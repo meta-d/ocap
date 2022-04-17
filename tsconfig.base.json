@@ -15,8 +15,15 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@metad/ocap-core": ["packages/core/src/index.ts"]
-    }
+      "@metad/ocap-angular": ["packages/angular/src/index.ts"],
+      "@metad/ocap-core": ["packages/core/src/index.ts"],
+      "@metad/ocap-echarts": ["packages/echarts/src/index.ts"],
+      "@metad/ocap-react": ["packages/react/src/index.ts"],
+      "@metad/store": ["packages/store/src/index.ts"]
+    },
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noPropertyAccessFromIndexSignature": false
   },
   "exclude": ["node_modules", "tmp"]
 }

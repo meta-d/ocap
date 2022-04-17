@@ -1,0 +1,26 @@
+{
+  "projectType": "library",
+  "root": "packages/angular",
+  "sourceRoot": "packages/angular/src",
+  "prefix": "metad-ocap",
+  "targets": {
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/angular"],
+      "options": {
+        "jestConfig": "packages/angular/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "packages/angular/src/**/*.ts",
+          "packages/angular/src/**/*.html"
+        ]
+      }
+    }
+  },
+  "tags": []
+}

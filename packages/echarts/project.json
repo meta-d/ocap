@@ -1,0 +1,32 @@
+{
+  "root": "packages/echarts",
+  "sourceRoot": "packages/echarts/src",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/echarts",
+        "main": "packages/echarts/src/index.ts",
+        "tsConfig": "packages/echarts/tsconfig.lib.json",
+        "assets": ["packages/echarts/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/echarts/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/echarts"],
+      "options": {
+        "jestConfig": "packages/echarts/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

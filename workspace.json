@@ -1,11 +1,15 @@
 {
   "version": 2,
   "projects": {
-    "angular": "apps/angular",
-    "angular-e2e": "apps/angular-e2e",
+    "angular": "packages/angular",
     "core": "packages/core",
+    "echarts": "packages/echarts",
     "nest": "apps/nest",
-    "react": "apps/react",
-    "react-e2e": "apps/react-e2e"
+    "ng": "apps/ng",
+    "ng-e2e": "apps/ng-e2e",
+    "rc": "apps/rc",
+    "rc-e2e": "apps/rc-e2e",
+    "react": "packages/react",
+    "store": "packages/store"
   }
 }

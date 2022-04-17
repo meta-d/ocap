@@ -1,2 +1,6 @@
-export * from './lib/core';
+export * from './lib/annotations/index'
+export * from './lib/core'
+export * from './lib/data-settings'
+export * from './lib/smart-chart/index'
 export * from './lib/state/todos.repository'
+export * from './lib/ds-core.service'

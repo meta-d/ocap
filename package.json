@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start:angular": "nx serve --project angular",
-    "start:react": "nx serve --project react",
+    "start:angular": "nx serve --project ng --port 4300",
+    "start:react": "nx serve --project rc",
     "postinstall": "ngcc --properties es2015 browser module main"
   },
   "private": true,
@@ -32,10 +32,12 @@
     "@testing-library/react": "13.0.0",
     "@testing-library/react-hooks": "7.0.2",
     "@types/jest": "27.0.2",
+    "@types/lodash": "^4.14.181",
     "@types/node": "16.11.7",
     "@types/react": "18.0.0",
     "@types/react-dom": "18.0.0",
     "@types/react-router-dom": "5.3.3",
+    "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "~5.18.0",
     "@typescript-eslint/parser": "~5.18.0",
     "autoprefixer": "^10.4.0",
@@ -77,6 +79,10 @@
     "@ngneat/elf-entities": "^4.2.1",
     "@ngneat/use-observable": "^1.0.0",
     "core-js": "^3.6.5",
+    "echarts": "^5.3.2",
+    "echarts-for-react": "^3.0.2",
+    "immer": "^9.0.12",
+    "lodash": "^4.17.21",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-router-dom": "5.3.0",
@@ -84,6 +90,7 @@
     "regenerator-runtime": "0.13.7",
     "rxjs": "~7.4.0",
     "tslib": "^2.0.0",
+    "uuid": "^8.3.2",
     "zone.js": "~0.11.4"
   }
 }
