@@ -1,0 +1,40 @@
+<ol class="list-decimal">
+    <li *ngFor="let todo of visibleTodos$ | async">
+        {{todo.text}}
+    </li>
+</ol>
+
+<div class="flex justify-center">
+  <div class="mb-3 xl:w-96">
+    <label for="exampleFormControlInput1" class="form-label inline-block mb-2 text-gray-700"
+      >Task</label
+    >
+    <input [(ngModel)]="task"
+      type="text"
+      class="
+        form-control
+        block
+        w-full
+        px-3
+        py-1.5
+        text-base
+        font-normal
+        text-gray-700
+        bg-white bg-clip-padding
+        border border-solid border-gray-300
+        rounded
+        transition
+        ease-in-out
+        m-0
+        focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none
+      "
+      id="exampleFormControlInput1"
+      placeholder="Task ..."
+    />
+  </div>
+</div>
+
+<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+    (click)="addTask()">
+    Add
+</button>

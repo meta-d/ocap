@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "projects": {
+    "angular": "apps/angular",
+    "angular-e2e": "apps/angular-e2e",
+    "core": "packages/core",
+    "nest": "apps/nest",
+    "react": "apps/react",
+    "react-e2e": "apps/react-e2e"
+  }
+}

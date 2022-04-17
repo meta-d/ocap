@@ -1,0 +1,5 @@
+{
+  "name": "@metad/ocap-core",
+  "version": "0.0.1",
+  "main": "./index.cjs.js"
+}
