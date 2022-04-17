@@ -1,10 +1,11 @@
 import styles from './analytical-card.module.scss'
-import { DataSettings } from '@metad/ocap-core'
+import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AppContext } from '../app-context'
+import { switchMap, tap } from 'rxjs'
 
 /* eslint-disable-next-line */
 export interface AnalyticalCardOptions {}
@@ -124,69 +125,57 @@ export interface AnalyticalCardProps {
 //   }
 // }
 
+export function useChartBusinessService(context) {
+  const { coreService } = useContext(context)
+  return useMemo(() => {
+    return new ChartBusinessService(coreService)
+  }, [])
+}
+
 export function AnalyticalCard(props: AnalyticalCardProps) {
 
   console.log(`***********************`)
-  const { coreService } = useContext(AppContext)
+
+  const chartService = useChartBusinessService(AppContext)
+  useEffect(() => {
+    chartService.dataSettings = props.dataSettings
+  }, [props.dataSettings])
+
+  const [loading] = useObservable(chartService.loading$)
   
   const engine = useMemo(() => {
     return new SmartEChartEngine()
   }, [])
 
-  // const [engine] = useState(new SmartEChartEngine())
   const [echartsOptions] = useObservable(engine.selectChartOptions())
-  // useLayoutEffect(() => {
-  //   engine.data = {
-  //     results: [
-  //       {
-  //         B: 'B1',
-  //         A: 'A1',
-  //         C: 100
-  //       }
-  //     ]
-  //   }
-  // }, [engine])
 
   useEffect(() => {
-    console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~`)
-
-    const subscription = coreService.selectEntity(props.dataSettings.entitySet).subscribe(value => {
-      engine.data = value
-    })
-
+    chartService.refresh()
+    const subscription = chartService.onAfterServiceInit().pipe(
+      tap(() => chartService.refresh()),
+      switchMap(() => {
+        return chartService.selectResult()
+      })).subscribe(value => {
+        engine.data = value
+      })
     return () => subscription.unsubscribe()
-  }, [props.dataSettings.entitySet])
+  }, [chartService])
 
   useEffect(() => {
     engine.chartAnnotation = props.dataSettings.chartAnnotation
   }, [engine, props.dataSettings])
 
-  const updateDimension = (dimension: string) => {
-    engine.updater((state) => {
-      state.chartAnnotation.dimensions[0].dimension = dimension
-    })()
-  }
-
   const refresh = () => {
-    engine.data = {...engine.data}
+    chartService.refresh()
   }
 
   return (
     <div className={styles['container']}>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={() => updateDimension('A')}>
-          A
-      </button>
-
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={() => updateDimension('B')}>
-          B
-      </button>
-
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
         onClick={() => refresh()}>
           Refresh
       </button>
+      {loading ? <>.............</> : <></>}
       <ReactECharts option={echartsOptions} />
     </div>
   );

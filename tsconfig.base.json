@@ -19,6 +19,7 @@
       "@metad/ocap-core": ["packages/core/src/index.ts"],
       "@metad/ocap-echarts": ["packages/echarts/src/index.ts"],
       "@metad/ocap-react": ["packages/react/src/index.ts"],
+      "@metad/ocap-sql": ["packages/sql/src/index.ts"],
       "@metad/store": ["packages/store/src/index.ts"]
     },
     "noImplicitAny": false,

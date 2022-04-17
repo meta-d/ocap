@@ -10,6 +10,7 @@
     "rc": "apps/rc",
     "rc-e2e": "apps/rc-e2e",
     "react": "packages/react",
+    "sql": "packages/sql",
     "store": "packages/store"
   }
 }

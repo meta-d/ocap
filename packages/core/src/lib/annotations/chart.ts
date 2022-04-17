@@ -1,4 +1,4 @@
-import { Annotation, Dimension, Measure } from "../core"
+import { Annotation, Dimension, Measure } from "../types"
 
 // for ChartAnnotation
 export enum ChartDimensionRoleType {

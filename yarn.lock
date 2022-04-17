@@ -1769,6 +1769,14 @@
   resolved "https://registry.npmmirror.com/@ngneat/elf/-/elf-1.5.6.tgz#63e684a89433f65883ee505cc2c747b7c5abc14f"
   integrity sha512-1k9QezigcasLZNLCRHB1VZU42aeZWkujp96L+RwWtZvjOTKpz7hqP0ZtddW/C4j8gF42lUcE/MlaBExTGZo3Og==
 
+"@ngneat/falso@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.npmmirror.com/@ngneat/falso/-/falso-4.0.0.tgz#991be0d3de61344d8f75faf794967d47e7057ac6"
+  integrity sha512-VCxeCOaoukr+TFyUDVdk4jMQnZiPBS3lLYf0PKbOcTRZdoNCCkIZRhRYczXdn0PGqY6jmDRiaQoZVMwX+KKt2w==
+  dependencies:
+    seedrandom "3.0.5"
+    uuid "8.3.2"
+
 "@ngneat/use-observable@^1.0.0":
   version "1.0.0"
   resolved "https://registry.npmmirror.com/@ngneat/use-observable/-/use-observable-1.0.0.tgz#e94ca47a79f05a26b8f4d821c8928da22f8ffa71"
@@ -10579,6 +10587,11 @@ secure-compare@3.0.1:
   version "3.0.1"
   resolved "https://registry.npmmirror.com/secure-compare/-/secure-compare-3.0.1.tgz#f1a0329b308b221fae37b9974f3d578d0ca999e3"
   integrity sha512-AckIIV90rPDcBcglUwXPF3kg0P0qmPsPXAj6BBEENQE1p5yA1xfmDJzfi1Tappj37Pv2mVbKpL3Z1T+Nn7k1Qw==
+
+seedrandom@3.0.5:
+  version "3.0.5"
+  resolved "https://registry.npmmirror.com/seedrandom/-/seedrandom-3.0.5.tgz#54edc85c95222525b0c7a6f6b3543d8e0b3aa0a7"
+  integrity sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==
 
 select-hose@^2.0.0:
   version "2.0.0"
