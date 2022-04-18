@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start:angular": "nx serve --project ng --port 4300",
+    "start:angular": "nx serve --project ng --port 4400",
     "start:react": "nx serve --project rc",
     "postinstall": "ngcc --properties es2015 browser module main"
   },
@@ -87,6 +87,8 @@
     "@ngneat/falso": "^4.0.0",
     "@ngneat/use-observable": "^1.0.0",
     "core-js": "^3.6.5",
+    "d3-scale": "^4.0.2",
+    "d3-scale-chromatic": "^3.0.0",
     "echarts": "^5.3.2",
     "echarts-for-react": "^3.0.2",
     "immer": "^9.0.12",

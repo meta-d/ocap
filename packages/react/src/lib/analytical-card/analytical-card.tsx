@@ -2,14 +2,15 @@ import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import CardHeader from '@mui/material/CardHeader'
 import IconButton from '@mui/material/IconButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
 import React, { useContext, useEffect, useMemo } from 'react'
@@ -21,8 +22,11 @@ export interface AnalyticalCardOptions {}
 
 /* eslint-disable-next-line */
 export interface AnalyticalCardProps {
+  title: string
   dataSettings: DataSettings
   options?: AnalyticalCardOptions
+  // callbacks
+  onFullscreen?: () => void
 }
 
 // export class AnalyticalCard extends React.Component<AnalyticalCardProps, { data: any, options: any }> {
@@ -154,6 +158,7 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
     return new SmartEChartEngine()
   }, [])
 
+  const [engineError] = useObservable(engine.error$)
   const [echartsOptions] = useObservable(engine.selectChartOptions())
 
   useEffect(() => {
@@ -190,19 +195,31 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
     setAnchorEl(null)
   }
 
+  const handleChangeChartType = (type: string) => {
+    engine.chartAnnotation = {
+      ...props.dataSettings.chartAnnotation,
+      chartType: {
+        ...props.dataSettings.chartAnnotation.chartType,
+        type
+      }
+    }
+    setAnchorEl(null)
+  }
+
   return (
-    <Card sx={{ minWidth: 275 }}>
-      <CardHeader
-        action={
-          <IconButton aria-label="settings" onClick={handleClick}>
-            {loading ? <RefreshIcon /> : <MoreVertIcon />}
-          </IconButton>
-        }
-        title="Shrimp and Chorizo Paella"
-        subheader="September 14, 2016"
-      />
-      <CardContent>
-        <ReactECharts option={echartsOptions} />
+    <Card>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+          {props.title}
+        </Typography>
+
+        <IconButton aria-label="settings" onClick={handleClick}>
+          {loading ? <RefreshIcon /> : <MoreVertIcon />}
+        </IconButton>
+      </Box>
+
+      <CardContent style={{ padding: 0 }}>
+        {engineError ? <Box>{JSON.stringify(engineError, null, 2)}</Box> : <ReactECharts option={echartsOptions.options} />}
       </CardContent>
 
       <Menu
@@ -220,8 +237,12 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
           </ListItemIcon>
           <ListItemText>Refresh</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Bar')}>Bar</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Line')}>Line</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Scatter')}>Scatter</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('EffectScatter')}>EffectScatter</MenuItem>
+        <MenuItem onClick={props.onFullscreen}>FullScreen</MenuItem>
+        <MenuItem onClick={handleClose}>Exit FullScreen</MenuItem>
       </Menu>
     </Card>
   )

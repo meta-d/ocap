@@ -49,23 +49,35 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
 
   override query(options?: QueryOptions): Observable<QueryReturn<T>> {
     return this.refresh$.pipe(
-      debounceTime(3000),
+      debounceTime(1000),
       switchMap(() => {
+
+        console.log(`SQL Entity Service want query for:`, options)
+
+        if (this.entitySet === 'SalesOrder') {
+          const results = []
+          randProductCategory({ length: 3 }).forEach(productCategory => {
+            randProductAdjective({ length: 10 }).forEach(product => {
+              results.push({
+                product,
+                productCategory,
+                sales: randFloat()
+              })
+            })
+          })
+
+          return of( {
+            results
+          })
+        }
+        
         return of(
-          this.entitySet === 'SalesOrder'
-            ? {
-                results: randProductAdjective({ length: 20 }).map((adjective) => ({
-                  product: adjective,
-                  productCategory: randProductCategory(),
-                  sales: randFloat()
-                }))
-              }
-            : {
-                results: randAirline({ length: 10 }).map((airline) => ({
-                  product: airline,
-                  sales: randFloat()
-                }))
-              }
+          {
+            results: randAirline({ length: 10 }).map((airline) => ({
+              product: airline,
+              sales: randFloat()
+            }))
+          }
         ) as unknown as Observable<QueryReturn<T>>
       })
     )

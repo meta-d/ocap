@@ -1,23 +1,28 @@
+import { isNil } from "lodash"
 import { Annotation, Dimension, Measure } from "../types"
 
 // for ChartAnnotation
 export enum ChartDimensionRoleType {
   Time = 'Time',
   Category = 'Category',
+  /**
+   * Category2
+   * 其它: Color Group Stacked 都是 Category2 大类下的子类型
+   */
   Category2 = 'Category2',
-  
+
   // dimension 作为颜色角色，图形可以根据此维度分配不同颜色
   Color = 'Color',
   /**
+   * 默认
    */
   Group = 'Group',
+  // Stacked bar 维度
+  Stacked = 'Stacked',
   /**
    * 此 Dimension 作为 Small Multiples 图形中的 Group 维度
    */
-  Trellis = 'Trellis',
-
-  // Stacked bar 维度
-  Stacked = 'Stacked'
+  Trellis = 'Trellis'
 }
 
 export enum ChartMeasureRoleType {
@@ -75,9 +80,9 @@ export enum ChartPattern {
 export interface ChartMeasure extends Measure {
   role?: ChartMeasureRoleType
   palette?: {
-    name: string,
-    reverse: boolean
-    pattern: ChartPattern
+    name?: string
+    reverse?: boolean
+    pattern?: ChartPattern
   }
   domain?: [number, number?]
   /**
@@ -105,4 +110,23 @@ export interface ChartAnnotation extends Annotation {
   measures: Array<ChartMeasure>
   // 图形库详细的配置项
   options?: any
+}
+
+export function getChartTrellis(chartAnnotation: ChartAnnotation): ChartDimension {
+  return chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Trellis)
+}
+export function getChartCategory(chartAnnotation: ChartAnnotation): ChartDimension {
+  return (
+    chartAnnotation?.dimensions.find((dimension) => dimension.role === ChartDimensionRoleType.Category || dimension.role === ChartDimensionRoleType.Time) ||
+    chartAnnotation?.dimensions.find((dimension) => isNil(dimension.role))
+  )
+}
+export function getChartCategory2(chartAnnotation: ChartAnnotation): ChartDimension {
+  return chartAnnotation.dimensions.find(
+    (item) =>
+      item.role === ChartDimensionRoleType.Category2 ||
+      item.role === ChartDimensionRoleType.Color ||
+      item.role === ChartDimensionRoleType.Group ||
+      item.role === ChartDimensionRoleType.Stacked
+  )
 }

@@ -232,6 +232,10 @@ export function getPropertyHierarchy(path: PropertyPath) {
   return isString(path) ? path : isDimension(path) ? path?.hierarchy || path?.dimension : null
 }
 
+export function getPropertyMeasure(path: Measure | PropertyName) {
+  return isString(path) ? path : path?.measure
+}
+
 export function getPropertyDisplayBehaviour(name: PropertyPath) {
   if (isDimension(name)) {
     return name.displayBehaviour

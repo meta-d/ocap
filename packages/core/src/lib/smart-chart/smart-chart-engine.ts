@@ -1,11 +1,13 @@
 import { ComponentStore } from '@metad/store'
 import { Observable } from 'rxjs'
 import { ChartAnnotation, QueryReturn } from '../annotations'
+import { EntityType } from '../csdl'
 import { NxChartEngine } from './chart'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface SmartChartEngineState {
   chartAnnotation: ChartAnnotation
+  entityType: EntityType
   data: QueryReturn<unknown>
 }
 
@@ -20,6 +22,14 @@ export abstract class SmartChartEngine<T extends SmartChartEngineState = SmartCh
     this.patchState({chartAnnotation: value} as Partial<T>)
   }
   readonly chartAnnotation$ = this.select(state => state.chartAnnotation)
+
+  get entityType() {
+    return this.get(state => state.entityType)
+  }
+  set entityType(value) {
+    this.patchState({entityType: value} as T)
+  }
+  public readonly entityType$ = this.select(state => state.entityType)
 
   get data() {
     return this.get(state => state.data)

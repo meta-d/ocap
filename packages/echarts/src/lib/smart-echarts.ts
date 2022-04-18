@@ -1,53 +1,78 @@
 import { SmartChartEngine } from '@metad/ocap-core'
-import { combineLatest, filter, map, shareReplay, startWith, tap, withLatestFrom } from 'rxjs'
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  EMPTY,
+  filter,
+  map,
+  shareReplay,
+  startWith,
+  tap,
+  withLatestFrom
+} from 'rxjs'
+import { bar } from './bar'
+import { line } from './line'
+import { scatter } from './scatter'
 
 export class SmartEChartEngine extends SmartChartEngine {
+  public readonly error$ = new BehaviorSubject(null)
+
   readonly echartsOptions$ = combineLatest([
-    this.data$.pipe(filter(value => !!value), tap(options => console.log(`111111111 data 111111111`, options))),
-    this.chartAnnotation$.pipe(filter(value => !!value))
+    this.data$.pipe(
+      filter((value) => !!value),
+      tap((value) => console.log(`echarts data change:`, value))
+    ),
+    this.chartAnnotation$.pipe(filter((value) => !!value))
   ]).pipe(
-    map(([data, chartAnnotation]) => {
-      const dimension = chartAnnotation.dimensions?.[0].dimension
-      const measure = chartAnnotation.measures?.[0]?.measure
+    withLatestFrom(this.entityType$),
+    map(([[data, chartAnnotation], entityType]) => {
+      const type = chartAnnotation.chartType.type
+
+      if (type === 'Bar') {
+        return {
+          options: bar(data, chartAnnotation, entityType)
+        }
+      }
+      if (type === 'Line') {
+        return {
+          options: line(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Scatter' || type === 'EffectScatter') {
+        return {
+          options: scatter(data, chartAnnotation, entityType)
+        }
+      }
+
       return {
-        grid: {
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          containLabel: true
-        },
-        xAxis: {
-          type: 'category',
-          data: data.results?.map((item: any) => item[dimension]),
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [
-          {
-            data: data.results?.map((item: any) => item[measure]),
-            type: 'bar'
-          }
-        ]
+        options: line(data, chartAnnotation, entityType)
       }
     }),
     startWith({
-      xAxis: {
-        type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          data: [120, 200, 150, 80, 70, 110, 130],
-          type: 'bar'
-        }
-      ]
+      options: {
+        // xAxis: {
+        //   type: 'category',
+        //   data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        // },
+        // yAxis: {
+        //   type: 'value'
+        // },
+        // series: [
+        //   {
+        //     data: [120, 200, 150, 80, 70, 110, 130],
+        //     type: 'bar'
+        //   }
+        // ]
+      }
     }),
-    tap(options => console.log(options)),
+    tap((options) => console.log(options)),
+    catchError((err) => {
+      console.error(err)
+      this.error$.next(err)
+      return EMPTY
+    }),
     shareReplay(1)
   )
 
