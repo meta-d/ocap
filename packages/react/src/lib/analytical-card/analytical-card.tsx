@@ -1,11 +1,20 @@
-import styles from './analytical-card.module.scss'
 import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import IconButton from '@mui/material/IconButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
-import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { AppContext } from '../app-context'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { switchMap, tap } from 'rxjs'
+import { AppContext } from '../app-context'
 
 /* eslint-disable-next-line */
 export interface AnalyticalCardOptions {}
@@ -115,7 +124,6 @@ export interface AnalyticalCardProps {
 //           B
 //       </button>
 
-
 //       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
 //         onClick={() => this.refresh()}>
 //           Refresh
@@ -133,7 +141,6 @@ export function useChartBusinessService(context) {
 }
 
 export function AnalyticalCard(props: AnalyticalCardProps) {
-
   console.log(`***********************`)
 
   const chartService = useChartBusinessService(AppContext)
@@ -142,7 +149,7 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
   }, [props.dataSettings])
 
   const [loading] = useObservable(chartService.loading$)
-  
+
   const engine = useMemo(() => {
     return new SmartEChartEngine()
   }, [])
@@ -151,11 +158,15 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
 
   useEffect(() => {
     chartService.refresh()
-    const subscription = chartService.onAfterServiceInit().pipe(
-      tap(() => chartService.refresh()),
-      switchMap(() => {
-        return chartService.selectResult()
-      })).subscribe(value => {
+    const subscription = chartService
+      .onAfterServiceInit()
+      .pipe(
+        tap(() => chartService.refresh()),
+        switchMap(() => {
+          return chartService.selectResult()
+        })
+      )
+      .subscribe((value) => {
         engine.data = value
       })
     return () => subscription.unsubscribe()
@@ -167,19 +178,53 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
 
   const refresh = () => {
     chartService.refresh()
+    handleClose()
+  }
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorEl(null)
   }
 
   return (
-    <div className={styles['container']}>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        onClick={() => refresh()}>
-          Refresh
-      </button>
-      {loading ? <>.............</> : <></>}
-      <ReactECharts option={echartsOptions} />
-    </div>
-  );
+    <Card sx={{ minWidth: 275 }}>
+      <CardHeader
+        action={
+          <IconButton aria-label="settings" onClick={handleClick}>
+            {loading ? <RefreshIcon /> : <MoreVertIcon />}
+          </IconButton>
+        }
+        title="Shrimp and Chorizo Paella"
+        subheader="September 14, 2016"
+      />
+      <CardContent>
+        <ReactECharts option={echartsOptions} />
+      </CardContent>
+
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'basic-button'
+        }}
+      >
+        <MenuItem onClick={refresh}>
+          <ListItemIcon>
+            <RefreshIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Refresh</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleClose}>My account</MenuItem>
+        <MenuItem onClick={handleClose}>Logout</MenuItem>
+      </Menu>
+    </Card>
+  )
 }
 
 export default AnalyticalCard
-

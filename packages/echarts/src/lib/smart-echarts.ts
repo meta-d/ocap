@@ -10,6 +10,13 @@ export class SmartEChartEngine extends SmartChartEngine {
       const dimension = chartAnnotation.dimensions?.[0].dimension
       const measure = chartAnnotation.measures?.[0]?.measure
       return {
+        grid: {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          containLabel: true
+        },
         xAxis: {
           type: 'category',
           data: data.results?.map((item: any) => item[dimension]),
