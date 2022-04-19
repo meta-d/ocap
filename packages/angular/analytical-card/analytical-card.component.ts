@@ -1,9 +1,10 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { OcapDSCoreService } from '@metad/ocap-angular/core'
 import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { map } from 'rxjs/operators'
-import { OcapDSCoreService } from '../core/core.service'
 
 @UntilDestroy()
 @Component({
