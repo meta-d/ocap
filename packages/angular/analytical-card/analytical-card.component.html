@@ -1,0 +1,18 @@
+<div fxLayout="row" fxLayoutAlign="space-between center">
+  <div>{{ title }}</div>
+
+  <div>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
+</div>
+
+<mat-card-content>
+  <div echarts [options]="options$ | async" class="demo-chart"></div>
+</mat-card-content>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item>Item 1</button>
+  <button mat-menu-item>Item 2</button>
+</mat-menu>

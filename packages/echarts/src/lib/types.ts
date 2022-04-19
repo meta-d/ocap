@@ -1,3 +1,5 @@
+import { ChartMeasure, Property } from "@metad/ocap-core"
+
 export enum AxisEnum {
   x = 'xAxis',
   y = 'yAxis',
@@ -23,4 +25,23 @@ export interface ChartSettings {
 
 export interface ChartOptions {
   options: any
+}
+
+export interface SeriesComponentType extends Partial<ChartMeasure> {
+  id?: string
+  name: string // 名称
+  seriesType?: string
+  seriesStack?: string
+  noDisplay?: boolean // 是否显示在如 tooltip 中
+  property?: Property // 对应的 OData Metadata 字段
+  dataMin?: number
+  dataMax?: number
+  dataSize?: number
+  categoryAxisIndex?: number
+  valueAxisIndex?: number
+  // series 组件对应的 measure 字段， 默认为一个， 在 scatter 图形中可能为两个或多个
+  measures?: Array<string>
+  datasetIndex?: number
+  seriesLayoutBy?: string
+  tooltip?: string[]
 }

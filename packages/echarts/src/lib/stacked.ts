@@ -10,7 +10,7 @@ import {
   getPropertyMeasure
 } from '@metad/ocap-core'
 import { uniqBy } from 'lodash'
-import { ChartSettings } from './types'
+import { ChartSettings, SeriesComponentType } from './types'
 
 export function stackedForMeasure(
   results: Array<unknown>,
@@ -44,23 +44,8 @@ export function stackedForMeasure(
         seriesStack: category2.role === ChartDimensionRoleType.Stacked ? getPropertyMeasure(measure) : null,
         seriesLayoutBy: 'row'
         // tooltip: tooltips.map(({ measure }) => measure)
-      }
+      } as SeriesComponentType
     })
-    // {
-    //   ...measure,
-    //   id: getPropertyMeasure(measure),
-    //   name: measureProperty.label,
-    //   label: measureProperty.label,
-    //   seriesType: measure.shapeType,
-    //   property: measureProperty,
-    //   // dataMin: minItem && minItem[measure],
-    //   // dataMax: maxItem && maxItem[measure],
-    //   // dataSize: items.length,
-    //   valueAxisIndex,
-    //   //  seriesStack: `${valueAxisIndex}`,
-    //   measure: measure,
-    //   tooltip: tooltips.map(({ measure }) => measure)
-    // }
   }
 }
 

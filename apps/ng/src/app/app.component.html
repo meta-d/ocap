@@ -1,2 +1,22 @@
-{{ title$ | async }}
-<metad-analytical-card></metad-analytical-card>
+<div fxLayout="column" fxLayoutAlign="start stretch" >
+    <mat-toolbar color="primary">
+        <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+            <mat-icon>menu</mat-icon>
+        </button>
+        <span>{{ title$ | async }}</span>
+        <span class="example-spacer"></span>
+        <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+            <mat-icon>favorite</mat-icon>
+        </button>
+        <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+            <mat-icon>share</mat-icon>
+        </button>
+    </mat-toolbar>
+    
+    <div fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem" style="padding: 1rem;">
+        <metad-analytical-card fxFlex="calc(33% - 1rem)" *ngFor="let card of cards" [class.mat-elevation-z2]="true"
+            [title]="card.title"
+            [dataSettings]="card.dataSettings"
+        ></metad-analytical-card>
+    </div>
+</div>

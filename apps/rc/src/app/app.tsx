@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ChartDimensionRoleType, DSCoreService } from '@metad/ocap-core'
+import { ReferenceLineType, ReferenceLineValueType, ReferenceLineAggregation, DSCoreService, ChartDimensionRoleType } from '@metad/ocap-core'
 import { AppContext, AnalyticalCard } from '@metad/ocap-react'
 import React, { useState } from 'react'
 import Grid from '@mui/material/Grid'
@@ -32,11 +32,11 @@ export function App() {
           },
           dimensions: [
             {
-              dimension: 'product'
+              dimension: 'product',
+              role: ChartDimensionRoleType.Stacked
             },
             {
-              dimension: 'productCategory',
-              role: ChartDimensionRoleType.Stacked
+              dimension: 'productCategory'
             }
           ],
           measures: [
@@ -70,8 +70,17 @@ export function App() {
               dimension: 'Measures',
               measure: 'sales',
               palette: {
-                pattern: 0
-              }
+                name: 'PuOr',
+                pattern: 1
+              },
+              referenceLines: [
+                {
+                  label: 'Sales Average',
+                  type: ReferenceLineType.markLine,
+                  valueType: ReferenceLineValueType.dynamic,
+                  aggregation: ReferenceLineAggregation.average
+                }
+              ]
             }
           ]
         }

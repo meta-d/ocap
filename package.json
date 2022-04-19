@@ -85,6 +85,7 @@
     "@ngneat/elf": "^1.5.6",
     "@ngneat/elf-entities": "^4.2.1",
     "@ngneat/falso": "^4.0.0",
+    "@ngneat/until-destroy": "^9.0.2",
     "@ngneat/use-observable": "^1.0.0",
     "core-js": "^3.6.5",
     "d3-scale": "^4.0.2",

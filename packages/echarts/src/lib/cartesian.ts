@@ -17,11 +17,11 @@ import {
   ReferenceLineValueType
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
-import { chunk, groupBy, indexOf, isArray, isEmpty, isNil, range } from 'lodash'
+import { chunk, groupBy, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
 import { getChromaticScale } from './chromatics'
 import { DecalPatterns } from './decal'
 import { stackedForMeasure } from './stacked'
-import { AxisEnum, ChartOptions, ChartSettings } from './types'
+import { AxisEnum, ChartOptions, ChartSettings, SeriesComponentType } from './types'
 
 /**
  * 设置轴方向布局
@@ -53,7 +53,8 @@ export function cartesian(
     grid: [],
     xAxis: [],
     yAxis: [],
-    series: []
+    series: [],
+    visualMap: []
   }
 
   cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
@@ -81,6 +82,8 @@ export function cartesian(
         })
       })
     })
+
+    echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
   })
 
   return echartsOptions
@@ -176,8 +179,11 @@ export function cartesianCoordinate(
         seriesComponents: chartAnnotation.measures
           .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
           .map((measure) => {
+            const measureName = getPropertyMeasure(measure)
             const measureProperty = getEntityProperty(entityType, measure)
             const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
+            const minItem = minBy(data, measureName)
+            const maxItem = maxBy(data, measureName)
             return {
               ...measure,
               // id: getPropertyMeasure(measure),
@@ -185,14 +191,14 @@ export function cartesianCoordinate(
               label: measureProperty?.label,
               seriesType: measure.shapeType,
               property: measureProperty,
-              // dataMin: minItem && minItem[measure],
-              // dataMax: maxItem && maxItem[measure],
-              // dataSize: items.length,
+              dataMin: minItem?.[measureName],
+              dataMax: maxItem?.[measureName],
+              dataSize: data.length,
               valueAxisIndex,
               //  seriesStack: `${valueAxisIndex}`,
               // measure: measure,
               tooltip: tooltips.map(({ measure }) => measure)
-            }
+            } as SeriesComponentType
           })
       }
     ]
@@ -241,7 +247,7 @@ export function cartesianCoordinate(
   return gridOptions
 }
 
-export function serializeSeriesComponent(dataset, seriesComponent, entityType, category, categoryAxis, valueAxis) {
+export function serializeSeriesComponent(dataset, seriesComponent: SeriesComponentType, entityType, category, categoryAxis, valueAxis) {
   const visualMaps = []
   const categoryProperty = getEntityProperty(entityType, category)
   const categoryText = getPropertyTextName(categoryProperty)
