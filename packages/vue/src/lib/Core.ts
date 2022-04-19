@@ -1,0 +1,1 @@
+export const CoreServiceKey = Symbol()

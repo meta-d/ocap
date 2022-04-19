@@ -11,6 +11,9 @@
     "rc-e2e": "apps/rc-e2e",
     "react": "packages/react",
     "sql": "packages/sql",
-    "store": "packages/store"
+    "store": "packages/store",
+    "vue": "packages/vue",
+    "vue-app": "apps/vue-app",
+    "vue-app-e2e": "apps/vue-app-e2e"
   }
 }

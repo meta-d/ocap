@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@metad/ocap-vue": ["packages/vue/src/index.ts"],
       "@metad/ocap-angular": ["packages/angular/src/index.ts"],
       "@metad/ocap-angular/*": ["packages/angular/*"],
       "@metad/ocap-core": ["packages/core/src/index.ts"],

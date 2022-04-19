@@ -1,0 +1,31 @@
+{
+  "root": "packages/vue",
+  "projectType": "library",
+  "sourceRoot": "packages/vue/src",
+  "targets": {
+    "build": {
+      "executor": "@nx-plus/vue:library",
+      "options": {
+        "dest": "dist/packages/vue",
+        "entry": "packages/vue/src/index.ts",
+        "tsConfig": "packages/vue/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/vue/**/*.{ts,tsx,vue}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/vue"],
+      "options": {
+        "jestConfig": "packages/vue/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
