@@ -234,10 +234,24 @@ export function cartesianCoordinate(
             seriesComponent,
             entityType,
             category,
-            categoryAxis,
             valueAxis
           )
           gridOptions.visualMap.push(...visualMaps)
+
+          if (!isNil(seriesComponent.valueAxisIndex)) {
+            series[valueAxis + 'Index'] = seriesComponent.valueAxisIndex
+          }
+          /**
+           * 堆积系列情况下不适用 encode, 使用的应该是 seriesLayoutBy: "row" name: "[Canada]" 与 dataset 中的行数据进行的对应
+           */
+          if (isNil(series.seriesLayoutBy)) {
+            series.encode = {
+              [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
+              [AxisEnum[valueAxis]]: seriesComponent.measure,
+              tooltip: seriesComponent.tooltip
+            }
+          }
+          
           return series
         })
       }
@@ -247,7 +261,7 @@ export function cartesianCoordinate(
   return gridOptions
 }
 
-export function serializeSeriesComponent(dataset, seriesComponent: SeriesComponentType, entityType, category, categoryAxis, valueAxis) {
+export function serializeSeriesComponent(dataset, seriesComponent: SeriesComponentType, entityType, category, valueAxis) {
   const visualMaps = []
   const categoryProperty = getEntityProperty(entityType, category)
   const categoryText = getPropertyTextName(categoryProperty)
@@ -256,28 +270,13 @@ export function serializeSeriesComponent(dataset, seriesComponent: SeriesCompone
     id: seriesComponent.id,
     name: seriesComponent.name ?? seriesComponent.id,
     type: seriesComponent.seriesType,
-    itemId: category,
-    itemName: categoryText ?? category,
+    // itemId: category,
+    // itemName: categoryText ?? category,
     measure: seriesComponent.measure,
     datasetIndex: seriesComponent.datasetIndex,
     seriesLayoutBy: seriesComponent.seriesLayoutBy,
     stack: seriesComponent.seriesStack,
     universalTransition: true
-  }
-
-  if (!isNil(seriesComponent.valueAxisIndex)) {
-    series[valueAxis + 'Index'] = seriesComponent.valueAxisIndex
-  }
-
-  /**
-   * 堆积系列情况下不适用 encode, 使用的应该是 seriesLayoutBy: "row" name: "[Canada]" 与 dataset 中的行数据进行的对应
-   */
-  if (isNil(series.seriesLayoutBy)) {
-    series.encode = {
-      [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
-      [AxisEnum[valueAxis]]: seriesComponent.measure,
-      tooltip: seriesComponent.tooltip
-    }
   }
 
   if (seriesComponent.palette?.name) {

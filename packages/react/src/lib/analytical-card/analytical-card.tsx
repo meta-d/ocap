@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography'
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
 import React, { useContext, useEffect, useMemo } from 'react'
-import { switchMap, tap } from 'rxjs'
+import { catchError, EMPTY, map, switchMap, tap } from 'rxjs'
 import { AppContext } from '../app-context'
 
 /* eslint-disable-next-line */
@@ -159,7 +159,15 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
   }, [])
 
   const [engineError] = useObservable(engine.error$)
-  const [echartsOptions] = useObservable(engine.selectChartOptions())
+  const [echartsOptions] = useObservable<any, any>(engine.selectChartOptions()
+  // .pipe(
+    // map(({options}) => options),
+    // catchError((err) => {
+    //   console.error(err)
+    //   return EMPTY
+    // })
+  // )
+  , {initialValue: {}})
 
   useEffect(() => {
     chartService.refresh()
@@ -219,7 +227,9 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
       </Box>
 
       <CardContent style={{ padding: 0 }}>
-        {engineError ? <Box>{JSON.stringify(engineError, null, 2)}</Box> : <ReactECharts option={echartsOptions.options} />}
+        {echartsOptions?.options ? <ReactECharts notMerge={true} option={echartsOptions.options} /> : <>No Data</>}
+
+        {engineError ? <Box>{JSON.stringify(engineError, null, 2)}</Box> : <></>}
       </CardContent>
 
       <Menu
@@ -241,6 +251,9 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
         <MenuItem onClick={() => handleChangeChartType('Line')}>Line</MenuItem>
         <MenuItem onClick={() => handleChangeChartType('Scatter')}>Scatter</MenuItem>
         <MenuItem onClick={() => handleChangeChartType('EffectScatter')}>EffectScatter</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Bar3D')}>Bar3D</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Scatter3D')}>Scatter3D</MenuItem>
+        <MenuItem onClick={() => handleChangeChartType('Line3D')}>Line3D</MenuItem>
         <MenuItem onClick={props.onFullscreen}>FullScreen</MenuItem>
         <MenuItem onClick={handleClose}>Exit FullScreen</MenuItem>
       </Menu>

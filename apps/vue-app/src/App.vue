@@ -1,17 +1,19 @@
 <template>
-
   <div v-for="(item, index) in dataSettings" :key="index">
     <AnalyticalCard :title="item.title" :dataSettings="item.dataSettings"></AnalyticalCard>
   </div>
-
 </template>
 
 <script lang="ts">
+import {
+  ChartDimensionRoleType,
+  DSCoreService,
+  ReferenceLineAggregation,
+  ReferenceLineType,
+  ReferenceLineValueType
+} from '@metad/ocap-core'
+import { AnalyticalCard, CoreServiceKey } from '@metad/ocap-vue'
 import { defineComponent } from 'vue'
-import { CoreServiceKey, AnalyticalCard } from '@metad/ocap-vue'
-import { DSCoreService } from '@metad/ocap-core'
-import { ReferenceLineType, ReferenceLineValueType, ReferenceLineAggregation, ChartDimensionRoleType } from '@metad/ocap-core'
-
 
 export default defineComponent({
   name: 'App',
@@ -32,97 +34,97 @@ export default defineComponent({
     return {
       dataSettings: [
         {
-      title: 'Sales Order Bar',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Bar'
-          },
-          dimensions: [
-            {
-              dimension: 'product',
-              role: ChartDimensionRoleType.Stacked
-            },
-            {
-              dimension: 'productCategory'
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            }
-          ]
-        }
-      }
-    },
-    {
-      title: 'Purchase Order Bar',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'PurchaseOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Bar'
-          },
-          dimensions: [
-            {
-              dimension: 'product'
-            },
-            {
-              dimension: 'productCategory'
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales',
-              palette: {
-                name: 'PuOr',
-                pattern: 1
+          title: 'Sales Order Bar',
+          dataSettings: {
+            dataSource: 'Sales',
+            entitySet: 'SalesOrder',
+            chartAnnotation: {
+              chartType: {
+                type: 'Bar'
               },
-              referenceLines: [
+              dimensions: [
                 {
-                  label: 'Sales Average',
-                  type: ReferenceLineType.markLine,
-                  valueType: ReferenceLineValueType.dynamic,
-                  aggregation: ReferenceLineAggregation.average
+                  dimension: 'product',
+                  role: ChartDimensionRoleType.Stacked
+                },
+                {
+                  dimension: 'productCategory'
+                }
+              ],
+              measures: [
+                {
+                  dimension: 'Measures',
+                  measure: 'sales'
                 }
               ]
             }
-          ]
-        }
-      }
-    },
-    {
-      title: 'Sales Order Line',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Line'
-          },
-          dimensions: [
-            {
-              dimension: 'product'
-            },
-            {
-              dimension: 'productCategory',
-              role: ChartDimensionRoleType.Trellis
+          }
+        },
+        {
+          title: 'Purchase Order Bar',
+          dataSettings: {
+            dataSource: 'Sales',
+            entitySet: 'PurchaseOrder',
+            chartAnnotation: {
+              chartType: {
+                type: 'Bar'
+              },
+              dimensions: [
+                {
+                  dimension: 'product'
+                },
+                {
+                  dimension: 'productCategory'
+                }
+              ],
+              measures: [
+                {
+                  dimension: 'Measures',
+                  measure: 'sales',
+                  palette: {
+                    name: 'PuOr',
+                    pattern: 1
+                  },
+                  referenceLines: [
+                    {
+                      label: 'Sales Average',
+                      type: ReferenceLineType.markLine,
+                      valueType: ReferenceLineValueType.dynamic,
+                      aggregation: ReferenceLineAggregation.average
+                    }
+                  ]
+                }
+              ]
             }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
+          }
+        },
+        {
+          title: 'Sales Order Line',
+          dataSettings: {
+            dataSource: 'Sales',
+            entitySet: 'SalesOrder',
+            chartAnnotation: {
+              chartType: {
+                type: 'Line'
+              },
+              dimensions: [
+                {
+                  dimension: 'product'
+                },
+                {
+                  dimension: 'productCategory',
+                  role: ChartDimensionRoleType.Trellis
+                }
+              ],
+              measures: [
+                {
+                  dimension: 'Measures',
+                  measure: 'sales'
+                }
+              ]
             }
-          ]
+          }
         }
-      },
-    }
       ]
     }
   }

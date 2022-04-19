@@ -28,6 +28,33 @@ export function App() {
         entitySet: 'SalesOrder',
         chartAnnotation: {
           chartType: {
+            type: 'Scatter3D'
+          },
+          dimensions: [
+            {
+              dimension: 'product',
+              role: ChartDimensionRoleType.Stacked
+            },
+            {
+              dimension: 'productCategory'
+            }
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Bar',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
             type: 'Bar'
           },
           dimensions: [
@@ -115,15 +142,8 @@ export function App() {
     }
   ])
 
-  const setEntitySet = (entitySet: string) => {
-    // setDataSettings({
-    //   ...dataSettings,
-    //   entitySet
-    // })
-  }
-
   const handleChange = (event: SelectChangeEvent) => {
-    setEntitySet(event.target.value);
+    //
   }
 
   return (

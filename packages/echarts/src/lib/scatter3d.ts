@@ -1,0 +1,11 @@
+import { ChartAnnotation, EntityType, QueryReturn } from '@metad/ocap-core'
+import { use } from "echarts/core"
+import { cartesian3d } from './cartesian3d'
+import { Scatter3DChart } from 'echarts-gl/charts'
+import { Grid3DComponent } from 'echarts-gl/components'
+
+use([Grid3DComponent, Scatter3DChart])
+
+export function scatter3d(data: QueryReturn<unknown>, chartAnnotation: ChartAnnotation, entityType: EntityType) {
+  return cartesian3d(data, chartAnnotation, entityType, null, null, 'scatter3D')
+}

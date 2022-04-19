@@ -1,19 +1,11 @@
 import { SmartChartEngine } from '@metad/ocap-core'
-import {
-  BehaviorSubject,
-  catchError,
-  combineLatest,
-  EMPTY,
-  filter,
-  map,
-  shareReplay,
-  startWith,
-  tap,
-  withLatestFrom
-} from 'rxjs'
+import { BehaviorSubject, catchError, combineLatest, EMPTY, filter, map, shareReplay, startWith, tap, withLatestFrom } from 'rxjs'
 import { bar } from './bar'
+import { bar3d } from './bar3d'
 import { line } from './line'
+import { line3d } from './line3d'
 import { scatter } from './scatter'
+import { scatter3d } from './scatter3d'
 
 export class SmartEChartEngine extends SmartChartEngine {
   public readonly error$ = new BehaviorSubject(null)
@@ -46,25 +38,26 @@ export class SmartEChartEngine extends SmartChartEngine {
         }
       }
 
+      if (type === 'Bar3D') {
+        return {
+          options: bar3d(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Scatter3D') {
+        return {
+          options: scatter3d(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Line3D') {
+        return {
+          options: line3d(data, chartAnnotation, entityType)
+        }
+      }
+
       return {
         options: line(data, chartAnnotation, entityType)
-      }
-    }),
-    startWith({
-      options: {
-        // xAxis: {
-        //   type: 'category',
-        //   data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        // },
-        // yAxis: {
-        //   type: 'value'
-        // },
-        // series: [
-        //   {
-        //     data: [120, 200, 150, 80, 70, 110, 130],
-        //     type: 'bar'
-        //   }
-        // ]
       }
     }),
     tap((options) => console.log(options)),
