@@ -3,6 +3,7 @@ import { Observable } from "rxjs"
 import { v4 as uuidv4 } from 'uuid'
 import { OrderBy } from "./orderby"
 
+export type HttpHeaders = { [key: string]: string | string[] }
 export type PrimitiveType = number | string | boolean | null | undefined
 export type UUID = string
 export type PropertyName = string
@@ -246,6 +247,21 @@ export function getPropertyDisplayBehaviour(name: PropertyPath) {
 
 export function uuid(): UUID {
   return uuidv4()
+}
+
+export function displayByBehaviour(option: IMember, behaviour?: DisplayBehaviour): string {
+  switch (behaviour) {
+    case DisplayBehaviour.descriptionAndId:
+      return `${option.label || ''}(${option.value})`
+    case DisplayBehaviour.descriptionOnly:
+      return `${option.label || ''}`
+    case DisplayBehaviour.idAndDescription:
+      return `${option.value}(${option.label || ''})`
+    case DisplayBehaviour.idOnly:
+      return `${option.value}`
+    default:
+      return `${option.label || option.value}`
+  }
 }
 
 /**

@@ -1,16 +1,10 @@
 import { ComponentStore } from '@metad/store'
 import { map, Observable } from 'rxjs'
+import { Agent } from './agent'
 import { QueryReturn } from './annotations'
 import { EntityType } from './csdl/entity'
-import { DataSource, DataSourceOptions } from './data-source'
+import { DataSource, DataSourceOptions, DATA_SOURCE_PROVIDERS } from './data-source'
 import { QueryOptions } from './types'
-
-export const DATA_SOURCE_PROVIDERS = {}
-
-// export interface DataSourceOptions {
-//   name: string
-//   type: string
-// }
 
 export interface DSState {
   dataSources: {
@@ -19,7 +13,7 @@ export interface DSState {
 }
 
 export class DSCoreService extends ComponentStore<DSState> {
-  constructor(dataSources: { [key: string]: DataSourceOptions }) {
+  constructor(private agents: Array<Agent>, dataSources: { [key: string]: DataSourceOptions }) {
     super({ dataSources })
   }
 
@@ -31,7 +25,9 @@ export class DSCoreService extends ComponentStore<DSState> {
           throw new Error(`Can't found provider for dataSource type: '${options.type}'`)
         }
 
-        return provider.factory(options)
+        const agent = options.agentType ? this.agents.find(item => item.type === options.agentType) : this.agents[0]
+
+        return provider.factory(options, agent)
       })
     )
   }
@@ -40,14 +36,6 @@ export class DSCoreService extends ComponentStore<DSState> {
     return this.getDataSource(dataSource).pipe(map(dataSource => dataSource.createEntityService(entitySet)))
   }
 }
-
-// export interface DataSource {
-//   options: DataSourceOptions
-
-//   createEntityService<T>(entitySet: string): EntityService<T>
-
-//   selectEntityType(entity: string): Observable<EntityType>
-// }
 
 export interface EntityService<T> {
   dataSource: DataSource

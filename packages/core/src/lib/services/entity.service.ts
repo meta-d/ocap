@@ -125,6 +125,10 @@ export class EntityBusinessService<
       })
   }
 
+  getEntityType(): EntityType {
+    return this.get(state => state.entityType)
+  }
+
   /**
    * 如果先改变查询条件和逻辑，可以在子类中重写此方法
    *

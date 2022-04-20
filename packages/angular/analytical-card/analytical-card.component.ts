@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { OcapDSCoreService } from '@metad/ocap-angular/core'
+import { NgxDSCoreService } from '@metad/ocap-angular/core'
 import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import { UntilDestroy } from '@ngneat/until-destroy'
@@ -20,7 +20,7 @@ export class AnalyticalCardComponent implements OnInit, OnChanges {
   private echartsEngine = new SmartEChartEngine()
   readonly options$ = this.echartsEngine.selectChartOptions().pipe(map(({ options }) => options)) as any
 
-  constructor(private dsCoreService: OcapDSCoreService) {
+  constructor(private dsCoreService: NgxDSCoreService) {
     //
   }
 

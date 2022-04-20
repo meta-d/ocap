@@ -1,8 +1,11 @@
 import { assign, isEqual, isNil, isString } from 'lodash'
 import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, shareReplay, switchMap } from 'rxjs'
+import { Agent, AgentType } from './agent'
 import { Catalog, EDMSchema, EntitySet, EntityType, IDimensionMember, mergeEntityType } from './csdl/index'
 import { EntityService } from './ds-core.service'
 import { Syntax } from './types'
+
+export const DATA_SOURCE_PROVIDERS = {} as Record<string, {factory: (options: DataSourceOptions, agent: Agent) => DataSource}>
 
 export type DataSourceType =
   | 'OData'
@@ -72,12 +75,9 @@ export interface DataSourceOptions {
     username: string
     password: string
   }
-  // 是否使用本地代理
-  useLocalAgent?: boolean
+  agentType: AgentType
   offline?: boolean
   settings?: DataSourceSettings
-  // // data source options
-  // options?: ConnectionOptions
   /**
    * 数据查询所使用的语言
    */
@@ -87,10 +87,6 @@ export interface DataSourceOptions {
    */
   dialect?: string
   schema?: EDMSchema
-
-  // 继承自 IDataSource
-  updatedAt?: Date
-  // ...
 }
 
 /**
@@ -101,6 +97,7 @@ export interface DataSourceOptions {
  */
 export interface DataSource {
   options: DataSourceOptions
+  agent: Agent
 
   /**
    * 根据指定的 entitySet 名称创建相应的 entityService
@@ -175,13 +172,13 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
 
   private _entitySets = {}
   private _entityTypies = {}
-  constructor(options: T) {
+  constructor(options: T, public agent: Agent) {
     this.options$.next(options)
   }
 
   abstract createEntityService<T>(entitySet: string): EntityService<T>
   abstract getEntitySets(): Observable<Array<EntitySet>>
-  abstract getEntityType(entitySet): Observable<EntityType>
+  abstract getEntityType(entitySet: string): Observable<EntityType>
   abstract getCatalogs(): Observable<Array<Catalog>>
   abstract getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
   abstract createEntity(name, columns, data?): Observable<string>

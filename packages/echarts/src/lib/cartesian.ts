@@ -2,7 +2,6 @@ import {
   ChartAnnotation,
   ChartDimension,
   ChartMeasureRoleType,
-  ChartOrient,
   EntityType,
   getChartCategory,
   getChartCategory2,
@@ -18,25 +17,13 @@ import {
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
 import { chunk, groupBy, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
+import { axisOrient } from './axis'
 import { getChromaticScale } from './chromatics'
 import { DecalPatterns } from './decal'
 import { stackedForMeasure } from './stacked'
+import { getEChartsTooltip } from './tooltip'
 import { AxisEnum, ChartOptions, ChartSettings, SeriesComponentType } from './types'
 
-/**
- * 设置轴方向布局
- *
- * @param orient ChartOrient
- * @return [categoryAxis, valueAxis]
- */
-export function axisOrient(orient: ChartOrient): [AxisEnum, AxisEnum] {
-  // Chart Orient
-  if (orient === ChartOrient.horizontal) {
-    return [AxisEnum.y, AxisEnum.x]
-  } else {
-    return [AxisEnum.x, AxisEnum.y]
-  }
-}
 
 export function cartesian(
   data: QueryReturn<unknown>,
@@ -54,7 +41,8 @@ export function cartesian(
     xAxis: [],
     yAxis: [],
     series: [],
-    visualMap: []
+    visualMap: [],
+    tooltip: []
   }
 
   cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
@@ -68,7 +56,7 @@ export function cartesian(
       gridIndex
     })
 
-    cartesianCoordinate.datasets.forEach(({dataset, series}) => {
+    cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
       echartsOptions.dataset.push({
         ...dataset
       })
@@ -84,6 +72,7 @@ export function cartesian(
     })
 
     echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
+    echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
   })
 
   return echartsOptions
@@ -101,8 +90,6 @@ export function cartesians(
   if (trellis) {
     const trellisName = getPropertyHierarchy(trellis)
     const trellisResults = groupBy(data.results, trellisName)
-
-    console.log(trellisResults)
 
     const coordinates = Object.keys(trellisResults).map((trellisKey) => {
       const dimensions = [...chartAnnotation.dimensions]
@@ -157,16 +144,43 @@ export function cartesianCoordinate(
   options: ChartOptions
 ) {
   const category = getChartCategory(chartAnnotation)
+  const categoryProperty = getEntityProperty(entityType, category)
   const category2 = getChartCategory2(chartAnnotation)
+
   const tooltips = chartAnnotation.measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
   let datasets = []
   if (category2) {
     datasets = chartAnnotation.measures
       .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
       .map((measure) => {
-        return stackedForMeasure(data, measure, chartAnnotation, null, settings)
+        return stackedForMeasure(data, measure, chartAnnotation, entityType, settings)
       })
   } else {
+
+    const seriesComponents = chartAnnotation.measures
+      .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
+      .map((measure) => {
+        const measureName = getPropertyMeasure(measure)
+        const measureProperty = getEntityProperty(entityType, measure)
+        const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
+        const minItem = minBy(data, measureName)
+        const maxItem = maxBy(data, measureName)
+        return {
+          ...measure,
+          // id: getPropertyMeasure(measure),
+          name: measureProperty?.label,
+          label: measureProperty?.label,
+          seriesType: measure.shapeType,
+          property: measureProperty,
+          dataMin: minItem?.[measureName],
+          dataMax: maxItem?.[measureName],
+          dataSize: data.length,
+          valueAxisIndex,
+          //  seriesStack: `${valueAxisIndex}`,
+          // measure: measure,
+          tooltip: tooltips.map(({ measure }) => measure)
+        } as SeriesComponentType
+      })
     datasets = [
       {
         dataset: {
@@ -176,30 +190,17 @@ export function cartesianCoordinate(
             ...chartAnnotation.measures.map(getPropertyMeasure)
           ]
         },
-        seriesComponents: chartAnnotation.measures
-          .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
-          .map((measure) => {
-            const measureName = getPropertyMeasure(measure)
-            const measureProperty = getEntityProperty(entityType, measure)
-            const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
-            const minItem = minBy(data, measureName)
-            const maxItem = maxBy(data, measureName)
-            return {
-              ...measure,
-              // id: getPropertyMeasure(measure),
-              name: measureProperty?.label,
-              label: measureProperty?.label,
-              seriesType: measure.shapeType,
-              property: measureProperty,
-              dataMin: minItem?.[measureName],
-              dataMax: maxItem?.[measureName],
-              dataSize: data.length,
-              valueAxisIndex,
-              //  seriesStack: `${valueAxisIndex}`,
-              // measure: measure,
-              tooltip: tooltips.map(({ measure }) => measure)
-            } as SeriesComponentType
-          })
+        seriesComponents,
+        tooltip: getEChartsTooltip(
+            options?.tooltip,
+            categoryProperty,
+            chartAnnotation.measures.map((measure) => ({
+              measure,
+              property: getEntityProperty(entityType, measure)
+            })),
+            seriesComponents,
+            'zh-Hans'
+          )
       }
     ]
   }
@@ -221,47 +222,54 @@ export function cartesianCoordinate(
       type: 'value'
     },
     visualMap: [],
-    datasets: []
+    datasets: [],
+    tooltip: []
   }
 
-  datasets.forEach(({ dataset, seriesComponents }) => {
-    gridOptions.datasets.push(
-      {
-        dataset,
-        series: seriesComponents.map((seriesComponent) => {
-          const { series, visualMaps } = serializeSeriesComponent(
-            dataset,
-            seriesComponent,
-            entityType,
-            category,
-            valueAxis
-          )
-          gridOptions.visualMap.push(...visualMaps)
+  datasets.forEach(({ dataset, seriesComponents, tooltip }) => {
+    gridOptions.datasets.push({
+      dataset,
+      series: seriesComponents.map((seriesComponent) => {
+        const { series, visualMaps } = serializeSeriesComponent(
+          dataset,
+          seriesComponent,
+          entityType,
+          category,
+          valueAxis
+        )
+        gridOptions.visualMap.push(...visualMaps)
 
-          if (!isNil(seriesComponent.valueAxisIndex)) {
-            series[valueAxis + 'Index'] = seriesComponent.valueAxisIndex
+        if (!isNil(seriesComponent.valueAxisIndex)) {
+          series[valueAxis + 'Index'] = seriesComponent.valueAxisIndex
+        }
+        /**
+         * 堆积系列情况下不适用 encode, 使用的应该是 seriesLayoutBy: "row" name: "[Canada]" 与 dataset 中的行数据进行的对应
+         */
+        if (isNil(series.seriesLayoutBy)) {
+          series.encode = {
+            [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
+            [AxisEnum[valueAxis]]: seriesComponent.measure,
+            tooltip: seriesComponent.tooltip
           }
-          /**
-           * 堆积系列情况下不适用 encode, 使用的应该是 seriesLayoutBy: "row" name: "[Canada]" 与 dataset 中的行数据进行的对应
-           */
-          if (isNil(series.seriesLayoutBy)) {
-            series.encode = {
-              [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
-              [AxisEnum[valueAxis]]: seriesComponent.measure,
-              tooltip: seriesComponent.tooltip
-            }
-          }
-          
-          return series
-        })
-      }
-    )
+        }
+
+        return series
+      })
+    })
+
+    gridOptions.tooltip.push(tooltip)
   })
 
   return gridOptions
 }
 
-export function serializeSeriesComponent(dataset, seriesComponent: SeriesComponentType, entityType, category, valueAxis) {
+export function serializeSeriesComponent(
+  dataset,
+  seriesComponent: SeriesComponentType,
+  entityType,
+  category,
+  valueAxis
+) {
   const visualMaps = []
   const categoryProperty = getEntityProperty(entityType, category)
   const categoryText = getPropertyTextName(categoryProperty)

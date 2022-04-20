@@ -25,6 +25,7 @@ export interface ChartSettings {
 
 export interface ChartOptions {
   options: any
+  tooltip?: any
 }
 
 export interface SeriesComponentType extends Partial<ChartMeasure> {

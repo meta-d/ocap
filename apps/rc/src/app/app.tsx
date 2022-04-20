@@ -1,21 +1,31 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ReferenceLineType, ReferenceLineValueType, ReferenceLineAggregation, DSCoreService, ChartDimensionRoleType } from '@metad/ocap-core'
-import { AppContext, AnalyticalCard } from '@metad/ocap-react'
-import React, { useState } from 'react'
-import Grid from '@mui/material/Grid'
-import Paper from '@mui/material/Paper'
-import Container from '@mui/material/Container'
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-
+import {
+  AgentType,
+  ChartDimensionRoleType,
+  DSCoreService,
+  MockAgent,
+  ReferenceLineAggregation,
+  ReferenceLineType,
+  ReferenceLineValueType
+} from '@metad/ocap-core'
+import { AnalyticalCard, AppContext } from '@metad/ocap-react'
 import * as SQL from '@metad/ocap-sql'
+import MenuIcon from '@mui/icons-material/Menu'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Container from '@mui/material/Container'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import React, { useState } from 'react'
+import { registerTheme } from 'echarts/core'
+import { DEFAULT_THEME } from '@metad/ocap-echarts'
 
+registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
 export function App() {
   const sss = SQL
@@ -138,7 +148,7 @@ export function App() {
             }
           ]
         }
-      },
+      }
     }
   ])
 
@@ -147,7 +157,6 @@ export function App() {
   }
 
   return (
-
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar variant="dense">
@@ -162,7 +171,7 @@ export function App() {
             labelId="demo-simple-select-helper-label"
             id="demo-simple-select-helper"
             label="Entity"
-            value='SalesOrder'
+            value="SalesOrder"
             onChange={handleChange}
           >
             <MenuItem value="">
@@ -174,29 +183,29 @@ export function App() {
         </Toolbar>
       </AppBar>
 
-    <Container >
-      <AppContext.Provider
-        value={{coreService: new DSCoreService({
-          Sales: {
-            name: 'Sales',
-            type: 'SQL'
-          }
-        })}}
-      >
-
-        <Grid container spacing={2}>
-          {dataSettings.map(({title, dataSettings}) => (
-            <Grid item xs={8} sm={3}>
-              <Paper>
-                <AnalyticalCard title={title} dataSettings={dataSettings}/>
-              </Paper>
+      <Container>
+        <AppContext.Provider
+          value={{
+            coreService: new DSCoreService([new MockAgent()], {
+              Sales: {
+                name: 'Sales',
+                type: 'SQL',
+                agentType: AgentType.Browser
+              }
+            })
+          }}
+        >
+          <Grid container spacing={2}>
+            {dataSettings.map(({ title, dataSettings }) => (
+              <Grid item xs={8} sm={3}>
+                <Paper>
+                  <AnalyticalCard title={title} dataSettings={dataSettings}  />
+                </Paper>
+              </Grid>
+            ))}
           </Grid>
-          ))}
-        </Grid>
-
-      </AppContext.Provider>
-    </Container>
-      
+        </AppContext.Provider>
+      </Container>
     </Box>
   )
 }

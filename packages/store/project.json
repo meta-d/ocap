@@ -3,13 +3,32 @@
   "sourceRoot": "packages/store/src",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nrwl/web:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
+        "updateBuildableProjectDepsInPackageJson": false,
         "outputPath": "dist/packages/store",
-        "main": "packages/store/src/index.ts",
         "tsConfig": "packages/store/tsconfig.lib.json",
-        "assets": ["packages/store/*.md"]
+        "project": "packages/store/package.json",
+        "entryFile": "packages/store/src/index.ts",
+        "globals": [
+          {
+            "global": "Rx",
+            "moduleId": "rxjs"
+          },
+          {
+            "global": "Rx",
+            "moduleId": "rxjs/operators"
+          }
+        ],
+        "assets": [
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
+        "format": ["cjs", "esm", "umd"]
       }
     },
     "lint": {

@@ -13,10 +13,12 @@
         </button>
     </mat-toolbar>
     
-    <div fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem" style="padding: 1rem;">
-        <metad-analytical-card fxFlex="calc(33% - 1rem)" *ngFor="let card of cards" [class.mat-elevation-z2]="true"
-            [title]="card.title"
-            [dataSettings]="card.dataSettings"
-        ></metad-analytical-card>
+    <div fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid" style="padding: 1rem;">
+        <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
+            <metad-analytical-card
+                [title]="card.title"
+                [dataSettings]="card.dataSettings"
+            ></metad-analytical-card>
+        </div>
     </div>
 </div>

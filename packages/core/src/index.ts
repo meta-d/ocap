@@ -1,4 +1,5 @@
 export * from './lib/abstract-entity.service'
+export * from './lib/agent/index'
 export * from './lib/annotations/index'
 export * from './lib/core'
 export * from './lib/csdl/index'
@@ -9,3 +10,4 @@ export * from './lib/services/index'
 export * from './lib/smart-chart/index'
 export * from './lib/state/todos.repository'
 export * from './lib/types'
+

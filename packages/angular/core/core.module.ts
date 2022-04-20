@@ -1,5 +1,5 @@
 import { ModuleWithProviders, NgModule } from '@angular/core'
-import { OcapDSCoreService } from './core.service'
+import { NgxDSCoreService } from './core.service'
 
 @NgModule({
   imports: [],
@@ -8,14 +8,14 @@ import { OcapDSCoreService } from './core.service'
   providers: []
 })
 export class OcapCoreModule {
-  static forRoot(config): ModuleWithProviders<OcapCoreModule> {
+  static forRoot(agents, config): ModuleWithProviders<OcapCoreModule> {
     return {
       ngModule: OcapCoreModule,
       providers: [
         {
-          provide: OcapDSCoreService,
+          provide: NgxDSCoreService,
           useFactory: () => {
-            return new OcapDSCoreService(config)
+            return new NgxDSCoreService(agents, config)
           }
         }
       ]

@@ -20,6 +20,32 @@ export class AppComponent {
         entitySet: 'SalesOrder',
         chartAnnotation: {
           chartType: {
+            type: 'Scatter3D'
+          },
+          dimensions: [
+            {
+              dimension: 'product',
+            },
+            {
+              dimension: 'productCategory'
+            }
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Bar',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
             type: 'Bar'
           },
           dimensions: [

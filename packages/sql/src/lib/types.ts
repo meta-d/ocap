@@ -1,10 +1,10 @@
 import { AggregationRole, DataSourceOptions, DataSourceSettings } from "@metad/ocap-core"
 
 export interface SQLDataSourceOptions extends DataSourceOptions {
-  settings: SQLDataSourceSettings
+  settings?: SQLDataSourceSettings
 }
 export interface SQLDataSourceSettings extends DataSourceSettings {
-  id: string
+  id?: string
   database?: string
 }
 

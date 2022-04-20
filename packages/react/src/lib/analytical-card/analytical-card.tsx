@@ -6,14 +6,20 @@ import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import IconButton from '@mui/material/IconButton'
+import DisplaySettingsIcon from '@mui/icons-material/DisplaySettings';
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
+import Popover from '@mui/material/Popover';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
-import React, { useContext, useEffect, useMemo } from 'react'
+import { isEmpty } from 'lodash'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { catchError, EMPTY, map, switchMap, tap } from 'rxjs'
 import { AppContext } from '../app-context'
 
@@ -144,6 +150,21 @@ export function useChartBusinessService(context) {
   }, [])
 }
 
+const CHART_TYPES = [
+  {
+    value: 'Bar',
+    label: '柱形图'
+  },
+  {
+    value: 'Line',
+    label: '线图'
+  },
+  {
+    value: 'Scatter',
+    label: '散点图'
+  },
+]
+
 export function AnalyticalCard(props: AnalyticalCardProps) {
   console.log(`***********************`)
 
@@ -169,18 +190,29 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
   // )
   , {initialValue: {}})
 
+  const [chartType, setChartType] = useState(props.dataSettings?.chartAnnotation?.chartType?.type)
+  const [noData, setNoData] = useState(null)
+
   useEffect(() => {
     chartService.refresh()
     const subscription = chartService
       .onAfterServiceInit()
       .pipe(
-        tap(() => chartService.refresh()),
+        tap(() => {
+          engine.entityType = chartService.getEntityType()
+          chartService.refresh()
+        }),
         switchMap(() => {
           return chartService.selectResult()
         })
       )
       .subscribe((value) => {
-        engine.data = value
+        if (isEmpty(value.results)) {
+          setNoData(true)
+        } else {
+          setNoData(false)
+          engine.data = value
+        }
       })
     return () => subscription.unsubscribe()
   }, [chartService])
@@ -214,20 +246,47 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
     setAnchorEl(null)
   }
 
+  const [anchorElPopover, setAnchorElPopover] = React.useState<HTMLButtonElement | null>(null);
+  const handlePopoverClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorElPopover(event.currentTarget);
+  };
+  const handlePopoverClose = () => {
+    setAnchorElPopover(null);
+  };
+  const openPopover = Boolean(anchorElPopover);
+  const id = open ? 'simple-popover' : undefined;
+
+  const handleChartTypeChange = (event: SelectChangeEvent) => {
+    setChartType(event.target.value)
+    engine.chartAnnotation = {
+      ...props.dataSettings.chartAnnotation,
+      chartType: {
+        ...props.dataSettings.chartAnnotation.chartType,
+        type: event.target.value
+      }
+    }
+  };
   return (
+    <div>
     <Card>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           {props.title}
         </Typography>
 
-        <IconButton aria-label="settings" onClick={handleClick}>
-          {loading ? <RefreshIcon /> : <MoreVertIcon />}
-        </IconButton>
+        <div>
+          <IconButton onClick={handlePopoverClick}>
+            <DisplaySettingsIcon></DisplaySettingsIcon>
+          </IconButton>
+          <IconButton aria-label="settings" onClick={handleClick}>
+            {loading ? <RefreshIcon /> : <MoreVertIcon />}
+          </IconButton>
+        </div>
+
       </Box>
 
       <CardContent style={{ padding: 0 }}>
-        {echartsOptions?.options ? <ReactECharts notMerge={true} option={echartsOptions.options} /> : <>No Data</>}
+        {noData || !echartsOptions?.options ? <>No Data</> : <ReactECharts notMerge={true} option={echartsOptions.options} theme={"default"}/>}
 
         {engineError ? <Box>{JSON.stringify(engineError, null, 2)}</Box> : <></>}
       </CardContent>
@@ -258,6 +317,38 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
         <MenuItem onClick={handleClose}>Exit FullScreen</MenuItem>
       </Menu>
     </Card>
+
+    <Popover
+      id={id}
+      open={openPopover}
+      anchorEl={anchorElPopover}
+      onClose={handlePopoverClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+    >
+      <Typography sx={{ p: 2 }}>The content of the Popover.</Typography>
+
+      <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+        <InputLabel id="demo-select-small">Chart Type</InputLabel>
+        <Select
+          labelId="demo-select-small"
+          id="demo-select-small"
+          value={chartType}
+          label="Entity Set"
+          onChange={handleChartTypeChange}
+        >
+          <MenuItem value="">
+            <em>None</em>
+          </MenuItem>
+          {CHART_TYPES.map(({value, label}) => (
+            <MenuItem value={value}>{label}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Popover>
+    </div>
   )
 }
 

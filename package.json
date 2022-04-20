@@ -6,6 +6,7 @@
     "start:angular": "nx serve --project ng --port 4400",
     "start:react": "nx serve --project rc",
     "start:vue": "nx serve --project vue-app --port 4500",
+    "start:nest": "nx serve --project nest",
     "postinstall": "ngcc --properties es2015 browser module main"
   },
   "private": true,

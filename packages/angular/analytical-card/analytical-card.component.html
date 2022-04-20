@@ -9,7 +9,7 @@
 </div>
 
 <mat-card-content>
-  <div echarts [options]="options$ | async" class="demo-chart"></div>
+  <div echarts [options]="options$ | async" [theme]="'default'" class="demo-chart"></div>
 </mat-card-content>
 
 <mat-menu #menu="matMenu">
