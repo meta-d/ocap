@@ -121,10 +121,9 @@ export function getChartCategory(chartAnnotation: ChartAnnotation): ChartDimensi
     chartAnnotation?.dimensions.find((dimension) => isNil(dimension.role))
   )
 }
-export function getChartCategory2(chartAnnotation: ChartAnnotation): ChartDimension {
+export function getChartSeries(chartAnnotation: ChartAnnotation): ChartDimension {
   return chartAnnotation.dimensions.find(
     (item) =>
-      item.role === ChartDimensionRoleType.Category2 ||
       item.role === ChartDimensionRoleType.Color ||
       item.role === ChartDimensionRoleType.Group ||
       item.role === ChartDimensionRoleType.Stacked

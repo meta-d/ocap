@@ -1,4 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import styles from './app.module.scss'
 import {
   AgentType,
   ChartDimensionRoleType,
@@ -16,7 +17,6 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import MenuItem from '@mui/material/MenuItem'
 import Paper from '@mui/material/Paper'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Toolbar from '@mui/material/Toolbar'
@@ -149,7 +149,94 @@ export function App() {
           ]
         }
       }
-    }
+    },
+    {
+      title: 'Sales Order Two Measures',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Bar'
+          },
+          dimensions: [
+            {
+              dimension: 'product',
+            },
+            {
+              dimension: 'productCategory',
+              role: ChartDimensionRoleType.Stacked
+            },
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            },
+            {
+              dimension: 'Measures',
+              measure: 'quantity'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Treemap',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Treemap'
+          },
+          dimensions: [
+            {
+              dimension: 'productCategory',
+            },
+            {
+              dimension: 'product',
+            },
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Heatmap',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Heatmap'
+          },
+          dimensions: [
+            {
+              dimension: 'productCategory',
+            },
+            {
+              dimension: 'product',
+              role: ChartDimensionRoleType.Category2
+            },
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales',
+              palette: {
+                name: 'PuOr'
+              }
+            }
+          ]
+        }
+      }
+    },
   ])
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -164,26 +251,12 @@ export function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" color="inherit" component="div">
-            Photos
+            Analytical Cards
           </Typography>
-
-          <Select
-            labelId="demo-simple-select-helper-label"
-            id="demo-simple-select-helper"
-            label="Entity"
-            value="SalesOrder"
-            onChange={handleChange}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={'SalesOrder'}>Sales Order</MenuItem>
-            <MenuItem value={'PurchaseOrder'}>Purchase Order</MenuItem>
-          </Select>
         </Toolbar>
       </AppBar>
 
-      <Container>
+      <Container className={styles.appContainer}>
         <AppContext.Provider
           value={{
             coreService: new DSCoreService([new MockAgent()], {

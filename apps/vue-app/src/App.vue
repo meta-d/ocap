@@ -10,21 +10,30 @@ import {
   DSCoreService,
   ReferenceLineAggregation,
   ReferenceLineType,
-  ReferenceLineValueType
+  ReferenceLineValueType,
+  MockAgent,
+  AgentType
 } from '@metad/ocap-core'
 import { AnalyticalCard, CoreServiceKey } from '@metad/ocap-vue'
 import { defineComponent } from 'vue'
+import { registerTheme } from 'echarts/core'
+import { DEFAULT_THEME } from '@metad/ocap-echarts'
+
+registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
 export default defineComponent({
   name: 'App',
   provide() {
     return {
-      [CoreServiceKey]: new DSCoreService({
-        Sales: {
-          name: 'Sales',
-          type: 'SQL'
+      [CoreServiceKey]: new DSCoreService([new MockAgent()],
+        {
+          Sales: {
+            name: 'Sales',
+            type: 'SQL',
+            agentType: AgentType.Browser
+          }
         }
-      })
+      )
     }
   },
   components: {

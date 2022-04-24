@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start:angular": "nx serve --project ng --port 4400",
-    "start:react": "nx serve --project rc",
+    "start:react": "nx serve --project rc --port 4300",
     "start:vue": "nx serve --project vue-app --port 4500",
     "start:nest": "nx serve --project nest",
     "postinstall": "ngcc --properties es2015 browser module main"
@@ -122,7 +122,7 @@
     "uuid": "^8.3.2",
     "vue": "^3.0.0",
     "vue-echarts": "^6.0.2",
-    "vuetify": "^2.6.4",
+    "vuetify": "^3.0.0-beta.1",
     "zone.js": "~0.11.4"
   }
 }

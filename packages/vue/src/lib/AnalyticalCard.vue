@@ -2,9 +2,7 @@
   <div>{{ title }}</div>
 
   <div>
-
-  <v-chart class="chart" :option="option" />
-
+    <v-chart class="chart" :option="option" :theme="'default'"/>
   </div>
 </template>
 
@@ -75,8 +73,8 @@ export default defineComponent({
           return this.chartBusinessService.selectResult()
         })
       ).subscribe(result => {
-      this.engine.data = result
-    })
+        this.engine.data = result
+      })
     this.chartBusinessService.dataSettings = this.dataSettings
   },
   watch: {

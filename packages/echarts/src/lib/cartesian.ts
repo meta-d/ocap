@@ -4,7 +4,7 @@ import {
   ChartMeasureRoleType,
   EntityType,
   getChartCategory,
-  getChartCategory2,
+  getChartSeries,
   getChartTrellis,
   getEntityProperty,
   getPropertyHierarchy,
@@ -145,7 +145,7 @@ export function cartesianCoordinate(
 ) {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
-  const category2 = getChartCategory2(chartAnnotation)
+  const category2 = getChartSeries(chartAnnotation)
 
   const tooltips = chartAnnotation.measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
   let datasets = []

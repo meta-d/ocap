@@ -163,6 +163,18 @@ const CHART_TYPES = [
     value: 'Scatter',
     label: '散点图'
   },
+  {
+    value: 'Heatmap',
+    label: '热力图'
+  },
+  {
+    value: 'Treemap',
+    label: '矩阵树图'
+  },
+  {
+    value: 'Sunburst',
+    label: '旭日图'
+  }
 ]
 
 export function AnalyticalCard(props: AnalyticalCardProps) {

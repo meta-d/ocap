@@ -3,7 +3,7 @@ import {
   ChartMeasureRoleType,
   EntityType,
   getChartCategory,
-  getChartCategory2,
+  getChartSeries,
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
@@ -64,7 +64,7 @@ export function cartesianCoordinate3d(
   options: ChartOptions
 ) {
   const category = getChartCategory(chartAnnotation)
-  const category2 = getChartCategory2(chartAnnotation)
+  const category2 = getChartSeries(chartAnnotation)
   const tooltips = chartAnnotation.measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
 
   const datasets = [

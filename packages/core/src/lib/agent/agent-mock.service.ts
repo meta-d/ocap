@@ -13,17 +13,6 @@ export class MockAgent implements Agent {
   request(dataSource: DataSourceOptions, options: any): Promise<any> {
     console.log(`~~~~~~~~~~~~~~~~~~~~`, dataSource, options)
 
-    // randAirline({ length: 10 }).map((airline) => ({
-    //   product: airline,
-    //   sales: randFloat()
-    // }))
-
-    // if (this.entitySet === 'SalesOrder') {
-    //   return of({
-    //     results
-    //   })
-    // }
-
     return new Promise((resolve, reject) => {
       if (options.method === 'get') {
         if (options.url === 'schema') {
@@ -49,6 +38,12 @@ export class MockAgent implements Agent {
                   label: '销售额',
                   type: 'number',
                   aggregationRole: AggregationRole.measure
+                },
+                {
+                  name: 'quantity',
+                  label: '销售量',
+                  type: 'number',
+                  aggregationRole: AggregationRole.measure
                 }
               ]
             })
@@ -62,7 +57,8 @@ export class MockAgent implements Agent {
               results.push({
                 product,
                 productCategory,
-                sales: randFloat()
+                sales: randFloat(),
+                quantity: randFloat()
               })
             })
           })

@@ -17122,10 +17122,10 @@ vue@^3.0.0:
     "@vue/server-renderer" "3.2.33"
     "@vue/shared" "3.2.33"
 
-vuetify@^2.6.4:
-  version "2.6.4"
-  resolved "https://registry.npmmirror.com/vuetify/-/vuetify-2.6.4.tgz#18052f77492d32856fea35c910755075ff32acc9"
-  integrity sha512-2wEzU/Gz39gQCxK93xoiWPKCHQUnyUKWd81wB7Q7hfYJWu5QOWQXYlF0X/BgUZzf8IOyHWKiSNEAfEe9OE3b4w==
+vuetify@^3.0.0-beta.1:
+  version "3.0.0-beta.1"
+  resolved "https://registry.npmjs.org/vuetify/-/vuetify-3.0.0-beta.1.tgz#8e3e4e41e00f1f6e00cb0a22b6a8f528581ca3f1"
+  integrity sha512-698CB/Xlvxku2Tm4AsFrmQ7LzMXOjleX7A5tbyQTnhPyt0NI1OTkf5zJUoXL3TNi2TN7DglN+adI6AE69e6CeQ==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"

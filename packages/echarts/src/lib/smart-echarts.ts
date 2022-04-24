@@ -2,6 +2,8 @@ import { SmartChartEngine } from '@metad/ocap-core'
 import { BehaviorSubject, catchError, combineLatest, EMPTY, filter, map, shareReplay, startWith, tap, withLatestFrom } from 'rxjs'
 import { bar } from './bar'
 import { bar3d } from './bar3d'
+import { heatmap } from './heatmap'
+import { sunburst, treemap } from './hierarchy'
 import { line } from './line'
 import { line3d } from './line3d'
 import { scatter } from './scatter'
@@ -38,6 +40,12 @@ export class SmartEChartEngine extends SmartChartEngine {
         }
       }
 
+      if (type === 'Heatmap') {
+        return {
+          options: heatmap(data, chartAnnotation, entityType)
+        }
+      }
+
       if (type === 'Bar3D') {
         return {
           options: bar3d(data, chartAnnotation, entityType)
@@ -53,6 +61,18 @@ export class SmartEChartEngine extends SmartChartEngine {
       if (type === 'Line3D') {
         return {
           options: line3d(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Treemap') {
+        return {
+          options: treemap(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Sunburst') {
+        return {
+          options: sunburst(data, chartAnnotation, entityType)
         }
       }
 

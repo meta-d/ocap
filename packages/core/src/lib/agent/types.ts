@@ -5,7 +5,8 @@ import { HttpHeaders } from '../types'
 export enum AgentType {
   Local,
   Browser,
-  Server
+  Server,
+  SQLite
 }
 
 export interface Agent {

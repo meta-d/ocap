@@ -5,7 +5,7 @@ import {
   ChartMeasure,
   EntityType,
   getChartCategory,
-  getChartCategory2,
+  getChartSeries,
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
@@ -25,7 +25,7 @@ export function stackedForMeasure(
   options?: ChartOptions
 ) {
   const category = getChartCategory(chartAnnotation)
-  const category2 = getChartCategory2(chartAnnotation)
+  const category2 = getChartSeries(chartAnnotation)
 
   const measureProperty = getEntityProperty(entityType, measure)
 
