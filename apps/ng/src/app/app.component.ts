@@ -1,8 +1,12 @@
 import { HttpClient } from '@angular/common/http'
 import { Component } from '@angular/core'
+import {
+  ChartDimensionRoleType,
+  ReferenceLineAggregation,
+  ReferenceLineType,
+  ReferenceLineValueType
+} from '@metad/ocap-core'
 import { map } from 'rxjs/operators'
-import { ReferenceLineType, ReferenceLineValueType, ReferenceLineAggregation, ChartDimensionRoleType } from '@metad/ocap-core'
-
 
 @Component({
   selector: 'metad-ocap-root',
@@ -25,6 +29,7 @@ export class AppComponent {
           dimensions: [
             {
               dimension: 'product',
+              role: ChartDimensionRoleType.Stacked
             },
             {
               dimension: 'productCategory'
@@ -129,7 +134,94 @@ export class AppComponent {
             }
           ]
         }
-      },
+      }
+    },
+    {
+      title: 'Sales Order Two Measures',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Bar'
+          },
+          dimensions: [
+            {
+              dimension: 'product'
+            },
+            {
+              dimension: 'productCategory',
+              role: ChartDimensionRoleType.Stacked
+            }
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            },
+            {
+              dimension: 'Measures',
+              measure: 'quantity'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Treemap',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Treemap'
+          },
+          dimensions: [
+            {
+              dimension: 'productCategory'
+            },
+            {
+              dimension: 'product'
+            }
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales'
+            }
+          ]
+        }
+      }
+    },
+    {
+      title: 'Sales Order Heatmap',
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder',
+        chartAnnotation: {
+          chartType: {
+            type: 'Heatmap'
+          },
+          dimensions: [
+            {
+              dimension: 'productCategory'
+            },
+            {
+              dimension: 'product',
+              role: ChartDimensionRoleType.Category2
+            }
+          ],
+          measures: [
+            {
+              dimension: 'Measures',
+              measure: 'sales',
+              palette: {
+                name: 'PuOr'
+              }
+            }
+          ]
+        }
+      }
     }
   ]
   constructor(private httpClient: HttpClient) {}

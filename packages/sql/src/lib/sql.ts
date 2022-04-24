@@ -12,7 +12,7 @@ import {
 import { isEmpty } from 'lodash'
 import { catchError, distinctUntilChanged, map, Observable, of, switchMap, throwError } from 'rxjs'
 import { SQLEntityService } from './entity.service'
-import { getFirstElement, serializeFrom } from './query'
+import { serializeFrom } from './query'
 import { decideRole, SQLDataSourceOptions, SQLSchema } from './types'
 import { typeOfObj } from './utils'
 
@@ -27,7 +27,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
     throw new Error('Method not implemented.')
   }
 
-  fetchTableSchema(modelName: string, catalog: string, table: string): Promise<SQLSchema> {
+  async fetchTableSchema(modelName: string, catalog: string, table: string): Promise<SQLSchema> {
     return this.agent
       .request(this.options, {
         method: 'get',

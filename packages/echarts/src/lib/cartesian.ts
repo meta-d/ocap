@@ -4,6 +4,7 @@ import {
   ChartMeasureRoleType,
   EntityType,
   getChartCategory,
+  getChartCategory2,
   getChartSeries,
   getChartTrellis,
   getEntityProperty,
@@ -145,11 +146,12 @@ export function cartesianCoordinate(
 ) {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
-  const category2 = getChartSeries(chartAnnotation)
+  const category2 = getChartCategory2(chartAnnotation)
+  const chartSeries = getChartSeries(chartAnnotation)
 
   const tooltips = chartAnnotation.measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
   let datasets = []
-  if (category2) {
+  if (chartSeries) {
     datasets = chartAnnotation.measures
       .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
       .map((measure) => {
@@ -219,7 +221,7 @@ export function cartesianCoordinate(
       type: 'category'
     },
     [valueAxis]: {
-      type: 'value'
+      type: category2 ? 'category' : 'value'
     },
     visualMap: [],
     datasets: [],
@@ -248,7 +250,7 @@ export function cartesianCoordinate(
         if (isNil(series.seriesLayoutBy)) {
           series.encode = {
             [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
-            [AxisEnum[valueAxis]]: seriesComponent.measure,
+            [AxisEnum[valueAxis]]: category2 ? getPropertyHierarchy(category2) : seriesComponent.measure,
             tooltip: seriesComponent.tooltip
           }
         }

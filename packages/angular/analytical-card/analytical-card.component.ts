@@ -3,7 +3,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { NgxDSCoreService } from '@metad/ocap-angular/core'
 import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { map } from 'rxjs/operators'
 
 @UntilDestroy()
@@ -25,9 +25,12 @@ export class AnalyticalCardComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.businessService.selectResult().subscribe((result) => {
-      this.echartsEngine.data = result
-    })
+    this.businessService
+      .selectResult()
+      .pipe(untilDestroyed(this))
+      .subscribe((result) => {
+        this.echartsEngine.data = result
+      })
   }
 
   ngOnChanges({ dataSettings }: SimpleChanges) {
@@ -36,5 +39,9 @@ export class AnalyticalCardComponent implements OnInit, OnChanges {
       this.businessService.dataSettings = dataSettings.currentValue
       this.businessService.refresh()
     }
+  }
+
+  refresh() {
+    this.businessService.refresh()
   }
 }
