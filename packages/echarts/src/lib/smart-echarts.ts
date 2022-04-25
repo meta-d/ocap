@@ -17,32 +17,33 @@ export class SmartEChartEngine extends SmartChartEngine {
       filter((value) => !!value),
       tap((value) => console.log(`echarts data change:`, value))
     ),
-    this.chartAnnotation$.pipe(filter((value) => !!value))
+    this.chartAnnotation$.pipe(filter((value) => !!value)),
+    this.settings$,
   ]).pipe(
     withLatestFrom(this.entityType$),
-    map(([[data, chartAnnotation], entityType]) => {
+    map(([[data, chartAnnotation, settings], entityType]) => {
       const type = chartAnnotation.chartType.type
 
       if (type === 'Bar') {
         return {
-          options: bar(data, chartAnnotation, entityType)
+          options: bar(data, chartAnnotation, entityType, settings, null)
         }
       }
       if (type === 'Line') {
         return {
-          options: line(data, chartAnnotation, entityType)
+          options: line(data, chartAnnotation, entityType, settings, null)
         }
       }
 
       if (type === 'Scatter' || type === 'EffectScatter') {
         return {
-          options: scatter(data, chartAnnotation, entityType)
+          options: scatter(data, chartAnnotation, entityType, settings, null)
         }
       }
 
       if (type === 'Heatmap') {
         return {
-          options: heatmap(data, chartAnnotation, entityType)
+          options: heatmap(data, chartAnnotation, entityType, settings, null)
         }
       }
 
@@ -77,7 +78,7 @@ export class SmartEChartEngine extends SmartChartEngine {
       }
 
       return {
-        options: line(data, chartAnnotation, entityType)
+        options: line(data, chartAnnotation, entityType, settings, null)
       }
     }),
     tap((options) => console.log(options)),

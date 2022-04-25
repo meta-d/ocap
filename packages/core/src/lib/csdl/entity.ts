@@ -1,4 +1,5 @@
 import { assign, cloneDeep, isArray, isNil, isString, mergeWith } from 'lodash'
+import { AggregationRole, EntityProperty } from '../models'
 import {
   Dimension,
   getPropertyName,
@@ -143,30 +144,14 @@ export interface EntityType {
   expression?: string
 }
 
-export enum AggregationRole {
-  dimension = 'dimension',
-  hierarchy = 'hierarchy',
-  level = 'level',
-  measure = 'measure',
-  text = 'text'
-}
-
-export interface PropertyAttributes {
-  __id__?: string
-  name: string
-  uniqueName?: string
-  label?: string
-  description?: string
-  dataType?: string // number, string, date
-  aggregationRole?: AggregationRole
-  hidden?: boolean
-  text?: Property | PropertyName
-  unit?: Property | PropertyName
+export interface PropertyAttributes extends EntityProperty {
   semantic?: Semantics
   /**
    * 日期 formatter
    */
   formatter?: string
+  text?: Property | PropertyName
+  unit?: Property | PropertyName
 }
 
 export interface PropertyHierarchyAttributes {
@@ -215,7 +200,6 @@ export interface PropertyMeasure extends Property {
 }
 
 export interface PropertyHierarchy extends PropertyAttributes {
-  dimension?: string
   hierarchyCardinality?: number
   /**
    * 默认成员, 当上线文没有设置此维度的成员时默认取此成员
@@ -237,7 +221,7 @@ export interface PropertyLevel extends PropertyAttributes {
   parentChild?: boolean
 }
 
-export interface ParameterProperty extends Omit<Omit<Dimension, 'name'>, 'parameter'>, PropertyAttributes {
+export interface ParameterProperty extends PropertyAttributes {
   paramType: ParameterControlEnum
   value?: PrimitiveType
 
@@ -404,14 +388,14 @@ export function getEntityDimensions(entityType: EntityType): Property[] {
   if (isNil(entityType?.properties)) {
     return []
   }
-  return Object.values(entityType?.properties).filter((item) => item.aggregationRole === AggregationRole.dimension)
+  return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.dimension)
 }
 
 export function getEntityHierarchies(entityType: EntityType): Property[] {
   if (isNil(entityType?.properties)) {
     return []
   }
-  return Object.values(entityType?.properties).filter((item) => item.aggregationRole === AggregationRole.hierarchy)
+  return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.hierarchy)
 }
 
 export function getEntityDimensionAndHierarchies(entityType: EntityType): Property[] {
@@ -419,7 +403,7 @@ export function getEntityDimensionAndHierarchies(entityType: EntityType): Proper
     return []
   }
   return Object.values(entityType?.properties).filter(
-    (item) => item.aggregationRole === AggregationRole.dimension || item.aggregationRole === AggregationRole.hierarchy
+    (item) => item.role === AggregationRole.dimension || item.role === AggregationRole.hierarchy
   )
 }
 
@@ -433,7 +417,7 @@ export function getEntityMeasures(entityType: EntityType): PropertyMeasure[] {
     return []
   }
   return Object.values(entityType.properties).filter(
-    (property) => property.aggregationRole === AggregationRole.measure && !property.hidden
+    (property) => property.role === AggregationRole.measure && !property.hidden
   )
 }
 
@@ -550,7 +534,7 @@ export function mapEntityTypeHierarchy2Tree(entityType: EntityType) {
     return []
   }
   return Object.keys(entityType.properties)
-    .filter((key) => entityType.properties[key].aggregationRole === AggregationRole.dimension)
+    .filter((key) => entityType.properties[key].role === AggregationRole.dimension)
     .map((key) => {
       return {
         value: entityType.properties[key].name,

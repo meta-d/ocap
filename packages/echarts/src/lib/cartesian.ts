@@ -2,6 +2,8 @@ import {
   ChartAnnotation,
   ChartDimension,
   ChartMeasureRoleType,
+  ChartOptions,
+  ChartSettings,
   EntityType,
   getChartCategory,
   getChartCategory2,
@@ -23,7 +25,7 @@ import { getChromaticScale } from './chromatics'
 import { DecalPatterns } from './decal'
 import { stackedForMeasure } from './stacked'
 import { getEChartsTooltip } from './tooltip'
-import { AxisEnum, ChartOptions, ChartSettings, SeriesComponentType } from './types'
+import { AxisEnum, SeriesComponentType } from './types'
 
 
 export function cartesian(
@@ -97,7 +99,7 @@ export function cartesians(
       const index = dimensions.indexOf(trellis)
       dimensions.splice(index, 1)
 
-      return cartesianCoordinate(
+      const coordinate = cartesianCoordinate(
         trellisResults[trellisKey],
         {
           ...chartAnnotation,
@@ -107,6 +109,15 @@ export function cartesians(
         settings,
         options
       )
+
+      coordinate.datasets = coordinate.datasets.map((dataset) => ({
+        ...dataset,
+        series: dataset.series.map((series) => ({
+          ...series,
+          id: `${trellisKey}-${series.id}`
+        }))
+      }))
+      return coordinate
     })
 
     const trellisHorizontal = settings?.trellisHorizontal ?? 2
@@ -169,7 +180,7 @@ export function cartesianCoordinate(
         const maxItem = maxBy(data, measureName)
         return {
           ...measure,
-          // id: getPropertyMeasure(measure),
+          id: settings?.universalTransition ? getPropertyMeasure(measure) : null,
           name: measureProperty?.label,
           label: measureProperty?.label,
           seriesType: measure.shapeType,
@@ -225,7 +236,8 @@ export function cartesianCoordinate(
     },
     visualMap: [],
     datasets: [],
-    tooltip: []
+    tooltip: [],
+    series: []
   }
 
   datasets.forEach(({ dataset, seriesComponents, tooltip }) => {
@@ -237,7 +249,8 @@ export function cartesianCoordinate(
           seriesComponent,
           entityType,
           category,
-          valueAxis
+          valueAxis,
+          settings
         )
         gridOptions.visualMap.push(...visualMaps)
 
@@ -270,7 +283,8 @@ export function serializeSeriesComponent(
   seriesComponent: SeriesComponentType,
   entityType,
   category,
-  valueAxis
+  valueAxis,
+  settings: ChartSettings
 ) {
   const visualMaps = []
   const categoryProperty = getEntityProperty(entityType, category)
@@ -286,7 +300,7 @@ export function serializeSeriesComponent(
     datasetIndex: seriesComponent.datasetIndex,
     seriesLayoutBy: seriesComponent.seriesLayoutBy,
     stack: seriesComponent.seriesStack,
-    universalTransition: true
+    universalTransition: settings?.universalTransition
   }
 
   if (seriesComponent.palette?.name) {

@@ -139,7 +139,7 @@ function mapTableSchemaEntityType(item: SQLSchema) {
       dataType: column.type,
       // 从后端进行推荐角色, 因为不同数据库字段类型差别很大
       // 似乎后端判断也不合适
-      aggregationRole: column.aggregationRole || decideRole(column.type)
+      role: column.aggregationRole || decideRole(column.type)
     }
   })
   return entityType

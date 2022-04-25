@@ -12,21 +12,7 @@ export enum AxisEnum {
   singleAxis = 'singleAxis'
 }
 
-export interface ChartSettings {
-  /**
-   * 格子横向个数
-   */
-  trellisHorizontal: number
-  /**
-   * 格子纵向个数
-   */
-  trellisVertical: number
-}
 
-export interface ChartOptions {
-  options: any
-  tooltip?: any
-}
 
 export interface SeriesComponentType extends Partial<ChartMeasure> {
   id?: string

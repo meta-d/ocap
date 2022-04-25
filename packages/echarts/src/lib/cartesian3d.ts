@@ -1,6 +1,8 @@
 import {
   ChartAnnotation,
   ChartMeasureRoleType,
+  ChartOptions,
+  ChartSettings,
   EntityType,
   getChartCategory,
   getChartSeries,
@@ -12,7 +14,7 @@ import {
 } from '@metad/ocap-core'
 import { isNil, maxBy, minBy, omitBy } from 'lodash'
 import { serializeSeriesComponent } from './cartesian'
-import { ChartOptions, ChartSettings, SeriesComponentType } from './types'
+import { SeriesComponentType } from './types'
 
 export function cartesian3d(
   data: QueryReturn<unknown>,
@@ -125,7 +127,7 @@ export function cartesianCoordinate3d(
     grid3dOptions.datasets.push({
       dataset,
       series: seriesComponents.map((seriesComponent) => {
-        const { series, visualMaps } = serializeSeriesComponent(dataset, seriesComponent, entityType, category, 'z')
+        const { series, visualMaps } = serializeSeriesComponent(dataset, seriesComponent, entityType, category, 'z', settings)
         grid3dOptions.visualMap.push(...visualMaps)
 
         series.encode = {

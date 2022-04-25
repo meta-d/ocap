@@ -1,6 +1,6 @@
 import { randFloat, randProductAdjective, randProductCategory } from '@ngneat/falso'
 import { Observable, of } from 'rxjs'
-import { AggregationRole } from '../csdl'
+import { AggregationRole } from '../models/index'
 import { DataSourceOptions } from '../data-source'
 import { Agent, AgentStatus, AgentType } from './types'
 

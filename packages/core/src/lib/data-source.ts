@@ -3,9 +3,13 @@ import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, s
 import { Agent, AgentType } from './agent'
 import { Catalog, EDMSchema, EntitySet, EntityType, IDimensionMember, mergeEntityType } from './csdl/index'
 import { EntityService } from './ds-core.service'
+import { SDL } from './models'
 import { Syntax } from './types'
 
-export const DATA_SOURCE_PROVIDERS = {} as Record<string, {factory: (options: DataSourceOptions, agent: Agent) => DataSource}>
+export const DATA_SOURCE_PROVIDERS = {} as Record<
+  string,
+  { factory: (options: DataSourceOptions, agent: Agent) => DataSource }
+>
 
 export type DataSourceType =
   | 'OData'
@@ -67,16 +71,7 @@ export interface DataSourceOptions {
   name?: string
   type: DataSourceType
   catalog?: string
-  baseUrl?: string
-  uri?: string
-  // 授权方式
-  authMethod?: AuthenticationMethod
-  auth?: {
-    username: string
-    password: string
-  }
   agentType: AgentType
-  offline?: boolean
   settings?: DataSourceSettings
   /**
    * 数据查询所使用的语言
@@ -86,7 +81,7 @@ export interface DataSourceOptions {
    * 数据源内的方言, 如 OData 中有 SAP, Microsoft 等, XMLA 中有 SAP BW, SQL 数据库有 Postgres Mysql Hive 等
    */
   dialect?: string
-  schema?: EDMSchema
+  schema?: SDL.Schema
 }
 
 /**

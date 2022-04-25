@@ -1,4 +1,4 @@
-import { ChartBusinessService, DataSettings } from '@metad/ocap-core'
+import { ChartBusinessService, DataSettings, ChartSettings } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import RefreshIcon from '@mui/icons-material/Refresh'
@@ -20,128 +20,22 @@ import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
 import { isEmpty } from 'lodash'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { catchError, EMPTY, map, switchMap, tap } from 'rxjs'
+import { switchMap, tap } from 'rxjs'
 import { AppContext } from '../app-context'
+import { CommonProps } from '@mui/material/OverridableComponent'
 
 /* eslint-disable-next-line */
 export interface AnalyticalCardOptions {}
 
 /* eslint-disable-next-line */
-export interface AnalyticalCardProps {
+export interface AnalyticalCardProps extends CommonProps {
   title: string
   dataSettings: DataSettings
+  chartSettings?: ChartSettings
   options?: AnalyticalCardOptions
   // callbacks
   onFullscreen?: () => void
 }
-
-// export class AnalyticalCard extends React.Component<AnalyticalCardProps, { data: any, options: any }> {
-//   subscription: Subscription | null = null
-//   engine: SmartEChartEngine
-//   constructor(props: AnalyticalCardProps) {
-//     super(props)
-
-//     this.engine = new SmartEChartEngine()
-//     this.state = {
-//       data: {
-//         results: [
-//           {
-//             A: 'A1',
-//             B: 'B1',
-//             C: 100
-//           }
-//         ]
-//       },
-//       options: {}
-//     }
-//   }
-
-//   // override shouldComponentUpdate(nextProps, nextState) {
-
-//   //   if (this.state.data !== nextState.data && nextState.data) {
-
-//   //     console.warn(`~~~~~~~~~~~***************~~~~~~~~~~~~~~~~~~~~` )
-
-//   //     this.engine.data = nextState.data
-//   //   }
-
-//   //   return true;
-//   // }
-
-//   override componentDidMount() {
-
-//     console.warn(`~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~` )
-
-//     this.subscription?.unsubscribe()
-
-//     // subscribe to home component messages
-//     this.subscription = this.engine.selectChartOptions().subscribe((options) => {
-//       if (options) {
-//         // add message to local state if not empty
-//         this.setState({ options })
-//       } else {
-//         // clear messages when empty message received
-//         this.setState({ options: {} })
-//       }
-//     })
-
-//     this.engine.chartAnnotation = {
-//       chartType: {
-//         type: 'Bar'
-//       },
-//       dimensions: [
-//         {
-//           dimension: 'A'
-//         }
-//       ],
-//       measures: [
-//         {
-//           dimension: 'Measures',
-//           measure: 'C'
-//         }
-//       ]
-//     }
-
-//     this.engine.data = this.state.data
-//   }
-
-//   override componentWillUnmount() {
-//     // unsubscribe to ensure no memory leaks
-//     this.subscription?.unsubscribe()
-//   }
-
-//   updateDimension(dimension: string) {
-//     this.engine.updater((state) => {
-//       state.chartAnnotation.dimensions[0].dimension = dimension
-//     })()
-//   }
-
-//   refresh() {
-//     console.log(`refresh....................`)
-//     this.engine.data = {...this.state.data}
-//   }
-
-//   override render() {
-//     const { options } = this.state
-//     return <div>
-//       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-//         onClick={() => this.updateDimension('A')}>
-//           A
-//       </button>
-
-//       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-//         onClick={() => this.updateDimension('B')}>
-//           B
-//       </button>
-
-//       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-//         onClick={() => this.refresh()}>
-//           Refresh
-//       </button>
-//       <ReactECharts option={options} />
-//     </div>
-//   }
-// }
 
 export function useChartBusinessService(context) {
   const { coreService } = useContext(context)
@@ -231,7 +125,8 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
 
   useEffect(() => {
     engine.chartAnnotation = props.dataSettings.chartAnnotation
-  }, [engine, props.dataSettings])
+    engine.settings = props.chartSettings
+  }, [engine, props.dataSettings, props.chartSettings])
 
   const refresh = () => {
     chartService.refresh()
@@ -280,7 +175,7 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
   };
   return (
     <div>
-    <Card>
+    <Card className={props.className}>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           {props.title}

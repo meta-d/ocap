@@ -3,6 +3,8 @@ import {
   ChartDimension,
   ChartDimensionRoleType,
   ChartMeasure,
+  ChartSettings,
+  ChartOptions,
   EntityType,
   getChartCategory,
   getChartSeries,
@@ -14,7 +16,7 @@ import {
 import { uniqBy } from 'lodash'
 import { axisOrient } from './axis'
 import { getEChartsMatrixTooltip } from './tooltip'
-import { ChartOptions, ChartSettings, SeriesComponentType } from './types'
+import { SeriesComponentType } from './types'
 
 export function stackedForMeasure(
   results: Array<unknown>,

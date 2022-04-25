@@ -6,6 +6,7 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
   refresh$ = new BehaviorSubject<void>(null)
 
   override query(options?: QueryOptions): Observable<QueryReturn<T>> {
+    console.log(this.dataSource.options.schema)
     return this.refresh$.pipe(
       switchMap(() => {
         return from(

@@ -148,6 +148,9 @@ export function App() {
             }
           ]
         }
+      },
+      chartSettings: {
+        universalTransition: true
       }
     },
     {
@@ -179,6 +182,9 @@ export function App() {
             }
           ]
         }
+      },
+      chartSettings: {
+        universalTransition: true
       }
     },
     {
@@ -205,6 +211,9 @@ export function App() {
             }
           ]
         }
+      },
+      chartSettings: {
+        universalTransition: true
       }
     },
     {
@@ -235,6 +244,9 @@ export function App() {
             }
           ]
         }
+      },
+      chartSettings: {
+        universalTransition: true
       }
     },
   ])
@@ -263,16 +275,50 @@ export function App() {
               Sales: {
                 name: 'Sales',
                 type: 'SQL',
-                agentType: AgentType.Browser
+                agentType: AgentType.Browser,
+                schema: {
+                  cubes: [
+                    {
+                      name: 'SalesOrder',
+                      Table: {
+                        name: 'sales'
+                      },
+                      Dimension: [{
+                        name: 'Time',
+                        Hierarchy: [
+                          {
+                            name: '',
+                            hasAll: true,
+                            primaryKey: 'timeid',
+                            Level: [
+                              {
+                                name: 'Year',
+                                column: 'year',
+                                uniqueMembers: true
+                              }
+                            ]
+                          }
+                        ]
+                      }],
+                      Measure: [
+                        {
+                          name: 'amount',
+                          column: 'amount',
+                          aggregator: 'sum'
+                        }
+                      ]
+                    }
+                  ]
+                }
               }
             })
           }}
         >
           <Grid container spacing={2}>
-            {dataSettings.map(({ title, dataSettings }) => (
-              <Grid item xs={8} sm={3}>
+            {dataSettings.map(({ title, dataSettings, chartSettings }) => (
+              <Grid item xs={8} sm={4}>
                 <Paper>
-                  <AnalyticalCard title={title} dataSettings={dataSettings}  />
+                  <AnalyticalCard className={styles.analyticalCard} title={title} dataSettings={dataSettings} chartSettings={chartSettings} />
                 </Paper>
               </Grid>
             ))}
