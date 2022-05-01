@@ -15,13 +15,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@metad/ocap-vue": ["packages/vue/src/index.ts"],
       "@metad/ocap-angular": ["packages/angular/src/index.ts"],
       "@metad/ocap-angular/*": ["packages/angular/*"],
       "@metad/ocap-core": ["packages/core/src/index.ts"],
+      "@metad/ocap-duckdb": ["packages/duckdb/src/index.ts"],
       "@metad/ocap-echarts": ["packages/echarts/src/index.ts"],
       "@metad/ocap-react": ["packages/react/src/index.ts"],
       "@metad/ocap-sql": ["packages/sql/src/index.ts"],
+      "@metad/ocap-vue": ["packages/vue/src/index.ts"],
       "@metad/store": ["packages/store/src/index.ts"]
     },
     "noImplicitAny": false,

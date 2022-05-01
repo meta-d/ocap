@@ -1,13 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styles from './app.module.scss'
+import './app.scss'
 import {
   AgentType,
-  ChartDimensionRoleType,
   DSCoreService,
   MockAgent,
-  ReferenceLineAggregation,
-  ReferenceLineType,
-  ReferenceLineValueType
 } from '@metad/ocap-core'
 import { AnalyticalCard, AppContext } from '@metad/ocap-react'
 import * as SQL from '@metad/ocap-sql'
@@ -17,13 +13,14 @@ import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import Paper from '@mui/material/Paper'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import React, { useState } from 'react'
 import { registerTheme } from 'echarts/core'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
+import { MAP_CARDS, CARTESIAN_CARDS } from './types'
+import { DuckdbWasmAgent } from '@metad/ocap-duckdb'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -31,224 +28,8 @@ export function App() {
   const sss = SQL
 
   const [dataSettings, setDataSettings] = useState([
-    {
-      title: 'Sales Order Bar',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Scatter3D'
-          },
-          dimensions: [
-            {
-              dimension: 'product',
-              role: ChartDimensionRoleType.Stacked
-            },
-            {
-              dimension: 'productCategory'
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            }
-          ]
-        }
-      }
-    },
-    {
-      title: 'Sales Order Bar',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Bar'
-          },
-          dimensions: [
-            {
-              dimension: 'product',
-              role: ChartDimensionRoleType.Stacked
-            },
-            {
-              dimension: 'productCategory'
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            }
-          ]
-        }
-      }
-    },
-    {
-      title: 'Purchase Order Bar',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'PurchaseOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Bar'
-          },
-          dimensions: [
-            {
-              dimension: 'product'
-            },
-            {
-              dimension: 'productCategory'
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales',
-              palette: {
-                name: 'PuOr',
-                pattern: 1
-              },
-              referenceLines: [
-                {
-                  label: 'Sales Average',
-                  type: ReferenceLineType.markLine,
-                  valueType: ReferenceLineValueType.dynamic,
-                  aggregation: ReferenceLineAggregation.average
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      title: 'Sales Order Line',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Line'
-          },
-          dimensions: [
-            {
-              dimension: 'product'
-            },
-            {
-              dimension: 'productCategory',
-              role: ChartDimensionRoleType.Trellis
-            }
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            }
-          ]
-        }
-      },
-      chartSettings: {
-        universalTransition: true
-      }
-    },
-    {
-      title: 'Sales Order Two Measures',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Bar'
-          },
-          dimensions: [
-            {
-              dimension: 'product',
-            },
-            {
-              dimension: 'productCategory',
-              role: ChartDimensionRoleType.Stacked
-            },
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            },
-            {
-              dimension: 'Measures',
-              measure: 'quantity'
-            }
-          ]
-        }
-      },
-      chartSettings: {
-        universalTransition: true
-      }
-    },
-    {
-      title: 'Sales Order Treemap',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Treemap'
-          },
-          dimensions: [
-            {
-              dimension: 'productCategory',
-            },
-            {
-              dimension: 'product',
-            },
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales'
-            }
-          ]
-        }
-      },
-      chartSettings: {
-        universalTransition: true
-      }
-    },
-    {
-      title: 'Sales Order Heatmap',
-      dataSettings: {
-        dataSource: 'Sales',
-        entitySet: 'SalesOrder',
-        chartAnnotation: {
-          chartType: {
-            type: 'Heatmap'
-          },
-          dimensions: [
-            {
-              dimension: 'productCategory',
-            },
-            {
-              dimension: 'product',
-              role: ChartDimensionRoleType.Category2
-            },
-          ],
-          measures: [
-            {
-              dimension: 'Measures',
-              measure: 'sales',
-              palette: {
-                name: 'PuOr'
-              }
-            }
-          ]
-        }
-      },
-      chartSettings: {
-        universalTransition: true
-      }
-    },
+    ...MAP_CARDS,
+    ...CARTESIAN_CARDS
   ])
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -268,58 +49,80 @@ export function App() {
         </Toolbar>
       </AppBar>
 
-      <Container className={styles.appContainer}>
+      <Container >
         <AppContext.Provider
           value={{
-            coreService: new DSCoreService([new MockAgent()], {
-              Sales: {
-                name: 'Sales',
-                type: 'SQL',
-                agentType: AgentType.Browser,
-                schema: {
-                  cubes: [
-                    {
-                      name: 'SalesOrder',
-                      Table: {
-                        name: 'sales'
-                      },
-                      Dimension: [{
-                        name: 'Time',
-                        Hierarchy: [
+            coreService: new DSCoreService([
+              new DuckdbWasmAgent([{
+                name: 'WASM',
+                type: '',
+                schemaName: 'main',
+                entities: [
+                  {
+                    name: 'CsseCovid19Daily',
+                    sourceUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
+                  },
+                  {
+                    name: 'CountryGDP',
+                    sourceUrl: `https://raw.githubusercontent.com/curran/data/gh-pages/worldFactbook/GDPPerCapita.csv`
+                  }
+                ]
+              }]),
+              new MockAgent()], {
+                Sales: {
+                  name: 'Sales',
+                  type: 'SQL',
+                  agentType: AgentType.Browser,
+                  schema: {
+                    cubes: [
+                      {
+                        name: 'SalesOrder',
+                        Table: {
+                          name: 'sales'
+                        },
+                        Dimension: [{
+                          name: 'Time',
+                          Hierarchy: [
+                            {
+                              name: '',
+                              hasAll: true,
+                              primaryKey: 'timeid',
+                              Level: [
+                                {
+                                  name: 'Year',
+                                  column: 'year',
+                                  uniqueMembers: true
+                                }
+                              ]
+                            }
+                          ]
+                        }],
+                        Measure: [
                           {
-                            name: '',
-                            hasAll: true,
-                            primaryKey: 'timeid',
-                            Level: [
-                              {
-                                name: 'Year',
-                                column: 'year',
-                                uniqueMembers: true
-                              }
-                            ]
+                            name: 'amount',
+                            column: 'amount',
+                            aggregator: 'sum'
                           }
                         ]
-                      }],
-                      Measure: [
-                        {
-                          name: 'amount',
-                          column: 'amount',
-                          aggregator: 'sum'
-                        }
-                      ]
-                    }
-                  ]
+                      }
+                    ]
+                  }
+                },
+                WASM: {
+                  name: 'WASM',
+                  type: 'SQL',
+                  agentType: AgentType.Wasm
                 }
-              }
             })
           }}
         >
           <Grid container spacing={2}>
-            {dataSettings.map(({ title, dataSettings, chartSettings }) => (
+            {dataSettings.map(({ title, dataSettings, chartSettings, chartOptions }) => (
               <Grid item xs={8} sm={4}>
-                <Paper>
-                  <AnalyticalCard className={styles.analyticalCard} title={title} dataSettings={dataSettings} chartSettings={chartSettings} />
-                </Paper>
+                <AnalyticalCard title={title}
+                  dataSettings={dataSettings}
+                  chartSettings={chartSettings}
+                  chartOptions={chartOptions}/>
               </Grid>
             ))}
           </Grid>

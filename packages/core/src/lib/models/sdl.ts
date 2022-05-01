@@ -50,10 +50,6 @@ export interface EntityType {
   // entity type 名称， 一般是 entity 名称加上 'Type' 如 MyEntityType
   // 但复杂 entity 可能出现对应的多个 entityType 如 MyEntityParameters, MyEntityResult
   name?: string
-  /**
-   * 对应系统中的表名
-   */
-  table?: string
 
   /**
    * Entity 主键们

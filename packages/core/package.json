@@ -1,5 +1,22 @@
 {
   "name": "@metad/ocap-core",
-  "version": "0.0.1",
+  "version": "0.0.1-beta.0",
+  "keywords": [
+    "metad",
+    "ocap"
+  ],
+  "author": "Tiven Wang <i.tiven.wang@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/meta-d/ocap",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meta-d/ocap.git"
+  },
+  "peerDependencies": {
+    "@metad/store": "*",
+    "lodash": "^4.17.21",
+    "rxjs": "^7.4.0",
+    "uuid": "^8.3.2"
+  },
   "main": "./index.cjs.js"
 }

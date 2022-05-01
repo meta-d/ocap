@@ -6,9 +6,13 @@ export enum AgentType {
   Local,
   Browser,
   Server,
-  SQLite
+  SQLite,
+  Wasm
 }
 
+/**
+ * 转发请求, 不解析请求内容
+ */
 export interface Agent {
   type: AgentType
   selectStatus(): Observable<AgentStatus>

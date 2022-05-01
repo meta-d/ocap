@@ -86,15 +86,16 @@ export function sunburst(data: QueryReturn<unknown>, chartAnnotation: ChartAnnot
 }
 
 export function sankey(data: QueryReturn<unknown>, chartAnnotation: ChartAnnotation, entityType: EntityType) {
-  const result = leveledHierarchy(data.results, chartAnnotation, sumBy)
-  const measures = chartAnnotation.measures
-  const mainMeasureName = getPropertyMeasure(measures[0])
-
+  const {nodes, links} = leveledGraph(data.results, chartAnnotation, sumBy)
+  const mainMeasureName = getPropertyMeasure(chartAnnotation.measures[0])
   return {
     series: [
       {
         type: 'sankey',
-        
+        id: mainMeasureName,
+        universalTransition: true,
+        data: nodes,
+        links: links,
       }
     ]
   }
@@ -107,6 +108,7 @@ export function leveledHierarchy(
 ) {
   const levels = chartAnnotation.dimensions
   const measures = chartAnnotation.measures
+  const measureName = getPropertyMeasure(measures[0])
   const results = [
     {
       name: 'all',
@@ -117,15 +119,16 @@ export function leveledHierarchy(
   let result = results
 
   levels.forEach((level) => {
+    const levelName = getPropertyHierarchy(level)
     const _result = result
     result = []
     _result.forEach((parent) => {
-      const childs = groupBy(parent.children, getPropertyHierarchy(level))
+      const childs = groupBy(parent.children, levelName)
       parent.children = Object.keys(childs).map((key) => {
         const child = {
           name: key,
           children: childs[key],
-          value: aggregator(childs[key], getPropertyMeasure(measures[0]))
+          value: aggregator(childs[key], measureName)
         }
         result.push(child)
         return child
@@ -134,4 +137,60 @@ export function leveledHierarchy(
   })
 
   return results
+}
+
+/**
+ * 
+ * @param data 
+ * @param chartAnnotation 
+ * @param aggregator 
+ */
+export function leveledGraph(
+  data: Array<unknown>,
+  chartAnnotation: ChartAnnotation,
+  aggregator: (data, key) => number
+) {
+  const levels = chartAnnotation.dimensions
+  const measures = chartAnnotation.measures
+
+  const measureName = getPropertyMeasure(measures[0])
+  let result = [
+    {
+      name: 'all',
+      children: data,
+    }
+  ]
+  const nodes = {}
+  const links = []
+
+  levels.forEach((level) => {
+    const levelName = getPropertyHierarchy(level)
+    const _result = result
+    result = []
+    _result.forEach((parent) => {
+      const childs = groupBy(parent.children, levelName)
+      Object.keys(childs).forEach((key) => {
+        if (!nodes[key]) {
+          nodes[key] = {
+            name: key
+          }
+        }
+        const child = {
+          name: key,
+          children: childs[key],
+          parent: parent.name ? parent : null,
+        }
+        result.push(child)
+        if (parent.name) {
+          links.push({
+            source: parent.name,
+            target: key,
+            value: aggregator(childs[key], measureName)
+          })
+        }
+      })
+    })
+  })
+
+  return {nodes: Object.values(nodes), links}
 }

@@ -15,6 +15,6 @@ export interface ChartSettings {
 }
 
 export interface ChartOptions {
-  options: any
+  options?: any
   tooltip?: any
 }

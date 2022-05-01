@@ -9,7 +9,19 @@
         "dest": "dist/apps/vue-app",
         "index": "apps/vue-app/public/index.html",
         "main": "apps/vue-app/src/main.ts",
-        "tsConfig": "apps/vue-app/tsconfig.app.json"
+        "tsConfig": "apps/vue-app/tsconfig.app.json",
+        "public": [
+          {
+            "glob": "*.wasm",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          },
+          {
+            "glob": "*.worker.js",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          }
+        ]
       },
       "configurations": {
         "production": {

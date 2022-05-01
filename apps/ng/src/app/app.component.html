@@ -3,7 +3,7 @@
         <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
             <mat-icon>menu</mat-icon>
         </button>
-        <span>{{ title$ | async }}</span>
+        <!-- <span>{{ title$ | async }}</span> -->
         <span class="example-spacer"></span>
         <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
             <mat-icon>favorite</mat-icon>
@@ -13,12 +13,9 @@
         </button>
     </mat-toolbar>
     
-    <div fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid" style="padding: 1rem;">
-        <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
-            <metad-analytical-card
-                [title]="card.title"
-                [dataSettings]="card.dataSettings"
-            ></metad-analytical-card>
-        </div>
+    <div class="app-content"  >
+
+        <router-outlet></router-outlet>
+        
     </div>
 </div>

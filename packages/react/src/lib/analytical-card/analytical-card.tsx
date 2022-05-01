@@ -1,4 +1,4 @@
-import { ChartBusinessService, DataSettings, ChartSettings } from '@metad/ocap-core'
+import { ChartBusinessService, DataSettings, ChartSettings, ChartOptions } from '@metad/ocap-core'
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import RefreshIcon from '@mui/icons-material/Refresh'
@@ -32,6 +32,7 @@ export interface AnalyticalCardProps extends CommonProps {
   title: string
   dataSettings: DataSettings
   chartSettings?: ChartSettings
+  chartOptions?: ChartOptions
   options?: AnalyticalCardOptions
   // callbacks
   onFullscreen?: () => void
@@ -68,6 +69,10 @@ const CHART_TYPES = [
   {
     value: 'Sunburst',
     label: '旭日图'
+  },
+  {
+    value: 'Sankey',
+    label: '桑基图'
   }
 ]
 
@@ -126,7 +131,8 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
   useEffect(() => {
     engine.chartAnnotation = props.dataSettings.chartAnnotation
     engine.settings = props.chartSettings
-  }, [engine, props.dataSettings, props.chartSettings])
+    engine.options = props.chartOptions
+  }, [engine, props.dataSettings, props.chartSettings, props.chartOptions])
 
   const refresh = () => {
     chartService.refresh()
@@ -174,8 +180,8 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
     }
   };
   return (
-    <div>
-    <Card className={props.className}>
+    <>
+    <Card className={'AnalyticalCard'}>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
           {props.title}
@@ -255,7 +261,7 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
         </Select>
       </FormControl>
     </Popover>
-    </div>
+    </>
   )
 }
 

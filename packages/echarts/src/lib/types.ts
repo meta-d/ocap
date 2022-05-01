@@ -1,4 +1,4 @@
-import { ChartMeasure, Property } from "@metad/ocap-core"
+import { ChartMeasure, ChartOptions, Property } from "@metad/ocap-core"
 
 export enum AxisEnum {
   x = 'xAxis',
@@ -31,4 +31,10 @@ export interface SeriesComponentType extends Partial<ChartMeasure> {
   datasetIndex?: number
   seriesLayoutBy?: string
   tooltip?: string[]
+  sizeMeasure?: ChartMeasure
+  lightnessMeasure?: ChartMeasure
+}
+
+export interface EChartsOptions extends ChartOptions {
+  dataZoom?: any
 }

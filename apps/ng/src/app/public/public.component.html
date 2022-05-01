@@ -1,0 +1,9 @@
+<div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">
+    <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
+        <metad-analytical-card
+            [title]="card.title"
+            [dataSettings]="card.dataSettings"
+
+        ></metad-analytical-card>
+    </div>
+</div>

@@ -1,5 +1,5 @@
 import { ComponentStore } from '@metad/store'
-import { isEmpty } from 'lodash'
+import { isEmpty, isNil } from 'lodash'
 import {
   BehaviorSubject,
   catchError,
@@ -48,6 +48,12 @@ export class EntityBusinessService<
     map((dataSettings) => dataSettings?.entitySet),
     distinctUntilChanged()
   )
+  get selectionVariant() {
+    return this.dataSettings.selectionVariant
+  }
+  get presentationVariant() {
+    return this.dataSettings.presentationVariant
+  }
   readonly initialise$ = this.select((state) => state.initialised).pipe(filter((initialised) => initialised))
   // is loading status
   public loading$ = new BehaviorSubject<boolean>(null)
@@ -147,6 +153,35 @@ export class EntityBusinessService<
     // ) {
     //   return of({ results: [] })
     // }
+
+    options = options ?? {}
+    const presentationVariant = this.presentationVariant
+    // Selects
+    if (presentationVariant?.requestAtLeast) {
+      options.selects = options.selects || []
+      options.selects.push(...presentationVariant.requestAtLeast)
+    }
+
+    // OrderBys
+    if (presentationVariant?.sortOrder) {
+      options.orderbys = options.orderbys || []
+      options.orderbys.push(...presentationVariant.sortOrder)
+    }
+
+    // Top
+    if (!isNil(presentationVariant?.maxItems)) {
+      options.paging = options.paging || {}
+      options.paging.top = presentationVariant.maxItems
+    }
+
+    // Skip
+    if (!isNil(presentationVariant?.skip)) {
+      options.paging = options.paging || {}
+      options.paging.skip = presentationVariant.skip
+    }
+
+    options = this.calculateFilters(options)
+
     return this.entityService.query(options)
   }
 
@@ -156,5 +191,9 @@ export class EntityBusinessService<
 
   selectResult() {
     return this.result$.pipe(filter(value => !!value))
+  }
+
+  calculateFilters(queryOptions?: QueryOptions) {
+    return queryOptions
   }
 }

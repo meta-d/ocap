@@ -50,6 +50,14 @@ export abstract class SmartChartEngine<T extends SmartChartEngineState = SmartCh
   }
   readonly settings$ = this.select(state => state.settings)
 
+  get options() {
+    return this.get(state => state.options)
+  }
+  set options(value) {
+    this.patchState({options: value} as Partial<T>)
+  }
+  readonly options$ = this.select(state => state.options)
+  
   constructor() {
     super({} as T)
   }

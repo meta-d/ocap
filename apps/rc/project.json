@@ -15,7 +15,20 @@
         "main": "apps/rc/src/main.tsx",
         "polyfills": "apps/rc/src/polyfills.ts",
         "tsConfig": "apps/rc/tsconfig.app.json",
-        "assets": ["apps/rc/src/favicon.ico", "apps/rc/src/assets"],
+        "assets": [
+          "apps/rc/src/favicon.ico",
+          "apps/rc/src/assets",
+          {
+            "glob": "*.wasm",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          },
+          {
+            "glob": "*.worker.js",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          }
+        ],
         "styles": ["apps/rc/src/styles.scss"],
         "scripts": [],
         "webpackConfig": "@nrwl/react/plugins/webpack"

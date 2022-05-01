@@ -6,15 +6,13 @@ import {
   EntityType,
   getChartCategory,
   getChartSeries,
-  getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
   getPropertyName,
   QueryReturn
 } from '@metad/ocap-core'
-import { isNil, maxBy, minBy, omitBy } from 'lodash'
-import { serializeSeriesComponent } from './cartesian'
-import { SeriesComponentType } from './types'
+import { isNil, omitBy } from 'lodash'
+import { measuresToSeriesComponents, serializeSeriesComponent } from './cartesian'
 
 export function cartesian3d(
   data: QueryReturn<unknown>,
@@ -33,7 +31,7 @@ export function cartesian3d(
     yAxis3D: [],
     zAxis3D: [],
     series: [],
-    // visualMap: []
+    visualMap: []
   }
 
   ;[cartesianCoordinate].forEach((cartesianCoordinate) => {
@@ -41,6 +39,7 @@ export function cartesian3d(
     echartsOptions.xAxis3D.push(cartesianCoordinate.xAxis3D)
     echartsOptions.yAxis3D.push(cartesianCoordinate.yAxis3D)
     echartsOptions.zAxis3D.push(cartesianCoordinate.zAxis3D)
+    echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
 
     cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
       echartsOptions.dataset.push(dataset)
@@ -78,27 +77,27 @@ export function cartesianCoordinate3d(
           ...chartAnnotation.measures.map(getPropertyMeasure)
         ]
       },
-      seriesComponents: chartAnnotation.measures
-        .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
-        .map((measure) => {
-          const measureName = getPropertyMeasure(measure)
-          const measureProperty = getEntityProperty(entityType, measure)
-          const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
-          const minItem = minBy(data, measureName)
-          const maxItem = maxBy(data, measureName)
-          return {
-            ...measure,
-            name: measureProperty?.label,
-            label: measureProperty?.label,
-            seriesType: measure.shapeType,
-            property: measureProperty,
-            dataMin: minItem?.[measureName],
-            dataMax: maxItem?.[measureName],
-            dataSize: data.length,
-            valueAxisIndex,
-            tooltip: tooltips.map(({ measure }) => measure)
-          } as SeriesComponentType
-        })
+      seriesComponents: measuresToSeriesComponents(chartAnnotation.measures, data, entityType, settings)
+        // .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
+        // .map((measure) => {
+        //   const measureName = getPropertyMeasure(measure)
+        //   const measureProperty = getEntityProperty(entityType, measure)
+        //   const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
+        //   const minItem = minBy(data, measureName)
+        //   const maxItem = maxBy(data, measureName)
+        //   return {
+        //     ...measure,
+        //     name: measureProperty?.label,
+        //     label: measureProperty?.label,
+        //     seriesType: measure.shapeType,
+        //     property: measureProperty,
+        //     dataMin: minItem?.[measureName],
+        //     dataMax: maxItem?.[measureName],
+        //     dataSize: data.length,
+        //     valueAxisIndex,
+        //     tooltip: tooltips.map(({ measure }) => measure)
+        //   } as SeriesComponentType
+        // })
     }
   ]
 

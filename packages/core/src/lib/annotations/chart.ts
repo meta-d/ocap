@@ -22,7 +22,10 @@ export enum ChartDimensionRoleType {
   /**
    * 此 Dimension 作为 Small Multiples 图形中的 Group 维度
    */
-  Trellis = 'Trellis'
+  Trellis = 'Trellis',
+
+  Lat = 'Lat',
+  Long = 'Long'
 }
 
 export enum ChartMeasureRoleType {
@@ -103,6 +106,13 @@ export interface ChartType {
   variant?: string
 }
 
+export interface ChartMapType extends ChartType {
+  type: 'Map'
+  map?: string
+  mapUrl?: string
+  projection?: string
+}
+
 export interface ChartAnnotation extends Annotation {
   qualifier?: string
   chartType: ChartType // Chart type
@@ -111,6 +121,9 @@ export interface ChartAnnotation extends Annotation {
   // 图形库详细的配置项
   options?: any
 }
+
+// type guards
+export const isChartMapType = (toBe): toBe is ChartMapType => toBe?.type === 'Map'
 
 export function getChartTrellis(chartAnnotation: ChartAnnotation): ChartDimension {
   return chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Trellis)

@@ -1,0 +1,32 @@
+{
+  "root": "packages/duckdb",
+  "sourceRoot": "packages/duckdb/src",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/duckdb",
+        "main": "packages/duckdb/src/index.ts",
+        "tsConfig": "packages/duckdb/tsconfig.lib.json",
+        "assets": ["packages/duckdb/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/duckdb/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/duckdb"],
+      "options": {
+        "jestConfig": "packages/duckdb/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

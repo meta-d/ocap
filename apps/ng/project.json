@@ -14,7 +14,20 @@
         "polyfills": "apps/ng/src/polyfills.ts",
         "tsConfig": "apps/ng/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
-        "assets": ["apps/ng/src/favicon.ico", "apps/ng/src/assets"],
+        "assets": [
+          "apps/ng/src/favicon.ico",
+          "apps/ng/src/assets",
+          {
+            "glob": "*.wasm",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          },
+          {
+            "glob": "*.worker.js",
+            "input": "node_modules/@duckdb/duckdb-wasm/dist/",
+            "output": "./assets/"
+          }
+        ],
         "styles": [
           "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
           "apps/ng/src/styles.scss"],

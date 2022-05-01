@@ -8,15 +8,16 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { MockAgent } from '@metad/ocap-core'
+import { AgentType, MockAgent } from '@metad/ocap-core'
+import { DuckdbWasmAgent } from '@metad/ocap-duckdb'
+import { DEFAULT_THEME } from '@metad/ocap-echarts'
 import * as SQL from '@metad/ocap-sql'
+import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
+import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { NxWelcomeComponent } from './nx-welcome.component'
-import { registerTheme } from 'echarts/core'
-import { DEFAULT_THEME } from '@metad/ocap-echarts'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -30,6 +31,7 @@ if (SQL) {
     BrowserAnimationsModule,
     BrowserModule,
     CommonModule,
+    AppRoutingModule,
     HttpClientModule,
     FormsModule,
     FlexLayoutModule,
@@ -39,15 +41,32 @@ if (SQL) {
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
-    OcapCoreModule.forRoot([new MockAgent()],
-      {
-        Sales: {
-          name: 'Sales',
-          type: 'SQL'
+    OcapCoreModule.forRoot([new DuckdbWasmAgent([{
+      name: 'WASM',
+      type: '',
+      schemaName: 'main',
+      entities: [
+        {
+          name: 'CsseCovid19Daily',
+          sourceUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
+        },
+        {
+          name: 'CountryGDP',
+          sourceUrl: `https://raw.githubusercontent.com/curran/data/gh-pages/worldFactbook/GDPPerCapita.csv`
         }
+      ]
+    }]), new MockAgent()], {
+      Sales: {
+        name: 'Sales',
+        type: 'SQL',
+        agentType: AgentType.Browser
+      },
+      WASM: {
+        name: 'WASM',
+        type: 'SQL',
+        agentType: AgentType.Wasm
       }
-    ),
-    AnalyticalCardModule
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]

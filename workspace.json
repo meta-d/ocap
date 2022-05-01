@@ -3,6 +3,7 @@
   "projects": {
     "angular": "packages/angular",
     "core": "packages/core",
+    "duckdb": "packages/duckdb",
     "echarts": "packages/echarts",
     "nest": "apps/nest",
     "ng": "apps/ng",

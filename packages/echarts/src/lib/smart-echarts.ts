@@ -1,13 +1,28 @@
-import { SmartChartEngine } from '@metad/ocap-core'
-import { BehaviorSubject, catchError, combineLatest, EMPTY, filter, map, shareReplay, startWith, tap, withLatestFrom } from 'rxjs'
+import { isChartMapType, SmartChartEngine } from '@metad/ocap-core'
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  concatMap,
+  EMPTY,
+  filter,
+  from,
+  map,
+  of,
+  shareReplay,
+  tap,
+  withLatestFrom
+} from 'rxjs'
 import { bar } from './bar'
 import { bar3d } from './bar3d'
 import { heatmap } from './heatmap'
-import { sunburst, treemap } from './hierarchy'
+import { sankey, sunburst, treemap } from './hierarchy'
 import { line } from './line'
 import { line3d } from './line3d'
+import { mapChart, mapChartAnnotation } from './maps/map'
 import { scatter } from './scatter'
 import { scatter3d } from './scatter3d'
+import { EChartsOptions } from './types'
 
 export class SmartEChartEngine extends SmartChartEngine {
   public readonly error$ = new BehaviorSubject(null)
@@ -17,16 +32,26 @@ export class SmartEChartEngine extends SmartChartEngine {
       filter((value) => !!value),
       tap((value) => console.log(`echarts data change:`, value))
     ),
-    this.chartAnnotation$.pipe(filter((value) => !!value)),
+    this.chartAnnotation$.pipe(
+      filter((value) => !!value),
+      concatMap((chartAnnotation) => {
+        if (isChartMapType(chartAnnotation.chartType)) {
+          return from(mapChartAnnotation(chartAnnotation))
+        }
+
+        return of(chartAnnotation)
+      })
+    ),
     this.settings$,
+    this.options$
   ]).pipe(
     withLatestFrom(this.entityType$),
-    map(([[data, chartAnnotation, settings], entityType]) => {
+    map(([[data, chartAnnotation, settings, options], entityType]) => {
       const type = chartAnnotation.chartType.type
 
       if (type === 'Bar') {
         return {
-          options: bar(data, chartAnnotation, entityType, settings, null)
+          options: bar(data, chartAnnotation, entityType, settings, options as EChartsOptions)
         }
       }
       if (type === 'Line') {
@@ -74,6 +99,18 @@ export class SmartEChartEngine extends SmartChartEngine {
       if (type === 'Sunburst') {
         return {
           options: sunburst(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Sankey') {
+        return {
+          options: sankey(data, chartAnnotation, entityType)
+        }
+      }
+
+      if (type === 'Map') {
+        return {
+          options: mapChart(data, chartAnnotation, entityType, settings, options as EChartsOptions)
         }
       }
 

@@ -1,8 +1,8 @@
 import {
   ChartAnnotation,
   ChartDimension,
+  ChartMeasure,
   ChartMeasureRoleType,
-  ChartOptions,
   ChartSettings,
   EntityType,
   getChartCategory,
@@ -14,26 +14,27 @@ import {
   getPropertyMeasure,
   getPropertyName,
   getPropertyTextName,
+  Property,
   QueryReturn,
   ReferenceLineType,
   ReferenceLineValueType
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
-import { chunk, groupBy, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
+import { chunk, groupBy, includes, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
 import { axisOrient } from './axis'
 import { getChromaticScale } from './chromatics'
+import { dataZoom } from './data-zoom'
 import { DecalPatterns } from './decal'
 import { stackedForMeasure } from './stacked'
 import { getEChartsTooltip } from './tooltip'
-import { AxisEnum, SeriesComponentType } from './types'
-
+import { AxisEnum, EChartsOptions, SeriesComponentType } from './types'
 
 export function cartesian(
   data: QueryReturn<unknown>,
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
   settings: ChartSettings,
-  options: ChartOptions,
+  options: EChartsOptions,
   type: string
 ) {
   const cartesianCoordinates = cartesians(data, chartAnnotation, entityType, settings, options)
@@ -45,7 +46,8 @@ export function cartesian(
     yAxis: [],
     series: [],
     visualMap: [],
-    tooltip: []
+    tooltip: [],
+    dataZoom: dataZoom(options)
   }
 
   cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
@@ -87,7 +89,7 @@ export function cartesians(
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
   settings: ChartSettings,
-  options: ChartOptions
+  options: EChartsOptions
 ) {
   const trellis = getChartTrellis(chartAnnotation)
   if (trellis) {
@@ -153,47 +155,25 @@ export function cartesianCoordinate(
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
   settings: ChartSettings,
-  options: ChartOptions
+  options: EChartsOptions
 ) {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
   const category2 = getChartCategory2(chartAnnotation)
   const chartSeries = getChartSeries(chartAnnotation)
 
-  const tooltips = chartAnnotation.measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
   let datasets = []
   if (chartSeries) {
     datasets = chartAnnotation.measures
-      .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
+      .filter(
+        ({ role }) =>
+          !includes([ChartMeasureRoleType.Tooltip, ChartMeasureRoleType.Size, ChartMeasureRoleType.Lightness], role)
+      )
       .map((measure) => {
         return stackedForMeasure(data, measure, chartAnnotation, entityType, settings)
       })
   } else {
-
-    const seriesComponents = chartAnnotation.measures
-      .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
-      .map((measure) => {
-        const measureName = getPropertyMeasure(measure)
-        const measureProperty = getEntityProperty(entityType, measure)
-        const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
-        const minItem = minBy(data, measureName)
-        const maxItem = maxBy(data, measureName)
-        return {
-          ...measure,
-          id: settings?.universalTransition ? getPropertyMeasure(measure) : null,
-          name: measureProperty?.label,
-          label: measureProperty?.label,
-          seriesType: measure.shapeType,
-          property: measureProperty,
-          dataMin: minItem?.[measureName],
-          dataMax: maxItem?.[measureName],
-          dataSize: data.length,
-          valueAxisIndex,
-          //  seriesStack: `${valueAxisIndex}`,
-          // measure: measure,
-          tooltip: tooltips.map(({ measure }) => measure)
-        } as SeriesComponentType
-      })
+    const seriesComponents = measuresToSeriesComponents(chartAnnotation.measures, data, entityType, settings)
     datasets = [
       {
         dataset: {
@@ -205,15 +185,15 @@ export function cartesianCoordinate(
         },
         seriesComponents,
         tooltip: getEChartsTooltip(
-            options?.tooltip,
-            categoryProperty,
-            chartAnnotation.measures.map((measure) => ({
-              measure,
-              property: getEntityProperty(entityType, measure)
-            })),
-            seriesComponents,
-            'zh-Hans'
-          )
+          options?.tooltip,
+          categoryProperty,
+          chartAnnotation.measures.map((measure) => ({
+            measure,
+            property: getEntityProperty(entityType, measure)
+          })),
+          seriesComponents,
+          'zh-Hans'
+        )
       }
     ]
   }
@@ -370,6 +350,20 @@ export function serializeSeriesComponent(
     })
   }
 
+  if (seriesComponent.sizeMeasure) {
+    visualMaps.push(
+      getSymbolSizeVisualMap(
+        seriesComponent.sizeMeasure,
+        getEntityProperty(entityType, seriesComponent.sizeMeasure),
+        dataset
+      )
+    )
+  }
+  if (seriesComponent.lightnessMeasure) {
+    const lightnessProperty = getEntityProperty(entityType, seriesComponent.lightnessMeasure)
+    visualMaps.push(getColorLightnessVisualMap(seriesComponent.lightnessMeasure, lightnessProperty, dataset))
+  }
+
   return {
     series,
     visualMaps
@@ -416,4 +410,109 @@ export function getLegendColorForVisualMap(colors) {
     return colors[0]
   }
   return undefined
+}
+
+export function getSymbolSizeVisualMap(measure: ChartMeasure, property: Property, dataset: any) {
+  const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
+  const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
+
+  return {
+    left: 'right',
+    top: '10%',
+    dimension: dataset.dimensions.indexOf(measure.measure),
+    min: dataMin,
+    max: dataMax,
+    itemWidth: 30,
+    itemHeight: 120,
+    calculable: true,
+    precision: 0.1,
+    text: [property.label || property.name],
+    textGap: 30,
+    inRange: {
+      symbolSize: [10, 70]
+    },
+    outOfRange: {
+      symbolSize: [10, 70],
+      color: ['rgba(255,255,255,0.4)']
+    },
+    controller: {
+      inRange: {
+        color: ['#c23531']
+      },
+      outOfRange: {
+        color: ['#999']
+      }
+    }
+  }
+}
+
+export function getColorLightnessVisualMap(
+  measure: ChartMeasure,
+  property: Property,
+  dataset: { dimensions: string[]; source: any }
+) {
+  const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
+  const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
+
+  return {
+    left: 'right',
+    bottom: '5%',
+    dimension: dataset.dimensions.indexOf(measure.measure),
+    min: dataMin,
+    max: dataMax,
+    itemHeight: 120,
+    text: [property.label || property.name],
+    textGap: 30,
+    inRange: {
+      colorLightness: [0.9, 0.5]
+    },
+    outOfRange: {
+      color: ['rgba(255,255,255,0.4)']
+    },
+    controller: {
+      inRange: {
+        color: ['#c23531']
+      },
+      outOfRange: {
+        color: ['#999']
+      }
+    }
+  }
+}
+
+export function measuresToSeriesComponents(
+  measures: ChartMeasure[],
+  data: any[],
+  entityType: EntityType,
+  settings: ChartSettings
+) {
+  const tooltips = measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
+  const _measures = measures.filter(
+    ({ role }) =>
+      !includes([ChartMeasureRoleType.Tooltip, ChartMeasureRoleType.Size, ChartMeasureRoleType.Lightness], role)
+  )
+
+  return _measures.map((measure) => {
+    const measureName = getPropertyMeasure(measure)
+    const measureProperty = getEntityProperty(entityType, measure)
+    const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
+    const dataNotNull = data.filter((item) => !isNil(item[measureName]))
+    const minItem = minBy(dataNotNull, measureName)
+    const maxItem = maxBy(dataNotNull, measureName)
+    return {
+      ...measure,
+      id: settings?.universalTransition ? getPropertyMeasure(measure) : null,
+      name: measureProperty?.label,
+      label: measureProperty?.label,
+      seriesType: measure.shapeType,
+      property: measureProperty,
+      dataMin: minItem?.[measureName],
+      dataMax: maxItem?.[measureName],
+      dataSize: data.length,
+      valueAxisIndex,
+      tooltip: tooltips.map(({ measure }) => measure),
+      sizeMeasure: measures.find(({ role }) => role === ChartMeasureRoleType.Size),
+      lightnessMeasure: measures.find(({ role }) => role === ChartMeasureRoleType.Lightness)
+    } as SeriesComponentType
+  })
 }

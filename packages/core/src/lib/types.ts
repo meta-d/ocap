@@ -172,6 +172,41 @@ export interface IFilter extends ISlicer {
   and?: boolean
 }
 
+export enum FilteringLogic {
+  And,
+  Or
+}
+
+export interface IAdvancedFilter extends IFilter {
+  filteringLogic: FilteringLogic
+  children: Array<IFilter>
+}
+
+export enum AdvancedSlicerOperator {
+  Equal = 'Equal',
+  NotEqual = 'NotEqual',
+  LessThan = 'LessThan',
+  GreaterThan = 'GreaterThan',
+  LessEqual = 'LessEqual',
+  GreaterEqual = 'GreaterEqual',
+  Between = 'Between',
+  NotBetween = 'NotBetween',
+  TopCount = 'TopCount',
+  BottomCount = 'BottomCount',
+  TopPercent = 'TopPercent',
+  BottomPercent = 'BottomPercent',
+  TopSum = 'TopSum',
+  BottomSum = 'BottomSum'
+}
+
+export interface AdvancedSlicer extends IFilter {
+  context?: Array<Dimension>
+  operator: AdvancedSlicerOperator
+  measure: PropertyName
+  value: PrimitiveType | PrimitiveType[]
+  other?: boolean
+}
+
 export type EntityKey<T> =
   | {
       readonly [P in keyof T]?: T[P]
@@ -184,14 +219,15 @@ export type EntityKey<T> =
  */
 export interface QueryOptions<T = any> {
   parameters?: EntityKey<T>
-  rows?: Array<PropertyPath>
-  columns?: Array<PropertyPath>
+  rows?: Array<Dimension>
+  columns?: Array<Dimension>
   /**
    * @deprecated use rows and columns
    */
-  selects?: Array<PropertyPath>
+  selects?: Array<Dimension>
   orderbys?: Array<OrderBy>
 
+  filterString?: string
   filters?: Array<ISlicer>
   // TODO 需要删除
   top?: number
@@ -223,6 +259,13 @@ export const isUnbookedData = (toBe: PropertyPath): boolean => {
   }
   return false
 }
+export const isSlicer = (toBe): toBe is ISlicer =>
+  !isNil((toBe as ISlicer)?.dimension) && !isNil((toBe as ISlicer)?.members)
+export const isFilter = (toBe): toBe is IFilter =>
+  (!isNil((toBe as IFilter)?.dimension) || !isNil((toBe as IFilter)?.dimension)) && !isNil((toBe as IFilter)?.operator)
+export const isAdvancedFilter = (toBe): toBe is IAdvancedFilter => !isNil((toBe as IAdvancedFilter)?.filteringLogic)
+export const isAdvancedSlicer = (toBe): toBe is AdvancedSlicer =>
+  !isNil(AdvancedSlicerOperator[(toBe as AdvancedSlicer)?.operator])
 
 // Helpers
 export function getPropertyName(path: PropertyPath) {
