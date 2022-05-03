@@ -37,4 +37,18 @@ export interface SeriesComponentType extends Partial<ChartMeasure> {
 
 export interface EChartsOptions extends ChartOptions {
   dataZoom?: any
+  valueAxis?: any
+}
+
+export const FORMAT_LOCALE_DATA = {
+  'en': {
+    lang: 'en-US',
+    shortNumberFactor: 3,
+    shortNumberUnits: 'K,M,B,T,Q'
+  },
+  'zh-Hans': {
+    lang: 'zh-Hans',
+    shortNumberFactor: 4,
+    shortNumberUnits: '万,亿,万亿',
+  }
 }

@@ -26,6 +26,11 @@
             "glob": "*.worker.js",
             "input": "node_modules/@duckdb/duckdb-wasm/dist/",
             "output": "./assets/"
+          },
+          {
+            "glob": "*",
+            "input": "data/",
+            "output": "./assets/data/"
           }
         ],
         "styles": [

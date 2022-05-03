@@ -8,15 +8,16 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { AgentType, MockAgent } from '@metad/ocap-core'
-import { DuckdbWasmAgent } from '@metad/ocap-duckdb'
+import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { AgentType } from '@metad/ocap-core'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
 import * as SQL from '@metad/ocap-sql'
 import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
+import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
@@ -41,34 +42,39 @@ if (SQL) {
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
-    OcapCoreModule.forRoot([new DuckdbWasmAgent([{
-      name: 'WASM',
-      type: '',
-      schemaName: 'main',
-      entities: [
-        {
-          name: 'CsseCovid19Daily',
-          sourceUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
-        },
-        {
-          name: 'CountryGDP',
-          sourceUrl: `https://raw.githubusercontent.com/curran/data/gh-pages/worldFactbook/GDPPerCapita.csv`
-        }
-      ]
-    }]), new MockAgent()], {
-      Sales: {
+    OcapCoreModule.forRoot()
+  ],
+  providers: [
+    WasmAgentService,
+    {
+      provide: OCAP_AGENT_TOKEN,
+      useExisting: WasmAgentService,
+      multi: true
+    },
+    {
+      provide: OCAP_AGENT_TOKEN,
+      useClass: MockAgent,
+      multi: true
+    },
+    {
+      provide: OCAP_MODEL_TOKEN,
+      useValue: {
         name: 'Sales',
         type: 'SQL',
         agentType: AgentType.Browser
       },
-      WASM: {
+      multi: true
+    },
+    {
+      provide: OCAP_MODEL_TOKEN,
+      useValue: {
         name: 'WASM',
         type: 'SQL',
         agentType: AgentType.Wasm
-      }
-    })
+      },
+      multi: true
+    }
   ],
-  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

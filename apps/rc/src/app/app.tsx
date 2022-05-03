@@ -3,7 +3,6 @@ import './app.scss'
 import {
   AgentType,
   DSCoreService,
-  MockAgent,
 } from '@metad/ocap-core'
 import { AnalyticalCard, AppContext } from '@metad/ocap-react'
 import * as SQL from '@metad/ocap-sql'
@@ -16,25 +15,38 @@ import IconButton from '@mui/material/IconButton'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { registerTheme } from 'echarts/core'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
-import { MAP_CARDS, CARTESIAN_CARDS } from './types'
 import { DuckdbWasmAgent } from '@metad/ocap-duckdb'
+import { DUCKDB_WASM_MODEL, CARTESIAN_CARDS, ANALYTICAL_CARDS } from '@metad/ocap-duckdb/src/lib/examples'
+import { MockAgent } from './mock'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
 export function App() {
   const sss = SQL
 
-  const [dataSettings, setDataSettings] = useState([
-    ...MAP_CARDS,
-    ...CARTESIAN_CARDS
+  const [cards, setCards] = useState([
+    // ...CARTESIAN_CARDS,
+    ...ANALYTICAL_CARDS
   ])
 
   const handleChange = (event: SelectChangeEvent) => {
     //
   }
+
+  const wasmDBAgent = useMemo(() => {
+    return new DuckdbWasmAgent([])
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~ duckdb register model ~~~~~~~~~~~~~~~~~~~~~~~~~~`)
+      wasmDBAgent.registerModel(DUCKDB_WASM_MODEL.name, DUCKDB_WASM_MODEL)
+    }, 5000);
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -52,72 +64,61 @@ export function App() {
       <Container >
         <AppContext.Provider
           value={{
+            wasmDBAgent,
             coreService: new DSCoreService([
-              new DuckdbWasmAgent([{
-                name: 'WASM',
-                type: '',
-                schemaName: 'main',
-                entities: [
-                  {
-                    name: 'CsseCovid19Daily',
-                    sourceUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
-                  },
-                  {
-                    name: 'CountryGDP',
-                    sourceUrl: `https://raw.githubusercontent.com/curran/data/gh-pages/worldFactbook/GDPPerCapita.csv`
-                  }
-                ]
-              }]),
-              new MockAgent()], {
-                Sales: {
-                  name: 'Sales',
-                  type: 'SQL',
-                  agentType: AgentType.Browser,
-                  schema: {
-                    cubes: [
-                      {
-                        name: 'SalesOrder',
-                        Table: {
-                          name: 'sales'
-                        },
-                        Dimension: [{
-                          name: 'Time',
-                          Hierarchy: [
-                            {
-                              name: '',
-                              hasAll: true,
-                              primaryKey: 'timeid',
-                              Level: [
-                                {
-                                  name: 'Year',
-                                  column: 'year',
-                                  uniqueMembers: true
-                                }
-                              ]
-                            }
-                          ]
-                        }],
-                        Measure: [
+              wasmDBAgent,
+              new MockAgent()
+            ],
+            [
+              {
+                name: 'Sales',
+                type: 'SQL',
+                agentType: AgentType.Browser,
+                schema: {
+                  cubes: [
+                    {
+                      name: 'SalesOrder',
+                      Table: {
+                        name: 'sales'
+                      },
+                      Dimension: [{
+                        name: 'Time',
+                        Hierarchy: [
                           {
-                            name: 'amount',
-                            column: 'amount',
-                            aggregator: 'sum'
+                            name: '',
+                            hasAll: true,
+                            primaryKey: 'timeid',
+                            Level: [
+                              {
+                                name: 'Year',
+                                column: 'year',
+                                uniqueMembers: true
+                              }
+                            ]
                           }
                         ]
-                      }
-                    ]
-                  }
-                },
-                WASM: {
-                  name: 'WASM',
-                  type: 'SQL',
-                  agentType: AgentType.Wasm
+                      }],
+                      Measure: [
+                        {
+                          name: 'amount',
+                          column: 'amount',
+                          aggregator: 'sum'
+                        }
+                      ]
+                    }
+                  ]
                 }
-            })
+              },
+              {
+                name: DUCKDB_WASM_MODEL.name,
+                type: 'SQL',
+                agentType: AgentType.Wasm
+              }
+            ])
           }}
         >
           <Grid container spacing={2}>
-            {dataSettings.map(({ title, dataSettings, chartSettings, chartOptions }) => (
+            {cards.map(({ title, dataSettings, chartSettings, chartOptions }) => (
               <Grid item xs={8} sm={4}>
                 <AnalyticalCard title={title}
                   dataSettings={dataSettings}

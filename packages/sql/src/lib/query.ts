@@ -1,4 +1,18 @@
-import { AdvancedSlicer, AggregationRole, EntityType, getEntityProperty, getPropertyTextName, isAdvancedSlicer, isCalculationProperty, isMeasure, isUnbookedData, MDX, Property, QueryOptions } from '@metad/ocap-core'
+import {
+  AdvancedSlicer,
+  AggregationRole,
+  EntityType,
+  getEntityProperty,
+  getPropertyName,
+  getPropertyTextName,
+  isAdvancedSlicer,
+  isCalculationProperty,
+  isMeasure,
+  isUnbookedData,
+  MDX,
+  Property,
+  QueryOptions
+} from '@metad/ocap-core'
 import { compact, concat, isArray, isEmpty, negate, union } from 'lodash'
 import { serializeCalculationProperty } from './calculation'
 import { OrderBy } from './functions'
@@ -18,46 +32,69 @@ export function serializeFrom(entityType: EntityType, dialect: string) {
     : serializeName(entityType.name, dialect)
 }
 
-
 export function queryCube(cubes: MDX.Cube[], options: QueryOptions, entityType: EntityType, dialect: string) {
   console.log(cubes, options, entityType)
 
-  const rows: Array<SQLQueryProperty> =
-    options.rows?.map((field) => ({
-      dimension: field,
-      property: getEntityProperty(entityType, field)
-    })) || []
-    
-  const columns: Array<SQLQueryProperty> =
-    options.columns?.map((field) => ({
-      dimension: field,
-      property: getEntityProperty(entityType, field)
-    })) || []
+  let queryContext: SQLQueryContext = {} as SQLQueryContext
+
+  queryContext.rows =
+    options.rows?.map((field) => {
+      const property = getEntityProperty(entityType, field)
+      if (!property) {
+        throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
+      }
+      return {
+        dimension: field,
+        property
+      }
+    }) || []
+
+  queryContext.columns =
+    options.columns?.map((field) => {
+      const property = getEntityProperty(entityType, field)
+      if (!property) {
+        throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
+      }
+
+      return {
+        dimension: field,
+        property: getEntityProperty(entityType, field)
+      }
+    }) || []
 
   options.selects?.forEach((field) => {
     const property = getEntityProperty(entityType, field)
+
+    if (!property) {
+      throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
+    }
+
     if (property.role === AggregationRole.dimension) {
-      rows.push({
+      queryContext.rows.push({
         dimension: field,
         property
       })
     } else {
-      columns.push({
+      queryContext.columns.push({
         dimension: field,
         property
       })
     }
   })
 
-  const row = generateSelectFields(rows, dialect)
-  const column = generateSelectFields(columns, dialect)
+  queryContext.dialect = dialect
+  queryContext.zeroSuppression = isZeroSuppression(queryContext)
 
-  const groupby = union(row.groupbys, column.groupbys).join(',')
+  queryContext = serializeSelectFields(queryContext)
+
+  // const row = generateSelectFields(queryContext.rows, dialect)
+  // const column = generateSelectFields(queryContext.columns, dialect)
+
+  const groupby = union(queryContext.groupbys).join(',')
 
   const fromSource = serializeFrom(entityType, dialect)
-  const fields = union(row.select, column.select)
 
-  let statement = `SELECT ${isEmpty(fields) ? '*' : fields.join(`, `)} FROM ${fromSource}`
+  let statement = `SELECT ${isEmpty(queryContext.select) ? '*' : queryContext.select.join(`, `)} FROM ${fromSource}`
 
   // Conditions
   const conditions: Array<AdvancedSlicer> = []
@@ -79,15 +116,15 @@ export function queryCube(cubes: MDX.Cube[], options: QueryOptions, entityType: 
 
   // 无值数据
 
-  const unbookedData = compact([...row.unbookedData, ...column.unbookedData])
+  const unbookedData = compact(queryContext.unbookedData)
   if (!isEmpty(unbookedData)) {
     filterString = (filterString ? `${filterString} AND ` : '') + unbookedData.join(' AND ')
   }
-  if (!isEmpty(row.where)) {
-    filterString = (filterString ? `${filterString} AND ` : '') + row.where.join(' AND ')
+  if (!isEmpty(queryContext.where)) {
+    filterString = (filterString ? `${filterString} AND ` : '') + queryContext.where.join(' AND ')
   }
-  if (!isEmpty(column.where)) {
-    filterString = (filterString ? `${filterString} AND ` : '') + column.where.join(' AND ')
+  if (!isEmpty(queryContext.where)) {
+    filterString = (filterString ? `${filterString} AND ` : '') + queryContext.where.join(' AND ')
   }
   if (filterString) {
     statement = statement + ` WHERE ${filterString}`
@@ -97,11 +134,11 @@ export function queryCube(cubes: MDX.Cube[], options: QueryOptions, entityType: 
     statement = statement + ` GROUP BY ${groupby}`
   }
   if (!isEmpty(options?.orderbys)) {
-    statement = statement + ` ${OrderBy(serializeOrderbys(options.orderbys, { rows, columns }, dialect))}`
+    statement = statement + ` ${OrderBy(serializeOrderbys(options.orderbys, queryContext, dialect))}`
   }
 
   if (!isEmpty(conditions)) {
-    console.warn(conditions.forEach((item) => serializeCondition(item, [...rows, ...columns])))
+    console.warn(conditions.forEach((item) => serializeCondition(item, [...queryContext.rows, ...queryContext.columns])))
   }
 
   if (options.paging?.top) {
@@ -111,43 +148,45 @@ export function queryCube(cubes: MDX.Cube[], options: QueryOptions, entityType: 
   return statement
 }
 
+// export function generateSelectFields(rows: Array<SQLQueryProperty>, dialect: string): SQLQueryContext {
+//   const fields = []
+//   const groupbys = []
+//   let zeroSuppression = false
+//   const unbookedData = []
+//   const where = []
 
-export function generateSelectFields(rows: Array<SQLQueryProperty>, dialect: string): SQLQueryContext {
-  const fields = []
-  const groupbys = []
-  const unbookedData = []
-  const where = []
+//   rows.forEach(({ dimension, property }) => {
+//     if (isMeasure(dimension)) {
+//       const [field, conditions = []] = serializeProperty(property, dialect)
+//       where.push(...conditions)
+//       fields.push(`${field} AS ${serializeName(property.name, dialect)}`)
+//     } else {
+//       if (dimension.zeroSuppression) {
+//         zeroSuppression = true
+//       }
+//       groupbys.push(serializeName(property.name, dialect))
+//       fields.push(serializeName(property.name, dialect))
+//       if (!isUnbookedData(dimension)) {
+//         unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
+//       }
 
-  rows.forEach(({ dimension, property }) => {
-    if (isMeasure(dimension)) {
-      const [field, conditions = []] = serializeProperty(property, dialect)
-      where.push(...conditions)
-      fields.push(`${field} AS ${serializeName(property.name, dialect)}`)
-    } else {
-      groupbys.push(serializeName(property.name, dialect))
-      fields.push(serializeName(property.name, dialect))
-      if (!isUnbookedData(dimension)) {
-        unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
-      }
+//       const textName = getPropertyTextName(property)
+//       if (textName) {
+//         groupbys.push(serializeName(textName, dialect))
+//         fields.push(serializeName(textName, dialect))
+//       }
+//     }
+//   })
 
-      const textName = getPropertyTextName(property)
-      if (textName) {
-        groupbys.push(serializeName(textName, dialect))
-        fields.push(serializeName(textName, dialect))
-      }
-    }
-  })
-
-  return { select: fields, groupbys, unbookedData, where }
-}
-
+//   return { select: fields, groupbys, zeroSuppression, unbookedData, where } as SQLQueryContext
+// }
 
 /**
  * 生成 Property 字段对应的 SQL 语句表达式
  * @param property
  * @returns
  */
- function serializeProperty(property: Property, dialect: string) {
+function serializeProperty(property: Property, dialect: string) {
   if (isCalculationProperty(property)) {
     return serializeCalculationProperty(property, dialect)
   }
@@ -169,4 +208,59 @@ export function serializeOrderbys(orderbys, { rows, columns }, dialect: string) 
   return orderbys
     .filter(({ by }) => fields.find((item) => item.property.name === by))
     .map(({ by, order }) => `${serializeName(by, dialect)}${order ? ` ${order}` : ''}`)
+}
+
+export function isZeroSuppression(context: SQLQueryContext) {
+  let zeroSuppression = false
+  context.rows.forEach(({ dimension }) => {
+    if (!isMeasure(dimension)) {
+      if (dimension.zeroSuppression) {
+        zeroSuppression = true
+      }
+    }
+  })
+  context.columns.forEach(({ dimension }) => {
+    if (!isMeasure(dimension)) {
+      if (dimension.zeroSuppression) {
+        zeroSuppression = true
+      }
+    }
+  })
+  return zeroSuppression
+}
+
+export function serializeSelectFields(context: SQLQueryContext): SQLQueryContext {
+  const fields = []
+  const groupbys = context.groupbys ?? []
+  const zeroSuppression = context.zeroSuppression
+  const unbookedData = []
+  const where = []
+  const dialect = context.dialect;
+
+  [...context.rows, ...context.columns].forEach(({ dimension, property }) => {
+    if (isMeasure(dimension)) {
+      const [field, conditions = []] = serializeProperty(property, dialect)
+      where.push(...conditions)
+      fields.push(`${field} AS ${serializeName(property.name, dialect)}`)
+
+      if (zeroSuppression) {
+        unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
+      }
+    } else {
+
+      groupbys.push(serializeName(property.name, dialect))
+      fields.push(serializeName(property.name, dialect))
+      if (!isUnbookedData(dimension)) {
+        unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
+      }
+
+      const textName = getPropertyTextName(property)
+      if (textName) {
+        groupbys.push(serializeName(textName, dialect))
+        fields.push(serializeName(textName, dialect))
+      }
+    }
+  })
+
+  return { ...context, select: fields, groupbys, zeroSuppression, unbookedData, where } as SQLQueryContext
 }

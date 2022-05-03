@@ -71,10 +71,14 @@ export function serializeWrapCatalog(expression: string, dialect: string, catalo
 }
 
 export interface SQLQueryContext {
+  rows: Array<SQLQueryProperty>
+  columns: Array<SQLQueryProperty>
   select: string[]
   where: string[]
   groupbys
-  unbookedData
+  unbookedData: string[]
+  zeroSuppression: boolean
+  dialect: string
 }
 
 export interface SQLQueryProperty {

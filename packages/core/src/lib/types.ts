@@ -36,11 +36,6 @@ export type BaseProperty = {
    * 也可以为 dimension 设置固定的成员
    */
   members?: Member[]
-
-  /**
-   * 清除度量全部为 0 的成员
-   */
-  zeroSuppression?: boolean
 }
 
 export type Dimension = BaseProperty &
@@ -59,6 +54,12 @@ export type Dimension = BaseProperty &
      * 显示为...
      */
     displayBehaviour: DisplayBehaviour
+
+    /**
+     * 清除度量全部为 NULL 的成员
+     */
+    zeroSuppression?: boolean
+
     /**
      * 是否显示无值数据, 在 MDX 中为 `[#]` 的成员
      */

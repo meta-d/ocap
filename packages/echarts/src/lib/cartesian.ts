@@ -21,7 +21,7 @@ import {
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
 import { chunk, groupBy, includes, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
-import { axisOrient } from './axis'
+import { axisOrient, getCategoryAxis, getValueAxis } from './axis'
 import { getChromaticScale } from './chromatics'
 import { dataZoom } from './data-zoom'
 import { DecalPatterns } from './decal'
@@ -46,20 +46,22 @@ export function cartesian(
     yAxis: [],
     series: [],
     visualMap: [],
-    tooltip: [],
+    tooltip: [{
+      trigger: 'axis'
+    }],
     dataZoom: dataZoom(options)
   }
 
   cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
     echartsOptions.grid.push(cartesianCoordinate.grid)
-    echartsOptions.xAxis.push({
-      ...cartesianCoordinate.xAxis,
+    echartsOptions.xAxis.push(...cartesianCoordinate.xAxis.map((xAxis) => ({
+      ...xAxis,
       gridIndex
-    })
-    echartsOptions.yAxis.push({
-      ...cartesianCoordinate.yAxis,
+    })))
+    echartsOptions.yAxis.push(...cartesianCoordinate.yAxis.map((yAxis) => ({
+      ...yAxis,
       gridIndex
-    })
+    })))
 
     cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
       echartsOptions.dataset.push({
@@ -68,8 +70,8 @@ export function cartesian(
       series.forEach((series) => {
         echartsOptions.series.push({
           ...series,
-          xAxisIndex: gridIndex,
-          yAxisIndex: gridIndex,
+          xAxisIndex: echartsOptions.xAxis.length + (series.xAxisIndex ?? 0) - 1,
+          yAxisIndex: echartsOptions.xAxis.length + (series.yAxisIndex ?? 0) - 1,
           datasetIndex: echartsOptions.dataset.length - 1,
           type: series.type ?? type
         })
@@ -77,7 +79,7 @@ export function cartesian(
     })
 
     echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
-    echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
+    // echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
   })
 
   return echartsOptions
@@ -170,7 +172,7 @@ export function cartesianCoordinate(
           !includes([ChartMeasureRoleType.Tooltip, ChartMeasureRoleType.Size, ChartMeasureRoleType.Lightness], role)
       )
       .map((measure) => {
-        return stackedForMeasure(data, measure, chartAnnotation, entityType, settings)
+        return stackedForMeasure(data, measure, chartAnnotation, entityType, settings, options)
       })
   } else {
     const seriesComponents = measuresToSeriesComponents(chartAnnotation.measures, data, entityType, settings)
@@ -192,13 +194,13 @@ export function cartesianCoordinate(
             property: getEntityProperty(entityType, measure)
           })),
           seriesComponents,
-          'zh-Hans'
+          settings.locale
         )
       }
     ]
   }
 
-  const [categoryAxis, valueAxis] = axisOrient(chartAnnotation.chartType.orient)
+  const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
     grid: {
@@ -208,12 +210,8 @@ export function cartesianCoordinate(
       left: 0,
       containLabel: true
     },
-    [categoryAxis]: {
-      type: 'category'
-    },
-    [valueAxis]: {
-      type: category2 ? 'category' : 'value'
-    },
+    [categoryAxis.orient]: categoryAxis.axis,
+    [valueAxis.orient]: valueAxis.axis,
     visualMap: [],
     datasets: [],
     tooltip: [],
@@ -235,24 +233,26 @@ export function cartesianCoordinate(
         gridOptions.visualMap.push(...visualMaps)
 
         if (!isNil(seriesComponent.valueAxisIndex)) {
-          series[valueAxis + 'Index'] = seriesComponent.valueAxisIndex
+          series[valueAxis.orient + 'Index'] = seriesComponent.valueAxisIndex
         }
         /**
          * 堆积系列情况下不适用 encode, 使用的应该是 seriesLayoutBy: "row" name: "[Canada]" 与 dataset 中的行数据进行的对应
          */
         if (isNil(series.seriesLayoutBy)) {
           series.encode = {
-            [AxisEnum[categoryAxis]]: getPropertyHierarchy(category),
-            [AxisEnum[valueAxis]]: category2 ? getPropertyHierarchy(category2) : seriesComponent.measure,
+            [AxisEnum[categoryAxis.orient]]: getPropertyHierarchy(category),
+            [AxisEnum[valueAxis.orient]]: category2 ? getPropertyHierarchy(category2) : seriesComponent.measure,
             tooltip: seriesComponent.tooltip
           }
         }
+
+        series.tooltip = tooltip
 
         return series
       })
     })
 
-    gridOptions.tooltip.push(tooltip)
+    // gridOptions.tooltip.push(tooltip)
   })
 
   return gridOptions
@@ -515,4 +515,31 @@ export function measuresToSeriesComponents(
       lightnessMeasure: measures.find(({ role }) => role === ChartMeasureRoleType.Lightness)
     } as SeriesComponentType
   })
+}
+
+export function getCoordinateSystem(
+  chartAnnotation: ChartAnnotation,
+  entityType: EntityType,
+  items: Array<unknown>,
+  chartOptions: EChartsOptions,
+  locale?: string
+) {
+  const [categoryOrient, valueOrient] = axisOrient(chartAnnotation.chartType.orient)
+
+  const category = getChartCategory(chartAnnotation)
+  const category2 = getChartCategory2(chartAnnotation)
+
+  let valueAxis = null
+  // 设置维度轴值
+  const categoryAxis = getCategoryAxis(items, category, getEntityProperty(entityType, category), chartOptions)
+  categoryAxis.orient = categoryOrient
+
+  if (category2) {
+    valueAxis = [getCategoryAxis(items, category2, getEntityProperty(entityType, category2), chartOptions)]
+  } else {
+    valueAxis = getValueAxis(chartAnnotation, entityType, chartOptions, locale)
+  }
+  valueAxis.orient = valueOrient
+
+  return { categoryAxis: {orient: categoryOrient, axis: [categoryAxis]}, valueAxis: {orient: valueOrient, axis: valueAxis} }
 }

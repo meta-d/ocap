@@ -1,15 +1,12 @@
+import { ChartDimension, ChartMeasure, ChartMeasureRoleType, ChartSettings, getPropertyUnitName, Property } from '@metad/ocap-core'
 import {
-  ChartDimension,
-  ChartMeasure,
-  ChartMeasureRoleType,
-  displayByBehaviour,
-  getMeasurePropertyUnit,
-  getPropertyTextName,
-  getPropertyUnitName,
-  PrimitiveType,
-  Property
-} from '@metad/ocap-core'
-import { find, isNumber } from 'lodash'
+  echartsFormatNumber,
+  formatCategoryLabel,
+  formatMeasureLabel,
+  formatMeasuresLabel,
+  getSeriesComponentMeasureName,
+  _formatDimensionValue
+} from './common'
 import { AxisEnum, SeriesComponentType } from './types'
 
 /**
@@ -72,6 +69,11 @@ export function getEChartsTooltip(
   return tooltip
 }
 
+/**
+ * 计算矩阵 DataSet 相应的 Tooltip 组件属性
+ * 
+ * @returns 
+ */
 export function getEChartsMatrixTooltip(
   tooltipOptions: any,
   chartCategory: ChartDimension,
@@ -81,8 +83,7 @@ export function getEChartsMatrixTooltip(
   categoryValueTexts: Map<string, string>,
   seriesValueTexts: Map<string, string>,
   seriesComponents: SeriesComponentType[],
-  locale: string,
-  settings: any
+  settings: ChartSettings
 ) {
   const tooltip: any = {
     trigger: tooltipOptions?.trigger || 'item'
@@ -92,6 +93,7 @@ export function getEChartsMatrixTooltip(
   const showMeasureName = tooltipOptions?.showMeasureName
   const categoryAxis = AxisEnum[_categoryAxis]
   const valueAxis = AxisEnum[_valueAxis]
+  const locale = settings.locale
 
   // 如果 multiple or stacked 图是以 category 字段为 series 则重写 formatter 方法以适应
   tooltip.formatter = (params: any) => {
@@ -135,7 +137,7 @@ export function getEChartsMatrixTooltip(
             texts.push(
               `${getSeriesComponentMeasureName(seriesComponents, param.seriesIndex)}: ${echartsFormatNumber(
                 param.data[param.encode[valueAxis][0]],
-                settings,
+                settings.digitInfo,
                 short,
                 locale
               )} ${unit}`
@@ -143,7 +145,7 @@ export function getEChartsMatrixTooltip(
           } else {
             text = `${text}: ${echartsFormatNumber(
               param.data[param.encode[valueAxis][0]],
-              settings,
+              settings.digitInfo,
               short,
               locale
             )} ${unit}`
@@ -151,6 +153,9 @@ export function getEChartsMatrixTooltip(
           }
         })
     } else {
+      // params.seriesIndex 代表的是全局 series 组件的索引序号, 而这里是某一个 measure 下的 series 组件们
+      // const seriesComponent = seriesComponents[params.seriesIndex]
+      const seriesComponent = seriesComponents.find(({name}) => name === params.seriesName)
       texts.push(formatCategoryLabel(params.data[params.encode[categoryAxis][0]], categoryValueTexts, chartCategory))
 
       texts.push(
@@ -159,10 +164,10 @@ export function getEChartsMatrixTooltip(
 
       // 判断 进行 数据简化操作 还是进行 数据格式化操作
       texts.push(
-        `${params.marker} ${getSeriesComponentMeasureName(seriesComponents, params.seriesIndex)}: ${echartsFormatNumber(
+        `${params.marker} ${seriesComponent?.property?.label || seriesComponent?.property?.name}: ${echartsFormatNumber(
           params.data[params.encode[valueAxis][0]],
-          settings,
-          short,
+          settings?.digitInfo,
+          seriesComponent.formatting?.shortNumber ?? short,
           locale
         )}`
       )
@@ -172,167 +177,4 @@ export function getEChartsMatrixTooltip(
   }
 
   return tooltip
-}
-
-export function getSeriesComponentMeasureName(seriesComponents: Array<SeriesComponentType>, i: number) {
-  const component = seriesComponents[i]
-  return component?.property?.label || component?.property?.name
-}
-
-export function formatCategoryLabel(
-  value: PrimitiveType,
-  valueTexts: Map<PrimitiveType, string>,
-  category: ChartDimension
-) {
-  const label = valueTexts?.get(value) || ''
-  return displayByBehaviour({ value, label }, category.displayBehaviour)
-}
-
-/**
- * 数字缩写格式化
- * @param value 数字
- * @param shortNumber 数字是否缩写
- */
-export function echartsFormatNumber(value, settings?: any, shortNumber?: boolean, locale?: string) {
-  if (isNumber(value)) {
-    if (shortNumber) {
-      const [short, unit] = formatShortNumber(value, locale)
-      return formatNumber(short, locale, settings?.digitInfo) + unit
-    }
-    return formatNumber(value, locale, settings?.digitInfo)
-  }
-
-  return '-'
-}
-
-/**
- * 度量的数字缩写格式化
- *
- * @param measure 度量
- * @param value 数值
- * @param locale 地区
- * @param shortNumber 是否缩短
- * @returns
- */
-export function formatMeasureNumber(
-  {
-    measure,
-    property
-  }: {
-    measure: ChartMeasure
-    property: Property
-  },
-  value: number | string,
-  locale: string,
-  shortNumber?: boolean
-) {
-  if (isNumber(value)) {
-    const digitInfo = `0.0-${measure.formatting?.decimal ?? 1}`
-    const unit = measure.formatting?.unit ?? getMeasurePropertyUnit(property)
-    if (unit === '%') {
-      value = value * 100
-    }
-    if (measure.formatting?.shortNumber ?? shortNumber) {
-      const [short, shortUnit] = formatShortNumber(value, locale)
-      return formatNumber(short, locale, digitInfo) + shortUnit + (unit ?? '')
-    }
-    return formatNumber(value, locale, digitInfo) + (unit ?? '')
-  }
-
-  return null
-}
-
-export function _formatDimensionValue(item, dimProperty?: Property | null) {
-  if (!item || !dimProperty) {
-    return ''
-  }
-
-  if (dimProperty?.dataType === 'Edm.DateTime') {
-    if (dimProperty.displayFormat === 'Date') {
-      return format(item[dimProperty.name], 'yyyy-MM-dd')
-    }
-    // TODO
-    return format(item[dimProperty.name], 'yyyy-MM-dd')
-  }
-
-  return displayByBehaviour(
-    {
-      value: item[dimProperty?.name],
-      label: item[getPropertyTextName(dimProperty)]
-    }
-    // dimProperty?.displayBehaviour
-  )
-}
-
-export function formatMeasureLabel(
-  item: unknown,
-  {
-    measure,
-    property
-  }: {
-    measure: ChartMeasure
-    property: Property
-  },
-  locale: string,
-  shortNumber?: boolean
-) {
-  if (!item) {
-    return '-'
-  }
-
-  const value = formatMeasureNumber({ measure, property }, item[measure.measure], locale, shortNumber)
-  return `${property?.label || measure.measure}: ${value ?? item[measure.measure] ?? '-'}`
-}
-
-export function formatMeasuresLabel(
-  item: unknown,
-  measures: Array<{ measure: ChartMeasure; property: Property }>,
-  locale: string,
-  shortNumber?: boolean
-) {
-  if (!item) {
-    return '-'
-  }
-
-  return measures
-    .map(({ measure, property }) => {
-      return formatMeasureLabel(item, { measure, property }, locale, shortNumber)
-    })
-    .join('<br>')
-}
-
-export function setCategoryAxisLabel(category, items, chartCategory: ChartDimension, property: Property) {
-  // 暂时只支持一个 dimension
-  const behaviour = chartCategory.displayBehaviour
-
-  category.axisLabel = category.axisLabel || {}
-  category.axisLabel.formatter = (value, index) => {
-    const textName = getPropertyTextName(property)
-    if (textName) {
-      const item = find(items, (item) => item[property.name] == value)
-      if (item) {
-        return displayByBehaviour({ value: item[property.name], label: item[textName] }, behaviour)
-      }
-    }
-
-    return value
-  }
-  if (category.type === 'time' || property.type === 'Edm.DateTime') {
-    category.axisLabel.formatter = (value, index) => {
-      // let date = new Date();
-      return format(value, 'yyyy-MM-dd') // date.getFullYear(), date.getMonth() + 1, date.getDate()].join('/');
-    }
-  }
-}
-
-export function format(value, formatter) {
-  return 'XXXXXXX'
-}
-
-export function formatShortNumber(value, locale?: string) {
-  return [value]
-}
-
-export function formatNumber(short: number, locale: string, digitInfo?: string) {
-  return short
 }

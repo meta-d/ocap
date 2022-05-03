@@ -1,4 +1,4 @@
-import { isChartMapType, SmartChartEngine } from '@metad/ocap-core'
+import { ChartSettings, isChartMapType, SmartChartEngine } from '@metad/ocap-core'
 import {
   BehaviorSubject,
   catchError,
@@ -47,6 +47,8 @@ export class SmartEChartEngine extends SmartChartEngine {
   ]).pipe(
     withLatestFrom(this.entityType$),
     map(([[data, chartAnnotation, settings, options], entityType]) => {
+      settings = {...(settings ?? {} as ChartSettings)}
+      settings.locale = settings.locale ?? 'en'
       const type = chartAnnotation.chartType.type
 
       if (type === 'Bar') {

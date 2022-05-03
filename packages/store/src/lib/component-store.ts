@@ -60,14 +60,14 @@ export class ComponentStore<T> {
     if (defaultState) {
       this.initState(defaultState);
     }
-    console.log(`Object ${this.__id__} of class ${this.constructor.name} be created`)
+    // console.log(`Object ${this.__id__} of class ${this.constructor.name} be created`)
   }
 
   /** Completes all relevant Observable streams. */
   onDestroy() {
     this.stateSubject$.complete();
     this.destroySubject$.next();
-    console.log(`Object ${this.__id__} of class ${this.constructor.name} be destroyed`)
+    // console.log(`Object ${this.__id__} of class ${this.constructor.name} be destroyed`)
   }
 
   /**

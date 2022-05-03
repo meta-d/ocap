@@ -50,6 +50,8 @@ export function stackedForMeasure(
     } as SeriesComponentType
   })
 
+  console.warn(categoryValues, category2Values, seriesComponents)
+
   const categoryValueTexts = new Map()
   categoryValues.forEach(({value, label}) => categoryValueTexts.set(value, label))
   const category2ValueTexts = new Map()
@@ -63,7 +65,6 @@ export function stackedForMeasure(
     categoryValueTexts,
     category2ValueTexts,
     seriesComponents,
-    'zh-Hans',
     settings
   )
 

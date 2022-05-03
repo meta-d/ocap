@@ -1,5 +1,11 @@
 export interface ChartSettings {
   /**
+   * Locale / Language
+   */
+  locale?: string
+
+  digitInfo?: string
+  /**
    * 格子横向个数
    */
   trellisHorizontal?: number

@@ -71,7 +71,7 @@ export class EntityBusinessService<
     // 如果想改变逻辑可以重写 query 方法
     this.refresh$
       .pipe(
-        tap(() => console.debug(`want refresh`)),
+        // tap(() => console.debug(`want refresh`)),
         delayWhen(() => this.initialise$),
         debounce(() => interval(100)),
         tap(() => console.debug(`refreshing`)),

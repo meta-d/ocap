@@ -9,7 +9,12 @@
 </div>
 
 <mat-card-content>
-  <div echarts [options]="options$ | async" [theme]="'default'" class="demo-chart"></div>
+  <div *ngIf="error$ | async as error; else echarts">
+    {{ error }}
+  </div>
+  <ng-template #echarts>
+    <div echarts [options]="options$ | async" [theme]="'default'" class="demo-chart"></div>
+  </ng-template>
 </mat-card-content>
 
 <mat-menu #menu="matMenu">
