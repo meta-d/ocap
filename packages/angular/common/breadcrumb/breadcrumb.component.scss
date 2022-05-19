@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  overflow-x: hidden;
+  height: 36px;
+  flex-direction: row;
+}
+.ngm-breadcrumb--pagination {
+  display: flex;
+  position: relative;
+  min-width: 32px;
+  height: 36px;
+  justify-content: center;
+  align-items: center;
+  &.ngm-breadcrumb--pagination-before {
+    .mat-tab-header-pagination-chevron {
+      transform: rotate(-135deg);
+    }
+  }
+  &.ngm-breadcrumb--pagination-after {
+    .mat-tab-header-pagination-chevron {
+      transform: rotate(45deg);
+    }
+  }
+}
+.ngm-breadcrumb--link-container {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}

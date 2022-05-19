@@ -1,27 +1,27 @@
-import { assign, isEqual, isNil, isString } from 'lodash'
+import { assign, flatten, isEqual, isNil, isString } from 'lodash'
 import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, shareReplay, switchMap } from 'rxjs'
-import { Agent, AgentType } from './agent'
-import { Catalog, EDMSchema, EntitySet, EntityType, IDimensionMember, mergeEntityType } from './csdl/index'
-import { EntityService } from './ds-core.service'
-import { SDL } from './models'
-import { Syntax } from './types'
+import { Agent, DSCacheService } from './agent'
+import { EntityService } from './entity'
+import {
+  AggregationRole,
+  CalculatedProperty,
+  CalculationType,
+  Catalog,
+  Cube,
+  EntitySet,
+  EntityType,
+  getEntityMeasures,
+  IDimensionMember,
+  Indicator,
+  mergeEntityType,
+  mergeEntityTypeCube,
+  Schema,
+  SemanticModel
+} from './models'
+import { Type } from './utils/index'
 
-export const DATA_SOURCE_PROVIDERS = {} as Record<
-  string,
-  { factory: (options: DataSourceOptions, agent: Agent) => DataSource }
->
-
-export type DataSourceType =
-  | 'OData'
-  | 'ODataAnnotation'
-  | 'GraphQL'
-  | 'JSON'
-  | 'XML'
-  | 'RAW'
-  | 'XMLA'
-  | 'SQL'
-  | 'SQLite'
-  | 'Mock'
+// export const DATA_SOURCE_PROVIDERS = {} as Record<string,{ factory: DataSourceFactory }>
+export type DataSourceFactory = () => Promise<Type<DataSource>>
 
 export enum AuthenticationMethod {
   none = 'none',
@@ -46,18 +46,6 @@ export interface DataSources {
   [name: string]: DataSourceOptions
 }
 
-export interface ConnectionOptions extends Record<string, unknown> {
-  secure: boolean
-  protocol?: string
-  host?: string
-  port?: number
-  path: string
-  authMethod?: AuthenticationMethod
-  username?: string
-  password?: string
-  [key: string]: any
-}
-
 /**
  * 数据源配置项
  * 其实对应一个语义模型而不是一个数据源
@@ -67,21 +55,14 @@ export interface ConnectionOptions extends Record<string, unknown> {
  *    * entityType 每个 entity 的类型字段配置
  *    * annotations 每个 entity 的 annotations 配置
  */
-export interface DataSourceOptions {
-  name?: string
-  type: DataSourceType
+export interface DataSourceOptions extends SemanticModel {
+  /**
+   * @TODO 语义模型 catalog 与原始 SQL 数据库的 catalog 冲突, 需要分开
+   */
   catalog?: string
-  agentType: AgentType
   settings?: DataSourceSettings
-  /**
-   * 数据查询所使用的语言
-   */
-  syntax?: Syntax
-  /**
-   * 数据源内的方言, 如 OData 中有 SAP, Microsoft 等, XMLA 中有 SAP BW, SQL 数据库有 Postgres Mysql Hive 等
-   */
-  dialect?: string
-  schema?: SDL.Schema
+  authMethod?: string
+  useLocalAgent?: boolean
 }
 
 /**
@@ -95,9 +76,9 @@ export interface DataSource {
   agent: Agent
 
   /**
-   * 根据指定的 entitySet 名称创建相应的 entityService
+   * 获取数据源的数据服务目录, 数据服务目录用于区分不同的数据实体类别, 如 ODataService 的 Catalog, XMLA 的 CATALOG_NAME 等
    */
-  createEntityService<T>(entitySet: string): EntityService<T>
+  getCatalogs(): Observable<Array<Catalog>>
 
   /**
    * 获取所有的 EntitySet
@@ -110,23 +91,36 @@ export interface DataSource {
   getEntityType(entitySet: string): Observable<EntityType>
 
   /**
-   * 获取数据源的数据服务目录, 数据服务目录用于区分不同的数据实体类别, 如 ODataService 的 Catalog, XMLA 的 CATALOG_NAME 等
+   * 获取维度成员
+   * 
+   * @param entity 实体
+   * @param dimension 维度
    */
-  getCatalogs(): Observable<Array<Catalog>>
-
   getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
+
+  /**
+   * 根据指定的 entitySet 名称创建相应的 entityService
+   */
+  createEntityService<T>(entitySet: string): EntityService<T>
 
   /**
    * 监听运行时 EDM Schema 配置变化
    */
-  selectSchema(): Observable<EDMSchema>
+  selectSchema(): Observable<Schema>
 
   /**
    * 设置自定义的 Schema
    *
    * @param schema EDMSchema
    */
-  setSchema(schema: EDMSchema): void
+  setSchema(schema: Schema): void
+
+  /**
+   * 更新单个 Cube 定义
+   *
+   * @param cube
+   */
+  updateCube(cube: Cube): void
 
   /**
    * 订阅 Entity 的类型定义变化， 合并运行时和用户增强后的
@@ -143,11 +137,26 @@ export interface DataSource {
   setEntityType(entityType: EntityType): void
 
   /**
-   * 订阅 Entity 的类型定义变化， 合并运行时和用户增强后的
+   * 订阅 Entity 的类型定义变化，合并运行时和用户增强后的
    *
    * @param entity
    */
   selectEntityType(entity: string): Observable<EntityType>
+
+  /**
+   * 获取实体相关指标
+   *
+   * @param entitySet 实体
+   */
+  selectIndicators(entitySet: string): Observable<Array<Indicator>>
+
+  /**
+   * 获取指定指标
+   *
+   * @param id 指标 ID
+   * @param entity
+   */
+  getIndicator(id: string, entity?: string): Indicator
 
   /**
    * 创建表
@@ -157,8 +166,24 @@ export interface DataSource {
    * @param data
    */
   createEntity(name, columns, data?): Observable<string>
+
+  /**
+   * 使用语句查询
+   *
+   * @param statement
+   */
+  query(options: { statement: string }): Observable<any>
+
+  /**
+   * 清除浏览器端缓存
+   */
+  clearCache(): Promise<void>
 }
 
+/**
+ * 数据源模型的通用功能实现, 包含元数据的获取, 执行一些与具体模型 Entity 无关的操作查询, 创建 Entity Service 等
+ *
+ */
 export abstract class AbstractDataSource<T extends DataSourceOptions> implements DataSource {
   private options$ = new BehaviorSubject<T>(null)
   get options() {
@@ -166,8 +191,8 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 
   private _entitySets = {}
-  private _entityTypies = {}
-  constructor(options: T, public agent: Agent) {
+  // private _entityTypies = {}
+  constructor(options: T, public agent: Agent, protected cacheService: DSCacheService) {
     this.options$.next(options)
   }
 
@@ -177,12 +202,32 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   abstract getCatalogs(): Observable<Array<Catalog>>
   abstract getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
   abstract createEntity(name, columns, data?): Observable<string>
+  abstract query({ statement: string }): Observable<any>
 
-  setSchema(schema: EDMSchema): void {
+  setSchema(schema: Schema): void {
     this.options$.next({ ...this.options$.value, schema })
   }
 
-  selectSchema(): Observable<EDMSchema> {
+  updateCube(cube: Cube) {
+    const schema = this.options.schema ?? {} as Schema
+    const cubes = schema.cubes ? [...schema.cubes] : []
+    const index = cubes.findIndex((item) => item.__id__ === cube.__id__)
+    if (index > -1) {
+      cubes.splice(index, 1, cube)
+    } else {
+      cubes.push(cube)
+    }
+
+    this.options$.next({
+      ...this.options$.value,
+      schema: {
+        ...schema,
+        cubes
+      }
+    })
+  }
+
+  selectSchema(): Observable<Schema> {
     return this.options$.pipe(
       distinctUntilChanged(),
       map((options) => options?.schema),
@@ -190,20 +235,22 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     )
   }
 
+  // selectSchemaEntity(entity: string) {
+  //   return this.selectSchema().pipe(map((schema: Schema) => schema?.entities?.[entity]))
+  // }
+
   setEntityType(entityType: EntityType) {
-    const options = this.options$.value
-    const entitySet = options.schema?.entitySets?.[entityType.name] || {}
+    const schema = this.options.schema ?? ({} as Schema)
+
+    const entitySets = schema.entitySets ?? {}
+    entitySets[entityType.name] = entitySets[entityType.name] ?? {name: entityType.name} as EntitySet
+    entitySets[entityType.name].entityType = entityType
+
     this.options$.next({
-      ...options,
+      ...this.options,
       schema: {
-        ...options.schema,
-        entitySets: {
-          ...options.schema.entitySets,
-          [entityType.name]: {
-            ...entitySet,
-            entityType
-          }
-        }
+        ...schema,
+        entitySets
       }
     })
   }
@@ -213,17 +260,24 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
       this._entitySets[entity] = this.getEntityType(entity).pipe(
         switchMap((rtEntityType) =>
           this.selectSchema().pipe(
-            map((schema) => schema?.entitySets?.[entity] ?? { entityType: null }),
+            // map((schema) => schema?.entities?.find((item) => item.name === entity)),
             distinctUntilChanged(),
-            map((customEntitySet) => {
-              let entityType = rtEntityType
-              if (!isNil(customEntitySet)) {
+            map((schema) => {
+              const customEntityType = schema?.entitySets?.[entity]?.entityType
+              const cube = schema?.cubes?.find((item) => item.name === entity)
+
+              let entityType = mergeEntityTypeCube(rtEntityType, cube)
+
+              if (!isNil(customEntityType)) {
                 // TODO merge 函数有风险
-                entityType = mergeEntityType(assign({}, rtEntityType), {
-                  ...customEntitySet?.entityType,
-                  ...this._getCustomEntityType(customEntitySet?.entityType)
+                entityType = mergeEntityType(assign({}, entityType), {
+                  ...customEntityType,
+                  ...this._getCustomEntityType(customEntityType)
                 })
               }
+
+              console.log(`runtime entity type is:`, rtEntityType, `cube is:`, cube, `customEntityType:`, customEntityType, `merge cube:`, entityType)
+
               if (entityType) {
                 // 将数据源方言同步到 EntityType
                 entityType.dialect = this.options.dialect
@@ -231,18 +285,12 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
               }
 
               return {
-                ...customEntitySet,
+                ...customEntityType,
                 entityType
               }
             })
           )
         ),
-        // catchError((err) => {
-        //   // TODO 1. 如何处理错误
-        //   // 2. 错误是否会中断处理链
-        //   console.error(err)
-        //   return of({} as any)
-        // }),
         shareReplay(1)
       )
     }
@@ -254,6 +302,27 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
       return EMPTY
     }
     return this.selectEntitySet(entity).pipe(pluck('entityType'))
+  }
+
+  selectIndicators(entitySet: string): Observable<Indicator[]> {
+    return this.selectSchema().pipe(
+      map((schema) => schema?.entitySets?.[entitySet]?.indicators),
+      distinctUntilChanged()
+    )
+  }
+
+  getIndicator(id: string, entity?: string): Indicator {
+    if (this.options.schema?.entitySets) {
+      const indicators = entity
+        ? this.options.schema.entitySets?.[entity]?.indicators
+        : flatten(Object.values(this.options.schema.entitySets).map((item) => item.indicators))
+      return indicators?.find((indicator) => indicator.id === id || indicator.code === id)
+    }
+    return null
+  }
+
+  async clearCache(): Promise<void> {
+    return await this.cacheService.clear('')
   }
 
   /**

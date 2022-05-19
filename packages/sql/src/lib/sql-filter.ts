@@ -1,22 +1,32 @@
 import {
   EntityType,
+  FilteringLogic,
   FilterOperator,
   getEntityProperty,
   getPropertyName,
   IFilter,
   IMember,
+  isAdvancedFilter,
   isFilter,
   ISlicer,
 } from '@metad/ocap-core'
 import { flatten, isArray, isNumber, isString } from 'lodash'
 import { serializeName } from './types'
 
-export function convertFiltersToSQL(filters: Array<IFilter>, entityType: EntityType, dialect: string) {
+/**
+ * 依据实体类型将过滤器转换成语句
+ * 
+ * @param filters 过滤器
+ * @param entityType 实体类型
+ * @param dialect 方言
+ * @returns 过滤语句
+ */
+export function convertFiltersToSQL(filters: Array<IFilter>, entityType: EntityType, dialect?: string) {
   return flatten(filters.map((item) => convertFilterToSQL(item, entityType, dialect)))
     .join(' AND ')
 }
 
-export function convertSlicerToSQL(iSlicer: ISlicer, dialect: string) {
+export function convertSlicerToSQL(iSlicer: ISlicer, dialect?: string) {
   return `${iSlicer.dimension.dimension} ${iSlicer.exclude ? 'NOT ' : ''}IN (${iSlicer.members
     .map(convertFilterValue)
     .join(',')})`
@@ -24,9 +34,9 @@ export function convertSlicerToSQL(iSlicer: ISlicer, dialect: string) {
 
 export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dialect: string) {
 
-  // if (isAdvancedFilter(slicer)) {
-  //   return slicer.children.map(child => `( ${convertFilterToSQL(child, entityType, dialect)} )`).join(slicer.filteringLogic === FilteringLogic.And ? ' AND ' : ' OR ')
-  // }
+  if (isAdvancedFilter(slicer)) {
+    return slicer.children.map(child => `( ${convertFilterToSQL(child, entityType, dialect)} )`).join(slicer.filteringLogic === FilteringLogic.And ? ' AND ' : ' OR ')
+  }
 
   const propertyName = getPropertyName(slicer.dimension)
   const property = getEntityProperty(entityType, propertyName)
@@ -41,12 +51,12 @@ export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dial
     switch (slicer.operator) {
       case FilterOperator.EQ:
         if (isArray(slicer.members)) {
-          return `${path} IN (${slicer.members.map(convertFilterValue).join(',')})`
+          return `${path} IN (${slicer.members.map(convertFilterValue).join(', ')})`
         }
         return `${path} = ${convertFilterValue(slicer.members[0])}`
       case FilterOperator.NE:
         if (isArray(slicer.members)) {
-          return `${path} NOT IN (${slicer.members.map(convertFilterValue).join(',')})`
+          return `${path} NOT IN (${slicer.members.map(convertFilterValue).join(', ')})`
         }
         return `${path} <> ${convertFilterValue(slicer.members)}`
       case FilterOperator.BT:
@@ -59,7 +69,7 @@ export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dial
 
   const inOperator = slicer.exclude ? 'NOT IN' : 'IN'
 
-  return `${path} ${inOperator} (${slicer.members.map(convertFilterValue).join(',')})`
+  return `${path} ${inOperator} (${slicer.members.map(convertFilterValue).join(', ')})`
 }
 
 export function convertFilterValue({ value }: IMember) {

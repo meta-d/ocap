@@ -54,9 +54,9 @@ export function _formatDimensionValue(item, dimProperty?: Property | null) {
   }
 
   if (dimProperty?.dataType === 'Edm.DateTime') {
-    if (dimProperty.displayFormat === 'Date') {
-      return format(item[dimProperty.name], 'yyyy-MM-dd')
-    }
+    // if (dimProperty.displayFormat === 'Date') {
+    //   return format(item[dimProperty.name], 'yyyy-MM-dd')
+    // }
     // TODO
     return format(item[dimProperty.name], 'yyyy-MM-dd')
   }
@@ -123,12 +123,12 @@ export function setCategoryAxisLabel(category, items, chartCategory: ChartDimens
 
     return value
   }
-  if (category.type === 'time' || property.type === 'Edm.DateTime') {
-    category.axisLabel.formatter = (value, index) => {
-      // let date = new Date();
-      return format(value, 'yyyy-MM-dd') // date.getFullYear(), date.getMonth() + 1, date.getDate()].join('/');
-    }
-  }
+  // if (category.type === 'time' || property.type === 'Edm.DateTime') {
+  //   category.axisLabel.formatter = (value, index) => {
+  //     // let date = new Date();
+  //     return format(value, 'yyyy-MM-dd') // date.getFullYear(), date.getMonth() + 1, date.getDate()].join('/');
+  //   }
+  // }
 }
 
 export function format(value, formatter) {

@@ -19,7 +19,7 @@ export interface IDimensionMember {
   memberType: MemberType
   memberGuid?: string
   memberCaption: string
-  memberIsVisible?: boolean
+  visible?: boolean
   childrenCardinality: number
   parentLevel: number
   parentUniqueName?: string

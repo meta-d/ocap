@@ -1,5 +1,5 @@
 import { isEmpty, isString } from 'lodash'
-import { catchError, EMPTY, Observable, of, shareReplay, switchMap } from 'rxjs'
+import { catchError, EMPTY, filter, Observable, of, shareReplay, switchMap } from 'rxjs'
 import { PresentationVariant, SelectionVariant } from '../annotations'
 import { IFilter, isAdvancedFilter, isFilter, ISlicer, isSlicer, QueryOptions, ServiceInit } from '../types'
 import { EntityBusinessService, EntityBusinessState } from './entity.service'
@@ -25,8 +25,14 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
     shareReplay(1)
   )
 
+  /**
+   * Service 初始化, 判断满足条件后才能往后发送事件, 否则可能造成后续逻辑报错
+   * 
+   * @returns 
+   */
   onInit(): Observable<any> {
-    return of(true)
+    // 根部使用 dataSettings 作为判断条件合适吗 ?
+    return this.dataSettings$.pipe(filter((value) => !!value)) //of(true)
   }
   onAfterServiceInit(): Observable<void> {
     return this.serviceInit$

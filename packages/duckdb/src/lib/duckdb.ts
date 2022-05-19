@@ -1,7 +1,7 @@
 import { AsyncDuckDB, AsyncDuckDBConnection, ConsoleLogger, DuckDBBundles, selectBundle } from '@duckdb/duckdb-wasm'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, SemanticModel } from '@metad/ocap-core'
 import { DataType } from 'apache-arrow'
-import { BehaviorSubject, filter, firstValueFrom, map, Observable, ReplaySubject } from 'rxjs'
+import { BehaviorSubject, filter, firstValueFrom, map, Observable, ReplaySubject, Subject } from 'rxjs'
 
 const MANUAL_BUNDLES: DuckDBBundles = {
   mvp: {
@@ -17,6 +17,7 @@ const MANUAL_BUNDLES: DuckDBBundles = {
 export class DuckdbWasmAgent implements Agent {
   type = AgentType.Wasm
 
+  private error$ = new Subject()
   private intial = true
   private db: AsyncDuckDB
   public _connection$ = new BehaviorSubject<AsyncDuckDBConnection>(null)
@@ -30,31 +31,49 @@ export class DuckdbWasmAgent implements Agent {
     models?.forEach((model) => (this.models[model.name] = model))
   }
 
-  async registerModel(name: string, model: SemanticModel) {
-    const connection = await firstValueFrom(this.connection$)
-    await Promise.all(
-      model.entities.map((entity) => {
-        if (entity.type === 'parquet') {
-          return (async () => {
-            await this.db.registerFileURL(entity.name, entity.sourceUrl)
-            await connection.query(`CREATE TABLE ${entity.name} AS SELECT * FROM read_parquet('${entity.name}')`)
-          })()
-        } else if (entity.type === 'csv') {
-          return connection.insertCSVFromPath(entity.sourceUrl, {
-            schema: model.schemaName,
-            name: entity.name,
-            delimiter: entity.delimiter
-          })
-        } else if (entity.type === 'json') {
-          return connection.insertJSONFromPath(entity.sourceUrl, {
-            schema: model.schemaName,
-            name: entity.name
-          })
-        }
+  error(err: any): void {
+    this.error$.next(err)
+  }
 
-        throw new Error(`Unsupport type for '${entity.type}'`)
-      })
-    )
+  async registerModel(model: SemanticModel) {
+    const name = model.name
+    // 清空相应 Model, 让请求等待新的 Model 初始化完成
+    this.models[name] = null
+    this.models$.next({ ...this.models })
+
+    const connection = await firstValueFrom(this.connection$)
+
+    try {
+      await Promise.all(
+        model.tables?.map((entity) => {
+          return (async () => {
+            await connection.query(`DROP TABLE IF EXISTS "${entity.name}"`)
+            if (entity.type === 'parquet') {
+              await this.db.registerFileURL(entity.name, entity.sourceUrl)
+              return connection.query(`CREATE TABLE "${entity.name}" AS SELECT * FROM read_parquet('${entity.name}')`)
+            } else if (entity.type === 'csv') {
+              return connection.insertCSVFromPath(entity.sourceUrl, {
+                create: true,
+                schema: model.schemaName,
+                name: entity.name,
+                // delimiter: entity.delimiter
+              })
+            } else if (entity.type === 'json') {
+              return connection.insertJSONFromPath(entity.sourceUrl, {
+                schema: model.schemaName,
+                name: entity.name
+              })
+            } else {
+              throw new Error(`Unsupport type for '${entity.type}'`)
+            }
+          })()
+        }) ?? []
+      )
+    } catch(error) {
+      console.error(error)
+      this.error(error)
+      // return
+    }
 
     this.models[name] = model
     this.models$.next({ ...this.models })
@@ -77,6 +96,10 @@ export class DuckdbWasmAgent implements Agent {
 
   selectStatus(): Observable<AgentStatus> {
     throw new Error('Method not implemented.')
+  }
+
+  selectError(): Observable<any> {
+    return this.error$
   }
 
   async getConnection() {
@@ -107,19 +130,33 @@ export class DuckdbWasmAgent implements Agent {
       if (options.url === 'schema') {
         if (options.table) {
           // const results = await this.query(connection, `SELECT * FROM ${options.table} LIMIT 1`)
-          const columns = await this.getTableColumns(dataSource.catalog, options.table)
-          return {
+          const columns = await this.getTableColumns(dataSource.catalog, options.table ?? options.statement)
+          return [{
             // database: 'main',
             name: options.table,
             columns
-          }
-        } else {
+          }]
+        } else if(options.statement) {
+          const columns = await this.getStatementColumns(dataSource.catalog, options.statement)
+          return [{
+            // database: 'main',
+            name: options.table,
+            columns
+          }]
+        }else {
           return await this.getTables()
         }
       }
     } else if (options.method === 'post') {
       if (options.url === 'query') {
-        const results = await this.query(connection, options.body.statement)
+        let results
+        try {
+          results = await this.query(connection, options.body.statement)
+        }catch(error) {
+          console.log(error)
+          return Promise.reject(error)
+        }
+        
         const columns = results.schema.fields.map((d) => ({
           name: d.name,
           nullable: d.nullable,
@@ -127,7 +164,7 @@ export class DuckdbWasmAgent implements Agent {
         }))
         const measures = columns.filter((col) => col.type === 'number')
         const rows = results.toArray().map(Object.fromEntries) as any
-        console.log(rows, columns)
+        // console.log(rows, columns)
         return {
           data: rows.map((row) => {
             const item = { ...row }
@@ -145,7 +182,12 @@ export class DuckdbWasmAgent implements Agent {
   }
 
   async query(connection: AsyncDuckDBConnection, statement: string) {
-    return await connection.query(statement)
+    // try {
+      return await connection.query(statement)
+    // }catch(error) {
+    //   console.log(error)
+    //   return Promise.reject()
+    // }
   }
 
   async getDatabases() {
@@ -175,14 +217,38 @@ export class DuckdbWasmAgent implements Agent {
 
   async getTableColumns(schemaName: string, tableName: string) {
     const connection = await this.getConnection()
-    const results = await this.query(connection, `DESCRIBE ${schemaName ? schemaName + '.' : ''}${tableName}`)
+    const statement = `DESCRIBE ${schemaName ? schemaName + '.' : ''}${tableName}`
+    const results = await this.query(connection, statement)
+
+    console.log(`[Duckdb] Execute:`, statement, ` = `, results)
+
     return results
       .toArray()
-      .map(Object.fromEntries)
       .map(({ Field, Null, Type }) => ({
         name: Field,
         nullable: Null === 'YES',
         type: mapType(Type)
+      }))
+      // .map(({ column_name, null: isNull, column_type, key }) => ({
+      //   name: column_name,
+      //   nullable: isNull === 'YES',
+      //   type: mapType(column_type)
+      // }))
+  }
+
+  async getStatementColumns(schemaName: string, statement: string) {
+    const connection = await this.getConnection()
+    statement = `DESCRIBE ${statement}`
+    const results = await this.query(connection, statement)
+
+    console.log(`[Duckdb] Execute:`, statement, ` = `, results)
+
+    return results
+      .toArray()
+      .map(({ column_name, null: isNull, column_type, key }) => ({
+        name: column_name,
+        nullable: isNull === 'YES',
+        type: mapType(column_type)
       }))
   }
 }

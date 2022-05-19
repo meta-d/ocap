@@ -17,6 +17,7 @@ export enum AxisEnum {
 export interface SeriesComponentType extends Partial<ChartMeasure> {
   id?: string
   name: string // 名称
+  caption?: string // 文本描述
   seriesType?: string
   seriesStack?: string
   noDisplay?: boolean // 是否显示在如 tooltip 中
@@ -36,8 +37,11 @@ export interface SeriesComponentType extends Partial<ChartMeasure> {
 }
 
 export interface EChartsOptions extends ChartOptions {
+  grid?: any
+  legend?: any
   dataZoom?: any
   valueAxis?: any
+  seriesStyle?: any
 }
 
 export const FORMAT_LOCALE_DATA = {

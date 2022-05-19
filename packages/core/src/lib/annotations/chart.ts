@@ -1,5 +1,5 @@
-import { isNil } from "lodash"
-import { Annotation, Dimension, Measure } from "../types"
+import { isNil } from 'lodash'
+import { Annotation, Dimension, Measure } from '../types'
 
 // for ChartAnnotation
 export enum ChartDimensionRoleType {
@@ -126,26 +126,26 @@ export interface ChartAnnotation extends Annotation {
 export const isChartMapType = (toBe): toBe is ChartMapType => toBe?.type === 'Map'
 
 export function getChartTrellis(chartAnnotation: ChartAnnotation): ChartDimension {
-  return chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Trellis)
+  return chartAnnotation.dimensions.find((item) => item?.role === ChartDimensionRoleType.Trellis)
 }
 export function getChartCategory(chartAnnotation: ChartAnnotation): ChartDimension {
   return (
-    chartAnnotation?.dimensions.find((dimension) => dimension.role === ChartDimensionRoleType.Category || dimension.role === ChartDimensionRoleType.Time) ||
-    chartAnnotation?.dimensions.find((dimension) => isNil(dimension.role))
+    chartAnnotation?.dimensions.find(
+      (dimension) =>
+        dimension?.role === ChartDimensionRoleType.Category || dimension?.role === ChartDimensionRoleType.Time
+    ) || chartAnnotation?.dimensions.find((dimension) => isNil(dimension?.role))
   )
 }
 
 export function getChartCategory2(chartAnnotation: ChartAnnotation): ChartDimension {
-  return (
-    chartAnnotation?.dimensions.find((dimension) => dimension.role === ChartDimensionRoleType.Category2)
-  )
+  return chartAnnotation?.dimensions.find((dimension) => dimension?.role === ChartDimensionRoleType.Category2)
 }
 
 export function getChartSeries(chartAnnotation: ChartAnnotation): ChartDimension {
   return chartAnnotation.dimensions.find(
     (item) =>
-      item.role === ChartDimensionRoleType.Color ||
-      item.role === ChartDimensionRoleType.Group ||
-      item.role === ChartDimensionRoleType.Stacked
+      item?.role === ChartDimensionRoleType.Color ||
+      item?.role === ChartDimensionRoleType.Group ||
+      item?.role === ChartDimensionRoleType.Stacked
   )
 }

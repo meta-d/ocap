@@ -1,5 +1,5 @@
 import { OrderBy } from '../orderby'
-import { PropertyName } from '../types'
+import { Dimension } from '../types'
 
 /**
  * Refer to OData 4.0 Vocabularies - SAP UI
@@ -20,7 +20,7 @@ export interface PresentationVariant {
    * Moreover, the series of sub-sequences (p1), (p1, p2), ... forms a **leveled hierarchy**,
    * which may become relevant in combination with `InitialExpansionLevel`.
    */
-  groupBy?: Array<PropertyName>
+  groupBy?: Array<Dimension>
   /**
    * @todo
    */

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core'
-import { MetadDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, ChartDataZoomType, ChartOptions, OrderDirection } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+
 
 @Component({
   selector: 'metad-ocap-public',
@@ -13,7 +14,7 @@ import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
         display: flex;
         flex: 1;
       }
-      metad-analytical-card {
+      ngm-analytical-card {
         height: 350px;
         border-radius: 6px;
         box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
@@ -54,20 +55,27 @@ export class PublicComponent {
       chartOptions: {
         dataZoom: {
           type: ChartDataZoomType.INSIDE
+        },
+        seriesStyle: {
+          selectedMode: 'single',
+          itemStyle: {
+          }
         }
       } as ChartOptions
     },
+    // CARTESIAN_CARDS[0],
     ...ANALYTICAL_CARDS
   ]
 
-  constructor(private wasmAgent: WasmAgentService, private dsCoreService: MetadDSCoreService) {
+  constructor(private wasmAgent: WasmAgentService, private dsCoreService: NgmDSCoreService) {
     setTimeout(() => {
-      wasmAgent.registerModel(DUCKDB_WASM_MODEL.name, DUCKDB_WASM_MODEL)
-      wasmAgent.registerModel('NG_WASM_MODEL', {
+      wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+      wasmAgent.registerModel({
         name: 'NG_WASM_MODEL',
-        type: 'DuckDB',
+        type: 'SQL',
+        agentType: AgentType.Wasm,
         schemaName: 'main',
-        entities: [
+        tables: [
           {
             name: 'Movies',
             sourceUrl: window.location.origin + '/assets/data/movies.json',

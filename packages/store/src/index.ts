@@ -1,2 +1,5 @@
 export * from './lib/component-store'
+export * from './lib/component-sub-store'
+export * from './lib/dirty-check.query'
 export * from './lib/immer-reducer'
+export * from './lib/query'

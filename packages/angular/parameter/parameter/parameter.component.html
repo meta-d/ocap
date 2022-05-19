@@ -1,0 +1,23 @@
+<mat-form-field *ngIf="paramType === ParameterControlEnum.Input" [displayDensity]="options?.displayDensity"
+    [appearance]="options?.appearance">
+    <mat-label>{{ parameter?.label || parameter?.name }}</mat-label>
+    <input matInput [formControl]="inputControl">
+</mat-form-field>
+
+<mat-radio-group *ngIf="paramType === ParameterControlEnum.Select" [displayDensity]="options?.displayDensity"
+    fxLayout="column" fxLayoutAlign="start start"
+    [ngModel]="$any(parameter.members?.[0])?.value"
+    (ngModelChange)="updateParameterValue($event)"
+>
+    <mat-radio-button *ngFor="let option of parameter.availableMembers"
+        [value]="option.value">{{ option.label }}</mat-radio-button>
+</mat-radio-group>
+
+<mat-selection-list *ngIf="paramType === ParameterControlEnum.Dimensions"
+    [displayDensity]="options?.displayDensity"
+    [(ngModel)]="members"
+>
+    <mat-list-option *ngFor="let availableMember of availableMembers" [value]="availableMember.value">
+      {{availableMember.label || availableMember.value}}
+    </mat-list-option>
+</mat-selection-list>

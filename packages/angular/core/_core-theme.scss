@@ -1,0 +1,41 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use './style/table-theme' as table;
+@use './style/card-theme' as card;
+@use './style/menu-theme' as menu;
+@use './style/mat-list-theme' as mat-list;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+
+  @include table.color($config-or-theme);
+  @include card.color($config-or-theme);
+  @include menu.color($config-or-theme);
+  @include mat-list.color($config-or-theme);
+}
+
+@mixin typography($config-or-theme) {
+}
+
+@mixin density($config-or-theme) {
+  @include table.density($config-or-theme);
+  @include card.density($config-or-theme);
+  @include menu.density($config-or-theme);
+  @include mat-list.density($config-or-theme);
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

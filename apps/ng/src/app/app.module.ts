@@ -8,11 +8,12 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
+import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentType } from '@metad/ocap-core'
+import { AgentType, DataSource, Type } from '@metad/ocap-core'
+import { DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
-import * as SQL from '@metad/ocap-sql'
+import { MissingTranslationHandler, MissingTranslationHandlerParams, TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { AppRoutingModule } from './app-routing.module'
@@ -22,8 +23,13 @@ import { NxWelcomeComponent } from './nx-welcome.component'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
-if (SQL) {
-  console.log(`加载 SQL`)
+export class MyMissingTranslationHandler implements MissingTranslationHandler {
+  handle(params: MissingTranslationHandlerParams) {
+    if (params.interpolateParams) {
+      return params.interpolateParams['Default'] || params.key
+    }
+    return params.key
+  }
 }
 
 @NgModule({
@@ -39,6 +45,12 @@ if (SQL) {
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
+    TranslateModule.forRoot({
+      missingTranslationHandler: {
+        provide: MissingTranslationHandler,
+        useClass: MyMissingTranslationHandler
+      }
+    }),
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
@@ -57,6 +69,17 @@ if (SQL) {
       multi: true
     },
     {
+      provide: OCAP_DATASOURCE_TOKEN,
+      useValue: {
+        type: 'SQL',
+        factory: async (): Promise<Type<DataSource>> => {
+          const { SQLDataSource } = await import('@metad/ocap-sql')
+          return SQLDataSource
+        }
+      },
+      multi: true
+    },
+    {
       provide: OCAP_MODEL_TOKEN,
       useValue: {
         name: 'Sales',
@@ -67,11 +90,7 @@ if (SQL) {
     },
     {
       provide: OCAP_MODEL_TOKEN,
-      useValue: {
-        name: 'WASM',
-        type: 'SQL',
-        agentType: AgentType.Wasm
-      },
+      useValue: DUCKDB_WASM_MODEL,
       multi: true
     }
   ],

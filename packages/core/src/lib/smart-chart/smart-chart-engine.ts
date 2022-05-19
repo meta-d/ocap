@@ -1,7 +1,7 @@
 import { ComponentStore } from '@metad/store'
 import { Observable } from 'rxjs'
-import { ChartAnnotation, QueryReturn } from '../annotations'
-import { EntityType } from '../csdl'
+import { ChartAnnotation } from '../annotations'
+import { EntityType, QueryReturn } from '../models'
 import { NxChartEngine } from './chart'
 import { ChartOptions, ChartSettings } from './types'
 
@@ -58,9 +58,7 @@ export abstract class SmartChartEngine<T extends SmartChartEngineState = SmartCh
   }
   readonly options$ = this.select(state => state.options)
   
-  constructor() {
-    super({} as T)
-  }
+
 
   selectChartOptions(items: any[]): Observable<any> {
     throw new Error('Method not implemented.')

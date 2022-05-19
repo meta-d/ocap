@@ -1,4 +1,5 @@
 import {
+  AgentType,
   ChartDataZoomType,
   ChartDimensionRoleType,
   ChartMeasureRoleType,
@@ -7,14 +8,19 @@ import {
   ReferenceLineAggregation,
   ReferenceLineType,
   ReferenceLineValueType,
-  SemanticModel
+  SemanticModel,
+  Syntax
 } from '@metad/ocap-core'
+
 
 export const DUCKDB_WASM_MODEL: SemanticModel = {
   name: 'WASM',
-  type: 'DuckDB',
+  type: 'SQL',
+  agentType: AgentType.Wasm,
+  syntax: Syntax.SQL,
+  dialect: 'DuckDB',
   schemaName: 'main',
-  entities: [
+  tables: [
     {
       name: 'CsseCovid19Daily',
       type: 'csv',
@@ -73,8 +79,7 @@ export const CARTESIAN_CARDS = [
       }
     },
     chartSettings: {},
-    chartOptions: {
-    } as ChartOptions
+    chartOptions: {} as ChartOptions
   },
   {
     title: 'Sales Order Bar',

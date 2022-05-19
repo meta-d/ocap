@@ -1,10 +1,15 @@
 import { ModuleWithProviders, NgModule } from '@angular/core'
-import { MetadDSCoreService } from './core.service'
+import { NgmDSCoreService } from './core.service'
+import { DensityDirective } from './displayDensity'
 
 @NgModule({
   imports: [],
-  exports: [],
-  declarations: [],
+  exports: [
+    DensityDirective
+  ],
+  declarations: [
+    DensityDirective
+  ],
   providers: []
 })
 export class OcapCoreModule {
@@ -12,7 +17,7 @@ export class OcapCoreModule {
     return {
       ngModule: OcapCoreModule,
       providers: [
-        MetadDSCoreService
+        NgmDSCoreService
       ]
     }
   }

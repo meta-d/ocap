@@ -27,7 +27,8 @@
     },
     "noImplicitAny": false,
     "strictNullChecks": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -4,9 +4,18 @@ import { DataSourceOptions } from '../data-source'
 import { Agent, AgentStatus, AgentType } from './types'
 
 export class MockAgent implements Agent {
+
   type = AgentType.Browser
+  
   selectStatus(): Observable<AgentStatus> {
     return of(AgentStatus.ONLINE)
+  }
+  selectError(): Observable<any> {
+    throw new Error('Method not implemented.')
+  }
+
+  error(err: any): void {
+    // this.error$.next(err)
   }
 
   request(dataSource: DataSourceOptions, options: any): Promise<any> {

@@ -15,7 +15,7 @@ export function serializeCalculationProperty(property: CalculationProperty, dial
   if (isAggregationProperty(property)) {
     formula = serializeAggregationProperty(property)
   } else if (isCalculatedProperty(property)) {
-    formula = property.formula
+    formula = `(${property.formula})`
   } else if (isIndicatorMeasureProperty(property)) {
     return serializeRestrictedMeasureProperty(property)
   } else {

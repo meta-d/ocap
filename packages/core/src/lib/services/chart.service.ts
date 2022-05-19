@@ -1,5 +1,5 @@
 import { distinctUntilChanged, map, Observable } from 'rxjs'
-import { QueryReturn } from '../annotations'
+import { QueryReturn } from '../models'
 import { QueryOptions } from '../types'
 import { SmartBusinessService } from './smart-business.service'
 

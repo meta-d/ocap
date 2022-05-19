@@ -5,9 +5,16 @@ import { Observable, of } from 'rxjs'
 
 @Injectable()
 export class MockAgent implements Agent {
+  
   type = AgentType.Browser
   selectStatus(): Observable<AgentStatus> {
     return of(AgentStatus.ONLINE)
+  }
+  selectError(): Observable<any> {
+    throw new Error('Method not implemented.')
+  }
+  error(err: any): void {
+    throw new Error('Method not implemented.')
   }
 
   request(dataSource: DataSourceOptions, options: any): Promise<any> {
@@ -17,7 +24,7 @@ export class MockAgent implements Agent {
       if (options.method === 'get') {
         if (options.url === 'schema') {
           if (options.table === 'SalesOrder') {
-            return resolve({
+            return resolve([{
               name: 'SalesOrder',
               label: '销售订单',
               columns: [
@@ -25,28 +32,28 @@ export class MockAgent implements Agent {
                   name: 'product',
                   label: '产品',
                   type: 'string',
-                  aggregationRole: AggregationRole.dimension
+                  // role: AggregationRole.dimension
                 },
                 {
                   name: 'productCategory',
                   label: '产品类别',
                   type: 'string',
-                  aggregationRole: AggregationRole.dimension
+                  // role: AggregationRole.dimension
                 },
                 {
                   name: 'sales',
                   label: '销售额',
                   type: 'number',
-                  aggregationRole: AggregationRole.measure
+                  // role: AggregationRole.measure
                 },
                 {
                   name: 'quantity',
                   label: '销售量',
                   type: 'number',
-                  aggregationRole: AggregationRole.measure
+                  // role: AggregationRole.measure
                 }
               ]
-            })
+            }])
           }
         }
       } else if (options.method === 'post') {

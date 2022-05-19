@@ -3,11 +3,10 @@ import { DataSourceOptions } from '../data-source'
 import { HttpHeaders } from '../types'
 
 export enum AgentType {
-  Local,
-  Browser,
-  Server,
-  SQLite,
-  Wasm
+  Local = 'local',
+  Browser = 'browser',
+  Server = 'server',
+  Wasm = 'wasm'
 }
 
 /**
@@ -16,6 +15,8 @@ export enum AgentType {
 export interface Agent {
   type: AgentType
   selectStatus(): Observable<AgentStatus>
+  selectError(): Observable<any>
+  error(err: any): void
   request(dataSource: DataSourceOptions, options: any): Promise<any>
 }
 

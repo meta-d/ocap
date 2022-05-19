@@ -42,6 +42,7 @@ export function stackedForMeasure(
   const seriesComponents = category2Values.map((category2Value) => {
     return {
       name: category2Value.value,
+      caption: category2Value.label,
       property: measureProperty,
       measure: getPropertyMeasure(measure),
       formatting: measure.formatting,
@@ -71,7 +72,9 @@ export function stackedForMeasure(
   return {
     dataset: {
       id: getDatasetIdForMeasure(getPropertyMeasure(measure)),
-      source
+      source,
+      categories: categoryValues,
+      series: category2Values
     },
     seriesComponents,
     tooltip

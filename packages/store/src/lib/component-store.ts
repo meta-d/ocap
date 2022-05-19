@@ -1,3 +1,5 @@
+import isEmpty from 'lodash/isEmpty';
+import pick from 'lodash/pick'
 import {
   isObservable,
   Observable,
@@ -21,8 +23,6 @@ import {
 } from 'rxjs/operators';
 import { debounceSync } from './debounce-sync';
 import { immerReducer } from './immer-reducer'
-import { isEmpty, pick } from 'lodash';
-import { v4 as uuidv4 } from 'uuid'
 
 export interface SelectConfig {
   debounce?: boolean;
@@ -40,7 +40,7 @@ export type Projector<Selectors extends Observable<unknown>[], Result> = (
 
 // @Injectable()
 export class ComponentStore<T> {
-  private __id__: string = uuidv4()
+  // private __id__: string = uuidv4()
 
   // Should be used only in ngOnDestroy.
   protected readonly destroySubject$ = new ReplaySubject<void>(1);

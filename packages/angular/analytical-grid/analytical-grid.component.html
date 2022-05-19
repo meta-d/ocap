@@ -1,0 +1,59 @@
+<div *ngIf="options?.showToolbar" class="ngm-card-header" fxLayout="row" fxLayoutAlign="space-between center">
+  <div>{{ title }}</div>
+
+  <div class="actions" fxLayout="row" fxLayoutAlign="space-around center">
+
+    <ng-content select="[ngmAction]"></ng-content>
+
+    <!-- Refresh & Loading icon -->
+    <button mat-icon-button class="ngm-analytical-grid__refresh" displayDensity="compact"
+      [style.opacity]="(isLoading$ | async) ? '0' : '1'"
+      [style.visibility]="(isLoading$ | async) ? 'hidden' : 'visible'"
+      (click)="refresh()">
+      <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+    </button>
+    <mat-spinner *ngIf="isLoading$ | async" class="ngm-analytical-grid__loading"
+      [diameter]="20"
+      [strokeWidth]="1"
+    >
+    </mat-spinner>
+  </div>
+</div>
+
+<div class="ngm-card-content">
+    <div class="ngm-analytical-grid__error" *ngIf="error$ | async as error">{{error}}</div>
+    
+    <table mat-table [dataSource]="dataSource" [displayDensity]="displayDensity ?? options?.displayDensity">
+      <ng-container [matColumnDef]="column.property?.name" *ngFor="let column of columns$ | async">
+        <th mat-header-cell *matHeaderCellDef
+          [ngClass]="{
+            'ngm-dimension': column.property?.role === AggregationRole.dimension,
+            'ngm-measure': column.property?.role === AggregationRole.measure
+          }"
+        > {{column.property?.label || column.property?.name}} </th>
+        <td mat-cell *matCellDef="let element"
+          [ngClass]="{
+            'ngm-dimension': column.property?.role === AggregationRole.dimension,
+            'ngm-measure': column.property?.role === AggregationRole.measure
+          }"
+        >
+          <ng-container *ngIf="column.property?.role === AggregationRole.measure">
+            <span *ngIf="column.property?.dataType !== 'string'">
+              {{element[column.property?.name] | number}}</span>
+            <span *ngIf="column.property?.dataType === 'string'">
+              {{element[column.property?.name]}}</span>
+          </ng-container>
+    
+          <ngm-display-behaviour *ngIf="column.property?.role !== AggregationRole.measure"
+            [option]="{value: element[column.property?.name], label: element[column.label]}"
+            [displayBehaviour]="column.displayBehaviour">
+          </ngm-display-behaviour>
+        </td>
+      </ng-container>
+    
+      <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async;sticky:true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async;"></tr>
+    </table>
+</div>
+
+<mat-paginator *ngIf="options?.paging" [pageSize]="options?.pageSize" [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>

@@ -1,0 +1,49 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+
+}
+
+@mixin typography($config-or-theme) {
+}
+
+@mixin _ngm-table-height($height, $font-size) {
+  tr.mat-row {
+    height: $height;
+  }
+  tr.mat-header-row, tr.mat-footer-row {
+    height: $height + .25rem;
+  }
+  .mat-cell, .mat-footer-cell {
+    font-size: $font-size;
+  }
+}
+
+@mixin density($config-or-theme) {
+  .mat-table.ngm-density__cosy {
+    @include _ngm-table-height(2.5rem, .85rem);
+  }
+  .mat-table.ngm-density__compact {
+    @include _ngm-table-height(1.85rem, .75rem);
+  }
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

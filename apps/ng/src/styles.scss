@@ -1,3 +1,31 @@
+@use '@angular/material' as mat;
+@use 'packages/angular/theming' as theming;
+
+// Define a theme.
+$primary: mat.define-palette(mat.$blue-grey-palette, 600);
+$accent:  mat.define-palette(mat.$amber-palette, A700, A400, A200);
+
+$material-typeface: "Lato, 'Noto Serif SC', monospace";
+// mat.$light-theme-background-palette: map-merge(mat.$light-theme-background-palette, (surface: rgba(255, 255, 255, 0.875)));
+
+$mat-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent:  $accent,
+    ),
+  )
+);
+
+$custom-typography: mat.define-typography-config(
+  $font-family: $material-typeface,
+  $subheading-2: mat.define-typography-level(1rem, 1rem, 500)
+);
+
+@include theming.core-theme($mat-theme);
+@include theming.analytical-grid-theme($mat-theme);
+@include theming.breadcrumb-theme($mat-theme);
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

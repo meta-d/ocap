@@ -1,7 +1,7 @@
-import { isNil, isString } from "lodash"
-import { Observable } from "rxjs"
+import { isNil, isString } from 'lodash'
+import { Observable } from 'rxjs'
 import { v4 as uuidv4 } from 'uuid'
-import { OrderBy } from "./orderby"
+import { OrderBy } from './orderby'
 
 export type HttpHeaders = { [key: string]: string | string[] }
 export type PrimitiveType = number | string | boolean | null | undefined
@@ -11,7 +11,8 @@ export const C_MEASURES = 'Measures'
 
 export enum Syntax {
   SQL = 'SQL',
-  JSON = 'JSON'
+  JSON = 'JSON',
+  MDX = 'MDX'
 }
 
 export interface IMember {
@@ -30,7 +31,7 @@ export enum DisplayBehaviour {
 export type Member = PropertyName | IMember
 
 export type BaseProperty = {
-  dimension: PropertyName
+  dimension?: PropertyName
   /**
    * 如当 Dimension = "Measures" 时可以设置 members 为 ["Gross Margin", "Discount"] 等度量字段名
    * 也可以为 dimension 设置固定的成员
@@ -106,7 +107,15 @@ export type Measure = BaseProperty & {
  * 全部 Annotation 的抽象接口
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Annotation {}
+export interface Annotation {
+  id?: string
+}
+
+export enum AnnotationTerm {
+  RelatedRecursiveHierarchy = 'RelatedRecursiveHierarchy',
+  ValueList = 'ValueList',
+  SelectionFields = 'SelectionFields'
+}
 
 export enum Drill {
   Children, // 子成员, distance 默认为 1
@@ -127,7 +136,6 @@ export interface ISlicer {
   // 下钻到的层级距离本节点级数, 默认为 1 即下一级, drill distance of the member
   distance?: number
 }
-
 
 export enum FilterOperator {
   // All = 'All',
@@ -247,6 +255,8 @@ export interface QueryOptions<T = any> {
   }
   // 原始 SQL MDX 语句
   statement?: string
+  // force refresh
+  force?: boolean | void
 }
 
 // type Guards
@@ -269,11 +279,11 @@ export const isAdvancedSlicer = (toBe): toBe is AdvancedSlicer =>
   !isNil(AdvancedSlicerOperator[(toBe as AdvancedSlicer)?.operator])
 
 // Helpers
-export function getPropertyName(path: PropertyPath) {
+export function getPropertyName(path: Dimension | Measure | string) {
   return isString(path) ? path : isDimension(path) ? path?.dimension : path?.measure
 }
 
-export function getPropertyHierarchy(path: PropertyPath) {
+export function getPropertyHierarchy(path: Dimension) {
   return isString(path) ? path : isDimension(path) ? path?.hierarchy || path?.dimension : null
 }
 
@@ -281,7 +291,7 @@ export function getPropertyMeasure(path: Measure | PropertyName) {
   return isString(path) ? path : path?.measure
 }
 
-export function getPropertyDisplayBehaviour(name: PropertyPath) {
+export function getPropertyDisplayBehaviour(name: Dimension) {
   if (isDimension(name)) {
     return name.displayBehaviour
   }

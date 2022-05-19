@@ -16,7 +16,7 @@ export interface SQLSchema {
     name: string
     label?: string
     type: string
-    aggregationRole?: AggregationRole
+    // role?: AggregationRole
   }[]
 }
 

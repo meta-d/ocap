@@ -1,6 +1,7 @@
-import { isNil } from 'lodash'
-import { Dimension, IMember, ISlicer, Measure, PrimitiveType, PropertyName } from '../types'
-import { Property, PropertyMeasure } from './entity'
+import { C_MEASURES, Dimension, IMember, ISlicer, Measure, PrimitiveType, PropertyName } from '../types'
+import { isNil } from '../utils/index'
+import { EntityProperty } from './property'
+import { ParameterProperty, Property, PropertyMeasure } from './sdl'
 
 /**
  * 计算字段类型
@@ -30,14 +31,32 @@ export enum AggregationOperation {
 }
 
 export interface CalculatedMember {
+  __id__?: string
   name: string
+  label?: string
   formula: string
+  dimension?: string
+  hierarchy?: string
+  visible?: boolean
+  caption?: string
+  calculatedProperties?: Array<{
+    name: string
+    value: string
+  }>
+}
+
+export interface NamedSet {
+  name: string
+  caption?: string
+  description?: string
+  formula?: string
+  Formula?: string[]
 }
 
 /**
  * 计算字段
  */
-export interface CalculationProperty extends Property {
+export interface CalculationProperty extends EntityProperty {
   calculationType: CalculationType
 }
 
@@ -74,16 +93,17 @@ export interface AggregationProperty extends CalculationProperty {
 
 export enum CompareToEnum {
   CurrentMember = 'CurrentMember',
-  CurrentDate = 'CurrentDate',
+  // CurrentDate = 'CurrentDate',
   SelectedMember = 'SelectedMember',
   Lag = 'Lag',
   Lead = 'Lead',
-  Parallel = 'Parallel'
+  Parallel = 'Parallel',
+  Ancestor = 'Ancestor'
 }
 
 export interface CompareToType {
   type: CompareToEnum
-  value?: number
+  value?: number | string
   slicer?: ISlicer
 }
 
@@ -108,10 +128,19 @@ export interface VarianceMeasureProperty extends CalculationProperty {
    */
   asPercentage?: boolean
   /**
+   * 直接相除 A / B
+   */
+  directDivide?: boolean
+  /**
    * 对分母取绝对值
+   * `(A - B) / abs(B)`
    */
   absBaseValue?: boolean
 
+  /**
+   * A: `(A - B) / A`
+   * B: `(A - B) / B`
+   */
   divideBy?: 'A' | 'B'
 }
 
@@ -159,6 +188,8 @@ export const isMeasureControlProperty = (toBe): toBe is MeasureControlProperty =
 export const isIndicatorMeasureProperty = (toBe): toBe is RestrictedMeasureProperty =>
   isCalculationProperty(toBe) && toBe.calculationType === CalculationType.Indicator
 
+export const isParameterProperty = (toBe): toBe is ParameterProperty => !isNil(toBe?.paramType)
+
 export function getMeasurePropertyUnit(property: Property) {
   if (isVarianceMeasureProperty(property)) {
     if (property.asPercentage) {
@@ -171,4 +202,14 @@ export function getMeasurePropertyUnit(property: Property) {
 
 export function parameterFormatter(name: string) {
   return `[@${name}]`
+}
+
+export const isCalculatedMember = (toBe): toBe is CalculatedMember =>
+  (!isNil((toBe as CalculatedMember)?.dimension) || !isNil((toBe as CalculatedMember)?.hierarchy)) && !isNil((toBe as CalculatedMember)?.formula)
+
+export function formatCalculatedMemberName(member: CalculatedMember) {
+  if (member.dimension === C_MEASURES) {
+    return `[Measures].[${member.name}]`
+  }
+  return `${member.hierarchy || member.dimension}.[${member.name}]`
 }

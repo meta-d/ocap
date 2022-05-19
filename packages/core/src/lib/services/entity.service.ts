@@ -1,5 +1,5 @@
 import { ComponentStore } from '@metad/store'
-import { isEmpty, isNil } from 'lodash'
+import { isNil, negate } from 'lodash'
 import {
   BehaviorSubject,
   catchError,
@@ -12,21 +12,23 @@ import {
   map,
   Observable,
   of,
+  pluck,
   ReplaySubject,
   switchMap,
   takeUntil,
   tap
 } from 'rxjs'
-import { QueryReturn } from '../annotations'
-import { EntityType } from '../csdl'
+import { PeriodFunctions } from '../annotations'
 import { DataSettings } from '../data-settings'
-import { DSCoreService, EntityService } from '../ds-core.service'
-import { QueryOptions } from '../types'
+import { DSCoreService } from '../ds-core.service'
+import { EntityService } from '../entity'
+import { EntityType, getEntityProperty, Property, QueryReturn } from '../models'
+import { Annotation, AnnotationTerm, PropertyPath, QueryOptions } from '../types'
 
 export interface EntityBusinessState {
   dataSettings: DataSettings
   entityType: EntityType
-  initialised: boolean
+  // initialised: boolean
 }
 
 export class EntityBusinessService<
@@ -54,7 +56,11 @@ export class EntityBusinessService<
   get presentationVariant() {
     return this.dataSettings.presentationVariant
   }
-  readonly initialise$ = this.select((state) => state.initialised).pipe(filter((initialised) => initialised))
+  public readonly presentationVariant$ = this.dataSettings$.pipe(map((dataSettings) => dataSettings?.presentationVariant))
+
+  private _initialise$ = new BehaviorSubject<boolean>(null)
+  readonly initialise$ = this._initialise$.asObservable().pipe(filter((initialised) => initialised))
+  
   // is loading status
   public loading$ = new BehaviorSubject<boolean>(null)
   protected result$ = new BehaviorSubject<QueryReturn<T>>(null)
@@ -63,7 +69,9 @@ export class EntityBusinessService<
 
   // 内部错误
   public internalError$ = new ReplaySubject<any>()
-  protected refresh$ = new ReplaySubject<void>()
+  protected refresh$ = new ReplaySubject<void | boolean>()
+
+  public readonly entityType$ = this.select((state) => state.entityType)
   constructor(public dsCoreService: DSCoreService) {
     super({} as State)
 
@@ -76,20 +84,31 @@ export class EntityBusinessService<
         debounce(() => interval(100)),
         tap(() => console.debug(`refreshing`)),
         tap(() => this.loading$.next(true)),
-        switchMap(() => {
-          return this.query().pipe(
-            // 避免出错后 refresh$ 的订阅自动取消
-            catchError((err) => {
-              this.internalError$.next(err)
-              return of({ error: err })
-            })
-          )
+        switchMap((force) => {
+          try {
+            return this.query({force}).pipe(
+              tap((result) => {
+                if (result.error) {
+                  this.internalError$.next(result.error)
+                }
+              }),
+              // 避免出错后 refresh$ 的订阅自动取消
+              catchError((err) => {
+                console.error(err)
+                this.internalError$.next(err)
+                return of({ error: err })
+              })
+            )
+          } catch(err) {
+            this.internalError$.next(err)
+            return of({ error: err })
+          }
         }),
-        // 避免出错后 refresh$ 的订阅自动取消
-        catchError((err) => {
-          this.internalError$.next(err)
-          return of({ error: err })
-        }),
+        // // 避免出错后 refresh$ 的订阅自动取消
+        // catchError((err) => {
+        //   this.internalError$.next(err)
+        //   return of({ error: err })
+        // }),
         tap(() => this.loading$.next(false)),
         takeUntil(this.destroySubject$)
       )
@@ -110,15 +129,18 @@ export class EntityBusinessService<
         tap((entityService) => {
           this.entityService?.onDestroy()
           this.entityService = entityService
-          this.patchState({ initialised: false } as Partial<State>)
+          // this.patchState({ initialised: false } as Partial<State>)
+          this._initialise$.next(false)
         }),
         switchMap((entityService) => {
           return entityService.selectEntityType().pipe(
             filter((value) => !!value),
             tap((entityType) => {
-              this.patchState({ entityType, initialised: true } as State)
+              this.patchState({entityType} as State)
+              // this.patchState({ entityType, initialised: true } as State)
+              this._initialise$.next(true)
             }),
-            catchError((err, caught) => {
+            catchError((err) => {
               this.internalError$.next(err)
               return EMPTY
             })
@@ -133,6 +155,9 @@ export class EntityBusinessService<
 
   getEntityType(): EntityType {
     return this.get(state => state.entityType)
+  }
+  getProperty(name: PropertyPath) {
+    return getEntityProperty(this.getEntityType(), name)
   }
 
   /**
@@ -185,8 +210,19 @@ export class EntityBusinessService<
     return this.entityService.query(options)
   }
 
-  refresh() {
-    this.refresh$.next()
+  refresh(force?: boolean) {
+    this.refresh$.next(force)
+  }
+
+  patchData(data) {
+    this.result$.next({
+      ...(this.result$.value || {}),
+      results: data
+    })
+  }
+
+  onChange(): Observable<T[]> {
+    return this.result$.pipe(pluck('results')).pipe(filter(negate(isNil)))
   }
 
   selectResult() {
@@ -195,5 +231,17 @@ export class EntityBusinessService<
 
   calculateFilters(queryOptions?: QueryOptions) {
     return queryOptions
+  }
+
+  getAnnotation<AT extends Annotation>(term: AnnotationTerm, qualifier?: string) {
+    return this.entityService.getAnnotation<AT>(term, qualifier)
+  }
+
+  getCalculatedMember(measure: string, type: PeriodFunctions): Property {
+    return this.entityService.getCalculatedMember(measure, type)
+  }
+
+  getIndicator(id: string) {
+    return this.entityService.getIndicator(id)
   }
 }

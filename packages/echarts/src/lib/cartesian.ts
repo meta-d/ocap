@@ -14,6 +14,7 @@ import {
   getPropertyMeasure,
   getPropertyName,
   getPropertyTextName,
+  mergeOptions,
   Property,
   QueryReturn,
   ReferenceLineType,
@@ -46,9 +47,8 @@ export function cartesian(
     yAxis: [],
     series: [],
     visualMap: [],
-    tooltip: [{
-      trigger: 'axis'
-    }],
+    tooltip: [],
+    legend: [],
     dataZoom: dataZoom(options)
   }
 
@@ -79,7 +79,8 @@ export function cartesian(
     })
 
     echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
-    // echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
+    echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
+    echartsOptions.legend.push(...cartesianCoordinate.legend)
   })
 
   return echartsOptions
@@ -151,7 +152,16 @@ export function cartesians(
   return [cartesianCoordinate(data.results, chartAnnotation, entityType, settings, options)]
 }
 
-// 单个笛卡尔坐标系
+/**
+ * 单个笛卡尔坐标系, 对应一个 grid 内的组件
+ * 
+ * @param data 数据数组
+ * @param chartAnnotation 图形注解
+ * @param entityType 实体类型
+ * @param settings 图形设置
+ * @param options 图形属性
+ * @returns 
+ */
 export function cartesianCoordinate(
   data: Array<unknown>,
   chartAnnotation: ChartAnnotation,
@@ -203,18 +213,19 @@ export function cartesianCoordinate(
   const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
-    grid: {
+    grid: mergeOptions({
       top: 0,
       right: 0,
       bottom: 0,
       left: 0,
       containLabel: true
-    },
+    }, options?.grid),
     [categoryAxis.orient]: categoryAxis.axis,
     [valueAxis.orient]: valueAxis.axis,
     visualMap: [],
     datasets: [],
     tooltip: [],
+    legend: [],
     series: []
   }
 
@@ -248,6 +259,8 @@ export function cartesianCoordinate(
 
         series.tooltip = tooltip
 
+        mergeOptions(series, options?.seriesStyle)
+
         return series
       })
     })
@@ -255,6 +268,20 @@ export function cartesianCoordinate(
     // gridOptions.tooltip.push(tooltip)
   })
 
+  // TODO
+  if (options?.tooltip?.trigger === 'axis') {
+    gridOptions.tooltip.push({
+      trigger: 'axis',
+    })
+  } else {
+    gridOptions.tooltip.push({})
+  }
+
+  // legend
+  if (options?.legend) {
+    gridOptions.legend.push(options.legend)
+  }
+  
   return gridOptions
 }
 
@@ -273,6 +300,7 @@ export function serializeSeriesComponent(
   const series: any = {
     id: seriesComponent.id,
     name: seriesComponent.name ?? seriesComponent.id,
+    caption: seriesComponent.caption,
     type: seriesComponent.seriesType,
     // itemId: category,
     // itemName: categoryText ?? category,

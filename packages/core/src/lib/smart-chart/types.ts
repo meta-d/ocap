@@ -1,3 +1,5 @@
+import { ISlicer } from '../types'
+
 export interface ChartSettings {
   /**
    * Locale / Language
@@ -23,4 +25,16 @@ export interface ChartSettings {
 export interface ChartOptions {
   options?: any
   tooltip?: any
+}
+
+export interface IChartClickEvent {
+  filter?: ISlicer
+  item?: any
+  data: any
+  event: MouseEvent
+}
+
+export interface IChartSelectedEvent {
+  slicers: ISlicer[]
+  event: MouseEvent
 }

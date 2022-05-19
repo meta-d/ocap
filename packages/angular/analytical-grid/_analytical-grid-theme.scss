@@ -1,0 +1,75 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+
+  .ngm-analytical-grid {
+    &.striped {
+      .mat-row:nth-child(even){
+        background-color: lighten(mat.get-color-from-palette($background, hover), 50%);
+      }
+    }
+  }
+}
+
+@mixin typography($config-or-theme) {
+}
+
+@mixin density($config-or-theme) {
+
+  .ngm-analytical-grid.ngm-density__cosy {
+
+    .mat-paginator {
+      overflow: hidden;
+    }
+    .mat-paginator-container {
+      min-height: 46px;
+
+      .mat-paginator-page-size {
+        height: 46px;
+      }
+
+      .mat-paginator-page-size-select {
+        margin: 0;
+      }
+    }
+  }
+
+  .ngm-analytical-grid.ngm-density__compact {
+
+    .mat-paginator {
+      overflow: hidden;
+    }
+    .mat-paginator-container {
+      min-height: 36px;
+
+      .mat-paginator-page-size {
+        height: 36px;
+      }
+
+      .mat-paginator-page-size-select {
+        margin: 0;
+      }
+    }
+  }
+
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

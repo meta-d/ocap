@@ -1,0 +1,51 @@
+:host {
+  position: relative;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  .ngm-card-header .actions {
+    opacity: .1;
+  }
+
+  &:hover {
+    .ngm-card-header .actions {
+      opacity: 1;
+    }
+  }
+}
+.ngm-analytical-grid__error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+}
+
+.mat-header-cell.ngm-measure,
+.mat-cell.ngm-measure {
+  text-align: right;
+}
+
+.mat-cell {
+  .nx-display-behaviour {
+    flex: 1;
+  }
+}
+
+.ngm-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  max-height: calc(100% - 40px);
+}
+
+.ngm-analytical-grid__loading {
+  position: absolute;
+  right: 0;
+}
