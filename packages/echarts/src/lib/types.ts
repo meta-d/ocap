@@ -1,4 +1,4 @@
-import { ChartMeasure, ChartOptions, Property } from "@metad/ocap-core"
+import { ChartDimension, ChartMeasure, ChartOptions, Property } from "@metad/ocap-core"
 
 export enum AxisEnum {
   x = 'xAxis',
@@ -37,11 +37,36 @@ export interface SeriesComponentType extends Partial<ChartMeasure> {
 }
 
 export interface EChartsOptions extends ChartOptions {
+  /**
+   * https://echarts.apache.org/en/option.html#grid
+   */
   grid?: any
+  /**
+   * https://echarts.apache.org/en/option.html#legend
+   */
   legend?: any
+  /**
+   * https://echarts.apache.org/en/option.html#dataZoom
+   */
   dataZoom?: any
+  /**
+   * https://echarts.apache.org/en/option.html#yAxis
+   */
   valueAxis?: any
+  /**
+   * https://echarts.apache.org/en/option.html#series
+   */
   seriesStyle?: any
+  colors?: {
+    /**
+     * https://echarts.apache.org/en/option.html#color
+     */
+    color: string[]
+  }
+  /**
+   * https://echarts.apache.org/en/option.html#aria
+   */
+  aria?: any
 }
 
 export const FORMAT_LOCALE_DATA = {

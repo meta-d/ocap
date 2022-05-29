@@ -1,5 +1,28 @@
-import { format, isDate } from 'date-fns'
-import { isArray, isString } from 'lodash'
+import {
+  isDate,
+  addDays,
+  addMonths,
+  addQuarters,
+  addYears,
+  endOfMonth,
+  endOfQuarter,
+  endOfWeek,
+  endOfYear,
+  format,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
+  startOfYear,
+  subDays,
+  subMonths,
+  subQuarters,
+  subYears,
+  addWeeks,
+  subWeeks
+} from 'date-fns'
+import { isArray, isNil, isString } from 'lodash'
+import { Semantics } from './annotations'
+import { EntityType, getEntityCalendarHierarchy } from './models'
 import {
   Dimension,
   Drill,
@@ -17,9 +40,6 @@ import {
 export const HTML5_FMT_DATETIME_LOCAL_SECONDS = `yyyy-MM-dd'T'HH:mm:ss`
 export const HTML5_FMT_DATE = 'yyyy-MM-dd'
 
-export interface NxIChip extends IMember {
-  selected?: boolean
-}
 
 /**
  * 对 IFilter 过滤条件接口的便捷实现类
@@ -73,6 +93,50 @@ export enum FilterMergeMode {
   ignore,
   replace,
   merge
+}
+
+export enum TimeGranularity {
+  Year = 'Year',
+  Quarter = 'Quarter',
+  Month = 'Month',
+  Week = 'Week',
+  Day = 'Day',
+  // @todo more
+}
+
+export enum TimeRangeType {
+  Standard = 'Standard',
+  Offset = 'Offset',
+}
+
+export enum OffSetDirection {
+  LookBack = 'LookBack',
+  LookAhead = 'LookAhead',
+}
+
+export interface TimeOffSet {
+  current?: Date
+  direction: OffSetDirection
+  granularity: TimeGranularity
+  amount: number
+}
+
+export interface TimeRange {
+  type: TimeRangeType
+  granularity: TimeGranularity
+  current?: Exclude<TimeOffSet, 'granularity'>
+  lookBack?: number
+  lookAhead?: number
+  selected?: boolean
+  /**
+   * 时间值的格式化字符串
+   */
+  formatter?: string
+}
+
+export interface TimeRangesSlicer extends ISlicer {
+  currentDate: string
+  ranges: Array<TimeRange>
 }
 
 /**
@@ -272,4 +336,160 @@ export const FILTER_OPERATOR_DESC = {
   Contains: '包含', //
   StartsWith: '开始于', // starts with
   EndsWith: '结束于' //
+}
+
+// type Guards
+export const isTimeRangesSlicer = (toBe): toBe is TimeRangesSlicer =>
+  !isNil((toBe as TimeRangesSlicer)?.ranges) && !isNil((toBe as TimeRangesSlicer)?.currentDate)
+
+
+// Helpers
+
+export function mapTimeGranularitySemantic(granularity: TimeGranularity): Semantics {
+  switch(granularity) {
+    case TimeGranularity.Year:
+      return Semantics["Calendar.Year"]
+    case TimeGranularity.Quarter:
+      return Semantics["Calendar.Quarter"]
+    case TimeGranularity.Month:
+      return Semantics["Calendar.Month"]
+    case TimeGranularity.Day:
+      return Semantics["Calendar.Day"]
+    default:
+      throw new Error(`Can't found semantics for granularity ${granularity}`)
+  }
+}
+
+
+export function formatCurrentPeriod(current: number | Date, granularity: TimeGranularity, formatter?: string) {
+  if (granularity === null || current === null) {
+    return null
+  }
+  let _format = 'yyyMMdd'
+  switch (granularity) {
+    case TimeGranularity.Year:
+      _format = 'yyyy'
+      break
+    case TimeGranularity.Quarter:
+      _format = `yyyy'Q'Q`
+      break
+    case TimeGranularity.Month:
+      _format = 'yyyyMM'
+      break
+    case TimeGranularity.Day:
+      _format = 'yyyyMMdd'
+      break
+  }
+
+  return format(current, formatter || _format)
+}
+
+export function calcOffset(currentDate: Date, { direction, granularity, amount }: Partial<TimeOffSet>): Date {
+  amount = amount || 0
+  switch (granularity) {
+    case TimeGranularity.Year:
+      if (direction === OffSetDirection.LookBack) {
+        return subYears(currentDate, amount)
+      } else {
+        return addYears(currentDate, amount)
+      }
+    case TimeGranularity.Quarter:
+      if (direction === OffSetDirection.LookBack) {
+        return subQuarters(currentDate, amount)
+      } else {
+        return addQuarters(currentDate, amount)
+      }
+    case TimeGranularity.Month:
+      if (direction === OffSetDirection.LookBack) {
+        return subMonths(currentDate, amount)
+      } else {
+        return addMonths(currentDate, amount)
+      }
+    case TimeGranularity.Week:
+      if (direction === OffSetDirection.LookBack) {
+        return subWeeks(currentDate, amount)
+      } else {
+        return addWeeks(currentDate, amount)
+      }
+    case TimeGranularity.Day:
+      if (direction === OffSetDirection.LookBack) {
+        return subDays(currentDate, amount)
+      } else {
+        return addDays(currentDate, amount)
+      }
+    default:
+      return currentDate
+  }
+}
+
+export function formatRangeCurrentPeriod(current: Date, range: TimeRange) {
+  if (range.type === TimeRangeType.Offset) {
+    current = calcOffset(current, {...range.current, granularity: range.granularity})
+  }
+
+  return formatCurrentPeriod(current, range.granularity, range.formatter)
+}
+
+export function calcRange(current: Date, range: TimeRange) {
+
+  if (range.type === TimeRangeType.Offset) {
+    current = calcOffset(current, {...range.current, granularity: range.granularity})
+  }
+  
+  return [
+    formatCurrentPeriod(
+      calcOffset(current, {
+        direction: OffSetDirection.LookBack,
+        granularity: range.granularity,
+        amount: range.lookBack || 0
+      }),
+      range.granularity,
+      range.formatter
+    ),
+
+    formatCurrentPeriod(
+      calcOffset(current, {
+        direction: OffSetDirection.LookAhead,
+        granularity: range.granularity,
+        amount: range.lookAhead || 0
+      }),
+      range.granularity,
+      range.formatter
+    )
+  ]
+}
+
+
+export function workOutTimeRangeSlicers(
+  currentDate: Date,
+  timeSlicer: TimeRangesSlicer,
+  entityType?: EntityType
+): ISlicer[] {
+  const property = getEntityCalendarHierarchy(entityType, timeSlicer.dimension)
+
+  return timeSlicer.ranges.map((range) => {
+    const calendarSemantic = mapTimeGranularitySemantic(range.granularity)
+    const calendarLevel = property?.levels?.find((level) => level.semantics?.semantic === calendarSemantic)
+    const results = calcRange(currentDate || new Date(), {
+      ...range,
+      formatter: range.formatter || calendarLevel?.semantics?.formatter
+    })
+
+    if (results[0] === results[1]) {
+      return {
+        dimension: timeSlicer.dimension,
+        members: [
+          {
+            value: results[0]
+          }
+        ]
+      }
+    }
+
+    return {
+      dimension: timeSlicer.dimension,
+      members: results.map(value => ({value})),
+      operator: FilterOperator.BT
+    }
+  })
 }

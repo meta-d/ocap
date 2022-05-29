@@ -13,7 +13,9 @@ import {
   Observable,
   of,
   pluck,
+  queueScheduler,
   ReplaySubject,
+  scheduled,
   switchMap,
   takeUntil,
   tap
@@ -95,13 +97,14 @@ export class EntityBusinessService<
               // 避免出错后 refresh$ 的订阅自动取消
               catchError((err) => {
                 console.error(err)
-                this.internalError$.next(err)
-                return of({ error: err })
+                this.internalError$.next(err.message)
+                return of({ error: err.message })
               })
             )
-          } catch(err) {
-            this.internalError$.next(err)
-            return of({ error: err })
+          } catch(err: any) {
+            console.error(err)
+            this.internalError$.next(err.message)
+            return of({ error: err.message })
           }
         }),
         // // 避免出错后 refresh$ 的订阅自动取消
@@ -109,7 +112,10 @@ export class EntityBusinessService<
         //   this.internalError$.next(err)
         //   return of({ error: err })
         // }),
-        tap(() => this.loading$.next(false)),
+        tap(() => {
+          this.loading$.next(false)
+          // this.internalError$.next('')
+        }),
         takeUntil(this.destroySubject$)
       )
       .subscribe(this.result$)
@@ -129,7 +135,6 @@ export class EntityBusinessService<
         tap((entityService) => {
           this.entityService?.onDestroy()
           this.entityService = entityService
-          // this.patchState({ initialised: false } as Partial<State>)
           this._initialise$.next(false)
         }),
         switchMap((entityService) => {
@@ -137,8 +142,6 @@ export class EntityBusinessService<
             filter((value) => !!value),
             tap((entityType) => {
               this.patchState({entityType} as State)
-              // this.patchState({ entityType, initialised: true } as State)
-              this._initialise$.next(true)
             }),
             catchError((err) => {
               this.internalError$.next(err)
@@ -146,10 +149,12 @@ export class EntityBusinessService<
             })
           )
         }),
+        // patchState 为异步操作, 所以发出 initialise 事件也要是异步
+        switchMap(() => scheduled([true], queueScheduler)),
         takeUntil(this.destroySubject$)
       )
-      .subscribe(() => {
-        console.debug(`subscribe dataSource`)
+      .subscribe((value) => {
+        this._initialise$.next(value)
       })
   }
 

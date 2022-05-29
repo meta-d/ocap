@@ -224,16 +224,16 @@ export class DuckdbWasmAgent implements Agent {
 
     return results
       .toArray()
-      .map(({ Field, Null, Type }) => ({
-        name: Field,
-        nullable: Null === 'YES',
-        type: mapType(Type)
-      }))
-      // .map(({ column_name, null: isNull, column_type, key }) => ({
-      //   name: column_name,
-      //   nullable: isNull === 'YES',
-      //   type: mapType(column_type)
+      // .map(({ Field, Null, Type }) => ({
+      //   name: Field,
+      //   nullable: Null === 'YES',
+      //   type: mapType(Type)
       // }))
+      .map(({ column_name, null: isNull, column_type, key }) => ({
+        name: column_name,
+        nullable: isNull === 'YES',
+        type: mapType(column_type)
+      }))
   }
 
   async getStatementColumns(schemaName: string, statement: string) {

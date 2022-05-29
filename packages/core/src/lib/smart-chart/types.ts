@@ -2,6 +2,10 @@ import { ISlicer } from '../types'
 
 export interface ChartSettings {
   /**
+   * 图形主题
+   */
+  theme?: string
+  /**
    * Locale / Language
    */
   locale?: string

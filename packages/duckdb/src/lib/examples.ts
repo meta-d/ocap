@@ -48,6 +48,31 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
 
 export const CARTESIAN_CARDS = [
   {
+    title: 'Sales Order Pie',
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder',
+      chartAnnotation: {
+        chartType: {
+          type: 'Pie'
+        },
+        dimensions: [
+          {
+            dimension: 'productCategory'
+          }
+        ],
+        measures: [
+          {
+            dimension: 'Measures',
+            measure: 'sales'
+          }
+        ]
+      }
+    },
+    chartSettings: {},
+    chartOptions: {} as ChartOptions
+  },
+  {
     title: 'Sales Order Bar',
     dataSettings: {
       dataSource: 'Sales',
@@ -144,7 +169,9 @@ export const CARTESIAN_CARDS = [
           }
         ]
       }
-    }
+    },
+    chartSettings: {},
+    chartOptions: {} as ChartOptions
   },
   {
     title: 'Sales Order Line',
@@ -306,7 +333,7 @@ export const CARTESIAN_CARDS = [
           {
             dimension: 'Measures',
             measure: 'quantity',
-            role: ChartMeasureRoleType.Size
+            // role: ChartMeasureRoleType.Size
           }
         ]
       }
@@ -502,7 +529,7 @@ export const ANALYTICAL_CARDS = [
       entitySet: 'CountryGDP',
       chartAnnotation: {
         chartType: {
-          type: 'Map',
+          type: 'GeoMap',
           map: 'World',
           mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
@@ -533,7 +560,7 @@ export const ANALYTICAL_CARDS = [
       entitySet: 'CsseCovid19Daily',
       chartAnnotation: {
         chartType: {
-          type: 'Map',
+          type: 'GeoMap',
           map: 'World',
           mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
@@ -588,7 +615,7 @@ export const ANALYTICAL_CARDS = [
       entitySet: 'CsseCovid19Daily',
       chartAnnotation: {
         chartType: {
-          type: 'Map',
+          type: 'GeoMap',
           map: 'World',
           mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
@@ -632,7 +659,7 @@ export const ANALYTICAL_CARDS = [
       entitySet: 'CsseCovid19Daily',
       chartAnnotation: {
         chartType: {
-          type: 'Map',
+          type: 'GeoMap',
           map: 'USA',
           mapUrl: `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`,
           projection: 'AlbersUsa'
@@ -675,7 +702,7 @@ export const ANALYTICAL_CARDS = [
       entitySet: 'CsseCovid19Daily',
       chartAnnotation: {
         chartType: {
-          type: 'Map',
+          type: 'GeoMap',
           map: 'USA',
           mapUrl: `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`
         },

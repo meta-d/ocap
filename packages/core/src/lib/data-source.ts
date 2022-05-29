@@ -3,14 +3,10 @@ import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, s
 import { Agent, DSCacheService } from './agent'
 import { EntityService } from './entity'
 import {
-  AggregationRole,
-  CalculatedProperty,
-  CalculationType,
   Catalog,
   Cube,
   EntitySet,
   EntityType,
-  getEntityMeasures,
   IDimensionMember,
   Indicator,
   mergeEntityType,
@@ -190,7 +186,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     return this.options$.value
   }
 
-  private _entitySets = {}
+  protected _entitySets = {}
   // private _entityTypies = {}
   constructor(options: T, public agent: Agent, protected cacheService: DSCacheService) {
     this.options$.next(options)
@@ -234,10 +230,6 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
       distinctUntilChanged(isEqual)
     )
   }
-
-  // selectSchemaEntity(entity: string) {
-  //   return this.selectSchema().pipe(map((schema: Schema) => schema?.entities?.[entity]))
-  // }
 
   setEntityType(entityType: EntityType) {
     const schema = this.options.schema ?? ({} as Schema)
@@ -304,9 +296,9 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     return this.selectEntitySet(entity).pipe(pluck('entityType'))
   }
 
-  selectIndicators(entitySet: string): Observable<Indicator[]> {
-    return this.selectSchema().pipe(
-      map((schema) => schema?.entitySets?.[entitySet]?.indicators),
+  selectIndicators(entity: string): Observable<Indicator[]> {
+    return this.selectEntitySet(entity).pipe(
+      map((entitySet) => entitySet?.indicators),
       distinctUntilChanged()
     )
   }

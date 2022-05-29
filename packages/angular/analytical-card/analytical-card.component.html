@@ -32,7 +32,7 @@
   <ng-template #echarts>
     <div echarts  class="echarts-chart"
       [options]="options$ | async"
-      [theme]="'default'"
+      [theme]="chartSettings?.theme ?? 'default'"
       (chartInit)="onChartInit($event)">
     </div>
   </ng-template>

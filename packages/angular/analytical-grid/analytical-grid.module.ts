@@ -8,8 +8,8 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTableModule } from '@angular/material/table'
-import { NgmCommonModule } from '../common'
-import { OcapCoreModule } from '../core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { AnalyticalGridComponent } from './analytical-grid.component'
 
 @NgModule({

@@ -2,10 +2,10 @@
 import './app.scss'
 import {
   AgentType,
-  DSCoreService,
+  DataSource,
+  Type,
 } from '@metad/ocap-core'
-import { AnalyticalCard, AppContext } from '@metad/ocap-react'
-import * as SQL from '@metad/ocap-sql'
+import { AnalyticalCard, OCAPCoreProvider } from '@metad/ocap-react'
 import MenuIcon from '@mui/icons-material/Menu'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
@@ -24,12 +24,17 @@ import { MockAgent } from './mock'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
+async function importSQL(): Promise<Type<DataSource>> {
+  const { SQLDataSource } = await import('@metad/ocap-sql')
+  return SQLDataSource
+}
+
 export function App() {
-  const sss = SQL
 
   const [cards, setCards] = useState([
+    CARTESIAN_CARDS[0]
     // ...CARTESIAN_CARDS,
-    ...ANALYTICAL_CARDS
+    // ...ANALYTICAL_CARDS
   ])
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -43,80 +48,84 @@ export function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       console.log(`~~~~~~~~~~~~~~~~~~~~~~~~~ duckdb register model ~~~~~~~~~~~~~~~~~~~~~~~~~~`)
-      wasmDBAgent.registerModel(DUCKDB_WASM_MODEL.name, DUCKDB_WASM_MODEL)
+      wasmDBAgent.registerModel(DUCKDB_WASM_MODEL)
     }, 5000);
     return () => clearTimeout(timer)
   }, [])
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar variant="dense">
-          <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" color="inherit" component="div">
-            Analytical Cards
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      <Container >
-        <AppContext.Provider
-          value={{
-            wasmDBAgent,
-            coreService: new DSCoreService([
-              wasmDBAgent,
-              new MockAgent()
-            ],
-            [
-              {
-                name: 'Sales',
-                type: 'SQL',
-                agentType: AgentType.Browser,
-                schema: {
-                  cubes: [
-                    {
-                      name: 'SalesOrder',
-                      Table: {
-                        name: 'sales'
-                      },
-                      Dimension: [{
-                        name: 'Time',
-                        Hierarchy: [
-                          {
-                            name: '',
-                            hasAll: true,
-                            primaryKey: 'timeid',
-                            Level: [
-                              {
-                                name: 'Year',
-                                column: 'year',
-                                uniqueMembers: true
-                              }
-                            ]
-                          }
-                        ]
-                      }],
-                      Measure: [
-                        {
-                          name: 'amount',
-                          column: 'amount',
-                          aggregator: 'sum'
-                        }
-                      ]
-                    }
-                  ]
+    <OCAPCoreProvider wasmDBAgent={wasmDBAgent} agents={[
+      wasmDBAgent,
+      new MockAgent()
+    ]} dataSources={[
+      {
+        name: 'Sales',
+        type: 'SQL',
+        agentType: AgentType.Browser,
+        schema: {
+          name: 'Sales',
+          cubes: [
+            {
+              name: 'SalesOrder1',
+              tables: [
+                {
+                  name: 'sales'
                 }
-              },
-              {
-                name: DUCKDB_WASM_MODEL.name,
-                type: 'SQL',
-                agentType: AgentType.Wasm
-              }
-            ])
-          }}
-        >
+              ],
+              dimensions: [{
+                name: 'Time',
+                hierarchies: [
+                  {
+                    name: '',
+                    hasAll: true,
+                    primaryKey: 'timeid',
+                    levels: [
+                      {
+                        name: 'Year',
+                        column: 'year',
+                        uniqueMembers: true
+                      }
+                    ]
+                  }
+                ]
+              }],
+              measures: [
+                {
+                  name: 'amount',
+                  column: 'amount',
+                  aggregator: 'sum'
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        name: DUCKDB_WASM_MODEL.name,
+        type: 'SQL',
+        agentType: AgentType.Wasm
+      }
+    ]}
+    factories={[
+      {
+        type: 'SQL',
+        factory: importSQL
+      }
+    ]}
+    >
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar variant="dense">
+            <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" color="inherit" component="div">
+              Analytical Cards
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        <Container >
           <Grid container spacing={2}>
             {cards.map(({ title, dataSettings, chartSettings, chartOptions }) => (
               <Grid item xs={8} sm={4}>
@@ -127,9 +136,9 @@ export function App() {
               </Grid>
             ))}
           </Grid>
-        </AppContext.Provider>
-      </Container>
-    </Box>
+        </Container>
+      </Box>
+    </OCAPCoreProvider>
   )
 }
 

@@ -5,10 +5,12 @@ import {
   getChartSeries,
   getDimensionLabel,
   getEntityProperty,
+  getPropertyHierarchy,
   getPropertyName,
   getPropertyTextName,
   IChartClickEvent,
   isChartMapType,
+  mergeOptions,
   SmartChartEngine,
   SmartChartEngineState
 } from '@metad/ocap-core'
@@ -35,10 +37,11 @@ import {
 import { bar } from './bar'
 import { bar3d } from './bar3d'
 import { heatmap } from './heatmap'
-import { sankey, sunburst, treemap } from './hierarchy'
+import { sankey, sunburst, tree, treemap } from './hierarchy'
 import { line } from './line'
 import { line3d } from './line3d'
 import { mapChart, mapChartAnnotation } from './maps/map'
+import { pie } from './pie'
 import { scatter } from './scatter'
 import { scatter3d } from './scatter3d'
 import { EChartsOptions } from './types'
@@ -71,88 +74,103 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
       // tap((value) => console.log(`echarts chartAnnotation changed:`, value))
     ),
     this.settings$.pipe(distinctUntilChanged(isEqual)),
-    this.options$.pipe(distinctUntilChanged(isEqual))
+    this.options$.pipe<EChartsOptions>(distinctUntilChanged(isEqual))
   ]).pipe(
     debounceTime(100),
     withLatestFrom(this.entityType$),
-    map(([[data, chartAnnotation, settings, options], entityType]) => {
+    map(([[data, chartAnnotation, settings, chartOptions], entityType]) => {
       try {
         settings = { ...(settings ?? ({} as ChartSettings)) }
         settings.locale = settings.locale ?? 'en'
-        const type = chartAnnotation.chartType?.type
 
-        if (type === 'Bar') {
-          return {
-            options: bar(data, chartAnnotation, entityType, settings, options as EChartsOptions)
+        // Custom Logic
+        if (settings.customLogic) {
+          let customLogic
+          try {
+            customLogic = new Function('data', 'chartAnnotation', 'locale', 'chartsInstance', settings.customLogic)
+          } catch (error: any) {
+            console.error(error)
+            this.error$.next(error.message)
+            customLogic = null
+          }
+
+          if (customLogic) {
+            return customLogic(data, chartAnnotation, settings.locale)
           }
         }
+
+        const type = chartAnnotation.chartType?.type
+        let options = null
+        if (type === 'Bar') {
+          options = bar(data, chartAnnotation, entityType, settings, chartOptions)
+        }
         if (type === 'Line') {
-          return {
-            options: line(data, chartAnnotation, entityType, settings, null)
-          }
+          options = line(data, chartAnnotation, entityType, settings, chartOptions)
+        }
+
+        if (type === 'Pie') {
+          options = pie(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
         if (type === 'Scatter' || type === 'EffectScatter') {
-          return {
-            options: scatter(data, chartAnnotation, entityType, settings, null)
-          }
+          options = scatter(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
         if (type === 'Heatmap') {
-          return {
-            options: heatmap(data, chartAnnotation, entityType, settings, null)
-          }
+          options = heatmap(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
         if (type === 'Bar3D') {
-          return {
-            options: bar3d(data, chartAnnotation, entityType)
-          }
+          options = bar3d(data, chartAnnotation, entityType)
         }
 
         if (type === 'Scatter3D') {
-          return {
-            options: scatter3d(data, chartAnnotation, entityType)
-          }
+          options = scatter3d(data, chartAnnotation, entityType)
         }
 
         if (type === 'Line3D') {
-          return {
-            options: line3d(data, chartAnnotation, entityType)
-          }
+          options = line3d(data, chartAnnotation, entityType)
         }
 
+        if (type === 'Tree') {
+          options = tree(data, chartAnnotation, entityType, settings, chartOptions)
+        }
         if (type === 'Treemap') {
-          return {
-            options: treemap(data, chartAnnotation, entityType)
-          }
+          options = treemap(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
         if (type === 'Sunburst') {
-          return {
-            options: sunburst(data, chartAnnotation, entityType)
-          }
+          options = sunburst(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
         if (type === 'Sankey') {
-          return {
-            options: sankey(data, chartAnnotation, entityType)
-          }
+          options = sankey(data, chartAnnotation, entityType, settings, chartOptions)
         }
 
-        if (type === 'Map') {
-          return {
-            options: mapChart(data, chartAnnotation, entityType, settings, options as EChartsOptions)
-          }
+        if (type === 'GeoMap') {
+          options = mapChart(data, chartAnnotation, entityType, settings, chartOptions as EChartsOptions)
         }
 
-        return { options: {} }
-      } catch (err) {
+        if (!options) {
+          throw new Error(`Unimplements type '${type}'`)
+        }
+
+        if (!isEmpty(chartOptions?.colors?.color)) {
+          options.color = chartOptions.colors.color
+        }
+
+        if (chartOptions?.aria) {
+          options.aria = mergeOptions(options.aria, chartOptions.aria)
+        }
+
+        return {
+          options
+        }
+      } catch (err: any) {
         console.error(err)
-        this.error$.next(err)
-        return { options: {} }
+        this.error$.next(err.message)
+        return {}
       }
-      // throw new Error(`Unimplements type '${type}'`)
     }),
     tap((options) => console.log(options)),
     catchError((err) => {
@@ -180,7 +198,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
           item = item[item.length - 1]
         }
 
-        const value = 'XXX' // event.dimensionNames[event.encode[AxisEnum[this.valueAxis]][0]]
+        const value = isArray(item) ? 'XXX' : item[getPropertyHierarchy(chartSeries)] // event.dimensionNames[event.encode[AxisEnum[this.valueAxis]][0]]
 
         const sFilter = {
           dimension: chartSeries,
@@ -232,7 +250,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
     debounceTime(100),
     withLatestFrom(this.chartClick$),
     map(([[event, echartsOptions, chartAnnotation, entityType], chartClick]: any) => {
-      console.warn(event, echartsOptions)
+      console.warn(event, chartClick, echartsOptions)
 
       const category = getChartCategory(chartAnnotation)
       const categoryProperty = getEntityProperty(entityType, category)
@@ -242,6 +260,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
         const datasetIndex = series.datasetIndex
         const dataset = echartsOptions.options.dataset[datasetIndex]
         if (chartSeries) {
+          return chartClick.filter
           // 逻辑与有 Series 维度下生成逻辑一致, 即数据使用的是数组矩阵 DataSet 的形式
           return {
             filteringLogic: FilteringLogic.And,

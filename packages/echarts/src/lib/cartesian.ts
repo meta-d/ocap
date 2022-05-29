@@ -8,7 +8,6 @@ import {
   getChartCategory,
   getChartCategory2,
   getChartSeries,
-  getChartTrellis,
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
@@ -21,11 +20,12 @@ import {
   ReferenceLineValueType
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
-import { chunk, groupBy, includes, indexOf, isArray, isEmpty, isNil, maxBy, minBy, range } from 'lodash'
-import { axisOrient, getCategoryAxis, getValueAxis } from './axis'
+import { assign, includes, indexOf, isArray, isEmpty, isNil, maxBy, merge, minBy, omit, range } from 'lodash'
+import { axisOrient, getCategoryAxis, getMeasureAxis, getValueAxis } from './axis'
 import { getChromaticScale } from './chromatics'
-import { dataZoom } from './data-zoom'
+import { coordinates, gatherCoordinates } from './coordinates'
 import { DecalPatterns } from './decal'
+import { referenceLines } from './series'
 import { stackedForMeasure } from './stacked'
 import { getEChartsTooltip } from './tooltip'
 import { AxisEnum, EChartsOptions, SeriesComponentType } from './types'
@@ -38,129 +38,140 @@ export function cartesian(
   options: EChartsOptions,
   type: string
 ) {
-  const cartesianCoordinates = cartesians(data, chartAnnotation, entityType, settings, options)
+  const pieCoordinates = coordinates(
+    data,
+    chartAnnotation,
+    entityType,
+    settings,
+    options,
+    type === 'pie' ? 'pie' : 'grid',
+    cartesianCoordinate
+  )
+  return gatherCoordinates(pieCoordinates, type, options)
 
-  const echartsOptions = {
-    dataset: [],
-    grid: [],
-    xAxis: [],
-    yAxis: [],
-    series: [],
-    visualMap: [],
-    tooltip: [],
-    legend: [],
-    dataZoom: dataZoom(options)
-  }
+  // const cartesianCoordinates = cartesians(data, chartAnnotation, entityType, settings, options)
 
-  cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
-    echartsOptions.grid.push(cartesianCoordinate.grid)
-    echartsOptions.xAxis.push(...cartesianCoordinate.xAxis.map((xAxis) => ({
-      ...xAxis,
-      gridIndex
-    })))
-    echartsOptions.yAxis.push(...cartesianCoordinate.yAxis.map((yAxis) => ({
-      ...yAxis,
-      gridIndex
-    })))
+  // const echartsOptions = {
+  //   dataset: [],
+  //   grid: [],
+  //   xAxis: [],
+  //   yAxis: [],
+  //   series: [],
+  //   visualMap: [],
+  //   tooltip: [],
+  //   legend: [],
+  //   dataZoom: dataZoom(options)
+  // }
 
-    cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
-      echartsOptions.dataset.push({
-        ...dataset
-      })
-      series.forEach((series) => {
-        echartsOptions.series.push({
-          ...series,
-          xAxisIndex: echartsOptions.xAxis.length + (series.xAxisIndex ?? 0) - 1,
-          yAxisIndex: echartsOptions.xAxis.length + (series.yAxisIndex ?? 0) - 1,
-          datasetIndex: echartsOptions.dataset.length - 1,
-          type: series.type ?? type
-        })
-      })
-    })
+  // cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
+  //   echartsOptions.grid.push(cartesianCoordinate.grid)
+  //   echartsOptions.xAxis.push(...cartesianCoordinate.xAxis.map((xAxis) => ({
+  //     ...xAxis,
+  //     gridIndex
+  //   })))
+  //   echartsOptions.yAxis.push(...cartesianCoordinate.yAxis.map((yAxis) => ({
+  //     ...yAxis,
+  //     gridIndex
+  //   })))
 
-    echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
-    echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
-    echartsOptions.legend.push(...cartesianCoordinate.legend)
-  })
+  //   cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
+  //     echartsOptions.dataset.push({
+  //       ...dataset
+  //     })
+  //     series.forEach((series) => {
+  //       echartsOptions.series.push({
+  //         ...series,
+  //         xAxisIndex: echartsOptions.xAxis.length + (series.xAxisIndex ?? 0) - 1,
+  //         yAxisIndex: echartsOptions.xAxis.length + (series.yAxisIndex ?? 0) - 1,
+  //         datasetIndex: echartsOptions.dataset.length - 1,
+  //         type: series.type ?? type
+  //       })
+  //     })
+  //   })
 
-  return echartsOptions
+  //   echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
+  //   echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
+  //   echartsOptions.legend.push(...cartesianCoordinate.legend)
+  // })
+
+  // return echartsOptions
 }
 
-// 多个笛卡尔坐标系
-export function cartesians(
-  data: QueryReturn<unknown>,
-  chartAnnotation: ChartAnnotation,
-  entityType: EntityType,
-  settings: ChartSettings,
-  options: EChartsOptions
-) {
-  const trellis = getChartTrellis(chartAnnotation)
-  if (trellis) {
-    const trellisName = getPropertyHierarchy(trellis)
-    const trellisResults = groupBy(data.results, trellisName)
+// // 多个笛卡尔坐标系
+// export function cartesians(
+//   data: QueryReturn<unknown>,
+//   chartAnnotation: ChartAnnotation,
+//   entityType: EntityType,
+//   settings: ChartSettings,
+//   options: EChartsOptions
+// ) {
+//   const trellis = getChartTrellis(chartAnnotation)
+//   if (trellis) {
+//     const trellisName = getPropertyHierarchy(trellis)
+//     const trellisResults = groupBy(data.results, trellisName)
 
-    const coordinates = Object.keys(trellisResults).map((trellisKey) => {
-      const dimensions = [...chartAnnotation.dimensions]
-      const index = dimensions.indexOf(trellis)
-      dimensions.splice(index, 1)
+//     const coordinates = Object.keys(trellisResults).map((trellisKey) => {
+//       const dimensions = [...chartAnnotation.dimensions]
+//       const index = dimensions.indexOf(trellis)
+//       dimensions.splice(index, 1)
 
-      const coordinate = cartesianCoordinate(
-        trellisResults[trellisKey],
-        {
-          ...chartAnnotation,
-          dimensions
-        },
-        entityType,
-        settings,
-        options
-      )
+//       const coordinate = cartesianCoordinate(
+//         trellisResults[trellisKey],
+//         {
+//           ...chartAnnotation,
+//           dimensions
+//         },
+//         entityType,
+//         settings,
+//         options
+//       )
 
-      coordinate.datasets = coordinate.datasets.map((dataset) => ({
-        ...dataset,
-        series: dataset.series.map((series) => ({
-          ...series,
-          id: `${trellisKey}-${series.id}`
-        }))
-      }))
-      return coordinate
-    })
+//       coordinate.datasets = coordinate.datasets.map((dataset) => ({
+//         ...dataset,
+//         series: dataset.series.map((series) => ({
+//           ...series,
+//           id: `${trellisKey}-${series.id}`
+//         }))
+//       }))
+//       return coordinate
+//     })
 
-    const trellisHorizontal = settings?.trellisHorizontal ?? 2
-    const trellisVertical = Math.ceil(coordinates.length / trellisHorizontal)
+//     const trellisHorizontal = settings?.trellisHorizontal ?? 2
+//     const trellisVertical = Math.ceil(coordinates.length / trellisHorizontal)
 
-    const coordinatesGroups = chunk(coordinates, trellisHorizontal)
+//     const coordinatesGroups = chunk(coordinates, trellisHorizontal)
 
-    const coordinateResults = []
-    coordinatesGroups.forEach((group, v) => {
-      group.forEach((coordinate, h) => {
-        coordinateResults.push({
-          ...coordinate,
-          grid: {
-            ...coordinate.grid,
-            left: h * (100 / trellisHorizontal) + '%',
-            top: v * (100 / trellisVertical) + '%',
-            width: 100 / trellisHorizontal + '%',
-            height: 100 / trellisVertical + '%'
-          }
-        })
-      })
-    })
+//     const coordinateResults = []
+//     coordinatesGroups.forEach((group, v) => {
+//       group.forEach((coordinate, h) => {
+//         coordinateResults.push({
+//           ...coordinate,
+//           grid: {
+//             ...coordinate.grid,
+//             left: h * (100 / trellisHorizontal) + '%',
+//             top: v * (100 / trellisVertical) + '%',
+//             width: 100 / trellisHorizontal + '%',
+//             height: 100 / trellisVertical + '%'
+//           }
+//         })
+//       })
+//     })
 
-    return coordinateResults
-  }
+//     return coordinateResults
+//   }
 
-  return [cartesianCoordinate(data.results, chartAnnotation, entityType, settings, options)]
-}
+//   return [cartesianCoordinate(data.results, chartAnnotation, entityType, settings, options)]
+// }
 
 /**
  * 单个笛卡尔坐标系, 对应一个 grid 内的组件
- * 
+ *
  * @param data 数据数组
  * @param chartAnnotation 图形注解
  * @param entityType 实体类型
  * @param settings 图形设置
  * @param options 图形属性
- * @returns 
+ * @returns
  */
 export function cartesianCoordinate(
   data: Array<unknown>,
@@ -190,10 +201,10 @@ export function cartesianCoordinate(
       {
         dataset: {
           source: data,
-          dimensions: [
-            ...chartAnnotation.dimensions.map(getPropertyName),
-            ...chartAnnotation.measures.map(getPropertyMeasure)
-          ]
+          // dimensions: [
+          //   ...chartAnnotation.dimensions.map(getPropertyName),
+          //   ...chartAnnotation.measures.map(getPropertyMeasure)
+          // ]
         },
         seriesComponents,
         tooltip: getEChartsTooltip(
@@ -213,13 +224,16 @@ export function cartesianCoordinate(
   const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
-    grid: mergeOptions({
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-      containLabel: true
-    }, options?.grid),
+    grid: mergeOptions(
+      {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        containLabel: true
+      },
+      options?.grid
+    ),
     [categoryAxis.orient]: categoryAxis.axis,
     [valueAxis.orient]: valueAxis.axis,
     visualMap: [],
@@ -239,7 +253,8 @@ export function cartesianCoordinate(
           entityType,
           category,
           valueAxis,
-          settings
+          settings,
+          options
         )
         gridOptions.visualMap.push(...visualMaps)
 
@@ -271,7 +286,7 @@ export function cartesianCoordinate(
   // TODO
   if (options?.tooltip?.trigger === 'axis') {
     gridOptions.tooltip.push({
-      trigger: 'axis',
+      trigger: 'axis'
     })
   } else {
     gridOptions.tooltip.push({})
@@ -281,7 +296,7 @@ export function cartesianCoordinate(
   if (options?.legend) {
     gridOptions.legend.push(options.legend)
   }
-  
+
   return gridOptions
 }
 
@@ -291,7 +306,8 @@ export function serializeSeriesComponent(
   entityType,
   category,
   valueAxis,
-  settings: ChartSettings
+  settings: ChartSettings,
+  options: EChartsOptions
 ) {
   const visualMaps = []
   const categoryProperty = getEntityProperty(entityType, category)
@@ -340,42 +356,43 @@ export function serializeSeriesComponent(
   }
 
   if (!isEmpty(seriesComponent.referenceLines)) {
-    seriesComponent.referenceLines.forEach((referenceLine) => {
-      if (referenceLine.type) {
-        const referenceLineData = {
-          name: referenceLine.label
-        }
+    assign(series, referenceLines(seriesComponent as ChartMeasure, null, options, valueAxis.orient))
+    // seriesComponent.referenceLines.forEach((referenceLine) => {
+    //   if (referenceLine.type) {
+    //     const referenceLineData = {
+    //       name: referenceLine.label
+    //     }
 
-        if (referenceLine.valueType === ReferenceLineValueType.fixed) {
-          referenceLineData[valueAxis] = referenceLine.value
-        } else if (referenceLine.valueType === ReferenceLineValueType.dynamic) {
-          referenceLineData['type'] = referenceLine.aggregation
-        }
+    //     if (referenceLine.valueType === ReferenceLineValueType.fixed) {
+    //       referenceLineData[valueAxis] = referenceLine.value
+    //     } else if (referenceLine.valueType === ReferenceLineValueType.dynamic) {
+    //       referenceLineData['type'] = referenceLine.aggregation
+    //     }
 
-        if (referenceLine.type === ReferenceLineType.markLine) {
-          series.markLine = series.markLine ?? {
-            label: {
-              show: true,
-              position: 'insideStartTop',
-              formatter: '{b}:{c}'
-            },
-            data: []
-          }
+    //     if (referenceLine.type === ReferenceLineType.markLine) {
+    //       series.markLine = series.markLine ?? {
+    //         label: {
+    //           show: true,
+    //           position: 'insideStartTop',
+    //           formatter: '{b}:{c}'
+    //         },
+    //         data: []
+    //       }
 
-          series.markLine.data.push(referenceLineData)
-        } else if (referenceLine.type === ReferenceLineType.markPoint) {
-          series.markPoint = series.markPoint ?? {
-            label: {
-              show: true,
-              position: 'insideStartTop',
-              formatter: '{b}:{c}'
-            },
-            data: []
-          }
-          series.markPoint.data.push(referenceLineData)
-        }
-      }
-    })
+    //       series.markLine.data.push(referenceLineData)
+    //     } else if (referenceLine.type === ReferenceLineType.markPoint) {
+    //       series.markPoint = series.markPoint ?? {
+    //         label: {
+    //           show: true,
+    //           position: 'insideStartTop',
+    //           formatter: '{b}:{c}'
+    //         },
+    //         data: []
+    //       }
+    //       series.markPoint.data.push(referenceLineData)
+    //     }
+    //   }
+    // })
   }
 
   if (seriesComponent.sizeMeasure) {
@@ -404,7 +421,7 @@ export function getVisualMapValueAxisIndex(dataset, seriesComponent, series?: Ch
   } else if (isArray(dataset)) {
     dataset = dataset[0]
   }
-  return indexOf(dataset.dimensions, seriesComponent.measure)
+  return dataset.dimensions ? indexOf(dataset.dimensions, seriesComponent.measure) : seriesComponent.measure
 }
 
 export function getLegendColorForVisualMap(colors) {
@@ -441,15 +458,15 @@ export function getLegendColorForVisualMap(colors) {
 }
 
 export function getSymbolSizeVisualMap(measure: ChartMeasure, property: Property, dataset: any) {
-  const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
-  const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
+  // const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
+  // const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
 
   return {
     left: 'right',
     top: '10%',
-    dimension: dataset.dimensions.indexOf(measure.measure),
-    min: dataMin,
-    max: dataMax,
+    dimension: dataset.dimensions ? dataset.dimensions.indexOf(measure.measure) : measure.measure,
+    // min: dataMin,
+    // max: dataMax,
     itemWidth: 30,
     itemHeight: 120,
     calculable: true,
@@ -479,15 +496,15 @@ export function getColorLightnessVisualMap(
   property: Property,
   dataset: { dimensions: string[]; source: any }
 ) {
-  const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
-  const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
+  // const dataMin = minBy(dataset.source, measure.measure)?.[measure.measure]
+  // const dataMax = maxBy(dataset.source, measure.measure)?.[measure.measure]
 
   return {
     left: 'right',
     bottom: '5%',
-    dimension: dataset.dimensions.indexOf(measure.measure),
-    min: dataMin,
-    max: dataMax,
+    dimension: dataset.dimensions ? dataset.dimensions.indexOf(measure.measure) : measure.measure,
+    // min: dataMin,
+    // max: dataMax,
     itemHeight: 120,
     text: [property.label || property.name],
     textGap: 30,
@@ -545,6 +562,38 @@ export function measuresToSeriesComponents(
   })
 }
 
+export function dimensionToSeriesComponent(
+  name: string,
+  dimension: ChartDimension,
+  measures: ChartMeasure[],
+  data: any[],
+  entityType: EntityType,
+  settings: ChartSettings
+) {
+  const property = getEntityProperty(entityType, dimension)
+  const tooltips = measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
+  return {
+    // ...omit(dimension, 'role'),
+    id: settings?.universalTransition ? getPropertyHierarchy(dimension) : null,
+    name: name ?? property.label ?? property.name,
+    label: property?.label,
+    property,
+    dataSize: data.length,
+    tooltip: tooltips.map(({ measure }) => measure),
+    sizeMeasure: measures.find(({ role }) => role === ChartMeasureRoleType.Size),
+    lightnessMeasure: measures.find(({ role }) => role === ChartMeasureRoleType.Lightness)
+  } as SeriesComponentType
+}
+
+/**
+ *
+ * @param chartAnnotation
+ * @param entityType
+ * @param items
+ * @param chartOptions
+ * @param locale
+ * @returns
+ */
 export function getCoordinateSystem(
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
@@ -557,17 +606,28 @@ export function getCoordinateSystem(
   const category = getChartCategory(chartAnnotation)
   const category2 = getChartCategory2(chartAnnotation)
 
-  let valueAxis = null
-  // 设置维度轴值
-  const categoryAxis = getCategoryAxis(items, category, getEntityProperty(entityType, category), chartOptions)
-  categoryAxis.orient = categoryOrient
-
-  if (category2) {
-    valueAxis = [getCategoryAxis(items, category2, getEntityProperty(entityType, category2), chartOptions)]
+  if (chartAnnotation.chartType.type === 'Scatter') {
+    const valueAxises = getValueAxis(chartAnnotation, entityType, chartOptions, locale)
+    return {
+      categoryAxis: { orient: categoryOrient, axis: [valueAxises[0]] },
+      valueAxis: { orient: valueOrient, axis: [valueAxises[1]] }
+    }
   } else {
-    valueAxis = getValueAxis(chartAnnotation, entityType, chartOptions, locale)
-  }
-  valueAxis.orient = valueOrient
+    let valueAxis = null
+    // 设置维度轴值
+    const categoryAxis = getCategoryAxis(items, category, getEntityProperty(entityType, category), chartOptions)
+    categoryAxis.orient = categoryOrient
 
-  return { categoryAxis: {orient: categoryOrient, axis: [categoryAxis]}, valueAxis: {orient: valueOrient, axis: valueAxis} }
+    if (category2) {
+      valueAxis = [getCategoryAxis(items, category2, getEntityProperty(entityType, category2), chartOptions)]
+    } else {
+      valueAxis = getValueAxis(chartAnnotation, entityType, chartOptions, locale)
+    }
+    valueAxis.orient = valueOrient
+
+    return {
+      categoryAxis: { orient: categoryOrient, axis: [categoryAxis] },
+      valueAxis: { orient: valueOrient, axis: valueAxis }
+    }
+  }
 }

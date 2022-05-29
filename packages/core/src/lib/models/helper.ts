@@ -247,8 +247,14 @@ export function hasLevel(dimension: PropertyPath) {
 
 export const isPropertyLevel = (toBe): toBe is PropertyLevel => toBe.aggregationRole === AggregationRole.level
 
-export function isSemanticCalendar(property: Property): boolean {
-  return property?.semantic && Semantics[property.semantic].startsWith('Calendar')
+/**
+ * The property is Calendar Semantic
+ * 
+ * @param property 
+ * @returns 
+ */
+export function isSemanticCalendar(property: EntityProperty): boolean {
+  return property?.semantics?.semantic && Semantics[property.semantics.semantic]?.startsWith('Calendar')
 }
 
 /**
@@ -371,6 +377,27 @@ export function isVisible(property: PropertyAttributes) {
   return property.visible || isNil(property.visible)
 }
 
+/**
+ * 获取实体类型中的日历层级, 如果没有指定层级名称则取默认层级
+ *
+ * @param entityType
+ * @param param1
+ * @returns
+ */
+export function getEntityCalendarHierarchy(
+  entityType: EntityType,
+  { dimension, hierarchy }: Dimension
+): PropertyHierarchy {
+  const dProperty = getEntityProperty(entityType, dimension)
+  if (hierarchy) {
+    return dProperty.hierarchies?.find((item) => item.name === hierarchy)
+  }
+
+  const defaultHierarchy = dProperty.hierarchies?.find((item) => item.name === dProperty.defaultHierarchy)
+
+  return defaultHierarchy ?? dProperty.hierarchies?.[0]
+}
+
 // merge EntityType
 export function mergeEntityType(a: EntityType, b: EntityType): EntityType {
   // for properties
@@ -395,15 +422,15 @@ export function mergeEntityType(a: EntityType, b: EntityType): EntityType {
     properties: mergeWith(cloneDeep(a.properties), b?.properties, customizer)
   }
 
-  // merge hierarchy and level
-  getEntityDimensions(entityType).forEach((dimension) => {
-    dimension.hierarchies?.forEach((hierarchy) => {
-      // assign(hierarchy, omit(entityType.properties[hierarchy.name], ['levels', 'hierarchies']))
-      hierarchy.levels?.forEach((level) => {
-        assign(level, entityType.properties[level.name])
-      })
-    })
-  })
+  // // merge hierarchy and level
+  // getEntityDimensions(entityType).forEach((dimension) => {
+  //   dimension.hierarchies?.forEach((hierarchy) => {
+  //     // assign(hierarchy, omit(entityType.properties[hierarchy.name], ['levels', 'hierarchies']))
+  //     hierarchy.levels?.forEach((level) => {
+  //       assign(level, entityType.properties[level.name])
+  //     })
+  //   })
+  // })
 
   return entityType
 }
@@ -517,6 +544,64 @@ export function mapEntityTypeHierarchy2Tree(entityType: EntityType) {
       }
     })
 }
+
+export function getMemberFromRow(row: unknown, property: Property) {
+  const label = getPropertyTextName(property)
+  return {
+    value: row[property.name],
+    label: label ? row[label] : null
+  }
+}
+
+// for Calendar Functions
+export function getCalendarDimension(entityType: EntityType): Property {
+  const timeDim = getEntityDimensions(entityType).find((property) => property.semantics?.semantic === Semantics.Calendar)
+  if (!timeDim) {
+    throw new Error(`Can't found calendar dimension in entityType: ${entityType.name}`)
+  }
+  return timeDim
+}
+
+export function getCalendarHierarchy(entityType: EntityType): PropertyHierarchy {
+  const timeDim = getCalendarDimension(entityType)
+  const timeHierarchy = getDefaultHierarchy(timeDim)
+
+  if (!timeHierarchy) {
+    throw new Error(`Can't found calendar hierarchy in dimension: ${timeDim?.name}`)
+  }
+
+  return timeHierarchy
+}
+
+export function getDefaultHierarchy(property: Property) {
+  const defaultHierarchy =
+    property?.hierarchies?.find((hierarchy) => hierarchy.name === property.defaultHierarchy) ||
+    property?.hierarchies?.[0]
+  // if (!defaultHierarchy) {
+  //     throw new Error(`Can't found default hierarchy in dimension: ${property?.name}`)
+  // }
+  return defaultHierarchy
+}
+
+export function getTimeYearLevel(hierarchy: PropertyHierarchy): PropertyLevel {
+  const yearLevel = hierarchy?.levels?.find((item) => item.semantics?.semantic === Semantics['Calendar.Year'])
+
+  if (!yearLevel) {
+    throw new Error(`Can't found Year level in Calendar dimension: ${hierarchy.name}`)
+  }
+
+  return yearLevel
+}
+
+export function getTimeQuarterLevel(hierarchy: PropertyHierarchy): PropertyLevel {
+  const quarter = hierarchy.levels.find((item) => item.semantics?.semantic === Semantics['Calendar.Quarter'])
+  return quarter
+}
+
+export function getHierarchySemanticLevel(hierarchy: PropertyHierarchy, semantic: Semantics): PropertyLevel {
+  return hierarchy?.levels?.find((item) => item.semantics?.semantic === semantic)
+}
+
 
 // Type Guards
 export const isDimensionUsage = (toBe): toBe is DimensionUsage =>

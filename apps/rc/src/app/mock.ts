@@ -8,6 +8,12 @@ export class MockAgent implements Agent {
   selectStatus(): Observable<AgentStatus> {
     return of(AgentStatus.ONLINE)
   }
+  selectError(): Observable<any> {
+    throw new Error('Method not implemented.')
+  }
+  error(err: any): void {
+    throw new Error('Method not implemented.')
+  }
 
   request(dataSource: DataSourceOptions, options: any): Promise<any> {
     console.log(`~~~~~~~~~~~~~~~~~~~~`, dataSource, options)
@@ -16,7 +22,7 @@ export class MockAgent implements Agent {
       if (options.method === 'get') {
         if (options.url === 'schema') {
           if (options.table === 'SalesOrder') {
-            return resolve({
+            return resolve([{
               name: 'SalesOrder',
               label: '销售订单',
               columns: [
@@ -45,7 +51,7 @@ export class MockAgent implements Agent {
                   aggregationRole: AggregationRole.measure
                 }
               ]
-            })
+            }])
           }
         }
       } else if (options.method === 'post') {

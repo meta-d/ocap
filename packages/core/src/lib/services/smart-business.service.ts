@@ -1,7 +1,8 @@
 import { isEmpty, isString } from 'lodash'
 import { catchError, EMPTY, filter, Observable, of, shareReplay, switchMap } from 'rxjs'
 import { PresentationVariant, SelectionVariant } from '../annotations'
-import { IFilter, isAdvancedFilter, isFilter, ISlicer, isSlicer, QueryOptions, ServiceInit } from '../types'
+import { isTimeRangesSlicer, putFilter, workOutTimeRangeSlicers } from '../filter'
+import { FilteringLogic, IFilter, isAdvancedFilter, isFilter, ISlicer, isSlicer, QueryOptions, ServiceInit } from '../types'
 import { EntityBusinessService, EntityBusinessState } from './entity.service'
 
 export interface SmartBusinessState extends EntityBusinessState {
@@ -51,7 +52,7 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
     // const querySettings = this.querySettings$.value
     const entityType = this.getEntityType()
 
-    const _filters: Array<ISlicer> = queryOptions?.filters || []
+    let _filters: Array<ISlicer> = queryOptions?.filters || []
 
     // // from SmartFilterBar
     // this.smartFilterBar?.getFilters()?.forEach((ftr) => {
@@ -70,30 +71,30 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
         // else if (isFilter(v) || isAdvancedFilter(v)) {
         //   _filters = putFilter(_filters, v)
         // }
-        // else if (isTimeRangesSlicer(v)) {
+        else if (isTimeRangesSlicer(v)) {
 
-        //   console.warn(`Time range filter`, v)
-        //   const {today, timeGranularity} = this.coreService.getToday()
-        //   const ranges = workOutTimeRangeSlicers(today, v, this.getEntityType())
+          console.warn(`Time range filter`, v)
+          const {today, timeGranularity} = this.dsCoreService.getToday()
+          const ranges = workOutTimeRangeSlicers(today, v, entityType)
 
-        //   // const ranges = this.coreService.calcRanges(v).map((range) => {
-        //   //   console.warn(`Time range filter results`, range)
-        //   //   if (range.result[0] === range.result[1]) {
-        //   //     return new NxFilter(v.dimension, range.result[0])
-        //   //   }
-        //   //   return new NxFilter(v.dimension, range.result, NxFilterOperator.BT)
-        //   // })
+          // const ranges = this.coreService.calcRanges(v).map((range) => {
+          //   console.warn(`Time range filter results`, range)
+          //   if (range.result[0] === range.result[1]) {
+          //     return new NxFilter(v.dimension, range.result[0])
+          //   }
+          //   return new NxFilter(v.dimension, range.result, NxFilterOperator.BT)
+          // })
 
-        //   _filters = putFilter(
-        //     _filters,
-        //     (ranges.length > 1
-        //       ? {
-        //           filteringLogic: FilteringLogic.And,
-        //           children: ranges
-        //         }
-        //       : ranges[0]) as NxIFilter
-        //   )
-        // }
+          _filters = putFilter(
+            _filters,
+            (ranges.length > 1
+              ? {
+                  filteringLogic: FilteringLogic.And,
+                  children: ranges
+                }
+              : ranges[0]) as IFilter
+          )
+        }
         else if (isSlicer(v) && !isEmpty(v.members)) {
           _filters.push(v)
           // _filters = putFilter(_filters, v)

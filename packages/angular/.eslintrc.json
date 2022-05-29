@@ -4,9 +4,7 @@
   "overrides": [
     {
       "files": ["*.ts"],
-      "extends": [
-        "plugin:@angular-eslint/template/process-inline-templates"
-      ],
+      "extends": ["plugin:@angular-eslint/template/process-inline-templates"],
       "rules": {
         "@angular-eslint/directive-selector": [
           "error",

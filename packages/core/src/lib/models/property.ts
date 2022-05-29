@@ -14,6 +14,9 @@ export interface PropertyAttributes {
   uniqueName?: string
   name: string
   label?: string
+  /**
+   * The caption field
+   */
   caption?: string
   role?: AggregationRole
   /**
@@ -45,6 +48,9 @@ export interface EntityProperty extends BaseProperty, PropertyAttributes {
     formatter?: string
   }
 
+  /**
+   * @deprecated use caption
+   */
   text?: string | EntityProperty
   unit?: string | EntityProperty
   

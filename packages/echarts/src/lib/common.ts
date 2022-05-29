@@ -211,3 +211,11 @@ export function echartsFormatNumber(value, digitInfo?: string, shortNumber?: boo
 
   return '-'
 }
+
+/**
+ * @todo locale
+ * 
+ * @param value 
+ * @returns 
+ */
+export const DefaultValueFormatter = (value: number) => formatNumber(value, 'zh-Hans')

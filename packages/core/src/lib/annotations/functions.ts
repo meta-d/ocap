@@ -1,6 +1,3 @@
-import { EntityType, getEntityDimensions, Property, PropertyHierarchy, PropertyLevel } from '../models'
-import { Semantics } from './semantics'
-
 export enum PeriodFunctions {
   CURRENT = 'CURRENT',
   /**
@@ -67,46 +64,4 @@ export enum PeriodFunctions {
    * 去年同期同比
    */
   PYSMYOY = 'PYSMYOY'
-}
-
-export function getCalendarDimension(entityType: EntityType): Property {
-  const timeDim = getEntityDimensions(entityType).find((property) => property.semantic === Semantics.Calendar)
-  if (!timeDim) {
-    throw new Error(`Can't found calendar dimension in entityType: ${entityType.name}`)
-  }
-  return timeDim
-}
-
-export function getCalendarHierarchy(entityType: EntityType): PropertyHierarchy {
-  const timeDim = getCalendarDimension(entityType)
-  const timeHierarchy = getDefaultHierarchy(timeDim)
-
-  if (!timeHierarchy) {
-    throw new Error(`Can't found calendar hierarchy in dimension: ${timeDim?.name}`)
-  }
-
-  return timeHierarchy
-}
-
-export function getDefaultHierarchy(property: Property) {
-  const defaultHierarchy =
-    property?.hierarchies?.find((hierarchy) => hierarchy.name === property.defaultHierarchy) ||
-    property?.hierarchies?.[0]
-  // if (!defaultHierarchy) {
-  //     throw new Error(`Can't found default hierarchy in dimension: ${property?.name}`)
-  // }
-  return defaultHierarchy
-}
-
-export function getTimeYearLevel(hierarchy: PropertyHierarchy): PropertyLevel {
-  return hierarchy.levels.find((item) => item.semantic === Semantics['Calendar.Year'])
-}
-
-export function getTimeQuarterLevel(hierarchy: PropertyHierarchy): PropertyLevel {
-  const quarter = hierarchy.levels.find((item) => item.semantic === Semantics['Calendar.Quarter'])
-  return quarter
-}
-
-export function getHierarchySemanticLevel(hierarchy: PropertyHierarchy, semantic: Semantics): PropertyLevel {
-  return hierarchy?.levels?.find((item) => item.semantic === semantic)
 }

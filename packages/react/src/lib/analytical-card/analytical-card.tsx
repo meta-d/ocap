@@ -19,10 +19,11 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { useObservable } from '@ngneat/use-observable'
 import ReactECharts from 'echarts-for-react'
 import { isEmpty } from 'lodash'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { switchMap, tap } from 'rxjs'
-import { AppContext } from '../app-context'
+import { useOCAPCoreContext } from '../app-context'
 import { CommonProps } from '@mui/material/OverridableComponent'
+import { CHART_TYPES } from './charts'
 
 /* eslint-disable-next-line */
 export interface AnalyticalCardOptions {}
@@ -38,48 +39,17 @@ export interface AnalyticalCardProps extends CommonProps {
   onFullscreen?: () => void
 }
 
-export function useChartBusinessService(context) {
-  const { coreService } = useContext(context)
+export function useChartBusinessService() {
+  const { coreService } = useOCAPCoreContext()
   return useMemo(() => {
     return new ChartBusinessService(coreService)
   }, [])
 }
 
-const CHART_TYPES = [
-  {
-    value: 'Bar',
-    label: '柱形图'
-  },
-  {
-    value: 'Line',
-    label: '线图'
-  },
-  {
-    value: 'Scatter',
-    label: '散点图'
-  },
-  {
-    value: 'Heatmap',
-    label: '热力图'
-  },
-  {
-    value: 'Treemap',
-    label: '矩阵树图'
-  },
-  {
-    value: 'Sunburst',
-    label: '旭日图'
-  },
-  {
-    value: 'Sankey',
-    label: '桑基图'
-  }
-]
-
 export function AnalyticalCard(props: AnalyticalCardProps) {
   console.log(`***********************`)
 
-  const chartService = useChartBusinessService(AppContext)
+  const chartService = useChartBusinessService()
   useEffect(() => {
     chartService.dataSettings = props.dataSettings
   }, [props.dataSettings])
@@ -179,6 +149,18 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
       }
     }
   };
+
+  let cardContent = null
+  if (engineError) {
+    cardContent = <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+      {JSON.stringify(engineError, null, 2)}
+    </Box>
+  } else if(noData || !echartsOptions?.options) {
+    cardContent = <>No Data</>
+  } else {
+    cardContent = <ReactECharts notMerge={true} option={echartsOptions.options} theme={"default"}/>
+  }
+
   return (
     <>
     <Card className={'AnalyticalCard'}>
@@ -199,9 +181,9 @@ export function AnalyticalCard(props: AnalyticalCardProps) {
       </Box>
 
       <CardContent style={{ padding: 0 }}>
-        {noData || !echartsOptions?.options ? <>No Data</> : <ReactECharts notMerge={true} option={echartsOptions.options} theme={"default"}/>}
-
-        {engineError ? <Box>{JSON.stringify(engineError, null, 2)}</Box> : <></>}
+        {
+          cardContent
+        }
       </CardContent>
 
       <Menu

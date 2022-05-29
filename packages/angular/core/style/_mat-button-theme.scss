@@ -1,0 +1,83 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+}
+
+@mixin typography($config-or-theme) {
+}
+
+@mixin icon-cosy() {
+  line-height: 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+@mixin icon-compact() {
+  line-height: 16px;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+@mixin density($config-or-theme) {
+  .mat-button-base {
+    &.ngm-density__cosy {
+      line-height: 30px;
+      padding: 0 12px;
+
+      &.mat-icon-button {
+        width: 30px;
+        height: 30px;
+      }
+
+      .mat-icon {
+        @include icon-cosy();
+        margin-left: -3px;
+      }
+    }
+    &.ngm-density__compact {
+      line-height: 24px;
+
+      .mat-icon {
+        @include icon-compact();
+      }
+
+      &:not(.mat-icon-button) {
+        padding: 0 6px;
+      }
+
+      &.mat-icon-button {
+        width: 24px;
+        height: 24px;
+
+        //   .mat-icon {
+        //     line-height: 20px;
+        //     width: 20px;
+        //     height: 20px;
+        //     font-size: 20px;
+        //   }
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

@@ -57,7 +57,8 @@ export interface RecursiveHierarchyData<T> {
 }
 export interface TreeNodeInterface<T> {
   key: string
-  value: T
+  raw: T
+  value?: number
   level?: number
   label: string
   title: string
@@ -71,7 +72,7 @@ export interface TreeNodeInterface<T> {
 export function hierarchize<T>(
   items: Array<T>,
   recursiveHierarchy: RecursiveHierarchyType,
-  filterText?: string
+  valueProperty?: string
 ): Array<TreeNodeInterface<T>> {
 
   const root = []
@@ -84,11 +85,15 @@ export function hierarchize<T>(
     }
     assign(results[item[recursiveHierarchy.valueProperty]], {
       key: item[recursiveHierarchy.valueProperty],
-      value: item,
       label: item[recursiveHierarchy.labelProperty],
       title: item[recursiveHierarchy.labelProperty],
       name: item[recursiveHierarchy.labelProperty],
+      raw: item
     })
+
+    if (valueProperty) {
+      results[item[recursiveHierarchy.valueProperty]].value = item[valueProperty]
+    }
 
     if (item[recursiveHierarchy.parentNodeProperty]) {
       if (results[item[recursiveHierarchy.parentNodeProperty]]) {
@@ -112,7 +117,7 @@ export function hierarchize<T>(
       node.isLeaf = true
       node.children = null
     }
-    if (!node.value) {
+    if (!node.raw) {
       root.push(...node.children)
     }
   })

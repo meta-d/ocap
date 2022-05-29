@@ -7,7 +7,8 @@
     "start:react": "nx serve --project rc --port 4300",
     "start:vue": "nx serve --project vue-app --port 4500",
     "start:nest": "nx serve --project nest",
-    "postinstall": "ngcc --properties es2015 browser module main"
+    "postinstall": "ngcc --properties es2015 browser module main",
+    "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn nx build duckdb && yarn nx build angular"
   },
   "private": true,
   "devDependencies": {
@@ -29,11 +30,18 @@
     "@nrwl/nest": "^13.10.2",
     "@nrwl/node": "13.10.2",
     "@nrwl/react": "^13.10.2",
+    "@nrwl/storybook": "^14.1.9",
     "@nrwl/web": "^13.10.2",
     "@nrwl/workspace": "13.10.2",
     "@nx-plus/vue": "^13.0.0",
+    "@storybook/addon-essentials": "~6.4.12",
+    "@storybook/angular": "~6.4.12",
+    "@storybook/builder-webpack5": "~6.4.12",
+    "@storybook/core-server": "~6.4.12",
+    "@storybook/manager-webpack5": "~6.4.12",
     "@testing-library/react": "13.0.0",
     "@testing-library/react-hooks": "7.0.2",
+    "@types/d3-scale": "^4.0.2",
     "@types/jest": "27.0.2",
     "@types/lodash": "^4.14.181",
     "@types/node": "16.11.7",
@@ -74,7 +82,8 @@
     "tailwindcss": "^3.0.2",
     "ts-jest": "27.0.5",
     "typescript": "~4.6.2",
-    "vue3-jest": "^27.0.0-alpha.1"
+    "vue3-jest": "^27.0.0-alpha.1",
+    "webpack": "^5.64.0"
   },
   "workspaces": [
     "packages/**"
@@ -91,7 +100,7 @@
     "@angular/platform-browser": "~13.3.0",
     "@angular/platform-browser-dynamic": "~13.3.0",
     "@angular/router": "~13.3.0",
-    "@duckdb/duckdb-wasm": "^1.13.1-dev285.0",
+    "@duckdb/duckdb-wasm": "^1.14.0",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.6.1",

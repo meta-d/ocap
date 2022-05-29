@@ -13,8 +13,15 @@ export interface EntityService<T> {
    */
   selectEntityType(): Observable<EntityType>
 
+  /**
+   * 查询
+   * @param options 
+   */
   query(options?: QueryOptions): Observable<QueryReturn<T>>
 
+  /**
+   * 刷新
+   */
   refresh(): void
 
   /**
@@ -38,7 +45,15 @@ export interface EntityService<T> {
    */
   getCalculatedMember(measure: string, type: PeriodFunctions): Property
 
+  /**
+   * 获取指标
+   * 
+   * @param id 
+   */
   getIndicator(id: string): Indicator
 
+  /**
+   * 销毁
+   */
   onDestroy(): void
 }

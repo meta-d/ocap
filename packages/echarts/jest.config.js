@@ -11,4 +11,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/echarts',
+  transformIgnorePatterns: ["../../node_modules/(?!d3-scale)"]
 };

@@ -7,10 +7,10 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
-import { NgmCommonModule } from '../common'
-import { OcapCoreModule } from '../core'
 import { AnalyticalCardComponent } from './analytical-card.component'
 
 @NgModule({

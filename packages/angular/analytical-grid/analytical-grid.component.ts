@@ -12,11 +12,11 @@ import {
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
+import { DisplayDensity } from '@metad/ocap-angular/core'
 import { AggregationRole, DataSettings, getPropertyName, getPropertyTextName } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { isNil } from 'lodash'
 import { map, shareReplay, tap } from 'rxjs/operators'
-import { DisplayDensity } from '../core'
 import { NgmAnalyticsBusinessService } from './analytics.service'
 
 export interface AnalyticalGridOptions {

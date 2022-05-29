@@ -4,18 +4,21 @@ import {
   ChartSettings,
   EntityType,
   getChartCategory,
+  getEntityProperty,
+  getEntityProperty2,
   getPropertyHierarchy,
   getPropertyMeasure,
   getPropertyName,
+  getPropertyTextName,
   isChartMapType,
   QueryReturn
 } from '@metad/ocap-core'
 import { MapChart } from 'echarts/charts'
 import { registerMap, use } from 'echarts/core'
+import { firstValueFrom, shareReplay, tap } from 'rxjs'
+import { fromFetch } from 'rxjs/fetch'
 import { measuresToSeriesComponents } from '../cartesian'
 import { EChartsOptions } from '../types'
-import { fromFetch } from 'rxjs/fetch'
-import { firstValueFrom, shareReplay, tap } from 'rxjs'
 import { tinymd5 } from '../utils'
 
 use([MapChart])
@@ -24,21 +27,22 @@ const registerMaps = {}
 
 let d3
 export async function mapChartAnnotation(chartAnnotation: ChartAnnotation): Promise<ChartAnnotation> {
-  const chartType = {...chartAnnotation.chartType}
+  const chartType = { ...chartAnnotation.chartType }
   if (!isChartMapType(chartType)) {
     throw new Error(`It's not supposed to be here: Not a Map type`)
   }
-  
+
   if (chartType.mapUrl) {
     const variant = tinymd5(chartType.mapUrl, 5)
     const mapType = chartType.map + '-' + variant
 
     if (!registerMaps[mapType]) {
-      registerMaps[mapType] = fromFetch(chartType.mapUrl,
-        {
-          selector: (res) => res.json()
-        }
-      ).pipe(tap((geoJson) => registerMap(mapType, geoJson)), shareReplay(1))
+      registerMaps[mapType] = fromFetch(chartType.mapUrl, {
+        selector: (res) => res.json()
+      }).pipe(
+        tap((geoJson) => registerMap(mapType, geoJson)),
+        shareReplay(1)
+      )
 
       await firstValueFrom(registerMaps[mapType])
     }
@@ -63,42 +67,51 @@ export function mapChart(
   settings: ChartSettings,
   options: EChartsOptions
 ) {
-  const chartType = {...chartAnnotation.chartType}
+  const chartType = { ...chartAnnotation.chartType }
   if (!isChartMapType(chartType)) {
     throw new Error(`It's not supposed to be here: Not a Map type`)
   }
 
   const chartCategory = getChartCategory(chartAnnotation)
   const chartCategoryName = getPropertyHierarchy(chartCategory)
+  const chartCategoryCaption = getPropertyTextName(getEntityProperty(entityType, chartCategory))
   const chartMeasure = chartAnnotation.measures[0]
   const chartMeasureName = getPropertyMeasure(chartMeasure)
 
-  const seriesComponents = measuresToSeriesComponents(chartAnnotation.measures, queryReturn.results, entityType, settings)
+  const seriesComponents = measuresToSeriesComponents(
+    chartAnnotation.measures,
+    queryReturn.data,
+    entityType,
+    settings
+  )
 
   console.log(seriesComponents)
 
   let projection
   if (chartType.projection) {
     try {
-      projection = d3['geo'+chartType.projection]()
-    }catch(err) {
+      projection = d3['geo' + chartType.projection]()
+    } catch (err) {
       throw new Error(`Can't found the projection '${chartType.projection}' in 'd3-geo' lib`)
     }
   }
 
   const series = seriesComponents.map((seriesComponent) => {
-
     let data
     if (seriesComponent.shapeType) {
-      const latName = getPropertyName(chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Lat))
-      const longName = getPropertyName(chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Long))
-      data = queryReturn.results.map((item) => ({
-        name: item[chartCategoryName],
+      const latName = getPropertyName(
+        chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Lat)
+      )
+      const longName = getPropertyName(
+        chartAnnotation.dimensions.find((item) => item.role === ChartDimensionRoleType.Long)
+      )
+      data = queryReturn.data.map((item) => ({
+        name: item[chartCategoryCaption ?? chartCategoryName],
         value: [item[longName], item[latName], item[chartMeasureName] ?? '-']
       }))
     } else {
-      data = queryReturn.results.map((item) => ({
-        name: item[chartCategoryName],
+      data = queryReturn.data.map((item) => ({
+        name: item[chartCategoryCaption ?? chartCategoryName],
         value: item[chartMeasureName] ?? '-'
       }))
     }
@@ -124,24 +137,26 @@ export function mapChart(
       }
     }
   })
-  
+
   return {
     geo: {
       map: chartType.map,
-      projection: projection ? {
-        project: (point)=> {
-          return projection(point);
-        },
-        unproject: (point) => {
-          return projection.invert(point);
-        }
-      } : null,
+      projection: projection
+        ? {
+            project: (point) => {
+              return projection(point)
+            },
+            unproject: (point) => {
+              return projection.invert(point)
+            }
+          }
+        : null,
       roam: true,
       emphasis: {
         label: {
           show: true
         }
-      },
+      }
     },
     visualMap: seriesComponents.map((seriesComponent) => {
       return {

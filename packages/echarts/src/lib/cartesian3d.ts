@@ -78,26 +78,26 @@ export function cartesianCoordinate3d(
         ]
       },
       seriesComponents: measuresToSeriesComponents(chartAnnotation.measures, data, entityType, settings)
-        // .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
-        // .map((measure) => {
-        //   const measureName = getPropertyMeasure(measure)
-        //   const measureProperty = getEntityProperty(entityType, measure)
-        //   const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
-        //   const minItem = minBy(data, measureName)
-        //   const maxItem = maxBy(data, measureName)
-        //   return {
-        //     ...measure,
-        //     name: measureProperty?.label,
-        //     label: measureProperty?.label,
-        //     seriesType: measure.shapeType,
-        //     property: measureProperty,
-        //     dataMin: minItem?.[measureName],
-        //     dataMax: maxItem?.[measureName],
-        //     dataSize: data.length,
-        //     valueAxisIndex,
-        //     tooltip: tooltips.map(({ measure }) => measure)
-        //   } as SeriesComponentType
-        // })
+      // .filter(({ role }) => role !== ChartMeasureRoleType.Tooltip)
+      // .map((measure) => {
+      //   const measureName = getPropertyMeasure(measure)
+      //   const measureProperty = getEntityProperty(entityType, measure)
+      //   const valueAxisIndex = measure.role === ChartMeasureRoleType.Axis2 ? 1 : 0
+      //   const minItem = minBy(data, measureName)
+      //   const maxItem = maxBy(data, measureName)
+      //   return {
+      //     ...measure,
+      //     name: measureProperty?.label,
+      //     label: measureProperty?.label,
+      //     seriesType: measure.shapeType,
+      //     property: measureProperty,
+      //     dataMin: minItem?.[measureName],
+      //     dataMax: maxItem?.[measureName],
+      //     dataSize: data.length,
+      //     valueAxisIndex,
+      //     tooltip: tooltips.map(({ measure }) => measure)
+      //   } as SeriesComponentType
+      // })
     }
   ]
 
@@ -126,7 +126,15 @@ export function cartesianCoordinate3d(
     grid3dOptions.datasets.push({
       dataset,
       series: seriesComponents.map((seriesComponent) => {
-        const { series, visualMaps } = serializeSeriesComponent(dataset, seriesComponent, entityType, category, 'z', settings)
+        const { series, visualMaps } = serializeSeriesComponent(
+          dataset,
+          seriesComponent,
+          entityType,
+          category,
+          'z',
+          settings,
+          options
+        )
         grid3dOptions.visualMap.push(...visualMaps)
 
         series.encode = {

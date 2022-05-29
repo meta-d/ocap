@@ -1,14 +1,21 @@
 import { ComponentStore } from '@metad/store'
-import { filter, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { combineLatest, filter, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { Agent, AgentType, DSCacheService } from './agent'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
+import { TimeGranularity } from './filter'
 import { EntitySet } from './models'
 
 export interface DSState {
   dataSources: DataSourceOptions[]
+  today?: Date
+  timeGranularity?: TimeGranularity
 }
 
 export class DSCoreService extends ComponentStore<DSState> {
+
+  public readonly timeGranularity$ = this.select((state) => state.timeGranularity)
+  public readonly currentTime$ = combineLatest([this.select(state => state.today), this.timeGranularity$])
+    .pipe(map(([today, timeGranularity]) => ({today, timeGranularity})))
 
   private _dataSources = new Map<string, Observable<DataSource>>()
   constructor(
@@ -75,5 +82,17 @@ export class DSCoreService extends ComponentStore<DSState> {
 
   getEntitySet(dataSource: string, entity: string): Observable<EntitySet> {
     return this.getDataSource(dataSource).pipe(switchMap((dataSource) => dataSource.selectEntitySet(entity)))
+  }
+
+  setTimeGranularity(timeGranularity: TimeGranularity) {
+    this.patchState({ timeGranularity })
+  }
+
+  setToday(today: Date) {
+    this.patchState({today})
+  }
+
+  getToday() {
+    return this.get(state => ({today: state.today, timeGranularity: state.timeGranularity}))
   }
 }

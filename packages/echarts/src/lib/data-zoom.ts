@@ -1,7 +1,7 @@
 import { ChartDataZoomType } from '@metad/ocap-core'
 import { EChartsOptions } from './types'
 
-export function dataZoom(chartOptions: EChartsOptions) {
+export function dataZoom(chartOptions?: EChartsOptions) {
   const dataZoom = []
   if (chartOptions?.dataZoom) {
     // TODO: 还没区分 axis

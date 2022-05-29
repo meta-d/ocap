@@ -107,7 +107,7 @@ export interface ChartType {
 }
 
 export interface ChartMapType extends ChartType {
-  type: 'Map'
+  type: 'GeoMap'
   map?: string
   mapUrl?: string
   projection?: string
@@ -123,7 +123,7 @@ export interface ChartAnnotation extends Annotation {
 }
 
 // type guards
-export const isChartMapType = (toBe): toBe is ChartMapType => toBe?.type === 'Map'
+export const isChartMapType = (toBe): toBe is ChartMapType => toBe?.type === 'GeoMap'
 
 export function getChartTrellis(chartAnnotation: ChartAnnotation): ChartDimension {
   return chartAnnotation.dimensions.find((item) => item?.role === ChartDimensionRoleType.Trellis)

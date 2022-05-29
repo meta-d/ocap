@@ -25,7 +25,9 @@ export abstract class AbstractEntityService<T> implements EntityService<T> {
     combineLatest([this.dataSource.selectEntityType(this.entitySet), this.registerMeasures$])
       .pipe(
         map(([entityType, registerMeasures]) => {
+
           // console.log(`[AbstractEntityService] entityType:`, entityType, `registerMeasures:`, registerMeasures )
+          
           return {
             ...entityType,
             properties: {

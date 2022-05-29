@@ -410,8 +410,12 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
     )
   })
 
+  /**
+   * 默认下钻行为: 如果图形为多维度, 则默认取第一个维度
+   */
   public readonly dilldown$ = this.selectedSlicers$.pipe(map(selectedSlicers => {
-    return isSlicer(selectedSlicers[0]) ? selectedSlicers[0] : null
+    const first = selectedSlicers[0]
+    return isAdvancedFilter(first) ? first.children[0] : (isSlicer(first) ? first : null)
   }))
   
   readonly drillDown = this.updater((state, slicer: ISlicer) => {
