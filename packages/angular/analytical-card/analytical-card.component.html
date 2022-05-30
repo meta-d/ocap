@@ -6,7 +6,7 @@
     <ng-content select="[ngmAction]"></ng-content>
 
     <!-- Refresh & Loading icon -->
-    <button mat-icon-button class="ngm-analytical-card__refresh" displayDensity="compact"
+    <button mat-icon-button class="ngm-analytical-card__refresh"
       [style.opacity]="(isLoading$ | async) ? '0' : '1'"
       [style.visibility]="(isLoading$ | async) ? 'hidden' : 'visible'"
       (click)="refresh()">
@@ -20,7 +20,7 @@
   </div>
 </div>
 
-<ngm-breadcrumb-bar displayDensity="compact"
+<ngm-breadcrumb-bar [displayDensity]="options?.displayDensity"
   [steps]="breadcrumbs$ | async"
   (selectedChange)="reselectDrill($event)">
 </ngm-breadcrumb-bar>

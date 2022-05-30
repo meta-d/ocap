@@ -7,20 +7,10 @@ import {
   IDimensionMember,
   QueryReturn
 } from '@metad/ocap-core'
-import {
-  combineLatest,
-  distinctUntilChanged,
-  from,
-  map,
-  Observable,
-  shareReplay,
-  switchMap,
-  tap,
-} from 'rxjs'
+import { combineLatest, distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { SQLEntityService } from './entity.service'
-import { serializeCubeFact, serializeFrom } from './query'
+import { serializeCubeFact } from './query'
 import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLSchema } from './types'
-
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _entitySets$: Observable<Array<EntitySet>>
@@ -71,16 +61,13 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   }
 
   async fetchTableSchema(modelName: string, catalog: string, table: string, statement: string): Promise<SQLSchema[]> {
-    return (
-      this.agent
-        .request(this.options, {
-          method: 'get',
-          url: 'schema',
-          catalog,
-          table,
-          statement,
-        })
-    )
+    return this.agent.request(this.options, {
+      method: 'get',
+      url: 'schema',
+      catalog,
+      table,
+      statement
+    })
   }
 
   /**
@@ -108,65 +95,35 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         // entityType 来自于用户自定义的元数据配置
         // 如果 entityType 为 null, 则 entitySet 为运行时指定的表名, 直接取 entitySet 相应的运行时元数据
         const statement = cube?.expression || (cube?.tables?.length ? serializeCubeFact(cube) : null)
-        // // const table = cube?.tables?.[0]?.name || entitySet
-        // if (entityType?.expression) {
-        //   const result = await this.agent.request(this.options, {
-        //     method: 'post',
-        //     url: 'query',
-        //     // body: this.describe(entityType, this.options.dialect),
-        //     catalog: this.options.catalog
-        //   })
 
-        //   if (result) {
-        //     const { data, columns = [], error } = result
-        //     if (isEmpty(columns) && data?.[0]) {
-        //       columns.push(
-        //         ...typeOfObj(data[0]).map((col) => ({
-        //           ...col,
-        //           aggregationRole: col.type === 'number' ? AggregationRole.measure : AggregationRole.dimension,
-        //           dataType: col.type
-        //         }))
-        //       )
-        //     }
+        const schema = await this.fetchTableSchema(
+          this.options.name,
+          this.options.catalog || '',
+          statement ? null : entity,
+          statement
+        )
+        if (!schema?.length) {
+          // this.agent.error(`未能获取到 Entity '${entitySet}' 的运行时元数据`)
+          return null
+        }
+        const _entityType = mapTableSchemaEntityType(schema[0])
 
-        //     console.warn(`sql entityType columns:`, columns)
+        console.log(
+          `schema`,
+          schema,
+          `getEntityType from entityType`,
+          entitySet?.entityType,
+          `cube`,
+          cube,
+          `runtime type is`,
+          _entityType
+        )
 
-        //     const properties = {}
-        //     columns?.forEach((column) => {
-        //       properties[column.name] = {
-        //         ...column,
-        //         __id__: column.name,
-        //         aggregationRole: column.aggregationRole || decideRole(column.type),
-        //         dataType: column.type
-        //       }
-        //     })
-
-        //     return {
-        //       name: entitySet,
-        //       properties
-        //     }
-        //   }
-        //   return null
-        // } else {
-          const schema = await this.fetchTableSchema(this.options.name, this.options.catalog || '', statement ? null : entity, statement)
-          if (!schema?.length) {
-            // this.agent.error(`未能获取到 Entity '${entitySet}' 的运行时元数据`)
-            return null
-          }
-          const _entityType = mapTableSchemaEntityType(schema[0])
-
-          console.log(`getEntityType from entityType`, entitySet?.entityType, `cube`, cube, `runtime type is`, _entityType)
-
-          return {
-            ..._entityType,
-            name: entity
-          }
-        // }
-      }),
-      // catchError((err) => {
-      //   console.log(`*************************** errorrrrrrrrrrrrrrrrrrrrr *************************************`)
-      //   return throwError(() => new Error(err))
-      // })
+        return {
+          ..._entityType,
+          name: entity
+        }
+      })
     )
   }
 
@@ -187,17 +144,13 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   //   return `SELECT * FROM ${serializeFrom( entityType, dialect)} LIMIT 1`
   // }
 
-  query(q: {statement: string}): Observable<QueryReturn<unknown>> {
-    const statement = serializeWrapCatalog(
-      q.statement,
-      this.options.dialect,
-      this.options.catalog
-    )
+  query(q: { statement: string }): Observable<QueryReturn<unknown>> {
+    const statement = serializeWrapCatalog(q.statement, this.options.dialect, this.options.catalog)
     return from(
       this.agent.request(this.options, {
         method: 'post',
         url: 'query',
-        body: {statement},
+        body: { statement },
         catalog: this.options.catalog
       })
     ).pipe(

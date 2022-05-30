@@ -12,7 +12,7 @@ export interface TableEntity {
 export interface SemanticModel {
   id?: string
   name?: string
-  type: 'SQL' | 'XMLA'
+  type: 'SQL' | 'XMLA' | 'OData'
   agentType?: AgentType
   /**
    * 数据查询所使用的语言
@@ -22,7 +22,11 @@ export interface SemanticModel {
    * 数据源内的方言, 如 OData 中有 SAP, Microsoft 等, XMLA 中有 SAP BW, SQL 数据库有 Postgres Mysql Hive 等
    */
   dialect?: string
-  schemaName?: string
+  /**
+   * DB Schema / OData Catalog ...
+   */
+  catalog?: string
+
   tables?: Array<TableEntity>
 
   schema?: Schema

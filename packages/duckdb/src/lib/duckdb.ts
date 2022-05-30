@@ -47,6 +47,10 @@ export class DuckdbWasmAgent implements Agent {
       await Promise.all(
         model.tables?.map((entity) => {
           return (async () => {
+            if (model.catalog) {
+              await connection.query(`CREATE SCHEMA IF NOT EXISTS ${model.catalog};`)
+            }
+
             await connection.query(`DROP TABLE IF EXISTS "${entity.name}"`)
             if (entity.type === 'parquet') {
               await this.db.registerFileURL(entity.name, entity.sourceUrl)
@@ -54,13 +58,13 @@ export class DuckdbWasmAgent implements Agent {
             } else if (entity.type === 'csv') {
               return connection.insertCSVFromPath(entity.sourceUrl, {
                 create: true,
-                schema: model.schemaName,
+                schema: model.catalog,
                 name: entity.name,
-                // delimiter: entity.delimiter
+                delimiter: entity.delimiter
               })
             } else if (entity.type === 'json') {
               return connection.insertJSONFromPath(entity.sourceUrl, {
-                schema: model.schemaName,
+                schema: model.catalog,
                 name: entity.name
               })
             } else {
@@ -122,9 +126,10 @@ export class DuckdbWasmAgent implements Agent {
     }
 
     const connection = await this.getConnection()
-    const model = await this.getModel(dataSource.name)
+    // waiting the model prepared
+    await this.getModel(dataSource.name)
 
-    console.log(dataSource, options, model)
+    // console.log(dataSource, options, model)
 
     if (options.method === 'get') {
       if (options.url === 'schema') {
@@ -151,7 +156,10 @@ export class DuckdbWasmAgent implements Agent {
       if (options.url === 'query') {
         let results
         try {
-          results = await this.query(connection, options.body.statement)
+          if (dataSource.catalog) {
+            await connection.query(`SET search_path TO ${dataSource.catalog};`)
+          }
+          results = await connection.query(options.body.statement)
         }catch(error) {
           console.log(error)
           return Promise.reject(error)
@@ -220,7 +228,7 @@ export class DuckdbWasmAgent implements Agent {
     const statement = `DESCRIBE ${schemaName ? schemaName + '.' : ''}${tableName}`
     const results = await this.query(connection, statement)
 
-    console.log(`[Duckdb] Execute:`, statement, ` = `, results)
+    // console.log(`[Duckdb] Execute:`, statement, ` = `, results)
 
     return results
       .toArray()
@@ -241,7 +249,7 @@ export class DuckdbWasmAgent implements Agent {
     statement = `DESCRIBE ${statement}`
     const results = await this.query(connection, statement)
 
-    console.log(`[Duckdb] Execute:`, statement, ` = `, results)
+    // console.log(`[Duckdb] Execute:`, statement, ` = `, results)
 
     return results
       .toArray()

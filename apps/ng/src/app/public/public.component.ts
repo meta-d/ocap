@@ -23,7 +23,46 @@ import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/oca
   ]
 })
 export class PublicComponent {
-  cards = [
+  cards: any = [
+    // {
+    //   title: 'TripPin OData',
+    //   dataSettings: {
+    //     dataSource: 'TripPin',
+    //     entitySet: 'Trip',
+    //     chartAnnotation: {
+    //       chartType: {
+    //         type: 'Bar',
+    //       },
+    //       dimensions: [
+    //         {
+    //           dimension: 'ShareId'
+    //         }
+    //       ],
+    //       measures: [
+    //         {
+    //           dimension: 'Measures',
+    //           measure: 'Budget',
+    //           formatting: {
+    //             shortNumber: true
+    //           }
+    //         }
+    //       ]
+    //     },
+    //   },
+    //   chartSettings: {
+    //     universalTransition: true
+    //   },
+    //   chartOptions: {
+    //     dataZoom: {
+    //       type: ChartDataZoomType.INSIDE
+    //     },
+    //     seriesStyle: {
+    //       selectedMode: 'single',
+    //       itemStyle: {
+    //       }
+    //     }
+    //   } as ChartOptions
+    // },
     {
       title: 'Movies (WASM JSON)',
       dataSettings: {
@@ -63,18 +102,17 @@ export class PublicComponent {
         }
       } as ChartOptions
     },
-    // CARTESIAN_CARDS[0],
+    // // CARTESIAN_CARDS[CARTESIAN_CARDS.length - 2],
     ...ANALYTICAL_CARDS
   ]
 
   constructor(private wasmAgent: WasmAgentService, private dsCoreService: NgmDSCoreService) {
     setTimeout(() => {
-      wasmAgent.registerModel(DUCKDB_WASM_MODEL)
       wasmAgent.registerModel({
         name: 'NG_WASM_MODEL',
         type: 'SQL',
         agentType: AgentType.Wasm,
-        schemaName: 'main',
+        catalog: 'jm',
         tables: [
           {
             name: 'Movies',
@@ -84,11 +122,23 @@ export class PublicComponent {
           }
         ]
       })
+
       dsCoreService.registerModel({
         name: 'NG_WASM_MODEL',
         type: 'SQL',
-        agentType: AgentType.Wasm
+        agentType: AgentType.Wasm,
+        catalog: 'jm',
+        // dialect: 'duckdb',
       })
+
+      wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+
+      // // OData DataSource
+      // dsCoreService.registerModel({
+      //   name: 'TripPin',
+      //   type: 'OData',
+      //   agentType: AgentType.Browser
+      // })
     })
   }
 }

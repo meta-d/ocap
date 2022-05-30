@@ -19,29 +19,32 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
   agentType: AgentType.Wasm,
   syntax: Syntax.SQL,
   dialect: 'DuckDB',
-  schemaName: 'main',
+  catalog: 'main',
   tables: [
     {
       name: 'CsseCovid19Daily',
       type: 'csv',
-      sourceUrl:
-        'https://cdn.jsdelivr.net/gh/CSSEGISandData/COVID-19@master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
+      sourceUrl: window.location.origin + '/assets/data/CsseCovid19Daily_05-18-2022.csv',
+        // 'https://cdn.jsdelivr.net/gh/CSSEGISandData/COVID-19@master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
       delimiter: ','
     },
     {
       name: 'CountryGDP',
       type: 'csv',
-      sourceUrl: `https://cdn.jsdelivr.net/gh/curran/data@gh-pages/worldFactbook/GDPPerCapita.csv`
+      sourceUrl: window.location.origin + '/assets/data/GDPPerCapita.csv',
+      //`https://cdn.jsdelivr.net/gh/curran/data@gh-pages/worldFactbook/GDPPerCapita.csv`
     },
     {
       name: 'UserData',
       type: 'parquet',
-      sourceUrl: 'https://cdn.jsdelivr.net/gh/Teradata/kylo@master/samples/sample-data/parquet/userdata1.parquet'
+      sourceUrl: window.location.origin + '/assets/data/userdata1.parquet',
+      //'https://cdn.jsdelivr.net/gh/Teradata/kylo@master/samples/sample-data/parquet/userdata1.parquet'
     },
     {
       name: 'HREmployeeAttrition',
       type: 'csv',
-      sourceUrl: 'https://cdn.jsdelivr.net/gh/ashutoshtyagixyz/HR-Employee-Attrition@main/HR-Employee-Attrition.csv'
+      sourceUrl: window.location.origin + '/assets/data/HR-Employee-Attrition.csv',
+      // 'https://cdn.jsdelivr.net/gh/ashutoshtyagixyz/HR-Employee-Attrition@main/HR-Employee-Attrition.csv'
     }
   ]
 }
@@ -531,7 +534,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'World',
-          mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
+          mapUrl: window.location.origin + '/assets/data/countries.geo.json', // `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
         },
         dimensions: [
@@ -562,7 +565,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'World',
-          mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
+          mapUrl: window.location.origin + '/assets/data/countries.geo.json', // `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
         },
         dimensions: [
@@ -617,7 +620,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'World',
-          mapUrl: `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
+          mapUrl: window.location.origin + '/assets/data/countries.geo.json', // `https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json`,
           projection: 'NaturalEarth1'
         },
         dimensions: [
@@ -661,7 +664,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'USA',
-          mapUrl: `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`,
+          mapUrl: window.location.origin + '/assets/data/us-states.json', // `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`,
           projection: 'AlbersUsa'
         },
         dimensions: [
@@ -704,7 +707,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'USA',
-          mapUrl: `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`
+          mapUrl: window.location.origin + '/assets/data/us-states.json', // `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`
         },
         dimensions: [
           {

@@ -80,6 +80,17 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
       multi: true
     },
     {
+      provide: OCAP_DATASOURCE_TOKEN,
+      useValue: {
+        type: 'OData',
+        factory: async (): Promise<Type<DataSource>> => {
+          const { ODataDataSource } = await import('@metad/ocap-odata')
+          return ODataDataSource
+        }
+      },
+      multi: true
+    },
+    {
       provide: OCAP_MODEL_TOKEN,
       useValue: {
         name: 'Sales',

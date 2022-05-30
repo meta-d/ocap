@@ -43,9 +43,9 @@ export async function mapChartAnnotation(chartAnnotation: ChartAnnotation): Prom
         tap((geoJson) => registerMap(mapType, geoJson)),
         shareReplay(1)
       )
-
-      await firstValueFrom(registerMaps[mapType])
     }
+
+    await firstValueFrom(registerMaps[mapType])
 
     chartType.map = mapType
   }

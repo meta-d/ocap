@@ -8,6 +8,7 @@
     "nest": "apps/nest",
     "ng": "apps/ng",
     "ng-e2e": "apps/ng-e2e",
+    "odata": "packages/odata",
     "rc": "apps/rc",
     "rc-e2e": "apps/rc-e2e",
     "react": "packages/react",

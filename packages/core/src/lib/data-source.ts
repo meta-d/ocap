@@ -52,10 +52,6 @@ export interface DataSources {
  *    * annotations 每个 entity 的 annotations 配置
  */
 export interface DataSourceOptions extends SemanticModel {
-  /**
-   * @TODO 语义模型 catalog 与原始 SQL 数据库的 catalog 冲突, 需要分开
-   */
-  catalog?: string
   settings?: DataSourceSettings
   authMethod?: string
   useLocalAgent?: boolean
@@ -84,7 +80,7 @@ export interface DataSource {
   /**
    * 获取运行时 EntityType
    */
-  getEntityType(entitySet: string): Observable<EntityType>
+  getEntityType(entity: string): Observable<EntityType>
 
   /**
    * 获取维度成员
@@ -97,7 +93,7 @@ export interface DataSource {
   /**
    * 根据指定的 entitySet 名称创建相应的 entityService
    */
-  createEntityService<T>(entitySet: string): EntityService<T>
+  createEntityService<T>(entity: string): EntityService<T>
 
   /**
    * 监听运行时 EDM Schema 配置变化
@@ -144,7 +140,7 @@ export interface DataSource {
    *
    * @param entitySet 实体
    */
-  selectIndicators(entitySet: string): Observable<Array<Indicator>>
+  selectIndicators(entity: string): Observable<Array<Indicator>>
 
   /**
    * 获取指定指标
@@ -161,7 +157,7 @@ export interface DataSource {
    * @param columns
    * @param data
    */
-  createEntity(name, columns, data?): Observable<string>
+  createEntity(name: string, columns, data?): Observable<string>
 
   /**
    * 使用语句查询
@@ -192,9 +188,9 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     this.options$.next(options)
   }
 
-  abstract createEntityService<T>(entitySet: string): EntityService<T>
+  abstract createEntityService<T>(entity: string): EntityService<T>
   abstract getEntitySets(): Observable<Array<EntitySet>>
-  abstract getEntityType(entitySet: string): Observable<EntityType>
+  abstract getEntityType(entity: string): Observable<EntityType>
   abstract getCatalogs(): Observable<Array<Catalog>>
   abstract getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
   abstract createEntity(name, columns, data?): Observable<string>

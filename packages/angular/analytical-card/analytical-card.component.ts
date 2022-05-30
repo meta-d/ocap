@@ -11,7 +11,7 @@ import {
   ViewChild
 } from '@angular/core'
 import { MatMenuTrigger } from '@angular/material/menu'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   ChartBusinessService,
   ChartOptions,
@@ -55,6 +55,7 @@ export interface DrillLevel {
 }
 
 export interface AnalyticalCardOptions {
+  displayDensity?: DisplayDensity
   hideHeader?: boolean
   hideRefresh?: boolean
   hideLoading?: boolean
@@ -325,7 +326,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
   readonly dataSettings$ = combineLatest([this._dataSettings$, this.selectedDrilledDimensions$]).pipe(
     filter(([dataSettings]) => !isNil(dataSettings)),
     map(([dataSettings, selectedHierachyLevels]) => {
-      console.log(`合并最终的数据设置:`, dataSettings, selectedHierachyLevels)
+      // console.log(`合并最终的数据设置:`, dataSettings, selectedHierachyLevels)
 
       const chartAnnotation = dataSettings.chartAnnotation
       // const filters = selectOptions?.map(option => convertSelectedMembers2Filter(option.selectedMemberOptions))

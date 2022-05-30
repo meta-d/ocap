@@ -31,21 +31,6 @@ export function decideRole(type: string) {
   }
 }
 
-// export enum ExecutionStatus {
-//   UNKOWN,
-//   WAITING,
-//   PROCESSING,
-//   DONE,
-//   FAILED,
-// }
-
-// export interface Job {
-//   status: ExecutionStatus
-//   query_result_id: number
-//   result: any
-//   error?: any
-// }
-
 /**
  * TODO 不同的数据库需要拼出不同的字段名格式 ? 有没有最佳实践 ?
  * 
