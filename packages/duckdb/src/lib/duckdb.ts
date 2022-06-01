@@ -151,6 +151,8 @@ export class DuckdbWasmAgent implements Agent {
         }else {
           return await this.getTables()
         }
+      } else if (options.url === 'catalogs') {
+        return await this.getDatabases()
       }
     } else if (options.method === 'post') {
       if (options.url === 'query') {

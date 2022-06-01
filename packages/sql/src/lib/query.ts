@@ -3,6 +3,7 @@ import {
   AggregationRole,
   Cube,
   EntityProperty,
+  EntitySemantics,
   EntityType,
   getEntityProperty,
   getPropertyName,
@@ -192,7 +193,7 @@ export function serializeTopCount(options) {
   return `LIMIT ${options.paging.top}`
 }
 
-export function serializeOrderbys(orderbys, { rows, columns }, dialect: string) {
+export function serializeOrderbys(orderbys, { rows, columns }: SQLQueryContext, dialect: string) {
   const fields = concat(rows, columns)
   return orderbys
     .filter(({ by }) => fields.find((item) => item.property.name === by))
@@ -218,6 +219,13 @@ export function isZeroSuppression(context: SQLQueryContext) {
   return zeroSuppression
 }
 
+/**
+ * 将维度度量分配到不同的查询位置 Select Group Sort 等
+ *
+ * @param context
+ * @param entityType
+ * @returns
+ */
 export function serializeSelectFields(context: SQLQueryContext, entityType: EntityType): SQLQueryContext {
   const fields = []
   const groupbys = context.groupbys ?? []
@@ -228,7 +236,7 @@ export function serializeSelectFields(context: SQLQueryContext, entityType: Enti
 
   const columns = [...context.rows, ...context.columns]
 
-  let hasMeasure = false
+  let hasMeasure = entityType.semantics === EntitySemantics.aggregate
 
   columns.forEach(({ dimension, property }) => {
     if (isMeasure(dimension)) {

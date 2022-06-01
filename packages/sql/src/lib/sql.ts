@@ -7,12 +7,13 @@ import {
   IDimensionMember,
   QueryReturn
 } from '@metad/ocap-core'
-import { combineLatest, distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { SQLEntityService } from './entity.service'
 import { serializeCubeFact } from './query'
 import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLSchema } from './types'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
+  private _catalogs$: Observable<Array<Catalog>>
   private _entitySets$: Observable<Array<EntitySet>>
   /**
    * 获取数据库表列表
@@ -46,7 +47,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
     return this._entitySets$
   }
 
-  fetchSchema(modelName: string, catalog: string): Promise<Array<SQLSchema>> {
+  async fetchSchema(modelName: string, catalog: string): Promise<Array<SQLSchema>> {
     return this.agent
       .request(this.options, {
         method: 'get',
@@ -60,7 +61,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
       })
   }
 
-  async fetchTableSchema(modelName: string, catalog: string, table: string, statement: string): Promise<SQLSchema[]> {
+  async fetchTableSchema(modelName: string, catalog: string, table: string, statement?: string): Promise<SQLSchema[]> {
     return this.agent.request(this.options, {
       method: 'get',
       url: 'schema',
@@ -76,60 +77,75 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
    * @param entitySet
    * @returns
    */
-  getEntityType(entity: any): Observable<EntityType> {
-    return combineLatest([
-      this.selectSchema().pipe(
-        map((schema) => schema?.entitySets?.[entity]),
-        distinctUntilChanged()
-      ),
-      this.selectSchema().pipe(
+  getEntityType(entity: string): Observable<EntityType> {
+    return this.selectSchema()
+      .pipe(
         map((schema) => schema?.cubes?.find((item) => item.name === entity)),
         distinctUntilChanged()
       )
-    ]).pipe(
-      switchMap(async ([entitySet, cube]) => {
-        // if (!cube?.tables?.length) {
-        //   return null
-        // }
+      .pipe(
+        switchMap(async (cube) => {
+          try {
+            let schemas
+            if (entity && !cube) {
+              schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', entity)
+            } else if (cube) {
+              // 如果 entityType 为 null, 则 entitySet 为运行时指定的表名, 直接取 entitySet 相应的运行时元数据
+              const statement = cube.expression || (cube.tables?.length ? serializeCubeFact(cube) : null)
+              if (!statement) {
+                return null
+              }
+              schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', null, statement)
+            }
 
-        // entityType 来自于用户自定义的元数据配置
-        // 如果 entityType 为 null, 则 entitySet 为运行时指定的表名, 直接取 entitySet 相应的运行时元数据
-        const statement = cube?.expression || (cube?.tables?.length ? serializeCubeFact(cube) : null)
+            if (!schemas?.length) {
+              this.agent.error(`未能获取到 Entity '${entity}' 的运行时元数据`)
+              return null
+            }
 
-        const schema = await this.fetchTableSchema(
-          this.options.name,
-          this.options.catalog || '',
-          statement ? null : entity,
-          statement
-        )
-        if (!schema?.length) {
-          // this.agent.error(`未能获取到 Entity '${entitySet}' 的运行时元数据`)
-          return null
-        }
-        const _entityType = mapTableSchemaEntityType(schema[0])
+            const _entityType = mapTableSchemaEntityType(schemas[0])
 
-        console.log(
-          `schema`,
-          schema,
-          `getEntityType from entityType`,
-          entitySet?.entityType,
-          `cube`,
-          cube,
-          `runtime type is`,
-          _entityType
-        )
+            return {
+              ..._entityType,
+              name: entity
+            }
+          } catch (error: any) {
+            this.agent.error(error.message)
+            return null
+          }
 
-        return {
-          ..._entityType,
-          name: entity
-        }
-      })
-    )
+          // console.log(
+          //   `schema`,
+          //   schema,
+          //   `getEntityType from entityType`,
+          //   entitySet?.entityType,
+          //   `cube`,
+          //   cube,
+          //   `runtime type is`,
+          //   _entityType
+          // )
+        })
+      )
   }
 
+  /**
+   * 应该对应数据库的什么对象 ?
+   */
   getCatalogs(): Observable<Catalog[]> {
-    throw new Error('Method not implemented.')
+    if (!this._catalogs$) {
+      this._catalogs$ = from(
+        this.agent
+          .request(this.options, { method: 'get', url: 'catalogs' })
+          // TODO ???
+          .catch((error) => {
+            console.error(error)
+            return []
+          })
+      )
+    }
+    return this._catalogs$
   }
+
   getMembers(entity: string, dimension: string): Observable<IDimensionMember[]> {
     throw new Error('Method not implemented.')
   }

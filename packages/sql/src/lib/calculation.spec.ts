@@ -12,6 +12,6 @@ describe('serializeCalculationProperty', () => {
         } as CalculatedProperty,
         ''
       )
-    ).toEqual(`"measure1" / "measure2"`)
+    ).toEqual(`("measure1" / "measure2")`)
   })
 })

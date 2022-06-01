@@ -9,7 +9,9 @@
         "outputPath": "dist/packages/sql",
         "main": "packages/sql/src/index.ts",
         "tsConfig": "packages/sql/tsconfig.lib.json",
-        "assets": ["packages/sql/*.md"]
+        "assets": [
+          "README.md"
+        ]
       }
     },
     "lint": {

@@ -1,4 +1,4 @@
-import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Property } from "@metad/ocap-core"
+import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from "@metad/ocap-core"
 
 export interface SQLDataSourceOptions extends DataSourceOptions {
   settings?: SQLDataSourceSettings
@@ -58,15 +58,15 @@ export function serializeWrapCatalog(expression: string, dialect: string, catalo
 export interface SQLQueryContext {
   rows: Array<SQLQueryProperty>
   columns: Array<SQLQueryProperty>
-  select: string[]
-  where: string[]
-  groupbys
-  unbookedData: string[]
-  zeroSuppression: boolean
-  dialect: string
+  select?: string[]
+  where?: string[]
+  groupbys?: string[]
+  unbookedData?: string[]
+  zeroSuppression?: boolean
+  dialect?: string
 }
 
 export interface SQLQueryProperty {
-  dimension: Dimension
+  dimension: Dimension | Measure
   property: Property
 }

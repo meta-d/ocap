@@ -248,9 +248,13 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
       this._entitySets[entity] = this.getEntityType(entity).pipe(
         switchMap((rtEntityType) =>
           this.selectSchema().pipe(
-            // map((schema) => schema?.entities?.find((item) => item.name === entity)),
             distinctUntilChanged(),
             map((schema) => {
+
+              if (!rtEntityType) {
+                return rtEntityType
+              }
+
               const customEntityType = schema?.entitySets?.[entity]?.entityType
               const cube = schema?.cubes?.find((item) => item.name === entity)
 

@@ -9,7 +9,9 @@
         "outputPath": "dist/packages/duckdb",
         "main": "packages/duckdb/src/index.ts",
         "tsConfig": "packages/duckdb/tsconfig.lib.json",
-        "assets": ["packages/duckdb/*.md"]
+        "assets": [
+          "README.md"
+        ]
       }
     },
     "lint": {

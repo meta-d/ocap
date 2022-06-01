@@ -1,12 +1,11 @@
 import { Observable, of } from 'rxjs'
-import { AggregationRole } from '../models/index'
 import { DataSourceOptions } from '../data-source'
+import { AggregationRole } from '../models/index'
 import { Agent, AgentStatus, AgentType } from './types'
 
 export class MockAgent implements Agent {
-
   type = AgentType.Browser
-  
+
   selectStatus(): Observable<AgentStatus> {
     return of(AgentStatus.ONLINE)
   }
@@ -25,7 +24,7 @@ export class MockAgent implements Agent {
       if (options.method === 'get') {
         if (options.url === 'schema') {
           if (options.table === 'SalesOrder') {
-            return resolve({
+            return resolve([{
               name: 'SalesOrder',
               label: '销售订单',
               columns: [
@@ -54,8 +53,44 @@ export class MockAgent implements Agent {
                   aggregationRole: AggregationRole.measure
                 }
               ]
-            })
+            }])
+          } else if (options.statement) {
+            return resolve([{
+              name: 'SalesOrder',
+              label: '销售订单',
+              columns: [
+                {
+                  name: 'product',
+                  label: '产品',
+                  type: 'string',
+                  aggregationRole: AggregationRole.dimension
+                },
+                {
+                  name: 'productCategory',
+                  label: '产品类别',
+                  type: 'string',
+                  aggregationRole: AggregationRole.dimension
+                },
+                {
+                  name: 'sales',
+                  label: '销售额',
+                  type: 'number',
+                  aggregationRole: AggregationRole.measure
+                },
+                {
+                  name: 'quantity',
+                  label: '销售量',
+                  type: 'number',
+                  aggregationRole: AggregationRole.measure
+                }
+              ]
+            }])
           }
+        } else if (options.url === 'catalogs') {
+          return resolve([
+            { name: 'Sales', label: '销售' },
+            { name: 'Inventory', label: '库存' }
+          ])
         }
       } else if (options.method === 'post') {
         if (options.url === 'query') {
@@ -77,7 +112,7 @@ export class MockAgent implements Agent {
         }
       }
 
-      resolve({})
+      return reject(`Unknow method ${options.url}`)
     })
   }
 }

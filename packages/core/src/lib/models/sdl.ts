@@ -3,6 +3,11 @@ import { CalculatedMember, ParameterControlEnum } from './calculated'
 import { Indicator } from './indicator'
 import { EntityProperty, PropertyAttributes } from './property'
 
+export interface Entity {
+  name: string
+  label?: string
+}
+
 export interface Schema {
   name: string
   /**
@@ -23,10 +28,8 @@ export interface Schema {
   }
 }
 
-export interface Cube {
+export interface Cube extends Entity {
   __id__?: string
-  name: string
-  label?: string
   expression?: string
   tables?: Table[]
   dimensionUsages?: DimensionUsage[]
@@ -82,7 +85,6 @@ export interface DimensionUsage {
 }
 
 /**
- * @deprecated
  */
 export enum EntitySemantics {
   aggregate = 'aggregate',
@@ -268,12 +270,8 @@ export interface ParameterProperty extends EntityProperty {
  * 
  * Entity 的 Meta 信息集合
  */
-export interface EntitySet {
+export interface EntitySet extends Entity {
   __id__?: string
-  /**
-   * Entity 名称
-   */
-  name: string
   /**
    * Entity Type 定义
    */
