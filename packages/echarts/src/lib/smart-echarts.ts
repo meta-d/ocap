@@ -15,7 +15,9 @@ import {
   SmartChartEngineState
 } from '@metad/ocap-core'
 import { ECharts } from 'echarts/core'
-import { isArray, isEmpty, isEqual } from 'lodash'
+import isArray from 'lodash/isArray'
+import isEmpty from 'lodash/isEmpty'
+import isEqual from 'lodash/isEqual'
 import {
   BehaviorSubject,
   catchError,
@@ -169,7 +171,9 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
       } catch (err: any) {
         console.error(err)
         this.error$.next(err.message)
-        return {}
+        return {
+          error: err.message
+        }
       }
     }),
     tap((options) => console.log(options)),

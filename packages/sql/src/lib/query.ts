@@ -17,7 +17,12 @@ import {
   QueryOptions,
   Schema
 } from '@metad/ocap-core'
-import { compact, concat, isArray, isEmpty, negate, union } from 'lodash'
+import compact from 'lodash/compact'
+import concat from 'lodash/concat'
+import isArray from 'lodash/isArray'
+import isEmpty from 'lodash/isEmpty'
+import negate from 'lodash/negate'
+import union from 'lodash/union'
 import { serializeCalculationProperty } from './calculation'
 import { OrderBy } from './functions'
 import { convertFiltersToSQL } from './sql-filter'

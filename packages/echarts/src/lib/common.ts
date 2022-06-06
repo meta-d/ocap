@@ -7,7 +7,8 @@ import {
   PrimitiveType,
   Property
 } from '@metad/ocap-core'
-import { find, isNumber } from 'lodash'
+import find from 'lodash/find'
+import isNumber from 'lodash/isNumber'
 import { formatNumber } from './decimal'
 import { FORMAT_LOCALE_DATA, SeriesComponentType } from './types'
 

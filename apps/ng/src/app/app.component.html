@@ -13,12 +13,55 @@
         </button>
     </mat-toolbar>
     
-    <div class="app-content"  >
+    <div class="app-content" >
+        <div fxLayout="row">
+            <ngm-smart-filter [dataSettings]="dataSettings"
+                [options]="smartFilterOptions"
+                [(ngModel)]="slicer"
+                (ngModelChange)="onSlicerChange($event)">
+            </ngm-smart-filter>
 
-        <router-outlet></router-outlet>
-        
-        <!-- <iframe width="100%"
-          height="600" src="http://localhost:4200/public/widget/851e83a9-710e-4d7b-98f1-cbbd3c9e1155">
-        </iframe> -->
+            <ngm-smart-filter [dataSettings]="dataSettings"
+                [options]="productFilterOptions"
+                [(ngModel)]="product"
+                (ngModelChange)="onSlicerChange($event)">
+            </ngm-smart-filter>
+
+            <ngm-smart-filter [dataSettings]="dataSettings"
+                [options]="{
+                    dimension: departmentDimension
+                }"
+                [(ngModel)]="department"
+                (ngModelChange)="onSlicerChange($event)">
+            </ngm-smart-filter>
+
+            <ngm-member-tree [dataSettings]="dataSettings"
+                [dimension]="departmentDimension"
+            ></ngm-member-tree>
+
+            <ngm-member-table [dataSettings]="dataSettings"
+                [dimension]="departmentDimension"
+                [(ngModel)]="department"
+                (ngModelChange)="onSlicerChange($event)"
+            ></ngm-member-table>
+        </div>
+
+        <div>
+            {{ department | json }}
+        </div>
+
+
+        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">
+            <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
+                <ngm-analytical-card displayDensity="compact"
+                    [title]="card.title"
+                    [dataSettings]="card.dataSettings"
+                    [chartSettings]="card.chartSettings"
+                    [chartOptions]="card.chartOptions"
+                    [options]="{
+                    }"
+                ></ngm-analytical-card>
+            </div>
+        </div>
     </div>
 </div>

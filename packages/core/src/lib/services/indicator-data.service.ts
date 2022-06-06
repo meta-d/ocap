@@ -1,4 +1,5 @@
-import { isEmpty, isString } from 'lodash'
+import isEmpty from 'lodash/isEmpty'
+import isString from 'lodash/isString'
 import { BehaviorSubject, EMPTY, filter, map, Observable, switchMap, tap, withLatestFrom } from 'rxjs'
 import { PeriodFunctions } from '../annotations'
 import { calcRange, mapTimeGranularitySemantic, TimeGranularity, TimeRangeType } from '../filter'

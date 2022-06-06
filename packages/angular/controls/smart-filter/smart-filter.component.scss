@@ -1,0 +1,16 @@
+.ngm-smart-filter__form-field {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ngm-smart-filter__member-chip {
+  max-width: 100%;
+  .ngm-display-behaviour {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+.ngm-smart-filter__autocomplete-viewport {
+  height: 250px;
+}

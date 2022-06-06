@@ -1,0 +1,48 @@
+<mat-form-field class="ngm-smart-filter__form-field" [appearance]="options?.appearance"
+  [floatLabel]="options?.floatLabel"
+  [hideRequiredMarker]="options?.hideRequiredMarker"
+  [displayDensity]="options?.displayDensity">
+  <mat-label>{{ label$ | async }}</mat-label>
+
+  <mat-chip-list #chipList>
+    <mat-chip class="ngm-smart-filter__member-chip"
+      *ngFor="let member of chips$ | async"
+      [selectable]="selectable"
+      (removed)="removeMember(member)"
+    >
+      <ngm-display-behaviour [option]="member" [excludeSelected]="slicer?.exclude"></ngm-display-behaviour>
+      <mat-icon *ngIf="removable" matChipRemove>cancel</mat-icon>
+    </mat-chip>
+
+    <mat-chip *ngIf="restChips?.length">+{{restChips?.length}}</mat-chip>
+
+    <input #search
+      [placeholder]="placeholder$ | async"
+      [formControl]="valueControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipList"
+    >
+  </mat-chip-list>
+
+  <button mat-icon-button matSuffix type="button" class="ngm-smart-filter__help"
+    (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
+  >
+    <mat-icon>help_outline</mat-icon>
+  </button>
+
+  <button *ngIf="isNotInitial$ | async" matSuffix mat-icon-button
+    (click)="$event.stopPropagation();clearMembers()">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="selectMember($event)">
+    <cdk-virtual-scroll-viewport class="ngm-smart-filter__autocomplete-viewport"
+      [displayDensity]="options?.displayDensity"
+      itemSize="32"
+    >
+      <mat-option *cdkVirtualFor="let member of filteredOptions$ | async" [value]="member">
+        <ngm-display-behaviour [option]="member" [highlight]="search.value"></ngm-display-behaviour>
+      </mat-option>
+    </cdk-virtual-scroll-viewport>
+  </mat-autocomplete>
+</mat-form-field>

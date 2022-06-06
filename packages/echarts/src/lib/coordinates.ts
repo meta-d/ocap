@@ -6,7 +6,9 @@ import {
   getPropertyHierarchy,
   QueryReturn
 } from '@metad/ocap-core'
-import { chunk, groupBy, isArray } from 'lodash'
+import chunk from 'lodash/chunk'
+import groupBy from 'lodash/groupBy'
+import isArray from 'lodash/isArray'
 import { dataZoom } from './data-zoom'
 import { EChartsOptions } from './types'
 

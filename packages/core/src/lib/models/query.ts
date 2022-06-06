@@ -1,5 +1,5 @@
 import { MemberType, Property } from '.'
-import { RecursiveHierarchyData } from '../annotations/hierarchy'
+import { RecursiveHierarchyData, RecursiveHierarchyType } from '../annotations/hierarchy'
 
 /**
  * Hierarchy 结构化的字段类型, 字段包含子字段们
@@ -22,6 +22,7 @@ export interface EntitySchema {
   rows?: Array<Property & PivotColumn>
   columns: Array<Property & PivotColumn>
   analytics?: any
+  recursiveHierarchy?: RecursiveHierarchyType
 }
 
 /**
@@ -34,6 +35,9 @@ export interface QueryReturn<T> {
   results?: Array<T>
   data?: Array<T>
   schema?: EntitySchema
+  /**
+   * @deprecated use schema
+   */
   recursiveData?: RecursiveHierarchyData<T>[]
   error?: any
 }

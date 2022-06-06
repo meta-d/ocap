@@ -4,6 +4,7 @@ import { DataSource } from './data-source'
 import { EntityService } from './entity'
 import { CalculatedProperty, EntityType, Property, QueryReturn } from './models'
 import { Annotation, Dimension, QueryOptions } from './types'
+import { isNil } from './utils'
 
 /**
  * 公共抽象实体服务类, 包含一些常用的公共能力如: 合并自定义 Entity 属性, 支持简易的 JavaScript 实体字段计算表达式
@@ -25,8 +26,9 @@ export abstract class AbstractEntityService<T> implements EntityService<T> {
     combineLatest([this.dataSource.selectEntityType(this.entitySet), this.registerMeasures$])
       .pipe(
         map(([entityType, registerMeasures]) => {
-
-          // console.log(`[AbstractEntityService] entityType:`, entityType, `registerMeasures:`, registerMeasures )
+          if (isNil(entityType)) {
+            return entityType
+          }
           
           return {
             ...entityType,

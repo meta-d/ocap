@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.cdk-virtual-scroll-viewport.cdk-virtual-scroll-orientation-vertical {
+  flex: 1;
+
+  .cdk-virtual-scroll-content-wrapper {
+    height: 100%;
+  }
+}
+
+.mat-table {
+  width: 100%;
+  height: 100%;
+  table-layout: fixed;
+}
+
+.mat-cell {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.mat-column-select {
+  width: 60px;
+}
+
+.ngm-member-table__search {
+  width: 100%;
+}

@@ -16,7 +16,8 @@ import {
 } from '@metad/ocap-core'
 import { TreemapChart } from 'echarts/charts'
 import { use } from 'echarts/core'
-import { groupBy, sumBy } from 'lodash'
+import groupBy from 'lodash/groupBy'
+import sumBy from 'lodash/sumBy'
 import { DefaultValueFormatter } from './common'
 import { EChartsOptions } from './types'
 

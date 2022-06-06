@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, ChartDataZoomType, ChartOptions, OrderDirection } from '@metad/ocap-core'
 import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
@@ -20,7 +20,7 @@ import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/oca
         box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px 0px;
       }
     `
-  ]
+  ],
 })
 export class PublicComponent {
   cards: any = [
@@ -106,7 +106,22 @@ export class PublicComponent {
     ...ANALYTICAL_CARDS
   ]
 
-  constructor(private wasmAgent: WasmAgentService, private dsCoreService: NgmDSCoreService) {
+  constructor(
+    private wasmAgent: WasmAgentService,
+    private dsCoreService: NgmDSCoreService) {
+
+    
+    // this.smartFilterBar.change([
+    //   {
+    //     dimension: {
+    //       dimension: 'Creative Type'
+    //     },
+    //     members: [
+    //       {value: 'Contemporary Fiction'}
+    //     ]
+    //   }
+    // ])
+
     setTimeout(() => {
       wasmAgent.registerModel({
         name: 'NG_WASM_MODEL',
@@ -128,6 +143,9 @@ export class PublicComponent {
         type: 'SQL',
         agentType: AgentType.Wasm,
         catalog: 'jm',
+        settings: {
+          ignoreUnknownProperty: true
+        }
         // dialect: 'duckdb',
       })
 

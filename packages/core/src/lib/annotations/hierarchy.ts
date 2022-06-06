@@ -1,4 +1,5 @@
-import { assign, isEmpty } from 'lodash'
+import assign from 'lodash/assign'
+import isEmpty from 'lodash/isEmpty'
 import { Annotation, PropertyName } from '../types'
 
 /**

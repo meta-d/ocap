@@ -1,26 +1,17 @@
-import {
-  isDate,
-  addDays,
-  addMonths,
-  addQuarters,
-  addYears,
-  endOfMonth,
-  endOfQuarter,
-  endOfWeek,
-  endOfYear,
-  format,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
-  subDays,
-  subMonths,
-  subQuarters,
-  subYears,
-  addWeeks,
-  subWeeks
-} from 'date-fns'
-import { isArray, isNil, isString } from 'lodash'
+import addDays from 'date-fns/addDays'
+import addMonths from 'date-fns/addMonths'
+import addQuarters from 'date-fns/addQuarters'
+import addWeeks from 'date-fns/addWeeks'
+import addYears from 'date-fns/addYears'
+import format from 'date-fns/format'
+import isDate from 'date-fns/isDate'
+import subDays from 'date-fns/subDays'
+import subMonths from 'date-fns/subMonths'
+import subQuarters from 'date-fns/subQuarters'
+import subWeeks from 'date-fns/subWeeks'
+import subYears from 'date-fns/subYears'
+import isString from 'lodash/isString'
+import isArray from 'lodash/isArray'
 import { Semantics } from './annotations'
 import { EntityType, getEntityCalendarHierarchy } from './models'
 import {
@@ -36,10 +27,11 @@ import {
   ISlicer,
   Measure
 } from './types'
+import isNil from 'lodash/isNil'
+
 // format
 export const HTML5_FMT_DATETIME_LOCAL_SECONDS = `yyyy-MM-dd'T'HH:mm:ss`
 export const HTML5_FMT_DATE = 'yyyy-MM-dd'
-
 
 /**
  * 对 IFilter 过滤条件接口的便捷实现类
@@ -100,18 +92,18 @@ export enum TimeGranularity {
   Quarter = 'Quarter',
   Month = 'Month',
   Week = 'Week',
-  Day = 'Day',
+  Day = 'Day'
   // @todo more
 }
 
 export enum TimeRangeType {
   Standard = 'Standard',
-  Offset = 'Offset',
+  Offset = 'Offset'
 }
 
 export enum OffSetDirection {
   LookBack = 'LookBack',
-  LookAhead = 'LookAhead',
+  LookAhead = 'LookAhead'
 }
 
 export interface TimeOffSet {
@@ -342,24 +334,22 @@ export const FILTER_OPERATOR_DESC = {
 export const isTimeRangesSlicer = (toBe): toBe is TimeRangesSlicer =>
   !isNil((toBe as TimeRangesSlicer)?.ranges) && !isNil((toBe as TimeRangesSlicer)?.currentDate)
 
-
 // Helpers
 
 export function mapTimeGranularitySemantic(granularity: TimeGranularity): Semantics {
-  switch(granularity) {
+  switch (granularity) {
     case TimeGranularity.Year:
-      return Semantics["Calendar.Year"]
+      return Semantics['Calendar.Year']
     case TimeGranularity.Quarter:
-      return Semantics["Calendar.Quarter"]
+      return Semantics['Calendar.Quarter']
     case TimeGranularity.Month:
-      return Semantics["Calendar.Month"]
+      return Semantics['Calendar.Month']
     case TimeGranularity.Day:
-      return Semantics["Calendar.Day"]
+      return Semantics['Calendar.Day']
     default:
       throw new Error(`Can't found semantics for granularity ${granularity}`)
   }
 }
-
 
 export function formatCurrentPeriod(current: number | Date, granularity: TimeGranularity, formatter?: string) {
   if (granularity === null || current === null) {
@@ -424,18 +414,17 @@ export function calcOffset(currentDate: Date, { direction, granularity, amount }
 
 export function formatRangeCurrentPeriod(current: Date, range: TimeRange) {
   if (range.type === TimeRangeType.Offset) {
-    current = calcOffset(current, {...range.current, granularity: range.granularity})
+    current = calcOffset(current, { ...range.current, granularity: range.granularity })
   }
 
   return formatCurrentPeriod(current, range.granularity, range.formatter)
 }
 
 export function calcRange(current: Date, range: TimeRange) {
-
   if (range.type === TimeRangeType.Offset) {
-    current = calcOffset(current, {...range.current, granularity: range.granularity})
+    current = calcOffset(current, { ...range.current, granularity: range.granularity })
   }
-  
+
   return [
     formatCurrentPeriod(
       calcOffset(current, {
@@ -458,7 +447,6 @@ export function calcRange(current: Date, range: TimeRange) {
     )
   ]
 }
-
 
 export function workOutTimeRangeSlicers(
   currentDate: Date,
@@ -488,7 +476,7 @@ export function workOutTimeRangeSlicers(
 
     return {
       dimension: timeSlicer.dimension,
-      members: results.map(value => ({value})),
+      members: results.map((value) => ({ value })),
       operator: FilterOperator.BT
     }
   })

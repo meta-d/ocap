@@ -1,4 +1,10 @@
-import { assign, cloneDeep, isArray, isEmpty, isNil, isString, mergeWith, omitBy } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import isArray from 'lodash/isArray'
+import isEmpty from 'lodash/isEmpty'
+import isNil from 'lodash/isNil'
+import isString from 'lodash/isString'
+import mergeWith from 'lodash/mergeWith'
+import omitBy from 'lodash/omitBy'
 import { Semantics } from '../annotations'
 import { Dimension, getPropertyName, isDimension, ISlicer, isMeasure, Measure, Member, PropertyPath } from '../types'
 import { CalculationProperty, CalculationType, isCalculationProperty } from './calculated'
@@ -204,6 +210,15 @@ export function getHierarchyProperty(hierarchy: PropertyHierarchy, name: string)
   return property
 }
 
+/**
+ * 获取字段的文本字段, 向后兼容 text 属性
+ * 
+ * @param property 
+ * @returns 
+ */
+export function getPropertyCaption(property: Property) {
+  return property.caption || getPropertyTextName(property)
+}
 export function getPropertyTextName(property: Property) {
   return isString(property?.text) ? property.text : property?.text?.name
 }

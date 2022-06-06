@@ -1,7 +1,6 @@
 export * from './lib/abstract-entity.service'
 export * from './lib/agent/index'
 export * from './lib/annotations/index'
-export * from './lib/core'
 export * from './lib/data-settings'
 export * from './lib/data-source'
 export * from './lib/ds-core.service'

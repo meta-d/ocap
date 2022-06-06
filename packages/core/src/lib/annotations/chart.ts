@@ -1,4 +1,4 @@
-import { isNil } from 'lodash'
+import isNil from 'lodash/isNil'
 import { Annotation, Dimension, Measure } from '../types'
 
 // for ChartAnnotation

@@ -1,4 +1,5 @@
-import { isNil, isString } from 'lodash'
+import isNil from 'lodash/isNil'
+import isString from 'lodash/isString'
 import { Observable } from 'rxjs'
 import { v4 as uuidv4 } from 'uuid'
 import { OrderBy } from './orderby'
@@ -283,7 +284,7 @@ export function getPropertyName(path: Dimension | Measure | string) {
   return isString(path) ? path : isDimension(path) ? path?.dimension : path?.measure
 }
 
-export function getPropertyHierarchy(path: Dimension) {
+export function getPropertyHierarchy(path: Dimension | string) {
   return isString(path) ? path : isDimension(path) ? path?.hierarchy || path?.dimension : null
 }
 

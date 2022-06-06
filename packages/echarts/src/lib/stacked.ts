@@ -13,7 +13,7 @@ import {
   getPropertyMeasure,
   getPropertyTextName
 } from '@metad/ocap-core'
-import { uniqBy } from 'lodash'
+import uniqBy from 'lodash/uniqBy'
 import { axisOrient } from './axis'
 import { getEChartsMatrixTooltip } from './tooltip'
 import { SeriesComponentType } from './types'

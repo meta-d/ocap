@@ -1,5 +1,6 @@
-import { isEmpty, isNil } from 'lodash'
-import { combineLatestWith, distinctUntilChanged, filter, map, Observable, switchMap } from 'rxjs'
+import isEmpty from 'lodash/isEmpty'
+import isNil from 'lodash/isNil'
+import { combineLatestWith, distinctUntilChanged, filter, map, Observable } from 'rxjs'
 import { getEntityProperty, QueryReturn } from '../models'
 import { QueryOptions } from '../types'
 import { SmartBusinessService } from './smart-business.service'

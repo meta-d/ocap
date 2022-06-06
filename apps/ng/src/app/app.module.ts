@@ -10,16 +10,20 @@ import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { ControlsModule } from '@metad/ocap-angular/controls'
 import { AgentType, DataSource, Type } from '@metad/ocap-core'
+import { ZhHans } from '@metad/ocap-angular'
 import { DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
-import { MissingTranslationHandler, MissingTranslationHandlerParams, TranslateModule } from '@ngx-translate/core'
+import { MissingTranslationHandler, MissingTranslationHandlerParams, TranslateLoader, TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
+import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
+import { Observable, of } from 'rxjs'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -29,6 +33,13 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
       return params.interpolateParams['Default'] || params.key
     }
     return params.key
+  }
+}
+
+export class CustomLoader implements TranslateLoader {
+  getTranslation(lang: string): Observable<any> {
+    console.log(lang, ZhHans)
+    return of(ZhHans);
   }
 }
 
@@ -46,6 +57,8 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
     MatButtonModule,
     MatIconModule,
     TranslateModule.forRoot({
+      defaultLanguage: 'en',
+      loader: {provide: TranslateLoader, useClass: CustomLoader},
       missingTranslationHandler: {
         provide: MissingTranslationHandler,
         useClass: MyMissingTranslationHandler
@@ -54,7 +67,9 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
-    OcapCoreModule.forRoot()
+    OcapCoreModule.forRoot(),
+    ControlsModule,
+    AnalyticalCardModule
   ],
   providers: [
     WasmAgentService,
@@ -95,13 +110,39 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
       useValue: {
         name: 'Sales',
         type: 'SQL',
-        agentType: AgentType.Browser
+        agentType: AgentType.Browser,
+        settings: {
+          ignoreUnknownProperty: true
+        },
+        schema: {
+          cubes: [
+            {
+              name: 'SalesOrder',
+              tables: [{name: 'SalesOrder'}],
+              dimensions: [
+                {
+                  name: 'product',
+                  caption: 'productName'
+                },
+                {
+                  name: 'Department',
+                  caption: 'DepartmentName'
+                }
+              ]
+            }
+          ]
+        }
       },
       multi: true
     },
     {
       provide: OCAP_MODEL_TOKEN,
-      useValue: DUCKDB_WASM_MODEL,
+      useValue: {
+        ...DUCKDB_WASM_MODEL,
+        settings: {
+          ignoreUnknownProperty: true
+        }
+      },
       multi: true
     }
   ],

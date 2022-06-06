@@ -3,7 +3,7 @@ import { ControlValueAccessor, FormArray, FormControl, FormGroup, NG_VALUE_ACCES
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { AggregationRole, Dimension, EntitySet, getEntityDimensionAndHierarchies, ISlicer } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { isEqual, values } from 'lodash'
+import isEqual from 'lodash/isEqual'
 import { BehaviorSubject, distinctUntilChanged, map, shareReplay, withLatestFrom } from 'rxjs'
 
 @UntilDestroy()

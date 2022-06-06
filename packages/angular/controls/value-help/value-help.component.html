@@ -1,0 +1,175 @@
+<div mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+    {{ 'Ngm.Controls.ValueHelp.Title' | translate: {Default: 'Set Filters for {{value}}', value: dimension?.dimension} }}
+</div>
+
+<div mat-dialog-content fxLayout="row">
+    <div class="ngm-value-help__available-members">
+        <div class="ngm-value-help__available">
+            <div class="sub-title">
+                {{ 'Ngm.Controls.ValueHelp.AvailableMembers' | translate: {Default: "Available Members"} }}
+                <button mat-icon-button (click)="expandAvailables=!expandAvailables">
+                    <mat-icon *ngIf="expandAvailables">keyboard_arrow_up</mat-icon>
+                    <mat-icon *ngIf="!expandAvailables">keyboard_arrow_down</mat-icon>
+                </button>
+            </div>
+
+            <div [ngStyle]="{height: expandAvailables ? '120px' : '0' }" class="ngm-value-help__options"
+                fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="0.5rem">
+
+                <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="0.5rem">
+                    <mat-form-field appearance="fill">
+                        <mat-label>
+                            {{ 'Ngm.Controls.ValueHelp.DisplayBehaviour' | translate: {Default: "Display Behaviour"} }}
+                        </mat-label>
+                        <mat-select [(ngModel)]="displayBehaviour">
+                            <mat-option [value]="DISPLAY_BEHAVIOUR.descriptionOnly">
+                                {{ 'Ngm.Common.DisplayBehaviour_Description' | translate: {Default: "Description"} }}
+                            </mat-option>
+                            <mat-option [value]="DISPLAY_BEHAVIOUR.descriptionAndId">
+                                {{ 'Ngm.Common.DisplayBehaviour_DescriptionID' | translate: {Default: "Description ID"} }}
+                            </mat-option>
+                            <mat-option [value]="DISPLAY_BEHAVIOUR.idAndDescription">
+                                {{ 'Ngm.Common.DisplayBehaviour_IDDescription' | translate: {Default: "ID Description"} }}
+                            </mat-option>
+                            <mat-option [value]="DISPLAY_BEHAVIOUR.idOnly">
+                                {{ 'Ngm.Common.DisplayBehaviour_ID' | translate: {Default: "ID"} }}
+                            </mat-option>
+                            <mat-option [value]="''">
+                                {{ 'Ngm.Common.DisplayBehaviour_Auto' | translate: {Default: "Auto"} }}
+                            </mat-option>
+                          </mat-select>
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" *ngIf="hierarchies$ | async as hierarchies">
+                        <mat-label>
+                            {{ 'Ngm.Controls.ValueHelp.ShowHierarchy' | translate: {Default: "Show Hierarchy"} }}
+                        </mat-label>
+                        <mat-select [(ngModel)]="hierarchy">
+                            <mat-option *ngFor="let hierarchy of hierarchies" [value]="hierarchy.name">{{hierarchy.label}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutGap="0.5rem">
+                    <mat-slide-toggle>
+                        {{ 'Ngm.Controls.ValueHelp.ShowUnbookedMembers' | translate: {Default: "Show Unbooked Members"} }}
+                    </mat-slide-toggle>
+                    <mat-slide-toggle>
+                        {{ 'Ngm.Controls.ValueHelp.ShowOnlyLeaves' | translate: {Default: "Only Leaves"} }}
+                    </mat-slide-toggle>
+                    <mat-slide-toggle [(ngModel)]="excludeSelected">
+                        {{ 'Ngm.Controls.ValueHelp.ExcludeSelectedMembers' | translate: {Default: "Exclude Selected Members"} }}
+                    </mat-slide-toggle>
+                </div>
+
+            </div>
+
+        </div>
+        <mat-divider></mat-divider>
+
+        <div class="ngm-value-help__members">
+            <ngm-member-table *ngIf="presentation !== PresentationEnum.Hierarchy" fxFlex="100"
+                [dataSettings]="dataSettings"
+                [dimension]="dimension"
+                [options]="options"
+                [(ngModel)]="slicerModel"
+            ></ngm-member-table>
+
+            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100"
+                [dataSettings]="dataSettings"
+                [dimension]="dimension"
+                [options]="options"
+                [(ngModel)]="slicerModel"
+            ></ngm-member-tree>
+        </div>
+    </div>
+
+    <mat-divider [vertical]="true"></mat-divider>
+
+    <div class="ngm-value-help__selected">
+        <div class="ngm-value-help__selected-members" fxLayout="column" fxLayoutGap="0.5rem">
+            <div class="sub-title">
+                {{ 'Ngm.Controls.ValueHelp.SelectedMembers' | translate: {Default: "Selected Members"} }}
+            </div>
+
+            <div class="ngm-value-help__selected-members-list" >
+                <mat-list>
+                    <mat-list-item *ngFor="let member of selectedMembers; let i = index;">
+                        <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
+                            [option]="member"
+                            [excludeSelected]="excludeSelected">
+                        </ngm-display-behaviour>
+                        <mat-icon color="warn" (click)="deleteMember(i)">remove_circle_outline</mat-icon>
+                        <mat-divider></mat-divider>
+                    </mat-list-item>
+                </mat-list>
+            </div>
+            
+            <button mat-button color="accent" (click)="clearSelection()">
+                {{ 'Ngm.Controls.ValueHelp.ClearSelection' | translate: {Default: "Clear Selection"} }}
+            </button>
+        </div>
+        <mat-divider></mat-divider>
+
+        <div class="ngm-value-help__settings" fxLayout="column">
+            <mat-form-field appearance="fill">
+                <mat-label>
+                    {{ 'Ngm.Controls.ValueHelp.SelectionType' | translate: {Default: "Selection Type"} }}
+                </mat-label>
+                <mat-select [(ngModel)]="selectionType">
+                  <mat-option [value]="FilterSelectionType.Single">
+                    {{ 'Ngm.Common.SelectionType_Single' | translate: {Default: "Single"} }}
+                </mat-option>
+                  <mat-option [value]="FilterSelectionType.Multiple">
+                    {{ 'Ngm.Common.SelectionType_Multiple' | translate: {Default: "Multiple"} }}
+                </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>
+                    {{ 'Ngm.Controls.ValueHelp.Presentation' | translate: {Default: "Presentation"} }}
+                </mat-label>
+                <mat-select [(ngModel)]="presentation">
+                    <mat-option [value]="PresentationEnum.Flat">
+                        {{ 'Ngm.Common.Presentation_Flat' | translate: {Default: "Flat"} }}
+                    </mat-option>
+                    <mat-option [value]="PresentationEnum.Hierarchy">
+                        {{ 'Ngm.Common.Presentation_Hierarchy' | translate: {Default: "Hierarchy"} }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" *ngIf="presentation === PresentationEnum.Hierarchy">
+                <mat-label>
+                    {{ 'Ngm.Controls.ValueHelp.HierarchySelectionMode' | translate: {Default: "Hierarchy Selection Mode"} }}
+                </mat-label>
+                <mat-select [(ngModel)]="treeSelectionMode">
+                    <mat-option [value]="TreeSelectionMode.Individual">
+                        {{ 'Ngm.Common.HierarchySelectionMode_Individual' | translate: {Default: "Individual"} }}
+                    </mat-option>
+                    <mat-option [value]="TreeSelectionMode.SelfDescendants">
+                        {{ 'Ngm.Common.HierarchySelectionMode_SelfDescendants' | translate: {Default: "Self & Descendants"} }}
+                    </mat-option>
+                    <mat-option [value]="TreeSelectionMode.DescendantsOnly">
+                        {{ 'Ngm.Common.HierarchySelectionMode_DescendantsOnly' | translate: {Default: "Descendants Only"} }}
+                    </mat-option>
+                    <mat-option [value]="TreeSelectionMode.SelfChildren">
+                        {{ 'Ngm.Common.HierarchySelectionMode_SelfChildren' | translate: {Default: "Self & Children"} }}
+                    </mat-option>
+                    <mat-option [value]="TreeSelectionMode.ChildrenOnly">
+                        {{ 'Ngm.Common.HierarchySelectionMode_ChildrenOnly' | translate: {Default: "Children Only"} }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>
+    {{ 'Ngm.Common.Cancel' | translate: {Default: "Cancel"} }}
+  </button>
+  <button mat-raised-button color="accent" [mat-dialog-close]="slicer" cdkFocusInitial>
+    {{ 'Ngm.Common.Apply' | translate: {Default: "Apply"} }}
+  </button>
+</div>

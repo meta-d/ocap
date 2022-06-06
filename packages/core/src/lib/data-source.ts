@@ -1,4 +1,7 @@
-import { assign, flatten, isEqual, isNil, isString } from 'lodash'
+import assign from 'lodash/assign'
+import flatten from 'lodash/flatten'
+import isEqual from 'lodash/isEqual'
+import isString from 'lodash/isString'
 import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, shareReplay, switchMap } from 'rxjs'
 import { Agent, DSCacheService } from './agent'
 import { EntityService } from './entity'
@@ -14,9 +17,8 @@ import {
   Schema,
   SemanticModel
 } from './models'
-import { Type } from './utils/index'
+import { isNil, Type } from './utils/index'
 
-// export const DATA_SOURCE_PROVIDERS = {} as Record<string,{ factory: DataSourceFactory }>
 export type DataSourceFactory = () => Promise<Type<DataSource>>
 
 export enum AuthenticationMethod {
@@ -36,6 +38,9 @@ export interface DataSourceSettings {
   database?: string
   // 语言
   language?: string
+
+  // ignoreUnknownProperty
+  ignoreUnknownProperty: boolean
 }
 
 export interface DataSources {
@@ -84,7 +89,7 @@ export interface DataSource {
 
   /**
    * 获取维度成员
-   * 
+   *
    * @param entity 实体
    * @param dimension 维度
    */
@@ -201,7 +206,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 
   updateCube(cube: Cube) {
-    const schema = this.options.schema ?? {} as Schema
+    const schema = this.options.schema ?? ({} as Schema)
     const cubes = schema.cubes ? [...schema.cubes] : []
     const index = cubes.findIndex((item) => item.__id__ === cube.__id__)
     if (index > -1) {
@@ -231,7 +236,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     const schema = this.options.schema ?? ({} as Schema)
 
     const entitySets = schema.entitySets ?? {}
-    entitySets[entityType.name] = entitySets[entityType.name] ?? {name: entityType.name} as EntitySet
+    entitySets[entityType.name] = entitySets[entityType.name] ?? ({ name: entityType.name } as EntitySet)
     entitySets[entityType.name].entityType = entityType
 
     this.options$.next({
@@ -250,7 +255,6 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
           this.selectSchema().pipe(
             distinctUntilChanged(),
             map((schema) => {
-
               if (!rtEntityType) {
                 return rtEntityType
               }
@@ -268,7 +272,16 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
                 })
               }
 
-              console.log(`runtime entity type is:`, rtEntityType, `cube is:`, cube, `customEntityType:`, customEntityType, `merge cube:`, entityType)
+              console.log(
+                `runtime entity type is:`,
+                rtEntityType,
+                `cube is:`,
+                cube,
+                `customEntityType:`,
+                customEntityType,
+                `merge cube:`,
+                entityType
+              )
 
               if (entityType) {
                 // 将数据源方言同步到 EntityType
@@ -318,6 +331,8 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 
   /**
+   * @deprecated
+   * 
    * 获取自定义 entityType, 用户在程序里自定义的 entityType 属性非数据源端的 entityType
    */
   protected _getCustomEntityType(entityType: EntityType): Partial<EntityType> {

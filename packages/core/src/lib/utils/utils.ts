@@ -1,4 +1,4 @@
-import { merge } from 'lodash'
+import merge from 'lodash/merge'
 import { isNil } from './isNil'
 import { isPlainObject } from './isPlainObject'
 import { isString } from './isString'

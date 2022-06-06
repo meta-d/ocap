@@ -22,7 +22,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     public agents: Array<Agent>,
     dataSources: Array<DataSourceOptions>,
     public factories: Array<{ type: string; factory: DataSourceFactory }>,
-    public cacheService: DSCacheService
+    public cacheService?: DSCacheService
   ) {
     super({ dataSources })
   }

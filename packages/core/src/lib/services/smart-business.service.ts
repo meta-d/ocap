@@ -1,13 +1,16 @@
-import { isEmpty, isString } from 'lodash'
-import { catchError, EMPTY, filter, Observable, of, shareReplay, switchMap } from 'rxjs'
-import { PresentationVariant, SelectionVariant } from '../annotations'
-import { isTimeRangesSlicer, putFilter, workOutTimeRangeSlicers } from '../filter'
-import { FilteringLogic, IFilter, isAdvancedFilter, isFilter, ISlicer, isSlicer, QueryOptions, ServiceInit } from '../types'
+import isEqual from 'lodash/isEqual'
+import isEmpty from 'lodash/isEmpty'
+import isString from 'lodash/isString'
+import { catchError, distinctUntilChanged, EMPTY, filter, Observable, of, shareReplay, switchMap } from 'rxjs'
+import { DSCoreService } from '../ds-core.service'
+import { FilterMergeMode, isTimeRangesSlicer, putFilter, workOutTimeRangeSlicers } from '../filter'
+import { getEntityProperty, QueryReturn } from '../models'
+import { FilteringLogic, IFilter, isAdvancedSlicer, ISlicer, isSlicer, QueryOptions, ServiceInit } from '../types'
 import { EntityBusinessService, EntityBusinessState } from './entity.service'
+import { SmartFilterBarService } from './smart-filter-bar.service'
 
 export interface SmartBusinessState extends EntityBusinessState {
-  selectionVariant?: SelectionVariant
-  presentationVariant?: PresentationVariant
+  //
 }
 
 export class SmartBusinessService<T, State extends SmartBusinessState = SmartBusinessState>
@@ -26,17 +29,39 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
     shareReplay(1)
   )
 
+  constructor(dsCoreService: DSCoreService, public smartFilterBar?: SmartFilterBarService) {
+    super(dsCoreService)
+  }
+
   /**
    * Service 初始化, 判断满足条件后才能往后发送事件, 否则可能造成后续逻辑报错
-   * 
-   * @returns 
+   *
+   * @returns
    */
   onInit(): Observable<any> {
     // 根部使用 dataSettings 作为判断条件合适吗 ?
-    return this.dataSettings$.pipe(filter((value) => !!value)) //of(true)
+    return this.dataSettings$.pipe(filter((value) => !!value), distinctUntilChanged(isEqual))
   }
   onAfterServiceInit(): Observable<void> {
     return this.serviceInit$
+  }
+
+  override query(options?: QueryOptions<any>): Observable<QueryReturn<T>> {
+    return (this.smartFilterBar?.onChange() ?? of([])).pipe(
+      switchMap((filters) => {
+        let _filters: Array<ISlicer> = options?.filters || []
+
+        // from SmartFilterBar
+        filters?.forEach((ftr) => {
+          _filters = putFilter(_filters, ftr, FilterMergeMode.ignore)
+        })
+
+        return super.query({
+          ...(options ?? {}),
+          filters: _filters
+        })
+      })
+    )
   }
 
   /**
@@ -44,20 +69,15 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
    * 1. queryOptions 指定的过滤器
    * 2. FilterBar 中选择的过滤器
    * 3. SelectionVariant 中指定的过滤器
-   * 
-   * @param queryOptions 
-   * @returns 
+   *
+   * @param queryOptions
+   * @returns
    */
   override calculateFilters(queryOptions?: QueryOptions) {
     // const querySettings = this.querySettings$.value
     const entityType = this.getEntityType()
 
     let _filters: Array<ISlicer> = queryOptions?.filters || []
-
-    // // from SmartFilterBar
-    // this.smartFilterBar?.getFilters()?.forEach((ftr) => {
-    //   _filters = putFilter(_filters, ftr, FilterMergeMode.ignore)
-    // })
 
     // from SelectionVariant
     const selectionVariant = this.selectionVariant
@@ -72,9 +92,8 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
         //   _filters = putFilter(_filters, v)
         // }
         else if (isTimeRangesSlicer(v)) {
-
           console.warn(`Time range filter`, v)
-          const {today, timeGranularity} = this.dsCoreService.getToday()
+          const { today, timeGranularity } = this.dsCoreService.getToday()
           const ranges = workOutTimeRangeSlicers(today, v, entityType)
 
           // const ranges = this.coreService.calcRanges(v).map((range) => {
@@ -94,8 +113,7 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
                 }
               : ranges[0]) as IFilter
           )
-        }
-        else if (isSlicer(v) && !isEmpty(v.members)) {
+        } else if (isSlicer(v) && !isEmpty(v.members)) {
           _filters.push(v)
           // _filters = putFilter(_filters, v)
         } else {
@@ -111,23 +129,19 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
       }
     }
 
-    // // from FilterContainer, 会覆盖来自 SmartFilterBar 和 SelectionVariant 的 filters
-    // this.filterContainer?.getFilters()?.forEach((filter) => {
-    //   _filters = putFilter(_filters, filter)
-    // })
-
-    // // ignore Unknown Property
-    // if (querySettings?.ignoreUnknownProperty) {
-    //   _filters = _filters.filter((f) => {
-    //     if (f.dimension) {
-    //       if (isAdvancedSlicer(f)) {
-    //         return !!getEntityProperty(entityType, f.context[0])
-    //       }
-    //       return !!getEntityProperty(entityType, f.dimension)
-    //     }
-    //     return true
-    //   })
-    // }
+    // ignore Unknown Property
+    const ignoreUnknownProperty = this.get((state) => state.dataSourceOptions?.settings?.ignoreUnknownProperty)
+    if (ignoreUnknownProperty) {
+      _filters = _filters.filter((f) => {
+        if (f.dimension) {
+          if (isAdvancedSlicer(f)) {
+            return !!getEntityProperty(entityType, f.context[0])
+          }
+          return !!getEntityProperty(entityType, f.dimension)
+        }
+        return true
+      })
+    }
 
     queryOptions.filters = _filters
 

@@ -11,7 +11,8 @@ import {
   getPropertyName,
   QueryReturn
 } from '@metad/ocap-core'
-import { isNil, omitBy } from 'lodash'
+import isNil from 'lodash/isNil'
+import omitBy from 'lodash/omitBy'
 import { measuresToSeriesComponents, serializeSeriesComponent } from './cartesian'
 
 export function cartesian3d(

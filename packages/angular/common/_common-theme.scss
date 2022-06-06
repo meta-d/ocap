@@ -1,1 +1,15 @@
 @forward './breadcrumb/breadcrumb.theme' as breadcrumb-*;
+
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin common-color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $accent: map.get($config, accent);
+
+  .ngm-display-behaviour {
+    .ngm-display-behaviour__highlight {
+      color: map-get($accent, 500);
+    }
+  }
+}

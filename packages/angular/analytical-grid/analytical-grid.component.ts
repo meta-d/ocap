@@ -15,7 +15,7 @@ import { MatTableDataSource } from '@angular/material/table'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { AggregationRole, DataSettings, getPropertyName, getPropertyTextName } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { isNil } from 'lodash'
+import isNil from 'lodash/isNil'
 import { map, shareReplay, tap } from 'rxjs/operators'
 import { NgmAnalyticsBusinessService } from './analytics.service'
 

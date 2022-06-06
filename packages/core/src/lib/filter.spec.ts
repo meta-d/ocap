@@ -1,5 +1,5 @@
 import { Semantics } from './annotations'
-import { TimeGranularity, TimeRangesSlicer, TimeRangeType, workOutTimeRangeSlicers } from './filter'
+import { putFilter, TimeGranularity, TimeRangesSlicer, TimeRangeType, workOutTimeRangeSlicers } from './filter'
 import { AggregationRole, EntityType } from './models/index'
 
 const entityType: EntityType = {
@@ -15,13 +15,13 @@ const entityType: EntityType = {
   }
 }
 
-describe('Filter', () => {
+describe('TimeRangeSlicers', () => {
   it('#WorkOutTimeRangeSlicers Basic', () => {
     const timeRange: TimeRangesSlicer = null
 
     expect(
       workOutTimeRangeSlicers(
-        new Date(),
+        new Date('2022-05-01'),
         {
           dimension: {
             dimension: 'Time'
@@ -44,7 +44,7 @@ describe('Filter', () => {
 
     expect(
       workOutTimeRangeSlicers(
-        new Date(),
+        new Date('2022-05-01'),
         {
           dimension: {
             dimension: 'Time'
@@ -68,7 +68,7 @@ describe('Filter', () => {
 
     expect(
       workOutTimeRangeSlicers(
-        new Date(),
+        new Date('2022-05-01'),
         {
           dimension: {
             dimension: 'Time'
@@ -113,4 +113,17 @@ describe('Filter', () => {
       )
     ).toEqual([{ dimension: { dimension: 'Time' }, members: [{ value: '[2022].[05]' }] }])
   })
+})
+
+
+describe('Slicers', () => {
+  it('putFilter', () => {
+    let filters = []
+    filters = putFilter(filters, {dimension: {
+      dimension: 'Department'
+    }})
+
+    expect(filters).toEqual([])
+  })
+  
 })

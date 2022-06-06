@@ -1,5 +1,7 @@
 import { ComponentStore } from '@metad/store'
-import { isNil, negate } from 'lodash'
+import omitBy from 'lodash/omitBy'
+import negate from 'lodash/negate'
+import isNil from 'lodash/isNil'
 import {
   BehaviorSubject,
   catchError,
@@ -16,21 +18,26 @@ import {
   queueScheduler,
   ReplaySubject,
   scheduled,
+  shareReplay,
   switchMap,
   takeUntil,
   tap
 } from 'rxjs'
-import { PeriodFunctions } from '../annotations'
+import { PeriodFunctions, PresentationVariant, SelectionVariant } from '../annotations'
 import { DataSettings } from '../data-settings'
+import { DataSourceOptions } from '../data-source'
 import { DSCoreService } from '../ds-core.service'
 import { EntityService } from '../entity'
 import { EntityType, getEntityProperty, Property, QueryReturn } from '../models'
 import { Annotation, AnnotationTerm, PropertyPath, QueryOptions } from '../types'
 
+
 export interface EntityBusinessState {
   dataSettings: DataSettings
+  selectionVariant?: SelectionVariant
+  presentationVariant?: PresentationVariant
   entityType: EntityType
-  // initialised: boolean
+  dataSourceOptions: DataSourceOptions
 }
 
 export class EntityBusinessService<
@@ -41,10 +48,14 @@ export class EntityBusinessService<
     return this.get((state) => state.dataSettings)
   }
   set dataSettings(value) {
-    this.patchState({ dataSettings: value } as State)
+    this.patchState(omitBy({
+      dataSettings: value,
+      selectionVariant: value.selectionVariant,
+      presentationVariant: value.presentationVariant
+    }, isNil) as Partial<State>)
   }
   public readonly dataSettings$ = this.select((state) => state.dataSettings)
-  readonly dataSource$ = this.dataSettings$.pipe(
+  readonly _dataSource$ = this.dataSettings$.pipe(
     map((dataSettings) => dataSettings?.dataSource),
     distinctUntilChanged()
   )
@@ -52,21 +63,34 @@ export class EntityBusinessService<
     map((dataSettings) => dataSettings?.entitySet),
     distinctUntilChanged()
   )
+
   get selectionVariant() {
-    return this.dataSettings.selectionVariant
+    return this.get((state) => state.selectionVariant)
+  }
+  set selectionVariant(value) {
+    this.patchState({ selectionVariant: value } as State)
   }
   get presentationVariant() {
-    return this.dataSettings.presentationVariant
+    return this.get((state) => state.presentationVariant)
   }
-  public readonly presentationVariant$ = this.dataSettings$.pipe(map((dataSettings) => dataSettings?.presentationVariant))
+  set presentationVariant(value) {
+    this.patchState({ presentationVariant: value } as State)
+  }
+  public readonly presentationVariant$ = this.select((state) => state.presentationVariant)
 
   private _initialise$ = new BehaviorSubject<boolean>(null)
   readonly initialise$ = this._initialise$.asObservable().pipe(filter((initialised) => initialised))
-  
+
   // is loading status
   public loading$ = new BehaviorSubject<boolean>(null)
   protected result$ = new BehaviorSubject<QueryReturn<T>>(null)
 
+  public readonly dataSource$ = this._dataSource$.pipe(
+    filter((name) => !!name),
+    switchMap((name) => this.dsCoreService.getDataSource(name)),
+    tap((dataSource) => this.patchState({ dataSourceOptions: dataSource.options } as State)),
+    shareReplay(1)
+  )
   entityService: EntityService<T>
 
   // 内部错误
@@ -74,6 +98,11 @@ export class EntityBusinessService<
   protected refresh$ = new ReplaySubject<void | boolean>()
 
   public readonly entityType$ = this.select((state) => state.entityType)
+
+  get entityType(): EntityType {
+    return this.get((state) => state.entityType)
+  }
+
   constructor(public dsCoreService: DSCoreService) {
     super({} as State)
 
@@ -88,7 +117,7 @@ export class EntityBusinessService<
         tap(() => this.loading$.next(true)),
         switchMap((force) => {
           try {
-            return this.query({force}).pipe(
+            return this.query({ force }).pipe(
               tap((result) => {
                 if (result.error) {
                   this.internalError$.next(result.error)
@@ -101,7 +130,7 @@ export class EntityBusinessService<
                 return of({ error: err.message })
               })
             )
-          } catch(err: any) {
+          } catch (err: any) {
             console.error(err)
             this.internalError$.next(err.message)
             return of({ error: err.message })
@@ -123,13 +152,10 @@ export class EntityBusinessService<
     this.entitySet$
       .pipe(
         filter((entity) => !!entity),
-        switchMap((entitySet) =>
+        switchMap((entity) =>
           this.dataSource$.pipe(
             filter((value) => !!value),
-            // tap(value => this.logger?.debug(`{${this._className_}} dataSource = ${value}`)),
-            switchMap((dataSource) => this.dsCoreService.getDataSource(dataSource)),
-            // untilDestroyed(this),
-            map((dataSource) => dataSource.createEntityService<T>(entitySet))
+            map((dataSource) => dataSource.createEntityService<T>(entity))
           )
         ),
         tap((entityService) => {
@@ -141,7 +167,7 @@ export class EntityBusinessService<
           return entityService.selectEntityType().pipe(
             filter((value) => !!value),
             tap((entityType) => {
-              this.patchState({entityType} as State)
+              this.patchState({ entityType } as State)
             }),
             catchError((err) => {
               this.internalError$.next(err)
@@ -159,7 +185,7 @@ export class EntityBusinessService<
   }
 
   getEntityType(): EntityType {
-    return this.get(state => state.entityType)
+    return this.get((state) => state.entityType)
   }
   getProperty(name: PropertyPath) {
     return getEntityProperty(this.getEntityType(), name)
@@ -226,12 +252,16 @@ export class EntityBusinessService<
     })
   }
 
+  /**
+   * @deprecated use selectResult
+   * @returns
+   */
   onChange(): Observable<T[]> {
     return this.result$.pipe(pluck('results')).pipe(filter(negate(isNil)))
   }
 
   selectResult() {
-    return this.result$.pipe(filter(value => !!value))
+    return this.result$.pipe(filter((value) => !!value))
   }
 
   calculateFilters(queryOptions?: QueryOptions) {

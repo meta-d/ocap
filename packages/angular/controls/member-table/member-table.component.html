@@ -1,0 +1,53 @@
+<mat-form-field *ngIf="options?.searchable" [appearance]="options?.appearance" [displayDensity]="options?.displayDensity"
+  class="ngm-member-table__search">
+  <mat-label>
+    {{ 'Ngm.Common.Search' | translate: {Default: "Search"} }}
+  </mat-label>
+  <input matInput placeholder="{{ 'Ngm.Common.Search_Placeholder' | translate: {Default: 'Please input keyword'} }}"
+    [formControl]="searchControl">
+
+  <div matSuffix fxLayout="row" fxLayoutAlign="start center">
+    <mat-icon>search</mat-icon>
+    <button *ngIf="searchControl.value" mat-icon-button
+      (click)="$event.stopPropagation();searchControl.setValue('')">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+</mat-form-field>
+
+<cdk-virtual-scroll-viewport [tvsItemSize]="itemSize" >
+  <table mat-table [dataSource]="dataSource" [displayDensity]="options?.displayDensity">
+
+    <!-- Checkbox Column -->
+    <ng-container matColumnDef="select">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-checkbox *ngIf="multiple$ | async" (change)="$event ? masterToggle() : null"
+                      [checked]="hasMember() && isAllSelected()"
+                      [indeterminate]="hasMember() && !isAllSelected()"
+                      >
+        </mat-checkbox>
+        <span *ngIf="(multiple$ | async) === false">
+          {{ 'Ngm.Common.Select' | translate: {Default: 'Select'} }}
+        </span>
+      </th>
+      <td mat-cell *matCellDef="let row">
+        <mat-checkbox (click)="$event.stopPropagation()"
+                      (change)="$event ? toggleMember(row) : null"
+                      [checked]="isSelected(row)"
+                     >
+        </mat-checkbox>
+      </td>
+    </ng-container>
+
+
+    <ng-container [matColumnDef]="col.name" *ngFor="let col of columns$ | async">
+      <th mat-header-cell *matHeaderCellDef> {{col.label}} </th>
+      <td mat-cell *matCellDef="let element"> {{element[col.name]}} </td>
+    </ng-container>
+  
+    <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async;"
+      (click)="toggleMember(row)"></tr>
+  </table>
+</cdk-virtual-scroll-viewport>

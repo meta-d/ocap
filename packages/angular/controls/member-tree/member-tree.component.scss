@@ -1,0 +1,15 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-node {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .mat-checkbox {
+    padding-right: 1rem;
+  }
+  
+}

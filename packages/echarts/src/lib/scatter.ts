@@ -11,7 +11,11 @@ import {
   mergeOptions,
   QueryReturn
 } from '@metad/ocap-core'
-import { assign, isEmpty, isNil, omitBy, uniqBy } from 'lodash'
+import assign from 'lodash/assign'
+import isEmpty from 'lodash/isEmpty'
+import isNil from 'lodash/isNil'
+import omitBy from 'lodash/omitBy'
+import uniqBy from 'lodash/uniqBy'
 import { getMeasureAxis } from './axis'
 import { dimensionToSeriesComponent, getCoordinateSystem, serializeSeriesComponent } from './cartesian'
 import { coordinates, gatherCoordinates } from './coordinates'

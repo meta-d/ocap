@@ -25,9 +25,15 @@ $custom-typography: mat.define-typography-config(
 @include theming.core-theme($mat-theme);
 @include theming.analytical-grid-theme($mat-theme);
 @include theming.breadcrumb-theme($mat-theme);
+@include theming.controls-theme($mat-theme);
+@include theming.common-color($mat-theme);
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* You can add global styles to this file, and also import other style files */
+
+body {
+  font-size: 14px;
+}

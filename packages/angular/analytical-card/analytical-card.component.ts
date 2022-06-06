@@ -11,9 +11,8 @@ import {
   ViewChild
 } from '@angular/core'
 import { MatMenuTrigger } from '@angular/material/menu'
-import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DisplayDensity } from '@metad/ocap-angular/core'
 import {
-  ChartBusinessService,
   ChartOptions,
   ChartSettings,
   DataSettings,
@@ -37,9 +36,14 @@ import {
 import { SmartEChartEngine } from '@metad/ocap-echarts'
 import { ComponentStore } from '@metad/store'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { assign, cloneDeep, findIndex, isEmpty, isNil } from 'lodash'
+import assign from 'lodash/assign'
+import cloneDeep from 'lodash/cloneDeep'
+import findIndex from 'lodash/findIndex'
+import isEmpty from 'lodash/isEmpty'
+import isNil from 'lodash/isNil'
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs'
 import { filter, map, shareReplay, tap, withLatestFrom } from 'rxjs/operators'
+import { AnalyticalCardService } from './analytical-card.service'
 
 export interface DrillLevel {
   // 父级维度， 从哪个维度下钻来的
@@ -77,7 +81,8 @@ export interface AnalyticalCardState {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-analytical-card',
   templateUrl: './analytical-card.component.html',
-  styleUrls: ['./analytical-card.component.scss']
+  styleUrls: ['./analytical-card.component.scss'],
+  providers: [AnalyticalCardService]
 })
 export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnChanges {
   @Input() title: string
@@ -104,14 +109,23 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
   @ViewChild('contextMenuTrigger') contextMenu: MatMenuTrigger
   contextMenuPosition = { x: '0px', y: '0px' }
 
-  private businessService = new ChartBusinessService(this.dsCoreService)
   private echartsEngine = new SmartEChartEngine()
-  readonly options$ = this.echartsEngine.selectChartOptions().pipe(map(({ options }) => options)) as any
+  readonly options$ = this.echartsEngine.selectChartOptions().pipe(
+    filter(({ error }) => {
+      if (error) {
+        this.error$.next(error)
+      } else {
+        this.error$.next(null)
+      }
+      return !error
+    }),
+    map(({ options }) => options)
+  ) as any
 
   public readonly isLoading$ = this.businessService.loading$ // .pipe(map((loading) => true))
-
   public readonly error$ = new BehaviorSubject<string>(null)
-  constructor(private dsCoreService: NgmDSCoreService, private _ngZone: NgZone) {
+
+  constructor(private businessService: AnalyticalCardService<unknown>, private _ngZone: NgZone) {
     super({} as AnalyticalCardState)
   }
 
@@ -151,7 +165,6 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         untilDestroyed(this)
       )
       .subscribe((dataSettings) => {
-        // this.echartsEngine.chartAnnotation = dataSettings?.chartAnnotation
         this.businessService.dataSettings = dataSettings
       })
 
@@ -168,11 +181,6 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
   }
 
   ngOnChanges({ chartSettings, chartOptions }: SimpleChanges) {
-    // if (dataSettings?.currentValue) {
-    //   this.echartsEngine.chartAnnotation = dataSettings.currentValue.chartAnnotation
-    //   this.businessService.dataSettings = dataSettings.currentValue
-    //   // this.refresh()
-    // }
 
     if (chartSettings) {
       this.echartsEngine.settings = chartSettings.currentValue

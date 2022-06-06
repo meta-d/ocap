@@ -38,9 +38,7 @@ export type Projector<Selectors extends Observable<unknown>[], Result> = (
   ...args: SelectorResults<Selectors>
 ) => Result;
 
-// @Injectable()
 export class ComponentStore<T> {
-  // private __id__: string = uuidv4()
 
   // Should be used only in ngOnDestroy.
   protected readonly destroySubject$ = new ReplaySubject<void>(1);
@@ -67,7 +65,6 @@ export class ComponentStore<T> {
   onDestroy() {
     this.stateSubject$.complete();
     this.destroySubject$.next();
-    // console.log(`Object ${this.__id__} of class ${this.constructor.name} be destroyed`)
   }
 
   /**

@@ -24,6 +24,8 @@ export interface ChartSettings {
    * 对应 ECharts 的 Universal Transition
    */
   universalTransition?: boolean
+
+  maximumLimit?: number
 }
 
 export interface ChartOptions {

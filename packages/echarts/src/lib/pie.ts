@@ -5,13 +5,11 @@ import {
   getChartCategory,
   getEntityProperty,
   getPropertyHierarchy,
-  getPropertyMeasure,
-  getPropertyName,
   getPropertyTextName,
   mergeOptions,
   QueryReturn
 } from '@metad/ocap-core'
-import { isNil } from 'lodash'
+import isNil from 'lodash/isNil'
 import { getCoordinateSystem, measuresToSeriesComponents, serializeSeriesComponent } from './cartesian'
 import { coordinates, gatherCoordinates } from './coordinates'
 import { getEChartsTooltip } from './tooltip'
@@ -24,6 +22,11 @@ export function pie(
   settings: ChartSettings,
   options: EChartsOptions
 ) {
+
+  if (data.data?.length > (settings?.maximumLimit ?? 100)) {
+    throw new Error(`Too much data, length ${data.data?.length}`)
+  }
+
   const pieCoordinates = coordinates(data, chartAnnotation, entityType, settings, options, 'pie', pieCoordinate)
   return gatherCoordinates(pieCoordinates, 'pie', options)
 }

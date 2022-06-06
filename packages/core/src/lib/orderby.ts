@@ -1,4 +1,5 @@
-import { isString, upperCase } from 'lodash'
+import isString from 'lodash/isString'
+import upperCase from 'lodash/upperCase'
 
 //
 export type OrderBy = {

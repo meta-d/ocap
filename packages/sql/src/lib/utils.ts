@@ -1,4 +1,4 @@
-import { isNil } from 'lodash'
+import isNil from 'lodash/isNil'
 
 /**
  * 根据 SQL 查询结果对象分析出字段类型

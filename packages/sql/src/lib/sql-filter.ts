@@ -10,8 +10,13 @@ import {
   isFilter,
   ISlicer,
 } from '@metad/ocap-core'
-import { flatten, isArray, isNumber, isString } from 'lodash'
+import isEmpty from 'lodash/isEmpty'
+import flatten from 'lodash/flatten'
+import isArray from 'lodash/isArray'
+import isNumber from 'lodash/isNumber'
+import isString from 'lodash/isString'
 import { serializeName } from './types'
+import compact from 'lodash/compact'
 
 /**
  * 依据实体类型将过滤器转换成语句
@@ -22,11 +27,16 @@ import { serializeName } from './types'
  * @returns 过滤语句
  */
 export function convertFiltersToSQL(filters: Array<IFilter>, entityType: EntityType, dialect?: string) {
-  return flatten(filters.map((item) => convertFilterToSQL(item, entityType, dialect)))
+  return compact(flatten(filters.map((item) => convertFilterToSQL(item, entityType, dialect))))
     .join(' AND ')
 }
 
 export function convertSlicerToSQL(iSlicer: ISlicer, dialect?: string) {
+
+  if (isEmpty(iSlicer.members)) {
+    return ''
+  }
+
   return `${iSlicer.dimension.dimension} ${iSlicer.exclude ? 'NOT ' : ''}IN (${iSlicer.members
     .map(convertFilterValue)
     .join(',')})`
@@ -38,8 +48,13 @@ export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dial
     return slicer.children.map(child => `( ${convertFilterToSQL(child, entityType, dialect)} )`).join(slicer.filteringLogic === FilteringLogic.And ? ' AND ' : ' OR ')
   }
 
+  if (isEmpty(slicer.members)) {
+    return ''
+  }
+
   const propertyName = getPropertyName(slicer.dimension)
   const property = getEntityProperty(entityType, propertyName)
+
   const path = property.entitySet
     ? `${serializeName(property.entitySet, dialect)}.${serializeName(
         propertyName.replace(property.entitySet + '_', ''),
