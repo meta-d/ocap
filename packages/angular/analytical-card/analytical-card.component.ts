@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   NgZone,
   OnChanges,
@@ -11,7 +12,7 @@ import {
   ViewChild
 } from '@angular/core'
 import { MatMenuTrigger } from '@angular/material/menu'
-import { DisplayDensity } from '@metad/ocap-angular/core'
+import { NgmAppearance } from '@metad/ocap-angular/core'
 import {
   ChartOptions,
   ChartSettings,
@@ -59,7 +60,7 @@ export interface DrillLevel {
 }
 
 export interface AnalyticalCardOptions {
-  displayDensity?: DisplayDensity
+  // displayDensity?: DisplayDensity
   hideHeader?: boolean
   hideRefresh?: boolean
   hideLoading?: boolean
@@ -85,7 +86,11 @@ export interface AnalyticalCardState {
   providers: [AnalyticalCardService]
 })
 export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnChanges {
+
+  @HostBinding('class.ngm-analytical-card') _isAnalyticalCard = true
+
   @Input() title: string
+  @Input() appearance: NgmAppearance
   /**
    * Data Settings
    */
@@ -122,7 +127,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
     map(({ options }) => options)
   ) as any
 
-  public readonly isLoading$ = this.businessService.loading$ // .pipe(map((loading) => true))
+  public readonly isLoading$ = this.businessService.loading$
   public readonly error$ = new BehaviorSubject<string>(null)
 
   constructor(private businessService: AnalyticalCardService<unknown>, private _ngZone: NgZone) {

@@ -3,6 +3,7 @@ import { FlatTreeControl } from '@angular/cdk/tree'
 import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
+import { NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   Dimension,
@@ -17,7 +18,7 @@ import { ComponentStore } from '@metad/store'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import isEmpty from 'lodash/isEmpty'
 import { Observable } from 'rxjs'
-import { filter, map, switchMap, tap } from 'rxjs/operators'
+import { debounceTime, filter, map, switchMap, tap } from 'rxjs/operators'
 import { NgmSmartFilterService } from '../smart-filter.service'
 import { ControlOptions } from '../types'
 
@@ -74,6 +75,7 @@ export class MemberTreeComponent<T>
   get treeSelectionMode() {
     return this.options?.treeSelectionMode
   }
+  @Input() appearance: NgmAppearance
 
   searchControl = new FormControl()
   /** Map from nested node to flattened node. This helps us to keep the same object for selection */
@@ -128,8 +130,16 @@ export class MemberTreeComponent<T>
       )
       .subscribe((data) => {
         if (data) {
-          console.log(data)
           this.dataSource.data = data
+          // 初始化数据后展开初始层级深度
+          if (this.options?.initialLevel > 0) {
+            this.treeControl.dataNodes.forEach((node) => {
+              const level = this.treeControl.getLevel(node)
+              if (level < this.options.initialLevel) {
+                this.treeControl.expand(node)
+              }
+            })  
+          }
         }
       })
   }
@@ -143,11 +153,11 @@ export class MemberTreeComponent<T>
     }
     if (options?.currentValue) {
       if (this.checklistSelection.isMultipleSelection()) {
-        if (options.currentValue.selctionType !== FilterSelectionType.Multiple) {
+        if (options.currentValue.selectionType !== FilterSelectionType.Multiple) {
           this.checklistSelection = new SelectionModel<PrimitiveType>(false, [])
           this.onSelectionChange(this.checklistSelection)
         }
-      } else if (options.currentValue.selctionType === FilterSelectionType.Multiple) {
+      } else if (options.currentValue.selectionType === FilterSelectionType.Multiple) {
         this.checklistSelection = new SelectionModel<PrimitiveType>(true, [])
         this.onSelectionChange(this.checklistSelection)
       }
@@ -156,7 +166,6 @@ export class MemberTreeComponent<T>
 
   writeValue(obj: any): void {
     if (obj?.members) {
-      // this.patchState({ slicer: obj })
       this.checklistSelection.clear()
       this.checklistSelection.select(...obj.members.map(({ value }) => value))
     }
@@ -285,6 +294,8 @@ export class MemberTreeComponent<T>
     return selection$.pipe(
       switchMap((selection) => selection.changed),
       filter(() => !isEmpty(this.treeControl.dataNodes)),
+      // 防止连续 clear+select 导致的空 members
+      debounceTime(100),
       map(() => this.checklistSelection.selected),
       tap((selected) => {
         let nodes = selected

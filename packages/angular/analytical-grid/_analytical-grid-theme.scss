@@ -12,6 +12,20 @@
         background-color: lighten(mat.get-color-from-palette($background, hover), 50%);
       }
     }
+
+    .mat-table thead, .mat-table tfoot, .mat-paginator {
+      background: lighten(mat.get-color-from-palette($background, hover), 50%);
+    }
+
+    .mat-table tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row], .mat-table-sticky {
+      background: unset;
+    }
+
+    .mat-row.selected {
+      .mat-cell.selected {
+        background-color: mat.get-color-from-palette($background, hover);
+      }
+    }
   }
 }
 

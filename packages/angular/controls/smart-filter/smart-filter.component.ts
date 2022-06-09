@@ -13,6 +13,7 @@ import {
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatDialog } from '@angular/material/dialog'
+import { NgmAppearance } from '@metad/ocap-angular/core'
 import { DataSettings, FilterSelectionType, getEntityProperty, IMember, ISlicer } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
@@ -66,6 +67,8 @@ export class SmartFilterComponent<T>
   implements OnInit, OnChanges, ControlValueAccessor
 {
   @Input() dataSettings: DataSettings
+  // @Input() dimension: Dimension
+
   @Input() get options() {
     return this.get((state) => state.options)
   }
@@ -78,6 +81,9 @@ export class SmartFilterComponent<T>
   get slicer() {
     return this.get((state) => state.slicer)
   }
+  @Input() appearance: NgmAppearance
+
+  
   public readonly options$ = this.select((state) => state.options)
   public readonly dimension$ = this.options$.pipe(map((options) => options?.dimension))
   public readonly property$ = this.dimension$.pipe(
@@ -224,10 +230,16 @@ export class SmartFilterComponent<T>
         state.slicer.members.splice(index, 1)
       } else {
         state.slicer.members = state.slicer.members || []
-        state.slicer.members.push(member)
+        state.slicer.members.push({
+          value: member.value,
+          label: member.label
+        })
       }
     } else {
-      state.slicer.members = [member]
+      state.slicer.members = [{
+        value: member.value,
+        label: member.label
+      }]
     }
   })
 

@@ -1,6 +1,6 @@
 import { Component, Inject, Input, OnInit } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   Dimension,
@@ -12,6 +12,7 @@ import {
   PropertyHierarchy,
   TreeSelectionMode
 } from '@metad/ocap-core'
+import merge from 'lodash/merge'
 import { BehaviorSubject, combineLatestWith, filter, map, Observable, switchMap, tap } from 'rxjs'
 import { MemberTreeOptions } from '../member-tree/member-tree.component'
 import { ControlOptions } from '../types'
@@ -44,9 +45,12 @@ export class ValueHelpDialog implements OnInit {
   private dimension$ = new BehaviorSubject<Dimension>(null)
 
   @Input() options = {
+      stickyHeader: true
+    } as ControlOptions
+  @Input() appearance: NgmAppearance = {
     displayDensity: DisplayDensity.cosy,
     appearance: 'outline'
-  } as ControlOptions
+  }
 
   slicer: ISlicer = {}
 
@@ -148,7 +152,7 @@ export class ValueHelpDialog implements OnInit {
       this.dataSettings = this.data.dataSettings
       this.dimension = this.data.dimension
       if (this.data.options) {
-        this.options = this.data.options
+        this.options = merge(this.options, this.data.options)
       }
       this.slicer = {
         ...(this.data.slicer ?? {})

@@ -1,9 +1,6 @@
 .mat-divider.mat-divider-vertical {
   margin: 0 10px;
 }
-.mat-divider.mat-divider-horizontal {
-  margin: 10px 0;
-}
 
 .ngm-value-help__available {
   .sub-title {
@@ -56,10 +53,13 @@
 }
 
 .ngm-value-help__selected-members {
+  flex: 1;
   min-height: 200px;
   width: 20rem;
   display: flex;
   flex-direction: column;
+  margin-bottom: 10px;
+  
   .ngm-value-help__selected-members-list {
     flex: 1;
     max-height: 300px;

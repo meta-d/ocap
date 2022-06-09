@@ -78,7 +78,7 @@ export interface DataSource {
   getCatalogs(): Observable<Array<Catalog>>
 
   /**
-   * 获取所有的 EntitySet
+   * 获取源实体集合
    */
   getEntitySets(): Observable<Array<EntitySet>>
 

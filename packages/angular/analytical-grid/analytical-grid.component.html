@@ -23,19 +23,21 @@
 <div class="ngm-card-content">
     <div class="ngm-analytical-grid__error" *ngIf="error$ | async as error">{{error}}</div>
     
-    <table mat-table [dataSource]="dataSource" [displayDensity]="displayDensity ?? options?.displayDensity">
-      <ng-container [matColumnDef]="column.property?.name" *ngFor="let column of columns$ | async">
+    <table mat-table [dataSource]="dataSource" [displayDensity]="appearance?.displayDensity">
+      <ng-container [matColumnDef]="column.property?.name" *ngFor="let column of columns$ | async; let j = index;">
         <th mat-header-cell *matHeaderCellDef
           [ngClass]="{
             'ngm-dimension': column.property?.role === AggregationRole.dimension,
             'ngm-measure': column.property?.role === AggregationRole.measure
           }"
         > {{column.property?.label || column.property?.name}} </th>
-        <td mat-cell *matCellDef="let element"
+        <td mat-cell *matCellDef="let element;"
           [ngClass]="{
             'ngm-dimension': column.property?.role === AggregationRole.dimension,
-            'ngm-measure': column.property?.role === AggregationRole.measure
+            'ngm-measure': column.property?.role === AggregationRole.measure,
+            selected: selected.j === j
           }"
+          (mousedown)="selectCell(j)"
         >
           <ng-container *ngIf="column.property?.role === AggregationRole.measure">
             <span *ngIf="column.property?.dataType !== 'string'">
@@ -51,8 +53,14 @@
         </td>
       </ng-container>
     
-      <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async;sticky:true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async;"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky:options?.sticky"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async; let i = index"
+        [ngClass]="{
+          selected: selected.i === i
+        }"
+        (mousedown)="selectRow(i)"
+        >
+      </tr>
     </table>
 </div>
 

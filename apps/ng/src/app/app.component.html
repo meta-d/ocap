@@ -8,7 +8,7 @@
         <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
             <mat-icon>favorite</mat-icon>
         </button>
-        <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+        <button mat-icon-button (click)="refresh()">
             <mat-icon>share</mat-icon>
         </button>
     </mat-toolbar>
@@ -17,30 +17,36 @@
         <div fxLayout="row">
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="smartFilterOptions"
+                [appearance]="appearance"
                 [(ngModel)]="slicer"
                 (ngModelChange)="onSlicerChange($event)">
             </ngm-smart-filter>
 
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="productFilterOptions"
+                [appearance]="appearance"
                 [(ngModel)]="product"
                 (ngModelChange)="onSlicerChange($event)">
             </ngm-smart-filter>
 
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="{
-                    dimension: departmentDimension
+                    dimension: departmentDimension,
+                    initialLevel: 1
                 }"
+                [appearance]="appearance"
                 [(ngModel)]="department"
                 (ngModelChange)="onSlicerChange($event)">
             </ngm-smart-filter>
 
             <ngm-member-tree [dataSettings]="dataSettings"
                 [dimension]="departmentDimension"
+                [appearance]="appearance"
             ></ngm-member-tree>
 
             <ngm-member-table [dataSettings]="dataSettings"
                 [dimension]="departmentDimension"
+                [appearance]="appearance"
                 [(ngModel)]="department"
                 (ngModelChange)="onSlicerChange($event)"
             ></ngm-member-table>
@@ -62,6 +68,15 @@
                     }"
                 ></ngm-analytical-card>
             </div>
+
+            <ngm-analytical-grid fxFlex="100"
+                [dataSettings]="dataSettings"
+                [options]="{
+                    strip: true,
+                    paging: true
+                }"></ngm-analytical-grid>
+
+
         </div>
     </div>
 </div>

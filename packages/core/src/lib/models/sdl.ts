@@ -161,7 +161,13 @@ export enum DimensionType {
 
 export interface Property extends EntityProperty {
   expression?: string
+  /**
+   * The foreignKey of Fact table for this property
+   */
   foreignKey?: string
+  /**
+   * The column of Dimension table for this property
+   */
   column?: string
   type?: DimensionType | string
   description?: string

@@ -8,22 +8,28 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { ZhHans } from '@metad/ocap-angular'
+import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
+import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
+import { ControlsModule } from '@metad/ocap-angular/controls'
 import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { ControlsModule } from '@metad/ocap-angular/controls'
 import { AgentType, DataSource, Type } from '@metad/ocap-core'
-import { ZhHans } from '@metad/ocap-angular'
 import { DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
-import { MissingTranslationHandler, MissingTranslationHandlerParams, TranslateLoader, TranslateModule } from '@ngx-translate/core'
+import {
+  MissingTranslationHandler,
+  MissingTranslationHandlerParams,
+  TranslateLoader,
+  TranslateModule
+} from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
+import { Observable, of } from 'rxjs'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
-import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { Observable, of } from 'rxjs'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -39,7 +45,7 @@ export class MyMissingTranslationHandler implements MissingTranslationHandler {
 export class CustomLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
     console.log(lang, ZhHans)
-    return of(ZhHans);
+    return of(ZhHans)
   }
 }
 
@@ -58,7 +64,7 @@ export class CustomLoader implements TranslateLoader {
     MatIconModule,
     TranslateModule.forRoot({
       defaultLanguage: 'en',
-      loader: {provide: TranslateLoader, useClass: CustomLoader},
+      loader: { provide: TranslateLoader, useClass: CustomLoader },
       missingTranslationHandler: {
         provide: MissingTranslationHandler,
         useClass: MyMissingTranslationHandler
@@ -69,7 +75,8 @@ export class CustomLoader implements TranslateLoader {
     }),
     OcapCoreModule.forRoot(),
     ControlsModule,
-    AnalyticalCardModule
+    AnalyticalCardModule,
+    AnalyticalGridModule
   ],
   providers: [
     WasmAgentService,
@@ -118,7 +125,7 @@ export class CustomLoader implements TranslateLoader {
           cubes: [
             {
               name: 'SalesOrder',
-              tables: [{name: 'SalesOrder'}],
+              tables: [{ name: 'SalesOrder' }],
               dimensions: [
                 {
                   name: 'product',

@@ -129,8 +129,6 @@ export class DuckdbWasmAgent implements Agent {
     // waiting the model prepared
     await this.getModel(dataSource.name)
 
-    // console.log(dataSource, options, model)
-
     if (options.method === 'get') {
       if (options.url === 'schema') {
         if (options.table) {
@@ -174,12 +172,13 @@ export class DuckdbWasmAgent implements Agent {
         }))
         const measures = columns.filter((col) => col.type === 'number')
         const rows = results.toArray().map(Object.fromEntries) as any
-        // console.log(rows, columns)
+
         return {
           data: rows.map((row) => {
             const item = { ...row }
             measures.forEach(({ name }) => {
-              item[name] = item[name] instanceof Uint32Array ? item[name][0] : item[name]
+              // item[name] = item[name] instanceof Uint32Array ? item[name][0] : item[name]
+              item[name] = item[name]?.length ? item[name][0] : item[name]
             })
             return item
           }),
@@ -192,12 +191,7 @@ export class DuckdbWasmAgent implements Agent {
   }
 
   async query(connection: AsyncDuckDBConnection, statement: string) {
-    // try {
-      return await connection.query(statement)
-    // }catch(error) {
-    //   console.log(error)
-    //   return Promise.reject()
-    // }
+    return await connection.query(statement)
   }
 
   async getDatabases() {

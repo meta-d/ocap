@@ -147,36 +147,41 @@ export class MockAgent implements Agent {
               })
             })
           })
-          return resolve({
-            data: results,
-            columns: [
-              {
-                name: 'OrderId',
-                label: '订单号',
-                type: 'string',
-              },
-              {
-                name: 'product',
-                label: '产品',
-                type: 'string',
-              },
-              {
-                name: 'productCategory',
-                label: '产品类别',
-                type: 'string'
-              },
-              {
-                name: 'Department',
-                label: '部门',
-                type: 'string'
-              },
-              {
-                name: 'DepartmentParent',
-                label: '上级部门',
-                type: 'string'
-              }
-            ]
-          })
+
+          setTimeout(() => {
+            resolve({
+              data: results,
+              columns: [
+                {
+                  name: 'OrderId',
+                  label: '订单号',
+                  type: 'string',
+                },
+                {
+                  name: 'product',
+                  label: '产品',
+                  type: 'string',
+                },
+                {
+                  name: 'productCategory',
+                  label: '产品类别',
+                  type: 'string'
+                },
+                {
+                  name: 'Department',
+                  label: '部门',
+                  type: 'string'
+                },
+                {
+                  name: 'DepartmentParent',
+                  label: '上级部门',
+                  type: 'string'
+                }
+              ]
+            })
+          }, 1000)
+
+          return
         }
       }
 

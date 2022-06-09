@@ -1,7 +1,7 @@
 import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { TableVirtualScrollDataSource } from '@metad/ocap-angular/common'
-import { DisplayDensity } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   Dimension,
@@ -24,6 +24,7 @@ export interface MemberTableOptions extends ControlOptions {
   placeholder?: string
   maxTagCount?: number
   autoActiveFirst?: boolean
+  stickyHeader?: boolean
 }
 
 export interface MemberTableState {
@@ -60,6 +61,8 @@ export class MemberTableComponent<T>
     this.patchState({ options: value })
   }
 
+  @Input() appearance: NgmAppearance
+
   itemSize = 50
   searchControl = new FormControl()
   dataSource = new TableVirtualScrollDataSource<T>([])
@@ -72,9 +75,10 @@ export class MemberTableComponent<T>
   public readonly slicer$ = this.select((state) => state.slicer)
 
   public readonly results$ = this.smartFilterService.selectResult()
-  public readonly columns$ = this.results$.pipe(map((result) => result?.schema?.columns))
+  public readonly schema$ = this.results$.pipe(map((result) => result?.schema))
+  public readonly columns$ = this.schema$.pipe(map((schema) => [...(schema?.rows ?? []), ...(schema?.columns ?? [])]))
   public readonly displayedColumns$ = this.columns$.pipe(
-    map((cols) => ['select', ...(cols ?? []).map((col) => col.name)]),
+    map((columns) => ['select', ...columns.map((col) => col.name)]),
     shareReplay(1)
   )
 
@@ -106,24 +110,25 @@ export class MemberTableComponent<T>
     this.searchControl.valueChanges.pipe(debounceTime(500)).subscribe((text) => {
       this.dataSource.filter = text.trim().toLowerCase()
     })
-
-    this.options$.pipe(map((options) => {
-      switch(options?.displayDensity) {
-        case DisplayDensity.compact:
-          return 30
-        case DisplayDensity.cosy:
-          return 40
-        default:
-          return 50
-      }
-    })).subscribe((itemSize) => this.itemSize = itemSize)
   }
-  ngOnChanges({ dataSettings, dimension }: SimpleChanges): void {
+  ngOnChanges({ dataSettings, dimension, appearance }: SimpleChanges): void {
     if (dataSettings?.currentValue) {
       this.smartFilterService.dataSettings = dataSettings.currentValue
     }
     if (dimension?.currentValue) {
       this.smartFilterService.options = { dimension: dimension.currentValue }
+    }
+    if (appearance?.currentValue) {
+      switch(this.appearance.displayDensity) {
+        case DisplayDensity.compact:
+          this.itemSize = 30
+          break
+        case DisplayDensity.cosy:
+          this.itemSize = 40
+          break
+        default:
+          this.itemSize = 50
+      }
     }
   }
   writeValue(obj: any): void {

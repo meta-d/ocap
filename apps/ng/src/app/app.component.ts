@@ -1,9 +1,10 @@
 import { Component } from '@angular/core'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
-import { DisplayDensity, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentType, FilterSelectionType } from '@metad/ocap-core'
+import { AgentType, DataSettings, FilterSelectionType } from '@metad/ocap-core'
 import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { cloneDeep } from 'lodash'
 
 @Component({
   selector: 'metad-ocap-root',
@@ -12,23 +13,36 @@ import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
   providers: [NgmSmartFilterBarService]
 })
 export class AppComponent {
-  dataSettings = {
+  appearance: NgmAppearance = {
+    appearance: 'outline',
+    displayDensity: DisplayDensity.compact
+  }
+  dataSettings: DataSettings = {
     dataSource: 'Sales',
-    entitySet: 'SalesOrder'
+    entitySet: 'SalesOrder',
+    analytics: {
+      rows: [
+        {
+          dimension: 'product'
+        }
+      ],
+      columns: [
+        {
+          dimension: 'sales'
+        }
+      ]
+    }
   }
   smartFilterOptions: SmartFilterOptions = {
     dimension: {
       dimension: 'OrderId'
     },
-    appearance: 'outline',
-    displayDensity: DisplayDensity.compact
+
   }
   productFilterOptions: SmartFilterOptions = {
     dimension: {
       dimension: 'product'
     },
-    appearance: 'outline',
-    displayDensity: DisplayDensity.compact,
     selectionType: FilterSelectionType.Multiple,
     maxTagCount: 2,
     autoActiveFirst: true
@@ -84,8 +98,8 @@ export class AppComponent {
     //   } as ChartOptions
     // },
     // // CARTESIAN_CARDS[CARTESIAN_CARDS.length - 2],
-    // ...ANALYTICAL_CARDS
-    ANALYTICAL_CARDS[0]
+    ...ANALYTICAL_CARDS
+    // ANALYTICAL_CARDS[0]
   ]
   constructor(
     private smartFilterBar: NgmSmartFilterBarService,
@@ -126,5 +140,9 @@ export class AppComponent {
   onSlicerChange(slicer) {
     this.smartFilterBar.put(slicer)
     this.smartFilterBar.go()
+  }
+
+  refresh() {
+    this.smartFilterOptions = cloneDeep(this.smartFilterOptions)
   }
 }

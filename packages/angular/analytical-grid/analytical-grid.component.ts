@@ -12,8 +12,8 @@ import {
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
-import { DisplayDensity } from '@metad/ocap-angular/core'
-import { AggregationRole, DataSettings, getPropertyName, getPropertyTextName } from '@metad/ocap-core'
+import { NgmAppearance } from '@metad/ocap-angular/core'
+import { AggregationRole, DataSettings, DisplayBehaviour, getPropertyName, getPropertyTextName } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import isNil from 'lodash/isNil'
 import { map, shareReplay, tap } from 'rxjs/operators'
@@ -21,10 +21,10 @@ import { NgmAnalyticsBusinessService } from './analytics.service'
 
 export interface AnalyticalGridOptions {
   showToolbar?: boolean
-  displayDensity?: DisplayDensity
   strip?: boolean
   paging?: boolean
   pageSize?: number
+  sticky?: boolean
 }
 
 @UntilDestroy()
@@ -40,9 +40,9 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
   AggregationRole = AggregationRole
 
   @Input() title: string
-  @Input() displayDensity: DisplayDensity | string
   @Input() dataSettings: DataSettings
   @Input() options: AnalyticalGridOptions
+  @Input() appearance: NgmAppearance
 
   @ViewChild(MatPaginator)
   set paginator(v: MatPaginator) {
@@ -51,6 +51,10 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
   @ViewChild(MatSort) sort: MatSort
 
   dataSource = new MatTableDataSource<unknown>()
+  selected = {
+    i: 1,
+    j: 1
+  }
 
   public readonly isLoading$ = this.analyticsService.loading$ //.pipe(map(() => true))
   public readonly error$ = this.analyticsService.selectResult().pipe(map((result) => result.error))
@@ -62,6 +66,7 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
         .map((column: any) => {
           column.label = column.label || (getPropertyTextName(column.property) ?? column.property?.name)
           // column.name = getPropertyTextName(column.property) ?? column.property?.name
+          column.displayBehaviour = column.displayBehaviour ?? DisplayBehaviour.descriptionOnly
           return column
         })
     }),
@@ -82,13 +87,11 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
       .subscribe(() => {
         this.refresh()
       })
-    this.columns$.subscribe((columns) => console.warn(columns))
 
     this.analyticsService
       .selectResult()
       .pipe(
-        map((result) => result.results),
-        tap((data) => console.log(data)),
+        map((result) => result.data),
         untilDestroyed(this)
       )
       .subscribe((data) => (this.dataSource.data = data))
@@ -107,6 +110,13 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
 
   refresh() {
     this.analyticsService.refresh()
+  }
+
+  selectRow(i: number) {
+    this.selected.i = i
+  }
+  selectCell(j: number) {
+    this.selected.j = j
   }
 
   @HostBinding('class.striped')

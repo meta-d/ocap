@@ -11,11 +11,11 @@
       .mat-checkbox {
         display: flex;
         flex: 1;
-        overflow: hidden;
+        // overflow: hidden; 因为会影响 checkbox ripple 效果
     
         .mat-checkbox-layout {
           flex: 1;
-          overflow: hidden;
+          // overflow: hidden;
 
           .mat-checkbox-label {
             flex: 1;

@@ -1,7 +1,7 @@
-<mat-form-field class="ngm-smart-filter__form-field" [appearance]="options?.appearance"
-  [floatLabel]="options?.floatLabel"
-  [hideRequiredMarker]="options?.hideRequiredMarker"
-  [displayDensity]="options?.displayDensity">
+<mat-form-field class="ngm-smart-filter__form-field" [appearance]="appearance?.appearance"
+  [floatLabel]="appearance?.floatLabel"
+  [hideRequiredMarker]="appearance?.hideRequiredMarker"
+  [displayDensity]="appearance?.displayDensity">
   <mat-label>{{ label$ | async }}</mat-label>
 
   <mat-chip-list #chipList>
@@ -37,7 +37,7 @@
 
   <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="selectMember($event)">
     <cdk-virtual-scroll-viewport class="ngm-smart-filter__autocomplete-viewport"
-      [displayDensity]="options?.displayDensity"
+      [displayDensity]="appearance?.displayDensity"
       itemSize="32"
     >
       <mat-option *cdkVirtualFor="let member of filteredOptions$ | async" [value]="member">

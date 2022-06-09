@@ -1,4 +1,4 @@
-<mat-form-field *ngIf="options?.searchable" [appearance]="options?.appearance" [displayDensity]="options?.displayDensity"
+<mat-form-field *ngIf="options?.searchable" [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity"
   class="ngm-member-table__search">
   <mat-label>
     {{ 'Ngm.Common.Search' | translate: {Default: "Search"} }}
@@ -17,7 +17,7 @@
 </mat-form-field>
 
 <cdk-virtual-scroll-viewport [tvsItemSize]="itemSize" >
-  <table mat-table [dataSource]="dataSource" [displayDensity]="options?.displayDensity">
+  <table mat-table [dataSource]="dataSource" [displayDensity]="appearance?.displayDensity">
 
     <!-- Checkbox Column -->
     <ng-container matColumnDef="select">
@@ -42,11 +42,11 @@
 
 
     <ng-container [matColumnDef]="col.name" *ngFor="let col of columns$ | async">
-      <th mat-header-cell *matHeaderCellDef> {{col.label}} </th>
+      <th mat-header-cell *matHeaderCellDef> {{col.label || col.name}} </th>
       <td mat-cell *matCellDef="let element"> {{element[col.name]}} </td>
     </ng-container>
   
-    <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: options?.stickyHeader"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async;"
       (click)="toggleMember(row)"></tr>
   </table>

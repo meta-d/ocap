@@ -3,6 +3,7 @@
   flex-direction: column;
   
   .ngm-card-header .actions {
+    position: relative;
     opacity: .1;
   }
 
@@ -25,7 +26,7 @@
 .ngm-analytical-card__loading {
   position: absolute;
   right: 0;
-  margin: 10px;
+  margin: 5px;
 }
 
 .ngm-card-error {

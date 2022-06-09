@@ -25,7 +25,7 @@ export enum MemberSource {
 }
 
 export interface SmartFilterDataOptions {
-  dimension: Dimension
+  dimension?: Dimension
   typeAhead?: TypeAhead
   // the data source of value list members
   memberSource?: MemberSource
