@@ -1,0 +1,36 @@
+<mat-form-field *ngIf="options?.searchable" [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity"
+  class="ngm-member-list__search">
+  <mat-label>
+    {{ 'Ngm.Common.Search' | translate: {Default: "Search"} }}
+  </mat-label>
+  <input matInput placeholder="{{ 'Ngm.Common.Search_Placeholder' | translate: {Default: 'Please input keyword'} }}"
+    [formControl]="searchControl">
+
+  <div matSuffix fxLayout="row" fxLayoutAlign="start center">
+    <mat-icon>search</mat-icon>
+    <button *ngIf="searchControl.value" mat-icon-button
+      (click)="$event.stopPropagation();searchControl.setValue('')">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</mat-form-field>
+
+<div fxFlex="100" class="ngm-member-list__members">
+  <mat-selection-list *ngIf="multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith">
+    <mat-list-option role="listitem" *ngFor="let item of selectOptions$ | async" [value]="item">
+      <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
+        [option]="item" [highlight]="searchControl.value"
+      ></ngm-display-behaviour>
+    </mat-list-option>
+  </mat-selection-list>
+
+  <mat-selection-list *ngIf="!multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith" [multiple]="false">
+    <mat-list-option role="listitem" *ngFor="let item of selectOptions$ | async" [value]="item">
+      <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
+        [option]="item" [highlight]="searchControl.value"
+      ></ngm-display-behaviour>
+    </mat-list-option>
+  </mat-selection-list>
+</div>
+
+<mat-spinner *ngIf="loading$ | async" strokeWidth="2" diameter="50"></mat-spinner>

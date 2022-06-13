@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input, OnInit, Optional } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
@@ -18,6 +18,7 @@ import { MemberTreeOptions } from '../member-tree/member-tree.component'
 import { ControlOptions } from '../types'
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-value-help',
   templateUrl: 'value-help.component.html',
   styleUrls: ['value-help.component.scss']
@@ -136,15 +137,15 @@ export class ValueHelpDialog implements OnInit {
     return this.slicer?.members
   }
   constructor(
-    public dialogRef: MatDialogRef<ValueHelpDialog>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
+    private dsCoreService: NgmDSCoreService,
+    @Optional() public dialogRef?: MatDialogRef<ValueHelpDialog>,
+    @Optional() @Inject(MAT_DIALOG_DATA)
+    public data?: {
       dataSettings: DataSettings
       dimension: Dimension
       options: ControlOptions
       slicer: ISlicer
     },
-    private dsCoreService: NgmDSCoreService
   ) {}
 
   ngOnInit() {

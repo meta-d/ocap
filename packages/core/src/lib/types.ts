@@ -1,8 +1,8 @@
-import isNil from 'lodash/isNil'
 import isString from 'lodash/isString'
 import { Observable } from 'rxjs'
 import { v4 as uuidv4 } from 'uuid'
 import { OrderBy } from './orderby'
+import { isNil } from './utils/index'
 
 export type HttpHeaders = { [key: string]: string | string[] }
 export type PrimitiveType = number | string | boolean | null | undefined
@@ -50,8 +50,14 @@ export type Dimension = BaseProperty &
     level: PropertyName
     /**
      * displayBehaviour 中所要显示文本字段
+     * 
+     * @deprecated use caption
      */
     label: PropertyName
+    /**
+     * Caption field for dimension
+     */
+    caption?: PropertyName
     /**
      * 显示为...
      */

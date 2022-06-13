@@ -1,15 +1,17 @@
 import {
   AbstractDataSource,
   Catalog,
+  Dimension,
   EntityService,
   EntitySet,
   EntityType,
   IDimensionMember,
   QueryReturn
 } from '@metad/ocap-core'
-import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { isEqual } from 'lodash'
+import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs'
 import { SQLEntityService } from './entity.service'
-import { serializeCubeFact } from './query'
+import { From, serializeCubeFact } from './query'
 import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLSchema } from './types'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
@@ -74,14 +76,14 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   /**
    * 从数据源获取实体的类型
    *
-   * @param entitySet
+   * @param entity
    * @returns
    */
   getEntityType(entity: string): Observable<EntityType> {
     return this.selectSchema()
       .pipe(
         map((schema) => schema?.cubes?.find((item) => item.name === entity)),
-        distinctUntilChanged()
+        distinctUntilChanged(isEqual)
       )
       .pipe(
         switchMap(async (cube) => {
@@ -111,6 +113,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
             }
           } catch (error: any) {
             this.agent.error(error.message)
+            console.error(error.message)
             return null
           }
 
@@ -124,7 +127,8 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           //   `runtime type is`,
           //   _entityType
           // )
-        })
+        }),
+        shareReplay(1)
       )
   }
 
@@ -146,19 +150,32 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
     return this._catalogs$
   }
 
-  getMembers(entity: string, dimension: string): Observable<IDimensionMember[]> {
-    throw new Error('Method not implemented.')
+  getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
+    return this.getEntityType(entity).pipe(
+      switchMap((entityType) => {
+        return this.query({
+          statement: `SELECT ${dimension.dimension} FROM ${From(entityType, this.options.schema, this.options.dialect)} GROUP BY ${dimension.dimension}`
+        }).pipe(
+          map((result) => {
+            console.log(entity, dimension, result)
+            return result.data.map((item) => ({
+              ...dimension,
+              memberKey: item[dimension.dimension],
+              memberCaption: item[dimension.caption],
+            })) as IDimensionMember[]
+          })
+        )
+      })
+    )
   }
+
   createEntity(name: any, columns: any, data?: any): Observable<string> {
     throw new Error('Method not implemented.')
   }
+
   createEntityService<T>(entitySet: string): EntityService<T> {
     return new SQLEntityService(this, entitySet)
   }
-
-  // describe(entityType, dialect) {
-  //   return `SELECT * FROM ${serializeFrom( entityType, dialect)} LIMIT 1`
-  // }
 
   query(q: { statement: string }): Observable<QueryReturn<unknown>> {
     const statement = serializeWrapCatalog(q.statement, this.options.dialect, this.options.catalog)

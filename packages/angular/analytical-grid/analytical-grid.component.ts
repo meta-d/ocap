@@ -70,7 +70,7 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
           return column
         })
     }),
-    tap((data) => console.log(data)),
+    // tap((data) => console.log(data)),
     shareReplay(1)
   )
 

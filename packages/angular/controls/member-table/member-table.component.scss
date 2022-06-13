@@ -1,4 +1,5 @@
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -30,4 +31,12 @@
 
 .ngm-member-table__search {
   width: 100%;
+}
+
+.mat-progress-spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -25px;
+  margin-top: -25px;
 }

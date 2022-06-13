@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { FlatTreeControl } from '@angular/cdk/tree'
-import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { NgmAppearance } from '@metad/ocap-angular/core'
@@ -8,8 +8,9 @@ import {
   DataSettings,
   Dimension,
   FilterSelectionType,
-  getPropertyHierarchy,
+  // getPropertyHierarchy,
   hierarchize,
+  IDimensionMember,
   PrimitiveType,
   TreeNodeInterface,
   TreeSelectionMode
@@ -37,12 +38,12 @@ export interface MemberTreeOptions extends ControlOptions {
 }
 
 export interface MemberTreeState {
-  // slicer: ISlicer
   options?: MemberTreeOptions
 }
 
 @UntilDestroy()
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-member-tree',
   templateUrl: 'member-tree.component.html',
   styleUrls: ['member-tree.component.scss'],
@@ -55,7 +56,7 @@ export interface MemberTreeState {
     }
   ]
 })
-export class MemberTreeComponent<T>
+export class MemberTreeComponent<T extends IDimensionMember = IDimensionMember>
   extends ComponentStore<MemberTreeState>
   implements OnInit, OnChanges, ControlValueAccessor
 {
@@ -88,10 +89,11 @@ export class MemberTreeComponent<T>
   checklistSelection = new SelectionModel<PrimitiveType>(false, [])
 
   public readonly options$ = this.select((state) => state.options)
+  public readonly loading$ = this.smartFilterService.loading$
 
   onChange: (input: any) => void
 
-  constructor(private smartFilterService: NgmSmartFilterService<T>) {
+  constructor(private smartFilterService: NgmSmartFilterService) {
     super({})
 
     this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel, this.isExpandable, this.getChildren)
@@ -130,7 +132,7 @@ export class MemberTreeComponent<T>
       )
       .subscribe((data) => {
         if (data) {
-          this.dataSource.data = data
+          this.dataSource.data = data as any
           // 初始化数据后展开初始层级深度
           if (this.options?.initialLevel > 0) {
             this.treeControl.dataNodes.forEach((node) => {
@@ -254,11 +256,11 @@ export class MemberTreeComponent<T>
   }
 
   isSelected(row: T) {
-    return this.checklistSelection.isSelected(row[getPropertyHierarchy(this.dimension)])
+    return this.checklistSelection.isSelected(row.memberKey)
   }
 
   itemSelectionToggle(node: TreeItemFlatNode<T>) {
-    const member = node.raw[getPropertyHierarchy(this.dimension)]
+    const member = node.raw.memberKey // [getPropertyHierarchy(this.dimension)]
     this.checklistSelection.toggle(member)
     const level = this.treeControl.getLevel(node)
 
@@ -269,7 +271,7 @@ export class MemberTreeComponent<T>
       const children = this.treeControl
         .getDescendants(node)
         .filter((node) => node.level === level + 1)
-        .map((node) => node.raw[getPropertyHierarchy(this.dimension)])
+        .map((node) => node.raw.memberKey) //  [getPropertyHierarchy(this.dimension)]
 
       this.checklistSelection.isSelected(member)
         ? this.checklistSelection.select(...children)
@@ -280,7 +282,7 @@ export class MemberTreeComponent<T>
     ) {
       const descendants = this.treeControl
         .getDescendants(node)
-        .map((node) => node.raw[getPropertyHierarchy(this.dimension)])
+        .map((node) => node.raw.memberKey) // [getPropertyHierarchy(this.dimension)]
       this.checklistSelection.isSelected(member)
         ? this.checklistSelection.select(...descendants)
         : this.checklistSelection.deselect(...descendants)

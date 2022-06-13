@@ -1,4 +1,4 @@
-import { C_MEASURES, Dimension, IMember, ISlicer, Measure, PrimitiveType, PropertyName } from '../types'
+import { C_MEASURES, Dimension, DisplayBehaviour, IMember, ISlicer, Measure, PrimitiveType, PropertyName } from '../types'
 import { isNil } from '../utils/index'
 import { EntityProperty } from './property'
 import { ParameterProperty, Property, PropertyMeasure } from './sdl'
@@ -165,6 +165,7 @@ export interface MeasureControlProperty extends CalculationProperty {
 
   // 候选成员
   availableMembers: Array<IMember>
+  displayBehaviour?: DisplayBehaviour
 }
 
 export const isCalculationProperty = (toBe): toBe is CalculationProperty =>

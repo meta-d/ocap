@@ -3,9 +3,15 @@ import isNil from 'lodash/isNil'
 import uniqBy from 'lodash/uniqBy'
 import { combineLatest, distinctUntilChanged, filter, map, switchMap } from 'rxjs'
 import { DSCoreService } from '../ds-core.service'
-import { getEntityDefaultMeasure, getEntityHierarchy, getEntityProperty, getPropertyCaption } from '../models'
+import {
+  DimensionMemberRecursiveHierarchy,
+  getEntityDefaultMeasure,
+  getEntityHierarchy,
+  IDimensionMember
+} from '../models'
 import { C_MEASURES, Dimension, getPropertyHierarchy, IMember, QueryOptions } from '../types'
 import { SmartBusinessService, SmartBusinessState } from './smart-business.service'
+
 
 export enum TypeAheadType {
   Local = 'Local',
@@ -29,10 +35,6 @@ export interface SmartFilterDataOptions {
   typeAhead?: TypeAhead
   // the data source of value list members
   memberSource?: MemberSource
-  //   // for members
-  //   recursiveHierarchy?: RecursiveHierarchyType
-  // 是否支持级联过滤
-//   cascadingEffect?: boolean
   // 是否显示 All 成员
   showAllMember?: boolean
 }
@@ -41,8 +43,9 @@ export interface SmartFilterState extends SmartBusinessState {
   options: SmartFilterDataOptions
 }
 
-export class SmartFilterService<T, State extends SmartFilterState = SmartFilterState> extends SmartBusinessService<
-  T, State
+export class SmartFilterService<State extends SmartFilterState = SmartFilterState> extends SmartBusinessService<
+  IDimensionMember,
+  State
 > {
   set options(value) {
     this.patchState({ options: value } as State)
@@ -63,21 +66,17 @@ export class SmartFilterService<T, State extends SmartFilterState = SmartFilterS
     this.showAllMember$
   ]).pipe(
     map(([{ data }, showAllMember]) => {
-      const valueProperty = getPropertyHierarchy(this.dimension)
-      const labelProperty = getPropertyCaption(getEntityProperty(this.entityType, valueProperty))
       const hierarchy = getEntityHierarchy(this.entityType, this.dimension)
-
-      let results
+      let results: IDimensionMember[]
       if (!showAllMember && hierarchy?.allMember) {
-        results = data.filter((item) => item[valueProperty] !== hierarchy.allMember)
+        results = data.filter((item) => item.memberKey !== hierarchy.allMember)
       } else {
         results = data
       }
-
       return uniqBy<IMember>(
         results.map((item) => ({
-          value: item[valueProperty],
-          label: item[labelProperty]
+          value: item.memberKey,
+          label: item.memberCaption
         })),
         'value'
       )
@@ -107,7 +106,26 @@ export class SmartFilterService<T, State extends SmartFilterState = SmartFilterS
     const memberSource = this.options?.memberSource
 
     if (memberSource === MemberSource.DIMENSION) {
-      this.entityService.getMembers<any>(this.dimension).pipe(map((data) => ({ data })))
+      return this.entityService.getMembers<IDimensionMember>(this.dimension).pipe(
+        map((data) => ({
+          data,
+          schema: {
+            columns: [
+              {
+                name: 'memberKey',
+                label: 'Member Key',
+                type: 'string'
+              },
+              {
+                name: 'memberCaption',
+                label: 'Member Caption',
+                type: 'string'
+              }
+            ],
+            recursiveHierarchy: DimensionMemberRecursiveHierarchy
+          }
+        }))
+      )
     }
 
     const hProperty = getEntityHierarchy(this.getEntityType(), this.dimension)
@@ -143,6 +161,38 @@ export class SmartFilterService<T, State extends SmartFilterState = SmartFilterS
     //   ]
     // }
 
-    return super.query(options)
+    const propertyName = getPropertyHierarchy(dimension)
+
+    return super.query(options).pipe(
+      map((result) => {
+        const valueProperty = dimension.hierarchy || dimension.dimension
+        const captionProperty = dimension.caption
+        const data = result.data.map((item) => ({
+          ...dimension,
+          memberKey: item[valueProperty],
+          memberCaption: item[captionProperty],
+          parentKey: `[${propertyName}].[PARENT_UNIQUE_NAME]`
+        }))
+
+        return {
+          data,
+          schema: {
+            columns: [
+              {
+                name: 'memberKey',
+                label: 'Member Key',
+                type: 'string'
+              },
+              {
+                name: 'memberCaption',
+                label: 'Member Caption',
+                type: 'string'
+              }
+            ],
+            recursiveHierarchy: DimensionMemberRecursiveHierarchy
+          }
+        }
+      })
+    )
   }
 }

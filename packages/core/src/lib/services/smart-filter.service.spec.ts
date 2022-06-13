@@ -1,4 +1,5 @@
-import { AgentType, MockAgent } from '../agent'
+import { AgentType } from '../agent'
+import { MockAgent } from '../agent/agent-mock.service'
 import { DSCoreService } from '../ds-core.service'
 import { MockDataSource } from './mock'
 import { SmartFilterService } from './smart-filter.service'

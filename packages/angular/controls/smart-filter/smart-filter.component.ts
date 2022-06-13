@@ -62,8 +62,7 @@ export interface SmartFilterState {
     }
   ]
 })
-export class SmartFilterComponent<T>
-  extends ComponentStore<SmartFilterState>
+export class SmartFilterComponent extends ComponentStore<SmartFilterState>
   implements OnInit, OnChanges, ControlValueAccessor
 {
   @Input() dataSettings: DataSettings
@@ -161,7 +160,7 @@ export class SmartFilterComponent<T>
   @ViewChild('search') searchInput: ElementRef<HTMLInputElement>
 
   onChange: (input: ISlicer) => any
-  constructor(private smartFilterService: NgmSmartFilterService<T>, public dialog: MatDialog) {
+  constructor(private smartFilterService: NgmSmartFilterService, public dialog: MatDialog) {
     super({ slicer: {} } as SmartFilterState)
   }
 

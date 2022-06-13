@@ -1,4 +1,4 @@
-import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { TableVirtualScrollDataSource } from '@metad/ocap-angular/common'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
@@ -34,6 +34,7 @@ export interface MemberTableState {
 
 @UntilDestroy()
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-member-table',
   templateUrl: 'member-table.component.html',
   styleUrls: ['member-table.component.scss'],
@@ -82,9 +83,11 @@ export class MemberTableComponent<T>
     shareReplay(1)
   )
 
+  public readonly loading$ = this.smartFilterService.loading$
+
   onChange: (input: any) => void
 
-  constructor(private smartFilterService: NgmSmartFilterService<T>) {
+  constructor(private smartFilterService: NgmSmartFilterService) {
     super({ slicer: {} })
   }
 
@@ -104,19 +107,22 @@ export class MemberTableComponent<T>
 
     this.results$.pipe(untilDestroyed(this)).subscribe((results) => {
       if (results.data) {
-        this.dataSource.data = results.data as T[]
+        this.dataSource.data = results.data as unknown as T[]
       }
     })
     this.searchControl.valueChanges.pipe(debounceTime(500)).subscribe((text) => {
       this.dataSource.filter = text.trim().toLowerCase()
     })
   }
-  ngOnChanges({ dataSettings, dimension, appearance }: SimpleChanges): void {
+  ngOnChanges({ dataSettings, dimension, appearance, options }: SimpleChanges): void {
     if (dataSettings?.currentValue) {
       this.smartFilterService.dataSettings = dataSettings.currentValue
     }
     if (dimension?.currentValue) {
-      this.smartFilterService.options = { dimension: dimension.currentValue }
+      this.smartFilterService.options = { ...this.options, dimension: dimension.currentValue }
+    }
+    if (options?.currentValue) {
+      this.smartFilterService.options = { ...options.currentValue, dimension: this.dimension }
     }
     if (appearance?.currentValue) {
       switch(this.appearance.displayDensity) {

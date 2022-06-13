@@ -35,14 +35,12 @@
       }
     },
     "storybook": {
-      "executor": "@nrwl/storybook:storybook",
+      "executor": "@storybook/angular:start-storybook",
       "options": {
-        "uiFramework": "@storybook/angular",
         "port": 4400,
-        "config": {
-          "configFolder": "packages/angular/.storybook"
-        },
-        "projectBuildConfig": "angular:build-storybook"
+        "configDir": "packages/angular/.storybook",
+        "browserTarget": "angular:build-storybook",
+        "compodoc": false
       },
       "configurations": {
         "ci": {
@@ -51,15 +49,16 @@
       }
     },
     "build-storybook": {
-      "executor": "@nrwl/storybook:build",
+      "executor": "@storybook/angular:build-storybook",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "uiFramework": "@storybook/angular",
-        "outputPath": "dist/storybook/angular",
-        "config": {
-          "configFolder": "packages/angular/.storybook"
-        },
-        "projectBuildConfig": "angular:build-storybook"
+        "outputDir": "dist/storybook/angular",
+        "configDir": "packages/angular/.storybook",
+        "browserTarget": "angular:build-storybook",
+        "compodoc": false,
+        "styles": [
+          "node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
+        ]
       },
       "configurations": {
         "ci": {

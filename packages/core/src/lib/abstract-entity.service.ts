@@ -45,8 +45,11 @@ export abstract class AbstractEntityService<T> implements EntityService<T> {
 
   abstract getCalculatedMember(measure: string, type: PeriodFunctions): Property
   
-  getMembers<M>(property: Dimension): Observable<M[]> {
-    throw new Error('method unimplemented')
+  /**
+   * 获取字段相关维度成员
+   */
+  getMembers<M>(property: Dimension): Observable<any[]> {
+    return this.dataSource.getMembers(this.entitySet, property)
   }
   
   selectEntityType(): Observable<EntityType> {

@@ -6,7 +6,7 @@ import { DisplayBehaviour } from '@metad/ocap-core'
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-display-behaviour',
   templateUrl: './display-behaviour.component.html',
-  styleUrls: ['./display-behaviour.component.scss'],
+  styleUrls: ['./display-behaviour.component.scss']
 })
 export class DisplayBehaviourComponent implements OnInit, OnChanges {
   DISPLAY_BEHAVIOUR = DisplayBehaviour

@@ -7,23 +7,33 @@ export enum MemberType {
 }
 
 export interface IDimensionMember {
-  modelId: string
-  entity: string
+  modelId?: string
+  entity?: string
   dimension: string
-  hierarchy: string
-  level: string
-  levelNumber: number
-  memberOrdinal: number
-  memberName: string
-  memberUniqueName: string
-  memberType: MemberType
+  hierarchy?: string
+  level?: string
+  levelNumber?: number
+  memberOrdinal?: number
+  memberKey: string
+  memberUniqueName?: string
+  memberType?: MemberType
   memberGuid?: string
-  memberCaption: string
+  memberCaption?: string
   visible?: boolean
-  childrenCardinality: number
-  parentLevel: number
-  parentUniqueName?: string
-  parentCount: number
+  childrenCardinality?: number
+  parentLevel?: number
+  parentKey?: string
+  parentCount?: number
   treeOp?: string
   depth?: number
+}
+
+export const DimensionMemberRecursiveHierarchy = {
+  parentNodeProperty: 'parentKey',
+  externalKeyProperty: 'memberUniqueName',
+  valueProperty: 'memberKey',
+  labelProperty: 'memberCaption',
+  levelProperty: 'levelNumber',
+  descendantCountProperty: 'childrenCardinality',
+  memberTypeProperty: 'memberType'
 }

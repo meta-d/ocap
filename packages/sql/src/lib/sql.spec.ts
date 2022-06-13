@@ -39,6 +39,38 @@ describe('sql', () => {
 
     expect(entityType).toEqual(null)
   })
+
+  it('getEntityType react schema update', (done) => {
+    dataSource.getEntityType('SalesOrder').pipe(skip(1)).subscribe((entityType) => {
+      console.log(entityType)
+      // expect(entityType.name).toEqual('SalesOrder')
+      done()
+    })
+
+    setTimeout(() => {
+      dataSource.setSchema({
+        name: 'Sales',
+        cubes: [
+          {
+            name: 'SalesOrder',
+            tables: [{ name: 'SalesOrder1' }]
+          }
+        ]
+      })
+
+      // dataSource.setSchema({
+      //   name: 'Sales',
+      //   cubes: [
+      //     {
+      //       name: 'SalesOrder',
+      //       tables: [{ name: 'SalesOrder' }],
+      //       dimensions: [],
+      //       measures: []
+      //     }
+      //   ]
+      // })
+    });
+  })
 })
 
 describe('Get EntityType with Exception', () => {

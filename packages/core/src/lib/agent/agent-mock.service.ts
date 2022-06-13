@@ -1,7 +1,10 @@
 import { Observable, of } from 'rxjs'
+import { randCompanyName, randFloat, randNumber, randProductAdjective, randProductCategory } from '@ngneat/falso'
 import { DataSourceOptions } from '../data-source'
 import { AggregationRole } from '../models/index'
 import { Agent, AgentStatus, AgentType } from './types'
+
+
 
 export class MockAgent implements Agent {
   type = AgentType.Browser
@@ -95,16 +98,18 @@ export class MockAgent implements Agent {
       } else if (options.method === 'post') {
         if (options.url === 'query') {
           const results = []
-          // randProductCategory({ length: 3 }).forEach((productCategory) => {
-          //   randProductAdjective({ length: 5 }).forEach((product) => {
-          //     results.push({
-          //       product,
-          //       productCategory,
-          //       sales: randFloat(),
-          //       quantity: randFloat()
-          //     })
-          //   })
-          // })
+
+          randProductCategory({ length: 3 }).forEach((productCategory) => {
+            randProductAdjective({ length: 5 }).forEach((product) => {
+              results.push({
+                product,
+                productCategory,
+                sales: randFloat(),
+                quantity: randFloat()
+              })
+            })
+          })
+          
           return resolve({
             data: results,
             columns: []

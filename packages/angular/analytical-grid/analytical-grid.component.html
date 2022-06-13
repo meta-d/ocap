@@ -65,3 +65,5 @@
 </div>
 
 <mat-paginator *ngIf="options?.paging" [pageSize]="options?.pageSize" [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>
+
+<mat-spinner *ngIf="isLoading$ | async" strokeWidth="2" diameter="50"></mat-spinner>

@@ -17,6 +17,7 @@ import {
   Schema,
   SemanticModel
 } from './models'
+import { Dimension } from './types'
 import { isNil, Type } from './utils/index'
 
 export type DataSourceFactory = () => Promise<Type<DataSource>>
@@ -93,7 +94,7 @@ export interface DataSource {
    * @param entity 实体
    * @param dimension 维度
    */
-  getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
+  getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
 
   /**
    * 根据指定的 entitySet 名称创建相应的 entityService
@@ -197,7 +198,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   abstract getEntitySets(): Observable<Array<EntitySet>>
   abstract getEntityType(entity: string): Observable<EntityType>
   abstract getCatalogs(): Observable<Array<Catalog>>
-  abstract getMembers(entity: string, dimension: string): Observable<IDimensionMember[]>
+  abstract getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
   abstract createEntity(name, columns, data?): Observable<string>
   abstract query({ statement: string }): Observable<any>
 

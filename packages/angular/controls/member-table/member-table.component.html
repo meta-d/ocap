@@ -13,7 +13,6 @@
       <mat-icon>close</mat-icon>
     </button>
   </div>
-
 </mat-form-field>
 
 <cdk-virtual-scroll-viewport [tvsItemSize]="itemSize" >
@@ -51,3 +50,5 @@
       (click)="toggleMember(row)"></tr>
   </table>
 </cdk-virtual-scroll-viewport>
+
+<mat-spinner *ngIf="loading$ | async" strokeWidth="2" diameter="50"></mat-spinner>

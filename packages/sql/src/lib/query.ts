@@ -123,17 +123,8 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
 
   const groupby = union(queryContext.groupbys).join(',')
 
-  let fromSource = `"${entityType.name}"`
-  const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
-  if (cube) {
-    fromSource = serializeFrom(cube, entityType, dialect)
-  } else {
-    const dimension = schema?.dimensions?.find(({ name }) => name === entityType.name)
-    if (dimension) {
-      fromSource = serializeDimensionFrom(dimension, entityType, dialect)
-    }
-  }
-
+  const fromSource = From(entityType, schema, dialect)
+  
   let statement = `SELECT ${isEmpty(queryContext.select) ? '*' : queryContext.select.join(`, `)} FROM ${fromSource}`
 
   // Conditions
@@ -322,4 +313,19 @@ export function serializeDProperty(property: PropertyDimension, dialect?: string
   }
 
   return serializeName(property.column ?? property.name, dialect)
+}
+
+export function From(entityType: EntityType, schema: Schema, dialect: string) {
+  let fromSource = `"${entityType.name}"`
+  const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
+  if (cube) {
+    fromSource = serializeFrom(cube, entityType, dialect)
+  } else {
+    const dimension = schema?.dimensions?.find(({ name }) => name === entityType.name)
+    if (dimension) {
+      fromSource = serializeDimensionFrom(dimension, entityType, dialect)
+    }
+  }
+
+  return fromSource
 }

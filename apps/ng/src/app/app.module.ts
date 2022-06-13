@@ -12,17 +12,18 @@ import { ZhHans } from '@metad/ocap-angular'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { ControlsModule } from '@metad/ocap-angular/controls'
-import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
+import {
+  NgmMissingTranslationHandler,
+  OcapCoreModule,
+  OCAP_AGENT_TOKEN,
+  OCAP_DATASOURCE_TOKEN,
+  OCAP_MODEL_TOKEN
+} from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, DataSource, Type } from '@metad/ocap-core'
 import { DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
-import {
-  MissingTranslationHandler,
-  MissingTranslationHandlerParams,
-  TranslateLoader,
-  TranslateModule
-} from '@ngx-translate/core'
+import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { Observable, of } from 'rxjs'
@@ -33,18 +34,8 @@ import { NxWelcomeComponent } from './nx-welcome.component'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
-export class MyMissingTranslationHandler implements MissingTranslationHandler {
-  handle(params: MissingTranslationHandlerParams) {
-    if (params.interpolateParams) {
-      return params.interpolateParams['Default'] || params.key
-    }
-    return params.key
-  }
-}
-
 export class CustomLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
-    console.log(lang, ZhHans)
     return of(ZhHans)
   }
 }
@@ -67,7 +58,7 @@ export class CustomLoader implements TranslateLoader {
       loader: { provide: TranslateLoader, useClass: CustomLoader },
       missingTranslationHandler: {
         provide: MissingTranslationHandler,
-        useClass: MyMissingTranslationHandler
+        useClass: NgmMissingTranslationHandler
       }
     }),
     NgxEchartsModule.forRoot({
