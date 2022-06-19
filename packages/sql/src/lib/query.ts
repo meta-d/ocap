@@ -44,18 +44,19 @@ export function serializeDimensionFrom(dimension: PropertyDimension, entityType:
   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
 }
 
-export function serializeCubeFact(cube: Cube, dialect?: string) {
+
+export function serializeCubeFact(cube: Cube, dialect: string) {
   const factTable = cube.tables[0]
 
-  let statement = `"${factTable.name}"`
+  let statement = serializeName(factTable.name, dialect)
   const tableNames = [factTable.name]
   cube.tables.slice(1).forEach((table) => {
     const exists = tableNames.filter((name) => name === table.name)
     const tableAlias = exists.length ? `${table.name}(${exists.length})` : table.name
     const conditions = table.join.fields
-      .map((field) => `"${factTable.name}"."${field.leftKey}" = "${tableAlias}"."${field.rightKey}"`)
+      .map((field) => `${serializeName(factTable.name, dialect)}.${serializeName(field.leftKey, dialect)} = ${serializeName(tableAlias, dialect)}.${serializeName(field.rightKey, dialect)}`)
       .join(' AND ')
-    statement = `${statement} ${table.join.type} JOIN "${table.name}" AS "${tableAlias}" ON ${conditions}`
+    statement = `${statement} ${table.join.type} JOIN ${serializeName(table.name, dialect)} AS ${serializeName(tableAlias, dialect)} ON ${conditions}`
 
     tableNames.push(table.name)
   })
@@ -316,7 +317,7 @@ export function serializeDProperty(property: PropertyDimension, dialect?: string
 }
 
 export function From(entityType: EntityType, schema: Schema, dialect: string) {
-  let fromSource = `"${entityType.name}"`
+  let fromSource = `${serializeName(entityType.name, dialect)}`
   const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
   if (cube) {
     fromSource = serializeFrom(cube, entityType, dialect)

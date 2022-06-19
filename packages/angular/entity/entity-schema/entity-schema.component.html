@@ -1,0 +1,35 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding matTreeNodePaddingIndent="20"
+    cdkDrag
+    [cdkDragData]="node.item"
+  >
+    <button mat-icon-button disabled>
+      <mat-icon *ngIf="node.error" color="warn" fontSet="material-icons-round" displayDensity="compact"
+        [matTooltip]="node.error">
+        warning_amber
+      </mat-icon>
+    </button>
+
+    <div class="ngm-entity-schema__type">{{node.item.type[0]}}</div>
+    <ngm-display-behaviour [option]="{value: node.item.name, label: node.item.label}" [highlight]="searchControl.value"></ngm-display-behaviour>
+    <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding matTreeNodePaddingIndent="20"
+    cdkDrag
+    [cdkDragData]="node.item"
+  >
+    <button *ngIf="!node.isLoading" mat-icon-button
+            [attr.aria-label]="'Toggle ' + node.item" matTreeNodeToggle>
+      <mat-icon class="mat-icon-rtl-mirror" fontSet="material-icons-round">
+        {{treeControl.isExpanded(node) ? 'arrow_drop_down' : 'arrow_right'}}
+      </mat-icon>
+    </button>
+    <mat-spinner *ngIf="node.isLoading" strokeWidth="1" diameter="15"></mat-spinner>
+
+    <div class="ngm-entity-schema__type">{{node.item.type[0]}}</div>
+
+    <ngm-display-behaviour [option]="{value: node.item.name, label: node.item.label}" [highlight]="searchControl.value"></ngm-display-behaviour>
+
+    <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
+  </mat-tree-node>
+</mat-tree>

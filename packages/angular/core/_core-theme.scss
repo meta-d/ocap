@@ -31,29 +31,29 @@
   @include mat-button.density($config-or-theme);
   @include mat-viewport.density($config-or-theme);
 
-  .ngm-density__cosy {
-    .mat-icon {
-      height: 22px;
-      width: 22px;
-      font-size: 22px;
-      line-height: 22px;
-    }
-    .mat-icon-button .mat-icon {
-      line-height: 22px;
-    }
-  }
-  .ngm-density__compact {
-    .mat-icon {
-      height: 20px;
-      width: 20px;
-      font-size: 20px;
-      line-height: 20px;
-    }
+  // .ngm-density__cosy {
+  //   .mat-icon {
+  //     height: 22px;
+  //     width: 22px;
+  //     font-size: 22px;
+  //     line-height: 22px;
+  //   }
+  //   .mat-icon-button .mat-icon {
+  //     line-height: 22px;
+  //   }
+  // }
+  // .ngm-density__compact {
+  //   .mat-icon {
+  //     height: 20px;
+  //     width: 20px;
+  //     font-size: 20px;
+  //     line-height: 20px;
+  //   }
 
-    .mat-icon-button .mat-icon {
-      line-height: 20px;
-    }
-  }
+  //   .mat-icon-button .mat-icon {
+  //     line-height: 20px;
+  //   }
+  // }
 }
 
 @mixin theme($theme) {

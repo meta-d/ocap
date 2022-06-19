@@ -1,0 +1,23 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.mat-tree-node {
+  min-height: 30px;
+  .mat-icon-button {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+  }
+}
+
+.ngm-display-behaviour {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mat-progress-spinner {
+  margin: 7.5px;
+}

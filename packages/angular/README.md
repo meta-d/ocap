@@ -1,10 +1,3 @@
-# angular
+# Metad Ocap
 
-This library was generated with [Nx](https://nx.dev).
-
-## Running unit tests
-
-Run `nx test angular` to execute the unit tests.
-
-- Run `nx generate @nrwl/angular:component componentName --project=angular --export` add a component
-- 
+提供统一规范的嵌入式分析工具.

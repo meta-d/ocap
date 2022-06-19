@@ -8,11 +8,12 @@ import {
   IDimensionMember,
   QueryReturn
 } from '@metad/ocap-core'
-import { isEqual } from 'lodash'
-import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap, tap } from 'rxjs'
+import isEqual from 'lodash/isEqual'
+import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { DimensionMembers } from './dimension'
 import { SQLEntityService } from './entity.service'
-import { From, serializeCubeFact } from './query'
-import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLSchema } from './types'
+import { serializeCubeFact } from './query'
+import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLQueryResult, SQLSchema } from './types'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _catalogs$: Observable<Array<Catalog>>
@@ -93,7 +94,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', entity)
             } else if (cube) {
               // 如果 entityType 为 null, 则 entitySet 为运行时指定的表名, 直接取 entitySet 相应的运行时元数据
-              const statement = cube.expression || (cube.tables?.length ? serializeCubeFact(cube) : null)
+              const statement = cube.expression || (cube.tables?.length ? serializeCubeFact(cube, this.options.dialect) : null)
               if (!statement) {
                 return null
               }
@@ -150,11 +151,16 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
     return this._catalogs$
   }
 
+  /**
+   * @param entity 
+   * @param dimension 
+   * @returns 
+   */
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
     return this.getEntityType(entity).pipe(
       switchMap((entityType) => {
         return this.query({
-          statement: `SELECT ${dimension.dimension} FROM ${From(entityType, this.options.schema, this.options.dialect)} GROUP BY ${dimension.dimension}`
+          statement: DimensionMembers(dimension, entityType, this.options.schema, this.options.dialect)
         }).pipe(
           map((result) => {
             console.log(entity, dimension, result)
@@ -187,7 +193,8 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         catalog: this.options.catalog
       })
     ).pipe(
-      map((result) => ({
+      map((result: SQLQueryResult) => ({
+        ...result,
         data: result.data,
         schema: {
           columns: result.columns

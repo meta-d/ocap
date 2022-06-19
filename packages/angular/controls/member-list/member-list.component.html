@@ -16,7 +16,7 @@
 </mat-form-field>
 
 <div fxFlex="100" class="ngm-member-list__members">
-  <mat-selection-list *ngIf="multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith">
+  <mat-selection-list *ngIf="multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith" [displayDensity]="appearance?.displayDensity">
     <mat-list-option role="listitem" *ngFor="let item of selectOptions$ | async" [value]="item">
       <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
         [option]="item" [highlight]="searchControl.value"
@@ -24,7 +24,7 @@
     </mat-list-option>
   </mat-selection-list>
 
-  <mat-selection-list *ngIf="!multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith" [multiple]="false">
+  <mat-selection-list *ngIf="!multiple" role="listbox" [(ngModel)]="members" [compareWith]="compareWith" [multiple]="false" [displayDensity]="appearance?.displayDensity">
     <mat-list-option role="listitem" *ngFor="let item of selectOptions$ | async" [value]="item">
       <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
         [option]="item" [highlight]="searchControl.value"

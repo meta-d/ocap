@@ -68,14 +68,14 @@
         <mat-divider></mat-divider>
 
         <div class="ngm-value-help__members">
-            <ngm-member-list *ngIf="presentation !== PresentationEnum.Hierarchy" fxFlex="100"
+            <ngm-member-list *ngIf="presentation !== PresentationEnum.Hierarchy" fxFlex="100" [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"
                 [(ngModel)]="slicerModel"
             ></ngm-member-list>
 
-            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100"
+            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100" [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"

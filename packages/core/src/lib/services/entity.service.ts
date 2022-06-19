@@ -245,12 +245,12 @@ export class EntityBusinessService<
     this.refresh$.next(force)
   }
 
-  patchData(data) {
-    this.result$.next({
-      ...(this.result$.value || {}),
-      results: data
-    })
-  }
+  // patchData(data) {
+  //   this.result$.next({
+  //     ...(this.result$.value || {}),
+  //     results: data
+  //   })
+  // }
 
   /**
    * @deprecated use selectResult

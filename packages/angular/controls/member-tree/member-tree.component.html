@@ -5,20 +5,22 @@
     <input matInput placeholder="{{ 'Ngm.Common.Search_Placeholder' | translate: {Default: 'Please input keyword'} }}"
       [formControl]="searchControl">
 
-    <mat-icon matSuffix>search</mat-icon>
-    <button *ngIf="searchControl.value" matSuffix mat-icon-button
-      (click)="$event.stopPropagation();searchControl.setValue('')">
-      <mat-icon>close</mat-icon>
-    </button>
+    <div matSuffix fxLayout="row" fxLayoutAlign="start center">
+      <mat-icon>search</mat-icon>
+      <button *ngIf="searchControl.value" mat-icon-button
+        (click)="$event.stopPropagation();searchControl.setValue('')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 </mat-form-field>
 
 <cdk-virtual-scroll-viewport fxFlex [itemSize]="40">
   <ng-container *cdkVirtualFor="let node of dataSource">
     <!-- Note that the [style.padding-left] is essentially what cdkTreeNodePadding is doing under the hood -->
-    <div class="tree-node" [style.padding-left]="node.level * 24 + 'px'">
+    <div class="tree-node" [style.padding-left]="node.level * 24 + 'px'" [displayDensity]="appearance?.displayDensity">
       <!-- Note that treeControl.toggle(node) is essentially what cdkTreeNodeToggle is doing under the hood -->
-      <button mat-icon-button disabled *ngIf="!node.expandable"></button>
-      <button mat-icon-button (click)="treeControl.toggle(node)" *ngIf="node.expandable">
+      <button mat-icon-button disabled *ngIf="!node.expandable" [displayDensity]="appearance?.displayDensity"></button>
+      <button mat-icon-button (click)="treeControl.toggle(node)" *ngIf="node.expandable" [displayDensity]="appearance?.displayDensity">
         <mat-icon class="mat-icon-rtl-mirror">
           {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
         </mat-icon>

@@ -258,6 +258,9 @@ export class DuckdbWasmAgent implements Agent {
 }
 
 export function mapArrowType(type) {
+  // if (['Float64', 'Decimal[38e0]'].includes(type.toString())) {
+  //   return 'number'
+  // } 
   if (DataType.isDecimal(type) || DataType.isInt(type) || DataType.isFloat(type)) {
     return 'number'
   }

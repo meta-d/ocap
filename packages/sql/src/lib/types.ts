@@ -1,4 +1,4 @@
-import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from "@metad/ocap-core"
+import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from '@metad/ocap-core'
 
 export interface SQLDataSourceOptions extends DataSourceOptions {
   settings?: SQLDataSourceSettings
@@ -21,7 +21,7 @@ export interface SQLSchema {
 }
 
 export function decideRole(type: string) {
-  switch(type) {
+  switch (type) {
     case 'string':
       return AggregationRole.dimension
     case 'number':
@@ -33,19 +33,17 @@ export function decideRole(type: string) {
 
 /**
  * TODO 不同的数据库需要拼出不同的字段名格式 ? 有没有最佳实践 ?
- * 
- * @param name 
- * @param dialect 
- * @returns 
+ *
+ * @param name
+ * @param dialect
+ * @returns
  */
- export function serializeName(name: string, dialect: string) {
-  if (['hive', 'presto'].includes(dialect)) {
-    return name
-  } else if (['mysql'].includes(dialect)) {
-    return `\`${name}\``
+export function serializeName(name: string, dialect: string) {
+  if (['pg', 'trino', 'presto', 'hana'].includes(dialect)) {
+    return `"${name}"`
   }
 
-  return `"${name}"`
+  return `\`${name}\``
 }
 
 export function serializeWrapCatalog(expression: string, dialect: string, catalog: string) {
@@ -69,4 +67,27 @@ export interface SQLQueryContext {
 export interface SQLQueryProperty {
   dimension: Dimension | Measure
   property: Property
+}
+
+// Types for sql database exec
+
+export interface IColumnDef {
+  name: string
+  label?: string
+  type: string
+  dbType?: string
+  nullable?: boolean
+  position?: number
+  /**
+   * 应该等同于 label
+   */
+  comment?: string
+}
+
+export interface SQLQueryResult {
+  status: 'OK' | 'ERROR'
+  data?: Array<unknown>
+  columns?: Array<IColumnDef>
+  stats?: any
+  error?: string
 }

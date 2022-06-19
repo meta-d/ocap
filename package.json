@@ -115,6 +115,7 @@
     "@ngneat/use-observable": "^1.0.0",
     "@ngx-translate/core": "^14.0.0",
     "core-js": "^3.6.5",
+    "css-element-queries": "^1.2.3",
     "d3-geo": "^3.0.1",
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.0.0",

@@ -1,4 +1,5 @@
 export * from './controls.module'
+export * from './member-list/member-list.component'
 export * from './member-table/member-table.component'
 export * from './member-tree/member-tree.component'
 export * from './smart-filter.service'

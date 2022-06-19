@@ -151,9 +151,11 @@ export class MemberTreeComponent<T extends IDimensionMember = IDimensionMember>
       this.smartFilterService.dataSettings = dataSettings.currentValue
     }
     if (dimension?.currentValue) {
-      this.smartFilterService.options = { dimension: dimension.currentValue }
+      this.smartFilterService.options = { ...(this.options ?? {}), dimension: dimension.currentValue }
     }
     if (options?.currentValue) {
+      this.smartFilterService.options = { ...options.currentValue, dimension: this.dimension }
+
       if (this.checklistSelection.isMultipleSelection()) {
         if (options.currentValue.selectionType !== FilterSelectionType.Multiple) {
           this.checklistSelection = new SelectionModel<PrimitiveType>(false, [])

@@ -30,14 +30,12 @@ export function tree(
   settings: ChartSettings,
   options?: EChartsOptions
 ) {
-  if (data.recursiveData?.[0].recursiveHierarchy) {
-    console.log(data.recursiveData)
-
+  if (data.schema?.recursiveHierarchy) {
     const series = mergeOptions(
       {
         type: 'tree',
         universalTransition: true,
-        data: data.recursiveData?.[0].data
+        data: hierarchize(data.data, data.schema?.recursiveHierarchy)
       },
       options?.seriesStyle
     )
@@ -76,8 +74,8 @@ export function treemap(
   const mainMeasureName = getPropertyMeasure(measures[0])
 
   let data
-  if (result.recursiveData?.[0].recursiveHierarchy) {
-    data = hierarchize(result.data, result.recursiveData?.[0].recursiveHierarchy, mainMeasureName)
+  if (result.schema?.recursiveHierarchy) {
+    data = hierarchize(result.data, result.schema?.recursiveHierarchy, {valueProperty: mainMeasureName})
   } else {
     data = leveledHierarchy(result.data, chartAnnotation, sumBy)?.[0].children
   }
@@ -144,8 +142,8 @@ export function sunburst(
   const mainMeasureName = getPropertyMeasure(measures[0])
 
   let data
-  if (result.recursiveData?.[0].recursiveHierarchy) {
-    data = hierarchize(result.data, result.recursiveData?.[0].recursiveHierarchy, mainMeasureName)
+  if (result.schema?.recursiveHierarchy) {
+    data = hierarchize(result.data, result.schema?.recursiveHierarchy, {valueProperty: mainMeasureName})
   } else {
     data = leveledHierarchy(result.data, chartAnnotation, sumBy)?.[0].children
   }
@@ -184,7 +182,7 @@ export function sankey(
 ) {
   const category = getChartCategory(chartAnnotation)
   const mainMeasureName = getPropertyMeasure(chartAnnotation.measures[0])
-  const recursiveHierarchy = data.recursiveData?.[0].recursiveHierarchy
+  const recursiveHierarchy = data.schema?.recursiveHierarchy
   const { nodes, links } = recursiveHierarchy
     ? convertTree2NodeLinks(
         data.data,

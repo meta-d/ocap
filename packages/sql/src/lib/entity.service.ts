@@ -1,7 +1,8 @@
 import { AbstractEntityService, PeriodFunctions, Property, QueryOptions, QueryReturn } from '@metad/ocap-core'
 import { BehaviorSubject, catchError, from, map, Observable, of, switchMap } from 'rxjs'
 import { queryCube } from './query'
-import { serializeWrapCatalog } from './types'
+import { serializeWrapCatalog, SQLQueryResult } from './types'
+
 
 /**
  * 要针对错误情况建立一套测试程序
@@ -49,13 +50,13 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
             catalog: this.dataSource.options.catalog
           })
         ).pipe(
-          map((result) => {
+          map((result: SQLQueryResult) => {
             return {
+              ...result,
               data: result.data,
-              results: result.data,
               schema: {
-                columns: result.columns
-              }
+                columns: result.columns,
+              },
             }
           }),
           // 需要在这里捕捉错误, 否则会终端 refresh 的这个 switchMap

@@ -118,7 +118,7 @@ export class MemberListComponent implements OnInit, OnChanges, ControlValueAcces
       this.smartFilterService.dataSettings = dataSettings.currentValue
     }
     if (dimension?.currentValue) {
-      this.smartFilterService.options = { ...this.options, dimension: dimension.currentValue }
+      this.smartFilterService.options = { ...(this.options ?? {}), dimension: dimension.currentValue }
     }
     if (options?.currentValue) {
       this.smartFilterService.options = { ...options.currentValue, dimension: this.dimension }

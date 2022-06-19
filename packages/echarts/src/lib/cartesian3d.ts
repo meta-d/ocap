@@ -23,7 +23,7 @@ export function cartesian3d(
   options: ChartOptions,
   type: string
 ) {
-  const cartesianCoordinate = cartesianCoordinate3d(data.results, chartAnnotation, entityType, settings, options)
+  const cartesianCoordinate = cartesianCoordinate3d(data.data, chartAnnotation, entityType, settings, options)
 
   const echartsOptions = {
     dataset: [],

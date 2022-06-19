@@ -1,5 +1,6 @@
-import { MemberType, Property } from '.'
-import { RecursiveHierarchyData, RecursiveHierarchyType } from '../annotations/hierarchy'
+import { RecursiveHierarchyType } from '../annotations/hierarchy'
+import { MemberType } from './member'
+import { Property } from './sdl'
 
 /**
  * Hierarchy 结构化的字段类型, 字段包含子字段们
@@ -29,15 +30,9 @@ export interface EntitySchema {
  * Query 查询返回值类型
  */
 export interface QueryReturn<T> {
-  /**
-   * @deprecated use data
-   */
-  results?: Array<T>
+  status?: 'OK' | 'ERROR'
   data?: Array<T>
   schema?: EntitySchema
-  /**
-   * @deprecated use schema
-   */
-  recursiveData?: RecursiveHierarchyData<T>[]
   error?: any
+  stats?: any
 }

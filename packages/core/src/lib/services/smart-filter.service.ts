@@ -104,8 +104,8 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
 
   override query(options?: QueryOptions) {
     const memberSource = this.options?.memberSource
-
-    if (memberSource === MemberSource.DIMENSION) {
+    // 默认取 Dimension Table
+    if (memberSource !== MemberSource.CUBE) {
       return this.entityService.getMembers<IDimensionMember>(this.dimension).pipe(
         map((data) => ({
           data,
@@ -119,6 +119,11 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
               {
                 name: 'memberCaption',
                 label: 'Member Caption',
+                type: 'string'
+              },
+              {
+                name: 'parentKey',
+                label: 'Parent Key',
                 type: 'string'
               }
             ],
@@ -166,12 +171,12 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
     return super.query(options).pipe(
       map((result) => {
         const valueProperty = dimension.hierarchy || dimension.dimension
-        const captionProperty = dimension.caption
+        const captionProperty = dimension.caption || hProperty?.caption
         const data = result.data.map((item) => ({
           ...dimension,
           memberKey: item[valueProperty],
           memberCaption: item[captionProperty],
-          parentKey: `[${propertyName}].[PARENT_UNIQUE_NAME]`
+          parentKey: item[`${propertyName}.[PARENT_UNIQUE_NAME]`]
         }))
 
         return {
@@ -186,6 +191,11 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
               {
                 name: 'memberCaption',
                 label: 'Member Caption',
+                type: 'string'
+              },
+              {
+                name: 'parentKey',
+                label: 'Parent Key',
                 type: 'string'
               }
             ],

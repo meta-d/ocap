@@ -1,4 +1,4 @@
-import { Annotation, IMember, Measure, PrimitiveType, Syntax } from '../types'
+import { Annotation, IMember, Measure, PrimitiveType, PropertyName, Syntax } from '../types'
 import { CalculatedMember, ParameterControlEnum } from './calculated'
 import { Indicator } from './indicator'
 import { EntityProperty, PropertyAttributes } from './property'
@@ -232,6 +232,7 @@ export interface PropertyHierarchy extends EntityProperty {
 }
 
 export interface PropertyLevel extends EntityProperty {
+  hierarchy?: PropertyName
   column?: string
   nameColumn?: string
   captionColumn?: string

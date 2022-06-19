@@ -1,5 +1,5 @@
 import { AggregationRole, C_MEASURES, EntitySemantics } from '@metad/ocap-core'
-import { queryCube, serializeSelectFields } from './query'
+import { queryCube, serializeCubeFact, serializeSelectFields } from './query'
 
 const SalesEntityType = {
   name: 'sales',
@@ -91,5 +91,21 @@ describe('Serialize SQL', () => {
 
     expect(context.groupbys).toEqual([`"Customer"`])
     expect(context.select).toEqual(['SUM("sales") AS "sales"', '"Customer" AS "Customer"'])
+  })
+
+  it('serializeCubeFact', () => {
+    expect(
+      serializeCubeFact(
+        {
+          name: 'Sales',
+          tables: [
+            {
+              name: 'SalesOrder'
+            }
+          ]
+        },
+        'hive'
+      )
+    ).toEqual(`SELECT * FROM SalesOrder`)
   })
 })
