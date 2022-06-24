@@ -33,8 +33,11 @@ import {
 //   return `${member.hierarchy || member.dimension}.[${member.name}]`
 // }
 
-export function serializeUniqueName(dimension: string, hierarchy?: string, level?: string) {
+export function serializeUniqueName(dimension: string, hierarchy?: string, level?: string, intrinsic?: string) {
   const name = !!hierarchy && dimension !== hierarchy ? `[${dimension}.${hierarchy}]` : `[${dimension}]`
+  if (intrinsic) {
+    return `${name}.[${level}].[${intrinsic}]`
+  }
   if (level) {
     return `${name}.[${level}]`
   }

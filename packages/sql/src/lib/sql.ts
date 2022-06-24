@@ -1,5 +1,6 @@
 import {
   AbstractDataSource,
+  AggregationRole,
   Catalog,
   Dimension,
   EntityService,
@@ -10,10 +11,17 @@ import {
 } from '@metad/ocap-core'
 import isEqual from 'lodash/isEqual'
 import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
-import { DimensionMembers } from './dimension'
+import { compileDimensionSchema, DimensionMembers } from './dimension'
 import { SQLEntityService } from './entity.service'
 import { serializeCubeFact } from './query'
-import { decideRole, serializeWrapCatalog, SQLDataSourceOptions, SQLQueryResult, SQLSchema } from './types'
+import {
+  C_MEASURES_ROW_COUNT,
+  decideRole,
+  serializeWrapCatalog,
+  SQLDataSourceOptions,
+  SQLQueryResult,
+  SQLSchema
+} from './types'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _catalogs$: Observable<Array<Catalog>>
@@ -33,13 +41,10 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
                 : item.database
                 ? `${item.database}.${item.name}`
                 : item.name
-              const entityType = mapTableSchemaEntityType(item)
+              const entityType = mapTableSchemaEntityType(tableName, item)
               return {
                 name: tableName,
-                entityType: {
-                  ...entityType,
-                  name: tableName
-                }
+                entityType
               }
             }) as EntitySet[]
         }),
@@ -83,18 +88,52 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   getEntityType(entity: string): Observable<EntityType> {
     return this.selectSchema()
       .pipe(
-        map((schema) => schema?.cubes?.find((item) => item.name === entity)),
+        map((schema) => {
+          // Find schema defination for the entity
+          const cube = schema?.cubes?.find((item) => item.name === entity)
+          if (cube) {
+            return {
+              type: 'CUBE',
+              cube
+            }
+          }
+          const dimension = schema?.dimensions?.find((item) => item.name === entity)
+          if (dimension) {
+            return {
+              type: 'DIMENSION',
+              dimension
+            }
+          }
+          return {}
+        }),
         distinctUntilChanged(isEqual)
       )
       .pipe(
-        switchMap(async (cube) => {
+        switchMap(async ({ type, cube, dimension }) => {
+          if (dimension) {
+            // Schema dimension to EntityType
+            const rtDimension = compileDimensionSchema(entity, dimension)
+            return {
+              name: entity,
+              properties: {
+                [rtDimension.name]: rtDimension,
+                [C_MEASURES_ROW_COUNT]: {
+                  name: C_MEASURES_ROW_COUNT,
+                  role: AggregationRole.measure,
+                  entity
+                }
+              }
+            } as EntityType
+          }
+
           try {
             let schemas
             if (entity && !cube) {
               schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', entity)
             } else if (cube) {
               // 如果 entityType 为 null, 则 entitySet 为运行时指定的表名, 直接取 entitySet 相应的运行时元数据
-              const statement = cube.expression || (cube.tables?.length ? serializeCubeFact(cube, this.options.dialect) : null)
+              const statement =
+                cube.expression || (cube.tables?.length ? serializeCubeFact(cube, this.options.dialect) : null)
               if (!statement) {
                 return null
               }
@@ -106,28 +145,13 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               return null
             }
 
-            const _entityType = mapTableSchemaEntityType(schemas[0])
-
-            return {
-              ..._entityType,
-              name: entity
-            }
+            const _entityType = mapTableSchemaEntityType(entity, schemas[0])
+            return _entityType
           } catch (error: any) {
             this.agent.error(error.message)
             console.error(error.message)
             return null
           }
-
-          // console.log(
-          //   `schema`,
-          //   schema,
-          //   `getEntityType from entityType`,
-          //   entitySet?.entityType,
-          //   `cube`,
-          //   cube,
-          //   `runtime type is`,
-          //   _entityType
-          // )
         }),
         shareReplay(1)
       )
@@ -152,9 +176,9 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   }
 
   /**
-   * @param entity 
-   * @param dimension 
-   * @returns 
+   * @param entity
+   * @param dimension
+   * @returns
    */
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
     return this.getEntityType(entity).pipe(
@@ -163,11 +187,12 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           statement: DimensionMembers(dimension, entityType, this.options.schema, this.options.dialect)
         }).pipe(
           map((result) => {
-            console.log(entity, dimension, result)
+            // console.log(entity, dimension, result)
             return result.data.map((item) => ({
               ...dimension,
               memberKey: item[dimension.dimension],
               memberCaption: item[dimension.caption],
+              entity
             })) as IDimensionMember[]
           })
         )
@@ -179,8 +204,8 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
     throw new Error('Method not implemented.')
   }
 
-  createEntityService<T>(entitySet: string): EntityService<T> {
-    return new SQLEntityService(this, entitySet)
+  createEntityService<T>(entity: string): EntityService<T> {
+    return new SQLEntityService(this, entity)
   }
 
   query(q: { statement: string }): Observable<QueryReturn<unknown>> {
@@ -204,14 +229,15 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   }
 }
 
-function mapTableSchemaEntityType(item: SQLSchema) {
+function mapTableSchemaEntityType(entity: string, item: SQLSchema) {
   const entityType = {
-    name: item.name,
+    name: entity,
     label: item.label,
     properties: {}
   } as EntityType
   item.columns?.forEach((column) => {
     entityType.properties[column.name] = {
+      entity,
       dimension: column.name,
       __id__: column.name,
       name: column.name,

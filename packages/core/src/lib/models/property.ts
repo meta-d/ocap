@@ -31,6 +31,10 @@ export interface PropertyAttributes {
 }
 
 export interface EntityProperty extends BaseProperty, PropertyAttributes {
+  /**
+   * 所属的 Entity
+   */
+  entity?: string
   description?: string
   dataType?: string // number, string, date
 
@@ -53,5 +57,4 @@ export interface EntityProperty extends BaseProperty, PropertyAttributes {
    */
   text?: string | EntityProperty
   unit?: string | EntityProperty
-  
 }

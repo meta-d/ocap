@@ -25,7 +25,8 @@ describe('convertFiltersToSQL', () => {
               role: AggregationRole.dimension
             }
           }
-        }
+        },
+        'pg'
       )
     ).toEqual(`"Sales"."Product" IN ('A1')`)
   })
@@ -75,7 +76,8 @@ describe('convertFiltersToSQL', () => {
               role: AggregationRole.dimension
             }
           }
-        }
+        },
+        'pg'
       )
     ).toEqual(`( "Sales"."Product" IN ('A1', 'A2') ) AND ( "Sales"."Country" IN ('China') )`)
   })

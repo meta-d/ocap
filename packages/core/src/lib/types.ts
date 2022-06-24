@@ -235,8 +235,8 @@ export type EntityKey<T> =
  */
 export interface QueryOptions<T = any> {
   parameters?: EntityKey<T>
-  rows?: Array<Dimension>
-  columns?: Array<Dimension>
+  rows?: Array<Dimension | Measure>
+  columns?: Array<Dimension | Measure>
   /**
    * @deprecated use rows and columns
    */

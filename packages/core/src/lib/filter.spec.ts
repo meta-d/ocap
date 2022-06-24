@@ -115,15 +115,21 @@ describe('TimeRangeSlicers', () => {
   })
 })
 
-
 describe('Slicers', () => {
   it('putFilter', () => {
     let filters = []
-    filters = putFilter(filters, {dimension: {
-      dimension: 'Department'
-    }})
+    filters = putFilter(filters, {
+      dimension: {
+        dimension: 'Department'
+      }
+    })
 
-    expect(filters).toEqual([])
+    expect(filters).toEqual([
+      {
+        dimension: {
+          dimension: 'Department'
+        }
+      }
+    ])
   })
-  
 })

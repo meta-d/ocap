@@ -24,6 +24,7 @@ import isEmpty from 'lodash/isEmpty'
 import negate from 'lodash/negate'
 import union from 'lodash/union'
 import { serializeCalculationProperty } from './calculation'
+import { queryDimension } from './dimension'
 import { OrderBy } from './functions'
 import { convertFiltersToSQL } from './sql-filter'
 import { serializeName, SQLQueryContext, SQLQueryProperty } from './types'
@@ -43,7 +44,6 @@ export function serializeDimensionFrom(dimension: PropertyDimension, entityType:
   const expression = entityType.expression ?? cubeFact
   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
 }
-
 
 export function serializeCubeFact(cube: Cube, dialect: string) {
   const factTable = cube.tables[0]
@@ -66,6 +66,12 @@ export function serializeCubeFact(cube: Cube, dialect: string) {
 
 export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
   console.log(`~~~~~~~~~~~~~`, schema, options, entityType, `~~~~~~~~~~~~~~~~~~`)
+
+  const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
+  if (dimension) {
+    return queryDimension(dimension, entityType, options, dialect)
+  }
+
 
   let queryContext: SQLQueryContext = {} as SQLQueryContext
 
@@ -274,7 +280,7 @@ export function serializeSelectFields(context: SQLQueryContext, entityType: Enti
   return { ...context, select: fields, groupbys, zeroSuppression, unbookedData, where } as SQLQueryContext
 }
 
-export function serializeProperty(property: EntityProperty, dialect?: string) {
+export function serializeProperty(property: EntityProperty, dialect: string) {
   if (isPropertyMeasure(property)) {
     if (isCalculationProperty(property)) {
       return {
@@ -302,7 +308,7 @@ export function serializeProperty(property: EntityProperty, dialect?: string) {
   }
 }
 
-export function serializeDProperty(property: PropertyDimension, dialect?: string): string {
+export function serializeDProperty(property: PropertyDimension, dialect: string): string {
   // 计算度量作为维度来用时
   if (isCalculationProperty(property)) {
     return serializeCalculationProperty(property, dialect)

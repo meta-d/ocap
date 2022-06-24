@@ -31,7 +31,7 @@ describe('Serialize SQL', () => {
       ''
     )
 
-    expect(query).toEqual(`SELECT * FROM "sales"`)
+    expect(query).toEqual('SELECT * FROM `sales`')
   })
 
   it('query Only Dimension', async () => {
@@ -43,7 +43,7 @@ describe('Serialize SQL', () => {
     )
 
     expect(query).toEqual(
-      `SELECT "Customer" AS "Customer" FROM "sales" WHERE ("Customer" IS NOT NULL) GROUP BY "Customer"`
+      'SELECT `Customer` AS `Customer` FROM `sales` WHERE (`Customer` IS NOT NULL) GROUP BY `Customer`'
     )
   })
 
@@ -62,9 +62,9 @@ describe('Serialize SQL', () => {
       },
       SalesEntityType
     )
-    expect(context.groupbys).toEqual([`"Customer"`])
-    expect(context.select).toEqual(['"Customer" AS "Customer"'])
-    expect(context.unbookedData).toEqual(['"Customer" IS NOT NULL'])
+    expect(context.groupbys).toEqual(['`Customer`'])
+    expect(context.select).toEqual(['`Customer` AS `Customer`'])
+    expect(context.unbookedData).toEqual(['`Customer` IS NOT NULL'])
 
     context = serializeSelectFields(
       {
@@ -89,8 +89,8 @@ describe('Serialize SQL', () => {
       SalesEntityType
     )
 
-    expect(context.groupbys).toEqual([`"Customer"`])
-    expect(context.select).toEqual(['SUM("sales") AS "sales"', '"Customer" AS "Customer"'])
+    expect(context.groupbys).toEqual(['`Customer`'])
+    expect(context.select).toEqual(['SUM(`sales`) AS `sales`', '`Customer` AS `Customer`'])
   })
 
   it('serializeCubeFact', () => {
@@ -106,6 +106,6 @@ describe('Serialize SQL', () => {
         },
         'hive'
       )
-    ).toEqual(`SELECT * FROM SalesOrder`)
+    ).toEqual('SELECT * FROM `SalesOrder`')
   })
 })

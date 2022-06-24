@@ -1,5 +1,9 @@
 import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from '@metad/ocap-core'
 
+// 固有度量字段 行计数
+export const C_MEASURES_ROW_COUNT = 'Measures_Row_Count'
+export const C_MEMBER_CAPTION = 'MEMBER_CAPTION'
+
 export interface SQLDataSourceOptions extends DataSourceOptions {
   settings?: SQLDataSourceSettings
 }
@@ -47,7 +51,7 @@ export function serializeName(name: string, dialect: string) {
 }
 
 export function serializeWrapCatalog(expression: string, dialect: string, catalog: string) {
-  if (['pg'].includes(dialect)) {
+  if (['pg'].includes(dialect) && catalog) {
     return `SET search_path TO ${catalog};${expression}`
   }
   return expression

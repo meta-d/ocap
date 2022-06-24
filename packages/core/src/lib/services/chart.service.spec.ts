@@ -84,6 +84,7 @@ describe('ChartBusinessService', () => {
 
     setTimeout(() => {
       filterBar.change([aSlicer])
+      filterBar.go()
     }, 500)
   })
 
@@ -102,6 +103,7 @@ describe('ChartBusinessService', () => {
 
     setTimeout(() => {
       filterBar.change([aSlicer])
+      filterBar.go()
     }, 500)
   })
 })

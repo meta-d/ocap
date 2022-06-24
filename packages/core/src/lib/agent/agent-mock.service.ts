@@ -112,7 +112,8 @@ export class MockAgent implements Agent {
           
           return resolve({
             data: results,
-            columns: []
+            columns: [],
+            statement: options.body?.statement
           })
         }
       }

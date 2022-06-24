@@ -71,7 +71,7 @@ export interface SQLExpression {
 }
 
 export type KeyExpression = SQLExpression
-
+export type NameExpression = SQLExpression
 export type CaptionExpression = SQLExpression
 
 export interface DimensionUsage {
@@ -169,6 +169,9 @@ export interface Property extends EntityProperty {
    * The column of Dimension table for this property
    */
   column?: string
+  /**
+   * 维度类型, 或字段 DB 类型
+   */
   type?: DimensionType | string
   description?: string
   hierarchies?: PropertyHierarchy[]
@@ -181,10 +184,6 @@ export interface Property extends EntityProperty {
 
   keyExpression?: KeyExpression
 
-  /**
-   * @deprecated
-   */
-  entitySet?: string
   /**
    * @deprecated
    */
@@ -258,11 +257,12 @@ export interface PropertyLevel extends EntityProperty {
   parentChild?: boolean
 
   captionExpression?: CaptionExpression
+  nameExpression?: NameExpression
 }
 
 export interface LevelProperty extends PropertyAttributes {
   column?: string
-  propertyExpression: SQLExpression
+  propertyExpression?: SQLExpression
 }
 
 export interface ParameterProperty extends EntityProperty {

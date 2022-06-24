@@ -2,7 +2,6 @@ import {
   EntityType,
   FilteringLogic,
   FilterOperator,
-  getEntityProperty,
   getPropertyName,
   IFilter,
   IMember,
@@ -53,14 +52,15 @@ export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dial
   }
 
   const propertyName = getPropertyName(slicer.dimension)
-  const property = getEntityProperty(entityType, propertyName)
+  // const property = getEntityProperty(entityType, propertyName)
 
-  const path = property.entitySet
-    ? `${serializeName(property.entitySet, dialect)}.${serializeName(
-        propertyName.replace(property.entitySet + '_', ''),
-        dialect
-      )}`
-    : `${serializeName(entityType.name, dialect)}.${serializeName(propertyName, dialect)}`
+  const path = `${serializeName(entityType.name, dialect)}.${serializeName(propertyName, dialect)}`
+  // property.entitySet
+  //   ? `${serializeName(property.entitySet, dialect)}.${serializeName(
+  //       propertyName.replace(property.entitySet + '_', ''),
+  //       dialect
+  //     )}`
+  //   : `${serializeName(entityType.name, dialect)}.${serializeName(propertyName, dialect)}`
 
   if (isFilter(slicer)) {
     switch (slicer.operator) {

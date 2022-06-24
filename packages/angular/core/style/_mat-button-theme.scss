@@ -28,8 +28,10 @@
   .mat-button-base {
     &.ngm-density__cosy {
       line-height: 30px;
-      padding: 0 12px;
 
+      &:not(.mat-icon-button) {
+        padding: 0 12px;
+      }
       &.mat-icon-button {
         width: 30px;
         height: 30px;
@@ -37,7 +39,7 @@
 
       .mat-icon {
         @include icon-cosy();
-        margin-left: -3px;
+        // margin-left: -3px;
       }
     }
     &.ngm-density__compact {

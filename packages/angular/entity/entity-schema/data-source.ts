@@ -3,12 +3,12 @@ import { FlatTreeControl } from '@angular/cdk/tree'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   DimensionMemberRecursiveHierarchy,
+  EntityProperty,
   EntityType,
   getEntityDimensions,
   getEntityMeasures,
   hierarchize,
   IDimensionMember,
-  PropertyAttributes,
   PropertyDimension,
   PropertyHierarchy,
   TreeNodeInterface
@@ -37,7 +37,7 @@ export enum EntitySchemaType {
   Member = 'Member'
 }
 
-export interface EntitySchemaNode extends PropertyAttributes {
+export interface EntitySchemaNode extends EntityProperty {
   type?: EntitySchemaType
 }
 
@@ -209,10 +209,11 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
           item.type = EntitySchemaType.Hierarchy
         })
         return of(hierarchies)
-      }
-      else {
+      } else {
         return this.entityService$.pipe(
-          switchMap((entityService) => entityService.getMembers<EntitySchemaNode & IDimensionMember>({ dimension: node.item.name })),
+          switchMap((entityService) =>
+            entityService.getMembers<EntitySchemaNode & IDimensionMember>({ dimension: node.item.name })
+          ),
           first(),
           map((members) => {
             members.forEach((item) => {
@@ -244,7 +245,9 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
         ),
         first(),
         map((members) => {
-          const _members = hierarchize<IDimensionMember>(members, DimensionMemberRecursiveHierarchy, { startLevel: item.levelNumber })
+          const _members = hierarchize<IDimensionMember>(members, DimensionMemberRecursiveHierarchy, {
+            startLevel: item.levelNumber
+          })
           _members.forEach((item: EntitySchemaNode & TreeNodeInterface<IDimensionMember>) => {
             item.type = EntitySchemaType.Member
             item.name = item.raw.memberUniqueName
