@@ -62,8 +62,8 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
           // 需要在这里捕捉错误, 否则会终端 refresh 的这个 switchMap
           catchError((err) => {
             console.error(err)
-            this.agent.error(err)
-            return of({ data: [], error: err.error?.message })
+            this.agent.error(err.message ?? err.error?.message)
+            return of({ data: [], error: err.message ?? err.error?.message })
           })
         ) as unknown as Observable<QueryReturn<T>>
       })

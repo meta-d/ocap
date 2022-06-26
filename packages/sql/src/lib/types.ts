@@ -43,7 +43,7 @@ export function decideRole(type: string) {
  * @returns
  */
 export function serializeName(name: string, dialect: string) {
-  if (['pg', 'trino', 'presto', 'hana'].includes(dialect)) {
+  if (['pg', 'trino', 'presto', 'duckdb', 'hana'].includes(dialect)) {
     return `"${name}"`
   }
 

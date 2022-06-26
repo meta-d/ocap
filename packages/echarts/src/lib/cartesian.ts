@@ -11,21 +11,15 @@ import {
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
-  getPropertyName,
   getPropertyTextName,
   mergeOptions,
   Property,
   QueryReturn,
-  ReferenceLineType,
-  ReferenceLineValueType
 } from '@metad/ocap-core'
 import { LinearGradient } from 'echarts/lib/util/graphic'
 import includes from 'lodash/includes'
 import isNil from 'lodash/isNil'
-import negate from 'lodash/negate'
-import isEqual from 'lodash/isEqual'
 import isEmpty from 'lodash/isEmpty'
-import merge from 'lodash/merge'
 import assign from 'lodash/assign'
 import indexOf from 'lodash/indexOf'
 import isArray from 'lodash/isArray'
@@ -33,7 +27,7 @@ import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import range from 'lodash/range'
 
-import { axisOrient, getCategoryAxis, getMeasureAxis, getValueAxis } from './axis'
+import { axisOrient, getCategoryAxis, getValueAxis } from './axis'
 import { getChromaticScale } from './chromatics'
 import { coordinates, gatherCoordinates } from './coordinates'
 import { DecalPatterns } from './decal'
@@ -60,120 +54,7 @@ export function cartesian(
     cartesianCoordinate
   )
   return gatherCoordinates(pieCoordinates, type, options)
-
-  // const cartesianCoordinates = cartesians(data, chartAnnotation, entityType, settings, options)
-
-  // const echartsOptions = {
-  //   dataset: [],
-  //   grid: [],
-  //   xAxis: [],
-  //   yAxis: [],
-  //   series: [],
-  //   visualMap: [],
-  //   tooltip: [],
-  //   legend: [],
-  //   dataZoom: dataZoom(options)
-  // }
-
-  // cartesianCoordinates.forEach((cartesianCoordinate, gridIndex) => {
-  //   echartsOptions.grid.push(cartesianCoordinate.grid)
-  //   echartsOptions.xAxis.push(...cartesianCoordinate.xAxis.map((xAxis) => ({
-  //     ...xAxis,
-  //     gridIndex
-  //   })))
-  //   echartsOptions.yAxis.push(...cartesianCoordinate.yAxis.map((yAxis) => ({
-  //     ...yAxis,
-  //     gridIndex
-  //   })))
-
-  //   cartesianCoordinate.datasets.forEach(({ dataset, series }) => {
-  //     echartsOptions.dataset.push({
-  //       ...dataset
-  //     })
-  //     series.forEach((series) => {
-  //       echartsOptions.series.push({
-  //         ...series,
-  //         xAxisIndex: echartsOptions.xAxis.length + (series.xAxisIndex ?? 0) - 1,
-  //         yAxisIndex: echartsOptions.xAxis.length + (series.yAxisIndex ?? 0) - 1,
-  //         datasetIndex: echartsOptions.dataset.length - 1,
-  //         type: series.type ?? type
-  //       })
-  //     })
-  //   })
-
-  //   echartsOptions.visualMap.push(...cartesianCoordinate.visualMap)
-  //   echartsOptions.tooltip.push(...cartesianCoordinate.tooltip)
-  //   echartsOptions.legend.push(...cartesianCoordinate.legend)
-  // })
-
-  // return echartsOptions
 }
-
-// // 多个笛卡尔坐标系
-// export function cartesians(
-//   data: QueryReturn<unknown>,
-//   chartAnnotation: ChartAnnotation,
-//   entityType: EntityType,
-//   settings: ChartSettings,
-//   options: EChartsOptions
-// ) {
-//   const trellis = getChartTrellis(chartAnnotation)
-//   if (trellis) {
-//     const trellisName = getPropertyHierarchy(trellis)
-//     const trellisResults = groupBy(data.results, trellisName)
-
-//     const coordinates = Object.keys(trellisResults).map((trellisKey) => {
-//       const dimensions = [...chartAnnotation.dimensions]
-//       const index = dimensions.indexOf(trellis)
-//       dimensions.splice(index, 1)
-
-//       const coordinate = cartesianCoordinate(
-//         trellisResults[trellisKey],
-//         {
-//           ...chartAnnotation,
-//           dimensions
-//         },
-//         entityType,
-//         settings,
-//         options
-//       )
-
-//       coordinate.datasets = coordinate.datasets.map((dataset) => ({
-//         ...dataset,
-//         series: dataset.series.map((series) => ({
-//           ...series,
-//           id: `${trellisKey}-${series.id}`
-//         }))
-//       }))
-//       return coordinate
-//     })
-
-//     const trellisHorizontal = settings?.trellisHorizontal ?? 2
-//     const trellisVertical = Math.ceil(coordinates.length / trellisHorizontal)
-
-//     const coordinatesGroups = chunk(coordinates, trellisHorizontal)
-
-//     const coordinateResults = []
-//     coordinatesGroups.forEach((group, v) => {
-//       group.forEach((coordinate, h) => {
-//         coordinateResults.push({
-//           ...coordinate,
-//           grid: {
-//             ...coordinate.grid,
-//             left: h * (100 / trellisHorizontal) + '%',
-//             top: v * (100 / trellisVertical) + '%',
-//             width: 100 / trellisHorizontal + '%',
-//             height: 100 / trellisVertical + '%'
-//           }
-//         })
-//       })
-//     })
-
-//     return coordinateResults
-//   }
-
-//   return [cartesianCoordinate(data.results, chartAnnotation, entityType, settings, options)]
-// }
 
 /**
  * 单个笛卡尔坐标系, 对应一个 grid 内的组件
@@ -186,7 +67,7 @@ export function cartesian(
  * @returns
  */
 export function cartesianCoordinate(
-  data: Array<unknown>,
+  data: Array<Record<string, unknown>>,
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
   settings: ChartSettings,
@@ -209,6 +90,17 @@ export function cartesianCoordinate(
       })
   } else {
     const seriesComponents = measuresToSeriesComponents(chartAnnotation.measures, data, entityType, settings)
+    data = [...data]
+    // Fill up measure null value
+    if (data[0]) {
+      data[0] = {...data[0]}
+      chartAnnotation.measures.forEach((measure) => {
+        if (isNil(data[0][measure.measure])) {
+          data[0][measure.measure] = '-'
+        }
+      })
+    }
+    
     datasets = [
       {
         dataset: {
