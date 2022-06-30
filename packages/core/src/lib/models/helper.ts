@@ -496,6 +496,13 @@ export function mergeSDLSchema(a: Schema, b: Schema) {
   }
 }
 
+/**
+ * @deprecated 看哪里还有用到?
+ * 
+ * @param entityType 
+ * @param cube 
+ * @returns 
+ */
 export function mergeEntityTypeCube(entityType: EntityType, cube: Cube) {
   const properties = { ...entityType.properties }
   // 暂时无法统一 XMLA dimension name

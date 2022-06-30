@@ -12,16 +12,21 @@ export interface SQLDataSourceSettings extends DataSourceSettings {
   database?: string
 }
 
+/**
+ * Database original schema
+ * 
+ * 三段式数据库命名 catalog.schema.table
+ */
 export interface SQLSchema {
-  database: string
+  catalog?: string
+  schema?: string
+  tables?: SQLTableSchema[]
+}
+
+export interface SQLTableSchema {
   name: string
   label?: string
-  columns: {
-    name: string
-    label?: string
-    type: string
-    // role?: AggregationRole
-  }[]
+  columns: IColumnDef[]
 }
 
 export function decideRole(type: string) {

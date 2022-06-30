@@ -1,8 +1,9 @@
 import { Agent, AgentStatus, AgentType, DataSourceOptions, DSCacheService, MockAgent } from '@metad/ocap-core'
 import { EMPTY, firstValueFrom, Observable, skip } from 'rxjs'
-import { SQLDataSource } from './sql'
+import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
+import { SQLDataSource } from './data-source'
 
-describe('sql', () => {
+describe('SQL DataSource', () => {
   let dataSource: SQLDataSource
   beforeAll(() => {
     dataSource = new SQLDataSource(
@@ -10,12 +11,8 @@ describe('sql', () => {
         type: 'SQL',
         schema: {
           name: 'Sales',
-          cubes: [
-            {
-              name: 'SalesOrder',
-              tables: [{ name: 'SalesOrder' }]
-            }
-          ]
+          dimensions: [SHARED_DIMENSION_TIME],
+          cubes: [CUBE_SALESORDER]
         }
       },
       new MockAgent(),
@@ -24,10 +21,32 @@ describe('sql', () => {
   })
 
   it('should work', async () => {
-    const catalogs = await firstValueFrom(dataSource.getCatalogs())
-    expect(catalogs).toEqual([
-      { label: '销售', name: 'Sales' },
-      { label: '库存', name: 'Inventory' }
+    expect(dataSource).toBeTruthy()
+  })
+
+  it('getCatalogs', async () => {
+    let catalogs = await firstValueFrom(dataSource.getCatalogs())
+    expect(catalogs).toEqual([{ name: 'default' }, { name: 'foodmart' }])
+
+    catalogs = await firstValueFrom(dataSource.getCatalogs())
+    expect(catalogs).toEqual([{ name: 'default' }, { name: 'foodmart' }])
+
+    catalogs = await firstValueFrom(dataSource.getCatalogs(true))
+    expect(catalogs).toEqual([{ name: 'default' }, { name: 'foodmart' }])
+  })
+
+  it('getEntitySets', async () => {
+    const entitySets = await firstValueFrom(dataSource.getEntitySets())
+    expect(entitySets).toEqual([
+      {
+        catalog: 'default',
+        name: 'SalesOrder',
+        label: '销售订单'
+        // entityType: {
+        //   name: 'SalesOrder',
+        //   label: '销售订单',
+        // },
+      }
     ])
   })
 
@@ -35,17 +54,63 @@ describe('sql', () => {
     let entityType = await firstValueFrom(dataSource.getEntityType('SalesOrder'))
     expect(entityType.name).toEqual('SalesOrder')
 
+    expect(entityType).toEqual(ENTITY_TYPE_SALESORDER)
+
     entityType = await firstValueFrom(dataSource.getEntityType('Inventory'))
 
-    expect(entityType).toEqual(null)
+    expect(entityType).toEqual({
+      label: undefined,
+      name: 'Inventory',
+      properties: {
+        product: {
+          __id__: 'product',
+          dataType: 'string',
+          dimension: 'product',
+          entity: 'Inventory',
+          label: '产品',
+          name: 'product',
+          role: 'dimension'
+        },
+        productCategory: {
+          __id__: 'productCategory',
+          dataType: 'string',
+          dimension: 'productCategory',
+          entity: 'Inventory',
+          label: '产品类别',
+          name: 'productCategory',
+          role: 'dimension'
+        },
+        quantity: {
+          __id__: 'quantity',
+          dataType: 'number',
+          dimension: 'quantity',
+          entity: 'Inventory',
+          label: '销售量',
+          name: 'quantity',
+          role: 'measure'
+        },
+        sales: {
+          __id__: 'sales',
+          dataType: 'number',
+          dimension: 'sales',
+          entity: 'Inventory',
+          label: '销售额',
+          name: 'sales',
+          role: 'measure'
+        }
+      }
+    })
   })
 
   it('getEntityType react schema update', (done) => {
-    dataSource.getEntityType('SalesOrder').pipe(skip(1)).subscribe((entityType) => {
-      console.log(entityType)
-      // expect(entityType.name).toEqual('SalesOrder')
-      done()
-    })
+    dataSource
+      .getEntityType('SalesOrder')
+      .pipe(skip(1))
+      .subscribe((entityType) => {
+        console.log(entityType)
+        // expect(entityType.name).toEqual('SalesOrder')
+        done()
+      })
 
     setTimeout(() => {
       dataSource.setSchema({
@@ -69,7 +134,7 @@ describe('sql', () => {
       //     }
       //   ]
       // })
-    });
+    })
   })
 })
 

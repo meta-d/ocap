@@ -3,12 +3,16 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @use './splitter/splitter-theme' as splitter;
+@use './tabs/tabs-theme' as tabs;
+@use './appearance/appearance-theme' as appearance;
 
 @mixin common-color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $accent: map.get($config, accent);
 
   @include splitter.color($config-or-theme);
+  @include appearance.color($config-or-theme);
+  @include tabs.color($config-or-theme);
 
   .ngm-display-behaviour {
     .ngm-display-behaviour__highlight {

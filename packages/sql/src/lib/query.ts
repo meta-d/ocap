@@ -17,6 +17,7 @@ import {
   QueryOptions,
   Schema
 } from '@metad/ocap-core'
+import { flatten, flattenDeep } from 'lodash'
 import compact from 'lodash/compact'
 import concat from 'lodash/concat'
 import isArray from 'lodash/isArray'
@@ -24,7 +25,16 @@ import isEmpty from 'lodash/isEmpty'
 import negate from 'lodash/negate'
 import union from 'lodash/union'
 import { serializeCalculationProperty } from './calculation'
-import { queryDimension } from './dimension'
+import { buildCubeContext } from './cube'
+import {
+  DimensionColumn,
+  DimensionContext,
+  queryDimension,
+  serializeColumn,
+  serializeGroupByDimensions,
+  serializeHierarchyFrom,
+  serializeTablesJoin
+} from './dimension'
 import { OrderBy } from './functions'
 import { convertFiltersToSQL } from './sql-filter'
 import { serializeName, SQLQueryContext, SQLQueryProperty } from './types'
@@ -54,9 +64,18 @@ export function serializeCubeFact(cube: Cube, dialect: string) {
     const exists = tableNames.filter((name) => name === table.name)
     const tableAlias = exists.length ? `${table.name}(${exists.length})` : table.name
     const conditions = table.join.fields
-      .map((field) => `${serializeName(factTable.name, dialect)}.${serializeName(field.leftKey, dialect)} = ${serializeName(tableAlias, dialect)}.${serializeName(field.rightKey, dialect)}`)
+      .map(
+        (field) =>
+          `${serializeName(factTable.name, dialect)}.${serializeName(field.leftKey, dialect)} = ${serializeName(
+            tableAlias,
+            dialect
+          )}.${serializeName(field.rightKey, dialect)}`
+      )
       .join(' AND ')
-    statement = `${statement} ${table.join.type} JOIN ${serializeName(table.name, dialect)} AS ${serializeName(tableAlias, dialect)} ON ${conditions}`
+    statement = `${statement} ${table.join.type} JOIN ${serializeName(table.name, dialect)} AS ${serializeName(
+      tableAlias,
+      dialect
+    )} ON ${conditions}`
 
     tableNames.push(table.name)
   })
@@ -65,13 +84,94 @@ export function serializeCubeFact(cube: Cube, dialect: string) {
 }
 
 export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
-  console.log(`~~~~~~~~~~~~~`, schema, options, entityType, `~~~~~~~~~~~~~~~~~~`)
-
   const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
   if (dimension) {
     return queryDimension(dimension, entityType, options, dialect)
   }
 
+  const cube = schema.cubes.find((item) => item.name === entityType.name)
+
+  const cubeContext = buildCubeContext(schema, options, entityType, dialect)
+  let statement = cubeContext.dimensions
+    .map((dimensionContext) => {
+      return dimensionContext.selectFields
+        .map((field) => serializeColumn(field, dialect))
+        .join(', ')
+    })
+    .join(', ')
+
+  if (cubeContext.measures.length) {
+    // fact table in cube
+    const fact = cube.tables[0].name
+    statement +=
+      ', ' +
+      cubeContext.measures
+        .map(
+          (measure: any) =>
+            `${measure.aggregator}(${
+              typeof measure.column === 'number'
+                ? measure.column
+                : serializeName(fact, dialect) + '.' + serializeName(measure.column, dialect)
+            }) AS ${serializeName(measure.alias, dialect)}`
+        )
+        .join(', ')
+  }
+
+  // serialize cube and dimensions
+  statement += ` FROM ` + serializeCubeFrom(cube, cubeContext.dimensions, dialect)
+
+  statement +=
+    ` GROUP BY ` + serializeGroupByDimensions(cubeContext.dimensions, dialect)
+    // [
+    //   ...new Set(
+    //     flattenDeep<DimensionColumn>(cubeContext.dimensions.map((dimension) => dimension.selectFields.map((field) => field.columns ? field.columns : [field])))
+    //       .filter((field) => !!field.column)
+    //       .map((field) => `${serializeName(field.table, dialect)}.${serializeName(field.column, dialect)}`)
+    //   )
+    // ].join(', ')
+
+  statement = `SELECT ` + statement
+
+  return statement
+}
+
+export function serializeCubeFrom(cube: Cube, dimensions: DimensionContext[], dialect: string): string {
+  const factAlias = cube.tables[0].name
+  return (
+    serializeTablesJoin(cube.tables, dialect) +
+    dimensions
+      .map((dimensionContext) => {
+        const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
+        return (
+          ` INNER JOIN ` +
+          serializeHierarchyFrom(dimensionContext.hierarchy, dialect) +
+          ` ON ${serializeName(factAlias, dialect)}.${serializeName(
+            dimensionContext.schema.foreignKey,
+            dialect
+          )} = ${serializeName(primaryKeyTable, dialect)}.${serializeName(
+            dimensionContext.hierarchy.primaryKey,
+            dialect
+          )}`
+        )
+      })
+      .join(' ')
+  )
+}
+
+/**
+ * 将查询条件根据运行时类型和原始模型编译成查询语句
+ *
+ * @param schema
+ * @param options
+ * @param entityType
+ * @param dialect
+ * @returns
+ */
+export function queryCube2(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
+  const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
+  if (dimension) {
+    return queryDimension(dimension, entityType, options, dialect)
+  }
 
   let queryContext: SQLQueryContext = {} as SQLQueryContext
 
@@ -131,7 +231,7 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
   const groupby = union(queryContext.groupbys).join(',')
 
   const fromSource = From(entityType, schema, dialect)
-  
+
   let statement = `SELECT ${isEmpty(queryContext.select) ? '*' : queryContext.select.join(`, `)} FROM ${fromSource}`
 
   // Conditions

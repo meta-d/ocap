@@ -3,7 +3,12 @@ import { CalculatedMember, ParameterControlEnum } from './calculated'
 import { Indicator } from './indicator'
 import { EntityProperty, PropertyAttributes } from './property'
 
+
 export interface Entity {
+  /**
+   * Catalog of entity
+   */
+  catalog?: string
   name: string
   label?: string
 }
@@ -214,8 +219,6 @@ export interface PropertyHierarchy extends EntityProperty {
   allMemberName?: string
   primaryKey?: string
   primaryKeyTable?: string
-  // Table?: Table[] | Table
-  // Join?: Join
 
   hierarchyCardinality?: number
 
@@ -251,7 +254,7 @@ export interface PropertyLevel extends EntityProperty {
 
   levelNumber?: number
   levelCardinality?: number
-  levelType?: number
+  levelType?: number | string
   properties?: Array<LevelProperty>
   // hierarchyLevelFor?: PropertyName
   parentChild?: boolean

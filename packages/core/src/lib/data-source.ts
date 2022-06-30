@@ -13,7 +13,6 @@ import {
   IDimensionMember,
   Indicator,
   mergeEntityType,
-  mergeEntityTypeCube,
   Schema,
   SemanticModel
 } from './models'
@@ -80,8 +79,10 @@ export interface DataSource {
 
   /**
    * 获取源实体集合
+   * 
+   * @param refresh 是否跳过缓存进行重新获取数据
    */
-  getEntitySets(): Observable<Array<EntitySet>>
+  getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
 
   /**
    * 获取运行时 EntityType
@@ -195,7 +196,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 
   abstract createEntityService<T>(entity: string): EntityService<T>
-  abstract getEntitySets(): Observable<Array<EntitySet>>
+  abstract getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
   abstract getEntityType(entity: string): Observable<EntityType>
   abstract getCatalogs(): Observable<Array<Catalog>>
   abstract getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
@@ -249,6 +250,12 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     })
   }
 
+  /**
+   * 这里只负责 merge 运行时的 EntitySet 设置, 不负责 Cube 的类型编译, Cube 类型编译放在 getEntityType 获取原始类型时.
+   * 
+   * @param entity 
+   * @returns 
+   */
   selectEntitySet(entity: string): Observable<EntitySet> {
     if (!this._entitySets[entity]) {
       this._entitySets[entity] = this.getEntityType(entity).pipe(
@@ -261,28 +268,28 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
               }
 
               const customEntityType = schema?.entitySets?.[entity]?.entityType
-              const cube = schema?.cubes?.find((item) => item.name === entity)
+              // const cube = schema?.cubes?.find((item) => item.name === entity)
 
-              let entityType = mergeEntityTypeCube(rtEntityType, cube)
+              // let entityType = mergeEntityTypeCube(rtEntityType, cube)
+
+              let entityType = rtEntityType
 
               if (!isNil(customEntityType)) {
                 // TODO merge 函数有风险
-                entityType = mergeEntityType(assign({}, entityType), {
+                entityType = mergeEntityType(assign({}, rtEntityType), {
                   ...customEntityType,
-                  ...this._getCustomEntityType(customEntityType)
+                  // ...this._getCustomEntityType(customEntityType)
                 })
               }
 
-              console.log(
-                `runtime entity type is:`,
-                rtEntityType,
-                `cube is:`,
-                cube,
-                `customEntityType:`,
-                customEntityType,
-                `merge cube:`,
-                entityType
-              )
+              // console.log(
+              //   `runtime entity type is:`,
+              //   rtEntityType,
+              //   `customEntityType:`,
+              //   customEntityType,
+              //   `merge cube:`,
+              //   entityType
+              // )
 
               if (entityType) {
                 // 将数据源方言同步到 EntityType

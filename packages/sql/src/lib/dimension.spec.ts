@@ -40,12 +40,14 @@ export const PRODUCT_DIMENSION: PropertyDimension = {
         {
           name: 'Product Type',
           column: 'product_type_id',
-          table: 'product_type'
+          table: 'product_type',
+          uniqueMembers: true
         },
         {
           name: 'Product Class',
           column: 'product_class_id',
           table: 'product_class',
+          uniqueMembers: null,
           captionExpression: {
             sql: {
               dialect: 'generic',
@@ -64,6 +66,7 @@ export const PRODUCT_DIMENSION: PropertyDimension = {
           column: 'product_id',
           table: 'product',
           nameColumn: 'product_name',
+          uniqueMembers: true,
           properties: [
             {
               name: 'Shelf Width',
@@ -146,7 +149,8 @@ export const EMPLOYEE_DIMENSION: PropertyDimension = {
           name: 'Name',
           column: 'employee_id',
           nameColumn: 'full_name',
-          parentColumn: 'supervisor_id'
+          parentColumn: 'supervisor_id',
+          uniqueMembers: true
         }
       ]
     }
@@ -413,13 +417,7 @@ describe('Parent-child hierarchies', () => {
         ]
       })
     ).toEqual(
-      'SELECT `employee`.`full_name` AS `[Employee].[Name]`,' +
-        ' `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`,' +
-        ' `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]`' +
-        ', SUM(1) AS `Measures_Row_Count`' +
-        ' FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)`' + 
-        ' ON `employee`.`supervisor_id` = `employee(1)`.`employee_id`'+
-        ' GROUP BY `employee`.`full_name`, `employee(1)`.`full_name`'
+      "SELECT `employee`.`employee_name` AS `[Employee].[Name]`, `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`, `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]`, SUM(1) AS `Measures_Row_Count` FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)` ON `employee`.`supervisor_id` = `employee(1)`.`employee_id` GROUP BY `employee`.`employee_id`, `employee`.`full_name`, `employee(1)`.`full_name`"
     )
   })
 
@@ -441,13 +439,7 @@ describe('Parent-child hierarchies', () => {
         ]
       }, 'pg')
     ).toEqual(
-      'SELECT "employee"."full_name" AS "[Employee].[Name]",' +
-      ' "employee"."full_name" AS "[Employee].[Name].[MEMBER_CAPTION]",' +
-      ' "employee(1)"."full_name" AS "[Employee].[Name].[PARENT_UNIQUE_NAME]"' +
-      ', SUM(1) AS "Measures_Row_Count"' +
-      ' FROM "employee" AS "employee" Left JOIN "employee" AS "employee(1)"' + 
-      ' ON "employee"."supervisor_id" = "employee(1)"."employee_id"'+
-      ' GROUP BY "employee"."full_name", "employee(1)"."full_name"'
+      `SELECT "employee"."full_name" AS "[Employee].[Name]", "employee"."full_name" AS "[Employee].[Name].[MEMBER_CAPTION]", "employee(1)"."full_name" AS "[Employee].[Name].[PARENT_UNIQUE_NAME]", SUM(1) AS "Measures_Row_Count" FROM "employee" AS "employee" Left JOIN "employee" AS "employee(1)" ON "employee"."supervisor_id" = "employee(1)"."employee_id" GROUP BY "employee"."employee_id", "employee"."full_name", "employee(1)"."full_name"`
     )
   })
 })
@@ -461,9 +453,23 @@ describe('Convert Dimension Schema to Runtime', () => {
     expect(compileDimensionSchema(PRODUCT_DIMENSION.name, PRODUCT_DIMENSION)).toEqual({
       entity: 'Product',
       name: '[Product]',
+      role: 'dimension',
       hierarchies: [
         {
           entity: 'Product',
+          name: '[Product]',
+          role: AggregationRole.hierarchy,
+          tables: [
+            { name: 'product' },
+            {
+              join: { fields: [{ leftKey: 'product_class_id', rightKey: 'product_class_id' }], type: 'Left' },
+              name: 'product_class'
+            },
+            {
+              join: { fields: [{ leftKey: 'product_type_id', rightKey: 'product_type_id' }], type: 'Left' },
+              name: 'product_type'
+            }
+          ],
           levels: [
             {
               column: 'product_type_id',
@@ -471,7 +477,9 @@ describe('Convert Dimension Schema to Runtime', () => {
               name: '[Product].[Product Type]',
               caption: null,
               properties: undefined,
-              table: 'product_type'
+              table: 'product_type',
+              role: AggregationRole.level,
+              uniqueMembers: true
             },
             {
               column: 'product_class_id',
@@ -480,6 +488,8 @@ describe('Convert Dimension Schema to Runtime', () => {
               caption: null,
               properties: [{ column: 'product_category', label: 'Category', name: '[Product].[Category]' }],
               table: 'product_class',
+              role: AggregationRole.level,
+              uniqueMembers: null,
               captionExpression: {
                 sql: {
                   content: "concat('C_', product_class.product_class_id)",
@@ -493,6 +503,8 @@ describe('Convert Dimension Schema to Runtime', () => {
               name: '[Product].[Product]',
               caption: '[Product].[Product].[MEMBER_CAPTION]',
               nameColumn: 'product_name',
+              role: AggregationRole.level,
+              uniqueMembers: true,
               properties: [
                 { column: 'shelf_width', label: 'Shelf Width', name: '[Product].[Shelf Width]' },
                 { column: 'units_per_case', label: 'Units PerCase', name: '[Product].[Units PerCase]' }
@@ -500,21 +512,18 @@ describe('Convert Dimension Schema to Runtime', () => {
               table: 'product'
             }
           ],
-          name: '[Product]',
+        },
+        {
+          entity: 'Product',
+          name: '[Product.Class]',
           tables: [
             { name: 'product' },
             {
               join: { fields: [{ leftKey: 'product_class_id', rightKey: 'product_class_id' }], type: 'Left' },
               name: 'product_class'
-            },
-            {
-              join: { fields: [{ leftKey: 'product_type_id', rightKey: 'product_type_id' }], type: 'Left' },
-              name: 'product_type'
             }
-          ]
-        },
-        {
-          entity: 'Product',
+          ],
+          role: AggregationRole.hierarchy,
           levels: [
             {
               column: 'product_class_id',
@@ -523,6 +532,7 @@ describe('Convert Dimension Schema to Runtime', () => {
               caption: null,
               properties: [{ column: 'product_category', label: 'Category', name: '[Product.Class].[Category]' }],
               table: 'product_class',
+              role: AggregationRole.level,
               captionExpression: {
                 sql: {
                   content: "concat('C_', product_class.product_class_id)",
@@ -535,6 +545,7 @@ describe('Convert Dimension Schema to Runtime', () => {
               entity: 'Product',
               name: '[Product.Class].[Product Id]',
               caption: '[Product.Class].[Product Id].[MEMBER_CAPTION]',
+              role: AggregationRole.level,
               properties: [
                 { column: 'shelf_width', label: 'Shelf Width', name: '[Product.Class].[Shelf Width]' },
                 { column: 'units_per_case', label: 'Units PerCase', name: '[Product.Class].[Units PerCase]' }
@@ -543,17 +554,8 @@ describe('Convert Dimension Schema to Runtime', () => {
               captionColumn: 'product_name'
             }
           ],
-          name: '[Product.Class]',
-          tables: [
-            { name: 'product' },
-            {
-              join: { fields: [{ leftKey: 'product_class_id', rightKey: 'product_class_id' }], type: 'Left' },
-              name: 'product_class'
-            }
-          ]
         }
       ],
-      role: 'dimension'
     })
 
     expect(compileDimensionSchema(EMPLOYEE_DIMENSION.name, EMPLOYEE_DIMENSION)).toEqual({
@@ -564,6 +566,7 @@ describe('Convert Dimension Schema to Runtime', () => {
           name: '[Employee]',
           entity: 'Employee',
           tables: [{ name: 'employee' }],
+          role: AggregationRole.hierarchy,
           levels: [
             {
               entity: 'Employee',
@@ -572,7 +575,9 @@ describe('Convert Dimension Schema to Runtime', () => {
               column: 'employee_id',
               nameColumn: 'full_name',
               parentColumn: 'supervisor_id',
-              properties: undefined
+              properties: undefined,
+              role: AggregationRole.level,
+              uniqueMembers: true
             }
           ]
         }

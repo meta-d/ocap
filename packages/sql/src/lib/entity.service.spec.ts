@@ -1,7 +1,8 @@
 import { C_MEASURES, MockAgent } from '@metad/ocap-core'
 import { PRODUCT_DIMENSION } from './dimension.spec'
-import { SQLDataSource } from './sql'
+import { SQLDataSource } from './data-source'
 import { C_MEASURES_ROW_COUNT } from './types'
+import { CUBE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
 
 describe('SQL Entity Service', () => {
   let dataSource: SQLDataSource
@@ -13,7 +14,13 @@ describe('SQL Entity Service', () => {
         type: 'SQL',
         schema: {
           name: 'Sales',
-          dimensions: [PRODUCT_DIMENSION]
+          dimensions: [
+            PRODUCT_DIMENSION,
+            SHARED_DIMENSION_TIME
+          ],
+          cubes: [
+            CUBE_SALESORDER
+          ]
         }
       },
       new MockAgent(),
@@ -104,6 +111,37 @@ describe('SQL Entity Service', () => {
         })
     })
   })
+
+  it('Query Cube', (done) => {
+    const entityService = dataSource.createEntityService(CUBE_SALESORDER.name)
+    entityService.selectEntityType().subscribe((entityType) => {
+      console.log(entityType)
+      entityService
+        .query({
+          rows: [
+            {
+              dimension: '[Product]',
+              level: '[Product].[Product Type]'
+            },
+            {
+              dimension: '[Product]',
+              level: '[Product].[Product Class]'
+            },
+            {
+              dimension: '[Product]',
+              level: '[Product].[Product]'
+            }
+          ]
+        })
+        .subscribe((result: any) => {
+          expect(result.statement).toEqual(
+            "SELECT `[Product]` AS `[Product]`, `[Product]` AS `[Product]`, `[Product]` AS `[Product]` FROM (SELECT * FROM `sales_order`) AS `SalesOrder` WHERE (`[Product]` IS NOT NULL OR `[Product]` IS NOT NULL OR `[Product]` IS NOT NULL)"
+          )
+          done()
+        })
+    })
+  })
+
 })
 
 describe('PG SQL Entity Service', () => {

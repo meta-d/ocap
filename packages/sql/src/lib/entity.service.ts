@@ -1,4 +1,5 @@
 import { AbstractEntityService, PeriodFunctions, Property, QueryOptions, QueryReturn } from '@metad/ocap-core'
+import isString from 'lodash/isString'
 import { BehaviorSubject, catchError, from, map, Observable, of, switchMap } from 'rxjs'
 import { queryCube } from './query'
 import { serializeWrapCatalog, SQLQueryResult } from './types'
@@ -62,8 +63,14 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
           // 需要在这里捕捉错误, 否则会终端 refresh 的这个 switchMap
           catchError((err) => {
             console.error(err)
-            this.agent.error(err.message ?? err.error?.message)
-            return of({ data: [], error: err.message ?? err.error?.message })
+            let error: string
+            if (isString(err)) {
+              error = err
+            } else {
+              error = err?.message ?? err?.error?.message
+            }
+            this.agent.error(error)
+            return of({ data: [], error })
           })
         ) as unknown as Observable<QueryReturn<T>>
       })
@@ -73,23 +80,6 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
   override refresh() {
     this.refresh$.next()
   }
-
-  // execSQL(
-  //   modelName: string,
-  //   statement: string
-  // ): Promise<{ data: Array<unknown>; columns: Array<unknown>; error: unknown }> {
-  //   return this.dataSource.agent
-  //     .request(this.dataSource.options, {
-  //       method: 'post',
-  //       url: 'query',
-  //       body: statement,
-  //       catalog: this.dataSource.options.catalog
-  //     })
-  //     .catch((err) => {
-  //       console.error(err)
-  //       throw err
-  //     })
-  // }
 
   getCalculatedMember(measure: string, type: PeriodFunctions): Property {
     throw new Error('Method not implemented.')

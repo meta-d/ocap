@@ -11,6 +11,7 @@ import {
 } from '@metad/ocap-core'
 import isEqual from 'lodash/isEqual'
 import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { compileCubeSchema } from './cube'
 import { compileDimensionSchema, DimensionMembers } from './dimension'
 import { SQLEntityService } from './entity.service'
 import { serializeCubeFact } from './query'
@@ -20,33 +21,76 @@ import {
   serializeWrapCatalog,
   SQLDataSourceOptions,
   SQLQueryResult,
-  SQLSchema
+  SQLSchema,
+  SQLTableSchema
 } from './types'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _catalogs$: Observable<Array<Catalog>>
   private _entitySets$: Observable<Array<EntitySet>>
+
+  /**
+   * 应该对应数据库的什么对象 ?
+   */
+  getCatalogs(refresh?: boolean): Observable<Catalog[]> {
+    if (!this._catalogs$ || refresh) {
+      this._catalogs$ = from(
+        this.agent
+          .request(this.options, { method: 'get', url: 'catalogs' })
+          // TODO ???
+          .catch((error) => {
+            console.error(error)
+            return []
+          })
+      )
+    }
+    return this._catalogs$
+  }
+
   /**
    * 获取数据库表列表
+   *
+   * @TODO 应不应该用缓存, 用了缓存刷新怎么做? refresh ?
+   *
    */
-  getEntitySets(): Observable<EntitySet[]> {
-    if (!this._entitySets$) {
+  getEntitySets(refresh?: boolean): Observable<EntitySet[]> {
+    if (!this._entitySets$ || refresh) {
       this._entitySets$ = from(this.fetchSchema(this.options.name, this.options.catalog || '')).pipe(
-        map((tables: SQLSchema[]) => {
-          return tables
-            .filter((table) => (this.options.catalog ? table.database === this.options.catalog : true))
-            .map((item) => {
-              const tableName = this.options.catalog
-                ? item.name
-                : item.database
-                ? `${item.database}.${item.name}`
-                : item.name
-              const entityType = mapTableSchemaEntityType(tableName, item)
-              return {
-                name: tableName,
-                entityType
-              }
-            }) as EntitySet[]
+        map((schemas: SQLSchema[]) => {
+          const entitySets = []
+          schemas
+            // 过滤出当前 Catalog (对应三段式中的 schema, 后续改成 schema) 的 tables , 因为有些 DB Driver 会带出来所有 catalog 下的 tables
+            .filter((schema) => (this.options.catalog ? schema.schema === this.options.catalog : true))
+            .forEach((schema) => {
+              schema.tables.forEach((table) => {
+                // 感觉这里应该只用到了 table label
+                // const entityType = mapTableSchemaEntityType(table.name, table)
+                entitySets.push({
+                  catalog: schema.schema,
+                  name: table.name,
+                  label: table.label
+                  // entityType
+                })
+              })
+            })
+          return entitySets
+          // return tables
+          //   // 过滤出当前 Catalog 的 tables , 因为有些 DB Driver 会带出来所有 catalog 下的 tables
+          //   .filter((table) => (this.options.catalog ? table.database === this.options.catalog : true))
+          //   .map((item) => {
+          //     // 加上 catalog 前缀 ???
+          //     const tableName = this.options.catalog
+          //       ? item.name
+          //       : item.database
+          //       ? `${item.database}.${item.name}`
+          //       : item.name
+          //     // Compile 成运行时 EntityType
+          //     const entityType = mapTableSchemaEntityType(tableName, item)
+          //     return {
+          //       name: tableName,
+          //       entityType
+          //     }
+          //   }) as EntitySet[]
         }),
         shareReplay(1)
       )
@@ -62,7 +106,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         url: 'schema',
         catalog
       })
-      .then((data) => data?.filter((table) => (catalog ? table.database === catalog : true)))
+      // .then((data) => data?.filter((table) => (catalog ? table.database === catalog : true)))
       .catch((error) => {
         console.error(error)
         return []
@@ -92,9 +136,11 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           // Find schema defination for the entity
           const cube = schema?.cubes?.find((item) => item.name === entity)
           if (cube) {
+            const dimensions = cube.dimensionUsages?.map((usage) => schema.dimensions.find((item) => item.name === usage.source))
             return {
               type: 'CUBE',
-              cube
+              cube,
+              dimensions
             }
           }
           const dimension = schema?.dimensions?.find((item) => item.name === entity)
@@ -109,7 +155,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         distinctUntilChanged(isEqual)
       )
       .pipe(
-        switchMap(async ({ type, cube, dimension }) => {
+        switchMap(async ({ type, cube, dimension, dimensions }) => {
           if (dimension) {
             // Schema dimension to EntityType
             const rtDimension = compileDimensionSchema(entity, dimension)
@@ -126,8 +172,12 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
             } as EntityType
           }
 
+          if (cube) {
+            return compileCubeSchema(entity, cube, dimensions)
+          }
+
           try {
-            let schemas
+            let schemas: SQLSchema[]
             if (entity && !cube) {
               schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', entity)
             } else if (cube) {
@@ -145,7 +195,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               return null
             }
 
-            const _entityType = mapTableSchemaEntityType(entity, schemas[0])
+            const _entityType = mapTableSchemaEntityType(entity, schemas[0]?.tables?.[0])
             return _entityType
           } catch (error: any) {
             this.agent.error(error.message)
@@ -155,24 +205,6 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         }),
         shareReplay(1)
       )
-  }
-
-  /**
-   * 应该对应数据库的什么对象 ?
-   */
-  getCatalogs(): Observable<Catalog[]> {
-    if (!this._catalogs$) {
-      this._catalogs$ = from(
-        this.agent
-          .request(this.options, { method: 'get', url: 'catalogs' })
-          // TODO ???
-          .catch((error) => {
-            console.error(error)
-            return []
-          })
-      )
-    }
-    return this._catalogs$
   }
 
   /**
@@ -229,7 +261,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   }
 }
 
-function mapTableSchemaEntityType(entity: string, item: SQLSchema) {
+function mapTableSchemaEntityType(entity: string, item: SQLTableSchema) {
   const entityType = {
     name: entity,
     label: item.label,
