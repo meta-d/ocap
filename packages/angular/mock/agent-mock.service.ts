@@ -54,6 +54,49 @@ const SalesOrder3s = {
   columns
 }
 
+export const CUBE_SALES_ORDER = {
+  name: 'SalesOrder',
+  tables: [{ name: 'SalesOrder' }],
+  dimensions: [
+    {
+      name: 'Product',
+      hierarchies: [
+        {
+          name: '',
+          levels: [
+            {
+              name: 'Product',
+              column: 'product',
+              captionColumn: 'ProductName'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'Department',
+      hierarchies: [
+        {
+          name: '',
+          levels: [
+            {
+              name: 'Department',
+              column: 'department',
+              captionColumn: 'DepartmentName'
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  measures: [
+    {
+      name: 'Sales',
+      column: 'sales'
+    }
+  ]
+}
+
 @Injectable()
 export class MockAgent implements Agent {
   type = AgentType.Browser
@@ -79,21 +122,92 @@ export class MockAgent implements Agent {
         if (options.url === 'schema') {
           switch (options.table) {
             case SalesOrder10s.name:
-              return resolve([SalesOrder10s])
+              return resolve([
+                {
+                  schema: 'default',
+                  tables: [SalesOrder10s]
+                }
+              ])
             case SalesOrder3s.name:
-              return resolve([SalesOrder3s])
+              return resolve([
+                {
+                  schema: 'default',
+                  tables: [SalesOrder3s]
+                }
+              ])
             case SalesOrder.name:
-              return resolve([SalesOrder])
+              return resolve([
+                {
+                  schema: 'deefault',
+                  tables: [SalesOrder]
+                }
+              ])
             default: {
               if (options.statement === 'SELECT * FROM "SalesOrder"') {
-                return resolve([SalesOrder])
+                return resolve([
+                  {
+                    schema: 'default',
+                    tables: [SalesOrder]
+                  }
+                ])
               }
+
+              return resolve([
+                {
+                  schema: 'default',
+                  tables: [
+                    {
+                      name: 'Inventory',
+                      label: '库存',
+                      columns: [
+                        {
+                          name: 'product',
+                          label: '产品',
+                          type: 'string'
+                        },
+                        {
+                          name: 'productCategory',
+                          label: '产品类别',
+                          type: 'string'
+                        },
+                        {
+                          name: 'sales',
+                          label: '销售额',
+                          type: 'number'
+                        },
+                        {
+                          name: 'quantity',
+                          label: '销售量',
+                          type: 'number'
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ])
             }
           }
         }
       } else if (options.method === 'post') {
         if (options.url === 'query') {
           const results = []
+
+          if (options.body?.statement?.includes('DISTINCT `product` AS `memberKey`')) {
+            return resolve({
+              data: randProductAdjective({ length: 5 }).map((product) => {
+                return {
+                  memberKey: product
+                }
+              }),
+              columns: [
+                {
+                  name: 'memberKey',
+                  label: '成员 Key',
+                  type: 'string'
+                }
+              ]
+            })
+          }
 
           if (options.body?.statement?.includes(`"Department" AS "Department"`)) {
             let departmentCode = 0
@@ -156,12 +270,12 @@ export class MockAgent implements Agent {
             randProductAdjective({ length: 5 }).forEach((product) => {
               results.push({
                 OrderId: randNumber(),
-                product: randNumber(),
-                productName: product,
+                '[Product]': randNumber(),
+                '[Product].[MEMBER_CAPTION]': product,
                 productCategory,
                 Department: randCompanyName(),
                 DepartmentParent,
-                sales: randFloat(),
+                Sales: randFloat(),
                 quantity: randFloat()
               })
             })
@@ -199,7 +313,7 @@ export class MockAgent implements Agent {
                   type: 'string'
                 },
                 {
-                  name: 'product',
+                  name: '[Product]',
                   label: '产品',
                   type: 'string'
                 },
@@ -209,12 +323,12 @@ export class MockAgent implements Agent {
                   type: 'string'
                 },
                 {
-                  name: 'Department',
+                  name: '[Department]',
                   label: '部门',
                   type: 'string'
                 },
                 {
-                  name: 'DepartmentParent',
+                  name: '[DepartmentParent]',
                   label: '上级部门',
                   type: 'string'
                 }

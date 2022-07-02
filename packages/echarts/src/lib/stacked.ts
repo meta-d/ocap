@@ -11,7 +11,7 @@ import {
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
-  getPropertyTextName
+  getPropertyCaption
 } from '@metad/ocap-core'
 import uniqBy from 'lodash/uniqBy'
 import { axisOrient } from './axis'
@@ -84,8 +84,8 @@ export function stackedForMeasure(
 export function getMatrixForMeasure(items: Array<unknown>, entityType: EntityType, category: ChartDimension, category2: ChartDimension, measure: string) {
   const categoryName = getPropertyHierarchy(category)
   const category2Name = getPropertyHierarchy(category2)
-  const categoryTextName = getPropertyTextName(getEntityProperty(entityType, category))
-  const category2TextName = getPropertyTextName(getEntityProperty(entityType, category2))
+  const categoryTextName = getPropertyCaption(getEntityProperty(entityType, category))
+  const category2TextName = getPropertyCaption(getEntityProperty(entityType, category2))
 
   // Itmes key-value 化, 解决使用 lodash find 函数速度问题
   const itemsMap = new Map()

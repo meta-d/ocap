@@ -135,14 +135,18 @@ export class DuckdbWasmAgent implements Agent {
           // const results = await this.query(connection, `SELECT * FROM ${options.table} LIMIT 1`)
           const columns = await this.getTableColumns(dataSource.catalog, options.table ?? options.statement)
           return [{
-            // database: 'main',
-            name: options.table,
-            columns
+            schema: dataSource.catalog,
+            tables: [
+              {
+                name: options.table,
+                columns
+              }
+            ]
           }]
         } else if(options.statement) {
           const columns = await this.getStatementColumns(dataSource.catalog, options.statement)
+          // TODO
           return [{
-            // database: 'main',
             name: options.table,
             columns
           }]

@@ -7,17 +7,17 @@ import {
   EntityType,
   getEntityProperty,
   getPropertyName,
-  getPropertyTextName,
-  isAdvancedSlicer,
+  getPropertyCaption,
+  isAdvancedSlicer, isCalculatedProperty,
   isCalculationProperty,
   isMeasure,
   isPropertyMeasure,
   isUnbookedData,
   PropertyDimension,
+  PropertyMeasure,
   QueryOptions,
   Schema
 } from '@metad/ocap-core'
-import { flatten, flattenDeep } from 'lodash'
 import compact from 'lodash/compact'
 import concat from 'lodash/concat'
 import isArray from 'lodash/isArray'
@@ -25,9 +25,8 @@ import isEmpty from 'lodash/isEmpty'
 import negate from 'lodash/negate'
 import union from 'lodash/union'
 import { serializeCalculationProperty } from './calculation'
-import { buildCubeContext } from './cube'
+import { buildCubeContext, CubeContext } from './cube'
 import {
-  DimensionColumn,
   DimensionContext,
   queryDimension,
   serializeColumn,
@@ -36,7 +35,7 @@ import {
   serializeTablesJoin
 } from './dimension'
 import { OrderBy } from './functions'
-import { convertFiltersToSQL } from './sql-filter'
+import { compileFilters, convertFiltersToSQL } from './sql-filter'
 import { serializeName, SQLQueryContext, SQLQueryProperty } from './types'
 
 export function getFirstElement<T>(objOrArray: T | T[]): T {
@@ -51,7 +50,7 @@ export function serializeFrom(cube: Cube, entityType: EntityType, dialect: strin
 export function serializeDimensionFrom(dimension: PropertyDimension, entityType: EntityType, dialect: string) {
   const cubeFact = serializeCubeFact(dimension, dialect)
 
-  const expression = entityType.expression ?? cubeFact
+  const expression = cubeFact
   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
 }
 
@@ -83,15 +82,42 @@ export function serializeCubeFact(cube: Cube, dialect: string) {
   return `SELECT * FROM ${statement}`
 }
 
-export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
-  const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
-  if (dimension) {
-    return queryDimension(dimension, entityType, options, dialect)
+export function serializeMeasure(fact: string, measure: PropertyMeasure & {alias: string}, dialect: string) {
+  if (isCalculatedProperty(measure)) {
+    return `${measure.aggregator || 'SUM'}(${
+        measure.formula
+    }) AS ${serializeName(measure.alias, dialect)}`
   }
 
-  const cube = schema.cubes.find((item) => item.name === entityType.name)
+  return `${measure.aggregator || 'SUM'}(${
+      typeof measure.column === 'number'
+        ? measure.column
+        : serializeName(fact, dialect) + '.' + serializeName(measure.column, dialect)
+    }) AS ${serializeName(measure.alias, dialect)}`
+}
 
-  const cubeContext = buildCubeContext(schema, options, entityType, dialect)
+/**
+ * 
+ * @param schema 
+ * @param options 
+ * @param entityType 
+ * @param catalog 数据源目录, 对应如 hive 的 schemaName
+ * @param dialect 
+ * @returns 
+ */
+export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string, catalog?: string) {
+  const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
+  if (dimension) {
+    return queryDimension(dimension, entityType, options, dialect, catalog)
+  }
+
+  const cube = schema?.cubes?.find((item) => item.name === entityType.name)
+
+  if (!cube) {
+    throw new Error(`未找到模型'${entityType.name}'`)
+  }
+
+  const cubeContext: CubeContext = buildCubeContext(cube, options, entityType, dialect)
   let statement = cubeContext.dimensions
     .map((dimensionContext) => {
       return dimensionContext.selectFields
@@ -106,22 +132,38 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
     statement +=
       ', ' +
       cubeContext.measures
-        .map(
-          (measure: any) =>
-            `${measure.aggregator}(${
-              typeof measure.column === 'number'
-                ? measure.column
-                : serializeName(fact, dialect) + '.' + serializeName(measure.column, dialect)
-            }) AS ${serializeName(measure.alias, dialect)}`
-        )
+        .map((measure: any) => serializeMeasure(fact, measure, dialect))
         .join(', ')
   }
 
-  // serialize cube and dimensions
-  statement += ` FROM ` + serializeCubeFrom(cube, cubeContext.dimensions, dialect)
+  
 
+  // Compile Slicers
+  const conditions = []
+  let filterString = options.filterString || ''
+  if (options.filters?.length) {
+    const filters = []
+    options.filters.forEach((item) => {
+      if (isAdvancedSlicer(item)) {
+        conditions.push(item)
+      } else {
+        filters.push(item)
+      }
+    })
+    if (filters.length) {
+      filterString = (filterString ? `${filterString} AND ` : '') + compileFilters(filters, entityType, cubeContext, dialect)
+    }
+  }
+
+  // Compile cube and dimensions
+  statement += ` FROM ` + serializeCubeFrom(cube, cubeContext.dimensions, dialect, catalog)
+  // Where slicers
+  if (filterString) {
+    statement += ' WHERE ' + filterString
+  }
+  // Aggregate Dimensions
   statement +=
-    ` GROUP BY ` + serializeGroupByDimensions(cubeContext.dimensions, dialect)
+    ` GROUP BY ` + (serializeGroupByDimensions(cubeContext.dimensions, dialect) || 1)
     // [
     //   ...new Set(
     //     flattenDeep<DimensionColumn>(cubeContext.dimensions.map((dimension) => dimension.selectFields.map((field) => field.columns ? field.columns : [field])))
@@ -135,32 +177,33 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
   return statement
 }
 
-export function serializeCubeFrom(cube: Cube, dimensions: DimensionContext[], dialect: string): string {
+export function serializeCubeFrom(cube: Cube, dimensions: DimensionContext[], dialect: string, catalog?: string): string {
   const factAlias = cube.tables[0].name
   return (
-    serializeTablesJoin(cube.tables, dialect) +
-    dimensions
-      .map((dimensionContext) => {
-        const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
-        return (
-          ` INNER JOIN ` +
-          serializeHierarchyFrom(dimensionContext.hierarchy, dialect) +
-          ` ON ${serializeName(factAlias, dialect)}.${serializeName(
-            dimensionContext.schema.foreignKey,
-            dialect
-          )} = ${serializeName(primaryKeyTable, dialect)}.${serializeName(
-            dimensionContext.hierarchy.primaryKey,
-            dialect
-          )}`
-        )
-      })
-      .join(' ')
+    serializeTablesJoin(cube.tables, dialect, catalog) +
+      dimensions.filter((dimensionContext) => !!dimensionContext.dimensionTable)
+        .map((dimensionContext) => {
+          const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
+          return (
+            ` INNER JOIN ` +
+            serializeHierarchyFrom(dimensionContext.hierarchy, dialect, catalog) +
+            ` ON ${serializeName(factAlias, dialect)}.${serializeName(
+              dimensionContext.schema.foreignKey,
+              dialect
+            )} = ${serializeName(primaryKeyTable, dialect)}.${serializeName(
+              dimensionContext.hierarchy.primaryKey,
+              dialect
+            )}`
+          )
+        })
+        .join('')
   )
 }
 
 /**
  * 将查询条件根据运行时类型和原始模型编译成查询语句
- *
+ * @deprecated
+ * 
  * @param schema
  * @param options
  * @param entityType
@@ -170,7 +213,7 @@ export function serializeCubeFrom(cube: Cube, dimensions: DimensionContext[], di
 export function queryCube2(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
   const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
   if (dimension) {
-    return queryDimension(dimension, entityType, options, dialect)
+    // return queryDimension(dimension, entityType, options, dialect,)
   }
 
   let queryContext: SQLQueryContext = {} as SQLQueryContext
@@ -364,7 +407,7 @@ export function serializeSelectFields(context: SQLQueryContext, entityType: Enti
         unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
       }
 
-      const textName = getPropertyTextName(property)
+      const textName = getPropertyCaption(property)
       const textProperty = getEntityProperty(entityType, textName)
       if (textProperty) {
         if (hasMeasure) {

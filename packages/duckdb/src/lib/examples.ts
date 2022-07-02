@@ -22,6 +22,12 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
   catalog: 'main',
   tables: [
     {
+      name: 'Countries',
+      type: 'csv',
+      sourceUrl: window.location.origin + '/assets/data/ISO-3166-Countries.csv',
+      delimiter: ','
+    },
+    {
       name: 'CsseCovid19Daily',
       type: 'csv',
       sourceUrl: window.location.origin + '/assets/data/CsseCovid19Daily_05-18-2022.csv',
@@ -46,7 +52,120 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
       sourceUrl: window.location.origin + '/assets/data/HR-Employee-Attrition.csv',
       // 'https://cdn.jsdelivr.net/gh/ashutoshtyagixyz/HR-Employee-Attrition@main/HR-Employee-Attrition.csv'
     }
-  ]
+  ],
+  schema: {
+    name: 'duckdb',
+    dimensions: [
+      {
+        name: 'Country',
+        label: '国家',
+        hierarchies: [
+          {
+            name: '',
+            label: '国家',
+            tables: [
+              {
+                name: 'Countries'
+              }
+            ],
+            primaryKey: 'name',
+            hasAll: true,
+            levels: [
+              {
+                name: 'Region',
+                column: 'region',
+                label: '地区'
+              },
+              {
+                name: 'Sub Region',
+                column: 'sub-region',
+                label: '子区域'
+              },
+              {
+                name: 'Name',
+                column: 'name',
+                label: '国家'
+              }
+            ]
+          },
+          {
+            name: 'Region',
+            label: '地区',
+            tables: [
+              {
+                name: 'Countries'
+              }
+            ],
+            primaryKey: 'name',
+            hasAll: true,
+            levels: [
+              {
+                name: 'Region',
+                column: 'region',
+                label: '地区'
+              },
+              {
+                name: 'Name',
+                column: 'name',
+                label: '国家'
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    cubes: [
+      {
+        name: 'Covid19Daily',
+        tables: [
+          {
+            name: 'CsseCovid19Daily'
+          }
+        ],
+        dimensionUsages: [
+          {
+            name: 'Country',
+            source: 'Country',
+            foreignKey: 'Country_Region'
+          }
+        ],
+        dimensions: [
+          {
+            name: 'Admin',
+            label: '管理员',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    column: 'Admin2',
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        measures: [
+          {
+            name: 'Confirmed',
+            column: 'Confirmed',
+            label: '确诊'
+          },
+          {
+            name: 'Deaths',
+            column: 'Deaths',
+            label: '死亡'
+          },
+          {
+            name: 'CaseFatalityRatio',
+            column: 'Case_Fatality_Ratio',
+            label: '病死率'
+          }
+        ]
+      }
+    ]
+  }
 }
 
 export const CARTESIAN_CARDS = [
@@ -61,7 +180,7 @@ export const CARTESIAN_CARDS = [
         },
         dimensions: [
           {
-            dimension: 'productCategory'
+            dimension: '[productCategory]'
           }
         ],
         measures: [
@@ -377,19 +496,19 @@ export const CARTESIAN_CARDS = [
 ]
 
 export const ANALYTICAL_CARDS = [
-  ...CARTESIAN_CARDS,
+  // ...CARTESIAN_CARDS,
   {
     title: 'Csse Covid-19 Daily',
     dataSettings: {
       dataSource: 'WASM',
-      entitySet: 'CsseCovid19Daily',
+      entitySet: 'Covid19Daily',
       chartAnnotation: {
         chartType: {
           type: 'Bar'
         },
         dimensions: [
           {
-            dimension: 'Country_Region'
+            dimension: '[Country]'
           }
         ],
         measures: [
@@ -406,7 +525,7 @@ export const ANALYTICAL_CARDS = [
           },
           {
             dimension: 'Measures',
-            measure: 'Case_Fatality_Ratio',
+            measure: 'CaseFatalityRatio',
             role: ChartMeasureRoleType.Axis2,
             formatting: {
               unit: '%'
@@ -427,6 +546,9 @@ export const ANALYTICAL_CARDS = [
       universalTransition: true
     },
     chartOptions: {
+      seriesStyle: {
+        selectedMode: 'single'
+      },
       dataZoom: {
         type: ChartDataZoomType.INSIDE
       }

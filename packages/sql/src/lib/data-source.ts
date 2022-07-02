@@ -10,7 +10,7 @@ import {
   QueryReturn
 } from '@metad/ocap-core'
 import isEqual from 'lodash/isEqual'
-import { distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { combineLatest, distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { compileCubeSchema } from './cube'
 import { compileDimensionSchema, DimensionMembers } from './dimension'
 import { SQLEntityService } from './entity.service'
@@ -74,23 +74,6 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               })
             })
           return entitySets
-          // return tables
-          //   // 过滤出当前 Catalog 的 tables , 因为有些 DB Driver 会带出来所有 catalog 下的 tables
-          //   .filter((table) => (this.options.catalog ? table.database === this.options.catalog : true))
-          //   .map((item) => {
-          //     // 加上 catalog 前缀 ???
-          //     const tableName = this.options.catalog
-          //       ? item.name
-          //       : item.database
-          //       ? `${item.database}.${item.name}`
-          //       : item.name
-          //     // Compile 成运行时 EntityType
-          //     const entityType = mapTableSchemaEntityType(tableName, item)
-          //     return {
-          //       name: tableName,
-          //       entityType
-          //     }
-          //   }) as EntitySet[]
         }),
         shareReplay(1)
       )
@@ -100,17 +83,19 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   }
 
   async fetchSchema(modelName: string, catalog: string): Promise<Array<SQLSchema>> {
-    return this.agent
-      .request(this.options, {
-        method: 'get',
-        url: 'schema',
-        catalog
-      })
-      // .then((data) => data?.filter((table) => (catalog ? table.database === catalog : true)))
-      .catch((error) => {
-        console.error(error)
-        return []
-      })
+    return (
+      this.agent
+        .request(this.options, {
+          method: 'get',
+          url: 'schema',
+          catalog
+        })
+        // .then((data) => data?.filter((table) => (catalog ? table.database === catalog : true)))
+        .catch((error) => {
+          console.error(error)
+          return []
+        })
+    )
   }
 
   async fetchTableSchema(modelName: string, catalog: string, table: string, statement?: string): Promise<SQLSchema[]> {
@@ -136,7 +121,9 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           // Find schema defination for the entity
           const cube = schema?.cubes?.find((item) => item.name === entity)
           if (cube) {
-            const dimensions = cube.dimensionUsages?.map((usage) => schema.dimensions.find((item) => item.name === usage.source))
+            const dimensions = cube.dimensionUsages?.map((usage) =>
+              schema.dimensions.find((item) => item.name === usage.source)
+            )
             return {
               type: 'CUBE',
               cube,
@@ -190,16 +177,27 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', null, statement)
             }
 
-            if (!schemas?.length) {
-              this.agent.error(`未能获取到 Entity '${entity}' 的运行时元数据`)
-              return null
+            if (!schemas[0]?.tables?.[0]) {
+              console.log(schemas)
+              throw new Error(`未能获取到实体 '${entity}' 的运行时元数据`)
             }
 
             const _entityType = mapTableSchemaEntityType(entity, schemas[0]?.tables?.[0])
             return _entityType
-          } catch (error: any) {
-            this.agent.error(error.message)
-            console.error(error.message)
+          } catch (err: any) {
+            let error: string
+            if (typeof err === 'string') {
+              error = err
+            } else if (err instanceof Error) {
+              error = err?.message
+            } else if (err?.error instanceof Error) {
+              error = err?.error?.message
+            } else {
+              error = err
+            }
+
+            console.error(error)
+            this.agent.error(error)
             return null
           }
         }),
@@ -215,17 +213,36 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
     return this.getEntityType(entity).pipe(
       switchMap((entityType) => {
-        return this.query({
-          statement: DimensionMembers(dimension, entityType, this.options.schema, this.options.dialect)
-        }).pipe(
-          map((result) => {
-            // console.log(entity, dimension, result)
-            return result.data.map((item) => ({
-              ...dimension,
-              memberKey: item[dimension.dimension],
-              memberCaption: item[dimension.caption],
-              entity
-            })) as IDimensionMember[]
+        return combineLatest(
+          DimensionMembers(
+            entity,
+            dimension,
+            entityType,
+            this.options.schema,
+            this.options.dialect,
+            this.options.catalog
+          ).map((statement) =>
+            this.query({
+              statement
+            })
+          )
+        ).pipe(
+          map((memberLevels) => {
+            const members = []
+
+            console.log(entity, dimension, memberLevels)
+
+            memberLevels.forEach((level) => {
+              members.push(
+                ...level.data.map((item: any) => ({
+                  ...item,
+                  ...dimension,
+                  entity
+                }))
+              )
+            })
+
+            return members as IDimensionMember[]
           })
         )
       })

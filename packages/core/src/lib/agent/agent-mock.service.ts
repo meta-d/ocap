@@ -21,7 +21,7 @@ export class MockAgent implements Agent {
   }
 
   request(dataSource: DataSourceOptions, options: any): Promise<any> {
-    console.log(`~~~~~~~~~~~~~~~~~~~~`, dataSource, options)
+    // console.log(`~~~~~~~~~~~~~~~~~~~~`, dataSource, options)
 
     return new Promise((resolve, reject) => {
       if (options.method === 'get') {
@@ -29,67 +29,119 @@ export class MockAgent implements Agent {
           if (options.table) {
             switch(options.table) {
               case 'SalesOrder':
-                return resolve([{
-                  name: 'SalesOrder',
-                  label: '销售订单',
-                  columns: [
-                    {
-                      name: 'product',
-                      label: '产品',
-                      type: 'string',
-                      aggregationRole: AggregationRole.dimension
-                    },
-                    {
-                      name: 'productCategory',
-                      label: '产品类别',
-                      type: 'string',
-                      aggregationRole: AggregationRole.dimension
-                    },
-                    {
-                      name: 'sales',
-                      label: '销售额',
-                      type: 'number',
-                      aggregationRole: AggregationRole.measure
-                    },
-                    {
-                      name: 'quantity',
-                      label: '销售量',
-                      type: 'number',
-                      aggregationRole: AggregationRole.measure
-                    }
-                  ]
-                }])
+                return resolve([
+                  {
+                    schema: 'default',
+                    tables: [
+                      {
+                        name: 'SalesOrder',
+                        label: '销售订单',
+                        columns: [
+                          {
+                            name: 'product',
+                            label: '产品',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'productCategory',
+                            label: '产品类别',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'sales',
+                            label: '销售额',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          },
+                          {
+                            name: 'quantity',
+                            label: '销售量',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ])
               case 'Inventory':
-                return resolve([{
-                  name: 'Inventory',
-                  label: '库存',
-                  columns: [
-                    {
-                      name: 'product',
-                      label: '产品',
-                      type: 'string',
-                      aggregationRole: AggregationRole.dimension
-                    },
-                    {
-                      name: 'productCategory',
-                      label: '产品类别',
-                      type: 'string',
-                      aggregationRole: AggregationRole.dimension
-                    },
-                    {
-                      name: 'sales',
-                      label: '销售额',
-                      type: 'number',
-                      aggregationRole: AggregationRole.measure
-                    },
-                    {
-                      name: 'quantity',
-                      label: '销售量',
-                      type: 'number',
-                      aggregationRole: AggregationRole.measure
-                    }
-                  ]
-                }])
+                return resolve([
+                  {
+                    schema: 'default',
+                    tables: [
+                      {
+                        name: 'Inventory',
+                        label: '库存',
+                        columns: [
+                          {
+                            name: 'product',
+                            label: '产品',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'productCategory',
+                            label: '产品类别',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'sales',
+                            label: '销售额',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          },
+                          {
+                            name: 'quantity',
+                            label: '销售量',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ])
+              default:
+                return resolve([
+                  {
+                    schema: 'default',
+                    tables: [
+                      {
+                        name: 'Inventory',
+                        label: '库存',
+                        columns: [
+                          {
+                            name: 'product',
+                            label: '产品',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'productCategory',
+                            label: '产品类别',
+                            type: 'string',
+                            aggregationRole: AggregationRole.dimension
+                          },
+                          {
+                            name: 'sales',
+                            label: '销售额',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          },
+                          {
+                            name: 'quantity',
+                            label: '销售量',
+                            type: 'number',
+                            aggregationRole: AggregationRole.measure
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ])
             }
           } else if (options.statement) {
             return resolve([{

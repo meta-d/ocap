@@ -1,6 +1,5 @@
 import { CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop'
 import { Component, ContentChildren, ElementRef, EventEmitter, HostBinding, HostListener, Input, Output, QueryList } from '@angular/core'
-import { ResizeSensor } from 'css-element-queries'
 import { SplitterPaneComponent } from './splitter-pane/splitter-pane.component'
 
 export const SPLITTER_INTERACTION_KEYS = new Set('right down left up arrowright arrowdown arrowleft arrowup'.split(' '))
@@ -17,6 +16,17 @@ export enum SplitterType {
   Horizontal,
   Vertical,
 }
+
+const entriesMap = new WeakMap()
+
+const ro = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    if (entriesMap.has(entry.target)) {
+      const comp = entriesMap.get(entry.target)
+      comp._resizeCallback(entry)
+    }
+  }
+})
 
 @Component({
   selector: 'ngm-splitter',
@@ -101,32 +111,47 @@ export class SplitterComponent {
    */
   private sibling!: SplitterPaneComponent
 
-  private resizeSensor: ResizeSensor
+  // private resizeSensor: ResizeSensor
   clientWidth: number
   clientHeight: number
   constructor(private readonly element: ElementRef) {
   }
 
   ngOnInit(): void {
-    // only initialize resize watching if sensor is availablei
-    if (ResizeSensor) {
-      this.resizeSensor = new ResizeSensor(this.element.nativeElement, () => this.onResized());
-    }
+    // // only initialize resize watching if sensor is availablei
+    // if (ResizeSensor) {
+    //   this.resizeSensor = new ResizeSensor(this.element.nativeElement, () => this.onResized());
+    // }
+
+    const target = this.element.nativeElement
+    entriesMap.set(target, this)
+    ro.observe(target)
   }
 
   ngOnDestroy(): void {
-    if (this.resizeSensor) {
-      this.resizeSensor.detach();
-    }
+    // if (this.resizeSensor) {
+    //   this.resizeSensor.detach();
+    // }
+    const target = this.element.nativeElement
+    ro.unobserve(target)
+    entriesMap.delete(target)
   }
 
-  private onResized(): void {
+  _resizeCallback(entry) {
     this.clientWidth = this.element.nativeElement.clientWidth
     this.clientHeight = this.element.nativeElement.clientHeight
 
     this.onMoveStart(this.panes.toArray()[0])
     this.onMoving(0)
   }
+
+  // private onResized(): void {
+  //   this.clientWidth = this.element.nativeElement.clientWidth
+  //   this.clientHeight = this.element.nativeElement.clientHeight
+
+  //   this.onMoveStart(this.panes.toArray()[0])
+  //   this.onMoving(0)
+  // }
 
   /** @hidden @internal */
   public ngAfterContentInit(): void {

@@ -57,5 +57,3 @@ export const CloseButton = ((args: any) => ({
   `,
   styles: [``]
 })).bind({})
-
-CloseButton.args = {}

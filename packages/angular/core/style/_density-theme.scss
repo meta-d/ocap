@@ -1,0 +1,77 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+  $primary: map.get($config, primary);
+  $accent: map.get($config, accent);
+}
+
+@mixin icon-cosy() {
+  line-height: 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+@mixin icon-compact() {
+  line-height: 16px;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+@mixin density($config-or-theme) {
+
+  // 迁移到 Ngm
+  .ngm-density__cosy {
+    .mat-form-field {
+      font-size: 12px;
+    }
+    .mat-chip.mat-standard-chip {
+      margin: 0 2px;
+      min-height: 20px;
+      font-size: 12px;
+
+      &.mat-chip-with-trailing-icon {
+        padding: 2px 2px 2px 5px;
+      }
+    }
+  }
+  .ngm-density__compact {
+    .mat-form-field {
+      font-size: 10px;
+    }
+    .mat-chip.mat-standard-chip {
+      margin: 0 2px;
+      min-height: 20px;
+      font-size: 12px;
+
+      &.mat-chip-with-trailing-icon {
+        padding: 2px 2px 2px 5px;
+      }
+    }
+  }
+
+  .mat-form-field {
+    &.ngm-density__cosy {
+      font-size: 12px;
+    }
+    &.ngm-density__compact {
+      font-size: 10px;
+    }
+  }
+
+  .mat-icon {
+    &.ngm-density__cosy {
+      @include icon-cosy();
+    }
+    &.ngm-density__compact {
+      @include icon-compact();
+    }
+  }
+
+}

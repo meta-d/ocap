@@ -113,6 +113,7 @@ export interface EntityType {
    * 与 Parameters 的区别
    */
   keys?: string[]
+
   // entity type 属性们
   properties: {
     [name: string]: Property
@@ -134,24 +135,11 @@ export interface EntityType {
   dialect?: any // string
 
   syntax?: Syntax
-
-  /**
-   * @deprecated
-   */
-  table?: string
-
-  /**
-   * @deprecated
-   */
-  expression?: string
+  
   /**
    * @deprecated
    */
   semantics?: EntitySemantics
-  /**
-   * @deprecated
-   */
-  cube?: Cube
 }
 
 /**

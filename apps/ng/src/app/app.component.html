@@ -1,3 +1,4 @@
+
 <div fxLayout="column" fxLayoutAlign="start stretch" >
     <mat-toolbar color="primary">
         <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
@@ -14,7 +15,7 @@
     </mat-toolbar>
     
     <div class="app-content" >
-        <div fxLayout="row">
+        <!-- <div fxLayout="row">
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="smartFilterOptions"
                 [appearance]="appearance"
@@ -32,7 +33,8 @@
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="{
                     dimension: departmentDimension,
-                    initialLevel: 1
+                    initialLevel: 1,
+                    searchable: true
                 }"
                 [appearance]="appearance"
                 [(ngModel)]="department"
@@ -50,13 +52,10 @@
                 [(ngModel)]="department"
                 (ngModelChange)="onSlicerChange($event)"
             ></ngm-member-table>
-        </div>
+        </div> -->
 
-        <div>
-            {{ department | json }}
-        </div>
-
-
+        <router-outlet #o="outlet"></router-outlet>
+<!-- 
         <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">
             <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
                 <ngm-analytical-card displayDensity="compact"
@@ -74,9 +73,8 @@
                 [options]="{
                     strip: true,
                     paging: true
-                }"></ngm-analytical-grid>
-
-
-        </div>
+                }">
+            </ngm-analytical-grid>
+        </div> -->
     </div>
 </div>

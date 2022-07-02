@@ -47,9 +47,13 @@ export function decideRole(type: string) {
  * @param dialect
  * @returns
  */
-export function serializeName(name: string, dialect: string) {
+export function serializeName(name: string, dialect: string, catalog?: string) {
   if (['pg', 'trino', 'presto', 'duckdb', 'hana'].includes(dialect)) {
     return `"${name}"`
+  }
+
+  if (['hive'].includes(dialect) && catalog) {
+    return `\`${catalog}\`.\`${name}\``
   }
 
   return `\`${name}\``

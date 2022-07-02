@@ -1,8 +1,8 @@
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
 import { combineLatestWith, distinctUntilChanged, filter, map, Observable } from 'rxjs'
-import { getEntityProperty, QueryReturn } from '../models'
-import { QueryOptions } from '../types'
+import { getEntityHierarchy, getEntityProperty, QueryReturn } from '../models'
+import { isMeasure, QueryOptions } from '../types'
 import { SmartBusinessService } from './smart-business.service'
 
 export class AnalyticsBusinessService<T> extends SmartBusinessService<T> {
@@ -25,11 +25,11 @@ export class AnalyticsBusinessService<T> extends SmartBusinessService<T> {
       return {
         rows: analyticsAnnotation.rows?.map((item) => ({
           ...item,
-          property: getEntityProperty(entityType, item)
+          property: isMeasure(item) ? getEntityProperty(entityType, item) : getEntityHierarchy(entityType, item)
         })),
         columns: analyticsAnnotation.columns?.map((item) => ({
           ...item,
-          property: getEntityProperty(entityType, item)
+          property: isMeasure(item) ? getEntityProperty(entityType, item) : getEntityHierarchy(entityType, item)
         }))
       }
     })

@@ -47,6 +47,7 @@ const SalesOrder = {
 @Injectable()
 export class MockAgent implements Agent {
   type = AgentType.Browser
+
   selectStatus(): Observable<AgentStatus> {
     return of(AgentStatus.ONLINE)
   }
@@ -54,7 +55,7 @@ export class MockAgent implements Agent {
     throw new Error('Method not implemented.')
   }
   error(err: any): void {
-    throw new Error('Method not implemented.')
+    console.error(err)
   }
 
   request(dataSource: DataSourceOptions, options: any): Promise<any> {
@@ -65,11 +66,19 @@ export class MockAgent implements Agent {
         if (options.url === 'schema') {
           if (options.table === 'SalesOrder') {
             return resolve([
-              SalesOrder
+              {
+                tables: [
+                  SalesOrder
+                ]
+              }
             ])
-          } else if (options.statement === "SELECT * FROM \"SalesOrder\"") {
+          } else if (options.statement === "SELECT * FROM `SalesOrder`") {
             return resolve([
-              SalesOrder
+              {
+                tables: [
+                  SalesOrder
+                ]
+              }
             ])
           }
         }

@@ -7,6 +7,7 @@
 @use './style/mat-form-field-theme' as mat-formfield;
 @use './style/mat-button-theme' as mat-button;
 @use './style/mat-viewport-theme' as mat-viewport;
+@use './style/density-theme' as mat-density;
 
 @mixin color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -30,6 +31,7 @@
   @include mat-formfield.density($config-or-theme);
   @include mat-button.density($config-or-theme);
   @include mat-viewport.density($config-or-theme);
+  @include mat-density.density($config-or-theme);
 
   // .ngm-density__cosy {
   //   .mat-icon {

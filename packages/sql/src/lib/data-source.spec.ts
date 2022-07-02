@@ -59,8 +59,8 @@ describe('SQL DataSource', () => {
     entityType = await firstValueFrom(dataSource.getEntityType('Inventory'))
 
     expect(entityType).toEqual({
-      label: undefined,
       name: 'Inventory',
+      label: '库存',
       properties: {
         product: {
           __id__: 'product',
@@ -222,7 +222,7 @@ describe('Get EntityType with Exception', () => {
       .getEntityType('SalesOrder')
       .pipe(skip(1))
       .subscribe((entityType) => {
-        expect(entityType).toEqual({ label: '销售', name: 'SalesOrder', properties: {} })
+        expect(entityType).toEqual({ label: undefined, name: 'SalesOrder', properties: {} })
         done()
       })
 

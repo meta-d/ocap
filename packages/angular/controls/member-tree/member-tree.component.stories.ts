@@ -10,7 +10,7 @@ import {
 import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
-import { MockAgent } from '../../mock/agent-mock.service'
+import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { ControlsModule } from '../controls.module'
 import { MemberTreeComponent } from './member-tree.component'
 
@@ -58,20 +58,7 @@ export default {
             },
             schema: {
               cubes: [
-                {
-                  name: 'SalesOrder',
-                  tables: [{ name: 'SalesOrder' }],
-                  dimensions: [
-                    {
-                      name: 'product',
-                      caption: 'productName'
-                    },
-                    {
-                      name: 'Department',
-                      caption: 'DepartmentName'
-                    }
-                  ]
-                }
+                CUBE_SALES_ORDER
               ]
             }
           },
@@ -93,7 +80,7 @@ Primary.args = {
     entitySet: 'SalesOrder3s'
   },
   dimension: {
-    dimension: 'Department'
+    dimension: 'product'
   },
   appearance: {
     displayDensity: DisplayDensity.compact
@@ -107,7 +94,7 @@ SourceFrom.args = {
     entitySet: 'SalesOrder3s'
   },
   dimension: {
-    dimension: 'Department'
+    dimension: 'product'
   },
   options: {
     memberSource: MemberSource.DIMENSION
@@ -121,7 +108,7 @@ Appearance.args = {
     entitySet: 'SalesOrder3s'
   },
   dimension: {
-    dimension: 'Department'
+    dimension: 'product'
   },
   options: {
     searchable: true

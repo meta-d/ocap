@@ -39,7 +39,7 @@ export interface CalculatedMember {
   hierarchy?: string
   visible?: boolean
   caption?: string
-  calculatedProperties?: Array<{
+  properties?: Array<{
     name: string
     value: string
   }>

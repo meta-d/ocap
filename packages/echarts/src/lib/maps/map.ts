@@ -9,7 +9,7 @@ import {
   getPropertyHierarchy,
   getPropertyMeasure,
   getPropertyName,
-  getPropertyTextName,
+  getPropertyCaption,
   isChartMapType,
   QueryReturn
 } from '@metad/ocap-core'
@@ -74,7 +74,7 @@ export function mapChart(
 
   const chartCategory = getChartCategory(chartAnnotation)
   const chartCategoryName = getPropertyHierarchy(chartCategory)
-  const chartCategoryCaption = getPropertyTextName(getEntityProperty(entityType, chartCategory))
+  const chartCategoryCaption = getPropertyCaption(getEntityProperty(entityType, chartCategory))
   const chartMeasure = chartAnnotation.measures[0]
   const chartMeasureName = getPropertyMeasure(chartMeasure)
 

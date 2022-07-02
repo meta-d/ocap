@@ -7,7 +7,7 @@ import {
   getChartSeries,
   getEntityProperty,
   getPropertyHierarchy,
-  getPropertyTextName,
+  getPropertyCaption,
   mergeOptions,
   QueryReturn
 } from '@metad/ocap-core'
@@ -61,7 +61,7 @@ export function scatterCoordinate(
   let datasets = []
   if (chartSeries) {
     const chartSeriesName = getPropertyHierarchy(chartSeries)
-    const chartSeriesTextName = getPropertyTextName(getEntityProperty(entityType, chartSeries))
+    const chartSeriesTextName = getPropertyCaption(getEntityProperty(entityType, chartSeries))
     const categoryValues = uniqBy(data, chartSeriesName).map((x) => ({
       value: x[chartSeriesName],
       label: x[chartSeriesTextName]

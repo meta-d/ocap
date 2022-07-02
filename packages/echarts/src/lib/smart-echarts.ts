@@ -7,7 +7,7 @@ import {
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyName,
-  getPropertyTextName,
+  getPropertyCaption,
   IChartClickEvent,
   isChartMapType,
   mergeOptions,
@@ -223,7 +223,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
               members: [
                 {
                   value: item[propertyName],
-                  label: item[getPropertyTextName(property)]
+                  label: item[getPropertyCaption(property)]
                 }
               ]
             },
@@ -237,7 +237,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
           members: [
             {
               value: item[propertyName],
-              label: item[getPropertyTextName(property)]
+              label: item[getPropertyCaption(property)]
             }
           ]
         }

@@ -5,10 +5,10 @@ import {
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN
 } from '@metad/ocap-angular/core'
-import { AgentType, C_MEASURES, DataSource, Type } from '@metad/ocap-core'
+import { AgentType, C_MEASURES, DataSource, Schema, Type } from '@metad/ocap-core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { NgxEchartsModule } from 'ngx-echarts'
-import { MockAgent } from '../mock/agent-mock.service'
+import { CUBE_SALES_ORDER, MockAgent } from '../mock/agent-mock.service'
 import { AnalyticalCardComponent } from './analytical-card.component'
 import { AnalyticalCardModule } from './analytical-card.module'
 
@@ -52,22 +52,13 @@ export default {
             },
             schema: {
               cubes: [
+                CUBE_SALES_ORDER,
                 {
-                  name: 'SalesOrder',
-                  tables: [{ name: 'SalesOrder' }],
-                  dimensions: [
-                    {
-                      name: 'product',
-                      caption: 'productName'
-                    },
-                    {
-                      name: 'Department',
-                      caption: 'DepartmentName'
-                    }
-                  ]
+                  ...CUBE_SALES_ORDER,
+                  name: 'SalesOrder10s'
                 }
               ]
-            }
+            } as Schema
           },
           multi: true
         }
@@ -95,13 +86,13 @@ Primary.args = {
       },
       dimensions: [
         {
-          dimension: 'product'
+          dimension: '[Product]'
         }
       ],
       measures: [
         {
           dimension: C_MEASURES,
-          measure: 'sales'
+          measure: 'Sales'
         }
       ]
     }
@@ -124,13 +115,13 @@ Appearance.args = {
       },
       dimensions: [
         {
-          dimension: 'product'
+          dimension: '[Product]'
         }
       ],
       measures: [
         {
           dimension: C_MEASURES,
-          measure: 'sales'
+          measure: 'Sales'
         }
       ]
     }
@@ -153,13 +144,13 @@ Loading.args = {
       },
       dimensions: [
         {
-          dimension: 'product'
+          dimension: '[Product]'
         }
       ],
       measures: [
         {
           dimension: C_MEASURES,
-          measure: 'sales'
+          measure: 'Sales'
         }
       ]
     }

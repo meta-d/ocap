@@ -12,7 +12,7 @@ import {
   ViewChild
 } from '@angular/core'
 import { MatMenuTrigger } from '@angular/material/menu'
-import { NgmAppearance } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   ChartOptions,
   ChartSettings,
@@ -86,7 +86,8 @@ export interface AnalyticalCardState {
   providers: [AnalyticalCardService]
 })
 export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnChanges {
-
+  DisplayDensity = DisplayDensity
+  
   @HostBinding('class.ngm-analytical-card') _isAnalyticalCard = true
 
   @Input() title: string

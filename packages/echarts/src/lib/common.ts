@@ -3,7 +3,7 @@ import {
   ChartMeasure,
   displayByBehaviour,
   getMeasurePropertyUnit,
-  getPropertyTextName,
+  getPropertyCaption,
   PrimitiveType,
   Property
 } from '@metad/ocap-core'
@@ -65,7 +65,7 @@ export function _formatDimensionValue(item, dimProperty?: Property | null) {
   return displayByBehaviour(
     {
       value: item[dimProperty?.name],
-      label: item[getPropertyTextName(dimProperty)]
+      label: item[getPropertyCaption(dimProperty)]
     }
     // dimProperty?.displayBehaviour
   )
@@ -114,7 +114,7 @@ export function setCategoryAxisLabel(category, items, chartCategory: ChartDimens
 
   category.axisLabel = category.axisLabel || {}
   category.axisLabel.formatter = (value, index) => {
-    const textName = getPropertyTextName(property)
+    const textName = getPropertyCaption(property)
     if (textName) {
       const item = find(items, (item) => item[property.name] == value)
       if (item) {

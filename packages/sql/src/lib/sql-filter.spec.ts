@@ -1,7 +1,197 @@
 import { AggregationRole, FilteringLogic, IAdvancedFilter } from '@metad/ocap-core'
-import { convertFiltersToSQL } from './sql-filter'
+import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER } from './cube.spec'
+import { convertFiltersToSQL, compileSlicer } from './sql-filter'
+
 
 describe('convertFiltersToSQL', () => {
+
+  it('#explainSlicer', () => {
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        members: [
+          {
+            value: '[A]'
+          },
+          {
+            value: '[Brand (1)]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("(`product`.`brand_name` = 'A') OR (`product`.`brand_name` = 'Brand (1)')")
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        members: [
+          {
+            value: '[A].[B]'
+          },
+          {
+            value: '[Brand (1)].[Product: 2]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("(`product`.`brand_name` = 'A' AND `product`.`product_name` = 'B') OR (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        members: [
+          {
+            value: '[A]'
+          },
+          {
+            value: '[Brand (1)].[Product: 2]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("(`product`.`brand_name` = 'A') OR (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+  })
+
+  it('#explainSlicer exclude members', () => {
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        exclude: true,
+        members: [
+          {
+            value: '[A]'
+          },
+          {
+            value: '[Brand (1)]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("NOT (`product`.`brand_name` = 'A') AND NOT (`product`.`brand_name` = 'Brand (1)')")
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        exclude: true,
+        members: [
+          {
+            value: '[A].[B]'
+          },
+          {
+            value: '[Brand (1)].[Product: 2]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("NOT (`product`.`brand_name` = 'A' AND `product`.`product_name` = 'B') AND NOT (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Product]'
+        },
+        exclude: true,
+        members: [
+          {
+            value: '[A]'
+          },
+          {
+            value: '[Brand (1)].[Product: 2]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("NOT (`product`.`brand_name` = 'A') AND NOT (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+  })
+
+  it('#explainSlicer with Degenerate dimension', () => {
+
+    expect(compileSlicer(
+      {
+        dimension: {
+          dimension: '[Payment method]',
+        },
+        members: [
+          {
+            value: '[Credit]'
+          },
+          {
+            value: '[ATM]'
+          }
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      {
+        schema: CUBE_SALESORDER,
+        entityType: ENTITY_TYPE_SALESORDER,
+        factTable: 'sales_fact',
+        dimensions: [],
+        measures: []
+      },
+      ''
+    )).toEqual("(`sales_fact`.`payment_method` = 'Credit') OR (`sales_fact`.`payment_method` = 'ATM')")
+  })
+
   it('#convertFiltersToSQL', () => {
     expect(
       convertFiltersToSQL(

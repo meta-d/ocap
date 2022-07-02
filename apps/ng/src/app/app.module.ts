@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatToolbarModule } from '@angular/material/toolbar'
+import {MatSidenavModule} from '@angular/material/sidenav'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { ZhHans } from '@metad/ocap-angular'
@@ -31,6 +32,7 @@ import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -53,6 +55,7 @@ export class CustomLoader implements TranslateLoader {
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
+    MatSidenavModule,
     TranslateModule.forRoot({
       defaultLanguage: 'en',
       loader: { provide: TranslateLoader, useClass: CustomLoader },
@@ -67,7 +70,8 @@ export class CustomLoader implements TranslateLoader {
     OcapCoreModule.forRoot(),
     ControlsModule,
     AnalyticalCardModule,
-    AnalyticalGridModule
+    AnalyticalGridModule,
+    NgmCommonModule
   ],
   providers: [
     WasmAgentService,
@@ -119,12 +123,43 @@ export class CustomLoader implements TranslateLoader {
               tables: [{ name: 'SalesOrder' }],
               dimensions: [
                 {
+                  name: 'productCategory',
+                  hierarchies: [
+                    {
+                      name: '',
+                      levels: [
+                        {
+                          name: 'productCategory',
+                          column: 'productCategory'
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
                   name: 'product',
-                  caption: 'productName'
+                  caption: 'productName',
+                  hierarchies: [
+                    {
+                      name: '',
+                      levels: [
+                        {
+                          name: 'productCategory',
+                          column: 'productCategory'
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   name: 'Department',
                   caption: 'DepartmentName'
+                }
+              ],
+              measures: [
+                {
+                  name: 'sales',
+                  column: 'sales'
                 }
               ]
             }
@@ -139,7 +174,9 @@ export class CustomLoader implements TranslateLoader {
         ...DUCKDB_WASM_MODEL,
         settings: {
           ignoreUnknownProperty: true
-        }
+        },
+        dialect: 'duckdb',
+        syntax: 'sql'
       },
       multi: true
     }

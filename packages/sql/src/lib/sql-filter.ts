@@ -7,31 +7,31 @@ import {
   IMember,
   isAdvancedFilter,
   isFilter,
-  ISlicer,
+  ISlicer
 } from '@metad/ocap-core'
-import isEmpty from 'lodash/isEmpty'
+import compact from 'lodash/compact'
 import flatten from 'lodash/flatten'
 import isArray from 'lodash/isArray'
+import isEmpty from 'lodash/isEmpty'
 import isNumber from 'lodash/isNumber'
 import isString from 'lodash/isString'
+import { CubeContext } from './cube'
+import { createDimensionContext } from './dimension'
 import { serializeName } from './types'
-import compact from 'lodash/compact'
 
 /**
  * 依据实体类型将过滤器转换成语句
- * 
+ *
  * @param filters 过滤器
  * @param entityType 实体类型
  * @param dialect 方言
  * @returns 过滤语句
  */
 export function convertFiltersToSQL(filters: Array<IFilter>, entityType: EntityType, dialect?: string) {
-  return compact(flatten(filters.map((item) => convertFilterToSQL(item, entityType, dialect))))
-    .join(' AND ')
+  return compact(flatten(filters.map((item) => convertFilterToSQL(item, entityType, dialect)))).join(' AND ')
 }
 
 export function convertSlicerToSQL(iSlicer: ISlicer, dialect?: string) {
-
   if (isEmpty(iSlicer.members)) {
     return ''
   }
@@ -42,9 +42,10 @@ export function convertSlicerToSQL(iSlicer: ISlicer, dialect?: string) {
 }
 
 export function convertFilterToSQL(slicer: ISlicer, entityType: EntityType, dialect: string) {
-
   if (isAdvancedFilter(slicer)) {
-    return slicer.children.map(child => `( ${convertFilterToSQL(child, entityType, dialect)} )`).join(slicer.filteringLogic === FilteringLogic.And ? ' AND ' : ' OR ')
+    return slicer.children
+      .map((child) => `( ${convertFilterToSQL(child, entityType, dialect)} )`)
+      .join(slicer.filteringLogic === FilteringLogic.And ? ' AND ' : ' OR ')
   }
 
   if (isEmpty(slicer.members)) {
@@ -109,4 +110,43 @@ export function convertFilterValue({ value }: IMember) {
   }
 
   return `null`
+}
+
+export const MEMBER_VALUE_REGEX = new RegExp('\\[(.*?)\\]', 'g')
+
+export function compileSlicer(slicer: ISlicer, entityType: EntityType, cube: CubeContext, dialect: string) {
+  const factTable = cube.factTable
+  let dimensionContext = cube.dimensions.find((item) => item.dimension.dimension === slicer.dimension.dimension)
+  if (!dimensionContext) {
+    dimensionContext = createDimensionContext(entityType, slicer.dimension)
+    dimensionContext.factTable = factTable
+    cube.dimensions.push(dimensionContext)
+  }
+
+  if (dimensionContext.hierarchy.name !== (slicer.dimension.hierarchy || slicer.dimension.dimension)) {
+    throw new Error(`不能同时查询不同层级结构${dimensionContext.hierarchy.name}和${slicer.dimension.hierarchy || slicer.dimension.dimension}`)
+  }
+
+  const levels = dimensionContext.hierarchy.levels.slice(dimensionContext.hierarchy.hasAll ? 1 : 0)
+
+  return slicer.members
+    .map((member) => {
+      return [...`${member.value}`.matchAll(MEMBER_VALUE_REGEX)]
+        .map((item) => item[1])
+        .map((value, i) => {
+          const level = levels[i]
+          return `${serializeName(level.table || dimensionContext.dimensionTable || factTable, dialect)}.${serializeName(
+            level.nameColumn || level.column,
+            dialect
+          )} = '${value}'`
+        })
+        .join(' AND ')
+    })
+    .filter((value) => !!value)
+    .map((memberStr) => (slicer.exclude ? `NOT (${memberStr})` : `(${memberStr})`))
+    .join(slicer.exclude ? ' AND ' : ' OR ')
+}
+
+export function compileFilters(filters: Array<IFilter>, entityType: EntityType, cube: CubeContext, dialect?: string) {
+  return compact(flatten(filters.map((item) => compileSlicer(item, entityType, cube, dialect)))).join(' AND ')
 }

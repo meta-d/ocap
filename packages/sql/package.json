@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-sql",
-  "version": "0.1.9",
+  "version": "0.1.13",
   "keywords": [
     "metad",
     "ocap",
@@ -14,7 +14,6 @@
     "url": "git+https://github.com/meta-d/ocap.git"
   },
   "peerDependencies": {
-    "@metad/ocap-core": "0.1.9",
     "lodash": "^4.17.21",
     "rxjs": "~7.4.0"
   }

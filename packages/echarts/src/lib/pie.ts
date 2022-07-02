@@ -5,7 +5,7 @@ import {
   getChartCategory,
   getEntityProperty,
   getPropertyHierarchy,
-  getPropertyTextName,
+  getPropertyCaption,
   mergeOptions,
   QueryReturn
 } from '@metad/ocap-core'
@@ -121,7 +121,7 @@ export function pieCoordinate(
         if (isNil(series.seriesLayoutBy)) {
           series.encode = {
             itemId: getPropertyHierarchy(category),
-            itemName: getPropertyTextName(categoryProperty),
+            itemName: getPropertyCaption(categoryProperty),
             value: seriesComponent.measure,
             tooltip: seriesComponent.tooltip
           }

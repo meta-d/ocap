@@ -20,14 +20,17 @@
   </div>
 </div>
 
-<ngm-breadcrumb-bar [displayDensity]="appearance?.displayDensity"
+<ngm-breadcrumb-bar [displayDensity]="appearance?.displayDensity ?? DisplayDensity.compact"
   [steps]="breadcrumbs$ | async"
   (selectedChange)="reselectDrill($event)">
 </ngm-breadcrumb-bar>
 
 <mat-card-content>
   <div *ngIf="error$ | async as error; else echarts" class="ngm-card-error">
-    {{ error }}
+    <span style="font-size: 3rem;">🐛</span>
+    <span>
+      {{ error }}
+    </span>
   </div>
   <ng-template #echarts>
     <div echarts  class="echarts-chart"

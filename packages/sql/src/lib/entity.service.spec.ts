@@ -50,16 +50,8 @@ describe('SQL Entity Service', () => {
           ]
         })
         .subscribe((result: any) => {
-          // console.log(result)
           expect(result.statement).toEqual(
-            `SELECT \`product_type\`.\`product_type_id\` AS \`[Product].[Product Type]\`,` +
-              ` \`product_class\`.\`product_class_id\` AS \`[Product].[Product Class]\`,` +
-              ` concat('C_', product_class.product_class_id) AS \`[Product].[Product Class].[MEMBER_CAPTION]\`,` +
-              ` \`product\`.\`product_name\` AS \`[Product].[Product]\`,` +
-              ` \`product\`.\`product_name\` AS \`[Product].[Product].[MEMBER_CAPTION]\``+
-              ` FROM \`product\` AS \`product\` Left JOIN \`product_class\` AS \`product_class\`` +
-              ` ON \`product\`.\`product_class_id\` = \`product_class\`.\`product_class_id\`` +
-              ` Left JOIN \`product_type\` AS \`product_type\` ON \`product_class\`.\`product_type_id\` = \`product_type\`.\`product_type_id\``
+            "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id`"
           )
           done()
         })
@@ -94,18 +86,8 @@ describe('SQL Entity Service', () => {
           ]
         })
         .subscribe((result: any) => {
-          // console.log(result)
           expect(result.statement).toEqual(
-            `SELECT \`product_type\`.\`product_type_id\` AS \`[Product].[Product Type]\`,` +
-              ` \`product_class\`.\`product_class_id\` AS \`[Product].[Product Class]\`,` +
-              ` concat('C_', product_class.product_class_id) AS \`[Product].[Product Class].[MEMBER_CAPTION]\`,` +
-              ` \`product\`.\`product_name\` AS \`[Product].[Product]\`,` +
-              ` \`product\`.\`product_name\` AS \`[Product].[Product].[MEMBER_CAPTION]\`,`+
-              ` SUM(1) AS \`Measures_Row_Count\``+
-              ` FROM \`product\` AS \`product\` Left JOIN \`product_class\` AS \`product_class\`` +
-              ` ON \`product\`.\`product_class_id\` = \`product_class\`.\`product_class_id\`` +
-              ` Left JOIN \`product_type\` AS \`product_type\` ON \`product_class\`.\`product_type_id\` = \`product_type\`.\`product_type_id\`` +
-              ` GROUP BY \`product_type\`.\`product_type_id\`, \`product_class\`.\`product_class_id\`, \`product\`.\`product_name\``
+            "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, SUM(1) AS `Measures_Row_Count` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`"
           )
           done()
         })
@@ -114,19 +96,10 @@ describe('SQL Entity Service', () => {
 
   it('Query Cube', (done) => {
     const entityService = dataSource.createEntityService(CUBE_SALESORDER.name)
-    entityService.selectEntityType().subscribe((entityType) => {
-      console.log(entityType)
+    entityService.selectEntityType().subscribe(() => {
       entityService
         .query({
           rows: [
-            {
-              dimension: '[Product]',
-              level: '[Product].[Product Type]'
-            },
-            {
-              dimension: '[Product]',
-              level: '[Product].[Product Class]'
-            },
             {
               dimension: '[Product]',
               level: '[Product].[Product]'
@@ -135,7 +108,7 @@ describe('SQL Entity Service', () => {
         })
         .subscribe((result: any) => {
           expect(result.statement).toEqual(
-            "SELECT `[Product]` AS `[Product]`, `[Product]` AS `[Product]`, `[Product]` AS `[Product]` FROM (SELECT * FROM `sales_order`) AS `SalesOrder` WHERE (`[Product]` IS NOT NULL OR `[Product]` IS NOT NULL OR `[Product]` IS NOT NULL)"
+            "SELECT concat('[', `product`.`brand_name`,'].[',`product`.`product_name`,']') AS `[Product]`, `product`.`product_name` AS `[Product].[MEMBER_CAPTION]` FROM `sales_fact` AS `sales_fact` INNER JOIN `product` AS `product` ON `sales_fact`.`product_id` = `product`.`product_id` GROUP BY `product`.`brand_name`, `product`.`product_name`"
           )
           done()
         })
@@ -155,7 +128,13 @@ describe('PG SQL Entity Service', () => {
         dialect: 'pg',
         schema: {
           name: 'Sales',
-          dimensions: [PRODUCT_DIMENSION]
+          dimensions: [
+            PRODUCT_DIMENSION,
+            SHARED_DIMENSION_TIME
+          ],
+          cubes: [
+            CUBE_SALESORDER
+          ]
         }
       },
       new MockAgent(),
@@ -187,15 +166,28 @@ describe('PG SQL Entity Service', () => {
         .subscribe((result: any) => {
           // console.log(result)
           expect(result.statement).toEqual(
-            `SELECT "product_type"."product_type_id" AS "[Product].[Product Type]",` +
-              ` "product_class"."product_class_id" AS "[Product].[Product Class]",` +
-              ` concat('C_', product_class.product_class_id) AS "[Product].[Product Class].[MEMBER_CAPTION]",` +
-              ` "product"."product_name" AS "[Product].[Product]",` +
-              ` "product"."product_name" AS "[Product].[Product].[MEMBER_CAPTION]"`+
-              ` FROM "product" AS "product" Left JOIN "product_class" AS "product_class"` +
-              ` ON "product"."product_class_id" = "product_class"."product_class_id"` +
-              ` Left JOIN "product_type" AS "product_type" ON "product_class"."product_type_id" = "product_type"."product_type_id"`
+            "SELECT \"product_type\".\"product_type_id\" AS \"[Product].[Product Type]\", \"product_type\".\"product_type_id\" AS \"[Product].[Product Type].[MEMBER_CAPTION]\", concat('[', \"product_type\".\"product_type_id\",'].[',\"product_class\".\"product_class_id\",']') AS \"[Product].[Product Class]\", concat('C_', product_class.product_class_id) AS \"[Product].[Product Class].[MEMBER_CAPTION]\", \"product\".\"product_name\" AS \"[Product].[Product]\", \"product\".\"product_name\" AS \"[Product].[Product].[MEMBER_CAPTION]\" FROM \"product\" AS \"product\" Left JOIN \"product_class\" AS \"product_class\" ON \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" Left JOIN \"product_type\" AS \"product_type\" ON \"product_class\".\"product_type_id\" = \"product_type\".\"product_type_id\""
           )
+          done()
+        })
+    })
+  })
+
+  it('Query Sales Cube with default All level', (done) => {
+    const entityService = dataSource.createEntityService('SalesOrder')
+    entityService.selectEntityType().subscribe(() => {
+      entityService
+        .query({
+          rows: [
+            {
+              dimension: '[Product]',
+            },
+          ]
+        })
+        .subscribe((result: any) => {
+          expect(result.statement).toEqual(
+            "SELECT '(All)' AS \"[Product]\", 'All' AS \"[Product].[MEMBER_CAPTION]\" FROM \"sales_fact\" AS \"sales_fact\" INNER JOIN \"product\" AS \"product\" ON \"sales_fact\".\"product_id\" = \"product\".\"product_id\" GROUP BY 1"
+            )
           done()
         })
     })
@@ -203,8 +195,7 @@ describe('PG SQL Entity Service', () => {
 
   it('Query Dimension with Row Count', (done) => {
     const entityService = dataSource.createEntityService('Product')
-    entityService.selectEntityType().subscribe((entityType) => {
-      console.log(entityType)
+    entityService.selectEntityType().subscribe(() => {
       entityService
         .query({
           rows: [
@@ -231,16 +222,7 @@ describe('PG SQL Entity Service', () => {
         .subscribe((result: any) => {
           // console.log(result)
           expect(result.statement).toEqual(
-            `SELECT "product_type"."product_type_id" AS "[Product].[Product Type]",` +
-              ` "product_class"."product_class_id" AS "[Product].[Product Class]",` +
-              ` concat('C_', product_class.product_class_id) AS "[Product].[Product Class].[MEMBER_CAPTION]",` +
-              ` "product"."product_name" AS "[Product].[Product]",`+
-              ` "product"."product_name" AS "[Product].[Product].[MEMBER_CAPTION]",`+
-              ` SUM(1) AS "Measures_Row_Count"` +
-              ` FROM "product" AS "product" Left JOIN "product_class" AS "product_class"` +
-              ` ON "product"."product_class_id" = "product_class"."product_class_id"` +
-              ` Left JOIN "product_type" AS "product_type" ON "product_class"."product_type_id" = "product_type"."product_type_id"` +
-              ` GROUP BY "product_type"."product_type_id", "product_class"."product_class_id", "product"."product_name"`
+            "SELECT \"product_type\".\"product_type_id\" AS \"[Product].[Product Type]\", \"product_type\".\"product_type_id\" AS \"[Product].[Product Type].[MEMBER_CAPTION]\", concat('[', \"product_type\".\"product_type_id\",'].[',\"product_class\".\"product_class_id\",']') AS \"[Product].[Product Class]\", concat('C_', product_class.product_class_id) AS \"[Product].[Product Class].[MEMBER_CAPTION]\", \"product\".\"product_name\" AS \"[Product].[Product]\", \"product\".\"product_name\" AS \"[Product].[Product].[MEMBER_CAPTION]\", SUM(1) AS \"Measures_Row_Count\" FROM \"product\" AS \"product\" Left JOIN \"product_class\" AS \"product_class\" ON \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" Left JOIN \"product_type\" AS \"product_type\" ON \"product_class\".\"product_type_id\" = \"product_type\".\"product_type_id\" GROUP BY \"product_type\".\"product_type_id\", \"product_class\".\"product_class_id\", \"product\".\"product_name\""
           )
           done()
         })

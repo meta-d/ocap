@@ -13,7 +13,7 @@ import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
 import { NgmAppearance } from '@metad/ocap-angular/core'
-import { AggregationRole, DataSettings, DisplayBehaviour, getPropertyName, getPropertyTextName } from '@metad/ocap-core'
+import { AggregationRole, DataSettings, DisplayBehaviour, getPropertyCaption, getPropertyHierarchy, getPropertyName, getPropertyTextName, isMeasure } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import isNil from 'lodash/isNil'
 import { map, shareReplay, tap } from 'rxjs/operators'
@@ -64,18 +64,16 @@ export class AnalyticalGridComponent implements OnInit, OnChanges, AfterViewInit
       return [...(analytics?.rows ?? []), ...(analytics?.columns ?? [])]
         .filter((column) => !isNil(column?.property))
         .map((column: any) => {
-          column.label = column.label || (getPropertyTextName(column.property) ?? column.property?.name)
-          // column.name = getPropertyTextName(column.property) ?? column.property?.name
+          column.label = column.label || (getPropertyCaption(column.property) ?? column.property?.name)
           column.displayBehaviour = column.displayBehaviour ?? DisplayBehaviour.descriptionOnly
           return column
         })
     }),
-    // tap((data) => console.log(data)),
     shareReplay(1)
   )
 
   public readonly displayedColumns$ = this.columns$.pipe(
-    map((columns) => columns?.map((column) => getPropertyName(column)))
+    map((columns) => columns?.map((column) => isMeasure(column) ? getPropertyName(column) : getPropertyHierarchy(column)))
   )
 
   constructor(public analyticsService: NgmAnalyticsBusinessService<unknown>) {}

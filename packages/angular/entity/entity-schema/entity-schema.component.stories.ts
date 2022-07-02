@@ -9,7 +9,8 @@ import {
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN
 } from '@metad/ocap-angular/core'
-import { AgentType, DataSettings, DataSource, MockAgent, Type } from '@metad/ocap-core'
+import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
+import { AgentType, DataSettings, DataSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { EntityModule } from '../entity.module'
@@ -20,6 +21,10 @@ import { EntitySchemaComponent } from './entity-schema.component'
   template: `<mat-drawer-container class="example-container" autosize cdkDropListGroup>
   <mat-drawer mode="side" opened cdkDropList >
     <ngm-entity-schema [dataSettings]="dataSettings"></ngm-entity-schema>
+    <ngm-entity-schema [dataSettings]="{
+      dataSource: dataSettings.dataSource,
+      entitySet: 'sales_fact'
+    }"></ngm-entity-schema>
   </mat-drawer>
   <mat-drawer-content cdkDropList [cdkDropListData]="drops" (cdkDropListDropped)="drop($event)">
     <ul>
@@ -88,20 +93,7 @@ export default {
             },
             schema: {
               cubes: [
-                {
-                  name: 'SalesOrder',
-                  tables: [{ name: 'SalesOrder' }],
-                  dimensions: [
-                    {
-                      name: 'product',
-                      caption: 'productName'
-                    },
-                    {
-                      name: 'Department',
-                      caption: 'DepartmentName'
-                    }
-                  ]
-                }
+                CUBE_SALES_ORDER
               ]
             }
           },

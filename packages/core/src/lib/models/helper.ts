@@ -222,6 +222,9 @@ export function getHierarchyProperty(hierarchy: PropertyHierarchy, name: string)
 export function getPropertyCaption(property: Property) {
   return property.caption || getPropertyTextName(property)
 }
+/**
+ * @deprecated 使用 getPropertyCaption
+ */
 export function getPropertyTextName(property: Property) {
   return isString(property?.text) ? property.text : property?.text?.name
 }

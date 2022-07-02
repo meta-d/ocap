@@ -1,12 +1,13 @@
-import { Component } from '@angular/core'
+import { ChangeDetectionStrategy, Component } from '@angular/core'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, DataSettings, FilterSelectionType } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { cloneDeep } from 'lodash'
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'metad-ocap-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -23,7 +24,7 @@ export class AppComponent {
     analytics: {
       rows: [
         {
-          dimension: 'product'
+          dimension: '[product]'
         }
       ],
       columns: [
@@ -35,9 +36,8 @@ export class AppComponent {
   }
   smartFilterOptions: SmartFilterOptions = {
     dimension: {
-      dimension: 'OrderId'
+      dimension: '[product]'
     },
-
   }
   productFilterOptions: SmartFilterOptions = {
     dimension: {
@@ -97,9 +97,9 @@ export class AppComponent {
     //     }
     //   } as ChartOptions
     // },
-    // // CARTESIAN_CARDS[CARTESIAN_CARDS.length - 2],
-    ...ANALYTICAL_CARDS
-    // ANALYTICAL_CARDS[0]
+    // CARTESIAN_CARDS[0],
+    // ...ANALYTICAL_CARDS,
+    ANALYTICAL_CARDS[0]
   ]
   constructor(
     private smartFilterBar: NgmSmartFilterBarService,
@@ -133,8 +133,7 @@ export class AppComponent {
         // dialect: 'duckdb',
       })
     })
-
-    wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+    
   }
 
   onSlicerChange(slicer) {

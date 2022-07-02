@@ -1,7 +1,7 @@
 import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
 import { AgentType, C_MEASURES, DataSource, Type } from '@metad/ocap-core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
-import { MockAgent } from '../mock/agent-mock.service'
+import { CUBE_SALES_ORDER, MockAgent } from '../mock/agent-mock.service'
 import { AnalyticalGridComponent } from './analytical-grid.component'
 import { AnalyticalGridModule } from './analytical-grid.module'
 
@@ -39,19 +39,10 @@ export default {
             },
             schema: {
               cubes: [
+                CUBE_SALES_ORDER,
                 {
-                  name: 'SalesOrder',
-                  tables: [{ name: 'SalesOrder' }],
-                  dimensions: [
-                    {
-                      name: 'product',
-                      caption: 'productName'
-                    },
-                    {
-                      name: 'Department',
-                      caption: 'DepartmentName'
-                    }
-                  ]
+                  ...CUBE_SALES_ORDER,
+                  name: 'SalesOrder10s'
                 }
               ]
             }
@@ -78,13 +69,13 @@ Primary.args = {
     analytics: {
       rows: [
         {
-          dimension: 'product'
+          dimension: '[Product]'
         }
       ],
       columns: [
         {
           dimension: C_MEASURES,
-          measure: 'sales'
+          measure: 'Sales'
         }
       ]
     }
@@ -103,13 +94,13 @@ Loading.args = {
     analytics: {
       rows: [
         {
-          dimension: 'product'
+          dimension: '[Product]'
         }
       ],
       columns: [
         {
           dimension: C_MEASURES,
-          measure: 'sales'
+          measure: 'Sales'
         }
       ]
     }

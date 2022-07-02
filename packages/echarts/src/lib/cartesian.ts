@@ -8,10 +8,10 @@ import {
   getChartCategory,
   getChartCategory2,
   getChartSeries,
+  getEntityHierarchy,
   getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
-  getPropertyTextName,
   mergeOptions,
   Property,
   QueryReturn,
@@ -214,8 +214,8 @@ export function serializeSeriesComponent(
   options: EChartsOptions
 ) {
   const visualMaps = []
-  const categoryProperty = getEntityProperty(entityType, category)
-  const categoryText = getPropertyTextName(categoryProperty)
+  // const categoryProperty = getEntityProperty(entityType, category)
+  // const categoryText = getPropertyCaption(categoryProperty)
 
   const series: any = {
     id: seriesComponent.id,
@@ -519,11 +519,11 @@ export function getCoordinateSystem(
   } else {
     let valueAxis = null
     // 设置维度轴值
-    const categoryAxis = getCategoryAxis(items, category, getEntityProperty(entityType, category), chartOptions)
+    const categoryAxis = getCategoryAxis(items, category, getEntityHierarchy(entityType, category), chartOptions)
     categoryAxis.orient = categoryOrient
 
     if (category2) {
-      valueAxis = [getCategoryAxis(items, category2, getEntityProperty(entityType, category2), chartOptions)]
+      valueAxis = [getCategoryAxis(items, category2, getEntityHierarchy(entityType, category2), chartOptions)]
     } else {
       valueAxis = getValueAxis(chartAnnotation, entityType, chartOptions, locale)
     }

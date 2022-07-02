@@ -1,5 +1,4 @@
 import { AbstractEntityService, PeriodFunctions, Property, QueryOptions, QueryReturn } from '@metad/ocap-core'
-import isString from 'lodash/isString'
 import { BehaviorSubject, catchError, from, map, Observable, of, switchMap } from 'rxjs'
 import { queryCube } from './query'
 import { serializeWrapCatalog, SQLQueryResult } from './types'
@@ -25,7 +24,8 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
               this.dataSource.options.schema,
               options,
               this.entityType,
-              this.dataSource.options.dialect
+              this.dataSource.options.dialect,
+              this.dataSource.options.catalog,
             )
           } catch (error) {
             console.error(error)
@@ -38,8 +38,8 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
 
         statement = serializeWrapCatalog(statement, this.dataSource.options.dialect, this.dataSource.options.catalog)
 
-        // console.log(`[SQL Entity Service] statement:`, statement)
-
+        console.log(statement)
+        
         return from(
           this.dataSource.agent.request(this.dataSource.options, {
             method: 'post',
@@ -52,6 +52,14 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
           })
         ).pipe(
           map((result: SQLQueryResult) => {
+
+            console.group('[SQL Entity Service] query')
+            console.log(`query options:`, options)
+            console.log(`entityType:`, this.entityType)
+            console.log(`statement:`, statement)
+            console.log(`sql result:`, result)
+            console.groupEnd()
+
             return {
               ...result,
               data: result.data,
@@ -62,13 +70,24 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
           }),
           // 需要在这里捕捉错误, 否则会终端 refresh 的这个 switchMap
           catchError((err) => {
-            console.error(err)
             let error: string
-            if (isString(err)) {
+            if (typeof err === 'string') {
               error = err
+            } else if (err instanceof Error) {
+              error = err?.message
+            } else if (err?.error instanceof Error) {
+              error = err?.error?.message
             } else {
-              error = err?.message ?? err?.error?.message
+              error = err
             }
+
+            console.group('[SQL Entity Service] query')
+            console.log(`query options:`, options)
+            console.log(`entityType:`, this.entityType)
+            console.log(`statement:`, statement)
+            console.log(`error:`, error)
+            console.groupEnd()
+
             this.agent.error(error)
             return of({ data: [], error })
           })
