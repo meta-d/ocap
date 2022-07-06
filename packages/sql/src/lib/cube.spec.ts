@@ -686,7 +686,7 @@ describe('SQL Cube', () => {
   })
 
   it('Query Cube', () => {
-    expect(compileCubeSchema(CUBE_SALESORDER.name, CUBE_SALESORDER, [SHARED_DIMENSION_TIME])).toEqual(
+    expect(compileCubeSchema(CUBE_SALESORDER.name, CUBE_SALESORDER, [SHARED_DIMENSION_TIME], '')).toEqual(
       ENTITY_TYPE_SALESORDER
     )
   })

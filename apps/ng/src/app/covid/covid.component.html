@@ -1,10 +1,17 @@
-<div>
+<div fxLayout="row" fxLayoutAlign="start center" >
     <ngm-smart-filter [dataSettings]="dataSettings"
         [options]="smartFilterOptions"
         [appearance]="appearance"
         [(ngModel)]="slicer"
         (ngModelChange)="onSlicerChange($event)">
     </ngm-smart-filter>
+
+    <ngm-member-tree-select [dataSettings]="dataSettings"
+        [dimension]="countryDimension"
+        [appearance]="appearance"
+        [(ngModel)]="countrySlicer"
+        (ngModelChange)="onSlicerChange($event)"
+    ></ngm-member-tree-select>
 </div>
 
 <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">

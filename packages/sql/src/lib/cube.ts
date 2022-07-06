@@ -12,8 +12,9 @@ import {
   QueryOptions,
 } from '@metad/ocap-core'
 import { compileDimensionSchema, DimensionContext, getLevelColumn } from './dimension'
+import { serializeMeasureName } from './types'
 
-export function compileCubeSchema(entity: string, cube: Cube, dimensions?: PropertyDimension[]): EntityType {
+export function compileCubeSchema(entity: string, cube: Cube, dimensions: PropertyDimension[], dialect: string): EntityType {
   const properties = {}
 
   cube.dimensionUsages?.forEach((usage) => {
@@ -23,7 +24,7 @@ export function compileCubeSchema(entity: string, cube: Cube, dimensions?: Prope
         ...dimension,
         name: usage.name,
         foreignKey: usage.foreignKey || dimension.foreignKey
-      })
+      }, dialect)
       properties[property.name] = property
     } else {
       throw new Error(`Can't found dimension for source '${usage.source}'`)
@@ -31,21 +32,25 @@ export function compileCubeSchema(entity: string, cube: Cube, dimensions?: Prope
   })
 
   cube.dimensions?.forEach((dimension) => {
-    const property = compileDimensionSchema(entity, dimension)
+    const property = compileDimensionSchema(entity, dimension, dialect)
     properties[property.name] = property
   })
 
   cube.measures?.forEach((measure) => {
-    properties[measure.name] = {
+    const name = serializeMeasureName(dialect, measure.name)
+    properties[name] = {
       ...measure,
+      name,
       role: AggregationRole.measure
     }
   })
 
   cube.calculatedMembers?.filter((member) => member.visible).forEach((calculatedMember) => {
     if (calculatedMember.dimension === C_MEASURES) {
-      properties[calculatedMember.name] = {
+      const name = serializeMeasureName(dialect, calculatedMember.name)
+      properties[name] = {
         ...calculatedMember,
+        name,
         role: AggregationRole.measure,
         dataType: 'number',
         calculationType: CalculationType.Calculated
@@ -119,6 +124,7 @@ export function buildCubeDimensionContext(
   row: Dimension
 ): DimensionContext {
   const property = getEntityProperty(entityType, row)
+  
   if (!property) {
     throw new Error(`未找到维度'${row.dimension}'`)
   }
@@ -185,14 +191,14 @@ export function buildCubeDimensionContext(
         table: level.table,
         column: captionColumn,
         expression: level.captionExpression.sql.content, // 需要判断 dialect
-        alias: hAlias + '.[MEMBER_CAPTION]' // 先与 MDX 命名保持一致
+        alias: context.hierarchy.caption
       })
     } else if (captionColumn) {
       // CaptionColumn
       context.selectFields.push({
         table,
         column: captionColumn,
-        alias: hAlias + '.[MEMBER_CAPTION]' // 先与 MDX 命名保持一致
+        alias: context.hierarchy.caption
       })
     }
 
@@ -202,7 +208,7 @@ export function buildCubeDimensionContext(
       context.selectFields.push({
         table: table + '(1)',
         column: nameColumn,
-        alias: hAlias + '.[PARENT_UNIQUE_NAME]' // 先与 MDX 命名保持一致
+        alias: hAlias + '[parent_unique_name]'
       })
     }
 

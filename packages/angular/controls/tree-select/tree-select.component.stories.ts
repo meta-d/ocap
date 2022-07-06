@@ -7,16 +7,16 @@ import {
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN
 } from '@metad/ocap-angular/core'
-import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
+import { AgentType, DataSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { ControlsModule } from '../controls.module'
-import { MemberTreeComponent } from './member-tree.component'
+import { MemberTreeSelectComponent } from './tree-select.component'
 
 export default {
-  title: 'MemberTreeComponent',
-  component: MemberTreeComponent,
+  title: 'MemberTreeSelectComponent',
+  component: MemberTreeSelectComponent,
   decorators: [
     moduleMetadata({
       imports: [
@@ -67,15 +67,57 @@ export default {
       ]
     })
   ]
-} as Meta<MemberTreeComponent>
+} as Meta<MemberTreeSelectComponent>
 
-const Template: Story<MemberTreeComponent> = (args: MemberTreeComponent) => ({
+
+const TREE_NODE_DATA = [
+  {
+    name: 'Fruit',
+    children: [
+      { name: 'Apple', value: 10, raw: { type: 'Hive' } },
+      { name: 'Banana', value: 20 },
+      { name: 'Fruit loops', value: 30 }
+    ]
+  },
+  {
+    name: 'Vegetables',
+    children: [
+      {
+        name: 'Green',
+        children: [
+          { name: 'Broccoli', value: 10 },
+          { name: 'Brussel sprouts', value: 20 }
+        ]
+      },
+      {
+        name: 'Orange',
+        children: [
+          { name: 'Pumpkins', value: 30, raw: { type: 'PG' } },
+          { name: 'Carrots', value: 40 }
+        ]
+      }
+    ]
+  }
+] as any
+
+const Template: Story<MemberTreeSelectComponent> = (args: MemberTreeSelectComponent) => ({
   props: args,
-  styles: [`.ngm-member-tree {height: 400px;}`]
+  styles: [`.ngm-member-tree-select {height: 400px;}`]
 })
 
 export const Primary = Template.bind({})
 Primary.args = {
+  dimension: {
+    dimension: 'product'
+  },
+  appearance: {
+    displayDensity: DisplayDensity.compact
+  },
+  data: TREE_NODE_DATA
+}
+
+export const FromDataSource = Template.bind({})
+FromDataSource.args = {
   dataSettings: {
     dataSource: 'Sales',
     entitySet: 'SalesOrder3s'
@@ -85,37 +127,5 @@ Primary.args = {
   },
   appearance: {
     displayDensity: DisplayDensity.compact
-  }
-}
-
-export const SourceFrom = Template.bind({})
-SourceFrom.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
   },
-  dimension: {
-    dimension: 'product'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION
-  }
-}
-
-export const Appearance = Template.bind({})
-Appearance.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'product'
-  },
-  options: {
-    searchable: true
-  },
-  appearance: {
-    appearance: 'outline',
-    displayDensity: DisplayDensity.compact
-  }
 }

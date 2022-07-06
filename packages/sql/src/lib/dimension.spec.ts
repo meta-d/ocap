@@ -190,7 +190,7 @@ describe('SQL Entity Service', () => {
         ]
       })
     ).toEqual(
-      "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id`"
+      "SELECT concat('[', `product_type`.`product_type_id`,']') AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,'].[',`product`.`product_name`,']') AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id`"
     )
 
     expect(
@@ -217,7 +217,7 @@ describe('SQL Entity Service', () => {
         ]
       })
     ).toEqual(
-      "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, SUM(1) AS `Measures_Row_Count` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`"
+      "SELECT concat('[', `product_type`.`product_type_id`,']') AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,'].[',`product`.`product_name`,']') AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, SUM(1) AS `Measures_Row_Count` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`"
     )
 
     expect(
@@ -272,7 +272,7 @@ describe('SQL Entity Service', () => {
         'pg'
       )
     ).toEqual(
-      'SELECT concat(\'[\', "product_class"."product_class_id",\']\') AS "[Product.Class].[Class]", concat(\'C_\', product_class.product_class_id) AS "[Product.Class].[Class].[MEMBER_CAPTION]", concat(\'[\', "product_class"."product_class_id",\'].[\',"product"."product_id",\']\') AS "[Product.Class].[Product Id]", "product"."product_name" AS "[Product.Class].[Product Id].[MEMBER_CAPTION]", SUM(1) AS "Measures_Row_Count" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_id", "product"."product_name"'
+      `SELECT concat('[', "product_class"."product_class_id",']') AS "[Product.Class].[Class]", concat('C_', product_class.product_class_id) AS "[Product.Class].[Class].[MEMBER_CAPTION]", concat('[', "product_class"."product_class_id",'].[',"product"."product_id",']') AS "[Product.Class].[Product Id]", "product"."product_name" AS "[Product.Class].[Product Id].[MEMBER_CAPTION]", SUM(1) AS "Measures_Row_Count" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_id", "product"."product_name"`
     )
   })
 
@@ -296,7 +296,7 @@ describe('SQL Entity Service', () => {
         ]
       })
     ).toEqual(
-      "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, `product`.`shelf_width` AS `[Product].[Shelf Width]` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id`"
+      "SELECT concat('[', `product_type`.`product_type_id`,']') AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,'].[',`product`.`product_name`,']') AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, `product`.`shelf_width` AS `[Product].[Shelf Width]` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id`"
     )
 
     expect(
@@ -324,7 +324,7 @@ describe('SQL Entity Service', () => {
         ]
       })
     ).toEqual(
-      "SELECT `product_type`.`product_type_id` AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, `product`.`product_name` AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, `product`.`shelf_width` AS `[Product].[Shelf Width]`, SUM(1) AS `Measures_Row_Count` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`, `product`.`shelf_width`"
+      "SELECT concat('[', `product_type`.`product_type_id`,']') AS `[Product].[Product Type]`, `product_type`.`product_type_id` AS `[Product].[Product Type].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `[Product].[Product Class]`, concat('C_', product_class.product_class_id) AS `[Product].[Product Class].[MEMBER_CAPTION]`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,'].[',`product`.`product_name`,']') AS `[Product].[Product]`, `product`.`product_name` AS `[Product].[Product].[MEMBER_CAPTION]`, `product`.`shelf_width` AS `[Product].[Shelf Width]`, SUM(1) AS `Measures_Row_Count` FROM `product` AS `product` Left JOIN `product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`, `product`.`shelf_width`"
     )
   })
 })
@@ -342,11 +342,7 @@ describe('Parent-child hierarchies', () => {
         ]
       })
     ).toEqual(
-      'SELECT `employee`.`full_name` AS `[Employee].[Name]`,' +
-        ' `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`,' +
-        ' `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]`' +
-        ' FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)`' +
-        ' ON `employee`.`supervisor_id` = `employee(1)`.`employee_id`'
+      "SELECT concat('[', `employee`.`full_name`,']') AS `[Employee].[Name]`, `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`, `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]` FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)` ON `employee`.`supervisor_id` = `employee(1)`.`employee_id`"
     )
   })
 
@@ -368,7 +364,7 @@ describe('Parent-child hierarchies', () => {
         ]
       })
     ).toEqual(
-      'SELECT `employee`.`full_name` AS `[Employee].[Name]`, `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`, `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]`, SUM(1) AS `Measures_Row_Count` FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)` ON `employee`.`supervisor_id` = `employee(1)`.`employee_id` GROUP BY `employee`.`full_name`, `employee(1)`.`full_name`'
+      "SELECT concat('[', `employee`.`full_name`,']') AS `[Employee].[Name]`, `employee`.`full_name` AS `[Employee].[Name].[MEMBER_CAPTION]`, `employee(1)`.`full_name` AS `[Employee].[Name].[PARENT_UNIQUE_NAME]`, SUM(1) AS `Measures_Row_Count` FROM `employee` AS `employee` Left JOIN `employee` AS `employee(1)` ON `employee`.`supervisor_id` = `employee(1)`.`employee_id` GROUP BY `employee`.`full_name`, `employee(1)`.`full_name`"
     )
   })
 
@@ -395,7 +391,7 @@ describe('Parent-child hierarchies', () => {
         'pg'
       )
     ).toEqual(
-      `SELECT "employee"."full_name" AS "[Employee].[Name]", "employee"."full_name" AS "[Employee].[Name].[MEMBER_CAPTION]", "employee(1)"."full_name" AS "[Employee].[Name].[PARENT_UNIQUE_NAME]", SUM(1) AS "Measures_Row_Count" FROM "employee" AS "employee" Left JOIN "employee" AS "employee(1)" ON "employee"."supervisor_id" = "employee(1)"."employee_id" GROUP BY "employee"."full_name", "employee(1)"."full_name"`
+      `SELECT concat('[', "employee"."full_name",']') AS "[Employee].[Name]", "employee"."full_name" AS "[Employee].[Name].[MEMBER_CAPTION]", "employee(1)"."full_name" AS "[Employee].[Name].[PARENT_UNIQUE_NAME]", SUM(1) AS "Measures_Row_Count" FROM "employee" AS "employee" Left JOIN "employee" AS "employee(1)" ON "employee"."supervisor_id" = "employee(1)"."employee_id" GROUP BY "employee"."full_name", "employee(1)"."full_name"`
     )
   })
 })
@@ -607,5 +603,62 @@ describe('Get Dimension Members', () => {
       'SELECT concat(\'[\', "product_class"."product_class_id",\']\') AS "memberKey", concat(\'C_\', product_class.product_class_id) AS "memberCaption", \'[(All)]\' AS "parentKey" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_class_id"',
       'SELECT concat(\'[\', "product_class"."product_class_id",\'].[\',"product"."product_id",\']\') AS "memberKey", "product"."product_name" AS "memberCaption", concat(\'[\', "product_class"."product_class_id",\']\') AS "parentKey" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_id", "product"."product_name"'
     ])
+  })
+
+  it('Orignal table column members', () => {
+    const statement = DimensionMembers(
+      'sales_fact',
+      { dimension: 'Product' },
+      { ...ENTITY_TYPE, name: 'sales_fact' },
+      null,
+      ''
+    )
+    expect(statement).toEqual(["SELECT DISTINCT `Product` AS `memberKey` FROM `sales_fact`"])
+  })
+})
+
+describe('Get Dimension Members for Hive', () => {
+  it('Dimension Members', () => {
+    const statement = DimensionMembers(
+      'Product',
+      { dimension: '[Product]' },
+      ENTITY_TYPE,
+      { name: 'Sales', dimensions: [PRODUCT_DIMENSION] },
+      'hive',
+      'foodmart'
+    )
+    expect(statement).toEqual([
+      'SELECT concat(\'[\', `product_type`.`product_type_id`,\']\') AS `memberKey`, `product`.`product_type_id` AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product`.`product_type_id`',
+      'SELECT concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\']\') AS `memberKey`, concat(\'C_\', product_class.product_class_id) AS `memberCaption`, concat(\'[\', `product_type`.`product_type_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_class_id`',
+      'SELECT concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\'].[\',`product`.`product_name`,\']\') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`'
+    ])
+  })
+
+  it('Dimension Members', () => {
+    const statement = DimensionMembers(
+      'Product',
+      { dimension: '[Product]', hierarchy: '[Product.Class]' },
+      ENTITY_TYPE,
+      { name: 'Sales', dimensions: [PRODUCT_DIMENSION] },
+      'hive',
+      'foodmart'
+    )
+    expect(statement).toEqual([
+      'SELECT \'[(All)]\' AS `memberKey`, \'All\' AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY 1',
+      'SELECT concat(\'[\', `product_class`.`product_class_id`,\']\') AS `memberKey`, concat(\'C_\', product_class.product_class_id) AS `memberCaption`, \'[(All)]\' AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_class_id`',
+      'SELECT concat(\'[\', `product_class`.`product_class_id`,\'].[\',`product`.`product_id`,\']\') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat(\'[\', `product_class`.`product_class_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_id`, `product`.`product_name`'
+    ])
+  })
+
+  it('Orignal table column members', () => {
+    const statement = DimensionMembers(
+      'sales_fact',
+      { dimension: 'Product' },
+      { ...ENTITY_TYPE, name: 'sales_fact' },
+      null,
+      'hive',
+      'foodmart'
+    )
+    expect(statement).toEqual(["SELECT DISTINCT `Product` AS `memberKey` FROM `foodmart`.`sales_fact`"])
   })
 })

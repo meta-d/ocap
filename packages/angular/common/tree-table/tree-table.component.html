@@ -1,0 +1,27 @@
+<table mat-table [dataSource]="dataSource" [displayDensity]="displayDensity" [ngClass]="{striped: striped, grid: grid}">
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>
+      <span [style.paddingLeft.px]="treeNodePadding"> {{nameLabel}} </span>
+    </th>
+    <td mat-cell *matCellDef="let data"> 
+      <button mat-icon-button [displayDensity]="displayDensity"
+              [style.visibility]="!data.expandable ? 'hidden' : ''"
+              [style.marginLeft.px]="data.level * treeNodePadding"
+              (click)="treeControl.toggle(data)">
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(data) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+      </button>
+
+      {{data.label || data.name}}
+    </td>
+  </ng-container>
+
+  <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
+    <th mat-header-cell *matHeaderCellDef> {{column.label || column.name}} </th>
+    <td mat-cell *matCellDef="let data"> {{data.raw?.[column.name]}} </td>
+  </ng-container> 
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

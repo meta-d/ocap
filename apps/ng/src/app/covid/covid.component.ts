@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { C_MEASURES, DataSettings } from '@metad/ocap-core'
+import { C_MEASURES, DataSettings, ISlicer } from '@metad/ocap-core'
 import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 
 @Component({
@@ -34,6 +34,17 @@ export class CovidComponent implements OnInit {
       ]
     }
   }
+  countryDimension = {
+    dimension: '[Country]'
+  }
+  countrySlicer: ISlicer = {
+    members: [
+      {
+        label: "China",
+        value: "[Asia].[Eastern Asia].[China]"
+      }
+    ]
+  }
   smartFilterOptions = {
     dimension: {
       dimension: '[Country]'
@@ -44,7 +55,7 @@ export class CovidComponent implements OnInit {
     displayDensity: DisplayDensity.compact
   } as NgmAppearance
 
-  slicer = {}
+  slicer: ISlicer = {}
 
   card1: any = ANALYTICAL_CARDS[0]
 
@@ -59,15 +70,20 @@ export class CovidComponent implements OnInit {
   ngOnInit() {}
 
   onSlicerChange(event) {
-    console.log(event)
+    const selectOptions = []
+    if (this.countrySlicer?.members) {
+      selectOptions.push(this.countrySlicer)
+    }
+    if (this.slicer?.members) {
+      selectOptions.push(this.slicer)
+    }
+
     this.card1 = {
       ...this.card1,
       dataSettings: {
         ...this.card1.dataSettings,
         selectionVariant: {
-          selectOptions: [
-            event
-          ]
+          selectOptions
         }
       }
     }

@@ -5,6 +5,7 @@
 @use './splitter/splitter-theme' as splitter;
 @use './tabs/tabs-theme' as tabs;
 @use './appearance/appearance-theme' as appearance;
+@use './table/table-theme' as table;
 
 @mixin common-color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -13,6 +14,7 @@
   @include splitter.color($config-or-theme);
   @include appearance.color($config-or-theme);
   @include tabs.color($config-or-theme);
+  @include table.color($config-or-theme);
 
   .ngm-display-behaviour {
     .ngm-display-behaviour__highlight {

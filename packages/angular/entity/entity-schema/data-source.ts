@@ -163,9 +163,19 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
             this.dataChange.next(this.data)
           },
           error: (err) => {
-            console.error(err)
+            let error: string
+            if (typeof err === 'string') {
+              error = err
+            } else if (err instanceof Error) {
+              error = err?.message
+            } else if (err?.error instanceof Error) {
+              error = err?.error?.message
+            } else {
+              error = err
+            }
+
             node.isLoading = false
-            this.data.splice(index, 1, { ...node, expandable: false, error: err.message })
+            this.data.splice(index, 1, { ...node, expandable: false, error })
             // notify the change
             this.dataChange.next(this.data)
           }

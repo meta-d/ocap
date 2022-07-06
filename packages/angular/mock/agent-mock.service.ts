@@ -193,16 +193,33 @@ export class MockAgent implements Agent {
           const results = []
 
           if (options.body?.statement?.includes('DISTINCT `product` AS `memberKey`')) {
+            const data = []
+            randProductAdjective({ length: 3 }).forEach((product) => {
+              data.push({memberKey: product}),
+              randProductAdjective({ length: 3 }).filter((product2) => !data.find((item) => item.memberKey === product2)).forEach((product2) => {
+                data.push({
+                  memberKey: product2,
+                  parentKey: product
+                })
+                randProductAdjective({ length: 5 }).filter((product) => !data.find((item) => item.memberKey === product)).forEach((product3) => {
+                  data.push({
+                    memberKey: product3,
+                    parentKey: product2
+                  })
+                })
+              })
+            })
             return resolve({
-              data: randProductAdjective({ length: 5 }).map((product) => {
-                return {
-                  memberKey: product
-                }
-              }),
+              data,
               columns: [
                 {
                   name: 'memberKey',
                   label: '成员 Key',
+                  type: 'string'
+                },
+                {
+                  name: 'parentKey',
+                  label: '父级 Key',
                   type: 'string'
                 }
               ]

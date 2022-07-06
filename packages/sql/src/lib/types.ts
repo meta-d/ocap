@@ -66,6 +66,47 @@ export function serializeWrapCatalog(expression: string, dialect: string, catalo
   return expression
 }
 
+export function serializeUniqueName(dialect: string, dimension: string, hierarchy?: string, level?: string, intrinsic?: string) {
+  const separator = ['hive'].includes(dialect) ? '|' : '.'
+  const connector = ['hive'].includes(dialect) ? '' : '.'
+  let name = !!hierarchy && dimension !== hierarchy ? `[${dimension}${separator}${hierarchy}]` : `[${dimension}]`
+
+  if (intrinsic) {
+    name = `${name}${connector}[${level}]${connector}[${intrinsic}]`
+  } else if (level) {
+    name = `${name}${connector}[${level}]`
+  }
+
+  if (isCaseInsensitive(dialect)) {
+    name = name.toLowerCase()
+  }
+
+  return name
+}
+
+export function serializeIntrinsicName(dialect: string, base: string, intrinsic: string) {
+  const connector = ['hive'].includes(dialect) ? '' : '.'
+  let name = `${base}${connector}[${intrinsic}]`
+
+  if (isCaseInsensitive(dialect)) {
+    name = name.toLowerCase()
+  }
+
+  return name
+}
+
+export function serializeMeasureName(dialect: string, measure: string) {
+  if (isCaseInsensitive(dialect)) {
+    measure = measure.toLowerCase()
+  }
+
+  return measure
+}
+
+export function isCaseInsensitive(dialect: string) {
+  return ['hive'].includes(dialect)
+}
+
 export interface SQLQueryContext {
   rows: Array<SQLQueryProperty>
   columns: Array<SQLQueryProperty>

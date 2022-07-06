@@ -140,7 +140,7 @@ export class MemberTreeComponent<T extends IDimensionMember = IDimensionMember>
               if (level < this.options.initialLevel) {
                 this.treeControl.expand(node)
               }
-            })  
+            })
           }
         }
       })

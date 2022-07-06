@@ -18,6 +18,7 @@ import { serializeCubeFact } from './query'
 import {
   C_MEASURES_ROW_COUNT,
   decideRole,
+  isCaseInsensitive,
   serializeWrapCatalog,
   SQLDataSourceOptions,
   SQLQueryResult,
@@ -145,7 +146,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
         switchMap(async ({ type, cube, dimension, dimensions }) => {
           if (dimension) {
             // Schema dimension to EntityType
-            const rtDimension = compileDimensionSchema(entity, dimension)
+            const rtDimension = compileDimensionSchema(entity, dimension, this.options.dialect)
             return {
               name: entity,
               properties: {
@@ -160,7 +161,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           }
 
           if (cube) {
-            return compileCubeSchema(entity, cube, dimensions)
+            return compileCubeSchema(entity, cube, dimensions, this.options.dialect)
           }
 
           try {
@@ -234,7 +235,14 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
 
             memberLevels.forEach((level) => {
               members.push(
-                ...level.data.map((item: any) => ({
+                ...level.data.map((item: any) => (isCaseInsensitive(this.options.dialect) ? {
+                  ...item,
+                  ...dimension,
+                  memberKey: item.memberkey,
+                  memberCaption: item.membercaption,
+                  parentKey: item.parentkey,
+                  entity
+                } : {
                   ...item,
                   ...dimension,
                   entity

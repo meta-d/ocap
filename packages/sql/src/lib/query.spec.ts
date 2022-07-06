@@ -1,5 +1,5 @@
 import { AggregationRole, C_MEASURES, EntitySemantics } from '@metad/ocap-core'
-import { buildCubeContext } from './cube'
+import { buildCubeContext, compileCubeSchema } from './cube'
 import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
 import { queryCube, serializeCubeFact, serializeCubeFrom, serializeSelectFields } from './query'
 
@@ -189,22 +189,6 @@ describe('Serialize SQL', () => {
 
     expect(context.groupbys).toEqual(['`Customer`'])
     expect(context.select).toEqual(['SUM(`sales`) AS `sales`', '`Customer` AS `Customer`'])
-  })
-
-  it('serializeCubeFact', () => {
-    expect(
-      serializeCubeFact(
-        {
-          name: 'Sales',
-          tables: [
-            {
-              name: 'SalesOrder'
-            }
-          ]
-        },
-        'hive'
-      )
-    ).toEqual('SELECT * FROM `SalesOrder`')
   })
 
   it('Query Degenerate dimension', () => {
@@ -400,55 +384,6 @@ describe('Build Cube', () => {
     )
   })
 
-  it('queryCube with Hive', () => {
-    const statement = queryCube(
-      {
-        name: 'Sales',
-        dimensions: [SHARED_DIMENSION_TIME],
-        cubes: [CUBE_SALESORDER]
-      },
-      {
-        rows: [
-          {
-            dimension: '[Time]',
-            hierarchy: '[Time.Weekly]',
-            level: '[Time.Weekly].[Week]'
-          },
-          {
-            dimension: '[Product]',
-            hierarchy: '[Product]',
-            level: '[Product].[Brand Name]'
-          },
-          {
-            dimension: '[Payment method]',
-            hierarchy: '[Payment method]',
-            level: '[Payment method].[Payment method]'
-          }
-        ],
-        columns: [
-          {
-            dimension: C_MEASURES,
-            measure: 'Sales'
-          },
-          {
-            dimension: C_MEASURES,
-            measure: 'Cost'
-          },
-          {
-            dimension: C_MEASURES,
-            measure: 'Profit'
-          }
-        ]
-      },
-      ENTITY_TYPE_SALESORDER,
-      'hive',
-      'foodmart'
-    )
-
-    expect(statement).toEqual(
-      "SELECT concat('[', `time_by_day`.`the_year`,'].[',`time_by_day`.`week_of_year`,']') AS `[Time.Weekly]`, `time_by_day`.`week_of_year` AS `[Time.Weekly].[MEMBER_CAPTION]`, concat('[', `product`.`brand_name`,']') AS `[Product]`, `product`.`brand_name` AS `[Product].[MEMBER_CAPTION]`, concat('[', `sales_fact`.`payment_method`,']') AS `[Payment method]`, `sales_fact`.`payment_method` AS `[Payment method].[MEMBER_CAPTION]`, sum(`sales_fact`.`store_sales`) AS `Sales`, sum(`sales_fact`.`store_cost`) AS `Cost`, SUM(`sales_fact`.`store_sales` - `sales_fact`.`store_cost`) AS `Profit` FROM `foodmart`.`sales_fact` AS `sales_fact` INNER JOIN `foodmart`.`time_by_day` AS `time_by_day` ON `sales_fact`.`time_id` = `time_by_day`.`time_id` INNER JOIN `foodmart`.`product` AS `product` ON `sales_fact`.`product_id` = `product`.`product_id` GROUP BY `time_by_day`.`the_year`, `time_by_day`.`week_of_year`, `product`.`brand_name`, `sales_fact`.`payment_method`"
-    )
-  })
 })
 
 describe('Query Cube with Filters', () => {
@@ -531,6 +466,76 @@ describe('Query Cube with Filters', () => {
     )
     expect(statement).toEqual(
       "SELECT concat('[', `time_by_day`.`the_year`,']') AS `[Time.Weekly]`, `time_by_day`.`the_year` AS `[Time.Weekly].[MEMBER_CAPTION]` FROM `sales_fact` AS `sales_fact` INNER JOIN `time_by_day` AS `time_by_day` ON `sales_fact`.`time_id` = `time_by_day`.`time_id` INNER JOIN `product` AS `product` ON `sales_fact`.`product_id` = `product`.`product_id` WHERE (`product`.`brand_name` = 'Brand 1' AND `product`.`product_name` = 'Product 1') GROUP BY `time_by_day`.`the_year`"
+    )
+  })
+})
+
+describe('Hive DB', () => {
+  it('serializeCubeFact', () => {
+    expect(
+      serializeCubeFact(
+        {
+          name: 'Sales',
+          tables: [
+            {
+              name: 'SalesOrder'
+            }
+          ]
+        },
+        'hive'
+      )
+    ).toEqual('SELECT * FROM `SalesOrder`')
+  })
+
+  it('queryCube with Hive', () => {
+    const statement = queryCube(
+      {
+        name: 'Sales',
+        dimensions: [SHARED_DIMENSION_TIME],
+        cubes: [
+          CUBE_SALESORDER
+        ]
+      },
+      {
+        rows: [
+          {
+            dimension: '[time]',
+            hierarchy: '[time|weekly]',
+            level: '[time|weekly][week]'
+          },
+          {
+            dimension: '[product]',
+            hierarchy: '[product]',
+            level: '[product][brand name]'
+          },
+          {
+            dimension: '[payment method]',
+            hierarchy: '[payment method]',
+            level: '[payment method][payment method]'
+          }
+        ],
+        columns: [
+          {
+            dimension: C_MEASURES,
+            measure: 'sales'
+          },
+          {
+            dimension: C_MEASURES,
+            measure: 'cost'
+          },
+          {
+            dimension: C_MEASURES,
+            measure: 'profit'
+          }
+        ]
+      },
+      compileCubeSchema(CUBE_SALESORDER.name, CUBE_SALESORDER, [SHARED_DIMENSION_TIME], 'hive'),
+      'hive',
+      'foodmart'
+    )
+
+    expect(statement).toEqual(
+      "SELECT concat('[', `time_by_day`.`the_year`,'].[',`time_by_day`.`week_of_year`,']') AS `[time|weekly]`, `time_by_day`.`week_of_year` AS `[time|weekly][member_caption]`, concat('[', `product`.`brand_name`,']') AS `[product]`, `product`.`brand_name` AS `[product][member_caption]`, concat('[', `sales_fact`.`payment_method`,']') AS `[payment method]`, `sales_fact`.`payment_method` AS `[payment method][member_caption]`, sum(`sales_fact`.`store_sales`) AS `sales`, sum(`sales_fact`.`store_cost`) AS `cost`, SUM(`sales_fact`.`store_sales` - `sales_fact`.`store_cost`) AS `profit` FROM `foodmart`.`sales_fact` AS `sales_fact` INNER JOIN `foodmart`.`time_by_day` AS `time_by_day` ON `sales_fact`.`time_id` = `time_by_day`.`time_id` INNER JOIN `foodmart`.`product` AS `product` ON `sales_fact`.`product_id` = `product`.`product_id` GROUP BY `time_by_day`.`the_year`, `time_by_day`.`week_of_year`, `product`.`brand_name`, `sales_fact`.`payment_method`"
     )
   })
 })

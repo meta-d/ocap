@@ -26,6 +26,7 @@ import { MemberListComponent } from './member-list/member-list.component'
 import { MemberTableComponent } from './member-table/member-table.component'
 import { MemberTreeComponent } from './member-tree/member-tree.component'
 import { SmartFilterComponent } from './smart-filter/smart-filter.component'
+import { MemberTreeSelectComponent } from './tree-select/tree-select.component'
 import { ValueHelpDialog } from './value-help/value-help.component'
 
 @NgModule({
@@ -57,8 +58,22 @@ import { ValueHelpDialog } from './value-help/value-help.component'
     OcapCoreModule,
     TableVirtualScrollModule
   ],
-  exports: [SmartFilterComponent, MemberTreeComponent, MemberTableComponent, MemberListComponent, ValueHelpDialog],
-  declarations: [SmartFilterComponent, MemberTreeComponent, MemberTableComponent, MemberListComponent, ValueHelpDialog],
+  exports: [
+    SmartFilterComponent,
+    MemberTreeComponent,
+    MemberTableComponent,
+    MemberListComponent,
+    MemberTreeSelectComponent,
+    ValueHelpDialog
+  ],
+  declarations: [
+    SmartFilterComponent,
+    MemberTreeComponent,
+    MemberTableComponent,
+    MemberListComponent,
+    MemberTreeSelectComponent,
+    ValueHelpDialog
+  ],
   providers: []
 })
 export class ControlsModule {}

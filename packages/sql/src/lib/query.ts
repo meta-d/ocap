@@ -273,7 +273,7 @@ export function queryCube2(schema: Schema, options: QueryOptions, entityType: En
 
   const groupby = union(queryContext.groupbys).join(',')
 
-  const fromSource = From(entityType, schema, dialect)
+  const fromSource = '' // From(entityType, schema, dialect)
 
   let statement = `SELECT ${isEmpty(queryContext.select) ? '*' : queryContext.select.join(`, `)} FROM ${fromSource}`
 
@@ -465,17 +465,17 @@ export function serializeDProperty(property: PropertyDimension, dialect: string)
   return serializeName(property.column ?? property.name, dialect)
 }
 
-export function From(entityType: EntityType, schema: Schema, dialect: string) {
-  let fromSource = `${serializeName(entityType.name, dialect)}`
-  const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
-  if (cube) {
-    fromSource = serializeFrom(cube, entityType, dialect)
-  } else {
-    const dimension = schema?.dimensions?.find(({ name }) => name === entityType.name)
-    if (dimension) {
-      fromSource = serializeDimensionFrom(dimension, entityType, dialect)
-    }
-  }
+// export function From(entityType: EntityType, schema: Schema, dialect: string, catalog: string) {
+//   let fromSource = `${serializeName(entityType.name, dialect, catalog)}`
+//   const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
+//   if (cube) {
+//     fromSource = serializeFrom(cube, entityType, dialect)
+//   } else {
+//     const dimension = schema?.dimensions?.find(({ name }) => name === entityType.name)
+//     if (dimension) {
+//       fromSource = serializeDimensionFrom(dimension, entityType, dialect)
+//     }
+//   }
 
-  return fromSource
-}
+//   return fromSource
+// }

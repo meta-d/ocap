@@ -1,0 +1,39 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $accent: map.get($config, accent);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+
+  .cdk-table {
+    &.striped {
+      .cdk-row:nth-child(even) {
+        background-color: lighten(mat.get-color-from-palette($background, hover), 50%);
+      }
+
+      .cdk-row {
+        &:hover {
+          background-color: mat.get-color-from-palette($background, hover);
+        }
+      }
+    }
+
+    &.grid {
+      .cdk-cell {
+        border-right: 1px solid mat.get-color-from-palette($foreground, divider);
+
+        &:first-child {
+          border-left: 1px solid mat.get-color-from-palette($foreground, divider);
+        }
+      }
+    }
+
+    .cdk-row {
+      &:hover {
+        background-color: mat.get-color-from-palette($background, hover);
+      }
+    }
+  }
+}

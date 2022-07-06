@@ -1,0 +1,17 @@
+<mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
+  <mat-label>{{dimension?.label}}</mat-label>
+  <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
+  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" [class]="appearance?.displayDensity === 'compact' ? 'ngm-density__compact' : ''">
+    <mat-option *ngFor="let data of filteredOptions | async" [value]="data">
+      <button mat-icon-button [displayDensity]="appearance?.displayDensity"
+        [style.visibility]="!data.expandable ? 'hidden' : ''"
+        [style.marginLeft.px]="data.level * treeNodePadding"
+        (click)="$event.stopPropagation(); treeControl.toggle(data)">
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(data) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+      </button>
+      {{data.label || data.key}}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>

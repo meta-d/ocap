@@ -1,4 +1,5 @@
 import { AsyncDuckDB, AsyncDuckDBConnection, ConsoleLogger, DuckDBBundles, selectBundle } from '@duckdb/duckdb-wasm'
+import { CSVInsertOptions } from '@duckdb/duckdb-wasm/dist/types/src/bindings'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, SemanticModel } from '@metad/ocap-core'
 import { DataType } from 'apache-arrow'
 import { BehaviorSubject, filter, firstValueFrom, map, Observable, ReplaySubject, Subject } from 'rxjs'
@@ -56,12 +57,15 @@ export class DuckdbWasmAgent implements Agent {
               await this.db.registerFileURL(entity.name, entity.sourceUrl)
               return connection.query(`CREATE TABLE "${entity.name}" AS SELECT * FROM read_parquet('${entity.name}')`)
             } else if (entity.type === 'csv') {
-              return connection.insertCSVFromPath(entity.sourceUrl, {
+              const options: CSVInsertOptions = {
                 create: true,
                 schema: model.catalog,
                 name: entity.name,
-                delimiter: entity.delimiter
-              })
+              }
+              if (entity.delimiter) {
+                options.delimiter = entity.delimiter
+              }
+              return connection.insertCSVFromPath(entity.sourceUrl, options)
             } else if (entity.type === 'json') {
               return connection.insertJSONFromPath(entity.sourceUrl, {
                 schema: model.catalog,
