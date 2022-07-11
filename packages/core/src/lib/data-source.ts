@@ -12,6 +12,7 @@ import {
   EntityType,
   IDimensionMember,
   Indicator,
+  MDCube,
   mergeEntityType,
   Schema,
   SemanticModel
@@ -72,10 +73,34 @@ export interface DataSource {
   options: DataSourceOptions
   agent: Agent
 
+  
   /**
+   * 
    * 获取数据源的数据服务目录, 数据服务目录用于区分不同的数据实体类别, 如 ODataService 的 Catalog, XMLA 的 CATALOG_NAME 等
    */
   getCatalogs(): Observable<Array<Catalog>>
+
+  /**
+   * Discover catalogs or schemas from DataSource's Database
+   */
+  discoverDBCatalogs(): Observable<Array<DBCatalog>>
+  /**
+   * Discover tables from DataSource's Database
+   */
+  discoverDBTables(): Observable<Array<DBTable>>
+
+  /**
+   * Discover cubes from api or schema defination of DataSource
+   */
+  discoverMDCubes(refresh?: boolean): Observable<Array<MDCube>>
+
+  /**
+   * Discover members of dimension
+   * 
+   * @param entity 
+   * @param dimension 
+   */
+  discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
 
   /**
    * 获取源实体集合
@@ -195,6 +220,10 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     this.options$.next(options)
   }
 
+  abstract discoverDBCatalogs(): Observable<Array<DBCatalog>>
+  abstract discoverDBTables(): Observable<Array<DBTable>>
+  abstract discoverMDCubes(refresh?: boolean): Observable<Array<EntitySet>>
+  abstract discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
   abstract createEntityService<T>(entity: string): EntityService<T>
   abstract getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
   abstract getEntityType(entity: string): Observable<EntityType>
@@ -373,4 +402,30 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
       properties
     }
   }
+}
+
+export interface DBCatalog {
+  name: string
+  label: string
+}
+
+
+export interface DBTable {
+  catalog?: string
+  name: string
+  label?: string
+  columns: DBColumn[]
+}
+
+export interface DBColumn {
+  name: string
+  label?: string
+  type: string
+  dbType?: string
+  nullable?: boolean
+  position?: number
+  /**
+   * 应该等同于 label
+   */
+  comment?: string
 }

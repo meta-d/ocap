@@ -70,6 +70,16 @@ export interface TreeNodeInterface<T> {
   isLeaf?: boolean
 }
 
+export interface FlatNode<T> {
+  expandable: boolean
+  key: string
+  name?: string
+  label: string
+  value?: number
+  level: number
+  raw?: T
+}
+
 export function hierarchize<T>(
   items: Array<T>,
   recursiveHierarchy: RecursiveHierarchyType,
@@ -155,6 +165,24 @@ function getTreeLevel<T>(item: TreeNodeInterface<T>, level: number) {
   return items
 }
 
+export function filterTreeNodes<T = any>(array: TreeNodeInterface<T>[], text: string) {
+  text = text?.toLowerCase()
+  const getNodes = (result: TreeNodeInterface<T>[], object: TreeNodeInterface<T>) => {
+    if (object.label?.toLowerCase().includes(text) || `${object.key}`?.toLowerCase().includes(text)) {
+      result.push(object)
+      return result
+    }
+    if (Array.isArray(object.children)) {
+      const children = object.children.reduce(getNodes, [])
+      if (children.length) {
+        result.push({ ...object, children })
+      }
+    }
+    return result
+  }
+
+  return !text ? array : array.reduce(getNodes, [])
+}
 
 // export function hierarchize<T>(
 //   items: Array<T>,

@@ -13,46 +13,11 @@ import {
   Table
 } from '@metad/ocap-core'
 import flattenDeep from 'lodash/flattenDeep'
+import { CubeFactTable } from './cube'
 import { Cast } from './functions'
-import { C_MEASURES_ROW_COUNT, C_MEMBER_CAPTION, serializeIntrinsicName, serializeName, serializeUniqueName } from './types'
+import { C_MEASURES_ROW_COUNT, C_MEMBER_CAPTION } from './types'
+import { serializeIntrinsicName, serializeName, serializeTableAlias, serializeUniqueName } from './utils'
 
-export function serializeHierarchyFrom(hierarchy: PropertyHierarchy, dialect: string, catalog: string) {
-  if (hierarchy.tables?.length) {
-    return serializeTablesJoin(hierarchy.tables, dialect, catalog)
-  }
-
-  return serializeName(hierarchy.primaryKeyTable, dialect)
-}
-
-export function serializeTablesJoin(tables: Table[], dialect: string, catalog: string) {
-  const factTable = tables[0]
-  const factTableAlias = serializeName(factTable.name, dialect)
-  let statement = serializeName(factTable.name, dialect, catalog) + ` AS ${factTableAlias}`
-  const tableNames = [factTable.name]
-  let leftTableAlias = factTableAlias
-  tables.slice(1).forEach((table, i) => {
-    const exists = tableNames.filter((name) => name === table.name)
-    const tableAlias = serializeName(exists.length ? `${table.name}(${exists.length})` : table.name, dialect)
-    const conditions = table.join.fields
-      .map(
-        (field) =>
-          `${leftTableAlias}.${serializeName(field.leftKey, dialect)} = ${tableAlias}.${serializeName(
-            field.rightKey,
-            dialect
-          )}`
-      )
-      .join(' AND ')
-    statement = `${statement} ${table.join.type} JOIN ${serializeName(
-      table.name,
-      dialect,
-      catalog
-    )} AS ${tableAlias} ON ${conditions}`
-    leftTableAlias = tableAlias
-    tableNames.push(table.name)
-  })
-
-  return statement
-}
 
 export interface DimensionColumn {
   table?: string
@@ -93,11 +58,75 @@ export interface DimensionContext {
   parentColumn?: string
 }
 
+export function serializeHierarchyFrom(
+  factTable: string,
+  hierarchy: PropertyHierarchy,
+  dialect: string,
+  catalog: string
+) {
+  if (hierarchy.tables?.length) {
+    return serializeTablesJoin(hierarchy.name, hierarchy.tables, dialect, catalog)
+  }
+
+  return serializeName(
+    hierarchy.primaryKeyTable ? serializeTableAlias(hierarchy.name, hierarchy.primaryKeyTable) : factTable,
+    dialect
+  )
+}
+
+export function serializeTablesJoin(prefix: string, tables: Table[], dialect: string, catalog: string) {
+  const factTable = tables[0]
+  const factTableAlias = serializeName(serializeTableAlias(prefix, factTable.name), dialect)
+  let statement = serializeName(factTable.name, dialect, catalog) + ` AS ${factTableAlias}`
+  const tableNames = [factTable.name]
+  let leftTableAlias = factTableAlias
+  tables.slice(1).forEach((table, i) => {
+    const exists = tableNames.filter((name) => name === table.name)
+    const tableAlias = serializeName(
+      serializeTableAlias(prefix, exists.length ? `${table.name}(${exists.length})` : table.name),
+      dialect
+    )
+    const conditions = table.join.fields
+      .map(
+        (field) =>
+          `${leftTableAlias}.${serializeName(field.leftKey, dialect)} = ${tableAlias}.${serializeName(
+            field.rightKey,
+            dialect
+          )}`
+      )
+      .join(' AND ')
+    statement = `${statement} ${table.join.type} JOIN ${serializeName(
+      table.name,
+      dialect,
+      catalog
+    )} AS ${tableAlias} ON ${conditions}`
+    leftTableAlias = tableAlias
+    tableNames.push(table.name)
+  })
+
+  if (tables.length > 1) {
+    statement = `(${statement})`
+  }
+
+  return statement
+}
+
+
 export function getLevelColumn(level: PropertyLevel, table: string) {
   return {
-    table: level.table || table,
+    table: table,
     column: level.nameColumn || level.column
   }
+}
+
+export function unassignedMember(column: DimensionColumn, dialect: string) {
+  return `CASE WHEN ${serializeName(column.table, dialect)}.${serializeName(
+    column.column,
+    dialect
+  )} IS NULL THEN '#' ELSE ${Cast(
+    `${serializeName(column.table, dialect)}.${serializeName(column.column, dialect)}`,
+    'VARCHAR'
+  )} END`
 }
 
 export function serializeColumn(field: DimensionField, dialect: string) {
@@ -108,11 +137,10 @@ export function serializeColumn(field: DimensionField, dialect: string) {
       `concat('[', ` +
       field.columns
         .map(
-          (col) =>
-            col.expression ??
-            (needCasts.includes(dialect)
-              ? Cast(`${serializeName(col.table, dialect)}.${serializeName(col.column, dialect)}`, 'VARCHAR')
-              : `${serializeName(col.table, dialect)}.${serializeName(col.column, dialect)}`)
+          (col) => col.expression ?? unassignedMember(col, dialect)
+          // (needCasts.includes(dialect)
+          //   ? Cast(`${serializeName(col.table, dialect)}.${serializeName(col.column, dialect)}`, 'VARCHAR')
+          //   : `${serializeName(col.table, dialect)}.${serializeName(col.column, dialect)}`)
         )
         .join(`,'].[',`) +
       `,']')`
@@ -126,12 +154,7 @@ export function serializeColumn(field: DimensionField, dialect: string) {
   return statement
 }
 
-export function TableColumnMembers(
-  dimension: Dimension,
-  entityType: EntityType,
-  dialect: string,
-  catalog: string
-) {
+export function TableColumnMembers(dimension: Dimension, entityType: EntityType, dialect: string, catalog: string) {
   return `SELECT DISTINCT ${serializeName(dimension.dimension, dialect)} AS ${serializeName(
     'memberKey',
     dialect
@@ -142,32 +165,39 @@ export function DimensionTable(hierarchy: PropertyHierarchy) {
   return hierarchy.primaryKeyTable || hierarchy.tables?.[0]?.name
 }
 
-export function LevelMembers(hierarchy: PropertyHierarchy, i: number, dialect: string, catalog: string) {
+export function LevelMembers(
+  factTable: string,
+  hierarchy: PropertyHierarchy,
+  i: number,
+  dialect: string,
+  catalog: string
+) {
   const selectFields = []
 
   if (hierarchy.hasAll && i === 0) {
     selectFields.push({
-      expression: `'[(All)]'`,
+      expression: hierarchy.allMemberName ? `'[${hierarchy.allMemberName}]'` : `'[(All)]'`,
       alias: `memberKey`
     })
     selectFields.push({
-      expression: `'All'`,
+      expression: hierarchy.allMemberName ? `'${hierarchy.allMemberName}'` :`'All'`,
       alias: `memberCaption`
     })
   } else {
     const levels = hierarchy.levels.slice(hierarchy.hasAll ? 1 : 0, i + 1)
     const dimensionTable = DimensionTable(hierarchy)
     selectFields.push({
-      // table: dimensionTable,
       columns: levels.map((level) => {
         const table = level.table || dimensionTable
-        return getLevelColumn(level, table)
+        return getLevelColumn(level, table ? serializeTableAlias(hierarchy.name, table) : factTable)
       }),
       alias: `memberKey`
     })
 
+    const level = levels[levels.length - 1]
+    const table = level.table || dimensionTable
     selectFields.push(
-      ...LevelCaptionFields(dimensionTable, levels[levels.length - 1], dialect).map((field) => ({
+      ...LevelCaptionFields(table ? serializeTableAlias(hierarchy.name, table) : factTable, level, dialect).map((field) => ({
         ...field,
         alias: 'memberCaption'
       }))
@@ -178,13 +208,13 @@ export function LevelMembers(hierarchy: PropertyHierarchy, i: number, dialect: s
         // table: dimensionTable,
         columns: levels.slice(0, levels.length - 1).map((level) => {
           const table = level.table || dimensionTable
-          return getLevelColumn(level, table)
+          return getLevelColumn(level, table ? serializeTableAlias(hierarchy.name, table) : factTable)
         }),
         alias: `parentKey`
       })
     } else if (hierarchy.hasAll) {
       selectFields.push({
-        expression: `'[(All)]'`,
+        expression: hierarchy.allMemberName ? `'[${hierarchy.allMemberName}]'` : `'[(All)]'`,
         alias: `parentKey`
       })
     }
@@ -192,7 +222,7 @@ export function LevelMembers(hierarchy: PropertyHierarchy, i: number, dialect: s
 
   let statement = `SELECT ${selectFields
     .map((item) => serializeColumn(item, dialect))
-    .join(', ')} FROM ${serializeHierarchyFrom(hierarchy, dialect, catalog)}`
+    .join(', ')} FROM ${serializeHierarchyFrom(factTable, hierarchy, dialect, catalog)}`
 
   statement += ` GROUP BY ` + (serializeGroupByDimensions([{ hierarchy, selectFields }], dialect) || 1)
 
@@ -218,9 +248,11 @@ export function DimensionMembers(
   if (!hierarchy) {
     throw new Error(`未找到维度'${dimension.dimension}'或层级结构'${dimension.hierarchy}'`)
   }
+  const cube = schema.cubes.find((item) => item.name === entity)
+  const factTable = CubeFactTable(cube)
   const levels = hierarchy.levels // .slice(hierarchy.hasAll ? 1 : 0)
   return levels.map((level, i) => {
-    return LevelMembers(hierarchy, i, dialect, catalog)
+    return LevelMembers(factTable, hierarchy, i, dialect, catalog)
   })
 }
 
@@ -275,7 +307,7 @@ export function buildDimensionContext(
   if (lIndex > -1) {
     const level = context.hierarchy.levels[lIndex]
     context.dimensionTable = context.hierarchy.primaryKeyTable || context.hierarchy.tables[0].name
-    const table = level.table || context.dimensionTable || context.factTable
+    const table = serializeTableAlias(context.hierarchy.name, level.table || context.dimensionTable) || context.factTable
     const nameColumn = level.nameColumn || level.column
     // let captionColumn = level.captionColumn || level.nameColumn
     // if (level.uniqueMembers) {
@@ -290,7 +322,8 @@ export function buildDimensionContext(
     context.selectFields.push({
       table,
       columns: context.hierarchy.levels.slice(context.hierarchy.hasAll ? 1 : 0, lIndex + 1).map((level) => {
-        return getLevelColumn(level, table)
+        const levelTable = level.table || context.dimensionTable
+        return getLevelColumn(level, levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable)
       }),
       alias: level.name
     })
@@ -386,6 +419,7 @@ export function queryDimension(
     ` FROM ` +
     (context.parentColumn
       ? serializeTablesJoin(
+          context.hierarchy.name,
           [
             context.hierarchy.tables[0],
             {
@@ -404,7 +438,7 @@ export function queryDimension(
           dialect,
           catalog
         )
-      : serializeHierarchyFrom(context.hierarchy, dialect, catalog))
+      : serializeHierarchyFrom('', context.hierarchy, dialect, catalog))
 
   if (measures.length) {
     statement += ` GROUP BY ` + serializeGroupByDimensions([context], dialect)

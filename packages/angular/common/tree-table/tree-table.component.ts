@@ -3,16 +3,7 @@ import { FlatTreeControl } from '@angular/cdk/tree'
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { DisplayDensity } from '@metad/ocap-angular/core'
-import { Property, TreeNodeInterface } from '@metad/ocap-core'
-
-export interface FlatNode<T> {
-  expandable: boolean
-  name: string
-  label: string
-  value: number
-  level: number
-  raw?: T
-}
+import { FlatNode, Property, TreeNodeInterface } from '@metad/ocap-core'
 
 @Component({
   selector: 'ngm-tree-table',
@@ -46,6 +37,7 @@ export class TreeTableComponent<T> implements OnInit, OnChanges {
   private transformer = (node: TreeNodeInterface<T>, level: number): FlatNode<T> => {
     return {
       expandable: !!node.children && node.children.length > 0,
+      key: node.key,
       name: node.name,
       label: node.label,
       value: node.value,
@@ -68,9 +60,9 @@ export class TreeTableComponent<T> implements OnInit, OnChanges {
 
   dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
 
-  constructor() {}
-
-  ngOnInit() {}
+  ngOnInit() {
+    //
+  }
 
   ngOnChanges({ data, columns, displayDensity }: SimpleChanges): void {
     if (data?.currentValue) {

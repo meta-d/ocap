@@ -2,6 +2,8 @@ import {
   AbstractDataSource,
   Catalog,
   DataSourceOptions,
+  DBCatalog,
+  DBTable,
   Dimension,
   EntityService,
   EntitySet,
@@ -13,6 +15,18 @@ import { ODataEntityService } from './entity.service'
 
 
 export class ODataDataSource extends AbstractDataSource<DataSourceOptions> {
+  discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
+    throw new Error('Method not implemented.')
+  }
+  discoverDBCatalogs(): Observable<DBCatalog[]> {
+    throw new Error('Method not implemented.')
+  }
+  discoverDBTables(): Observable<DBTable[]> {
+    throw new Error('Method not implemented.')
+  }
+  discoverMDCubes(refresh?: boolean): Observable<EntitySet[]> {
+    throw new Error('Method not implemented.')
+  }
   
   createEntityService<T>(entity: string): EntityService<T> {
     return new ODataEntityService(this, entity)

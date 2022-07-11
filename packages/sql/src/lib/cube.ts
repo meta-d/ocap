@@ -12,8 +12,17 @@ import {
   QueryOptions,
 } from '@metad/ocap-core'
 import { compileDimensionSchema, DimensionContext, getLevelColumn } from './dimension'
-import { serializeMeasureName } from './types'
+import { serializeMeasureName, serializeTableAlias } from './utils'
 
+/**
+ * Compile the cube of entity with it's dimensions to runtime entity type
+ * 
+ * @param entity 
+ * @param cube 
+ * @param dimensions 
+ * @param dialect 
+ * @returns 
+ */
 export function compileCubeSchema(entity: string, cube: Cube, dimensions: PropertyDimension[], dialect: string): EntityType {
   const properties = {}
 
@@ -74,7 +83,11 @@ export interface CubeContext {
 }
 
 export function CubeFactTable(cube: Cube) {
-  return cube.tables?.[0]?.name
+  if (!cube.tables?.[0]?.name) {
+    throw new Error(`未找到多维数据集 '${cube.name}' 的事实表`)
+  }
+  // 暂时只支持一个事实表
+  return serializeTableAlias(cube.name, cube.tables[0].name)
 }
 
 export function buildCubeContext(cube: Cube, options: QueryOptions, entityType: EntityType, dialect: string): CubeContext {
@@ -83,7 +96,7 @@ export function buildCubeContext(cube: Cube, options: QueryOptions, entityType: 
     throw new Error(`在模型中未找到事实表`)
   }
 
-  const context = { entityType, dimensions: [], measures: [], factTable } as CubeContext
+  const context = { schema: cube, entityType, dimensions: [], measures: [], factTable } as CubeContext
 
   ;[...(options.rows ?? []), ...(options.columns ?? [])].forEach((row) => {
     if (isMeasure(row)) {
@@ -153,7 +166,8 @@ export function buildCubeDimensionContext(
     context.level = level
     context.dimensionTable = context.hierarchy.primaryKeyTable || context.hierarchy.tables?.[0]?.name
     const hAlias = context.hierarchy.name
-    const table = level.table || context.dimensionTable || context.factTable
+    const levelTable = level.table || context.dimensionTable
+    const table =  levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable
     const nameColumn = level.nameColumn || level.column
     let captionColumn = level.captionColumn || level.nameColumn
     if (level.levelNumber === 0 && context.hierarchy.hasAll) {

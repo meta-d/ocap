@@ -1,0 +1,172 @@
+<mat-form-field *ngIf="!treeViewer" [appearance]="appearance" fxFlex="100">
+    <mat-label>{{ label }}</mat-label>
+
+    <ng-container *ngIf="autocomplete">
+      <mat-chip-list #chipList>
+        <mat-chip *ngFor="let chip of chipList$ | async" [displayDensity]="displayDensity" (removed)="removeChip(chip)">
+          <ngm-display-behaviour [option]="{value: chip.key, label: chip.label}"
+            [displayBehaviour]="displayBehaviour"></ngm-display-behaviour>
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+        <input type="text" #autoInput matInput
+          [placeholder]="placeholder"
+          [formControl]="autoControl"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipList"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          (matChipInputTokenEnd)="add($event)"
+          >
+      </mat-chip-list>
+
+      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-tree-select__panel"
+        [class]="(multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
+        [displayWith]="displayWith"
+        (optionSelected)="selected($event)"
+      >
+        <cdk-virtual-scroll-viewport *ngIf="virtualScroll; else nonVirtualScroll" itemSize="36"
+          minBufferPx="200" maxBufferPx="400" class="ngm-tree-select__viewport">
+          <mat-option *cdkVirtualFor="let option of selectOptions$ | async;" [value]="option">
+
+            <div fxLayout="row" fxLayoutAlign="start center">
+              <button mat-icon-button [displayDensity]="displayDensity"
+                [style.visibility]="!option.expandable ? 'hidden' : ''"
+                [style.marginLeft.px]="option.level * treeNodePaddingIndent"
+                (click)="$event.stopPropagation(); treeControl.toggle(option)">
+                <mat-icon class="mat-icon-rtl-mirror">
+                  {{treeControl.isExpanded(option) ? 'expand_more' : 'chevron_right'}}
+                </mat-icon>
+              </button>
+
+              <mat-checkbox *ngIf="multiple" fxFlex="100"
+                [checked]="isSelected(option)"
+                (click)="$event.stopPropagation()"
+                (change)="onCheckboxSelect($event, option)"
+              >
+                <ngm-display-behaviour [option]="{value: option.key, label: option.label}"
+                  [displayBehaviour]="displayBehaviour"
+                  [highlight]="autoHighlight">
+                </ngm-display-behaviour>
+              </mat-checkbox>
+
+              <ngm-display-behaviour *ngIf="!multiple" fxFlex="100"
+                [option]="{value: option.key, label: option.label}"
+                [displayBehaviour]="displayBehaviour"
+                [highlight]="autoHighlight">
+              </ngm-display-behaviour>
+            </div>
+
+          </mat-option>
+        </cdk-virtual-scroll-viewport>
+
+        <ng-template #nonVirtualScroll>
+            <mat-option *ngFor="let option of selectOptions$ | async" [value]="option" (click)="$event.stopPropagation();$event.preventDefault()">
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <button mat-icon-button [displayDensity]="displayDensity"
+                  [style.visibility]="!option.expandable ? 'hidden' : ''"
+                  [style.marginLeft.px]="option.level * treeNodePaddingIndent"
+                  (click)="$event.stopPropagation(); treeControl.toggle(option)">
+                  <mat-icon class="mat-icon-rtl-mirror">
+                    {{treeControl.isExpanded(option) ? 'expand_more' : 'chevron_right'}}
+                  </mat-icon>
+                </button>
+
+                <mat-checkbox *ngIf="multiple" fxFlex="100"
+                  [checked]="isSelected(option)"
+                  (click)="$event.stopPropagation()"
+                  (change)="onCheckboxSelect($event, option)"
+                >
+                  <ngm-display-behaviour [option]="{value: option.key, label: option.label}"
+                    [displayBehaviour]="displayBehaviour"
+                    [highlight]="autoHighlight">
+                  </ngm-display-behaviour>
+                </mat-checkbox>
+
+                <ngm-display-behaviour *ngIf="!multiple" fxFlex="100"
+                  [option]="{value: option.key, label: option.label}"
+                  [displayBehaviour]="displayBehaviour"
+                  [highlight]="autoHighlight">
+                </ngm-display-behaviour>
+              </div>
+
+            </mat-option>
+        </ng-template>
+      </mat-autocomplete>
+    </ng-container>
+
+    <mat-select *ngIf="!autocomplete" [formControl]="formControl" [compareWith]="compareWith" panelClass="ngm-tree-select__panel"
+      [multiple]="multiple"
+      [placeholder]="placeholder"
+    >
+
+      <mat-select-trigger>{{ trigger$ | async }}</mat-select-trigger>
+
+      <mat-option *ngFor="let option of selectOptions$ | async" [value]="option">
+        <div fxLayout="row" fxLayoutAlign="start center">
+          <button mat-icon-button [displayDensity]="displayDensity"
+            [style.visibility]="!option.expandable ? 'hidden' : ''"
+            [style.marginLeft.px]="option.level * treeNodePaddingIndent"
+            (click)="$event.stopPropagation(); treeControl.toggle(option)">
+            <mat-icon class="mat-icon-rtl-mirror">
+              {{treeControl.isExpanded(option) ? 'expand_more' : 'chevron_right'}}
+            </mat-icon>
+          </button>
+
+          <ngm-display-behaviour fxFlex="100"
+            [option]="{value: option.key, label: option.label}"
+            [displayBehaviour]="displayBehaviour"
+          >
+          </ngm-display-behaviour>
+        </div>
+      </mat-option>
+    </mat-select>
+
+    <div matSuffix fxLayout="row">
+      <button *ngIf="isNotInitial" mat-icon-button
+        (click)="clear($event)">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-spinner *ngIf="loading" color="accent" strokeWidth="2" diameter="20"></mat-spinner>
+    </div>
+</mat-form-field>
+
+<ng-container *ngIf="treeViewer">
+
+  <mat-form-field *ngIf="searchable" [appearance]="appearance">
+    <mat-label>{{ 'Ngm.Common.Search' | translate: {Default: 'Search'} }} </mat-label>
+    <input matInput [formControl]="autoControl" placeholder="{{ 'Ngm.Common.Search_Placeholder' | translate: {Default: 'Please input keyword'} }}">
+    <div matSuffix fxLayout="row">
+      <button *ngIf="autoHighlight" mat-icon-button
+        (click)="clearSearch($event)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </mat-form-field>
+
+  <mat-tree fxFlex="100" class="selection ngm-tree-select__panel" [dataSource]="dataSource" [treeControl]="treeControl" [displayDensity]="displayDensity">
+    <!-- This is the tree node template for leaf nodes -->
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
+      [ngClass]="isSelected(node) ? 'selected' : ''"
+      (click)="onSelect(node)">
+      <!-- use a disabled button to provide padding for tree leaf -->
+      <button mat-icon-button disabled [displayDensity]="displayDensity"></button>
+      
+      <ngm-display-behaviour fxFlex="100" [option]="{value: node.key, label: node.label}" [displayBehaviour]="displayBehaviour" [highlight]="autoHighlight"></ngm-display-behaviour>
+    </mat-tree-node>
+    <!-- This is the tree node template for expandable nodes -->
+    <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
+      [ngClass]="isSelected(node) ? 'selected' : ''"
+      (click)="onSelect(node)">
+      <button mat-icon-button matTreeNodeToggle [displayDensity]="displayDensity"
+              [attr.aria-label]="'Toggle ' + node.name">
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+      </button>
+
+      <ngm-display-behaviour fxFlex="100" [option]="{value: node.key, label: node.label}" [displayBehaviour]="displayBehaviour" [highlight]="autoHighlight"></ngm-display-behaviour>
+    </mat-tree-node>
+  </mat-tree>
+  
+</ng-container>

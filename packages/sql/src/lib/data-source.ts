@@ -2,11 +2,14 @@ import {
   AbstractDataSource,
   AggregationRole,
   Catalog,
+  DBCatalog,
+  DBTable,
   Dimension,
   EntityService,
   EntitySet,
   EntityType,
   IDimensionMember,
+  MDCube,
   QueryReturn
 } from '@metad/ocap-core'
 import isEqual from 'lodash/isEqual'
@@ -17,20 +20,76 @@ import { SQLEntityService } from './entity.service'
 import { serializeCubeFact } from './query'
 import {
   C_MEASURES_ROW_COUNT,
-  decideRole,
-  isCaseInsensitive,
-  serializeWrapCatalog,
   SQLDataSourceOptions,
   SQLQueryResult,
   SQLSchema,
   SQLTableSchema
 } from './types'
+import {
+  decideRole,
+  isCaseInsensitive,
+  serializeWrapCatalog,
+} from './utils'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _catalogs$: Observable<Array<Catalog>>
   private _entitySets$: Observable<Array<EntitySet>>
 
+  discoverDBCatalogs(): Observable<DBCatalog[]> {
+    return from(
+      this.agent
+        .request(this.options, { method: 'get', url: 'catalogs' })
+        // TODO ???
+        .catch((error) => {
+          console.error(error)
+          return []
+        })
+    )
+  }
+
+  discoverDBTables(): Observable<DBTable[]> {
+    return from(this.fetchSchema(this.options.name, this.options.catalog || '')).pipe(
+      map((schemas: SQLSchema[]) => {
+        const entitySets = []
+        schemas
+          // 过滤出当前 Catalog (对应三段式中的 schema, 后续改成 schema) 的 tables , 因为有些 DB Driver 会带出来所有 catalog 下的 tables
+          // .filter((schema) => (this.options.catalog ? schema.schema === this.options.catalog : true))
+          .forEach((schema) => {
+            schema.tables.forEach((table) => {
+              entitySets.push({
+                catalog: schema.schema,
+                name: table.name,
+                label: table.label
+              })
+            })
+          })
+        return entitySets
+      })
+    )
+  }
+
+  discoverMDCubes(): Observable<MDCube[]> {
+    return this.selectSchema().pipe(
+      map((schema) => {
+        return schema?.cubes?.map((cube) => {
+          return {
+            name: cube.name,
+            label: cube.label,
+            entityType: null
+          }
+        })
+      }),
+      distinctUntilChanged(isEqual)
+    )
+  }
+
+  discoverMDMembers(entity: string, dimension: Dimension) {
+    return this.getMembers(entity, dimension)
+  }
+
   /**
+   * @deprecated use discoverDBCatalogs
+   *
    * 应该对应数据库的什么对象 ?
    */
   getCatalogs(refresh?: boolean): Observable<Catalog[]> {
@@ -122,9 +181,13 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
           // Find schema defination for the entity
           const cube = schema?.cubes?.find((item) => item.name === entity)
           if (cube) {
-            const dimensions = cube.dimensionUsages?.map((usage) =>
-              schema.dimensions.find((item) => item.name === usage.source)
-            )
+            const dimensions = cube.dimensionUsages?.map((usage) => {
+              const dimension = schema.dimensions.find((item) => item.name === usage.source)
+              if (!dimension) {
+                throw new Error(`未找到源维度'${usage.source}'`)
+              }
+              return dimension
+            })
             return {
               type: 'CUBE',
               cube,
@@ -235,18 +298,22 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
 
             memberLevels.forEach((level) => {
               members.push(
-                ...level.data.map((item: any) => (isCaseInsensitive(this.options.dialect) ? {
-                  ...item,
-                  ...dimension,
-                  memberKey: item.memberkey,
-                  memberCaption: item.membercaption,
-                  parentKey: item.parentkey,
-                  entity
-                } : {
-                  ...item,
-                  ...dimension,
-                  entity
-                }))
+                ...level.data.map((item: any) =>
+                  isCaseInsensitive(this.options.dialect)
+                    ? {
+                        ...item,
+                        ...dimension,
+                        memberKey: item.memberkey,
+                        memberCaption: item.membercaption,
+                        parentKey: item.parentkey,
+                        entity
+                      }
+                    : {
+                        ...item,
+                        ...dimension,
+                        entity
+                      }
+                )
               )
             })
 

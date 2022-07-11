@@ -176,4 +176,8 @@ export class ValueHelpDialog implements OnInit {
       members: []
     }
   }
+
+  close() {
+    this.dialogRef.close({...this.slicer, dimension: {...this.dimension}})
+  }
 }

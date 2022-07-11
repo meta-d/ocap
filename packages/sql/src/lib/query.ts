@@ -36,7 +36,8 @@ import {
 } from './dimension'
 import { OrderBy } from './functions'
 import { compileFilters, convertFiltersToSQL } from './sql-filter'
-import { serializeName, SQLQueryContext, SQLQueryProperty } from './types'
+import { SQLQueryContext, SQLQueryProperty } from './types'
+import { serializeName, serializeTableAlias } from './utils'
 
 export function getFirstElement<T>(objOrArray: T | T[]): T {
   return isArray(objOrArray) ? objOrArray[0] : objOrArray
@@ -47,12 +48,12 @@ export function serializeFrom(cube: Cube, entityType: EntityType, dialect: strin
   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
 }
 
-export function serializeDimensionFrom(dimension: PropertyDimension, entityType: EntityType, dialect: string) {
-  const cubeFact = serializeCubeFact(dimension, dialect)
+// export function serializeDimensionFrom(dimension: PropertyDimension, entityType: EntityType, dialect: string) {
+//   const cubeFact = serializeCubeFact(dimension, dialect)
 
-  const expression = cubeFact
-  return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
-}
+//   const expression = cubeFact
+//   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
+// }
 
 export function serializeCubeFact(cube: Cube, dialect: string) {
   const factTable = cube.tables[0]
@@ -128,15 +129,13 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
 
   if (cubeContext.measures.length) {
     // fact table in cube
-    const fact = cube.tables[0].name
+    const fact = serializeTableAlias(cube.name, cube.tables[0].name)
     statement +=
       ', ' +
       cubeContext.measures
         .map((measure: any) => serializeMeasure(fact, measure, dialect))
         .join(', ')
   }
-
-  
 
   // Compile Slicers
   const conditions = []
@@ -156,7 +155,7 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
   }
 
   // Compile cube and dimensions
-  statement += ` FROM ` + serializeCubeFrom(cube, cubeContext.dimensions, dialect, catalog)
+  statement += ` FROM ` + serializeCubeFrom(cubeContext, dialect, catalog)
   // Where slicers
   if (filterString) {
     statement += ' WHERE ' + filterString
@@ -177,20 +176,19 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
   return statement
 }
 
-export function serializeCubeFrom(cube: Cube, dimensions: DimensionContext[], dialect: string, catalog?: string): string {
-  const factAlias = cube.tables[0].name
+export function serializeCubeFrom(cubeContext: CubeContext, dialect: string, catalog?: string): string {
   return (
-    serializeTablesJoin(cube.tables, dialect, catalog) +
-      dimensions.filter((dimensionContext) => !!dimensionContext.dimensionTable)
+    serializeTablesJoin(cubeContext.schema.name, cubeContext.schema.tables, dialect, catalog) +
+    cubeContext.dimensions.filter((dimensionContext) => !!dimensionContext.dimensionTable)
         .map((dimensionContext) => {
           const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
           return (
             ` INNER JOIN ` +
-            serializeHierarchyFrom(dimensionContext.hierarchy, dialect, catalog) +
-            ` ON ${serializeName(factAlias, dialect)}.${serializeName(
+            serializeHierarchyFrom('', dimensionContext.hierarchy, dialect, catalog) +
+            ` ON ${serializeName(cubeContext.factTable, dialect)}.${serializeName(
               dimensionContext.schema.foreignKey,
               dialect
-            )} = ${serializeName(primaryKeyTable, dialect)}.${serializeName(
+            )} = ${serializeName(serializeTableAlias(dimensionContext.hierarchy.name, primaryKeyTable), dialect)}.${serializeName(
               dimensionContext.hierarchy.primaryKey,
               dialect
             )}`

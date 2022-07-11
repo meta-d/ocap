@@ -1,168 +1,30 @@
-import { AggregationRole, C_MEASURES, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
+import { AggregationRole, C_MEASURES, serializeUniqueName } from '@metad/ocap-core'
 import { compileDimensionSchema, DimensionMembers, queryDimension } from './dimension'
+import { CUBE_SALESORDER, EMPLOYEE_DIMENSION, ENTITY_TYPE_SALESORDER, PRODUCT_DIMENSION } from './mock-data'
 import { C_MEASURES_ROW_COUNT } from './types'
 
-export const PRODUCT_DIMENSION: PropertyDimension = {
-  name: 'Product',
-  hierarchies: [
-    {
-      name: '',
-      tables: [
-        {
-          name: 'product'
-        },
-        {
-          name: 'product_class',
-          join: {
-            type: 'Left',
-            fields: [
-              {
-                leftKey: 'product_class_id',
-                rightKey: 'product_class_id'
-              }
-            ]
-          }
-        },
-        {
-          name: 'product_type',
-          join: {
-            type: 'Left',
-            fields: [
-              {
-                leftKey: 'product_type_id',
-                rightKey: 'product_type_id'
-              }
-            ]
-          }
-        }
-      ],
-      levels: [
-        {
-          name: 'Product Type',
-          column: 'product_type_id',
-          table: 'product_type',
-          uniqueMembers: true
-        },
-        {
-          name: 'Product Class',
-          column: 'product_class_id',
-          table: 'product_class',
-          uniqueMembers: null,
-          captionExpression: {
-            sql: {
-              dialect: 'generic',
-              content: `concat('C_', product_class.product_class_id)`
-            }
-          },
-          properties: [
-            {
-              name: 'Category',
-              column: 'product_category'
-            }
-          ]
-        },
-        {
-          name: 'Product',
-          column: 'product_id',
-          table: 'product',
-          nameColumn: 'product_name',
-          uniqueMembers: true,
-          properties: [
-            {
-              name: 'Shelf Width',
-              column: 'shelf_width'
-            },
-            {
-              name: 'Units PerCase',
-              column: 'units_per_case'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      name: 'Class',
-      hasAll: true,
-      tables: [
-        {
-          name: 'product'
-        },
-        {
-          name: 'product_class',
-          join: {
-            type: 'Left',
-            fields: [
-              {
-                leftKey: 'product_class_id',
-                rightKey: 'product_class_id'
-              }
-            ]
-          }
-        }
-      ],
-      levels: [
-        {
-          name: 'Class',
-          column: 'product_class_id',
-          table: 'product_class',
-          captionExpression: {
-            sql: {
-              dialect: 'generic',
-              content: `concat('C_', product_class.product_class_id)`
-            }
-          },
-          properties: [
-            {
-              name: 'Category',
-              column: 'product_category'
-            }
-          ]
-        },
-        {
-          name: 'Product Id',
-          column: 'product_id',
-          table: 'product',
-          captionColumn: 'product_name',
-          properties: [
-            {
-              name: 'Shelf Width',
-              column: 'shelf_width'
-            },
-            {
-              name: 'Units PerCase',
-              column: 'units_per_case'
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-
-export const EMPLOYEE_DIMENSION: PropertyDimension = {
-  name: 'Employee',
-  hierarchies: [
-    {
-      name: '',
-      tables: [{ name: 'employee' }],
-      levels: [
-        {
-          name: 'Name',
-          column: 'employee_id',
-          nameColumn: 'full_name',
-          parentColumn: 'supervisor_id',
-          uniqueMembers: true
-        }
-      ]
-    }
-  ]
-}
-
 const ENTITY_TYPE = {
-  name: PRODUCT_DIMENSION.name,
+  name: 'SalesOrder',
   properties: {
     [serializeUniqueName(PRODUCT_DIMENSION.name)]: compileDimensionSchema(PRODUCT_DIMENSION.name, PRODUCT_DIMENSION),
-    [serializeUniqueName(EMPLOYEE_DIMENSION.name)]: compileDimensionSchema(EMPLOYEE_DIMENSION.name, EMPLOYEE_DIMENSION)
+    [serializeUniqueName(EMPLOYEE_DIMENSION.name)]: compileDimensionSchema(EMPLOYEE_DIMENSION.name, EMPLOYEE_DIMENSION),
+    '[Payment method]': {
+      name: '[Payment method]',
+      role: AggregationRole.dimension,
+      hierarchies: [
+        {
+          name: '[Payment method]',
+          hasAll: true,
+          levels: [
+            {
+              name: '[Payment method].[Payment method]',
+              column: 'payment_method',
+              uniqueMembers: true
+            }
+          ]
+        }
+      ]
+    }
   }
 }
 
@@ -411,6 +273,7 @@ describe('Convert Dimension Schema to Runtime', () => {
           entity: 'Product',
           dimension: '[Product]',
           name: '[Product]',
+          primaryKey: 'product_id',
           caption: '[Product].[MEMBER_CAPTION]',
           role: AggregationRole.hierarchy,
           tables: [
@@ -605,6 +468,21 @@ describe('Get Dimension Members', () => {
     ])
   })
 
+  it('Members for Degenerate Dimension', () => {
+    const statement = DimensionMembers(
+      ENTITY_TYPE_SALESORDER.name,
+      { dimension: '[Payment method]' },
+      ENTITY_TYPE_SALESORDER,
+      { name: 'Sales', dimensions: [PRODUCT_DIMENSION], cubes: [CUBE_SALESORDER] },
+      'pg'
+    )
+    expect(statement).toEqual([
+      'SELECT \'[(All)]\' AS "memberKey", \'All\' AS "memberCaption" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY 1',
+      'SELECT concat(\'[\', "product_class"."product_class_id",\']\') AS "memberKey", concat(\'C_\', product_class.product_class_id) AS "memberCaption", \'[(All)]\' AS "parentKey" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_class_id"',
+      'SELECT concat(\'[\', "product_class"."product_class_id",\'].[\',"product"."product_id",\']\') AS "memberKey", "product"."product_name" AS "memberCaption", concat(\'[\', "product_class"."product_class_id",\']\') AS "parentKey" FROM "product" AS "product" Left JOIN "product_class" AS "product_class" ON "product"."product_class_id" = "product_class"."product_class_id" GROUP BY "product_class"."product_class_id", "product"."product_id", "product"."product_name"'
+    ])
+  })
+
   it('Orignal table column members', () => {
     const statement = DimensionMembers(
       'sales_fact',
@@ -613,7 +491,7 @@ describe('Get Dimension Members', () => {
       null,
       ''
     )
-    expect(statement).toEqual(["SELECT DISTINCT `Product` AS `memberKey` FROM `sales_fact`"])
+    expect(statement).toEqual(['SELECT DISTINCT `Product` AS `memberKey` FROM `sales_fact`'])
   })
 })
 
@@ -628,9 +506,9 @@ describe('Get Dimension Members for Hive', () => {
       'foodmart'
     )
     expect(statement).toEqual([
-      'SELECT concat(\'[\', `product_type`.`product_type_id`,\']\') AS `memberKey`, `product`.`product_type_id` AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product`.`product_type_id`',
-      'SELECT concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\']\') AS `memberKey`, concat(\'C_\', product_class.product_class_id) AS `memberCaption`, concat(\'[\', `product_type`.`product_type_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_class_id`',
-      'SELECT concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\'].[\',`product`.`product_name`,\']\') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat(\'[\', `product_type`.`product_type_id`,\'].[\',`product_class`.`product_class_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`'
+      "SELECT concat('[', `product_type`.`product_type_id`,']') AS `memberKey`, `product`.`product_type_id` AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product`.`product_type_id`",
+      "SELECT concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `memberKey`, concat('C_', product_class.product_class_id) AS `memberCaption`, concat('[', `product_type`.`product_type_id`,']') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_class_id`",
+      "SELECT concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,'].[',`product`.`product_name`,']') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat('[', `product_type`.`product_type_id`,'].[',`product_class`.`product_class_id`,']') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` Left JOIN `foodmart`.`product_type` AS `product_type` ON `product_class`.`product_type_id` = `product_type`.`product_type_id` GROUP BY `product_type`.`product_type_id`, `product_class`.`product_class_id`, `product`.`product_name`"
     ])
   })
 
@@ -644,9 +522,9 @@ describe('Get Dimension Members for Hive', () => {
       'foodmart'
     )
     expect(statement).toEqual([
-      'SELECT \'[(All)]\' AS `memberKey`, \'All\' AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY 1',
-      'SELECT concat(\'[\', `product_class`.`product_class_id`,\']\') AS `memberKey`, concat(\'C_\', product_class.product_class_id) AS `memberCaption`, \'[(All)]\' AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_class_id`',
-      'SELECT concat(\'[\', `product_class`.`product_class_id`,\'].[\',`product`.`product_id`,\']\') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat(\'[\', `product_class`.`product_class_id`,\']\') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_id`, `product`.`product_name`'
+      "SELECT '[(All)]' AS `memberKey`, 'All' AS `memberCaption` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY 1",
+      "SELECT concat('[', `product_class`.`product_class_id`,']') AS `memberKey`, concat('C_', product_class.product_class_id) AS `memberCaption`, '[(All)]' AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_class_id`",
+      "SELECT concat('[', `product_class`.`product_class_id`,'].[',`product`.`product_id`,']') AS `memberKey`, `product`.`product_name` AS `memberCaption`, concat('[', `product_class`.`product_class_id`,']') AS `parentKey` FROM `foodmart`.`product` AS `product` Left JOIN `foodmart`.`product_class` AS `product_class` ON `product`.`product_class_id` = `product_class`.`product_class_id` GROUP BY `product_class`.`product_class_id`, `product`.`product_id`, `product`.`product_name`"
     ])
   })
 
@@ -659,6 +537,6 @@ describe('Get Dimension Members for Hive', () => {
       'hive',
       'foodmart'
     )
-    expect(statement).toEqual(["SELECT DISTINCT `Product` AS `memberKey` FROM `foodmart`.`sales_fact`"])
+    expect(statement).toEqual(['SELECT DISTINCT `Product` AS `memberKey` FROM `foodmart`.`sales_fact`'])
   })
 })

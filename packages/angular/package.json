@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-angular",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "keywords": [
     "metad",
     "ocap",
@@ -15,8 +15,8 @@
     "url": "git+https://github.com/meta-d/ocap.git"
   },
   "peerDependencies": {
-    "@angular/common": "^13.2.0",
-    "@angular/core": "^13.2.0"
+    "@angular/common": "^14.0.4",
+    "@angular/core": "^14.0.4"
   },
   "dependencies": {
     "tslib": "^2.3.0"

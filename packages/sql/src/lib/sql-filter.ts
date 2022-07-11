@@ -17,7 +17,7 @@ import isNumber from 'lodash/isNumber'
 import isString from 'lodash/isString'
 import { CubeContext } from './cube'
 import { createDimensionContext } from './dimension'
-import { serializeName } from './types'
+import { serializeName, serializeTableAlias } from './utils'
 
 /**
  * 依据实体类型将过滤器转换成语句
@@ -128,14 +128,16 @@ export function compileSlicer(slicer: ISlicer, entityType: EntityType, cube: Cub
   }
 
   const levels = dimensionContext.hierarchy.levels.slice(dimensionContext.hierarchy.hasAll ? 1 : 0)
-
+  const allLevel = dimensionContext.hierarchy.hasAll ? dimensionContext.hierarchy.levels[0] : null
   return slicer.members
     .map((member) => {
       return [...`${member.value}`.matchAll(MEMBER_VALUE_REGEX)]
         .map((item) => item[1])
+        .filter((value, i) => !(i === 0 && dimensionContext.hierarchy.hasAll && (dimensionContext.hierarchy.allMemberName || '(All)') === value ))
         .map((value, i) => {
           const level = levels[i]
-          return `${serializeName(level.table || dimensionContext.dimensionTable || factTable, dialect)}.${serializeName(
+          const levelTable = level.table || dimensionContext.dimensionTable
+          return `${serializeName(levelTable ? serializeTableAlias(dimensionContext.hierarchy.name, levelTable) : factTable, dialect)}.${serializeName(
             level.nameColumn || level.column,
             dialect
           )} = '${value}'`

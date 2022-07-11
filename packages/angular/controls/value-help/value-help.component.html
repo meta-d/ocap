@@ -168,7 +168,7 @@
   <button mat-button mat-dialog-close>
     {{ 'Ngm.Common.Cancel' | translate: {Default: "Cancel"} }}
   </button>
-  <button mat-raised-button color="accent" [mat-dialog-close]="slicer" cdkFocusInitial>
+  <button mat-raised-button color="accent" cdkFocusInitial (click)="close()">
     {{ 'Ngm.Common.Apply' | translate: {Default: "Apply"} }}
   </button>
 </div>

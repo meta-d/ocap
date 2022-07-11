@@ -1,6 +1,7 @@
 import { AggregationRole, C_MEASURES, EntitySemantics } from '@metad/ocap-core'
 import { buildCubeContext, compileCubeSchema } from './cube'
 import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
+import { PRODUCT_DIMENSION } from './dimension.spec'
 import { queryCube, serializeCubeFact, serializeCubeFrom, serializeSelectFields } from './query'
 
 const SalesEntityType = {
@@ -384,6 +385,40 @@ describe('Build Cube', () => {
     )
   })
 
+  it('queryCube with Two dimensions has same table', () => {
+    const statement = queryCube(
+      {
+        name: 'Sales',
+        dimensions: [
+          PRODUCT_DIMENSION,
+          SHARED_DIMENSION_TIME
+        ],
+        cubes: [CUBE_SALESORDER]
+      },
+      {
+        rows: [
+          {
+            dimension: '[Product]',
+          },
+          {
+            dimension: '[Product Class]',
+          },
+        ],
+        columns: [
+          {
+            dimension: C_MEASURES,
+            measure: 'Sales'
+          },
+        ]
+      },
+      ENTITY_TYPE_SALESORDER,
+      ''
+    )
+
+    expect(statement).toEqual(
+      "SELECT concat('[', `time_by_day`.`the_year`,'].[',`time_by_day`.`week_of_year`,']') AS `[Time.Weekly]`, `time_by_day`.`week_of_year` AS `[Time.Weekly].[MEMBER_CAPTION]`, concat('[', `product`.`brand_name`,']') AS `[Product]`, `product`.`brand_name` AS `[Product].[MEMBER_CAPTION]`, concat('[', `sales_fact`.`payment_method`,']') AS `[Payment method]`, `sales_fact`.`payment_method` AS `[Payment method].[MEMBER_CAPTION]`, sum(`sales_fact`.`store_sales`) AS `Sales`, sum(`sales_fact`.`store_cost`) AS `Cost`, SUM(`sales_fact`.`store_sales` - `sales_fact`.`store_cost`) AS `Profit` FROM `sales_fact` AS `sales_fact` INNER JOIN `time_by_day` AS `time_by_day` ON `sales_fact`.`time_id` = `time_by_day`.`time_id` INNER JOIN `product` AS `product` ON `sales_fact`.`product_id` = `product`.`product_id` GROUP BY `time_by_day`.`the_year`, `time_by_day`.`week_of_year`, `product`.`brand_name`, `sales_fact`.`payment_method`"
+    )
+  })
 })
 
 describe('Query Cube with Filters', () => {
@@ -491,10 +526,8 @@ describe('Hive DB', () => {
     const statement = queryCube(
       {
         name: 'Sales',
-        dimensions: [SHARED_DIMENSION_TIME],
-        cubes: [
-          CUBE_SALESORDER
-        ]
+        dimensions: [PRODUCT_DIMENSION, SHARED_DIMENSION_TIME],
+        cubes: [CUBE_SALESORDER]
       },
       {
         rows: [
@@ -529,7 +562,7 @@ describe('Hive DB', () => {
           }
         ]
       },
-      compileCubeSchema(CUBE_SALESORDER.name, CUBE_SALESORDER, [SHARED_DIMENSION_TIME], 'hive'),
+      compileCubeSchema(CUBE_SALESORDER.name, CUBE_SALESORDER, [PRODUCT_DIMENSION, SHARED_DIMENSION_TIME], 'hive'),
       'hive',
       'foodmart'
     )

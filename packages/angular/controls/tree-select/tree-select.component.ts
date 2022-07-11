@@ -1,21 +1,14 @@
+import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { FlatTreeControl } from '@angular/cdk/tree'
 import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
-import { DataSettings, Dimension, hierarchize, IMember, TreeNodeInterface } from '@metad/ocap-core'
+import { DataSettings, Dimension, FlatNode, hierarchize, IMember, TreeNodeInterface } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { debounceTime, EMPTY, map, Observable, of, startWith, switchMap } from 'rxjs'
 import { NgmSmartFilterService } from '../smart-filter.service'
 
-export interface FlatNode<T> {
-  expandable: boolean
-  key: string
-  label: string
-  value: number
-  level: number
-  raw?: T
-}
 
 @UntilDestroy()
 @Component({
@@ -40,9 +33,17 @@ export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValu
   @Input() dimension: Dimension
   @Input() appearance: NgmAppearance
 
+  @Input() get multiple() {
+    return this._multiple
+  }
+  set multiple(value: boolean | string) {
+    this._multiple = coerceBooleanProperty(value)
+  }
+  private _multiple = false
+
   // private slicer$ = new BehaviorSubject<ISlicer>(null)
   treeNodePadding = 40
-  myControl = new FormControl('')
+  myControl = new FormControl<string | FlatNode<any>>('')
   treeData$ = this.smartFilterService.selectResult().pipe(
     switchMap(({ error, schema, data }) => {
       if (error) {
@@ -142,11 +143,11 @@ export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValu
 
     if (appearance?.currentValue) {
       if (this.appearance.displayDensity === DisplayDensity.compact) {
-        this.treeNodePadding = 24
+        this.treeNodePadding = 18
       } else if (this.appearance.displayDensity === DisplayDensity.cosy) {
-        this.treeNodePadding = 30
+        this.treeNodePadding = 24
       } else {
-        this.treeNodePadding = 40
+        this.treeNodePadding = 30
       }
     }
   }

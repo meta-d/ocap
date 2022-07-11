@@ -28,7 +28,7 @@
             "output": "."
           }
         ],
-        "format": ["cjs", "esm", "umd"]
+        "format": ["cjs", "esm"]
       }
     },
     "lint": {

@@ -1,0 +1,120 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $color-config: mat.get-color-config($config-or-theme);
+  $primary: map-get($color-config, 'primary');
+  $accent:  map-get($color-config, 'accent');
+  $warn:    map-get($color-config, 'warn');
+  $foreground:    map-get($color-config, 'foreground');
+
+  .ngm-appearance-acrylic {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: -8px;
+      right: -8px;
+      bottom: -8px;
+      z-index: -1;
+      background-blend-mode: exclusion;
+      filter: blur(8px);
+      -webkit-filter: blur(8px);
+      filter: url(#blur);
+      filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius='8');
+    }
+
+    &::after {
+      // background-color: white;
+      opacity: 0.50;
+    }
+  }
+
+  .mat-button-base, .mat-menu-item, .mat-option {
+    &.ngm-appearance-dashed {
+      border: 1px dashed mat.get-color-from-palette($foreground, divider);
+    }
+  }
+
+  .mat-button-base:not(.mat-button-disabled), .mat-menu-item, .mat-option {
+    &.ngm-appearance-dashed:hover, &.ngm-appearance-dashed:focus {
+      border-color: #738187;
+    }
+  }
+
+  .mat-button-toggle-group {
+    &.ngm-appearance-outline {
+      border-color: transparent;
+      
+      .mat-button-toggle {
+        box-sizing: content-box;
+        border: 1px solid transparent;
+        transition: all ease-in-out 300ms;
+        &:hover {
+          border-radius: 5px;
+          color: mat.get-color-from-palette($primary, 400);
+          border-color: mat.get-color-from-palette($primary, A400);
+        }
+        &.mat-button-toggle-checked {
+          border-radius: 15px;
+          color: mat.get-color-from-palette($primary, 500);
+          border-color: mat.get-color-from-palette($primary, A400);
+          background-color: transparent;
+        }
+      }
+
+      // .mat-button-toggle:first-of-type {
+      //   border-top-left-radius: 15px;
+      //   border-bottom-left-radius: 15px;
+      // }
+      // .mat-button-toggle:last-of-type {
+      //   border-top-right-radius: 15px;
+      //   border-bottom-right-radius: 15px;
+      // }
+      .mat-button-toggle.mat-button-toggle-checked {
+        // color: map.get($primary, 500);
+        // border-color: map.get($primary, 500);
+        // background-color: map.get($primary, 100);
+        /*cdk-focused cdk-mouse-focused*/
+      }
+    }
+  }
+
+  // danger
+  .mat-button-base, .mat-menu-item, .mat-option {
+    &.ngm-appearance-danger:hover {
+      color:  mat.get-color-from-palette($warn);
+      .mat-icon-no-color {
+        color: mat.get-color-from-palette($warn);
+      }
+    }
+  }
+
+  .ngm-appearance-opacity {
+    opacity: .5;
+  }
+}
+
+@mixin density($config-or-theme) {
+}
+
+@mixin typography($config-or-theme) {
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

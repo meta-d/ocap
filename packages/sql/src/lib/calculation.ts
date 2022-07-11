@@ -8,7 +8,7 @@ import {
   RestrictedMeasureProperty
 } from '@metad/ocap-core'
 import { convertSlicerToSQL } from './sql-filter'
-import { serializeName } from './types'
+import { serializeName } from './utils'
 
 export function serializeCalculationProperty(property: CalculationProperty, dialect: string) {
   let formula

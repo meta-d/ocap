@@ -1,14 +1,17 @@
 import { ModuleWithProviders, NgModule } from '@angular/core'
 import { NgmDSCoreService } from './core.service'
-import { DensityDirective } from './displayDensity'
+import { AppearanceDirective } from './directives/appearance'
+import { DensityDirective } from './directives/displayDensity'
 
 @NgModule({
   imports: [],
   exports: [
-    DensityDirective
+    DensityDirective,
+    AppearanceDirective
   ],
   declarations: [
-    DensityDirective
+    DensityDirective,
+    AppearanceDirective
   ],
   providers: []
 })

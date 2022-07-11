@@ -5,20 +5,22 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatTabsModule } from '@angular/material/tabs'
 import { NgmBreadcrumbBarComponent } from './breadcrumb/breadcrumb.component'
 import { ResizeObserverModule } from './directives/resize-observer.module'
-import { DisplayBehaviourComponent } from './display-behaviour/display-behaviour.component'
+import { DisplayBehaviourModule } from './display-behaviour/display-behaviour.module'
 import { ResizerModule } from './resizer/resizer.module'
 import { SplitterModule } from './splitter/splitter.module'
+import { TreeSelectModule } from './tree-select/tree-select.module'
 
 @NgModule({
   imports: [CommonModule, MatIconModule, MatRippleModule, MatTabsModule, ResizerModule, SplitterModule],
   exports: [
-    DisplayBehaviourComponent,
     NgmBreadcrumbBarComponent,
     ResizerModule,
     SplitterModule,
-    ResizeObserverModule
+    ResizeObserverModule,
+    TreeSelectModule,
+    DisplayBehaviourModule
   ],
-  declarations: [DisplayBehaviourComponent, NgmBreadcrumbBarComponent],
+  declarations: [NgmBreadcrumbBarComponent],
   providers: []
 })
 export class NgmCommonModule {}

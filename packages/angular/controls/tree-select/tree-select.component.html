@@ -1,7 +1,10 @@
 <mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
   <mat-label>{{dimension?.label}}</mat-label>
   <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
-  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" [class]="appearance?.displayDensity === 'compact' ? 'ngm-density__compact' : ''">
+  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+    class="ngm-tree-select__panel"
+    [class]="(multiple ? 'multiple' : '') + ' ' + (appearance?.displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (appearance?.displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
+  >
     <mat-option *ngFor="let data of filteredOptions | async" [value]="data">
       <button mat-icon-button [displayDensity]="appearance?.displayDensity"
         [style.visibility]="!data.expandable ? 'hidden' : ''"

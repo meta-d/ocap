@@ -56,13 +56,14 @@ const SalesOrder3s = {
 
 export const CUBE_SALES_ORDER = {
   name: 'SalesOrder',
-  tables: [{ name: 'SalesOrder' }],
+  tables: [{ name: 'sales_order' }],
   dimensions: [
     {
       name: 'Product',
       hierarchies: [
         {
           name: '',
+          label: '产品',
           levels: [
             {
               name: 'Product',

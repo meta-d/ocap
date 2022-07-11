@@ -1,7 +1,8 @@
 import { AbstractEntityService, PeriodFunctions, Property, QueryOptions, QueryReturn } from '@metad/ocap-core'
 import { BehaviorSubject, catchError, from, map, Observable, of, switchMap } from 'rxjs'
 import { queryCube } from './query'
-import { serializeWrapCatalog, SQLQueryResult } from './types'
+import { SQLQueryResult } from './types'
+import { serializeWrapCatalog } from './utils'
 
 
 /**
@@ -37,8 +38,6 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
         }
 
         statement = serializeWrapCatalog(statement, this.dataSource.options.dialect, this.dataSource.options.catalog)
-
-        console.log(statement)
         
         return from(
           this.dataSource.agent.request(this.dataSource.options, {

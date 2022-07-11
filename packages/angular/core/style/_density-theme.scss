@@ -74,29 +74,27 @@
     }
   }
 
-  .mat-autocomplete-panel {
-    .mat-option {
-      .mat-button-base .mat-icon {
-        margin: 0;
-      }
-    }
+  // .mat-autocomplete-panel {
+  //   .mat-option {
+  //     .mat-button-base .mat-icon {
+  //       margin: 0;
+  //     }
+  //   }
 
-    &.ngm-density__cosy {
-      .mat-option {
-        height: 42px;
-        font-size: 14px;
-      }
-    }
+  //   &.ngm-density__cosy {
+  //     .mat-option {
+  //       height: 42px;
+  //       font-size: 14px;
+  //     }
+  //   }
 
-    &.ngm-density__compact {
-      .mat-option {
-        height: 36px;
-        font-size: 14px;
-        padding: 0 10px;
-
-        
-      }
-    }
-  }
+  //   &.ngm-density__compact {
+  //     .mat-option {
+  //       height: 36px;
+  //       font-size: 14px;
+  //       padding: 0 10px;
+  //     }
+  //   }
+  // }
 
 }

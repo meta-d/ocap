@@ -21,7 +21,13 @@
     }
 
     &.grid {
-      .cdk-cell {
+      .cdk-header-row {
+        border-top-width: 1px;
+        border-top-style: solid;
+        border-top-color: mat.get-color-from-palette($foreground, divider);
+      }
+      .cdk-cell,
+      .cdk-header-cell {
         border-right: 1px solid mat.get-color-from-palette($foreground, divider);
 
         &:first-child {
@@ -33,6 +39,23 @@
     .cdk-row {
       &:hover {
         background-color: mat.get-color-from-palette($background, hover);
+      }
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+  .cdk-table.grid {
+    &.ngm-density__cosy {
+      .cdk-header-cell,
+      .cdk-cell {
+        padding: 0 10px;
+      }
+    }
+    &.ngm-density__compact {
+      .cdk-header-cell,
+      .cdk-cell {
+        padding: 0 5px;
       }
     }
   }

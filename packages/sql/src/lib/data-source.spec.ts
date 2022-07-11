@@ -2,6 +2,7 @@ import { Agent, AgentStatus, AgentType, DataSourceOptions, DSCacheService, MockA
 import { EMPTY, firstValueFrom, Observable, skip } from 'rxjs'
 import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
 import { SQLDataSource } from './data-source'
+import { PRODUCT_DIMENSION } from './dimension.spec'
 
 describe('SQL DataSource', () => {
   let dataSource: SQLDataSource
@@ -11,7 +12,7 @@ describe('SQL DataSource', () => {
         type: 'SQL',
         schema: {
           name: 'Sales',
-          dimensions: [SHARED_DIMENSION_TIME],
+          dimensions: [PRODUCT_DIMENSION, SHARED_DIMENSION_TIME],
           cubes: [CUBE_SALESORDER]
         }
       },

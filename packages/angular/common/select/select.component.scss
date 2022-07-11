@@ -1,0 +1,21 @@
+.ngm-select-form-field__viewport {
+  min-height: 200px;
+}
+
+::ng-deep {
+  .ngm-select__autocomplete-panel.mat-autocomplete-panel {
+    .mat-option-text {
+      .mat-checkbox {
+        width: 100%;
+
+        .mat-checkbox-layout {
+          width: 100%;
+
+          .mat-checkbox-label {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+}

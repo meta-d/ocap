@@ -8,6 +8,7 @@ import {
   DataSettings,
   Dimension,
   FilterSelectionType,
+  filterTreeNodes,
   // getPropertyHierarchy,
   hierarchize,
   IDimensionMember,
@@ -19,7 +20,7 @@ import { ComponentStore } from '@metad/store'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import isEmpty from 'lodash/isEmpty'
 import { Observable } from 'rxjs'
-import { debounceTime, filter, map, switchMap, tap } from 'rxjs/operators'
+import { combineLatestWith, debounceTime, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { NgmSmartFilterService } from '../smart-filter.service'
 import { ControlOptions } from '../types'
 
@@ -127,6 +128,14 @@ export class MemberTreeComponent<T extends IDimensionMember = IDimensionMember>
           }
 
           return null
+        }),
+        combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null))),
+        map(([treeNodes, text]) => {
+          text = text?.trim()
+          if (text) {
+            return filterTreeNodes(treeNodes, text)
+          }
+          return treeNodes
         }),
         untilDestroyed(this)
       )

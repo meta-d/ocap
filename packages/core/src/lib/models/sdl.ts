@@ -265,10 +265,21 @@ export interface ParameterProperty extends EntityProperty {
 }
 
 /**
- * 
  * Entity 的 Meta 信息集合
  */
 export interface EntitySet extends Entity {
+  __id__?: string
+  /**
+   * Entity Type 定义
+   */
+  entityType: EntityType
+
+  annotations?: Array<Annotation>
+
+  indicators?: Array<Indicator>
+}
+
+export interface MDCube extends Entity {
   __id__?: string
   /**
    * Entity Type 定义
