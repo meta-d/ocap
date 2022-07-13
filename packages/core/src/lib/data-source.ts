@@ -110,6 +110,8 @@ export interface DataSource {
   getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
 
   /**
+   * @deprecated 运行时 EntityType 接口不应该直接暴露, 使用 selectEntitySet 方法
+   * 
    * 获取运行时 EntityType
    */
   getEntityType(entity: string): Observable<EntityType>

@@ -1,5 +1,6 @@
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import {
+  DisplayDensity,
   NgmMissingTranslationHandler,
   OcapCoreModule,
   OCAP_AGENT_TOKEN,
@@ -80,7 +81,10 @@ Primary.args = {
   },
   dimension: {
     dimension: '[Product]'
-  }
+  },
+  options: {
+    searchable: true
+  },
 }
 
 export const MemberSourceFromDimension = Template.bind({})
@@ -95,5 +99,8 @@ MemberSourceFromDimension.args = {
   options: {
     memberSource: MemberSource.DIMENSION,
     searchable: true
+  },
+  appearance: {
+    displayDensity: DisplayDensity.cosy
   }
 }

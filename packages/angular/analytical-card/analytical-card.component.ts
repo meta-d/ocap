@@ -83,7 +83,11 @@ export interface AnalyticalCardState {
   selector: 'ngm-analytical-card',
   templateUrl: './analytical-card.component.html',
   styleUrls: ['./analytical-card.component.scss'],
-  providers: [AnalyticalCardService]
+  providers: [AnalyticalCardService],
+  host: {
+    '[class.ngm-density__compact]': `displayDensity==='compact'`,
+    '[class.ngm-density__cosy]': `displayDensity==='cosy'`
+  }
 })
 export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState> implements OnInit, OnChanges {
   DisplayDensity = DisplayDensity
@@ -114,6 +118,10 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
 
   @ViewChild('contextMenuTrigger') contextMenu: MatMenuTrigger
   contextMenuPosition = { x: '0px', y: '0px' }
+
+  get displayDensity() {
+    return this.appearance?.displayDensity
+  }
 
   private echartsEngine = new SmartEChartEngine()
   readonly options$ = this.echartsEngine.selectChartOptions().pipe(

@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
 import { MatRadioModule } from '@angular/material/radio'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { DisplayBehaviourModule } from '@metad/ocap-angular/common'
 import { ParameterComponent } from './parameter/parameter.component'
 
 
@@ -21,7 +22,8 @@ import { ParameterComponent } from './parameter/parameter.component'
     MatRadioModule,
     MatListModule,
 
-    OcapCoreModule
+    OcapCoreModule,
+    DisplayBehaviourModule
   ],
   exports: [ParameterComponent],
   declarations: [ParameterComponent],

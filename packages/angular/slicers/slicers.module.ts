@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { FlexLayoutModule } from '@angular/flex-layout'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatSelectModule } from '@angular/material/select'
-import { TranslateModule } from '@ngx-translate/core'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { SlicerSelectComponent } from './select/select.component'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { SortByComponent } from './sort-by/sort-by.component'
 
 @NgModule({
   imports: [
@@ -25,8 +26,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
     MatIconModule,
     OcapCoreModule
   ],
-  exports: [SlicerSelectComponent],
-  declarations: [SlicerSelectComponent],
+  exports: [SlicerSelectComponent, SortByComponent],
+  declarations: [SlicerSelectComponent, SortByComponent],
   providers: []
 })
 export class SlicersModule {}

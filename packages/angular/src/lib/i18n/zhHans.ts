@@ -28,14 +28,13 @@ export const ZhHans = {
         DisplayBehaviour: '展现形式',
         SelectedMembers: '选中成员',
         ClearSelection: '清空选择',
-        ShowHierarchy: '显示层级',
         ShowUnbookedMembers: '显示未分配成员',
         ShowOnlyLeaves: '只显示叶子节点',
         ExcludeSelectedMembers: '排除选中成员',
         SelectionType: '选择类型',
         Presentation: '展现形式',
         HierarchySelectionMode: '层级选择模式',
-
+        Hierarchy: '层次结构'
       }
     }
   }

@@ -29,7 +29,7 @@ import { EntitySchemaComponent } from './entity-schema.component'
   <mat-drawer-content cdkDropList [cdkDropListData]="drops" (cdkDropListDropped)="drop($event)">
     <ul>
       <li *ngFor="let item of drops">
-        {{item.entity}}/{{item.name}}/{{item.type}}/{{item.dataType}}/{{item.dbType}}
+        {{item.entity}}/{{item.name || item.raw.memberKey}}/{{item.type}}/{{item.dataType}}/{{item.dbType}}
       </li>
     </ul>
   </mat-drawer-content>

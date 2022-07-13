@@ -56,6 +56,7 @@ const SalesOrder3s = {
 
 export const CUBE_SALES_ORDER = {
   name: 'SalesOrder',
+  label: '销售订单',
   tables: [{ name: 'sales_order' }],
   dimensions: [
     {
@@ -193,18 +194,20 @@ export class MockAgent implements Agent {
         if (options.url === 'query') {
           const results = []
 
-          if (options.body?.statement?.includes('DISTINCT `product` AS `memberKey`')) {
+          if (options.body?.statement?.includes('AS `memberKey`')) {
             const data = []
             randProductAdjective({ length: 3 }).forEach((product) => {
-              data.push({memberKey: product}),
+              data.push({memberKey: product, memberCaption: product}),
               randProductAdjective({ length: 3 }).filter((product2) => !data.find((item) => item.memberKey === product2)).forEach((product2) => {
                 data.push({
                   memberKey: product2,
+                  memberCaption: product2,
                   parentKey: product
                 })
                 randProductAdjective({ length: 5 }).filter((product) => !data.find((item) => item.memberKey === product)).forEach((product3) => {
                   data.push({
                     memberKey: product3,
+                    memberCaption: product3,
                     parentKey: product2
                   })
                 })

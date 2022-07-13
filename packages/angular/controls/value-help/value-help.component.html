@@ -42,7 +42,7 @@
     
                     <mat-form-field appearance="fill" *ngIf="hierarchies$ | async as hierarchies">
                         <mat-label>
-                            {{ 'Ngm.Controls.ValueHelp.ShowHierarchy' | translate: {Default: "Show Hierarchy"} }}
+                            {{ 'Ngm.Controls.ValueHelp.Hierarchy' | translate: {Default: "Hierarchy"} }}
                         </mat-label>
                         <mat-select [(ngModel)]="hierarchy">
                             <mat-option *ngFor="let hierarchy of hierarchies" [value]="hierarchy.name">{{hierarchy.label}}</mat-option>
@@ -68,14 +68,16 @@
         <mat-divider></mat-divider>
 
         <div class="ngm-value-help__members">
-            <ngm-member-list *ngIf="presentation !== PresentationEnum.Hierarchy" fxFlex="100" [appearance]="appearance"
+            <ngm-member-list *ngIf="presentation !== PresentationEnum.Hierarchy" fxFlex="100"
+                [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"
                 [(ngModel)]="slicerModel"
             ></ngm-member-list>
 
-            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100" [appearance]="appearance"
+            <ngm-member-tree *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100"
+                [appearance]="appearance"
                 [dataSettings]="dataSettings"
                 [dimension]="dimension"
                 [options]="options"
@@ -110,8 +112,8 @@
             </button>
         </div>
 
-        <div class="ngm-value-help__settings" fxLayout="column">
-            <mat-form-field appearance="fill">
+        <div class="ngm-value-help__settings" fxLayout="row wrap" fxLayoutGap=".5em grid">
+            <mat-form-field fxFlex="50" appearance="standard">
                 <mat-label>
                     {{ 'Ngm.Controls.ValueHelp.SelectionType' | translate: {Default: "Selection Type"} }}
                 </mat-label>
@@ -125,7 +127,7 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field appearance="fill">
+            <mat-form-field fxFlex="50" appearance="standard">
                 <mat-label>
                     {{ 'Ngm.Controls.ValueHelp.Presentation' | translate: {Default: "Presentation"} }}
                 </mat-label>
@@ -139,7 +141,9 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field appearance="fill" *ngIf="presentation === PresentationEnum.Hierarchy">
+            <mat-form-field *ngIf="presentation === PresentationEnum.Hierarchy" fxFlex="100"
+                appearance="standard"
+                >
                 <mat-label>
                     {{ 'Ngm.Controls.ValueHelp.HierarchySelectionMode' | translate: {Default: "Hierarchy Selection Mode"} }}
                 </mat-label>

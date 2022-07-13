@@ -51,6 +51,7 @@
 .ngm-value-help__selected {
   display: flex;
   flex-direction: column;
+  max-width: 300px;
 }
 
 .ngm-value-help__selected-members {

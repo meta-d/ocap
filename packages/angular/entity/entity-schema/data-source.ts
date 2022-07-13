@@ -24,7 +24,9 @@ import {
   Observable,
   of,
   shareReplay,
+  Subject,
   switchMap,
+  takeUntil,
   tap
 } from 'rxjs'
 
@@ -54,6 +56,7 @@ export class EntitySchemaFlatNode {
 }
 
 export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> {
+  private destroy$ = new Subject<void>()
   dataChange = new BehaviorSubject<EntitySchemaFlatNode[]>([])
 
   get dataSourceName() {
@@ -67,6 +70,7 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
     distinctUntilChanged(),
     filter((value) => !!value),
     switchMap((name) => this.dsCoreService.getDataSource(name)),
+    takeUntil(this.destroy$),
     shareReplay(1)
   )
   private entity$ = new BehaviorSubject<string>(null)
@@ -74,6 +78,7 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
     distinctUntilChanged(),
     filter((value) => !!value),
     switchMap((name) => this.dataSource$.pipe(map((dataSource) => dataSource.createEntityService(name)))),
+    takeUntil(this.destroy$),
     shareReplay(1)
   )
 
@@ -102,7 +107,8 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
     return merge(collectionViewer.viewChange, this.dataChange).pipe(map(() => this.data))
   }
   disconnect(collectionViewer: CollectionViewer): void {
-    //
+    this.destroy$.next()
+    this.destroy$.complete()
   }
 
   /** Handle expand/collapse behaviors */
@@ -130,7 +136,7 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
         this.dataChange.next(this.data)
       } else {
         node.isLoading = true
-        this.getChildren(node).subscribe({
+        this.getChildren(node).pipe(takeUntil(this.destroy$)).subscribe({
           next: (children) => {
             const index = this.data.indexOf(node)
             if (index < 0) {
@@ -200,25 +206,35 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
 
       this.entity$.next(node.item.name)
       return this.dataSource$.pipe(
-        switchMap((dataSource) => dataSource.getEntityType(node.item.name)),
+        switchMap((dataSource) => dataSource.selectEntityType(node.item.name)),
         first(),
-        tap((entityType) => (this.entityType = entityType)),
+        // map((entityType) => cloneDeep(entityType)),
+        tap((entityType) => {
+          this.entityType = entityType
+          node.item.label = this.entityType.label
+        }),
         map((entityType) => {
           const dimensions = getEntityDimensions(entityType)
-          dimensions.forEach((dimension) => (dimension.type = EntitySchemaType.Dimension))
+          // dimensions.forEach((dimension) => (dimension.type = EntitySchemaType.Dimension))
           const measures = getEntityMeasures(entityType)
-          measures.forEach((dimension) => ((dimension as EntitySchemaNode).type = EntitySchemaType.IMeasure))
-          return [...dimensions, ...measures]
+          // measures.forEach((item) => ((item as EntitySchemaNode).type = EntitySchemaType.IMeasure))
+          return [...dimensions.map((item) => ({...item, type: EntitySchemaType.Dimension})), ...measures.map((item) => ({
+            ...item,
+            type: EntitySchemaType.IMeasure
+          }))]
         })
       )
     } else if (node.item.type === EntitySchemaType.Dimension) {
       const item = node.item as PropertyDimension
       const hierarchies = item.hierarchies
       if (!isEmpty(hierarchies)) {
-        hierarchies.forEach((item: EntitySchemaNode) => {
-          item.type = EntitySchemaType.Hierarchy
-        })
-        return of(hierarchies)
+        // hierarchies.forEach((item: EntitySchemaNode) => {
+        //   item.type = EntitySchemaType.Hierarchy
+        // })
+        return of(hierarchies.map((item) => ({
+          ...item,
+          type: EntitySchemaType.Hierarchy
+        })))
       } else {
         return this.entityService$.pipe(
           switchMap((entityService) =>
@@ -226,22 +242,30 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
           ),
           first(),
           map((members) => {
-            members.forEach((item) => {
-              item.type = EntitySchemaType.Member
-              item.name = item.memberKey
-              item.label = item.memberCaption
-            })
-            return members
+            // members.forEach((item) => {
+            //   item.type = EntitySchemaType.Member
+            //   item.name = item.memberKey
+            //   item.label = item.memberCaption
+            // })
+            return members.map((item) => ({
+              ...item,
+              type: EntitySchemaType.Member,
+              name: item.memberKey,
+              label: item.memberCaption
+            }))
           })
         )
       }
     } else if (node.item.type === EntitySchemaType.Hierarchy) {
       const levels = (node.item as PropertyHierarchy).levels as EntitySchemaNode[]
       if (!isEmpty(levels)) {
-        levels.forEach((item) => {
-          item.type = EntitySchemaType.Level
-        })
-        return of(levels)
+        // levels.forEach((item) => {
+        //   item.type = EntitySchemaType.Level
+        // })
+        return of(levels.map((item) => ({
+          ...item,
+          type: EntitySchemaType.Level
+        })))
       }
     } else if (node.item.type === EntitySchemaType.Level) {
       const item = node.item as any
@@ -258,20 +282,28 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
           const _members = hierarchize<IDimensionMember>(members, DimensionMemberRecursiveHierarchy, {
             startLevel: item.levelNumber
           })
-          _members.forEach((item: EntitySchemaNode & TreeNodeInterface<IDimensionMember>) => {
-            item.type = EntitySchemaType.Member
-            item.name = item.raw.memberUniqueName
-          })
-          return _members
+          // _members.forEach((item: EntitySchemaNode & TreeNodeInterface<IDimensionMember>) => {
+          //   item.type = EntitySchemaType.Member
+          //   item.name = item.raw.memberUniqueName
+          // })
+          return _members.map((item) => ({
+            ...item,
+            type: EntitySchemaType.Member,
+            name: item.raw.memberUniqueName
+          }))
         })
       )
     } else if (node.item.type === EntitySchemaType.Member) {
       const members = (node.item as unknown as TreeNodeInterface<IDimensionMember>).children
-      members?.forEach((item: EntitySchemaNode & TreeNodeInterface<IDimensionMember>) => {
-        item.type = EntitySchemaType.Member
-        item.name = item.raw.memberUniqueName
-      })
-      return of(members ?? [])
+      // members?.forEach((item: EntitySchemaNode & TreeNodeInterface<IDimensionMember>) => {
+      //   item.type = EntitySchemaType.Member
+      //   item.name = item.raw.memberUniqueName
+      // })
+      return of(members?.map((item) => ({
+        ...item,
+        type: EntitySchemaType.Member,
+        name: item.raw.memberUniqueName
+      })) ?? [])
     }
 
     return of([])
