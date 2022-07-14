@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core'
 import { ExtraOptions, PreloadAllModules, RouterModule, Routes } from '@angular/router'
+import { ChartsComponent } from './charts/charts.component'
 
 const routes: Routes = [
   // {
@@ -18,6 +19,10 @@ const routes: Routes = [
   {
     path: 'covid',
     loadChildren: () => import('./covid/covid.module').then((m) => m.CovidModule)
+  },
+  {
+    path: 'charts',
+    component: ChartsComponent
   }
   // { path: '', redirectTo: 'pages', pathMatch: 'full' },
   // { path: '**', redirectTo: 'pages' }

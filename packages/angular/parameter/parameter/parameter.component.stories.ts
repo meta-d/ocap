@@ -146,6 +146,32 @@ ParameterInput.args = {
   }
 }
 
+export const ParameterInputNumber = Template.bind({})
+ParameterInputNumber.args = {
+  dataSettings: {
+    dataSource: 'Sales',
+    entitySet: 'SalesOrder'
+  },
+  parameter: {
+    name: 'DepartmentInput',
+    paramType: ParameterControlEnum.Input,
+    dataType: 'number',
+  }
+}
+
+export const ParameterInputString = Template.bind({})
+ParameterInputString.args = {
+  dataSettings: {
+    dataSource: 'Sales',
+    entitySet: 'SalesOrder'
+  },
+  parameter: {
+    name: 'DepartmentInput',
+    paramType: ParameterControlEnum.Input,
+    dataType: 'string',
+  }
+}
+
 export const ParameterSelect = Template.bind({})
 ParameterSelect.args = {
   dataSettings: {

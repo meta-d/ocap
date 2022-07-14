@@ -33,6 +33,7 @@ import { AppComponent } from './app.component'
 import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { ChartsComponent } from './charts/charts.component'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -43,7 +44,7 @@ export class CustomLoader implements TranslateLoader {
 }
 
 @NgModule({
-  declarations: [AppComponent, NxWelcomeComponent],
+  declarations: [AppComponent, ChartsComponent, NxWelcomeComponent],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,

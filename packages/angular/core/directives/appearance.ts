@@ -1,12 +1,21 @@
+import { FocusMonitor } from '@angular/cdk/a11y'
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
-import { Directive, HostBinding, Input } from '@angular/core'
+import { Directive, ElementRef, HostBinding, Input } from '@angular/core'
+import { CanColor, mixinColor } from '@angular/material/core'
 
 export type ngmAppearance = 'filled' | 'outline' | 'ghost' | 'hero' | 'acrylic' | 'opacity' | 'dashed' | 'danger'
 
+const _NgmAppearanceBase = mixinColor(
+  class {
+    constructor(public _elementRef: ElementRef) {}
+  }
+)
+
 @Directive({
-  selector: '[ngmAppearance]'
+  selector: '[ngmAppearance]',
+  inputs: ['color'],
 })
-export class AppearanceDirective {
+export class AppearanceDirective extends _NgmAppearanceBase implements CanColor {
   @Input() ngmAppearance: ngmAppearance = 'filled'
 
   /**
@@ -65,5 +74,9 @@ export class AppearanceDirective {
     if (coerceBooleanProperty(value)) {
       this.ngmAppearance = 'danger'
     }
+  }
+
+  constructor(elementRef: ElementRef, private _focusMonitor: FocusMonitor) {
+    super(elementRef)
   }
 }

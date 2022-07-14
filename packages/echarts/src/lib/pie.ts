@@ -13,7 +13,7 @@ import isNil from 'lodash/isNil'
 import { getCoordinateSystem, measuresToSeriesComponents, serializeSeriesComponent } from './cartesian'
 import { coordinates, gatherCoordinates } from './coordinates'
 import { getEChartsTooltip } from './tooltip'
-import { EChartsOptions } from './types'
+import { EChartsOptions, ICoordinate } from './types'
 
 export function pie(
   data: QueryReturn<unknown>,
@@ -47,7 +47,7 @@ export function pieCoordinate(
   entityType: EntityType,
   settings: ChartSettings,
   options: EChartsOptions
-) {
+): ICoordinate {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
 
@@ -81,6 +81,7 @@ export function pieCoordinate(
   const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
+    name: '',
     grid: mergeOptions(
       {
         top: 0,

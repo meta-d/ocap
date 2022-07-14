@@ -34,7 +34,7 @@ import { DecalPatterns } from './decal'
 import { referenceLines } from './series'
 import { stackedForMeasure } from './stacked'
 import { getEChartsTooltip } from './tooltip'
-import { AxisEnum, EChartsOptions, SeriesComponentType } from './types'
+import { AxisEnum, EChartsOptions, ICoordinate, SeriesComponentType } from './types'
 
 export function cartesian(
   data: QueryReturn<unknown>,
@@ -72,7 +72,7 @@ export function cartesianCoordinate(
   entityType: EntityType,
   settings: ChartSettings,
   options: EChartsOptions
-) {
+): ICoordinate {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
   const category2 = getChartCategory2(chartAnnotation)
@@ -128,6 +128,7 @@ export function cartesianCoordinate(
   const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
+    name: '',
     grid: mergeOptions(
       {
         top: 0,
@@ -434,7 +435,7 @@ export function measuresToSeriesComponents(
   data: any[],
   entityType: EntityType,
   settings: ChartSettings
-) {
+): SeriesComponentType[] {
   const tooltips = measures.filter(({ role }) => role === ChartMeasureRoleType.Tooltip)
   const _measures = measures.filter(
     ({ role }) =>
@@ -450,7 +451,9 @@ export function measuresToSeriesComponents(
     const maxItem = maxBy(dataNotNull, measureName)
     return {
       ...measure,
-      id: settings?.universalTransition ? getPropertyMeasure(measure) : null,
+      // TODO 如何设置规律的 series ID 编码
+      // id: settings?.universalTransition ? getPropertyMeasure(measure) : null,
+      id: getPropertyMeasure(measure),
       name: measureProperty?.label,
       label: measureProperty?.label,
       seriesType: measure.shapeType,

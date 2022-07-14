@@ -81,3 +81,15 @@ export const FORMAT_LOCALE_DATA = {
     shortNumberUnits: '万,亿,万亿',
   }
 }
+
+export interface ICoordinate {
+  name: string
+  datasets: any[]
+  grid: any,
+  title?: any
+  xAxis?: any
+  yAxis?: any
+  visualMap?: any
+  tooltip?: any
+  legend?: any
+}

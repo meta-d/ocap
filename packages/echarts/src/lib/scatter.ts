@@ -21,7 +21,7 @@ import { dimensionToSeriesComponent, getCoordinateSystem, serializeSeriesCompone
 import { coordinates, gatherCoordinates } from './coordinates'
 import { referenceLines } from './series'
 import { getEChartsTooltip } from './tooltip'
-import { AxisEnum, EChartsOptions } from './types'
+import { AxisEnum, EChartsOptions, ICoordinate } from './types'
 
 export function scatter(
   data: QueryReturn<unknown>,
@@ -52,7 +52,7 @@ export function scatterCoordinate(
   entityType: EntityType,
   settings: ChartSettings,
   options: EChartsOptions
-) {
+): ICoordinate {
   const category = getChartCategory(chartAnnotation)
   const categoryProperty = getEntityProperty(entityType, category)
   // const category2 = getChartCategory2(chartAnnotation)
@@ -130,6 +130,7 @@ export function scatterCoordinate(
   const { categoryAxis, valueAxis } = getCoordinateSystem(chartAnnotation, entityType, data, options, settings.locale)
 
   const gridOptions = {
+    name: '',
     grid: mergeOptions(
       {
         top: 0,

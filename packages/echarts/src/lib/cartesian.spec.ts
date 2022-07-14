@@ -1,42 +1,9 @@
-import { AggregationRole, C_MEASURES } from '@metad/ocap-core'
-import { getCoordinateSystem } from './cartesian'
+import { getCoordinateSystem, measuresToSeriesComponents } from './cartesian'
+import { CHART_ANNOTATION, SALES_ENTITY_TYPE } from './mock'
 
 describe('CoordinateSystem', () => {
   it('#Basic', () => {
-    const c = getCoordinateSystem(
-      {
-        chartType: {
-          type: 'Scatter'
-        },
-        dimensions: [
-          {
-            dimension: 'Time'
-          }
-        ],
-        measures: [
-          {
-            dimension: C_MEASURES,
-            measure: 'sales'
-          }
-        ]
-      },
-      {
-        name: 'Sales',
-        properties: {
-          Time: {
-            name: 'Time',
-            role: AggregationRole.dimension
-          },
-          sales: {
-            name: 'sales',
-            role: AggregationRole.measure
-          }
-        }
-      },
-      [],
-      {},
-      'zh-Hans'
-    )
+    const c = getCoordinateSystem(CHART_ANNOTATION, SALES_ENTITY_TYPE, [], {}, 'zh-Hans')
 
     expect(c).toMatchObject({
       valueAxis: { axis: [undefined], orient: 'yAxis' }
@@ -44,5 +11,17 @@ describe('CoordinateSystem', () => {
     expect(c.categoryAxis).toMatchObject({
       orient: 'xAxis'
     })
+  })
+
+  it('#measuresToSeriesComponents', () => {
+    const seriesComponents = measuresToSeriesComponents(CHART_ANNOTATION.measures, [], SALES_ENTITY_TYPE, {})
+
+    expect(seriesComponents[0]).toEqual(
+      expect.objectContaining({
+        id: 'sales',
+        measure: 'sales',
+        valueAxisIndex: 0,
+      })
+    )
   })
 })

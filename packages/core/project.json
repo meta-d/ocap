@@ -6,7 +6,7 @@
       "executor": "@nrwl/web:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "updateBuildableProjectDepsInPackageJson": false,
+        "updateBuildableProjectDepsInPackageJson": true,
         "outputPath": "dist/packages/core",
         "tsConfig": "packages/core/tsconfig.lib.json",
         "project": "packages/core/package.json",

@@ -132,6 +132,8 @@ export class AppComponent {
         }
         // dialect: 'duckdb',
       })
+
+      wasmAgent.registerModel(DUCKDB_WASM_MODEL)
     })
     
   }

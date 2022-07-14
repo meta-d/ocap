@@ -2,7 +2,7 @@
     [displayDensity]="appearance?.displayDensity"
     [appearance]="appearance?.appearance">
     <mat-label>{{ parameter?.label || parameter?.name }}</mat-label>
-    <input matInput [formControl]="inputControl">
+    <input matInput [formControl]="inputControl" [type]="parameter.dataType ?? 'string'">
 </mat-form-field>
 
 <mat-radio-group *ngIf="paramType === ParameterControlEnum.Select" fxFlex="100" fxLayout="column" fxLayoutAlign="start start"

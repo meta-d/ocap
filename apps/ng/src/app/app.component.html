@@ -6,12 +6,9 @@
         </button>
         <!-- <span>{{ title$ | async }}</span> -->
         <span class="example-spacer"></span>
-        <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
-            <mat-icon>favorite</mat-icon>
-        </button>
-        <button mat-icon-button (click)="refresh()">
-            <mat-icon>share</mat-icon>
-        </button>
+
+        <button mat-button routerLink="./charts" routerLinkActive="mat-accent">Charts</button>
+        <button mat-button routerLink="./covid" routerLinkActive="mat-accent">Covid</button>
     </mat-toolbar>
     
     <div class="app-content" >
@@ -55,26 +52,6 @@
         </div> -->
 
         <router-outlet #o="outlet"></router-outlet>
-<!-- 
-        <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">
-            <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
-                <ngm-analytical-card displayDensity="compact"
-                    [title]="card.title"
-                    [dataSettings]="card.dataSettings"
-                    [chartSettings]="card.chartSettings"
-                    [chartOptions]="card.chartOptions"
-                    [options]="{
-                    }"
-                ></ngm-analytical-card>
-            </div>
 
-            <ngm-analytical-grid fxFlex="100"
-                [dataSettings]="dataSettings"
-                [options]="{
-                    strip: true,
-                    paging: true
-                }">
-            </ngm-analytical-grid>
-        </div> -->
     </div>
 </div>

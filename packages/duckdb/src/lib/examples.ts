@@ -31,25 +31,25 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
       name: 'CsseCovid19Daily',
       type: 'csv',
       sourceUrl: window.location.origin + '/assets/data/CsseCovid19Daily_05-18-2022.csv',
-        // 'https://cdn.jsdelivr.net/gh/CSSEGISandData/COVID-19@master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
+      // 'https://cdn.jsdelivr.net/gh/CSSEGISandData/COVID-19@master/csse_covid_19_data/csse_covid_19_daily_reports/04-28-2022.csv',
       delimiter: ','
     },
     {
       name: 'CountryGDP',
       type: 'csv',
-      sourceUrl: window.location.origin + '/assets/data/GDPPerCapita.csv',
+      sourceUrl: window.location.origin + '/assets/data/GDPPerCapita.csv'
       //`https://cdn.jsdelivr.net/gh/curran/data@gh-pages/worldFactbook/GDPPerCapita.csv`
     },
     {
       name: 'UserData',
       type: 'parquet',
-      sourceUrl: window.location.origin + '/assets/data/userdata1.parquet',
+      sourceUrl: window.location.origin + '/assets/data/userdata1.parquet'
       //'https://cdn.jsdelivr.net/gh/Teradata/kylo@master/samples/sample-data/parquet/userdata1.parquet'
     },
     {
       name: 'HREmployeeAttrition',
       type: 'csv',
-      sourceUrl: window.location.origin + '/assets/data/HR-Employee-Attrition.csv',
+      sourceUrl: window.location.origin + '/assets/data/HR-Employee-Attrition.csv'
       // 'https://cdn.jsdelivr.net/gh/ashutoshtyagixyz/HR-Employee-Attrition@main/HR-Employee-Attrition.csv'
     }
   ],
@@ -131,6 +131,22 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
         ],
         dimensions: [
           {
+            name: 'Country Region',
+            label: '国家',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    label: '名称',
+                    column: 'Country_Region',
+                  },
+                ]
+              }
+            ]
+          },
+          {
             name: 'Admin',
             label: '管理员',
             hierarchies: [
@@ -139,7 +155,7 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
                 levels: [
                   {
                     name: 'Name',
-                    column: 'Admin2',
+                    column: 'Admin2'
                   }
                 ]
               }
@@ -161,6 +177,141 @@ export const DUCKDB_WASM_MODEL: SemanticModel = {
             name: 'CaseFatalityRatio',
             column: 'Case_Fatality_Ratio',
             label: '病死率'
+          }
+        ]
+      },
+      {
+        name: 'UserData',
+        tables: [
+          {
+            name: 'UserData'
+          }
+        ],
+        dimensions: [
+          {
+            name: 'Country',
+            label: '国家',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    column: 'country'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Gender',
+            label: '性别',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    column: 'gender'
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        measures: [
+          {
+            name: 'salary',
+            column: 'salary',
+            label: '薪金'
+          }
+        ]
+      },
+      {
+        name: 'HREmployeeAttrition',
+        tables: [
+          {name: 'HREmployeeAttrition'}
+        ],
+        dimensions: [
+          {
+            name: 'Department',
+            label: '部门',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    column: 'Department'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Job Role',
+            label: '职位',
+            hierarchies: [
+              {
+                name: '',
+                levels: [
+                  {
+                    name: 'Name',
+                    column: 'JobRole'
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        measures: [
+          {
+            name: 'EnvironmentSatisfaction',
+            label: '环境满意度',
+            column: 'EnvironmentSatisfaction',
+          }
+        ]
+      },
+      {
+        name: 'CountryGDP',
+        tables: [
+          {name: 'CountryGDP'}
+        ],
+        dimensions: [
+          {
+            name: 'Country',
+            label: '国家',
+            foreignKey: 'Country',
+            hierarchies: [
+              {
+                name: '',
+                tables: [
+                  {
+                    name: 'Countries',
+                  }
+                ],
+                primaryKey: 'name',
+                levels: [
+                  {
+                    name: 'Region',
+                    label: '区域',
+                    column: 'region',
+                  },
+                  {
+                    name: 'Name',
+                    label: '国家',
+                    column: 'name',
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        measures: [
+          {
+            name: 'GDP',
+            label: '国民生产总值',
+            column: 'GDP Per Capita'
           }
         ]
       }
@@ -454,7 +605,7 @@ export const CARTESIAN_CARDS = [
           },
           {
             dimension: 'Measures',
-            measure: 'quantity',
+            measure: 'quantity'
             // role: ChartMeasureRoleType.Size
           }
         ]
@@ -555,21 +706,21 @@ export const ANALYTICAL_CARDS = [
     } as ChartOptions
   },
   {
-    title: 'UserData Bar',
+    title: 'UserData Stacked Bar',
     dataSettings: {
       dataSource: 'WASM',
-      entitySet: `UserData`,
+      entitySet: 'UserData',
       chartAnnotation: {
         chartType: {
           type: 'Bar'
         },
         dimensions: [
           {
-            dimension: 'country',
+            dimension: '[Country]',
             zeroSuppression: true
           },
           {
-            dimension: 'gender',
+            dimension: '[Gender]',
             role: ChartDimensionRoleType.Stacked
           }
         ],
@@ -603,7 +754,7 @@ export const ANALYTICAL_CARDS = [
     } as ChartOptions
   },
   {
-    title: 'HREmployeeAttrition Bar',
+    title: 'HREmployeeAttrition Stacked Bar',
     dataSettings: {
       dataSource: 'WASM',
       entitySet: 'HREmployeeAttrition',
@@ -613,11 +764,11 @@ export const ANALYTICAL_CARDS = [
         },
         dimensions: [
           {
-            dimension: 'Department',
+            dimension: '[Department]',
             zeroSuppression: true
           },
           {
-            dimension: 'JobRole',
+            dimension: '[Job Role]',
             role: ChartDimensionRoleType.Stacked
           }
         ],
@@ -661,13 +812,13 @@ export const ANALYTICAL_CARDS = [
         },
         dimensions: [
           {
-            dimension: 'Country'
+            dimension: '[Country]'
           }
         ],
         measures: [
           {
             dimension: 'Measures',
-            measure: 'GDP Per Capita',
+            measure: 'GDP',
             formatting: {
               shortNumber: true
             }
@@ -682,7 +833,7 @@ export const ANALYTICAL_CARDS = [
     title: 'Csse Covid-19 Daily',
     dataSettings: {
       dataSource: 'WASM',
-      entitySet: 'CsseCovid19Daily',
+      entitySet: 'Covid19Daily',
       chartAnnotation: {
         chartType: {
           type: 'GeoMap',
@@ -692,7 +843,7 @@ export const ANALYTICAL_CARDS = [
         },
         dimensions: [
           {
-            dimension: 'Country_Region'
+            dimension: '[Country]'
           },
           {
             dimension: 'Lat',
@@ -829,7 +980,7 @@ export const ANALYTICAL_CARDS = [
         chartType: {
           type: 'GeoMap',
           map: 'USA',
-          mapUrl: window.location.origin + '/assets/data/us-states.json', // `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`
+          mapUrl: window.location.origin + '/assets/data/us-states.json' // `https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json`
         },
         dimensions: [
           {
@@ -889,5 +1040,49 @@ export const ANALYTICAL_CARDS = [
         type: ChartDataZoomType.INSIDE
       }
     } as ChartOptions
+  },
+  {
+    title: 'Covid19Daily Trellis',
+    dataSettings: {
+      dataSource: 'WASM',
+      entitySet: 'Covid19Daily',
+      chartAnnotation: {
+        chartType: {
+          type: 'Bar'
+        },
+        dimensions: [
+          {
+            dimension: '[Country Region]',
+            
+          },
+          {
+            dimension: '[Country]',
+            hierarchy: '[Country]',
+            level: '[Country].[Region]',
+            role: ChartDimensionRoleType.Trellis
+          }
+        ],
+        measures: [
+          {
+            dimension: 'Measures',
+            measure: 'Confirmed',
+            palette: {
+              name: 'PuOr'
+            },
+            formatting: {
+              shortNumber: true
+            }
+          },
+          {
+            dimension: 'Measures',
+            measure: 'Deaths'
+            // role: ChartMeasureRoleType.Size
+          }
+        ]
+      }
+    },
+    chartSettings: {
+      universalTransition: true
+    }
   }
 ]

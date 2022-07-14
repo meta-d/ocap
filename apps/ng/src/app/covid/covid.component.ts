@@ -1,16 +1,16 @@
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { C_MEASURES, DataSettings, ISlicer } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { ANALYTICAL_CARDS } from '@metad/ocap-duckdb'
 
 @Component({
-  selector: 'app-covid',
+  selector: 'metad-ocap-covid',
   templateUrl: 'covid.component.html',
   styleUrls: ['covid.component.scss']
 })
-export class CovidComponent implements OnInit {
+export class CovidComponent {
   dataSettings: DataSettings = {
     dataSource: 'WASM',
     entitySet: 'Covid19Daily',
@@ -40,15 +40,15 @@ export class CovidComponent implements OnInit {
   countrySlicer: ISlicer = {
     members: [
       {
-        label: "China",
-        value: "[Asia].[Eastern Asia].[China]"
+        label: 'China',
+        value: '[Asia].[Eastern Asia].[China]'
       }
     ]
   }
   smartFilterOptions = {
     dimension: {
       dimension: '[Country]'
-    },
+    }
   }
   appearance = {
     appearance: 'outline' as MatFormFieldAppearance,
@@ -59,15 +59,11 @@ export class CovidComponent implements OnInit {
 
   card1: any = ANALYTICAL_CARDS[0]
 
-  cards = [
-    ...ANALYTICAL_CARDS
-  ]
+  cards = [...ANALYTICAL_CARDS]
 
-  constructor(wasmAgent: WasmAgentService,) {
-    wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+  constructor(wasmAgent: WasmAgentService) {
+    // wasmAgent.registerModel(DUCKDB_WASM_MODEL)
   }
-
-  ngOnInit() {}
 
   onSlicerChange(event) {
     const selectOptions = []
