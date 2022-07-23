@@ -52,7 +52,7 @@ export class DuckdbWasmAgent implements Agent {
               await connection.query(`CREATE SCHEMA IF NOT EXISTS ${model.catalog};`)
             }
 
-            await connection.query(`DROP TABLE IF EXISTS "${entity.name}"`)
+            await connection.query(`DROP TABLE IF EXISTS "${model.catalog}"."${entity.name}"`)
             if (entity.type === 'parquet') {
               await this.db.registerFileURL(entity.name, entity.sourceUrl)
               return connection.query(`CREATE TABLE "${entity.name}" AS SELECT * FROM read_parquet('${entity.name}')`)

@@ -142,7 +142,7 @@ export class MemberTreeComponent<T extends IDimensionMember = IDimensionMember>
         if (data) {
           this.dataSource.data = data as any
           // 初始化数据后展开初始层级深度
-          if (this.options?.initialLevel > 0 && !!this.searchControl.value) {
+          if (this.options?.initialLevel > 0 || !!this.searchControl.value) {
             this.treeControl.dataNodes.forEach((node) => {
               const level = this.treeControl.getLevel(node)
               if (!!this.searchControl.value || level < this.options.initialLevel) {

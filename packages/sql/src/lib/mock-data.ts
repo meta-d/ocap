@@ -317,6 +317,7 @@ export const CUBE_SALESORDER: Cube = {
   name: 'SalesOrder',
   label: '销售订单',
   tables: [{ name: 'sales_fact' }],
+  defaultMeasure: 'Sales',
   dimensionUsages: [
     {
       __id__: '22f3cdd3-c6d6-42a1-a312-6d75c7b40d8b',
@@ -441,6 +442,7 @@ export const CUBE_SALESORDER: Cube = {
 export const ENTITY_TYPE_SALESORDER: EntityType = {
   name: 'SalesOrder',
   label: '销售订单',
+  defaultMeasure: 'Sales',
   properties: {
     '[Time]': {
       __id__: '590d2e4a-ef71-49e4-b53f-36100cc5b004',

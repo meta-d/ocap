@@ -20,7 +20,11 @@
           >
       </mat-chip-list>
 
-      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-tree-select__panel"
+      <!-- 
+        [class.multiple]="multiple"
+        [class.ngm-density__compact]="displayDensity==='compact'"
+        [class.ngm-density__cosy]="displayDensity==='cosy'" -->
+      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" disableRipple class="ngm-tree-select__panel"
         [class]="(multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
         [displayWith]="displayWith"
         (optionSelected)="selected($event)"
@@ -61,7 +65,8 @@
         </cdk-virtual-scroll-viewport>
 
         <ng-template #nonVirtualScroll>
-            <mat-option *ngFor="let option of selectOptions$ | async" [value]="option" (click)="$event.stopPropagation();$event.preventDefault()">
+            <mat-option *ngFor="let option of selectOptions$ | async" [value]="option"
+              (click)="$event.stopPropagation();$event.preventDefault()">
               <div fxLayout="row" fxLayoutAlign="start center">
                 <button mat-icon-button [displayDensity]="displayDensity"
                   [style.visibility]="!option.expandable ? 'hidden' : ''"
@@ -95,7 +100,7 @@
       </mat-autocomplete>
     </ng-container>
 
-    <mat-select *ngIf="!autocomplete" [formControl]="formControl" [compareWith]="compareWith" panelClass="ngm-tree-select__panel"
+    <mat-select *ngIf="!autocomplete" [formControl]="formControl" [compareWith]="compareWith" disableRipple panelClass="ngm-tree-select__panel"
       [multiple]="multiple"
       [placeholder]="placeholder"
     >

@@ -20,7 +20,18 @@
       }
     }
 
-    &.grid {
+    &.ngm-table-grid {
+      .cdk-header-cell,
+      .cdk-cell {
+        padding: 0 10px;
+      }
+      &.ngm-density__compact {
+        .cdk-header-cell,
+        .cdk-cell {
+          padding: 0 5px;
+        }
+      }
+  
       .cdk-header-row {
         border-top-width: 1px;
         border-top-style: solid;
@@ -29,7 +40,7 @@
       .cdk-cell,
       .cdk-header-cell {
         border-right: 1px solid mat.get-color-from-palette($foreground, divider);
-
+  
         &:first-child {
           border-left: 1px solid mat.get-color-from-palette($foreground, divider);
         }

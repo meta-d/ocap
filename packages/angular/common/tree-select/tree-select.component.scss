@@ -5,3 +5,11 @@
 .ngm-tree-select__viewport {
   min-height: 200px;
 }
+
+.mat-chip {
+  max-width: 100%;
+  .ngm-display-behaviour {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}

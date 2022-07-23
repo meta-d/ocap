@@ -1,14 +1,11 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
-import { FlatTreeControl } from '@angular/cdk/tree'
 import { Component, forwardRef, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
-import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
-import { DataSettings, Dimension, FlatNode, hierarchize, IMember, TreeNodeInterface } from '@metad/ocap-core'
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { NgmAppearance } from '@metad/ocap-angular/core'
+import { DataSettings, Dimension, FlatNode, hierarchize, TreeNodeInterface } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { debounceTime, EMPTY, map, Observable, of, startWith, switchMap } from 'rxjs'
+import { map } from 'rxjs'
 import { NgmSmartFilterService } from '../smart-filter.service'
-
 
 @UntilDestroy()
 @Component({
@@ -27,12 +24,13 @@ import { NgmSmartFilterService } from '../smart-filter.service'
 export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValueAccessor {
   @HostBinding('class.ngm-member-tree-select') _isMemberTreeSelectComponent = true
 
+  @Input() label: string
   @Input() data: TreeNodeInterface<any>[]
 
   @Input() dataSettings: DataSettings
   @Input() dimension: Dimension
   @Input() appearance: NgmAppearance
-
+  @Input() initialLevel: number
   @Input() get multiple() {
     return this._multiple
   }
@@ -41,92 +39,67 @@ export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValu
   }
   private _multiple = false
 
-  // private slicer$ = new BehaviorSubject<ISlicer>(null)
-  treeNodePadding = 40
-  myControl = new FormControl<string | FlatNode<any>>('')
+  @Input() get virtualScroll() {
+    return this._virtualScroll
+  }
+  set virtualScroll(value: boolean | string) {
+    this._virtualScroll = coerceBooleanProperty(value)
+  }
+  private _virtualScroll = false
+
+  @Input() get autocomplete(): boolean {
+    return this._autocomplete
+  }
+  set autocomplete(value: boolean | string) {
+    this._autocomplete = coerceBooleanProperty(value)
+  }
+  private _autocomplete = false
+
+  @Input() get treeViewer(): boolean {
+    return this._treeViewer
+  }
+  set treeViewer(value: boolean | string) {
+    this._treeViewer = coerceBooleanProperty(value)
+  }
+  private _treeViewer = false
+  @Input() get searchable(): boolean {
+    return this._searchable
+  }
+  set searchable(value: boolean | string) {
+    this._searchable = coerceBooleanProperty(value)
+  }
+  private _searchable = false
+
+  members = []
+  memberKeys
+  // treeNodePadding = 40
+  // myControl = new FormControl<string | FlatNode<any>>('')
   treeData$ = this.smartFilterService.selectResult().pipe(
-    switchMap(({ error, schema, data }) => {
+    map(({ error, schema, data }) => {
       if (error) {
         console.error(error)
-        return EMPTY
+        return null
       }
-      return this.myControl.valueChanges.pipe(
-        startWith(''),
-        map((value) => {
-          const name = typeof value === 'string' ? value : value?.key
-          const filterValue = name?.toLowerCase()
-          return name
-            ? data.filter(
-                (option) =>
-                  option.memberKey.toLowerCase().includes(filterValue) ||
-                  option.memberCaption?.toLowerCase().includes(filterValue)
-              )
-            : data.slice()
-        }),
-        map((data) => {
-          if (schema?.recursiveHierarchy) {
-            return hierarchize(data, schema?.recursiveHierarchy)
-          }
-          return null
-        })
-      )
+
+      this.members = data
+      if (schema?.recursiveHierarchy) {
+        return hierarchize(data, schema?.recursiveHierarchy)
+      }
+      return null
     })
   )
 
-  private transformer = (node: TreeNodeInterface<any>, level: number): FlatNode<any> => {
-    return {
-      expandable: !!node.children && node.children.length > 0,
-      key: node.key,
-      label: node.label,
-      value: node.value,
-      level: level,
-      raw: node.raw
-    }
-  }
-
-  treeControl = new FlatTreeControl<FlatNode<any>>(
-    (node) => node.level,
-    (node) => node.expandable
-  )
-
-  treeFlattener = new MatTreeFlattener(
-    this.transformer,
-    (node) => node.level,
-    (node) => node.expandable,
-    (node) => node.children
-  )
-
-  dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
-  filteredOptions: Observable<FlatNode<any>[]> = this.dataSource.connect({ viewChange: of() })
-
   onChange: (input: any) => void
   constructor(private smartFilterService: NgmSmartFilterService) {
+  }
+
+  ngOnInit() {
     this.smartFilterService
       .onAfterServiceInit()
       .pipe(untilDestroyed(this))
       .subscribe(() => {
         this.smartFilterService.refresh()
       })
-
-    this.treeData$.pipe(untilDestroyed(this)).subscribe((data) => {
-      this.dataSource.data = data
-    })
-  }
-
-  ngOnInit() {
-    this.myControl.valueChanges.pipe(debounceTime(500), untilDestroyed(this)).subscribe((value) => {
-      let members: IMember[]
-      if (typeof value === 'string') {
-        members = value ? [{ value }] : null
-      } else {
-        members = value ? [{ value: value.key, label: value.label }] : null
-      }
-
-      this.onChange?.({
-        members,
-        dimension: this.dimension
-      })
-    })
   }
 
   ngOnChanges({ dataSettings, dimension, data, appearance }: SimpleChanges): void {
@@ -136,26 +109,11 @@ export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValu
     if (dimension?.currentValue) {
       this.smartFilterService.options = { dimension: dimension.currentValue }
     }
-
-    if (data) {
-      this.dataSource.data = data.currentValue
-    }
-
-    if (appearance?.currentValue) {
-      if (this.appearance.displayDensity === DisplayDensity.compact) {
-        this.treeNodePadding = 18
-      } else if (this.appearance.displayDensity === DisplayDensity.cosy) {
-        this.treeNodePadding = 24
-      } else {
-        this.treeNodePadding = 30
-      }
-    }
   }
 
   writeValue(obj: any): void {
     if (obj) {
-      console.log(obj.members?.[0]?.value)
-      this.myControl.setValue(obj.members?.[0]?.value)
+      this.memberKeys = obj.members?.map((member) => member.value)
     }
   }
   registerOnChange(fn: any): void {
@@ -170,5 +128,19 @@ export class MemberTreeSelectComponent implements OnInit, OnChanges, ControlValu
 
   displayFn(item: FlatNode<any>): string {
     return typeof item === 'string' ? item : item?.label || item?.key
+  }
+
+  onModelChange(event) {
+    this.onChange({
+      dimension: this.dimension,
+      members: Array.isArray(event)
+        ? event.map((key) => ({
+            value: key,
+            label: this.members.find((item) => item.memberKey === key)?.memberCaption
+          }))
+        : event
+        ? [{ value: event, label: this.members.find((item) => item.memberKey === event)?.memberCaption }]
+        : null
+    })
   }
 }

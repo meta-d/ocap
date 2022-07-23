@@ -16,7 +16,11 @@ import {
   PropertyDimension,
   PropertyMeasure,
   QueryOptions,
-  Schema
+  Schema,
+  PivotColumn,
+  C_MEASURES,
+  IntrinsicMemberProperties,
+  wrapHierarchyValue
 } from '@metad/ocap-core'
 import compact from 'lodash/compact'
 import concat from 'lodash/concat'
@@ -27,7 +31,6 @@ import union from 'lodash/union'
 import { serializeCalculationProperty } from './calculation'
 import { buildCubeContext, CubeContext } from './cube'
 import {
-  DimensionContext,
   queryDimension,
   serializeColumn,
   serializeGroupByDimensions,
@@ -109,7 +112,7 @@ export function serializeMeasure(fact: string, measure: PropertyMeasure & {alias
 export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string, catalog?: string) {
   const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
   if (dimension) {
-    return queryDimension(dimension, entityType, options, dialect, catalog)
+    return {statement: queryDimension(dimension, entityType, options, dialect, catalog)}
   }
 
   const cube = schema?.cubes?.find((item) => item.name === entityType.name)
@@ -119,12 +122,72 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
   }
 
   const cubeContext: CubeContext = buildCubeContext(cube, options, entityType, dialect)
+  // Compile Slicers
+  const conditions = []
+  cubeContext.filterString = options.filterString || ''
+  if (options.filters?.length) {
+    const filters = []
+    options.filters.forEach((item) => {
+      if (isAdvancedSlicer(item)) {
+        conditions.push(item)
+      } else {
+        filters.push(item)
+      }
+    })
+    if (filters.length) {
+      cubeContext.filterString += (cubeContext.filterString ? ` AND ` : '') + compileFilters(filters, entityType, cubeContext, dialect)
+    }
+  }
+
+  // 排列组合每个 Dimension 下需要计算的 Levels
+  let levels = []
+  cubeContext.dimensions.filter(({dimension}) => dimension.dimension !== C_MEASURES).forEach((dimensionContext) => {
+    const _levels = levels.length ? [...levels] : [{...cubeContext, dimensions: []}]
+    levels = []
+    
+    if (dimensionContext.levels?.length) {
+      dimensionContext.levels?.forEach((level) => {
+        levels.push(..._levels.map((context) => {
+          return {
+            ...context,
+            dimensions: [
+              ...context.dimensions,
+              {
+                ...dimensionContext,
+                level: level.level,
+                selectFields: level.selectFields
+              }
+            ]
+          }
+        }))
+      })
+    } else {
+      levels.push(..._levels.map((context) => ({
+        ...context,
+        dimensions: [
+          ...context.dimensions,
+              {
+                ...dimensionContext,
+              }
+        ]
+      })))
+    }
+  })
+  
+  const statement = levels.map((cubeContext) => serializeLevelSelect(cubeContext, dialect, catalog)).join(' union ')
+
+  return {cubeContext, statement}
+}
+
+export function serializeLevelSelect(cubeContext: CubeContext, dialect: string, catalog: string) {
+  const cube = cubeContext.schema
   let statement = cubeContext.dimensions
     .map((dimensionContext) => {
       return dimensionContext.selectFields
         .map((field) => serializeColumn(field, dialect))
         .join(', ')
     })
+    .filter((statement) => !!statement)
     .join(', ')
 
   if (cubeContext.measures.length) {
@@ -137,43 +200,17 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
         .join(', ')
   }
 
-  // Compile Slicers
-  const conditions = []
-  let filterString = options.filterString || ''
-  if (options.filters?.length) {
-    const filters = []
-    options.filters.forEach((item) => {
-      if (isAdvancedSlicer(item)) {
-        conditions.push(item)
-      } else {
-        filters.push(item)
-      }
-    })
-    if (filters.length) {
-      filterString = (filterString ? `${filterString} AND ` : '') + compileFilters(filters, entityType, cubeContext, dialect)
-    }
-  }
-
   // Compile cube and dimensions
   statement += ` FROM ` + serializeCubeFrom(cubeContext, dialect, catalog)
   // Where slicers
-  if (filterString) {
-    statement += ' WHERE ' + filterString
+  if (cubeContext.filterString) {
+    statement += ' WHERE ' + cubeContext.filterString
   }
   // Aggregate Dimensions
   statement +=
     ` GROUP BY ` + (serializeGroupByDimensions(cubeContext.dimensions, dialect) || 1)
-    // [
-    //   ...new Set(
-    //     flattenDeep<DimensionColumn>(cubeContext.dimensions.map((dimension) => dimension.selectFields.map((field) => field.columns ? field.columns : [field])))
-    //       .filter((field) => !!field.column)
-    //       .map((field) => `${serializeName(field.table, dialect)}.${serializeName(field.column, dialect)}`)
-    //   )
-    // ].join(', ')
 
-  statement = `SELECT ` + statement
-
-  return statement
+  return `SELECT ` + statement
 }
 
 export function serializeCubeFrom(cubeContext: CubeContext, dialect: string, catalog?: string): string {
@@ -477,3 +514,80 @@ export function serializeDProperty(property: PropertyDimension, dialect: string)
 
 //   return fromSource
 // }
+
+export function transposePivot(cubeContext: CubeContext, data: Array<any>) {
+  const rowContexts = cubeContext.dimensions.filter((context) => context.role === 'row')
+  const columnContexts = cubeContext.dimensions.filter((context) => context.role === 'column')
+  let recursiveHierarchy
+  let rowHierarchy
+  const hRow = rowContexts?.find((row) => row.dimension.displayHierarchy)
+  if (hRow) {
+    rowHierarchy = hRow.hierarchy.name
+    recursiveHierarchy = {
+      parentNodeProperty: wrapHierarchyValue(hRow.keyColumn, IntrinsicMemberProperties.PARENT_UNIQUE_NAME),
+      valueProperty: hRow.keyColumn
+    }
+  }
+
+  if (!columnContexts.length) {
+    return {data, schema: {recursiveHierarchy, rowHierarchy}}
+  }
+
+  const columns: PivotColumn[] = []
+  const columnsKeyMap = {}
+
+  const results = []
+  const resultKeyMap = {}
+  data.forEach((item) => {
+    const rowKey = rowContexts.map(({keyColumn}) => item[keyColumn]).join('')
+    if (!resultKeyMap[rowKey]) {
+      resultKeyMap[rowKey] = item
+      results.push(item)
+    }
+
+    let parentColumns = columns
+    let parent = null
+    columnContexts.forEach(({keyColumn, captionColumn, parentKeyColumn, childrenCardinalityColumn, dimension}, key, arr) => {
+      const columnName = (parent?.name ? parent.name + '/' : '') + (isMeasure(dimension) ? keyColumn : item[keyColumn])
+      if (!columnsKeyMap[columnName]) {
+        if (isMeasure(dimension)) {
+          columnsKeyMap[columnName] = {
+            name: columnName,
+            label: keyColumn,
+            uniqueName: keyColumn,
+            measure: keyColumn,
+            columns: []
+          }
+        } else {
+          columnsKeyMap[columnName] = {
+            name: columnName,
+            label: item[captionColumn],
+            uniqueName: item[keyColumn],
+            parentUniqueName: item[parentKeyColumn],
+            childrenCardinality: item[childrenCardinalityColumn],
+            measure: parent?.measure,
+            columns: []
+          }
+        }
+        
+        parentColumns.push(columnsKeyMap[columnName])
+      }
+
+      if (Object.is(arr.length - 1, key)) {
+        const measure = columnsKeyMap[columnName].measure ?? cubeContext.schema.defaultMeasure
+        resultKeyMap[rowKey][columnName] = item[measure]
+      }
+
+      parentColumns = columnsKeyMap[columnName].columns
+      parent = columnsKeyMap[columnName]
+    })
+  })
+
+  console.log(columnsKeyMap, columns)
+
+  return {
+    data: results,
+    schema: {recursiveHierarchy, rowHierarchy, columns}
+    // rows: rowContexts.map(({keyColumn}) => keyColumn)
+  }
+}

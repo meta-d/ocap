@@ -1,6 +1,6 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { FlatTreeControl } from '@angular/cdk/tree'
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { Component, Input, OnChanges, OnInit, SimpleChanges, TemplateRef } from '@angular/core'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { FlatNode, Property, TreeNodeInterface } from '@metad/ocap-core'
@@ -12,8 +12,9 @@ import { FlatNode, Property, TreeNodeInterface } from '@metad/ocap-core'
 })
 export class TreeTableComponent<T> implements OnInit, OnChanges {
   @Input() data: TreeNodeInterface<T>[]
-  @Input() columns: Property[]
+  @Input() columns: Array<Property & {cellTemplate?: TemplateRef<any>}>
   @Input() nameLabel: string
+  @Input() nameCellTemplate: TemplateRef<any>
   @Input() displayDensity: DisplayDensity
   @Input() get striped() {
     return this._striped

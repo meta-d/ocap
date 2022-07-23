@@ -8,6 +8,7 @@
 @use './style/mat-button-theme' as mat-button;
 @use './style/mat-viewport-theme' as mat-viewport;
 @use './style/density-theme' as mat-density;
+@use './style/mat-tab-theme' as mat-tab;
 @use './directives/appearance-theme' as appearance;
 
 @mixin color($config-or-theme) {
@@ -34,31 +35,8 @@
   @include mat-button.density($config-or-theme);
   @include mat-viewport.density($config-or-theme);
   @include mat-density.density($config-or-theme);
+  @include mat-tab.density($config-or-theme);
   @include appearance.density($config-or-theme);
-
-  // .ngm-density__cosy {
-  //   .mat-icon {
-  //     height: 22px;
-  //     width: 22px;
-  //     font-size: 22px;
-  //     line-height: 22px;
-  //   }
-  //   .mat-icon-button .mat-icon {
-  //     line-height: 22px;
-  //   }
-  // }
-  // .ngm-density__compact {
-  //   .mat-icon {
-  //     height: 20px;
-  //     width: 20px;
-  //     font-size: 20px;
-  //     line-height: 20px;
-  //   }
-
-  //   .mat-icon-button .mat-icon {
-  //     line-height: 20px;
-  //   }
-  // }
 }
 
 @mixin theme($theme) {

@@ -1,4 +1,10 @@
-import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OCAP_MODEL_TOKEN } from '@metad/ocap-angular/core'
+import {
+  DisplayDensity,
+  OcapCoreModule,
+  OCAP_AGENT_TOKEN,
+  OCAP_DATASOURCE_TOKEN,
+  OCAP_MODEL_TOKEN
+} from '@metad/ocap-angular/core'
 import { AgentType, C_MEASURES, DataSource, Type } from '@metad/ocap-core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../mock/agent-mock.service'
@@ -52,16 +58,65 @@ export default {
       ]
     })
   ]
-} as Meta<AnalyticalGridComponent>
+} as Meta<AnalyticalGridComponent<any>>
 
-const Template: Story<AnalyticalGridComponent> = (args: AnalyticalGridComponent) => ({
+const Template: Story<AnalyticalGridComponent<any>> = (args: AnalyticalGridComponent<any>) => ({
   props: args
 })
 
 export const Primary = Template.bind({})
 Primary.args = {
   title: 'Primary Analytical Grid',
+  appearance: {},
+  dataSettings: {
+    dataSource: 'Sales',
+    entitySet: 'SalesOrder',
+    analytics: {
+      rows: [
+        {
+          dimension: '[Product]'
+        }
+      ],
+      columns: [
+        {
+          dimension: C_MEASURES,
+          measure: 'Sales'
+        }
+      ]
+    }
+  },
+  options: {}
+}
+
+export const Loading = Template.bind({})
+Loading.args = {
+  title: 'Loading Analytical Grid',
+  appearance: {},
+  dataSettings: {
+    dataSource: 'Sales',
+    entitySet: 'SalesOrder10s',
+    analytics: {
+      rows: [
+        {
+          dimension: '[Product]'
+        }
+      ],
+      columns: [
+        {
+          dimension: C_MEASURES,
+          measure: 'Sales'
+        }
+      ]
+    }
+  },
+  options: {}
+}
+
+export const DensityCompact = Template.bind({})
+DensityCompact.args = {
+  title: 'Analytical Grid compact',
   appearance: {
+    displayDensity: DisplayDensity.compact
   },
   dataSettings: {
     dataSource: 'Sales',
@@ -80,21 +135,23 @@ Primary.args = {
       ]
     }
   },
-  options: {},
+  options: {}
 }
 
-export const Loading = Template.bind({})
-Loading.args = {
-  title: 'Loading Analytical Grid',
+export const DisplayHierarchy = Template.bind({})
+DisplayHierarchy.args = {
+  title: 'Analytical Grid Hierarchy',
   appearance: {
+    displayDensity: DisplayDensity.compact
   },
   dataSettings: {
     dataSource: 'Sales',
-    entitySet: 'SalesOrder10s',
+    entitySet: 'SalesOrder',
     analytics: {
       rows: [
         {
-          dimension: '[Product]'
+          dimension: '[Product]',
+          displayHierarchy: true
         }
       ],
       columns: [

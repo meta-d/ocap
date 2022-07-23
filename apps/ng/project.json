@@ -28,7 +28,7 @@
             "output": "./assets/"
           },
           {
-            "glob": "*",
+            "glob": "**",
             "input": "data/",
             "output": "./assets/data/"
           }

@@ -1,18 +1,12 @@
+import { AfterViewInit, Component, TemplateRef, ViewChild } from '@angular/core'
+import { RouterModule, Routes } from '@angular/router'
+import { MatButtonModule } from '@angular/material/button'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { DisplayDensity, OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { TreeTableComponent } from './tree-table.component'
 import { TreeTableModule } from './tree-table.module'
 
-export default {
-  title: 'TreeTableComponent',
-  component: TreeTableComponent,
-  decorators: [
-    moduleMetadata({
-      imports: [BrowserAnimationsModule, TreeTableModule, OcapCoreModule]
-    })
-  ]
-} as Meta<TreeTableComponent<unknown>>
 
 const TREE_NODE_DATA = [
   {
@@ -43,6 +37,56 @@ const TREE_NODE_DATA = [
     ]
   }
 ] as any
+
+@Component({
+  selector: 'test-tree-table-cell-template',
+  template: `
+<ng-template #cell let-data="name">
+  <button mat-button>
+    {{data}}
+  </button>
+</ng-template>
+<ng-template #name let-data="name">
+  <a href="{{data}}">{{data}}</a>
+</ng-template>
+
+<ngm-tree-table [columns]="columns" [data]="data" [nameCellTemplate]="name"></ngm-tree-table>  
+  `
+})
+class TestCellTemplate implements AfterViewInit {
+
+  @ViewChild('cell') cell: TemplateRef<any>
+
+  data = TREE_NODE_DATA
+  columns
+
+  ngOnInit() {
+    //
+  }
+
+  ngAfterViewInit(): void {
+    this.columns = [
+      {
+        name: 'type',
+        label: '类型',
+        cellTemplate: this.cell
+      }
+    ]
+  }
+
+}
+
+export default {
+  title: 'TreeTableComponent',
+  component: TreeTableComponent,
+  decorators: [
+    moduleMetadata({
+      imports: [BrowserAnimationsModule, MatButtonModule, RouterModule, TreeTableModule, OcapCoreModule],
+      declarations: [ TestCellTemplate ]
+    })
+  ]
+} as Meta<TreeTableComponent<unknown>>
+
 
 const Template: Story<TreeTableComponent<unknown>> = (args: TreeTableComponent<unknown>) => ({
   props: args,
@@ -96,4 +140,14 @@ Grid.args = {
   ],
   displayDensity: DisplayDensity.compact,
   grid: true
+}
+
+
+const TemplateTemplate: Story<TestCellTemplate> = (args: TestCellTemplate) => ({
+  props: args,
+  template: `<test-tree-table-cell-template></test-tree-table-cell-template>`
+})
+
+export const CellTemplate = TemplateTemplate.bind({})
+CellTemplate.args = {
 }

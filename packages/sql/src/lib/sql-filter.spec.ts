@@ -1,5 +1,5 @@
 import { AggregationRole, FilteringLogic, IAdvancedFilter } from '@metad/ocap-core'
-import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER } from './cube.spec'
+import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER } from './mock-data'
 import { convertFiltersToSQL, compileSlicer } from './sql-filter'
 
 
@@ -30,7 +30,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("(`product`.`brand_name` = 'A') OR (`product`.`brand_name` = 'Brand (1)')")
+    )).toEqual("(`[product]_product`.`brand_name` = 'A') OR (`[product]_product`.`brand_name` = 'Brand (1)')")
 
     expect(compileSlicer(
       {
@@ -55,7 +55,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("(`product`.`brand_name` = 'A' AND `product`.`product_name` = 'B') OR (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+    )).toEqual("(`[product]_product`.`brand_name` = 'A' AND `[product]_product`.`product_name` = 'B') OR (`[product]_product`.`brand_name` = 'Brand (1)' AND `[product]_product`.`product_name` = 'Product: 2')")
 
     expect(compileSlicer(
       {
@@ -80,7 +80,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("(`product`.`brand_name` = 'A') OR (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+    )).toEqual("(`[product]_product`.`brand_name` = 'A') OR (`[product]_product`.`brand_name` = 'Brand (1)' AND `[product]_product`.`product_name` = 'Product: 2')")
   })
 
   it('#explainSlicer exclude members', () => {
@@ -109,7 +109,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("NOT (`product`.`brand_name` = 'A') AND NOT (`product`.`brand_name` = 'Brand (1)')")
+    )).toEqual("NOT (`[product]_product`.`brand_name` = 'A') AND NOT (`[product]_product`.`brand_name` = 'Brand (1)')")
 
     expect(compileSlicer(
       {
@@ -135,7 +135,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("NOT (`product`.`brand_name` = 'A' AND `product`.`product_name` = 'B') AND NOT (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+    )).toEqual("NOT (`[product]_product`.`brand_name` = 'A' AND `[product]_product`.`product_name` = 'B') AND NOT (`[product]_product`.`brand_name` = 'Brand (1)' AND `[product]_product`.`product_name` = 'Product: 2')")
 
     expect(compileSlicer(
       {
@@ -161,7 +161,7 @@ describe('convertFiltersToSQL', () => {
         measures: []
       },
       ''
-    )).toEqual("NOT (`product`.`brand_name` = 'A') AND NOT (`product`.`brand_name` = 'Brand (1)' AND `product`.`product_name` = 'Product: 2')")
+    )).toEqual("NOT (`[product]_product`.`brand_name` = 'A') AND NOT (`[product]_product`.`brand_name` = 'Brand (1)' AND `[product]_product`.`product_name` = 'Product: 2')")
   })
 
   it('#explainSlicer with Degenerate dimension', () => {

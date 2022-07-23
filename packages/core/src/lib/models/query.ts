@@ -4,6 +4,8 @@ import { Property } from './sdl'
 
 /**
  * Hierarchy 结构化的字段类型, 字段包含子字段们
+ * 
+ * 每个 PivotColumn 应该是一个 Dimension Member, 所以它应该和 Dimension Member 有共同的属性
  */
 export interface PivotColumn {
   name: string
@@ -16,6 +18,8 @@ export interface PivotColumn {
   memberType?: MemberType
   uniqueName?: string
   parentUniqueName?: string
+  childrenCardinality?: number
+  isCell?: boolean
   properties?: Array<PivotColumn>
 }
 
@@ -34,5 +38,7 @@ export interface QueryReturn<T> {
   data?: Array<T>
   schema?: EntitySchema
   error?: any
-  stats?: any
+  stats?: {
+    statements: string[]
+  }
 }

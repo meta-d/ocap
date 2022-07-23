@@ -1,3 +1,4 @@
+import startsWith from 'lodash/startsWith'
 import cloneDeep from 'lodash/cloneDeep'
 import isArray from 'lodash/isArray'
 import isEmpty from 'lodash/isEmpty'
@@ -156,7 +157,7 @@ export function getEntityMeasures(entityType: EntityType): PropertyMeasure[] {
 }
 
 export function getEntityDefaultMeasure(entityType: EntityType) {
-  return getEntityMeasures(entityType)[0]
+  return entityType.defaultMeasure ? entityType.properties[entityType.defaultMeasure] : getEntityMeasures(entityType)[0]
 }
 
 /**
@@ -630,6 +631,35 @@ export function getHierarchySemanticLevel(hierarchy: PropertyHierarchy, semantic
   return hierarchy?.levels?.find((item) => item.semantics?.semantic === semantic)
 }
 
+export function isWrapBrackets(name: string) {
+  return name?.match(/\[.*\]/g)
+}
+
+export function wrapBrackets(name: string) {
+  if (name && !isWrapBrackets(name)) {
+    return `[${name}]`
+  }
+  return name
+}
+
+export function unwrapBrackets(name: string) {
+  const m = name?.match(/\[(.*)\]/)
+  if (m) {
+    return m[1]
+  }
+  return name
+}
+
+/**
+ * 将 Hierarchy 和其 Member 的值拼接成 MDX 语句中的 Member 唯一标识形式
+ */
+export function wrapHierarchyValue(hierarchy, value: string) {
+  // 有的 Member 值里包含 Hierarchy 名字如 `"[Time.Weekly].[1998].[01]"`
+  if (startsWith(value, hierarchy)) {
+    return value
+  }
+  return `${hierarchy}.${wrapBrackets(value)}`
+}
 
 // Type Guards
 export const isDimensionUsage = (toBe): toBe is DimensionUsage =>

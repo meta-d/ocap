@@ -1,6 +1,6 @@
 import { AbstractEntityService, PeriodFunctions, Property, QueryOptions, QueryReturn } from '@metad/ocap-core'
 import { BehaviorSubject, catchError, from, map, Observable, of, switchMap } from 'rxjs'
-import { queryCube } from './query'
+import { queryCube, transposePivot } from './query'
 import { SQLQueryResult } from './types'
 import { serializeWrapCatalog } from './utils'
 
@@ -18,16 +18,20 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
   override query(options?: QueryOptions): Observable<QueryReturn<T>> {
     return this.refresh$.pipe(
       switchMap(() => {
-        let statement = options?.statement
-        if (!statement) {
+        let _statement = options?.statement
+        let _cubeContext
+        if (!_statement) {
           try {
-            statement = queryCube(
+            const {cubeContext, statement} = queryCube(
               this.dataSource.options.schema,
               options,
               this.entityType,
               this.dataSource.options.dialect,
               this.dataSource.options.catalog,
             )
+
+            _cubeContext = cubeContext
+            _statement = statement
           } catch (error) {
             console.error(error)
             this.agent.error(error)
@@ -37,38 +41,45 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
           }
         }
 
-        statement = serializeWrapCatalog(statement, this.dataSource.options.dialect, this.dataSource.options.catalog)
+        _statement = serializeWrapCatalog(_statement, this.dataSource.options.dialect, this.dataSource.options.catalog)
         
         return from(
           this.dataSource.agent.request(this.dataSource.options, {
             method: 'post',
             url: 'query',
             body: {
-              statement: statement,
+              statement: _statement,
               forceRefresh: options.force
             },
             catalog: this.dataSource.options.catalog
           })
         ).pipe(
           map((result: SQLQueryResult) => {
+            // Query cube or dimension
+            const {data, schema} = _cubeContext ? transposePivot(_cubeContext, result.data) : {data: result.data, schema: {columns: result.columns}}
 
             console.group('[SQL Entity Service] query')
             console.log(`query options:`, options)
             console.log(`entityType:`, this.entityType)
-            console.log(`statement:`, statement)
+            console.log(`statement:`, _statement)
             console.log(`sql result:`, result)
             console.groupEnd()
 
             return {
-              ...result,
-              data: result.data,
-              schema: {
-                columns: result.columns,
-              },
+              ...result, // backcomp
+              data,
+              schema,
+              stats: {
+                ...(result.stats ?? {}),
+                statements: [
+                  _statement
+                ]
+              }
             }
           }),
           // 需要在这里捕捉错误, 否则会终端 refresh 的这个 switchMap
           catchError((err) => {
+            console.error(err)
             let error: string
             if (typeof err === 'string') {
               error = err
@@ -80,15 +91,15 @@ export class SQLEntityService<T> extends AbstractEntityService<T> {
               error = err
             }
 
-            console.group('[SQL Entity Service] query')
+            console.group('[SQL Entity Service] query error')
             console.log(`query options:`, options)
             console.log(`entityType:`, this.entityType)
-            console.log(`statement:`, statement)
+            console.log(`statement:`, _statement)
             console.log(`error:`, error)
             console.groupEnd()
 
             this.agent.error(error)
-            return of({ data: [], error })
+            return of({ data: [], error, stats: {statements: [_statement]} })
           })
         ) as unknown as Observable<QueryReturn<T>>
       })

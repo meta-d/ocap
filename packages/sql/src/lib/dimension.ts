@@ -4,6 +4,7 @@ import {
   EntityType,
   getEntityHierarchy,
   getEntityProperty,
+  IntrinsicMemberProperties,
   isMeasure,
   PropertyDimension,
   PropertyHierarchy,
@@ -15,7 +16,7 @@ import {
 import flattenDeep from 'lodash/flattenDeep'
 import { CubeFactTable } from './cube'
 import { Cast } from './functions'
-import { C_MEASURES_ROW_COUNT, C_MEMBER_CAPTION } from './types'
+import { AggregateFunctions, C_MEASURES_ROW_COUNT } from './types'
 import { serializeIntrinsicName, serializeName, serializeTableAlias, serializeUniqueName } from './utils'
 
 
@@ -24,13 +25,24 @@ export interface DimensionColumn {
   column?: string
   expression?: string
   alias?: string
+  cast?: 'VARCHAR'
+  aggregate?: AggregateFunctions
 }
 
 export type DimensionField = DimensionColumn & {
   columns?: DimensionColumn[]
 }
 
+export interface LevelContext {
+  /**
+   * 查询的层级 Schema
+   */
+  level?: PropertyLevel
+  selectFields: Array<DimensionField>
+}
+
 export interface DimensionContext {
+  dialect: string
   /**
    * Fact table name in Cube
    */
@@ -48,14 +60,22 @@ export interface DimensionContext {
    */
   hierarchy?: PropertyHierarchy
   dimensionTable?: string
+
   /**
-   * 查询的层级 Schema
+   * 这个是谁的别名 ?
    */
-  level?: PropertyLevel
   alias?: string
   selectFields: Array<DimensionField>
-  parentKeyColumn?: string
+  // parentKeyColumn?: string
   parentColumn?: string
+  role: 'row' | 'column'
+  levels: Array<LevelContext>
+  // 最终输出结果的字段们
+  columns?: string[]
+  keyColumn?: string
+  captionColumn?: string
+  parentKeyColumn?: string
+  childrenCardinalityColumn?: string
 }
 
 export function serializeHierarchyFrom(
@@ -133,7 +153,7 @@ export function serializeColumn(field: DimensionField, dialect: string) {
   const needCasts = ['presto', 'trino']
   let statement = ''
   if (field.columns) {
-    statement +=
+    statement = field.columns.length ? 
       `concat('[', ` +
       field.columns
         .map(
@@ -143,12 +163,25 @@ export function serializeColumn(field: DimensionField, dialect: string) {
           //   : `${serializeName(col.table, dialect)}.${serializeName(col.column, dialect)}`)
         )
         .join(`,'].[',`) +
-      `,']')`
+      `,']')` : `''`
   } else {
-    statement += `${
+    statement = `${
       field.expression ?? `${serializeName(field.table, dialect)}.${serializeName(field.column, dialect)}`
     }`
+    if (field.cast) {
+      statement = `CAST(${statement} AS ${field.cast})`
+    }
   }
+
+  if (field.aggregate) {
+    switch(field.aggregate) {
+      case AggregateFunctions.COUNT_DISTINCT:
+        statement = `COUNT(DISTINCT ${statement})`
+        break
+      default:
+    }
+  }
+
   statement += ` AS ${serializeName(field.alias, dialect)}`
 
   return statement
@@ -224,7 +257,7 @@ export function LevelMembers(
     .map((item) => serializeColumn(item, dialect))
     .join(', ')} FROM ${serializeHierarchyFrom(factTable, hierarchy, dialect, catalog)}`
 
-  statement += ` GROUP BY ` + (serializeGroupByDimensions([{ hierarchy, selectFields }], dialect) || 1)
+  statement += ` GROUP BY ` + (serializeGroupByDimensions([{ dialect, hierarchy, selectFields, role: 'row', levels: [] }], dialect) || 1)
 
   return statement
 }
@@ -248,8 +281,8 @@ export function DimensionMembers(
   if (!hierarchy) {
     throw new Error(`未找到维度'${dimension.dimension}'或层级结构'${dimension.hierarchy}'`)
   }
-  const cube = schema.cubes.find((item) => item.name === entity)
-  const factTable = CubeFactTable(cube)
+  const cube = schema.cubes?.find((item) => item.name === entity)
+  const factTable = cube ? CubeFactTable(cube) : null
   const levels = hierarchy.levels // .slice(hierarchy.hasAll ? 1 : 0)
   return levels.map((level, i) => {
     return LevelMembers(factTable, hierarchy, i, dialect, catalog)
@@ -257,7 +290,7 @@ export function DimensionMembers(
 }
 
 export function LevelCaptionFields(table: string, level: PropertyLevel, dialect: string) {
-  const selectFields = []
+  const selectFields: DimensionField[] = []
   const captionColumn = level.captionColumn || level.nameColumn || level.column
 
   if (level.captionExpression?.sql?.content) {
@@ -266,14 +299,15 @@ export function LevelCaptionFields(table: string, level: PropertyLevel, dialect:
       table,
       column: captionColumn,
       expression: level.captionExpression.sql.content, // 需要判断 dialect
-      alias: serializeIntrinsicName(dialect, level.name, 'MEMBER_CAPTION') // 先与 MDX 命名保持一致
+      alias: serializeIntrinsicName(dialect, level.name, IntrinsicMemberProperties.MEMBER_CAPTION) // 先与 MDX 命名保持一致
     })
   } else if (captionColumn) {
     // CaptionColumn
     selectFields.push({
       table,
       column: captionColumn,
-      alias: serializeIntrinsicName(dialect, level.name, 'MEMBER_CAPTION') // 先与 MDX 命名保持一致
+      alias: serializeIntrinsicName(dialect, level.name, IntrinsicMemberProperties.MEMBER_CAPTION), // 先与 MDX 命名保持一致
+      cast: 'VARCHAR'
     })
   }
 
@@ -319,24 +353,28 @@ export function buildDimensionContext(
     // } else {
     //
     // captionColumn = captionColumn || nameColumn
+    const levels = context.hierarchy.levels.slice(context.hierarchy.hasAll ? 1 : 0, lIndex + 1)
+    const memberUniqueNameColumns = levels.map((level) => {
+      const levelTable = level.table || context.dimensionTable
+      return getLevelColumn(level, levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable)
+    })
     context.selectFields.push({
       table,
-      columns: context.hierarchy.levels.slice(context.hierarchy.hasAll ? 1 : 0, lIndex + 1).map((level) => {
-        const levelTable = level.table || context.dimensionTable
-        return getLevelColumn(level, levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable)
-      }),
+      columns: memberUniqueNameColumns,
       alias: level.name
     })
     // }
 
     context.selectFields.push(...LevelCaptionFields(table, level, dialect))
 
+    // 这里是自循环的 ParentChild
     if (level.parentColumn) {
       context.parentKeyColumn = level.column
       context.parentColumn = level.parentColumn
+      const parentTable = table + '(1)'
       context.selectFields.push({
-        table: table + '(1)',
-        column: nameColumn,
+        table: parentTable,
+        columns: memberUniqueNameColumns.map((column) => ({...column, table: parentTable})),
         alias: serializeIntrinsicName(dialect, level.name, 'PARENT_UNIQUE_NAME') // 先与 MDX 命名保持一致
       })
     }
@@ -453,9 +491,9 @@ export function serializeGroupByDimensions(dimensions: DimensionContext[], diale
   return [
     ...new Set(
       flattenDeep<DimensionColumn>(
-        dimensions.map((dimension) => dimension.selectFields.map((field) => (field.columns ? field.columns : [field])))
+        dimensions.map((context) => context.selectFields.filter((field) => !field.aggregate).map((field) => (field.columns ? field.columns : [field])))
       )
-        .filter((field) => !!field.column)
+        .filter((field) => !!field.column )
         .map((field) => `${serializeName(field.table, dialect)}.${serializeName(field.column, dialect)}`)
     )
   ].join(', ')
@@ -483,7 +521,7 @@ export function compileDimensionSchema(
       const levels = hierarchy.levels?.map((level) => ({
         ...level,
         name: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name),
-        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name, C_MEMBER_CAPTION),
+        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name, IntrinsicMemberProperties.MEMBER_CAPTION),
         role: AggregationRole.level,
         properties: level.properties?.map((property) => ({
           ...property,
@@ -498,15 +536,15 @@ export function compileDimensionSchema(
             dialect,
             dimension.name,
             hierarchy.name,
-            hierarchy.allMemberName || `(All ${hierarchy.name || dimension.name}s)`
+            `(All ${hierarchy.name || dimension.name}s)`
           ),
           role: AggregationRole.level,
           caption: serializeUniqueName(
             dialect,
             dimension.name,
             hierarchy.name,
-            hierarchy.allMemberName || `(All ${hierarchy.name || dimension.name}s)`,
-            C_MEMBER_CAPTION
+            `(All ${hierarchy.name || dimension.name}s)`,
+            IntrinsicMemberProperties.MEMBER_CAPTION
           ),
           properties: []
         })
@@ -518,7 +556,7 @@ export function compileDimensionSchema(
         entity,
         dimension: dimensionUniqueName,
         role: AggregationRole.hierarchy,
-        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, C_MEMBER_CAPTION),
+        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, IntrinsicMemberProperties.MEMBER_CAPTION),
         levels: levels?.map((level, i) => ({
           ...level,
           levelNumber: i,

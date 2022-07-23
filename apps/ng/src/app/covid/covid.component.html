@@ -1,21 +1,23 @@
 <div fxLayout="row" fxLayoutAlign="start center" >
-    <ngm-smart-filter [dataSettings]="dataSettings"
+    <!-- <ngm-smart-filter [dataSettings]="dataSettings"
         [options]="smartFilterOptions"
         [appearance]="appearance"
         [(ngModel)]="slicer"
         (ngModelChange)="onSlicerChange($event)">
-    </ngm-smart-filter>
+    </ngm-smart-filter> -->
 
-    <ngm-member-tree-select [dataSettings]="dataSettings"
-        [dimension]="countryDimension"
+    <ngm-member-tree-select label="Product" [dataSettings]="dataSettings"
+        [dimension]="productDimension"
         [appearance]="appearance"
-        [(ngModel)]="countrySlicer"
+        autocomplete
+        [initialLevel]="1"
+        [(ngModel)]="productSlicer"
         (ngModelChange)="onSlicerChange($event)"
     ></ngm-member-tree-select>
 </div>
 
 <div fxFlex="100" fxLayout="row wrap" fxLayoutAlign="start start" fxLayoutGap="1rem grid">
-    <div fxFlex="calc(33% - 1rem)">
+    <!-- <div fxFlex="calc(33% - 1rem)">
         <ngm-analytical-card displayDensity="compact"
             [title]="card1.title"
             [dataSettings]="card1.dataSettings"
@@ -24,7 +26,7 @@
             [options]="{
             }"
         ></ngm-analytical-card>
-    </div>
+    </div> -->
 
     <!-- <div *ngFor="let card of cards" fxFlex="calc(33% - 1rem)">
         <ngm-analytical-card displayDensity="compact"
@@ -37,11 +39,12 @@
         ></ngm-analytical-card>
     </div>
  -->
-    <ngm-analytical-grid fxFlex="100"
+ 
+    <ngm-analytical-grid fxFlex="100" [appearance]="{displayDensity: DisplayDensity.compact}"
         [dataSettings]="dataSettings"
         [options]="{
             strip: true,
-            paging: true
+            grid: true
         }">
     </ngm-analytical-grid>
 </div>

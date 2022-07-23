@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use '@angular/material' as theming;
 
@@ -32,6 +33,32 @@
   //     #{$property}: theming.get-color-from-palette($palette, disabled-button);
   //   }
   // }
+}
+
+@mixin _theme-outline($theme, $border) {
+  $primary: map.get($theme, primary);
+  $accent: map.get($theme, accent);
+  $warn: map.get($theme, warn);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
+  
+  border: 1px #{$border} mat.get-color-from-palette($foreground, divider);
+
+  &.mat-primary {
+    border-color: theming.get-color-from-palette($primary, 100);
+    background-color: color.change(theming.get-color-from-palette($primary), $alpha: 0.1);
+    color: theming.get-color-from-palette($primary);
+  }
+  &.mat-accent {
+    border-color: theming.get-color-from-palette($accent, 100);
+    background-color: color.change(theming.get-color-from-palette($accent), $alpha: 0.1);
+    color: theming.get-color-from-palette($accent);
+  }
+  &.mat-warn {
+    border-color: theming.get-color-from-palette($warn, 100);
+    background-color: color.change(theming.get-color-from-palette($warn), $alpha: 0.1);
+    color: theming.get-color-from-palette($warn);
+  }
 }
 
 @mixin color($config-or-theme) {
@@ -138,7 +165,7 @@
       background-color: mat.get-color-from-palette($background, background);
 
       &:hover, 
-      &:focus,
+      &.cdk-focused,
       &:active {
         box-shadow: rgb(143 155 179 / 16%) 0px 0px 0px var(--box-shadow-radius);
         z-index: 1;
@@ -150,6 +177,7 @@
       --box-shadow-radius: 5px;
       .mat-button-toggle-label-content {
         line-height: 24px;
+        font-size: .75em;
       }
     }
 
@@ -158,6 +186,7 @@
       --box-shadow-radius: 6px;
       .mat-button-toggle-label-content {
         line-height: 32px;
+        font-size: .85em;
       }
     }
 
@@ -165,6 +194,31 @@
       --box-shadow-radius: 10px;
       border: 1px solid mat.get-color-from-palette($foreground, divider);
       padding: 3px;
+    }
+  }
+
+  .mat-chip-list {
+    --box-shadow-radius: 6px;
+    
+    .mat-chip {
+      &:hover, 
+      &:focus,
+      &:active {
+        box-shadow: rgb(143 155 179 / 16%) 0px 0px 0px var(--box-shadow-radius);
+        z-index: 1;
+      }
+    }
+
+    &.ngm-appearance-outline {
+      .mat-chip {
+        @include _theme-outline($color-config, solid);
+      }
+    }
+
+    &.ngm-appearance-dashed {
+      .mat-chip {
+        @include _theme-outline($color-config, dashed);
+      }
     }
   }
 }

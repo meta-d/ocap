@@ -28,23 +28,24 @@ describe('SQL Cube', () => {
       ENTITY_TYPE_SALESORDER,
       ''
     )
-    expect(cubeContext.dimensions[0].selectFields).toEqual([
+    expect(cubeContext.dimensions[0].levels[0].selectFields).toEqual([
       {
         alias: '[Time.Weekly]',
         columns: [
           {
-            table: 'time_by_day',
+            table: '[time.weekly]_time_by_day',
             column: 'the_year'
           },
           {
-            table: 'time_by_day',
+            table: '[time.weekly]_time_by_day',
             column: 'week_of_year'
           }
         ],
-        table: 'time_by_day'
+        table: '[time.weekly]_time_by_day'
       },
       {
-        table: 'time_by_day',
+        table: '[time.weekly]_time_by_day',
+        cast: 'VARCHAR',
         column: 'week_of_year',
         alias: '[Time.Weekly].[MEMBER_CAPTION]'
       }
@@ -66,21 +67,22 @@ describe('SQL Cube', () => {
       ENTITY_TYPE_SALESORDER,
       ''
     )
-    expect(cubeContext.dimensions[0].selectFields).toEqual([
+    expect(cubeContext.dimensions[0].levels[0].selectFields).toEqual([
       {
         alias: '[Payment method]',
         columns: [
           {
             column: 'payment_method',
-            table: 'sales_fact'
+            table: 'salesorder_sales_fact'
           }
         ],
-        table: 'sales_fact'
+        table: 'salesorder_sales_fact'
       },
       {
         alias: '[Payment method].[MEMBER_CAPTION]',
+        cast: 'VARCHAR',
         column: 'payment_method',
-        table: 'sales_fact'
+        table: 'salesorder_sales_fact'
       }
     ])
   })

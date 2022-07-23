@@ -1,9 +1,9 @@
-import { Component } from '@angular/core'
+import { ChangeDetectorRef, Component } from '@angular/core'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { C_MEASURES, DataSettings, ISlicer } from '@metad/ocap-core'
 import { ANALYTICAL_CARDS } from '@metad/ocap-duckdb'
+import { timer } from 'rxjs'
 
 @Component({
   selector: 'metad-ocap-covid',
@@ -11,37 +11,44 @@ import { ANALYTICAL_CARDS } from '@metad/ocap-duckdb'
   styleUrls: ['covid.component.scss']
 })
 export class CovidComponent {
+  DisplayDensity = DisplayDensity
+
   dataSettings: DataSettings = {
-    dataSource: 'WASM',
-    entitySet: 'Covid19Daily',
+    dataSource: 'FOODMART',
+    entitySet: 'Sales',
     analytics: {
       rows: [
         {
-          dimension: '[Country]',
-          hierarchy: '[Country.Region]',
-          level: '[Country.Region].[Region]'
-        },
-        {
-          dimension: '[Admin]',
-          level: '[Admin].[Name]'
+          dimension: '[Store]',
+          level: '[Store].[Store City]',
+          displayHierarchy: true
         }
       ],
       columns: [
         {
+          dimension: '[Time]',
+          hierarchy: '[Time]',
+          level: '[Time].[Quarter]',
+          displayHierarchy: true
+        },
+        {
           dimension: C_MEASURES,
-          measure: 'Confirmed'
+          measure: 'Sales'
         }
       ]
     }
   }
-  countryDimension = {
-    dimension: '[Country]'
+  productDimension = {
+    dimension: '[Product]'
   }
-  countrySlicer: ISlicer = {
+  productSlicer: ISlicer = {
+    dimension: {
+      dimension: '[Product]'
+    },
     members: [
       {
-        label: 'China',
-        value: '[Asia].[Eastern Asia].[China]'
+        value: '[Washington].[Washington Berry Juice]',
+        label: 'Washington Berry Juice'
       }
     ]
   }
@@ -61,27 +68,25 @@ export class CovidComponent {
 
   cards = [...ANALYTICAL_CARDS]
 
-  constructor(wasmAgent: WasmAgentService) {
-    // wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+  constructor(private cdr: ChangeDetectorRef) {
   }
 
   onSlicerChange(event) {
     const selectOptions = []
-    if (this.countrySlicer?.members) {
-      selectOptions.push(this.countrySlicer)
-    }
-    if (this.slicer?.members) {
-      selectOptions.push(this.slicer)
+
+    if (this.productSlicer.members?.length) {
+      selectOptions.push(this.productSlicer)
     }
 
-    this.card1 = {
-      ...this.card1,
-      dataSettings: {
-        ...this.card1.dataSettings,
+    timer(100).subscribe(() => {
+      this.dataSettings = {
+        ...this.dataSettings,
         selectionVariant: {
           selectOptions
         }
       }
-    }
+
+      this.cdr.detectChanges()
+    })
   }
 }

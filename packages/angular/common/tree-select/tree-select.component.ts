@@ -94,6 +94,8 @@ export class TreeSelectComponent<T>
   }
   private treeNodes$ = new BehaviorSubject<TreeNodeInterface<T>[]>(null)
 
+  @Input() initialLevel: number
+
   @Input() get multiple() {
     return this._multiple
   }
@@ -143,7 +145,7 @@ export class TreeSelectComponent<T>
     return this.formControl.value
   }
   get isNotInitial() {
-    return Array.isArray(this.formControl.value) ? this.formControl.value.length : this.formControl.value
+    return this.multipleSelection.selected?.length || this.singleSelection.selected?.length || (Array.isArray(this.formControl.value) ? this.formControl.value.length : this.formControl.value)
   }
 
   autoControl = new FormControl<string>(null)
@@ -218,9 +220,14 @@ export class TreeSelectComponent<T>
       )
       .subscribe((nodes) => {
         this.dataSource.data = nodes
-        this.treeControl.dataNodes.forEach((node) => {
-          this.treeControl.expand(node)
-        })
+        if (this.initialLevel || !!this.autoControl.value) {
+          this.treeControl.dataNodes.forEach((node) => {
+            const level = this.treeControl.getLevel(node)
+            if (!!this.autoControl.value || level < this.initialLevel) {
+              this.treeControl.expand(node)
+            }
+          })
+        }
 
         // 重新设置新的值对象引用
         const values = this.formControl.value
@@ -360,6 +367,8 @@ export class TreeSelectComponent<T>
   clear(event) {
     event.stopPropagation()
     this.formControl.setValue(null)
+    this.singleSelection.clear()
+    this.multipleSelection.clear()
   }
 
   clearSearch(event) {

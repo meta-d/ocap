@@ -1,8 +1,7 @@
 import { Agent, AgentStatus, AgentType, DataSourceOptions, DSCacheService, MockAgent } from '@metad/ocap-core'
 import { EMPTY, firstValueFrom, Observable, skip } from 'rxjs'
-import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, SHARED_DIMENSION_TIME } from './cube.spec'
 import { SQLDataSource } from './data-source'
-import { PRODUCT_DIMENSION } from './dimension.spec'
+import { CUBE_SALESORDER, ENTITY_TYPE_SALESORDER, PRODUCT_DIMENSION, SHARED_DIMENSION_TIME } from './mock-data'
 
 describe('SQL DataSource', () => {
   let dataSource: SQLDataSource
@@ -119,7 +118,8 @@ describe('SQL DataSource', () => {
         cubes: [
           {
             name: 'SalesOrder',
-            tables: [{ name: 'SalesOrder1' }]
+            tables: [{ name: 'SalesOrder1' }],
+            defaultMeasure: ''
           }
         ]
       })
@@ -201,7 +201,8 @@ describe('Get EntityType with Exception', () => {
             {
               __id__: '123',
               name: 'SalesOrder',
-              tables: [{ name: 'ErrorTable' }]
+              tables: [{ name: 'ErrorTable' }],
+              defaultMeasure: ''
             }
           ]
         }
@@ -223,7 +224,7 @@ describe('Get EntityType with Exception', () => {
       .getEntityType('SalesOrder')
       .pipe(skip(1))
       .subscribe((entityType) => {
-        expect(entityType).toEqual({ label: undefined, name: 'SalesOrder', properties: {} })
+        expect(entityType).toEqual({ label: undefined, name: 'SalesOrder', defaultMeasure: '', properties: {} })
         done()
       })
 
@@ -232,7 +233,8 @@ describe('Get EntityType with Exception', () => {
       dataSource.updateCube({
         __id__: '123',
         name: 'SalesOrder',
-        tables: [{ name: 'SalesOrder' }]
+        tables: [{ name: 'SalesOrder' }],
+        defaultMeasure: ''
       })
     })
   })

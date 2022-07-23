@@ -5,7 +5,14 @@
   flex-direction: column;
 
   .ngm-card-header .actions {
-    opacity: .1;
+    opacity: 0.1;
+    position: relative;
+
+    .mat-progress-spinner {
+      position: absolute;
+      right: 0;
+      margin: 5px;
+    }
   }
 
   &:hover {
@@ -25,6 +32,23 @@
   top: 0;
 }
 
+.mat-header-cell {
+  // position: relative;
+
+  // .pivot-column-header-content {
+  //   height: 100%;
+  //   width: 100%;
+  //   position: absolute;
+  //   top: 0;
+  //   line-height: 24px;
+  // }
+}
+
+.mat-header-cell,
+.mat-cell {
+  white-space: nowrap;
+}
+
 .mat-header-cell.ngm-measure,
 .mat-cell.ngm-measure {
   text-align: right;
@@ -42,18 +66,18 @@
   flex: 1;
   position: relative;
   overflow: auto;
-  max-height: calc(100% - 40px);
 }
 
-.ngm-analytical-grid__loading {
-  position: absolute;
-  right: 0;
-}
-
-.mat-progress-spinner {
+.mat-progress-spinner.ngm-analytical-grid__loading {
   position: absolute;
   left: 50%;
   top: 50%;
   margin-left: -25px;
   margin-top: -25px;
+}
+
+
+.cdk-header-row.empty {
+  height: 0;
+  display: none;
 }

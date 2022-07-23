@@ -3,7 +3,7 @@ import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, DataSettings, FilterSelectionType } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_FOODMART_MODEL, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { cloneDeep } from 'lodash'
 
 @Component({
@@ -134,6 +134,7 @@ export class AppComponent {
       })
 
       wasmAgent.registerModel(DUCKDB_WASM_MODEL)
+      wasmAgent.registerModel(DUCKDB_FOODMART_MODEL)
     })
     
   }

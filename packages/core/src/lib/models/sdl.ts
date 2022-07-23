@@ -41,6 +41,7 @@ export interface Cube extends Entity {
   dimensions?: PropertyDimension[]
   measures?: PropertyMeasure[]
   calculatedMembers?: CalculatedMember[]
+  defaultMeasure: string
 }
 
 export interface Table {
@@ -140,6 +141,8 @@ export interface EntityType {
    * @deprecated
    */
   semantics?: EntitySemantics
+
+  defaultMeasure?: string
 }
 
 /**

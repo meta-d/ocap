@@ -84,6 +84,7 @@ export function hierarchize<T>(
   items: Array<T>,
   recursiveHierarchy: RecursiveHierarchyType,
   options?: {
+    compositeKeys?: string[]
     valueProperty?: string
     startLevel?: number
   }
@@ -91,7 +92,7 @@ export function hierarchize<T>(
   const root = []
   const results = {} as Record<string, TreeNodeInterface<T>>
   items.forEach((item) => {
-    const itemKey = item[recursiveHierarchy.valueProperty]
+    const itemKey = item[recursiveHierarchy.valueProperty] + (options?.compositeKeys.map((key) => item[key]).join('/') ?? '')
     if (!results[itemKey]) {
       results[itemKey] = {
         children: []
@@ -109,7 +110,7 @@ export function hierarchize<T>(
       results[itemKey].value = item[options.valueProperty]
     }
 
-    const parentKey = item[recursiveHierarchy.parentNodeProperty]
+    const parentKey = item[recursiveHierarchy.parentNodeProperty] + (options?.compositeKeys.map((key) => item[key]).join('/') ?? '')
     if (parentKey) {
       if (results[parentKey]) {
         results[parentKey].children.push(results[itemKey])
@@ -183,58 +184,3 @@ export function filterTreeNodes<T = any>(array: TreeNodeInterface<T>[], text: st
 
   return !text ? array : array.reduce(getNodes, [])
 }
-
-// export function hierarchize<T>(
-//   items: Array<T>,
-//   recursiveHierarchy: RecursiveHierarchyType,
-//   valueProperty?: string
-// ): Array<TreeNodeInterface<T>> {
-
-//   const root = []
-//   const results = {} as Record<string, TreeNodeInterface<T>>
-//   items.forEach((item) => {
-//     if (!results[item[recursiveHierarchy.valueProperty]]) {
-//       results[item[recursiveHierarchy.valueProperty]] = {
-//         children: []
-//       } as TreeNodeInterface<T>
-//     }
-//     assign(results[item[recursiveHierarchy.valueProperty]], {
-//       key: item[recursiveHierarchy.valueProperty],
-//       label: item[recursiveHierarchy.labelProperty],
-//       title: item[recursiveHierarchy.labelProperty],
-//       name: item[recursiveHierarchy.labelProperty],
-//       raw: item
-//     })
-
-//     if (valueProperty) {
-//       results[item[recursiveHierarchy.valueProperty]].value = item[valueProperty]
-//     }
-
-//     if (item[recursiveHierarchy.parentNodeProperty]) {
-//       if (results[item[recursiveHierarchy.parentNodeProperty]]) {
-//         results[item[recursiveHierarchy.parentNodeProperty]].children.push(
-//           results[item[recursiveHierarchy.valueProperty]]
-//         )
-//       } else {
-//         results[item[recursiveHierarchy.parentNodeProperty]] = {
-//           children: [
-//             results[item[recursiveHierarchy.valueProperty]]
-//           ]
-//         } as TreeNodeInterface<T>
-//       }
-//     } else {
-//       root.push(results[item[recursiveHierarchy.valueProperty]])
-//     }
-//   })
-
-//   Object.values(results).forEach((node) => {
-//     if (isEmpty(node.children)) {
-//       node.isLeaf = true
-//       node.children = null
-//     }
-//     if (!node.raw) {
-//       root.push(...node.children)
-//     }
-//   })
-//   return root
-// }

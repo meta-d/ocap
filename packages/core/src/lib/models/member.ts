@@ -37,3 +37,15 @@ export const DimensionMemberRecursiveHierarchy = {
   descendantCountProperty: 'childrenCardinality',
   memberTypeProperty: 'memberType'
 }
+
+export enum IntrinsicMemberProperties {
+  Unkown = 'Unkown',
+  CATALOG_NAME = 'CATALOG_NAME',
+  DESCRIPTION = 'DESCRIPTION',
+  PARENT_UNIQUE_NAME = 'PARENT_UNIQUE_NAME',
+  MEMBER_UNIQUE_NAME = 'MEMBER_UNIQUE_NAME',
+  MEMBER_CAPTION = 'MEMBER_CAPTION',
+  MEMBER_TYPE = 'MEMBER_TYPE',
+  LEVEL_NUMBER = 'LEVEL_NUMBER',
+  CHILDREN_CARDINALITY = 'CHILDREN_CARDINALITY',
+}

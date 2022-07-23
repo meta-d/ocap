@@ -5,6 +5,7 @@
   $config: mat.get-color-config($config-or-theme);
   $background: map.get($config, background);
   $foreground: map.get($config, foreground);
+  $accent: map.get($config, accent);
 
   .ngm-analytical-grid {
     &.striped {
@@ -17,6 +18,13 @@
       background: lighten(mat.get-color-from-palette($background, hover), 50%);
     }
 
+    // .mat-header-cell {
+    //   // background: lighten(mat.get-color-from-palette($background, hover), 50%);
+    //   &.mat-table-sticky {
+    //     background: white;
+    //   }
+    // }
+
     .mat-table tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row], .mat-table-sticky {
       background: unset;
     }
@@ -24,6 +32,9 @@
     .mat-row.selected {
       .mat-cell.selected {
         background-color: mat.get-color-from-palette($background, hover);
+        border-right: 1px solid mat.get-color-from-palette($accent);
+        border-bottom: 1px solid mat.get-color-from-palette($accent);
+        box-shadow: inset 1px 1px mat.get-color-from-palette($accent);
       }
     }
   }
@@ -35,7 +46,11 @@
 @mixin density($config-or-theme) {
 
   .ngm-analytical-grid.ngm-density__cosy {
-
+    &.ngm-with-toolbar {
+      .ngm-card-content {
+        max-height: calc(100% - 40px);
+      }
+    }
     .mat-paginator {
       overflow: hidden;
     }
@@ -53,6 +68,11 @@
   }
 
   .ngm-analytical-grid.ngm-density__compact {
+    &.ngm-with-toolbar {
+      .ngm-card-content {
+        max-height: calc(100% - 30px);
+      }
+    }
 
     .mat-paginator {
       overflow: hidden;

@@ -8,6 +8,7 @@ import { EntityService } from './entity'
 import {
   Catalog,
   Cube,
+  Entity,
   EntitySet,
   EntityType,
   IDimensionMember,
@@ -412,7 +413,7 @@ export interface DBCatalog {
 }
 
 
-export interface DBTable {
+export interface DBTable extends Entity {
   catalog?: string
   name: string
   label?: string

@@ -1,6 +1,7 @@
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { MatChipsModule } from '@angular/material/chips'
 import { MatIconModule } from '@angular/material/icon'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { moduleMetadata, Story } from '@storybook/angular'
@@ -9,7 +10,7 @@ export default {
   title: 'Appearance',
   decorators: [
     moduleMetadata({
-      imports: [FormsModule, OcapCoreModule, MatIconModule, MatButtonModule, MatButtonToggleModule],
+      imports: [FormsModule, OcapCoreModule, MatIconModule, MatButtonModule, MatButtonToggleModule, MatChipsModule],
       providers: []
     })
   ]
@@ -92,6 +93,41 @@ const Template: Story<any> = (args: any) => ({
     <mat-button-toggle value="italic">Italic</mat-button-toggle>
     <mat-button-toggle value="underline">Underline</mat-button-toggle>
   </mat-button-toggle-group>
+</div>
+
+
+<div>
+  <mat-chip-list aria-label="Fish selection" >
+    <mat-chip>One fish</mat-chip>
+    <mat-chip>Two fish</mat-chip>
+    <mat-chip color="primary" selected>Primary fish</mat-chip>
+    <mat-chip color="accent" selected>Accent fish</mat-chip>
+    <mat-chip color="warn" selected>warn fish</mat-chip>
+  </mat-chip-list>
+
+  <mat-chip-list aria-label="Fish selection" ngmAppearance="outline">
+    <mat-chip>One fish</mat-chip>
+    <mat-chip>Two fish</mat-chip>
+    <mat-chip color="primary" selected>Primary fish</mat-chip>
+    <mat-chip color="accent" selected>Accent fish</mat-chip>
+    <mat-chip color="warn" selected>warn fish</mat-chip>
+  </mat-chip-list>
+
+  <mat-chip-list aria-label="Fish selection" ngmAppearance="dashed">
+    <mat-chip>One fish</mat-chip>
+    <mat-chip>Two fish</mat-chip>
+    <mat-chip color="primary" selected>Primary fish</mat-chip>
+    <mat-chip color="accent" selected>Accent fish</mat-chip>
+    <mat-chip color="warn" selected>warn fish</mat-chip>
+  </mat-chip-list>
+
+  <mat-chip-list aria-label="Fish selection" ngmAppearance="outline" displayDensity="compact">
+    <mat-chip>One fish</mat-chip>
+    <mat-chip>Two fish</mat-chip>
+    <mat-chip color="primary" selected>Primary fish</mat-chip>
+    <mat-chip color="accent" selected>Accent fish</mat-chip>
+    <mat-chip color="warn" selected>warn fish</mat-chip>
+  </mat-chip-list>
 </div>
 </div>
   `

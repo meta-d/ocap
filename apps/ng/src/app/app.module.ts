@@ -22,7 +22,7 @@ import {
 } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, DataSource, Type } from '@metad/ocap-core'
-import { DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { DUCKDB_FOODMART_MODEL, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
 import { DEFAULT_THEME } from '@metad/ocap-echarts'
 import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
@@ -176,8 +176,16 @@ export class CustomLoader implements TranslateLoader {
         settings: {
           ignoreUnknownProperty: true
         },
-        dialect: 'duckdb',
-        syntax: 'sql'
+      },
+      multi: true
+    },
+    {
+      provide: OCAP_MODEL_TOKEN,
+      useValue: {
+        ...DUCKDB_FOODMART_MODEL,
+        settings: {
+          ignoreUnknownProperty: true
+        },
       },
       multi: true
     }

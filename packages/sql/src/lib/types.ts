@@ -1,8 +1,7 @@
-import { AggregationRole, DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from '@metad/ocap-core'
+import { DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from '@metad/ocap-core'
 
 // 固有度量字段 行计数
 export const C_MEASURES_ROW_COUNT = 'Measures_Row_Count'
-export const C_MEMBER_CAPTION = 'MEMBER_CAPTION'
 
 export interface SQLDataSourceOptions extends DataSourceOptions {
   settings?: SQLDataSourceSettings
@@ -66,4 +65,9 @@ export interface SQLQueryResult {
   columns?: Array<IColumnDef>
   stats?: any
   error?: string
+}
+
+export enum AggregateFunctions {
+  COUNT,
+  COUNT_DISTINCT
 }

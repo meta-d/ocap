@@ -23,17 +23,24 @@
       [matChipInputFor]="chipList"
     >
   </mat-chip-list>
+  
+  <div matPrefix>
+    <ng-content select="[matPrefix]"></ng-content>
+  </div>
 
-  <button mat-icon-button matSuffix type="button" class="ngm-smart-filter__help"
-    (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
-  >
-    <mat-icon>help_outline</mat-icon>
-  </button>
+  <div matSuffix fxLayout="row" fxLayoutAlign="space-around center">
+    <button *ngIf="isNotInitial$ | async" mat-icon-button
+      (click)="$event.stopPropagation();clearMembers()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <button mat-icon-button type="button" class="ngm-smart-filter__help"
+      (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
+    >
+      <mat-icon>help_outline</mat-icon>
+    </button>
 
-  <button *ngIf="isNotInitial$ | async" matSuffix mat-icon-button
-    (click)="$event.stopPropagation();clearMembers()">
-    <mat-icon>close</mat-icon>
-  </button>
+    <ng-content></ng-content>
+  </div>
 
   <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="selectMember($event)">
     <cdk-virtual-scroll-viewport class="ngm-smart-filter__autocomplete-viewport"
