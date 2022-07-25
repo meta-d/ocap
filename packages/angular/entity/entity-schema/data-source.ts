@@ -9,6 +9,7 @@ import {
   getEntityMeasures,
   hierarchize,
   IDimensionMember,
+  isEntityType,
   PropertyDimension,
   PropertyHierarchy,
   TreeNodeInterface
@@ -208,12 +209,15 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
       return this.dataSource$.pipe(
         switchMap((dataSource) => dataSource.selectEntityType(node.item.name)),
         first(),
-        // map((entityType) => cloneDeep(entityType)),
         tap((entityType) => {
+          if (entityType instanceof Error) {
+            throw entityType
+          }
           this.entityType = entityType
-          node.item.label = this.entityType.label
+          node.item.label = this.entityType?.label
         }),
-        map((entityType) => {
+        filter(isEntityType),
+        map((entityType: EntityType) => {
           const dimensions = getEntityDimensions(entityType)
           // dimensions.forEach((dimension) => (dimension.type = EntitySchemaType.Dimension))
           const measures = getEntityMeasures(entityType)

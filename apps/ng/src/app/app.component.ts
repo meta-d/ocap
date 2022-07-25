@@ -103,7 +103,7 @@ export class AppComponent {
   ]
   constructor(
     private smartFilterBar: NgmSmartFilterBarService,
-    wasmAgent: WasmAgentService,
+    private wasmAgent: WasmAgentService,
     dsCoreService: NgmDSCoreService
   ) {
     setTimeout(() => {
@@ -135,8 +135,24 @@ export class AppComponent {
 
       wasmAgent.registerModel(DUCKDB_WASM_MODEL)
       wasmAgent.registerModel(DUCKDB_FOODMART_MODEL)
+
+      wasmAgent.registerModel({
+        ...DUCKDB_FOODMART_MODEL,
+        name: 'ERROR',
+        tables: [
+          {
+            name: 'sales_fact',
+            type: 'csv',
+            sourceUrl: '/assets/data/foodmart/sales_fact.csv',
+            delimiter: ','
+          },
+        ]
+      })
     })
     
+    this.wasmAgent.selectError().subscribe((error) => {
+      console.error(error)
+    })
   }
 
   onSlicerChange(slicer) {

@@ -11,14 +11,16 @@
 }
 
 @mixin density($config-or-theme) {
+
   .mat-list-base.ngm-density__cosy {
     .mat-list-item {
       line-height: 40px;
       height: 40px;
       font-size: 14px;
 
-      .mat-icon {
-        font-size: 20px;
+      .mat-list-item-content > .mat-icon {
+        font-size: 18px;
+        line-height: 20px;
         width: 20px;
         height: 20px;
       }
@@ -30,13 +32,11 @@
       height: 38px;
       font-size: 12px;
 
-      :not(.mat-icon-button) {
-        .mat-icon {
-          font-size: 16px;
-          line-height: 16px;
-          width: 16px;
-          height: 16px;
-        }
+      .mat-list-item-content > .mat-icon {
+        font-size: 16px;
+        line-height: 18px;
+        width: 18px;
+        height: 18px;
       }
     }
   }

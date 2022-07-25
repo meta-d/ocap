@@ -208,6 +208,8 @@ export interface PropertyHierarchy extends EntityProperty {
   join?: Join
   hasAll?: boolean
   allMemberName?: string
+  allMemberCaption?: string
+  allLevelName?: string
   primaryKey?: string
   primaryKeyTable?: string
 

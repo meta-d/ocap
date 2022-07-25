@@ -1,18 +1,30 @@
 import { Injectable } from '@angular/core'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, SemanticModel } from '@metad/ocap-core'
-import { from, Observable, switchMap } from 'rxjs'
+import { BehaviorSubject, filter, Observable, switchMap } from 'rxjs'
 
 @Injectable()
 export class WasmAgentService implements Agent {
   type = AgentType.Wasm
 
-  agent: Agent
+  get agent() {
+    return this.agent$.value
+  }
+  set agent(value) {
+    this.agent$.next(value)
+  }
+  private agent$ = new BehaviorSubject<Agent>(null)
 
   selectStatus(): Observable<AgentStatus> {
-    return from(this.getWASMAgent()).pipe(switchMap((agent) => agent.selectStatus()))
+    return this.agent$.pipe(
+      filter((agent) => !!agent),
+      switchMap((agent) => agent.selectStatus())
+    )
   }
   selectError(): Observable<any> {
-    return from(this.getWASMAgent()).pipe(switchMap((agent) => agent.selectError()))
+    return this.agent$.pipe(
+      filter((agent) => !!agent),
+      switchMap((agent) => agent.selectError())
+    )
   }
   error(err: any): void {
     this.getWASMAgent().then((agent) => agent.error(err))

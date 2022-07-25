@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { FlexLayoutModule } from '@angular/flex-layout'
 import { FormsModule } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { ControlsModule } from '@metad/ocap-angular/controls'
@@ -14,6 +16,9 @@ import { CovidComponent } from './covid.component'
     CommonModule,
     FlexLayoutModule,
     FormsModule,
+    MatIconModule,
+    MatButtonModule,
+    
     AnalyticalCardModule,
     AnalyticalGridModule,
     OcapCoreModule,

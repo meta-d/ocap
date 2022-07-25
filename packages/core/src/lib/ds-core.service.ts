@@ -3,7 +3,7 @@ import { combineLatest, filter, map, Observable, shareReplay, switchMap } from '
 import { Agent, AgentType, DSCacheService } from './agent'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
 import { TimeGranularity } from './filter'
-import { EntitySet } from './models'
+import { EntitySet, isEntitySet } from './models'
 
 export interface DSState {
   dataSources: DataSourceOptions[]
@@ -12,10 +12,10 @@ export interface DSState {
 }
 
 export class DSCoreService extends ComponentStore<DSState> {
-
   public readonly timeGranularity$ = this.select((state) => state.timeGranularity)
-  public readonly currentTime$ = combineLatest([this.select(state => state.today), this.timeGranularity$])
-    .pipe(map(([today, timeGranularity]) => ({today, timeGranularity})))
+  public readonly currentTime$ = combineLatest([this.select((state) => state.today), this.timeGranularity$]).pipe(
+    map(([today, timeGranularity]) => ({ today, timeGranularity }))
+  )
 
   private _dataSources = new Map<string, Observable<DataSource>>()
   constructor(
@@ -46,33 +46,36 @@ export class DSCoreService extends ComponentStore<DSState> {
 
   /**
    * @todo 共用 DataSource 对象
-   * 
-   * @param name 
-   * @returns 
+   *
+   * @param name
+   * @returns
    */
   getDataSource(name: string): Observable<DataSource> {
     if (!this._dataSources.get(name)) {
-      this._dataSources.set(name, this.select((state) => state.dataSources?.find((item) => item.name === name)).pipe(
-        filter((value) => !!value),
-        switchMap(async (options) => {
-          const provider = this.factories.find(({ type }) => type === options?.type)
-          if (!provider) {
-            throw new Error(`Can't found provider for dataSource type: '${options.type}'`)
-          }
-          
-          const agent = this.agents.find((item) => item.type === options.agentType)
-  
-          if (!agent) {
-            throw new Error(`Can't found Agent for type '${options.agentType}'`)
-          }
-  
-          const DataSourceType = await provider.factory()
-          return new DataSourceType(options, agent, this.cacheService)
-        }),
-        shareReplay()
-      ))
+      this._dataSources.set(
+        name,
+        this.select((state) => state.dataSources?.find((item) => item.name === name)).pipe(
+          filter((value) => !!value),
+          switchMap(async (options) => {
+            const provider = this.factories.find(({ type }) => type === options?.type)
+            if (!provider) {
+              throw new Error(`Can't found provider for dataSource type: '${options.type}'`)
+            }
+
+            const agent = this.agents.find((item) => item.type === options.agentType)
+
+            if (!agent) {
+              throw new Error(`Can't found Agent for type '${options.agentType}'`)
+            }
+
+            const DataSourceType = await provider.factory()
+            return new DataSourceType(options, agent, this.cacheService)
+          }),
+          shareReplay()
+        )
+      )
     }
-    
+
     return this._dataSources.get(name)
   }
 
@@ -81,7 +84,9 @@ export class DSCoreService extends ComponentStore<DSState> {
   }
 
   getEntitySet(dataSource: string, entity: string): Observable<EntitySet> {
-    return this.getDataSource(dataSource).pipe(switchMap((dataSource) => dataSource.selectEntitySet(entity)))
+    return this.getDataSource(dataSource).pipe(
+      switchMap((dataSource) => dataSource.selectEntitySet(entity).pipe(filter(isEntitySet)))
+    )
   }
 
   setTimeGranularity(timeGranularity: TimeGranularity) {
@@ -89,10 +94,10 @@ export class DSCoreService extends ComponentStore<DSState> {
   }
 
   setToday(today: Date) {
-    this.patchState({today})
+    this.patchState({ today })
   }
 
   getToday() {
-    return this.get(state => ({today: state.today, timeGranularity: state.timeGranularity}))
+    return this.get((state) => ({ today: state.today, timeGranularity: state.timeGranularity }))
   }
 }

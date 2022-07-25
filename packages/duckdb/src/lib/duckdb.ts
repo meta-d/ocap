@@ -154,8 +154,13 @@ export class DuckdbWasmAgent implements Agent {
             name: options.table,
             columns
           }]
-        }else {
-          return await this.getTables()
+        } else {
+          const tables = await this.getTables(dataSource.catalog)
+
+          return [{
+            schema: dataSource.catalog,
+            tables
+          }]
         }
       } else if (options.url === 'catalogs') {
         return await this.getDatabases()
@@ -215,8 +220,11 @@ export class DuckdbWasmAgent implements Agent {
       }))
   }
 
-  async getTables() {
+  async getTables(catalog: string) {
     const connection = await this.getConnection()
+    if (catalog) {
+      await connection.query(`SET search_path TO ${catalog};`)
+    }
     const results = await this.query(connection, `PRAGMA show_tables;`)
 
     return results

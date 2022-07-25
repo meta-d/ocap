@@ -9,6 +9,7 @@ import {
   getEntityProperty,
   IntrinsicMemberProperties,
   isMeasure,
+  Measure,
   PropertyDimension,
   PropertyLevel,
   PropertyMeasure,
@@ -37,6 +38,10 @@ export function compileCubeSchema(
 
   cube.dimensionUsages?.forEach((usage) => {
     const dimension = dimensions?.find((item) => item.name === usage.source)
+    // Validator: fact foreignKeya for foreignKey
+    if (!usage.foreignKey) {
+      throw new Error(`The foreignKey '${usage.foreignKey}' of dimension usage '${usage.name}' is not correct!`)
+    }
     if (dimension) {
       const property = compileDimensionSchema(
         entity,
@@ -49,7 +54,7 @@ export function compileCubeSchema(
       )
       properties[property.name] = property
     } else {
-      throw new Error(`Can't found dimension for source '${usage.source}'`)
+      throw new Error(`Can't found source dimension '${usage.source}' for dimension usage '${usage.name}'`)
     }
   })
 
@@ -130,16 +135,25 @@ export function buildCubeContext(
       context.dimensions.push(dimension)
     }
     if (isMeasure(row)) {
-      const measure = getEntityProperty(entityType, row)
-      if (!measure) {
-        throw new Error(`未找到度量'${row.measure}'`)
+      dimension.members = []
+      const members = row.members ? [...row.members] : []
+      if (!members.length && row.measure) {
+        members.push(row.measure)
       }
-      context.measures.push({
-        ...measure,
-        alias: measure.name
+      members.forEach((measureName) => {
+        const measure = getEntityProperty(entityType, {dimension: C_MEASURES, measure: measureName} as Measure)
+        if (!measure) {
+          throw new Error(`未找到度量'${measureName}'`)
+        }
+        context.measures.push({
+          ...measure,
+          alias: measure.name
+        })
+        dimension.members.push({
+          value: measure.name,
+          label: measure.label
+        })
       })
-
-      dimension.keyColumn = measure.name
     } else {
       buildCubeDimensionContext(dimension, entityType)
     }
@@ -222,6 +236,7 @@ export function buildLevelContext(context: DimensionContext, row: Dimension, lev
   const hAlias = context.keyColumn
   const levelTable = level.table || context.dimensionTable
   const table = levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable
+  
   const nameColumn = level.nameColumn || level.column
   let captionColumn = level.captionColumn || level.nameColumn
   const levels = context.hierarchy.levels.slice(context.hierarchy.hasAll ? 1 : 0, lIndex + 1)
@@ -246,10 +261,7 @@ export function buildLevelContext(context: DimensionContext, row: Dimension, lev
     //
     captionColumn = captionColumn || nameColumn
     levelContext.selectFields.push({
-      table,
-      columns: levels.map((level) => {
-        return getLevelColumn(level, table)
-      }),
+      columns: LevelsToColumns(levels, context),
       alias: hAlias
     })
   }
@@ -305,10 +317,7 @@ export function buildLevelContext(context: DimensionContext, row: Dimension, lev
       })
     } else {
       levelContext.selectFields.push({
-        table,
-        columns: levels.slice(0, levels.length - 1).map((level) => {
-          return getLevelColumn(level, table)
-        }),
+        columns: LevelsToColumns(levels.slice(0, levels.length - 1), context),
         alias: serializeIntrinsicName(context.dialect, hAlias, IntrinsicMemberProperties.PARENT_UNIQUE_NAME)
       })
     }
@@ -316,14 +325,19 @@ export function buildLevelContext(context: DimensionContext, row: Dimension, lev
     // Children cardinality
     const childrenLevels = context.hierarchy.levels.slice(context.hierarchy.hasAll ? 1 : 0, Math.min(lIndex + 2, context.hierarchy.levels.length))
     levelContext.selectFields.push({
-      table,
-      columns: childrenLevels.map((level) => {
-        return getLevelColumn(level, table)
-      }),
+      columns: LevelsToColumns(childrenLevels, context),
       alias: serializeIntrinsicName(context.dialect, hAlias, IntrinsicMemberProperties.CHILDREN_CARDINALITY),
       aggregate: AggregateFunctions.COUNT_DISTINCT
     })
   }
 
   return levelContext
+}
+
+export function LevelsToColumns(levels: PropertyLevel[], context: DimensionContext) {
+  return levels.map((level) => {
+      const levelTable = level.table || context.dimensionTable
+      const table = levelTable ? serializeTableAlias(context.hierarchy.name, levelTable) : context.factTable
+      return getLevelColumn(level, table)
+    })
 }

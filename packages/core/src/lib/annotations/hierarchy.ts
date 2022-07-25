@@ -91,8 +91,8 @@ export function hierarchize<T>(
 ): Array<TreeNodeInterface<T>> {
   const root = []
   const results = {} as Record<string, TreeNodeInterface<T>>
-  items.forEach((item) => {
-    const itemKey = item[recursiveHierarchy.valueProperty] + (options?.compositeKeys.map((key) => item[key]).join('/') ?? '')
+  items?.forEach((item) => {
+    const itemKey = item[recursiveHierarchy.valueProperty] + (options?.compositeKeys?.map((key) => item[key]).join('/') ?? '')
     if (!results[itemKey]) {
       results[itemKey] = {
         children: []
@@ -110,7 +110,7 @@ export function hierarchize<T>(
       results[itemKey].value = item[options.valueProperty]
     }
 
-    const parentKey = item[recursiveHierarchy.parentNodeProperty] + (options?.compositeKeys.map((key) => item[key]).join('/') ?? '')
+    const parentKey = item[recursiveHierarchy.parentNodeProperty] + (options?.compositeKeys?.map((key) => item[key]).join('/') ?? '')
     if (parentKey) {
       if (results[parentKey]) {
         results[parentKey].children.push(results[itemKey])

@@ -241,17 +241,12 @@ export function getPropertyUnitName(property: Property) {
  * @returns 
  */
 export function getDimensionLabel(entityType: EntityType, dimension: Dimension) {
-  if (dimension.label) {
-    return dimension.label
+  if (dimension.caption) {
+    return dimension.caption
   }
   const property = getEntityProperty(entityType, dimension)
-  const label = getPropertyTextName(property)
-  if (label) {
-    return label
-  }
-
-  // Default dimension caption rule: `${dimension}_Text` (暂时, 以后可以重命名)
-  return dimension.dimension + '_Text'
+  
+  return getPropertyCaption(property)
 }
 
 /**
@@ -666,3 +661,5 @@ export const isDimensionUsage = (toBe): toBe is DimensionUsage =>
   !isNil((toBe as DimensionUsage)?.source)
 
 export const isPropertyMeasure = (toBe): toBe is PropertyMeasure => (toBe as PropertyMeasure)?.role === AggregationRole.measure
+export const isEntityType = (toBe): toBe is EntityType => !(toBe instanceof Error) && !isNil((toBe as EntityType)?.name)
+export const isEntitySet = (toBe): toBe is EntitySet => !(toBe instanceof Error) && !isNil((toBe as EntitySet)?.name)

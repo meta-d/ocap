@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
-import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { C_MEASURES, DataSettings, ISlicer } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS } from '@metad/ocap-duckdb'
-import { timer } from 'rxjs'
+import { ANALYTICAL_CARDS, DUCKDB_FOODMART_MODEL } from '@metad/ocap-duckdb'
+import { retryWhen, catchError, retry, Subject, switchMap, throwError, timer } from 'rxjs'
 
 @Component({
   selector: 'metad-ocap-covid',
@@ -68,7 +68,30 @@ export class CovidComponent {
 
   cards = [...ANALYTICAL_CARDS]
 
-  constructor(private cdr: ChangeDetectorRef) {
+  public refresh$ = new Subject<void>()
+
+  private foodmartDataSource$ = this.dsCoreService.getDataSource(DUCKDB_FOODMART_MODEL.name)
+  public dbCatalogs$ = this.foodmartDataSource$.pipe(
+    switchMap((dataSource) => {
+      return dataSource.discoverDBCatalogs()
+    })
+  )
+  public dbTables$ = this.foodmartDataSource$.pipe(
+    switchMap((dataSource) => {
+      return dataSource.discoverDBTables()
+    })
+  )
+
+  public readonly entitySet$ = this.foodmartDataSource$.pipe(
+    switchMap((dataSource) => dataSource.selectEntitySet('Sales')),
+    catchError((error) => {
+      console.error(error)
+      return throwError(() => error)
+    }),
+    retryWhen((errors) => this.refresh$)
+  )
+
+  constructor(private dsCoreService: NgmDSCoreService, private cdr: ChangeDetectorRef) {
   }
 
   onSlicerChange(event) {

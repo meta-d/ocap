@@ -195,11 +195,11 @@ export class AnalyticalGridComponent<T> implements OnInit, OnChanges, AfterViewI
       .selectResult()
       .pipe(untilDestroyed(this))
       .subscribe((result) => {
-        const treeDataNodes = hierarchize(result.schema.columns, {
+        const treeDataNodes = result.schema?.columns ? hierarchize(result.schema.columns, {
           valueProperty: 'uniqueName',
           parentNodeProperty: 'parentUniqueName',
           labelProperty: 'label'
-        })
+        }) : []
         this.columnsDataSource.data = treeDataNodes
       })
 

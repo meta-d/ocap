@@ -48,3 +48,11 @@
         }">
     </ngm-analytical-grid>
 </div>
+
+<div>
+    {{dbCatalogs$ | async | json}}
+</div>
+
+<div>
+    {{dbTables$ | async | json}}
+</div>

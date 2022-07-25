@@ -245,9 +245,7 @@ export interface QueryOptions<T = any> {
 
   filterString?: string
   filters?: Array<ISlicer>
-  // TODO 需要删除
-  top?: number
-  skip?: number
+
   search?: string
   params?: Array<string>
 

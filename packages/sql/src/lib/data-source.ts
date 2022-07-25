@@ -9,27 +9,18 @@ import {
   EntitySet,
   EntityType,
   IDimensionMember,
+  isEntityType,
   MDCube,
   QueryReturn
 } from '@metad/ocap-core'
 import isEqual from 'lodash/isEqual'
-import { combineLatest, distinctUntilChanged, from, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { combineLatest, distinctUntilChanged, filter, from, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { compileCubeSchema } from './cube'
 import { compileDimensionSchema, DimensionMembers } from './dimension'
 import { SQLEntityService } from './entity.service'
 import { serializeCubeFact } from './query'
-import {
-  C_MEASURES_ROW_COUNT,
-  SQLDataSourceOptions,
-  SQLQueryResult,
-  SQLSchema,
-  SQLTableSchema
-} from './types'
-import {
-  decideRole,
-  isCaseInsensitive,
-  serializeWrapCatalog,
-} from './utils'
+import { C_MEASURES_ROW_COUNT, SQLDataSourceOptions, SQLQueryResult, SQLSchema, SQLTableSchema } from './types'
+import { decideRole, isCaseInsensitive, serializeWrapCatalog } from './utils'
 
 export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
   private _catalogs$: Observable<Array<Catalog>>
@@ -174,7 +165,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
    * @param entity
    * @returns
    */
-  getEntityType(entity: string): Observable<EntityType> {
+  getEntityType(entity: string): Observable<EntityType | Error> {
     return this.selectSchema()
       .pipe(
         map((schema) => {
@@ -207,27 +198,28 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
       )
       .pipe(
         switchMap(async ({ type, cube, dimension, dimensions }) => {
-          if (dimension) {
-            // Schema dimension to EntityType
-            const rtDimension = compileDimensionSchema(entity, dimension, this.options.dialect)
-            return {
-              name: entity,
-              properties: {
-                [rtDimension.name]: rtDimension,
-                [C_MEASURES_ROW_COUNT]: {
-                  name: C_MEASURES_ROW_COUNT,
-                  role: AggregationRole.measure,
-                  entity
-                }
-              }
-            } as EntityType
-          }
-
-          if (cube) {
-            return compileCubeSchema(entity, cube, dimensions, this.options.dialect)
-          }
-
           try {
+            if (dimension) {
+              // Schema dimension to EntityType
+              const rtDimension = compileDimensionSchema(entity, dimension, this.options.dialect)
+              return {
+                name: entity,
+                properties: {
+                  [rtDimension.name]: rtDimension,
+                  [C_MEASURES_ROW_COUNT]: {
+                    name: C_MEASURES_ROW_COUNT,
+                    role: AggregationRole.measure,
+                    entity
+                  }
+                }
+              } as EntityType
+            }
+
+            if (cube) {
+              return compileCubeSchema(entity, cube, dimensions, this.options.dialect)
+            }
+
+            // try {
             let schemas: SQLSchema[]
             if (entity && !cube) {
               schemas = await this.fetchTableSchema(this.options.name, this.options.catalog || '', entity)
@@ -260,9 +252,8 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
               error = err
             }
 
-            console.error(error)
             this.agent.error(error)
-            return null
+            return new Error(error)
           }
         }),
         shareReplay(1)
@@ -276,6 +267,7 @@ export class SQLDataSource extends AbstractDataSource<SQLDataSourceOptions> {
    */
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
     return this.getEntityType(entity).pipe(
+      filter(isEntityType),
       switchMap((entityType) => {
         return combineLatest(
           DimensionMembers(

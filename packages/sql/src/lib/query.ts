@@ -1,34 +1,21 @@
 import {
   AdvancedSlicer,
-  AggregationRole,
   Cube,
-  EntityProperty,
-  EntitySemantics,
+  C_MEASURES,
   EntityType,
-  getEntityProperty,
-  getPropertyName,
-  getPropertyCaption,
-  isAdvancedSlicer, isCalculatedProperty,
-  isCalculationProperty,
+  IntrinsicMemberProperties,
+  isAdvancedSlicer,
+  isCalculatedProperty,
   isMeasure,
-  isPropertyMeasure,
-  isUnbookedData,
-  PropertyDimension,
+  PivotColumn,
   PropertyMeasure,
   QueryOptions,
   Schema,
-  PivotColumn,
-  C_MEASURES,
-  IntrinsicMemberProperties,
   wrapHierarchyValue
 } from '@metad/ocap-core'
-import compact from 'lodash/compact'
 import concat from 'lodash/concat'
+import flatten from 'lodash/flatten'
 import isArray from 'lodash/isArray'
-import isEmpty from 'lodash/isEmpty'
-import negate from 'lodash/negate'
-import union from 'lodash/union'
-import { serializeCalculationProperty } from './calculation'
 import { buildCubeContext, CubeContext } from './cube'
 import {
   queryDimension,
@@ -37,8 +24,7 @@ import {
   serializeHierarchyFrom,
   serializeTablesJoin
 } from './dimension'
-import { OrderBy } from './functions'
-import { compileFilters, convertFiltersToSQL } from './sql-filter'
+import { compileFilters } from './sql-filter'
 import { SQLQueryContext, SQLQueryProperty } from './types'
 import { serializeName, serializeTableAlias } from './utils'
 
@@ -50,13 +36,6 @@ export function serializeFrom(cube: Cube, entityType: EntityType, dialect: strin
   const expression = cube.expression || serializeCubeFact(cube, dialect)
   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
 }
-
-// export function serializeDimensionFrom(dimension: PropertyDimension, entityType: EntityType, dialect: string) {
-//   const cubeFact = serializeCubeFact(dimension, dialect)
-
-//   const expression = cubeFact
-//   return `(${expression}) AS ${serializeName(entityType.name, dialect)}`
-// }
 
 export function serializeCubeFact(cube: Cube, dialect: string) {
   const factTable = cube.tables[0]
@@ -86,33 +65,37 @@ export function serializeCubeFact(cube: Cube, dialect: string) {
   return `SELECT * FROM ${statement}`
 }
 
-export function serializeMeasure(fact: string, measure: PropertyMeasure & {alias: string}, dialect: string) {
+export function serializeMeasure(fact: string, measure: PropertyMeasure & { alias: string }, dialect: string) {
   if (isCalculatedProperty(measure)) {
-    return `${measure.aggregator || 'SUM'}(${
-        measure.formula
-    }) AS ${serializeName(measure.alias, dialect)}`
+    return `(${measure.formula}) AS ${serializeName(measure.alias, dialect)}`
   }
 
   return `${measure.aggregator || 'SUM'}(${
-      typeof measure.column === 'number'
-        ? measure.column
-        : serializeName(fact, dialect) + '.' + serializeName(measure.column, dialect)
-    }) AS ${serializeName(measure.alias, dialect)}`
+    typeof measure.column === 'number'
+      ? measure.column
+      : serializeName(fact, dialect) + '.' + serializeName(measure.column, dialect)
+  }) AS ${serializeName(measure.alias, dialect)}`
 }
 
 /**
- * 
- * @param schema 
- * @param options 
- * @param entityType 
+ *
+ * @param schema
+ * @param options
+ * @param entityType
  * @param catalog 数据源目录, 对应如 hive 的 schemaName
- * @param dialect 
- * @returns 
+ * @param dialect
+ * @returns
  */
-export function queryCube(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string, catalog?: string) {
+export function queryCube(
+  schema: Schema,
+  options: QueryOptions,
+  entityType: EntityType,
+  dialect: string,
+  catalog?: string
+) {
   const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
   if (dimension) {
-    return {statement: queryDimension(dimension, entityType, options, dialect, catalog)}
+    return { statement: queryDimension(dimension, entityType, options, dialect, catalog) }
   }
 
   const cube = schema?.cubes?.find((item) => item.name === entityType.name)
@@ -135,69 +118,90 @@ export function queryCube(schema: Schema, options: QueryOptions, entityType: Ent
       }
     })
     if (filters.length) {
-      cubeContext.filterString += (cubeContext.filterString ? ` AND ` : '') + compileFilters(filters, entityType, cubeContext, dialect)
+      cubeContext.filterString +=
+        (cubeContext.filterString ? ` AND ` : '') + compileFilters(filters, entityType, cubeContext, dialect)
     }
   }
 
   // 排列组合每个 Dimension 下需要计算的 Levels
   let levels = []
-  cubeContext.dimensions.filter(({dimension}) => dimension.dimension !== C_MEASURES).forEach((dimensionContext) => {
-    const _levels = levels.length ? [...levels] : [{...cubeContext, dimensions: []}]
-    levels = []
-    
-    if (dimensionContext.levels?.length) {
-      dimensionContext.levels?.forEach((level) => {
-        levels.push(..._levels.map((context) => {
-          return {
+  cubeContext.dimensions
+    .filter(({ dimension }) => dimension.dimension !== C_MEASURES)
+    .forEach((dimensionContext) => {
+      const _levels = levels.length ? [...levels] : [{ ...cubeContext, dimensions: [] }]
+      levels = []
+
+      if (dimensionContext.levels?.length) {
+        dimensionContext.levels?.forEach((level) => {
+          levels.push(
+            ..._levels.map((context) => {
+              return {
+                ...context,
+                dimensions: [
+                  ...context.dimensions,
+                  {
+                    ...dimensionContext,
+                    level: level.level,
+                    selectFields: level.selectFields
+                  }
+                ]
+              }
+            })
+          )
+        })
+      } else {
+        levels.push(
+          ..._levels.map((context) => ({
             ...context,
             dimensions: [
               ...context.dimensions,
               {
-                ...dimensionContext,
-                level: level.level,
-                selectFields: level.selectFields
+                ...dimensionContext
               }
             ]
-          }
-        }))
-      })
-    } else {
-      levels.push(..._levels.map((context) => ({
-        ...context,
-        dimensions: [
-          ...context.dimensions,
-              {
-                ...dimensionContext,
-              }
-        ]
-      })))
-    }
-  })
-  
-  const statement = levels.map((cubeContext) => serializeLevelSelect(cubeContext, dialect, catalog)).join(' union ')
+          }))
+        )
+      }
+    })
 
-  return {cubeContext, statement}
+  let statement =
+    levels.map((cubeContext) => serializeLevelSelect(cubeContext, dialect, catalog)).join(' union ') ||
+    serializeLevelSelect(cubeContext, dialect, catalog)
+
+  if (options.paging?.top || options.orderbys?.length) {
+    statement = `SELECT * FROM (${statement}) AS LIMIT_ALIAS`
+    if (options.orderbys?.length) {
+      statement =
+        `${statement} ORDER BY ` +
+        options.orderbys
+          .map((orderBy) => serializeName(orderBy.by, dialect) + ' ' + (orderBy.order || 'ASC'))
+          .join(', ')
+    }
+    if (options.paging?.top) {
+      statement = `${statement} LIMIT ${options.paging.top}`
+    }
+  }
+
+  return { cubeContext, statement }
 }
 
 export function serializeLevelSelect(cubeContext: CubeContext, dialect: string, catalog: string) {
   const cube = cubeContext.schema
-  let statement = cubeContext.dimensions
+  const dimensionsStatement = cubeContext.dimensions
     .map((dimensionContext) => {
-      return dimensionContext.selectFields
-        .map((field) => serializeColumn(field, dialect))
-        .join(', ')
+      return dimensionContext.selectFields?.map((field) => serializeColumn(field, dialect)).join(', ')
     })
     .filter((statement) => !!statement)
     .join(', ')
 
+  let statement
   if (cubeContext.measures.length) {
     // fact table in cube
     const fact = serializeTableAlias(cube.name, cube.tables[0].name)
-    statement +=
-      ', ' +
-      cubeContext.measures
-        .map((measure: any) => serializeMeasure(fact, measure, dialect))
-        .join(', ')
+    statement =
+      dimensionsStatement +
+      (dimensionsStatement ? ', ' : '') +
+      cubeContext.measures.map((measure: any) => serializeMeasure(fact, measure, dialect)).join(', ')
   }
 
   // Compile cube and dimensions
@@ -207,8 +211,10 @@ export function serializeLevelSelect(cubeContext: CubeContext, dialect: string, 
     statement += ' WHERE ' + cubeContext.filterString
   }
   // Aggregate Dimensions
-  statement +=
-    ` GROUP BY ` + (serializeGroupByDimensions(cubeContext.dimensions, dialect) || 1)
+  const groupByStatement = serializeGroupByDimensions(cubeContext.dimensions, dialect) || (dimensionsStatement ? 1 : '')
+  if (groupByStatement) {
+    statement += ` GROUP BY ` + groupByStatement
+  }
 
   return `SELECT ` + statement
 }
@@ -216,154 +222,24 @@ export function serializeLevelSelect(cubeContext: CubeContext, dialect: string, 
 export function serializeCubeFrom(cubeContext: CubeContext, dialect: string, catalog?: string): string {
   return (
     serializeTablesJoin(cubeContext.schema.name, cubeContext.schema.tables, dialect, catalog) +
-    cubeContext.dimensions.filter((dimensionContext) => !!dimensionContext.dimensionTable)
-        .map((dimensionContext) => {
-          const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
-          return (
-            ` INNER JOIN ` +
-            serializeHierarchyFrom('', dimensionContext.hierarchy, dialect, catalog) +
-            ` ON ${serializeName(cubeContext.factTable, dialect)}.${serializeName(
-              dimensionContext.schema.foreignKey,
-              dialect
-            )} = ${serializeName(serializeTableAlias(dimensionContext.hierarchy.name, primaryKeyTable), dialect)}.${serializeName(
-              dimensionContext.hierarchy.primaryKey,
-              dialect
-            )}`
-          )
-        })
-        .join('')
+    cubeContext.dimensions
+      .filter((dimensionContext) => !!dimensionContext.dimensionTable)
+      .map((dimensionContext) => {
+        const primaryKeyTable = dimensionContext.hierarchy.primaryKeyTable || dimensionContext.hierarchy.tables[0].name
+        return (
+          ` INNER JOIN ` +
+          serializeHierarchyFrom('', dimensionContext.hierarchy, dialect, catalog) +
+          ` ON ${serializeName(cubeContext.factTable, dialect)}.${serializeName(
+            dimensionContext.schema.foreignKey,
+            dialect
+          )} = ${serializeName(
+            serializeTableAlias(dimensionContext.hierarchy.name, primaryKeyTable),
+            dialect
+          )}.${serializeName(dimensionContext.hierarchy.primaryKey, dialect)}`
+        )
+      })
+      .join('')
   )
-}
-
-/**
- * 将查询条件根据运行时类型和原始模型编译成查询语句
- * @deprecated
- * 
- * @param schema
- * @param options
- * @param entityType
- * @param dialect
- * @returns
- */
-export function queryCube2(schema: Schema, options: QueryOptions, entityType: EntityType, dialect: string) {
-  const dimension = schema?.dimensions?.find((item) => item.name === entityType.name)
-  if (dimension) {
-    // return queryDimension(dimension, entityType, options, dialect,)
-  }
-
-  let queryContext: SQLQueryContext = {} as SQLQueryContext
-
-  queryContext.rows =
-    options.rows?.map((field) => {
-      const property = getEntityProperty(entityType, field)
-      if (!property) {
-        throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
-      }
-      return {
-        dimension: field,
-        property
-      }
-    }) || []
-
-  queryContext.columns =
-    options.columns?.map((field) => {
-      const property = getEntityProperty(entityType, field)
-      if (!property) {
-        throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
-      }
-
-      return {
-        dimension: field,
-        property: getEntityProperty(entityType, field)
-      }
-    }) || []
-
-  options.selects?.forEach((field) => {
-    const property = getEntityProperty(entityType, field)
-
-    if (!property) {
-      throw new Error(`Can't found Entity Property for field '${getPropertyName(field)}'`)
-    }
-
-    if (property.role === AggregationRole.dimension) {
-      queryContext.rows.push({
-        dimension: field,
-        property
-      })
-    } else {
-      queryContext.columns.push({
-        dimension: field,
-        property
-      })
-    }
-  })
-
-  queryContext.dialect = dialect
-  queryContext.zeroSuppression = isZeroSuppression(queryContext)
-
-  queryContext = serializeSelectFields(queryContext, entityType)
-
-  // const row = generateSelectFields(queryContext.rows, dialect)
-  // const column = generateSelectFields(queryContext.columns, dialect)
-
-  const groupby = union(queryContext.groupbys).join(',')
-
-  const fromSource = '' // From(entityType, schema, dialect)
-
-  let statement = `SELECT ${isEmpty(queryContext.select) ? '*' : queryContext.select.join(`, `)} FROM ${fromSource}`
-
-  // Conditions
-  const conditions: Array<AdvancedSlicer> = []
-
-  let filterString = options.filterString || ''
-  if (negate(isEmpty)(options.filters)) {
-    const filters = []
-    options.filters.forEach((item) => {
-      if (isAdvancedSlicer(item)) {
-        conditions.push(item)
-      } else {
-        filters.push(item)
-      }
-    })
-    if (negate(isEmpty)(filters)) {
-      filterString = (filterString ? `${filterString} AND ` : '') + convertFiltersToSQL(filters, entityType, dialect)
-    }
-  }
-
-  // 无值数据
-
-  const unbookedData = compact(queryContext.unbookedData)
-  if (!isEmpty(unbookedData)) {
-    filterString = (filterString ? `${filterString} AND ` : '') + `(${unbookedData.join(' OR ')})`
-  }
-  if (!isEmpty(queryContext.where)) {
-    filterString = (filterString ? `${filterString} AND ` : '') + queryContext.where.join(' AND ')
-  }
-  if (!isEmpty(queryContext.where)) {
-    filterString = (filterString ? `${filterString} AND ` : '') + queryContext.where.join(' AND ')
-  }
-  if (filterString) {
-    statement = statement + ` WHERE ${filterString}`
-  }
-
-  if (groupby) {
-    statement = statement + ` GROUP BY ${groupby}`
-  }
-  if (!isEmpty(options?.orderbys)) {
-    statement = statement + ` ${OrderBy(serializeOrderbys(options.orderbys, queryContext, dialect))}`
-  }
-
-  if (!isEmpty(conditions)) {
-    console.warn(
-      conditions.forEach((item) => serializeCondition(item, [...queryContext.rows, ...queryContext.columns]))
-    )
-  }
-
-  if (options.paging?.top) {
-    statement = `${statement} ${serializeTopCount(options)}`
-  }
-
-  return statement
 }
 
 export function serializeCondition(condition: AdvancedSlicer, context: Array<SQLQueryProperty>) {
@@ -400,121 +276,6 @@ export function isZeroSuppression(context: SQLQueryContext) {
   return zeroSuppression
 }
 
-/**
- * 将维度度量分配到不同的查询位置 Select Group Sort 等
- *
- * @param context
- * @param entityType
- * @returns
- */
-export function serializeSelectFields(context: SQLQueryContext, entityType: EntityType): SQLQueryContext {
-  const fields = []
-  const groupbys = context.groupbys ?? []
-  const zeroSuppression = context.zeroSuppression
-  const unbookedData = []
-  const where = []
-  const dialect = context.dialect
-
-  const columns = [...context.rows, ...context.columns]
-
-  let hasMeasure = entityType.semantics === EntitySemantics.aggregate
-
-  columns.forEach(({ dimension, property }) => {
-    if (isMeasure(dimension)) {
-      const alias = serializeName(property.name, dialect)
-      const { statement, isAggregate } = serializeProperty(property, dialect)
-      fields.push(`${statement} AS ${alias}`)
-      if (isAggregate) {
-        hasMeasure = true
-      }
-    }
-  })
-
-  columns.forEach(({ dimension, property }) => {
-    const alias = serializeName(property.name, dialect)
-    if (!isMeasure(dimension)) {
-      if (hasMeasure) {
-        groupbys.push(serializeName(property.name, dialect))
-      }
-      const statement = serializeDProperty(property, dialect)
-      fields.push(`${statement} AS ${alias}`)
-      if (!isUnbookedData(dimension)) {
-        unbookedData.push(`${serializeName(property.name, dialect)} IS NOT NULL`)
-      }
-
-      const textName = getPropertyCaption(property)
-      const textProperty = getEntityProperty(entityType, textName)
-      if (textProperty) {
-        if (hasMeasure) {
-          groupbys.push(serializeName(textName, dialect))
-        }
-        const alias = serializeName(textProperty.name, dialect)
-        const statement = serializeDProperty(textProperty, dialect)
-        fields.push(`${statement} AS ${alias}`)
-      }
-    }
-  })
-
-  return { ...context, select: fields, groupbys, zeroSuppression, unbookedData, where } as SQLQueryContext
-}
-
-export function serializeProperty(property: EntityProperty, dialect: string) {
-  if (isPropertyMeasure(property)) {
-    if (isCalculationProperty(property)) {
-      return {
-        statement: serializeCalculationProperty(property, dialect)
-      }
-    } else {
-      const content = serializeName(property.name, dialect)
-      if (!property.dataType || property.dataType === 'number') {
-        return {
-          statement: `SUM(${content})`,
-          isAggregate: true
-        }
-      } else {
-        return {
-          statement: `${content}`,
-          isAggregate: false
-        }
-      }
-    }
-  }
-
-  return {
-    statement: serializeDProperty(property, dialect),
-    isAggregate: false
-  }
-}
-
-export function serializeDProperty(property: PropertyDimension, dialect: string): string {
-  // 计算度量作为维度来用时
-  if (isCalculationProperty(property)) {
-    return serializeCalculationProperty(property, dialect)
-  }
-
-  dialect = property.keyExpression?.sql?.dialect ?? dialect
-  if (property.keyExpression?.sql?.content) {
-    return `${property.keyExpression?.sql?.content}`
-  }
-
-  return serializeName(property.column ?? property.name, dialect)
-}
-
-// export function From(entityType: EntityType, schema: Schema, dialect: string, catalog: string) {
-//   let fromSource = `${serializeName(entityType.name, dialect, catalog)}`
-//   const cube = schema?.cubes?.find(({ name }) => name === entityType.name)
-//   if (cube) {
-//     fromSource = serializeFrom(cube, entityType, dialect)
-//   } else {
-//     const dimension = schema?.dimensions?.find(({ name }) => name === entityType.name)
-//     if (dimension) {
-//       fromSource = serializeDimensionFrom(dimension, entityType, dialect)
-//     }
-//   }
-
-//   return fromSource
-// }
-
 export function transposePivot(cubeContext: CubeContext, data: Array<any>) {
   const rowContexts = cubeContext.dimensions.filter((context) => context.role === 'row')
   const columnContexts = cubeContext.dimensions.filter((context) => context.role === 'column')
@@ -530,7 +291,7 @@ export function transposePivot(cubeContext: CubeContext, data: Array<any>) {
   }
 
   if (!columnContexts.length) {
-    return {data, schema: {recursiveHierarchy, rowHierarchy}}
+    return { data, schema: { recursiveHierarchy, rowHierarchy } }
   }
 
   const columns: PivotColumn[] = []
@@ -539,55 +300,78 @@ export function transposePivot(cubeContext: CubeContext, data: Array<any>) {
   const results = []
   const resultKeyMap = {}
   data.forEach((item) => {
-    const rowKey = rowContexts.map(({keyColumn}) => item[keyColumn]).join('')
+    // Backward compatibility for dimension name property
+    rowContexts.forEach(({schema, dimension, keyColumn, captionColumn}) => {
+      item[dimension.dimension] = item[keyColumn]
+      item[schema.caption] = item[captionColumn]
+    })
+    const rowKey = rowContexts.map(({ keyColumn }) => item[keyColumn]).join('')
     if (!resultKeyMap[rowKey]) {
       resultKeyMap[rowKey] = item
       results.push(item)
     }
 
-    let parentColumns = columns
-    let parent = null
-    columnContexts.forEach(({keyColumn, captionColumn, parentKeyColumn, childrenCardinalityColumn, dimension}, key, arr) => {
-      const columnName = (parent?.name ? parent.name + '/' : '') + (isMeasure(dimension) ? keyColumn : item[keyColumn])
-      if (!columnsKeyMap[columnName]) {
-        if (isMeasure(dimension)) {
-          columnsKeyMap[columnName] = {
-            name: columnName,
-            label: keyColumn,
-            uniqueName: keyColumn,
-            measure: keyColumn,
-            columns: []
-          }
-        } else {
-          columnsKeyMap[columnName] = {
-            name: columnName,
-            label: item[captionColumn],
-            uniqueName: item[keyColumn],
-            parentUniqueName: item[parentKeyColumn],
-            childrenCardinality: item[childrenCardinalityColumn],
-            measure: parent?.measure,
-            columns: []
-          }
-        }
-        
-        parentColumns.push(columnsKeyMap[columnName])
-      }
+    let parents = [null]
+    columnContexts.forEach(
+      ({ keyColumn, captionColumn, parentKeyColumn, childrenCardinalityColumn, dimension, members }, key, arr) => {
+        parents.forEach((parent) => {
+          let parentColumns = parent?.columns ?? columns
+          if (isMeasure(dimension)) {
+            members.forEach((member) => {
+              const keyColumn = member.value
+              const columnName = (parent?.name ? parent.name + '/' : '') + keyColumn
+              if (!columnsKeyMap[columnName]) {
+                columnsKeyMap[columnName] = {
+                  name: columnName,
+                  label: member.label || member.value,
+                  uniqueName: keyColumn,
+                  measure: keyColumn,
+                  columns: []
+                }
 
-      if (Object.is(arr.length - 1, key)) {
-        const measure = columnsKeyMap[columnName].measure ?? cubeContext.schema.defaultMeasure
-        resultKeyMap[rowKey][columnName] = item[measure]
-      }
+                parentColumns.push(columnsKeyMap[columnName])
+              }
 
-      parentColumns = columnsKeyMap[columnName].columns
-      parent = columnsKeyMap[columnName]
-    })
+              if (Object.is(arr.length - 1, key)) {
+                const measure = columnsKeyMap[columnName].measure ?? cubeContext.schema.defaultMeasure
+                resultKeyMap[rowKey][columnName] = item[measure]
+              }
+            })
+          } else {
+            const columnName = (parent?.name ? parent.name + '/' : '') + item[keyColumn]
+            if (!columnsKeyMap[columnName]) {
+              columnsKeyMap[columnName] = {
+                name: columnName,
+                label: item[captionColumn],
+                uniqueName: item[keyColumn],
+                parentUniqueName: item[parentKeyColumn],
+                childrenCardinality: item[childrenCardinalityColumn],
+                measure: parent?.measure,
+                columns: []
+              }
+
+              parentColumns.push(columnsKeyMap[columnName])
+            }
+
+            if (Object.is(arr.length - 1, key)) {
+              const measure = columnsKeyMap[columnName].measure ?? cubeContext.schema.defaultMeasure
+              resultKeyMap[rowKey][columnName] = item[measure]
+            }
+
+            parentColumns = columnsKeyMap[columnName].columns
+          }
+        })
+
+        parents = flatten(parents.map((parent) => parent?.columns ?? columns))
+      }
+    )
   })
 
   console.log(columnsKeyMap, columns)
 
   return {
     data: results,
-    schema: {recursiveHierarchy, rowHierarchy, columns}
+    schema: { recursiveHierarchy, rowHierarchy, columns }
     // rows: rowContexts.map(({keyColumn}) => keyColumn)
   }
 }

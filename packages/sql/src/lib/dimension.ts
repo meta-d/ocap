@@ -4,6 +4,7 @@ import {
   EntityType,
   getEntityHierarchy,
   getEntityProperty,
+  IMember,
   IntrinsicMemberProperties,
   isMeasure,
   PropertyDimension,
@@ -14,7 +15,8 @@ import {
   Table
 } from '@metad/ocap-core'
 import flattenDeep from 'lodash/flattenDeep'
-import { CubeFactTable } from './cube'
+import countBy from 'lodash/countBy'
+import { CubeFactTable, LevelsToColumns } from './cube'
 import { Cast } from './functions'
 import { AggregateFunctions, C_MEASURES_ROW_COUNT } from './types'
 import { serializeIntrinsicName, serializeName, serializeTableAlias, serializeUniqueName } from './utils'
@@ -76,6 +78,7 @@ export interface DimensionContext {
   captionColumn?: string
   parentKeyColumn?: string
   childrenCardinalityColumn?: string
+  members?: IMember[]
 }
 
 export function serializeHierarchyFrom(
@@ -134,7 +137,7 @@ export function serializeTablesJoin(prefix: string, tables: Table[], dialect: st
 
 export function getLevelColumn(level: PropertyLevel, table: string) {
   return {
-    table: table,
+    table,
     column: level.nameColumn || level.column
   }
 }
@@ -238,7 +241,6 @@ export function LevelMembers(
 
     if (levels.length > 1) {
       selectFields.push({
-        // table: dimensionTable,
         columns: levels.slice(0, levels.length - 1).map((level) => {
           const table = level.table || dimensionTable
           return getLevelColumn(level, table ? serializeTableAlias(hierarchy.name, table) : factTable)
@@ -491,9 +493,9 @@ export function serializeGroupByDimensions(dimensions: DimensionContext[], diale
   return [
     ...new Set(
       flattenDeep<DimensionColumn>(
-        dimensions.map((context) => context.selectFields.filter((field) => !field.aggregate).map((field) => (field.columns ? field.columns : [field])))
+        dimensions.map((context) => context.selectFields?.filter((field) => !field.aggregate).map((field) => (field.columns ? field.columns : [field])))
       )
-        .filter((field) => !!field.column )
+        .filter((field) => !!field?.column )
         .map((field) => `${serializeName(field.table, dialect)}.${serializeName(field.column, dialect)}`)
     )
   ].join(', ')
@@ -511,61 +513,96 @@ export function compileDimensionSchema(
   dimension: PropertyDimension,
   dialect?: string
 ): PropertyDimension {
+
+  // Validators
+  Object.entries(countBy(dimension.hierarchies?.map((hierarchy) => ({name: hierarchy.name || ''})), 'name'))
+    .forEach(([name, count]) => {
+      if (count > 1) {
+        throw new Error(`Hierarchy name '${name}' cannot be duplicated.`)
+      }
+    })
+
   const dimensionUniqueName = serializeUniqueName(dialect, dimension.name)
+
+  const hierarchies = dimension.hierarchies?.map((hierarchy) => {
+    // Validator: If has dimension table then must set primaryKey
+    if (hierarchy.tables?.length && !hierarchy.primaryKey) {
+      throw new Error(`The primaryKey '${hierarchy.primaryKey}' of hierarchy '${hierarchy.name ?? ''}' is not correct!`)
+    }
+    // Validator: If has multiple dimension tables
+    if (hierarchy.tables?.length > 1) {
+      // Tables joins check
+      tablesValidator(hierarchy.tables)
+      // must set primaryKeyTable
+      if (!hierarchy.primaryKeyTable) {
+        throw new Error(`The primaryKeyTable of hierarchy '${hierarchy.name ?? ''}' is need!`)
+      }
+    }
+
+    const hierarchyUniqueName = serializeUniqueName(dialect, dimension.name, hierarchy.name)
+    const levels = hierarchy.levels?.map((level) => ({
+      ...level,
+      label: level.label ?? level.name,
+      name: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name),
+      caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name, IntrinsicMemberProperties.MEMBER_CAPTION),
+      role: AggregationRole.level,
+      properties: level.properties?.map((property) => ({
+        ...property,
+        name: serializeUniqueName(dialect, dimension.name, hierarchy.name, property.name),
+        label: property.name
+      }))
+    }))
+
+    if (hierarchy.hasAll) {
+      const allLevelName = hierarchy.allLevelName || `(All ${hierarchy.name || dimension.name}s)`
+      const allLevelUniqueName = serializeUniqueName(
+        dialect,
+        dimension.name,
+        hierarchy.name,
+        allLevelName
+      )
+      levels?.splice(0, 0, {
+        name: allLevelUniqueName,
+        label: allLevelName,
+        role: AggregationRole.level,
+        caption: serializeIntrinsicName(
+          dialect,
+          allLevelUniqueName,
+          IntrinsicMemberProperties.MEMBER_CAPTION
+        ),
+        properties: []
+      })
+    }
+
+    return {
+      ...hierarchy,
+      name: hierarchyUniqueName,
+      entity,
+      dimension: dimensionUniqueName,
+      role: AggregationRole.hierarchy,
+      caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, IntrinsicMemberProperties.MEMBER_CAPTION),
+      levels: levels?.map((level, i) => ({
+        ...level,
+        levelNumber: i,
+        entity,
+        dimension: dimensionUniqueName,
+        hierarchy: hierarchyUniqueName
+      }))
+    }
+  })
+
   return {
     ...dimension,
     entity,
     name: dimensionUniqueName,
-    hierarchies: dimension.hierarchies?.map((hierarchy) => {
-      const hierarchyUniqueName = serializeUniqueName(dialect, dimension.name, hierarchy.name)
-      const levels = hierarchy.levels?.map((level) => ({
-        ...level,
-        name: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name),
-        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, level.name, IntrinsicMemberProperties.MEMBER_CAPTION),
-        role: AggregationRole.level,
-        properties: level.properties?.map((property) => ({
-          ...property,
-          name: serializeUniqueName(dialect, dimension.name, hierarchy.name, property.name),
-          label: property.name
-        }))
-      }))
-
-      if (hierarchy.hasAll) {
-        levels?.splice(0, 0, {
-          name: serializeUniqueName(
-            dialect,
-            dimension.name,
-            hierarchy.name,
-            `(All ${hierarchy.name || dimension.name}s)`
-          ),
-          role: AggregationRole.level,
-          caption: serializeUniqueName(
-            dialect,
-            dimension.name,
-            hierarchy.name,
-            `(All ${hierarchy.name || dimension.name}s)`,
-            IntrinsicMemberProperties.MEMBER_CAPTION
-          ),
-          properties: []
-        })
-      }
-
-      return {
-        ...hierarchy,
-        name: hierarchyUniqueName,
-        entity,
-        dimension: dimensionUniqueName,
-        role: AggregationRole.hierarchy,
-        caption: serializeUniqueName(dialect, dimension.name, hierarchy.name, IntrinsicMemberProperties.MEMBER_CAPTION),
-        levels: levels?.map((level, i) => ({
-          ...level,
-          levelNumber: i,
-          entity,
-          dimension: dimensionUniqueName,
-          hierarchy: hierarchyUniqueName
-        }))
-      }
-    }),
+    caption: serializeIntrinsicName(dialect, dimensionUniqueName, IntrinsicMemberProperties.MEMBER_CAPTION),
+    hierarchies,
     role: AggregationRole.dimension
+  }
+}
+
+export function tablesValidator(tables: Table[]) {
+  if (tables.slice(1).some((table) => !table.join?.fields?.length)) {
+    throw new Error(`tables join fields is need!`)
   }
 }

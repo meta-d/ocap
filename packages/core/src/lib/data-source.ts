@@ -2,7 +2,7 @@ import assign from 'lodash/assign'
 import flatten from 'lodash/flatten'
 import isEqual from 'lodash/isEqual'
 import isString from 'lodash/isString'
-import { BehaviorSubject, distinctUntilChanged, EMPTY, map, Observable, pluck, shareReplay, switchMap } from 'rxjs'
+import { BehaviorSubject, distinctUntilChanged, EMPTY, filter, map, Observable, of, shareReplay, switchMap } from 'rxjs'
 import { Agent, DSCacheService } from './agent'
 import { EntityService } from './entity'
 import {
@@ -13,6 +13,8 @@ import {
   EntityType,
   IDimensionMember,
   Indicator,
+  isEntitySet,
+  isEntityType,
   MDCube,
   mergeEntityType,
   Schema,
@@ -74,9 +76,8 @@ export interface DataSource {
   options: DataSourceOptions
   agent: Agent
 
-  
   /**
-   * 
+   *
    * 获取数据源的数据服务目录, 数据服务目录用于区分不同的数据实体类别, 如 ODataService 的 Catalog, XMLA 的 CATALOG_NAME 等
    */
   getCatalogs(): Observable<Array<Catalog>>
@@ -97,25 +98,25 @@ export interface DataSource {
 
   /**
    * Discover members of dimension
-   * 
-   * @param entity 
-   * @param dimension 
+   *
+   * @param entity
+   * @param dimension
    */
   discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
 
   /**
    * 获取源实体集合
-   * 
+   *
    * @param refresh 是否跳过缓存进行重新获取数据
    */
   getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
 
   /**
    * @deprecated 运行时 EntityType 接口不应该直接暴露, 使用 selectEntitySet 方法
-   * 
+   *
    * 获取运行时 EntityType
    */
-  getEntityType(entity: string): Observable<EntityType>
+  getEntityType(entity: string): Observable<EntityType | Error>
 
   /**
    * 获取维度成员
@@ -154,7 +155,7 @@ export interface DataSource {
    *
    * @param entity
    */
-  selectEntitySet(entity: string): Observable<EntitySet>
+  selectEntitySet(entity: string): Observable<EntitySet | Error>
 
   /**
    * 单独设置一个 EntityType
@@ -168,7 +169,7 @@ export interface DataSource {
    *
    * @param entity
    */
-  selectEntityType(entity: string): Observable<EntityType>
+  selectEntityType(entity: string): Observable<EntityType | Error>
 
   /**
    * 获取实体相关指标
@@ -229,7 +230,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   abstract discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
   abstract createEntityService<T>(entity: string): EntityService<T>
   abstract getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
-  abstract getEntityType(entity: string): Observable<EntityType>
+  abstract getEntityType(entity: string): Observable<EntityType | Error>
   abstract getCatalogs(): Observable<Array<Catalog>>
   abstract getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
   abstract createEntity(name, columns, data?): Observable<string>
@@ -284,57 +285,40 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
 
   /**
    * 这里只负责 merge 运行时的 EntitySet 设置, 不负责 Cube 的类型编译, Cube 类型编译放在 getEntityType 获取原始类型时.
-   * 
-   * @param entity 
-   * @returns 
+   *
+   * @param entity
+   * @returns
    */
-  selectEntitySet(entity: string): Observable<EntitySet> {
+  selectEntitySet(entity: string): Observable<EntitySet | Error> {
     if (!this._entitySets[entity]) {
       this._entitySets[entity] = this.getEntityType(entity).pipe(
         switchMap((rtEntityType) =>
-          this.selectSchema().pipe(
-            distinctUntilChanged(),
-            map((schema) => {
-              if (!rtEntityType) {
-                return rtEntityType
-              }
+          isEntityType(rtEntityType)
+            ? this.selectSchema().pipe(
+                distinctUntilChanged(),
+                map((schema) => {
+                  const customEntityType = schema?.entitySets?.[entity]?.entityType
+                  let entityType = rtEntityType
 
-              const customEntityType = schema?.entitySets?.[entity]?.entityType
-              // const cube = schema?.cubes?.find((item) => item.name === entity)
+                  if (!isNil(customEntityType)) {
+                    // TODO merge 函数有风险
+                    entityType = mergeEntityType(assign({}, rtEntityType), customEntityType)
+                  }
 
-              // let entityType = mergeEntityTypeCube(rtEntityType, cube)
+                  if (entityType) {
+                    // 将数据源方言同步到 EntityType
+                    entityType.dialect = this.options.dialect
+                    entityType.syntax = this.options.syntax
+                  }
 
-              let entityType = rtEntityType
-
-              if (!isNil(customEntityType)) {
-                // TODO merge 函数有风险
-                entityType = mergeEntityType(assign({}, rtEntityType), {
-                  ...customEntityType,
-                  // ...this._getCustomEntityType(customEntityType)
+                  return {
+                    name: entityType.name,
+                    label: entityType.label,
+                    entityType
+                  }
                 })
-              }
-
-              // console.log(
-              //   `runtime entity type is:`,
-              //   rtEntityType,
-              //   `customEntityType:`,
-              //   customEntityType,
-              //   `merge cube:`,
-              //   entityType
-              // )
-
-              if (entityType) {
-                // 将数据源方言同步到 EntityType
-                entityType.dialect = this.options.dialect
-                entityType.syntax = this.options.syntax
-              }
-
-              return {
-                ...customEntityType,
-                entityType
-              }
-            })
-          )
+              )
+            : of(rtEntityType)
         ),
         shareReplay(1)
       )
@@ -342,16 +326,19 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     return this._entitySets[entity]
   }
 
-  selectEntityType(entity: string): Observable<EntityType> {
+  selectEntityType(entity: string): Observable<EntityType | Error> {
     if (!entity) {
       return EMPTY
     }
-    return this.selectEntitySet(entity).pipe(pluck('entityType'))
+    return this.selectEntitySet(entity).pipe(
+      map((entitySet) => (isEntitySet(entitySet) ? entitySet.entityType : entitySet))
+    )
   }
 
   selectIndicators(entity: string): Observable<Indicator[]> {
     return this.selectEntitySet(entity).pipe(
-      map((entitySet) => entitySet?.indicators),
+      filter(isEntitySet),
+      map((entitySet) => entitySet.indicators),
       distinctUntilChanged()
     )
   }
@@ -372,7 +359,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
 
   /**
    * @deprecated
-   * 
+   *
    * 获取自定义 entityType, 用户在程序里自定义的 entityType 属性非数据源端的 entityType
    */
   protected _getCustomEntityType(entityType: EntityType): Partial<EntityType> {
@@ -411,7 +398,6 @@ export interface DBCatalog {
   name: string
   label: string
 }
-
 
 export interface DBTable extends Entity {
   catalog?: string
