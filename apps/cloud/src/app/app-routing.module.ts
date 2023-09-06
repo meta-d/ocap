@@ -8,6 +8,11 @@ const routes: Routes = [
     loadChildren: () => import('./public/public.module').then((m) => m.PublicModule)
   },
   {
+		path: 'onboarding',
+		loadChildren: () => import('./onboarding/onboarding.module').then((m) => m.OnboardingModule),
+		canActivate: []
+	},
+  {
     path: 'auth',
     loadChildren: () => import('@metad/cloud/auth').then((m) => m.PacAuthModule)
   },

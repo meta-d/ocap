@@ -1,4 +1,4 @@
-import { IPagination, ITenant, ITenantCreateInput, RolesEnum } from '@metad/contracts';
+import { DEFAULT_TENANT, IPagination, ITenant, ITenantCreateInput, RolesEnum } from '@metad/contracts';
 import {
 	BadRequestException,
 	Body,
@@ -14,19 +14,21 @@ import {
 	Put,
 	UseGuards
 } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UUIDValidationPipe } from './../shared/pipes';
 import { RequestContext } from '../core/context';
 import { CrudController } from './../core/crud';
-import { Roles } from './../shared/decorators';
+import { Public, Roles } from './../shared/decorators';
 import { RoleGuard, TenantPermissionGuard } from './../shared/guards';
 import { Tenant } from './tenant.entity';
 import { TenantService } from './tenant.service';
+import { UserCreateCommand } from '../user/commands';
 
 @ApiTags('Tenant')
 @Controller()
 export class TenantController extends CrudController<Tenant> {
-	constructor(private readonly tenantService: TenantService) {
+	constructor(private readonly tenantService: TenantService, private readonly commandBus: CommandBus) {
 		super(tenantService);
 	}
 
@@ -62,6 +64,17 @@ export class TenantController extends CrudController<Tenant> {
 				id: tenantId
 			}
 		});
+	}
+
+	@Public()
+	@HttpCode(HttpStatus.OK)
+	@Get('onboard')
+	async getOnboardDefault(): Promise<boolean> {
+		const defaultTenant = await this.tenantService.findOneOrFail({
+			name: DEFAULT_TENANT
+			
+		})
+		return defaultTenant.success
 	}
 
 	@ApiOperation({ summary: 'Find by id' })
@@ -106,6 +119,31 @@ export class TenantController extends CrudController<Tenant> {
 		if (user.tenantId || user.roleId) {
 			throw new BadRequestException('Tenant already exists');
 		}
+		return await this.tenantService.onboardTenant(entity, user);
+	}
+
+	@ApiOperation({
+		summary:
+			'Create new tenant. The user who creates the tenant is given the super admin role.'
+	})
+	@ApiResponse({
+		status: HttpStatus.CREATED,
+		description: 'The record has been successfully created.'
+	})
+	@ApiResponse({
+		status: HttpStatus.BAD_REQUEST,
+		description:
+			'Invalid input, The response body may contain clues as to what went wrong'
+	})
+	@Public()
+	@HttpCode(HttpStatus.CREATED)
+	@Post('onboard')
+	async onboardDefault(@Body() entity: ITenantCreateInput): Promise<Tenant> {
+		const defaultTenant = await this.tenantService.findOneOrFail({name: entity.name})
+		if (defaultTenant.success) {
+			throw new BadRequestException('Tenant already exists');
+		}
+		const user = await this.commandBus.execute(new UserCreateCommand(entity.superAdmin))
 		return await this.tenantService.onboardTenant(entity, user);
 	}
 

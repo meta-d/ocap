@@ -7,6 +7,8 @@ import { RolePermission } from './role-permission.entity';
 import { RolePermissionService } from './role-permission.service';
 import { UserModule } from '../user/user.module';
 import { TenantModule } from '../tenant/tenant.module';
+import { CommandHandlers } from './commands/handlers';
+import { RoleModule } from '../role/role.module';
 
 @Module({
 	imports: [
@@ -16,10 +18,11 @@ import { TenantModule } from '../tenant/tenant.module';
 		forwardRef(() => TypeOrmModule.forFeature([ RolePermission ])),
 		forwardRef(() => TenantModule),
 		forwardRef(() => UserModule),
+		forwardRef(() => RoleModule),
 		CqrsModule
 	],
 	controllers: [RolePermissionController],
-	providers: [RolePermissionService],
+	providers: [RolePermissionService, ...CommandHandlers],
 	exports: [TypeOrmModule, RolePermissionService]
 })
 export class RolePermissionModule {}

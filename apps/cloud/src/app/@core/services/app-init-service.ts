@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
 import { Ability, AbilityBuilder } from '@casl/ability'
 import { IUser } from '@metad/contracts'
-import { ThemesEnum, UsersService } from '@metad/cloud/state'
+import { UsersService } from '@metad/cloud/state'
 import * as Sentry from "@sentry/angular";
 import { NgxPermissionsService } from 'ngx-permissions'
 import { AuthStrategy } from '../../@core/auth/auth-strategy.service'
 import { Store } from '../../@core/services/store.service'
-import { PACThemeService } from '../theme'
 import { AbilityActions, RolesEnum } from '../types'
+import { TenantService } from './tenant.service'
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
@@ -16,12 +16,12 @@ export class AppInitService {
 
   constructor(
     private readonly usersService: UsersService,
+    private readonly tenantService: TenantService,
     private readonly authStrategy: AuthStrategy,
     private readonly router: Router,
     private readonly store: Store,
     private readonly ngxPermissionsService: NgxPermissionsService,
     private readonly ability: Ability,
-    private readonly themeService: PACThemeService
   ) {}
 
   async init() {
@@ -37,15 +37,10 @@ export class AppInitService {
           'tenant.featureOrganizations.feature'
         ])
 
-        // this.authStrategy.electronAuthentication({
-        // 	user: this.user,
-        // 	token: this.store.token
-        // });
-
         //When a new user registers & logs in for the first time, he/she does not have tenantId.
         //In this case, we have to redirect the user to the onboarding page to create their first organization, tenant, role.
         if (!this.user?.tenantId) {
-          this.router.navigate(['/onboarding/tenant'])
+          this.router.navigate(['/onboarding/'])
           return
         }
 
@@ -69,6 +64,12 @@ export class AppInitService {
 
         // Sentry identify user
         Sentry.setUser({ id: this.user.id, email: this.user.email, username: this.user.username })
+      } else {
+        const onboarded = await this.tenantService.getOnboard()
+        if (!onboarded) {
+          this.router.navigate(['/onboarding/'])
+          return
+        }
       }
     } catch (error) {
       console.log(error)

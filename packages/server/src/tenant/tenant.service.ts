@@ -8,7 +8,9 @@ import {
 	ITenantCreateInput,
 	RolesEnum,
 	IUser,
-	FileStorageProviderEnum
+	FileStorageProviderEnum,
+	DEFAULT_TENANT,
+	IOrganizationCreateInput
 } from '@metad/contracts';
 import { UserService } from '../user/user.service';
 import { RoleService } from './../role/role.service';
@@ -18,7 +20,8 @@ import { ImportRecordUpdateOrCreateCommand } from './../export-import/import-rec
 import { User } from './../core/entities/internal';
 import { TenantSettingSaveCommand } from './tenant-setting/commands';
 import { TenantCreatedEvent } from './events';
-import { DEFAULT_TENANT } from './default-tenants';
+import { OrganizationCreateCommand } from '../organization/commands';
+
 
 @Injectable()
 export class TenantService extends CrudService<Tenant> {
@@ -37,7 +40,7 @@ export class TenantService extends CrudService<Tenant> {
 		entity: ITenantCreateInput,
 		user: IUser
 	): Promise<Tenant> {
-		const { isImporting = false, sourceId = null } = entity;
+		const { isImporting = false, sourceId = null, defaultOrganization } = entity;
 
 		//1. Create Tenant of user.
 		const tenant = await this.create(entity);
@@ -101,6 +104,10 @@ export class TenantService extends CrudService<Tenant> {
 				);
 			}
 		}
+		
+		//7. Create default organization for tenant.
+		const organization = await this.commandBus.execute(new OrganizationCreateCommand(
+			{...defaultOrganization, tenant, tenantId} as IOrganizationCreateInput))
 
 		return tenant;
 	}

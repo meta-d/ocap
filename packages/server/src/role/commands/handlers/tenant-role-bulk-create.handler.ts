@@ -1,15 +1,16 @@
 import { IRole } from '@metad/contracts';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { RolePermissionService } from '../../../role-permission/role-permission.service';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RoleService } from '../../role.service';
 import { TenantRoleBulkCreateCommand } from '../tenant-role-bulk-create.command';
+import { TenantRolePermissionBulkCreateCommand } from '../../../role-permission';
+
 
 @CommandHandler(TenantRoleBulkCreateCommand)
 export class TenantRoleBulkCreateHandler
 	implements ICommandHandler<TenantRoleBulkCreateCommand> {
 	constructor(
 		private readonly roleService: RoleService,
-		// private readonly rolePermissionService: RolePermissionService
+		private readonly commandBus: CommandBus
 	) {}
 
 	public async execute(
@@ -19,10 +20,7 @@ export class TenantRoleBulkCreateHandler
 
 		//create roles/permissions after create tenant
 		const roles = await this.roleService.createBulk(tenants);
-		// await this.rolePermissionService.updateRolesAndPermissions(
-		// 	tenants,
-		// 	roles
-		// );
+		await this.commandBus.execute(new TenantRolePermissionBulkCreateCommand(tenants))
 		return roles;
 	}
 }

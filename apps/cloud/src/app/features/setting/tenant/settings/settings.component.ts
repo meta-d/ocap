@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { isNil } from '@metad/ocap-core'
-import { PACTenantService } from '../../../../@core'
+import { TenantService } from '../../../../@core'
 
 interface ItemData {
   id?: string
@@ -18,7 +18,7 @@ export class SettingsComponent implements OnInit {
   editCache: { [key: string]: { edit: boolean; data: ItemData } } = {}
 
   listOfData: ItemData[] = []
-  constructor(private readonly tenantService: PACTenantService, private readonly _cdr: ChangeDetectorRef) {}
+  constructor(private readonly tenantService: TenantService, private readonly _cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
     const settings = await this.tenantService.getSettings()

@@ -1,0 +1,94 @@
+<div class="w-full p-2 flex justify-center">
+	<img src="/assets/logo.svg" class="w-12 h-12">
+</div>
+<mat-divider class="w-full"></mat-divider>
+
+<mat-vertical-stepper class="w-[600px] max-w-full my-4 shadow-lg rounded-lg" [linear]="false" #stepper>
+  <mat-step [stepControl]="preferredLanguageFormGroup" [editable]="!loading()">
+    <form [formGroup]="preferredLanguageFormGroup">
+      <ng-template matStepLabel>What's your preferred Language</ng-template>
+
+      <p>This language will be used throughout Metad platform and will be the default for new users.</p>
+
+      <mat-selection-list [multiple]="false" formControlName="preferredLanguage">
+        <mat-list-option *ngFor="let language of Languages" [value]="language">
+          {{ language }}
+        </mat-list-option>
+      </mat-selection-list>
+
+      <div>
+        <button mat-flat-button color="primary" matStepperNext>Next</button>
+      </div>
+    </form>
+  </mat-step>
+  <mat-step [stepControl]="userFormGroup" [editable]="!loading()">
+    <form [formGroup]="userFormGroup" class="flex flex-col gap-4">
+      <ng-template matStepLabel>What should we call you?</ng-template>
+
+      <div class="grid grid-cols-2 gap-2">
+        <mat-form-field>
+			<mat-label>
+				First name
+			</mat-label>
+          <input matInput formControlName="firstName" />
+        </mat-form-field>
+
+        <mat-form-field>
+			<mat-label>
+				Last name
+			</mat-label>
+          <input matInput formControlName="lastName" />
+        </mat-form-field>
+
+		<mat-form-field class="col-span-2">
+			<mat-label>
+				Email
+			</mat-label>
+			<input matInput placeholder="email" formControlName="email" />
+		</mat-form-field>
+
+		<mat-form-field class="col-span-2">
+			<mat-label>
+				Company or team name
+			</mat-label>
+			<input matInput placeholder="Your company or team name" formControlName="organizationName" />
+		</mat-form-field>
+
+		<mat-form-field class="col-span-2">
+			<mat-label>
+				Create a password
+			</mat-label>
+			<input matInput type="password" placeholder="*******" formControlName="password" />
+			<mat-error *ngIf="minlengthError() as error">Min length {{error.requiredLength}} actual length is {{error.actualLength}}</mat-error>
+		</mat-form-field>
+
+		<mat-form-field class="col-span-2">
+			<mat-label>
+				Confirm your password
+			</mat-label>
+			<input matInput type="password" placeholder="*******" formControlName="confirmPassword" />
+			<mat-error *ngIf="mustMatchError()">Password must match</mat-error>
+		</mat-form-field>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+        <button mat-flat-button color="primary" [disabled]="userFormGroup.invalid || loading()"
+			(click)="onboard()"
+		>Next</button>
+      </div>
+    </form>
+  </mat-step>
+  <mat-step [editable]="!loading()">
+    <ng-template matStepLabel>Done</ng-template>
+    You are now done.
+
+
+    <div class="flex items-center gap-4">
+      <button mat-flat-button color="primary" matStepperPrevious>Back</button>
+      <button mat-flat-button color="primary" (click)="navigateHome()">
+        Let's get started
+      </button>
+    </div>
+  </mat-step>
+</mat-vertical-stepper>

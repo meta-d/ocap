@@ -6,13 +6,19 @@ import { firstValueFrom } from 'rxjs'
 
 
 @Injectable({ providedIn: 'root' })
-export class PACTenantService {
+export class TenantService {
   constructor(private http: HttpClient) {}
 
   API_URL = `${API_PREFIX}/tenant`
 
   create(createInput: ITenantCreateInput): Promise<ITenant> {
     return firstValueFrom(this.http.post<ITenant>(`${this.API_URL}`, createInput))
+  }
+  getOnboard() {
+    return firstValueFrom(this.http.get<ITenant>(`${this.API_URL}/onboard`))
+  }
+  onboard(createInput: ITenantCreateInput): Promise<ITenant> {
+    return firstValueFrom(this.http.post<ITenant>(`${this.API_URL}/onboard`, createInput))
   }
 
   getSettings() {

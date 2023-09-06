@@ -1,6 +1,6 @@
 import { Component } from '@angular/core'
 import { catchError, concatMap, EMPTY, Observable, tap } from 'rxjs'
-import { PACTenantService, Store, ToastrService } from '../../../../@core'
+import { TenantService, Store, ToastrService } from '../../../../@core'
 import { TranslationBaseComponent } from '../../../../@shared'
 import { effectAction } from '@metad/ocap-angular/core'
 
@@ -11,7 +11,7 @@ import { effectAction } from '@metad/ocap-angular/core'
 })
 export class DemoComponent extends TranslationBaseComponent {
   constructor(
-    private readonly tenantService: PACTenantService,
+    private readonly tenantService: TenantService,
     private readonly store: Store,
     private readonly _toastrService: ToastrService
   ) {

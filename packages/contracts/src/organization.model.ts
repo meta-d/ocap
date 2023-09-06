@@ -6,6 +6,7 @@ import { IFeatureOrganization } from './feature.model';
 import { IOrganizationLanguage } from './organization-language.model';
 import { ITag } from './tag-entity.model';
 import { ITenant } from './tenant.model';
+import { LanguagesEnum } from './user.model';
 
 export enum OrganizationPermissionsEnum {
 	ALLOW_MANUAL_TIME = 'allowManualTime',
@@ -90,6 +91,7 @@ export interface IOrganization extends IBasePerTenantEntityModel {
 	defaultInvoiceEstimateTerms?: string;
 	convertAcceptedEstimates?: boolean;
 	daysUntilDue?: number;
+	preferredLanguage?: LanguagesEnum;
 }
 
 export interface IOrganizationFindInput extends IBasePerTenantEntityModel {
@@ -141,6 +143,7 @@ export interface IOrganizationCreateInput extends IContact {
 	defaultInvoiceEstimateTerms?: string;
 	convertAcceptedEstimates?: boolean;
 	daysUntilDue?: number;
+	preferredLanguage?: LanguagesEnum;
 
 	isImporting?: boolean;
 	sourceId?: string;

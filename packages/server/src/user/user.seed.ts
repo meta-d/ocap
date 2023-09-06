@@ -10,13 +10,14 @@ import {
 	IRole,
 	ITenant,
 	IUser,
-	ComponentLayoutStyleEnum
+	ComponentLayoutStyleEnum,
+	DEFAULT_TENANT
 } from '@metad/contracts';
 import { User } from './user.entity';
 import { getUserDummyImage, Role } from '../core';
 import { DEFAULT_EMPLOYEES, DEFAULT_PEANUT_EMPLOYEES } from '../employee/default-employees';
 import { DEFAULT_SUPER_ADMINS, DEFAULT_ADMINS, EMAIL_ADDRESS } from './default-users';
-import { DEFAULT_TENANT } from '../tenant/index';
+
 
 export const createDefaultAdminUsers = async (
 	connection: Connection,

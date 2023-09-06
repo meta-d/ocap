@@ -4,8 +4,9 @@ import {
 	FileStorageProviderEnum,
 	S3FileStorageProviderConfig
 } from './file-provider';
-import { IOrganization } from './organization.model';
+import { IOrganization, IOrganizationCreateInput } from './organization.model';
 import { IRolePermission } from './role-permission.model';
+import { IUserCreateInput } from './user.model';
 
 export interface ITenant {
 	id?: string;
@@ -26,8 +27,13 @@ export interface ITenantCreateInput {
 	isImporting?: boolean;
 	sourceId?: string;
 	userSourceId?: string;
+
+	superAdmin?: IUserCreateInput
+	defaultOrganization?: IOrganizationCreateInput
 }
 
 export interface ITenantSetting extends S3FileStorageProviderConfig {
 	fileStorageProvider?: FileStorageProviderEnum;
 }
+
+export const DEFAULT_TENANT = 'Default Tenant';

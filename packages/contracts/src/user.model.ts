@@ -110,9 +110,8 @@ export interface IUserPasswordInput {
 export enum LanguagesEnum {
 	CHINESE = "zh",
 	ENGLISH = 'en',
-	BULGARIAN = 'bg',
-	HEBREW = 'he',
-	RUSSIAN = 'ru'
+	ZhHans = 'zh-Hans',
+	ZhHant = 'zh-Hant',
 }
 
 export const LanguagesMap = {
