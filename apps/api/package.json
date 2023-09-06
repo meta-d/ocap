@@ -1,0 +1,40 @@
+{
+  "name": "@metad/server-api",
+  "version": "0.0.1",
+  "description": "API services of Metad Server",
+  "scripts": {
+    "ng": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=4096 yarn nx",
+    "typeorm": "yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json node_modules/.bin/typeorm",
+    "typeorm:sync": "yarn typeorm schema:sync",
+    "typeorm:seeds": "yarn typeorm migration:run",
+    "typeorm:flush": "yarn typeorm migration:revert",
+    "typeorm:create": "yarn typeorm migration:create",
+    "typeorm:preserve": "yarn typeorm:sync -- -f=ormconfig && yarn typeorm:seeds -- -f=ormconfig",
+    "start": "yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/main.ts",
+    "start:debug": "nodemon --config nodemon-debug.json",
+    "build": "yarn ng build api",
+    "build:prod": "yarn ng build api --prod",
+    "seed": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed.ts",
+    "seed:build": "yarn ng run api:seed",
+    "seed:all": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed-all.ts",
+    "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed-module.ts --name",
+    "seed:all:build": "yarn ng run api:seed-all",
+    "seed:prod": "cross-env NODE_ENV=production NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed.ts",
+    "seed:prod:build": "yarn ng run api:seed -c=production"
+  },
+  "dependencies": {
+    "@nestjs/platform-socket.io": "^8.1.2",
+    "@nestjs/websockets": "^8.1.2"
+  },
+  "devDependencies": {
+    "@types/socket.io": "3.0.1",
+    "@types/socket.io-redis": "1.0.27",
+    "@types/ws": "7.4.7",
+    "@nestjs/schematics": "^7.1.2",
+    "@nestjs/testing": "^7.4.4",
+    "nodemon": "^2.0.7",
+    "pm2": "^4.5.1",
+    "dotenv": "^8.2.0",
+    "ts-node": "^9.1.1"
+  }
+}

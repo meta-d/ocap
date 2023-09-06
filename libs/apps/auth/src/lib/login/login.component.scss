@@ -1,0 +1,23 @@
+:host {
+  @apply w-[368px] flex flex-col max-w-full px-8;
+}
+
+.pac-auth__login-remember {
+  margin-bottom: 1rem;
+}
+
+.pac-auth__signin-button {
+  height: 45px;
+  margin-top: 1rem;
+}
+
+.pac-login__signins {
+  margin: 1rem 0;
+}
+
+.pac-login__signin-button {
+  img {
+    width: 30px;
+    height: 30px;
+  }
+}

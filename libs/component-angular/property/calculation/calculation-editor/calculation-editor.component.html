@@ -1,0 +1,128 @@
+<div class="nx-theme-dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+    <div class="w-full flex justify-start items-center mb-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+      <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
+      <span class="text-lg pointer-events-none">
+        {{ 'COMPONENTS.CALCULATION.TITLE' | translate: {Default: "Calculation Editor"} }}
+      </span>
+    </div>
+
+    <div class="flex flex-col justify-start items-stretch">
+        <mat-form-field appearance="fill" color="accent">
+            <mat-label>
+                {{ 'COMPONENTS.CALCULATION.Name' | translate: {Default: "Name"} }}
+            </mat-label>
+            <input matInput [formControl]="name" required>
+            <mat-error *ngIf="name.invalid">
+                {{ 'COMPONENTS.CALCULATION.NameRequired' | translate: {Default: "Name required or existed"} }}
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" color="accent">
+            <mat-label>
+                {{ 'COMPONENTS.CALCULATION.Caption' | translate: {Default: "Caption"} }}
+            </mat-label>
+            <input matInput [formControl]="caption">
+        </mat-form-field>
+    </div>
+
+    <div class="flex-1 flex flex-col">
+        <label id="ngm-radio-group__label my-2">{{ 'COMPONENTS.CALCULATION.TYPE' | translate: {Default: "Type"} }}</label>
+        <mat-radio-group color="accent"
+            class="flex flex-col justify-start items-stretch mb-4"
+            [formControl]="calculationType">
+            <mat-radio-button [value]="CALCULATION_TYPE.Calculated" class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.CALCULATED_MEASURE' | translate: {Default: "Calculated Measure"} }}
+            </mat-radio-button>
+            <mat-radio-button [value]="CALCULATION_TYPE.Restricted" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.RESTRICTED_MEASURE' | translate: {Default: "Restricted Measure"} }}
+            </mat-radio-button>
+            <mat-radio-button [value]="CALCULATION_TYPE.Variance" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.VARIANCE_MEASURE' | translate: {Default: "Variance Measure"} }}
+            </mat-radio-button>
+            <mat-radio-button [value]="CALCULATION_TYPE.Aggregation" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.ConditionalAggregation' | translate: {Default: "Conditional Aggregation"} }}
+            </mat-radio-button>
+            <mat-radio-button [value]="CALCULATION_TYPE.D2Measure" disabled class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.DIMENSION_TO_MEASURE' | translate: {Default: "Dimension to Measure"} }}
+            </mat-radio-button>
+            <mat-radio-button [value]="CALCULATION_TYPE.MeasureControl" class="p-2 rounded-lg hover:bg-white/20">
+                {{ 'COMPONENTS.CALCULATION.MEASURE_CONTROL' | translate: {Default: "Measure Control"} }}
+            </mat-radio-button>
+        </mat-radio-group>
+
+        <div *ngIf="calculationType.value === CALCULATION_TYPE.Calculated">
+            <mat-form-field class="w-full" appearance="fill" color="accent">
+                <mat-label>
+                    {{ 'COMPONENTS.CALCULATION.Unit' | translate: {Default: "Unit"} }}
+                </mat-label>
+                <input matInput [formControl]="unit">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="flex justify-start">
+        <div ngmButtonGroup>
+            <button mat-raised-button color="accent" cdkFocusInitial [disabled]="formGroup.invalid" (click)="onApply()">
+                {{ 'COMPONENTS.COMMON.APPLY' | translate: {Default: 'Apply'} }}
+            </button>
+            <button mat-button mat-dialog-close>
+                {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="mat-typography flex-1 flex flex-col justify-start items-stretch overflow-auto" cdkDropListGroup>
+
+    <ng-container [ngSwitch]="calculationType.value">
+        <ng-container *ngSwitchCase="CALCULATION_TYPE.Calculated">
+            <!-- <ng-container [ngSwitch]="syntax">
+                <nx-calculation-sql *ngSwitchCase="SYNTAX.SQL"
+                    [dataSettings]="dataSettings"
+                    [entityType]="entityType"
+                    [coreService]="coreService"
+                    [(ngModel)]="calculation"
+                >
+                </nx-calculation-sql> -->
+                <nx-calculated-measure story opened class="max-w-full w-[1000px] h-full"
+                    [dsCoreService]="dsCoreService"
+                    [dataSettings]="dataSettings"
+                    [entityType]="entityType"
+                    [coreService]="coreService"
+                    [syntax]="syntax"
+                    [(ngModel)]="formula"
+                    >
+                </nx-calculated-measure>
+            <!-- </ng-container> -->
+        </ng-container>
+        
+        <nx-restricted-measure *ngSwitchCase="CALCULATION_TYPE.Restricted" class="sub-calculation"
+            [coreService]="coreService"
+            [dataSettings]="dataSettings"
+            [entityType]="entityType"
+            [(ngModel)]="calculation">
+        </nx-restricted-measure>
+
+        <nx-conditional-aggregation *ngSwitchCase="CALCULATION_TYPE.Aggregation" class="sub-calculation"
+            [coreService]="coreService"
+            [dsCoreService]="dsCoreService"
+            [dataSettings]="dataSettings"
+            [entityType]="entityType"
+            [(ngModel)]="calculation">
+        </nx-conditional-aggregation>
+
+        <pac-calculation-variance *ngSwitchCase="CALCULATION_TYPE.Variance" class="sub-calculation"
+            [dsCoreService]="dsCoreService"
+            [dataSettings]="dataSettings"
+            [entityType]="entityType"
+            [(ngModel)]="calculation"
+        ></pac-calculation-variance>
+
+        <nx-measure-control *ngSwitchCase="CALCULATION_TYPE.MeasureControl" class="sub-calculation"
+            [(ngModel)]="calculation"
+            [entityType]="entityType"
+            >
+        </nx-measure-control>
+    </ng-container>
+    
+</div>

@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  flex-direction: column;
+
+  .nx-smart-grid--selection-summaries {
+    height: 1rem;
+  }
+
+  .igx-grid, .igx-grid--cosy, .igx-grid--compact {
+    box-shadow: unset;
+  }
+}
+
+// :host::ng-deep {
+//   igx-grid-cell.nx-navigation {
+//     cursor: pointer;
+//     &:hover {
+//       background: var(--igx-grid-cell-selected-background);
+//     }
+
+//     .igx-grid__td-text {
+//       text-decoration: dashed;
+//       cursor: pointer;
+//     }
+//   }
+// }

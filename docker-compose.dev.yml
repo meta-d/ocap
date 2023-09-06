@@ -1,0 +1,66 @@
+version: '3.7'
+
+volumes:
+    pg_dev_data:
+
+networks:
+    overlay:
+        driver: bridge
+
+services:
+    db:
+        image: postgres:12-alpine
+        container_name: db
+        restart: always
+        environment:
+            POSTGRES_DB: ${DB_NAME:-postgres}
+            POSTGRES_USER: ${DB_USER:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASS:-root}
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'psql postgres://$${POSTGRES_USER}:$${POSTGRES_PASSWORD}@localhost:5432/$${POSTGRES_DB} || exit 1'
+                ]
+        volumes:
+            - pg_dev_data:/var/lib/postgresql/data
+            - ./.scripts/initdb.d/:/docker-entrypoint-initdb.d/:ro
+        ports:
+            - ${DB_PORT:-5432}:5432
+        networks:
+            - overlay
+
+    adminer:
+        image: adminer
+        container_name: adminer
+        restart: always
+        depends_on:
+            - db
+        environment:
+            ADMINER_DEFAULT_DB_DRIVER: pgsql
+            ADMINER_DEFAULT_DB_HOST: ${DB_HOST:-db}
+            ADMINER_DEFAULT_DB_NAME: ${DB_NAME:-postgres}
+            ADMINER_DEFAULT_DB_PASSWORD: ${DB_PASS:-root}
+        ports:
+            - '8084:8080'
+        networks:
+            - overlay
+
+    redis:
+        image: redis:6-alpine
+        mem_limit: 100m
+        restart: unless-stopped
+        command: ["sh", "-c", "redis-server --requirepass $${REDIS_PASSWORD}"]
+        ports:
+            - "6379:6379"
+        environment:
+            REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+        networks:
+            - overlay
+
+    redisinsight:
+        image: redislabs/redisinsight:1.11.1
+        ports:
+            - "8001:8001"
+        networks:
+            - overlay

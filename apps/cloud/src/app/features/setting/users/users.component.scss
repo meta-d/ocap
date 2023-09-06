@@ -1,0 +1,16 @@
+:host {
+  @apply flex-1 flex flex-col items-end justify-start;
+}
+
+.pac-sketch-card.mdc-card {
+
+  .mat-mdc-card-subtitle {
+    margin-bottom: 0;
+  }
+
+  .mat-chip-list {
+    display: inline-block;
+    margin: 0 5px;
+    vertical-align: middle;
+  }
+}

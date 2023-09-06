@@ -1,0 +1,18 @@
+<mat-form-field appearance="fill">
+    <mat-label>{{label}}</mat-label>
+    <mat-select #propertySelect [(ngModel)]="value" (ngModelChange)="onModelChange($event)" [multiple]="multiple">
+      <mat-select-trigger *ngIf="selectTriggers$ | async as selectTriggers">
+        <mat-chip-list #chipList>
+          <mat-chip *ngFor="let selectTrigger of selectTriggers" [selectable]="selectable"
+                   [removable]="removable" (removed)="remove(selectTrigger)">
+            <nx-property hiddenIcon [property]="selectTrigger" [displayBehaviour]="displayBehaviour"></nx-property>
+            <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+          </mat-chip>
+        </mat-chip-list>
+      </mat-select-trigger>
+      <!-- <mat-option>--</mat-option> -->
+      <mat-option [value]="property.name" *ngFor="let property of properties">
+        <nx-property [property]="property" [displayBehaviour]="displayBehaviour"></nx-property>
+      </mat-option>
+    </mat-select>
+</mat-form-field>

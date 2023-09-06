@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.mat-mdc-nav-list .mat-mdc-list-item {
+  @apply text-white rounded-lg duration-300;
+
+  &.active {
+    @apply bg-slate-50 text-slate-500;
+  }
+}
+
+mat-stepper.mat-stepper-vertical {
+  @apply bg-bluegray-700;
+}
+
+.pac-upload-table__upload-name {
+  font-size: 800;
+  margin-right: 1rem;
+}
+
+input.mat-mdc-input-element {
+  @apply caret-yellow-500 bg-transparent outline-none;
+}
+
+.ngm-input.mat-mdc-input-element {
+  @apply p-2 rounded-sm hover:bg-slate-200;
+
+  &:focus {
+    @apply right-2 ring-yellow-200 ring-offset-2 bg-slate-300;
+  }
+}
+
+.ngm-select {
+  @apply bg-transparent hover:bg-slate-200 focus:bg-slate-300;
+}
+
+.pac-upload-preview__length {
+  @apply w-12 text-right hover:bg-slate-200 focus:bg-slate-300;
+}

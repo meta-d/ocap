@@ -1,0 +1,58 @@
+<div class="flex flex-col">
+  <div class="flex justify-between items-center">
+    <h2 class="text-xl ml-4 mb-0">
+      {{ 'PAC.Project.ManageIndicators' | translate: {Default: "Manage Indicators"} }}
+    </h2>
+    <div class="flex gap-2">
+      <input #fileUpload type="file" class="file-input invisible"
+        (change)="handleUploadChange($event)"
+        (click)="fileUpload.value=null;">
+      <div ngmButtonGroup>
+        <button mat-button displayDensity="cosy" (click)="export()">
+          <div class="flex items-center">
+            <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+            {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
+          </div>
+        </button>
+
+        <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
+          <mat-icon fontSet="material-icons-round">upload</mat-icon>
+            {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
+        </button>
+        
+        <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicator']">
+          {{ 'PAC.INDICATOR.MY_INDICATORS.REGISTER' | translate: {Default: "Register"} }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <nav mat-tab-nav-bar color="accent" disableRipple displayDensity="cosy" mat-stretch-tabs="false" mat-align-tabs="start">
+    <span mat-tab-link [routerLink]="['.']"
+      routerLinkActive #rla="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla.isActive"
+    >
+    <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">settings</mat-icon>
+    {{ 'PAC.INDICATOR.All' | translate: {Default: "All"} }}
+    </span>
+    <!-- <span mat-tab-link [routerLink]="['./all']"
+      routerLinkActive #rla2="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla2.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">group_add</mat-icon>
+      {{ 'PAC.INDICATOR.MY_INDICATORS.ALL' | translate: {Default: "All"} }}
+    </span> -->
+    <span mat-tab-link [routerLink]="['approvals']"
+      routerLinkActive #rla3="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla3.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">verified_user</mat-icon>
+      {{ 'PAC.INDICATOR.MY_INDICATORS.Approvals' | translate: {Default: "Approvals"} }}
+    </span>
+  </nav>
+</div>
+
+<router-outlet #o="outlet"></router-outlet>

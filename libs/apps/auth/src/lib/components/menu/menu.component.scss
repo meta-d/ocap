@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.pac-menu__space {
+  flex: 1;
+  min-height: 40px;
+}

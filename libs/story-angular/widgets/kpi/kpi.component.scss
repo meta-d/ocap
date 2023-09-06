@@ -1,0 +1,45 @@
+.nx-kpi--loading {
+  position: absolute;
+}
+
+.nx-kpi--value {
+  white-space: nowrap;
+  align-items: baseline;
+}
+
+.nx-kpi--trend {
+  padding-top: 0.5rem;
+
+  .nx-kpi-reference,
+  .nx-kpi-deviation {
+    font-size: 0.75rem;
+  }
+}
+
+.nx-kpi--data-point {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  place-content: center;
+  align-items: flex-start;
+}
+
+:host.nx-kpi--flex-row {
+  .nx-kpi--kpi {
+    flex: 2 1 100%;
+  }
+  .nx-kpi--additional {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+.nx-kpi--additional {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: row;
+}
+
+.nx-kpi__intent {
+  @apply cursor-pointer hover:underline;
+}

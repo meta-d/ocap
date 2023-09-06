@@ -1,0 +1,18 @@
+:host {
+  display: flex;
+  flex: 1;
+
+  .nx-property-select {
+    flex: 1;
+  }
+}
+
+.nx-formly__remove {
+  visibility: hidden;
+}
+
+.nx-property-select:hover {
+  .nx-formly__remove {
+    visibility: visible;
+  }
+}

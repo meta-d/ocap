@@ -1,0 +1,12 @@
+:host {
+  @apply w-[368px] flex flex-col max-w-full px-8;
+}
+
+.mat-mdc-hint {
+  flex: 1;
+
+  .mat-mdc-progress-bar {
+    border-radius: 4px;
+  }
+}
+

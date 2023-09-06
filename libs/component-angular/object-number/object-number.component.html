@@ -1,0 +1,19 @@
+<ng-container *ngIf="shortNumber; else noShort">
+    <span class="nx-object-number--value" *ngIf="_number | shortNumber:locale as values">
+        {{values[0] | number:digitsInfo}}
+        <span class="nx-object-number--short-unit">{{values[1]||''}}</span>
+    </span>
+</ng-container>
+<ng-template #noShort>
+    <span class="nx-object-number--value" >
+        {{_number | number:digitsInfo}}
+    </span>
+</ng-template>
+<ng-container *ngIf="unit">
+    <ng-container *ngIf="unitSemantics === 'currency-code'">
+        <span class="nx-object-number--unit">{{getCurrencySymbol(unit, 'narrow')}}</span>
+    </ng-container>
+    <ng-container *ngIf="unitSemantics !== 'currency-code'">
+        <span class="nx-object-number--unit">{{unit}}</span>
+    </ng-container>
+</ng-container>

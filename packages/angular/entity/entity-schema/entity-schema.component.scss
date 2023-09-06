@@ -1,0 +1,19 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.mat-tree-node {
+  min-height: 30px;
+
+  .mat-mdc-icon-button.mat-mdc-button-base {
+    --mdc-icon-button-state-layer-size: 30px;
+    padding: 0;
+  }
+}
+
+.ngm-display-behaviour {
+  flex: 1;
+  overflow: hidden;
+}

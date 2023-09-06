@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mat-drawer-content {
+  padding: 1rem;
+}

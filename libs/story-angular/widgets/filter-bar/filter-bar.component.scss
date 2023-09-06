@@ -1,0 +1,13 @@
+:host {
+  display: block;
+
+  .nx-smart-filter-bar_filter {
+    max-width: 100%;
+    min-width: 200px;
+  }
+
+  .nx-smart-filter-bar--content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}

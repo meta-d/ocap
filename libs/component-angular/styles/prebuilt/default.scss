@@ -1,0 +1,11 @@
+@import 'projects/components/styles/material/all-theme';
+@import 'projects/components/styles/material/all-components';
+@import 'projects/components/styles/material/default.theme';
+@import '../all';
+
+// $nb-enabled-themes: (default);
+
+// @include nb-install() {
+//   @include nb-theme-global();
+//   @include nx-components-theme();
+// }

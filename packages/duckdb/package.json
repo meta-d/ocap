@@ -1,0 +1,22 @@
+{
+  "name": "@metad/ocap-duckdb",
+  "version": "0.2.5",
+  "keywords": [
+    "metad",
+    "ocap",
+    "duckdb"
+  ],
+  "author": "Tiven Wang <i.tiven.wang@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/meta-d/ocap",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meta-d/ocap.git"
+  },
+  "scripts": {
+    "build:release": "node bundle.mjs release"
+  },
+  "peerDependencies": {
+    "@duckdb/duckdb-wasm": "^1.25.0"
+  }
+}

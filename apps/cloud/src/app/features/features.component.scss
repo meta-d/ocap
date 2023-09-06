@@ -1,0 +1,81 @@
+:host {
+  flex: 1;
+  height: 100%;
+  max-width: 100%;
+}
+
+.mat-drawer.mat-sidenav {
+  display: flex;
+  flex-direction: column;
+}
+
+.pac_brand {
+  display: flex;
+  align-items: center;
+
+  span {
+    white-space: nowrap;
+  }
+}
+
+.avatar {
+  width: 25px;
+  border-radius: 50%;
+}
+
+.pac-app__page-outlet {
+  width: 100%;
+}
+
+.pac_sidenav-content {
+  z-index: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pac_sidenav-content.pac-fullscreen {
+  z-index: 2;
+  .pac-app__page-outlet {
+    z-index: 2;
+  }
+}
+
+.pac-home-title {
+  background: linear-gradient(-45deg, #5d55f4, #00ff95, #5d55f4);
+	background-size: 200%;
+  background-position: 80% 50%;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  cursor: pointer;
+
+  &:hover {
+    animation: animated_text 3s ease-in-out infinite;
+    -moz-animation: animated_text 3s ease-in-out infinite;
+    -webkit-animation: animated_text 3s ease-in-out infinite;
+  }
+}
+
+@keyframes animated_text {
+  0% {
+    background-position: 80% 50%;
+  }
+  50% {
+    background-position: 180% 50%;
+  }
+  100% {
+    background-position: 280% 50%;
+  }
+}
+
+
+.pac-router__progress-bar {
+  position: absolute;
+  height: 2px;
+}
+
+.pac__toolbar-new {
+  @apply rounded-md m-2;
+}

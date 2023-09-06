@@ -1,0 +1,80 @@
+<div class="flex justify-start items-center">
+    <div ngmButtonGroup displayDensity="cosy">
+        <button mat-raised-button color="primary" displayDensity="cosy" (click)="add()">
+            <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">add</mat-icon>{{ 'PAC.ACTIONS.ADD' | translate: {Default: "Add"} }}
+        </button>
+    </div>
+</div>
+
+<nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2" displayDensity="compact"
+    paging
+    [data]="listOfData"
+    [columns]="[
+        {
+            name: 'name',
+            caption: 'PAC.KEY_WORDS.NAME' | translate: {Default: 'Name'},
+            cellTemplate: nameTempl
+        },
+        {
+            name: 'value',
+            caption: 'PAC.KEY_WORDS.VALUE' | translate: {Default: 'Value'},
+            cellTemplate: valueTempl
+        },
+        {
+            name: 'action',
+            caption: 'PAC.KEY_WORDS.ACTION' | translate: { Default: 'Action' },
+            cellTemplate: actionTempl
+        }
+    ]"
+></nx-table>
+
+<ng-template #nameTempl let-id="id" let-name="name">
+    <ng-container *ngIf="!editCache[id]?.edit; else editTemplate">
+        <span>{{ name }}</span>
+    </ng-container>
+
+    <ng-template #editTemplate>
+        <!-- <input matInput [(ngModel)]="editCache[id].data.name"> -->
+        <ngm-input [(ngModel)]="editCache[id].data.name" class="mb-1"></ngm-input>
+    </ng-template>
+</ng-template>
+
+<ng-template #valueTempl let-id="id" let-value="value">
+    <ng-container *ngIf="!editCache[id]?.edit; else editTemplate">
+        <span>{{ value }}</span>
+    </ng-container>
+
+    <ng-template #editTemplate>
+        <!-- <input matInput [(ngModel)]="editCache[id].data.value"> -->
+        <ngm-input [(ngModel)]="editCache[id].data.value" class="mb-1"></ngm-input>
+    </ng-template>
+</ng-template>
+
+<ng-template #actionTempl let-id="id">
+    <div class="flex items-center gap-2">
+        <button *ngIf="!editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="startEdit(id)">
+            <div class="flex justify-center items-center">
+                <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+            </div>
+        </button>
+
+        <button *ngIf="editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="saveEdit(id)">
+            <div class="flex justify-center items-center">
+                <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+            </div>
+        </button>
+        <mat-divider [vertical]="true" style="height: 20px;"></mat-divider>
+        <button *ngIf="!editCache[id]?.edit" mat-icon-button displayDensity="cosy" ngmAppearance="danger" class="text-gray-500"
+            (click)="deleteRow(id)">
+            <div class="flex justify-center items-center">
+                <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+            </div>
+        </button>
+        <button *ngIf="editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500"
+            (click)="cancelEdit(id)">
+            <div class="flex justify-center items-center">
+                <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
+            </div>
+        </button>
+    </div>
+</ng-template>

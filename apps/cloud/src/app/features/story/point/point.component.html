@@ -1,0 +1,50 @@
+<facebook-content-loader *ngIf="!pointKey()" class="absolute w-full h-full p-4"
+    [animate]="true">
+</facebook-content-loader>
+
+<div class="pac-story-point-viewer block w-full h-full">
+    <nx-story-point *ngIf="pointKey()" class="w-full h-full"
+        ngmTransformScale
+        [ngStyle]="storySizeStyles()"
+        [key]="pointKey()"
+        [opened]="true"
+    >
+    </nx-story-point>
+</div>
+
+<div class="pac-story-bar absolute left-4 top-16 max-w-[46px] p-2 flex flex-col justify-start items-center gap-2
+    rounded-lg z-20
+    text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-100
+    backdrop-blur-sm bg-gray-800/10 hover:bg-gray-800/20 hover:backdrop-blur-lg dark:bg-white/10"
+    cdkDrag
+>
+    <mat-icon class="cursor-move">drag_indicator</mat-icon>
+
+    <button mat-icon-button displayDensity="cosy" matTooltip="{{ 'PAC.Story.AutoRefresh' | translate: {Default: 'Auto Refresh'} }}" matTooltipPosition="right"
+        [matMenuTriggerFor]="timerMenu">
+        <mat-icon fontSet="material-icons-outlined">update</mat-icon>
+    </button>
+
+    <!-- <button mat-icon-button displayDensity="cosy" (click)="openShares(story)">
+        <mat-icon fontSet="material-icons-outlined">share</mat-icon>
+    </button> -->
+
+    <button mat-icon-button displayDensity="cosy" (click)="toggleFullscreen()">
+        <mat-icon *ngIf="!fullscreen" fontSet="material-icons-outlined"
+            matTooltip="{{ 'PAC.Story.Fullscreen' | translate: {Default: 'Fullscreen'} }}" matTooltipPosition="right">fullscreen</mat-icon>
+        <mat-icon *ngIf="fullscreen" fontSet="material-icons-outlined"
+            matTooltip="{{ 'PAC.Story.ExitFullscreen' | translate: {Default: 'Exit Fullscreen'} }}" matTooltipPosition="right">fullscreen_exit</mat-icon>
+    </button>
+</div>
+
+<mat-menu #timerMenu="matMenu" class="ngm-density__compact mat-color-accent">
+    <div class="text-xs uppercase px-4 py-2">
+        {{ 'PAC.KEY_WORDS.AutoRefresh' | translate: {Default: 'Auto Refresh'} }}
+    </div>
+    <button mat-menu-item (click)="timerUpdate(null)">
+        <mat-icon *ngIf="!timer" class="ngm-density__compact">done</mat-icon> {{ 'PAC.KEY_WORDS.Off' | translate: {Default: 'Off'} }}
+    </button>
+    <button mat-menu-item *ngFor="let t of Schedulers" (click)="timerUpdate(t)">
+        <mat-icon *ngIf="timer===t" class="ngm-density__compact">done</mat-icon>{{t}} {{ 'PAC.KEY_WORDS.Minute' | translate: {Default: 'Minutes'} }}
+    </button>
+</mat-menu>

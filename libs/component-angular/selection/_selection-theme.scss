@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $accent: map-get($config, accent);
+
+  nx-slicer {
+    .mat-chip-list-wrapper {
+      max-width: 100%;
+      .mat-standard-chip {
+        padding: 0 8px;
+        min-height: 24px;
+        max-width: 100%;
+        white-space: nowrap;
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+
+  nx-slicers, nx-slicer-bar {
+    .mat-divider {
+      margin: .5rem 0;
+    }
+  }
+  
+}
+
+@mixin theme($theme) {
+
+  $density: mat.get-density-config($theme);
+
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+  
+  @if $density != null {
+    @include density($density);
+  }
+}

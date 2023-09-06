@@ -1,0 +1,56 @@
+<div class="nx-theme-dark dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+    <div class="w-full flex justify-start items-center mb-4" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+      <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
+      <span class="text-lg pointer-events-none">
+        {{ 'PAC.Project.Files' | translate: { Default: 'Files' } }}
+      </span>
+    </div>
+  
+    <ngm-search class="my-2" ></ngm-search>
+  
+    <mat-nav-list class="flex-1 overflow-auto">
+        <mat-list-item class="group/item"
+            *ngFor="let file of files"
+            [class.active]="activedFile?.id === file.id" 
+            (click)="activeLink(file)"
+        >
+            <span class="flex-1 text-ellipsis overflow-hidden whitespace-nowrap"> {{ file.originalName }} </span>
+
+            <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="opacity-0 group-hover/item:opacity-100"
+                (click)="deleteFile($event, file)">
+                <mat-icon fontSet="material-icons-round">delete</mat-icon>
+            </button>
+        </mat-list-item>
+    </mat-nav-list>
+
+    <input #fileUpload type="file" class="file-input h-0 invisible" (change)="onFileSelected($event)" (click)="fileUpload.value=null;" accept="*">
+
+    <div class="flex justify-end items-center">
+        <div *ngIf="activedFile" ngmButtonGroup>
+            <button mat-stroked-button ngmAppearance="dashed" displayDensity="cosy" color="accent" (click)="fileUpload.click()">
+                <div class="flex justify-start items-center">
+                  <mat-icon fontSet="material-icons-round">upload</mat-icon>
+                  {{ 'Story.Common.Upload' | translate: {Default: "Upload"} }}
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="flex-1 flex flex-col justify-center items-center overflow-auto">
+    <div *ngIf="activedFile" class="w-full flex-1 flex flex-col justify-start items-stretch">
+        <span class="w-full p-2">{{activedFile.originalName}}: {{activedFile.url}}</span>
+
+        <img *ngIf="isImage(activedFile)" class="flex-1"
+            [src]="activedFile.url">
+    </div>
+
+    <button *ngIf="!activedFile" mat-stroked-button ngmAppearance="dashed" color="accent"
+        (click)="fileUpload.click()"
+    >
+        <div class="flex justify-start items-center">
+          <mat-icon fontSet="material-icons-round">upload</mat-icon>
+          {{ 'Story.Common.Upload' | translate: {Default: "Upload"} }}
+        </div>
+    </button>
+</div>

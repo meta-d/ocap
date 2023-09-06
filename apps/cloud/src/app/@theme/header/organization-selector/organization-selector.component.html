@@ -1,0 +1,18 @@
+<button class="w-full flex items-center" [matMenuTriggerFor]="menu" [matTooltip]="selectedOrganization?.name">
+  <mat-icon *ngIf="!selectedOrganization" class="m-2">corporate_fare</mat-icon>
+  <ng-container *ngIf="selectedOrganization">
+    <pac-org-avatar [organization]="selectedOrganization" class="shrink-0 w-6 h-6 rounded-full overflow-hidden block m-2"></pac-org-avatar>
+    <span class="flex-1 text-ellipsis overflow-hidden">{{ selectedOrganization.name }}</span>
+  </ng-container>
+  <svg width="20" height="20" fill="currentColor" class="m-2 shrink-0"><path d="M9.261 12.697l-2.955-2.93a1.029 1.029 0 010-1.464 1.051 1.051 0 011.478 0L10 10.5l2.216-2.197a1.051 1.051 0 011.478 0 1.03 1.03 0 010 1.465l-2.955 2.929a1.051 1.051 0 01-1.478 0z"></path></svg>
+</button>
+
+<mat-menu #menu="matMenu" class="ngm-density__compact mat-color-accent">
+  <button mat-menu-item *ngFor="let org of organizations$ | async" [ngClass]="{selected: selectedOrganization?.id === org.id}"
+    (click)="selectOrganization(org)">
+    <div class="flex justify-start items-center">
+      <pac-org-avatar [organization]="org" class="w-6 h-6 rounded-full overflow-hidden block mr-2"></pac-org-avatar>
+      <span>{{org.name}}</span>
+    </div>
+  </button>
+</mat-menu>

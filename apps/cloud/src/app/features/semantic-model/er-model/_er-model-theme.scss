@@ -1,0 +1,44 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+  $primary: map.get($config, primary);
+
+  .pac-model-erm {
+    .connection .main-path {
+      stroke-width: 3px;
+    }
+
+    .node .field {
+      border-top: 1px dashed mat.get-color-from-palette($foreground, divider);
+
+      &:hover {
+        background-color: mat.get-color-from-palette($foreground, divider);
+      }
+    }
+
+    .node.cube {
+      .input-socket {
+        .socket {
+          background: unset;
+          border: unset;
+        }
+      }
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+  .pac-model-erm {
+    .title {
+      rete-socket {
+        .socket {
+          margin: 0px 0px 0px -10px;
+        }
+      }
+    }
+  }
+}

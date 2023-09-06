@@ -1,0 +1,21 @@
+<mat-accordion>
+	<mat-expansion-panel hideToggle class="mat-elevation-z" *ngFor="let feature of features$ | async"
+		[disabled]="!enabledFeature(feature)">
+	  <mat-expansion-panel-header>
+		<mat-panel-title>
+		  {{ feature.name }}
+		</mat-panel-title>
+		<mat-panel-description class="flex justify-end items-center">
+		  {{ feature.description }}
+		</mat-panel-description>
+		<mat-slide-toggle [checked]="enabledFeature(feature)" (change)="featureChanged($event.checked, feature)"></mat-slide-toggle>
+	  </mat-expansion-panel-header>
+	  
+	  <mat-list *ngIf="feature?.children.length > 0" displayDensity="cosy">
+		<mat-list-item *ngFor="let child of feature.children">
+			<mat-checkbox [checked]="enabledFeature(child)" (change)="featureChanged($event.checked, child)">{{ child?.name }}</mat-checkbox>
+		</mat-list-item>
+	  </mat-list>
+
+	</mat-expansion-panel>
+</mat-accordion>

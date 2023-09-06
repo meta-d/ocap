@@ -1,0 +1,32 @@
+<label *ngIf="appearance?.displayDensity === 'cosy' || appearance?.displayDensity === 'compact'">{{label$ | async}}</label>
+
+<mat-form-field class="flex-1"
+  [appearance]="appearance?.appearance"
+  [floatLabel]="appearance?.floatLabel"
+  [color]="appearance?.color"
+  [displayDensity]="appearance?.displayDensity"
+>
+  <mat-label>{{label$ | async}}</mat-label>
+  <mat-select [placeholder]="placeholder$ | async"
+    [disabled]="disabled"
+    [ngModel]="memberValues$ | async"
+    (ngModelChange)="setSelectedValues($event)"
+    [multiple]="multiple$ | async"
+  >
+    <mat-option [value]="option.value" *ngFor="let option of selectOptions$ | async">
+      {{ option.caption || option.value }}
+    </mat-option>
+  </mat-select>
+
+  <div matSuffix class="flex items-center">
+    <button *ngIf="(isInitial$ | async) === false" mat-icon-button [disabled]="disabled" aria-label="Clear"
+      ngmAppearance="danger"
+      (click)="$event.stopPropagation();setMembers(null)">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <mat-spinner *ngIf="loading$ | async" color="primary" strokeWidth="1" diameter="20"></mat-spinner>
+
+    <ng-content></ng-content>
+  </div>
+</mat-form-field>

@@ -1,0 +1,119 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@angular/material' as mat;
+
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+  $primary: map.get($config, primary);
+  $accent: map.get($config, accent);
+
+
+  .cdk-overlay-pane {
+    .nx-property-select__panel {
+      @apply mt-2;
+    }
+
+    &.mat-mdc-select-panel-above {
+      .nx-property-select__panel {
+        @apply mb-2;
+      }
+    }
+  }
+  
+  .nx-property-select__panel {
+    .mat-mdc-optgroup .mat-mdc-option {
+      &:not(.mat-option-multiple) {
+        padding-left: 16px;
+      }
+      .mat-mdc-button {
+        width: 100%;
+        line-height: 2em;
+      }
+
+      .mdc-list-item__primary-text {
+        @apply w-full;
+      }
+
+      &.nx-property-select__action {
+        background-color: unset;
+      }
+    }
+    .nx-property > .mat-icon {
+      margin-right: 0;
+    }
+  }
+
+  .nx-property-array__empty {
+    .nx-property-array__container {
+      border: 1px dashed mat.get-color-from-palette($foreground, divider);
+      border-radius: 5px;
+    }
+  }
+
+  .nx-property-select__parameter-menu {
+    .mat-mdc-menu-item {
+      display: flex;
+      align-items: center;
+
+      .mat-mdc-icon-button {
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
+
+  .nx-property-modeling {
+    .cdk-drop-list.nx-property-modeling__empty {
+      border: 1px dashed mat.get-color-from-palette($foreground, divider);
+    }
+  }
+  
+}
+
+@mixin density($config-or-theme) {
+
+  .nx-property-select {
+    @include mat.form-field-density(-1);
+    font-size: 12px;
+
+    .mat-form-field-infix {
+      width: 80px;
+    }
+    .mat-form-field-suffix {
+      font-size: .8rem;
+    }
+  }
+
+  .nx-property-modeling {
+    .cdk-drop-list.nx-property-modeling__empty {
+      min-height: 50px;
+      border-radius: .25rem;
+      margin-bottom: 1rem;
+    }
+    .mat-expansion-panel-body {
+      padding: 0 16px;
+    }
+  }
+}
+
+@mixin theme($theme) {
+
+  $density: mat.get-density-config($theme);
+
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+  
+  @if $density != null {
+    @include density($density);
+  }
+}

@@ -1,0 +1,52 @@
+<label class="ngm-input-label">
+  {{ label }}
+</label>
+
+<div class="w-full relative flex items-center bg-gray-50 rounded-md">
+  <div class="absolute left-0 max-w-[75%] overflow-hidden flex items-center px-1">
+    <ng-content select="[ngmPrefix]"></ng-content>
+  </div>
+
+  <div class="ngm-input__suffix flex items-center">
+    <button mat-icon-button displayDensity="compact" [matMenuTriggerFor]="paramMenu"
+      (click)="$event.stopPropagation(); $event.preventDefault()">
+      <mat-icon>alternate_email</mat-icon>
+    </button>
+
+    <ng-content select="[ngmSuffix]"></ng-content>
+  </div>
+
+  <input #search matInput class="ngm-input-element ngm-w-full"
+    [class.ngm-input__searching]="!!formControl.value"
+    [placeholder]="placeholder"
+    [(ngModel)]="value"
+    [disabled]="disabled"
+    [matAutocomplete]="auto"
+  >
+</div>
+
+<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete"
+  class="ngm-density__compact"
+  (optionSelected)="onOptionSelected($event)"
+>
+    <mat-option *ngFor="let parameter of selectOptions$ | async" [value]="parameter.value">{{parameter.label || parameter.value}}</mat-option>
+</mat-autocomplete>
+
+
+<mat-radio-group [(ngModel)]="value">
+  <mat-menu #paramMenu="matMenu" class="ngm-density__compact">
+    <button mat-menu-item disableRipple *ngFor="let parameter of parameters$ | async"
+      (click)="$event.stopPropagation();">
+      <mat-radio-button [value]="parameter.value">
+        {{parameter.label}}
+      </mat-radio-button>
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item ngmAppearance="dashed"
+      (click)="$event.stopPropagation();openCreate()">
+      {{ 'COMPONENTS.PROPERTY.CreateParameter' | translate: {Default: "Create Parameter"} }}
+    </button>
+  </mat-menu>
+</mat-radio-group>

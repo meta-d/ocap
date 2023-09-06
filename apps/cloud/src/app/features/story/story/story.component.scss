@@ -1,0 +1,106 @@
+:host {
+  @apply relative flex-1 flex flex-col max-w-full;
+}
+
+.nx-story__container-content {
+  @apply overflow-hidden flex flex-col gap-2;
+
+  &.EmulatedDevice {
+    .nx-story__device {
+      max-height: calc(100% - 1.5rem);
+      @apply px-2;
+    }
+  }
+
+  .nx-story--add-story-point {
+    position: absolute;
+    top: 5px;
+    right: 5rem;
+    z-index: 1;
+  }
+
+  .nx-story--filter-list {
+    position: absolute;
+    top: 5px;
+    right: 3rem;
+    z-index: 1;
+  }
+}
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  --mdc-icon-button-state-layer-size: 40px;
+  padding: 0;
+}
+
+.nx-story__toolbar {
+  &.pac-toolbar__expand-less {
+    @apply bottom-8;
+  }
+}
+
+.pac-story-designer__menu-trigger.active {
+  @apply bg-gray-400/20;
+}
+
+.pac-cdk__drag-handle {
+  @apply cursor-move;
+}
+
+.nx-story--point-hidden {
+  text-decoration: line-through;
+}
+
+.pac-story__error {
+  position: absolute;
+  margin: auto;
+  top: 50%;
+}
+
+.nx-story__settings-container {
+  flex: 1;
+  max-height: 100%;
+}
+
+.mat-mdc-tab-group {
+  flex: 1;
+  max-width: 100%;
+}
+
+.nx-story-designer__template {
+  @apply flex justify-center items-center text-lg border-2 border-gray-300 border-dashed rounded-lg cursor-pointer;
+
+  width: 300px;
+  height: 200px;
+}
+
+.nx-story__device-size-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-height: 1rem;
+  text-align: center;
+
+  .layout-size {
+    display: flex;
+    height: 1rem;
+    opacity: 0.5;
+    border-left: 1px solid white;
+    border-right: 1px solid white;
+    border-top: 2px solid white;
+    &:hover,
+    &.hover {
+      opacity: 1;
+    }
+  }
+
+  .layout-size__label {
+    position: absolute;
+    font-size: 12px;
+    pointer-events: none;
+  }
+}
+
+.nx-story__designer-drawer.mat-drawer-side.mat-drawer-end {
+  @apply border-l-0;
+}

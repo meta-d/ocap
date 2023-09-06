@@ -1,0 +1,9 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+table.mat-mdc-table {
+    min-width: 100%;
+}

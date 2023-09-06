@@ -1,0 +1,9 @@
+<pac-menu-group [isCollapsed]="isCollapsed" [menu]="general$ | async"
+    (clicked)="clicked.emit()">
+</pac-menu-group>
+
+<div class="pac-menu__space"></div>
+
+<pac-menu-group [isCollapsed]="isCollapsed" [menu]="admin$ | async"
+    (clicked)="clicked.emit()">
+</pac-menu-group>

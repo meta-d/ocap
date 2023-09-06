@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.nx-date-range {
+  display: flex;
+  flex-direction: row;
+  .nx-date-range--end {
+    margin-left: 0.25rem;
+  }
+}

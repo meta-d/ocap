@@ -1,0 +1,100 @@
+$background-color: #090909;
+$border-bottom-color: #23282a;
+$searching-transition: all 300ms;
+
+:host {
+  flex: 1;
+  max-width: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+
+  &.searching {
+    .pac-indicator-market_-toolbar {
+      height: 0;
+      transform: translateY(-50%);
+    }
+
+    .pac-indicator-market__search-input {
+      margin-right: 0;
+    }
+
+    .pac-indicator-market__search-done {
+      opacity: 1;
+      width: 64px;
+      transform: translateX(0);
+    }
+  }
+}
+
+.pac-indicator-market_-toolbar {
+  transition: $searching-transition;
+  height: 40px;
+  overflow: hidden;
+}
+
+.pac-indicator-market__search-input {
+  transition: $searching-transition;
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
+}
+
+.pac-indicator-market__search-done {
+  transition: $searching-transition;
+  opacity: 0;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  transform: translateX(50%);
+}
+
+.pac-indicator-market__drawer {
+  // min-width: 400px;
+  // width: 400px;
+  // max-width: 100%;
+  // height: 100%;
+  // position: relative;
+
+  .ant-list {
+    .ant-list-item {
+      overflow: hidden;
+    }
+  }
+
+  .pac-indicator-market__empty {
+    position: absolute;
+    top: 50%;
+    margin: -50px auto auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  
+    .signal {
+      font-size: 3rem;
+    }
+  }
+  
+}
+
+.pac-indicator-detail {
+  overflow: hidden;
+}
+
+.pac-indicator-market__searchbar {
+  position: absolute;
+  width: 100%;
+  visibility: hidden;
+  opacity: 0;
+  display: none;
+}
+
+.pac-indicator-market__infinite-container {
+  flex: 1;
+}
+
+.mat-datepicker-input.pac-indicator-market__date-picker {
+  background-color: $background-color;
+  border: unset;
+}

@@ -1,0 +1,36 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@angular/material' as mat;
+@use './insight/insight-theme' as insight;
+@use './dashboard/dashboard-theme' as dashboard;
+
+@mixin color($theme) {
+  @include insight.color($theme);
+  @include dashboard.color($theme);
+}
+
+@mixin typography($theme) {
+  @include insight.typography($theme);
+  @include dashboard.typography($theme);
+}
+
+@mixin density($theme) {
+  @include insight.density($theme);
+  @include dashboard.density($theme);
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

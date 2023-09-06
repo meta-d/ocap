@@ -1,0 +1,43 @@
+.ngm-input-element.mat-mdc-input-element {
+  @apply min-w-[6rem] block box-border w-full max-w-full p-2 border-2 border-solid rounded-lg
+    border-gray-100 bg-gray-100 text-gray-700 ring-offset-1 ring-2 ring-transparent
+    focus:z-10 focus:outline-none focus:bg-white/50 focus:border-slate-200 hover:ring-yellow-500/50 focus:ring-yellow-500
+    dark:bg-gray-700 dark:bg-opacity-50 dark:border-transparent dark:placeholder-gray-400 dark:text-white dark:focus:border-gray-500 dark:focus:bg-gray-800 dark:focus:bg-opacity-50
+    dark:ring-offset-transparent dark:hover:ring-yellow-500/50 dark:focus:ring-yellow-500 dark:focus:ring-offset-gray-800/50
+    disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed;
+
+  &.ngm-input__searching {
+    @apply focus:bg-white dark:focus:bg-gray-800;
+  }
+}
+
+.ngm-input__suffix {
+  @apply absolute right-2;
+}
+
+.ngm-density__cosy {
+  .ngm-input-element.mat-mdc-input-element {
+    @apply py-1 px-2 text-sm rounded;
+  }
+  .ngm-input__suffix {
+    @apply absolute right-1;
+  }
+}
+
+.ngm-density__compact {
+  .ngm-input-element.mat-mdc-input-element {
+    @apply py-1 px-2 text-xs rounded;
+  }
+  .ngm-input__suffix {
+    @apply absolute right-0;
+  }
+}
+
+.ngm-input-element.mat-mdc-input-element.ngm-w-full {
+  @apply w-full;
+}
+
+
+.ngm-input-label {
+  @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+}

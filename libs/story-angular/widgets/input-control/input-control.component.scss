@@ -1,0 +1,54 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .nx-input-control__valueList {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    max-width: 100%;
+
+    .mat-selection-list {
+      overflow: auto;
+    }
+  }
+}
+
+.pac-member-control {
+  max-height: 100%;
+}
+
+.mat-chip.mat-standard-chip {
+  cursor: pointer;
+}
+
+.nx-input-control__select-model {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .select-model-trigger {
+    cursor: pointer;
+  }
+}
+
+.nx-input-control__selected-members {
+  margin-left: 1rem;
+  font-size: 12px;
+}
+
+.ngm-member-table, .ngm-member-tree {
+  flex: 1;
+}
+
+ngm-parameter {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.ngm-member-list {
+  flex: 1;
+  overflow: hidden;
+}

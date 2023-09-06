@@ -1,0 +1,141 @@
+<pac-story-toolbar #toolbar class="nx-story__toolbar shadow-xl
+    overflow-hidden absolute left-4 top-8 z-10
+    rounded-2xl bg-bluegray-900/90 text-slate-200 hover:bg-bluegray-900 dark:text-slate-500 dark:hover:text-slate-100
+    backdrop-blur-sm hover:backdrop-blur-lg dark:bg-white/10"
+    cdkDrag
+    (cdkDragEnded)="onToolbarDragEnded($event)"
+    [(editable)]="editable"
+    (fullscreen)="onFullscreen($event)"
+    (emulatedDeviceChange)="onEmulatedDevice($event)"
+    (deviceZoomChange)="deviceZoom=$event"
+    (resetScalePan)="resetScalePanState()"
+    >
+
+    <button mat-icon-button cdkDragHandle class="pac-cdk__drag-handle">
+        <mat-icon>drag_indicator</mat-icon>
+    </button>
+
+    <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger"
+        [class.active]="drawer.opened"
+        [matTooltip]="'Story.Toolbar.AttributesPanel' | translate: {Default: 'Attributes Panel'}"
+        matTooltipPosition="after"
+        (click)="drawer.opened=!drawer.opened">
+        <mat-icon fontSet="material-icons-outlined">edit_attributes</mat-icon>
+    </button>
+</pac-story-toolbar>
+
+<mat-drawer-container class="nx-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
+    <mat-drawer #drawer class="nx-story__designer-drawer mat-elevation-z "
+        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        position="end" 
+        [(opened)]="designerOpened"
+        ngmResizer [resizerWidth]="400"
+    >
+        <nx-settings-panel class="nx-story__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+            liveMode
+            [(opened)]="designerOpened" 
+        >
+        </nx-settings-panel>
+
+        <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
+            cdkDrag
+            cdkDragLockAxis="x"
+        ></div>
+    </mat-drawer>
+    <mat-drawer-content class="nx-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice}">
+
+        <div *ngIf="emulatedDevice" class="nx-story__device-size-bar">
+
+            <div *ngIf="hoverSize" class="layout-size__label text-xs">
+                {{hoverSize.name}} - {{hoverSize.width}}px
+            </div>
+
+            <div *ngFor="let size of ResponsiveBreakpoints | reverse" class="layout-size"
+                [ngClass]="{hover: size.width <= hoverSize?.width}"
+                [ngStyle]="{'min-width': size.margin + 'px'}"
+                (mouseenter)="mouseEnter(size)"
+                (mouseleave)="mouseLeave(size)"
+                (click)="selectSize(size)"
+            >
+            </div>
+            
+            <div *ngFor="let size of ResponsiveBreakpoints.slice(1)" class="layout-size"
+                [ngClass]="{hover: size.width <= hoverSize?.width}"
+                [ngStyle]="{'min-width': size.margin + 'px'}"
+                (mouseenter)="mouseEnter(size)"
+                (mouseleave)="mouseLeave(size)"
+                (click)="selectSize(size)"
+            >
+            </div>
+        </div>
+
+        <div #storyContainer class="nx-story__device flex-1 max-w-full overflow-auto">
+            <div class="relative w-full h-full origin-top shadow-md mx-auto"
+                [ngStyle]="{
+                    'width': emulatedDevice ? (emulatedDevice.width + 'px') : '',
+                    'min-width': emulatedDevice ? (emulatedDevice.width + 'px') : '',
+                    'height': emulatedDevice ? (emulatedDevice.height + 'px') : '',
+                    'min-height': emulatedDevice ? (emulatedDevice.height + 'px') : ''
+                }"
+                [style.transform]="'scale('+deviceZoom?.value??1+')'"
+                ngmResizer [resizerWidth]="emulatedDevice?.width" [resizerHeight]="emulatedDevice?.height"
+                [ngmResizerDisabled]="!emulatedDevice"
+                (resizerWidthChange)="onEmulatedDeviceWidthChange($event)"
+                (resizerHeightChange)="onEmulatedDeviceHeighChange($event)"
+                >
+
+                <nx-story class="w-full h-full"
+                    [id]="storyId"
+                    [story]="story()"
+                    [pageKey]="pageKey$ | async"
+                    [widgetKey]="widgetKey$ | async"
+                    [options]="storyOptions"
+                    [editable]="editable"
+                    [watermark]="watermark$ | async"
+                >
+                </nx-story>
+
+                <div *ngIf="storyService.isEmpty$ | async" class="flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 dark:text-white">
+                    <span class="text-6xl font-notoColorEmoji">🛒</span>
+                    <div class="text-lg my-2">
+                        {{ 'Story.Designer.LookingEmpty' | translate: {Default: 'This story is looking empty'} }}.
+                    </div>
+                    <div class="text-sm">
+                        {{ 'Story.Designer.LookingEmptyAddStoryPoint' | translate: {Default: 'Add a story point to start'} }}!
+                    </div>
+
+                    <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
+                        <div class="nx-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                            (click)="storyService.createStoryPoint(STORY_POINT_TYPE.Canvas)">
+                            <div>
+                                {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
+                            </div>
+                        </div>
+
+                        <div class="nx-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                            (click)="toolbarService.openTemplates()">
+                            <div>
+                                {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div ngmResizerBar resizerBarPosition="right" style="z-index: 1;"
+                    cdkDrag
+                    cdkDragLockAxis="x"
+                    [cdkDragDisabled]="!emulatedDevice"
+                ></div>
+                <div ngmResizerBar resizerBarPosition="bottom" style="z-index: 1;"
+                    cdkDrag
+                    cdkDragLockAxis="y"
+                    [cdkDragDisabled]="!emulatedDevice"
+                ></div>
+            </div>
+
+        </div>
+
+    </mat-drawer-content>
+</mat-drawer-container>
+
+<div *ngIf="error" class="pac-story__error">{{error}}</div>

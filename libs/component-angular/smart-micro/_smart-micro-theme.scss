@@ -1,0 +1,107 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@import '../core/index';
+
+$nx-smart-micro-minimum-height: 2rem !default;
+
+$nx-smart-micro-height-desktop: 2.5rem !default;
+$nx-smart-micro-maximum-height-desktop: 3rem !default;
+$nx-smart-micro-minimum-height-desktop: $nx-smart-micro-minimum-height !default;
+
+$nx-smart-micro-height-mobile: 3rem !default;
+$nx-smart-micro-maximum-height-mobile: $nx-smart-micro-height-mobile !default;
+$nx-smart-micro-minimum-height-mobile: $nx-smart-micro-minimum-height !default;
+
+$nx-smart-micro-desktop-density-config: (
+  height: (
+    default: $nx-smart-micro-height-desktop,
+    maximum: $nx-smart-micro-maximum-height-desktop,
+    minimum: $nx-smart-micro-minimum-height-desktop,
+  ),
+  font-size: (
+    default: 1rem,
+    maximum: 1rem,
+    minimum: 0.75rem,
+  )
+) !default;
+
+$nx-smart-micro-mobile-density-config: (
+  height: (
+    default: $nx-smart-micro-height-mobile,
+    maximum: $nx-smart-micro-maximum-height-mobile,
+    minimum: $nx-smart-micro-minimum-height-mobile,
+  ),
+  font-size: (
+    default: 1rem,
+    maximum: 1rem,
+    minimum: 0.75rem,
+  )
+) !default;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map-get($config, background);
+  $primary: map-get($config, primary);
+
+  .nx-micro-table {
+    display: block;
+    overflow: auto;
+    table.mat-table {
+      width: 100%;
+
+      th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
+        padding: 0 .5rem;
+      }
+      
+      .mat-row:hover {
+        background-color: mat.get-color-from-palette($background, hover);
+      }
+    }
+
+    &.striped {
+      .mat-row:nth-child(even){
+        background-color: lighten(mat.get-color-from-palette($background, hover), 50%);
+      }
+    }
+
+    .mat-cell.mat-column-select {
+      text-align: left;
+    }
+  
+    .mat-cell.nx-micro-table--dimension {
+      text-align: left;
+    }
+  }
+}
+
+@mixin _nx-smart-micro-height($height, $font-size) {
+  tr.mat-header-row, tr.mat-row, tr.mat-footer-row {
+    height: $height;
+  }
+  .mat-cell, .mat-footer-cell {
+    font-size: $font-size;
+  }
+}
+
+@mixin density($config-or-theme) {
+  .nx-micro-table.ngm-density__compact {
+    @include _nx-smart-micro-height(2rem, .75rem);
+  }
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

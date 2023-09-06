@@ -1,0 +1,28 @@
+<div class="flex flex-col justify-start items-stretch">
+  <h2 class="text-lg">
+    {{ 'PAC.KEY_WORDS.ORGANIZATION' | translate: {Default: 'Organization'} }} {{ selectedOrg?.name }}
+  </h2>
+
+  <div class="w-full flex justify-center">
+    <pac-org-avatar-editor [org]="selectedOrg"></pac-org-avatar-editor>
+  </div>
+  <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple>
+    <span mat-tab-link [routerLink]="['./main']"
+      routerLinkActive #rla="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla.isActive"
+    >
+      {{ 'PAC.ORGANIZATIONS_PAGE.Organization.MAIN' | translate: {Default: "Main"} }}
+    </span>
+
+    <span mat-tab-link [routerLink]="['./demo']"
+      routerLinkActive #rla2="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla2.isActive"
+    >
+      {{ 'PAC.ORGANIZATIONS_PAGE.Organization.DEMO' | translate: {Default: "Demo"} }}
+    </span>
+  </nav>
+</div>
+
+<router-outlet></router-outlet>

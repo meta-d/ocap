@@ -1,0 +1,8 @@
+<input matInput class="ngm-input-element w-full"
+  [matDatepicker]="dp" [formControl]="date" />
+<mat-datepicker #dp startView="multi-year" (yearSelected)="chosenYearHandler($event, dp)"></mat-datepicker>
+
+<div class="absolute right-0 h-full flex items-center">
+  <mat-datepicker-toggle [for]="dp" displayDensity="compact"></mat-datepicker-toggle>
+  <ng-content select="[ngmSuffix]"></ng-content>
+</div>

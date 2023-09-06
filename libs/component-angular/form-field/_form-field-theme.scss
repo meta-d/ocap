@@ -1,0 +1,49 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map-get($config, background);
+  $primary: map-get($config, primary);
+
+  .ngm-color-input {
+    .mtx-colorpicker-toggle {
+      @apply text-gray-500;
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+  .ngm-color-input {
+    .mtx-colorpicker-toggle.ngm-density__compact {
+      .mat-icon-button {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+
+        svg {
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  $density: mat.get-density-config($theme);
+
+  $color-config: mat.get-color-config($theme);
+  @if $color-config != null {
+    @include color($theme);
+  }
+
+  $typography-config: mat.get-typography-config($theme);
+  @if $typography-config != null {
+    @include typography($theme);
+  }
+
+  @if $density != null {
+    @include density($density);
+  }
+}

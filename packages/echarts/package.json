@@ -1,0 +1,27 @@
+{
+  "name": "@metad/ocap-echarts",
+  "version": "0.3.0-rc.1",
+  "keywords": [
+    "metad",
+    "ocap",
+    "echarts"
+  ],
+  "author": "Tiven Wang <i.tiven.wang@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/meta-d/ocap",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meta-d/ocap.git"
+  },
+  "peerDependencies": {
+    "d3-scale": "^4.0.2",
+    "d3-scale-chromatic": "^3.0.0",
+    "d3-geo": "^3.0.1",
+    "d3-geo-projection": "^4.0.0",
+    "echarts": "^5.4.2",
+    "echarts-gl": "^2.0.9",
+    "lodash-es": "^4.17.21",
+    "rxjs": "~7.8.0",
+    "topojson-client": "^3.1.0"
+  }
+}

@@ -1,0 +1,27 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $foreground: map.get($config, foreground);
+  $background: map.get($config, background);
+  $primary: map.get($config, primary);
+}
+
+@mixin density($config-or-theme) {
+  .mat-autocomplete-panel.pac-formly-select__autocomplete {
+    @apply mt-2;
+  }
+  .cdk-overlay-pane.mat-autocomplete-panel-above {
+    .mat-autocomplete-panel.pac-formly-select__autocomplete {
+      @apply mb-2;
+    }
+  }
+  .pac-formly-select {
+    .mat-mdc-select {
+      .mat-mdc-select-arrow-wrapper {
+        height: unset;
+      }
+    }
+  }
+}

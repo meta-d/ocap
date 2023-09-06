@@ -1,0 +1,14 @@
+:host {
+  @apply w-full flex flex-col sm:flex-row;
+}
+
+.pac-page__body {
+  flex: 1;
+  padding-top: 0;
+}
+.emoji-loader {
+  position: absolute;
+}
+.emoji-loader::before {
+  font-size: 2rem;
+}

@@ -1,0 +1,69 @@
+<div fxFlex="100" class="pac-micro-table__container">
+    <table mat-table [dataSource]="dataSource" matSort>
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+                <mat-checkbox (click)="$event.stopPropagation()"
+                    (change)="$event ? masterToggle() : null"
+                    [checked]="selection.hasValue() && isAllSelected()"
+                    [indeterminate]="selection.hasValue() && !isAllSelected()"
+                    [aria-label]="checkboxLabel()">
+                </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+                <mat-checkbox (click)="$event.stopPropagation()"
+                    (change)="$event ? selection.toggle(row) : null"
+                    [checked]="selection.isSelected(row)"
+                    [aria-label]="checkboxLabel(row)">
+                </mat-checkbox>
+            </td>
+        </ng-container>
+    
+        <!-- Position Column -->
+        <ng-container *ngFor="let column of (columnDefs$ | async); trackBy: identify" [matColumnDef]="column.name">
+            
+            <th mat-header-cell *matHeaderCellDef mat-sort-header
+                [ngClass]="{
+                    'nx-micro-table--dimension': column.property.role === 'dimension',
+                    'nx-micro-table--measure': column.property.role === 'measure'
+                }"> {{column.label || column.name}} </th>
+            <td mat-cell *matCellDef="let item" class="nx-micro-table--cell"
+                [ngClass]="{
+                    'nx-micro-table--dimension': column.property.role === 'dimension',
+                    'nx-micro-table--measure': column.property.role === 'measure'
+                }">
+                <ng-container [ngSwitch]="column.property.role">
+    
+                    <ng-container *ngSwitchCase="'dimension'">
+                        <nx-display-behaviour-option *ngIf="column.text" class="nx-micro-table--cell-content"
+                            [displayBehaviour]="column.displayBehaviour"
+                            [option]="{value: item[column.name], label: item[column.text.name]}">
+                        </nx-display-behaviour-option>
+                        <div *ngIf="!column.text" class="nx-micro-table--cell-content">
+                            {{ item[column.name] }}
+                        </div>
+                    </ng-container>
+    
+                    <ng-container *ngSwitchCase="'measure'" >
+                        <ng-container *ngIf="item[column.name] !== undefined">
+                            <ng-container [ngSwitch]="!!column.unit">
+                                <nx-object-number *ngSwitchCase="true" [number]="item[column.name]" [unit]="item[column.unit.name]"
+                                    class="nx-micro-table--cell-content"></nx-object-number>
+                                <nx-object-number *ngSwitchDefault [number]="item[column.name]"
+                                    class="nx-micro-table--cell-content"></nx-object-number>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                    <div *ngSwitchDefault class="nx-micro-table--cell-content">
+                        {{ item[column.name] }}
+                    </div>
+                </ng-container>
+            </td>
+        </ng-container>
+    
+        <tr mat-header-row *matHeaderRowDef="columns$ | async;sticky:true"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns$ | async;"></tr>
+    </table>
+</div>
+
+<mat-paginator *ngIf="options?.paging" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>

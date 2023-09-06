@@ -1,0 +1,25 @@
+{
+  "name": "@metad/ocap-angular",
+  "version": "0.3.0-rc.1",
+  "keywords": [
+    "metad",
+    "ocap",
+    "Angular",
+    "echarts"
+  ],
+  "author": "Tiven Wang <i.tiven.wang@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/meta-d/ocap",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meta-d/ocap.git"
+  },
+  "peerDependencies": {
+    "@angular/common": "^16.0.0",
+    "@angular/core": "^16.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

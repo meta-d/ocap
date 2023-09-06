@@ -1,0 +1,137 @@
+<div class="shrink-0 flex justify-start items-center overflow-hidden">
+    <span class="whitespace-nowrap text-ellipsis overflow-hidden">{{ title$() }}</span>
+    <div *ngIf="displayMembers()" class="nx-input-control__selected-members flex justify-between items-center overflow-hidden">
+        <span class="flex-1 whitespace-nowrap text-ellipsis overflow-hidden">{{displayMembers()}}</span>
+        <mat-icon class="members-clear cursor-pointer rounded-full hover:bg-gray-500/10 dark:hover:bg-white/20"
+            displayDensity="compact"
+            ngmAppearance="danger"
+            (click)="clearSelectedMembers()">close</mat-icon>
+    </div>
+</div>
+
+<div class="flex-1 relative flex flex-col justify-start items-center overflow-hidden">
+    <mat-error *ngIf="error()" class="whitespace-normal overflow-auto">
+        {{error()}}
+    </mat-error>
+
+    <ng-container *ngIf="!error()">
+        <ng-container [ngSwitch]="type()">
+            <ngm-member-datepicker *ngSwitchCase="INPUT_CONTROL_TYPE.Datepicker" class="w-full justify-self-start"
+                [label]="options?.label"
+                [placeholder]="options?.placeholder"
+                [appearance]="styling?.appearance?.appearance"
+                [displayDensity]="styling?.appearance?.displayDensity"
+                [dataSettings]="dataSettings$ | async"
+                [dimension]="dimension()"
+                [selectionType]="options?.selectionType"
+                [granularity]="options?.granularity"
+                [granularitySequence]="options?.granularitySequence"
+                [formatter]="options?.formatter"
+                [defaultValue]="options?.defaultValue"
+                [(date)]="dates"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            >
+            </ngm-member-datepicker>
+        
+            <ngm-member-list *ngSwitchCase="INPUT_CONTROL_TYPE.Select" class="w-full flex-1"
+                [appearance]="styling?.appearance"
+                [dataSettings]="dataSettings$ | async"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            ></ngm-member-list>
+        
+            <ngm-member-tree *ngSwitchCase="INPUT_CONTROL_TYPE.TreeSelect" class="w-full flex-1"
+                [appearance]="styling?.appearance"
+                [dataSettings]="dataSettings$ | async"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            ></ngm-member-tree>
+        
+            <ngm-smart-select *ngSwitchCase="CONTROL_TYPE.dropDownList" class="w-full justify-self-start"
+                [appearance]="styling?.appearance"
+                [dataSettings]="dataSettings$ | async"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            ></ngm-smart-select>
+        
+            <ng-container *ngSwitchCase="INPUT_CONTROL_TYPE.MeasureControl">
+                <mat-chip-listbox aria-label="Measure selection" *ngIf="measureControlProperty() as property" class="w-full flex-1"
+                    aria-orientation="vertical"
+                    [aria-orientation]="options?.ariaOrientation"
+                    [hideSingleSelectionIndicator]="options?.hideSingleSelectionIndicator"
+                    [(ngModel)]="measure"
+                    >
+                    <mat-chip-option *ngFor="let measure of availableMeasures(); trackBy: trackByName" selectable [color]="options?.chipColor"
+                        [highlighted]="options?.highlighted"
+                        [value]="measure.name"
+                        >
+                        <ngm-display-behaviour [option]="{value: measure.name, label: measure.caption}"
+                            [displayBehaviour]="property.displayBehaviour">
+                        </ngm-display-behaviour>
+                    </mat-chip-option>
+                </mat-chip-listbox>
+            </ng-container>
+        
+            <ngm-parameter *ngSwitchCase="INPUT_CONTROL_TYPE.Parameter" class="w-full flex-1"
+                [dataSettings]="dataSettings$ | async"
+                [options]="options"
+                [appearance]="styling?.appearance"
+                [displayBehaviour]="dimension()?.displayBehaviour"
+                [parameter]="parameter()"
+                (parameterChange)="updateParameterValue($event)"
+            >
+            </ngm-parameter>
+        
+            <div *ngSwitchDefault class="nx-input-control__select-model w-full flex-1">
+                <div *ngIf="editable" class="select-model-trigger flex flex-col justify-center items-center">
+                    <span>{{ 'Story.Widgets.InputControl.Title' | translate: {Default: 'Input Control'} }}</span>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
+</div>
+
+<div *ngIf="editable && asPlaceholder()" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+    <pac-input-control-placeholder class="w-full h-full cursor-pointer" (click)="openDesigner()"></pac-input-control-placeholder>
+</div>
+
+<mat-menu #widgetInputControl="matMenu" class="nx-density__compact">
+    <button mat-menu-item [matMenuTriggerFor]="entityMenu">
+        {{ 'Story.Widgets.InputControl.ENTITY' | translate: {Default: 'Entity'} }}
+    </button>
+    <mat-divider></mat-divider>
+    <!-- <ng-container *ngIf="entitySet$ | async">
+        <button mat-menu-item [matMenuTriggerFor]="Dimensions">
+            {{ 'Story.Widgets.InputControl.DIMENSIONS' | translate: {Default: 'Dimensions'} }}
+        </button>
+
+    </ng-container> -->
+</mat-menu>
+
+<mat-menu #entityMenu="matMenu" class="nx-density__compact">
+    <!-- <button mat-menu-item *ngFor="let entity of entities$ | async"
+        (click)="setEntitySet(entity.value);$event.stopPropagation()">
+        <ngm-display-behaviour [option]="entity"></ngm-display-behaviour>
+    </button> -->
+</mat-menu>
+
+
+<mat-menu #Dimensions="matMenu" class="nx-density__compact">
+    <button mat-menu-item *ngFor="let dimension of dimensions$ | async"
+        (click)="setProperty(dimension.name)">
+        <ngm-entity-property [property]="dimension"></ngm-entity-property>
+    </button>
+</mat-menu>
+
+<mat-menu #Measures="matMenu" class="nx-density__compact">
+    <button mat-menu-item *ngFor="let measure of measures$ | async">
+        <ngm-entity-property [property]="measure"></ngm-entity-property>
+    </button>
+</mat-menu>

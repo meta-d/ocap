@@ -1,0 +1,7 @@
+{
+  "name": "@metad/copilot",
+  "version": "0.0.1",
+  "dependencies": {
+    "openai": "^3.2.1"
+  }
+}

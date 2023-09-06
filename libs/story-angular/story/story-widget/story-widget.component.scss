@@ -1,0 +1,30 @@
+:host {
+  display: flex;
+  position: relative;
+}
+
+.nx-story-widget__content {
+  flex: 1;
+  display: flex;
+  max-width: 100%;
+  z-index: 1;
+}
+
+.nx-story-widget__fab-menu {
+  position: absolute;
+  top: 0px;
+  right: -40px;
+  z-index: 2;
+}
+
+.nx-story-widget__component-container {
+  flex: 1;
+  display: flex;
+  max-width: 100%;
+}
+
+.nx-story-widget__placeholder {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}

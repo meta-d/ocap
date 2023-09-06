@@ -1,0 +1,51 @@
+<ng-container *ngIf="indicator$ | async as indicator">
+<div class="pac-item-meta flex-1 flex flex-col overflow-hidden "
+  [class.text-gray-500]="loading$ | async"
+>
+  <div class="pac-item-meta-title text-lg flex justify-start items-center overflow-hidden">
+    <span class="font-semibold whitespace-nowrap text-ellipsis overflow-hidden">{{ indicator.code }}</span>
+    <mat-icon *ngIf="indicator.favour" color="accent" displayDensity="compact">star</mat-icon>
+  </div>
+  <div class="pac-item-meta-description text-base">
+    <span>{{ indicator.name }}</span>
+  </div>
+</div>
+
+<div *ngIf="!indicator.error" class="w-28 h-12 px-2"
+  pacSparkLine
+  [indicator]="indicator"
+  [statisticalType]="statisticalType"
+></div>
+
+<div *ngIf="indicator.error" class="text-xs w-28 h-12 px-2 whitespace-normal overflow-hidden" [title]="indicator.error">
+  {{indicator.error}}
+</div>
+
+<div class="w-16 flex flex-col justify-around items-end z-10">
+  <div>
+    <span *ngIf="indicator.unit === '%'">
+      {{ indicator.data?.CURRENT * 100 | number:'0.0-2' | replaceNullWithText:'-' }}
+    </span>
+    <span *ngIf="indicator.unit !== '%'">
+      {{ indicator.data?.CURRENT | number:'0.0-2' | replaceNullWithText:'-' }}
+    </span>
+  </div>
+
+  <div (click)="toggleTag($event)" class="pac-indicator__tag bg-gray-500 bg-opacity-25"
+    [ngClass]="{'Trend-Up': indicator?.trend === TREND.Up, 'Trend-Down': indicator?.trend === TREND.Down}"
+  >
+    <span *ngIf="tag===TagEnum.UNIT">
+      {{ indicator.unit }}
+    </span>
+
+    <span *ngIf="tag===TagEnum.MOM">
+      {{ indicator.data?.MOM | percent:'0.2-2' }}
+    </span>
+
+    <span *ngIf="tag===TagEnum.YOY">
+      {{ indicator.data?.YOY | percent:'0.2-2' }}
+    </span>
+  </div>
+
+</div>
+</ng-container>

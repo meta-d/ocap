@@ -1,0 +1,5 @@
+export * from './model.entity'
+export * from './model.service'
+export * from './model.controller'
+export * from './model.module'
+export * from './commands/index'

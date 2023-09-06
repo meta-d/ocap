@@ -1,0 +1,206 @@
+<label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{'FORMLY.CHART.ChartType' | translate: {Default: 'Chart Type'} }}</label>
+<div class="flex items-center w-full max-w-full py-1 px-2 text-xs rounded-md bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+  <div class="pac-formly-chart-type__prefix">
+    <ng-content class="ngm-prefix"></ng-content>
+  </div>
+
+  <mat-select class="flex-1" [formControl]="chartTypeControl" panelClass="ngm-formly-chart-type__panel ngm-select-panel ngm-density__cosy">
+    <mat-select-trigger *ngIf="type" class="flex items-center">
+      <mat-icon *ngIf="type" class="mr-1" displayDensity="compact" [svgIcon]="getChartType(type)?.icon"></mat-icon>
+      <div class="flex-1">
+        <span>{{ 'FORMLY.CHART.' + typeLabel | translate: {Default: typeLabel} }}</span>
+        <span *ngIf="name.value" class="">:{{name.value}}</span>
+      </div>
+
+      <button matSuffix mat-icon-button displayDensity="compact"
+        [popper]="attrs"
+        [popperTrigger]="NgxPopperjsTriggers.click"
+        [popperHideOnClickOutside]="true"
+        [popperHideOnScroll]="true"
+        [popperHideOnMouseLeave]="false"
+        [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+        (click)="$event.stopPropagation();$event.preventDefault();">
+        <mat-icon fontSet="material-icons-round">more_vert</mat-icon>
+      </button>
+
+      <button *ngIf="HAS_ORIENTS[type]" matSuffix mat-icon-button displayDensity="compact"
+        [matMenuTriggerFor]="orientMenu"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+        (click)="$event.stopPropagation();$event.preventDefault();">
+        <mat-icon fontSet="material-icons-outlined">signpost</mat-icon>
+      </button>
+
+      <button *ngIf="VARIANTS[type]" matSuffix mat-icon-button displayDensity="compact"
+        [matMenuTriggerFor]="variantMenu"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+        (click)="$event.stopPropagation();$event.preventDefault();">
+        <mat-icon fontSet="material-icons-outlined">subscript</mat-icon>
+      </button>
+
+      <button *ngIf="type===NxChartType.GeoMap" matSuffix mat-icon-button displayDensity="compact"
+        (click)="$event.stopPropagation();$event.preventDefault();openMap()">
+        <mat-icon fontSet="material-icons-outlined">map</mat-icon>
+      </button>
+
+      <button *ngIf="type===NxChartType.Custom" matSuffix mat-icon-button displayDensity="compact"
+        (click)="$event.stopPropagation();$event.preventDefault();showCustomCode=!showCustomCode">
+        <mat-icon fontSet="material-icons-outlined"
+          [color]="showCustomCode?'accent':''"
+        >code</mat-icon>
+      </button>
+
+      <button *ngIf="type!==NxChartType.Custom" matSuffix mat-icon-button displayDensity="compact"
+        (click)="$event.stopPropagation();$event.preventDefault();openChartOptions()">
+        <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
+      </button>
+    </mat-select-trigger>
+    
+    <mat-option>-- {{'FORMLY.CHART.None' | translate: {Default: 'None'} }} --</mat-option>
+    <mat-optgroup *ngFor="let group of chartTypeGroups" [label]=" 'FORMLY.CHART.' + group.name | translate: {Default: group.name} "
+                  [disabled]="group.disabled">
+      <mat-option *ngFor="let chart of group.charts" [value]="chart.value" class="text-slate-500">
+        <mat-icon [svgIcon]="chart.icon" ></mat-icon>
+        {{ 'FORMLY.CHART.' + chart.label | translate: {Default: chart.label} }}
+      </mat-option>
+    </mat-optgroup>
+  </mat-select>
+  <button matSuffix *ngIf="removable" class="nx-formly__remove" displayDensity="compact"
+    mat-icon-button color="warn"
+    (click)="$event.stopPropagation();$event.preventDefault();killMyself()">
+    <mat-icon>clear</mat-icon>
+  </button>
+</div>
+
+<mat-radio-group [(ngModel)]="orient">
+  <mat-menu #orientMenu="matMenu" class="nx-formly ngm-density__compact">
+    <button mat-menu-item disableRipple *ngFor="let orient of ORIENTS"
+      (click)="$event.stopPropagation();">
+      <mat-radio-button [value]="orient.value">
+        {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
+      </mat-radio-button>
+    </button>
+  </mat-menu>
+</mat-radio-group>
+
+<mat-radio-group [(ngModel)]="variant">
+  <mat-menu #variantMenu="matMenu" class="nx-formly ngm-density__compact">
+    <button mat-menu-item disableRipple *ngFor="let option of VARIANTS[type]"
+      (click)="$event.stopPropagation();">
+      <mat-radio-button [value]="option.value">
+        {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
+      </mat-radio-button>
+    </button>
+  </mat-menu>
+</mat-radio-group>
+
+
+<ng-template #mapTemp>
+  <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+    <h4 style="pointer-events: none;">
+        {{ 'FORMLY.CHART.Map' | translate: {Default: 'Map'} }}
+    </h4>
+  </header>
+
+  <mat-dialog-content class="pac-formly-chart__map-dialog-content" style="width: 500px;">
+
+    <form [formGroup]="mapFormGroup" class="flex flex-col justify-start items-start">
+      <mat-form-field appearance="fill" class="self-stretch">
+        <mat-label>{{ 'FORMLY.CHART.MapName' | translate: {Default: 'Map Name'} }}</mat-label>
+        <input matInput formControlName="map" >
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="self-stretch">
+        <mat-label>{{ 'FORMLY.CHART.MapUrl' | translate: {Default: 'Map Url'} }}</mat-label>
+        <input matInput formControlName="mapUrl" >
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isTopoJSON">
+        {{ 'FORMLY.CHART.IsTopoJSON' | translate: {Default: 'Is TopoJSON'} }}
+      </mat-checkbox>
+
+      <mat-form-field *ngIf="mapFormGroup.value.isTopoJSON" appearance="fill" class="self-stretch">
+        <mat-label>{{ 'FORMLY.CHART.FeatureObjectNames' | translate: {Default: 'Feature Object Names'} }}</mat-label>
+        <input matInput formControlName="features">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'FORMLY.CHART.MapProjection' | translate: {Default: 'Map Projection'} }}</mat-label>
+        <mat-select formControlName="projection" >
+          <mat-option>{{ 'FORMLY.CHART.None' | translate: {Default: 'None'} }}</mat-option>
+          <mat-option *ngFor="let proj of GeoProjections" [value]="proj">{{ proj }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <div ngmButtonGroup>
+        <button mat-flat-button mat-dialog-close>
+            {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
+        </button>
+        <button mat-raised-button color="accent" cdkFocusInitial [mat-dialog-close]="true">
+            {{ 'COMPONENTS.COMMON.APPLY' | translate: {Default: 'Apply'} }}
+        </button>
+    </div>
+  </mat-dialog-actions>
+
+</ng-template>
+
+<div *ngIf="showCustomCode" class="flex flex-col justify-start items-stretch relative mt-2" ngmResizer [resizerHeight]="500">
+  <header class="flex justify-between items-center">
+    <input matInput [formControl]="name"
+      placeholder="{{ 'FORMLY.CHART.CustomCode' | translate: {Default: 'Custom Code'} }}"  
+    />
+  
+    <div class="flex items-center gap-2">
+      <button mat-icon-button displayDensity="cosy" [disabled]="!scripts || answering"
+        [matTooltip]=" 'FORMLY.CHART.AutomaticallyGenerateCode' | translate: {Default: 'Automatically generate code by comments'} "
+        (click)="askComplete()">
+          <mat-icon fontSet="material-icons-outlined">auto_awesome</mat-icon>
+      </button>
+      <button mat-icon-button displayDensity="cosy" [disabled]="answering"
+          [popper]="copilot"
+          [popperTrigger]="NgxPopperjsTriggers.click"
+          [popperHideOnClickOutside]="true"
+          [popperHideOnScroll]="true"
+          [popperHideOnMouseLeave]="false"
+          [popperPlacement]="NgxPopperjsPlacements.TOPEND">
+          <mat-icon fontSet="material-icons-outlined">try</mat-icon>
+      </button>
+    </div>
+  </header>
+  
+  <ngx-monaco-editor class="flex-1 w-full"
+      [options]="editorOptions"
+      [(ngModel)]="scripts"
+      (onInit)="editor$.next($event)"
+  ></ngx-monaco-editor>
+  <div ngmResizerBar resizerBarPosition="bottom" style="z-index: 1;"
+    cdkDrag
+    cdkDragLockAxis="y"
+  ></div>
+</div>
+
+<popper-content #copilot class="z-[101]">
+  <form (ngSubmit)="copilot.hide();askCopilot()" class="bg-white p-2">
+    <div class="relative w-full flex ">
+      <div class="inset-y-0 left-0 flex items-center pointer-events-none">
+        🤖
+      </div>
+      <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        placeholder="{{ 'FORMLY.CHART.Ask' | translate: {Default: 'Ask'} }}..." required
+        matInput [(ngModel)]="prompt" [ngModelOptions]="{standalone: true}"
+      >
+    </div>
+  </form>
+</popper-content>
+
+<popper-content #attrs class="z-[101]">
+  <div class="flex flex-col bg-white p-2" displayDensity="compact">
+    <ngm-input [label]="'FORMLY.CHART.ChartName' | translate: {Default: 'Chart Name'}"
+    [formControl]="name"
+    ></ngm-input>
+  </div>
+</popper-content>

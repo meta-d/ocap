@@ -1,0 +1,91 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $primary: map.get($config, primary);
+
+  .pac-sketch-card {
+    position: relative;
+
+    .mat-mdc-card-avatar {
+      overflow: hidden;
+      width: 50px;
+      height: 50px;
+      img {
+        width: 100%;
+        height: 100%;
+        margin-right: 5px;
+      }
+    }
+
+    .mat-mdc-card-header {
+      overflow: hidden;
+
+      .mat-mdc-card-header-text {
+        overflow: hidden;
+
+        .mat-mdc-card-title {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .mat-mdc-card-subtitle {
+        margin-bottom: 0;
+      }
+    }
+
+    .pac-sketch-card__menu {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      opacity: 0;
+      transition: all 300ms;
+
+      &.active {
+        opacity: 1;
+      }
+    }
+
+    &:hover {
+      .pac-sketch-card__menu {
+        opacity: 1;
+      }
+    }
+  }
+
+  /**
+   * 纵向 nav bar
+   */
+  .pac-nav__tab-bar {
+    .pac-nav__tab-bar {
+      @apply -ml-2 -mr-2 border-2 border-transparent;
+    }
+    .pac-nav__tab-bar:hover {
+      @apply bg-slate-100 border-slate-200 rounded-lg dark:bg-bluegray-600 dark:border-bluegray-500;
+    }
+    .pac-nav__tab-bar:focus {
+      @apply bg-slate-50 border-slate-200 rounded-lg dark:bg-bluegray-600 dark:border-bluegray-500;
+    }
+    .pac-nav__tab-bar.active {
+      @apply bg-slate-100 border-slate-200 rounded-lg dark:bg-bluegray-700 dark:border-bluegray-500;
+    }
+  }
+
+  /**
+   * 横向 nav bar
+   */
+  .pac-tab-nav-bar {
+    @apply flex flex-wrap -mb-px text-base font-medium text-center justify-center border-b-bluegray-100 border-b-[1px] dark:border-b-bluegray-600;
+    .pac-tab-link {
+      &.active {
+        & > button {
+          @apply border-b-bluegray-500;
+        }
+      }
+    }
+  }
+}

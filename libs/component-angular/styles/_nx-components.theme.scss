@@ -1,0 +1,82 @@
+@use '@angular/material' as mat;
+// @import './global/layout.theme';
+// @import '../src/lib/smart-charts/smart-charts.component.theme';
+// @import '../src/lib/smart-filter/smart-filter.theme';
+// @import '../src/lib/smart-table/smart-table.component.theme';
+// @import '../src/lib/smart-player/smart-player.theme';
+// @import '../src/lib/smart-kpi/kpi.theme';
+// @import '../src/lib/smart-variants/smart-variants.theme';
+// @import '../src/lib/smart-micro/micro-table/micro-table.component.theme';
+
+// @import './components/tab-bar.theme';
+// @import './components/progress-bar.theme';
+// @import './components/button-balance.theme';
+// /*@import './components/dialog.theme';*/
+// @import './components/fullscreen.theme';
+
+// @import '../src/lib/selection/filters.component.theme';
+// @import '../src/lib/chip/chip.component.theme';
+// @import '../src/lib/palette/palette.component.theme';
+// @import '../src/lib/table/table.theme';
+// @import '../src/lib/object-number/object-number.component.theme';
+
+// @import './components/tab-bar.theme';
+// @import './components/progress-bar.theme';
+// @import './components/button-balance.theme';
+// @import './components/fullscreen.theme';
+// @import './components/density.theme';
+// @import './components/select.component.theme';
+// @import './components/mat-option.theme';
+// @import './components/mat-autocomplete.theme';
+// @import './components/mat-slider.theme';
+
+// @mixin nx-components-theme() {
+//   @include nx-smart-charts-theme();
+//   @include nx-smart-filter-module-theme();
+//   @include nx-smart-table-theme();
+//   @include nx-smart-player-theme();
+//   @include nx-kpi-theme();
+//   @include nx-tab-bar-theme();
+//   @include nx-progress-bar-theme();
+//   @include nx-buttons-balance-theme();
+//   // @include nx-dialog-theme();
+//   @include nx-micro-table-theme();
+//   // @include nx-fullscreen-theme();
+
+//   @include nx-selections-theme();
+//   @include nx-chip-theme();
+//   @include nx-palette-theme();
+//   @include nx-table-theme();
+//   @include nx-object-number-theme();
+
+//   @include nx-smart-variants-theme();
+
+//   // external components enhancement
+//   @include nx-tab-bar-theme();
+//   @include nx-progress-bar-theme();
+//   @include nx-buttons-balance-theme();
+//   @include nx-fullscreen-theme();
+//   @include nx-mat-slider-theme();
+//   @include nx-mat-option-theme();
+//   @include nx-mat-autocomplete-theme();
+//   @include nx-density-theme();
+//   @include nx-select-theme();
+
+//   nb-layout-header nav {
+//     transition: all;
+//     transition-duration: nb-theme(density-transition-duration);
+//   }
+
+//   // nb-layout .layout {
+//   //   background: nb-theme(layout-background);
+//   // }
+
+//   nb-card.nx-dialog {
+//     background: nb-theme(dialog-background);
+//   }
+// }
+
+// // 忘记是什么作用了? 现在默认使用 mat 全局样式 angular-material-color
+// // @include mat.form-field-theme($starter-theme);
+// // @include mat.divider-theme($starter-theme);
+// // @include mat.table-theme($starter-theme);

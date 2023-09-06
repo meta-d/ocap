@@ -1,0 +1,9 @@
+<nx-story-widget *ngIf="_widget$ | async as widget" class="pac-story-widget-viewer w-full h-full"
+    [key]="widget.key"
+    [editable]="false"
+    [standalone]="true"
+></nx-story-widget>
+
+<div *ngIf="error$ | async as error">
+    {{error | json}}
+</div>

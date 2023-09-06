@@ -1,0 +1,226 @@
+<div class="pac-home__content" waIntersectionObserver waIntersectionThreshold="0.5">
+    <div class="pac-home__body flex flex-col px-2 md:px-8 mt-4 mx-auto max-w-5xl lg:max-w-6xl">
+
+        <h2 class="text-lg">{{ 'PAC.MENU.HOME.HELLO' | translate: {Default: "Hello"} }} 
+            <span class="font-semibold">
+                {{user$ | async | createdBy}}
+            </span>
+            !
+        </h2>
+
+        <div *ngIf="searchAssets$ | async as searchAssets" class="pac-home__assets">
+
+            <div *ngIf="searchAssets.empty" class="pac-home__assets-empty">
+                <span class="shopping-cart font-notoColorEmoji">🛒</span>
+                <span>
+                    {{ 'PAC.MENU.HOME.NoRelevantDigitalAssets' | translate: {Default: 'No relevant digital assets were found'} }}!
+                </span>
+            </div>
+
+            <ng-container *ngIf="!searchAssets.empty">
+                <mat-button-toggle-group [(value)]="searchAssetsType" color="accent" displayDensity="compact" ngmAppearance="outline" class="pac-home__assets-types">
+                    <mat-button-toggle [disabled]="!searchAssets.story.total" value="story">
+                        <span [matBadge]="searchAssets.story.total" [matBadgeHidden]="!searchAssets.story.total"
+                            matBadgeOverlap="false" matBadgeSize="small">
+                            {{ 'PAC.KEY_WORDS.STORY' | translate: {Default: 'Story'} }}
+                        </span>
+                    </mat-button-toggle>
+                    <mat-button-toggle [disabled]="!searchAssets.indicator.total" value="indicator">
+                        <span [matBadge]="searchAssets.indicator.total" [matBadgeHidden]="!searchAssets.indicator.total"
+                            matBadgeOverlap="false" matBadgeSize="small">
+                            {{ 'PAC.KEY_WORDS.INDICATOR' | translate: {Default: 'Indicator'} }}
+                        </span>
+                    </mat-button-toggle>
+                    <mat-button-toggle [disabled]="!searchAssets.semanticModel.total" value="semanticModel">
+                        <span [matBadge]="searchAssets.semanticModel.total" [matBadgeHidden]="!searchAssets.semanticModel.total"
+                            matBadgeOverlap="false" matBadgeSize="small">
+                            {{ 'PAC.KEY_WORDS.SEMANTIC_MODEL' | translate: {Default: 'Semantic Model'} }}
+                        </span>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
+    
+                <mat-list class="assets-list" *ngIf="searchAssetsType==='story'">
+                    <mat-list-item *ngFor="let story of searchAssets.story.items">
+                        <span mat-list-icon class="font-notoColorEmoji">📖</span>
+                        <div mat-line>
+                            <a [routerLink]="['/story', story.id]">{{story.name}}</a>
+                        </div>
+                        <div mat-line>
+                            <div class="flex-1 flex justify-between items-baseline">
+                                <span class="flex-1 basis-1/2"></span>
+                                <div class="flex-1 basis-0">{{story.updatedAt | date}}</div>
+                            </div>
+                        </div>
+                    </mat-list-item>
+                </mat-list>
+
+                <mat-list class="assets-list" *ngIf="searchAssetsType==='indicator'">
+                    <mat-list-item *ngFor="let indicator of searchAssets.indicator.items">
+                        <span mat-list-icon>💹</span>
+                        <div mat-line>
+                            <a [routerLink]="['/indicator/viewer', indicator.id]">{{indicator.name}}</a>
+                        </div>
+                        <div mat-line>
+                            <div class="flex-1 flex justify-between items-baseline">
+                                <div class="flex-1 basis-1/2">{{indicator.code}}</div>
+                                <div class="flex-1 basis-0">{{indicator.updatedAt | date}}</div>
+                            </div>
+                        </div>
+                    </mat-list-item>
+                </mat-list>
+
+                <mat-list class="assets-list" *ngIf="searchAssetsType==='semanticModel'">
+                    <mat-list-item *ngFor="let semanticModel of searchAssets.semanticModel.items">
+                        <span mat-list-icon class="font-notoColorEmoji">🧊</span>
+                        <div mat-line>
+                            <a [routerLink]="['/models', semanticModel.id]">{{semanticModel.name}}</a>
+                        </div>
+                        <div mat-line>
+                            <div class="flex-1 flex justify-between items-baseline">
+                                <span class="flex-1 basis-1/2"></span>
+                                <div class="flex-1 basis-0">{{semanticModel.updatedAt | date}}</div>
+                            </div>
+                        </div>
+                    </mat-list-item>
+                </mat-list>
+            </ng-container>
+
+        </div>
+
+        <!-- *ngIf="AbilityActions.Manage | able:'Story'"  -->
+        <div class="pac-home__quick-guide flex flex-wrap justify-start items-center"
+            [class.pac-dashboard__created-demo]="createdDemo$ | async"
+        >
+            <div class="step" *ngIf="demoPermission$ | async">
+                <div *ngIf="!creatingDemo" class="complete mr-4">
+                    <span *ngIf="!quickGuides.sample.complete">🔘</span>
+                    <span *ngIf="quickGuides.sample.complete">🟢</span>
+                </div>
+                <div *ngIf="creatingDemo" class="complete mr-4 emoji-loader w-8" style="position: relative;"></div>
+                <span class="guide" >
+                    <a *ngIf="!creatingDemo" class="cursor-pointer" (click)="createOrgDemo()">
+                        <span *ngIf="!quickGuides.sample.complete">{{ 'PAC.MENU.HOME.GenerateSamples' | translate: {Default: 'Generate Samples'} }}</span>
+                        <span *ngIf="quickGuides.sample.complete">{{ 'PAC.MENU.HOME.RegenerateSamples' | translate: {Default: 'Regenerate Samples'} }}</span>
+                    </a>
+                    <span *ngIf="creatingDemo" class="ml-4">
+                        {{ 'PAC.MENU.HOME.GeneratingSamples' | translate: {Default: 'Generating Samples'} }}...
+                    </span>
+                </span>
+            </div>
+
+            <div class="step" *ngIf="!quickGuides.model.complete">
+                <span class="complete mr-4">🔘</span>
+                <span class="guide">
+                    <a routerLink="/models">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstSemanticModel' | translate: {Default: 'Create your first semantic model'} }}
+                    </a>
+                </span>
+            </div>
+            <div class="step" *ngIf="quickGuides.model.complete">
+                <span class="complete mr-4">🟢</span>
+                <span class="guide">
+                    <a routerLink="/models">
+                        {{ 'PAC.MENU.HOME.HaveSemanticModels' | translate: {
+                            Default: 'Have ' + quickGuides.model.quantity + ' semantic models',
+                            quantity: quickGuides.model.quantity
+                        } }}
+                    </a>
+                </span>
+            </div>
+
+            <div class="step" *ngIf="!quickGuides.story.complete">
+                <span class="complete mr-4">🔘</span>
+                <span class="guide">
+                    <a routerLink="/project">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstStory' | translate: {Default: 'Create your first story'} }}
+                    </a>
+                </span>
+            </div>
+            <div class="step" *ngIf="quickGuides.story.complete">
+                <span class="complete mr-4">🟢</span>
+                <span class="guide">
+                    <a routerLink="/project">
+                        {{ 'PAC.MENU.HOME.HaveStories' | translate: {
+                            Default: 'Have ' + quickGuides.story.quantity + ' stories',
+                            quantity: quickGuides.story.quantity
+                        } }}
+                    </a>
+                </span>
+            </div>
+
+            <div class="step" *ngIf="!quickGuides.indicator.complete">
+                <span class="complete mr-4">🔘</span>
+                <span class="guide">
+                    <a routerLink="/project/indicator">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstIndicator' | translate: {Default: 'Create your first indicator'} }}
+                    </a>
+                </span>
+            </div>
+            <div class="step" *ngIf="quickGuides.indicator.complete">
+                <span class="complete mr-4">🟢</span>
+                <span class="guide">
+                    <a routerLink="/project/indicators">
+                        {{ 'PAC.MENU.HOME.HaveIndicators' | translate: {
+                            Default: 'Have ' + quickGuides.indicator.quantity + ' indicators',
+                            quantity: quickGuides.indicator.quantity
+                        } }}
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center self-stretch">
+            <div>
+                <input matInput class="pac-home__date-picker"
+                    [matDatepicker]="picker" [formControl]="dateControl"
+                    (click)="picker.open()">
+                <mat-datepicker #picker></mat-datepicker>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button *ngIf="!editable" mat-icon-button displayDensity="cosy" (click)="toggleEdit()">
+                    <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+                </button>
+                
+                <button *ngIf="editable" mat-icon-button displayDensity="cosy" (click)="restore()">
+                    <mat-icon fontSet="material-icons-outlined">restart_alt</mat-icon>
+                </button>
+                <button *ngIf="editable && dirty$ | async" mat-icon-button displayDensity="cosy" (click)="undoEdit()">
+                    <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
+                </button>
+                <button *ngIf="editable" mat-icon-button displayDensity="cosy" (click)="commitEdit()">
+                    <mat-icon fontSet="material-icons-outlined">done</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <gridster class="" [options]="options" [ngClass]="{editable: editable}">
+            <gridster-item [item]="feed.options.position" *ngFor="let feed of feeds$ | async; index as i; trackBy: trackById" class="pac-home__gridster-item"
+                (itemChange)="onGridsterItemChange($event, feed)">
+                <pac-story-widget-feed fxFlex="100" *ngIf="feed.type ==='StoryWidget'" [id]="feed.entityId">
+                </pac-story-widget-feed>
+
+                <pac-feed-recents fxFlex="100" *ngIf="feed.type ==='Recents'" class="pac-home__my-recent pac-home__widget"></pac-feed-recents>
+                <pac-feed-user-visit fxFlex="100" *ngIf="feed.type ==='UserVisits'" class="pac-home__widget"></pac-feed-user-visit>
+
+                <div class="pac-home__widget-actions">
+                    <button *ngIf="editable" mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
+                        (click)="$event.preventDefault();$event.stopPropagation();removeWidget(feed)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                    <button *ngIf="feed.type ==='StoryWidget'" mat-icon-button displayDensity="cosy"
+                        [routerLink]="['/story', feed.options.storyId]" [queryParams]="{pageKey: feed.options.pageKey, widgetKey: feed.options.widgetKey}">
+                        <mat-icon fontSet="material-icons-round">launch</mat-icon>
+                    </button>
+                </div>
+            </gridster-item>
+        </gridster>
+        
+    </div>
+
+    <!-- <div (waIntersectionObservee)="onIntersection($event)">
+        <div *ngIf="showTrending">
+            <h2>Trending Datasets</h2>
+        </div>
+    </div> -->
+</div>

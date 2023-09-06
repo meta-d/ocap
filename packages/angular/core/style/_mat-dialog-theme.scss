@@ -1,0 +1,148 @@
+@use '@angular/material' as mat;
+
+@mixin nx-dialog-size($config-or-theme) {
+  .nx-dialog-container {
+    &.small {
+      min-height: 50vh;
+      min-width: 40vw;
+    }
+    &.medium {
+      min-width: 60vw;
+      min-height: 60vh;
+    }
+    &.large {
+      min-width: 80vw;
+      min-height: 80vh;
+    }
+  }
+}
+
+$dialog-container-padding: 0;
+
+@mixin dialog-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 100%;
+
+  .mat-mdc-dialog-title {
+    padding: .25rem 1rem;
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+
+    h4 {
+      margin: 0;
+      text-align: left;
+      font-weight: 500;
+      font-size: 1.25rem;
+    }
+  }
+
+  .cdk-drag-handle {
+    cursor: grab;
+  }
+
+  .mdc-dialog__content {
+    flex: 1;
+    max-height: unset;
+    padding: 1rem;
+    margin: 0;
+  }
+  
+  .mat-mdc-dialog-actions {
+    min-height: unset;
+    margin-bottom: -$dialog-container-padding;
+    border-top: 1px dashed rgba(0, 0, 0, 0.08);
+    padding: 8px;
+    &:not([align='end']) {
+      justify-content: space-between;
+    }
+  }
+}
+
+@mixin color($config-or-theme) {
+  
+  .cdk-overlay-container {
+    .mat-mdc-dialog-container {
+      --mdc-dialog-subhead-font: inherit;
+      display: flex;
+      padding: $dialog-container-padding;
+      max-height: 90vh;
+
+      .mat-mdc-dialog-title {
+        padding: .5rem 1rem;
+        margin: 0;
+        background-color: rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+    
+        h4 {
+          margin: 0;
+          text-align: left;
+          // font-weight: 500;
+          font-size: 1.25rem;
+        }
+      }
+
+      .cdk-drag-handle {
+        cursor: grab;
+      }
+    
+      .mdc-dialog__content {
+        flex: 1;
+        max-height: unset;
+        padding: 1rem;
+        margin: 0;
+      }
+      
+      .mat-mdc-dialog-actions {
+        min-height: unset;
+        margin-bottom: -$dialog-container-padding;
+        border-top: 1px dashed rgba(0, 0, 0, 0.08);
+        padding: 8px;
+        &:not([align='end']) {
+          justify-content: space-between;
+        }
+      }
+
+      .mat-tree {
+        background: unset;
+      }
+    }
+
+    .nx-dialog-container {
+      .mat-mdc-dialog-container {
+        
+        @include dialog-container;
+
+        .mat-mdc-dialog-actions {
+          display: flex;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+  @include nx-dialog-size($config-or-theme);
+}
+
+@mixin theme($theme) {
+  $color: mat.get-color-config($theme);
+  $density: mat.get-density-config($theme);
+  $typography: mat.get-typography-config($theme);
+
+  @if $color != null {
+    @include color($color);
+  }
+  @if $density != null {
+    @include density($density);
+  }
+  @if $typography != null {
+    @include typography($typography);
+  }
+}

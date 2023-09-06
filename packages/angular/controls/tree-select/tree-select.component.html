@@ -1,0 +1,52 @@
+<label *ngIf="appearance?.displayDensity === 'cosy' || appearance?.displayDensity === 'compact'">{{label()}}</label>
+<ngm-tree-select class="flex-1 max-w-full"
+  [appearance]="appearance?.appearance"
+  [floatLabel]="appearance?.floatLabel"
+  [color]="appearance?.color"
+  [displayBehaviour]="displayBehaviour"
+  [displayDensity]="appearance?.displayDensity"
+  [label]="label()"
+  [placeholder]="options?.placeholder"
+  [treeNodes]="data || (treeData$ | async)"
+  [initialLevel]="options?.initialLevel"
+  [multiple]="options?.multiple"
+  [maxTagCount]="options?.maxTagCount"
+  [virtualScroll]="options?.virtualScroll"
+  [autocomplete]="options?.autocomplete"
+  [searchable]="options?.searchable"
+  [panelWidth]="options?.panelWidth"
+  [autoActiveFirstOption]="options?.autoActiveFirst"
+  [autoSelectActiveOption]="options?.autoSelectActive"
+  [disabled]="disabled"
+  [ngModel]="memberKeys()"
+  (ngModelChange)="onModelChange($event)"
+>
+  <div matSuffix style="display: flex; align-items: center;">
+    <mat-spinner *ngIf="loading$ | async" [color]="appearance?.color" strokeWidth="1" diameter="20"></mat-spinner>
+
+    <button mat-icon-button *ngIf="hierarchies()?.length > 1"
+      [matMenuTriggerFor]="hierarchiesMenu"
+      #mt="matMenuTrigger"
+      [class.active]="mt.menuOpen"
+      (click)="$event.stopPropagation();$event.preventDefault();">
+      <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
+    </button>
+
+    <button mat-icon-button type="button" [disabled]="disabled" class="ngm-smart-filter__help"
+      (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
+    >
+      <mat-icon>help_outline</mat-icon>
+    </button>
+  </div>
+</ngm-tree-select>
+
+<mat-radio-group [(ngModel)]="hierarchy">
+  <mat-menu #hierarchiesMenu="matMenu" class="ngm-density__compact">
+    <button mat-menu-item disableRipple *ngFor="let property of hierarchies(); trackBy: trackByName"
+      (click)="$event.stopPropagation();">
+      <mat-radio-button class="flex-1" [value]="property.name">
+        <ngm-entity-property class="flex-1" hiddenIcon [property]="property" [displayBehaviour]="DisplayBehaviour.auto"></ngm-entity-property>
+      </mat-radio-button>
+    </button>
+  </mat-menu>
+</mat-radio-group>

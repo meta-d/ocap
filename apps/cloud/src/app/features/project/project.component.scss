@@ -1,0 +1,21 @@
+:host {
+  flex: 1;
+  max-width: 100%;
+}
+
+.mat-drawer-content {
+  @apply flex overflow-visible;
+}
+
+.pac-project__router-link.active {
+  @apply bg-slate-100 hover:bg-slate-200;
+}
+
+.pac-project__anchor {
+  @apply absolute z-10 border border-solid border-bluegray-100 text-bluegray-100 hover:border-bluegray-200 hover:text-bluegray-200;
+}
+
+.mdc-list-item.pac-project__router-link {
+  --mdc-list-list-item-one-line-container-height: 30px;
+  @apply rounded-md p-0;
+}

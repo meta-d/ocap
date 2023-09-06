@@ -1,0 +1,12 @@
+:host {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ngm-button-group {
+  .mat-form-field,
+  pac-language-selector {
+    margin-top: -0.5rem;
+  }
+}

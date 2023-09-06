@@ -1,0 +1,11 @@
+@import '../all';
+@import '../material/theming';
+@import 'projects/components/styles/material/all-components';
+@import 'projects/components/styles/material/corporate.theme';
+
+// $nb-enabled-themes: (corporate);
+
+// @include nb-install() {
+//   @include nb-theme-global();
+//   @include nx-components-theme();
+// };

@@ -1,0 +1,68 @@
+<div class="text-base mb-4">
+  {{ 'COMPONENTS.CALCULATION.PROPERTIES' | translate: {Default: "Properties"} }}
+</div>
+
+<form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch" displayDensity="cosy">
+  <div class="flex items-start gap-4">
+    <ngm-select class="nx-calculation__form-field flex-1" [label]="'COMPONENTS.CALCULATION.OPERATION' | translate: {Default: 'Operation'}"
+      formControlName="operation"
+      [selectOptions]="OPERATIONS"
+    ></ngm-select>
+
+    <ngm-parameter-select *ngIf="formGroup.value.operation === AggregationOperation.TOP_PERCENT || formGroup.value.operation === AggregationOperation.TOP_COUNT"
+      class="flex-1"
+      [label]=" 'COMPONENTS.CALCULATION.VALUE' | translate: {Default: 'Value'} "
+      [dataSettings]="dataSettings"
+      [entityType]="entityType"
+      [coreService]="coreService"
+      formControlName="value"
+    >
+    </ngm-parameter-select>
+
+  </div>
+
+  <!-- <ngm-select class="pt-4" formControlName="measure" label="{{ 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} }}"
+    formControlName="measure"
+    [selectOptions]="measures$()"
+  ></ngm-select> -->
+
+  <ngm-measure-select class="pt-4" formControlName="measure" label="{{ 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} }}"
+    [measures]="measures$()"
+  >
+
+  </ngm-measure-select>
+
+  <div class="text-base my-4">{{ 'COMPONENTS.CALCULATION.AGGREGATION_DIMENSIONS' | translate: {Default: "Aggregation Dimensions"} }}</div>
+  <nx-property-array class="nx-conditional-aggregation__dimensions"
+    formControlName="aggregationDimensions"
+    [dataSettings]="dataSettings"
+    [entityType]="entityType"
+    [capacities]="[PropertyCapacity.Dimension]"
+  ></nx-property-array>
+
+  <mat-checkbox formControlName="useConditionalAggregation" class="my-2">
+    {{ 'COMPONENTS.CALCULATION.UseConditionalAggregation' | translate: {Default: "Use Conditional Aggregation"} }}
+  </mat-checkbox>
+
+  <div *ngIf="formGroup.value.useConditionalAggregation" class="nx-conditional-aggregation__conditions flex flex-col justify-start items-stretch">
+    <div class="nx-calculation__form-row">
+        <mat-checkbox formControlName="excludeConditions">
+          {{ 'COMPONENTS.CALCULATION.ExcludeConditions' | translate: {Default: "Exclude Conditions"} }}
+        </mat-checkbox>
+    </div>
+
+    <div class="text-base my-4">
+      {{ 'COMPONENTS.CALCULATION.ConditionalDimensions' | translate: {Default: "Conditional Dimensions"} }}
+    </div>
+    <nx-property-array class="w-full"
+      formControlName="conditionalDimensions"
+      [dataSettings]="dataSettings"
+      [entityType]="entityType"
+      [coreService]="coreService"
+      [dsCoreService]="dsCoreService"
+      [capacities]="[PropertyCapacity.Dimension]"
+    ></nx-property-array>
+
+  </div>
+    
+</form>

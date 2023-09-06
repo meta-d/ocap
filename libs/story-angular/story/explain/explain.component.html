@@ -1,0 +1,68 @@
+<div class="nx-theme-dark dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+  <div class="w-full flex justify-start items-center mb-4" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+    <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
+    <span class="text-lg pointer-events-none">
+      {{ 'Story.Explain.Title' | translate: {Default: "Execute Explain"} }}
+    </span>
+  </div>
+
+  <mat-nav-list class="ngm-nav-list my-2 flex-1 overflow-auto">
+    <mat-list-item *ngFor="let item of explains" class="flex group/item mb-2" [class.active]="explain?.key === item.key"
+      (click)="activeLink(item)">
+     <span *ngIf="item.type === 'statements'" class="flex-1">{{ 'Story.Explain.ExecuteStatements' | translate: {Default: 'Execute Statements'} }}</span>
+     <span *ngIf="item.type === 'data'" class="flex-1">{{ 'Story.Explain.Data' | translate: {Default: 'Data'} }}</span>
+     <span *ngIf="item.type === 'error'" class="flex-1">{{ 'Story.Explain.Error' | translate: {Default: 'Error'} }}</span>
+     <span *ngIf="item.type === 'chart'" class="flex-1">{{ 'Story.Explain.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
+     <span *ngIf="item.type === 'slicers'" class="flex-1">{{ 'Story.Explain.Slicers' | translate: {Default: 'Slicers'} }}</span>
+    </mat-list-item>
+  </mat-nav-list>
+
+  <div class="flex justify-start items-center">
+    <div ngmButtonGroup>
+      <button mat-flat-button mat-dialog-close>
+        {{ 'Story.Common.Close' | translate: {Default: 'Close'} }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="flex flex-col overflow-auto">
+  <div *ngIf="explain?.type === 'statements'">
+    <div *ngFor="let statement of explain.statements">
+      <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Statement' | translate: {Default: 'Statement'} }}:</h5>
+      <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 overflow-auto"
+        [code]="statement"
+        language="sql">
+      </ngm-prism-highlight>
+    </div>
+  </div>
+
+  <nx-table *ngIf="explain?.type === 'data'" class="overflow-auto"
+    [data]="explain.data"
+    [columns]="explain.columns"
+  >
+  </nx-table>
+
+  <div *ngIf="explain?.type === 'error'">
+    <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.ErrorInfo' | translate: {Default: 'Error Info'} }}:</h5>
+    <div class="text-sm select-all rounded border-dotted border-2 p-2 m-4 overflow-auto">
+      <code>{{ explain.error }}</code>
+    </div>
+  </div>
+
+  <div *ngIf="explain?.type === 'chart'">
+    <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Options' | translate: {Default: 'Options'} }}:</h5>
+    <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
+      [code]="explain.options | json"
+      language="json">
+    </ngm-prism-highlight>
+  </div>
+
+  <div *ngIf="explain?.type === 'slicers'">
+    <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Slicers' | translate: {Default: 'Slicers'} }}:</h5>
+    <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
+      [code]="explain.options | json"
+      language="json">
+    </ngm-prism-highlight>
+  </div>
+</div>

@@ -1,0 +1,99 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use 'libs/component-angular/styles/material/all-components' as components;
+@use 'libs/formly/formly-theme' as formly;
+@use 'libs/story-angular/responsive/responsive-theme' as responsive;
+@use 'libs/story-angular/story/story-theme' as story;
+@use 'libs/story-angular/src/lib/story-theme' as story-designer;
+@use 'libs/story-angular/widgets/widgets-theme' as widgets;
+// @use '@metad/ocap-angular/theming' as ocap;
+@use 'packages/angular/theming' as ocap;
+
+
+$material-typeface: Lato, 'Noto Serif SC', monospace;
+
+// Define a theme.
+// $dark-primary: mat.define-palette(mat.$deep-purple-palette);
+// $dark-accent: mat.define-palette(mat.$teal-palette);
+// $dark-primary: mat.define-palette(mat.$indigo-palette);
+$dark-primary: mat.define-palette(mat.$blue-grey-palette, 600);
+$dark-accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
+
+$light-secondary-text: rgba(white, 0.7);
+$light-disabled-text: rgba(white, 0.5);
+$light-dividers: rgba(white, 0.12);
+$grey-palette: mat.$blue-grey-palette;
+$dark-theme: map.deep-merge(mat.define-dark-theme((
+  color: (
+    primary: $dark-primary,
+    accent: $dark-accent,
+  )
+ )),
+  (
+    color: (
+      background: (
+        status-bar: #151a30,
+        app-bar:    #263238,
+        // background: black,
+        background: #0e1315, // darker than $dark-primary 900
+        hover:      rgba(white, 0.1), // TODO(kara): check style with Material Design UX
+        card:       mat.get-color-from-palette($dark-primary, 900), //#192038, //#222b45,
+        dialog:     mat.get-color-from-palette($dark-primary, 800),
+        disabled-button: rgba(white, 0.12),
+        raised-button: map.get($grey-palette, 800),
+        // focused-button: $light-focused,
+        selected-button: map.get($grey-palette, 900),
+        selected-disabled-button: map.get($grey-palette, 800),
+        disabled-button-toggle: black,
+        unselected-chip: map.get($grey-palette, 700),
+        disabled-list-option: black,
+        tooltip: map.get($grey-palette, 700),
+      ),
+      // TODO 没起作用
+      foreground: (
+        base:              white,
+        divider:           $light-dividers,
+        dividers:          $light-dividers,
+        disabled:          $light-disabled-text,
+        disabled-button:   rgba(white, 0.3),
+        disabled-text:     $light-disabled-text,
+        elevation:         black,
+        hint-text:         $light-disabled-text,
+        secondary-text:    $light-secondary-text,
+        icon:              white,
+        icons:             white,
+        text:              white,
+        slider-min:        white,
+        slider-off:        rgba(white, 0.3),
+        slider-off-active: rgba(white, 0.3),
+      )
+    )
+  )
+);
+
+$custom-typography: mat.define-typography-config(
+  $font-family: $material-typeface
+);
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+// @include mat.core($custom-typography);
+
+.nx-theme-dark {
+  // Include all theme styles for the mat components.
+  @include mat.all-component-colors($dark-theme);
+  @include components.all-component-colors($dark-theme);
+  @include formly.color($dark-theme);
+  @include responsive.color($dark-theme);
+  @include story.color($dark-theme);
+  @include story-designer.color($dark-theme);
+  @include widgets.color($dark-theme);
+
+  @include ocap.core-color($dark-theme);
+  @include ocap.analytical-grid-color($dark-theme);
+  @include ocap.breadcrumb-color($dark-theme);
+  @include ocap.controls-color($dark-theme);
+  @include ocap.entity-color($dark-theme);
+  @include ocap.common-color($dark-theme);
+}

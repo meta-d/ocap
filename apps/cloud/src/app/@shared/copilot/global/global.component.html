@@ -1,0 +1,16 @@
+<button mat-icon-button class="text-xl font-notoColorEmoji" [displayDensity]="displayDensity"
+    matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
+    [popper]="copilotPopper"
+    [popperTrigger]="NgxPopperjsTriggers.click"
+    [popperHideOnClickOutside]="true"
+    [popperHideOnScroll]="true"
+    [popperPlacement]="NgxPopperjsPlacements.BOTTOMEND"
+    >
+    <div class="flex justify-center items-center text-xl">🤖</div>
+</button>
+
+<popper-content #copilotPopper>
+    <pac-copilot-chat class="w-[100vw] sm:w-[400px] h-[600px]"
+        [copilotEngine]="copilotGlobalService.copilotEngine"
+    ></pac-copilot-chat>
+</popper-content>

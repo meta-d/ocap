@@ -1,0 +1,28 @@
+<div class="flex flex-col justify-start items-stretch">
+  <h2 class="text-lg">
+    {{ 'PAC.MENU.MANAGE_FEATURES' | translate: {Default: "Manage Features"} }}
+  </h2>
+
+  <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple>
+    <span mat-tab-link [routerLink]="['./tenant']"
+      routerLinkActive #rla="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">storage</mat-icon>
+      {{ 'PAC.KEY_WORDS.TENANT' | translate: {Default: "Tenant"} }}
+    </span>
+    <span mat-tab-link [routerLink]="['./organization']"
+      routerLinkActive #rla2="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla2.isActive"
+    >
+      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">corporate_fare</mat-icon>
+      {{ 'PAC.KEY_WORDS.ORGANIZATION' | translate: {Default: "Organization"} }}
+    </span>
+  </nav>
+</div>
+
+<div class="pac-page__body pac-settings-features">
+  <router-outlet></router-outlet>
+</div>

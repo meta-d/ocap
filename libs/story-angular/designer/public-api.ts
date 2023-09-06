@@ -1,0 +1,7 @@
+export * from './component-form/formly-form.component'
+export * from './designer.module'
+export * from './settings-panel/settings-panel.component'
+export * from './settings-panel/settings-panel.service'
+export * from './types'
+export * from './schemas'
+export * from './panel/panel.component'

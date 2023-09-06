@@ -1,0 +1,9 @@
+<form (ngSubmit)="onSubmit()" class="flex flex-col justify-around items-stretch">
+  <formly-form *ngFor="let item of fields$ | async"
+    [form]="item.formGroup"
+    [fields]="item.fields"
+    [model]="model"
+    (modelChange)="onModelChange($event)"
+    [options]="options"
+  ></formly-form>
+</form>

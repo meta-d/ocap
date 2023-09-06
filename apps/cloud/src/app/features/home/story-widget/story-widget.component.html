@@ -1,0 +1,9 @@
+<pac-embed-widget class="w-full h-full" *ngIf="_widget$ | async as widget"
+    [story]="story$ | async"
+    [widget]="widget"
+>
+</pac-embed-widget>
+
+<div *ngIf="error$ | async as error">
+    {{error | json}}
+</div>

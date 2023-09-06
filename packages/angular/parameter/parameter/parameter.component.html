@@ -1,0 +1,62 @@
+<ng-container *ngIf="paramType === ParameterControlEnum.Input">
+    <mat-slider *ngIf="options?.slider; else input" class="w-full"
+        [step]="options?.sliderStep || 1"
+        [min]="options?.sliderMin || 0"
+        [max]="options?.sliderMax || 100"
+        [discrete]="options?.showThumbLabel"
+        [showTickMarks]="options?.showTickMarks"
+        [color]="options?.sliderColor"
+        >
+        <input matSliderThumb [(ngModel)]="parameterValue" (dragEnd)="onSlicerEnd($event)">
+    </mat-slider>
+
+    <ng-template #input>
+        <ngm-input class="block w-full px-2" [(ngModel)]="parameterValue" [type]="parameter.dataType ?? 'string'"
+            (blur)="onBlur($event)"
+        >
+        </ngm-input>
+    </ng-template>
+</ng-container>
+
+
+<mat-radio-group *ngIf="paramType === ParameterControlEnum.Select" class="flex-1 flex flex-col justify-start items-start"
+    [displayDensity]="appearance?.displayDensity"
+    [ngModel]="$any(parameter.members?.[0])?.value"
+    (ngModelChange)="updateParameterValue($event)"
+>
+    <mat-radio-button *ngFor="let option of parameter.availableMembers"
+        [value]="option.value">{{ option.label }}</mat-radio-button>
+</mat-radio-group>
+
+<!-- 暂时先用简易版:平铺展示维度成员 -->
+<ng-container *ngIf="paramType === ParameterControlEnum.Dimensions">
+    <mat-selection-list *ngIf="multiple" class="flex-1"
+        [multiple]="true"
+        [displayDensity]="appearance?.displayDensity"
+        [compareWith]="compareWith"
+        [(ngModel)]="members"
+    >
+        <mat-list-option *ngFor="let availableMember of availableMembers$ | async" [value]="availableMember">
+            <ngm-display-behaviour [option]="availableMember" [displayBehaviour]="displayBehaviour"></ngm-display-behaviour>
+        </mat-list-option>
+    </mat-selection-list>
+
+    <mat-selection-list *ngIf="!multiple" class="flex-1"
+        [multiple]="false"
+        [displayDensity]="appearance?.displayDensity"
+        [compareWith]="compareWith"
+        [(ngModel)]="members"
+    >
+        <mat-list-option *ngFor="let availableMember of availableMembers$ | async" [value]="availableMember">
+            <ngm-display-behaviour [option]="availableMember" [displayBehaviour]="displayBehaviour"></ngm-display-behaviour>
+        </mat-list-option>
+    </mat-selection-list>
+</ng-container>
+
+<ngm-member-tree class="flex-1" *ngIf="parameter?.referenceDimension"
+    [dataSettings]="dataSettings"
+    [dimension]="dimension$ | async"
+    [options]="options"
+    [ngModel]="slicer"
+    (ngModelChange)="onSlicerChange($event)"
+></ngm-member-tree>

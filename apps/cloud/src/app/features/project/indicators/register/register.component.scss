@@ -1,0 +1,7 @@
+:host {
+  @apply overflow-auto flex-1 max-w-full flex flex-col;
+}
+
+.pac-indicator-register__form.pac-page__body {
+  @apply overflow-hidden;
+}

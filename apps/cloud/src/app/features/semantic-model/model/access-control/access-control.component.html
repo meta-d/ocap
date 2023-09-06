@@ -1,0 +1,84 @@
+<mat-toolbar class="pac-nav-toolbar flex" displayDensity="compact">
+    <nav *ngIf="roles?.length" mat-tab-nav-bar color="accent" disableRipple mat-stretch-tabs="false" mat-align-tabs="start"
+        class="pac-model-access__nav flex-1"
+        [tabPanel]="tabPanel"
+        cdkDropList cdkDropListOrientation="horizontal"
+        [cdkDropListData]="roles"
+        (cdkDropListDropped)="drop($event)">
+        <span mat-tab-link *ngFor="let role of roles; trackBy: trackByKey"
+            [routerLink]="[role.key]"
+            routerLinkActive #rla="routerLinkActive"
+            [active]="rla.isActive"
+            cdkDragBoundary=".pac-model-access__nav" cdkDrag [cdkDragData]="role"
+        >
+            <span class="pac-nav-tab__label" matTooltipClass="pac-model-query__statement-tip">
+                {{ role.name }}
+            </span>
+            <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
+                [matMenuTriggerFor]="roleMenu"
+                [matMenuTriggerData]="{role: role}"
+            >
+                <mat-icon>more_vert</mat-icon>
+            </button>
+        </span>
+    </nav>
+
+    <span *ngIf="!roles?.length" class="pl-4">
+        {{ 'PAC.MODEL.AccessControl.NewRole' | translate: {Default: 'New Role'} }}
+    </span>
+    <button mat-icon-button displayDensity="cosy" [matTooltip]="'PAC.MODEL.AccessControl.NewRole' | translate: {Default: 'New Role'}"
+        (click)="openCreate()">
+        <mat-icon>add_circle_outline</mat-icon>
+    </button>
+</mat-toolbar>
+
+<mat-tab-nav-panel #tabPanel class="overflow-hidden">
+    <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>
+
+
+<mat-menu #roleMenu="matMenu" class="ngm-density__compact">
+    <ng-template matMenuContent let-role="role">
+      <button mat-menu-item (click)="duplicate(role)">
+        <mat-icon fontSet="material-icons-outlined">content_copy</mat-icon>
+        <span>{{ 'PAC.ACTIONS.Duplicate' | translate: {Default: "Duplicate"} }}</span>
+      </button>
+    
+      <button mat-menu-item ngmAppearance="danger" (click)="remove(role)">
+        <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
+        <span>{{ 'PAC.KEY_WORDS.DELETE' | translate: {Default: "Delete"} }}</span>
+      </button>
+    </ng-template>
+</mat-menu>
+
+
+<ng-template #creatTmpl let-data>
+    <ngm-dialog [title]=" 'PAC.MODEL.AccessControl.NewRole' | translate: {Default: 'New Role'} " [form]="creatFormGroup"
+        (apply)="onCreate()">
+        <form [formGroup]="creatFormGroup" class="flex flex-col justify-start items-stretch gap-4">
+            <div class="flex justify-start items-center gap-4 my-4">
+                <label>{{ 'PAC.MODEL.AccessControl.Type' | translate: {Default: 'Type'} }}:</label>
+                <mat-radio-group formControlName="type" class="ngm-radio-group__horizontal">
+                    <mat-radio-button >
+                        {{ 'PAC.MODEL.AccessControl.SingleRole' | translate: {Default: 'Single Role' } }}</mat-radio-button>
+                    <mat-radio-button value="union">
+                        {{ 'PAC.MODEL.AccessControl.UnionRole' | translate: {Default: 'Union Role' } }}
+                    </mat-radio-button>
+                </mat-radio-group>
+            </div>
+
+            <mat-form-field appearance="fill">
+                <mat-label>{{ 'PAC.MODEL.AccessControl.Name' | translate: {Default: 'Name'} }}</mat-label>
+                <input matInput formControlName="name">
+                <mat-error *ngIf="name.invalid">
+                    <span *ngIf="name.errors?.['forbiddenName']">
+                        {{ 'PAC.MESSAGE.NameAlreadyExist' | translate: {Default: 'Name Already Exist'} }}
+                    </span>
+                    <span *ngIf="name.errors?.['required']">
+                        {{ 'PAC.MESSAGE.Required' | translate: {Default: 'Required'} }}
+                    </span>
+                </mat-error>
+            </mat-form-field>
+        </form>
+    </ngm-dialog>
+</ng-template>

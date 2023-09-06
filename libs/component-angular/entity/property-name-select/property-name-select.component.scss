@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+
+  .mat-form-field {
+    flex: 1;
+  }
+
+  .nx-property {
+    max-width: 100%;
+  }
+}

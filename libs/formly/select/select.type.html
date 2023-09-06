@@ -1,0 +1,7 @@
+<ngm-select displayDensity="compact" [label]="props?.label" [placeholder]="props?.placeholder"
+  [valueKey]="props?.valueKey ?? 'value'"
+  [searchable]="props?.searchable"
+  [virtualScroll]="props?.virtualScroll"
+  [formControl]="valueFormControl"
+  [selectOptions]="_selectOptions$ | async"
+></ngm-select>

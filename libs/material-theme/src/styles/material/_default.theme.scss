@@ -1,0 +1,54 @@
+@use '@angular/material' as mat;
+@use 'libs/component-angular/styles/material/all-components' as components;
+@use 'libs/formly/formly-theme' as formly;
+@use 'libs/story-angular/responsive/responsive-theme' as responsive;
+@use 'libs/story-angular/story/story-theme' as story;
+@use 'libs/story-angular/src/lib/story-theme' as story-designer;
+@use 'libs/story-angular/widgets/widgets-theme' as widgets;
+@use 'libs/apps/auth/src/lib/auth-theme' as auth;
+// @use '@metad/ocap-angular/theming' as theming;
+@use 'packages/angular/theming' as ocap;
+
+
+// Define a theme.
+$primary: mat.define-palette(mat.$blue-grey-palette, 600);
+$accent:  mat.define-palette(mat.$amber-palette, A700, A400, A200);
+
+$material-typeface: Lato, 'Noto Serif SC', monospace;
+// mat.$light-theme-background-palette: map-merge(mat.$light-theme-background-palette, (surface: rgba(255, 255, 255, 0.875)));
+
+$mat-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent:  $accent,
+    ),
+    density: -1,
+  ),
+);
+
+$custom-typography: mat.define-typography-config(
+  $font-family: $material-typeface
+);
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+// Include all theme styles for the mat components.
+@include mat.all-component-themes($mat-theme);
+@include components.nx-mat-theme($mat-theme);
+@include formly.theme($mat-theme);
+@include responsive.theme($mat-theme);
+@include story.theme($mat-theme);
+@include story-designer.theme($mat-theme);
+@include widgets.theme($mat-theme);
+@include ocap.core-theme($mat-theme);
+@include ocap.analytical-grid-theme($mat-theme);
+@include ocap.breadcrumb-theme($mat-theme);
+@include ocap.controls-theme($mat-theme);
+@include ocap.entity-theme($mat-theme);
+@include ocap.common-color($mat-theme);
+@include ocap.common-density($mat-theme);
+@include auth.theme($mat-theme);

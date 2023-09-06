@@ -1,0 +1,9 @@
+:host {
+  flex: 1;
+  max-width: 100%;
+}
+
+.pac-page__body.pac-organizations__content {
+  padding-top: 0;
+  overflow: auto;
+}

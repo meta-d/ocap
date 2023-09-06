@@ -1,0 +1,50 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding matTreeNodePaddingIndent="20"
+    cdkDrag
+    [cdkDragData]="node.item"
+    [class.selected]="selectedHierarchy && (
+      node.item.name === selectedHierarchy || node.item.hierarchy === selectedHierarchy || node.item.raw?.hierarchy === selectedHierarchy)"
+    draggable="true"
+  >
+    <button mat-icon-button disabled displayDensity="compact">
+      <mat-icon *ngIf="node.error" color="warn" fontSet="material-icons-round"
+        [matTooltip]="node.error">
+        warning_amber
+      </mat-icon>
+    </button>
+
+    <div class="ngm-entity-schema__type">{{node.item.type?.[0]}}</div>
+    <ngm-display-behaviour [option]="{value: node.item.name, caption: node.item.caption ?? node.item.label}"
+      [highlight]="searchControl.value">
+    </ngm-display-behaviour>
+    <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding matTreeNodePaddingIndent="20" class="group"
+    cdkDrag
+    [cdkDragData]="node.item"
+    [class.selected]="selectedHierarchy && (
+      node.item.name === selectedHierarchy || node.item.hierarchy === selectedHierarchy || node.item.raw?.hierarchy === selectedHierarchy)"
+    draggable="true"
+  >
+    <button *ngIf="!node.isLoading" mat-icon-button
+            [attr.aria-label]="'Toggle ' + node.item" matTreeNodeToggle>
+      <mat-icon class="mat-icon-rtl-mirror" fontSet="material-icons-round">
+        {{treeControl.isExpanded(node) ? 'arrow_drop_down' : 'arrow_right'}}
+      </mat-icon>
+    </button>
+    <mat-spinner *ngIf="node.isLoading" class="m-2" strokeWidth="1" diameter="15"></mat-spinner>
+
+    <div class="ngm-entity-schema__type">{{node.item.type?.[0]}}</div>
+
+    <ngm-display-behaviour class="flex-1" [option]="{value: node.item.name, caption: node.item.caption ?? node.item.label}"
+      [highlight]="searchControl.value">
+    </ngm-display-behaviour>
+
+    <ngm-search *ngIf="node.item.type === EntitySchemaType.Entity" class="w-0 overflow-hidden group-hover:w-auto"
+      displayDensity="cosy"
+      [formControl]="searchControl">
+    </ngm-search>
+
+    <div class="ngm-entity-schema__drag-placeholder" *cdkDragPlaceholder></div>
+  </mat-tree-node>
+</mat-tree>

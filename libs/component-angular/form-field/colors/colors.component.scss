@@ -1,0 +1,7 @@
+:host {
+  @apply flex flex-col items-stretch justify-start pb-1;
+}
+
+.ngm-colors__clear {
+  @apply absolute bg-white;
+}

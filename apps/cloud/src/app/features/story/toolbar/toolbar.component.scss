@@ -1,0 +1,26 @@
+:host {
+  @apply flex justify-start items-stretch;
+
+  &.pac-toolbar__on-right {
+    @apply flex-row-reverse;
+  }
+
+}
+
+.mat-divider {
+  @apply border border-dashed my-4;
+}
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  --mdc-icon-button-state-layer-size: 40px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pac-story-bar__scale-item.active {
+  .pac-story-bar__scale-point {
+    @apply bg-yellow-500;
+  }
+}

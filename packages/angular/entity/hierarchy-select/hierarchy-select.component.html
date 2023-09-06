@@ -1,0 +1,9 @@
+<label class="ngm-input-label">{{label}}</label>
+<mat-select class="ngm-select-element" panelClass="ngm-select-panel" [formControl]="formControl">
+    <mat-option>-- {{ 'Ngm.Common.None' | translate: {Default: 'None'} }} --</mat-option>
+    <mat-optgroup *ngFor="let dimension of dimensions" [label]="dimension.caption">
+        <mat-option *ngFor="let hierarchy of dimension.hierarchies" [value]="hierarchy.name">
+            <ngm-display-behaviour class="flex-1" [option]="{value: hierarchy.name, caption: hierarchy.caption}"></ngm-display-behaviour>
+        </mat-option>
+    </mat-optgroup>
+</mat-select>

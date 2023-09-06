@@ -1,0 +1,13 @@
+{
+  "name": "@metad/ocap-olap",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rimraf target && mvn install && yarn run docker-build",
+    "mvn": "mvn install",
+    "docker-build": "docker build --tag pangolin/olap .",
+    "start": "mvn spring-boot:run"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  }
+}

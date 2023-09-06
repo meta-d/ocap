@@ -1,0 +1,53 @@
+{
+  "name": "xmla",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/xmla/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "updateBuildableProjectDepsInPackageJson": false,
+        "outputPath": "dist/packages/xmla",
+        "tsConfig": "packages/xmla/tsconfig.lib.json",
+        "main": "packages/xmla/src/index.ts",
+        "project": "packages/xmla/package.json",
+        "entryFile": "packages/xmla/src/index.ts",
+        "globals": [
+          {
+            "global": "Rx",
+            "moduleId": "rxjs"
+          },
+          {
+            "global": "Rx",
+            "moduleId": "rxjs/operators"
+          }
+        ],
+        "assets": [
+          {
+            "glob": "README.md",
+            "input": ".",
+            "output": "."
+          }
+        ],
+        "format": ["cjs", "esm"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/xmla/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/xmla"],
+      "options": {
+        "jestConfig": "packages/xmla/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,49 @@
+@import './global/variants';
+@import '../src/lib/smart-charts/smart-charts.component.theme';
+@import '../src/lib/smart-filter/smart-filter.theme';
+@import '../src/lib/list-report/list-report.component.theme';
+@import '../src/lib/smart-table/smart-table.component.theme';
+@import '../src/lib/smart-player/smart-player.theme';
+@import '../src/lib/smart-kpi/kpi.theme';
+@import '../src/lib/smart-variants/smart-variants.theme';
+@import '../src/lib/smart-micro/micro-table/micro-table.component.theme';
+
+@import './components/tab-bar.theme';
+@import './components/progress-bar.theme';
+@import './components/button-balance.theme';
+@import './components/dialog.theme';
+@import './components/fullscreen.theme';
+
+@import '../src/lib/selection/filters.component.theme';
+@import '../src/lib/chip/chip.component.theme';
+@import '../src/lib/palette/palette.component.theme';
+@import '../src/lib/table/table.theme';
+@import '../src/lib/object-number/object-number.component.theme';
+
+@import './global/layout.theme';
+
+// @import '../analytical-card/src/analytical-card.component.theme';
+// @import '../cards/src/styles/nx-cards.theme';
+
+@mixin nx-charts-theme() {
+  @include nx-smart-charts-theme();
+  @include nx-smart-filter-module-theme();
+  @include nx-list-report-theme();
+  @include nx-smart-table-theme();
+  @include nx-smart-player-theme();
+  @include nx-kpi-theme();
+  @include nx-tab-bar-theme();
+  @include nx-progress-bar-theme();
+  @include nx-buttons-balance-theme();
+  @include nx-dialog-theme();
+  @include nx-micro-table-theme();
+  // @include nx-fullscreen-theme();
+
+  @include nx-selections-theme();
+  @include nx-chip-theme();
+  @include nx-palette-theme();
+  @include nx-table-theme();
+  @include nx-object-number-theme();
+
+  @include nx-smart-variants-theme();
+}

@@ -1,0 +1,76 @@
+<label *ngIf="label" class="ngm-select-label">
+  {{label}}
+</label>
+
+<div *ngIf="!searchable" class="relative">
+  <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
+    [formControl]="formControl"
+    [placeholder]="placeholder"
+  >
+    <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
+      <span class="flex-1">
+        {{selectTrigger().caption || selectTrigger().label || selectTrigger()[valueKey] || placeholder}}
+      </span>
+    </mat-select-trigger>
+    <mat-option *ngFor="let option of selectOptions" [value]="option[valueKey]">
+      <ng-container *ngTemplateOutlet="optionTemplate; context: {$implicit: option}"></ng-container>
+    </mat-option>
+  </mat-select>
+
+  <div class="absolute right-6 top-0 h-full flex items-center">
+    <ng-container *ngTemplateOutlet="suffixTemplate"></ng-container>
+  </div>
+</div>
+<div class="relative" *ngIf="searchable">
+  <input class="ngm-input-element w-full relative"
+    type="text"
+    [placeholder]="placeholder"
+    matInput
+    [ngModel]="autoInput()"
+    (ngModelChange)="onAutoInput($event)"
+    [matAutocomplete]="auto"
+  />
+
+  <div class="absolute right-0 top-0 h-full flex items-center">
+    <ng-container *ngTemplateOutlet="suffixTemplate"></ng-container>
+  </div>
+</div>
+<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-density__compact ngm-select__autocomplete-panel ngm-autocomplete-panel"
+  [displayWith]="displayWith"
+  (optionSelected)="onOptionSelected($event)"
+>
+  <cdk-virtual-scroll-viewport *ngIf="virtualScroll" class="nx-formly__virtual-scroll-viewport" minBufferPx="200" maxBufferPx="400"
+    [style.height.px]="240" [itemSize]="30"
+  >
+    <mat-option *cdkVirtualFor="let option of options$(); trackBy: trackByValue" [value]="option">
+      <ng-container *ngTemplateOutlet="optionTemplate; context: {$implicit: option}"></ng-container>
+    </mat-option>
+  </cdk-virtual-scroll-viewport>
+
+  <ng-container *ngIf="!virtualScroll">
+    <mat-option *ngFor="let option of options$()" [value]="option" class="text-sm">
+      <ng-container *ngTemplateOutlet="optionTemplate; context: {$implicit: option}"></ng-container>
+    </mat-option>
+  </ng-container>
+</mat-autocomplete>
+
+<mat-error *ngIf="formControl.invalid" class="text-xs">
+  {{formControl.getError('error')}}
+</mat-error>
+
+<ng-template #optionTemplate let-option>
+  <ng-template [ngIf]="_explicitContent" [ngIfElse]="optionTextLabel">
+    <ng-container *ngTemplateOutlet="_explicitContent; context: {$implicit: option, value: option.value, caption: option.caption, key: option.key, highlight: highlight()}"></ng-container>
+  </ng-template>
+  <ng-template #optionTextLabel>
+    <mat-icon *ngIf="option.icon" [fontSet]="option.fontSet">{{option.icon}}</mat-icon>
+    <ngm-display-behaviour class="flex-1 overflow-hidden" [displayBehaviour]="displayBehaviour"
+      [option]="option"
+      [highlight]="highlight()">
+    </ngm-display-behaviour>
+  </ng-template>
+</ng-template>
+
+<ng-template #suffixTemplate>
+  <ng-content select="[ngmSuffix]"></ng-content>
+</ng-template>

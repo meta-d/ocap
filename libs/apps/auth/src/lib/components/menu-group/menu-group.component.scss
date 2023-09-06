@@ -1,0 +1,25 @@
+.pac-router-link.active {
+  @apply bg-white/20;
+
+  &.has-submenu {
+    @apply bg-white/10;
+  }
+}
+
+.pac-sub-menu {
+  li {
+    @apply px-4 py-0;
+    height: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 200ms ease-in-out;
+  }
+  &.expanded {
+    li {
+      @apply px-4 py-2;
+      height: 40px;
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+}

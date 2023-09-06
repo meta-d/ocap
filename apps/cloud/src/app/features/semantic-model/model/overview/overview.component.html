@@ -1,0 +1,194 @@
+<h2 class="text-xl">{{ 'PAC.MODEL.ModelOverview' | translate: {Default: 'Semantic Model Overview'} }}</h2>
+
+<div class="grid grid-cols-3 gap-4">
+    <div *ngFor="let item of analysis" class="group shadow-md rounded-md box-border border-2 border-transparent overflow-hidden	bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">
+        <div class="p-2 flex h-full flex-col justify-between bg-white">
+            <h1 class="text-lg">
+                {{ item.Statement }}
+            </h1>
+            <div class="h-0 overflow-hidden group-hover:h-24 transition-all duration-300 flex flex-col">
+                <p class="leading-relaxed m-0 text-slate-800 overflow-auto">
+                    {{ item.SQL }}
+                </p>
+                <div class="flex justify-end">
+                    <div ngmButtonGroup>
+                        <button mat-raised-button color="primary" displayDensity="cosy" (click)="applyAnalysis(item)">
+                          <mat-icon fontSet="material-icons-outlined">add</mat-icon>
+                          {{ 'PAC.KEY_WORDS.Apply' | translate: { Default: 'Apply' } }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- <div *ngIf="enableCopilot" class="flex flex-wrap gap-4">
+
+    <div class="flex flex-col items-start gap-4 w-full">
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>提示</mat-label>
+          <textarea matInput [(ngModel)]="text"></textarea>
+    
+          <button mat-icon-button matSuffix [disabled]="asking"
+            (click)="askCopilot()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-progress-bar *ngIf="asking" mode="buffer"></mat-progress-bar>
+
+        <div class="flex flex-col" *ngFor="let conversation of conversations">
+            <p class="whitespace-pre">
+                {{ conversation.prompt }}
+            </p>
+
+            <p class="whitespace-pre" *ngFor="let choice of conversation.choices">
+                {{ choice }}
+            </p>
+        </div>
+    </div>
+
+</div> -->
+
+<ng-container *ngIf="dimensions$ | async as dimensions">
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.SharedDimensions' | translate: {Default: 'Shared Dimensions'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]"
+    [columns]="[
+        {
+            name: 'name',
+            caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+            cellTemplate: dimTempl 
+        },
+        {
+            name: 'caption',
+            caption: 'PAC.KEY_WORDS.Caption' | translate: {Default: 'Caption'}
+        },
+        {
+            name: 'description',
+            caption: 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'}
+        }]"
+    [data]="dimensions">
+</nx-table>
+</ng-container>
+<ng-template #dimTempl let-key="__id__" let-name="name">
+    <a [routerLink]="['dimension', key]"><span>{{name}}</span></a>
+</ng-template>
+
+
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.Cubes' | translate: {Default: 'Cubes'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]" [columns]="[
+{
+    name: 'name',
+    caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+    cellTemplate: cubeTempl 
+},
+{
+    name: 'caption',
+    caption: 'PAC.KEY_WORDS.Caption' | translate: {Default: 'Caption'}
+},
+{
+    name: 'description',
+    caption: 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'}
+}]" [data]="cubes$ | async"></nx-table>
+<ng-template #cubeTempl let-key="__id__" let-name="name">
+    <a [routerLink]="['entity', key]"><span>{{name}}</span></a>
+</ng-template>
+
+<ng-container *ngIf="virtualCubes$ | async as virtualCubes">
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.VirtualCubes' | translate: {Default: 'Virtual Cubes'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]" [columns]="[
+    {
+        name: 'name',
+        caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+        cellTemplate: vCubeTempl 
+    },
+    {
+        name: 'caption',
+        caption: 'PAC.KEY_WORDS.Caption' | translate: {Default: 'Caption'}
+    },
+    {
+        name: 'description',
+        caption: 'PAC.KEY_WORDS.Description' | translate: {Default: 'Description'}
+    }
+]" [data]="virtualCubes"></nx-table>
+</ng-container>
+<ng-template #vCubeTempl let-key="__id__" let-name="name">
+    <a [routerLink]="['virtual-cube', key]"><span>{{name}}</span></a>
+</ng-template>
+
+<!-- 角色 -->
+<ng-container *ngIf="roles$ | async as roles">
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.Roles' | translate: {Default: 'Roles'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]"
+    [columns]="[
+        {
+            name: 'name',
+            caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+            cellTemplate: roleTempl
+        }
+    ]"
+    [data]="roles">
+</nx-table>
+</ng-container>
+<ng-template #roleTempl let-key="key" let-name="name">
+    <a [routerLink]="['access', key]"><span>{{name}}</span></a>
+</ng-template>
+
+<!-- 指标 -->
+<ng-container *ngIf="indicators$ | async as indicators">
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.Indicators' | translate: {Default: 'Indicators'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]"
+    [columns]="[
+        {
+            name: 'name',
+            caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+            cellTemplate: indicatorTempl
+        },
+        {
+            name: 'code',
+            caption: 'PAC.MODEL.IndicatorCode' | translate: {Default: 'Indicator Code'}
+        },
+        {
+            name: 'createdBy',
+            caption: 'PAC.KEY_WORDS.CreatedBy' | translate: {Default: 'Created By'},
+            cellTemplate: createdByTempl
+        },
+
+    ]"
+    [data]="indicators">
+</nx-table>
+</ng-container>
+<ng-template #indicatorTempl let-id="id" let-name="name">
+    <a [routerLink]="['/indicator/viewer/', id]"><span>{{name}}</span></a>
+</ng-template>
+
+<!-- 故事 -->
+<ng-container *ngIf="stories$ | async as stories">
+<h3 class="mb-2 mt-4">{{ 'PAC.MODEL.Stories' | translate: {Default: 'Stories'} }}</h3>
+<nx-table class="rounded-lg border border-gray-200 overflow-hidden" paging [pageSizeOptions]="[10, 20]"
+    [columns]="[
+        {
+            name: 'name',
+            caption: 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'},
+            cellTemplate: storyTempl
+        },
+        {
+            name: 'createdBy',
+            caption: 'PAC.KEY_WORDS.CreatedBy' | translate: {Default: 'Created By'},
+            cellTemplate: createdByTempl
+        },
+    
+    ]"
+    [data]="stories">
+</nx-table>
+</ng-container>
+
+<ng-template #storyTempl let-id="id" let-name="name">
+    <a [routerLink]="['/story', id, 'edit']"><span>{{name}}</span></a>
+</ng-template>
+
+<ng-template #createdByTempl let-createdBy="createdBy">
+    <span>{{ createdBy | user }}</span>
+</ng-template>

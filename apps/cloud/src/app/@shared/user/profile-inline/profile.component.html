@@ -1,0 +1,12 @@
+<div class="relative h-10 w-10 shrink-0">
+    <img
+        class="h-full w-full rounded-full object-cover object-center"
+        [src]="user?.imageUrl || '/assets/images/avatar-default.svg'"
+        alt="{{user | user}}"
+    />
+    <span class="absolute right-0 bottom-0 h-2 w-2 rounded-full bg-green-400 ring ring-white"></span>
+</div>
+<div class="text-sm overflow-hidden text-ellipsis">
+    <div class="font-medium text-gray-700 overflow-hidden text-ellipsis">{{user?.firstName}} {{user?.lastName}}</div>
+    <div class="text-gray-400 overflow-hidden text-ellipsis">{{ user?.email }}</div>
+</div>

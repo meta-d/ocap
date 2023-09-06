@@ -1,0 +1,175 @@
+<div #panDragHandler class="nx-story__story-container flex w-full h-full"
+    [ngStyle]="storySizeStyles()"
+    ngmTransformScale
+    [ngmTransformDisabled]="editable"
+    cdkDrag
+    [cdkDragDisabled]="disablePanMode$ | async"
+    [class.cursor-grab.select-none]="isPanMode$ | async"
+    >
+    <mat-tab-group #pageTabs class="nx-story__point-tab-group w-full h-full" disableRipple preserveContent
+        [attr.mat-align-tabs]="pageHeaderAlignTabs()"
+        [mat-stretch-tabs]="pageHeaderStretchTabs()"
+        [ngStyle]="storyStyle$ | async"
+        [class.tabBarHidden]="tabHidden()"
+        [selectedIndex]="currentPageIndex$ | async"
+        [headerPosition]="pageHeaderPosition()"
+        [fitInkBarToContent]="pageHeaderFitInkBarToContent()"
+        (selectedTabChange)="onSelectedTabChange($event)"
+        (click)="onSelectedIndex(pageTabs.selectedIndex)"
+    >
+        <mat-tab *ngFor="let point of displayPoints$ | async; index as i; last as isLast; first as isFirst; trackBy: trackByKey">
+
+            <ng-template matTabLabel>
+                <div class="relative flex items-center">
+
+                    <span *ngIf="story_point.dirty" class="absolute top-0 -left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+
+                    <span [ngClass]="{'nx-story--point-hidden': point.hidden && editable}">{{ point.name }}</span>
+                    
+                    <button *ngIf="editable" mat-icon-button disableRipple displayDensity="cosy" class="nx-story-point__tab-menu-trigger"
+                        (click)="$event.preventDefault();$event.stopPropagation()"
+                        [matMenuTriggerFor]="pointMenu"
+                        [matMenuTriggerData]="{point: point, component: story_point}"
+                        #mt="matMenuTrigger"
+                        [class.active]="mt.menuOpen"
+                    >
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                </div>
+            </ng-template>
+            
+            <nx-story-point #story_point class="nx-color"
+                [ngStyle]="pageStyle$ | async"
+                [ngClass]="point.styling?.background ? 'nx-color__' + point.styling.background : ''"
+                [story]="story"
+                [key]="point.key"
+                [editable]="editable"
+                [opened]="i === pageTabs.selectedIndex"
+                [focus]="pageKey && point.key === pageKey ? widgetKey : i === 0 ? widgetKey : null"
+                [isFirst]="isFirst"
+                [isLast]="isLast"
+                (navToPointIndex)="onSelectedIndex($event)"
+            >
+            </nx-story-point>
+        </mat-tab>
+    </mat-tab-group>
+
+    <!-- 暂时没时间实现 global filters 功能
+    <button mat-icon-button class="nx-story__global-filter z-[100]"
+        [popper]="gFilters"
+        [popperTrigger]="NgxPopperjsTriggers.click"
+        [popperHideOnClickOutside]="true"
+        [popperHideOnScroll]="true"
+        [popperHideOnMouseLeave]="false"
+        [popperPlacement]="NgxPopperjsPlacements.TOPEND">
+        <mat-icon fontSet="material-icons-round">filter</mat-icon>
+    </button> -->
+</div>
+
+<popper-content #gFilters class="z-[101]">
+    <div class="flex flex-col bg-white p-2" displayDensity="compact">
+        <h2>
+            {{ 'Story.Story.GlobalFilters' | translate: {Default: "Global Filters"} }}
+        </h2>
+        <!-- <pac-widget-filter-bar class="nx-story__widget flex-1 overflow-hidden"
+            [class.active]="true"
+            [dataSettings]="filterBar()?.dataSettings"
+            [options]="filterBar()?.options"
+            [styling]="filterBar()?.styling"
+            [editable]="editable"
+            (optionsChange)="onStoryFilterBarOptionsChange($event)">
+        </pac-widget-filter-bar> -->
+    </div>
+</popper-content>
+  
+
+<nx-trial-watermark *ngIf="enableWatermark$ | async" [options]="watermarkOptions$ | async"></nx-trial-watermark>
+ 
+<mat-menu #pointMenu="matMenu" xPosition="before" class="ngm-density__compact">
+<ng-template matMenuContent let-point="point" let-component="component">
+
+    <button mat-menu-item [disabled]="!component.dirty" (click)="saveStoryPoint(point.key)">
+        <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+        {{ 'Story.Story.Save' | translate: {Default: "Save"} }}
+    </button>
+
+    <button mat-menu-item (click)="duplicateStoryPoint(point.key)">
+        <mat-icon>content_copy</mat-icon>
+        {{ 'Story.Story.Duplicate' | translate: {Default: "Duplicate"} }}
+    </button>
+    <button mat-menu-item (click)="component.rename()">
+        <mat-icon fontSet="material-icons-outlined">drive_file_rename_outline</mat-icon>
+        {{ 'Story.Story.Rename' | translate: {Default: "Rename"} }}
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item *ngIf="!point.hidden" (click)="toggleStoryPointHidden(point.key)">
+        <mat-icon>flip_to_back</mat-icon>
+        {{ 'Story.Story.Hidden' | translate: {Default: "Hidden"} }}
+    </button>
+    <button mat-menu-item *ngIf="point.hidden" (click)="toggleStoryPointHidden(point.key)">
+        <mat-icon>flip_to_front</mat-icon>
+        {{ 'Story.Story.Visiable' | translate: {Default: "Visiable"} }}
+    </button>
+    <button mat-menu-item [disabled]="component.isFirst" (click)="move(point, 'left')">
+        <mat-icon>chevron_left</mat-icon>
+        {{ 'Story.Story.MOVE_LEFT' | translate: {Default: "Move Left"} }}
+    </button>
+    <button mat-menu-item [disabled]="component.isLast" (click)="move(point, 'right')">
+        <mat-icon>chevron_right</mat-icon>
+        {{ 'Story.Story.MOVE_RIGHT' | translate: {Default: "Move Right"} }}
+    </button>
+    <button mat-menu-item [disabled]="component.isFirst" (click)="move(point, 'first')">
+        <mat-icon>first_page</mat-icon>
+        {{ 'Story.Story.MOVE_FIRST' | translate: {Default: "Move First"} }}
+    </button>
+    <button mat-menu-item [disabled]="component.isLast" (click)="move(point, 'last')">
+        <mat-icon>last_page</mat-icon>
+        {{ 'Story.Story.MOVE_LAST' | translate: {Default: "Move Last"} }}
+    </button>
+
+    <mat-divider></mat-divider>
+    <!-- <button mat-menu-item >
+        <mat-icon>comment</mat-icon>
+        {{ 'Story.Story.COMMENT' | translate: {Default: "Comment"} }}
+    </button> -->
+    <button mat-menu-item (click)="openShare(point)">
+        <mat-icon fontSet="material-icons-outlined">share</mat-icon>
+        {{ 'Story.Story.Share' | translate: {Default: "Share"} }}
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item class="ngm-cdk-menu__danger" color="warn" ngmAppearance="danger"
+        (click)="removeStoryPoint(point)">
+        <mat-icon>delete_forever</mat-icon>
+        {{ 'Story.Story.Delete' | translate: {Default: "Delete"} }}
+    </button>
+</ng-template>
+</mat-menu>
+
+<div *ngIf="tabIsPoint()" class="nx-story__pagination nx-story__pagination-bullets px-8"
+    [class.nx-story__pagination-header-below]="pageHeaderPosition() === 'below'"
+    [attr.mat-align-tabs]="pageHeaderAlignTabs()"
+    [attr.mat-stretch-tabs]="pageHeaderStretchTabs()"
+>
+    <div class="nx-story__pagination-horizontal overflow-auto whitespace-nowrap pointer-events-auto flex flex-wrap justify-start items-center
+        rounded-lg px-2 py-1 bg-slate-500/10 backdrop-blur-md">
+        <div *ngFor="let point of displayPoints$ | async; index as i;" class="nx-story__pagination-page flex items-center cursor-pointer group hover:underline pointer-events-auto"
+            (click)="storyService.setCurrentPageKey(point.key)"
+        >
+            <div class="nx-story__pagination-bullet shrink-0 inline-block w-4 h-4 rounded-full mx-1 opacity-50 group-hover:opacity-100"
+                [class.nx-story__pagination-bullet-active]="point.key === currentPageKey()"
+                [matTooltip]="point.name"
+                >
+            </div>
+            <div *ngIf="pageHeaderShowLabel() === PageHeaderLabelEnum.auto && point.key === currentPageKey()
+                || pageHeaderShowLabel() === PageHeaderLabelEnum.always || pageHeaderShowLabel() === true" class="inline-block dark:text-white">
+                {{point.name}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-content></ng-content>

@@ -1,0 +1,46 @@
+<div class="text-xl ">
+    {{ 'PAC.Copilot.AICopilot' | translate: {Default: 'AI Copilot'} }}
+</div>
+
+<form [formGroup]="formGroup" class="w-full lg:w-1/2 lg:max-w-[50%] flex flex-col items-start p-4 overflow-hidden"
+    (ngSubmit)="onSubmit()">
+    <mat-slide-toggle class="my-8" formControlName="enabled">
+        {{ 'PAC.Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
+    </mat-slide-toggle>
+
+    <mat-form-field appearance="fill">
+        <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
+        <mat-select formControlName="provider">
+          <mat-option value="openai">OpenAI</mat-option>
+          <mat-option value="azure">Azure</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <div class="self-stretch flex justify-start items-center gap-4">
+        <mat-form-field appearance="fill" class="flex-1">
+            <mat-label>
+                {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
+            </mat-label>
+            <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
+        </mat-form-field>
+
+        <a mat-stroked-button [href]="providerHref[provider]">
+            {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
+        </a>
+    </div>
+
+    <div class="self-stretch flex justify-start items-center">
+        <mat-form-field appearance="fill" class="flex-1">
+            <mat-label>
+                {{ 'PAC.Copilot.APIHost' | translate: {Default: 'API Host'} }}
+            </mat-label>
+            <input name="copilot-apihost" id="copilot-apihost" matInput formControlName="apiHost" type="text">
+        </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="primary" class="ngm-rounded-full"
+        [disabled]="formGroup.invalid || formGroup.pristine"
+    >
+        {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
+    </button>
+</form>

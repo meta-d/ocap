@@ -1,0 +1,38 @@
+:host {
+  @apply flex flex-col w-full h-full overflow-auto;
+
+  .pac-page__body {
+    padding-top: 0;
+  }
+}
+
+.file-input {
+  display: none;
+}
+
+.ant-page-header-heading-extra {
+  white-space: normal;
+}
+
+.pac__table-actions {
+  opacity: 0;
+}
+
+:host::ng-deep {
+  .cdk-row:hover {
+    .pac__table-actions {
+      opacity: 1;
+    }
+  }
+  ngm-tree-table {
+    .mat-cell, .mat-header-cell {
+      white-space: nowrap;
+      padding: 0 10px;
+    }
+  }
+}
+
+ngm-tree-table {
+  display: block;
+  overflow-x: auto;
+}

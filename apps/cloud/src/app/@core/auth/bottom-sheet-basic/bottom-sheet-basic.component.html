@@ -1,0 +1,20 @@
+<h3>为数据源 {{data.name}} 提供账号</h3>
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col justify-start items-stretch">
+  <mat-form-field appearance="outline" displayDensity="cosy">
+    <mat-label>{{ 'PAC.KEY_WORDS.Username' | translate: {Default: 'Username'} }}</mat-label>
+    <input matInput formControlName="username" />
+  </mat-form-field>
+  <mat-form-field appearance="outline" displayDensity="cosy">
+    <mat-label>{{ 'PAC.KEY_WORDS.Password' | translate: {Default: 'Password'} }}</mat-label>
+    <input matInput formControlName="password" type="password" />
+  </mat-form-field>
+
+  <mat-checkbox formControlName="remeberMe">记住我</mat-checkbox>
+
+  <div class="flex justify-end items-center">
+    <div ngmButtonGroup displayDensity="cosy">
+      <button mat-flat-button type="button" displayDensity="cosy" (click)="onCancel()">取消</button>
+      <button mat-raised-button color="primary" displayDensity="cosy">确认</button>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,61 @@
+:host {
+  --pac-copilot-bg-color: theme('colors.white');
+  background-color: var(--pac-copilot-bg-color);
+  @apply flex flex-col relative text-sm text-neutral-500 dark:text-neutral-300;
+}
+
+.copilot-code-container {
+  @apply bg-gray-200 rounded-lg text-xs text-gray-500;
+}
+
+.copilot-code-titlebar {
+  @apply flex justify-between items-center border-b-2 p-2;
+}
+
+.copilot-code-copy-button {
+  @apply flex items-center;
+}
+
+.copilot-code-content {
+  @apply overflow-x-auto overflow-y-hidden p-2 whitespace-pre;
+}
+
+.copilot-message-stop {
+  .emoji-loader {
+    width: 1.5rem;
+  }
+  .emoji-loader::before {
+    font-size: 1rem;
+    line-height: 1rem;
+  }
+}
+
+.pac-copilot__message-remove.mat-mdc-icon-button {
+  background-color: var(--pac-copilot-bg-color);
+  @apply absolute z-[101] text-slate-500 hover:text-red-500 hover:bg-slate-50;
+}
+.pac-colpilot__clear-messages {
+  @apply border-dashed;
+}
+
+.pac-copilot__resubmit {
+  @apply my-2 rounded-full;
+}
+
+.mat-mdc-input-element {
+  @apply outline-none bg-transparent;
+}
+
+.pac-copilot__user-message {
+  @apply bg-bluegray-100/50 text-black;
+}
+
+.pac-colpilot__active {
+  @apply shadow-lg;
+}
+
+:host::ng-deep {
+  markdown p:first-child {
+    @apply indent-4;
+  }
+}

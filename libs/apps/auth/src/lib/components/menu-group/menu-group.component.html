@@ -1,0 +1,45 @@
+<ul class="flex flex-col gap-1">
+  <ng-container *ngFor="let item of menu">
+    <ng-container *ngIf="!item.hidden">
+      <li>
+        <div class="pac-router-link flex items-center py-3 px-4 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+          [class.has-submenu]="item.children"
+          [routerLink]="item.children ? null : item.link"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [class.active]="rla.isActive"
+          (click)="item.expanded=!isActive(item)"
+        >
+          <mat-icon *ngIf="item.matIcon" displayDensity="cosy" fontSet="material-icons-outlined">{{ item.matIcon }}</mat-icon>
+          <span class="flex-1 ml-3">{{ item.title }}</span>
+
+          <svg *ngIf="item.children" class="ml-auto w-3 h-3" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path [attr.d]="item.expanded ? 'M2 11L8.16086 5.31305C8.35239 5.13625 8.64761 5.13625 8.83914 5.31305L15 11' : 'M2 5L8.16086 10.6869C8.35239 10.8637 8.64761 10.8637 8.83914 10.6869L15 5'" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              style="transition: all 200ms ease-in-out 0s">
+            </path>
+          </svg>
+        </div>
+
+        <ul *ngIf="item.children" class="pac-sub-menu flex flex-col ml-3 mt-1" [class.expanded]="isActive(item)"
+          [class.gap-1]="isActive(item)"
+        >
+          <ng-container *ngFor="let child of item.children">
+            <li *ngIf="!child.hidden" class="pac-router-link flex items-center py-2 px-4 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+              [routerLink]="child.link"
+              routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
+              #rla="routerLinkActive"
+              (isActiveChange)="child.isActive = $event"
+              [class.active]="rla.isActive"
+              (click)="clicked.emit()">
+
+              <mat-icon *ngIf="child.matIcon" displayDensity="compact" fontSet="material-icons-outlined">{{ child.matIcon }}</mat-icon>
+              <i *ngIf="child.icon"></i>
+              <span class="ml-3">{{ child.title }}</span>
+            </li>
+          </ng-container>
+        </ul>
+      </li>
+    </ng-container>
+  </ng-container>
+</ul>
+  

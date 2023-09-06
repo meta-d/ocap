@@ -1,0 +1,34 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $foreground: map.get($config, foreground);
+  $primary: map.get($config, primary);
+  $accent: map.get($config, accent);
+
+  .pac-model-entity-calculation {
+    .cdk-drop-list.nx-property-modeling__empty {
+      border: 1px dashed mat.get-color-from-palette($foreground, divider);
+    }
+
+    .mat-expansion-panel {
+      background: transparent;
+    }
+  }
+}
+
+@mixin density($config-or-theme) {
+  .pac-model-entity-calculation {
+    .cdk-drop-list.nx-property-modeling__empty {
+      min-height: 50px;
+      // border-radius: .25rem;
+      margin-bottom: 1rem;
+    }
+    .mat-expansion-panel-body {
+      padding: 0 16px;
+    }
+  }
+}

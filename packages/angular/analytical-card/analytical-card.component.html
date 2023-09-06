@@ -1,0 +1,160 @@
+<div *ngIf="!options?.hideHeader" class="ngm-card-header flex justify-between items-center">
+  <div class="ngm-card-header__title">{{ title }}</div>
+  
+  <div class="flex-1 flex justify-end items-center">
+
+    <ng-content></ng-content>
+
+    <mat-button-toggle-group *ngIf="chartSettings?.chartTypes?.length" displayDensity="compact" ngmAppearance="color" color="primary"
+      [(ngModel)]="chartType"  
+    >
+      <mat-button-toggle *ngIf="_dataSettings()?.chartAnnotation?.chartType"
+        [value]="_dataSettings().chartAnnotation.chartType">
+        {{ _dataSettings().chartAnnotation.chartType.name || _dataSettings().chartAnnotation.chartType.type }}
+      </mat-button-toggle>
+      <mat-button-toggle *ngFor="let chartType of chartSettings.chartTypes" [value]="chartType">
+        {{ chartType?.name || chartType?.type }}
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="actions flex justify-around items-center">
+
+    <ng-content select="[ngmAction]"></ng-content>
+
+    <!-- data download -->
+    <button mat-icon-button *ngIf="!options?.hideDataDownload" displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.DataDownload' | translate: {Default: 'Data Download'} "
+      (click)="downloadData()">
+      <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+    </button>
+
+    <!-- screenshot -->
+    <button mat-icon-button *ngIf="!options?.hideScreenshot" displayDensity="cosy" [matTooltip]=" 'Ngm.AnalyticalCard.Screenshot' | translate: {Default: 'Screenshot'} "
+      (click)="screenshot()">
+      <mat-icon fontSet="material-icons-outlined">photo_camera</mat-icon>
+    </button>
+
+    <!-- Refresh & Loading icon -->
+    <button mat-icon-button class="ngm-analytical-card__refresh" displayDensity="cosy"
+      [matTooltip]=" 'Ngm.AnalyticalCard.Refresh' | translate: {Default: 'Refresh'} "
+      [style.visibility]="(isLoading$ | async) ? 'hidden' : 'visible'"
+      (click)="refresh()">
+      <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+    </button>
+    <mat-spinner *ngIf="isLoading$ | async" class="ngm-analytical-card__loading"
+      [diameter]="20"
+      [strokeWidth]="1"
+    >
+    </mat-spinner>
+  </div>
+</div>
+
+<ngm-breadcrumb-bar *ngIf="breadcrumbs$ | async as breadcrumbs" [displayDensity]="appearance?.displayDensity ?? DisplayDensity.compact"
+  [steps]="breadcrumbs"
+  (selectedChange)="reselectDrill($event)"
+  (close)="clearDrill()">
+</ngm-breadcrumb-bar>
+
+<mat-card-content>
+  <div *ngIf="error$ | async as error" class="ngm-card-error">
+    <span class="title-icon text-2xl font-notoColorEmoji">🐞</span>
+    <span>
+      {{ error }}
+    </span>
+  </div>
+
+  <div *ngIf="empty$ | async" class="ngm-card-error">
+    <span class="title-icon text-2xl font-notoColorEmoji">🛒</span>
+    <span>
+      {{ 'Ngm.AnalyticalCard.DataEmpty' | translate: {Default: "Data Empty"} }}
+    </span>
+  </div>
+
+  <ng-container *ngIf="!((error$ | async) || (empty$ | async))">
+    <div echarts class="echarts-chart"
+      [options]="options$ | async"
+      [theme]="chartSettings?.theme ?? 'default'"
+      (chartInit)="onChartInit($event)"
+      (optionsError)="onOptionsError($event)"
+    >
+    </div>
+  </ng-container>
+    
+</mat-card-content>
+
+
+<div style="visibility: hidden; position: absolute;"
+  #contextMenuTrigger="matMenuTrigger"
+    [style.left]="contextMenuPosition.x"
+    [style.top]="contextMenuPosition.y"
+    [matMenuTriggerFor]="contextMenu">
+</div>
+
+<!-- [hasBackdrop]="false" -->
+<mat-menu #contextMenu="matMenu" class="ngm-density__compact">
+	<ng-template matMenuContent let-slicers="slicers">
+
+    <button mat-menu-item (click)="onLinkAnalysis(slicers)">
+      <mat-icon displayDensity="cosy">add_link</mat-icon>
+      {{ 'Ngm.AnalyticalCard.LinkAnalysis' | translate: {Default: "Link Analysis"} }}
+    </button>
+
+    <ng-container *ngIf="canDrillLevels$ | async">
+      <mat-divider></mat-divider>
+      <button mat-menu-item disableRipple disabled>
+        {{ 'Ngm.AnalyticalCard.DrillLevel' | translate: {Default: "Drill Level"} }}
+      </button>
+      <button mat-menu-item *ngFor="let drill of drillLevels$ | async"
+        [matMenuTriggerFor]="drillLevelsMenu"
+        [matMenuTriggerData]="{slicer: drill.slicer, levels: drill.levels}">
+        <mat-icon displayDensity="cosy">format_list_numbered</mat-icon>
+        <div class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis">
+          {{drill.property.caption || drill.property.name}}:{{drill.slicerCaption}}
+        </div>
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="canDrillDimensions$ | async">
+      <mat-divider></mat-divider>
+      <button mat-menu-item disableRipple disabled>
+        {{ 'Ngm.AnalyticalCard.DrillDimension' | translate: {Default: "Drill Dimension"} }}
+      </button>
+
+      <button mat-menu-item *ngFor="let item of dillSlicers$ | async"
+        [matMenuTriggerFor]="drillDimensionsMenu"
+        [matMenuTriggerData]="{slicer: item.value}">
+        <mat-icon displayDensity="cosy">tag</mat-icon>{{ item.label }}
+      </button>
+
+    </ng-container>
+
+    <ng-container *ngIf="dilldown$ | async as slicer">
+      <mat-divider></mat-divider>
+      <button mat-menu-item  (click)="drillDown(slicer)">
+        <mat-icon displayDensity="cosy">arrow_drop_down</mat-icon>
+        {{ 'Ngm.AnalyticalCard.DrillDown' | translate: {Default: "Drill Down"} }}
+      </button>
+    </ng-container>
+		
+	</ng-template>
+</mat-menu>
+
+<mat-menu #drillLevelsMenu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent let-levels="levels" let-slicer="slicer">
+    <button mat-menu-item *ngFor="let item of levels" 
+      [disabled]="item.disabled"
+      (click)="drillLevel({property: item.property, slicer})">
+      <ngm-entity-property [property]="item.property"></ngm-entity-property>
+    </button>
+  </ng-template>
+</mat-menu>
+
+<mat-menu #drillDimensionsMenu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent let-slicer="slicer">
+    <button mat-menu-item *ngFor="let item of drillDimensions$ | async" 
+      [disabled]="item.disabled"
+      (click)="drill({parent: slicer.dimension, dimension: item.dimension, slicer})">
+      <ngm-entity-property [property]="item.property"></ngm-entity-property>
+    </button>
+  </ng-template>
+</mat-menu>

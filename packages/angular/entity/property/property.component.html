@@ -1,0 +1,13 @@
+<ng-container *ngIf="!hiddenIcon">
+  <mat-icon mat-list-icon class="shrink-0" [displayDensity]="displayDensity">{{ icon }}</mat-icon>
+</ng-container>
+
+<ngm-display-behaviour class="flex-1 overflow-hidden"
+  [displayBehaviour]="displayBehaviour"
+  [option]="{
+    value: property.name,
+    caption: property.caption
+  }"
+  [highlight]="highlight"
+>
+</ngm-display-behaviour>

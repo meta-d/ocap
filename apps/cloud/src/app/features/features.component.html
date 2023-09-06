@@ -1,0 +1,130 @@
+<mat-sidenav-container class="pac-features__sidenav-container flex-1 h-full" >
+  <mat-sidenav #sidenav [mode]="sidenavMode" class="nx-theme-dark w-[260px] flex flex-col bg-bluegray-900 text-white">
+    <div class="flex items-center border-b border-b-gray-600">
+      <button class="outline-none border-r border-r-gray-600 hover:text-yellow-600" (click)="sidenavMode==='over' ? sidenavMode='side' : sidenav.toggle()">
+        <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"></pac-sidenav-navigator>
+      </button>
+      <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"></pac-organization-selector>
+    </div>
+
+    <button *ngIf="AbilityActions.Manage | able:'Story'" mat-stroked-button color="accent" class="pac__toolbar-new m-2"
+      [matMenuTriggerFor]="creatMenu"
+      #mt="matMenuTrigger"
+      [class.active]="mt.menuOpen"
+      >
+      <div class="flex justify-center items-center">
+        <mat-icon class="shrink-0">add</mat-icon>
+        <span class="hidden md:inline">
+          {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
+        </span>
+      </div>
+    </button>
+
+    <pac-menu class="flex-1 p-2 flex overflow-auto" [isCollapsed]="isCollapsed" [menu]="menu"
+      (clicked)="onMenuClicked($event, isMobile)">
+    </pac-menu>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="pac_sidenav-content max-h-full overflow-hidden" [ngClass]="{'pac-fullscreen': zIndex > 1}">
+    <mat-toolbar class="pac__shell-bar mat-elevation-z2 flex justify-between items-center md:gap-2">
+      <div class="flex justify-start items-center overflow-hidden">
+        <button *ngIf="!(sidenav.opened && sidenavMode==='side')" class="w-12 outline-none hover:text-yellow-600 transition-colors"
+          (click)="sidenav.toggle();sidenavMode='over'">
+          <span class="flex justify-center items-center">
+            <svg height="26" width="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3,7 h20" style="transition: all 200ms ease 0s;"></path><path d="M3,13 h20" style="transition: all 200ms ease 0s;"></path><path d="M3,19 h20" style="transition: all 200ms ease 0s;"></path><path d="M4,10 L1,13 L4,16" style="opacity: 0; transform: translate(2px, 0px);"></path><path d="M22,10 L25,13 L22,16" style="opacity: 0; transform: translate(-2px, 0px);"></path></svg>
+          </span>
+        </button>
+
+        <span *ngIf="!isMobile" class="pac-home-title text-2xl" routerLink="/home">{{'PAC.title.short' | translate}}</span>
+
+        <button *ngIf="!isMobile" mat-icon-button (click)="back()">
+          <mat-icon>navigate_before</mat-icon>
+        </button>
+
+        <div *ngIf="navigation$ | async as navigation" class="flex items-center text-sm overflow-hidden">
+          <pac-header-project *ngIf="navigation.catalog === MENU_CATALOG.Project" class="h-full rounded-none"></pac-header-project>
+          <span class="font-bold flex items-center cursor-pointer text-slate-300 hover:text-white" (click)="navigate(navigation.catalog)">
+            <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="mx-1">{{navigation.icon}}</mat-icon>
+            <span *ngIf="!isMobile">{{ navigation.catalogName }}</span>
+          </span>
+          <ng-container *ngIf="navigation.id && !isMobile">
+            <span class="mx-1 font-bold">|</span>
+            <span class="text-ellipsis overflow-hidden">{{ navigation.label }}</span>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="flex flex-1">
+      </div>
+
+      <!-- <header-notify></header-notify> -->
+
+      <div class="pac-toolbar-search w-32 md:w-80 flex items-center p-1 max-w-xs rounded-lg bg-gray-500 bg-opacity-25 text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input #searchInput class="flex-1 outline-none bg-transparent placeholder:text-bluegray-300 focus:placeholder:text-bluegray-200"
+          type="text"
+          [placeholder]=" ('PAC.ACTIONS.Search' | translate: {Default: 'Search'})+'...'"
+          [matAutocomplete]="auto"
+          matInput
+          [(ngModel)]="assetsSearch"
+        >
+      </div>
+
+      <mat-autocomplete #auto="matAutocomplete" class="pac-toolbar-search__autocomplete"
+        (opened)="assetsInit=true"
+      >
+        <pac-assets *ngIf="assetsInit" [search]="assetsSearch"></pac-assets>
+        <mat-option class="h-0" style="height: 0; min-height: 0;"></mat-option>
+      </mat-autocomplete>
+
+      <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global>
+      
+      <button mat-icon-button *ngIf="isAuthenticated$ | async as user" class="d-none d-sm-inline"
+        displayDensity="cosy"
+        [popper]="popperContent"
+        [popperTrigger]="NgxPopperjsTriggers.click"
+        [popperHideOnClickOutside]="true"
+        [popperHideOnScroll]="true"
+        [popperPlacement]="NgxPopperjsPlacements.BOTTOMEND"
+      >
+        <img class="avatar w-4/6 h-4/6 m-auto rounded-full" [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" />
+      </button>
+    </mat-toolbar>
+
+    <div class="pac-app__page-outlet z-0" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title">
+      <router-outlet #o="outlet"></router-outlet>
+    </div>
+
+    <pac-status-bar class="pac__status-bar"></pac-status-bar>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+
+<mat-progress-bar *ngIf="loading" class="pac-router__progress-bar absolute top-0 left-0 w-full z-10"
+   color="accent" mode="indeterminate" >
+</mat-progress-bar>
+
+<popper-content #popperContent>
+  <pac-header-settings class="bg-white flex"></pac-header-settings>
+</popper-content>
+
+<mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent">
+  <button mat-menu-item (click)="createQuery()">
+    <mat-icon fontSet="material-icons-outlined">reviews</mat-icon>
+    {{ 'PAC.KEY_WORDS.Query' | translate: {Default: 'Query'} }}
+  </button>
+  <button mat-menu-item (click)="createStory()">
+    <mat-icon fontSet="material-icons-outlined">auto_stories</mat-icon>
+    {{ 'PAC.KEY_WORDS.Story' | translate: {Default: 'Story'} }}
+  </button>
+  <button mat-menu-item (click)="createIndicator()">
+    <mat-icon fontSet="material-icons-outlined">score</mat-icon>
+    {{ 'PAC.KEY_WORDS.Indicator' | translate: {Default: 'Indicator'} }}
+  </button>
+  <button mat-menu-item (click)="createModel()">
+    <mat-icon fontSet="material-icons-outlined">dataset</mat-icon>
+    {{ 'PAC.KEY_WORDS.Model' | translate: {Default: 'Model'} }}
+  </button>
+</mat-menu>

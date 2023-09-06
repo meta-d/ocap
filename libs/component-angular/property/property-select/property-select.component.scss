@@ -1,0 +1,8 @@
+:host {
+  display: flex;
+  flex: 1;
+}
+
+.nx-property-select__create-calculation {
+  @apply flex justify-center items-center;
+}

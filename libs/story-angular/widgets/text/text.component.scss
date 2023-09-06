@@ -1,0 +1,7 @@
+:host {
+    @apply whitespace-pre-wrap flex items-center justify-center;
+
+    &.ngm-intent-navigation {
+        @apply cursor-pointer hover:underline;
+    }
+}

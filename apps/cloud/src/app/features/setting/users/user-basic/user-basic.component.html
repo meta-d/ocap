@@ -1,0 +1,7 @@
+<pac-user-basic-info-form #form class="w-full" [isSuperAdmin]="true" [password]="true"
+    [(ngModel)]="user">
+</pac-user-basic-info-form>
+
+<button mat-flat-button color="primary" (click)="save()" [disabled]="form.form.invalid">
+    {{ 'PAC.ACTIONS.SAVE' | translate: {Default: 'Save'} }}
+</button>

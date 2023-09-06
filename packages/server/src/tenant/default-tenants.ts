@@ -1,0 +1,1 @@
+export const DEFAULT_TENANT = 'Default Tenant';

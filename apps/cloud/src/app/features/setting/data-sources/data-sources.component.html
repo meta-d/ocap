@@ -1,0 +1,60 @@
+<div class="flex justify-start px-2">
+    <div ngmButtonGroup>
+        <button mat-raised-button color="primary" (click)="create()">
+            <div class="flex items-center">
+                <mat-icon>add</mat-icon>
+                {{ 'PAC.ACTIONS.NEW' | translate: {Default: "New"} }} {{ 'PAC.KEY_WORDS.DATA_SOURCE' | translate: {Default: "Data Source"} }}
+            </div>
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 self-stretch mr-4 p-2">
+    <mat-card class="pac-sketch-card" *ngFor="let item of dataSources()" [ngClass]="routeAnimationsElements">
+        <mat-card-header class="overflow-hidden">
+            <div mat-card-avatar>
+                <img src="assets/images/db-logos/{{item.type?.type}}.png">
+            </div>
+            <mat-card-title>
+                <a (click)="edit(item)" class="cursor-pointer">{{item.name}}</a>
+            </mat-card-title>
+            <mat-card-subtitle>
+                {{item.type?.type}}
+            </mat-card-subtitle>
+        </mat-card-header>
+
+        <button mat-icon-button class="pac-sketch-card__menu" displayDensity="cosy"
+            [matMenuTriggerFor]="menu"
+            [matMenuTriggerData]="{item: item}"
+            #mt="matMenuTrigger"
+            [class.active]="mt.menuOpen">
+            <mat-icon>more_vert</mat-icon>
+        </button>
+        
+    </mat-card>
+</div>
+
+<div *ngIf="loading" class="emoji-loader h-full w-full"></div>
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+    <ng-template matMenuContent let-item="item">
+        <button mat-menu-item (click)="edit(item)">
+            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+            <span>
+                {{ 'PAC.ACTIONS.Edit' | translate: {Default: "Edit"} }}
+            </span>
+        </button>
+
+        <button mat-menu-item (click)="copy(item)">
+            <mat-icon fontSet="material-icons-outlined">content_copy</mat-icon>
+            <span>
+                {{ 'PAC.ACTIONS.Copy' | translate: {Default: "Copy"} }}
+            </span>
+        </button>
+
+        <button mat-menu-item ngmAppearance="danger" (click)="remove(item)">
+          <mat-icon fontSet="material-icons-outlined">delete_forever</mat-icon>
+          <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
+        </button>
+    </ng-template>
+</mat-menu>

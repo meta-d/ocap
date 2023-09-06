@@ -1,0 +1,10 @@
+:host {
+  @apply flex flex-col justify-start items-stretch;
+}
+.mat-mdc-input-element {
+  @apply block box-border w-full max-w-full py-1 px-2 text-xs bg-gray-100 text-gray-700 border-2 border-solid border-gray-100 rounded ring-offset-1 ring-2 ring-transparent
+      focus:outline-none;
+  &:not([disabled]) {
+    @apply focus:bg-white focus:border-slate-200 hover:ring-yellow-500/50 focus:ring-yellow-500;
+  }
+}

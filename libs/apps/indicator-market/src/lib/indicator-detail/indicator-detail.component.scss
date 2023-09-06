@@ -1,0 +1,44 @@
+:host {
+  display: flex;
+  flex: 1;
+  max-width: 100%;
+}
+
+.mat-mdc-card {
+  max-width: 100%;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+
+  .mat-mdc-card-header {
+    border-bottom: 1px solid grey;
+    padding: 10px 10px 0 10px;
+  }
+
+  .mat-mdc-card-content {
+    padding: 10px;
+  }
+}
+
+.pac-indicator-app__business {
+  padding: 1rem;
+  border-radius: 1rem;
+  
+  .title {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.pac-indicator-app__comment-remove {
+  @apply absolute top-0 right-0 bg-bluegray-800;
+}
+
+.pac-indicator-app__comment-input {
+  @apply caret-white;
+}
+
+.pac-indicator-app__close {
+  @apply bg-white/10;
+}

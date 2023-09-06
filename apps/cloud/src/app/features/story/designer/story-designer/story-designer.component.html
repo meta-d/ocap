@@ -1,0 +1,10 @@
+<div class="text-lg p-2">
+    {{ 'PAC.Story.GlobalStyles' | translate: {Default: 'Global Styles'} }}
+</div>
+<formly-form
+    [fields]="fields"
+    [options]="options"
+    [form]="formGroup"
+    [model]="model"
+    (modelChange)="onModelChange($event)"
+></formly-form>

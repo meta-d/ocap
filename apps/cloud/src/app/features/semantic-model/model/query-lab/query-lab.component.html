@@ -1,0 +1,52 @@
+<mat-toolbar class="pac-nav-toolbar flex" displayDensity="compact">
+  <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="accent" disableRipple mat-stretch-tabs="false" mat-align-tabs="start" class="pac-model-query__nav flex-1"
+    cdkDropList cdkDropListOrientation="horizontal"
+    [cdkDropListData]="queries()"
+    (cdkDropListDropped)="sortQueries($event)">
+    <span mat-tab-link *ngFor="let query of queries(); index as i; trackBy: trackByKey"
+      [routerLink]="query.key"
+      routerLinkActive #rla="routerLinkActive"
+      [active]="rla.isActive"
+      cdkDrag [cdkDragData]="query" cdkDragBoundary=".pac-model-query__nav" 
+    >
+      <span *ngIf="isDirty(query.key)" class="pac-badge-status-dot"></span>
+      <span class="pac-nav-tab__label max-w-[200px] overflow-hidden text-ellipsis"
+        [matTooltip]="query.name"
+        [matTooltipShowDelay]="1000"
+      >
+        {{query.name}}
+      </span>
+  
+      <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
+        [matMenuTriggerFor]="menu"
+        [matMenuTriggerData]="{key: query.key}"
+        >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      
+    </span>
+  
+    <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'PAC.MODEL.QUERY.New' | translate: {Default: 'New Query'} "
+      (click)="addQuery()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </nav>
+</mat-toolbar>
+
+<mat-tab-nav-panel #tabPanel class="flex-1 overflow-hidden">
+  <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent let-key="key">
+    <button mat-menu-item (click)="renameQuery(key)">
+      <mat-icon fontSet="material-icons-outlined">drive_file_rename_outline</mat-icon>
+      <span>{{ 'PAC.KEY_WORDS.RENAME' | translate: {Default: "Rename"} }}</span>
+    </button>
+  
+    <button mat-menu-item ngmAppearance="danger" (click)="deleteQuery(key)">
+      <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
+      <span>{{ 'PAC.KEY_WORDS.DELETE' | translate: {Default: "Delete"} }}</span>
+    </button>
+  </ng-template>
+</mat-menu>

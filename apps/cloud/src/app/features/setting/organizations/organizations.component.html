@@ -1,0 +1,60 @@
+<div class="flex justify-between items-center">
+  <div class="text-lg">
+    {{ 'PAC.MENU.MANAGE_ORGANIZATIONS' | translate: {Default: "Manage Organizations"} }}
+  </div>
+
+  <div ngmButtonGroup displayDensity="cosy">
+    <button mat-raised-button color="primary" displayDensity="cosy" (click)="addOrganization()">
+      <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">add</mat-icon>{{ 'PAC.ACTIONS.ADD' | translate: {Default: "Add"} }}
+    </button>
+  </div>
+</div>
+
+<nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
+  paging
+  [data]="organizations$ | async"
+  [columns]="[
+    {
+      name: 'imageUrl',
+      caption: 'PAC.KEY_WORDS.Logo' | translate: {Default: 'Logo'},
+      cellTemplate: avatarTempl
+    },
+    {
+      name: 'name',
+      caption: 'PAC.KEY_WORDS.NAME' | translate: {Default: 'Name'}
+    },
+    {
+      name: 'totalEmployees',
+      caption: 'PAC.ORGANIZATIONS_PAGE.Organization.TotalEmployees' | translate: {Default: 'Total Employees'}
+    },
+    {
+      name: 'currency',
+      caption: 'PAC.KEY_WORDS.CURRENCY' | translate: {Default: 'Currency'}
+    },
+    {
+      name: 'action',
+      caption: 'PAC.KEY_WORDS.ACTION' | translate: { Default: 'Action' },
+      cellTemplate: actionTempl
+    }
+  ]"
+></nx-table>
+
+<ng-template #avatarTempl let-imageUrl let-name="name">
+  <pac-org-avatar [organization]="{imageUrl, name}" class="block w-8 h-8 rounded-full overflow-hidden"></pac-org-avatar>
+</ng-template>
+
+<ng-template #actionTempl let-loading="loading" let-id="id">
+  <div class="flex items-center">
+    <button mat-icon-button displayDensity="cosy" class="text-gray-400" (click)="editOrganization(id)">
+      <div class="flex justify-center items-center">
+        <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+      </div>
+    </button>
+
+    <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="text-gray-400"
+      [disabled]="loading"
+      (click)="deleteOrganization(id)">
+      <div class="flex justify-center items-center"><mat-icon fontSet="material-icons-outlined">delete</mat-icon></div>
+    </button>
+  </div>
+</ng-template>

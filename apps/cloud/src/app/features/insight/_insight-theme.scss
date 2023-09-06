@@ -1,0 +1,75 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@mixin color($config-or-theme) {
+  $config: mat.get-color-config($config-or-theme);
+  $background: map.get($config, background);
+  $primary: map.get($config, primary);
+
+  .pac-insight-board__widgets {
+    .mat-content {
+      align-items: center;
+    }
+    .mat-expansion-panel {
+      // flex: 1;
+      border-radius: 0.25rem;
+      box-shadow: 0 0.125rem 0.6875rem 0 mat.get-color-from-palette($primary, 100);
+      border: 1px solid mat.get-color-from-palette($primary, 300);
+    }
+
+    .mat-expansion-panel-header-title, .mat-expansion-panel-header-description {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+
+    .nx-story-widget__component-container {
+      box-shadow: unset;
+    }
+    .mat-card {
+      box-shadow: unset;
+    }
+  }
+
+  .pac-insight-board__hit {
+    padding: 1rem;
+    width: 500px;
+  }
+  .pac-insight-board__widgets {
+    display: flex;
+    flex-direction: column;
+    width: 800px;
+    .pac-insight-widget {
+      flex: 1;
+
+      nx-analytical-card {
+        height: 300px;
+      }
+
+      nx-kpi-card {
+        height: 200px;
+        .nx-kpi--data-point {
+          font-size: 3rem;
+          line-height: 4rem;
+          .nx-kpi--title, .nx-object-number--short-unit {
+            font-size: 2rem;
+          }
+        }
+      }
+    }
+  }
+
+  .pac-insight-board__search-bar {
+    font-size: 14px;
+
+    .pac-insight-board__search-field {
+      width: 500px;
+      margin: auto;
+    }
+    
+  }
+}
