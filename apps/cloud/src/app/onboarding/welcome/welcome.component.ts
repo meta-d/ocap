@@ -1,14 +1,14 @@
 import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { Router } from '@angular/router'
-import { TranslateService } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
   selector: 'ngm-onboarding-welcome',
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss'],
-  imports: [MatButtonModule]
+  imports: [MatButtonModule, TranslateModule]
 })
 export class WelcomeComponent {
   private translate = inject(TranslateService)

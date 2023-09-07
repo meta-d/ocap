@@ -17,13 +17,15 @@ import {
 import { pick } from '@metad/server-common'
 import { ConfigService, getConnectionOptions } from '@metad/server-config'
 import { Organization, OrganizationDemoCommand, RequestContext } from '@metad/server-core'
-import { Inject } from '@nestjs/common'
+import { Inject, Logger } from '@nestjs/common'
 import { ConfigService as NestConfigService } from '@nestjs/config'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as fs from 'fs'
-import { assign, isString } from 'lodash'
 import * as path from 'path'
+import * as unzipper from 'unzipper'
+import * as _axios from 'axios'
+import { assign, isString } from 'lodash'
 import { RedisClientType } from 'redis'
 import { Repository } from 'typeorm'
 import { dataLoad, prepareDataSource } from '../../../data-source/utils'
@@ -42,8 +44,12 @@ import {
 import { readYamlFile } from '../../helper'
 import { REDIS_CLIENT } from '../../redis.module'
 
+const axios = _axios.default
+
 @CommandHandler(OrganizationDemoCommand)
 export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemoCommand> {
+	private readonly logger = new Logger(OrganizationDemoHandler.name)
+
 	tenant: ITenant
 	organization: Organization
 	owner: IUser
@@ -79,49 +85,27 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	) {}
 
 	public async execute(command: OrganizationDemoCommand): Promise<void> {
+		const { id, options } = command.input
 		const userId = RequestContext.currentUserId()
-		const organization = await this.orgRepository.findOne(command.input.id, { relations: ['tenant'] })
+		const organization = await this.orgRepository.findOne(id, { relations: ['tenant'] })
 		this.organization = organization
 		this.tenant = organization.tenant
 		this.owner = RequestContext.currentUser()
 
-		const idDemo = this.configService.get('demo')
+		const isDemo = this.configService.get('demo') as boolean
 		const withDoris = this.nestConfigService.get('INSTALLATION_MODE') === 'with-doris'
 		const withStarrocks = this.nestConfigService.get('INSTALLATION_MODE') === 'with-starrocks'
 		const standalone = !this.nestConfigService.get('INSTALLATION_MODE') || this.nestConfigService.get('INSTALLATION_MODE') === 'standalone'
 
-		console.log(
-			'Generate demo data for tenant',
-			organization.tenantId,
-			'organzation',
-			organization.id,
-			'user',
-			userId
-		)
+		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
+		
+		//extracted import data files directory path
+		const assetPath = this.configService.assetOptions.assetPath
+		const demosFolder = path.join(assetPath, 'demos')
+		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.4.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.4.0.zip'
+	    const files = await this.unzipAndRead(file, assetPath)
 
-		// await seedTenantDefaultData(
-		// 	this.dstService,
-		// 	this.dsRepository,
-		// 	this.businessAreaRepository,
-		// 	this.businessAreaUserRepository,
-		// 	this.modelRepository,
-		// 	this.modelService,
-		// 	this.storyRepository,
-		// 	this.storyPointRepository,
-		// 	this.storyWidgetRepository,
-		// 	this.indicatorRepository,
-		// 	organization.tenantId,
-		// 	userId,
-		// 	organization.id,
-		// 	this.commandBus
-		// )
-
-		const demosFolder = path.join(this.configService.assetOptions.assetPath, 'demos')
-		const files = fs.readdirSync(demosFolder).filter((file) => {
-			return path.extname(file).toLowerCase() === '.yml'
-		})
-
-		console.log(`Read demos files: `, files)
+		this.logger.debug(files)
 
 		for await (const file of files) {
 			const sheets = await readYamlFile<
@@ -177,7 +161,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 							} else if (withDoris && item.type === DORIS_TYPE) {
 								dataSourceEntity = await this.createDorisDataSource(item)
 							} else {
-								dataSourceEntity = await this.createDataSource(item)
+								dataSourceEntity = await this.createDataSource(item, isDemo)
 							}
 						}
 						dataSourceId = dataSourceEntity.id
@@ -194,7 +178,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					}))
 				}
 
-				if (idDemo && dataset) {
+				if (!isDemo && dataset) {
 					if (!Array.isArray(dataset)) {
 						throw new Error(`'dataset' must be an array`)
 					}
@@ -267,6 +251,36 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 
 		return Promise.resolve()
 	}
+
+	public async unzipAndRead(url: string, assetPath = '') {
+		const demoFilePath = path.join(assetPath, 'demos.zip')
+		await this.downloadDemoFile(url, demoFilePath)
+
+		const directory = await unzipper.Open.file(demoFilePath)
+		await directory.extract({ path: assetPath })
+
+		const demosFolder = path.join(assetPath, 'demos')
+		const files = fs.readdirSync(demosFolder).filter((file) => {
+			return path.extname(file).toLowerCase() === '.yml'
+		})
+		return files
+	}
+
+	async downloadDemoFile(url: string, destination: string) {  
+		const writer = fs.createWriteStream(destination)
+		const response = await axios({
+			url,
+			method: 'GET',
+			responseType: 'stream'
+		  })
+		
+		response.data.pipe(writer)
+	  
+		return new Promise((resolve, reject) => {
+		  writer.on('finish', resolve)
+		  writer.on('error', reject)
+		})
+	  }
 
 	async createDorisDataSource(_dataSource: IDataSource): Promise<DataSource> {
 		// Remove existing data sources with the same name
@@ -360,7 +374,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		return await this.dsRepository.save(dataSource)
 	}
 
-	async createDataSource(dataSource: IDataSource) {
+	async createDataSource(dataSource: IDataSource, isDemo: boolean) {
 		// Remove existing data sources with the same name
 		const dataSources = await this.dsRepository.find({
 			where: {
@@ -399,6 +413,12 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 			...(dataSource.options ?? {}),
 			host: dataSource.options?.host ?? connection.host,
 			port: dataSource.options?.port ?? connection.port
+		}
+
+		if (!isDemo) {
+			_dataSource.options.database = connection.database
+			_dataSource.options.password = connection.password
+			_dataSource.options.username = connection.username
 		}
 
 		return await this.dsRepository.save(_dataSource)

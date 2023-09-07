@@ -3,11 +3,16 @@ import { ITenant } from '@metad/contracts'
 import { Connection } from 'typeorm'
 import { DataSourceType } from './data-source-type.entity'
 
-export const createDefaultDataSourceTypes = async (
+export const seedDefaultDataSourceTypes = async (
 	connection: Connection,
 	tenant: ITenant
 ): Promise<DataSourceType[]> => {
-	const types = Object.entries(QUERY_RUNNERS).map(([type, QueryRunner]) => {
+	const types = createDefaultDataSourceTypes(tenant)
+	return await connection.manager.save(types)
+}
+
+export function createDefaultDataSourceTypes(tenant: ITenant) {
+	return Object.entries(QUERY_RUNNERS).map(([type, QueryRunner]) => {
 		const queryRunner = new QueryRunner({} as AdapterBaseOptions)
 		const dsType = new DataSourceType()
 		dsType.tenant = tenant
@@ -18,6 +23,4 @@ export const createDefaultDataSourceTypes = async (
 		dsType.configuration = queryRunner.configurationSchema
 		return dsType
 	})
-
-	return await connection.manager.save(types)
 }

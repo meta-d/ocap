@@ -102,16 +102,17 @@ export class RolePermissionService extends TenantAwareCrudService<RolePermission
 					tenantId: tenant.id
 				}
 			})).items;
-			for await (const role of roles) {
+			for (const role of roles) {
 				const defaultPermissions = DEFAULT_ROLE_PERMISSIONS.find(
 					(defaultRole) => role.name === defaultRole.role
 				);
-				const permissions = Object.values(PermissionsEnum).filter(
-					(permission: PermissionsEnum) => environment.demo ? !deniedPermissions.includes(permission) : true
-				);
-				for await (const permission of permissions) {
-					if (defaultPermissions) {
-						const { defaultEnabledPermissions = [] } = defaultPermissions;
+
+				if (defaultPermissions) {
+					const { defaultEnabledPermissions = [] } = defaultPermissions;
+					for (const permission of defaultEnabledPermissions) {
+						if (environment.demo ? deniedPermissions.includes(permission) : false) {
+							continue
+						}
 						const rolePermission = new RolePermission();
 						rolePermission.roleId = role.id;
 						rolePermission.permission = permission;

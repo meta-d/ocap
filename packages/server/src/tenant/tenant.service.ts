@@ -43,7 +43,7 @@ export class TenantService extends CrudService<Tenant> {
 		const { isImporting = false, sourceId = null, defaultOrganization } = entity;
 
 		//1. Create Tenant of user.
-		const tenant = await this.create(entity);
+		const tenant = await this.create({...entity, createdBy: user});
 
 		//2. Create Role/Permissions to relative tenants.
 		await this.commandBus.execute(
@@ -106,8 +106,16 @@ export class TenantService extends CrudService<Tenant> {
 		}
 		
 		//7. Create default organization for tenant.
-		const organization = await this.commandBus.execute(new OrganizationCreateCommand(
-			{...defaultOrganization, tenant, tenantId} as IOrganizationCreateInput))
+		if (defaultOrganization) {
+			const organization = await this.commandBus.execute(new OrganizationCreateCommand(
+				{...defaultOrganization, tenant, tenantId} as IOrganizationCreateInput))
+			tenant.organizations = [organization]
+		}
+
+		//8. Apply tenant created event
+		const _tenant = this.publisher.mergeObjectContext(tenant)
+		_tenant.apply(new TenantCreatedEvent(tenant.id))
+		_tenant.commit()
 
 		return tenant;
 	}

@@ -5,6 +5,7 @@ import { IUser } from '@metad/contracts'
 import { UsersService } from '@metad/cloud/state'
 import * as Sentry from "@sentry/angular";
 import { NgxPermissionsService } from 'ngx-permissions'
+import { firstValueFrom } from 'rxjs'
 import { AuthStrategy } from '../../@core/auth/auth-strategy.service'
 import { Store } from '../../@core/services/store.service'
 import { AbilityActions, RolesEnum } from '../types'
@@ -65,7 +66,7 @@ export class AppInitService {
         // Sentry identify user
         Sentry.setUser({ id: this.user.id, email: this.user.email, username: this.user.username })
       } else {
-        const onboarded = await this.tenantService.getOnboard()
+        const onboarded = await firstValueFrom(this.tenantService.getOnboard())
         if (!onboarded) {
           this.router.navigate(['/onboarding/'])
           return

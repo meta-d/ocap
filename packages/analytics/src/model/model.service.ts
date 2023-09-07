@@ -263,7 +263,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	}
 
 	private async innerOlap(query: string, language: string, roleNames?: string[]) {
-		const olapHost = this.configService.get<string>('OLAP_HOST') || 'olap'
+		const olapHost = this.configService.get<string>('OLAP_HOST') || 'localhost'
 		const olapPort = this.configService.get<string>('OLAP_PORT') || '8080'
 
 		const headers = {

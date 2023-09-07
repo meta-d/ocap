@@ -52,7 +52,7 @@ export class OrganizationsService {
     )
   }
 
-  demo(id: string) {
-    return this.http.post(`${API_PREFIX}/organization/${id}/demo`, {})
+  demo(id: string, body?: any) {
+    return this.http.post(`${API_PREFIX}/organization/${id}/demo`, body)
   }
 }

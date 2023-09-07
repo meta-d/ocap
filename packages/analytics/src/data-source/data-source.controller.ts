@@ -175,7 +175,11 @@ export class DataSourceController extends CrudController<DataSource> {
 
 	@Post('/ping')
 	async ping(@Body() body: IDataSource): Promise<void> {
-		return this.dsService.ping(body)
+		try {
+			return await this.dsService.ping(body)
+		} catch (err) {
+			throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR)
+		}
 	}
 
 	@Post('/:id/ping')

@@ -4,7 +4,21 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 	{
 		role: RolesEnum.SUPER_ADMIN,
 		defaultEnabledPermissions: [
-
+			AnalyticsPermissionsEnum.DATA_SOURCE_EDIT,
+			AnalyticsPermissionsEnum.DATA_SOURCE_VIEW,
+			AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT,
+			AnalyticsPermissionsEnum.BUSINESS_AREA_VIEW,
+			AnalyticsPermissionsEnum.MODELS_EDIT,
+			AnalyticsPermissionsEnum.MODELS_VIEW,
+			AnalyticsPermissionsEnum.STORIES_EDIT,
+			AnalyticsPermissionsEnum.STORIES_VIEW,
+			AnalyticsPermissionsEnum.INDICATOR_EDIT,
+			AnalyticsPermissionsEnum.INDICATOR_VIEW,
+			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
+			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_EDIT,
+			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
+			AnalyticsPermissionsEnum.INSIGHT_EDIT,
+			AnalyticsPermissionsEnum.INSIGHT_VIEW,
         ],
 	},
 	{

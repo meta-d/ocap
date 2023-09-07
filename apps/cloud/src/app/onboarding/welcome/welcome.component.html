@@ -1,11 +1,20 @@
 <div class="w-[500px] max-w-full flex flex-col justify-center items-center gap-4">
     <img src="/assets/logo.svg" class="w-20 h-20">
-    <div class="text-3xl text-bluegray-500">Welcome to Metad Platform</div>
-    <div class="text-lg text-center">Looks like everything is working. Now let's get to know you, connect to your data, and start finding you some answers!</div>
+    <div class="text-3xl text-bluegray-500">
+        {{ 'PAC.Onboarding.Welcome' | translate: {Default: 'Welcome to Metad Analytics Platform'} }}
+    </div>
+    <div class="text-lg text-center">
+        {{ 'PAC.Onboarding.WelcomeInfo' | translate: {Default: 'Looks like everything is working. Now let\'s get to know you, connect to your data, and start finding you some answers!'} }}
+    </div>
 
-    <button mat-raised-button color="primary" class="text-lg" (click)="navigateTenant()">Let's get started</button>
+    <button mat-raised-button color="primary" class="text-lg" (click)="navigateTenant()">
+        {{ 'PAC.Onboarding.LetGetStarted' | translate: {Default: 'Let\'s get started'} }}
+    </button>
 </div>
 
 <div class="absolute bottom-4 p-4 ">
-    If you feel stuck, <a href="https://www.mtda.cloud/docs/deploy/" class="text-bluegray-500">our getting started guide</a> is just a click away.
+    {{ 'PAC.Onboarding.FeelStuck' | translate: {Default: 'If you feel stuck'} }}
+    , <a href="https://www.mtda.cloud/docs/deploy/" class="text-bluegray-500">
+        {{ 'PAC.Onboarding.OurGuide' | translate: {Default: 'our getting started guide'} }}
+        </a> {{ 'PAC.Onboarding.ClickAway' | translate: {Default: 'is just a click away'} }}.
 </div>

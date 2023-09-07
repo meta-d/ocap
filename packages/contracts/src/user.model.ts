@@ -110,7 +110,6 @@ export interface IUserPasswordInput {
 export enum LanguagesEnum {
 	CHINESE = "zh",
 	ENGLISH = 'en',
-	ZhHans = 'zh-Hans',
 	ZhHant = 'zh-Hant',
 }
 

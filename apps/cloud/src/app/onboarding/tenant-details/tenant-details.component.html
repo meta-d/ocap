@@ -3,92 +3,182 @@
 </div>
 <mat-divider class="w-full"></mat-divider>
 
-<mat-vertical-stepper class="w-[600px] max-w-full my-4 shadow-lg rounded-lg" [linear]="false" #stepper>
-  <mat-step [stepControl]="preferredLanguageFormGroup" [editable]="!loading()">
+<mat-vertical-stepper class="w-[600px] max-w-full my-4 shadow-lg rounded-lg" [linear]="true" #stepper>
+  <mat-step [stepControl]="preferredLanguageFormGroup" [editable]="!tenantCompleted() && !loading()">
     <form [formGroup]="preferredLanguageFormGroup">
-      <ng-template matStepLabel>What's your preferred Language</ng-template>
+      <ng-template matStepLabel>
+        {{ 'PAC.Onboarding.WhatsPreferredLanguage' | translate: {Default: 'What\'s your preferred Language'} }}
+      </ng-template>
 
-      <p>This language will be used throughout Metad platform and will be the default for new users.</p>
+      <p>{{ 'PAC.Onboarding.PreferredLanguageDescription' | translate: {Default: 'This language will be used throughout Metad analytics platform and will be the default for new users.'} }}</p>
 
       <mat-selection-list [multiple]="false" formControlName="preferredLanguage">
         <mat-list-option *ngFor="let language of Languages" [value]="language">
-          {{ language }}
+          {{ 'PAC.Languages.' + language | translate: {Default: language } }}
         </mat-list-option>
       </mat-selection-list>
 
       <div>
-        <button mat-flat-button color="primary" matStepperNext>Next</button>
+        <button mat-flat-button color="primary" matStepperNext>
+          {{ 'PAC.Onboarding.Next' | translate: {Default: 'Next'} }}
+        </button>
       </div>
     </form>
   </mat-step>
-  <mat-step [stepControl]="userFormGroup" [editable]="!loading()">
+  <mat-step [stepControl]="userFormGroup" [editable]="!tenantCompleted() && !loading()">
     <form [formGroup]="userFormGroup" class="flex flex-col gap-4">
-      <ng-template matStepLabel>What should we call you?</ng-template>
+      <ng-template matStepLabel> {{ 'PAC.Onboarding.WhatCallYou' | translate: {Default: 'What should we call you'} }}?</ng-template>
 
       <div class="grid grid-cols-2 gap-2">
         <mat-form-field>
-			<mat-label>
-				First name
-			</mat-label>
+          <mat-label>{{ 'PAC.Onboarding.FirstName' | translate: {Default: 'First name'} }}</mat-label>
           <input matInput formControlName="firstName" />
         </mat-form-field>
 
         <mat-form-field>
-			<mat-label>
-				Last name
-			</mat-label>
+          <mat-label>{{ 'PAC.Onboarding.LastName' | translate: {Default: 'Last name'} }}</mat-label>
           <input matInput formControlName="lastName" />
         </mat-form-field>
 
-		<mat-form-field class="col-span-2">
-			<mat-label>
-				Email
-			</mat-label>
-			<input matInput placeholder="email" formControlName="email" />
-		</mat-form-field>
+        <mat-form-field class="col-span-2">
+          <mat-label>{{ 'PAC.Onboarding.Email' | translate: {Default: 'Email'} }}</mat-label>
+          <input matInput placeholder="email" formControlName="email" />
+        </mat-form-field>
 
-		<mat-form-field class="col-span-2">
-			<mat-label>
-				Company or team name
-			</mat-label>
-			<input matInput placeholder="Your company or team name" formControlName="organizationName" />
-		</mat-form-field>
+        <mat-form-field class="col-span-2">
+          <mat-label>{{ 'PAC.Onboarding.CompanyTeamName' | translate: {Default: 'Company or team name'} }}</mat-label>
+          <input matInput formControlName="organizationName" />
+        </mat-form-field>
 
-		<mat-form-field class="col-span-2">
-			<mat-label>
-				Create a password
-			</mat-label>
-			<input matInput type="password" placeholder="*******" formControlName="password" />
-			<mat-error *ngIf="minlengthError() as error">Min length {{error.requiredLength}} actual length is {{error.actualLength}}</mat-error>
-		</mat-form-field>
+        <mat-form-field class="col-span-2">
+          <mat-label>{{ 'PAC.Onboarding.CreateAPassword' | translate: {Default: 'Create a password'} }}</mat-label>
+          <input matInput type="password" placeholder="*******" formControlName="password" />
+          <mat-error *ngIf="minlengthError() as error">
+            {{ 'PAC.Onboarding.Minlength' | translate: {Default: 'Min length'} }} {{error.requiredLength}} {{ 'PAC.Onboarding.Actuallength' | translate: {Default: 'actual length'} }} {{error.actualLength}}</mat-error>
+        </mat-form-field>
 
-		<mat-form-field class="col-span-2">
-			<mat-label>
-				Confirm your password
-			</mat-label>
-			<input matInput type="password" placeholder="*******" formControlName="confirmPassword" />
-			<mat-error *ngIf="mustMatchError()">Password must match</mat-error>
-		</mat-form-field>
+        <mat-form-field class="col-span-2">
+          <mat-label>{{ 'PAC.Onboarding.ConfirmYourPassword' | translate: {Default: 'Confirm your password'} }}</mat-label>
+          <input matInput type="password" placeholder="*******" formControlName="confirmPassword" />
+          <mat-error *ngIf="mustMatchError()">{{ 'PAC.Onboarding.PasswordMustMatch' | translate: {Default: 'Password must match'} }}</mat-error>
+        </mat-form-field>
       </div>
 
       <div class="flex items-center gap-4">
-        <button mat-flat-button color="primary" matStepperPrevious>Back</button>
         <button mat-flat-button color="primary" [disabled]="userFormGroup.invalid || loading()"
-			(click)="onboard()"
-		>Next</button>
+          (click)="onboard()"
+        >{{ 'PAC.Onboarding.Next' | translate: {Default: 'Next'} }}</button>
       </div>
     </form>
   </mat-step>
-  <mat-step [editable]="!loading()">
-    <ng-template matStepLabel>Done</ng-template>
-    You are now done.
 
+  <mat-step [stepControl]="demoFormGroup" [editable]="!demoCompleted() && !loading()">
+    <ng-template matStepLabel>{{ 'PAC.Onboarding.WantGenerateDemo' | translate: {Default: 'Do you want to generate samples'} }}?</ng-template>
+
+    <div class="my-8">{{ 'PAC.Onboarding.GenerateDemoDescription' | translate: {Default: 'The system will download the demo data file from the server link, import the data into the system database, and create the corresponding samples'} }}.</div>
+
+    <form [formGroup]="demoFormGroup" class="flex flex-col">
+      <label>{{ 'PAC.Onboarding.SelectNetwork' | translate: {Default: 'Select Network'} }}</label>
+      <mat-radio-group formControlName="source">
+        <mat-radio-button value="github">GitHub</mat-radio-button>
+        <mat-radio-button value="aliyun">Aliyun oss</mat-radio-button>
+      </mat-radio-group>
+    </form>
+
+    <div class="flex justify-center items-center w-full h-24">
+      <mat-spinner *ngIf="loading()" diameter="30"></mat-spinner>
+      <mat-error *ngIf="demoError() as error" class="">{{error}}</mat-error>
+    </div>
 
     <div class="flex items-center gap-4">
-      <button mat-flat-button color="primary" matStepperPrevious>Back</button>
-      <button mat-flat-button color="primary" (click)="navigateHome()">
-        Let's get started
-      </button>
+      <button mat-flat-button matStepperNext>{{ 'PAC.Onboarding.Skip' | translate: {Default: 'Skip'} }}</button>
+      <button mat-flat-button color="primary" [disabled]="demoFormGroup.invalid || loading()"
+        (click)="generateDemo()"
+      >{{ 'PAC.Onboarding.Generate' | translate: {Default: 'Generate'} }}</button>
+    </div>
+  </mat-step>
+
+  <mat-step [editable]="!loading()" [editable]="!connectionCompleted()">
+    <ng-template matStepLabel>{{ 'PAC.Onboarding.AddYourData' | translate: {Default: 'Add your data'} }}</ng-template>
+
+    <div class="w-full flex flex-col gap-4">
+      <div>
+        <p>{{ 'PAC.Onboarding.ReadyExploringYourData' | translate: {Default: 'Are you ready to start exploring your data? Add it below.'} }}</p>
+        <p>{{ 'PAC.Onboarding.NotReadySample' | translate: {Default: 'Not ready? Skip and play around with our Samples.'} }}</p>
+      </div>
+
+      <ngm-search class="w-full" [formControl]="searchControl"></ngm-search>
+      <form [formGroup]="dataSourceTypeFormGroup" class="w-full flex flex-col gap-4">
+        <div class="max-h-80 w-full overflow-auto">
+          <mat-selection-list formControlName="type" disableRipple [multiple]="false" [compareWith]="compareTypeFn" >
+            <mat-list-option *ngFor="let item of filteredDataSourceTypes()" [value]="item" class="rounded-lg mb-1">
+                <span>
+                    <img src="assets/images/db-logos/{{item.type}}.png" width="32" height="32" class="m-0 inline-block">
+                    {{item.name}}
+                </span>
+            </mat-list-option>
+          </mat-selection-list>
+        </div>
+
+        <ng-container *ngIf="type">
+          <div class="flex flex-col justify-start items-center">
+            <img src="assets/images/db-logos/{{type.type}}.png" width="32" height="32" class="m-0 inline-block">
+            <div>{{type.name}}</div>
+          </div>
+          <mat-form-field appearance="fill">
+              <mat-label>
+                  {{ 'PAC.Onboarding.DisplayName' | translate: {Default: 'Display Name'} }}
+              </mat-label>
+              <input matInput formControlName="name">
+              <mat-error *ngIf="dataSourceNameError()">
+                  {{ 'PAC.Onboarding.NameRequired' | translate: {Default: 'Name Required'} }}
+              </mat-error>
+          </mat-form-field>
+
+          <formly-form
+            [form]="dataSourceTypeFormGroup"
+            [fields]="formlyFields()"
+            [model]="model"
+            (modelChange)="onModelChange($event)"
+            >
+        </formly-form>
+        </ng-container>
+      </form>
+
+      <div *ngIf="type" class="flex justify-end items-center gap-4">
+        <button mat-flat-button matStepperNext>{{ 'PAC.Onboarding.Skip' | translate: {Default: 'Skip'} }}</button>
+        <button mat-flat-button color="primary" [disabled]="dataSourceTypeFormGroup.invalid || loading()"
+          (click)="connectDatabase()"
+        >{{ 'PAC.Onboarding.ConnectDatabase' | translate: {Default: 'Connect database'} }}</button>
+      </div>
+
+      <div *ngIf="!type">
+        <a class="cursor-pointer" (click)="stepper.next()">
+          {{ 'PAC.Onboarding.AddDataLater' | translate: {Default: 'I\'ll add my data later'} }}
+          </a>
+      </div>
+    </div>
+  </mat-step>
+
+  <mat-step [editable]="!loading()">
+    <ng-template matStepLabel>{{ 'PAC.Onboarding.Done' | translate: {Default: 'Done'} }}</ng-template>
+    <div class="flex flex-col justify-start items-center gap-4">
+      <div class="text-3xl text-bluegray-500 p-8">{{ 'PAC.Onboarding.AllSetup' | translate: {Default: 'You\'re all set up!'} }} </div>
+
+      <mat-divider class="w-full"></mat-divider>
+
+      <div class="p-8">
+        <button mat-raised-button color="primary" (click)="navigateHome()">
+          {{ 'PAC.Onboarding.TakeMetoMetadAnalyticsPlatform' | translate: {Default: 'Take me to Metad Analytics Platform'} }}
+        </button>
+      </div>
     </div>
   </mat-step>
 </mat-vertical-stepper>
+
+<div class="p-4 my-8">
+  {{ 'PAC.Onboarding.FeelStuck' | translate: {Default: 'If you feel stuck'} }}
+  , <a href="https://www.mtda.cloud/docs/deploy/" class="text-bluegray-500">
+      {{ 'PAC.Onboarding.OurGuide' | translate: {Default: 'our getting started guide'} }}
+      </a> {{ 'PAC.Onboarding.ClickAway' | translate: {Default: 'is just a click away'} }}.
+</div>

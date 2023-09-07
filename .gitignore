@@ -51,7 +51,6 @@ Thumbs.db
 # sqlite3 database
 *.sqlite3
 *.sqlite3-journal
-.scripts/*.d/
 
 /ormlogs.log
 

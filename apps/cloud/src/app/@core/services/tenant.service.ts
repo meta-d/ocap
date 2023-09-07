@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { ITenant, ITenantCreateInput, ITenantSetting } from '@metad/contracts'
 import { API_PREFIX } from '@metad/cloud/state'
-import { firstValueFrom } from 'rxjs'
+import { delay, firstValueFrom, of } from 'rxjs'
 
 
 @Injectable({ providedIn: 'root' })
 export class TenantService {
-  constructor(private http: HttpClient) {}
+
+  private readonly http = inject(HttpClient)
 
   API_URL = `${API_PREFIX}/tenant`
 
@@ -15,10 +16,12 @@ export class TenantService {
     return firstValueFrom(this.http.post<ITenant>(`${this.API_URL}`, createInput))
   }
   getOnboard() {
-    return firstValueFrom(this.http.get<ITenant>(`${this.API_URL}/onboard`))
+    return this.http.get<ITenant>(`${this.API_URL}/onboard`)
   }
   onboard(createInput: ITenantCreateInput): Promise<ITenant> {
     return firstValueFrom(this.http.post<ITenant>(`${this.API_URL}/onboard`, createInput))
+
+    // return firstValueFrom(of({}).pipe(delay(1000)))
   }
 
   getSettings() {

@@ -138,11 +138,11 @@ export class OrganizationController extends CrudController<Organization> {
 	})
 	@HttpCode(HttpStatus.OK)
 	@UseGuards(RoleGuard, TenantPermissionGuard)
-	@Roles(RolesEnum.ADMIN, RolesEnum.TRIAL)
+	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Post(':id/demo')
-	async generateDemo(@Param('id', UUIDValidationPipe) id: string) {
+	async generateDemo(@Param('id', UUIDValidationPipe) id: string, @Body() body: any) {
 		try {
-			return await this.organizationService.generateDemo(id)
+			return await this.organizationService.generateDemo(id, body)
 		} catch(err) {
 			throw new InternalServerErrorException(err.message)
 		}

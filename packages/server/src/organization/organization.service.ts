@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CommandBus } from '@nestjs/cqrs';
 import { Repository, FindOneOptions } from 'typeorm';
 import { TenantAwareCrudService } from './../core/crud';
 import { Organization } from './organization.entity';
-import { CommandBus } from '@nestjs/cqrs';
 import { OrganizationDemoCommand } from './commands';
 
 @Injectable()
@@ -38,12 +38,13 @@ export class OrganizationService extends TenantAwareCrudService<Organization> {
 		);
 	}
 
-	public async generateDemo(id: string) {
+	public async generateDemo(id: string, options: any) {
 		const organization = await this.organizationRepository.findOne(id);
 
 		await this.commandBus.execute(
 			new OrganizationDemoCommand({
-				id
+				id,
+				options
 			})
 		)
 
