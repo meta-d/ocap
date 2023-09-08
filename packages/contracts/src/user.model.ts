@@ -108,15 +108,15 @@ export interface IUserPasswordInput {
 }
 
 export enum LanguagesEnum {
-	CHINESE = "zh",
-	ENGLISH = 'en',
-	ZhHant = 'zh-Hant',
+	Chinese = "zh",
+	TraditionalChinese = 'zh-Hant',
+	English = 'en',
 }
 
 export const LanguagesMap = {
-	'zh-CN': LanguagesEnum.CHINESE,
-	'zh-Hans': LanguagesEnum.CHINESE,
-	'zh': LanguagesEnum.CHINESE,
+	'zh-CN': LanguagesEnum.Chinese,
+	'zh-Hans': LanguagesEnum.Chinese,
+	'zh': LanguagesEnum.Chinese,
 }
 
 export enum ComponentLayoutStyleEnum {

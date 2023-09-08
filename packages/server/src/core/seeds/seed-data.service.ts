@@ -34,7 +34,6 @@ import {
 } from '../../employee/employee.seed';
 import {
 	createDefaultOrganizations,
-	createRandomOrganizations,
 	DEFAULT_ORGANIZATIONS,
 	getTenantDefaultOrganization,
 	OrganizationDemoCommand

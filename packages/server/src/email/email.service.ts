@@ -148,7 +148,7 @@ export class EmailService extends TenantAwareCrudService<IEmail> {
 			// Find email template for customized for given organization
 			let emailTemplate: IEmailTemplate = await this.emailTemplateRepository.findOne({
 				name: view,
-				languageCode: locals.locale || LanguagesEnum.ENGLISH,
+				languageCode: locals.locale || LanguagesEnum.English,
 				organizationId: locals.organizationId,
 				tenantId: locals.tenantId
 			});
@@ -157,7 +157,7 @@ export class EmailService extends TenantAwareCrudService<IEmail> {
 			if (!emailTemplate) {
 				emailTemplate = await this.emailTemplateRepository.findOne({
 					name: view,
-					languageCode: locals.locale || LanguagesEnum.ENGLISH,
+					languageCode: locals.locale || LanguagesEnum.English,
 					organizationId: IsNull(),
 					tenantId: locals.tenantId
 				});

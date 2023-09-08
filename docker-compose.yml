@@ -1,0 +1,185 @@
+version: '3.7'
+
+volumes:
+    postgres_data:
+    certificates:
+    clickhouse_data:
+
+networks:
+    overlay:
+        driver: bridge
+
+services:
+    db:
+        image: postgres:12-alpine
+        container_name: db
+        restart: always
+        environment:
+            POSTGRES_DB: ${DB_NAME:-postgres}
+            POSTGRES_USER: ${DB_USER:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASS:-root}
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'psql postgres://$${POSTGRES_USER}:$${POSTGRES_PASSWORD}@localhost:5432/$${POSTGRES_DB} || exit 1'
+                ]
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./.scripts/initdb.d/:/docker-entrypoint-initdb.d/:ro
+        networks:
+            - overlay
+
+    adminer:
+        image: adminer
+        container_name: adminer
+        restart: always
+        depends_on:
+            - db
+        links:
+            - db:${DB_HOST:-db}
+        environment:
+            ADMINER_DEFAULT_DB_DRIVER: pgsql
+            ADMINER_DEFAULT_DB_HOST: ${DB_HOST:-db}
+            ADMINER_DEFAULT_DB_NAME: ${DB_NAME:-postgres}
+            ADMINER_DEFAULT_DB_PASSWORD: ${DB_PASS:-root}
+        ports:
+            - '8084:8080'
+        networks:
+            - overlay
+
+    # Clickhouse Database
+    clickhouse:
+        image: yandex/clickhouse-server
+        mem_limit: 2048m
+        ports:
+            - 9000:9000
+            - 8123:8123
+        volumes:
+            - clickhouse_data:/var/lib/clickhouse
+            - ./.deploy/clickhouse/log:/var/log/clickhouse-server/
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144
+        privileged: true
+        networks:
+            - overlay
+
+    redis:
+        image: redis:6-alpine
+        mem_limit: 100m
+        restart: unless-stopped
+        command: ["sh", "-c", "redis-server --requirepass $${REDIS_PASSWORD}"]
+        environment:
+            REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+        networks:
+            - overlay
+
+    # OLAP Services
+    olap:
+        build:
+            context: .
+            dockerfile: ./.deploy/olap/Dockerfile
+            target: webapp
+        mem_limit: 1024m
+        restart: always
+        environment:
+            REDIS_DATABASE: 1
+            REDIS_HOST: "redis"
+            REDIS_PORT: 6379
+            REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+        networks:
+            - overlay
+
+    api:
+        container_name: api
+        image: metadc/metad-api:latest
+        build:
+            context: .
+            dockerfile: ./.deploy/api/Dockerfile
+            target: production
+            args:
+                NODE_ENV: ${NODE_ENV:-development}
+                API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+        environment:
+            HOST: ${API_HOST:-api}
+            PORT: ${API_PORT:-3000}
+            NODE_ENV: ${NODE_ENV:-development}
+            DB_HOST: db
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+            OLAP_HOST: olap
+            OLAP_PORT: 8080
+            API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+            SENTRY_DSN: ${SENTRY_DSN:-}
+        env_file:
+            - .env
+        command: ['node', 'main.js']
+        restart: on-failure
+        depends_on:
+            - db
+            - redis
+        links:
+            - db:${DB_HOST:-db}
+        ports:
+            - '3000:${API_PORT:-3000}'
+        networks:
+            - overlay
+    webapp:
+        container_name: webapp
+        image: metadc/metad-webapp:latest
+        build:
+            context: .
+            dockerfile: ./.deploy/webapp/Dockerfile
+            target: production
+            args:
+                NODE_ENV: ${NODE_ENV:-development}
+                API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+                CLIENT_BASE_URL: ${CLIENT_BASE_URL:-http://localhost:4200}
+                SENTRY_DSN: ${SENTRY_DSN:-}
+                CHATWOOT_SDK_TOKEN: ${CHATWOOT_SDK_TOKEN:-}
+                CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+                CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+                GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+                GOOGLE_PLACE_AUTOCOMPLETE: ${GOOGLE_PLACE_AUTOCOMPLETE:-false}
+                DEFAULT_LATITUDE: ${DEFAULT_LATITUDE:-42.6459136}
+                DEFAULT_LONGITUDE: ${DEFAULT_LONGITUDE:-23.3332736}
+                DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-USD}
+                DEMO: 'true'
+                API_HOST: ${API_HOST:-api}
+                API_PORT: ${API_PORT:-3000}
+        environment:
+            HOST: ${WEB_HOST:-webapp}
+            PORT: ${WEB_PORT:-4200}
+            NODE_ENV: ${NODE_ENV:-development}
+            API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+            CLIENT_BASE_URL: ${CLIENT_BASE_URL:-http://localhost:4200}
+            SENTRY_DSN: ${SENTRY_DSN:-}
+            CHATWOOT_SDK_TOKEN: ${CHATWOOT_SDK_TOKEN:-}
+            CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+            CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+            GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+            GOOGLE_PLACE_AUTOCOMPLETE: ${GOOGLE_PLACE_AUTOCOMPLETE:-false}
+            DEFAULT_LATITUDE: ${DEFAULT_LATITUDE:-42.6459136}
+            DEFAULT_LONGITUDE: ${DEFAULT_LONGITUDE:-23.3332736}
+            DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-USD}
+            DEMO: 'true'
+            API_HOST: ${API_HOST:-api}
+            API_PORT: ${API_PORT:-3000}
+        entrypoint: './entrypoint.compose.sh'
+        command: ['nginx', '-g', 'daemon off;']
+        env_file:
+            - .env
+        restart: on-failure
+        links:
+            - db:${DB_HOST:-db}
+            - api:${API_HOST:-api}
+        depends_on:
+            - db
+            - api
+        ports:
+            - 4200:80
+            - 4300:8080
+        networks:
+            - overlay

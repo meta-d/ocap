@@ -3,12 +3,10 @@ import * as moment from 'moment';
 import * as timezone from 'moment-timezone';
 import { Connection } from 'typeorm';
 import * as faker from 'faker';
-import { getDummyImage } from '../core';
 import {
 	Organization,
 } from '../core/entities/internal';
 import {
-	DefaultValueDateTypeEnum,
 	BonusTypeEnum,
 	WeekDaysEnum,
 	AlignmentOptions,
@@ -17,7 +15,6 @@ import {
 	ITenant,
 	DEFAULT_DATE_FORMATS
 } from '@metad/contracts';
-import { environment as env } from '@metad/server-config';
 
 export const getDefaultOrganization = async (
 	connection: Connection,
@@ -129,160 +126,6 @@ export const createDefaultOrganizations = async (
 	await connection.manager.save(defaultOrganizations);
 	defaultOrganizationsInserted = [...defaultOrganizations];
 	return defaultOrganizationsInserted;
-};
-
-export const createRandomOrganizations = async (
-	connection: Connection,
-	tenants: ITenant[],
-	noOfOrganizations: number
-): Promise<Map<ITenant, IOrganization[]>> => {
-	const defaultDateTypes = Object.values(DefaultValueDateTypeEnum);
-	// const skills = await getSkills(connection);
-	// const contacts = await getContacts(connection);
-	const tenantOrganizations: Map<ITenant, IOrganization[]> = new Map();
-	let allOrganizations: IOrganization[] = [];
-
-	tenants.forEach((tenant) => {
-		const randomOrganizations: IOrganization[] = [];
-		if (tenant.name === 'Ever') {
-			tenantOrganizations.set(tenant, defaultOrganizationsInserted);
-		} else {
-			for (let index = 0; index < noOfOrganizations; index++) {
-				// const organizationSkills = _.chain(skills)
-				// 	.shuffle()
-				// 	.take(faker.datatype.number({ min: 1, max: 4 }))
-				// 	.values()
-				// 	.value();
-				const organization: IOrganization = new Organization();
-				const companyName = faker.company.companyName();
-
-				const logoAbbreviation = _extractLogoAbbreviation(companyName);
-
-				organization.name = companyName;
-				organization.isDefault = (index === 0) || false;
-				organization.profile_link = generateLink(companyName);
-				organization.currency = env.defaultCurrency;
-				organization.defaultValueDateType =
-					defaultDateTypes[index % defaultDateTypes.length];
-				organization.imageUrl = getDummyImage(
-					330,
-					300,
-					logoAbbreviation
-				);
-				organization.invitesAllowed = true;
-				organization.overview = faker.name.jobDescriptor();
-				organization.short_description = faker.name.jobDescriptor();
-				organization.client_focus = faker.name.jobDescriptor();
-				organization.show_profits = false;
-				organization.show_bonuses_paid = false;
-				organization.show_income = false;
-				organization.show_total_hours = false;
-				organization.show_projects_count = true;
-				organization.show_minimum_project_size = true;
-				organization.show_clients_count = true;
-				organization.show_employees_count = true;
-				organization.banner = faker.name.jobDescriptor();
-
-				const { bonusType, bonusPercentage } = randomBonus();
-				organization.bonusType = bonusType;
-				organization.bonusPercentage = bonusPercentage;
-				organization.registrationDate = faker.date.past(
-					Math.floor(Math.random() * 10) + 1
-				);
-
-				// organization.skills = organizationSkills;
-				organization.brandColor = faker.random.arrayElement([
-					'red',
-					'green',
-					'blue',
-					'orange',
-					'yellow'
-				]);
-				// organization.contact = faker.random.arrayElement(contacts);
-				organization.timeZone = faker.random.arrayElement(
-					timezone.tz.names().filter((zone) => zone.includes('/'))
-				);
-				organization.dateFormat = faker.random.arrayElement(DEFAULT_DATE_FORMATS);
-				organization.defaultAlignmentType = faker.random.arrayElement(
-					Object.keys(AlignmentOptions)
-				);
-				organization.fiscalStartDate = moment(new Date())
-					.add(faker.datatype.number(10), 'days')
-					.toDate();
-				organization.fiscalEndDate = moment(
-					organization.fiscalStartDate
-				)
-					.add(faker.datatype.number(10), 'days')
-					.toDate();
-				organization.futureDateAllowed = faker.datatype.boolean();
-				organization.inviteExpiryPeriod = faker.datatype.number(50);
-				organization.numberFormat = faker.random.arrayElement([
-					'USD',
-					'BGN',
-					'ILS'
-				]);
-				organization.officialName = faker.company.companyName();
-				organization.separateInvoiceItemTaxAndDiscount = faker.datatype.boolean();
-				organization.startWeekOn = WeekDaysEnum.MONDAY;
-				organization.totalEmployees = faker.datatype.number(4);
-				organization.tenant = tenant;
-				organization.valueDate = moment(new Date())
-					.add(faker.datatype.number(10), 'days')
-					.toDate();
-
-				randomOrganizations.push(organization);
-			}
-
-			tenantOrganizations.set(tenant, randomOrganizations);
-		}
-
-		allOrganizations = allOrganizations.concat(randomOrganizations);
-	});
-
-	await insertOrganizations(connection, allOrganizations);
-	return tenantOrganizations;
-};
-
-const insertOrganizations = async (
-	connection: Connection,
-	organizations: IOrganization[]
-): Promise<void> => {
-	await connection.manager.save(organizations);
-};
-
-const _extractLogoAbbreviation = (companyName: string) => {
-	const logoFirstWordFirstLetterIndex = 0;
-	const companyNameLastEmptyLetterIndex = companyName.lastIndexOf(' ');
-	const logoFirstLetter = companyName[logoFirstWordFirstLetterIndex];
-
-	let logoAbbreviation = logoFirstLetter;
-
-	if (
-		companyNameLastEmptyLetterIndex !== -1 &&
-		companyNameLastEmptyLetterIndex !== logoFirstWordFirstLetterIndex
-	) {
-		const logoLastWordFirstLetterIndex =
-			companyNameLastEmptyLetterIndex + 1;
-		const logoSecondLetter = companyName[logoLastWordFirstLetterIndex];
-
-		logoAbbreviation += logoSecondLetter;
-	}
-
-	return logoAbbreviation;
-};
-
-const randomBonus = () => {
-	const randomNumberBetween = (min, max) =>
-		Math.floor(Math.random() * (max - min + 1) + min);
-
-	const bonusType = Object.values(BonusTypeEnum)[randomNumberBetween(0, 1)];
-
-	const bonusPercentage =
-		bonusType === BonusTypeEnum.PROFIT_BASED_BONUS
-			? randomNumberBetween(65, 75)
-			: randomNumberBetween(5, 10);
-
-	return { bonusType, bonusPercentage };
 };
 
 const generateLink = (name) => {

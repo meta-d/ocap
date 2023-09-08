@@ -100,10 +100,10 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
 		
 		//extracted import data files directory path
-		const assetPath = this.configService.assetOptions.assetPath
-		const demosFolder = path.join(assetPath, 'demos')
+		const samplesPath = await this.getSamplesPath()
+		const demosFolder = path.join(samplesPath, 'demos')
 		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.4.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.4.0.zip'
-	    const files = await this.unzipAndRead(file, assetPath)
+	    const files = await this.unzipAndRead(file, samplesPath)
 
 		this.logger.debug(files)
 
@@ -249,13 +249,28 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 			}
 		}
 
+		// Delete the samples folder
+		fs.rmSync(samplesPath, { recursive: true, force: true })
+
 		return Promise.resolve()
+	}
+
+	async getSamplesPath() {
+		const cache = path.join(process.cwd(), 'cache')
+		const samples = path.join(cache, 'samples')
+		if (!fs.existsSync(cache)) {
+			fs.mkdirSync(cache)
+		}
+		if (!fs.existsSync(samples)) {
+			fs.mkdirSync(samples)
+		}
+		return samples
 	}
 
 	public async unzipAndRead(url: string, assetPath = '') {
 		const demoFilePath = path.join(assetPath, 'demos.zip')
+		
 		await this.downloadDemoFile(url, demoFilePath)
-
 		const directory = await unzipper.Open.file(demoFilePath)
 		await directory.extract({ path: assetPath })
 
@@ -266,7 +281,9 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		return files
 	}
 
-	async downloadDemoFile(url: string, destination: string) {  
+	async downloadDemoFile(url: string, destination: string) {
+		this.logger.debug(`download demo file from ${url} to ${destination}`)
+
 		const writer = fs.createWriteStream(destination)
 		const response = await axios({
 			url,

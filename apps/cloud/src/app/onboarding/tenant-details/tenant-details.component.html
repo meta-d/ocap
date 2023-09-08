@@ -87,14 +87,17 @@
 
     <div class="flex justify-center items-center w-full h-24">
       <mat-spinner *ngIf="loading()" diameter="30"></mat-spinner>
-      <mat-error *ngIf="demoError() as error" class="">{{error}}</mat-error>
+      <mat-error *ngIf="demoError()" class="">{{demoError()}}</mat-error>
     </div>
 
     <div class="flex items-center gap-4">
       <button mat-flat-button matStepperNext>{{ 'PAC.Onboarding.Skip' | translate: {Default: 'Skip'} }}</button>
       <button mat-flat-button color="primary" [disabled]="demoFormGroup.invalid || loading()"
         (click)="generateDemo()"
-      >{{ 'PAC.Onboarding.Generate' | translate: {Default: 'Generate'} }}</button>
+      >
+        <span *ngIf="!demoError()">{{ 'PAC.Onboarding.Generate' | translate: {Default: 'Generate'} }}</span>
+        <span *ngIf="demoError()">{{ 'PAC.Onboarding.Retry' | translate: {Default: 'Retry'} }}</span>
+      </button>
     </div>
   </mat-step>
 

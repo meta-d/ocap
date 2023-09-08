@@ -22,7 +22,7 @@ export class EmployeeCreateHandler
 
 	public async execute(command: EmployeeCreateCommand): Promise<IEmployee> {
 		const { input } = command;
-		const languageCode = command.languageCode || LanguagesEnum.ENGLISH;
+		const languageCode = command.languageCode || LanguagesEnum.English;
 		const inputWithHash = await this._addHashAndLanguage(
 			input,
 			languageCode

@@ -79,7 +79,7 @@ export class FindEmailTemplateHandler
 			} else {
 				try {
 					const { hbs, mjml } = await this.emailTemplateService.findOne({
-						languageCode: LanguagesEnum.ENGLISH,
+						languageCode: LanguagesEnum.English,
 						name: `${name}/${type}`,
 						organizationId,
 						tenantId
@@ -88,7 +88,7 @@ export class FindEmailTemplateHandler
 					template = mjml;
 				} catch (error) {
 					const { hbs, mjml } = await this.emailTemplateService.findOne({
-						languageCode: LanguagesEnum.ENGLISH,
+						languageCode: LanguagesEnum.English,
 						name: `${name}/${type}`,
 						organizationId: IsNull(),
 						tenantId

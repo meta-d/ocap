@@ -9,7 +9,7 @@ export const DEFAULT_EMPLOYEES: any = [
 		imageUrl: 'assets/images/avatar-default.svg',
 		startedWorkOn: '2018-03-20',
 		employeeLevel: 'A',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	}
 ];
@@ -22,7 +22,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		lastName: 'Konviser',
 		imageUrl: 'assets/images/avatars/ruslan.jpg',
 		employeeLevel: 'A',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -34,7 +34,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2018-03-20',
 		endWork: null,
 		employeeLevel: 'D',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -46,7 +46,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2018-03-19',
 		endWork: null,
 		employeeLevel: 'C',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -58,7 +58,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2018-05-25',
 		endWork: null,
 		employeeLevel: 'C',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -70,7 +70,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2019-06-17',
 		endWork: null,
 		employeeLevel: 'B',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -82,7 +82,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2019-08-01',
 		endWork: null,
 		employeeLevel: 'B',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -94,7 +94,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2019-11-27',
 		endWork: null,
 		employeeLevel: null,
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -106,7 +106,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2019-11-26',
 		endWork: null,
 		employeeLevel: null,
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -118,7 +118,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2020-03-16',
 		endWork: null,
 		employeeLevel: 'A',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -130,7 +130,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2020-02-05',
 		endWork: null,
 		employeeLevel: 'A',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -142,7 +142,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2020-03-02',
 		endWork: null,
 		employeeLevel: 'A',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -154,7 +154,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2019-11-27',
 		endWork: null,
 		employeeLevel: null,
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -166,7 +166,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2020-03-07',
 		endWork: null,
 		employeeLevel: null,
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -178,7 +178,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2020-03-07',
 		endWork: null,
 		employeeLevel: null,
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -190,7 +190,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2018-08-01',
 		endWork: null,
 		employeeLevel: 'C',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	},
 	{
@@ -202,7 +202,7 @@ export const DEFAULT_PEANUT_EMPLOYEES: any = [
 		startedWorkOn: '2018-08-01',
 		endWork: null,
 		employeeLevel: 'C',
-		preferredLanguage: LanguagesEnum.ENGLISH,
+		preferredLanguage: LanguagesEnum.English,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	}
 ];

@@ -103,6 +103,7 @@ export class TenantDetailsComponent {
 
   loading = signal(false)
   tenantCompleted = signal(false)
+  demoError = signal<string>(null)
   demoCompleted = signal(false)
   connectionCompleted = signal(false)
 
@@ -135,10 +136,6 @@ export class TenantDetailsComponent {
 
   dataSourceNameError() {
     return this.dataSourceTypeFormGroup.get('name').getError('required')
-  }
-
-  demoError() {
-    return this.demoFormGroup.getError('demoError')
   }
 
   async onboard() {
@@ -193,6 +190,7 @@ export class TenantDetailsComponent {
 
   async generateDemo() {
     try {
+      this.demoError.set(null)
       this.loading.set(true)
       await firstValueFrom(
         this.organizationsService.demo(this.defaultOrganization().id, {
@@ -207,12 +205,9 @@ export class TenantDetailsComponent {
       this.loading.set(false)
       this.stepper.next()
     } catch (error) {
-      console.error(error)
       this.loading.set(false)
       const errorText = getErrorMessage(error)
-      this.demoFormGroup.setErrors({
-        demoError: errorText
-      })
+      this.demoError.set(errorText)
       this.toastrService.error(errorText)
     }
   }

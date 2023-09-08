@@ -1159,6 +1159,7 @@
       "GenerateDemoDescription": "系统将从服务器链接上下载演示数据文件，并将数据导入至系统数据库中，然后创建相应的演示样例",
       "Skip": "跳过",
       "Generate": "生成",
+      "Retry": "重试",
       "AddYourData": "添加您的数据",
       "ReadyExploringYourData": "准备好开始探索您的数据了吗？在下面添加它吧。",
       "NotReadySample": "还没有准备好？跳过并玩玩我们的示例吧。",

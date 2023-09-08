@@ -381,7 +381,7 @@ export class AuthService extends SocialAuthService {
 						},
 						originalUrl: 'oauth'
 					},
-					LanguagesEnum.CHINESE
+					LanguagesEnum.Chinese
 				)
 			)
 			const { token, refreshToken } = await this.createToken(user)
@@ -424,7 +424,7 @@ export class AuthService extends SocialAuthService {
 				const user = await this.commandBus.execute(
 					new AuthTrialCommand(
 						{ user: { email: emails[0].value }, originalUrl: 'oauth' },
-						LanguagesEnum.CHINESE
+						LanguagesEnum.Chinese
 					)
 				)
 				const { token } = await this.createToken(user)
