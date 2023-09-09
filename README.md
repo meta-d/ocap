@@ -10,6 +10,8 @@
 
 ## 💡 What's New
 
+We released new version which includes AI Copilot in query lab, it can assit you to write and optimize SQL or MDX queries.
+
 ## 🌟 What is it
 
 [Metad Platform][uri_metad] - **Open-Source Analytics Platform** for Enterprise Data Analysis and Reporting.
@@ -107,6 +109,23 @@ Read more about Metad and how to use it at your company,
 
 ## 💻 Demo, Downloads, Testing and Production
 
+### Demo
+
+Metad Analytics Platform Demo at <https://app.mtda.cloud>.
+
+Notes:
+- You can generate samples data in the home dashbaord page.
+
+### Downloads
+
+You can download [Metad Desktop Agent](https://github.com/meta-d/meta-d/releases) use to connect to your local data sources.
+
+### Production (SaaS)
+
+Metad Analytics Platform SaaS is available at <https://app.mtda.cloud>.
+
+Note: it's currently in Alpha version / in testing mode, please use it with caution!
+
 ## 🧱 Technology Stack and Requirements
 
 - [TypeScript](https://www.typescriptlang.org) language
@@ -139,7 +158,7 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 - Clone repo.
 - Make sure you have Docker Compose [installed locally](https://docs.docker.com/compose/install).
 - Copy `.env.compose` file into `.env` file in the root of mono-repo (the file contains default env variables definitions). Important: the file `.env.compose` is different from `.env.sample` in some settings, please make sure you use the correct one!
-- Run `docker-compose -f docker-compose.demo.yml up`, if you want to run the platform using our prebuild Docker images. _(Note: it uses latest images pre-build automatically from head of `master` branch using GitHub CI/CD.)_
+- Run `docker-compose -f docker-compose.demo.yml up`, if you want to run the platform using our prebuild Docker images. _(Note: it uses latest images pre-build automatically from head of `main` branch using GitHub CI/CD.)_
 - Run `docker-compose up`, if you want to build everything (code and Docker images) locally. _(Note: this is extremely long process, option above is much faster.)_
 - Open <http://localhost:4200> in your browser.
 - The first time you will enter the onborading page. Follow the prompts to complete the initial settings ( organization, samples and connect your data source), and then you can start using it.
@@ -161,6 +180,7 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 
 ### Production
 
+- For simple deployment scenarios (e.g. for yourself or your own small organization), check our [Kubernetes configurations](https://github.com/meta-d/ocap/tree/develop/.deploy/k8s), which we are using to deploy Metad Analytics demo into [Aliyun k8s cluster](https://cn.aliyun.com/product/kubernetes).
 
 ## 💌 Contact Us
 
@@ -168,6 +188,17 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 - [Metad Platform @ Twitter](https://twitter.com/CloudMtda)
 
 ## 🛡️ License
+
+We support the open-source community.
+
+This software is available under the following licenses:
+
+- [Metad Analytics Platform Community Edition](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-community-edition-license)
+- [Metad Analytics Platform Small Business](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-small-business-license)
+- [Metad Analytics Platform Enterprise](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-enterprise-license)
+
+
+#### Please see [LICENSE](LICENSE.md) for more information on licenses.
 
 ## 🍺 Contribute
 
