@@ -58,7 +58,7 @@ import { StorageFileModule } from './storage-file/storage-file.module'
       },
     ]),
     I18nModule.forRoot({
-      fallbackLanguage: LanguagesEnum.ENGLISH,
+      fallbackLanguage: LanguagesEnum.English,
       parser: I18nJsonParser,
       parserOptions: {
         path: path.resolve(__dirname, 'i18n/'),

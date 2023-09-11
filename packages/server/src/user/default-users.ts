@@ -9,7 +9,7 @@ export const DEFAULT_SUPER_ADMINS = [
 		firstName: 'Super',
 		lastName: 'Admin',
 		imageUrl: 'assets/images/avatar-default.svg',
-		preferredLanguage: LanguagesEnum.CHINESE,
+		preferredLanguage: LanguagesEnum.Chinese,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	}
 ]
@@ -21,7 +21,7 @@ export const DEFAULT_ADMINS = [
 		firstName: 'Local',
 		lastName: 'Admin',
 		imageUrl: 'assets/images/avatar-default.svg',
-		preferredLanguage: LanguagesEnum.CHINESE,
+		preferredLanguage: LanguagesEnum.Chinese,
 		preferredComponentLayout: ComponentLayoutStyleEnum.TABLE
 	}
 ]

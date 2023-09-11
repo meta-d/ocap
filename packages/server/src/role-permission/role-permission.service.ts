@@ -9,21 +9,24 @@ import {
 	IRole,
 	IRolePermission,
 	IImportRecord,
-	IRolePermissionMigrateInput
+	IRolePermissionMigrateInput,
+	PermissionsEnum
 } from '@metad/contracts';
+import { environment } from '@metad/server-config';
 import { TenantAwareCrudService } from './../core/crud';
 import { RequestContext } from './../core/context';
 import { ImportRecordUpdateOrCreateCommand } from './../export-import/import-record';
 import { RolePermission } from './role-permission.entity';
 import { Role } from '../role/role.entity';
 import { DEFAULT_ROLE_PERMISSIONS } from './default-role-permissions';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class RolePermissionService extends TenantAwareCrudService<RolePermission> {
 	constructor(
 		@InjectRepository(RolePermission)
 		private readonly rolePermissionRepository: Repository<RolePermission>,
-
+		private readonly roleService: RoleService,
 		private readonly _commandBus: CommandBus
 	) {
 		super(rolePermissionRepository);
@@ -82,36 +85,44 @@ export class RolePermissionService extends TenantAwareCrudService<RolePermission
 	}
 
 	public async updateRolesAndPermissions(
-		tenants: ITenant[],
-		roles: IRole[]
+		tenants: ITenant[]
 	): Promise<IRolePermission[]> {
 		if (!tenants.length) {
 			return;
 		}
-
+		// removed permissions for all users in DEMO mode
+		const deniedPermissions = [
+			PermissionsEnum.ACCESS_DELETE_ACCOUNT,
+			PermissionsEnum.ACCESS_DELETE_ALL_DATA
+		];
 		const rolesPermissions: IRolePermission[] = [];
 		for await (const tenant of tenants) {
-			for await (const role of roles) {
+			const roles = (await this.roleService.findAll({
+				where: {
+					tenantId: tenant.id
+				}
+			})).items;
+			for (const role of roles) {
 				const defaultPermissions = DEFAULT_ROLE_PERMISSIONS.find(
 					(defaultRole) => role.name === defaultRole.role
 				);
-				if (
-					defaultPermissions &&
-					defaultPermissions['defaultEnabledPermissions']
-				) {
-					const { defaultEnabledPermissions } = defaultPermissions;
-					for await (const permission of defaultEnabledPermissions) {
+
+				if (defaultPermissions) {
+					const { defaultEnabledPermissions = [] } = defaultPermissions;
+					for (const permission of defaultEnabledPermissions) {
+						if (environment.demo ? deniedPermissions.includes(permission) : false) {
+							continue
+						}
 						const rolePermission = new RolePermission();
 						rolePermission.roleId = role.id;
 						rolePermission.permission = permission;
-						rolePermission.enabled = true;
+						rolePermission.enabled = defaultEnabledPermissions.includes(permission);
 						rolePermission.tenant = tenant;
 						rolesPermissions.push(rolePermission);
 					}
 				}
 			}
 		}
-		
 		await this.rolePermissionRepository.save(rolesPermissions);
 		return rolesPermissions;
 	}

@@ -9,8 +9,8 @@ networks:
 
 services:
     db:
-        image: postgres:12-alpine
         container_name: db
+        image: postgres:12-alpine
         restart: always
         environment:
             POSTGRES_DB: ${DB_NAME:-postgres}
@@ -31,8 +31,8 @@ services:
             - overlay
 
     adminer:
-        image: adminer
         container_name: adminer
+        image: adminer
         restart: always
         depends_on:
             - db
@@ -47,6 +47,7 @@ services:
             - overlay
 
     redis:
+        container_name: redis
         image: redis:6-alpine
         mem_limit: 100m
         restart: unless-stopped
@@ -59,6 +60,7 @@ services:
             - overlay
 
     redisinsight:
+        container_name: redisinsight
         image: redislabs/redisinsight:1.11.1
         ports:
             - "8001:8001"

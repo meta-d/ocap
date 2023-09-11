@@ -11,7 +11,6 @@ import {
 import * as chalk from 'chalk';
 import { TenantService } from '../tenant/tenant.service';
 import { DEFAULT_FEATURES } from './default-features';
-import { DEFAULT_TENANT } from '../tenant/default-tenants';
 import { createFeature } from './feature.seed';
 
 @Injectable()

@@ -33,6 +33,7 @@ import {
 	IEmployee,
 	IOrganizationLanguage,
 	IFeatureOrganization,
+	LanguagesEnum
 } from '@metad/contracts';
 import {
 	Contact,
@@ -383,6 +384,12 @@ export class Organization extends TenantBaseEntity implements IOrganization {
 	@IsOptional()
 	@Column({ nullable: true })
 	daysUntilDue?: number;
+
+	@ApiProperty({ type: () => String, enum: LanguagesEnum })
+	@IsEnum(LanguagesEnum)
+	@Column({ nullable: true })
+	preferredLanguage?: LanguagesEnum
+	
 	/*
     |--------------------------------------------------------------------------
     | @ManyToOne 

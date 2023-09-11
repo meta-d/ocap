@@ -10,8 +10,6 @@
     "typeorm:flush": "yarn typeorm migration:revert",
     "typeorm:create": "yarn typeorm migration:create",
     "typeorm:preserve": "yarn typeorm:sync -- -f=ormconfig && yarn typeorm:seeds -- -f=ormconfig",
-    "start": "yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/main.ts",
-    "start:debug": "nodemon --config nodemon-debug.json",
     "build": "yarn ng build api",
     "build:prod": "yarn ng build api --prod",
     "seed": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed.ts",

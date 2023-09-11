@@ -171,6 +171,7 @@ export class AuthStrategy extends PacAuthStrategy {
         this.store.userId = user.id
         this.store.token = token
         this.store.refreshToken = refreshToken
+        this.store.user = user
 
         return new PacAuthResult(
           true,

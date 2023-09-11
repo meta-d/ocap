@@ -6,6 +6,7 @@ import { RouterModule } from 'nest-router';
 import { DataSourceTypeController } from './data-source-type.controller';
 import { DataSourceType } from './data-source-type.entity';
 import { DataSourceTypeService } from './data-source-type.service';
+import { EventHandlers } from './events';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { DataSourceTypeService } from './data-source-type.service';
     CqrsModule,
   ],
   controllers: [DataSourceTypeController],
-  providers: [DataSourceTypeService],
+  providers: [DataSourceTypeService, ...EventHandlers],
   exports: [
     TypeOrmModule,
     DataSourceTypeService,

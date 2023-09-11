@@ -1,11 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { Component, Input, inject } from '@angular/core'
+import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType } from '@metad/ocap-core'
-import { convertStoryResult, convertStoryWidgetResult, WidgetsService } from '@metad/cloud/state'
 import { omit } from 'lodash-es'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
+import { registerWasmAgentModel } from '../../../@core'
 
 @Component({
   selector: 'pac-story-widget-feed',
@@ -15,7 +15,10 @@ import { catchError, filter, map, shareReplay, switchMap, tap } from 'rxjs/opera
     class: 'pac-story-widget-feed'
   }
 })
-export class StoryWidgetFeedComponent implements OnInit {
+export class StoryWidgetFeedComponent {
+  private readonly widgetsService = inject(WidgetsService)
+  private readonly wasmAgent = inject(WasmAgentService)
+
   @Input() get id(): string {
     return this.id$.value
   }
@@ -33,10 +36,15 @@ export class StoryWidgetFeedComponent implements OnInit {
           'point.story',
           'point.story.points',
           'createdBy',
-          'point.story.model',
-          'point.story.model.indicators',
-          'point.story.model.dataSource',
-          'point.story.model.dataSource.type'
+          // 'point.story.model',
+          // 'point.story.model.indicators',
+          // 'point.story.model.dataSource',
+          // 'point.story.model.dataSource.type'
+
+          'point.story.models',
+          'point.story.models.dataSource',
+          'point.story.models.dataSource.type',
+          'point.story.models.indicators'
         ])
         .pipe(
           catchError((err) => {
@@ -47,26 +55,26 @@ export class StoryWidgetFeedComponent implements OnInit {
     ),
     shareReplay(1)
   )
+
   public readonly story$ = this.widget$.pipe(
     map((widget) => {
-      const points = widget.point.story.points
-      points.forEach((point) => {
-        if (point.id === widget.pointId) {
-          point.widgets = [omit(widget, ['point', 'story'])]
-        }
-      })
       return convertStoryResult({
         ...widget.point.story,
-        points
+        points: [
+          {
+            ...widget.point,
+            story: null,
+            widgets: [omit(widget, 'point')]
+          }
+        ]
       })
     }),
     tap((story) => {
-      if (story.model?.agentType === AgentType.Wasm) {
-        this.wasmAgent.registerModel({
-          ...story.model,
-          catalog: story.model.catalog ?? 'main'
-        })
-      }
+      story.models?.forEach((model) => {
+        if (model.agentType === AgentType.Wasm) {
+          registerWasmAgentModel(this.wasmAgent, model)
+        }
+      })
     })
   )
 
@@ -77,12 +85,4 @@ export class StoryWidgetFeedComponent implements OnInit {
   )
 
   public error$ = new BehaviorSubject(null)
-
-  constructor(
-    private widgetsService: WidgetsService,
-    private wasmAgent: WasmAgentService,
-    private route: ActivatedRoute
-  ) {}
-
-  ngOnInit() {}
 }

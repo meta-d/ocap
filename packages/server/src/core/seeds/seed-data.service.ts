@@ -17,7 +17,8 @@ import {
 	IOrganization,
 	IRole,
 	ITenant,
-	IUser
+	IUser,
+	DEFAULT_TENANT
 } from '@metad/contracts';
 import { createRoles } from '../../role/role.seed';
 import {	
@@ -33,7 +34,6 @@ import {
 } from '../../employee/employee.seed';
 import {
 	createDefaultOrganizations,
-	createRandomOrganizations,
 	DEFAULT_ORGANIZATIONS,
 	getTenantDefaultOrganization,
 	OrganizationDemoCommand
@@ -47,7 +47,6 @@ import { cleanUpRolePermissions, createRolePermissions } from '../../role-permis
 import {
 	createDefaultTenant,
 	createRandomTenants,
-	DEFAULT_TENANT,
 	TenantCreatedEvent,
 	TenantService
 } from '../../tenant';

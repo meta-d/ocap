@@ -102,10 +102,6 @@ const routes: Routes = [
         path: 'organization',
         loadChildren: () => import('./organization/organization.module').then((m) => m.OrganizationModule)
       },
-      // {
-      //   path: 'project',
-      //   loadChildren: () => import('./project/project.module').then((m) => m.ProjectModule)
-      // }
     ]
   }
 ]

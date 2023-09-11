@@ -1,4 +1,3 @@
-export * from './default-tenants'
 export * from './events/index'
 export * from './tenant-setting'
 export * from './tenant.controller'

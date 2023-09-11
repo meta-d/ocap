@@ -47,11 +47,11 @@ Thumbs.db
 /packages/**/.cache
 /packages/**/dist
 /packages/**/node_modules
+/.deploy/clickhouse/log
 
 # sqlite3 database
 *.sqlite3
 *.sqlite3-journal
-.scripts/*.d/
 
 /ormlogs.log
 

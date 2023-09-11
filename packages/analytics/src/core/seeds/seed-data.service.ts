@@ -30,7 +30,7 @@ import { assign, omit, pick } from 'lodash'
 import * as path from 'path'
 import { RedisClientType } from 'redis'
 import { Connection, Like } from 'typeorm'
-import { createDefaultDataSourceTypes } from '../../data-source-type/index'
+import { seedDefaultDataSourceTypes } from '../../data-source-type/index'
 import { dataLoad, prepareDataSource } from '../../data-source/utils'
 import { updateXmlaCatalogContent } from '../../model/helper'
 import {
@@ -59,7 +59,7 @@ export class SeedDataService extends SeedServerDataService {
 	}
 
 	public async seedTenantMoreDefault(connection: Connection, tenant: ITenant) {
-		await this.tryExecute('Default DataSource Types', createDefaultDataSourceTypes(connection, tenant))
+		await this.tryExecute('Default DataSource Types', seedDefaultDataSourceTypes(connection, tenant))
 	}
 
 	public async runDemoSeed(name: string, organization: string) {

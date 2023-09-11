@@ -85,7 +85,7 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 
 	async olap(dataSource: DataSource, body: string, acceptLanguage?: string) {
 		if (dataSource.type.protocol !== 'xmla') {
-			const olapHost = this.configService.get<string>('OLAP_HOST') || 'olap'
+			const olapHost = this.configService.get<string>('OLAP_HOST') || 'localhost'
 			const olapPort = this.configService.get<string>('OLAP_PORT') || '8080'
 			return axios
 				.post(`http://${olapHost}:${olapPort}/xmla`, body, {

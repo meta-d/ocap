@@ -3,7 +3,6 @@ import {
 	ChangeDetectorRef,
 	Component,
 	OnDestroy,
-	OnInit,
 	SecurityContext,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -41,7 +40,7 @@ export class EmailTemplatesComponent
 	static buildForm(fb: FormBuilder): FormGroup {
 		return fb.group({
 			name: [EmailTemplateNameEnum.WELCOME_USER],
-			languageCode: [LanguagesEnum.ENGLISH],
+			languageCode: [LanguagesEnum.English],
 			subject: ['', [Validators.required, Validators.maxLength(60)]],
 			mjml: ['', Validators.required]
 		});
@@ -128,7 +127,7 @@ export class EmailTemplatesComponent
 			const { tenantId } = this.store.user;
 			const { id: organizationId } = this.organization ?? {}
 			const {
-				languageCode = LanguagesEnum.ENGLISH,
+				languageCode = LanguagesEnum.English,
 				name = EmailTemplateNameEnum.WELCOME_USER
 			} = this.form.value;		
 			const result = await this.emailTemplateService.getTemplate({

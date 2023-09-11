@@ -171,7 +171,7 @@
 
         <div class="flex justify-between items-center self-stretch">
             <div>
-                <input matInput class="pac-home__date-picker"
+                <input matInput class="pac-home__date-picker outline-none bg-transparent"
                     [matDatepicker]="picker" [formControl]="dateControl"
                     (click)="picker.open()">
                 <mat-datepicker #picker></mat-datepicker>
@@ -215,12 +215,6 @@
                 </div>
             </gridster-item>
         </gridster>
-        
     </div>
 
-    <!-- <div (waIntersectionObservee)="onIntersection($event)">
-        <div *ngIf="showTrending">
-            <h2>Trending Datasets</h2>
-        </div>
-    </div> -->
 </div>
