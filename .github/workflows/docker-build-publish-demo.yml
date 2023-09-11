@@ -40,6 +40,17 @@ jobs:
       run: |
           docker push ghcr.io/meta-d/ocap-api-demo:latest
 
+    - uses: aliyun/acr-login@v1
+      with:
+        login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
+        region-id: 'cn-hangzhou'
+        access-key-id: ${{ secrets.ACR_USERNAME }}
+        access-key-secret: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Push to Aliyun Registry
+      run: |
+          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-api-demo:latest
+          
   ocap-webapp:
 
     runs-on: ubuntu-latest
@@ -73,3 +84,15 @@ jobs:
     - name: Push to Github Registry
       run: |
           docker push ghcr.io/meta-d/ocap-webapp-demo:latest
+
+    - uses: aliyun/acr-login@v1
+      with:
+        login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
+        region-id: 'cn-hangzhou'
+        access-key-id: ${{ secrets.ACR_USERNAME }}
+        access-key-secret: ${{ secrets.ACR_PASSWORD }}
+
+    - name: Push to Aliyun Registry
+      run: |
+          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp-demo:latest
+    
