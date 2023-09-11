@@ -44,9 +44,9 @@ jobs:
 
     - uses: aliyun/acr-login@v1
       with:
-        login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+        login-server: https://registry.cn-hangzhou.aliyuncs.com
+        username: "${{ secrets.ACR_USERNAME }}"
+        password: "${{ secrets.ACR_PASSWORD }}"
 
     - name: Push to Aliyun Registry
       run: |
@@ -88,9 +88,9 @@ jobs:
 
     - uses: aliyun/acr-login@v1
       with:
-        login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+        login-server: https://registry.cn-hangzhou.aliyuncs.com
+        username: "${{ secrets.ACR_USERNAME }}"
+        password: "${{ secrets.ACR_PASSWORD }}"
 
     - name: Push to Aliyun Registry
       run: |
