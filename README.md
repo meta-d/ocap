@@ -1,3 +1,5 @@
+English | [中文](./README_zh.md)
+
 # Metad Analytics Platform
 
 [uri_metad]: https://mtda.cloud/en/
@@ -10,7 +12,7 @@
 
 ## 💡 What's New
 
-We released new version which includes AI Copilot in query lab, it can assit you to write and optimize SQL or MDX queries.
+We released new version which includes [AI Copilot](https://mtda.cloud/en/blog/copilot-1-assist-data-query) in query lab, it can assit you to write and optimize SQL or MDX queries.
 
 ## 🌟 What is it
 
@@ -21,9 +23,9 @@ We released new version which includes AI Copilot in query lab, it can assit you
 * **Indicator Management**: Easily define, manage, and monitor key performance indicators (KPIs) to ensure data quality, consistency, and effective performance analysis.
 * **AI Copilot**: Benefit from AI-driven insights and recommendations to enhance decision-making processes and identify actionable opportunities.
 
-![](https://mtda.cloud/img/story/story-workspace.png)
+![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/story-workspace.png)
 
-![](https://mtda.cloud/img/blog/adv/indicator-application.png)
+![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
 
 ## ✨ Features
 
@@ -71,41 +73,41 @@ Basic feartures of the platform:
 * Certification
 * Dark / Light / Thin and other themes
 
-Read more about Metad and how to use it at your company, 
-
 ## 🌼 Screenshots
 
 <details>
 <summary>Show / Hide Screenshots</summary>
 
 ### Sales overview [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b)
-![](https://github.com/meta-d/meta-d/blob/main/img/adv-sales-overview.png)
+![Sales overview Screenshot](https://github.com/meta-d/meta-d/blob/main/img/adv-sales-overview.png)
 
 
 ### Pareto analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=bsZ0sjxnxI)
-![](https://github.com/meta-d/meta-d/blob/main/img/product-pareto-analysis.png)
+![Pareto analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/product-pareto-analysis.png)
 
 ### Product profit analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=6S4oEUnVO3)
-![](https://github.com/meta-d/meta-d/blob/main/img/profit-margin-analysis.jpg)
+![Product profit analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/profit-margin-analysis.jpg)
 
 ### Reseller analysis [open in new tab](https://app.mtda.cloud/public/story/a58112aa-fc9c-4b5b-a04e-4ea9b57ebba9?pageKey=nrEZxh1aqp)
-![](https://github.com/meta-d/meta-d/blob/main/img/reseller-profit-analysis.png)
+![Reseller analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/reseller-profit-analysis.png)
 
 ### Bigview dashboard [open in new tab](https://app.mtda.cloud/public/story/9c462bea-89f6-44b8-a35e-34b21cd15a36)
-![](https://github.com/meta-d/meta-d/blob/main/img/bigview-supermart-sales.png)
+![Bigview dashboard Screenshot](https://github.com/meta-d/meta-d/blob/main/img/bigview-supermart-sales.png)
 
 ### Indicator application [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
-![](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
+![Indicator application Screenshot](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
 
 ### Indicator mobile app [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
-![](https://github.com/meta-d/meta-d/blob/main/img/indicator-app-mobile.jpg)
+![Indicator mobile app Screenshot](https://github.com/meta-d/meta-d/blob/main/img/indicator-app-mobile.jpg)
 
 </details>
 
 ## 🔗 Links
 
-* [Website][uri_metad]
-* [Documentation](https://mtda.cloud/en/docs/)
+* <https://mtda.cloud> check more information about the platform at the official website.
+* <https://mtda.cloud/docs/> check the official documentation and tutorials for more details.
+* <https://mtda.cloud/blog/> Check out the official blog for the latest updates.
+* <https://app.mtda.cloud/> Login to Metad analytics platform for free use.
 
 ## 💻 Demo, Downloads, Testing and Production
 
@@ -157,7 +159,7 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 
 - Clone repo.
 - Make sure you have Docker Compose [installed locally](https://docs.docker.com/compose/install).
-- Copy `.env.compose` file into `.env` file in the root of mono-repo (the file contains default env variables definitions). Important: the file `.env.compose` is different from `.env.sample` in some settings, please make sure you use the correct one!
+- Copy `.env.compose` file into `.env` file in the root of mono-repo (the file contains default env variables definitions).
 - Run `docker-compose -f docker-compose.demo.yml up`, if you want to run the platform using our prebuild Docker images. _(Note: it uses latest images pre-build automatically from head of `main` branch using GitHub CI/CD.)_
 - Run `docker-compose up`, if you want to build everything (code and Docker images) locally. _(Note: this is extremely long process, option above is much faster.)_
 - Open <http://localhost:4200> in your browser.
@@ -174,13 +176,14 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 - Copy [`.env.local`](./.env.local) file into `.env` and adjust settings in the file which is used in local runs.
 - Run command `docker-compose -f docker-compose.dev.yml up -d` to start PostgreSQL database and redis services.
 - Run both API, UI and OLAP engine with a single command: `yarn start`, or run them separately with `yarn start:api`, `yarn start:cloud` and `yarn start:olap`.
-- Open Metad OCAP UI on <http://localhost:4200> in your browser (API runs on <http://localhost:3000/api>).
+- Open Metad UI on <http://localhost:4200> in your browser (API runs on <http://localhost:3000/api>).
 - Onboarding...
 - Enjoy!
 
 ### Production
 
-- For simple deployment scenarios (e.g. for yourself or your own small organization), check our [Kubernetes configurations](https://github.com/meta-d/ocap/tree/develop/.deploy/k8s), which we are using to deploy Metad Analytics demo into [Aliyun k8s cluster](https://cn.aliyun.com/product/kubernetes).
+- For simple deployment scenarios (e.g. for yourself or your own small organization), check our [Docker Compose file](./docker-compose.demo.yml), which we are using to deploy Metad Analytics Platform to docker cluster.
+- For production deployment scenarios (e.g. for enterprise organization), check our [Kubernetes configurations](https://github.com/meta-d/ocap/tree/develop/.deploy/k8s), which we are using to deploy Metad Analytics Platform into Kubernetes platform, for example [Aliyun k8s cluster](https://cn.aliyun.com/product/kubernetes).
 
 ## 💌 Contact Us
 
