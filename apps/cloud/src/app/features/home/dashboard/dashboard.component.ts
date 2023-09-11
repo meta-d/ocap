@@ -27,8 +27,8 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   ToastrService
 } from '../../../@core'
-import { createTimer } from '../../../@shared'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
+import { createTimer, TranslationBaseComponent } from '../../../@shared'
+
 
 @UntilDestroy({ checkProperties: true })
 @Component({
