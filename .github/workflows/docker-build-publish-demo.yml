@@ -1,10 +1,8 @@
-name: Build and Publish Docker Images Prod
+name: Build and Publish Docker Images Demo
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
 
@@ -22,10 +20,10 @@ jobs:
           load: true
           platforms: linux/amd64
           tags: |
-              ghcr.io/meta-d/ocap-api:latest
-              metadc/ocap-api:latest
-              registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:latest
-          cache-from: type=registry,ref=metadc/ocap-api:latest
+              ghcr.io/meta-d/ocap-api-demo:latest
+              metadc/ocap-api-demo:latest
+              registry.cn-hangzhou.aliyuncs.com/metad/ocap-api-demo:latest
+          cache-from: type=registry,ref=metadc/ocap-api-demo:latest
           cache-to: type=inline
     - name: Docker images list
       run: |
@@ -40,4 +38,4 @@ jobs:
 
     - name: Push to Github Registry
       run: |
-          docker push ghcr.io/meta-d/ocap-api:latest
+          docker push ghcr.io/meta-d/ocap-api-demo:latest
