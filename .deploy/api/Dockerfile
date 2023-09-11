@@ -66,7 +66,7 @@ COPY --chown=node:node .deploy/api/package-prod.json ./package.json
 
 RUN yarn config set network-timeout 300000
 RUN yarn install --frozen-lockfile && yarn cache clean && \
-    touch ormlogs.log && chown node:node ormlogs.log
+    touch ormlogs.log && chown -R node:node /srv/pangolin
 
 USER node:node
 
