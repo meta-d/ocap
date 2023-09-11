@@ -1,0 +1,28 @@
+name: Build and Publish Docker Images Demo
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+    
+jobs:
+
+  ocap-api:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: aliyun/acr-login@v1
+      with:
+        login-server: https://registry.cn-hangzhou.aliyuncs.com
+        username: "${{ secrets.ACR_USERNAME }}"
+        password: "${{ secrets.ACR_PASSWORD }}"
+
+    - name: Push to Aliyun Registry
+      run: |
+          docker pull ghcr.io/meta-d/ocap-api-demo:latest
+          docker tag ghcr.io/meta-d/ocap-api-demo:latest registry.cn-hangzhou.aliyuncs.com/metad/ocap-api-demo:latest
+          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-api-demo:latest
+
+    
