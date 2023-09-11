@@ -3,7 +3,9 @@ name: Build and Publish Docker Images Demo
 on:
   push:
     branches: [ "develop" ]
-
+  pull_request:
+    branches: [ "develop" ]
+    
 jobs:
 
   ocap-api:
@@ -43,9 +45,8 @@ jobs:
     - uses: aliyun/acr-login@v1
       with:
         login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
-        region-id: 'cn-hangzhou'
-        access-key-id: ${{ secrets.ACR_USERNAME }}
-        access-key-secret: ${{ secrets.ACR_PASSWORD }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
 
     - name: Push to Aliyun Registry
       run: |
@@ -88,9 +89,8 @@ jobs:
     - uses: aliyun/acr-login@v1
       with:
         login-server: 'https://registry.cn-hangzhou.aliyuncs.com'
-        region-id: 'cn-hangzhou'
-        access-key-id: ${{ secrets.ACR_USERNAME }}
-        access-key-secret: ${{ secrets.ACR_PASSWORD }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
 
     - name: Push to Aliyun Registry
       run: |
