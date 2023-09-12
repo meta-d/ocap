@@ -256,7 +256,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	}
 
 	async getSamplesPath() {
-		const cache = path.join(process.cwd(), 'cache')
+		const cache = path.join(process.cwd(), '.cache')
 		const samples = path.join(cache, 'samples')
 		if (!fs.existsSync(cache)) {
 			fs.mkdirSync(cache)

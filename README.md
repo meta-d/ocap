@@ -104,9 +104,9 @@ Basic feartures of the platform:
 
 ## 🔗 Links
 
-* <https://mtda.cloud> check more information about the platform at the official website.
-* <https://mtda.cloud/docs/> check the official documentation and tutorials for more details.
-* <https://mtda.cloud/blog/> Check out the official blog for the latest updates.
+* <https://mtda.cloud/en/> check more information about the platform at the official website.
+* <https://mtda.cloud/en/docs/> (WIP) check the official documentation and tutorials for more details.
+* <https://mtda.cloud/en/blog/> Check out the official blog for the latest updates.
 * <https://app.mtda.cloud/> Login to Metad analytics platform for free use.
 
 ## 💻 Demo, Downloads, Testing and Production
@@ -199,7 +199,6 @@ This software is available under the following licenses:
 - [Metad Analytics Platform Community Edition](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-community-edition-license)
 - [Metad Analytics Platform Small Business](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-small-business-license)
 - [Metad Analytics Platform Enterprise](https://github.com/meta-d/ocap/blob/master/LICENSE.md#metad-analytics-platform-enterprise-license)
-
 
 #### Please see [LICENSE](LICENSE.md) for more information on licenses.
 
