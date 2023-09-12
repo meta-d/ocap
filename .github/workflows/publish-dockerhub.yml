@@ -19,5 +19,6 @@ jobs:
           env:
             GITHUB_REF_NAME: ${{ github.ref_name }}
           run: |
+            echo "Current Git Tag: ${GITHUB_REF_NAME#refs/tags/}"
             echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
             echo "GITHUB_REF_NAME: ${{ env.GITHUB_REF_NAME }}"
