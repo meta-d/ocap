@@ -2,9 +2,8 @@ name: Build and Publish Docker Images Prod
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - '*'
 
 jobs:
 
@@ -27,10 +26,25 @@ jobs:
               registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:latest
           cache-from: type=registry,ref=metadc/ocap-api:latest
           cache-to: type=inline
+
     - name: Docker images list
       run: |
           sudo docker image list
-  
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Push to Docker Hub Registry
+      env:
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+      run: |
+        docker push metadc/ocap-api:latest
+        docker tag metadc/ocap-api:latest metadc/ocap-api:$GITHUB_REF_NAME
+        docker push metadc/ocap-api:$GITHUB_REF_NAME
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -41,6 +55,8 @@ jobs:
     - name: Push to Github Registry
       run: |
           docker push ghcr.io/meta-d/ocap-api:latest
+          docker tag ghcr.io/meta-d/ocap-api:latest ghcr.io/meta-d/ocap-api:$GITHUB_REF_NAME
+          docker push ghcr.io/meta-d/ocap-api:$GITHUB_REF_NAME
 
     - uses: aliyun/acr-login@v1
       with:
@@ -51,6 +67,8 @@ jobs:
     - name: Push to Aliyun Registry
       run: |
           docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:latest
+          docker tag registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:latest registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:$GITHUB_REF_NAME
+          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:$GITHUB_REF_NAME
           
   ocap-webapp:
 
@@ -71,10 +89,25 @@ jobs:
               registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:latest
           cache-from: type=registry,ref=metadc/ocap-webapp:latest
           cache-to: type=inline
+
     - name: Docker images list
       run: |
           sudo docker image list
-  
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Push to Docker Hub Registry
+      env:
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+      run: |
+        docker push metadc/ocap-webapp:latest
+        docker tag metadc/ocap-webapp:latest metadc/ocap-webapp:$GITHUB_REF_NAME
+        docker push metadc/ocap-webapp:$GITHUB_REF_NAME
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -84,7 +117,9 @@ jobs:
 
     - name: Push to Github Registry
       run: |
-          docker push ghcr.io/meta-d/ocap-webapp:latest
+        docker push ghcr.io/meta-d/ocap-webapp:latest
+        docker tag ghcr.io/meta-d/ocap-webapp:latest ghcr.io/meta-d/ocap-webapp:$GITHUB_REF_NAME
+        docker push ghcr.io/meta-d/ocap-webapp:$GITHUB_REF_NAME
 
     - uses: aliyun/acr-login@v1
       with:
@@ -94,5 +129,7 @@ jobs:
 
     - name: Push to Aliyun Registry
       run: |
-          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:latest
+        docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:latest
+        docker tag registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:latest registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:$GITHUB_REF_NAME
+        docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:$GITHUB_REF_NAME
     
