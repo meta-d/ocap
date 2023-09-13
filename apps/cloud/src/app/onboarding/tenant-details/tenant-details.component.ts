@@ -156,6 +156,7 @@ export class TenantDetailsComponent {
         defaultOrganization: {
           name: this.userFormGroup.get('organizationName').value,
           preferredLanguage: this.preferredLanguageFormGroup.get('preferredLanguage').value[0],
+          invitesAllowed: true,
           currency: CurrenciesEnum.USD,
           profile_link: '',
           imageUrl: '',

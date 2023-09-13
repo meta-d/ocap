@@ -1,30 +1,40 @@
 import { Location, DatePipe } from '@angular/common'
-import { Component, Inject, LOCALE_ID } from '@angular/core'
+import { Component, Inject, LOCALE_ID, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { InvitationExpirationEnum, InvitationTypeEnum } from '@metad/contracts'
 import { InviteService, Store, ToastrService } from '@metad/cloud/state'
-import { TranslationBaseComponent, userLabel } from 'apps/cloud/src/app/@shared'
+import { InlineSearchComponent, MaterialModule, SharedModule, TranslationBaseComponent, UserProfileInlineComponent, userLabel } from 'apps/cloud/src/app/@shared'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import isAfter from 'date-fns/isAfter'
 import { withLatestFrom, map, switchMap, firstValueFrom, combineLatestWith, BehaviorSubject } from 'rxjs'
 import { InviteMutationComponent } from '../../../../@shared/invite'
+import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NxTableModule } from '@metad/components/table'
+import { PACUsersComponent } from '../users.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
+  standalone: true,
   selector: 'pac-manage-user-invite',
   templateUrl: './manage-user-invite.component.html',
-  styles: [
-    `
-      :host {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-    `
+  styleUrls: ['./manage-user-invite.component.scss'],
+  imports: [
+    SharedModule,
+    MaterialModule,
+    // Standard components
+    ButtonGroupDirective,
+    NxTableModule,
+    InlineSearchComponent,
+    // OCAP Modules
+    OcapCoreModule,
+    UserProfileInlineComponent
   ]
 })
 export class ManageUserInviteComponent extends TranslationBaseComponent {
   userLabel = userLabel
   invitationTypeEnum = InvitationTypeEnum
+
+  private readonly usersComponent = inject(PACUsersComponent)
 
   private readonly refresh$ = new BehaviorSubject<void>(null)
 
@@ -47,12 +57,16 @@ export class ManageUserInviteComponent extends TranslationBaseComponent {
         expireDate: invite.expireDate ? formatDistanceToNow(new Date(invite.expireDate)) : InvitationExpirationEnum.NEVER,
         statusText: invite.status === 'ACCEPTED' || !invite.expireDate || isAfter(new Date(invite.expireDate), new Date())
             ? this.getTranslation(
-                `INVITE_PAGE.STATUS.${invite.status}`, { Default: invite.status }
+                `PAC.INVITE_PAGE.STATUS.${invite.status}`, { Default: invite.status }
               )
-            : this.getTranslation(`INVITE_PAGE.STATUS.EXPIRED`, { Default: 'EXPIRED' }),
+            : this.getTranslation(`PAC.INVITE_PAGE.STATUS.EXPIRED`, { Default: 'EXPIRED' }),
       }))
     )
   )
+
+  private invitedSub = this.usersComponent.invitedEvent.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.refresh()
+  })
 
   constructor(
     private readonly store: Store,
@@ -68,6 +82,10 @@ export class ManageUserInviteComponent extends TranslationBaseComponent {
 
   back(): void {
     this.location.back()
+  }
+
+  refresh() {
+    this.refresh$.next()
   }
 
   async invite() {

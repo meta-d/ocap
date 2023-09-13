@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { PermissionsEnum } from '@metad/contracts'
-import { InviteGuard } from '../../../@core/guards'
+import { inviteGuard } from '../../../@core/guards'
 import { PACEditUserComponent } from './edit-user/edit-user.component'
 import { ManageUserInviteComponent } from './manage-user-invite/manage-user-invite.component'
 import { PACUserOrganizationsComponent } from './organizations/organizations.component'
 import { UserBasicComponent } from './user-basic/user-basic.component'
 import { PACUsersComponent } from './users.component'
+import { ManageUserComponent } from './manage-user/manage-user.component'
 
 const routes: Routes = [
   {
@@ -29,19 +30,6 @@ const routes: Routes = [
       }
     ]
   },
-
-  {
-    path: 'invites',
-    component: ManageUserInviteComponent,
-    canActivate: [InviteGuard],
-		data: {
-      title: 'Settings/User/Invites',
-			expectedPermissions: [
-				PermissionsEnum.ORG_INVITE_EDIT,
-				PermissionsEnum.ORG_INVITE_VIEW
-			]
-		}
-  },
   {
     path: '',
     component: PACUsersComponent,
@@ -50,8 +38,27 @@ const routes: Routes = [
     },
     children: [
       {
+        path: '',
+        component: ManageUserComponent
+      },
+      {
+        path: 'invites',
+        component: ManageUserInviteComponent,
+        canActivate: [inviteGuard],
+        data: {
+          title: 'Settings/User/Invites',
+          expectedPermissions: [
+            PermissionsEnum.ORG_INVITE_EDIT,
+            PermissionsEnum.ORG_INVITE_VIEW
+          ]
+        }
+      },
+      {
         path: ':id',
-        component: PACEditUserComponent
+        component: PACEditUserComponent,
+        data: {
+          title: 'Settings/User/Edit'
+        },
       }
     ]
   },

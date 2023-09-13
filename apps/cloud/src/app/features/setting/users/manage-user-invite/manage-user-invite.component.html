@@ -1,58 +1,54 @@
-<div class="flex justify-between items-center px-4">
-    <h2 class="text-base flex justify-start items-center">
-        <button mat-icon-button (click)="back()">
-            <mat-icon>navigate_before</mat-icon>
-        </button>
-        {{ 'PAC.ACTIONS.ManageInvites' | translate: {Default: "Manage Invites"} }}
-        {{ organizationName$ | async }}
-    </h2>
-    <div ngmButtonGroup>
-        <button mat-raised-button displayDensity="cosy" color="primary" (click)="invite()">
-            <div class="flex items-center">
-                <mat-icon fontSet="material-icons-outlined">person_add</mat-icon>{{ 'PAC.ACTIONS.INVITE' | translate: {Default: "Invite"} }}
-            </div>
-        </button>
+<div class="pac-page-body-toolbar">
+    <div>
+        <span>{{ 'PAC.INVITE_PAGE.ForOrganization' | translate: {Default: 'For Organization'} }}</span>: 
+        <span class="italic">
+            {{ organizationName$ | async }}
+        </span>
     </div>
 </div>
 
-<div class="flex-1 p-4 overflow-y-auto">
+<div class="flex-1 overflow-y-auto">
     <nx-table class="rounded-xl border border-gray-200 overflow-hidden"
         [columns]="[
             {
                 name: 'email',
-                caption: 'INVITE_PAGE.Email' | translate: {Default: 'Email'}
+                caption: 'PAC.INVITE_PAGE.Email' | translate: {Default: 'Email'}
             },
             {
                 name: 'role.name',
-                caption: 'INVITE_PAGE.Role' | translate: {Default: 'Role'}
+                caption: 'PAC.INVITE_PAGE.Role' | translate: {Default: 'Role'}
             },
             {
                 name: 'invitedBy',
-                caption: 'INVITE_PAGE.InvitedBy' | translate: {Default: 'Invited By'},
-                pipe: userLabel
+                caption: 'PAC.INVITE_PAGE.InvitedBy' | translate: {Default: 'Invited By'},
+                cellTemplate: invitedByTempl
             },
             {
                 name: 'createdAt',
-                caption: 'INVITE_PAGE.CreatedAt' | translate: {Default: 'Created At'}
+                caption: 'PAC.INVITE_PAGE.CreatedAt' | translate: {Default: 'Created At'}
             },
             {
                 name: 'expireDate',
-                caption: 'INVITE_PAGE.Expires' | translate: {Default: 'Expires'}
+                caption: 'PAC.INVITE_PAGE.Expires' | translate: {Default: 'Expires'}
             },
             {
                 name: 'statusText',
-                caption: 'INVITE_PAGE.Status' | translate: {Default: 'Status'},
+                caption: 'PAC.INVITE_PAGE.Status' | translate: {Default: 'Status'},
                 cellTemplate: statusTempl
             },
             {
                 name: 'action',
-                caption: 'INVITE_PAGE.Action' | translate: {Default: 'Action'},
+                caption: 'PAC.INVITE_PAGE.Action' | translate: {Default: 'Action'},
                 cellTemplate: actionTempl
             }
         ]"
         [data]="invites$ | async">
     </nx-table>
 </div>
+
+<ng-template #invitedByTempl let-invitedBy="invitedBy" >
+    <pac-user-profile-inline [user]="invitedBy"></pac-user-profile-inline>
+</ng-template>
 
 <ng-template #actionTempl let-id="id" let-email="email">
     <button mat-icon-button displayDensity="cosy" ngmAppearance="danger" (click)="deleteInvite(id, email)">

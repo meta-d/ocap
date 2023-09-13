@@ -152,7 +152,8 @@
       "CalculatedFormula": "计算公式",
       "Visits": "访问量",
       "UpdatedDate": "更新日期",
-      "SortBy": "排序"
+      "SortBy": "排序",
+      "Role&Permissions": "角色 & 权限"
     },
     "MENU": {
       "Certification": "认证",
@@ -198,7 +199,7 @@
       "InviteUsers": "邀请用户",
       "Authentication": "用户认证",
       "UserSettings": "用户设置",
-
+      "ManageUsersAndInvites": "管理用户和邀请",
       "ORGANIZATIONS": "组织",
       "FEATURES": "功能",
       "USERS": "用户",
@@ -907,6 +908,7 @@
       }
     },
     "BUSINESS_AREA": {
+      "All": "所有",
       "BASIC": "基本属性",
       "Delete": "删除",
       "Update": "更新",
@@ -950,6 +952,28 @@
       "StoryCard": {
         "LastUpdated": "最后更新",
         "Open": "查看"
+      }
+    },
+    "INVITE_PAGE": {
+      "ForOrganization": "为组织",
+      "INVITATION_EXPIRATION_OPTIONS": {
+        "DAY": "一日",
+        "WEEK": "一周",
+        "TWO_WEEK": "两周",
+        "MONTH": "一月",
+        "NEVER": "永不"
+      },
+      "Email": "邮箱",
+      "Role": "角色",
+      "InvitedBy": "邀请人",
+      "CreatedAt": "创建时间",
+      "Expires": "过期时间",
+      "Action": "操作",
+      "Status": "状态",
+      "STATUS": {
+        "INVITED": "邀请中",
+        "ACCEPTED": "已接受",
+        "EXPIRED": "过期"
       }
     },
     "Header": {
@@ -1181,6 +1205,9 @@
       "zh-Hans": "中文简体",
       "zh-Hant": "中文繁体"
     },
+    "Users": {
+      "NoMoreOrganizations": "没有更多的组织可添加"
+    },
     "title": {
       "short": "分析云"
     },
@@ -1335,6 +1362,7 @@
         "MAIN": "主属性",
         "DEMO": "演示数据",
         "GENERATE_DEMO": "生成演示数据",
+        "RegenerateDemo": "重新生成演示数据",
         "TotalEmployees": "总员工数",
         "BasicInfo": "基础信息",
         "OtherInfo": "其他信息",
@@ -2813,27 +2841,7 @@
       "ROLE": "选择角色"
     }
   },
-  "INVITE_PAGE": {
-    "INVITATION_EXPIRATION_OPTIONS": {
-      "DAY": "一日",
-      "WEEK": "一周",
-      "TWO_WEEK": "两周",
-      "MONTH": "一月",
-      "NEVER": "永不"
-    },
-    "Email": "邮箱",
-    "Role": "角色",
-    "InvitedBy": "邀请人",
-    "CreatedAt": "创建时间",
-    "Expires": "过期时间",
-    "Action": "操作",
-    "Status": "状态",
-    "STATUS": {
-      "INVITED": "邀请中",
-      "ACCEPTED": "已接受",
-      "EXPIRED": "过期"
-    }
-  },
+  
   "EMAIL_TEMPLATES_PAGE": {
     "TEMPLATE_NAMES": {
       "password": "密码重置",

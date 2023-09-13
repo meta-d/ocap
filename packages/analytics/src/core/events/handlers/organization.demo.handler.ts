@@ -44,6 +44,7 @@ import {
 import { readYamlFile } from '../../helper'
 import { REDIS_CLIENT } from '../../redis.module'
 
+
 const axios = _axios.default
 
 @CommandHandler(OrganizationDemoCommand)
@@ -100,7 +101,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
 		
 		//extracted import data files directory path
-		const samplesPath = await this.getSamplesPath()
+		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
 		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.4.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.4.0.zip'
 	    const files = await this.unzipAndRead(file, samplesPath)
@@ -256,12 +257,12 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		}
 
 		// Delete the samples folder
-		fs.rmSync(samplesPath, { recursive: true, force: true })
+		// fs.rmSync(samplesPath, { recursive: true, force: true })
 
 		return Promise.resolve()
 	}
 
-	async getSamplesPath() {
+	async getUserSamplesPath(userId: string) {
 		const cache = path.join(process.cwd(), '.cache')
 		const samples = path.join(cache, 'samples')
 		if (!fs.existsSync(cache)) {
@@ -270,7 +271,12 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		if (!fs.existsSync(samples)) {
 			fs.mkdirSync(samples)
 		}
-		return samples
+
+		const userSamples = path.join(samples, userId)
+		if (!fs.existsSync(userSamples)) {
+			fs.mkdirSync(userSamples)
+		}
+		return userSamples
 	}
 
 	public async unzipAndRead(url: string, assetPath = '') {

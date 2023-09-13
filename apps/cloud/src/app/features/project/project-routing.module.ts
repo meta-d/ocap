@@ -38,6 +38,11 @@ const routes: Routes = [
             path: 'approvals',
             component: ApprovalsComponent
           },
+          {
+            path: ':id',
+            component: IndicatorRegisterComponent,
+            canDeactivate: [DirtyCheckGuard],
+          },
         ]
       },
       {

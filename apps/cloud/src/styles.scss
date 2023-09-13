@@ -349,3 +349,33 @@ html.cdk-global-scrollblock {
     @apply text-xs;
   }
 }
+
+
+.pac-page-header {
+  @apply flex flex-col justify-start items-start gap-2 px-4 pt-4 bg-white;
+}
+.pac-page-title {
+  @apply text-2xl font-bold;
+}
+.pac-page-subtitle {
+  @apply text-base font-light;
+}
+.pac-page-body {
+  @apply bg-slate-50 rounded-lg overflow-auto relative;
+}
+.pac-page-body-toolbar {
+  @apply flex justify-between items-center;
+}
+.pac-tab-nav-bar {
+  .pac-tab-close {
+    @apply opacity-0 invisible;
+  }
+  .mdc-tab.mdc-tab--active {
+    .pac-tab-close {
+      @apply opacity-100 visible;
+    }
+  }
+}
+.mat-mdc-card.mdc-card {
+  @apply rounded-lg shadow-sm;
+}

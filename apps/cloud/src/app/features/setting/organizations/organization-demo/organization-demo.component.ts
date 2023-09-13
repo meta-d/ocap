@@ -1,10 +1,10 @@
-import { Component } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { UntilDestroy } from '@ngneat/until-destroy'
-import { OrganizationsService, ToastrService } from 'apps/cloud/src/app/@core'
+import { OrganizationsService, ToastrService, getErrorMessage } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
-import { catchError, concatMap, EMPTY, Observable, tap, withLatestFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { EditOrganizationComponent } from '../edit-organization/edit-organization.component'
-import { effectAction } from '@metad/ocap-angular/core'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -12,28 +12,24 @@ import { effectAction } from '@metad/ocap-angular/core'
   styleUrls: ['./organization-demo.component.scss']
 })
 export class OrganizationDemoComponent extends TranslationBaseComponent {
-  constructor(
-    public editOrganizationComponent: EditOrganizationComponent,
-    private orgsService: OrganizationsService,
-    private readonly _toastrService: ToastrService
-  ) {
-    super()
-  }
+  public editOrganizationComponent = inject(EditOrganizationComponent)
+  private orgsService = inject(OrganizationsService)
+  private readonly _toastrService = inject(ToastrService)
 
-  readonly generate = effectAction((origin$: Observable<void>) => {
-    return origin$.pipe(
-      withLatestFrom(this.editOrganizationComponent.organization$),
-      concatMap(([, org]) => {
-        return this.orgsService.demo(org.id).pipe(
-          catchError((err) => {
-            this._toastrService.error('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATE_ERROR')
-            return EMPTY
-          })
-        )
-      }),
-      tap(() => {
-        this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED')
-      })
-    )
-  })
+  private readonly organization = toSignal(this.editOrganizationComponent.organization$)
+  public readonly loading = signal(false)
+  public readonly generated = signal(false)
+
+  async generate() {
+    try {
+      this.loading.set(true)
+      await firstValueFrom(this.orgsService.demo(this.organization().id))
+      this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED', { Default: 'Demo generated' })
+      this.loading.set(false)
+      this.generated.set(true)
+    } catch (err) {
+      this._toastrService.error(getErrorMessage(err))
+      this.loading.set(false)
+    }
+  }
 }

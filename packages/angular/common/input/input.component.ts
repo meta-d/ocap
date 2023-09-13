@@ -8,7 +8,8 @@ import {
   OnInit,
   Output,
   TemplateRef,
-  forwardRef
+  forwardRef,
+  signal
 } from '@angular/core'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
@@ -52,7 +53,14 @@ export class NgmInputComponent implements ControlValueAccessor, OnInit {
   // We need an initializer here to avoid a TS error. The value will be set in `ngAfterViewInit`.
   _explicitContent: TemplateRef<any> = undefined!
 
-  value: string
+  get value() {
+    return this._value()
+  }
+  set value(value) {
+    this._value.set(value)
+  }
+  private readonly _value = signal(null)
+
   searchControl = new FormControl()
   private _onChange: (value) => void
   private _onTouched: (value) => void

@@ -1,3 +1,4 @@
-<button mat-raised-button color="primary" (click)="generate()">
-  {{ 'PAC.ORGANIZATIONS_PAGE.Organization.GENERATE_DEMO' | translate: {Default: "Generate Demo"} }}
+<button mat-raised-button color="primary" [disabled]="loading()" (click)="generate()">
+  <span *ngIf="!generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.GENERATE_DEMO' | translate: {Default: "Generate Demo"} }}</span>
+  <span *ngIf="generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.RegenerateDemo' | translate: {Default: "Re-Generate Demo"} }}</span>
 </button>

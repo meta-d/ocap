@@ -41,6 +41,7 @@
 		"@types/cron": "1.7.3",
 		"@types/express": "^4.17.11",
 		"@types/redis": "^2.8.32",
+		"@types/unzipper": "^0.10.7",
 		"nodemon": "^2.0.19"
 	}
 }

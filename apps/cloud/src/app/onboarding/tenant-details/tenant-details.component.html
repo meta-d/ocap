@@ -87,7 +87,7 @@
 
     <div class="flex justify-center items-center w-full h-24">
       <mat-spinner *ngIf="loading()" diameter="30"></mat-spinner>
-      <mat-error *ngIf="demoError()" class="">{{demoError()}}</mat-error>
+      <mat-error *ngIf="demoError()" class="max-h-full max-w-full overflow-auto">{{demoError()}}</mat-error>
     </div>
 
     <div class="flex items-center gap-4">

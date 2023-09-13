@@ -6,7 +6,7 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
 @Component({
   selector: 'pac-settings',
   template: `
-    <div class="flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4">
+    <div class="flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4 md:pr-0">
       <!-- <h2 class="text-lg">
     {{ 'PAC.MENU.Settings' | translate: {Default: 'Settings'} }}
   </h2> -->
@@ -30,28 +30,12 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
 
     <div
       [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
-      class="pac-nav__router relative flex-1 mt-8"
+      class="pac-nav__router relative flex-1"
     >
       <router-outlet #o="outlet"></router-outlet>
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: flex;
-        flex: 1;
-        flex-direction: row;
-        max-width: 100%;
-        overflow: auto;
-      }
-      .pac-nav__router {
-        display: flex;
-        max-height: calc(100% - 37px);
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-    `
-  ],
+  styleUrls: ['./settings.component.scss'],
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

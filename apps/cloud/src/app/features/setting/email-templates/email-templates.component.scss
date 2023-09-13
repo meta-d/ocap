@@ -4,9 +4,6 @@
   flex-direction: column;
 }
 
-.ngm-button-group {
-  .mat-form-field,
-  pac-language-selector {
-    margin-top: -0.5rem;
-  }
+.pac-page-header {
+  @apply flex flex-row items-center justify-between;
 }

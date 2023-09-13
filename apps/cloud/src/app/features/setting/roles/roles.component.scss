@@ -6,16 +6,10 @@
   
 }
 
-.pac-page__body.pac-settings-roles__body {
-  padding: 24px;
-  overflow: auto;
-}
-
 :host::ng-deep {
   .mat-mdc-list-item.mdc-list-item:not(.mdc-list-item--disabled) {
     @apply hover:bg-gray-100;
   }
-  
 
   .mdc-list-item__primary-text {
     @apply w-full flex items-center h-10;

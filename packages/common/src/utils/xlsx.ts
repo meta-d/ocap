@@ -58,7 +58,7 @@ export async function readExcelJson(wSheet, fileName = ''): Promise<UploadSheetT
     const excelDataEncodeToJson = refExcelData.slice(0).map((item, row) =>
       item.reduce((obj, val, i) => {
         if (!excelTransformNum[i]) {
-          throw new Error(`The column name corresponding to cell in row ${row + 2} and column ${i + 1} was not found.
+          throw new Error(`The column name corresponding to cell in row ${row + 2} and column ${i + 1} was not found. The file is ${fileName}.
 The current row data is ${item}, and the header row data is ${excelTransformNum}.`)
         }
         obj[excelTransformNum[i].trim()] = val
