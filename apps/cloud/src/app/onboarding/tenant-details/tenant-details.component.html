@@ -80,8 +80,8 @@
     <form [formGroup]="demoFormGroup" class="flex flex-col">
       <label>{{ 'PAC.Onboarding.SelectNetwork' | translate: {Default: 'Select Network'} }}</label>
       <mat-radio-group formControlName="source">
-        <mat-radio-button value="github">GitHub</mat-radio-button>
-        <mat-radio-button value="aliyun">Aliyun oss</mat-radio-button>
+        <mat-radio-button [value]="OrganizationDemoNetworkEnum.github">GitHub</mat-radio-button>
+        <mat-radio-button [value]="OrganizationDemoNetworkEnum.aliyun">Aliyun oss</mat-radio-button>
       </mat-radio-group>
     </form>
 

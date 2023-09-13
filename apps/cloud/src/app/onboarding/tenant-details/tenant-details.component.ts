@@ -27,6 +27,7 @@ import {
   IOrganization,
   LanguagesEnum,
   MatchValidator,
+  OrganizationDemoNetworkEnum,
   OrganizationsService,
   ServerAgent,
   TenantService,
@@ -58,6 +59,8 @@ import {
   ]
 })
 export class TenantDetailsComponent {
+  OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
+  
   private readonly tenantService = inject(TenantService)
   private readonly typesService = inject(DataSourceTypesService)
   private readonly dataSourceService = inject(DataSourceService)
@@ -88,7 +91,7 @@ export class TenantDetailsComponent {
     }
   )
   demoFormGroup: FormGroup = this._formBuilder.group({
-    source: ['github', Validators.required]
+    source: [OrganizationDemoNetworkEnum.github, Validators.required]
   })
 
   dataSourceTypeFormGroup: FormGroup = this._formBuilder.group({

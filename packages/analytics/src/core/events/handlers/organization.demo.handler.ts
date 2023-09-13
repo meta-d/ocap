@@ -108,19 +108,25 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.logger.debug(files)
 
 		for await (const file of files) {
-			const sheets = await readYamlFile<
-				Array<{
-					name: string
-					installationMode: string
-					dataSource: IDataSource
-					dataset: CreationTable & { fileUrl: string }
-					businessArea: BusinessArea
-					semanticModel: ISemanticModel
-					project: IProject
-					story: IStory[]
-					indicator: IIndicator[]
-				}>
-			>(path.join(demosFolder, file))
+			let sheets
+			try {
+				sheets = await readYamlFile<
+					Array<{
+						name: string
+						installationMode: string
+						dataSource: IDataSource
+						dataset: CreationTable & { fileUrl: string }
+						businessArea: BusinessArea
+						semanticModel: ISemanticModel
+						project: IProject
+						story: IStory[]
+						indicator: IIndicator[]
+					}>
+				>(path.join(demosFolder, file))
+			} catch (err) {
+				this.logger.error(err.message)
+				continue;
+			}
 			for await (const {
 				name,
 				installationMode,

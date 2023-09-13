@@ -254,3 +254,8 @@ export interface IKeyValuePair {
     key: string;
     value: boolean | string;
 }
+
+export enum OrganizationDemoNetworkEnum {
+	github = 'github',
+	aliyun = 'aliyun'
+}
