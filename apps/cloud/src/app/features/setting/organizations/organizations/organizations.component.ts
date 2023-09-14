@@ -1,19 +1,24 @@
 import { SelectionModel } from '@angular/cdk/collections'
+import { CommonModule } from '@angular/common'
 import { Component } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
+import { Router, RouterModule } from '@angular/router'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
+import { NxTableModule } from '@metad/components/table'
+import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
-import { IOrganization, OrganizationsService, ToastrService } from '../../../@core'
-import { ManageEntityBaseComponent } from '../../../@shared'
-import { OrganizationMutationComponent } from './organization-mutation/organization-mutation.component'
-
+import { IOrganization, OrganizationsService, ToastrService } from '../../../../@core'
+import { MaterialModule, OrgAvatarComponent, TranslationBaseComponent } from '../../../../@shared'
+import { OrganizationMutationComponent } from '../organization-mutation/organization-mutation.component'
 
 @Component({
-  selector: 'pac-organizations',
+  standalone: true,
+  selector: 'pac-all-organizations',
   templateUrl: './organizations.component.html',
-  styleUrls: ['./organizations.component.scss']
+  styleUrls: ['./organizations.component.scss'],
+  imports: [CommonModule, MaterialModule, TranslateModule, RouterModule, NxTableModule, OrgAvatarComponent]
 })
-export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganization> {
+export class AllOrganizationsComponent extends TranslationBaseComponent {
   private refresh$ = new BehaviorSubject<void>(null)
   public readonly organizations$ = this.refresh$.pipe(
     switchMap(() => this.organizationsService.getAll().pipe(map(({ items }) => items))),
@@ -24,6 +29,7 @@ export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganizat
 
   constructor(
     private readonly organizationsService: OrganizationsService,
+    private readonly router: Router,
     private readonly _dialog: MatDialog,
     private _toastrService: ToastrService
   ) {
@@ -39,7 +45,7 @@ export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganizat
   }
 
   editOrganization(id) {
-    this.router.navigate(['/settings/organizations/edit/', id])
+    this.router.navigate(['/settings/organizations/', id])
   }
 
   async addOrganization() {

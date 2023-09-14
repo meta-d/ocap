@@ -6,7 +6,7 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
 @Component({
   selector: 'pac-settings',
   template: `
-    <div class="flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4 md:pr-0">
+    <div class="z-10 flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4 md:pr-0">
       <!-- <h2 class="text-lg">
     {{ 'PAC.MENU.Settings' | translate: {Default: 'Settings'} }}
   </h2> -->

@@ -23,7 +23,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as unzipper from 'unzipper'
+import * as decompress from 'decompress'
 import * as _axios from 'axios'
 import { assign, isString } from 'lodash'
 import { RedisClientType } from 'redis'
@@ -283,8 +283,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		const demoFilePath = path.join(assetPath, 'demos.zip')
 		
 		await this.downloadDemoFile(url, demoFilePath)
-		const directory = await unzipper.Open.file(demoFilePath)
-		await directory.extract({ path: assetPath })
+		await decompress(demoFilePath, assetPath)
 
 		const demosFolder = path.join(assetPath, 'demos')
 		const files = fs.readdirSync(demosFolder).filter((file) => {
@@ -568,7 +567,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					await this.modelRepository.findOne({
 						tenantId: this.tenant.id,
 						organizationId: this.organization.id,
-						name: indicator.modelId
+						key: indicator.modelKey
 					})
 				)?.id
 			: modelId

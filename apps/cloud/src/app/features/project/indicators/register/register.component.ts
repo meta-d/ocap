@@ -75,7 +75,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     map((paramMap) => paramMap.get('id')),
     tap((id) => {
       if (id === 'new') {
-        this.indicatorsComponent?.setCurrentIndicator({id: 'new'} as Indicator)
+        this.indicatorsComponent?.setCurrentLink({id: 'new'} as Indicator)
       }
     }),
     filter((id) => !isNil(id) && id !== 'new'),
@@ -135,7 +135,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       delay(300)
     ).subscribe((indicator) => {
       this.registerForm.formGroup.markAsPristine()
-      this.indicatorsComponent?.setCurrentIndicator(indicator)
+      this.indicatorsComponent?.setCurrentLink(indicator)
     })
   constructor(
     private indicatorsService: IndicatorsService,
@@ -245,6 +245,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   }
 
   ngOnDestroy(): void {
-    this.indicatorsComponent?.setCurrentIndicator(null)
+    this.indicatorsComponent?.setCurrentLink(null)
   }
 }

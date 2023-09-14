@@ -23,6 +23,7 @@
 		"axios": "^0.24.0",
 		"cron": "1.8.2",
 		"date-fns": "2.28.0",
+		"decompress": "4.2.1",
 		"immer": "^9.0.6",
 		"nestjs-i18n": "^8.1.6",
 		"redis": "^4.0.4",
@@ -30,7 +31,6 @@
 		"sharp": "^0.30.5",
 		"socket.io-redis": "6.1.1",
 		"typeorm": "^0.2.37",
-		"unzipper": "^0.10.14",
 		"xml2js": "^0.4.23"
 	},
 	"devDependencies": {
@@ -39,9 +39,9 @@
 		"@types/ws": "7.4.7",
 		"@nestjs/testing": "^8.0.0",
 		"@types/cron": "1.7.3",
+		"@types/decompress": "4.2.4",
 		"@types/express": "^4.17.11",
 		"@types/redis": "^2.8.32",
-		"@types/unzipper": "^0.10.7",
 		"nodemon": "^2.0.19"
 	}
 }

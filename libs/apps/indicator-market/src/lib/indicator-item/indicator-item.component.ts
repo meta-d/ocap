@@ -1,15 +1,15 @@
 import { Component, Input, inject } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { BehaviorSubject, distinctUntilChanged, EMPTY, filter, switchMap, tap } from 'rxjs'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, StatisticalType, TagEnum, Trend } from '../types'
 import { IndicatorItemDataService } from './indicator-item.service'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+
 
 /**
  * 由于 cdk-virtual-scroll 原理 (待严格确定) 此组件不会随 indicator 变化而重新创建, 所以此组件的 indicator 输入会变化, 导致指标数据显示混乱
  * 
  */
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-indicator-item',
   templateUrl: 'indicator-item.component.html',
@@ -63,13 +63,17 @@ export class IndicatorItemComponent {
           }),
         )
       }),
+      takeUntilDestroyed()
     )
     .subscribe(() => {
       //
     })
 
   private _indicatorResultSub = this.dataService.selectResult()
-    .pipe(filter((result: any) => result.indicator?.id && result.indicator?.id === this.indicator?.id))
+    .pipe(
+      filter((result: any) => result.indicator?.id && result.indicator?.id === this.indicator?.id),
+      takeUntilDestroyed()
+    )
     .subscribe((result: any) => {
       if (result?.error) {
         this.store.updateIndicator({
@@ -94,6 +98,11 @@ export class IndicatorItemComponent {
         })
       }
     })
+
+  // Response to global refresh event
+  private refreshSub = this.store.onRefresh().pipe(takeUntilDestroyed()).subscribe((force) => {
+    this.dataService.refresh(force)
+  })
 
   open() {
     console.log('open')

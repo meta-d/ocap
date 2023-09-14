@@ -44,8 +44,8 @@
             [active]="link.id === currentLink()?.id">
             <mat-icon class="mr-1" fontSet="material-icons-outlined" displayDensity="cosy">face</mat-icon>
             {{ userLabel(link) }}
-            <button mat-icon-button class="pac-tab-close" (click)="removeOpenedLink(link)">
-                <mat-icon>close</mat-icon>
+            <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(link)">
+                <mat-icon>cancel</mat-icon>
             </button>
         </span>
     </nav>

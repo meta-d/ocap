@@ -8,7 +8,7 @@
     [user]="semanticModel?.owner">
     <div *ngIf="isOwner" ngmButtonGroup>
       <button mat-stroked-button color="accent" displayDensity="cosy" (click)="transferOwner()">
-        <div class="flex items-center">
+        <div class="flex items-center whitespace-nowrap text-ellipsis overflow-hidden">
           <mat-icon fontSet="material-icons-outlined">local_shipping</mat-icon>
           {{ 'PAC.MODEL.TransferOwnership' | translate: { Default: 'Transfer Ownership' } }}
         </div>

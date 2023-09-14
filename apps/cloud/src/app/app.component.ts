@@ -7,18 +7,45 @@ import { TranslateService } from '@ngx-translate/core'
 import { ThemesEnum } from '@metad/cloud/state'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest } from 'rxjs'
-import { filter, map, tap } from 'rxjs/operators'
+import { filter, map } from 'rxjs/operators'
 import { ICONS, PACThemeService, Store, UpdateService } from './@core'
 import { AppService } from './app.service'
+import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
+import { DateFnsAdapter, MAT_DATE_FNS_FORMATS } from '@angular/material-date-fns-adapter'
+import { enUS } from 'date-fns/locale';
+import { zhCN } from 'date-fns/locale';
+import { zhHK } from 'date-fns/locale';
+
+
+function mapDateLocale(locale: string) {
+  switch (locale) {
+    case 'zh-CN':
+    case 'zh-Hans':
+    case 'zh':
+      return zhCN
+    case 'zh-Hant':
+      return zhHK
+    default:
+      return enUS
+  }
+}
 
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  providers: [
+    {
+      provide: DateAdapter,
+      useClass: DateFnsAdapter,
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_DATE_FNS_FORMATS },
+  ]
 })
 export class AppComponent implements OnInit {
+
   constructor(
     private store: Store,
     public readonly appService: AppService,
@@ -33,6 +60,7 @@ export class AppComponent implements OnInit {
     private domSanitizer: DomSanitizer,
     private platform: Platform,
     private title: Title,
+    private _adapter: DateAdapter<any>
   ) {
     translate.setDefaultLang('en')
     // the lang to use, if the lang isn't available, it will use the current loader to get them
@@ -42,6 +70,7 @@ export class AppComponent implements OnInit {
     this.store.preferredLanguage$.pipe(filter(value => !!value)).subscribe((language) => {
       this.translate.use(language)
       this.document.documentElement.lang = language
+      this._adapter.setLocale(mapDateLocale(language))
     })
 
     this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))

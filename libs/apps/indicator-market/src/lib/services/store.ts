@@ -14,7 +14,7 @@ import {
 } from '@metad/cloud/state'
 import { convertStoryModel2DataSource, StoryModel } from '@metad/story/core'
 import { assign, includes, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
-import { combineLatest, firstValueFrom, Observable } from 'rxjs'
+import { combineLatest, firstValueFrom, Observable, Subject } from 'rxjs'
 import { concatMap, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorState, TagEnum } from '../types'
 
@@ -74,6 +74,8 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     this.patchState({locale: value})
   }
 
+  private refresh$ = new Subject<boolean>()
+
   // TODO distinctUntilChanged 需要找到原因
   public readonly all$: Observable<IndicatorState[]> = this.select(selectAll).pipe(distinctUntilChanged(isEqual))
 
@@ -103,6 +105,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
 
   public readonly tag$ = this.select((state) => state.tag)
   public readonly lookBack$ = this.select((state) => state.lookBack)
+
   constructor(
     private modelsService: ModelsService,
     private indicatorService: IndicatorsService,
@@ -308,5 +311,13 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
         comments: comments.filter((item) => item.id !== comment.id)
       }
     })
+  }
+
+  onRefresh() {
+    return this.refresh$.asObservable()
+  }
+
+  refresh(force = false) {
+    this.refresh$.next(force)
   }
 }

@@ -1,23 +1,34 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Inject, LOCALE_ID, ViewChild, ViewContainerRef } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostBinding,
+  Inject,
+  LOCALE_ID,
+  ViewChild,
+  ViewContainerRef
+} from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet'
+import { MatDatepicker } from '@angular/material/datepicker'
+import { Store } from '@metad/cloud/state'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { Store } from '@metad/cloud/state'
 import { includes, some } from 'lodash-es'
+import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatest, firstValueFrom, Observable } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { MyDataSource } from './services/data-source'
 import { IndicatorsStore } from './services/store'
 import { TagEnum } from './types'
-import { MatDatepicker } from '@angular/material/datepicker'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-indicator-market',
@@ -25,10 +36,12 @@ import { MatDatepicker } from '@angular/material/datepicker'
   styleUrls: [`indicator-market.component.scss`],
   providers: [IndicatorsStore]
 })
-export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
+export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   TIME_GRANULARITY = TimeGranularity
+  NgxPopperjsTriggers = NgxPopperjsTriggers
+  NgxPopperjsPlacements = NgxPopperjsPlacements
 
-  @HostBinding('class.nx-theme-dark') isDarkTheme = true
+  @HostBinding('class.nx-theme-dark.dark') isDarkTheme = true
   @HostBinding('class.indicator-market-app') isIndicatoryMarketComponent = true
   @HostBinding('class.searching') searching = false
 
@@ -38,17 +51,19 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
   public readonly tag$ = this.indicatorsStore.tag$
   public readonly tagText$ = this.tag$.pipe(
     switchMap(async (tag) => {
-      const tagEnum = await firstValueFrom(this.translateService.get('IndicatorApp.TagEnum', {
-        Default: {
-          [TagEnum.UNIT]: 'Unit',
-          [TagEnum.MOM]: 'MOM',
-          [TagEnum.YOY]: 'YOY',
-        }
-      }))
+      const tagEnum = await firstValueFrom(
+        this.translateService.get('IndicatorApp.TagEnum', {
+          Default: {
+            [TagEnum.UNIT]: 'Unit',
+            [TagEnum.MOM]: 'MOM',
+            [TagEnum.YOY]: 'YOY'
+          }
+        })
+      )
       return tagEnum[tag]
     })
   )
-  
+
   indicatorDataSource: MyDataSource // = new MyDataSource(this.indicatorsStore)
   readonly mediaMatcher$ = combineLatest(
     Object.keys(Breakpoints).map((name) => {
@@ -76,11 +91,14 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
   /**
    * Subscriptions
    */
-  private _orgSub = this.store.selectOrganizationId().subscribe((id) => {
-    this.indicatorsStore.init()
-    this.onLookback(this.lookback)
-    this.indicatorDataSource = new MyDataSource(this.indicatorsStore)
-  })
+  private _orgSub = this.store
+    .selectOrganizationId()
+    .pipe(takeUntilDestroyed())
+    .subscribe((id) => {
+      this.indicatorsStore.init()
+      this.onLookback(this.lookback)
+      this.indicatorDataSource = new MyDataSource(this.indicatorsStore)
+    })
 
   constructor(
     private store: Store,
@@ -169,9 +187,9 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
   }
 
   get lookbackLimit() {
-    switch(this.timeGranularity) {
+    switch (this.timeGranularity) {
       case TimeGranularity.Day:
-        return 365*2
+        return 365 * 2
       case TimeGranularity.Month:
         return 24
       case TimeGranularity.Quarter:
@@ -184,7 +202,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
   }
 
   onLookback(event) {
-    this.indicatorsStore.patchState({lookBack: event})
+    this.indicatorsStore.patchState({ lookBack: event })
   }
 
   toggleTag(event) {
@@ -193,6 +211,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
 
   refresh() {
     // 强制刷新指标数据
+    this.indicatorsStore.refresh(true)
   }
 
   onSearchFocus(event) {
@@ -208,5 +227,4 @@ export class IndicatoryMarketComponent extends ComponentStore<{id?: string}> {
   public get reverse() {
     return this.locale === 'zh-Hans'
   }
-  
 }

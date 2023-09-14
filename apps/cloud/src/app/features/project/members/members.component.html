@@ -7,7 +7,7 @@
     [user]="project?.owner">
     <div *ngIf="isOwner" ngmButtonGroup>
       <button mat-stroked-button color="accent" displayDensity="cosy" (click)="transferOwner()">
-        <div class="flex items-center">
+        <div class="flex items-center whitespace-nowrap overflow-hidden text-ellipsis">
           <mat-icon fontSet="material-icons-outlined">local_shipping</mat-icon>
           {{ 'PAC.Project.TransferOwnership' | translate: { Default: 'Transfer Ownership' } }}
         </div>

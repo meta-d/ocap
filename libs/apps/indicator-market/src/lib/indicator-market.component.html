@@ -16,9 +16,14 @@
       <div class="pac-indicator__tag uppercase bg-gray-500 bg-opacity-25" (click)="toggleTag($event)">
         {{tagText$ | async}}
       </div>
-      <button mat-icon-button [matMenuTriggerFor]="menu"
-        #mt="matMenuTrigger"
-        [class.active]="mt.menuOpen"
+      <button mat-icon-button
+        [popper]="options"
+        [popperTrigger]="NgxPopperjsTriggers.click"
+        [popperHideOnClickOutside]="true"
+        [popperHideOnScroll]="true"
+        [popperHideOnMouseLeave]="false"
+        [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+        (click)="$event.stopPropagation();$event.preventDefault();"
       >
         <mat-icon>more_horiz</mat-icon>
       </button>
@@ -71,9 +76,11 @@
   </pac-indicator-detail>
 </ng-container>
 
-<mat-menu #menu="matMenu" class="pac-indicator-market__settings-menu ngm-density__cosy">
-  <button mat-menu-item disableRipple>
-    <mat-button-toggle-group ngmAppearance="outline" color="accent" displayDensity="compact"
+<popper-content #options class="z-[101]">
+  <div class="pac-indicator-app__options flex flex-col gap-2 p-2">
+
+    <label>{{ 'IndicatorApp.TimeGranularity' | translate: {Default: 'Time Granularity'} }}</label>
+    <mat-button-toggle-group ngmAppearance="outline" color="accent" displayDensity="cosy"
       [(ngModel)]="timeGranularity" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
       <mat-button-toggle [value]="TIME_GRANULARITY.Year">
         {{ 'COMPONENTS.DATE_PICKER.Year' | translate: {Default: 'Year'} }}
@@ -88,23 +95,26 @@
         {{ 'COMPONENTS.DATE_PICKER.Day' | translate: {Default: 'Day'} }}
       </mat-button-toggle>
     </mat-button-toggle-group>
-  </button>
-  <button mat-menu-item disableRipple class="settings-lookback">
-    <mat-slider class="w-full" style="width: 100%;" discrete color="accent"
+
+    <mat-divider></mat-divider>
+
+    <label>{{ 'IndicatorApp.LookbackLimit' | translate: {Default: 'Lookback Limit'} }}</label>
+    <mat-slider class="w-full" discrete color="accent"
       step="1"
       min="0"
       [max]="lookbackLimit"
       (click)="$event.stopPropagation()"
     >
-      <input matSliderThumb [(ngModel)]="lookback"
-        (ngModelChange)="onLookback($event)">
+      <input matSliderThumb [(ngModel)]="lookback" (valueChange)="onLookback($event)">
     </mat-slider>
-  </button>
 
-  <button mat-menu-item disableRipple (click)="refresh()">
-    <mat-icon>refresh</mat-icon>
-    <span>
-      {{ 'PAC.KEY_WORDS.Refresh' | translate: {Default: 'Refresh'} }}
-    </span>
-  </button>
-</mat-menu>
+    <mat-divider></mat-divider>
+
+    <button mat-button disableRipple (click)="refresh()">
+      <mat-icon>refresh</mat-icon>
+      <span>
+        {{ 'IndicatorApp.Refresh' | translate: {Default: 'Refresh'} }}
+      </span>
+    </button>
+  </div>
+</popper-content>

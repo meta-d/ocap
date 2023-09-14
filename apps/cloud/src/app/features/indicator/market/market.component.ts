@@ -5,7 +5,6 @@ import { IndicatorType, PermissionApprovalStatusTypesEnum } from '@metad/contrac
 import { NgmCommonModule, NgmTreeSelectComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { findTreeNode } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { BusinessAreasService, hierarchize, IndicatorsService, Store, ToastrService } from '@metad/cloud/state'
 import { HighlightDirective } from '@metad/components/core'
@@ -22,6 +21,7 @@ import {
 } from 'rxjs'
 import {
   ApprovalPolicyTypesStringEnum,
+  CertificationService,
   IPermissionApprovalUser,
   PermissionApprovalService,
   TagService,
@@ -30,8 +30,9 @@ import {
 import { MaterialModule, SharedModule, TagViewerComponent } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { IndicatorTypeComponent } from '../../../@shared/indicator'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({checkProperties: true})
+
 @Component({
   standalone: true,
   imports: [
@@ -68,6 +69,7 @@ export class MarketComponent {
   private readonly indicatorStore = inject(IndicatorsService)
   private readonly businessGroupsStore = inject(BusinessAreasService)
   private readonly permissionApprovalService = inject(PermissionApprovalService)
+  private readonly certificationService = inject(CertificationService)
   private readonly toastrService = inject(ToastrService)
 
   PAGE_SIZE = 10
@@ -87,6 +89,7 @@ export class MarketComponent {
     this.types$.next(value)
   }
   private selectedTagNames$ = new BehaviorSubject<string[]>([])
+  public certificationsControl = new FormControl()
 
   public readonly tags$ = this.tagService.getAll('indicator')
   public readonly index$ = new BehaviorSubject<number>(1)
@@ -95,7 +98,7 @@ export class MarketComponent {
   private readonly permissionApprovals$ = this.refreshApproval$.pipe(
     switchMap(() => this.permissionApprovalService.getMy()),
     map(({ items }) => items),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   // 所有的公开指标
@@ -155,7 +158,7 @@ export class MarketComponent {
 
       return indicators
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -211,10 +214,14 @@ export class MarketComponent {
       return indicators
     }),
     switchMap((indicators) => this.types$.pipe(map((types) => indicators.filter((indicator) => types.length ? types.includes(indicator.type) : true)))),
+    switchMap((indicators) => this.certificationsControl.valueChanges.pipe(
+      startWith(null),
+      map((certification) => indicators.filter((indicator) => certification?.length ? certification.includes(indicator.certification?.id) : true)))
+    ),
     switchMap((indicators) => this.selectedTagNames$.pipe(map((tags) => indicators.filter((indicator) => {
       return tags.length === 0 || tags.every((tag) => find(indicator.tags, (item) => item.name === tag))
     })))),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -236,6 +243,15 @@ export class MarketComponent {
       )
     }),
   )
+
+  public readonly certifications = toSignal(this.certificationService.getAll().pipe(
+    map((items) => items.map((item) => ({
+      key: item.id,
+      value: item.id,
+      caption: item.name,
+      color: 'green'
+    })))
+  ))
 
   onPageIndexChange(index) {
     this.index$.next(index)

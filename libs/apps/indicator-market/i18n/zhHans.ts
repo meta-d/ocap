@@ -25,5 +25,8 @@ export const ZhHans = {
     AskOrComment: '询问或评论',
     Pie: '饼图',
     Bar: '柱图',
+    TimeGranularity: '时间粒度',
+    LookbackLimit: '回溯限制',
+    Refresh: '刷新'
   }
 }

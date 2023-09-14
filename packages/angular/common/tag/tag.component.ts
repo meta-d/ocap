@@ -39,6 +39,15 @@ export class NgmTagsComponent implements ControlValueAccessor {
   }
   private _selectable = false
 
+  @HostBinding('class.disabled')
+  @Input() get disabled() {
+    return this._disabled
+  }
+  set disabled(value: string | boolean) {
+    this._disabled = coerceBooleanProperty(value)
+  }
+  private _disabled = false
+
   selection = new SelectionModel<string>(true, [])
 
   @Output() selectedChange = this.selection.changed.pipe(map((change) => change.source.selected))
@@ -70,5 +79,7 @@ export class NgmTagsComponent implements ControlValueAccessor {
   registerOnTouched(fn: any): void {
     this._onTouched = fn
   }
-  setDisabledState?(isDisabled: boolean): void {}
+  setDisabledState?(isDisabled: boolean): void {
+    this.disabled = isDisabled
+  }
 }

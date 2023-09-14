@@ -34,6 +34,8 @@
   @include indicator-market.color(thin-theme.$dark-theme);
 }
 
+@import './app/_app.component';
+
 html,
 body {
   height: 100%;
@@ -366,9 +368,11 @@ html.cdk-global-scrollblock {
 .pac-page-body-toolbar {
   @apply flex justify-between items-center;
 }
-.pac-tab-nav-bar {
+.pac-tab-nav-bar.mat-mdc-tab-header {
+  --mdc-secondary-navigation-tab-container-height: 32px;
+
   .pac-tab-close {
-    @apply opacity-0 invisible;
+    @apply opacity-0 invisible absolute -right-6;
   }
   .mdc-tab.mdc-tab--active {
     .pac-tab-close {

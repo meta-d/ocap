@@ -302,7 +302,7 @@
       "INDICATOR": {
         "REGISTER_INDICATOR": "注册指标",
         "BATCH_UPLOAD": "批量上传",
-        "DOWNLOAD_TEMPLATE": "下载模板",
+        "DownloadAsTemplate": "下载为模板",
         "INDICATOR_MARKET": "指标市场",
         "INDICATOR_MARKET_DESC": "浏览指标，申请指标权限"
       },
@@ -546,7 +546,8 @@
       "Import": "导入",
       "Indicators": "指标",
       "Types": "类型",
-      "IndicatorMarket": "指标市场"
+      "IndicatorMarket": "指标市场",
+      "Certifications": "认证"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
@@ -1359,6 +1360,7 @@
         "ACCESS_DELETE_ALL_DATA": "Access Delete All Data"
       },
       "Organization": {
+        "AllOrganizations": "所有组织",
         "MAIN": "主属性",
         "DEMO": "演示数据",
         "GENERATE_DEMO": "生成演示数据",
@@ -1379,7 +1381,8 @@
         "ProfileLink": "主页链接",
         "OfficialName": "组织全称",
         "ShortDescription": "组织简介",
-        "Website": "网站链接"
+        "Website": "网站链接",
+        "SelectDataNetwork": "选择数据网络"
       }
     }
   },

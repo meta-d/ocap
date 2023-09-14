@@ -1,4 +1,16 @@
+<div class="flex flex-col">
+  <label>{{ 'PAC.ORGANIZATIONS_PAGE.Organization.SelectDataNetwork' | translate: {Default: 'Select Data Network'} }}</label>
+  <mat-radio-group [formControl]="source">
+    <mat-radio-button [value]="OrganizationDemoNetworkEnum.github">GitHub</mat-radio-button>
+    <mat-radio-button [value]="OrganizationDemoNetworkEnum.aliyun">Aliyun oss</mat-radio-button>
+  </mat-radio-group>
+</div>
+
 <button mat-raised-button color="primary" [disabled]="loading()" (click)="generate()">
-  <span *ngIf="!generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.GENERATE_DEMO' | translate: {Default: "Generate Demo"} }}</span>
-  <span *ngIf="generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.RegenerateDemo' | translate: {Default: "Re-Generate Demo"} }}</span>
+  <div class="flex justify-center items-center">
+    <mat-spinner *ngIf="loading()" color="accent" diameter="18"></mat-spinner>
+    <span *ngIf="!generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.GENERATE_DEMO' | translate: {Default: "Generate Demo"} }}</span>
+    <span *ngIf="generated()">{{ 'PAC.ORGANIZATIONS_PAGE.Organization.RegenerateDemo' | translate: {Default: "Re-Generate Demo"} }}</span>
+  </div>
 </button>
+

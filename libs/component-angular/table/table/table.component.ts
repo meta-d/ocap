@@ -21,6 +21,7 @@ import { TranslateService } from '@ngx-translate/core'
 import get from 'lodash-es/get'
 import { Subject } from 'rxjs'
 import { TableColumn } from '../types'
+import { DisplayDensity } from '@metad/ocap-angular/core'
 
 @UntilDestroy()
 @Injectable()
@@ -127,10 +128,12 @@ export class NxTableComponent implements OnChanges, AfterViewInit {
   }
   private _selectable = false
 
+  @Input() displayDensity: DisplayDensity | string  = DisplayDensity.compact
+
   /**
    * A cell or row was selected.
    */
-  @Output() select: EventEmitter<any> = new EventEmitter()
+  // @Output() select: EventEmitter<any> = new EventEmitter()
   @Output() rowSelectionChanging = new EventEmitter<any[]>()
 
   @ViewChild(MatPaginator) paginator: MatPaginator

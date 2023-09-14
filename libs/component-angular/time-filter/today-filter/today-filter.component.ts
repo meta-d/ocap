@@ -1,11 +1,10 @@
 import { Component, forwardRef, HostBinding, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms'
-import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
+import { MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatDatepicker } from '@angular/material/datepicker'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { UntilDestroy } from '@ngneat/until-destroy'
-import { NxDateFnsDateAdapter } from '@metad/components/core'
 import { NxCoreService, TIME_GRANULARITY_SEQUENCES } from '@metad/core'
 import { getMonth, getYear, isDate, setMonth, setYear } from 'date-fns'
 import { filter } from 'rxjs/operators'
@@ -108,10 +107,6 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   styleUrls: ['./today-filter.component.scss'],
   providers: [
     {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
-    {
       provide: MAT_DATE_FORMATS,
       useValue: {
         parse: {
@@ -189,10 +184,6 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
 `,
   styleUrls: ['./today-filter.component.scss'],
   providers: [
-    {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
     {
       provide: MAT_DATE_FORMATS,
       useValue: {
@@ -272,10 +263,6 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
   </mat-form-field>`,
   styleUrls: ['./today-filter.component.scss'],
   providers: [
-    {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
     {
       provide: MAT_DATE_FORMATS,
       useValue: {

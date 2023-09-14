@@ -45,6 +45,12 @@
         [(ngModel)]="types"
       ></ngm-tags>
     </div>
+    <div class="flex flex-wrap justify-start items-start gap-2 p-4">
+      <label class="shrink-0">{{ 'PAC.INDICATOR.Certifications' | translate: {Default: 'Certifications'} }}</label>
+      <ngm-tags class="flex-1 flex-wrap" selectable [tags]="certifications()"
+        [formControl]="certificationsControl"
+      ></ngm-tags>
+    </div>
     <div class="flex justify-start items-start gap-2 px-4 py-2">
       <label class="w-10 shrink-0">{{ 'PAC.INDICATOR.MARKET.Tags' | translate: {Default: 'Tags'} }}</label>
       <pac-tags class="flex-1 " [tags]="tags$ | async" [selectable]="true"
