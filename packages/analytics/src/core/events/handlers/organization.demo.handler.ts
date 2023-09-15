@@ -103,7 +103,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		//extracted import data files directory path
 		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
-		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.4.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.4.0.zip'
+		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
 	    const files = await this.unzipAndRead(file, samplesPath)
 
 		this.logger.debug(files)

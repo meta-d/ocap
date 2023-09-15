@@ -16,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { Router } from '@angular/router'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { cloneDeep } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { HighlightDirective } from '@metad/components/core'
 import { Story, StoryModel, StoryOptions } from '@metad/story/core'
 import { Subject, combineLatestWith, filter, firstValueFrom, map, startWith, switchMap, tap } from 'rxjs'
@@ -54,6 +54,7 @@ export class StoryDetailsComponent implements OnInit {
   public readonly data = inject<Story>(MAT_DIALOG_DATA)
   public dialogRef? = inject(MatDialogRef<StoryDetailsComponent>)
   private readonly router = inject(Router)
+  private readonly translate = inject(TranslateService)
 
   @ViewChild('modelInput') modelInput: ElementRef<HTMLInputElement>
 
@@ -69,6 +70,7 @@ export class StoryDetailsComponent implements OnInit {
 
   file: File
   imagePreview: string | ArrayBuffer | null
+  error: string = null
 
   modelCtrl = new FormControl(null)
   projectId$ = new Subject<string>()
@@ -136,9 +138,16 @@ export class StoryDetailsComponent implements OnInit {
   onFileSelected(event: Event): void {
     this.file = (event.target as HTMLInputElement).files?.[0]
     if (this.file) {
+      this.error = null
       const reader = new FileReader()
       reader.onload = () => {
-        this.imagePreview = reader.result
+        const result = reader.result as string
+        if (result.length > 3*(2**20)) { // Note: 2*2**20 = 2MB
+          this.error = `${this.translate.instant('Story.StoryDetails.PreviewExceedsMaximum', {Default: 'File exceeds the maximum size'})} 2MB`
+          this.file = null
+        } else {
+          this.imagePreview = result
+        }
       }
       reader.readAsDataURL(this.file)
     }

@@ -40,10 +40,10 @@
             <div class="step" *ngIf="quickGuides.model.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
-                    <a routerLink="/models">
-                        {{ 'PAC.MENU.HOME.HaveSemanticModels' | translate: {
-                            Default: 'Have ' + quickGuides.model.quantity + ' semantic models',
-                            quantity: quickGuides.model.quantity
+                    <a routerLink="/models" class="hover:underline">
+                        <span class="text-lg font-bold italic">{{quickGuides.model.quantity}}</span>
+                        {{ 'PAC.KEY_WORDS.SemanticModels' | translate: {
+                            Default: 'Semantic Models',
                         } }}
                     </a>
                 </span>
@@ -60,11 +60,9 @@
             <div class="step" *ngIf="quickGuides.story.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
-                    <a routerLink="/project">
-                        {{ 'PAC.MENU.HOME.HaveStories' | translate: {
-                            Default: 'Have ' + quickGuides.story.quantity + ' stories',
-                            quantity: quickGuides.story.quantity
-                        } }}
+                    <a routerLink="/project" class="hover:underline">
+                        <span class="text-lg font-bold italic">{{quickGuides.story.quantity}}</span>
+                        {{ 'PAC.KEY_WORDS.Stories' | translate: { Default: 'Stories' } }}
                     </a>
                 </span>
             </div>
@@ -80,11 +78,9 @@
             <div class="step" *ngIf="quickGuides.indicator.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
-                    <a routerLink="/project/indicators">
-                        {{ 'PAC.MENU.HOME.HaveIndicators' | translate: {
-                            Default: 'Have ' + quickGuides.indicator.quantity + ' indicators',
-                            quantity: quickGuides.indicator.quantity
-                        } }}
+                    <a routerLink="/project/indicators" class="hover:underline">
+                        <span class="text-lg font-bold italic">{{quickGuides.indicator.quantity}}</span>
+                        {{ 'PAC.KEY_WORDS.Indicators' | translate: { Default: 'Indicators' } }}
                     </a>
                 </span>
             </div>

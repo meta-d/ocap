@@ -5,7 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { ChartAnnotation, DataSettings, isNil, omit, omitBy, pick } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryPoint, StoryPointState } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
 import {
@@ -45,6 +45,7 @@ export class SaveAsTemplateComponent {
   private readonly storyTemplateService = inject(StoryTemplateService)
   private readonly screenshotService = inject(ScreenshotService)
   private readonly toastrService = inject(ToastrService)
+  private readonly translate = inject(TranslateService)
 
   file: File
   imagePreview: string | ArrayBuffer | null = null
@@ -88,8 +89,9 @@ export class SaveAsTemplateComponent {
       const reader = new FileReader()
       reader.onload = () => {
         const result = reader.result as String;
-        if (result.length > 2**21) { // Note: 2*2**20 = 2**21 = 2MB
-          this.error = 'File exceeds the maximum size 2MB'
+        // File size check (There is an error)
+        if (result.length > 3*(2**20)) { // Note: 2*2**20 = 2MB
+          this.error = `${this.translate.instant('Story.Template.PreviewExceedsMaximum', {Default: 'File exceeds the maximum size'})} 2MB`
           this.file = null
         } else {
           this.imagePreview = reader.result
@@ -148,6 +150,7 @@ export class SaveAsTemplateComponent {
   deletePreview() {
     this.file = null
     this.imagePreview = null
+    this.error = null
     this.formGroup.patchValue({ previewId: null, thumbnail: null })
   }
 }

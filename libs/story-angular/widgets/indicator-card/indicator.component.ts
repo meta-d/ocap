@@ -1,11 +1,11 @@
 import { formatNumber } from '@angular/common'
-import { Component, InjectFlags, LOCALE_ID, inject } from '@angular/core'
-import { Indicator, PeriodFunctions, cloneDeep, isNil } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { AbstractStoryWidget, formatShortNumber } from '@metad/core'
+import { Component, LOCALE_ID, computed, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { AbstractStoryWidget, formatShortNumber, mapLangToLocale } from '@metad/core'
+import { Indicator, PeriodFunctions, cloneDeep, isNil, nonNullable } from '@metad/ocap-core'
+import { LangChangeEvent } from '@ngx-translate/core'
 import { graphic } from 'echarts/core'
-import { Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { IndicatorDataService } from './indicator-data.service'
 import { ArrowDirection, IndicatorOption, IndicatorOptions } from './types'
 
@@ -23,7 +23,6 @@ interface MiddleIndicator extends HeadIndicator {
   title: string
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-indicator-card',
   templateUrl: 'indicator.component.html',
@@ -37,7 +36,8 @@ export class IndicatorCardComponent extends AbstractStoryWidget<IndicatorOptions
   ArrowDirection = ArrowDirection
 
   public readonly indicatorDataService = inject(IndicatorDataService)
-  private readonly _locale?: string = inject(LOCALE_ID, InjectFlags.Optional)
+
+  private readonly _locale = signal(inject(LOCALE_ID, { optional: true }))
 
   option: any = {
     grid: {
@@ -115,10 +115,11 @@ export class IndicatorCardComponent extends AbstractStoryWidget<IndicatorOptions
   )
 
   readonly result$ = this.indicatorDataService.selectResult().pipe(
-    map(({ data, error }) => {
-      return !error ? data[0] : null
-    }),
-    filter((result) => !!result)
+    map(({ data, error }) => (!error ? data[0] : null)),
+    filter(nonNullable)
+  )
+  private readonly queryResult = toSignal(
+    this.indicatorDataService.selectResult().pipe(map(({ data, error }) => (!error ? data[0] : null)))
   )
 
   public readonly main$ = this.indicatorDataService.selectResult().pipe(
@@ -127,73 +128,70 @@ export class IndicatorCardComponent extends AbstractStoryWidget<IndicatorOptions
     }),
     filter((main) => !!main?.data)
   )
-  public readonly title$ = this.indicatorDataService.indicator$.pipe(
-    map((indicator) => this.options.title || indicator?.name || indicator?.code)
+
+  public readonly titleSignal = toSignal(
+    this.indicatorDataService.indicator$.pipe(
+      map((indicator) => this.options.title || indicator?.name || indicator?.code)
+    )
   )
 
-  public headIndicatorData$: Observable<HeadIndicator> = this.result$.pipe(
-    map(({ main }) => main),
-    map(({ data, indicator }) => {
-      const locale = this.locale || this._locale
-      return mapIndicatorResult(this.options, indicator, data[0], locale)
-    }),
-    untilDestroyed(this),
-    shareReplay(1)
-  )
-
-  /**
-   * 子指标数据计算结果
-   */
-  public subIndicators$: Observable<Array<MiddleIndicator>> = this.result$.pipe(
-    map(({ subIndicators }) => subIndicators),
-    filter((value) => !!value),
-    map((subIndicators) => {
-      const locale = this.locale || this._locale
-      return subIndicators.map(({ data, indicator }, index) => {
-        const option = this.options.indicators[index]
-        return mapIndicatorResult(option, indicator, data[0], locale)
-      })
+  public readonly headIndicatorData = computed(() => {
+    if (!this.queryResult()) {
+      return null
+    }
+    const { main } = this.queryResult()
+    const { data, indicator } = main
+    return mapIndicatorResult(this.options, indicator, data[0], this._locale())
+  })
+  public readonly subIndicators = computed(() => {
+    if (!this.queryResult()) {
+      return null
+    }
+    const { subIndicators } = this.queryResult()
+    return subIndicators?.map(({ data, indicator }, index) => {
+      const option = this.options.indicators[index]
+      return mapIndicatorResult(option, indicator, data[0], this._locale())
     })
-  )
-
-  public chartOption$ = this.result$.pipe(
-    map(({ trend }) => trend),
-    map((trend) => {
-      if (isNil(trend)) {
-        return {
-          show: false,
-          option: {}
-        }
-      }
-
-      const currentName = PeriodFunctions.CURRENT
-      const timeHierarchyText = this.indicatorDataService.calendar.name
-      const option: any = cloneDeep(this.option)
-      const seriesData = trend.data
-      option.xAxis.data = seriesData.map((x) => x[timeHierarchyText])
-      option.series[0].data = seriesData.map((x) => x[currentName])
+  })
+  public readonly chartOptions = computed(() => {
+    if (!this.queryResult()) {
+      return null
+    }
+    const { trend } = this.queryResult()
+    if (isNil(trend)) {
       return {
-        show: true,
-        option: option
+        show: false,
+        option: {}
       }
-    })
-  )
+    }
+
+    const currentName = PeriodFunctions.CURRENT
+    const timeHierarchyText = this.indicatorDataService.calendar.name
+    const option: any = cloneDeep(this.option)
+    const seriesData = trend.data
+    option.xAxis.data = seriesData.map((x) => x[timeHierarchyText])
+    option.series[0].data = seriesData.map((x) => x[currentName])
+    return {
+      show: true,
+      option: option
+    }
+  })
 
   public readonly isLoading$ = this.indicatorDataService.loading$
   public readonly error$ = this.indicatorDataService.selectResult().pipe(map((result) => result.error))
 
   // Subscriptions (effect)
   // slicers
-  private slicersSub = this.selectionVariant$.subscribe((selectionVariant) => {
+  private slicersSub = this.selectionVariant$.pipe(takeUntilDestroyed()).subscribe((selectionVariant) => {
     this.indicatorDataService.selectionVariant = selectionVariant
     this.refresh()
   })
   // dataSettings
-  private dataSettingsSub = this.dataSettings$.pipe(distinctUntilChanged()).subscribe((value) => {
+  private dataSettingsSub = this.dataSettings$.pipe(distinctUntilChanged(), takeUntilDestroyed()).subscribe((value) => {
     this.indicatorDataService.dataSettings = value
   })
   // options
-  private optionsSub = this.options$.pipe(distinctUntilChanged()).subscribe({
+  private optionsSub = this.options$.pipe(distinctUntilChanged(), takeUntilDestroyed()).subscribe({
     next: (value) => {
       this.indicatorDataService.patchState({
         indicatorId: value.code,
@@ -204,13 +202,28 @@ export class IndicatorCardComponent extends AbstractStoryWidget<IndicatorOptions
     }
   })
   // service inited
-  private serviceSub = this.indicatorDataService.onAfterServiceInit().subscribe(() => {
-    this.refresh()
-  })
+  private serviceSub = this.indicatorDataService
+    .onAfterServiceInit()
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => {
+      this.refresh()
+    })
 
-  private explainSub = this.indicatorDataService.selectResult().subscribe((queryReturn) => {
-    this.setExplains([queryReturn])
-  })
+  private explainSub = this.indicatorDataService
+    .selectResult()
+    .pipe(takeUntilDestroyed())
+    .subscribe((queryReturn) => {
+      this.setExplains([queryReturn])
+    })
+  private langSub = this.translateService.onLangChange
+    .pipe(
+      map((event: LangChangeEvent) => event.lang),
+      startWith(this.translateService.currentLang),
+      takeUntilDestroyed()
+    )
+    .subscribe((lang) => {
+      this._locale.set(mapLangToLocale(lang))
+    })
 
   refresh(force = false): void {
     this.indicatorDataService.refresh(force)

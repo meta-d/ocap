@@ -153,7 +153,10 @@
       "Visits": "访问量",
       "UpdatedDate": "更新日期",
       "SortBy": "排序",
-      "Role&Permissions": "角色 & 权限"
+      "Role&Permissions": "角色 & 权限",
+      "SemanticModels": "语义模型",
+      "Stories": "故事",
+      "Indicators": "指标"
     },
     "MENU": {
       "Certification": "认证",
@@ -1353,11 +1356,12 @@
         "SMS_GATEWAY_VIEW": "View SMS Gateway",
         "CUSTOM_SMTP_VIEW": "View Custom SMTP",
         "IMPORT_EXPORT_VIEW": "View Import/Export",
-        "ORG_JOB_EMPLOYEE_VIEW": "View Job Employees",
-        "ORG_JOB_MATCHING_VIEW": "View Job Matching",
+        "ORG_JOB_EMPLOYEE_VIEW": "查看任务员工",
+        "ORG_JOB_MATCHING_VIEW": "查看任务匹配",
         "TENANT_SETTINGS": "租户设置表",
-        "ACCESS_DELETE_ACCOUNT": "Access Delete Account",
-        "ACCESS_DELETE_ALL_DATA": "Access Delete All Data"
+        "ACCESS_DELETE_ACCOUNT": "访问删除账号",
+        "ACCESS_DELETE_ALL_DATA": "访问删除所有数据",
+        "ORG_DEMO_EDIT": "维护组织演示样例"
       },
       "Organization": {
         "AllOrganizations": "所有组织",
