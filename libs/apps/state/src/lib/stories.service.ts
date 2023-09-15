@@ -8,6 +8,8 @@ import { OrganizationBaseService } from './organization-base.service'
 import { Store } from './store.service'
 import { convertStory, convertStoryResult } from './types'
 
+const C_API_STORY_PUBLIC = C_API_STORY + '/public/'
+
 @Injectable({
   providedIn: 'root'
 })
@@ -56,7 +58,7 @@ export class StoriesService extends OrganizationBaseService {
   }
 
   getPublicOne(id: string): Observable<IStory> {
-    return this.httpClient.get<IStory>(C_API_STORY + '/public/' + id, {
+    return this.httpClient.get<IStory>(C_API_STORY_PUBLIC + id, {
       params: new HttpParams().append(
         '$query',
         JSON.stringify({
@@ -121,7 +123,7 @@ export class StoriesService extends OrganizationBaseService {
   }
 
   getTrends(params: { skip: number; take: number; orderType: 'visits' | 'update' }, searchText?: string) {
-    return this.httpClient.get<IPagination<IStory>>(C_API_STORY + `/trends`, {
+    return this.httpClient.get<IPagination<IStory>>(C_API_STORY_PUBLIC + 'trends', {
       params: {
         ...params,
         relations: ['createdBy', 'updatedBy', 'preview'],

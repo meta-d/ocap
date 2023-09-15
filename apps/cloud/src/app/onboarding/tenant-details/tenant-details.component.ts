@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, ViewChild, inject, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDividerModule } from '@angular/material/divider'
@@ -128,6 +128,12 @@ export class TenantDetailsComponent {
   )
 
   model = {}
+
+  private preferredLanguageSub = this.preferredLanguageFormGroup.get('preferredLanguage').valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe((language) => {
+      this.translateService.use(language)
+    })
 
   minlengthError() {
     return this.userFormGroup.get('password').getError('minlength')

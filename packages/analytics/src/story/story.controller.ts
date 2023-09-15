@@ -118,6 +118,23 @@ export class StoryController extends CrudController<Story> {
 	async getCount(): Promise<number | void> {
 		return await this.storyService.countMy()
 	}
+	
+	@Public()
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get('public/trends')
+	async trends(
+		@Query('take') take: number,
+		@Query('skip') skip: number,
+		@Query('orderType') orderType: 'visits' | 'update',
+		@Query('relations') relations: string[],
+	  	@Query('searchText') searchText?: string
+	) {
+		const {items, total} = await this.queryBus.execute(new StoryTrendsQuery(searchText, {take, skip, relations}, orderType))
+		return {
+			total,
+			items: items.map((item) => new StoryPublicDTO(item))
+		}
+	}
 
 	@Public()
 	@UseInterceptors(ClassSerializerInterceptor)
@@ -142,18 +159,6 @@ export class StoryController extends CrudController<Story> {
 		)
 
 		return story
-	}
-
-	@UseInterceptors(ClassSerializerInterceptor)
-	@Get('trends')
-	async trends(@Query('take') take: number, @Query('skip') skip: number, @Query('orderType') orderType: 'visits' | 'update',
-		@Query('relations') relations: string[],
-	  @Query('searchText') searchText?: string) {
-		const {items, total} = await this.queryBus.execute(new StoryTrendsQuery(searchText, {take, skip, relations}, orderType)) //
-		return {
-			total,
-			items: items.map((item) => new StoryPublicDTO(item))
-		}
 	}
 
 	/**
