@@ -1,5 +1,5 @@
-import { StoryStatusEnum } from '@metad/contracts'
-import { RequestContext, User } from '@metad/server-core'
+import { DEFAULT_TENANT, StoryStatusEnum } from '@metad/contracts'
+import { RequestContext, TenantService, User } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -13,20 +13,23 @@ export class StoryTrendsHandler implements IQueryHandler<StoryTrendsQuery> {
 	constructor(
 		private readonly commandBus: CommandBus,
 		@InjectRepository(Story)
-		private repository: Repository<Story>
+		private repository: Repository<Story>,
+		private tenantService: TenantService
 	) {}
 
 	async execute(query: StoryTrendsQuery) {
 		const { searchText, options, orderType } = query
 		const { skip, take } = options ?? {}
 
-		const tenantId = RequestContext.currentTenantId()
+		const tenantId =
+			RequestContext.currentTenantId() ?? (await this.tenantService.findOne({ name: DEFAULT_TENANT }))?.id
 
 		let where: FindOneOptions['where'] = {
 			tenantId,
 			visibility: 'public',
 			status: StoryStatusEnum.RELEASED
 		}
+
 		if (searchText) {
 			where = [
 				{
@@ -39,19 +42,6 @@ export class StoryTrendsHandler implements IQueryHandler<StoryTrendsQuery> {
 				}
 			]
 		}
-
-		// const qb = this.repository.createQueryBuilder('story')
-		// 	.leftJoinAndSelect('story.visits', 'visit')
-		// 	.leftJoinAndSelect('story.updatedBy', 'updatedBy')
-		// 	.select('story')
-		// 	.addSelect('updatedBy')
-		// 	.addSelect('SUM(visit.visits) AS pv')
-		// 	.where(where)
-		// 	.groupBy('story.id')
-		// 	.addGroupBy('updatedBy.id')
-		// 	.orderBy('pv', 'DESC')
-		// 	.take(take)
-		// 	.skip(skip)
 
 		const qb = this.repository.manager
 			.createQueryBuilder()

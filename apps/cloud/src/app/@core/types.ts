@@ -35,17 +35,9 @@ export enum RequestMethodEnum {
 
 export const LANGUAGES = [
   { value: 'zh-CN', label: '简体中文' },
+  { value: 'zh-Hant', label: '繁体中文' },
   { value: 'en', label: 'English' }
 ]
-
-// /**
-//  * @deprecated use in state project
-//  */
-// export enum ThemesEnum {
-//   default = 'default',
-//   dark = 'dark',
-//   thin = 'thin'
-// }
 
 export interface Group {
   id: string

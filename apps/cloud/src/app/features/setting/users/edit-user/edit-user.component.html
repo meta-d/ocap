@@ -1,28 +1,3 @@
-<div class="flex flex-col justify-start items-stretch">
-  <h2 class="text-lg">
-    {{ 'PAC.MENU.EDIT_USER' | translate: {Default: "Edit User"} }}
-    <span class="font-bold">{{ user$ | async | createdBy }}</span>
-  </h2>
-  <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple>
-    <span mat-tab-link [routerLink]="['.']"
-      routerLinkActive #rla="routerLinkActive"
-      [routerLinkActiveOptions]="{exact: true}"
-      [active]="rla.isActive"
-    >
-      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">manage_accounts</mat-icon>
-      {{ 'PAC.MENU.USER.BASIC' | translate: {Default: "Basic"} }}
-    </span>
-    <span mat-tab-link [routerLink]="['./organizations']"
-      routerLinkActive #rla2="routerLinkActive"
-      [routerLinkActiveOptions]="{exact: true}"
-      [active]="rla2.isActive"
-    >
-      <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">corporate_fare</mat-icon>
-      {{ 'PAC.MENU.ORGANIZATIONS' | translate: {Default: "Organizations"} }}
-    </span>
-  </nav>
-</div>
+<pac-user-basic class="p-4"></pac-user-basic>
 
-<mat-tab-nav-panel #tabPanel class="pac-page__body" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
-  <router-outlet #o="outlet"></router-outlet>
-</mat-tab-nav-panel>
+<pac-user-organizations class="p-4"></pac-user-organizations>

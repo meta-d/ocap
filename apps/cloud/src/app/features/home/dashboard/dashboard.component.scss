@@ -44,28 +44,6 @@ gridster {
   height: 100%;
 }
 
-.pac-home__gridster-item {
-  background: transparent;
-
-  .pac-home__widget-actions {
-    position: absolute;
-    right: -30px;
-    top: 0;
-    opacity: 0;
-    visibility: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  &:hover {
-    z-index: 1000 !important;
-    .pac-home__widget-actions {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-}
-
 .pac-home__assets-empty {
   height: 280px;
   text-align: center;

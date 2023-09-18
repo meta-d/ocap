@@ -1,90 +1,57 @@
-<nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple class="self-stretch">
-    <span mat-tab-link [routerLink]="['.']"
-      routerLinkActive #rla="routerLinkActive"
-      [routerLinkActiveOptions]="{exact: true}"
-      [active]="rla.isActive"
-    >
-      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">account_circle</mat-icon>
-      {{ 'PAC.MENU.USERS' | translate: {Default: "Users"} }}
-    </span>
-
-    <span mat-tab-link [routerLink]="['invites']"
-        routerLinkActive #rla2="routerLinkActive"
-        [routerLinkActiveOptions]="{exact: true}"
-        [active]="rla2.isActive"
-    >
-        <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">person_add</mat-icon>
-        {{ 'PAC.ACTIONS.ManageInvites' | translate: {Default: "Manage Invites"} }}
-        {{ organizationName$ | async }}
-    </span>
-</nav>
-
-<div class="pac-page__body w-full flex flex-col justify-start items-stretch gap-4">
-
-    <div class="flex justify-between items-center gap-2">
-        <pac-inline-search [(ngModel)]="search"></pac-inline-search>
-
-        <div>
-            <mtx-checkbox-group [items]="ROLES" [(ngModel)]="roles">
-            </mtx-checkbox-group>
+<div class="pac-page-header">
+    <div class="w-full flex justify-between items-end">
+        <div class="flex flex-col">
+            <div class="pac-page-title">{{ 'PAC.MENU.MANAGE_USERS' | translate: {Default: 'Manage Users'} }}</div>
+            <div class="pac-page-subtitle">{{ 'PAC.MENU.ManageUsersAndInvites' | translate: {Default: 'Manage Users & Invites'} }}</div>
         </div>
 
         <div ngmButtonGroup>
-            <button mat-raised-button color="primary" displayDensity="cosy" (click)="add()">
+            <button mat-raised-button displayDensity="cosy" color="accent" (click)="invite()">
+                <div class="flex items-center">
+                    <mat-icon fontSet="material-icons-outlined">person_add</mat-icon>{{ 'PAC.ACTIONS.INVITE' | translate: {Default: "Invite"} }}
+                </div>
+            </button>
+
+            <button mat-raised-button color="primary" displayDensity="cosy" (click)="addUser()">
                 <mat-icon fontSet="material-icons-outlined">add</mat-icon>
                 {{ 'PAC.ACTIONS.NEW' | translate: {Default: "New"} }}
             </button>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-        <div *ngFor="let user of users$ | async" >
-            <mat-card class="pac-sketch-card relative">
-                <mat-card-header>
-                    <div mat-card-avatar [routerLink]="['/settings/users/edit/', user.id]" >
-                        <img src="{{user.imageUrl || 'assets/images/avatar-default.svg'}}">
-                    </div>
-                    <mat-card-title class="flex justify-between items-center">
-                        <a [routerLink]="['/settings/users/edit/', user.id]" style="overflow: hidden;">{{ user | user }}</a>
-                    </mat-card-title>
-                    <mat-card-subtitle class="flex">
-                        <span class="text-xs inline-flex items-center font-bold leading-sm uppercase px-2 py-1 rounded-lg"
-                            [ngClass]="{
-                                'bg-blue-100 text-blue-500': user.role.name === 'VIEWER',
-                                'bg-yellow-100 text-yellow-500': user.role.name === 'ADMIN',
-                                'bg-red-100 text-red-500': user.role.name=== 'SUPER_ADMIN',
-                                'bg-green-100 text-green-500': !['VIEWER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role.name)
-                            }"
-                        >
-                            {{user.role.name}}
-                        </span>
-                        <div>{{user.email}}</div>
-                    </mat-card-subtitle>
-                </mat-card-header>
+    <nav mat-tab-nav-bar class="pac-tab-nav-bar self-stretch max-w-full overflow-hidden" color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple displayDensity="cosy"
+        [tabPanel]="tabPanel"
+    >
+        <span mat-tab-link [routerLink]="['.']"
+            routerLinkActive #rla="routerLinkActive"
+            [routerLinkActiveOptions]="{exact: true}"
+            [active]="rla.isActive"
+        >
+            <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">account_circle</mat-icon>
+            {{ 'PAC.MENU.USERS' | translate: {Default: "Users"} }}
+        </span>
 
-                <button mat-icon-button displayDensity="cosy" class="pac-sketch-card__menu"
-                    [matMenuTriggerFor]="menu" [matMenuTriggerData]="{user: user}"
-                    #mt="matMenuTrigger"
-                    [class.active]="mt.menuOpen"
-                    >
-                    <mat-icon>more_vert</mat-icon>
-                </button>
-            </mat-card>
-        </div>
-    </div>
+        <span mat-tab-link [routerLink]="['invites']"
+            routerLinkActive #rla2="routerLinkActive"
+            [routerLinkActiveOptions]="{exact: true}"
+            [active]="rla2.isActive"
+        >
+            <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">person_add</mat-icon>
+            {{ 'PAC.ACTIONS.ManageInvites' | translate: {Default: "Manage Invites"} }}
+        </span>
 
+        <span mat-tab-link *ngFor="let link of openedLinks(); trackBy: trackById" [routerLink]="[link.id]"
+            [active]="link.id === currentLink()?.id">
+            <mat-icon class="mr-1" fontSet="material-icons-outlined" displayDensity="cosy">face</mat-icon>
+            {{ userLabel(link) }}
+            <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(link)">
+                <mat-icon>cancel</mat-icon>
+            </button>
+        </span>
+    </nav>
 </div>
+<mat-divider></mat-divider>
 
-<mat-menu #menu="matMenu">
-    <ng-template matMenuContent let-user="user">
-        <button mat-menu-item [routerLink]="['/settings/users/edit/', user.id]">
-            <mat-icon>edit</mat-icon>
-            <span>{{ 'PAC.ACTIONS.Edit' | translate: {Default: "Edit"} }}</span>
-        </button>
-    
-        <button mat-menu-item ngmAppearance="danger" (click)="remove(user)">
-            <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>
-            <span>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}</span>
-        </button>
-    </ng-template>
-</mat-menu>
+<mat-tab-nav-panel #tabPanel class="pac-page-body" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+    <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>

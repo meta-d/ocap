@@ -1,7 +1,7 @@
 import { DIALOG_DATA } from '@angular/cdk/dialog'
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, Inject } from '@angular/core'
+import { Component, Inject, computed, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialogRef } from '@angular/material/dialog'
 import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
@@ -9,9 +9,11 @@ import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core
 import { pick } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BusinessAreasService, StoriesService } from '@metad/cloud/state'
-import { firstValueFrom, startWith } from 'rxjs'
+import { BehaviorSubject, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { IStory, StoryStatusEnum, ToastrService, Visibility } from '../../@core'
 import { MaterialModule } from '../../@shared'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { nonNullable } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -47,7 +49,17 @@ import { MaterialModule } from '../../@shared'
       </mat-radio-button>
     </mat-radio-group>
 
-    <ngm-tree-select *ngIf="type===1" appearance="fill" searchable displayBehaviour="descriptionOnly"
+    <div *ngIf="notAllPublic()" class="flex flex-col mb-2">
+      <mat-error>
+        {{ 'PAC.Project.AllModelsMustBePublic' | translate: { Default: 'All models must be public' } }}
+      </mat-error>
+
+      <ul class="pl-4">
+        <li *ngFor="let model of noPublicModels()">{{model.name}}</li>
+      </ul>
+    </div>
+
+    <ngm-tree-select *ngIf="type() === 1" appearance="fill" searchable displayBehaviour="descriptionOnly"
       formControlName="businessAreaId"
       label="{{ 'PAC.KEY_WORDS.BusinessArea' | translate: { Default: 'Business Area' } }}"
       [treeNodes]="businessArea$ | async"
@@ -80,7 +92,7 @@ import { MaterialModule } from '../../@shared'
     <button
       mat-raised-button
       color="accent"
-      [disabled]="form.invalid"
+      [disabled]="form.invalid || notAllPublic()"
       (click)="release()"
     >
       {{ 'PAC.Project.Release' | translate: { Default: 'Release' } }}
@@ -90,6 +102,8 @@ import { MaterialModule } from '../../@shared'
   styles: [``]
 })
 export class ReleaseStoryDialog {
+  private readonly storiesService = inject(StoriesService)
+
   form = new FormGroup({
     type: new FormControl(null),
     name: new FormControl(null, [Validators.required]),
@@ -97,26 +111,40 @@ export class ReleaseStoryDialog {
     businessAreaId: new FormControl(null),
   })
 
-  get type() {
-    return this.form.get('type').value
-  }
+  public readonly type = toSignal(this.form.get('type').valueChanges)
 
   public readonly businessArea$ = this.businessAreaService.getMyAreasTree(true).pipe(startWith([]))
+
+  story$ = new BehaviorSubject<IStory>(null)
+  public readonly semanticModels = toSignal(this.story$.pipe(
+    filter(nonNullable),
+    switchMap(story => this.storiesService.getOne(story.id, ['models'])),
+    map((story) => story.models)
+  ))
+
+  public readonly noPublicModels = computed(() => {
+    return this.semanticModels()?.filter(model => model.visibility !== Visibility.Public)
+  })
+
+  public readonly notAllPublic = computed(() => {
+    return this.type() === 2 && this.noPublicModels()?.length > 0
+  })
+
   constructor(
     @Inject(DIALOG_DATA) public data: {
       story: IStory
     },
     private _dialogRef: MatDialogRef<ReleaseStoryDialog>,
     private businessAreaService: BusinessAreasService,
-    private storiesService: StoriesService,
     private _toastrService: ToastrService
   ) {
+    this.story$.next(this.data.story)
     this.form.patchValue(pick(this.data.story, 'name', 'description', 'businessAreaId'))
   }
 
   async release() {
     if (this.form.valid) {
-      await firstValueFrom(this.storiesService.update(this.data.story.id, this.type === 1 ? {
+      await firstValueFrom(this.storiesService.update(this.data.story.id, this.type() === 1 ? {
         name: this.form.value.name,
         description: this.form.value.description,
         businessAreaId: this.form.value.businessAreaId,

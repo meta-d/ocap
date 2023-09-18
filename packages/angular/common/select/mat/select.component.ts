@@ -228,7 +228,7 @@ export class NgmMatSelectComponent
     } else {
       let option: any = this.formControl.value
       // if (isObject(option)) {
-      const value = option.value
+      const value = option?.value
       if (value && !option.label) {
         option = {
           value,

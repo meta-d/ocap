@@ -126,6 +126,7 @@ export const ZhHans = {
       ThumbnailUrl: '缩略图链接',
       Models: '模型',
       AddSemanticModels: '添加语义模型',
+      PreviewExceedsMaximum: '文件大小超过限制',
     },
     Preferences: {
       Title: '首选项',
@@ -679,7 +680,8 @@ export const ZhHans = {
       Template: '模板',
       Theme: '主题',
       ConfirmApply: '应用模板将覆盖故事中的所有页面。你想继续吗？',
-      Tags: '标签'
+      Tags: '标签',
+      PreviewExceedsMaximum: '文件大小超过限制',
     },
     STYLING: {
       CSS: {

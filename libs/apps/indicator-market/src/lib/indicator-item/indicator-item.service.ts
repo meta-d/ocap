@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { isNumber, PeriodFunctions, SmartIndicatorDataService } from '@metad/ocap-core'
+import { isNumber, PeriodFunctions, QueryOptions, SmartIndicatorDataService } from '@metad/ocap-core'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { combineLatest, map } from 'rxjs'
 import { Trend } from '../types'
@@ -13,12 +13,12 @@ export class IndicatorItemDataService extends SmartIndicatorDataService<unknown>
     super(dsCoreService)
   }
 
-  override selectQuery() {
+  override selectQuery(options?: QueryOptions) {
     const lookBack = this.get((state) => state.lookBack)
 
     return combineLatest([
-      super.selectQuery(null, null, [PeriodFunctions.CURRENT, PeriodFunctions.MOM, PeriodFunctions.YOY, PeriodFunctions.YTD], 0),
-      super.selectQuery(null, null, [PeriodFunctions.CURRENT], lookBack ?? 1)
+      super.selectQuery(options, null, [PeriodFunctions.CURRENT, PeriodFunctions.MOM, PeriodFunctions.YOY, PeriodFunctions.YTD], 0),
+      super.selectQuery(options, null, [PeriodFunctions.CURRENT], lookBack ?? 1)
     ]).pipe(
       map(([current, trends]) => {
         if (current.error || trends.error) {

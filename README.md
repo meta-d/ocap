@@ -1,14 +1,33 @@
 English | [中文](./README_zh.md)
 
-# Metad Analytics Platform
-
 [uri_metad]: https://mtda.cloud/en/
 [uri_license]: https://www.gnu.org/licenses/agpl-3.0.html
 [uri_license_image]: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=meta-d.ocap)
-[![License: AGPL v3][uri_license_image]][uri_license]
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/meta-d/ocap)
+<p align="center">
+  <a href="https://mtda.cloud/en/">
+  <img src="https://avatars.githubusercontent.com/u/100019674?v=4" alt="Metad">
+  </a>
+</p>
+<p align="center">
+  <em>Open-Source Analytics Platform for Enterprise Data Analysis, Indicator Management and Reporting</em>
+</p>
+<p align="center">
+  <a href="https://github.com/meta-d/ocap/" target="_blank">
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=meta-d.ocap" alt="Visitors">
+  </a>
+  <a href="https://github.com/meta-d/ocap/releases" target="_blank">
+    <img src="https://img.shields.io/github/v/release/meta-d/ocap?color=white" alt="Release">
+  </a>
+  <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">
+    <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3">
+  </a>
+  <a href="https://gitpod.io/#https://github.com/meta-d/ocap" target="_blank">
+    <img src="https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod" alt="Gitpod Ready-to-Code">
+  </a>
+</p>
+
+# Metad Analytics Platform
 
 ## 💡 What's New
 
@@ -16,16 +35,16 @@ We released new version which includes [AI Copilot](https://mtda.cloud/en/blog/c
 
 ## 🌟 What is it
 
-[Metad Platform][uri_metad] - **Open-Source Analytics Platform** for Enterprise Data Analysis and Reporting.
+[Metad Platform][uri_metad] - **Open-Source Analytics Platform** for Enterprise Data Analysis Indicator Management and Reporting.
 
 * **Semantic Model**: Perform multi-dimensional data modeling and analysis, allowing users to explore data from various dimensions and hierarchies.
 * **Story Dashboard**: Create compelling visual narratives with Story Dashboards, combining interactive visualizations, narrative elements, and data-driven storytelling.
 * **Indicator Management**: Easily define, manage, and monitor key performance indicators (KPIs) to ensure data quality, consistency, and effective performance analysis.
 * **AI Copilot**: Benefit from AI-driven insights and recommendations to enhance decision-making processes and identify actionable opportunities.
 
-![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/story-workspace.png)
+![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/en/story-workspace.png)
 
-![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
+![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
 
 ## ✨ Features
 
@@ -81,9 +100,8 @@ Basic feartures of the platform:
 ### Sales overview [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b)
 ![Sales overview Screenshot](https://github.com/meta-d/meta-d/blob/main/img/adv-sales-overview.png)
 
-
 ### Pareto analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=bsZ0sjxnxI)
-![Pareto analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/product-pareto-analysis.png)
+![Pareto analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/en/story-pareto-analysis.png)
 
 ### Product profit analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=6S4oEUnVO3)
 ![Product profit analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/profit-margin-analysis.jpg)
@@ -95,7 +113,7 @@ Basic feartures of the platform:
 ![Bigview dashboard Screenshot](https://github.com/meta-d/meta-d/blob/main/img/bigview-supermart-sales.png)
 
 ### Indicator application [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
-![Indicator application Screenshot](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
+![Indicator application Screenshot](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
 
 ### Indicator mobile app [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
 ![Indicator mobile app Screenshot](https://github.com/meta-d/meta-d/blob/main/img/indicator-app-mobile.jpg)

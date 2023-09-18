@@ -113,7 +113,7 @@ export class ShortNumberPipe implements PipeTransform {
  *
  * @returns null 或者 short结果数组 (例如: ['4.53', 'K'] ['5.62', '万'])
  */
-export function formatShortNumber(value: number|string, locale, factor?, shortUnits?): [number, string] {
+export function formatShortNumber(value: number|string, locale: string, factor?: number , shortUnits?: string): [number, string] {
 
   try {
     const num = strToNumber(value);

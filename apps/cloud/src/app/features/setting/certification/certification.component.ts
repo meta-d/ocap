@@ -10,7 +10,7 @@ import { UsersService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, catchError, firstValueFrom, from, map, switchMap } from 'rxjs'
 import { CertificationService, ICertification, ToastrService } from '../../../@core'
-import { MaterialModule, UserProfileInlineComponent, userLabel } from '../../../@shared'
+import { MaterialModule, SharedModule, UserProfileInlineComponent, userLabel } from '../../../@shared'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -19,6 +19,7 @@ import { MaterialModule, UserProfileInlineComponent, userLabel } from '../../../
   templateUrl: './certification.component.html',
   styleUrls: ['./certification.component.scss'],
   imports: [
+    SharedModule,
     CommonModule,
     TranslateModule,
     MaterialModule,

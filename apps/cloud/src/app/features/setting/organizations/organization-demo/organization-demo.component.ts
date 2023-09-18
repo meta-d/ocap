@@ -1,39 +1,47 @@
-import { Component } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
-import { OrganizationsService, ToastrService } from 'apps/cloud/src/app/@core'
-import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
-import { catchError, concatMap, EMPTY, Observable, tap, withLatestFrom } from 'rxjs'
+import { CommonModule } from '@angular/common'
+import { Component, inject, signal } from '@angular/core'
+import { FormControl } from '@angular/forms'
+import { TranslateModule } from '@ngx-translate/core'
+import {
+  OrganizationDemoNetworkEnum,
+  OrganizationsService,
+  ToastrService,
+  getErrorMessage
+} from 'apps/cloud/src/app/@core'
+import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
+import { firstValueFrom } from 'rxjs'
 import { EditOrganizationComponent } from '../edit-organization/edit-organization.component'
-import { effectAction } from '@metad/ocap-angular/core'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
+  standalone: true,
+  selector: 'pac-organization-demo',
   templateUrl: './organization-demo.component.html',
-  styleUrls: ['./organization-demo.component.scss']
+  styleUrls: ['./organization-demo.component.scss'],
+  imports: [CommonModule, SharedModule, MaterialModule, TranslateModule]
 })
 export class OrganizationDemoComponent extends TranslationBaseComponent {
-  constructor(
-    public editOrganizationComponent: EditOrganizationComponent,
-    private orgsService: OrganizationsService,
-    private readonly _toastrService: ToastrService
-  ) {
-    super()
-  }
+  OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
 
-  readonly generate = effectAction((origin$: Observable<void>) => {
-    return origin$.pipe(
-      withLatestFrom(this.editOrganizationComponent.organization$),
-      concatMap(([, org]) => {
-        return this.orgsService.demo(org.id).pipe(
-          catchError((err) => {
-            this._toastrService.error('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATE_ERROR')
-            return EMPTY
-          })
-        )
-      }),
-      tap(() => {
-        this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED')
-      })
-    )
-  })
+  public editOrganizationComponent = inject(EditOrganizationComponent)
+  private orgsService = inject(OrganizationsService)
+  private readonly _toastrService = inject(ToastrService)
+
+  source = new FormControl(OrganizationDemoNetworkEnum.github)
+
+  private readonly organization = this.editOrganizationComponent.organization
+  public readonly loading = signal(false)
+  public readonly generated = signal(false)
+
+  async generate() {
+    try {
+      this.loading.set(true)
+      await firstValueFrom(this.orgsService.demo(this.organization().id, {source: this.source.value}))
+      this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED', { Default: 'Demo generated' })
+      this.loading.set(false)
+      this.generated.set(true)
+    } catch (err) {
+      this._toastrService.error(getErrorMessage(err))
+      this.loading.set(false)
+    }
+  }
 }

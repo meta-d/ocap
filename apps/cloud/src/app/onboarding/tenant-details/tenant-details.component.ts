@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, ViewChild, inject, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDividerModule } from '@angular/material/divider'
@@ -27,6 +27,7 @@ import {
   IOrganization,
   LanguagesEnum,
   MatchValidator,
+  OrganizationDemoNetworkEnum,
   OrganizationsService,
   ServerAgent,
   TenantService,
@@ -58,6 +59,8 @@ import {
   ]
 })
 export class TenantDetailsComponent {
+  OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
+  
   private readonly tenantService = inject(TenantService)
   private readonly typesService = inject(DataSourceTypesService)
   private readonly dataSourceService = inject(DataSourceService)
@@ -88,7 +91,7 @@ export class TenantDetailsComponent {
     }
   )
   demoFormGroup: FormGroup = this._formBuilder.group({
-    source: ['github', Validators.required]
+    source: [OrganizationDemoNetworkEnum.github, Validators.required]
   })
 
   dataSourceTypeFormGroup: FormGroup = this._formBuilder.group({
@@ -126,6 +129,12 @@ export class TenantDetailsComponent {
 
   model = {}
 
+  private preferredLanguageSub = this.preferredLanguageFormGroup.get('preferredLanguage').valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe((language) => {
+      this.translateService.use(language)
+    })
+
   minlengthError() {
     return this.userFormGroup.get('password').getError('minlength')
   }
@@ -153,6 +162,7 @@ export class TenantDetailsComponent {
         defaultOrganization: {
           name: this.userFormGroup.get('organizationName').value,
           preferredLanguage: this.preferredLanguageFormGroup.get('preferredLanguage').value[0],
+          invitesAllowed: true,
           currency: CurrenciesEnum.USD,
           profile_link: '',
           imageUrl: '',

@@ -124,6 +124,14 @@
         "STATUS": "Status"
       }
     },
+    "Languages": {
+      "en": "English",
+      "en-US": "US English",
+      "zh": "Chinese",
+      "zh-CN": "Chinese",
+      "zh-Hans": "Simplied Chinese",
+      "zh-Hant": "Traditional Chinese"
+    },
     "title": {
       "short": "Analytics Cloud"
     },
@@ -292,7 +300,8 @@
         "ORG_JOB_MATCHING_VIEW": "View Job Matching",
         "TENANT_SETTINGS": "Tenant Settings",
         "ACCESS_DELETE_ACCOUNT": "Access Delete Account",
-        "ACCESS_DELETE_ALL_DATA": "Access Delete All Data"
+        "ACCESS_DELETE_ALL_DATA": "Access Delete All Data",
+        "ORG_DEMO_EDIT": "Edit Organization Demo"
       }
     }
   },
@@ -436,11 +445,6 @@
     },
     "VALUE_HELP": {
       "TITLE": "Set Filters for '{{value}}'"
-    }
-  },
-  "FORMLY": {
-    "PROPERTY_SELECT": {
-      "REFERENCE_LINE": "Reference Line"
     }
   }
 }

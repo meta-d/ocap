@@ -1,21 +1,19 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { Component } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { Router } from '@angular/router'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
 import { IOrganization, OrganizationsService, ToastrService } from '../../../@core'
-import { TranslationBaseComponent } from '../../../@shared'
+import { ManageEntityBaseComponent } from '../../../@shared'
 import { OrganizationMutationComponent } from './organization-mutation/organization-mutation.component'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-organizations',
   templateUrl: './organizations.component.html',
   styleUrls: ['./organizations.component.scss']
 })
-export class OrganizationsComponent extends TranslationBaseComponent {
+export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganization> {
   private refresh$ = new BehaviorSubject<void>(null)
   public readonly organizations$ = this.refresh$.pipe(
     switchMap(() => this.organizationsService.getAll().pipe(map(({ items }) => items))),
@@ -26,7 +24,6 @@ export class OrganizationsComponent extends TranslationBaseComponent {
 
   constructor(
     private readonly organizationsService: OrganizationsService,
-    private readonly router: Router,
     private readonly _dialog: MatDialog,
     private _toastrService: ToastrService
   ) {

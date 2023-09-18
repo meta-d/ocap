@@ -110,7 +110,7 @@ export class SmartIndicatorDataService<
     indicator: Indicator | string,
     measures: Array<PeriodFunctions>,
     lookBack?: number,
-    force?: boolean
+    force?: boolean | void
   ): Observable<QueryReturn<T>> {
     indicator = isString(indicator) ? this.getIndicator(indicator as string) : (indicator as Indicator)
 
@@ -221,7 +221,8 @@ export class SmartIndicatorDataService<
     return this.queryIndicator(
       indicator ?? this.indicator,
       measures ?? this.get((state) => state.measures),
-      lookBack ?? this.lookBack
+      lookBack ?? this.lookBack,
+      options?.force
     )
   }
 

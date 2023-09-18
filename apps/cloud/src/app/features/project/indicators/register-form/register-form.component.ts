@@ -105,7 +105,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     visible: new FormControl<boolean>(true),
     businessAreaId: new FormControl<string>(null),
     certificationId: new FormControl<string>(null),
-    createdByName: new FormControl<string>({ value: '本人', disabled: true }),
+    createdByName: new FormControl<string>('Me'),
     principal: new FormControl<string>(null),
     unit: new FormControl<string>(null),
     validity: new FormControl<string>(null),
@@ -264,6 +264,8 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   }
   setDisabledState?(isDisabled: boolean): void {
     isDisabled ? this.formGroup.disable() : this.formGroup.enable()
+    // Disable createdby user as readonly whatever
+    this.formGroup.get('createdByName').disable()
   }
 
   async openFormula() {

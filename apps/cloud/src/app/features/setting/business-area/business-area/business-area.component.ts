@@ -1,17 +1,28 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnDestroy, computed, effect, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { BusinessAreasService, BusinessType } from '@metad/cloud/state'
-import { distinctUntilChanged, filter, map, shareReplay, startWith, switchMap } from 'rxjs'
+import { TranslateModule } from '@ngx-translate/core'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { BehaviorSubject, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs'
+import { BusinessAreaInfoFormComponent } from '../area-info-form/area-info-form.component'
+import { BusinessAreaUsersComponent } from '../area-users/area-users.component'
+import { BusinessAreaComponent } from '../business-area.component'
 
-@UntilDestroy()
 @Component({
-  selector: 'pac-business-area',
+  standalone: true,
+  selector: 'pac-edit-business-area',
   templateUrl: './business-area.component.html',
-  styleUrls: ['./business-area.component.scss']
+  styleUrls: ['./business-area.component.scss'],
+  imports: [MaterialModule, TranslateModule, BusinessAreaInfoFormComponent, BusinessAreaUsersComponent]
 })
-export class BusinessAreaComponent implements OnInit {
+export class EditBusinessAreaComponent implements OnDestroy {
   BUSINESS_AREA_TYPE = BusinessType
+
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
+  private businessAreasService = inject(BusinessAreasService)
+  private businessAreaComponent = inject(BusinessAreaComponent)
 
   public readonly businessAreaId$ = this.route.params.pipe(
     startWith(this.route.snapshot.params),
@@ -20,18 +31,32 @@ export class BusinessAreaComponent implements OnInit {
     distinctUntilChanged()
   )
 
-  public readonly businessArea$ = this.businessAreaId$.pipe(
-    switchMap((id) => this.businessAreasService.getById(id)),
-    untilDestroyed(this),
-    shareReplay(1)
+  private readonly refresh$ = new BehaviorSubject<void>(null)
+
+  public readonly businessArea = toSignal(
+    this.businessAreaId$.pipe(
+      switchMap((id) => this.refresh$.pipe(switchMap(() => this.businessAreasService.getById(id))))
+    )
   )
 
-  public readonly name$ = this.businessArea$.pipe(map((businessArea) => businessArea?.name))
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private businessAreasService: BusinessAreasService
-  ) {}
+  public readonly name = computed(() => this.businessArea()?.name)
 
-  ngOnInit(): void {}
+  constructor() {
+    effect(
+      () => {
+        if (this.businessArea()) {
+          this.businessAreaComponent.setCurrentBusinessArea(this.businessArea())
+        }
+      },
+      { allowSignalWrites: true }
+    )
+  }
+
+  refresh() {
+    this.refresh$.next()
+  }
+
+  ngOnDestroy(): void {
+    this.businessAreaComponent.setCurrentBusinessArea(null)
+  }
 }

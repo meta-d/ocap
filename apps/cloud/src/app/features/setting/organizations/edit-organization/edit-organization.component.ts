@@ -1,22 +1,43 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
-import { ActivatedRoute, Router } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { TranslateService } from '@ngx-translate/core'
+import { Component, effect, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { ActivatedRoute } from '@angular/router'
 import { IOrganization } from '@metad/contracts'
-import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
-import { EmployeesService, OrganizationsService, PermissionsEnum, Store } from '../../../../@core'
+import { nonBlank } from '@metad/core'
+import { TranslateService } from '@ngx-translate/core'
+import { MaterialModule, OrgAvatarComponent, OrgAvatarEditorComponent, SharedModule } from 'apps/cloud/src/app/@shared'
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
+import { OrganizationsService, Store } from '../../../../@core'
+import { OrganizationsComponent } from '../organizations.component'
+import { EditOrganizationSettingsModule } from './edit-organization-settings/edit-organization-settings.module'
+import { OrganizationDemoComponent } from '../organization-demo/organization-demo.component'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
+  standalone: true,
   templateUrl: './edit-organization.component.html',
-  styleUrls: ['./edit-organization.component.scss']
+  styleUrls: ['./edit-organization.component.scss'],
+  imports: [
+    SharedModule,
+    MaterialModule,
+    FormsModule,
+    ReactiveFormsModule,
+    OrgAvatarEditorComponent,
+    OrgAvatarComponent,
+    EditOrganizationSettingsModule,
+    OrganizationDemoComponent
+  ]
 })
-export class EditOrganizationComponent implements OnInit {
+export class EditOrganizationComponent {
+  private readonly organizationsComponent = inject(OrganizationsComponent)
 
-  public readonly organization$ = this.route.params.pipe(
-    map((params) => params.id),
-    switchMap((id) => this.organizationsService.getById(id, null, ['tags'])),
-    shareReplay(1)
+  public readonly organization = toSignal(
+    this.route.params.pipe(
+      map((params) => params.id),
+      distinctUntilChanged(),
+      filter(nonBlank),
+      switchMap((id) => this.organizationsService.getById(id, null, ['tags']))
+    )
   )
 
   selectedOrg: IOrganization
@@ -24,50 +45,34 @@ export class EditOrganizationComponent implements OnInit {
   employeesCount: number
   params: any
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private organizationsService: OrganizationsService,
-    private employeesService: EmployeesService,
-    private store: Store,
-    readonly translateService: TranslateService
-  ) {}
-
-  async ngOnInit() {
-    this.organization$.pipe(untilDestroyed(this)).subscribe((organization) => {
+  private orgSub = this.store.selectedOrganization$
+    .pipe(
+      filter((organization) => !!organization),
+      takeUntilDestroyed()
+    )
+    .subscribe((organization) => {
       this.setSelectedOrg(organization)
     })
-
-    this.store.selectedOrganization$
-      .pipe(
-        filter((organization) => !!organization),
-        untilDestroyed(this)
-      )
-      .subscribe((organization) => {
-        this.setSelectedOrg(organization)
-      })
+  constructor(
+    private route: ActivatedRoute,
+    private organizationsService: OrganizationsService,
+    private store: Store,
+    readonly translateService: TranslateService
+  ) {
+    effect(() => {
+      if (this.organization()) {
+        this.setSelectedOrg(this.organization())
+      }
+    })
   }
 
-  setSelectedOrg(selectedOrg) {
+  setSelectedOrg(selectedOrg: IOrganization) {
     this.store.selectedEmployee = null
     this.selectedOrg = selectedOrg
     this.store.selectedOrganization = this.selectedOrg
     this.store.organizationId = this.selectedOrg.id
     this.selectedOrgFromHeader = this.selectedOrg
+
+    this.organizationsComponent.setCurrentLink(this.selectedOrg)
   }
-
-  // canEditPublicPage() {
-  //   return this.store.hasPermission(PermissionsEnum.PUBLIC_PAGE_EDIT)
-  // }
-
-  // private async loadEmployeesCount() {
-  //   const { tenantId } = this.store.user
-  //   const { total } = await firstValueFrom(
-  //     this.employeesService.getAll([], {
-  //       organizationId: this.selectedOrg.id,
-  //       tenantId
-  //     })
-  //   )
-  //   this.employeesCount = total
-  // }
 }

@@ -1,7 +1,7 @@
 <div class="content flex flex-col">
-    <span class="nx-indicator__kpi-title" *ngrxLet="title$ as title">{{ title }}</span>
+    <span class="nx-indicator__kpi-title">{{ titleSignal() }}</span>
 
-    <ng-container *ngIf="headIndicatorData$ | async as headData">
+    <ng-container *ngIf="headIndicatorData() as headData">
         <div class="nx-indicator__kpi-maxnum-xauto">
             <span class="nx-indicator__kpi-maxnum">{{ headData.currentValue }}</span>&nbsp;
             <span class="nx-indicator__kpi-maxnum-text">{{headData.shortUnit}}{{ headData.unit }}</span>
@@ -27,7 +27,7 @@
     </ng-container>
     
     <div class="pac-indicator-card__sub-indicators overflow-y-auto">
-        <div *ngFor="let indicator of subIndicators$ | async" class="pac-indicator-card__indicator flex justify-between items-center">
+        <div *ngFor="let indicator of subIndicators()" class="pac-indicator-card__indicator flex justify-between items-center">
             <div class="flex-auto w-8/12 flex justify-between items-center">
                 <span class="nx-indicator__kpi-text">{{indicator.title }}</span>
                 <div>
@@ -50,9 +50,9 @@
         </div>
     </div>
 
-    <ng-container *ngIf="chartOption$ | async as chartOption">
-        <ng-container *ngIf="chartOption.show">
-            <div echarts [options]="chartOption.option" [autoResize]="true" [loading]="true" class="echarts"></div>
+    <ng-container *ngIf="chartOptions()">
+        <ng-container *ngIf="chartOptions().show">
+            <div echarts [options]="chartOptions().option" [autoResize]="true" [loading]="true" class="echarts"></div>
         </ng-container>
     </ng-container>
 

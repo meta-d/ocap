@@ -1,28 +1,31 @@
-import { Component, Input, OnInit } from '@angular/core'
-import { IUserUpdateInput, LanguagesEnum } from '@metad/contracts'
-import { TranslationBaseComponent, CreatedByPipe } from '../../../../@shared'
-import { ToastrService, User } from '../../../../@core'
-import { PACEditUserComponent } from '../edit-user/edit-user.component'
-import { UsersService } from '@metad/cloud/state'
+import { Component, Input, OnInit, effect } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-
+import { UsersService } from '@metad/cloud/state'
+import { IUserUpdateInput, LanguagesEnum } from '@metad/contracts'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { UserFormsModule } from 'apps/cloud/src/app/@shared/user/forms'
+import { ToastrService, User } from '../../../../@core'
+import { CreatedByPipe, MaterialModule, SharedModule, TranslationBaseComponent } from '../../../../@shared'
+import { PACEditUserComponent } from '../edit-user/edit-user.component'
 
 @Component({
+  standalone: true,
   selector: 'pac-user-basic',
   templateUrl: 'user-basic.component.html',
-  styles: [`:host {
-    display: flex;
-    flex-direction: column;
-    max-width: 700px;
-    align-items: flex-start;
-    margin: auto;
-  }`]
+  styles: [
+    `
+      :host {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    `
+  ],
+  imports: [SharedModule, MaterialModule, NgmCommonModule, UserFormsModule]
 })
 export class UserBasicComponent extends TranslationBaseComponent implements OnInit {
   @Input() allowRoleChange: boolean
-
-  public readonly user$ = this.userComponent.user$
 
   user: User
   constructor(
@@ -33,8 +36,8 @@ export class UserBasicComponent extends TranslationBaseComponent implements OnIn
   ) {
     super()
 
-    this.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
-      this.user = user as User
+    effect(() => {
+      this.user = this.userComponent.user() as User
     })
   }
 
@@ -51,7 +54,7 @@ export class UserBasicComponent extends TranslationBaseComponent implements OnIn
       lastName,
       tags,
       preferredLanguage: preferredLanguage as LanguagesEnum,
-      imageUrl,
+      imageUrl
     }
 
     if (password) {
@@ -70,7 +73,7 @@ export class UserBasicComponent extends TranslationBaseComponent implements OnIn
 
     try {
       await this.userService.update(this.user.id, request).then(() => {
-        this._toastrService.success(`PAC.NOTES.USERS.USER_UPDATED`, {name: (new CreatedByPipe()).transform(this.user)})
+        this._toastrService.success(`PAC.NOTES.USERS.USER_UPDATED`, { name: new CreatedByPipe().transform(this.user) })
       })
     } catch (error) {}
   }

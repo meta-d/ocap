@@ -1,9 +1,7 @@
-<mat-form-field [appearance]="appearance">
-	<mat-label>{{ 'PAC.KEY_WORDS.Language' | translate: {Default: "Language"} }}</mat-label>
-	<mat-select [(ngModel)]="selectedLanguageCode" >
-	  <mat-option *ngFor="let language of languages" [value]="language.code">
-		{{ language.name }}
-	  </mat-option>
-	</mat-select>
-	<mat-spinner *ngIf="loading" matSuffix color="accent" strokeWidth="2" diameter="20"></mat-spinner>
-</mat-form-field>
+<ngm-select [label]=" 'PAC.KEY_WORDS.Language' | translate: {Default: 'Language'} "
+	[(ngModel)]="selectedLanguageCode"
+	[selectOptions]="languagesOptions()"
+	[valueKey]="'key'"
+>
+	<mat-spinner *ngIf="loading" ngmSuffix color="accent" strokeWidth="2" diameter="20"></mat-spinner>
+</ngm-select>

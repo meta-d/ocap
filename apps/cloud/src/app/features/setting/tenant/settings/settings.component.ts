@@ -11,7 +11,7 @@ interface ItemData {
 @Component({
   selector: 'pac-tenant-settings',
   templateUrl: 'settings.component.html',
-  styles: [':host {display: block;}']
+  styles: [':host {display: block; width: 100%; padding: 1rem;}']
 })
 export class SettingsComponent implements OnInit {
   i = 0

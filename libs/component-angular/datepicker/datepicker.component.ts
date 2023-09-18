@@ -1,6 +1,5 @@
 import { Component, EventEmitter, forwardRef, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatDatepicker } from '@angular/material/datepicker'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { NgmSmartFilterService } from '@metad/ocap-angular/controls'
@@ -18,7 +17,6 @@ import {
   calcRange,
   mapTimeGranularitySemantic,
 } from '@metad/ocap-core'
-import { NxDateFnsDateAdapter } from '@metad/components/core'
 import {
   NxCoreService,
   TIME_GRANULARITY_SEQUENCES
@@ -300,6 +298,7 @@ export class NgmMemberDatepickerComponent implements OnInit, OnChanges, ControlV
     if (!event) {
       this.dateChanged(null)
     } else {
+      //
     }
   }
 }
@@ -323,31 +322,13 @@ export class NgmMemberDatepickerComponent implements OnInit, OnChanges, ControlV
   </mat-form-field>`,
   providers: [
     {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: `yyyy'Q'Q`
-        },
-        display: {
-          dateInput: `yyyy'Q'Q`,
-          monthYearLabel: 'LLL y',
-          dateA11yLabel: 'MMMM d, y',
-          monthYearA11yLabel: 'MMMM y'
-        }
-      }
-    },
-    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NxQuarterFilterComponent), // replace name as appropriate
       multi: true
     }
   ]
 })
-export class NxQuarterFilterComponent implements OnInit, ControlValueAccessor {
+export class NxQuarterFilterComponent implements ControlValueAccessor {
   @Input() appearance: MatFormFieldAppearance
   @Input() label: string
   @Input() placeholder: string
@@ -362,10 +343,6 @@ export class NxQuarterFilterComponent implements OnInit, ControlValueAccessor {
    * Invoked when the model has been touched
    */
   onTouched: () => void = () => {}
-
-  constructor() {}
-
-  ngOnInit(): void {}
 
   chosenYearHandler(event) {
     const ctrlValue = this.date.value
@@ -414,31 +391,13 @@ export class NxQuarterFilterComponent implements OnInit, ControlValueAccessor {
   </mat-form-field>`,
   providers: [
     {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: `yyyyMM`
-        },
-        display: {
-          dateInput: `yyyyMM`,
-          monthYearLabel: 'LLL y',
-          dateA11yLabel: 'MMMM d, y',
-          monthYearA11yLabel: 'MMMM y'
-        }
-      }
-    },
-    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NxMonthFilterComponent), // replace name as appropriate
       multi: true
     }
   ]
 })
-export class NxMonthFilterComponent implements OnInit, ControlValueAccessor {
+export class NxMonthFilterComponent implements ControlValueAccessor {
   @Input() appearance: MatFormFieldAppearance
   @Input() label: string
   @Input() placeholder: string
@@ -453,10 +412,6 @@ export class NxMonthFilterComponent implements OnInit, ControlValueAccessor {
    * Invoked when the model has been touched
    */
   onTouched: () => void = () => {}
-
-  constructor() {}
-
-  ngOnInit(): void {}
 
   chosenYearHandler(event) {
     const ctrlValue = this.date.value
@@ -500,31 +455,13 @@ export class NxMonthFilterComponent implements OnInit, ControlValueAccessor {
   </mat-form-field>`,
   providers: [
     {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: `yyyy`
-        },
-        display: {
-          dateInput: `yyyy`,
-          monthYearLabel: 'LLL y',
-          dateA11yLabel: 'MMMM d, y',
-          monthYearA11yLabel: 'MMMM y'
-        }
-      }
-    },
-    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NxYearFilterComponent), // replace name as appropriate
       multi: true
     }
   ]
 })
-export class NxYearFilterComponent implements OnInit, ControlValueAccessor {
+export class NxYearFilterComponent implements ControlValueAccessor {
   @Input() appearance: MatFormFieldAppearance
   @Input() label: string
   @Input() placeholder: string
@@ -539,10 +476,6 @@ export class NxYearFilterComponent implements OnInit, ControlValueAccessor {
    * Invoked when the model has been touched
    */
   onTouched: () => void = () => {}
-
-  constructor() {}
-
-  ngOnInit(): void {}
 
   chosenYearHandler(event, datepicker: MatDatepicker<any>) {
     // const ctrlValue = this.date.value

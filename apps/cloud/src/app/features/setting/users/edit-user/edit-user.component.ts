@@ -1,16 +1,28 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnDestroy, OnInit, effect, inject } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { UsersService } from '@metad/cloud/state'
-import { distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
+import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { routeAnimations } from '../../../../@core'
+import { UserBasicComponent } from '../user-basic/user-basic.component'
+import { PACUserOrganizationsComponent } from '../organizations/organizations.component'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { PACUsersComponent } from '../users.component'
 
 @Component({
+  standalone: true,
   selector: 'pac-edit-user',
   templateUrl: './edit-user.component.html',
   styleUrls: ['./edit-user.component.scss'],
-  animations: [routeAnimations]
+  animations: [routeAnimations],
+  imports: [SharedModule, MaterialModule, UserBasicComponent, PACUserOrganizationsComponent]
 })
-export class PACEditUserComponent implements OnInit {
+export class PACEditUserComponent implements OnDestroy {
+
+  private userService = inject(UsersService)
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
+  private usersComponent = inject(PACUsersComponent)
 
   public readonly userId$ = this.route.params.pipe(
     startWith(this.route.snapshot.params),
@@ -19,18 +31,20 @@ export class PACEditUserComponent implements OnInit {
     distinctUntilChanged()
   )
 
-  public readonly user$ = this.userId$.pipe(
-    switchMap((userId) => this.userService.getUserById(userId)),
-    shareReplay(1)
-  )
+  public readonly user = toSignal(this.userId$.pipe(
+    switchMap((userId) => this.userService.getUserById(userId))))
 
-  constructor(private userService: UsersService, private route: ActivatedRoute, private router: Router) {}
-
-  ngOnInit(): void {
-    //
+  constructor() {
+    effect(() => {
+      this.usersComponent.setCurrentLink(this.user())
+    }, {allowSignalWrites: true})
   }
 
   navigate(url) {
     this.router.navigate([url], { relativeTo: this.route })
+  }
+
+  ngOnDestroy(): void {
+    this.usersComponent.setCurrentLink(null)
   }
 }

@@ -1,28 +1,33 @@
-<div class="flex flex-col justify-start items-stretch">
-  <h2 class="text-lg">
-    {{ 'PAC.KEY_WORDS.ORGANIZATION' | translate: {Default: 'Organization'} }} {{ selectedOrg?.name }}
-  </h2>
+<mat-card class="w-full">
+  <mat-card-header>
+    <mat-card-title>{{ 'PAC.KEY_WORDS.ORGANIZATION' | translate: {Default: 'Organization'} }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content >
+    <div class="w-full flex flex-col justify-center items-center">
+      <pac-org-avatar-editor [org]="selectedOrg"></pac-org-avatar-editor>
+      <div>{{ selectedOrg?.name }}</div>
+    </div>
+  </mat-card-content>
+</mat-card>
 
-  <div class="w-full flex justify-center">
-    <pac-org-avatar-editor [org]="selectedOrg"></pac-org-avatar-editor>
-  </div>
-  <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple>
-    <span mat-tab-link [routerLink]="['./main']"
-      routerLinkActive #rla="routerLinkActive"
-      [routerLinkActiveOptions]="{exact: true}"
-      [active]="rla.isActive"
-    >
-      {{ 'PAC.ORGANIZATIONS_PAGE.Organization.MAIN' | translate: {Default: "Main"} }}
-    </span>
+<mat-card class="w-full">
+  <mat-card-header>
+    <mat-card-title>{{ 'PAC.ORGANIZATIONS_PAGE.Organization.MAIN' | translate: {Default: "Main"} }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content >
+    <div class="w-full flex justify-center">
+      <pac-edit-org-main></pac-edit-org-main>
+    </div>
+  </mat-card-content>
+</mat-card>
 
-    <span mat-tab-link [routerLink]="['./demo']"
-      routerLinkActive #rla2="routerLinkActive"
-      [routerLinkActiveOptions]="{exact: true}"
-      [active]="rla2.isActive"
-    >
-      {{ 'PAC.ORGANIZATIONS_PAGE.Organization.DEMO' | translate: {Default: "Demo"} }}
-    </span>
-  </nav>
-</div>
-
-<router-outlet></router-outlet>
+<mat-card class="w-full">
+  <mat-card-header>
+    <mat-card-title>{{ 'PAC.ORGANIZATIONS_PAGE.Organization.DEMO' | translate: {Default: "Demo"} }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content >
+    <div class="w-full flex justify-start">
+      <pac-organization-demo></pac-organization-demo>
+    </div>
+  </mat-card-content>
+</mat-card>

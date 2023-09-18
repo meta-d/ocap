@@ -22,6 +22,7 @@ import {
 import {
   AbilityActions,
   FeedsService,
+  OrganizationDemoNetworkEnum,
   OrganizationsService,
   PermissionsEnum,
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -235,7 +236,9 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     }
     this.creatingDemo = true
     try {
-      await firstValueFrom(this.organizationsService.demo(this.store.organizationId))
+      await firstValueFrom(this.organizationsService.demo(this.store.organizationId, {
+        source: OrganizationDemoNetworkEnum.aliyun
+      }))
       this.toastrService.success('PAC.MENU.HOME.GenerateSamples', { Default: 'Generate samples' })
       this.quickGuides.sample.complete = true
       this.store.selectedOrganization = {

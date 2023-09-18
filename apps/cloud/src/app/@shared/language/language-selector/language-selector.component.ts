@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, forwardRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, forwardRef, ChangeDetectorRef, signal, computed } from '@angular/core';
 import { ILanguage } from '@metad/contracts';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguagesService, Store } from '../../../@core';
@@ -6,10 +6,10 @@ import { filter, tap } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslationBaseComponent } from '../translation-base.component';
+import { NgmSelectComponent } from '@metad/ocap-angular/common';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -19,9 +19,8 @@ import { TranslationBaseComponent } from '../translation-base.component';
 		FormsModule,
 		TranslateModule,
 
-		MatFormFieldModule,
-		MatSelectModule,
-		MatProgressSpinnerModule
+		MatProgressSpinnerModule,
+		NgmSelectComponent
 	],
 	selector: 'pac-language-selector',
 	templateUrl: './language-selector.component.html',
@@ -35,10 +34,13 @@ import { TranslationBaseComponent } from '../translation-base.component';
 	]
 })
 export class LanguageSelectorComponent extends TranslationBaseComponent implements OnInit {
-	languages: ILanguage[];
+	languages = signal<ILanguage[]>([])
+	// languages: ILanguage[];
 	loading: boolean;
 	onChange: any = () => { }
 	onTouch: any = () => { }
+
+	languagesOptions = computed(() => this.languages().map((language: ILanguage) => ({key: language.code, caption: language.name})))
 
 	@Input() appearance: MatFormFieldAppearance
 
@@ -179,21 +181,21 @@ export class LanguageSelectorComponent extends TranslationBaseComponent implemen
 
 	async getAllLanguages() {
 		const { items } = await this.languagesService.getAllLanguages();
-		this.languages = items;
+		this.languages.set(items)
 	}
 
 	checkPreFilledLanguage() {
 		if (!this.selectedLanguageCode) {
 			return;
 		}
-		if (this.languages?.length > 0) {
+		if (this.languages()?.length > 0) {
 			const selectedLanguage = this.getLanguageByCode(this.selectedLanguageCode);
 			this.onChangeLanguage(selectedLanguage);
 		}
 	}
 
 	getLanguageByCode(code: ILanguage['code']) {
-		return this.languages.find(
+		return this.languages().find(
 			(language: ILanguage) => code === language.code
 		);
 	}

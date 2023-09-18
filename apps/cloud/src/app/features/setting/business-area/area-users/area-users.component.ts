@@ -2,11 +2,10 @@ import { Component, inject } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { BusinessAreaRole, IBusinessAreaUser, IUser } from '@metad/contracts'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { BusinessAreaUserService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { ToastrService } from 'apps/cloud/src/app/@core'
-import { TranslationBaseComponent, userLabel, UserRoleSelectComponent } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, TranslationBaseComponent, userLabel, UserProfileInlineComponent, UserRoleSelectComponent } from 'apps/cloud/src/app/@shared'
 import {
   BehaviorSubject,
   combineLatest,
@@ -19,13 +18,26 @@ import {
   startWith,
   switchMap
 } from 'rxjs'
-import { BusinessAreaComponent } from '../business-area/business-area.component'
+import { EditBusinessAreaComponent } from '../business-area/business-area.component'
+import { NxTableModule } from '@metad/components/table'
+import { TranslateModule } from '@ngx-translate/core'
+import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { CommonModule } from '@angular/common'
 
-@UntilDestroy()
+
 @Component({
+  standalone: true,
   selector: 'pac-area-users',
   templateUrl: './area-users.component.html',
-  styleUrls: ['./area-users.component.scss']
+  styleUrls: ['./area-users.component.scss'],
+  imports: [
+    CommonModule,
+    MaterialModule,
+    TranslateModule,
+    NxTableModule,
+    UserProfileInlineComponent,
+    NgmSearchComponent
+  ]
 })
 export class BusinessAreaUsersComponent extends TranslationBaseComponent {
   BusinessAreaRole = BusinessAreaRole
@@ -61,13 +73,12 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
       }
       return users
     }),
-    untilDestroyed(this),
     shareReplay(1)
   )
 
-  public readonly businessArea$ = this.areaComponent.businessArea$
+  public readonly businessArea = this.areaComponent.businessArea
   constructor(
-    private areaComponent: BusinessAreaComponent,
+    private areaComponent: EditBusinessAreaComponent,
     private businessAreaUserService: BusinessAreaUserService,
     private _dialog: MatDialog
   ) {
@@ -123,7 +134,7 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
         .afterClosed()
     )
     if (value) {
-      const businessArea = await firstValueFrom(this.businessArea$)
+      const businessArea = this.businessArea()
       this.addUser(
         businessArea,
         value.users.map((user) => ({ ...user, role: value.role }))

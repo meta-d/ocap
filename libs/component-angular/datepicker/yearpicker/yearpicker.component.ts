@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { Component, forwardRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
-import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
+import { MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker'
 import { MatInputModule } from '@angular/material/input'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { NxDateFnsDateAdapter } from '@metad/components/core'
 import { getYear, setYear } from 'date-fns'
 
 @Component({
@@ -15,10 +14,6 @@ import { getYear, setYear } from 'date-fns'
   templateUrl: './yearpicker.component.html',
   styleUrls: ['./yearpicker.component.scss'],
   providers: [
-    {
-      provide: DateAdapter,
-      useClass: NxDateFnsDateAdapter
-    },
     {
       provide: MAT_DATE_FORMATS,
       useValue: {

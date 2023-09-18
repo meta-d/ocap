@@ -58,7 +58,8 @@ export async function readExcelJson(wSheet, fileName = ''): Promise<UploadSheetT
     const excelDataEncodeToJson = refExcelData.slice(0).map((item, row) =>
       item.reduce((obj, val, i) => {
         if (!excelTransformNum[i]) {
-          throw new Error(`没有找到 ${row + 2} 行 ${i + 1} 列单元格对应的列名称`)
+          throw new Error(`The column name corresponding to cell in row ${row + 2} and column ${i + 1} was not found. The file is ${fileName}.
+The current row data is ${item}, and the header row data is ${excelTransformNum}.`)
         }
         obj[excelTransformNum[i].trim()] = val
         return obj
@@ -79,7 +80,6 @@ export async function readExcelJson(wSheet, fileName = ''): Promise<UploadSheetT
       name: wSheet.SheetNames.length > 1 ? sheetName : name,
       columns: columns.filter((col) => !!col),
       data: excelDataEncodeToJson,
-    //   preview: excelDataEncodeToJson.slice(0, 50)
     }
   })
 }

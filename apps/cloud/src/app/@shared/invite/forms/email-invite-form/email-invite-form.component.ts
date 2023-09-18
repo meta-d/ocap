@@ -131,23 +131,23 @@ export class EmailInviteFormComponent extends TranslationBaseComponent implement
   renderInvitationExpiryOptions() {
     this.invitationExpiryOptions = [
       {
-        label: this.getTranslation('INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.DAY', { Default: '1 Day' }),
+        label: this.getTranslation('PAC.INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.DAY', { Default: '1 Day' }),
         value: InvitationExpirationEnum.DAY
       },
       {
-        label: this.getTranslation('INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.WEEK', { Default: '1 Week' }),
+        label: this.getTranslation('PAC.INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.WEEK', { Default: '1 Week' }),
         value: InvitationExpirationEnum.WEEK
       },
       {
-        label: this.getTranslation('INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.TWO_WEEK', { Default: '2 Week' }),
+        label: this.getTranslation('PAC.INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.TWO_WEEK', { Default: '2 Week' }),
         value: InvitationExpirationEnum.TWO_WEEK
       },
       {
-        label: this.getTranslation('INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.MONTH', { Default: '1 Month' }),
+        label: this.getTranslation('PAC.INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.MONTH', { Default: '1 Month' }),
         value: InvitationExpirationEnum.MONTH
       },
       {
-        label: this.getTranslation('INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.NEVER', { Default: 'Never' }),
+        label: this.getTranslation('PAC.INVITE_PAGE.INVITATION_EXPIRATION_OPTIONS.NEVER', { Default: 'Never' }),
         value: InvitationExpirationEnum.NEVER
       }
     ]

@@ -7,6 +7,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { LanguageSelectorComponent, MaterialModule, SharedModule } from '../../../@shared';
 import { EmailTemplatesRoutingModule } from './email-templates-routing.module';
 import { EmailTemplatesComponent } from './email-templates.component';
+import { NgmSelectComponent } from '@metad/ocap-angular/common';
 
 
 @NgModule({
@@ -20,10 +21,12 @@ import { EmailTemplatesComponent } from './email-templates.component';
 		SharedModule,
 		MaterialModule,
 
-		ButtonGroupDirective,
 		LanguageSelectorComponent,
-
-		MonacoEditorModule.forRoot()
+		
+		MonacoEditorModule.forRoot(),
+		
+		ButtonGroupDirective,
+		NgmSelectComponent
 	],
 	providers: [],
 	declarations: [EmailTemplatesComponent]

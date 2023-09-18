@@ -1,30 +1,37 @@
-<mat-toolbar class="pac-nav-toolbar flex" displayDensity="compact">
-  <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple class="flex-1">
-    <span mat-tab-link *ngFor="let option of roles$ | async" 
-      [active]="role?.name === option.name"
-      (click)="onSelectedRole(option)">
-        <span class="pac-nav-tab__label"
-          matTooltipClass="pac-model-query__statement-tip"
-        >
-          {{ option.name }}
-        </span>
+<div class="pac-page-header">
+  <div class="pac-page-title">{{ 'PAC.KEY_WORDS.Role&Permissions' | translate: {Default: 'Role & Permissions'} }}</div>
 
-        <button *ngIf="!option.isSystem" mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
-          (click)="remove(option)">
-          <mat-icon>cancel</mat-icon>
-        </button>
-    </span>
-  </nav>
+  <div class="max-w-full flex items-center overflow-hidden">
+    <nav mat-tab-nav-bar color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple class="pac-tab-nav-bar flex-1"
+      [tabPanel]="tabPanel"
+    >
+      <span mat-tab-link *ngFor="let option of roles$ | async" 
+        [active]="role?.name === option.name"
+        (click)="onSelectedRole(option)">
+          <span class="pac-nav-tab__label"
+            matTooltipClass="pac-model-query__statement-tip"
+          >
+            {{ option.name }}
+          </span>
 
-  <button mat-icon-button displayDensity="cosy" (click)="create()">
-    <mat-icon>add_circle_outline</mat-icon>
-  </button>
-</mat-toolbar>
+          <button *ngIf="!option.isSystem" mat-icon-button displayDensity="compact" class="pac-tab-close"
+            (click)="remove(option)">
+            <mat-icon>cancel</mat-icon>
+          </button>
+      </span>
+    </nav>
 
-<div class="pac-page__body pac-settings-roles__body" >
+    <button mat-icon-button displayDensity="cosy" class="shrink-0" (click)="create()">
+      <mat-icon>add_circle_outline</mat-icon>
+    </button>
+  </div>
+</div>
+<mat-divider></mat-divider>
+
+<div class="pac-page-body p-4" >
   <div class="grid grid-cols-1 md:grid-cols-2 md:gap-4">
-    <div class="flex flex-col items-stretch overflow-hidden">
-      <h3>
+    <div class="flex flex-col items-stretch overflow-hidden shadow-lg rounded-lg bg-white">
+      <h3 class="p-2 text-lg">
         {{ 'PAC.MENU.Roles.General' | translate: {Default: 'General'} }}
       </h3>
       <mat-list class="overflow-auto">
@@ -39,8 +46,8 @@
         </mat-list-item>
        </mat-list>
     </div>
-    <div class="flex flex-col items-stretch">
-      <h3>
+    <div class="flex flex-col items-stretch shadow-lg rounded-lg bg-white">
+      <h3 class="p-2 text-lg">
         {{ 'PAC.MENU.Roles.Administration' | translate: {Default: 'Administration'} }}
       </h3>
       <mat-list>
@@ -57,3 +64,7 @@
     </div>
   </div>
 </div>
+
+<mat-tab-nav-panel #tabPanel >
+  <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>

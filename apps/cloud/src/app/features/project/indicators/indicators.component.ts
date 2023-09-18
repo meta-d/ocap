@@ -1,36 +1,28 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
-import { RouterModule } from '@angular/router'
-import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { Indicator } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
-import { TranslateModule } from '@ngx-translate/core'
-import { convertIndicatorResult } from '@metad/cloud/state'
-import { firstValueFrom } from 'rxjs'
-import { MaterialModule } from '../../../@shared'
-import { ProjectComponent } from '../project.component'
 import { MatDialog } from '@angular/material/dialog'
-import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
+import { RouterModule } from '@angular/router'
+import { Indicator, convertIndicatorResult } from '@metad/cloud/state'
 import { saveAsYaml, uploadYamlFile } from '@metad/core'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
+import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
+import { firstValueFrom } from 'rxjs'
+import { IIndicator, routeAnimations } from '../../../@core'
+import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
+import { ProjectComponent } from '../project.component'
 import { exportIndicator } from '../types'
+import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
 
-@UntilDestroy()
+
 @Component({
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    TranslateModule,
-    MaterialModule,
-    ButtonGroupDirective,
-    DensityDirective,
-  ],
+  imports: [CommonModule, RouterModule, TranslateModule, MaterialModule, ButtonGroupDirective, DensityDirective],
   selector: 'pac-project-indicators',
   templateUrl: './indicators.component.html',
-  styleUrls: ['./indicators.component.scss']
+  styleUrls: ['./indicators.component.scss'],
+  animations: [routeAnimations]
 })
-export class ProjectIndicatorsComponent extends TranslationBaseComponent {
+export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndicator> {
   private projectComponent = inject(ProjectComponent)
   private _dialog = inject(MatDialog)
 
@@ -40,28 +32,47 @@ export class ProjectIndicatorsComponent extends TranslationBaseComponent {
 
   selectedIndicators = []
 
-  
   async export() {
     const indicators = this.selectedIndicators.length ? this.selectedIndicators : this.indicators
     const indicatorsFileName = this.getTranslation('PAC.INDICATOR.Indicators', { Default: 'Indicators' })
-    saveAsYaml(`${indicatorsFileName}.yaml`, indicators.map((item) => exportIndicator(convertIndicatorResult(item))))
+    saveAsYaml(
+      `${indicatorsFileName}.yaml`,
+      indicators.map((item) => exportIndicator(convertIndicatorResult(item)))
+    )
   }
 
   async handleUploadChange(event) {
     const indicators = await uploadYamlFile<Indicator[]>(event.target.files[0])
 
-    const results = await firstValueFrom(this._dialog.open(IndicatorImportComponent, {
-      data: {
-        indicators,
-        models: this.projectComponent.project.models,
-        certifications: this.projectComponent.project.certifications,
-        projectId: this.projectComponent.project?.id
-      }}).afterClosed())
+    const results = await firstValueFrom(
+      this._dialog
+        .open(IndicatorImportComponent, {
+          data: {
+            indicators,
+            models: this.projectComponent.project.models,
+            certifications: this.projectComponent.project.certifications,
+            projectId: this.projectComponent.project?.id
+          }
+        })
+        .afterClosed()
+    )
     if (results) {
       // 下载上传结果
-      saveAsYaml(`${this.getTranslation('PAC.INDICATOR.IndicatorImportResults', { Default: 'Indicator_Import_Results' })}.yml`, results)
+      saveAsYaml(
+        `${this.getTranslation('PAC.INDICATOR.IndicatorImportResults', { Default: 'Indicator_Import_Results' })}.yml`,
+        results
+      )
       this.projectComponent.refreshIndicators()
+
+      this.router.navigate(['.'], { relativeTo: this.route })
     }
   }
 
+  replaceNewIndicator(indicator: Indicator) {
+    const index = this.openedLinks().findIndex((item) => item.id === 'new')
+    if (index > -1) {
+      this.openedLinks().splice(index, 1, indicator)
+    }
+    this.currentLink.set(indicator)
+  }
 }

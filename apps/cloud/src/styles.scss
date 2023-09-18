@@ -34,6 +34,8 @@
   @include indicator-market.color(thin-theme.$dark-theme);
 }
 
+@import './app/_app.component';
+
 html,
 body {
   height: 100%;
@@ -348,4 +350,36 @@ html.cdk-global-scrollblock {
   .mdc-tooltip {
     @apply text-xs;
   }
+}
+
+
+.pac-page-header {
+  @apply flex flex-col justify-start items-start gap-2 px-4 pt-4 bg-white;
+}
+.pac-page-title {
+  @apply text-2xl font-bold;
+}
+.pac-page-subtitle {
+  @apply text-base font-light;
+}
+.pac-page-body {
+  @apply bg-slate-50 rounded-lg overflow-auto relative;
+}
+.pac-page-body-toolbar {
+  @apply flex justify-between items-center;
+}
+.pac-tab-nav-bar.mat-mdc-tab-header {
+  --mdc-secondary-navigation-tab-container-height: 32px;
+
+  .pac-tab-close {
+    @apply opacity-0 invisible absolute -right-6;
+  }
+  .mdc-tab.mdc-tab--active {
+    .pac-tab-close {
+      @apply opacity-100 visible;
+    }
+  }
+}
+.mat-mdc-card.mdc-card {
+  @apply rounded-lg shadow-sm;
 }

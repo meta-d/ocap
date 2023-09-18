@@ -5,7 +5,7 @@ import { StoryViewerComponent } from '../story/viewer/viewer.component'
 import { ProjectHomeComponent } from './home/home.component'
 import { ApprovalsComponent } from './indicators/approvals/approvals.component'
 import { ProjectIndicatorsComponent } from './indicators/indicators.component'
-import { MyIndicatorComponent } from './indicators/my/my.component'
+import { AllIndicatorComponent } from './indicators/all/all.component'
 import { IndicatorRegisterComponent } from './indicators/register/register.component'
 import { ProjectMembersComponent } from './members/members.component'
 import { ProjectComponent } from './project.component'
@@ -32,11 +32,16 @@ const routes: Routes = [
         children: [
           {
             path: '',
-            component: MyIndicatorComponent
+            component: AllIndicatorComponent
           },
           {
             path: 'approvals',
             component: ApprovalsComponent
+          },
+          {
+            path: ':id',
+            component: IndicatorRegisterComponent,
+            canDeactivate: [DirtyCheckGuard],
           },
         ]
       },

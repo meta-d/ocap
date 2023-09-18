@@ -1,42 +1,25 @@
-import { Store } from './../services/store.service';
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { first } from 'rxjs/operators';
-import { PermissionsEnum } from '@metad/contracts';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { inject } from '@angular/core'
+import { ActivatedRouteSnapshot, Router } from '@angular/router'
+import { PermissionsEnum } from '@metad/contracts'
+import { combineLatest } from 'rxjs'
+import { first, map, tap } from 'rxjs/operators'
+import { Store } from './../services/store.service'
 
-@UntilDestroy()
-@Injectable()
-export class InviteGuard  {
-	hasPermission = false;
-	organizationInvitesAllowed = false;
-
-	constructor(
-		private readonly router: Router,
-		private readonly store: Store
-	) {}
-
-	async canActivate(route: ActivatedRouteSnapshot) {
-		const expectedPermissions: PermissionsEnum[] =
-			route.data.expectedPermissions;
-		this.store.userRolePermissions$.pipe(first()).subscribe(() => {
-			this.hasPermission = expectedPermissions.some((permission) =>
-				this.store.hasPermission(permission)
-			);
-		});
-		this.store.selectedOrganization$
-			.pipe(first(), untilDestroyed(this))
-			.subscribe((organization) => {
-				if (organization) {
-					this.organizationInvitesAllowed =
-						organization.invitesAllowed;
-				}
-			});
-		if (this.organizationInvitesAllowed && this.hasPermission) {
-			return true;
-		}
-
-		this.router.navigate(['/']);
-		return false;
-	}
+export function inviteGuard(route: ActivatedRouteSnapshot) {
+  const store = inject(Store)
+  const router = inject(Router)
+  const expectedPermissions: PermissionsEnum[] = route.data.expectedPermissions
+  return combineLatest([
+    store.userRolePermissions$.pipe(
+      first(),
+      map(() => expectedPermissions.some((permission) => store.hasPermission(permission)))
+    ),
+    store.selectedOrganization$.pipe(
+      first(),
+      map((organization) => organization?.invitesAllowed)
+    )
+  ]).pipe(
+    map(([hasPermission, invitesAllowed]) => invitesAllowed && hasPermission),
+    tap((allowed) => allowed || router.navigate(['/']))
+  )
 }

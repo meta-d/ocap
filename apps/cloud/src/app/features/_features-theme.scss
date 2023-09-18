@@ -259,23 +259,6 @@ $sidebar-collapsed-width: 40px;
     }
   }
 
-  .ngxp__container.ngxp__animation {
-    @apply p-0 border-transparent shadow-none bg-transparent z-10;
-
-    .ngxp__inner {
-      // background-color: mat.get-color-from-palette($background, card);
-      @apply shadow-lg border-0 border-slate-200 overflow-hidden rounded-lg border-t-0;
-    }
-    .ngxp__arrow::before {
-      @apply shadow-md bg-slate-100;
-    }
-
-    &[data-popper-placement="bottom-end"] {
-      .ngxp__arrow {
-        right: 12px;
-      }
-    }
-  }
   
   .pac-toolbar-search {
     .mat-mdc-input-element {

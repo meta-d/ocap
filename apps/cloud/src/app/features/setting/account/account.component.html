@@ -1,28 +1,31 @@
-<div class="flex flex-col items-center gap-4 my-8">
-  <pac-user-avatar-editor
-    [user]="user"
-  ></pac-user-avatar-editor>
-  <!-- <img class="avatar w-16 h-16 rounded-full flex"
-    [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" alt="{{user | user}}" /> -->
-  <div class="text-base flex">{{user?.email}}</div>
-</div>
+<div class="pac-page-header">
+  <div class="w-full flex flex-col items-center gap-4 my-8">
+    <pac-user-avatar-editor
+      [user]="user()"
+    ></pac-user-avatar-editor>
+    <!-- <img class="avatar w-16 h-16 rounded-full flex"
+      [src]="user?.imageUrl || '/assets/images/avatar-default.svg'" alt="{{user | user}}" /> -->
+    <div class="text-base flex">{{user()?.email}}</div>
+  </div>
 
-<ul class="pac-tab-nav-bar self-stretch " id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
-  <li class="pac-tab-link mr-2" role="presentation" [routerLink]="['profile']"
-    routerLinkActive #rla1="routerLinkActive"
-    [routerLinkActiveOptions]="{exact: true}"
-    [class.active]="rla1.isActive"
-  >
-    <button class="inline-block p-4 border-b-2 rounded-t-lg" id="profile-tab" data-tabs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false"
-      >{{ 'PAC.KEY_WORDS.Profile' | translate: {Default: 'Profile'} }}</button>
-  </li>
-  <li class="pac-tab-link mr-2" role="presentation" [routerLink]="['password']"
+  <nav mat-tab-nav-bar class="pac-tab-nav-bar" color="accent" mat-align-tabs="center" mat-stretch-tabs="false" disableRipple class="w-full">
+    <span mat-tab-link [routerLink]="['profile']"
+      routerLinkActive #rla="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla.isActive"
+    >
+      {{ 'PAC.KEY_WORDS.Profile' | translate: {Default: 'Profile'} }}
+    </span>
+    <span mat-tab-link [routerLink]="['password']"
       routerLinkActive #rla2="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"
-      [class.active]="rla2.isActive">
-      <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="dashboard-tab" data-tabs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="false"
-        >{{ 'PAC.KEY_WORDS.Password' | translate: {Default: 'Password'} }}</button>
-  </li>
-</ul>
-
-<router-outlet></router-outlet>
+      [active]="rla2.isActive"
+    >
+    {{ 'PAC.KEY_WORDS.Password' | translate: {Default: 'Password'} }}
+    </span>
+  </nav>
+</div>
+<mat-divider></mat-divider>
+<mat-tab-nav-panel #tabPanel class="pac-page-body flex flex-col items-center" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+  <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>

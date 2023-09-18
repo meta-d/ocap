@@ -1,30 +1,24 @@
 import { PlatformModule } from '@angular/cdk/platform'
-import { registerLocaleData } from '@angular/common'
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'
-import en from '@angular/common/locales/en'
-import localeZhExtra from '@angular/common/locales/extra/zh-Hans'
-import zh from '@angular/common/locales/zh'
-import localeZh from '@angular/common/locales/zh-Hans'
-import { APP_INITIALIZER, ErrorHandler, LOCALE_ID, NgModule } from '@angular/core'
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
+import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { BrowserModule, HammerModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { Router, RouteReuseStrategy } from '@angular/router'
+import { RouteReuseStrategy } from '@angular/router'
 import { ServiceWorkerModule } from '@angular/service-worker'
 import { Ability, PureAbility } from '@casl/ability'
 import { AbilityModule } from '@casl/angular'
-import { NxCoreModule, registerLocaleData as nxRegisterLocaleData, zhHans } from '@metad/core'
-import * as Sentry from "@sentry/angular"
+import { NxCoreModule } from '@metad/core'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { NgxPermissionsModule } from 'ngx-permissions'
-import { environment } from '../environments/environment'
 import {
   APIInterceptor,
   AppInitService,
   AppRouteReuseStrategy,
   CoreModule,
+  LOCALE_DEFAULT,
   LanguageInterceptor,
   TenantInterceptor,
   TokenInterceptor,
@@ -41,12 +35,6 @@ function detectSubjectType(subject) {
 
   return subject[TYPE_KEY]
 }
-
-const LOCALE = 'zh-Hans'
-registerLocaleData(localeZh, LOCALE, localeZhExtra)
-registerLocaleData(zh)
-registerLocaleData(en)
-nxRegisterLocaleData(zhHans, LOCALE)
 
 @NgModule({
   declarations: [AppComponent],
@@ -68,7 +56,7 @@ nxRegisterLocaleData(zhHans, LOCALE)
       level: NgxLoggerLevel.WARN,
       serverLogLevel: NgxLoggerLevel.ERROR,
       colorScheme: ['purple', 'teal', 'gray', 'gray', 'red', 'red', 'red'],
-      enableSourceMaps: true,
+      enableSourceMaps: true
     }),
     NxCoreModule.forRoot(),
     AbilityModule,
@@ -85,7 +73,7 @@ nxRegisterLocaleData(zhHans, LOCALE)
     UpdateService,
     {
       provide: LOCALE_ID,
-      useValue: LOCALE
+      useValue: LOCALE_DEFAULT
     },
     {
       provide: RouteReuseStrategy,
@@ -120,7 +108,7 @@ nxRegisterLocaleData(zhHans, LOCALE)
       multi: true
     },
     { provide: Ability, useValue: new Ability([], { detectSubjectType }) },
-    { provide: PureAbility, useExisting: Ability },
+    { provide: PureAbility, useExisting: Ability }
 
     // {
     //   provide: ErrorHandler,

@@ -15,7 +15,7 @@
           {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
       </button> -->
       <button mat-button displayDensity="cosy" (click)="downloadTempl()">
-        {{ 'PAC.MENU.INDICATOR.DOWNLOAD_TEMPLATE' | translate: {Default: "Download Template"} }}
+        {{ 'PAC.MENU.INDICATOR.DownloadAsTemplate' | translate: {Default: "Download as Template"} }}
       </button>
   
       <button mat-raised-button *ngIf="type !== 'copy' && (indicator$ | async) as indicator" displayDensity="cosy"
@@ -29,7 +29,7 @@
       </button>
 
       <button *ngIf="indicator?.id" mat-icon-button displayDensity="cosy" ngmAppearance="danger" (click)="deleteIndicator()">
-        <mat-icon>close</mat-icon>
+        <mat-icon>delete_forever</mat-icon>
       </button>
     </div>
   </div>

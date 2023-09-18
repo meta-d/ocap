@@ -141,15 +141,6 @@ $trend-down: rgb(254, 60, 46);
     }
   }
 
-  .pac-indicator-market__settings-menu {
-    .settings-lookback {
-      overflow: visible;
-      .mat-slider {
-        width: 100%;
-      }
-    }
-  }
-
   .pac-indicator-market__infinite-container.cdk-virtual-scroll-orientation-vertical
     .cdk-virtual-scroll-content-wrapper {
     max-width: 100%;

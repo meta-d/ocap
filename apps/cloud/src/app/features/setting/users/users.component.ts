@@ -1,79 +1,80 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ViewChild, effect, inject, signal } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { Router } from '@angular/router'
-import { Store, UsersService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { includes } from 'lodash-es'
-import { BehaviorSubject, firstValueFrom, map, startWith, switchMap } from 'rxjs'
-import { Group, IUser, RolesEnum, routeAnimations, ROUTE_ANIMATIONS_ELEMENTS, ToastrService } from '../../../@core/index'
+import { ActivatedRoute, Router } from '@angular/router'
+import { Store } from '@metad/cloud/state'
+import { Subject, firstValueFrom, map } from 'rxjs'
+import { Group, IUser, ROUTE_ANIMATIONS_ELEMENTS, routeAnimations } from '../../../@core/index'
+import { MaterialModule, SharedModule, UserMutationComponent, userLabel } from '../../../@shared'
 import { InviteMutationComponent } from '../../../@shared/invite'
-import { userLabel } from '../../../@shared/pipes'
-import { UserMutationComponent } from '../../../@shared/user'
 import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 
+
 @Component({
+  standalone: true,
   selector: 'pac-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss'],
   animations: [routeAnimations],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SharedModule, MaterialModule]
 })
-export class PACUsersComponent extends TranslationBaseComponent {
+export class PACUsersComponent<T extends IUser = IUser> extends TranslationBaseComponent {
   routeAnimationsElements = ROUTE_ANIMATIONS_ELEMENTS
+  userLabel = userLabel
 
   private readonly store = inject(Store)
-  private userService = inject(UsersService)
   private router = inject(Router)
+  private _route = inject(ActivatedRoute)
   private _dialog = inject(MatDialog)
-  private toastrService = inject(ToastrService)
 
-  ROLES = Object.keys(RolesEnum)
-  roles$ = new BehaviorSubject<string[]>([])
-  get roles() {
-    return this.roles$.value
-  }
-  set roles(value) {
-    this.roles$.next(value)
-  }
-  user = 'A'
-  private search$ = new BehaviorSubject<string>('')
-  get search() {
-    return this.search$.value
-  }
-  set search(value) {
-    this.search$.next(value)
-  }
+  openedLinks = signal<T[]>([])
+  currentLink = signal<T | null>(null)
 
-  private refresh$ = new BehaviorSubject<void>(null)
-  public readonly users$ = this.refresh$.pipe(
-    switchMap(() => this.userService.getAll(['role'])),
-    switchMap((users) => this.roles$.pipe(map((roles) => roles?.length ? users.filter((user) => includes(roles, user.role.name)) : users))),
-    switchMap((users) => {
-      return this.search$.pipe(
-        startWith(this.search),
-        map((text: string) => {
-          text = text?.toLowerCase()
-          return text
-            ? users.filter(
-                (user) =>
-                  user.name?.toLowerCase().includes(text) ||
-                  user.lastName?.toLowerCase().includes(text) ||
-                  user.firstName?.toLowerCase().includes(text) ||
-                  user.email?.toLowerCase().includes(text)
-              )
-            : users
-        })
-      )
-    })
-  )
   public readonly organizationName$ = this.store.selectedOrganization$.pipe(map((org) => org?.name))
+
+  public readonly invitedEvent = new Subject<void>()
+
+  constructor() {
+    super()
+
+    effect(
+      () => {
+        if (this.currentLink()) {
+          const links = this.openedLinks()
+          const index = links.findIndex((item) => item.id === this.currentLink().id)
+          if (index > -1) {
+            if (links[index] !== this.currentLink()) {
+              this.openedLinks.set([...links.slice(0, index), this.currentLink(), ...links.slice(index + 1)])
+            }
+          } else {
+            this.openedLinks.set([...links, this.currentLink()])
+          }
+        }
+      },
+      { allowSignalWrites: true }
+    )
+  }
+
+  trackById(index: number, item: T) {
+    return item?.id
+  }
+
+  setCurrentLink(link: T) {
+    this.currentLink.set(link)
+  }
+
+  removeOpenedLink(link: T) {
+    this.currentLink.set(null)
+    this.openedLinks.set(this.openedLinks().filter((item) => item.id !== link.id))
+    this.router.navigate(['.'], { relativeTo: this._route })
+  }
 
   checkChange(e: boolean): void {
     console.log(e)
   }
 
   navUser(user: IUser) {
-    this.router.navigate(['/settings/users/edit/', user.id])
+    this.router.navigate(['/settings/users/', user.id])
   }
 
   navGroup(group: Group) {
@@ -81,40 +82,25 @@ export class PACUsersComponent extends TranslationBaseComponent {
   }
 
   manageInvites() {
-		this.router.navigate(['/settings/users/invites/']);
-	}
-
-  async add() {
-    const user = await firstValueFrom(this._dialog
-      .open(UserMutationComponent, { data: { isAdmin: true } })
-      .afterClosed()
-    )
-    if (user) {
-      this.refresh$.next()
-    }
+    this.router.navigate(['/settings/users/invites/'])
   }
 
   async invite() {
-    const user = await firstValueFrom(this._dialog.open(InviteMutationComponent,).afterClosed())
+    const result = await firstValueFrom(this._dialog.open(InviteMutationComponent).afterClosed())
+
+    // 成功邀请人数
+    if (result?.total) {
+      this.invitedEvent.next()
+      this.router.navigate(['invites'], { relativeTo: this._route })
+    }
   }
 
-  /**
-   * 对比下面函数的写法
-   */
-  async remove(user: IUser) {
-    const confirm = await firstValueFrom(this._dialog.open(ConfirmDeleteComponent, { data: {value: userLabel(user)} }).afterClosed())
-    if (confirm) {
-      try {
-        await firstValueFrom(this.userService.delete(user.id, user))
-        this.toastrService.success('PAC.NOTES.USERS.UserDelete', {
-          name: userLabel(user)
-        })
-        this.refresh$.next()
-      } catch (err) {
-        this.toastrService.error('PAC.NOTES.USERS.UserDelete', '', {
-          name: userLabel(user)
-        })
-      }
+  async addUser() {
+    const result = await firstValueFrom(
+      this._dialog.open(UserMutationComponent, { data: { isAdmin: true } }).afterClosed()
+    )
+    if (result?.user) {
+      this.router.navigate(['.', result.user.id], { relativeTo: this._route })
     }
   }
 }

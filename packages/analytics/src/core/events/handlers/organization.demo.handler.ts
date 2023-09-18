@@ -23,7 +23,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as unzipper from 'unzipper'
+import * as decompress from 'decompress'
 import * as _axios from 'axios'
 import { assign, isString } from 'lodash'
 import { RedisClientType } from 'redis'
@@ -43,6 +43,7 @@ import {
 } from '../../entities/internal'
 import { readYamlFile } from '../../helper'
 import { REDIS_CLIENT } from '../../redis.module'
+
 
 const axios = _axios.default
 
@@ -100,27 +101,33 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
 		
 		//extracted import data files directory path
-		const samplesPath = await this.getSamplesPath()
+		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
-		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.4.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.4.0.zip'
+		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
 	    const files = await this.unzipAndRead(file, samplesPath)
 
 		this.logger.debug(files)
 
 		for await (const file of files) {
-			const sheets = await readYamlFile<
-				Array<{
-					name: string
-					installationMode: string
-					dataSource: IDataSource
-					dataset: CreationTable & { fileUrl: string }
-					businessArea: BusinessArea
-					semanticModel: ISemanticModel
-					project: IProject
-					story: IStory[]
-					indicator: IIndicator[]
-				}>
-			>(path.join(demosFolder, file))
+			let sheets
+			try {
+				sheets = await readYamlFile<
+					Array<{
+						name: string
+						installationMode: string
+						dataSource: IDataSource
+						dataset: CreationTable & { fileUrl: string }
+						businessArea: BusinessArea
+						semanticModel: ISemanticModel
+						project: IProject
+						story: IStory[]
+						indicator: IIndicator[]
+					}>
+				>(path.join(demosFolder, file))
+			} catch (err) {
+				this.logger.error(err.message)
+				continue;
+			}
 			for await (const {
 				name,
 				installationMode,
@@ -250,12 +257,12 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		}
 
 		// Delete the samples folder
-		fs.rmSync(samplesPath, { recursive: true, force: true })
+		// fs.rmSync(samplesPath, { recursive: true, force: true })
 
 		return Promise.resolve()
 	}
 
-	async getSamplesPath() {
+	async getUserSamplesPath(userId: string) {
 		const cache = path.join(process.cwd(), '.cache')
 		const samples = path.join(cache, 'samples')
 		if (!fs.existsSync(cache)) {
@@ -264,15 +271,19 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		if (!fs.existsSync(samples)) {
 			fs.mkdirSync(samples)
 		}
-		return samples
+
+		const userSamples = path.join(samples, userId)
+		if (!fs.existsSync(userSamples)) {
+			fs.mkdirSync(userSamples)
+		}
+		return userSamples
 	}
 
 	public async unzipAndRead(url: string, assetPath = '') {
 		const demoFilePath = path.join(assetPath, 'demos.zip')
 		
 		await this.downloadDemoFile(url, demoFilePath)
-		const directory = await unzipper.Open.file(demoFilePath)
-		await directory.extract({ path: assetPath })
+		await decompress(demoFilePath, assetPath)
 
 		const demosFolder = path.join(assetPath, 'demos')
 		const files = fs.readdirSync(demosFolder).filter((file) => {
@@ -556,7 +567,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					await this.modelRepository.findOne({
 						tenantId: this.tenant.id,
 						organizationId: this.organization.id,
-						name: indicator.modelId
+						key: indicator.modelKey
 					})
 				)?.id
 			: modelId

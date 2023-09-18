@@ -1,14 +1,17 @@
 import { Platform } from '@angular/cdk/platform'
 import { DOCUMENT } from '@angular/common'
 import { ChangeDetectionStrategy, Component, Inject, OnInit, Renderer2 } from '@angular/core'
+import { DateFnsAdapter, MAT_DATE_FNS_FORMATS } from '@angular/material-date-fns-adapter'
+import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatIconRegistry } from '@angular/material/icon'
 import { DomSanitizer, Title } from '@angular/platform-browser'
-import { TranslateService } from '@ngx-translate/core'
 import { ThemesEnum } from '@metad/cloud/state'
+import { nonNullable } from '@metad/core'
+import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest } from 'rxjs'
-import { filter, map, tap } from 'rxjs/operators'
-import { ICONS, PACThemeService, Store, UpdateService } from './@core'
+import { filter, map } from 'rxjs/operators'
+import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale } from './@core'
 import { AppService } from './app.service'
 
 
@@ -16,7 +19,14 @@ import { AppService } from './app.service'
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  providers: [
+    {
+      provide: DateAdapter,
+      useClass: DateFnsAdapter
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_DATE_FNS_FORMATS }
+  ]
 })
 export class AppComponent implements OnInit {
   constructor(
@@ -24,6 +34,7 @@ export class AppComponent implements OnInit {
     public readonly appService: AppService,
     public readonly updateService: UpdateService,
     private readonly themeService: PACThemeService,
+    private readonly languagesService: LanguagesService,
     private translate: TranslateService,
     private logger: NGXLogger,
     @Inject(DOCUMENT)
@@ -33,15 +44,17 @@ export class AppComponent implements OnInit {
     private domSanitizer: DomSanitizer,
     private platform: Platform,
     private title: Title,
+    private _adapter: DateAdapter<any>
   ) {
     translate.setDefaultLang('en')
     // the lang to use, if the lang isn't available, it will use the current loader to get them
     translate.use(this.store.preferredLanguage || navigator.language || 'en')
     this.document.documentElement.lang = translate.currentLang
 
-    this.store.preferredLanguage$.pipe(filter(value => !!value)).subscribe((language) => {
+    this.store.preferredLanguage$.pipe(filter(nonNullable)).subscribe((language) => {
       this.translate.use(language)
       this.document.documentElement.lang = language
+      this._adapter.setLocale(mapDateLocale(language))
     })
 
     this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))
@@ -54,10 +67,8 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     combineLatest([
       this.appService.isMobile$,
-      this.store.preferredTheme$.pipe(
-        map((theme) => `nx-theme-${theme ?? ThemesEnum.default}`))
-    ])
-    .subscribe(([isMobile, theme]) => {
+      this.store.preferredTheme$.pipe(map((theme) => `nx-theme-${theme ?? ThemesEnum.default}`))
+    ]).subscribe(([isMobile, theme]) => {
       // for body
       const body = this.document.getElementsByTagName('body')[0]
       const bodyThemeRemove = Array.from(body.classList).filter((item: string) => item.includes('-theme'))
@@ -68,12 +79,11 @@ export class AppComponent implements OnInit {
         this.renderer.addClass(body, value)
       })
 
-      if (isMobile && (this.platform.IOS || this.platform.ANDROID) ) {
+      if (isMobile && (this.platform.IOS || this.platform.ANDROID)) {
         this.renderer.addClass(body, 'mobile')
       } else {
         body.classList.remove('mobile')
       }
     })
   }
-
 }

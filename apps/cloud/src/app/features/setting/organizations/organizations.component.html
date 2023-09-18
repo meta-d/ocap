@@ -1,60 +1,37 @@
-<div class="flex justify-between items-center">
-  <div class="text-lg">
-    {{ 'PAC.MENU.MANAGE_ORGANIZATIONS' | translate: {Default: "Manage Organizations"} }}
+<div class="pac-page-header">
+  <div class="w-full flex justify-between items-center">
+    <div class="pac-page-title">{{ 'PAC.MENU.MANAGE_ORGANIZATIONS' | translate: {Default: "Manage Organizations"} }}</div>
+    
+    <div ngmButtonGroup displayDensity="cosy">
+      <button mat-raised-button color="primary" displayDensity="cosy" (click)="addOrganization()">
+        <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">add</mat-icon>{{ 'PAC.ACTIONS.ADD' | translate: {Default: "Add"} }}
+      </button>
+    </div>
   </div>
 
-  <div ngmButtonGroup displayDensity="cosy">
-    <button mat-raised-button color="primary" displayDensity="cosy" (click)="addOrganization()">
-      <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">add</mat-icon>{{ 'PAC.ACTIONS.ADD' | translate: {Default: "Add"} }}
-    </button>
-  </div>
+  <nav mat-tab-nav-bar class="pac-tab-nav-bar" color="accent" mat-align-tabs="start" mat-stretch-tabs="false" disableRipple displayDensity="cosy"
+    [tabPanel]="tabPanel"
+  >
+    <span mat-tab-link [routerLink]="['.']"
+      routerLinkActive #rla="routerLinkActive"
+      [routerLinkActiveOptions]="{exact: true}"
+      [active]="rla.isActive"
+    >
+      {{ 'PAC.ORGANIZATIONS_PAGE.Organization.AllOrganizations' | translate: {Default: "All Organizations"} }}
+    </span>
+
+    <span mat-tab-link *ngFor="let link of openedLinks(); trackBy: trackByEntityId" [routerLink]="[link.id]"
+      [active]="link.id === currentLink()?.id">
+      <mat-icon class="mr-1" fontSet="material-icons-outlined" displayDensity="cosy">face</mat-icon>
+      {{ link.name }}
+      <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(link)">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </span>
+  </nav>
 </div>
+<mat-divider></mat-divider>
 
-<nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
-  paging
-  [data]="organizations$ | async"
-  [columns]="[
-    {
-      name: 'imageUrl',
-      caption: 'PAC.KEY_WORDS.Logo' | translate: {Default: 'Logo'},
-      cellTemplate: avatarTempl
-    },
-    {
-      name: 'name',
-      caption: 'PAC.KEY_WORDS.NAME' | translate: {Default: 'Name'}
-    },
-    {
-      name: 'totalEmployees',
-      caption: 'PAC.ORGANIZATIONS_PAGE.Organization.TotalEmployees' | translate: {Default: 'Total Employees'}
-    },
-    {
-      name: 'currency',
-      caption: 'PAC.KEY_WORDS.CURRENCY' | translate: {Default: 'Currency'}
-    },
-    {
-      name: 'action',
-      caption: 'PAC.KEY_WORDS.ACTION' | translate: { Default: 'Action' },
-      cellTemplate: actionTempl
-    }
-  ]"
-></nx-table>
-
-<ng-template #avatarTempl let-imageUrl let-name="name">
-  <pac-org-avatar [organization]="{imageUrl, name}" class="block w-8 h-8 rounded-full overflow-hidden"></pac-org-avatar>
-</ng-template>
-
-<ng-template #actionTempl let-loading="loading" let-id="id">
-  <div class="flex items-center">
-    <button mat-icon-button displayDensity="cosy" class="text-gray-400" (click)="editOrganization(id)">
-      <div class="flex justify-center items-center">
-        <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-      </div>
-    </button>
-
-    <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="text-gray-400"
-      [disabled]="loading"
-      (click)="deleteOrganization(id)">
-      <div class="flex justify-center items-center"><mat-icon fontSet="material-icons-outlined">delete</mat-icon></div>
-    </button>
-  </div>
-</ng-template>
+<mat-tab-nav-panel #tabPanel class="pac-page-body flex flex-col items-center" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+  <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>
