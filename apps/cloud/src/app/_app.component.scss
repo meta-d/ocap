@@ -1,3 +1,5 @@
+@import './features/home/_home';
+
 .nx-theme-dark, .dark {
   --ngm-card-bg-color: theme(colors.bluegray.800);
   --ngm-card-border-color: theme(colors.bluegray.700);

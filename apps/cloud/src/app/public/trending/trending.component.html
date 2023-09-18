@@ -1,6 +1,20 @@
-<div class="flex justify-start items-center p-4">
-  <img src="/assets/logo.svg" class="w-8 h-8" >
-  <span class="pac-home-title text-2xl" routerLink="/home">{{'PAC.title.short' | translate}}</span>
+<div class="flex justify-between items-center p-4">
+  <div class="flex items-center">
+    <img src="/assets/logo.svg" class="w-8 h-8" >
+    <span class="pac-home-title text-2xl" routerLink="/home">{{'PAC.title.short' | translate}}</span>
+  </div>
+
+  <div class="flex gap-4">
+    <button mat-button routerLink="/project">
+      {{ 'PAC.KEY_WORDS.Story' | translate: {Default: "Story"} }}
+    </button>
+    <button mat-button routerLink="/indicator/market">
+      {{ 'PAC.KEY_WORDS.IndicatorMarket' | translate: {Default: "Indicator Market"} }}
+    </button>
+    <button mat-button routerLink="/models">
+      {{ 'PAC.KEY_WORDS.SemanticModel' | translate: {Default: "Semantic Model"} }}
+    </button>
+  </div>
 </div>
 
 <div class="max-w-full w-full flex flex-col px-8 py-4 overflow-auto">

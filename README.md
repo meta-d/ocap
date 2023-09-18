@@ -1,5 +1,7 @@
 English | [中文](./README_zh.md)
 
+![](https://avatars.githubusercontent.com/u/100019674?v=4)
+
 # Metad Analytics Platform
 
 [uri_metad]: https://mtda.cloud/en/
@@ -23,9 +25,9 @@ We released new version which includes [AI Copilot](https://mtda.cloud/en/blog/c
 * **Indicator Management**: Easily define, manage, and monitor key performance indicators (KPIs) to ensure data quality, consistency, and effective performance analysis.
 * **AI Copilot**: Benefit from AI-driven insights and recommendations to enhance decision-making processes and identify actionable opportunities.
 
-![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/story-workspace.png)
+![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
 
-![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/indicator-application.png)
+![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
 
 ## ✨ Features
 

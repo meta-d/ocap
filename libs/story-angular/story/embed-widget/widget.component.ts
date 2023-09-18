@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core'
+import { NxCoreService } from '@metad/core'
 import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
-import { NxCoreService } from '@metad/core'
 import { NxStoryService, Story, StoryWidget } from '@metad/story/core'
 import { NxStoryPointService } from '../story-point.service'
 import { NxStoryModule } from '../story.module'
@@ -16,15 +16,13 @@ import { NxStoryModule } from '../story.module'
   providers: [NxStoryService, NxStoryPointService, NgmSmartFilterBarService, NxCoreService]
 })
 export class EmbedWidgetComponent implements OnInit, OnChanges {
+  public storyService = inject(NxStoryService)
+  private pointService = inject(NxStoryPointService)
+  public smartFilterBarService = inject(NgmSmartFilterBarService)
+  private dsCoreService = inject(NgmDSCoreService)
+
   @Input() story: Story
   @Input() widget: StoryWidget
-
-  constructor(
-    public storyService: NxStoryService,
-    private pointService: NxStoryPointService,
-    public smartFilterBarService: NgmSmartFilterBarService,
-    private dsCoreService: NgmDSCoreService
-  ) {}
 
   ngOnInit(): void {
     this.dsCoreService.setTimeGranularity(TimeGranularity.Month)

@@ -12,6 +12,7 @@ import { StoriesService } from '@metad/cloud/state'
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs'
 import { StoryCardComponent } from '../../@shared'
 import { IStory, listAnimation } from '../../@core'
+import { MatButtonModule } from '@angular/material/button'
 
 
 @Component({
@@ -24,6 +25,7 @@ import { IStory, listAnimation } from '../../@core'
     RouterModule,
     IntersectionObserverModule,
     MatButtonToggleModule,
+    MatButtonModule,
 
     TranslateModule,
     NgmCommonModule,

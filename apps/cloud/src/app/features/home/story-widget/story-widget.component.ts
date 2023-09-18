@@ -1,10 +1,11 @@
-import { Component, Input, inject } from '@angular/core'
+import { Component, Input, computed, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType } from '@metad/ocap-core'
 import { omit } from 'lodash-es'
 import { BehaviorSubject, EMPTY } from 'rxjs'
-import { catchError, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
+import { catchError, filter, switchMap } from 'rxjs/operators'
 import { registerWasmAgentModel } from '../../../@core'
 
 @Component({
@@ -27,38 +28,40 @@ export class StoryWidgetFeedComponent {
   }
   private id$ = new BehaviorSubject<string>(null)
 
-  public readonly widget$ = this.id$.pipe(
-    filter((value) => !!value),
-    switchMap((id) =>
-      this.widgetsService
-        .getOne(id, [
-          'point',
-          'point.story',
-          'point.story.points',
-          'createdBy',
-          // 'point.story.model',
-          // 'point.story.model.indicators',
-          // 'point.story.model.dataSource',
-          // 'point.story.model.dataSource.type'
+  public readonly widget = toSignal(
+    this.id$.pipe(
+      filter((value) => !!value),
+      switchMap((id) =>
+        this.widgetsService
+          .getOne(id, [
+            'point',
+            'point.story',
+            'point.story.points',
+            'createdBy',
+            // 'point.story.model',
+            // 'point.story.model.indicators',
+            // 'point.story.model.dataSource',
+            // 'point.story.model.dataSource.type'
 
-          'point.story.models',
-          'point.story.models.dataSource',
-          'point.story.models.dataSource.type',
-          'point.story.models.indicators'
-        ])
-        .pipe(
-          catchError((err) => {
-            this.error$.next(err.error)
-            return EMPTY
-          })
-        )
-    ),
-    shareReplay(1)
+            'point.story.models',
+            'point.story.models.dataSource',
+            'point.story.models.dataSource.type',
+            'point.story.models.indicators'
+          ])
+          .pipe(
+            catchError((err) => {
+              this.error$.next(err.error)
+              return EMPTY
+            })
+          )
+      )
+    )
   )
 
-  public readonly story$ = this.widget$.pipe(
-    map((widget) => {
-      return convertStoryResult({
+  public readonly story = computed(() => {
+    const widget = this.widget()
+    if (widget) {
+      const story = convertStoryResult({
         ...widget.point.story,
         points: [
           {
@@ -68,21 +71,23 @@ export class StoryWidgetFeedComponent {
           }
         ]
       })
-    }),
-    tap((story) => {
+
       story.models?.forEach((model) => {
         if (model.agentType === AgentType.Wasm) {
           registerWasmAgentModel(this.wasmAgent, model)
         }
       })
-    })
-  )
 
-  public readonly _widget$ = this.widget$.pipe(
-    map((widget) => {
+      return story
+    }
+  })
+
+  public readonly _widget = computed(() => {
+    const widget = this.widget()
+    if (widget) {
       return convertStoryWidgetResult(widget)
-    })
-  )
+    }
+  })
 
   public error$ = new BehaviorSubject(null)
 }
