@@ -30,8 +30,8 @@
     "build:package:olap": "yarn --cwd ./packages/olap build",
     "build:package:all": "yarn nx build contracts && yarn nx build common && yarn nx build config && yarn nx build auth && yarn nx build server && yarn nx build adapter && yarn nx build analytics",
 
-    "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name"
-    
+    "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name",
+    "bootstrap": "yarn install"
   },
   "private": true,
   "dependencies": {
