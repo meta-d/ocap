@@ -25,7 +25,7 @@ export class StoryPointBuilderSchema extends BaseDesignerSchemaService<StoryPoin
   }
 
   getGridOptions(I18NGridOptions) {
-    const className = 'nx-formly__col nx-formly__col-6'
+    const className = 'ngm-formly__col ngm-formly__col-6'
     return {
       key: 'gridOptions',
       wrappers: ['expansion'],
@@ -35,7 +35,7 @@ export class StoryPointBuilderSchema extends BaseDesignerSchemaService<StoryPoin
       },
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: gridsterOptions(className, I18NGridOptions)
         }
       ]

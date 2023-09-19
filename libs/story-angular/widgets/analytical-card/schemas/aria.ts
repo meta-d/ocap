@@ -7,7 +7,7 @@ export function AriaCapacity(className: string, I18N?) {
     fieldGroup: [
       {
         key: 'decal',
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           {
             className,

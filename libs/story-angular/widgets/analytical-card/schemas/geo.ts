@@ -20,7 +20,7 @@ export function GeoCapacity(className: string, I18N) {
             label: I18N.Geo?.Title ?? 'Geo',
             keyShow: showKey
           },
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [ItemStyle(className, I18N)]
         }
       ]

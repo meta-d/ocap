@@ -45,7 +45,7 @@ export function VisualMap(className: string, I18N?) {
   const isNotPiecewise = `!model || model.type !== 'piecewise'`
   return [
     {
-      className: 'nx-formly__pb-2',
+      className: 'ngm-formly__pb-2',
       fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [
         {

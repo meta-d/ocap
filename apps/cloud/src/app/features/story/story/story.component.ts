@@ -70,7 +70,7 @@ type ResponsiveBreakpointType = {
   templateUrl: './story.component.html',
   styleUrls: ['./story.component.scss'],
   host: {
-    class: 'nx-story-designer'
+    class: 'ngm-story-designer'
   },
   providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService, StoryCopilotEngineService]
 })
@@ -97,7 +97,7 @@ export class StoryComponent implements OnInit {
   @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent;
   @ViewChild('storyContainer') storyContainer: ElementRef<any>
   @ViewChild(NxStoryComponent) storyComponent: NxStoryComponent
-  @HostBinding('class.nx-story--fullscreen')
+  @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
   zIndex = 4
 
@@ -201,14 +201,14 @@ export class StoryComponent implements OnInit {
     const echartsTheme = story.options?.echartsTheme
 
     if (prev === 'light' || !prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'nx-theme-default')
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-default')
     }
     if (prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'nx-theme-' + prev)
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
       this.renderer.removeClass(this.storyContainer.nativeElement, prev)
     }
     if (current) {
-      this.renderer.addClass(this.storyContainer.nativeElement, 'nx-theme-' + current)
+      this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
       this.renderer.addClass(this.storyContainer.nativeElement, current)
       if (echartsTheme?.[current]) {
         this.coreService.changeTheme(`${current}-${key}`)

@@ -7,7 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
   templateUrl: './formatting.component.html',
   styleUrls: ['./formatting.component.scss'],
   host: {
-    class: 'nx-dialog-container'
+    class: 'ngm-dialog-container'
   }
 })
 export class FormattingComponent implements OnInit {

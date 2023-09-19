@@ -120,7 +120,7 @@ export class TabGroupSchemaService extends DataSettingsSchemaService {
                   padding: true
                 },
                 fieldArray: {
-                  fieldGroupClassName: 'nx-formly__row',
+                  fieldGroupClassName: 'ngm-formly__row',
                   fieldGroup: [
                     {
                       key: 'title',

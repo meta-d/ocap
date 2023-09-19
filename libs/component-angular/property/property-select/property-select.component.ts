@@ -89,7 +89,7 @@ export enum PropertyCapacity {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-property-select',
+  selector: 'ngm-property-select',
   templateUrl: './property-select.component.html',
   styleUrls: ['./property-select.component.scss'],
   providers: [
@@ -126,7 +126,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   DisplayDensity = DisplayDensity
   CalculationType = CalculationType
 
-  @HostBinding('class.nx-property-select') isPropertySelect = true
+  @HostBinding('class.ngm-property-select') isPropertySelect = true
 
   private readonly _dialog? = inject(MatDialog, {optional: true})
   private readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})

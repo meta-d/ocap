@@ -169,16 +169,16 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
         },
         fieldGroup: [
           {
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: [
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'filterable',
                 type: 'toggle',
                 templateOptions: { label: 'Column Filterable' }
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'groupable',
                 type: 'toggle',
                 templateOptions: { label: 'Column Groupable' }
@@ -201,11 +201,11 @@ export function GridOptionsSchema(BUILDER) {
 
   return [
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         // displayDensity(),
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'showToolbar',
           type: 'toggle',
           templateOptions: {
@@ -216,10 +216,10 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'exportExcel',
           type: 'toggle',
           templateOptions: {
@@ -227,7 +227,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'columnPinning',
           type: 'toggle',
           templateOptions: {
@@ -238,16 +238,16 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'allowFiltering',
           type: 'toggle',
           templateOptions: { label: 'Allow Filtering' }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'filterMode',
           type: 'select',
           templateOptions: {
@@ -262,10 +262,10 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'paging',
           type: 'checkbox',
           templateOptions: {
@@ -273,7 +273,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'pageSize',
           type: 'input',
           templateOptions: {
@@ -298,12 +298,12 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       key: 'column',
       wrappers: ['panel'],
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'resizable',
           type: 'checkbox',
           templateOptions: {
@@ -311,7 +311,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'width',
           type: 'input',
           templateOptions: {

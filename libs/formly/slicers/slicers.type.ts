@@ -7,12 +7,12 @@ import { isObservable, Observable, of } from 'rxjs'
   selector: 'pac-formly-slicers',
   template: `
 <div>{{props?.label}}</div>
-<nx-slicers editable inline
+<ngm-slicers editable inline
   [capacities]="props?.capacities"
   [slicers]="formControl.value"
   [dataSettings]="dataSettings$ | async"
   (valueChange)="onValueChange($event)">
-</nx-slicers>`,
+</ngm-slicers>`,
   styles: [
     `
       :host {

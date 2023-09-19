@@ -1,4 +1,4 @@
-@mixin nx-select-theme() {
+@mixin ngm-select-theme() {
   nb-option-list .option-list {
     @include nb-scrollbars(
       nb-theme(card-scrollbar-color),

@@ -6,37 +6,37 @@
   <ng-container *ngSwitchCase="FilterType.SingleRange">
     <ng-container [ngSwitch]="granularity">
       <ng-container *ngSwitchCase="TimeGranularity.Year">
-        <nx-year-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
-        </nx-year-filter>
+        <ngm-year-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
+        </ngm-year-filter>
 
-        <nx-year-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
+        <ngm-year-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
           <button mat-icon-button [matMenuTriggerFor]="granularityMenu"
             (click)="$event.stopPropagation();$event.preventDefault();">
               <mat-icon>more_vert</mat-icon>
           </button>
-        </nx-year-filter>
+        </ngm-year-filter>
       </ng-container>
       <ng-container *ngSwitchCase="TimeGranularity.Quarter">
-        <nx-quarter-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
-        </nx-quarter-filter>
+        <ngm-quarter-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
+        </ngm-quarter-filter>
 
-        <nx-quarter-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
+        <ngm-quarter-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
           <button mat-icon-button [matMenuTriggerFor]="granularityMenu"
             (click)="$event.stopPropagation();$event.preventDefault();">
               <mat-icon>more_vert</mat-icon>
           </button>
-        </nx-quarter-filter>
+        </ngm-quarter-filter>
       </ng-container>
       <ng-container *ngSwitchCase="TimeGranularity.Month">
-        <nx-month-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
-        </nx-month-filter>
+        <ngm-month-filter class="flex flex-1 mr-2" [formControl]="fromDateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.From' | translate: {Default: 'From'}">
+        </ngm-month-filter>
 
-        <nx-month-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
+        <ngm-month-filter class="flex flex-1" [formControl]="dateControl" [appearance]="appearance" [label]="'COMPONENTS.DATE_PICKER.To' | translate: {Default: 'To'}">
           <button mat-icon-button [matMenuTriggerFor]="granularityMenu"
             (click)="$event.stopPropagation();$event.preventDefault();">
               <mat-icon>more_vert</mat-icon>
           </button>
-        </nx-month-filter>
+        </ngm-month-filter>
       </ng-container>
     
       <ng-container *ngSwitchDefault>
@@ -110,7 +110,7 @@
 
 
 <mat-radio-group [(ngModel)]="granularity">
-  <mat-menu #granularityMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #granularityMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let value of TIME_GRANULARITY_SEQUENCES[granularitySequence]"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="value">

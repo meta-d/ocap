@@ -158,8 +158,8 @@ export class StoryWidgetSmartGridComponent
 
             if (column.intent) {
               column.cellClasses = merge(column.cellClasses, {
-                'nx-navigation': true,
-                'nx-navigation--intent': true
+                'ngm-navigation': true,
+                'ngm-navigation--intent': true
               })
             }
             return column
@@ -198,7 +198,7 @@ export class StoryWidgetSmartGridComponent
    */
   private resolveSemanticClasses(semantic: Semantic, columnName: string): any {
     const classes = {}
-    const baseClass = 'nx-semantic'
+    const baseClass = 'ngm-semantic'
     const parser = new Parser()
     const styles = semantic.style || ''
     Object.keys(semantic.expression).forEach((key) => {

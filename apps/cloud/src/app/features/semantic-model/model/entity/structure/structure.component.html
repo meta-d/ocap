@@ -1,11 +1,11 @@
 <ngm-splitter [type]="SplitterType.Vertical" class="flex-1">
     <ngm-splitter-pane>
         <div *ngIf="expression$ | async as expression; else tables" class="w-full h-full">
-            <nx-editor-sql #editor class="w-full h-full"
+            <ngm-editor-sql #editor class="w-full h-full"
                 [ngModel]="expression"
                 (ngModelChange)="changeExpression($event)"
                 >
-            </nx-editor-sql>
+            </ngm-editor-sql>
         </div>
     </ngm-splitter-pane>
 

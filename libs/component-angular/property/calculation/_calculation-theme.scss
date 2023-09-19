@@ -6,28 +6,28 @@
   $foreground: map-get($config, foreground);
   $primary: map-get($config, primary);
 
-  .nx-calculation__form-row {
+  .ngm-calculation__form-row {
     display: flex;
     flex-direction: row;
     place-content: center space-between;
   }
 
-  .nx-calculation-measure__formula-functions {
-    .nx-mdx-functions__function-option.mat-mdc-list-option {
+  .ngm-calculation-measure__formula-functions {
+    .ngm-mdx-functions__function-option.mat-mdc-list-option {
       .mat-mdc-list-item-content.mat-mdc-list-item-content-reverse {
         .mat-mdc-list-text {
           padding-right: 0;
         }
       }
     }
-    .mat-accordion.nx-accordion {
+    .mat-accordion.ngm-accordion {
       .mat-expansion-panel-body {
         padding: 0;
       }
     }
   }
 
-  .nx-mdx-functions__help-container.mat-mdc-menu-panel {
+  .ngm-mdx-functions__help-container.mat-mdc-menu-panel {
     max-width: 380px;
   }
 }
@@ -36,13 +36,13 @@
 }
 
 @mixin density($config-or-theme) {
-  nx-calculation-editor {
+  ngm-calculation-editor {
     .mat-mdc-radio-button .mdc-radio {
       --mdc-radio-state-layer-size: 28px;
     }
   }
 
-  .nx-calculation__dimensions {
+  .ngm-calculation__dimensions {
     margin-bottom: 0.5rem;
   }
 

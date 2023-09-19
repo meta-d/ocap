@@ -19,12 +19,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
             type: 'empty',
           },
           {
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: [
               {
                 key: 'direction',
                 type: 'select',
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 templateOptions: {
                   label: '响应页面',
                   options: [
@@ -37,7 +37,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 key: 'wrap',
                 type: 'toggle',
                 defaultValue: true,
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 templateOptions: {
                   label: 'Wrap'
                 }
@@ -48,12 +48,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
             key: 'styles',
             fieldGroup: [
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'justify-content',
                     type: 'select',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Justify Content',
                       options: [
@@ -69,7 +69,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'align-items',
                     type: 'select',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Align Items',
                       options: [
@@ -83,12 +83,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'align-content',
                     type: 'select',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Align Content',
                       options: [
@@ -104,7 +104,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'align-items',
                     type: 'select',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Align Items',
                       options: [
@@ -118,12 +118,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'align-self',
                     type: 'select',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Align Self',
                       options: [
@@ -139,7 +139,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'order',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Order',
                       type: 'number'
@@ -148,12 +148,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'flex-grow',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-4',
+                    className: 'ngm-formly__col ngm-formly__col-4',
                     templateOptions: {
                       label: 'Flex Grow',
                       type: 'number'
@@ -162,7 +162,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'flex-shrink',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-4',
+                    className: 'ngm-formly__col ngm-formly__col-4',
                     templateOptions: {
                       label: 'Flex Shrink',
                       type: 'number'
@@ -171,7 +171,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'flex-basis',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-4',
+                    className: 'ngm-formly__col ngm-formly__col-4',
                     templateOptions: {
                       label: 'Flex Basis'
                     }
@@ -179,12 +179,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'width',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Width'
                     }
@@ -192,7 +192,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'height',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Height'
                     }
@@ -200,12 +200,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'max-width',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Max Width'
                     }
@@ -213,7 +213,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'max-height',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Max Height'
                     }
@@ -221,12 +221,12 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                 ]
               },
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: [
                   {
                     key: 'margin',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Margin'
                     }
@@ -234,7 +234,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
                   {
                     key: 'padding',
                     type: 'input',
-                    className: 'nx-formly__col nx-formly__col-6',
+                    className: 'ngm-formly__col ngm-formly__col-6',
                     templateOptions: {
                       label: 'Padding'
                     }

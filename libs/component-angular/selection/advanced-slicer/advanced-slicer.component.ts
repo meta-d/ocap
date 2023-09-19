@@ -85,12 +85,12 @@ const ADVANCED_SLICER_OPERATORS = [
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'nx-advanced-slicer',
+  selector: 'ngm-advanced-slicer',
   templateUrl: './advanced-slicer.component.html',
   styleUrls: ['./advanced-slicer.component.scss']
 })
 export class AdvancedSlicerComponent {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
   DisplayBehaviour = DisplayBehaviour
   PropertyCapacity = PropertyCapacity
 

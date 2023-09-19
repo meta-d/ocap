@@ -107,10 +107,10 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
       .subscribe((SMTP) => {
         this.schema = [
           {
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: [
               {
-                className: 'nx-formly__col nx-formly__col-2',
+                className: 'ngm-formly__col ngm-formly__col-2',
                 key: 'host',
                 type: 'input',
                 props: {
@@ -119,7 +119,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
                 }
               },
               {
-                className: 'nx-formly__col nx-formly__col-2',
+                className: 'ngm-formly__col ngm-formly__col-2',
                 key: 'port',
                 type: 'input',
                 props: {
@@ -128,7 +128,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
                 }
               },
               {
-                className: 'nx-formly__col nx-formly__col-2',
+                className: 'ngm-formly__col ngm-formly__col-2',
                 key: 'secure',
                 type: 'select',
                 props: {
@@ -146,7 +146,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
                 }
               },
               {
-                className: 'nx-formly__col nx-formly__col-2',
+                className: 'ngm-formly__col ngm-formly__col-2',
                 key: 'username',
                 type: 'input',
                 props: {
@@ -155,7 +155,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
               },
 
               {
-                className: 'nx-formly__col nx-formly__col-2',
+                className: 'ngm-formly__col ngm-formly__col-2',
                 key: 'password',
                 type: 'input',
                 props: {

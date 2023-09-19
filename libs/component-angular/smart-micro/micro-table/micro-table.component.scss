@@ -11,28 +11,28 @@
 }
 
 :host::ng-deep {
-  .nx-micro-table--measure {
+  .ngm-micro-table--measure {
     .mat-sort-header-container {
       justify-content: flex-end;
     }
-    .nx-micro-table--cell-content {
+    .ngm-micro-table--cell-content {
       display: flex;
       justify-content: flex-end;
     }
   }
 
-  .nx-micro-table--measure {
-    .nx-data-point--value {
+  .ngm-micro-table--measure {
+    .ngm-data-point--value {
       font-size: 1rem;
       line-height: 1rem;
     }
-    .nx-data-point--unit {
+    .ngm-data-point--unit {
       font-size: 0.8rem;
       line-height: 0.8rem;
     }
   }
 
-  .nx-micro-table--dimension {
+  .ngm-micro-table--dimension {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
@@ -52,7 +52,7 @@
   }
 }
 
-.nx-micro-table--measure {
+.ngm-micro-table--measure {
   .mat-sort-header-container {
     justify-content: flex-end;
   }

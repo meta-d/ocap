@@ -8,13 +8,13 @@
   </ngm-measure-select>
 
   <div class="text-base font-medium my-4"> {{ 'COMPONENTS.CALCULATION.RestrictiveConditions' | translate: {Default: "Restrictive Conditions"} }} </div>
-  <nx-property-array class="nx-calculation__dimensions"
+  <ngm-property-array class="ngm-calculation__dimensions"
     formControlName="dimensions"
     [dataSettings]="dataSettings"
     [entityType]="entityType$ | async"
     [coreService]="coreService"
     [capacities]="[PropertyCapacity.Dimension]"
-  ></nx-property-array>
+  ></ngm-property-array>
   
   <mat-slide-toggle formControlName="enableConstantSelection" class="my-4"
     [matTooltip]=" 'COMPONENTS.CALCULATION.ConstantSelectionTootip' | translate: {Default: 'Lock down restrictive conditions dimension members so that they will not be overwritten by the user\'s context slicers.'} ">

@@ -286,7 +286,7 @@ export function PresentationVariantExpansion(
           // fieldGroup: [
           //   {
           //     className: FORMLY_W_1_2,
-          //     type: 'nx-select',
+          //     type: 'ngm-select',
           //     key: 'by',
           //     props: {
           //       label: BUILDER?.BY_FIELD ?? 'By Field',

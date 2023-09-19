@@ -12,8 +12,8 @@
       </mat-form-field>
 
       <mat-option *ngIf="selectedOption$ | async as option" [value]="option.value"
-        class="nx-formly__select-option"
-        [ngClass]="{'nx-formly__with-icon': option.icon}">
+        class="ngm-formly__select-option"
+        [ngClass]="{'ngm-formly__with-icon': option.icon}">
         <mat-icon *ngIf="option.icon" [fontSet]="option.fontSet">{{option.icon}}</mat-icon>
         <ngm-display-behaviour [displayBehaviour]="DISPLAY_BEHAVIOUR"
               [option]="option"
@@ -22,18 +22,18 @@
       </mat-option>
 
       <!-- <cdk-virtual-scroll-viewport [itemSize]="42" [style.height.px]=4*42 minBufferPx="200" maxBufferPx="400"
-        class="nx-formly__virtual-scroll-viewport">
+        class="ngm-formly__virtual-scroll-viewport">
         <mat-option *cdkVirtualFor="let option of options$ | async" [value]="option.value"
-          class="nx-formly__select-option"
-          [ngClass]="{'nx-formly__with-icon': option.icon}">
+          class="ngm-formly__select-option"
+          [ngClass]="{'ngm-formly__with-icon': option.icon}">
           <mat-icon *ngIf="option.icon" [fontSet]="option.fontSet">{{option.icon}}</mat-icon>
-          <nx-display-behaviour-option [displayBehaviour]="DISPLAY_BEHAVIOUR"
+          <ngm-display-behaviour-option [displayBehaviour]="DISPLAY_BEHAVIOUR"
                 [option]="{
                   value: option.value,
                   text: option.label
                 }"
                 [highlight]="highlight">
-          </nx-display-behaviour-option>
+          </ngm-display-behaviour-option>
         </mat-option>
       </cdk-virtual-scroll-viewport> -->
 

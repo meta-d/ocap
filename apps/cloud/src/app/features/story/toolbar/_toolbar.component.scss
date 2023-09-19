@@ -1,0 +1,16 @@
+pac-story-toolbar.pac-story-toolbar {
+  --mat-expansion-container-background-color: transparent;
+  @apply bg-bluegray-800;
+
+  .mat-divider.mat-divider-vertical {
+    @apply mx-4 h-8;
+  }
+
+  .ngm-story__toolbar-button {
+    margin: 0 0.25rem;
+  }
+  .ngm-story__toolbar-title {
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+  }
+}

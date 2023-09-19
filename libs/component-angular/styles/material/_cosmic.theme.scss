@@ -41,9 +41,9 @@ $cosmic-theme: mat.define-dark-theme(
 // $config: if(_mat-is-theme-object($cosmic-theme),
 //     mat.get-color-config($cosmic-theme), $cosmic-theme);
 // for Material Components theming
-.nx-theme-cosmic {
+.ngm-theme-cosmic {
   // @include mat.all-component-colors($cosmic-theme);
-  @include nx-mat-theme((
+  @include ngm-mat-theme((
     color: mat.get-color-config($cosmic-theme),
     typography: null,
     density: null,

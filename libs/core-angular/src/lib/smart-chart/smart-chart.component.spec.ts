@@ -8,7 +8,7 @@ import { NxSmartChartComponent } from './smart-chart.component'
 import { NxChartLibrary } from './types'
 
 @Component({
-  selector: 'nx-test-smart-chart',
+  selector: 'ngm-test-smart-chart',
 })
 class TestSmartChartComponent extends NxSmartChartComponent {
   public chartLibrary: NxChartLibrary = NxChartLibrary.echarts

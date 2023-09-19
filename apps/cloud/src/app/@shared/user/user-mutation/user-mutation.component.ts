@@ -30,7 +30,7 @@ import { ToastrService } from '../../../@core'
   styleUrls: ['./user-mutation.component.scss']
 })
 export class UserMutationComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   @ViewChild('userBasicInfo')
   userBasicInfo: BasicInfoFormComponent

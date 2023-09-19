@@ -16,7 +16,7 @@ import { FlexItemType, FlexLayout } from '../types'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-flex-layout',
+  selector: 'ngm-flex-layout',
   templateUrl: 'flex-layout.component.html',
   styles: [
     `
@@ -219,5 +219,5 @@ export class NxFlexLayoutComponent implements OnInit {
     return this.flexLayout.wrap ? 'wrap' : 'nowrap'
   }
 
-  @HostBinding('class.nx-flex-layout') nxFlexLayout = 'nx-flex-layout'
+  @HostBinding('class.ngm-flex-layout') nxFlexLayout = 'ngm-flex-layout'
 }

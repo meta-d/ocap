@@ -2,24 +2,24 @@
   @apply relative flex-1 flex flex-col max-w-full;
 }
 
-.nx-story__container-content {
+.ngm-story__container-content {
   @apply overflow-hidden flex flex-col gap-2;
 
   &.EmulatedDevice {
-    .nx-story__device {
+    .ngm-story__device {
       max-height: calc(100% - 1.5rem);
       @apply px-2;
     }
   }
 
-  .nx-story--add-story-point {
+  .ngm-story--add-story-point {
     position: absolute;
     top: 5px;
     right: 5rem;
     z-index: 1;
   }
 
-  .nx-story--filter-list {
+  .ngm-story--filter-list {
     position: absolute;
     top: 5px;
     right: 3rem;
@@ -32,7 +32,7 @@
   padding: 0;
 }
 
-.nx-story__toolbar {
+.ngm-story__toolbar {
   &.pac-toolbar__expand-less {
     @apply bottom-8;
   }
@@ -46,7 +46,7 @@
   @apply cursor-move;
 }
 
-.nx-story--point-hidden {
+.ngm-story--point-hidden {
   text-decoration: line-through;
 }
 
@@ -56,7 +56,7 @@
   top: 50%;
 }
 
-.nx-story__settings-container {
+.ngm-story__settings-container {
   flex: 1;
   max-height: 100%;
 }
@@ -66,14 +66,14 @@
   max-width: 100%;
 }
 
-.nx-story-designer__template {
+.ngm-story-designer__template {
   @apply flex justify-center items-center text-lg border-2 border-gray-300 border-dashed rounded-lg cursor-pointer;
 
   width: 300px;
   height: 200px;
 }
 
-.nx-story__device-size-bar {
+.ngm-story__device-size-bar {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -101,6 +101,6 @@
   }
 }
 
-.nx-story__designer-drawer.mat-drawer-side.mat-drawer-end {
+.ngm-story__designer-drawer.mat-drawer-side.mat-drawer-end {
   @apply border-l-0;
 }

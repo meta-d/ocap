@@ -6,7 +6,7 @@
 <mat-progress-bar mode="query" *ngIf="loading"></mat-progress-bar>
 
 <cdk-virtual-scroll-viewport [itemSize]="38" [style.height.px]=10*38 minBufferPx="200" maxBufferPx="400"
-    class="nx-formly__virtual-scroll-viewport">
+    class="ngm-formly__virtual-scroll-viewport">
 
     <button mat-menu-item *cdkVirtualFor="let option of selectOptions$ | async"
         (click)="clickEntity(option)">

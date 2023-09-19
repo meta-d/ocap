@@ -106,7 +106,7 @@
     </button>
 </div>
 
-<nx-story #storyComponent class="w-full h-full overflow-auto"
+<ngm-story #storyComponent class="w-full h-full overflow-auto"
     [story]="story"
     [pageKey]="pageKey$ | async"
     [widgetKey]="widgetKey$ | async"
@@ -114,7 +114,7 @@
     [dark]="isDark$ | async"
     [(filterBarOpened)]="globalFilterBarOpened"
     >
-</nx-story>
+</ngm-story>
 
 <div *ngIf="error" class="pac-result w-full">
     <div class="bug font-notoColorEmoji">🐞</div>

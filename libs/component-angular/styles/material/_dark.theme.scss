@@ -42,10 +42,10 @@ $dark-theme: mat.define-dark-theme(
 // $config: if(_mat-is-theme-object($dark-theme),
 //     mat.get-color-config($dark-theme), $dark-theme);
 // for Material Components theming
-.nx-theme-dark {
+.ngm-theme-dark {
   // @include mat.all-component-colors($dark-theme);
   // @include mat.dialog-theme($dark-theme);
-  @include nx-mat-theme((
+  @include ngm-mat-theme((
     color: mat.get-color-config($dark-theme),
     typography: null,
     density: null,

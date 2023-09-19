@@ -19,7 +19,7 @@ import { nonNullable } from '@metad/core'
 
 
 @Component({
-  selector: 'nx-slicer',
+  selector: 'ngm-slicer',
   templateUrl: 'slicer.component.html',
   styleUrls: ['slicer.component.scss']
 })

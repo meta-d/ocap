@@ -145,11 +145,11 @@
       ></ngm-mat-select>
   
       <div class="col-span-1 sm:col-span-2 text-base font-medium">{{ 'PAC.INDICATOR.REGISTER.RestrictiveCondition' | translate: {Default: 'Restrictive Condition'} }}</div>
-      <nx-slicers class="col-span-1 sm:col-span-2" editable inline
+      <ngm-slicers class="col-span-1 sm:col-span-2" editable inline
         [dataSettings]="dataSettings$ | async"
         [capacities]="[SlicersCapacity.CombinationSlicer]"
         formControlName="filters"
-      ></nx-slicers>
+      ></ngm-slicers>
     </div>
   
     <div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">

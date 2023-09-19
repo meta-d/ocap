@@ -39,7 +39,7 @@
 </ng-container>
 
 <mat-radio-group [(ngModel)]="granularity">
-  <mat-menu #granularityMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #granularityMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let value of TIME_GRANULARITY_SEQUENCES[granularitySequence]"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="value">

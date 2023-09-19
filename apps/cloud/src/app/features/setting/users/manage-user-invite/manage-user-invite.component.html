@@ -8,7 +8,7 @@
 </div>
 
 <div class="flex-1 overflow-y-auto">
-    <nx-table class="rounded-xl border border-gray-200 overflow-hidden"
+    <ngm-table class="rounded-xl border border-gray-200 overflow-hidden"
         [columns]="[
             {
                 name: 'email',
@@ -43,7 +43,7 @@
             }
         ]"
         [data]="invites$ | async">
-    </nx-table>
+    </ngm-table>
 </div>
 
 <ng-template #invitedByTempl let-invitedBy="invitedBy" >

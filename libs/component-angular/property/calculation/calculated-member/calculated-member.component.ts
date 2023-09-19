@@ -21,11 +21,11 @@
 //  * @deprecated
 //  */
 // @Component({
-//   selector: 'nx-calculated-member',
+//   selector: 'ngm-calculated-member',
 //   templateUrl: './calculated-member.component.html',
 //   styleUrls: ['./calculated-member.component.scss'],
 //   host: {
-//     class: 'nx-calculated-member',
+//     class: 'ngm-calculated-member',
 //   },
 //   providers: [
 //     {

@@ -96,6 +96,7 @@ import { CHARTS, COMPONENTS, PAGES } from './types'
   ]
 })
 export class StoryToolbarComponent implements OnInit {
+  @HostBinding('class.pac-story-toolbar') isStoryToolbar = true
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
   EmulatedDevices = [

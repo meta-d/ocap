@@ -10,11 +10,11 @@ import { BaseEditorDirective } from '../editor.directive'
 import { createInfoProvider } from '../providers/index'
 
 @Component({
-  selector: 'nx-editor-sql',
+  selector: 'ngm-editor-sql',
   templateUrl: './sql.component.html',
   styleUrls: ['./sql.component.scss'],
   host: {
-    class: 'nx-editor-sql'
+    class: 'ngm-editor-sql'
   },
   providers: [
     {

@@ -15,7 +15,7 @@ import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/tr
   styleUrls: ['./preferences.component.scss']
 })
 export class ModelPreferencesComponent extends TranslationBaseComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public data: Partial<NgmSemanticModel> = inject(MAT_DIALOG_DATA)
   private readonly dataSourceService = inject(DataSourceService)

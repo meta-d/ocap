@@ -7,7 +7,7 @@ export function PolarCapacity(className: string, I18N) {
       label: I18N.Polar?.Title ?? 'Polar',
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             {
               key: 'radius',

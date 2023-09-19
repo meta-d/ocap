@@ -1,14 +1,14 @@
  $card-padding-horizontal: 1.5rem;
  $card-padding-vertical: 1rem;
  
- $nx-mapping: (
+ $ngm-mapping: (
  
    /* backdrop */
    backdrop-background: color-basic-500,
    backdrop-back-background: color-basic-transparent-200,
    
    /* fullscreen */
-   nx-fullscreen-card-background: card-background-color,
+   ngm-fullscreen-card-background: card-background-color,
  
    /* Slide out component */
    slide-out-background: card-background-color,
@@ -37,7 +37,7 @@
  
    dialog-background: card-background-color,
  
-   nx-chip-background: background-basic-color-2,
+   ngm-chip-background: background-basic-color-2,
  
    smart-filter-input-background: background-basic-color-2,
    smart-filter-input-tag-background: background-basic-color-3,
@@ -94,11 +94,11 @@
    neutral-background-color: #f4f4f4,
    information-background-color: #f5faff,
 
-   nx-very-negative-color: color-danger-600,
-   nx-negative-color: color-danger-400,
-   nx-critical-color: color-primary-500,
-   nx-positive-color: color-success-700,
-   nx-very-positive-color: color-success-600,
+   ngm-very-negative-color: color-danger-600,
+   ngm-negative-color: color-danger-400,
+   ngm-critical-color: color-primary-500,
+   ngm-positive-color: color-success-700,
+   ngm-very-positive-color: color-success-600,
  
    trend-strong-up-color: color-success-700,
    trend-up-color: color-success-600,

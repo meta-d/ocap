@@ -172,7 +172,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
     }
 
     if (controlType === ControlType.dropDownList) {
-      optionsFieldGroup.push(DataTable('nx-formly__col nx-formly__col-12', i18nStoryWidgets?.Filter))
+      optionsFieldGroup.push(DataTable('ngm-formly__col ngm-formly__col-12', i18nStoryWidgets?.Filter))
     }
 
     return [
@@ -205,7 +205,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
             fieldGroupClassName: FORMLY_ROW,
             fieldGroup: [
               // {
-              //   className: 'nx-formly__col nx-formly__col-12',
+              //   className: 'ngm-formly__col ngm-formly__col-12',
               //   key: 'dimension',
               //   type: 'input-control',
               //   props: {

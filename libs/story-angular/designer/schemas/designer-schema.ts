@@ -54,7 +54,7 @@ export function StylingCssSchema(className: string, DESIGNER) {
         label: DESIGNER?.STYLING?.CSS?.FONT?.TITLE ?? 'Font'
       },
       fieldGroupClassName: FORMLY_ROW,
-      fieldGroup: FontCss('nx-formly__col nx-formly__col-4', DESIGNER?.STYLING?.CSS?.FONT)
+      fieldGroup: FontCss('ngm-formly__col ngm-formly__col-4', DESIGNER?.STYLING?.CSS?.FONT)
     }
   ]
 }

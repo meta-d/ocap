@@ -6,14 +6,14 @@
   $background: map-get($config, background);
   $primary: map-get($config, primary);
 
-  .nx-property {
+  .ngm-property {
     & > .mat-icon {
       font-size: 1.25em;
       width: 1.25em;
       height: 1.25em;
       line-height: 1.25em;
     }
-    .nx-display-behaviour--option-text {
+    .ngm-display-behaviour--option-text {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -22,14 +22,14 @@
 
   .mat-select-panel {
     .mat-option {
-      .nx-property {
+      .ngm-property {
         flex: 1;
       }
     }
   }
 
   .mat-menu-item {
-    .nx-property > .mat-icon {
+    .ngm-property > .mat-icon {
       margin-right: 0;
     }
   }

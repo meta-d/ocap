@@ -10,7 +10,7 @@ export function GlobalCapacity(className: string, I18N?) {
           props: {
             label: I18N?.Global?.Title ?? 'Global'
           },
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             {
               className,

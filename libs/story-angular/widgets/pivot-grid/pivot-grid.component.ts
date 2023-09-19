@@ -219,7 +219,7 @@ export class PACWidgetPivotGridComponent
    */
   private resolveSemanticClasses(semantic: Semantic, columnName: string): any {
     const classes = {}
-    const baseClass = 'nx-semantic'
+    const baseClass = 'ngm-semantic'
     const parser = new Parser()
     const styles = semantic.style || ''
     Object.keys(semantic.expression).forEach((key) => {

@@ -172,7 +172,7 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
       ...this.field.formControl.value,
     })
     
-    const result = await firstValueFrom(this._dialog.open(this.mapTemplate, { panelClass: 'nx-dialog-container' }).afterClosed())
+    const result = await firstValueFrom(this._dialog.open(this.mapTemplate, { panelClass: 'ngm-dialog-container' }).afterClosed())
     if (result) {
       this.field.formControl.setValue({
         ...this.mapFormGroup.value,

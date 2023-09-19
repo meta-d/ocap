@@ -13,9 +13,9 @@ $theme: (
   slide-out-shadow-color-rtl: 0 4px 14px 0 #8f9bb3,
 
   /* kpi components */
-  nx-neutral-color: color-basic-600,
+  ngm-neutral-color: color-basic-600,
 );
 
-$theme: map-merge($nx-mapping, $theme);
+$theme: map-merge($ngm-mapping, $theme);
 
 $nb-themes: nb-register-theme($theme, default, default);

@@ -5,14 +5,14 @@ import { NxCoreService, TIME_GRANULARITY_SEQUENCES, TypeAheadType } from '@metad
 import { Observable, combineLatest, throwError } from 'rxjs'
 import { catchError, map, switchMap, tap } from 'rxjs/operators'
 
-export const CLASS_NAME_COL6 = 'nx-formly__col nx-formly__col-6'
-export const CLASS_NAME_COL12 = 'nx-formly__col nx-formly__col-12'
-export const FORMLY_W_FULL = 'nx-formly__col nx-formly__col-12'
-export const FORMLY_W_1_3 = 'nx-formly__col nx-formly__col-4'
-export const FORMLY_W_2_3 = 'nx-formly__col nx-formly__col-8'
-export const FORMLY_W_1_2 = 'nx-formly__col nx-formly__col-6'
-export const FORMLY_W_NONE = 'nx-formly__col_none'
-export const FORMLY_ROW = 'nx-formly__row'
+export const CLASS_NAME_COL6 = 'ngm-formly__col ngm-formly__col-6'
+export const CLASS_NAME_COL12 = 'ngm-formly__col ngm-formly__col-12'
+export const FORMLY_W_FULL = 'ngm-formly__col ngm-formly__col-12'
+export const FORMLY_W_1_3 = 'ngm-formly__col ngm-formly__col-4'
+export const FORMLY_W_2_3 = 'ngm-formly__col ngm-formly__col-8'
+export const FORMLY_W_1_2 = 'ngm-formly__col ngm-formly__col-6'
+export const FORMLY_W_NONE = 'ngm-formly__col_none'
+export const FORMLY_ROW = 'ngm-formly__row'
 
 export function AccordionWrappers(
   expansions: {
@@ -83,7 +83,7 @@ export function DataSettingsSchema(
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           {
             key: 'dataSource',
@@ -97,7 +97,7 @@ export function DataSettingsSchema(
           },
           {
             key: 'entitySet',
-            type: 'nx-select',
+            type: 'ngm-select',
             className: CLASS_NAME_COL6,
             props: {
               label: BUILDER?.Entity ?? 'Entity',
@@ -204,7 +204,7 @@ export function hierarchyAttributes(COMMON?) {
 
 export function typeAhead(COMMON) {
   return {
-    fieldGroupClassName: 'nx-formly__row',
+    fieldGroupClassName: 'ngm-formly__row',
     key: 'typeAhead',
     wrappers: ['panel'],
     props: { label: '自动补全' },
@@ -265,7 +265,7 @@ export function SelectionType(className: string, I18N) {
 export function filterOption(className: string, DESIGNER) {
   return [
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         SelectionType(className, DESIGNER),
         {
@@ -529,7 +529,7 @@ export function BackgroundProperties(className?: string, TRANSLATE?) {
 export function Layout(col?: number, TRANSLATE?) {
   let className = null
   if (col) {
-    className = `nx-formly__col nx-formly__col-${col}`
+    className = `ngm-formly__col ngm-formly__col-${col}`
   }
 
   return [

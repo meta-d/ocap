@@ -5,11 +5,11 @@ import { MDXEditorComponent } from '../mdx/mdx.component'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'nx-editor-mdx-member',
+  selector: 'ngm-editor-mdx-member',
   templateUrl: './mdx-member.component.html',
   styleUrls: ['./mdx-member.component.scss'],
   host: {
-    class: 'nx-editor-mdx-member'
+    class: 'ngm-editor-mdx-member'
   },
   providers: [
     {

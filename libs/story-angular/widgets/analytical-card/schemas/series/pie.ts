@@ -197,7 +197,7 @@ export function PieLabel(className: string, I18N) {
   return [
     ...Labels(className, I18N),
     // {
-    //   className: 'nx-formly__col nx-formly__col-12',
+    //   className: 'ngm-formly__col ngm-formly__col-12',
     //   key: 'show',
     //   type: 'toggle',
     //   props: {

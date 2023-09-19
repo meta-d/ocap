@@ -75,11 +75,11 @@ import { toSignal } from '@angular/core/rxjs-interop'
 @UntilDestroy({ checkProperties: true })
 @Component({
     standalone: true,
-    selector: 'nx-story-point',
+    selector: 'ngm-story-point',
     templateUrl: './story-point.component.html',
     styleUrls: ['./story-point.component.scss'],
     host: {
-        class: 'nx-story-point'
+        class: 'ngm-story-point'
     },
     providers: [NxStoryPointService, NgmSmartFilterBarService, ResponsiveService],
     imports: [
@@ -132,7 +132,7 @@ export class NxStoryPointComponent implements OnChanges {
   /**
    * 聚焦 Widget
    */
-  @HostBinding('class.nx-story__focus')
+  @HostBinding('class.ngm-story__focus')
   @Input()
   focus: string
 
@@ -155,7 +155,7 @@ export class NxStoryPointComponent implements OnChanges {
   public dirty = false
   public gridOptions: GridsterConfig
 
-  @HostBinding('class.nx-story-point__multi-layer')
+  @HostBinding('class.ngm-story-point__multi-layer')
   get allowMultiLayer(): boolean {
     return this.gridOptions?.allowMultiLayer
   }
@@ -229,7 +229,7 @@ export class NxStoryPointComponent implements OnChanges {
       enabled: true,
       // ignoreContentClass: 'gridster-item-content',
       // ignoreContent: true,
-      // dragHandleClass: 'nx-drag-handler',
+      // dragHandleClass: 'ngm-drag-handler',
       dropOverItems: false,
       dropOverItemsCallback: NxStoryPointComponent.overlapEvent
     },
@@ -551,7 +551,7 @@ export class NxStoryPointComponent implements OnChanges {
     return this.gridOptions?.gridType === 'fit'
   }
 
-  @HostBinding('class.nx-fullscreen')
+  @HostBinding('class.ngm-fullscreen')
   get isFullscreen() {
     return this.storyPointService.storyPoint?.fullscreen
   }

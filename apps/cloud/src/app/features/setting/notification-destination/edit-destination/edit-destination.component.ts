@@ -12,7 +12,7 @@ import { convertConfigurationSchema, PACNotificationDestinationsService, INotifi
   styleUrls: ['./edit-destination.component.scss'],
 })
 export class EditDestinationComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
   
   destination$: Observable<{
     destination: INotificationDestination

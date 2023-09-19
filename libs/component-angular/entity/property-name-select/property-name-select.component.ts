@@ -11,7 +11,7 @@
 //  * @deprecated use MeasureSelectComponent 等
 //  */
 // @Component({
-//   selector: 'nx-property-name-select',
+//   selector: 'ngm-property-name-select',
 //   templateUrl: './property-name-select.component.html',
 //   styleUrls: ['./property-name-select.component.scss'],
 //   providers: [
@@ -83,7 +83,7 @@
 //     this.propertySelect?.focus()
 //   }
 
-//   @HostBinding('class.nx-property-select__non_value')
+//   @HostBinding('class.ngm-property-select__non_value')
 //   get isNonValue() {
 //     return !this.value
 //   }

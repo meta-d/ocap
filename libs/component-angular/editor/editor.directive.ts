@@ -1,13 +1,13 @@
-import { Directive, EventEmitter, Input, OnDestroy, Output } from '@angular/core'
+import { Directive, EventEmitter, Input, OnDestroy, Output, computed, signal } from '@angular/core'
 import { ControlValueAccessor } from '@angular/forms'
 import { BehaviorSubject, Observable, Observer, Subject, Subscription } from 'rxjs'
-import { debounceTime, filter, map, switchMap } from 'rxjs/operators'
+import { debounceTime, filter, switchMap } from 'rxjs/operators'
 
 declare var monaco: any
 
 
 @Directive({
-  selector: '[nxEditor]',
+  selector: '[ngmEditor]',
 })
 export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
 
@@ -17,14 +17,22 @@ export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
   }
   protected editor$ = new BehaviorSubject<any>(null)
 
+  @Input() get theme() {
+    return this._theme()
+  }
+  set theme(value) {
+    this._theme.set(value)
+  }
+  private _theme = signal<string>('')
+
   // CodeEditor options
   @Input() get options() {
-    return this._options$.value
+    return this._options()
   }
   set options(value) {
-    this._options$.next(value)
+    this._options.set(value)
   }
-  private _options$ = new BehaviorSubject({})
+  private _options = signal({})
 
   @Input() textSelection: string
 
@@ -40,12 +48,15 @@ export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
     theme: 'vs',
     automaticLayout: true,
   }
-  public editorOptions$ = this._options$.pipe(
-    map((options) => ({ language: this.languageId,
+  public editorOptions = computed(() => {
+    const theme = this.theme ? `vs-${this.theme}` : this.defaultOptions.theme
+    return {
+      language: this.languageId,
       ...this.defaultOptions,
-      ...(options ?? {})
-    }))
-  )
+      ...(this.options ?? {}),
+      theme
+    }
+  })
 
   code = ''
 

@@ -15,7 +15,7 @@ export interface TextWidgetOptions {
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule],
-  selector: 'nx-story-widget-text',
+  selector: 'ngm-story-widget-text',
   templateUrl: './text.component.html',
   styleUrls: ['./text.component.scss'],
   providers: [TextDataService]

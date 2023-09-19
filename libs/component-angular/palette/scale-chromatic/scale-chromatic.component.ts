@@ -3,7 +3,7 @@ import { NGXLogger } from 'ngx-logger'
 import { NgmChromaticType } from '../types'
 
 @Component({
-  selector: 'nx-scale-chromatic',
+  selector: 'ngm-scale-chromatic',
   templateUrl: './scale-chromatic.component.html',
   styleUrls: ['./scale-chromatic.component.scss'],
 })

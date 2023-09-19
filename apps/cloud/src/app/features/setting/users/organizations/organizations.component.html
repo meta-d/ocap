@@ -19,7 +19,7 @@
     </div>
   </mat-card-header>
   <mat-card-content >
-    <nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
+    <ngm-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
       paging
       [data]="userOrganizations$ | async"
       [columns]="[
@@ -37,7 +37,7 @@
           cellTemplate: actionTempl
         }
       ]"
-    ></nx-table>
+    ></ngm-table>
   </mat-card-content>
 </mat-card>
 

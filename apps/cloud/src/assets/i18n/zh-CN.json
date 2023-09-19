@@ -229,7 +229,9 @@
       "Project": "项目",
       "Indicators": "指标",
       "Data Sources": "数据源",
-
+      "AddCertifications": "添加认证",
+      "UserProfile": "用户配置",
+      "Logout": "退出账号",
       "HOME": {
         "TODAY": "今天",
         "Catalog": "目录",
@@ -314,7 +316,8 @@
         "TITLE": "通用",
         "LANGUAGE": "语言",
         "LANGUAGE_PLACEHOLDER": "选择语言",
-        "THEME": "主题"
+        "THEME": "主题",
+        "ThemePlaceholder": "选择主题"
       },
       "DATA_SOURCES": {
         "TYPE_SELECTION": "选择类型",

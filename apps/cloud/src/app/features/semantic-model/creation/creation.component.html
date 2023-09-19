@@ -1,4 +1,4 @@
-<div class="nx-theme-dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+<div class="ngm-theme-dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
     <div class="w-full flex justify-start items-center mb-4" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
       <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
       <span class="text-lg pointer-events-none">
@@ -55,12 +55,12 @@
     </div>
 </div>
 
-<div class="w-[400px] max-h-full overflow-auto">
+<div mat-dialog-content class="pac-dialog-content w-[400px] max-h-full overflow-auto">
 <form [formGroup]="formGroup" class="flex flex-col items-stretch p-4 overflow-auto">
     <label class="text-lg">
         {{ 'PAC.MODEL.DataSource' | translate: { Default: 'Data source' } }}
     </label>
-    <nx-single-selection-table
+    <ngm-single-selection-table
         appearance="outline"
         displayDensity="compact"
         grid
@@ -68,14 +68,14 @@
         [columns]="columns$ | async"
         formControlName="dataSource"
     >
-    </nx-single-selection-table>
+    </ngm-single-selection-table>
 
     <label class="text-lg mt-4">
         {{ 'PAC.MENU.MODEL.SELECT_CATALOG' | translate: { Default: 'Select Catalog' } }}
     </label>
     <mat-progress-bar *ngIf="catalogsLoading" mode="query"></mat-progress-bar>
     <div class="relative flex flex-col">
-        <nx-single-selection-table class="z-0"
+        <ngm-single-selection-table class="z-0"
             appearance="outline"
             displayDensity="compact"
             grid
@@ -83,7 +83,7 @@
             [columns]="catalogColumns$ | async"
             formControlName="catalog"
         >
-        </nx-single-selection-table>
+        </ngm-single-selection-table>
 
         <div *ngIf="discoverDBCatalogsError" class="absolute top-0 left-0 w-full h-full flex justify-center items-center overflow-hidden text-ellipsis bg-slate-500/20 backdrop-blur-lg">
             {{discoverDBCatalogsError}}

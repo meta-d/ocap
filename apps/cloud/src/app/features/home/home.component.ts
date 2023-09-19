@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
@@ -17,6 +17,7 @@ import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@me
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { AppService } from '../../app.service'
+import { routeAnimations } from '../../@core'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -46,51 +47,51 @@ import { AppService } from '../../app.service'
   ],
   selector: 'pac-home',
   template: `
-    <nav mat-tab-nav-bar [tabPanel]="tabPanel" mat-stretch-tabs="false" mat-align-tabs="start" color="accent" disableRipple displayDensity="cosy" class="pac-home__navigation p-0 sm:px-2 md:px-8">
-      <span
-        mat-tab-link
-        routerLink="."
-        routerLinkActive
-        #rla="routerLinkActive"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [active]="rla.isActive"
-      >
-        {{ 'PAC.MENU.HOME.TODAY' | translate: { Default: 'Today' } }}
-      </span>
-      <span
-        mat-tab-link
-        routerLink="./catalog"
-        routerLinkActive
-        #rla2="routerLinkActive"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [active]="rla2.isActive"
-      >
-        {{ 'PAC.MENU.HOME.Catalog' | translate: { Default: 'Catalog' } }}
-      </span>
-      <span
-        mat-tab-link
-        routerLink="./trending"
-        routerLinkActive
-        #rla3="routerLinkActive"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [active]="rla3.isActive"
-      >
-        {{ 'PAC.MENU.HOME.Trending' | translate: { Default: 'Trending' } }}
-      </span>
-      <span *ngIf="copilotEnabled$ | async"
-        mat-tab-link
-        routerLink="./insight"
-        routerLinkActive
-        #rla4="routerLinkActive"
-        [routerLinkActiveOptions]="{ exact: true }"
-        [active]="rla4.isActive"
-      >
-        {{ 'PAC.MENU.HOME.Insight' | translate: { Default: 'Insight' } }}
-      </span>
-    </nav>
-  <mat-tab-nav-panel #tabPanel class="flex-1 overflow-auto">
-    <router-outlet #o="outlet"></router-outlet>
-  </mat-tab-nav-panel>
+<nav mat-tab-nav-bar [tabPanel]="tabPanel" mat-stretch-tabs="false" mat-align-tabs="start" color="accent" disableRipple displayDensity="cosy" class="pac-home__navigation p-0 sm:px-2 md:px-8">
+  <span
+    mat-tab-link
+    routerLink="."
+    routerLinkActive
+    #rla="routerLinkActive"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [active]="rla.isActive"
+  >
+    {{ 'PAC.MENU.HOME.TODAY' | translate: { Default: 'Today' } }}
+  </span>
+  <span
+    mat-tab-link
+    routerLink="./catalog"
+    routerLinkActive
+    #rla2="routerLinkActive"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [active]="rla2.isActive"
+  >
+    {{ 'PAC.MENU.HOME.Catalog' | translate: { Default: 'Catalog' } }}
+  </span>
+  <span
+    mat-tab-link
+    routerLink="./trending"
+    routerLinkActive
+    #rla3="routerLinkActive"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [active]="rla3.isActive"
+  >
+    {{ 'PAC.MENU.HOME.Trending' | translate: { Default: 'Trending' } }}
+  </span>
+  <span *ngIf="copilotEnabled$ | async"
+    mat-tab-link
+    routerLink="./insight"
+    routerLinkActive
+    #rla4="routerLinkActive"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [active]="rla4.isActive"
+  >
+    {{ 'PAC.MENU.HOME.Insight' | translate: { Default: 'Insight' } }}
+  </span>
+</nav>
+<mat-tab-nav-panel #tabPanel class="flex-1 overflow-auto" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+  <router-outlet #o="outlet"></router-outlet>
+</mat-tab-nav-panel>
   `,
   styles: [
     `
@@ -102,7 +103,9 @@ import { AppService } from '../../app.service'
         flex-direction: column;
       }
     `
-  ]
+  ],
+  animations: [routeAnimations],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
   private readonly appService = inject(AppService)

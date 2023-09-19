@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
 
-@mixin nx-story-point($config-or-theme) {
+@mixin ngm-story-point($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $foreground: map-get($config, foreground);
   $background: map-get($config, background);
@@ -11,45 +11,45 @@
 
   %widget-editable {
     border-color: map-get($accent, 500);
-    .nx-drag-handler {
+    .ngm-drag-handler {
       background-color: mat.get-color-from-palette($foreground, divider);
     }
   }
 
-  .nx-story-point {
+  .ngm-story-point {
     transition: all 500ms cubic-bezier(0.35, 0, 0.25, 1);
 
-    &:not(.nx-story-point__multi-layer) {
-      .nx-story__widget.active {
+    &:not(.ngm-story-point__multi-layer) {
+      .ngm-story__widget.active {
         // 之前注释掉是因为影响到了多层部件下的上下关系???
         z-index: 2 !important;
       }
     }
 
-    .nx-story-point__page {
+    .ngm-story-point__page {
       
       /* page size styling */
-      &.nx-story-point__size-a4 {
+      &.ngm-story-point__size-a4 {
         @include mat.elevation(8);
         margin: auto;
         padding: 1rem;
         width: 1240px;
         height: 1754px;
   
-        &.nx-story-point__size-continuous-height {
+        &.ngm-story-point__size-continuous-height {
           height: auto;
         }
       }
     }
 
-    .nx-story__widget {
+    .ngm-story__widget {
       &.active {
-        .nx-story-widget__fab-menu {
+        .ngm-story-widget__fab-menu {
           visibility: visible;
         }
       }
 
-      &.nx-fullscreen {
+      &.ngm-fullscreen {
         width: 100% !important;
         height: 100% !important;
         position: absolute !important;
@@ -58,7 +58,7 @@
         transform: none !important;
         z-index: 1000 !important;
         
-        .nx-story-widget__fab-menu {
+        .ngm-story-widget__fab-menu {
           right: 0;
           opacity: .2;
           &:hover {
@@ -67,7 +67,7 @@
         }
       }
 
-      &:not(.nx-fullscreen) {
+      &:not(.ngm-fullscreen) {
         border: 1px dashed transparent;
         &.active.editable {
           @extend %widget-editable;
@@ -80,22 +80,22 @@
     }
     
     /* focusing */
-    &.nx-story__focus {
+    &.ngm-story__focus {
       background-color: rgb(204, 204, 204);
 
-      .nx-story__widget:not(.nx-story__focus) {
+      .ngm-story__widget:not(.ngm-story__focus) {
         opacity: 0.35;
       }
-      .nx-story__widget.nx-story__focus {
-        .nx-story-widget__content {
+      .ngm-story__widget.ngm-story__focus {
+        .ngm-story-widget__content {
           @include mat.elevation(8);
           background-color: mat.get-color-from-palette($background, card);
         }
       }
     }
 
-    .nx-story-point__quick-start {
-      .nx-story-point__quick-start-widget:hover {
+    .ngm-story-point__quick-start {
+      .ngm-story-point__quick-start-widget:hover {
         color: mat.get-color-from-palette($foreground, text);
         background-color: mat.get-color-from-palette($primary);
         font-weight: 600;
@@ -104,25 +104,25 @@
   }
 
   /* 移动端页面 */
-  .nx-story__layout.mobile {
-    .nx-story-widget {
+  .ngm-story__layout.mobile {
+    .ngm-story-widget {
       width: 100%;
       max-width: 100%;
       margin-bottom: 1rem;
 
-      .nx-story-widget__content.nx-story-widget__card {
+      .ngm-story-widget__content.ngm-story-widget__card {
         min-height: 300px;
       }
-      &.nx-fullscreen {
+      &.ngm-fullscreen {
         width: 100% !important;
         height: 100% !important;
         position: absolute !important;
       }
-      .nx-story-widget__content {
+      .ngm-story-widget__content {
         overflow: visible;
       }
 
-      .nx-story-widget__fab-menu {
+      .ngm-story-widget__fab-menu {
         top: -40px;
         right: 0;
       }
@@ -130,7 +130,7 @@
   }
 
   /* gridster 网格样式 */
-  gridster.nx-story__layout {
+  gridster.ngm-story__layout {
     overflow: visible;
 
     &.gridSize:not(.fit) {
@@ -141,7 +141,7 @@
       // height: initial;
     }
     &.display-grid {
-      .nx-story__widget {
+      .ngm-story__widget {
         border-color: map-get($foreground, divider);
       }
     }
@@ -165,7 +165,7 @@
     }
   }
 
-  gridster-item.nx-story__widget {
+  gridster-item.ngm-story__widget {
     background: unset;
   }
 
@@ -175,7 +175,7 @@
     }
   }
 
-  .nx-story-point__responsive {
+  .ngm-story-point__responsive {
     min-height: 100%;
   }
   

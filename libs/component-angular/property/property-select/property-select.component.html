@@ -13,7 +13,7 @@
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
-    <mat-select #propertySelect formControlName="dimension" panelClass="nx-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
+    <mat-select #propertySelect formControlName="dimension" panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
       [required]="required"
       *ngrxLet="selectTrigger$ as selectTrigger">
       <mat-select-trigger *ngIf="selectTrigger" class="flex items-center overflow-hidden">
@@ -60,9 +60,9 @@
         <mat-option *ngFor="let property of calculations$ | async" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
-        <mat-option *ngIf="editable" class="nx-property-select__action" [value]="null"
+        <mat-option *ngIf="editable" class="ngm-property-select__action" [value]="null"
           (click)="$event.stopPropagation();$event.preventDefault();">
-          <button mat-button color="primary" ngmAppearance="dashed" class="nx-property-select__create-calculation w-full"
+          <button mat-button color="primary" ngmAppearance="dashed" class="ngm-property-select__create-calculation w-full"
             (click)="$event.stopPropagation();onCreateCalculation($event)">
             <div class="flex justify-center items-center">
               <mat-icon>add</mat-icon>
@@ -109,7 +109,7 @@
   </div>
 </form>
 
-<mat-menu #dimensionMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #dimensionMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item *ngIf="showDisplayAs()" disableRipple [matMenuTriggerFor]="displayMenu">
     <mat-icon class="shrink-0">dvr</mat-icon>
     <span>{{ 'COMPONENTS.PROPERTY.DisplayAs' | translate: {Default: "Display As"} }}...</span>
@@ -169,7 +169,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="displayBehaviour">
-  <mat-menu #displayMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #displayMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let behaviour of DISPLAY_BEHAVIOUR_LIST"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="behaviour.value">
@@ -180,7 +180,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="memberCaption">
-  <mat-menu #labelMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #labelMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple
       (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property" [value]="null">
@@ -198,7 +198,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="level">
-  <mat-menu #hierarchyMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #hierarchyMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple [matMenuTriggerFor]="hierarchiesMenu">
       <mat-icon class="shrink-0" fontSet="material-icons-outlined">account_tree</mat-icon>
       <span>{{ 'COMPONENTS.PROPERTY.HIERARCHY' | translate: {Default: "Hierarchy"} }}...</span>
@@ -251,7 +251,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="hierarchy">
-  <mat-menu #hierarchiesMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #hierarchiesMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property" [value]="null">
         {{ 'COMPONENTS.PROPERTY.Default' | translate: {Default: "Default"} }}
@@ -275,7 +275,7 @@
   </button>
 </mat-menu>
 
-<mat-menu #propertiesMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #propertiesMenu="matMenu" class="ngm-formly ngm-density__compact">
   <mat-selection-list [(ngModel)]="properties" displayDensity="compact">
     <mat-list-option *ngFor="let property of properties$ | async" [value]="property.name"
       (click)="$event.stopPropagation();">
@@ -285,7 +285,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="parameter">
-  <mat-menu #memberMenu="matMenu" class="nx-property-select__parameter-menu ngm-density__compact">
+  <mat-menu #memberMenu="matMenu" class="ngm-property-select__parameter-menu ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button [value]="null">
         {{ 'COMPONENTS.COMMON.None' | translate: {Default: "None"} }}

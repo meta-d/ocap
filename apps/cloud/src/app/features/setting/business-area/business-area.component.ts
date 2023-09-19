@@ -69,7 +69,7 @@ export class BusinessAreaComponent {
     this.parentId = parent?.id
     this.name = null
     const name = await firstValueFrom(
-      this._dialog.open(this.createTempl, { panelClass: 'nx-dialog-container' }).afterClosed()
+      this._dialog.open(this.createTempl, { panelClass: 'ngm-dialog-container' }).afterClosed()
     )
 
     if (name) {

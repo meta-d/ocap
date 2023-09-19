@@ -12,7 +12,7 @@ export function SQLExpression(COMMON) {
     fieldGroup: [
       {
         key: 'dialect',
-        type: 'nx-select',
+        type: 'ngm-select',
         className: FORMLY_W_1_2,
         props: {
           label: COMMON?.SQLExpression?.Dialect ?? 'Dialect',

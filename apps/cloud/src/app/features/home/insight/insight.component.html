@@ -59,13 +59,13 @@
 
       <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
         <div class="text-base font-semibold">{{ 'COMPONENTS.SELECTION.Slicers' | translate: {Default: "Slicers"} }}</div>
-        <nx-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
+        <ngm-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
           [dataSettings]="answer.dataSettings"
           [limit]="5"
           [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]"
           (valueChange)="answer.slicers = $event"
           (click)="$event.stopPropagation()"
-        ></nx-slicers>
+        ></ngm-slicers>
       </mat-menu>
       
       

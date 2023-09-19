@@ -103,7 +103,7 @@
     max-width: 100%;
   }
 
-  .mat-mdc-menu-panel.nx-formly {
+  .mat-mdc-menu-panel.ngm-formly {
     .mat-menu-item {
       .mat-radio-button {
         max-width: 100%;
@@ -124,34 +124,34 @@
     }
   }
 
-  .nx-formly__row {
+  .ngm-formly__row {
     @apply grid grid-cols-12 gap-4;
   }
-  .nx-formly__col-12 {
+  .ngm-formly__col-12 {
     @apply col-span-12 max-w-full;
   }
-  .nx-formly__col-9 {
+  .ngm-formly__col-9 {
     @apply col-span-9 max-w-full;
   }
-  .nx-formly__col-8 {
+  .ngm-formly__col-8 {
     @apply col-span-8 max-w-full;
   }
-  .nx-formly__col-6 {
+  .ngm-formly__col-6 {
     @apply col-span-6 max-w-full;
   }
-  .nx-formly__col-4 {
+  .ngm-formly__col-4 {
     @apply col-span-4 max-w-full;
   }
-  .nx-formly__col-3 {
+  .ngm-formly__col-3 {
     @apply col-span-3 max-w-full;
   }
-  .nx-formly__col-2 {
+  .ngm-formly__col-2 {
     @apply col-span-2 max-w-full;
   }
-  .nx-formly__col-1 {
+  .ngm-formly__col-1 {
     @apply col-span-1 max-w-full;
   }
-  .nx-formly__col_none {
+  .ngm-formly__col_none {
     grid-column: none;
   }
 
@@ -165,25 +165,25 @@
     }
   }
 
-  .nx-formly__virtual-scroll-viewport {
+  .ngm-formly__virtual-scroll-viewport {
     .cdk-virtual-scroll-content-wrapper {
       max-width: 100%;
     }
   }
   
-  .nx-formly__select-option {
+  .ngm-formly__select-option {
     .mat-option-text {
       display: inline-flex;
       align-items: center;
-      .nx-display-behaviour {
+      .ngm-display-behaviour {
         display: inline-flex;
         flex: 1;
         max-width: 100%;
       }
     }
 
-    &.nx-formly__with-icon {
-      .nx-display-behaviour {
+    &.ngm-formly__with-icon {
+      .ngm-display-behaviour {
         max-width: calc(100% - 24px - 16px);
       }
     }
@@ -197,7 +197,7 @@
     }
   }
   
-  .mat-select-panel.nx-formly__background-color-panel {
+  .mat-select-panel.ngm-formly__background-color-panel {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
@@ -214,7 +214,7 @@
       .mat-option-text {
         height: 100%;
       }
-      .nx-color {
+      .ngm-color {
         display: block;
         width: 100%;
         height: 100%;
@@ -222,19 +222,19 @@
         line-height: 6em;
         text-align: center;
       }
-      .nx-color.nx-color__null {
+      .ngm-color.ngm-color__null {
         border: 1px dashed mat.get-color-from-palette($foreground, divider);
       }
     }
   }
 
-  .nx-formly-tab-group {
+  .ngm-formly-tab-group {
     .mat-tab-body-wrapper {
       flex: 1;
     }
   }
   
-  .nx-dialog-container.pac-formly__table {
+  .ngm-dialog-container.pac-formly__table {
     .ant-table-wrapper {
       thead > tr > th {
         white-space: nowrap;
@@ -354,7 +354,7 @@
     }
   }
 
-  .nx-formly__pb-2 {
+  .ngm-formly__pb-2 {
     @apply pb-2;
   }
 }

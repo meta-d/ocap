@@ -15,7 +15,7 @@
 
 </div>
 
-<nx-table class="mt-2 rounded-lg border border-gray-200 overflow-hidden"
+<ngm-table class="mt-2 rounded-lg border border-gray-200 overflow-hidden"
   paging
   [data]="businessAreaUsers$ | async"
   [columns]="[
@@ -35,7 +35,7 @@
       cellTemplate: actionTempl
     }
   ]"
-></nx-table>
+></ngm-table>
 
 <ng-template #userTempl let-user>
   <pac-user-profile-inline [user]="user"></pac-user-profile-inline>

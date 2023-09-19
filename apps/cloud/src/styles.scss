@@ -1,7 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-@use 'libs/material-theme/src/styles/material/default.theme' as nx-theme;
+@use 'libs/material-theme/src/styles/material/default.theme' as ngm-theme;
 @use 'libs/material-theme/src/styles/material/dark.theme' as dark-theme;
 @use 'libs/material-theme/src/styles/material/thin.theme' as thin-theme;
+@use 'libs/material-theme/src/styles/material/dark-green.theme' as dark-green-theme;
 @use 'libs/apps/indicator-market/src/lib/indicator-market-theme' as indicator-market;
 @use './app/features/features-theme' as features;
 @use './app/@shared/components-theme' as shared;
@@ -16,22 +17,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@include features.theme(nx-theme.$mat-theme);
-@include shared.theme(nx-theme.$mat-theme);
-@include public.theme(nx-theme.$mat-theme);
-@include indicator-market.theme(nx-theme.$mat-theme);
+@include features.theme(ngm-theme.$mat-theme);
+@include shared.theme(ngm-theme.$mat-theme);
+@include public.theme(ngm-theme.$mat-theme);
+@include indicator-market.theme(ngm-theme.$mat-theme);
 
-.nx-theme-dark {
+.ngm-theme-dark {
   @include features.color(dark-theme.$dark-theme);
   @include shared.color(dark-theme.$dark-theme);
   @include public.color(dark-theme.$dark-theme);
   @include indicator-market.color(dark-theme.$dark-theme);
 }
-.nx-theme-thin {
+.ngm-theme-thin {
   @include features.color(thin-theme.$dark-theme);
   @include shared.color(thin-theme.$dark-theme);
   @include public.color(thin-theme.$dark-theme);
   @include indicator-market.color(thin-theme.$dark-theme);
+}
+.ngm-theme-dark-green {
+  @include features.color(dark-green-theme.$dark-theme);
+  @include shared.color(dark-green-theme.$dark-theme);
+  @include public.color(dark-green-theme.$dark-theme);
+  @include indicator-market.color(dark-green-theme.$dark-theme);
 }
 
 @import './app/_app.component';
@@ -81,7 +88,7 @@ body {
       background: transparent;
     }
 
-    .nx-theme-dark {
+    .ngm-theme-dark {
       ::-webkit-scrollbar-thumb {
         background-color: rgba(255, 255, 255, 0.12);
       }
@@ -97,7 +104,7 @@ body {
 // .cdk-virtual-scroll-orientation-vertical .cdk-virtual-scroll-content-wrapper {
 //   max-width: 100%;
 // }
-.nx-smart-echarts__tooltip {
+.ngm-smart-echarts__tooltip {
   z-index: 100 !important;
 }
 
@@ -170,25 +177,7 @@ formly-form {
     cursor: pointer;
   }
 
-  // .mat-dialog-title {
-  //   padding: 0.75rem 1rem;
-  //   margin: 0;
-  //   background-color: #00000014;
-  // }
-
-  // .mat-dialog-content {
-  //   padding: 1rem;
-  //   margin: 0;
-  // }
-
-  // .mat-dialog-actions {
-  //   min-height: unset;
-  //   margin-bottom: 0;
-  //   border-top: 1px dashed rgba(0, 0, 0, 0.08);
-  //   padding: 8px;
-  // }
-
-  .nx-theme-dark {
+  .ngm-theme-dark {
     .mdc-text-field--filled:not(.mdc-text-field--disabled) {
       background-color: rgba(255, 255, 255, 0.05);
     }
@@ -290,7 +279,7 @@ html.cdk-global-scrollblock {
   }
 }
 
-.nx-settings-panel__drawer-content {
+.ngm-settings-panel__drawer-content {
   .mat-mdc-tab-header {
     --mdc-secondary-navigation-tab-container-height: 38px;
   }
@@ -300,7 +289,7 @@ html.cdk-global-scrollblock {
   @apply px-4 pb-2;
 }
 
-.nx-dialog-container {
+.ngm-dialog-container {
   @apply flex-1 flex flex-col;
   .mat-horizontal-content-container {
     padding: 0 24px;
@@ -350,36 +339,4 @@ html.cdk-global-scrollblock {
   .mdc-tooltip {
     @apply text-xs;
   }
-}
-
-
-.pac-page-header {
-  @apply flex flex-col justify-start items-start gap-2 px-4 pt-4 bg-white;
-}
-.pac-page-title {
-  @apply text-2xl font-bold;
-}
-.pac-page-subtitle {
-  @apply text-base font-light;
-}
-.pac-page-body {
-  @apply bg-slate-50 rounded-lg overflow-auto relative;
-}
-.pac-page-body-toolbar {
-  @apply flex justify-between items-center;
-}
-.pac-tab-nav-bar.mat-mdc-tab-header {
-  --mdc-secondary-navigation-tab-container-height: 32px;
-
-  .pac-tab-close {
-    @apply opacity-0 invisible absolute -right-6;
-  }
-  .mdc-tab.mdc-tab--active {
-    .pac-tab-close {
-      @apply opacity-100 visible;
-    }
-  }
-}
-.mat-mdc-card.mdc-card {
-  @apply rounded-lg shadow-sm;
 }

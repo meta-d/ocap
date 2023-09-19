@@ -52,12 +52,12 @@ import { stringifyTableType } from './utils'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'pac-model',
+  selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
   providers: [NxSettingsPanelService, SemanticModelService, ModelCopilotEngineService],
   host: {
-    class: 'nx-story-model'
+    class: 'ngm-semanctic-model'
   },
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -314,7 +314,7 @@ export class ModelComponent extends TranslationBaseComponent {
   }
 
   createIndicator() {
-    this.router.navigate(['/project/indicator'], {
+    this.router.navigate(['/project/indicators/new'], {
       queryParams: {
         modelId: this.model.id
       }

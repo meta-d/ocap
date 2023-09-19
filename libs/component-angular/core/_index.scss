@@ -1,15 +1,15 @@
-$nx-density-config: (
+$ngm-density-config: (
   '': default,
   '__cosy': default,
   '__comfortable': maximum,
   '__compact': minimum
 );
 
-@function _nx-density-mapping($density) {
-  @return map-get($nx-density-config, $density);
+@function _ngm-density-mapping($density) {
+  @return map-get($ngm-density-config, $density);
 }
 
 // from @metad/core
-@function nx-get-densities() {
+@function ngm-get-densities() {
   @return '', '__comfortable', '__cosy', '__compact';
 }

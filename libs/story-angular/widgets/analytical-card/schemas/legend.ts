@@ -21,7 +21,7 @@ export function LegendCapacity(className: string, I18N) {
             label: I18N?.LEGEND?.TextStyle ?? 'Text Style',
             fieldGroup: [
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 fieldGroup: TextStyles(className, I18N)
               }
             ]
@@ -35,7 +35,7 @@ export function LegendCapacity(className: string, I18N) {
 export function Legend(className: string, I18N) {
   return [
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
           className,

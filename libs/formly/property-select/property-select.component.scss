@@ -2,17 +2,17 @@
   display: flex;
   flex: 1;
 
-  .nx-property-select {
+  .ngm-property-select {
     flex: 1;
   }
 }
 
-.nx-formly__remove {
+.ngm-formly__remove {
   visibility: hidden;
 }
 
-.nx-property-select:hover {
-  .nx-formly__remove {
+.ngm-property-select:hover {
+  .ngm-formly__remove {
     visibility: visible;
   }
 }

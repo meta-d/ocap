@@ -6,7 +6,7 @@
     </div>
 </div>
 
-<nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2" displayDensity="compact"
+<ngm-table class="overflow-hidden rounded-lg border border-gray-200 mt-2" displayDensity="compact"
     paging
     [data]="listOfData"
     [columns]="[
@@ -26,7 +26,7 @@
             cellTemplate: actionTempl
         }
     ]"
-></nx-table>
+></ngm-table>
 
 <ng-template #nameTempl let-id="id" let-name="name">
     <ng-container *ngIf="!editCache[id]?.edit; else editTemplate">

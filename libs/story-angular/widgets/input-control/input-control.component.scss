@@ -3,7 +3,7 @@
   flex-direction: column;
   overflow: hidden;
 
-  .nx-input-control__valueList {
+  .ngm-input-control__valueList {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -23,7 +23,7 @@
   cursor: pointer;
 }
 
-.nx-input-control__select-model {
+.ngm-input-control__select-model {
   flex: 1;
   display: flex;
   justify-content: center;
@@ -34,7 +34,7 @@
   }
 }
 
-.nx-input-control__selected-members {
+.ngm-input-control__selected-members {
   margin-left: 1rem;
   font-size: 12px;
 }

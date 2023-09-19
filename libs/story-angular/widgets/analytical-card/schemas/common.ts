@@ -11,7 +11,7 @@ export function ItemStyle(className: string, I18N) {
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           SingleColor(className, I18N),
           ...Borders(className, I18N),
@@ -58,7 +58,7 @@ export function ItemStyle(className: string, I18N) {
             }
           },
 
-          ...Shadows('nx-formly__col nx-formly__col-6', I18N),
+          ...Shadows('ngm-formly__col ngm-formly__col-6', I18N),
           Opacity(className, I18N)
         ]
       }
@@ -80,7 +80,7 @@ export function ItemStyle(className: string, I18N) {
 //     },
 //     fieldGroup: [
 //       {
-//         fieldGroupClassName: 'nx-formly__row',
+//         fieldGroupClassName: 'ngm-formly__row',
 //         fieldGroup: [
 //           SingleColor(className, I18N),
 //           ...Borders(className, I18N),
@@ -144,7 +144,7 @@ export function ItemStyleAccordionWrappers(className: string, I18N, extensions?)
       label: I18N?.ItemStyle?.Title ?? 'Item Style',
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             {
               className,
@@ -214,7 +214,7 @@ export function ItemStyleAccordionWrappers(className: string, I18N, extensions?)
 export function SeriesDataSet(I18N) {
   return [
     {
-      className: 'nx-formly__col nx-formly__col-12',
+      className: 'ngm-formly__col ngm-formly__col-12',
       key: 'seriesLayoutBy',
       type: 'button-toggle',
       props: {
@@ -229,7 +229,7 @@ export function SeriesDataSet(I18N) {
 
     // 不能在统一样式属性里指定
     // {
-    //   className: 'nx-formly__col nx-formly__col-6',
+    //   className: 'ngm-formly__col ngm-formly__col-6',
     //   key: 'datasetIndex',
     //   type: 'input',
     //   props: {
@@ -350,7 +350,7 @@ export function MarkLine(className, I18N) {
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           {
             className,
@@ -365,7 +365,7 @@ export function MarkLine(className, I18N) {
       {
         key: 'lineStyle',
         wrappers: ['panel'],
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         props: {
           label: I18N?.MarkLine?.LineStyle ?? 'Line Style'
         },
@@ -444,7 +444,7 @@ export function EmphasisAccordionWrappers(className: string, I18N, extensions?: 
 //       toggleable: true,
 //       keyShow: keyShow
 //     },
-//     fieldGroupClassName: 'nx-formly__row',
+//     fieldGroupClassName: 'ngm-formly__row',
 //     fieldGroup: Emphasis(className, I18N).fieldGroup
 //   }
 // }
@@ -454,7 +454,7 @@ export function Emphasis(className: string, I18N) {
     key: 'emphasis',
     // wrappers: ['expansion'],
     // defaultValue: C_FORMLY_INITIAL_VALUE,
-    // fieldGroupClassName: 'nx-formly__row',
+    // fieldGroupClassName: 'ngm-formly__row',
     props: {
       label: I18N?.EMPHASIS?.TITLE ?? 'Emphasis',
       icon: 'announcement',

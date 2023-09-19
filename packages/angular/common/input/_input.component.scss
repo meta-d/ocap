@@ -37,7 +37,10 @@
   @apply w-full;
 }
 
-
 .ngm-input-label {
   @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+}
+
+.ngm-form-field__subscript-wrapper {
+  @apply w-full h-2;
 }

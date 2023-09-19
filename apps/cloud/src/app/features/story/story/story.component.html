@@ -1,7 +1,7 @@
-<pac-story-toolbar #toolbar class="nx-story__toolbar shadow-xl
+<pac-story-toolbar #toolbar class="ngm-story__toolbar shadow-xl
     overflow-hidden absolute left-4 top-8 z-10
     rounded-2xl bg-bluegray-900/90 text-slate-200 hover:bg-bluegray-900 dark:text-slate-500 dark:hover:text-slate-100
-    backdrop-blur-sm hover:backdrop-blur-lg dark:bg-white/10"
+    backdrop-blur-sm hover:backdrop-blur-lg"
     cdkDrag
     (cdkDragEnded)="onToolbarDragEnded($event)"
     [(editable)]="editable"
@@ -24,27 +24,27 @@
     </button>
 </pac-story-toolbar>
 
-<mat-drawer-container class="nx-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
-    <mat-drawer #drawer class="nx-story__designer-drawer mat-elevation-z "
+<mat-drawer-container class="ngm-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
+    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z "
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
         position="end" 
         [(opened)]="designerOpened"
         ngmResizer [resizerWidth]="400"
     >
-        <nx-settings-panel class="nx-story__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+        <ngm-settings-panel class="ngm-story__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
             liveMode
             [(opened)]="designerOpened" 
         >
-        </nx-settings-panel>
+        </ngm-settings-panel>
 
         <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
             cdkDrag
             cdkDragLockAxis="x"
         ></div>
     </mat-drawer>
-    <mat-drawer-content class="nx-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice}">
+    <mat-drawer-content class="ngm-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice}">
 
-        <div *ngIf="emulatedDevice" class="nx-story__device-size-bar">
+        <div *ngIf="emulatedDevice" class="ngm-story__device-size-bar">
 
             <div *ngIf="hoverSize" class="layout-size__label text-xs">
                 {{hoverSize.name}} - {{hoverSize.width}}px
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <div #storyContainer class="nx-story__device flex-1 max-w-full overflow-auto">
+        <div #storyContainer class="ngm-story__device flex-1 max-w-full overflow-auto">
             <div class="relative w-full h-full origin-top shadow-md mx-auto"
                 [ngStyle]="{
                     'width': emulatedDevice ? (emulatedDevice.width + 'px') : '',
@@ -84,7 +84,7 @@
                 (resizerHeightChange)="onEmulatedDeviceHeighChange($event)"
                 >
 
-                <nx-story class="w-full h-full"
+                <ngm-story class="w-full h-full"
                     [id]="storyId"
                     [story]="story()"
                     [pageKey]="pageKey$ | async"
@@ -93,7 +93,7 @@
                     [editable]="editable"
                     [watermark]="watermark$ | async"
                 >
-                </nx-story>
+                </ngm-story>
 
                 <div *ngIf="storyService.isEmpty$ | async" class="flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 dark:text-white">
                     <span class="text-6xl font-notoColorEmoji">🛒</span>
@@ -105,14 +105,14 @@
                     </div>
 
                     <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
-                        <div class="nx-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
                             (click)="storyService.createStoryPoint(STORY_POINT_TYPE.Canvas)">
                             <div>
                                 {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
                             </div>
                         </div>
 
-                        <div class="nx-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
                             (click)="toolbarService.openTemplates()">
                             <div>
                                 {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}

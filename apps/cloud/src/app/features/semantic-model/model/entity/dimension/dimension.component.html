@@ -1,7 +1,7 @@
 <mat-tree
   [dataSource]="dataSource"
   [treeControl]="treeControl"
-  class="nx-tree_selection"
+  class="ngm-tree_selection"
   id="pac-entity-dimension"
 >
   <mat-tree-node
@@ -9,7 +9,7 @@
     matTreeNodeToggle
     matTreeNodePaddingIndent="20"
     matTreeNodePadding
-    class="nx-list-item"
+    class="ngm-list-item"
     [ngClass]="isSelected(node) ? 'selected' : ''"
     (click)="onSelect(node)"
     (mouseenter)="(node.readonly && !node.isUsage) || actionStrip.show()"
@@ -22,7 +22,7 @@
     <mat-icon *ngIf="node.isUsage" class="text-gray-500" displayDensity="compact" fontSet="material-icons-outlined">share</mat-icon>
     <ngm-entity-property [property]="node" [displayBehaviour]="displayBehaviour"></ngm-entity-property>
 
-    <nx-action-strip #actionStrip [hidden]="true">
+    <ngm-action-strip #actionStrip [hidden]="true">
       <button
         mat-icon-button displayDensity="cosy"
         *ngIf="!readonly &&
@@ -41,14 +41,14 @@
         (click)="onDelete($event, node)">
         <mat-icon>delete</mat-icon>
       </button>
-    </nx-action-strip>
+    </ngm-action-strip>
   </mat-tree-node>
 
   <mat-tree-node
     *matTreeNodeDef="let node; when: hasChild"
     matTreeNodePaddingIndent="20"
     matTreeNodePadding
-    class="nx-list-item"
+    class="ngm-list-item"
     [ngClass]="isSelected(node) ? 'selected' : ''"
     (click)="onSelect(node)"
     (mouseenter)="node.isUsage && usageStrip.show(); node.readonly || actionStrip.show()"
@@ -69,12 +69,12 @@
     
     <ngm-entity-property [property]="node" [displayBehaviour]="displayBehaviour"></ngm-entity-property>
 
-    <nx-action-strip #usageStrip [hidden]="true">
+    <ngm-action-strip #usageStrip [hidden]="true">
       <!-- <button mat-icon-button displayDensity="cosy" (click)="toDimensionUsage($event, node)">
         <mat-icon>link</mat-icon>
       </button> -->
-    </nx-action-strip>
-    <nx-action-strip #actionStrip [hidden]="true">
+    </ngm-action-strip>
+    <ngm-action-strip #actionStrip [hidden]="true">
       <button mat-icon-button *ngIf="!readonly" displayDensity="cosy" (click)="addNewItem($event, node)">
         <mat-icon fontSet="material-icons-round">add_circle_outline</mat-icon>
       </button>
@@ -82,6 +82,6 @@
         (click)="onDelete($event, node)">
         <mat-icon>delete</mat-icon>
       </button>
-    </nx-action-strip>
+    </ngm-action-strip>
   </mat-tree-node>
 </mat-tree>

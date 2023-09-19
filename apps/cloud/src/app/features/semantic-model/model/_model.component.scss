@@ -1,0 +1,17 @@
+.ngm-table {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+// Toolbar styles
+.mat-toolbar.pac-sub-toolbar {
+  min-height: 33px;
+  background-color: var(--ngm-card-bg-color);
+  @apply text-gray-500 dark:text-gray-200;
+
+  &.ngm-density__compact.mat-toolbar-row,
+  &.ngm-density__compact.mat-toolbar-single-row {
+    height: 33px;
+    padding: 0 6px;
+    font-size: 1rem;
+  }
+}

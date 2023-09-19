@@ -23,7 +23,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 @Component({
-  selector: 'nx-slicers',
+  selector: 'ngm-slicers',
   templateUrl: 'slicers.component.html',
   styleUrls: ['slicers.component.scss'],
   inputs: ['dataSettings'],

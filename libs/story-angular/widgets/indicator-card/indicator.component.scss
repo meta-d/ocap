@@ -17,30 +17,30 @@ $card-padding: .5em;
   flex: 1;
 }
 
-.nx-indicator__kpi-title {
+.ngm-indicator__kpi-title {
   font-size: 1rem;
   font-style: normal;
   font-weight: bold;
 }
 
-.nx-indicator__kpi-maxnum-xauto {
+.ngm-indicator__kpi-maxnum-xauto {
   white-space: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-.nx-indicator__kpi-maxnum {
+.ngm-indicator__kpi-maxnum {
   font-stretch: condensed;
   font-size: 4rem;
   font-family: 'Oswald', Lato, 'Noto Serif SC', monospace;
 }
 
-.nx-indicator__kpi-text {
+.ngm-indicator__kpi-text {
   font-size: 12px;
 }
 
-.nx-indicator__kpi_text-up,
-.nx-indicator__kpi-text-down {
+.ngm-indicator__kpi_text-up,
+.ngm-indicator__kpi-text-down {
   font-size: 12px;
 }
 

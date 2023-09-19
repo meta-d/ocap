@@ -6,8 +6,8 @@ import { FieldArrayType } from '@ngx-formly/core'
 @Component({
   selector: 'pac-formly-array',
   template: `
-<div class="nx-formly__title">{{ to.label }}</div>
-<div class="nx-formly-cdk__drag-list flex flex-col justify-start items-stretch" [class.empty]="!field.fieldGroup?.length" 
+<div class="ngm-formly__title">{{ to.label }}</div>
+<div class="ngm-formly-cdk__drag-list flex flex-col justify-start items-stretch" [class.empty]="!field.fieldGroup?.length" 
   cdkDropList
   (cdkDropListDropped)="drop($event)">
 
@@ -17,16 +17,16 @@ import { FieldArrayType } from '@ngx-formly/core'
     </div>
   </button>
 
-  <div *ngFor="let field of field.fieldGroup; let i = index;" class="nx-formly__array-row"
-    cdkDragBoundary=".nx-formly-cdk__drag-list" cdkDrag>
+  <div *ngFor="let field of field.fieldGroup; let i = index;" class="ngm-formly__array-row"
+    cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
 
     <formly-field class="flex-1" [field]="field"></formly-field>
 
-    <button *ngIf="!to.disableDelete" class="nx-formly__remove" mat-icon-button color="warn" (click)="remove(i)">
+    <button *ngIf="!to.disableDelete" class="ngm-formly__remove" mat-icon-button color="warn" (click)="remove(i)">
       <mat-icon>clear</mat-icon>
     </button>
 
-    <div class="nx-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
+    <div class="ngm-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
   </div>
 </div>
 
@@ -45,7 +45,7 @@ import { FieldArrayType } from '@ngx-formly/core'
 :host {
   flex: 1;
 }
-.nx-formly-cdk__drag-placeholder {
+.ngm-formly-cdk__drag-placeholder {
   min-height: 60px;
 }
 `,

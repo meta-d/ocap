@@ -24,11 +24,11 @@ import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE, STORY_DESIGNER_SCHEMA } 
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'nx-settings-panel',
+  selector: 'ngm-settings-panel',
   templateUrl: './settings-panel.component.html',
   styleUrls: ['./settings-panel.component.scss'],
   host: {
-    class: 'nx-settings-panel'
+    class: 'ngm-settings-panel'
   }
 })
 export class NxSettingsPanelComponent implements OnChanges {

@@ -8,7 +8,7 @@ import { IOrganizationCreateInput } from '@metad/contracts'
   styleUrls: ['./organization-mutation.component.scss']
 })
 export class OrganizationMutationComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   organization = {} as IOrganizationCreateInput
 

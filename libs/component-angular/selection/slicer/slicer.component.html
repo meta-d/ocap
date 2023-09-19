@@ -8,7 +8,7 @@
   <span *ngIf="title$ | async as title">{{title}}</span>
   <!-- <span *ngIf="isAdvancedSlicer$ | async">{{ 'COMPONENTS.SELECTION.SLICER.ADVANCED_SLICER' | translate: {Default: "Advanced Slicer"} }}</span> -->
 
-  <button *ngIf="editable" mat-icon-button [disabled]="disabled" displayDensity="cosy" class="nx-slicer__remove"
+  <button *ngIf="editable" mat-icon-button [disabled]="disabled" displayDensity="cosy" class="ngm-slicer__remove"
     (click)="remove()">
     <mat-icon color="warn">remove_circle_outline</mat-icon>
   </button>
@@ -19,7 +19,7 @@
     [removable]="editable"
     [matTooltip]="(member.key || member.value) + ':\n' + (member.caption || member.label)"
     (removed)="removeMember(i)">
-    <ngm-display-behaviour class="nx-slicer__label" [class.nx-slicer__exclude]="slicer.exclude"
+    <ngm-display-behaviour class="ngm-slicer__label" [class.ngm-slicer__exclude]="slicer.exclude"
       [displayBehaviour]="displayBehaviour$ | async"
       [option]="member"
     >

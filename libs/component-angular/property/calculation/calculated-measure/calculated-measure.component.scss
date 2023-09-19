@@ -3,10 +3,10 @@
   flex-direction: row;
   align-items: stretch;
 
-  .nx-calculated-measure__drawer {
+  .ngm-calculated-measure__drawer {
     overflow: visible;
 
-    .nx-calculated-measure__drawer-anchor {
+    .ngm-calculated-measure__drawer-anchor {
       position: absolute;
       left: -40px;
       top: 0;
@@ -18,21 +18,21 @@
     }
   }
 
-  .nx-calculated-measure__monaco-editor {
+  .ngm-calculated-measure__monaco-editor {
     flex: 1;
   }
-  .nx-calculated-measure__formula-functions {
+  .ngm-calculated-measure__formula-functions {
     flex: 1;
 
-    .nx-mdx-functions__function-option {
-      .nx-mdx-functions__help-trigger {
+    .ngm-mdx-functions__function-option {
+      .ngm-mdx-functions__help-trigger {
         opacity: 0;
         visibility: hidden;
         transition: all 300ms ease-in-out;
       }
 
       &:hover {
-        .nx-mdx-functions__help-trigger {
+        .ngm-mdx-functions__help-trigger {
           opacity: 1;
           visibility: visible;
         }
@@ -42,7 +42,7 @@
 }
 
 :host::ng-deep {
-  .nx-calculated-measure__helpers {
+  .ngm-calculated-measure__helpers {
     .mat-mdc-tab-header {
       --mdc-secondary-navigation-tab-container-height: 38px;
     }
@@ -85,10 +85,10 @@
   }
 }
 
-.nx-calculated-measure__helpers {
+.ngm-calculated-measure__helpers {
   height: 100%;
 
-  nx-entity-member-select {
+  ngm-entity-member-select {
     flex: 1;
     min-width: 300px;
     // min-height: 300px;
@@ -97,12 +97,12 @@
 
 #ngm-calculated-parameters {
   .mat-mdc-list-item {
-    .nx-calculated-measure__parameter-edit {
+    .ngm-calculated-measure__parameter-edit {
       opacity: 0;
     }
 
     &:hover {
-      .nx-calculated-measure__parameter-edit {
+      .ngm-calculated-measure__parameter-edit {
         opacity: 1;
       }
     }

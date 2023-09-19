@@ -263,12 +263,12 @@
   <ngm-dialog class="w-full" [title]=" 'PAC.INDICATOR.EditFormula' | translate: {Default: 'Edit formula for ' + name, name: (name ?? '')} "
     (apply)="onApplyFormula()"
   >
-    <nx-calculated-measure class="flex w-full h-full"
+    <ngm-calculated-measure class="flex w-full h-full"
       [syntax]="Syntax.MDX"
       [dataSettings]="dataSettings$ | async"
       [entityType]="entityType$ | async"
       [(ngModel)]="_formula"
     >
-    </nx-calculated-measure>
+    </ngm-calculated-measure>
   </ngm-dialog>
 </ng-template> -->

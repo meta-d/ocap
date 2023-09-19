@@ -7,7 +7,7 @@ export interface IframeWidgetOptions {
 }
 
 @Component({
-  selector: 'nx-story-widget-iframe',
+  selector: 'ngm-story-widget-iframe',
   templateUrl: './iframe.component.html',
   styleUrls: ['./iframe.component.scss']
 })

@@ -19,11 +19,11 @@ import {
 } from '../providers/index'
 
 @Component({
-  selector: 'nx-editor-mdx',
+  selector: 'ngm-editor-mdx',
   templateUrl: './mdx.component.html',
   styleUrls: ['./mdx.component.scss'],
   host: {
-    class: 'nx-editor-mdx'
+    class: 'ngm-editor-mdx'
   },
   providers: [
     {

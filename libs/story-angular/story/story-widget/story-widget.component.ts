@@ -86,11 +86,11 @@ interface StoryWidgetState {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-story-widget',
+  selector: 'ngm-story-widget',
   templateUrl: './story-widget.component.html',
   styleUrls: ['./story-widget.component.scss'],
   host: {
-    class: 'nx-story-widget'
+    class: 'ngm-story-widget'
   },
   providers: [WidgetService, NxStoryWidgetService],
   imports: [
@@ -128,7 +128,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   )
 
   @Input()
-  @HostBinding('class.nx-story-widget__active')
+  @HostBinding('class.ngm-story-widget__active')
   get selected(): boolean {
     return this.get((state) => state.selected)
   }
@@ -138,7 +138,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   readonly selected$ = this.select((state) => state.selected)
 
   @Input()
-  @HostBinding('class.nx-story-widget__editable')
+  @HostBinding('class.ngm-story-widget__editable')
   get editable(): boolean {
     return this.get((state) => state.editable)
   }
@@ -148,7 +148,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   readonly editable$ = this.select((state) => state.editable)
 
   // @Input()
-  @HostBinding('class.nx-story-widget__fullscreen')
+  @HostBinding('class.ngm-story-widget__fullscreen')
   get fullscreen(): boolean {
     return this.widget()?.fullscreen
   }
@@ -173,7 +173,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
   @ViewChild('anchor', { read: ViewContainerRef }) anchor: ViewContainerRef
 
-  @HostBinding('class.nx-story-widget__placeholder')
+  @HostBinding('class.ngm-story-widget__placeholder')
 
   disableFab = false
   isCommentOpen = false
@@ -205,8 +205,8 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   readonly componentCategory$ = this.componentProvider$.pipe(map((componentProvider) => componentProvider?.category))
   readonly componentClasses$ = this.componentCategory$.pipe(
     map((category) => ({
-      ['nx-story-widget__' + category]: true,
-      'nx-story-widget__card': ['card', ].includes(category)
+      ['ngm-story-widget__' + category]: true,
+      'ngm-story-widget__card': ['card', ].includes(category)
     }))
   )
 
@@ -297,7 +297,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     }
   })
   private keySub = this.widgetKey$.subscribe((key) => {
-    this._renderer.addClass(this._elementRef.nativeElement, 'nx-story-widget-' + key)
+    this._renderer.addClass(this._elementRef.nativeElement, 'ngm-story-widget-' + key)
   })
 
   private refreshSub = this.storyService.onRefresh().subscribe((force) => {

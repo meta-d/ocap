@@ -26,11 +26,11 @@
 <div class="text-base my-4">
   {{ 'COMPONENTS.CALCULATION.MeasureSelectOptions' | translate: {Default: 'Measure Select Options'} }}
 </div>
-<mat-selection-list displayDensity="cosy" cdkDropList (cdkDropListDropped)="drop($event)" class="nx-cdk__drag-list"
+<mat-selection-list displayDensity="cosy" cdkDropList (cdkDropListDropped)="drop($event)" class="ngm-cdk__drag-list"
   [(ngModel)]="selectedMeasures"
   (selectionChange)="onSelectionChange($event)">
     <mat-list-option *ngFor="let measure of measures$ | async" [value]="measure.name"
-      cdkDrag cdkDragBoundary=".nx-cdk__drag-list">
+      cdkDrag cdkDragBoundary=".ngm-cdk__drag-list">
       <ngm-entity-property [property]="measure" [displayBehaviour]="displayBehaviour.value"></ngm-entity-property>
     </mat-list-option>
 </mat-selection-list>

@@ -4,11 +4,11 @@ import { StoryComment } from '@metad/story/core'
 
 @Component({
   standalone: true,
-  selector: 'nx-story-comments',
+  selector: 'ngm-story-comments',
   templateUrl: './story-comments.component.html',
   styleUrls: ['./story-comments.component.scss'],
   host: {
-    class: 'nx-story-comments',
+    class: 'ngm-story-comments',
   },
   imports: [
     CommonModule,

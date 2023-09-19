@@ -138,7 +138,7 @@ export function DimensionModeling(
                 {
                   // 只有内联维度才需要(才可能)设置此属性
                   key: 'foreignKey',
-                  type: 'nx-select',
+                  type: 'ngm-select',
                   className,
                   props: {
                     label: DIMENSION?.ForeignKey ?? 'Foreign Key',

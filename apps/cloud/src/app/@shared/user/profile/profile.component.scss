@@ -1,0 +1,5 @@
+:host {
+  background-color: var(--ngm-card-bg-color);
+  border-color: var(--ngm-card-border-color);
+  @apply border rounded-lg;
+}

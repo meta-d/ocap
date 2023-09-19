@@ -62,9 +62,9 @@
             [cdkDropListEnterPredicate]="measureEnterPredicate"
             (cdkDropListDropped)="dropMeasure($event)"
           >
-            <mat-list disableRipple displayDensity="compact" class="nx-list-base flex-1 flex flex-col overflow-auto">
+            <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
               <mat-list-item *ngFor="let member of measures" cdkDragBoundary=".pac-model-entity" cdkDrag [cdkDragData]="member"
-                class="nx-list-item"
+                class="ngm-list-item"
                 [ngClass]="checklistSelection.isSelected(ModelDesignerType.measure + '#' + member.__id__)?'selected':''"
                 (click)="onSelect(ModelDesignerType.measure, member)"
                 (mouseenter)="actionStrip.show()"
@@ -76,11 +76,11 @@
                     >
                   </ngm-entity-property>
                   
-                  <nx-action-strip #actionStrip [hidden]="true">
+                  <ngm-action-strip #actionStrip [hidden]="true">
                     <button *ngIf="!member.rt" mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteMeasure($event, member)">
                       <mat-icon>delete</mat-icon>
                     </button>
-                  </nx-action-strip>
+                  </ngm-action-strip>
                 </div>
 
                 <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>
@@ -109,8 +109,8 @@
           [cdkDropListData]="calculatedMembers"
           [cdkDropListEnterPredicate]="calculatedEnterPredicate"
           (cdkDropListDropped)="dropCalcMembers($event)">
-          <mat-list disableRipple displayDensity="compact" class="nx-list-base flex-1 flex flex-col overflow-auto">
-            <mat-list-item *ngFor="let member of calculatedMembers" class="nx-list-item"
+          <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
+            <mat-list-item *ngFor="let member of calculatedMembers" class="ngm-list-item"
               [class.bg-orange-100]="!member.name"
               [ngClass]="checklistSelection.isSelected(ModelDesignerType.calculatedMember + '#' + member.__id__)?'selected':''"
               (click)="onSelect(ModelDesignerType.calculatedMember, member)"
@@ -125,7 +125,7 @@
                   >
                 </ngm-entity-property>
         
-                <nx-action-strip #actionStrip [hidden]="true">
+                <ngm-action-strip #actionStrip [hidden]="true">
                   <button mat-icon-button displayDensity="cosy"
                     (click)="$event.stopPropagation();$event.preventDefault();onCalculatedMemberEdit(member)" >
                     <mat-icon>edit</mat-icon>
@@ -133,7 +133,7 @@
                   <button mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteCalculatedMember($event, member)">
                     <mat-icon>delete</mat-icon>
                   </button>
-                </nx-action-strip>
+                </ngm-action-strip>
               </div>
 
               <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>

@@ -42,9 +42,9 @@ $thin-theme: mat.define-dark-theme(
 // $config: if(_mat-is-theme-object($thin-theme),
 //     mat.get-color-config($thin-theme), $thin-theme);
 // for Material Components theming
-.nx-theme-thin {
+.ngm-theme-thin {
   // @include mat.all-component-colors($thin-theme);
-  @include nx-mat-theme((
+  @include ngm-mat-theme((
     color: mat.get-color-config($thin-theme),
     typography: null,
     density: null,

@@ -8,13 +8,13 @@
     <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch gap-2">
         <div>{{ 'COMPONENTS.SELECTION.ADVANCED_SLICER.CONTEXT' | translate: {Default: "Context"} }}</div>
 
-        <nx-property-array class="nx-advanced-slicer__context"
+        <ngm-property-array class="ngm-advanced-slicer__context"
             formControlName="context"
             [dataSettings]="dataSettings"
             [entityType]="entityType$ | async"
             [coreService]="coreService"
             [capacities]="[PropertyCapacity.Dimension]"
-        ></nx-property-array>
+        ></ngm-property-array>
 
         <ngm-select formControlName="operator" [label]="'COMPONENTS.SELECTION.ADVANCED_SLICER.OPERATOR' | translate: {Default: 'Operator'}"
             [selectOptions]="operators"

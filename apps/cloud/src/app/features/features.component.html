@@ -1,5 +1,5 @@
 <mat-sidenav-container class="pac-features__sidenav-container flex-1 h-full" >
-  <mat-sidenav #sidenav [mode]="sidenavMode" class="nx-theme-dark w-[260px] flex flex-col bg-bluegray-900 text-white">
+  <mat-sidenav #sidenav [mode]="sidenavMode" class="ngm-theme-dark w-[260px] flex flex-col bg-bluegray-900 text-white">
     <div class="flex items-center border-b border-b-gray-600">
       <button class="outline-none border-r border-r-gray-600 hover:text-yellow-600" (click)="sidenavMode==='over' ? sidenavMode='side' : sidenav.toggle()">
         <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"></pac-sidenav-navigator>
@@ -107,7 +107,7 @@
 </mat-progress-bar>
 
 <popper-content #popperContent>
-  <pac-header-settings class="bg-white flex"></pac-header-settings>
+  <pac-header-settings></pac-header-settings>
 </popper-content>
 
 <mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent">

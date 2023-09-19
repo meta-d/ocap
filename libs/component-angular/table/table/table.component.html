@@ -1,4 +1,4 @@
-<div class="nx-table__container flex-1 h-full flex flex-col overflow-auto">
+<div class="ngm-table__container flex-1 h-full flex flex-col overflow-auto">
     <table mat-table [dataSource]="dataSource" matSort
       class="min-w-full" [ngClass]="{grid: grid}"
       [displayDensity]="displayDensity"
@@ -27,7 +27,7 @@
         <!-- Columns -->
         <ng-container [matColumnDef]="column.name" *ngFor="let column of columns">
           <th mat-header-cell *matHeaderCellDef mat-sort-header [width]="column.width">
-            <div class="nx-header-cell flex-1 flex justify-start items-center whitespace-nowrap">
+            <div class="ngm-header-cell flex-1 flex justify-start items-center whitespace-nowrap">
               {{column.caption || column.name}}
 
               <div class="searchable flex-1 flex justify-between items-center" [class.searching]="searchingColumn===column.name">

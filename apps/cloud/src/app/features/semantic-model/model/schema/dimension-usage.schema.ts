@@ -64,7 +64,7 @@ export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsag
               {
                 className,
                 key: 'foreignKey',
-                type: 'nx-select',
+                type: 'ngm-select',
                 props: {
                   required: true,
                   searchable: true,

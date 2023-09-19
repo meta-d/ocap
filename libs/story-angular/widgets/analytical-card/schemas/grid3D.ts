@@ -9,7 +9,7 @@ export function Grid3DCapacity(className: string, I18N) {
       label: I18N.DDD?.GridTitle ?? 'Grid 3D',
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             ...Positions(className, I18N),
             ...WidthHeight(className, I18N),
@@ -41,7 +41,7 @@ export function Grid3DCapacity(className: string, I18N) {
               }
             },
             {
-              className: 'nx-formly__col nx-formly__col-12',
+              className: 'ngm-formly__col ngm-formly__col-12',
               key: 'environment',
               type: 'json',
               props: {
@@ -51,7 +51,7 @@ export function Grid3DCapacity(className: string, I18N) {
               }
             },
             {
-              className: 'nx-formly__col nx-formly__col-12',
+              className: 'ngm-formly__col ngm-formly__col-12',
               key: 'light',
               type: 'json',
               props: {
@@ -62,7 +62,7 @@ export function Grid3DCapacity(className: string, I18N) {
               }
             },
             {
-              className: 'nx-formly__col nx-formly__col-12',
+              className: 'ngm-formly__col ngm-formly__col-12',
               key: 'postEffect',
               type: 'json',
               props: {
@@ -73,7 +73,7 @@ export function Grid3DCapacity(className: string, I18N) {
               }
             },
             {
-              className: 'nx-formly__col nx-formly__col-12',
+              className: 'ngm-formly__col ngm-formly__col-12',
               key: 'viewControl',
               type: 'json',
               props: {

@@ -7,7 +7,7 @@ import { NgmChromaticInterpolate, previewChromaticInterpolate } from '../types'
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-chromatic-preview',
+  selector: 'ngm-chromatic-preview',
   templateUrl: 'color-preview.component.html',
   animations: [listEnterAnimation],
   styleUrls: ['./color-preview.component.scss']

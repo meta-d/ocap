@@ -56,7 +56,7 @@ export class IndicatorCardComponent extends AbstractStoryWidget<IndicatorOptions
         }
       },
       appendToBody: true,
-      className: 'nx-smart-echarts__tooltip'
+      className: 'ngm-smart-echarts__tooltip'
       // formatter: (param) => {
       //   const value = thousandsCommaPipe(param[0].value)
       //   return `${param[0].name}: ${value}`

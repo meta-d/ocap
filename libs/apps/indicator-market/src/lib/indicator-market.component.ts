@@ -41,7 +41,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
 
-  @HostBinding('class.nx-theme-dark.dark') isDarkTheme = true
+  @HostBinding('class.ngm-theme-dark.dark') isDarkTheme = true
   @HostBinding('class.indicator-market-app') isIndicatoryMarketComponent = true
   @HostBinding('class.searching') searching = false
 
@@ -133,7 +133,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
           tap((isMobile) => {
             if (isMobile && id) {
               this._bottomSheetRef = this._bottomSheet.open(IndicatorDetailComponent, {
-                panelClass: ['pac-indicator-market__detail-container', 'nx-theme-dark'],
+                panelClass: ['pac-indicator-market__detail-container', 'ngm-theme-dark'],
                 viewContainerRef: this._viewContainerRef,
                 data: { id }
               })

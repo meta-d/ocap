@@ -7,7 +7,7 @@ import { UserPipe } from "../../pipes"
     standalone: true,
     selector: 'pac-user-profile-card',
     templateUrl: 'profile.component.html',
-    styles: [``],
+    styleUrls: ['profile.component.scss'],
     imports: [CommonModule, UserPipe]
 })
 export class UserProfileComponent {

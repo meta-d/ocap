@@ -9,13 +9,13 @@
   $primary: map.get($config, primary);
   $accent: map.get($config, accent);
 
-  .nx-flex-layout {
+  .ngm-flex-layout {
     position: relative;
     min-width: 50px;
     min-height: 50px;
     --header-size: 10px;
 
-    .nx-responsive__fab-menu {
+    .ngm-responsive__fab-menu {
       position: absolute;
       top: 0;
       right: -40px;
@@ -27,7 +27,7 @@
       }
     }
 
-    .nx-responsive__item.widget {
+    .ngm-responsive__item.widget {
       overflow: visible;
       max-width: 100%;
     }
@@ -38,18 +38,18 @@
       transition: all .1s ease-in;
       border-radius: 5px;
 
-      .nx-responsive__fab-menu {
+      .ngm-responsive__fab-menu {
         visibility: visible;
       }
 
-      .nx-responsive__item.widget {
+      .ngm-responsive__item.widget {
         border: 1px solid mat.get-color-from-palette($foreground, divider);
         &.active {
           border: 1px dashed mat.get-color-from-palette($accent);
         }
       }
 
-      .nx-responsive__header {
+      .ngm-responsive__header {
         position: absolute;
         top: 0;
         left: 0;
@@ -76,15 +76,15 @@
         background: mat.get-color-from-palette($accent, 100);
         border: 2px dashed mat.get-color-from-palette($accent);
 
-        .nx-responsive__header {
+        .ngm-responsive__header {
           background-color: mat.get-color-from-palette($accent, 100);
           color: mat.get-color-from-palette($accent, '100-contrast');
         }
       }
     }
 
-    .nx-story-widget {
-      .nx-story-widget__fab-menu {
+    .ngm-story-widget {
+      .ngm-story-widget__fab-menu {
         position: absolute;
         top: 0;
         right: 0;

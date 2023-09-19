@@ -5,7 +5,7 @@ import { NxSettingsPanelService } from '@metad/story/designer'
 import { BehaviorSubject, Observable } from 'rxjs'
 
 @Component({
-  selector: 'nx-pin-widget',
+  selector: 'ngm-pin-widget',
   templateUrl: './pin-widget.component.html',
   styleUrls: ['./pin-widget.component.scss'],
   providers: [

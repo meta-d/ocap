@@ -10,12 +10,12 @@ export interface ConfirmCodeEditorData {
 }
 
 @Component({
-  selector: 'nx-confirm-code-editor',
+  selector: 'ngm-confirm-code-editor',
   templateUrl: './confirm-code-editor.component.html',
   styleUrls: ['./confirm-code-editor.component.scss']
 })
 export class ConfirmCodeEditorComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public editor$ = new BehaviorSubject(null)
   editorOptions = {

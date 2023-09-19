@@ -1,16 +1,18 @@
-import { inject, Injectable, Optional } from '@angular/core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { TranslateService } from '@ngx-translate/core'
+import { inject, Injectable } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { DataSettingsSchemaService } from '@metad/story/designer'
-import { EMPTY } from 'rxjs'
-import { filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
+import { TranslateService } from '@ngx-translate/core'
+import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
 import { EntitySchemaState } from './types'
+import { UntilDestroy } from '@ngneat/until-destroy'
 
 @UntilDestroy()
 @Injectable()
 export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> extends DataSettingsSchemaService<T> {
+  protected readonly modelService = inject(SemanticModelService)
+  protected readonly entityService? = inject(ModelEntityService, { optional: true })
 
   private _translateService = inject(TranslateService)
 
@@ -24,23 +26,23 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
         .map((table) => ({
           value: table.name,
           key: table.name,
-          caption: table.caption,
+          caption: table.caption
         }))
       tables.splice(0, 0, {
         value: null,
         key: null,
-        caption: this.getTranslation('PAC.MODEL.SCHEMA.COMMON.None') ?? 'None',
+        caption: this.getTranslation('PAC.MODEL.SCHEMA.COMMON.None', { Default: 'None' }) ?? 'None'
       })
       return tables
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
   public readonly entityType$ = this.select((state) => state.entity).pipe(
     filter(Boolean),
     switchMap((entity) => this.modelService.selectEntityType(entity)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -51,14 +53,6 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
     ),
     map((options) => [{ value: null, label: 'None' }, ...options])
   )
-
-  constructor(
-    protected modelService: SemanticModelService,
-    @Optional()
-    protected entityService?: ModelEntityService
-  ) {
-    super()
-  }
 
   getSchema() {
     return this.translate.stream('STORY_DESIGNER').pipe(
@@ -108,14 +102,6 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
         return options
       })
     )
-  }
-
-  selectDimension(id: string) {
-    return this.entityService?.selectDimension(id).pipe(untilDestroyed(this)) ?? EMPTY
-  }
-
-  selectDimensionHierarchies(id: string) {
-    return this.selectDimension(id).pipe(map((dim) => dim?.hierarchies))
   }
 
   getTranslation(key: string, params?) {

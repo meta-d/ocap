@@ -84,11 +84,11 @@ export class MyCustomPaginatorIntl implements MatPaginatorIntl {
 @UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-table',
+  selector: 'ngm-table',
   templateUrl: './table.component.html',
   styleUrls: [`table.component.scss`],
   host: {
-    class: 'nx-table'
+    class: 'ngm-table'
   }
 })
 export class NxTableComponent implements OnChanges, AfterViewInit {

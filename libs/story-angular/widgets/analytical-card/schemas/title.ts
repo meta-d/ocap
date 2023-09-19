@@ -18,7 +18,7 @@ export function TitleCapacity(className: string, I18N) {
             label: I18N.Title?.Title ?? 'Title',
             keyShow: showKey
           },
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             {
               className,

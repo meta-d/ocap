@@ -2,7 +2,7 @@
 @use '../../designer/_designer-theme' as designer;
 @import './settings/settings-theme';
 
-@mixin nx-story__filter-bar($config-or-theme) {
+@mixin ngm-story__filter-bar($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $foreground: map-get($config, foreground);
   $drawer-side-border: solid 1px mat.get-color-from-palette($foreground, divider);
@@ -10,25 +10,25 @@
   /**
     * for story filter bar
     */
-  .nx-story__filter-bar {
+  .ngm-story__filter-bar {
     &.mat-drawer-side {
       border-right: unset;
     }
-    .nx-story__filter-bar-header {
+    .ngm-story__filter-bar-header {
       border-bottom: $drawer-side-border;
     }
 
-    .nx-smart-filter-bar {
+    .ngm-smart-filter-bar {
       flex: 1;
       max-height: calc(100% - 41px);
       font-size: 12px;
 
-      &.nx-direction--column {
+      &.ngm-direction--column {
         form {
           display: flex;
           max-height: 100%;
 
-          .nx-smart-filter-bar--content {
+          .ngm-smart-filter-bar--content {
             flex-wrap: nowrap;
             overflow: auto;
             max-height: 100%;
@@ -51,7 +51,7 @@
   @include designer.color($config-or-theme);
 
   // // for cdk-drag-preview
-  // nx-formly-dimension {
+  // ngm-formly-dimension {
   //   .mat-form-field {
   //     flex: 1;
   //   }
@@ -60,7 +60,7 @@
   //   }
   // }
 
-  // .cdk-drag-preview.nx-form--row {
+  // .cdk-drag-preview.ngm-form--row {
   //   display: flex;
   //   background: map-get($background, background);
   // }

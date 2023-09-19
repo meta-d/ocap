@@ -160,7 +160,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             },
             {
               key: 'column',
-              type: 'nx-select',
+              type: 'ngm-select',
               className,
               props: {
                 label: LEVEL?.Column ?? 'Column',
@@ -190,7 +190,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'nameColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.NameColumn ?? 'Name Column',
                 searchable: true,
@@ -200,7 +200,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'captionColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.CaptionColumn ?? 'Caption Column',
                 searchable: true,
@@ -210,7 +210,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'ordinalColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.OrdinalColumn ?? 'Ordinal Column',
                 searchable: true,
@@ -220,7 +220,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'parentColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ParentColumn ?? 'Parent Column',
                 searchable: true,
@@ -238,7 +238,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'table',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.Table ?? 'Table',
                 icon: 'table_view',
@@ -304,7 +304,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
               fieldGroup: [
                 {
                   key: 'name',
-                  type: 'nx-select',
+                  type: 'ngm-select',
                   props: {
                     label: LEVEL?.Table ?? 'Table',
                     searchable: true,
@@ -316,7 +316,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'parentColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ParentColumn ?? 'Parent Column',
                 searchable: true
@@ -335,7 +335,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'childColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ChildColumn ?? 'Child Column',
                 searchable: true
@@ -384,7 +384,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
                   {
                     className,
                     key: 'column',
-                    type: 'nx-select',
+                    type: 'ngm-select',
                     props: {
                       label: LEVEL?.Column ?? 'Column',
                       searchable: true,

@@ -247,7 +247,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   expanded: true
                 },
                 fieldArray: {
-                  fieldGroupClassName: 'nx-formly__row',
+                  fieldGroupClassName: 'ngm-formly__row',
                   fieldGroup: [
                     {
                       key: 'type',
@@ -299,7 +299,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.Autoplay ?? 'Autoplay',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'nx-formly__row',
+                      fieldGroupClassName: 'ngm-formly__row',
                       fieldGroup: [
                         {
                           className,
@@ -365,7 +365,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.Pagination ?? 'Pagination',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'nx-formly__row',
+                      fieldGroupClassName: 'ngm-formly__row',
                       fieldGroup: [
                         {
                           className,
@@ -422,7 +422,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.KeyboardControl ?? 'Keyboard Control',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'nx-formly__row',
+                      fieldGroupClassName: 'ngm-formly__row',
                       fieldGroup: [
                         {
                           className,
@@ -455,7 +455,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
               ]),
 
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 key: 'breakpoints',
                 type: 'table-inline',
                 wrappers: ['expansion'],

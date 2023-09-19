@@ -66,7 +66,7 @@
       </mat-option>
     </mat-optgroup>
   </mat-select>
-  <button matSuffix *ngIf="removable" class="nx-formly__remove" displayDensity="compact"
+  <button matSuffix *ngIf="removable" class="ngm-formly__remove" displayDensity="compact"
     mat-icon-button color="warn"
     (click)="$event.stopPropagation();$event.preventDefault();killMyself()">
     <mat-icon>clear</mat-icon>
@@ -74,7 +74,7 @@
 </div>
 
 <mat-radio-group [(ngModel)]="orient">
-  <mat-menu #orientMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #orientMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let orient of ORIENTS"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="orient.value">
@@ -85,7 +85,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="variant">
-  <mat-menu #variantMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #variantMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let option of VARIANTS[type]"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="option.value">

@@ -1,0 +1,34 @@
+.pac-project__router-link.active {
+  @apply bg-slate-100 hover:bg-slate-200 dark:bg-slate-100/10 dark:hover:bg-slate-200/10;
+}
+.mdc-list-item.pac-project__router-link {
+  --mdc-list-list-item-one-line-container-height: 30px;
+  @apply rounded-md p-0;
+}
+.pac-project__anchor {
+  @apply border-bluegray-100 text-bluegray-100 hover:border-bluegray-200 hover:text-bluegray-200;
+}
+
+.pac-creation-card {
+  @apply flex flex-col justify-center items-center rounded-xl border cursor-pointer ring-2 ring-offset-2 ring-transparent
+    border-transparent hover:border-bluegray-200 focus:ring-bluegray-200 dark:ring-bluegray-800 dark:ring-offset-bluegray-800 dark:border-slate-500 dark:hover:border-slate-300;
+  background-color: var(--ngm-card-bg-color);
+  color: var(--ngm-text-primary-color);
+
+  &.pac-creation-card__upload {
+    @apply border-2 border-gray-300 border-dashed dark:border-slate-500 dark:hover:border-slate-300;
+  }
+}
+
+.pac-confirm-card {
+  @apply border rounded-lg;
+  background-color: var(--ngm-card-bg-color);
+  border-color: var(--ngm-card-border-color);
+  color: var(--ngm-text-primary-color);
+
+  &.pac-confirm-card__delete {
+    .pac-confirm-card__delete-actions {
+      @apply p-0;
+    }
+  }
+}

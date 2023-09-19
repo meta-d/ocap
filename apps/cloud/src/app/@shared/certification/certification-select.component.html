@@ -1,16 +1,17 @@
 <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
     <div style="pointer-events: none;">
-        {{ 'PAC.MENU.AddUsers' | translate: {Default: 'Add Users'} }}
+        {{ 'PAC.MENU.AddCertifications' | translate: {Default: 'Add Certifications'} }}
     </div>
 </header>
 
 <mat-dialog-content class="mat-typography flex flex-col">
-    <ngm-mat-select appearance="fill" displayBehaviour="descriptionOnly"
+    <ngm-select appearance="fill" color="accent" displayBehaviour="descriptionOnly"
         [label]=" 'PAC.KEY_WORDS.Certification' | translate: { Default: 'Certification' } "
         [selectOptions]="certifications$ | async"
+        searchable
         [(ngModel)]="certificationId"
     >
-    </ngm-mat-select>
+    </ngm-select>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

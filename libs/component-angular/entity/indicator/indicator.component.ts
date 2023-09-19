@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core'
 import { DisplayBehaviour, Indicator } from '@metad/ocap-core'
 
 @Component({
-  selector: 'nx-indicator',
+  selector: 'ngm-indicator',
   templateUrl: './indicator.component.html',
   styleUrls: ['./indicator.component.scss']
 })

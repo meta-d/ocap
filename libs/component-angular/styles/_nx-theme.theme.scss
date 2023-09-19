@@ -1,39 +1,39 @@
-@use '@angular/material' as mat;
-@import './components/tab-bar.theme';
-@import './components/progress-bar.theme';
-@import './components/button-balance.theme';
-@import './components/fullscreen.theme';
-@import './components/density.theme';
-@import './components/select.component.theme';
-@import './components/mat-option.theme';
-@import './components/mat-autocomplete.theme';
-@import './components/mat-slider.theme';
+// @use '@angular/material' as mat;
+// @import './components/tab-bar.theme';
+// @import './components/progress-bar.theme';
+// @import './components/button-balance.theme';
+// @import './components/fullscreen.theme';
+// @import './components/density.theme';
+// @import './components/select.component.theme';
+// @import './components/mat-option.theme';
+// @import './components/mat-autocomplete.theme';
+// @import './components/mat-slider.theme';
 
-@mixin nx-components-themes() {
-  @include nx-tab-bar-theme();
-  @include nx-progress-bar-theme();
-  @include nx-buttons-balance-theme();
-  @include nx-fullscreen-theme();
-  @include nx-mat-slider-theme();
-  @include nx-mat-option-theme();
-  @include nx-mat-autocomplete-theme();
-  @include nx-density-theme();
-  @include nx-select-theme();
+// @mixin ngm-components-themes() {
+//   @include ngm-tab-bar-theme();
+//   @include ngm-progress-bar-theme();
+//   @include ngm-buttons-balance-theme();
+//   @include ngm-fullscreen-theme();
+//   @include ngm-mat-slider-theme();
+//   @include ngm-mat-option-theme();
+//   @include ngm-mat-autocomplete-theme();
+//   @include ngm-density-theme();
+//   @include ngm-select-theme();
 
-  nb-layout-header nav {
-    transition: all;
-    transition-duration: nb-theme(density-transition-duration);
-  }
+//   nb-layout-header nav {
+//     transition: all;
+//     transition-duration: nb-theme(density-transition-duration);
+//   }
 
-  // nb-layout .layout {
-  //   background: nb-theme(layout-background);
-  // }
+//   // nb-layout .layout {
+//   //   background: nb-theme(layout-background);
+//   // }
 
-  nb-card.nx-dialog {
-    background: nb-theme(dialog-background);
-  }
-}
+//   nb-card.ngm-dialog {
+//     background: nb-theme(dialog-background);
+//   }
+// }
 
-@include mat.form-field-theme($starter-theme);
-@include mat.divider-theme($starter-theme);
-@include mat.table-theme($starter-theme);
+// @include mat.form-field-theme($starter-theme);
+// @include mat.divider-theme($starter-theme);
+// @include mat.table-theme($starter-theme);

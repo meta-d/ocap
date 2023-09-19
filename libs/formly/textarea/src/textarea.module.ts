@@ -4,10 +4,10 @@ import { NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
 import { FormlyModule } from '@ngx-formly/core'
-import { FormlyFieldTextArea } from './textarea.type'
+import { FormlyFieldTextAreaComponent } from './textarea.type'
 
 @NgModule({
-  declarations: [FormlyFieldTextArea],
+  declarations: [FormlyFieldTextAreaComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -18,7 +18,7 @@ import { FormlyFieldTextArea } from './textarea.type'
       types: [
         {
           name: 'textarea',
-          component: FormlyFieldTextArea
+          component: FormlyFieldTextAreaComponent
         }
       ]
     })

@@ -53,7 +53,7 @@ export function SunburstCapacity(className: string, I18N) {
                 ...CenterRadius(className, I18N),
 
                 {
-                  className: 'nx-formly__col nx-formly__col-12',
+                  className: 'ngm-formly__col ngm-formly__col-12',
                   key: 'levels',
                   type: 'json',
                   props: {

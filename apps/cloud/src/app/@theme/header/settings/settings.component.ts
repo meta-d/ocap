@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -34,13 +34,18 @@ export class HeaderSettingsComponent {
   languages = LANGUAGES
   DisplayBehaviour = DisplayBehaviour
 
+  private store = inject(Store)
+  private router = inject(Router)
+
   public readonly isAuthenticated$ = this.store.user$
   preferredLanguage$ = this.store.preferredLanguage$
-
-  constructor(private store: Store, private router: Router) {}
+  preferredTheme$ = this.store.preferredTheme$
 
   onLanguageSelect(language): void {
     this.store.preferredLanguage = language
+  }
+  onThemeSelect(mode: string): void {
+    this.store.preferredTheme = mode
   }
   onProfile() {
     this.router.navigate(['/settings/account'])

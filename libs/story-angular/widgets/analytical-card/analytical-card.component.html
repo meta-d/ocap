@@ -39,11 +39,11 @@
 <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
   <div class="text-base font-semibold">{{ 'COMPONENTS.SELECTION.Slicers' | translate: {Default: "Slicers"} }}</div>
 
-  <nx-slicers class="overflow-hidden" inline editable [slicers]="selectOptions$ | async"
+  <ngm-slicers class="overflow-hidden" inline editable [slicers]="selectOptions$ | async"
     [dataSettings]="dataSettings$ | async"
     [limit]="5"
     [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
-  ></nx-slicers>
+  ></ngm-slicers>
 </mat-menu>

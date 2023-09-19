@@ -33,7 +33,7 @@ export class AccountingStatementSchemaService extends DataSettingsSchemaService 
                 },
                 fieldGroup: [
                   {
-                    fieldGroupClassName: 'nx-formly__row',
+                    fieldGroupClassName: 'ngm-formly__row',
                     fieldGroup: [
                       {
                         className,
@@ -74,7 +74,7 @@ export class AccountingStatementSchemaService extends DataSettingsSchemaService 
                     ]
                   },
                   {
-                    className: 'nx-formly__col nx-formly__col-12',
+                    className: 'ngm-formly__col ngm-formly__col-12',
                     key: 'measures',
                     type: 'table-inline',
                     props: {

@@ -28,11 +28,11 @@ import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValu
 @UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-property-member-select',
+  selector: 'ngm-property-member-select',
   templateUrl: './member-select.component.html',
   styleUrls: ['./member-select.component.scss'],
   host: {
-    class: 'nx-property-member-select'
+    class: 'ngm-property-member-select'
   },
   providers: [
     {

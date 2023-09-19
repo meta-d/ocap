@@ -1,8 +1,8 @@
 @use '@angular/material' as mat;
 
 
-@mixin nx-scrollbar-color($config-or-theme) {
-  .nx-scrollbar {
+@mixin ngm-scrollbar-color($config-or-theme) {
+  .ngm-scrollbar {
     /* width */
     &::-webkit-scrollbar {
       width: 20px;
@@ -27,21 +27,21 @@
   }
 }
 
-@mixin nx-scrollbar-density($config-or-theme) {
+@mixin ngm-scrollbar-density($config-or-theme) {
 }
 
-@mixin nx-scrollbar-theme($theme-or-color-config) {
+@mixin ngm-scrollbar-theme($theme-or-color-config) {
   $theme: mat-private-legacy-get-theme($theme-or-color-config);
-  @include mat-private-check-duplicate-theme-styles($theme, 'nx-scrollbar') {
+  @include mat-private-check-duplicate-theme-styles($theme, 'ngm-scrollbar') {
     $color: mat.get-color-config($theme);
     $density: mat.get-density-config($theme);
     $typography: mat-get-typography-config($theme);
 
     @if $color != null {
-      @include nx-scrollbar-color($color);
+      @include ngm-scrollbar-color($color);
     }
     @if $density != null {
-      @include nx-scrollbar-density($density);
+      @include ngm-scrollbar-density($density);
     }
     // @if $typography != null {
     //   @include mat.button-toggle-typography($typography);

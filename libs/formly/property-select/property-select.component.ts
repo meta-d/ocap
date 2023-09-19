@@ -87,7 +87,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
   ]
 
   /**
-   * 对接 nx-property-select 的 FormControl, 与当前组件的 formControl 连接
+   * 对接 ngm-property-select 的 FormControl, 与当前组件的 formControl 连接
    */
   _formControl = new FormControl()
 

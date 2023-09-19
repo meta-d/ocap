@@ -9,54 +9,54 @@
   $primary: map.get($config, primary);
   $accent: map.get($config, accent);
 
-  // .nx-kpi--title {
+  // .ngm-kpi--title {
   //   font-size: 2em;
   // }
 
-  // .nx-kpi--value {
-  //   .nx-object-number--value {
+  // .ngm-kpi--value {
+  //   .ngm-object-number--value {
   //     font-size: 3em;
   //   }
   // }
-  // .nx-kpi--reference.nx-kpi--deviation {
-  //   .nx-kpi--title {
+  // .ngm-kpi--reference.ngm-kpi--deviation {
+  //   .ngm-kpi--title {
   //     font-size: 1em;
   //   }
-  //   .nx-object-number--value {
+  //   .ngm-object-number--value {
   //     font-size: 1em;
   //   }
-  //   .nx-object-number--unit {
+  //   .ngm-object-number--unit {
 
   //   }
   // }
 
-  // .nx-kpi--additional {
+  // .ngm-kpi--additional {
   //   font-size: .5rem;
   // }
   
   pac-widget-kpi {
-    .nx-kpi--trend {
-      .nx-object-number--value {
+    .ngm-kpi--trend {
+      .ngm-object-number--value {
         font-size: 1rem;
         line-height: 1rem;
       }
-      .nx-object-number--short-unit {
+      .ngm-object-number--short-unit {
         font-size: 0.5rem;
         line-height: 0.5rem;
       }
     }
 
-    .nx-object-number--short-unit {
+    .ngm-object-number--short-unit {
       font-size: 1rem;
       line-height: 1rem;
     }
-    .nx-object-number--unit {
+    .ngm-object-number--unit {
       justify-content: flex-start;
       align-content: flex-start;
     }
   
-    .nx-kpi--reference {
-      .nx-object-number--unit {
+    .ngm-kpi--reference {
+      .ngm-object-number--unit {
         align-items: flex-start;
         font-size: 0.5rem;
         line-height: 0.5rem;

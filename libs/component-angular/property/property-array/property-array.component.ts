@@ -32,7 +32,7 @@ import { PropertyCapacity, PropertySelectComponent } from '../property-select/pr
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-property-array',
+  selector: 'ngm-property-array',
   templateUrl: 'property-array.component.html',
   styleUrls: ['property-array.component.scss'],
   providers: [
@@ -62,7 +62,7 @@ export class PropertyArrayComponent implements OnInit, ControlValueAccessor {
 
   formArray = this.formBuilder.array([])
 
-  @HostBinding('class.nx-property-array__empty')
+  @HostBinding('class.ngm-property-array__empty')
   get isEmpty() {
     return !this.formArray.length
   }

@@ -95,11 +95,11 @@
                     </button>
                 </mat-toolbar>
                 <div style="position: relative; flex: 1; max-height: calc(100% - 34px)" class="flex">
-                    <nx-table class="striped flex-1 max-w-full"
+                    <ngm-table class="striped flex-1 max-w-full"
                         [columns]="columns$ | async"
                         [data]="data$ | async"
                         [paging]="true"
-                    ></nx-table>
+                    ></ngm-table>
                     <mat-spinner *ngIf="loading" strokeWidth="2" diameter="30"></mat-spinner>
                     <div *ngIf="error$ | async as error" class="pac-model-hierarchy__error">
                         <div style="font-size: 4rem;" class="font-notoColorEmoji">🐞</div>

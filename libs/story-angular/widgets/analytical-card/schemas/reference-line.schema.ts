@@ -21,7 +21,7 @@ export class ReferenceLineSchemaService extends BaseDesignerSchemaService<BaseSc
     return this.storyDesigner$.pipe(
       map((STORY_DESIGNER) => STORY_DESIGNER?.BUILDER?.CHART?.ReferenceLine),
       map((ReferenceLine) => {
-        const className = 'nx-formly__col nx-formly__col-6'
+        const className = 'ngm-formly__col ngm-formly__col-6'
         return [
           {
             key: 'referenceLines',
@@ -34,7 +34,7 @@ export class ReferenceLineSchemaService extends BaseDesignerSchemaService<BaseSc
               removeLabel: ReferenceLine?.removeLabel ?? 'Remove'
             },
             fieldArray: {
-              fieldGroupClassName: 'nx-formly__row',
+              fieldGroupClassName: 'ngm-formly__row',
               fieldGroup: [
                 {
                   className,

@@ -32,8 +32,8 @@ class SchemaService implements DesignerSchema {
 }
 
 @Component({
-  selector: 'nx-designer-wrapper',
-  template: `<nx-settings-panel fxFlex="100"></nx-settings-panel>
+  selector: 'ngm-designer-wrapper',
+  template: `<ngm-settings-panel fxFlex="100"></ngm-settings-panel>
 <div>
 <button mat-raised-button (click)="openBasic()">Basic</button>
 <button mat-raised-button (click)="openTabs()">Tabs</button>
@@ -137,7 +137,7 @@ export default {
 } as Meta
 
 const Template: Story<NxSettingsPanelComponent> = (args) => ({
-  template: `<nx-designer-wrapper></nx-designer-wrapper>`,
+  template: `<ngm-designer-wrapper></ngm-designer-wrapper>`,
   props: {
     ...args,
   },

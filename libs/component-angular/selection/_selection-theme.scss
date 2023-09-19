@@ -5,7 +5,7 @@
   $config: mat.get-color-config($config-or-theme);
   $accent: map-get($config, accent);
 
-  nx-slicer {
+  ngm-slicer {
     .mat-chip-list-wrapper {
       max-width: 100%;
       .mat-standard-chip {
@@ -24,7 +24,7 @@
 
 @mixin density($config-or-theme) {
 
-  nx-slicers, nx-slicer-bar {
+  ngm-slicers, ngm-slicer-bar {
     .mat-divider {
       margin: .5rem 0;
     }

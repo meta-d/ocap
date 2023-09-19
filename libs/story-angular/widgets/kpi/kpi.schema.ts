@@ -148,7 +148,7 @@ export class KpiSchemaService extends DataSettingsSchemaService {
       },
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: [
             {
               className,
@@ -236,7 +236,7 @@ export class KpiStylingSchemaService extends WidgetStylingSchema {
             },
             fieldGroup: [
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: 'ngm-formly__row',
                 key: 'title',
                 fieldGroup: FontCss(FORMLY_W_1_3, DESIGNER?.STYLING?.CSS?.FONT)
               }

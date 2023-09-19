@@ -49,7 +49,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
         dimension: serializeUniqueName(dimension),
         hierarchy: serializeUniqueName(dimension, hierarchy)
       }).pipe(
-        // selectMembers 存在频繁刷新, 导致 nx-select 组件显示异常
+        // selectMembers 存在频繁刷新, 导致 ngm-select 组件显示异常
         take(1)
       )
     )
@@ -229,7 +229,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
           fieldGroup: [
             {
               key: 'primaryKey',
-              type: 'nx-select',
+              type: 'ngm-select',
               className,
               props: {
                 icon: 'view_column',
@@ -273,7 +273,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
     return {
       className: FORMLY_W_FULL,
       key: 'defaultMember',
-      type: 'nx-select',
+      type: 'ngm-select',
       props: {
         label: this.SCHEMA?.HIERARCHY?.DefaultMember ?? 'Default Member',
         searchable: true,

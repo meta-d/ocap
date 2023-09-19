@@ -36,7 +36,7 @@ import {
 })
 export class PACDataSourceEditComponent implements OnInit {
   AuthenticationEnum = AuthenticationEnum
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   loading = false
   model = {}

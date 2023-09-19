@@ -18,9 +18,9 @@ export default {
 } as Meta
 
 const Template: Story<IgxActionStripComponent> = (args) => ({
-  template: `<nx-action-strip>
+  template: `<ngm-action-strip>
   <button mat-icon-button><mat-icon>done</mat-icon></button>
-</nx-action-strip>`,
+</ngm-action-strip>`,
   props: {
     ...args
   }

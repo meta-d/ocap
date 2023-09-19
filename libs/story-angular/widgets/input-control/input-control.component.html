@@ -1,6 +1,6 @@
 <div class="shrink-0 flex justify-start items-center overflow-hidden">
     <span class="whitespace-nowrap text-ellipsis overflow-hidden">{{ title$() }}</span>
-    <div *ngIf="displayMembers()" class="nx-input-control__selected-members flex justify-between items-center overflow-hidden">
+    <div *ngIf="displayMembers()" class="ngm-input-control__selected-members flex justify-between items-center overflow-hidden">
         <span class="flex-1 whitespace-nowrap text-ellipsis overflow-hidden">{{displayMembers()}}</span>
         <mat-icon class="members-clear cursor-pointer rounded-full hover:bg-gray-500/10 dark:hover:bg-white/20"
             displayDensity="compact"
@@ -89,7 +89,7 @@
             >
             </ngm-parameter>
         
-            <div *ngSwitchDefault class="nx-input-control__select-model w-full flex-1">
+            <div *ngSwitchDefault class="ngm-input-control__select-model w-full flex-1">
                 <div *ngIf="editable" class="select-model-trigger flex flex-col justify-center items-center">
                     <span>{{ 'Story.Widgets.InputControl.Title' | translate: {Default: 'Input Control'} }}</span>
                 </div>
@@ -102,7 +102,7 @@
     <pac-input-control-placeholder class="w-full h-full cursor-pointer" (click)="openDesigner()"></pac-input-control-placeholder>
 </div>
 
-<mat-menu #widgetInputControl="matMenu" class="nx-density__compact">
+<mat-menu #widgetInputControl="matMenu" class="ngm-density__compact">
     <button mat-menu-item [matMenuTriggerFor]="entityMenu">
         {{ 'Story.Widgets.InputControl.ENTITY' | translate: {Default: 'Entity'} }}
     </button>
@@ -115,7 +115,7 @@
     </ng-container> -->
 </mat-menu>
 
-<mat-menu #entityMenu="matMenu" class="nx-density__compact">
+<mat-menu #entityMenu="matMenu" class="ngm-density__compact">
     <!-- <button mat-menu-item *ngFor="let entity of entities$ | async"
         (click)="setEntitySet(entity.value);$event.stopPropagation()">
         <ngm-display-behaviour [option]="entity"></ngm-display-behaviour>
@@ -123,14 +123,14 @@
 </mat-menu>
 
 
-<mat-menu #Dimensions="matMenu" class="nx-density__compact">
+<mat-menu #Dimensions="matMenu" class="ngm-density__compact">
     <button mat-menu-item *ngFor="let dimension of dimensions$ | async"
         (click)="setProperty(dimension.name)">
         <ngm-entity-property [property]="dimension"></ngm-entity-property>
     </button>
 </mat-menu>
 
-<mat-menu #Measures="matMenu" class="nx-density__compact">
+<mat-menu #Measures="matMenu" class="ngm-density__compact">
     <button mat-menu-item *ngFor="let measure of measures$ | async">
         <ngm-entity-property [property]="measure"></ngm-entity-property>
     </button>

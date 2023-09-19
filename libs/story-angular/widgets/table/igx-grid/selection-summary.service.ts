@@ -37,7 +37,7 @@ export class NxGridSelectionSummaryService implements NxGridSelectionSummary {
   }
 }
 
-export const NX_GRID_SELECTION_SUMMARY = new InjectionToken<NxGridSelectionSummary>('nx-grid-selection-summary', {
+export const NX_GRID_SELECTION_SUMMARY = new InjectionToken<NxGridSelectionSummary>('ngm-grid-selection-summary', {
   providedIn: 'root',
   factory: NX_GRID_SELECTION_SUMMARY_FACTORY,
 })

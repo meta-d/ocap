@@ -1,5 +1,5 @@
 <ngx-monaco-editor [ngStyle]="{'height': 'calc(100% - 1rem)'}"
-    [options]="editorOptions$ | async"
+    [options]="editorOptions()"
     [(ngModel)]="code"
     (ngModelChange)="onModelChange($event)"
     (onInit)="onInit($event)"

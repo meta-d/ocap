@@ -15,19 +15,19 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
 
   $grid-divider: 1px dashed map-get($foreground, divider);
 
-  @include nx-story-point($config-or-theme);
-  @include nx-story-widget($config-or-theme);
-  @include nx-story-comments($config-or-theme);
+  @include ngm-story-point($config-or-theme);
+  @include ngm-story-widget($config-or-theme);
+  @include ngm-story-comments($config-or-theme);
 
-  .nx-story {
+  .ngm-story {
     color: mat.get-color-from-palette($foreground, text);
     background: mat.get-color-from-palette($background, background);
   }
 
-  .nx-story__story-container {
+  .ngm-story__story-container {
     background: transparent;
 
-    .nx-story__point-tab-group {
+    .ngm-story__point-tab-group {
       height: 100%;
       
       & > .mat-mdc-tab-header {
@@ -53,56 +53,56 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
       }
     }
 
-    .nx-story__filter-bar {
-      .nx-story__filter-bar-anchor {
+    .ngm-story__filter-bar {
+      .ngm-story__filter-bar-anchor {
         box-shadow: rgb(99 99 99 / 20%) 0px 2px 8px 0px;
       }
-      .nx-story__filter-bar-header, .pac-widget-filter-bar {
+      .ngm-story__filter-bar-header, .pac-widget-filter-bar {
         z-index: 1;
       }
 
-      .nx-story__filter-bar-anchor,
-      .nx-story__filter-bar-header,
+      .ngm-story__filter-bar-anchor,
+      .ngm-story__filter-bar-header,
       .pac-widget-filter-bar {
         background-color: mat.get-color-from-palette($background, dialog);
       }
 
-      .nx-smart-filter-bar--content {
+      .ngm-smart-filter-bar--content {
         flex-direction: column;
       }
     }
 
   }
 
-  .nx-story {
+  .ngm-story {
     --story-fullscreen-top: 0;
 
-    .nx-story-primary--add {
+    .ngm-story-primary--add {
       position: absolute;
       bottom: 2rem;
       right: 2rem;
       z-index: 1;
     }
 
-    .nx-story--action-list {
+    .ngm-story--action-list {
       .mat-mdc-list-icon {
         border: 1px solid;
       }
     }
 
-    .nx-filter-type--exclude {
+    .ngm-filter-type--exclude {
       text-decoration-line: line-through;
     }
 
-    &.nx-story--fullscreen {
-      .nx-story__container {
+    &.ngm-story--fullscreen {
+      .ngm-story__container {
         position: fixed;
         width: 100%;
         top: var(--story-fullscreen-top);
         height: 100%;
         transition: all 500ms $ease-in-out-curve-function;
       }
-      .nx-story__toolbar {
+      .ngm-story__toolbar {
         position: fixed;
         top: 5px - 55px;
         z-index: 2;
@@ -120,13 +120,13 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
       }
     }
 
-    .nx-story__pagination {
+    .ngm-story__pagination {
       transition: 0.3s opacity;
       transform: translate3d(0, 0, 0);
-      .nx-story__pagination-bullet {
+      .ngm-story__pagination-bullet {
         background-color: mat.get-color-from-palette($primary, 100);
 
-        &.nx-story__pagination-bullet-active {
+        &.ngm-story__pagination-bullet-active {
           background-color: mat.get-color-from-palette($accent);
         }
       }
@@ -136,8 +136,8 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
 }
 
 @mixin density($config-or-theme) {
-  .nx-story__filter-bar {
-    .nx-story__filter-bar-header {
+  .ngm-story__filter-bar {
+    .ngm-story__filter-bar-header {
       padding: 0.5rem;
     }
   }

@@ -20,7 +20,7 @@ export class CountdownConfirmationComponent {
   isEnabled: boolean
   countDownConfig: CountdownConfig = { leftTime: 5 }
 
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   constructor(protected dialogRef: MatDialogRef<CountdownConfirmationComponent>) {}
 

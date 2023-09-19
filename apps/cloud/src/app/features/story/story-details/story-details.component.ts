@@ -43,7 +43,7 @@ import { ISemanticModel, ProjectService, ScreenshotService, ToastrService } from
     HighlightDirective,
     OcapCoreModule
   ],
-  selector: 'nx-story-details',
+  selector: 'ngm-story-details',
   templateUrl: './story-details.component.html',
   styleUrls: ['./story-details.component.scss']
 })

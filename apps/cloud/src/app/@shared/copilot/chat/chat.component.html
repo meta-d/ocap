@@ -44,12 +44,12 @@
         <div *ngIf="conversation.role === CopilotChatMessageRoleEnum.User" class="pl-4 flex">
             <div class="flex-1 flex items-start justify-end overflow-auto">
                 <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
-                    <nx-table *ngIf="conversation.data; else messageContent" class="max-w-full rounded-lg border overflow-hidden bg-white"
+                    <ngm-table *ngIf="conversation.data; else messageContent" class="max-w-full rounded-lg border overflow-hidden bg-white"
                         [columns]="conversation.data.columns"
                         [data]="conversation.data.content"
                         paging
                         [pageSizeOptions]="[10, 20, 50, 100]"
-                    ></nx-table>
+                    ></ngm-table>
 
                     <ng-template #messageContent>
                         <div class="pac-copilot__user-message rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">

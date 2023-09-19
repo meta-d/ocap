@@ -8,7 +8,7 @@ export function GridCapacity(className: string, I18N) {
       label: I18N.GRID?.GRID ?? 'Grid',
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: 'ngm-formly__row',
           fieldGroup: Grid(className, I18N)
         }
       ]

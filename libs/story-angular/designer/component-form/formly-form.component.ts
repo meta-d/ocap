@@ -25,7 +25,7 @@ import {
 
 @UntilDestroy()
 @Component({
-  selector: 'nx-component-settings',
+  selector: 'ngm-component-settings',
   templateUrl: 'formly-form.component.html',
   styleUrls: ['formly-form.component.scss'],
   animations: [

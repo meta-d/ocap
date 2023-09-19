@@ -53,11 +53,11 @@
 </div>
 
 <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
-  <nx-slicers class="overflow-hidden" inline editable
+  <ngm-slicers class="overflow-hidden" inline editable
     [slicers]="selectOptions$ | async"
     [dataSettings]="dataSettings$ | async"
     [limit]="5"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
-  ></nx-slicers>
+  ></ngm-slicers>
 </mat-menu>

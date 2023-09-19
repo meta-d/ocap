@@ -35,15 +35,15 @@
     </div>
 </mat-toolbar>
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" [autosize]="true">
-    <mat-drawer #drawer class="nx-story__designer-drawer mat-elevation-z"
+    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
         autosize position="end"
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
         [(opened)]="detailsOpen"
         ngmResizer [resizerWidth]="380"
     >
-        <nx-settings-panel class="pac-model__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+        <ngm-settings-panel class="pac-model__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
             liveMode (opened)="detailsOpen=true">
-        </nx-settings-panel>
+        </ngm-settings-panel>
 
         <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
             cdkDrag

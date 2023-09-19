@@ -1,5 +1,5 @@
 <ng-container *ngFor="let slicer of slicers$ | async; index as i">
-  <nx-slicer [slicer]="slicer"
+  <ngm-slicer [slicer]="slicer"
     [dataSettings]="dataSettings"
     [entityType]="entityType"
     [editable]="editable"
@@ -7,7 +7,7 @@
     [limit]="limit"
     (slicerChange)="update($event, i)"
     (removed)="remove(i)">
-  </nx-slicer>
+  </ngm-slicer>
   <mat-divider></mat-divider>
 </ng-container>
 

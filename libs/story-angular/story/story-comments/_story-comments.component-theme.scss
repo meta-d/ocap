@@ -1,7 +1,7 @@
 
 
-@mixin nx-story-comments($config-or-theme) {
-  .nx-story-comments {
+@mixin ngm-story-comments($config-or-theme) {
+  .ngm-story-comments {
     --editor-container-height: 10rem;
     --story-comments-height: 35rem;
     --story-comments-width: 30rem;
@@ -17,7 +17,7 @@
       overflow-y: auto;
     }
 
-    .nx-story-widget__comment-editor {
+    .ngm-story-widget__comment-editor {
       .ql-container {
         height: var(--editor-container-height);
       }

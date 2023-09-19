@@ -19,7 +19,7 @@ export interface VideoWidgetOptions {
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule],
-  selector: 'nx-story-widget-video',
+  selector: 'ngm-story-widget-video',
   templateUrl: './video.component.html',
   styleUrls: ['./video.component.scss']
 })

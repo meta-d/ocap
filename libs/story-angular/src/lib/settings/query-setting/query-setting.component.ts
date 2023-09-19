@@ -30,12 +30,12 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule,
     NgmCommonModule
   ],
-  selector: 'nx-settings-query-setting',
+  selector: 'ngm-settings-query-setting',
   templateUrl: './query-setting.component.html',
   styleUrls: ['./query-setting.component.scss']
 })
 export class QuerySettingComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   ngOnInit() {
     //

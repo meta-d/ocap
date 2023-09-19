@@ -304,7 +304,7 @@ export class NgmMemberDatepickerComponent implements OnInit, OnChanges, ControlV
 }
 
 @Component({
-  selector: 'nx-quarter-filter',
+  selector: 'ngm-quarter-filter',
   template: `<mat-form-field class="flex-1" [appearance]="appearance">
     <mat-label>{{ label }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" [placeholder]="placeholder" />
@@ -373,7 +373,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'nx-month-filter',
+  selector: 'ngm-month-filter',
   template: ` <mat-form-field class="flex-1" [appearance]="appearance">
     <mat-label>{{ label }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" [placeholder]="placeholder"/>
@@ -442,7 +442,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'nx-year-filter',
+  selector: 'ngm-year-filter',
   template: `<mat-form-field class="flex-1" [appearance]="appearance">
     <mat-label>{{ label }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" [placeholder]="placeholder"/>

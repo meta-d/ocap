@@ -8,11 +8,11 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs'
 import { map, startWith, switchMap, tap } from 'rxjs/operators'
 
 @Component({
-  selector: 'nx-entity-select',
+  selector: 'ngm-entity-select',
   templateUrl: './entity-select.component.html',
   styleUrls: ['./entity-select.component.scss'],
   host: {
-    'class': 'nx-entity-select'
+    'class': 'ngm-entity-select'
   }
 })
 export class EntitySelectComponent implements OnInit {

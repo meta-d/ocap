@@ -38,7 +38,8 @@
         </div>
 
         <ng-container [ngSwitch]="useMDX$ | async">
-            <nx-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+            <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                [theme]="themeName()"    
                 [entityType]="entityType$ | async"
                 [(ngModel)]="statement"
                 (ngModelChange)="onStatementChange($event)"
@@ -49,9 +50,10 @@
                 [cdkDropListData]="entities"
                 (cdkDropListDropped)="drop($event)"
                 >
-            </nx-editor-mdx>
+            </ngm-editor-mdx>
 
-            <nx-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+            <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                [theme]="themeName()"    
                 [entityType]="entityType$ | async"
                 [entitySets]="tables$ | async"
                 [(ngModel)]="statement"
@@ -63,20 +65,20 @@
                 [cdkDropListData]="entities"
                 (cdkDropListDropped)="drop($event)"
                 >
-            </nx-editor-sql>
+            </ngm-editor-sql>
         </ng-container>
 
     </ngm-splitter-pane>
     <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
         <!-- <mat-progress-bar *ngIf="loading$ | async" mode="query" class="pac-model-query__progress-bar"></mat-progress-bar> -->
-        <nx-table *ngIf="!error; else errorResult" class="pac-model-ql-lab__result pac-cdk-drop__list pac-cdk-drop__area striped flex-1 h-full"
+        <ngm-table *ngIf="!error; else errorResult" class="pac-model-ql-lab__result pac-cdk-drop__list pac-cdk-drop__area striped flex-1 h-full"
             [columns]="columns"
             [data]="data"
             [paging]="true"
             cdkDropList
             [cdkDropListData]="entities"
             (cdkDropListDropped)="dropTable($event)"
-        ></nx-table>
+        ></ngm-table>
 
         <ng-template #errorResult>
             <div class="pac-result h-full w-full absolute top-0 left-0">

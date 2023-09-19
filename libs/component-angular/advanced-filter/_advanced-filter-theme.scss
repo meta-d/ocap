@@ -9,7 +9,7 @@
   $primary: map.get($config, primary);
   $accent: map.get($config, accent);
 
-  .nx-advanced-filter {
+  .ngm-advanced-filter {
 
     .pac-filter-tree__line {
       width: 0.5rem;
@@ -104,7 +104,7 @@
 }
 
 @mixin density($config-or-theme) {
-  .nx-advanced-filter {
+  .ngm-advanced-filter {
     .pac-filter-tree {
       margin-top: .5rem;
     }

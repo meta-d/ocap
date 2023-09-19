@@ -5,11 +5,11 @@
 // import { assign } from 'lodash-es'
 
 // @Component({
-//   selector: 'nx-property-modeling',
+//   selector: 'ngm-property-modeling',
 //   templateUrl: './property-modeling.component.html',
 //   styleUrls: ['./property-modeling.component.scss'],
 //   host: {
-//     class: 'nx-property-modeling',
+//     class: 'ngm-property-modeling',
 //   },
 //   providers: [
 //     {
