@@ -14,6 +14,7 @@ import { shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IBusinessArea, ToastrService, routeAnimations } from '../../../../@core/index'
 import { BusinessAreaComponent } from '../business-area.component'
 
+
 @Component({
   standalone: true,
   selector: 'pac-business-areas',
@@ -39,6 +40,9 @@ export class BusinessAreasComponent {
   DisplayDensity = DisplayDensity
 
   private readonly businessAreaComponent = inject(BusinessAreaComponent)
+  private readonly businessAreasStore = inject(BusinessAreasService)
+  private readonly _toastrService = inject(ToastrService)
+  private readonly _dialog = inject(MatDialog)
 
   loading = false
   private refresh$ = new BehaviorSubject<void>(null)
@@ -50,14 +54,11 @@ export class BusinessAreasComponent {
     shareReplay(1)
   )
 
-  constructor(
-    private businessAreasStore: BusinessAreasService,
-    private readonly _toastrService: ToastrService,
-    private _dialog: MatDialog
-  ) {}
+  private updateSub = this.businessAreaComponent.update$.pipe(takeUntilDestroyed())
+    .subscribe(() => this.refresh())
 
-  async addGroup(parent?: IBusinessArea) {
-    const area = await this.businessAreaComponent.addGroup(parent)
+  async addBusinessArea(parent?: IBusinessArea) {
+    const area = await this.businessAreaComponent.createBusinessArea(parent)
     if (area) {
       this.refresh$.next()
     }
