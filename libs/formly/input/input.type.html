@@ -1,8 +1,13 @@
 <ngm-input class="w-full" displayDensity="compact"
-    [label]="props?.label"
-    [placeholder]="props?.placeholder"
-    [type]="props?.type"
-    [formControl]="valueFormControl"
-    [options]="options$ | async"
+  [class.ngm-input-error]="formControl.invalid"
+  [label]="props?.label"
+  [placeholder]="props?.placeholder"
+  [type]="props?.type"
+  [formControl]="valueFormControl"
+  [options]="options$ | async"
   >
 </ngm-input>
+
+<mat-error *ngIf="formControl.invalid" class="text-xs flex">
+  <formly-validation-message [field]="field"></formly-validation-message>
+</mat-error>

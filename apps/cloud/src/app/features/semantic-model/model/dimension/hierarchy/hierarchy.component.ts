@@ -163,7 +163,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
         caption: this.T_Count
       })
       return columns
-    })
+    }),
   )
 
   private refresh$ = new BehaviorSubject<void>(null)

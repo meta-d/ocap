@@ -1,4 +1,8 @@
-import { ChatCompletionRequestMessage, CreateChatCompletionRequest, CreateChatCompletionResponseChoicesInner } from 'openai'
+import {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionRequest,
+  CreateChatCompletionResponseChoicesInner
+} from 'openai'
 
 export interface ICopilot {
   enabled?: boolean
@@ -17,10 +21,10 @@ export interface BusinessOperation {
 }
 
 export enum CopilotChatMessageRoleEnum {
-  System = "system",
-  User = "user",
-  Assistant = "assistant",
-  Info = "info"
+  System = 'system',
+  User = 'user',
+  Assistant = 'assistant',
+  Info = 'info'
 }
 
 export interface CopilotChatMessage extends Omit<ChatCompletionRequestMessage, 'role'> {
@@ -49,4 +53,20 @@ export const AI_PROVIDERS = {
   }
 }
 
-export type AIOptions = CreateChatCompletionRequest & {useSystemPrompt?: boolean}
+export type AIOptions = CreateChatCompletionRequest & { useSystemPrompt?: boolean }
+
+// Helper function
+export function getFunctionCall(message: ChatCompletionRequestMessage, name?: string) {
+  if (message.role !== CopilotChatMessageRoleEnum.Assistant) {
+    throw new Error('Only assistant messages can be used to generate function calls')
+  }
+
+  if (name && name !== message.function_call.name) {
+    throw new Error(`The message is not the function call '${name}'`)
+  }
+
+  return {
+    name: message.function_call.name,
+    arguments: JSON.parse(message.function_call.arguments)
+  }
+}

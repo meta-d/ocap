@@ -23,7 +23,6 @@ import { RouterModule } from '@angular/router'
 import { CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { isString, pick } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NxTableModule } from '@metad/components/table'
 import { MarkdownModule } from 'ngx-markdown'
@@ -40,8 +39,9 @@ import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
 import { UserAvatarComponent } from '../../user'
 import { CopilotEnableComponent } from '../enable/enable.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -179,7 +179,7 @@ export class CopilotMessageDirective implements OnChanges {
   }
 }
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -400,7 +400,7 @@ export class CopilotChatComponent {
   })
 
   // Subscribers
-  private _copilotSub = this.copilotService.copilot$.pipe(delay(1000)).subscribe(() => {
+  private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
     this._cdr.detectChanges()
   })
 

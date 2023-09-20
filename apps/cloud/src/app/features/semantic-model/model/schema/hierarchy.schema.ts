@@ -6,6 +6,9 @@ import { distinctUntilChanged, filter, map, switchMap, take } from 'rxjs/operato
 import { nonBlank } from '@metad/core'
 import { DimensionModeling, DimensionSchemaService } from './dimension.schema'
 import { CubeSchemaState } from './types'
+import { AbstractControl } from '@angular/forms'
+import { FormlyFieldConfig } from '@ngx-formly/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable()
 export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy> extends DimensionSchemaService<T> {
@@ -25,6 +28,8 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
         })) ?? []
     ),
   )
+
+  readonly otherHierarchies = toSignal(this.select((state) => state.hierarchies?.filter((item) => item.__id__ !== state.modeling?.__id__)))
   
   /**
    * 多张表关联的维度, 需要为 Hierarchy 指定 `primaryKeyTable`
@@ -66,8 +71,10 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
 
         const dimensionModeling = DimensionModeling(
           SCHEMA,
+          this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
+          this.dimensions
         )
         dimensionModeling.key = 'dimension'
         return [
@@ -100,6 +107,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
     const HIERARCHY = this.HIERARCHY
     const className = FORMLY_W_1_2
     const allMemberHide = `model === null || !model.hasAll`
+    const translate = this.getTranslationFun()
     return {
       key: 'modeling',
       wrappers: ['panel'],
@@ -117,6 +125,14 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               className,
               props: {
                 label: HIERARCHY?.Name ?? 'Name'
+              },
+              validators: {
+                name: {
+                  expression: (c: AbstractControl) => !(this.otherHierarchies().find((item) => item.name === c.value)),
+                  message: (error: any, field: FormlyFieldConfig) => field.formControl.value ? 
+                    translate('PAC.Messages.AlreadyExists', {Default: `Name already exists`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})}) : 
+                    translate('PAC.Messages.IsRequired', {Default: `Name is required`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})})
+                }
               }
             },
             {

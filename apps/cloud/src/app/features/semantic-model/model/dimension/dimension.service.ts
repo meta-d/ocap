@@ -2,7 +2,6 @@ import { Injectable, OnDestroy } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, cloneDeep, isNil } from 'lodash-es'
@@ -10,6 +9,8 @@ import { distinctUntilChanged, filter, map, Observable, of, switchMap, tap, with
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType, ModelDimensionState, PACModelState } from '../types'
 import { nonNullable } from '@metad/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 
 
 @UntilDestroy()
@@ -35,6 +36,10 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
     shareReplay(1)
   )
 
+  private isDirtySub = this.dirtyCheckQuery.isDirty$.pipe(takeUntilDestroyed()).subscribe((dirty) => {
+    this.patchState({ dirty })
+  })
+
   constructor(
     private modelService: SemanticModelService,
     private settingsService: NxSettingsPanelService,
@@ -42,11 +47,6 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
     private router: Router
   ) {
     super({} as ModelDimensionState)
-
-    this.dirtyCheckQuery.isDirty$.pipe(untilDestroyed(this)).subscribe((dirty) => {
-      // console.log(`Dimension is dirty = `, dirty)
-      this.patchState({ dirty })
-    })
 
     this.dimension$.subscribe((dimension) => {
       if (this.modelService.originalDataSource) {

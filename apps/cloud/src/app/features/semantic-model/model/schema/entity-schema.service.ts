@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { DataSettingsSchemaService } from '@metad/story/designer'
-import { TranslateService } from '@ngx-translate/core'
 import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
@@ -13,8 +12,6 @@ import { UntilDestroy } from '@ngneat/until-destroy'
 export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> extends DataSettingsSchemaService<T> {
   protected readonly modelService = inject(SemanticModelService)
   protected readonly entityService? = inject(ModelEntityService, { optional: true })
-
-  private _translateService = inject(TranslateService)
 
   public readonly id$ = this.select((state) => state.id)
   public readonly modeling$ = this.select((state) => state.modeling)
@@ -104,11 +101,4 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
     )
   }
 
-  getTranslation(key: string, params?) {
-    let result = ''
-    this._translateService.get(key, params).subscribe((value) => {
-      result = value
-    })
-    return result
-  }
 }

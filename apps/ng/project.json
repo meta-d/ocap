@@ -2,7 +2,7 @@
   "projectType": "application",
   "root": "apps/ng",
   "sourceRoot": "apps/ng/src",
-  "prefix": "metad-ocap",
+  "prefix": "ngm-ocap",
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
@@ -84,7 +84,8 @@
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
       "options": {
-        "proxyConfig": "apps/ng/proxy.conf.json"
+        "proxyConfig": "apps/ng/proxy.conf.json",
+        "port": 4300
       },
       "configurations": {
         "production": {

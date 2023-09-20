@@ -7,17 +7,20 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotChatResponseChoice,
   CopilotEngine,
-  DefaultModel
+  DefaultModel,
+  getFunctionCall
 } from '@metad/copilot'
 import { Cube, PropertyDimension } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NgmCopilotService } from '@metad/core'
 import { map, of, switchMap } from 'rxjs'
+import { z } from 'zod'
+import { zodToJsonSchema } from 'zod-to-json-schema'
 import { SemanticModelService } from './model.service'
 import { uuid } from '../../../@core'
 import { ModelDimensionState, SemanticModelEntityType } from './types'
 
-type ModelCopilotAction = 'CreateDimension' | 'CreateCube' | 'FreePrompt'
+type ModelCopilotAction = 'create_dimension' | 'create_cube' | 'free_prompt'
 
 
 @Injectable()
@@ -54,7 +57,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
   businessAreas = [
     {
       businessArea: 'Prompt',
-      action: 'FreePrompt',
+      action: 'free_prompt',
       prompts: {
         zhHans: '自由提问'
       },
@@ -63,7 +66,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
     },
     {
       businessArea: 'Dimension',
-      action: 'CreateDimension',
+      action: 'create_dimension',
       prompts: {
         zhHans: '创建维度'
       },
@@ -72,7 +75,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
     },
     {
       businessArea: 'Cube',
-      action: 'CreateCube',
+      action: 'create_cube',
       prompts: {
         zhHans: '创建数据集'
       },
@@ -89,7 +92,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
 问题：根据表 product (id string, name string, type string) 信息创建产品维度
 答案：
 {
-  "action": "CreateDimension",
+  "action": "create_dimension",
   "value": {
     "name": "product",
     "caption": "产品",
@@ -125,36 +128,50 @@ export class ModelCopilotEngineService implements CopilotEngine {
     return of(prompt).pipe(
       switchMap(() => this.preprocess(prompt, this.aiOptions)),
       map((action) => this.assignAction(action, prompt)),
-      switchMap((systemPrompt) => {
-        const _messages = []
-        if (systemPrompt) {
-          _messages.push({
+      switchMap(({systemPrompt, options}: any) => {
+
+        return this.copilotService.chatCompletions([
+          {
             role: CopilotChatMessageRoleEnum.System,
             content: systemPrompt
-          })
-        }
-
-        let userPrompt = prompt
-        for (let index = messages.length - 1; index > -1; index--) {
-          const message = messages[index]
-          // 汇总最新的连续的提问消息内容
-          if (message.role !== CopilotChatMessageRoleEnum.User || message.end) {
-            break
-          }
-
-          userPrompt += '\n' + message.content
-        }
-
-        _messages.push({
-          role: CopilotChatMessageRoleEnum.User,
-          content: `请回答
-问题：${userPrompt}
-答案：`
-        })
-
-        return this.copilotService.chatCompletions(_messages, this.aiOptions).pipe(
+          },
+          {
+            role: CopilotChatMessageRoleEnum.User,
+            content: prompt
+          }], options)
+        .pipe(
           map(({choices}) => choices)
         )
+
+//         const _messages = []
+//         if (systemPrompt) {
+//           _messages.push({
+//             role: CopilotChatMessageRoleEnum.System,
+//             content: systemPrompt
+//           })
+//         }
+
+//         let userPrompt = prompt
+//         for (let index = messages.length - 1; index > -1; index--) {
+//           const message = messages[index]
+//           // 汇总最新的连续的提问消息内容
+//           if (message.role !== CopilotChatMessageRoleEnum.User || message.end) {
+//             break
+//           }
+
+//           userPrompt += '\n' + message.content
+//         }
+
+//         _messages.push({
+//           role: CopilotChatMessageRoleEnum.User,
+//           content: `请回答
+// 问题：${userPrompt}
+// 答案：`
+//         })
+
+//         return this.copilotService.chatCompletions(_messages, this.aiOptions).pipe(
+//           map(({choices}) => choices)
+//         )
       }),
       switchMap((choices) => this.postprocess(prompt, choices))
     )
@@ -172,12 +189,12 @@ export class ModelCopilotEngineService implements CopilotEngine {
 问题：根据表 product (id string, name string, type string) 信息创建产品维度
 答案：
 {
-  "action": "CreateDimension"
+  "action": "create_dimension"
 }
 问题：如何查询 Mysql 数据库中的表信息
 答案：
 {
-  "action": "FreePrompt"
+  "action": "free_prompt"
 }
 `
         },
@@ -196,7 +213,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
           res = JSON.parse(choices[0].message.content)
           return res.action
         } catch (err) {
-          return 'FreePrompt'
+          return 'free_prompt'
         }
       })
     )
@@ -205,7 +222,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
   postprocess(prompt: string, choices: CopilotChatResponseChoice[]) {
     let res
     try {
-      res = JSON.parse(choices[0].message.content)
+      res = getFunctionCall(choices[0].message)
     } catch (err) {
       return of([
         {
@@ -220,14 +237,14 @@ export class ModelCopilotEngineService implements CopilotEngine {
     }
 
     const messages = []
-    res.forEach((operation: BusinessOperation) => {
+    res.forEach((operation) => {
       try {
-        switch (operation.action) {
-          case 'CreateDimension':
-            this.createDimension(operation.value)
+        switch (operation.name) {
+          case 'create_dimension':
+            this.create_dimension(operation.arguments)
             break
-          case 'CreateCube':
-            this.createCube(operation.value)
+          case 'create_cube':
+            this.create_cube(operation.value)
             break
         }
 
@@ -237,7 +254,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
             typeof operation.value === 'string'
               ? operation.value
               : `任务 **${
-                  this.businessAreas.find((item) => item.action === operation.action)?.prompts.zhHans
+                  this.businessAreas.find((item) => item.action === operation.name)?.prompts.zhHans
                 }** 执行完成`
         })
       } catch (err: any) {
@@ -253,20 +270,35 @@ export class ModelCopilotEngineService implements CopilotEngine {
   }
 
   assignAction(action: ModelCopilotAction, prompt: string) {
-    if (action === 'CreateDimension') {
-      return this.createDimensionPrompt(prompt)
-    } else if (action === 'CreateCube') {
-      return this.createCubePrompt(prompt)
+    if (action === 'create_dimension') {
+      return this.create_dimensionPrompt(prompt)
+    } else if (action === 'create_cube') {
+      return this.create_cubePrompt(prompt)
     } else {
       return null
     }
   }
 
-  createDimensionPrompt(prompt: string) {
+  create_dimensionPrompt(prompt: string) {
+    return {
+      systemPrompt: `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`,
+      options: {
+        model: 'gpt-3.5-turbo-0613',
+        functions: [
+          {
+            name: 'create_dimension',
+            description: 'Should always be used to properly format output',
+            parameters: zodToJsonSchema(DimensionSchema)
+          }
+        ],
+        function_call: { name: 'create_dimension' }
+      }
+    }
+
     return `根据表结构给出创建维度 Dimension 的数据结构 json 格式, 不用注释, 不用额外属性, 例如问题: Table "product" (id string, product_category string, product_name string, product_family string) 创建维度
 答案:
 {
-  "action": "CreateDimension",
+  "action": "create_dimension",
   "value": {
     "name": "Product",
     "caption": "产品",
@@ -304,11 +336,11 @@ export class ModelCopilotEngineService implements CopilotEngine {
 }`
   }
 
-  createCubePrompt(prompt: string) {
+  create_cubePrompt(prompt: string) {
     return `根据表结构给出创建数据集 Cube 的数据结构 json 格式, 将可能属于同一个维度的表字段划分到同一维度的 Hierarchy Levels 里, 如 product_category product_id product_name 属于 Product dimension, 不用注释, 不用额外属性, 例如问题: Table "sales" (id string, product_category string, product_id string, product_name string, channel string, amount number) 创建多维数据集
 答案:
 {
-  "action": "CreateCube",
+  "action": "create_cube",
   "value": {
     "name": "Sales",
     "caption": "销售",
@@ -371,7 +403,10 @@ export class ModelCopilotEngineService implements CopilotEngine {
 `
   }
 
-  createDimension(dimension: PropertyDimension) {
+  create_dimension(dimension: PropertyDimension) {
+    
+    console.log(dimension)
+
     const key = uuid()
     const dimensionState: ModelDimensionState = {
       type: SemanticModelEntityType.DIMENSION,
@@ -392,7 +427,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
     this.modelService.activeEntity(dimensionState)
   }
 
-  createCube(cube: Cube) {
+  create_cube(cube: Cube) {
     const key = uuid()
     const cubeState = {
       type: SemanticModelEntityType.CUBE,
@@ -420,3 +455,27 @@ export class ModelCopilotEngineService implements CopilotEngine {
   }
 
 }
+
+const DimensionSchema = z.object({
+  name: z.string().describe('The name of the dimension'),
+  caption: z.string().describe('The caption of the dimension'),
+  hierarchies: z
+    .array(
+      z.object({
+        name: z.string().describe('The name of the hierarchy'),
+        caption: z.string().describe('The caption of the hierarchy'),
+        tables: z.array(z.object({
+          name: z.string().describe('The name of the dimension table')
+          // join: z.object({})
+        })),
+        primaryKey: z.string().describe('The primary key of the dimension table'),
+        levels: z.array(z.object({
+          name: z.string().describe('The name of the level'),
+          caption: z.string().describe('The caption of the level'),
+          column: z.string().describe('The column of the level'),
+        }))
+        .describe('An array of levels in this hierarchy')
+      })
+    )
+    .describe('An array of hierarchies in this dimension')
+})

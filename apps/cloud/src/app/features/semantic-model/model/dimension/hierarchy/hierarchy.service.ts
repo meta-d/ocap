@@ -1,5 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, Optional, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { EntityService, PropertyHierarchy, PropertyLevel, Table } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -7,12 +8,10 @@ import { NgmError, ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { assign, cloneDeep, isEqual, isNil } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import {
-  combineLatest,
   combineLatestWith,
   filter,
   map,
   Observable,
-  of,
   shareReplay,
   switchMap,
   tap,
@@ -21,13 +20,18 @@ import {
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType, ModelDimensionState } from '../../types'
 import { ModelDimensionService } from '../dimension.service'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 @Injectable()
 export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, ModelDimensionState> {
   private readonly toastrService = inject(ToastrService)
-  
+  private readonly modelService = inject(SemanticModelService)
+  private readonly settingsService = inject(NxSettingsPanelService)
+  private readonly logger? = inject(NGXLogger, {optional: true})
+
+  // Signals
+  private readonly sharedDimensions = toSignal(this.modelService.dimensions$)
+
   // Query
   public readonly name$ = this.select((state) => state.name)
   public readonly caption$ = this.select((state) => state.caption)
@@ -43,7 +47,8 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
     map(([hierarchy, dimension]) => ({
       modeling: hierarchy,
       dimension,
-      hierarchies: dimension?.hierarchies
+      hierarchies: dimension?.hierarchies,
+      dimensions: this.sharedDimensions().filter((item) => item.__id__ !== dimension.__id__)
     }))
   )
 
@@ -55,7 +60,7 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
 
   public entityType$ = this.tableName$.pipe(
     switchMap((tableName) => this.modelService.selectOriginalEntityType(tableName)),
-    shareReplay()
+    shareReplay(1)
   )
 
   /**
@@ -64,10 +69,7 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
   column: string
 
   constructor(
-    private modelService: SemanticModelService,
     private parentService: ModelDimensionService,
-    private settingsService: NxSettingsPanelService,
-    @Optional() private logger?: NGXLogger
   ) {
     super({} as PropertyHierarchy)
   }

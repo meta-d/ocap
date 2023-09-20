@@ -121,8 +121,10 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     ),
     map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
   )
-  public readonly dimensions$ = this.select((state) => state.model.schema?.dimensions).pipe(combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
-  map(([dimensions]) => dimensions))
+  public readonly dimensions$ = this.select((state) => state.model.schema?.dimensions).pipe(
+    combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
+    map(([dimensions]) => dimensions)
+  )
   public readonly roles$ = this.model$.pipe(combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))), map(([model, isOlap]) => model?.roles))
   public readonly indicators$ = this.model$.pipe(map((model) => model.indicators))
 

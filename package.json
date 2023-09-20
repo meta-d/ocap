@@ -18,7 +18,6 @@
     "watch:tailwind": "npx tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./packages/angular/.storybook/index.css -m1 --watch",
     "watch:storybook": "npx nx storybook angular",
     "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb && yarn nx build angular",
-
     "build:package:duckdb": "yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb",
     "build:package:contracts": "yarn nx build contracts",
     "build:package:common": "yarn nx build common",
@@ -29,7 +28,6 @@
     "build:package:analytics": "yarn nx build analytics",
     "build:package:olap": "yarn --cwd ./packages/olap build",
     "build:package:all": "yarn nx build contracts && yarn nx build common && yarn nx build config && yarn nx build auth && yarn nx build server && yarn nx build adapter && yarn nx build analytics",
-
     "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name",
     "bootstrap": "yarn install"
   },
@@ -97,6 +95,7 @@
     "immer": "^10.0.1",
     "js-yaml": "^4.1.0",
     "json5": "^2.2.3",
+    "langchain": "^0.0.152",
     "lato-font": "^3.0.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
@@ -133,6 +132,8 @@
     "tslib": "^2.3.0",
     "typeorm": "^0.2.37",
     "xlsx": "^0.18.5",
+    "zod": "^3.22.2",
+    "zod-to-json-schema": "^3.21.4",
     "zone.js": "0.13.1"
   },
   "devDependencies": {

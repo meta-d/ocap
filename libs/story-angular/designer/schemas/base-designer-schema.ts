@@ -36,4 +36,8 @@ export abstract class BaseDesignerSchemaService<T extends BaseSchemaState = Base
   constructor(injector?: Injector) {
     super({} as T)
   }
+
+  getTranslation(key: string, interpolateParams?: any): string {
+    return this.translate.instant(key, interpolateParams)
+  }
 }
