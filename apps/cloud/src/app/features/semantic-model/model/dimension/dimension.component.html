@@ -57,6 +57,13 @@
     </mat-drawer-content>
 </mat-drawer-container>
 
+<div *ngIf="!dimension()" class="pac-result absolute top-0 left-0 w-full h-full z-10 flex flex-col justify-center items-center bg-white/10 backdrop-blur-md">
+    <span class="bug font-notoColorEmoji">🐞</span>
+    <span class="description">{{ 'PAC.MODEL.DIMENSION.DimensionNotFound' | translate: {Default: 'Dimension not found!'} }}</span>
+</div>
+
+
+
 <mat-menu #menu="matMenu" class="ngm-density__compact">
     <button mat-menu-item (click)="editDimension()">
         <mat-icon fontSet="material-icons-round">drive_file_rename_outline</mat-icon>

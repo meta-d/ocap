@@ -12,6 +12,7 @@ import {
   EntityType,
   isEntityType,
   omit,
+  PropertyDimension,
   Schema,
   TableEntity,
   wrapHierarchyValue
@@ -44,6 +45,7 @@ import {
 } from './types'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 @UntilDestroy({checkProperties: true})
@@ -72,8 +74,8 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     map((states) => states?.map((state) => state.dimension))
   )
   public readonly entities$: Observable<SemanticModelEntity[]> = combineLatest([
-    this.cubeStates$, //.pipe(tap((entities) => console.log(entities))),
-    this.dimensionStates$ //.pipe(tap((entities) => console.log(entities)))
+    this.cubeStates$,
+    this.dimensionStates$
   ]).pipe(
     map(([cubes, dimensions]) => {
       return [
@@ -81,6 +83,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
         ...(dimensions?.map((dimension) => ({ ...dimension, caption: dimension.dimension?.caption })) ?? [])
       ]
     }),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -95,14 +98,33 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     // todo 其他情况
     return MODEL_TYPE.SQL
   })
-  // public readonly syntax$ = new BehaviorSubject('')
+
   public readonly isWasm$ = this.model$.pipe(map((model) => model?.agentType === AgentType.Wasm))
   public readonly isXmla$ = this.model$.pipe(map((model) => model?.type === 'XMLA'))
   public readonly isOlap$ = this.modelType$.pipe(map((modelType) => modelType === MODEL_TYPE.OLAP))
   public readonly isSQLSource$ = this.model$.pipe(map((model) => model.dataSource?.type?.protocol?.toUpperCase() === 'SQL' || model?.agentType === AgentType.Wasm))
   public readonly wordWrap$ = this.select((state) => state.viewEditor?.wordWrap)
   
-  public readonly currentEntity$ = this.select((state) => state.currentEntity)
+  // public readonly currentEntity$ = this.select((state) => state.currentEntity)
+  public readonly currentCube$ = combineLatest([
+    this.select((state) => state.currentEntity),
+    this.cubeStates$
+  ]).pipe(
+    map(([current, cubeStates]) => {
+      return cubeStates?.find((item) => item.id === current)?.cube
+    }),
+    takeUntilDestroyed(),
+    shareReplay(1)
+  )
+  public readonly currentDimension$ = combineLatest([
+    this.select((state) => state.currentEntity),
+    this.dimensionStates$
+  ]).pipe(
+    map(([current, dimensionStates]) => dimensionStates?.find((item) => item.id === current)?.dimension),
+    takeUntilDestroyed(),
+    shareReplay(1)
+  )
+
   public readonly currentEntityType$ = combineLatest([
     this.select((state) => state.currentEntity),
     this.entities$
@@ -121,7 +143,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     ),
     map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
   )
-  public readonly dimensions$ = this.select((state) => state.model.schema?.dimensions).pipe(
+  public readonly dimensions$ = this.select((state) => state.model?.schema?.dimensions).pipe(
     combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
     map(([dimensions]) => dimensions)
   )
@@ -475,6 +497,13 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
 
   readonly newDimension = this.updater((state, dimension: ModelDimensionState) => {
     state.dimensions.push(dimension)
+  })
+
+  readonly updateDimension = this.updater((state, dimension: PropertyDimension) => {
+    const dimensionState = state.dimensions.find((item) => item.id === dimension.__id__)
+    if (dimensionState) {
+      dimensionState.dimension = dimension
+    }
   })
 
   readonly updateDataSourceSchemaCube = this.effect((origin$: Observable<Cube>) => {

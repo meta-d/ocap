@@ -82,7 +82,6 @@
                     [cdkDropListData]="entities$ | async"
                     (cdkDropListDropped)="drop($event)"
                     [cdkDropListEnterPredicate]="entityPredicate"
-                    *ngrxLet="currentEntity$ as current"
                 >
                   <div class="max-h-full overflow-y-auto">
                     <a mat-list-item *ngFor="let entity of entities$ | async; trackBy: trackById" class="pac-model__nav-item"
@@ -244,8 +243,7 @@
                 ></div>
             </mat-drawer>
 
-            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
-                >
+            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
                 <router-outlet #o="outlet"></router-outlet>
             </mat-drawer-content>
         </mat-drawer-container>

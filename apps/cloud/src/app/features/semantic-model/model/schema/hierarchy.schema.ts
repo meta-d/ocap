@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { EntityProperty, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { combineLatest } from 'rxjs'
@@ -8,7 +9,7 @@ import { DimensionModeling, DimensionSchemaService } from './dimension.schema'
 import { CubeSchemaState } from './types'
 import { AbstractControl } from '@angular/forms'
 import { FormlyFieldConfig } from '@ngx-formly/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+
 
 @Injectable()
 export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy> extends DimensionSchemaService<T> {
@@ -74,7 +75,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
           this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
-          this.dimensions
+          this.dimensions()
         )
         dimensionModeling.key = 'dimension'
         return [
@@ -95,7 +96,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
                 },
                 fieldGroup: [dimensionModeling]
               }
-            ]
+            ] as FormlyFieldConfig[]
           }
         ]
       })

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { DimensionType, getLevelsHierarchy, PropertyLevel } from '@metad/ocap-core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -14,6 +15,7 @@ import {
   SemanticsExpansion,
 } from './common'
 import { HierarchySchemaService } from './hierarchy.schema'
+
 
 @Injectable()
 export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
@@ -67,6 +69,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
       })
       return options
     }),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -88,8 +91,8 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
                 },
                 fieldGroup: [this.levelModeling]
               },
-              this.role as any
-            ]
+              // this.role as any
+            ] as FormlyFieldConfig[]
           }
         ]
       })
@@ -427,26 +430,4 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
     }
   }
 
-  // get levelProperty() {
-  //   return {
-  //     fieldGroupClassName: FORMLY_ROW,
-  //     key: 'property',
-  //     wrappers: ['expansion'],
-  //     props: {
-  //       label: 'Attributes'
-  //       // enableSelectFields: true,
-  //     },
-  //     fieldGroup: [
-  //       this.semantic,
-  //       this.calendarFormatter,
-  //       {
-  //         key: 'parentChild',
-  //         type: 'checkbox',
-  //         props: {
-  //           label: 'Parent Child'
-  //         }
-  //       }
-  //     ]
-  //   }
-  // }
 }

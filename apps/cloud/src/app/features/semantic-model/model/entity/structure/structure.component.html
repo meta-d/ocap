@@ -14,14 +14,26 @@
             <span class="">
                 {{ 'PAC.MODEL.ENTITY.SourceFields' | translate: {Default: "Source Fields"} }}
             </span>
-            <button *ngIf="isSQLSource$ | async" [disabled]="visibleEmpty" mat-button displayDensity="compact"
-                [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeyGenerateModel' | translate: {Default: 'One-key generate model by table fields'} "
-                (click)="generate()">
-                <mat-icon>auto_fix_high</mat-icon>
-                <span>
-                    {{ 'PAC.MODEL.ENTITY.OnekeyGeneration' | translate: {Default: "One-key Generation"} }}
-                </span>
-            </button>
+            <ng-container *ngIf="isSQLSource$ | async">
+                <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
+                    [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeyGenerateModel' | translate: {Default: 'One-key generate model by table fields'} "
+                    (click)="generate()">
+                    <mat-icon>auto_fix_high</mat-icon>
+                    <span>
+                        {{ 'PAC.MODEL.ENTITY.OnekeyGeneration' | translate: {Default: "One-key Generation"} }}
+                    </span>
+                </button>
+
+                <!-- <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
+                    [matTooltip]=" 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: 'Create dimension'} "
+                    (click)="createDimension()">
+                    <mat-icon>auto_fix_high</mat-icon>
+                    <span>
+                        {{ 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: "Create an dimension"} }}
+                    </span>
+                </button> -->
+            </ng-container>
+
             <button *ngIf="isXmla$ | async" [disabled]="visibleEmpty" mat-button displayDensity="compact"
                 [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeySyncModel' | translate: {Default: 'One-key sync model by source cube defination'} "
                 (click)="sync()">

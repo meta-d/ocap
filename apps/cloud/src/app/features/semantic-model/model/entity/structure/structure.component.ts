@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDragDrop, CdkDragRelease, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, OnInit, inject } from '@angular/core'
 import { SplitterType } from '@metad/ocap-angular/common'
 import {
   AggregationRole,
@@ -38,6 +38,12 @@ import { effectAction } from '@metad/ocap-angular/core'
 export class ModelEntityStructureComponent extends TranslationBaseComponent implements OnInit {
   @HostBinding('class.pac-model-cube-structure') _isModelCubeStructure = true
   SplitterType = SplitterType
+
+  public coreService = inject(NxCoreService)
+  public modelService = inject(SemanticModelService)
+  public entityService = inject(ModelEntityService)
+  private _toastrService = inject(ToastrService)
+  private _cdr = inject(ChangeDetectorRef)
 
   dimensions: Property[] = []
   measures: Property[] = []
@@ -104,15 +110,6 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       )
       this._cdr.detectChanges()
     })
-  constructor(
-    public coreService: NxCoreService,
-    public modelService: SemanticModelService,
-    public entityService: ModelEntityService,
-    private _toastrService: ToastrService,
-    private _cdr: ChangeDetectorRef
-  ) {
-    super()
-  }
 
   ngOnInit(): void {
     this.fectTableFields$
@@ -219,6 +216,28 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
         measures: this.measures
       })
     )
+  }
+
+  async createDimension() {
+    const levels = this.dimensions
+      .filter((item) => item.visible)
+    this.entityService.addDimension({
+      __id__: uuid(),
+      name: '',
+      hierarchies: [
+        {
+          name: '',
+          levels: levels.map((property) => ({
+            __id__: uuid(),
+            name: property.name,
+            caption: property.caption,
+            column: property.name,
+          }))
+        }
+      ]
+    })
+
+    this.toggleVisibleAll(false)
   }
 
   /**

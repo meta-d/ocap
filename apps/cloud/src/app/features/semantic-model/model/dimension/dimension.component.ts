@@ -52,8 +52,9 @@ import { TablesJoinModule } from '../../tables-join'
 export class ModelDimensionComponent extends TranslationBaseComponent implements OnInit {
   detailsOpen = false
 
-  public hierarchies = toSignal(this.dimensionService.hierarchies$)
-  // public readonly hierarchies$ = this.dimensionService.hierarchies$
+  public readonly hierarchies = toSignal(this.dimensionService.hierarchies$)
+  public readonly dimension = toSignal(this.dimensionService.dimension$)
+
   public readonly isMobile$ = this.appService.isMobile$
   public readonly dimension$ = this.dimensionService.dimension$
 

@@ -209,6 +209,14 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     }
   })
 
+  readonly addDimension = this.updater((state, dimension: PropertyDimension) => {
+    state.cube.dimensions = state.cube.dimensions ?? []
+    state.cube.dimensions.push({
+      __id__: uuid(),
+      ...dimension,
+    } as PropertyDimension)
+  })
+
   readonly newDimensionUsage = this.updater((state, { index, usage }: { index: number; usage: DimensionUsage }) => {
     state.cube.dimensionUsages = state.cube.dimensionUsages ?? []
     state.cube.dimensionUsages.splice(Math.min(index, state.cube.dimensionUsages.length), 0, {

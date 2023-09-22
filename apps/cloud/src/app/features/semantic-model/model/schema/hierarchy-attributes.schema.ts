@@ -21,7 +21,7 @@ export class HierarchyAttributesSchema extends HierarchySchemaService<PropertyHi
           this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
-          this.dimensions
+          this.dimensions()
         )
         dimensionModeling.key = 'dimension'
         return [

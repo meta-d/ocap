@@ -1,4 +1,4 @@
-<mat-toolbar class="pac-nav-toolbar flex " displayDensity="compact" *ngrxLet="route$ as current">
+<mat-toolbar class="pac-nav-toolbar flex" displayDensity="compact">
     <button mat-icon-button displayDensity="cosy" (click)="drawer.toggle()">
         <mat-icon fontSet="material-icons-round">segment</mat-icon>
     </button>
@@ -84,3 +84,8 @@
         </mat-drawer-container>
     </mat-drawer-content>
 </mat-drawer-container>
+
+<div *ngIf="!cube()" class="pac-result absolute top-0 left-0 w-full h-full z-10 flex flex-col justify-center items-center bg-white/10 backdrop-blur-md">
+    <span class="bug font-notoColorEmoji">🐞</span>
+    <span class="description">{{ 'PAC.MODEL.ENTITY.CubeNotFound' | translate: {Default: 'Cube not found!'} }}</span>
+</div>

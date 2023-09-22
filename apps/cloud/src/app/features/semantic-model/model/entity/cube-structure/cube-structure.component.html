@@ -71,9 +71,7 @@
                 (mouseleave)="actionStrip.hide()"
               >
                 <div class="w-full flex items-center">
-                  <ngm-entity-property class="flex-1" displayBehaviour="descriptionAndId"
-                    [property]="member"
-                    >
+                  <ngm-entity-property class="flex-1" [property]="member">
                   </ngm-entity-property>
                   
                   <ngm-action-strip #actionStrip [hidden]="true">
@@ -104,13 +102,12 @@
         </mat-toolbar>
       
         <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col overflow-hidden"
-          *ngrxLet="calculatedMembers$ as calculatedMembers"
           cdkDropList
-          [cdkDropListData]="calculatedMembers"
+          [cdkDropListData]="calculatedMembers()"
           [cdkDropListEnterPredicate]="calculatedEnterPredicate"
           (cdkDropListDropped)="dropCalcMembers($event)">
           <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
-            <mat-list-item *ngFor="let member of calculatedMembers" class="ngm-list-item"
+            <mat-list-item *ngFor="let member of calculatedMembers()" class="ngm-list-item"
               [class.bg-orange-100]="!member.name"
               [ngClass]="checklistSelection.isSelected(ModelDesignerType.calculatedMember + '#' + member.__id__)?'selected':''"
               (click)="onSelect(ModelDesignerType.calculatedMember, member)"
@@ -120,9 +117,7 @@
               [cdkDragData]="member"
             >
               <div class="w-full flex items-center">
-                <ngm-entity-property class="flex-1" displayBehaviour="descriptionAndId"
-                  [property]="$any(member)"
-                  >
+                <ngm-entity-property class="flex-1" [property]="$any(member)">
                 </ngm-entity-property>
         
                 <ngm-action-strip #actionStrip [hidden]="true">

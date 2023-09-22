@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { AbstractControl } from '@angular/forms'
 import { ISelectOption } from '@metad/ocap-angular/core'
-import { DimensionType, EntityProperty, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
+import { DimensionType, EntityProperty, Property, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
 import { nonBlank, nonNullable } from '@metad/core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -9,6 +9,7 @@ import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators'
 import { SemanticsExpansion } from './common'
 import { CubeSchemaService } from './cube.schema'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable()
 export class DimensionSchemaService<T extends EntityProperty = PropertyDimension> extends CubeSchemaService<T> {
@@ -36,10 +37,19 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
         })) ?? []
     ),
   )
+  readonly sharedDimensions$ = this.select((state) => state.dimensions)
 
-  get dimensions() {
-    return this.get((state) => state.dimensions)
-  }
+  dimensions = toSignal(combineLatest([
+    this.sharedDimensions$,
+    this.cube$.pipe(map((cube) => cube?.dimensions))
+  ]).pipe(
+    map(([sharedDimensions, dimensions]) => {
+      return [
+        ...(dimensions ?? []),
+        ...(sharedDimensions ?? [])
+      ]
+    })
+  ))
 
   DIMENSION: any
   rt = false
@@ -56,7 +66,7 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
         return [
           {
             type: 'tabs',
-            fieldGroup: [this.builder, this.dataDistribution]
+            fieldGroup: [this.builder]
           }
         ]
       })
@@ -74,7 +84,7 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
           key: 'cube',
           type: 'empty'
         },
-        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.dimensions, this.rt, this.isCube)
+        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.dimensions(), this.rt, this.isCube)
       ]
     }
   }
