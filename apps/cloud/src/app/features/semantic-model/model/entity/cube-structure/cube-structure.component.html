@@ -1,5 +1,5 @@
 <ngm-splitter [type]="SplitterType.Vertical" size='10rem'>
-  <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
+  <ngm-splitter-pane class="pac-model__sub-area shadow-sm rounded-md m-1" minSize="35px">
     <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
       <span>
         {{ 'PAC.MENU.DIMENSIONS' | translate: {Default: "Dimensions"} }}
@@ -42,7 +42,7 @@
   </ngm-splitter-pane>
   <ngm-splitter-pane minSize="70px">
     <ngm-splitter [type]="SplitterType.Vertical" size='10rem' class="flex-1">
-      <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
+      <ngm-splitter-pane class="pac-model__sub-area shadow-sm rounded-md m-1" minSize="35px">
         <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
           <span>
             {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
@@ -88,7 +88,7 @@
           </div>
       </ngm-splitter-pane>
 
-      <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
+      <ngm-splitter-pane class="pac-model__sub-area shadow-sm rounded-md m-1" minSize="35px">
         <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
           <span>
             {{ 'PAC.MENU.CALCULATED_MEMBERS' | translate: {Default: "Calculated Members"} }}

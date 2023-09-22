@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { AbstractControl } from '@angular/forms'
 import { ISelectOption } from '@metad/ocap-angular/core'
-import { DimensionType, EntityProperty, Property, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
+import { DimensionType, EntityProperty, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
 import { nonBlank, nonNullable } from '@metad/core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
-import { distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
 import { SemanticsExpansion } from './common'
 import { CubeSchemaService } from './cube.schema'
-import { toSignal } from '@angular/core/rxjs-interop'
+
 
 @Injectable()
 export class DimensionSchemaService<T extends EntityProperty = PropertyDimension> extends CubeSchemaService<T> {
@@ -38,10 +39,14 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
     ),
   )
   readonly sharedDimensions$ = this.select((state) => state.dimensions)
+  readonly otherDimensions$ = combineLatest([this.dimension$.pipe(map((dimension) => dimension?.__id__)), this.cube$.pipe(map((cube) => cube?.dimensions))])
+    .pipe(
+      map(([id, dimensions]) => dimensions?.filter((dimension) => dimension.__id__ !== id) ?? [])
+    )
 
   dimensions = toSignal(combineLatest([
     this.sharedDimensions$,
-    this.cube$.pipe(map((cube) => cube?.dimensions))
+    this.otherDimensions$
   ]).pipe(
     map(([sharedDimensions, dimensions]) => {
       return [
@@ -161,7 +166,7 @@ export function DimensionModeling(
             type: 'textarea',
             props: {
               label: COMMON?.Description ?? 'Description',
-              rows: 1,
+              autosizeMinRows: 2,
               autosize: true
             }
           },

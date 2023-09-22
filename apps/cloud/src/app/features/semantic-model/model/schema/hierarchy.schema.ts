@@ -129,7 +129,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               },
               validators: {
                 name: {
-                  expression: (c: AbstractControl) => !(this.otherHierarchies().find((item) => item.name === c.value)),
+                  expression: (c: AbstractControl) => !(this.otherHierarchies()?.find((item) => item.name === c.value)),
                   message: (error: any, field: FormlyFieldConfig) => field.formControl.value ? 
                     translate('PAC.Messages.AlreadyExists', {Default: `Name already exists`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})}) : 
                     translate('PAC.Messages.IsRequired', {Default: `Name is required`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})})
@@ -150,7 +150,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               type: 'textarea',
               props: {
                 label: COMMON?.Description ?? 'Description',
-                rows: 1,
+                autosizeMinRows: 2,
                 autosize: true,
               }
             },

@@ -36,19 +36,6 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		private readonly redisClient: RedisClientType
 	) {
 		super(modelRepository, employeeRepository, commandBus)
-
-		// const host = this.configService.get('REDIS_HOST') || 'localhost'
-		// const port = this.configService.get('REDIS_PORT') || 6379
-		// // const username = this.configService.get('REDIS.USERNAME') || ''
-		// const password = this.configService.get('REDIS_PASSWORD') || ''
-
-		// this.redisClient = createClient({
-		// 	url: `redis://@${host}:${port}`,
-		// 	// username,
-		// 	password
-		// })
-
-		// this.redisClient.connect()
 	}
 
 	/**
@@ -99,58 +86,16 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 			relations: ['dataSource', 'dataSource.type', 'roles']
 		})
 
+		// Update Xmla Schema into Redis for model
 		updateXmlaCatalogContent(this.redisClient, model)
-		// if (
-		// 	model.type?.toLowerCase() === 'xmla' &&
-		// 	model.dataSource?.type.protocol === 'sql' &&
-		// 	model.options?.schema && model.options.schema.cubes?.length
-		// ) {
-		// 	const schema = convertSchemaToXmla(model, model.options.schema)
-		// 	const roles = convertSchemaRolesToXmla(model.roles)
-		// 	schema.Role = roles
-		// 	const catalogContent = buildSchema(schema)
 
-		// 	const query_runner = createQueryRunnerByType(model.dataSource.type.type, <AdapterBaseOptions><unknown>(model.dataSource.options ?? {}))
-		// 	const name = model.id
-		// 	this.redisClient.sAdd(XMLA_CONNECTION_KEY, name)
-		// 	this.redisClient.hSet(XMLA_CONNECTION_KEY + ':' + name, {
-		// 		_class: 'com.pangolin.olap.repository.XmlaConnection',
-		// 		id: name,
-		// 		jdbcDriver: query_runner.jdbcDriver,
-		// 		jdbcConnectionString: query_runner.jdbcUrl(model.catalog),
-		// 		description: `Xmla connection for: ${model.dataSource.name}`,
-		// 		catalog: model.catalog,
-		// 		catalogContent
-		// 	})
-		// }
+		// Clear cache for model
+		try {
+			await this.cacheService.delete({ modelId: model.id })
+		} catch(err) {
+			//
+		}
 	}
-
-	// async findOne(
-	// 	id: string | number | FindOneOptions<SemanticModel> | FindConditions<SemanticModel>,
-	// 	options?: FindOneOptions<SemanticModel>
-	// ): Promise<SemanticModel> {
-	// 	const token = RequestContext.currentToken()
-
-	// 	const { id: userId } = verify(token, env.JWT_SECRET) as {
-	// 		id: string
-	// 		role: string
-	// 	}
-
-	// 	const user = await this.userService.findOne(userId, {
-	// 		relations: ['role', 'role.rolePermissions']
-	// 	})
-
-	// 	const isAuthorized = !!user.role.rolePermissions.find(
-	// 		(p) => p.permission === AnalyticsPermissionsEnum.DATA_SOURCE_EDIT && p.enabled
-	// 	)
-
-	// 	return super.findOne(id, options).then((one) => {
-	// 		if (!isAuthorized && one.dataSource) {
-	// 			delete one.dataSource.options
-	// 		}
-	// 		return one
-	// 	})
-	// }
 
 	async query(modelId: string, query: { statement: string }, options: Record<string, unknown>) {
 		const model = await this.repository.findOne(modelId, {

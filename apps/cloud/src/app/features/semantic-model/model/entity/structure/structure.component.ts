@@ -226,7 +226,9 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       name: '',
       hierarchies: [
         {
+          __id__: uuid(),
           name: '',
+          hasAll: true,
           levels: levels.map((property) => ({
             __id__: uuid(),
             name: property.name,

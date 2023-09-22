@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { ISemanticModel } from '@metad/contracts'
 import { TenantBaseEntity } from '@metad/server-core'
 import { IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import { SemanticModel } from '../model.entity'
 
 /**

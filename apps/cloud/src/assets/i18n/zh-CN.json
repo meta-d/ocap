@@ -707,7 +707,8 @@
         "SelectAll": "全选",
         "ConfirmOverwriteCube": "数据集已存在配置，确认覆盖？",
         "PleaseSelectFields": "请选择字段！",
-        "CubeNotFound": "多维数据集未找到！"
+        "CubeNotFound": "多维数据集未找到！",
+        "CreateDimension": "创建维度"
       },
       "DIMENSION": {
         "Levels": "层级",

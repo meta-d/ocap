@@ -24,14 +24,14 @@
                     </span>
                 </button>
 
-                <!-- <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
+                <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
                     [matTooltip]=" 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: 'Create dimension'} "
                     (click)="createDimension()">
                     <mat-icon>auto_fix_high</mat-icon>
                     <span>
                         {{ 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: "Create an dimension"} }}
                     </span>
-                </button> -->
+                </button>
             </ng-container>
 
             <button *ngIf="isXmla$ | async" [disabled]="visibleEmpty" mat-button displayDensity="compact"

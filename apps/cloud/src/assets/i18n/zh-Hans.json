@@ -408,6 +408,10 @@
       "ConfirmExitDirtyData": "有未保存数据, 确认退出吗?",
       "Sure": "确定"
     },
+    "Messages": {
+      "AlreadyExists": "{{value}}已存在",
+      "IsRequired": "{{value}}未输入"
+    },
     "NOTES": {
       "ORGANIZATIONS": {
         "DELETE_CONFIRM": "确定从服务器上删除此组织?",
@@ -702,7 +706,9 @@
         "AllVisible": "所有可见",
         "SelectAll": "全选",
         "ConfirmOverwriteCube": "数据集已存在配置，确认覆盖？",
-        "PleaseSelectFields": "请选择字段！"
+        "PleaseSelectFields": "请选择字段！",
+        "CubeNotFound": "多维数据集未找到！",
+        "CreateDimension": "创建维度"
       },
       "DIMENSION": {
         "Levels": "层级",
@@ -710,7 +716,8 @@
         "DataPreview": "数据预览",
         "Count": "计数",
         "EditAttributes": "编辑属性",
-        "SameLevelAlreadyExists": "相同层级已存在"
+        "SameLevelAlreadyExists": "相同层级已存在",
+        "DimensionNotFound": "维度未找到！"
       },
       "UPLOAD": {
         "Title": "上传数据文件",
