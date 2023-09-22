@@ -24,6 +24,16 @@
 .ngm-select-element:focus {
   @apply bg-white;
 }
-.mdc-text-field__input.mat-mdc-input-element {
-  @apply h-7;
+
+.mat-mdc-input-element.mat-mdc-autocomplete-trigger {
+  @apply ml-0;
+}
+
+.pac-insight__bottom-padding {
+  height: 90px;
+}
+.pac-indight__expand-model {
+  .pac-insight__bottom-padding {
+    height: 285px;
+  }
 }

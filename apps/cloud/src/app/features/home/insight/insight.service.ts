@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
@@ -17,11 +18,13 @@ import { UntilDestroy } from '@ngneat/until-destroy'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import JSON5 from 'json5'
 import { uniq, upperFirst } from 'lodash-es'
-import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, switchMap } from 'rxjs'
-import { calcEntityTypePrompt, CopilotService, ISemanticModel, registerModel } from '../../../@core'
+import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, map, switchMap } from 'rxjs'
 import { getSemanticModelKey } from '@metad/story/core'
 import { nonNullable } from '@metad/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import zodToJsonSchema from 'zod-to-json-schema'
+import { ChartSchema } from './types'
+import { calcEntityTypePrompt, CopilotService, registerModel } from '../../../@core'
+
 
 
 @UntilDestroy()
@@ -43,12 +46,26 @@ export class InsightService {
   modelSignal = toSignal(this.model$)
   // cube: Cube
   cube = signal<Cube>(null)
+
   private _suggestedPrompts = signal<Record<string, string[]>>({})
 
   suggestedPrompts = computed(() => {
     return this._suggestedPrompts()[(getSemanticModelKey(this.modelSignal()) + (this.cube()?.name ?? ''))]
   })
   suggesting = false
+
+  entityType = toSignal(
+    combineLatest([
+      this.model$.pipe(map(getSemanticModelKey)),
+      toObservable(this.cube).pipe(map((cube) => cube?.name))
+    ]).pipe(
+      debounceTime(100),
+      filter(([key, cube]) => !!key && !!cube),
+      switchMap(([key, cube]) => this.dsCoreService.selectEntitySet(key, cube).pipe(
+        map((entitySet) => entitySet?.entityType)
+      ))
+    )
+  )
   error = ''
   answers = [
   ]
@@ -178,6 +195,13 @@ export class InsightService {
     }
   }
 
+  /**
+   * Request copilot answer using prompt
+   * 
+   * @param prompt 
+   * @param options 
+   * @returns 
+   */
   async askCopilot(prompt: string, options?: { signal: AbortSignal }) {
     const dataSourceName = this.model.key
     try {
@@ -185,11 +209,11 @@ export class InsightService {
       const classification = hasCube && this.cube() ? this.cube().name : await this.preclassify(prompt, options)
       const entityType = await this.getEntityType(classification)
       const cubes = await this.getAllCubes()
-      const choices = await this.copilotService.createChat(
-        [
-          {
-            role: CopilotChatMessageRoleEnum.System,
-            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户问题对应的图形的配置 in json format，不用解释。过滤条件为 slicers，slicers is optional, Order is optional。
+
+      const messages = [
+        {
+          role: CopilotChatMessageRoleEnum.System,
+          content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户问题对应的图形的配置 in json format，不用解释。过滤条件为 slicers，slicers is optional, Order is optional。
 ${this.getChartTypePrompt()}
 ${this.getSlicersPrompt()}
 ${this.getDimensionPrompt()}
@@ -199,58 +223,72 @@ ${this.getDataSettingsPrompt()}
 多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
 问题：产品类别为 Bike 的访问量走势
 回答：{
-  "cube": "Visit",
-  "chartType": {
-    "type": "Line"
-  },
-  "dimension": {
-    "dimension": "[Time]",
-    "hierarchy": "[Time]",
-    "level": "[Time].[Day]",
-  },
-  "measure": {
-    "measure": "visits"
-  },
-  "slicers": [
-    {
-      "dimension": {
-        "dimension": "[Product]",
-        "hierarchy": "[Product]",
-        "level": "[Product].[Category]"
-      },
-      "members": [
+"cube": "Visit",
+"chartType": {
+  "type": "Line"
+},
+"dimension": {
+  "dimension": "[Time]",
+  "hierarchy": "[Time]",
+  "level": "[Time].[Day]",
+},
+"measure": {
+  "measure": "visits"
+},
+"slicers": [
+  {
+    "dimension": {
+      "dimension": "[Product]",
+      "hierarchy": "[Product]",
+      "level": "[Product].[Category]"
+    },
+    "members": [
+      {
+        "value": "Bike"
+      }
+    ]
+  }
+]
+}`
+        },
         {
-          "value": "Bike"
+          role: CopilotChatMessageRoleEnum.User,
+          content: `多维数据模型信息为：
+${this.getEntityTypePrompt(entityType)}
+问题：${prompt}
+回答：`
         }
       ]
-    }
-  ]
-}`
-          },
+
+      const requestOptions = {
+        model: 'gpt-3.5-turbo-0613',
+        functions: [
           {
-            role: CopilotChatMessageRoleEnum.User,
-            content: `多维数据模型信息为：
-  ${this.getEntityTypePrompt(entityType)}
-  问题：${prompt}
-  回答：`
+            name: 'create_dimension',
+            description: 'Should always be used to properly format output',
+            parameters: zodToJsonSchema(ChartSchema)
           }
         ],
+        function_call: { name: 'create_dimension' }
+      }
+
+      const choices = await this.copilotService.createChat(messages,
         {
           ...(options ?? {}),
-          request: {
-            temperature: 0.2 // 不要那么随意
-          }
+          request: requestOptions
         }
       )
 
+      let answer
       try {
-        const answer = JSON5.parse(choices[0].message.content)
-        const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer)
+        answer = getFunctionCall(choices[0].message)
+        
+        const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer.arguments)
         const answerMessage = {
-          message: choices[0].message.content,
+          message: JSON.stringify(answer.arguments, null, 2),
           dataSettings: {
             dataSource: dataSourceName,
-            entitySet: answer.cube,
+            entitySet: answer.arguments.cube,
             chartAnnotation,
             presentationVariant: {
               maxItems: limit,
@@ -263,7 +301,7 @@ ${this.getDataSettingsPrompt()}
           } as DataSettings,
           slicers,
           chartOptions,
-          isCube: cubes.find((item) => item.name === answer.cube)
+          isCube: cubes.find((item) => item.name === answer.arguments.cube)
         }
 
         return answerMessage
@@ -271,6 +309,8 @@ ${this.getDataSettingsPrompt()}
         return {
           message: choices[0].message.content
         }
+      } finally {
+        console.log(`Request is `, messages, requestOptions, `Answer is `, answer)
       }
     } catch(err: any) {
       this.error = err.message
@@ -278,7 +318,6 @@ ${this.getDataSettingsPrompt()}
         message: ''
       }
     }
-
   }
 
   async suggestPrompts(cube?: Cube) {

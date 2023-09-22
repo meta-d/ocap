@@ -17,7 +17,6 @@ import {
   Semantics,
   TimeRange,
 } from '@metad/ocap-core'
-import { ComponentStore } from '@metad/store'
 import { NxTimeFilterEditorComponent } from '@metad/components/time-filter'
 import { DateVariableEnum, NxCoreService } from '@metad/core'
 import { pick } from 'lodash-es'
@@ -27,7 +26,7 @@ import { AdvancedSlicerComponent } from './advanced-slicer/advanced-slicer.compo
 import { SlicersCapacity } from './types'
 
 @Directive({})
-export class BaseSlicersComponent extends ComponentStore<{}> {
+export class BaseSlicersComponent {
   isSemanticCalendar = isSemanticCalendar
 
   public coreService = inject(NxCoreService)
@@ -51,10 +50,7 @@ export class BaseSlicersComponent extends ComponentStore<{}> {
   protected entityType$ = new BehaviorSubject<EntityType>(null)
 
   public readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
-
-  constructor() {
-    super({})
-  }
+ 
 
   async openSlicerCreator(property: Property | SlicersCapacity) {
     const entityType = this.entityType
@@ -136,7 +132,9 @@ export class BaseSlicersComponent extends ComponentStore<{}> {
     }
   }
 
-  async addSlicer(slicer: ISlicer) {}
+  async addSlicer(slicer: ISlicer) {
+    //
+  }
 
   /**
    * Open value help dialog of property for select members
@@ -208,7 +206,7 @@ export class BaseSlicersComponent extends ComponentStore<{}> {
       const dialogRef = this._dialog.open(NgmValueHelpComponent, {
         viewContainerRef: this.viewContainerRef,
         data: {
-          dimension: slicer.dimension,
+          dimension: pick(slicer, 'dimension', 'hierarchy'),
           slicer: slicer,
           dataSettings: this.dataSettings,
           options: {

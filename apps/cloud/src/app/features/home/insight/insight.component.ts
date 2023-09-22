@@ -2,7 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop'
 import { ENTER } from '@angular/cdk/keycodes'
 import { CdkTreeModule } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatChipInputEvent } from '@angular/material/chips'
@@ -11,8 +11,9 @@ import { MatExpansionModule } from '@angular/material/expansion'
 import { Router, RouterModule } from '@angular/router'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { Cube, DataSettings } from '@metad/ocap-core'
+import { Cube, DataSettings, getEntityDimensions, getEntityIndicators, getEntityMeasures, isIndicatorMeasureProperty, negate } from '@metad/ocap-core'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NgmSemanticModel } from '@metad/cloud/state'
@@ -22,7 +23,8 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService } from '../../../@core'
 import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -43,6 +45,7 @@ import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
     AppearanceDirective,
     AnalyticalCardModule,
     NxSelectionModule,
+    NgmEntityPropertyComponent,
 
     CopilotEnableComponent
   ],
@@ -76,11 +79,11 @@ export class InsightComponent {
     return this.insightService.suggestedPrompts
   }
 
+  readonly answers = signal([])
+
   answering = false
   askController: AbortController
-  get answers() {
-    return this.insightService.answers
-  }
+
   get suggesting() {
     return this.insightService.suggesting
   }
@@ -92,6 +95,31 @@ export class InsightComponent {
   readonly models$ = this.insightService.models$
   readonly hasCube$ = this.insightService.hasCube$
   readonly cubes$ = this.insightService.cubes$
+
+  readonly entityType = this.insightService.entityType
+
+  dimensions = computed(() => {
+    if (this.entityType()) {
+      return getEntityDimensions(this.entityType())
+    }
+    return null
+  })
+
+  measures = computed(() => {
+    if (this.entityType()) {
+      return getEntityMeasures(this.entityType()).filter(negate(isIndicatorMeasureProperty))
+    }
+    return null
+  })
+
+  indicators = computed(() => {
+    if (this.entityType()) {
+      return getEntityIndicators(this.entityType())
+    }
+    return null
+  })
+
+  showModel = signal(null)
 
   private promptControlSub = this.promptControl.valueChanges.subscribe(() => this.insightService.error = '')
 
@@ -115,7 +143,13 @@ export class InsightComponent {
     await this.insightService.setCube(cube)
   }
 
+  /**
+   * Add an ask prompt
+   * 
+   * @param event 
+   */
   async add(event: MatChipInputEvent) {
+    // Prompt value
     const value = (event.value || '').trim();
 
     // Clear the input value
@@ -132,8 +166,18 @@ export class InsightComponent {
     this.promptControl.setValue(event.option.viewValue)
   }
 
+  removeAnswer(index: number) {
+    this.answers().splice(index, 1)
+    this.answers.set([...this.answers()])
+  }
+
+  /**
+   * Ask copilot using prompt
+   * 
+   * @param prompt string
+   */
   async askCopilot(prompt: string) {
-    // 取消上一个请求
+    // Cancel prev ask request if any
     this.askController?.abort()
     this.askController = new AbortController()
     this.answering = true
@@ -144,64 +188,33 @@ export class InsightComponent {
       answering: true
     }
 
-    this.answers.push(_answer)
+    // Append answer
+    this.answers.set([
+      ...this.answers(),
+      _answer
+    ])
 
+    // Ask copilot
     const answer = await this.insightService.askCopilot(prompt, {
       signal: this.askController.signal
     })
 
-    const index = this.answers.indexOf(_answer)
-    this.answers[index] = {
-      ..._answer,
-      ...answer,
-      expanded: true,
-      answering: false
-    }
+    // Update answer
+    const index = this.answers().indexOf(_answer)
+    this.answers.set([
+      ...this.answers().slice(0, index),
+      {
+        ..._answer,
+        ...answer,
+        expanded: true,
+        answering: false
+      },
+      ...this.answers().slice(index + 1)
+    ])
 
     this.answering = false
     this._cdr.detectChanges()
   }
-
-  // getModelPromptInfo(model: NgmSemanticModel) {
-  //   return model.schema.cubes.map((cube) => ({
-  //     name: cube.name,
-  //     caption: cube.caption,
-  //     dimensions: [
-  //       ...(cube.dimensionUsages?.map((usage) => {
-  //         const dimension = model.schema.dimensions.find((item) => item.name === usage.name)
-
-  //         return {
-  //           name: usage.name,
-  //           caption: usage.caption,
-  //           hierarchies: dimension.hierarchies.map((item) => ({
-  //             name: item.name,
-  //             caption: item.name,
-  //             levels: item.levels.map((item) => ({
-  //               name: item.name,
-  //               caption: item.caption
-  //             }))
-  //           }))
-  //         }
-  //       }) ?? []),
-  //       ...(cube.dimensions?.map((dimension) => ({
-  //         name: dimension.name,
-  //         caption: dimension.caption,
-  //         hierarchies: dimension.hierarchies.map((item) => ({
-  //           name: item.name,
-  //           caption: item.name,
-  //           levels: item.levels.map((item) => ({
-  //             name: item.name,
-  //             caption: item.caption
-  //           }))
-  //         }))
-  //       })) ?? [])
-  //     ],
-  //     measures: cube.measures?.map((item) => ({
-  //       name: item.name,
-  //       caption: item.caption,
-  //     })) ?? []
-  //   }))
-  // }
 
   async addToStory(answer) {
     const addToStoryTitle = await firstValueFrom(this.translateService.get('PAC.Home.Insight.AddWidgetToStoryTitle', {Default: 'Add widget to story'}))

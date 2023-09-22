@@ -1,5 +1,6 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { Component, EventEmitter, forwardRef, inject, Input, OnInit, Output } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, getEntityDimensions, getPropertyName, ISlicer, Syntax } from '@metad/ocap-core'
@@ -19,7 +20,6 @@ import {
 import { BaseSlicersComponent } from '../base-slicers'
 import { SlicerBarComponent } from '../slicer-bar/slicer-bar.component'
 import { SlicersCapacity } from '../types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 @Component({
