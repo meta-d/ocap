@@ -4,7 +4,9 @@
             <mat-label>
               {{ 'PAC.KEY_WORDS.Project' | translate: {Default: 'Project'} }}
             </mat-label>
-            <mat-select [formControl]="projectControl" [compareWith]="compareWith">
+            <mat-select [formControl]="projectControl" [compareWith]="compareWith"
+              panelClass="ngm-select-panel ngm-density__cosy"
+            >
               <mat-option *ngFor="let project of projects$ | async" [value]="project">
                 <div class="flex items-center">
                     <mat-icon *ngIf="project.modelNotInProject" displayDensity="compact" class="shrink-0"
@@ -19,7 +21,8 @@
             <mat-label>
               {{ 'PAC.KEY_WORDS.Story' | translate: {Default: 'Story'} }}
             </mat-label>
-            <mat-select [formControl]="storyControl" [compareWith]="compareWith">
+            <mat-select [formControl]="storyControl" [compareWith]="compareWith"
+              panelClass="ngm-select-panel ngm-density__cosy">
               <mat-option *ngFor="let story of stories$ | async" [value]="story">
                 <div class="flex items-center ">
                     <mat-icon *ngIf="story.modelNotInStory" displayDensity="compact" class="shrink-0"

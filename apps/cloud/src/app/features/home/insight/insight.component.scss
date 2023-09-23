@@ -37,3 +37,9 @@
     height: 285px;
   }
 }
+
+.pac-insight__ask-input {
+  .cdk-drag-placeholder {
+    @apply absolute left-0 top-0;
+  }
+}

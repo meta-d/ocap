@@ -6,10 +6,8 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { SemanticModel } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { convertStoryResult, StoriesService, WidgetsService } from '@metad/cloud/state'
+import { StoriesService, WidgetsService } from '@metad/cloud/state'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { BehaviorSubject, distinctUntilChanged, firstValueFrom, map, of, switchMap, tap } from 'rxjs'
 import { DefaultProject, ISemanticModel, IStory, ProjectService } from '../../../@core'
@@ -17,7 +15,7 @@ import { LazyImgDirective } from '../../directives/lazy-img.directive'
 import { MaterialModule } from '../../material.module'
 import { CreatedByPipe } from '../../pipes'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -110,13 +108,13 @@ export class StorySelectorComponent {
     distinctUntilChanged(),
     switchMap((id) =>
       this.projectStories.get(id) ? of(this.projectStories.get(id)) :
-      this.storiesService.getAllByProject(id === DefaultProject.id ? null : id, ['points'])
+      this.storiesService.getAllByProject(id === DefaultProject.id ? null : id, ['points', 'models'])
         .pipe(tap((stories) => this.projectStories.set(id, stories)))
     ),
     switchMap((stories) => this._model$.pipe(
       map((model) => stories.map((story) => ({
         ...story,
-        modelNotInStory: story.modelId !== model?.id
+        modelNotInStory: !story.models.find((item) => item.id === model?.id)
       }))),
     ))
   )

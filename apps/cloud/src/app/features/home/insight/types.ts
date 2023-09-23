@@ -9,6 +9,9 @@ export const ChartSchema = z.object({
     chartOptions: z.object({
         seriesStyle: z.any().describe('The series options of ECharts library'),
         legend: z.any().describe('The legend options of ECharts library'),
+        axis: z.any().describe('The axis options of ECharts library'),
+        dataZoom: z.any().describe('The dataZoom options of ECharts library'),
+        tooltip: z.any().describe('The tooltip options of ECharts library'),
     }).describe('The chart options of ECharts library')
   }),
   dimensions: z
@@ -16,14 +19,16 @@ export const ChartSchema = z.object({
       z.object({
         dimension: z.string().describe('The name of the dimension'),
         hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-        level: z.string().optional().describe('The name of the level in the hierarchy')
+        level: z.string().optional().describe('The name of the level in the hierarchy'),
       })
     )
     .describe('The dimensions used by the chart'),
   measures: z
     .array(
       z.object({
-        measure: z.string().describe('The name of the measure')
+        measure: z.string().describe('The name of the measure'),
+        order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
+        chartOptions: z.any().optional().describe('The chart options of ECharts library')
       })
     )
     .describe('The measures used by the chart'),
@@ -47,3 +52,5 @@ export const ChartSchema = z.object({
     })
   ).describe('The slicers used by the chart')
 })
+
+export const SuggestPromptsSchema = z.array(z.string().describe('The suggested prompt')).describe('The suggested prompts')

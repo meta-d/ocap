@@ -1167,7 +1167,10 @@
     "Home": {
       "Insight": {
         "CreateSemanticModelForUse": "添加到故事：创建语义模型后才能使用",
-        "AddWidgetToStoryTitle": "将部件添加到故事"
+        "AddWidgetToStoryTitle": "将微件添加到故事",
+        "AskAICopilot": "向 AI 副驾驶询问问题",
+        "AskAICopilotDesc": "您可以针对您的数据提出问题，并立即将答案以可视化形式呈现。这些可视化图表最终可以添加到您的故事中。",
+        "ForExample": "例如"
       }
     },
     "ApprovalPolicy": {

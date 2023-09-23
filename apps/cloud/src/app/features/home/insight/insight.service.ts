@@ -15,6 +15,7 @@ import {
   isEntityType
 } from '@metad/ocap-core'
 import { UntilDestroy } from '@ngneat/until-destroy'
+import { TranslateService } from '@ngx-translate/core'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import JSON5 from 'json5'
 import { uniq, upperFirst } from 'lodash-es'
@@ -22,9 +23,8 @@ import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, m
 import { getSemanticModelKey } from '@metad/story/core'
 import { nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { ChartSchema } from './types'
+import { ChartSchema, SuggestPromptsSchema } from './types'
 import { calcEntityTypePrompt, CopilotService, registerModel } from '../../../@core'
-
 
 
 @UntilDestroy()
@@ -34,6 +34,9 @@ export class InsightService {
   private copilotService = inject(CopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private wasmAgent = inject(WasmAgentService)
+  private readonly translateService = inject(TranslateService)
+
+  language = toSignal(this.translateService.onLangChange.pipe(map(({lang}) => lang)))
 
   get model(): NgmSemanticModel {
     return this.model$.value
@@ -140,6 +143,7 @@ export class InsightService {
   )
 
   async setModel(model: NgmSemanticModel) {
+    this.error = null
     model = convertNewSemanticModelResult(await firstValueFrom(this.modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type',])))
     this.model = model
     if (!this._suggestedPrompts()[getSemanticModelKey(model)]) {
@@ -150,6 +154,7 @@ export class InsightService {
   }
 
   async setCube(cube: Cube) {
+    this.error = null
     this.cube.set(cube)
     if (cube) {
       const prompts = await this.suggestPrompts()
@@ -264,12 +269,12 @@ ${this.getEntityTypePrompt(entityType)}
         model: 'gpt-3.5-turbo-0613',
         functions: [
           {
-            name: 'create_dimension',
+            name: 'create_chart',
             description: 'Should always be used to properly format output',
             parameters: zodToJsonSchema(ChartSchema)
           }
         ],
-        function_call: { name: 'create_dimension' }
+        function_call: { name: 'create_chart' }
       }
 
       const choices = await this.copilotService.createChat(messages,
@@ -334,7 +339,7 @@ ${this.getEntityTypePrompt(entityType)}
         [
           {
             role: CopilotChatMessageRoleEnum.System,
-            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的问题 in json format，不用解释。
+            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的问题(use language: ${this.language()}) in json format，不用解释。
   例如：
   多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
   回答：[
@@ -349,9 +354,23 @@ ${this.getEntityTypePrompt(entityType)}
             content: `多维数据模型信息为：${prompt}\n回答：`
           }
         ],
+        {
+          request: {
+            model: 'gpt-3.5-turbo-0613',
+            functions: [
+              {
+                name: 'create_suggests',
+                description: 'Should always be used to properly format output',
+                parameters: zodToJsonSchema(SuggestPromptsSchema)
+              }
+            ],
+            function_call: { name: 'create_suggests' }
+          }
+        }
       )
-      const answer = JSON5.parse(choices[0].message.content)
-      return answer
+
+      const answer = getFunctionCall(choices[0].message) //
+      return answer.arguments
     } catch (err: any) {
       this.error = err.message
       return []
