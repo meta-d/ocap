@@ -1,7 +1,7 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { SelectionModel } from '@angular/cdk/collections'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, HostBinding, Input, Output, forwardRef } from '@angular/core'
+import { ChangeDetectionStrategy, Component, HostBinding, Input, Output, forwardRef, signal } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { map } from 'rxjs/operators'
@@ -48,6 +48,15 @@ export class NgmTagsComponent implements ControlValueAccessor {
   }
   private _disabled = false
 
+  @Input()
+  get multiple() {
+    return this._multiple()
+  }
+  set multiple(value: string | boolean) {
+    this._multiple.set(coerceBooleanProperty(value))
+  }
+  private _multiple = signal(false)
+
   selection = new SelectionModel<string>(true, [])
 
   @Output() selectedChange = this.selection.changed.pipe(map((change) => change.source.selected))
@@ -60,17 +69,20 @@ export class NgmTagsComponent implements ControlValueAccessor {
   })
 
   toggleTag(tag: ISelectOption<string>) {
-    this.selection.toggle(tag.value)
+    this.selection.selected.filter((item) => item !== (tag.key ?? tag.value)).forEach((key) => {
+      this.selection.deselect(key)
+    })
+    this.selection.toggle(tag.key ?? tag.value)
   }
 
   isSelected(tag: ISelectOption<string>) {
-    return this.selection.isSelected(tag.value)
+    return this.selection.isSelected(tag.key ?? tag.value)
   }
 
   writeValue(obj: any): void {
     this.selection.clear()
     if (obj) {
-        this.selection.select(...obj)
+      this.selection.select(...obj)
     }
   }
   registerOnChange(fn: any): void {

@@ -683,6 +683,9 @@ export const ZhHans = {
       Tags: '标签',
       PreviewExceedsMaximum: '文件大小超过限制',
     },
+    Explorer: {
+      AddDimensions: '添加维度',
+    },
     STYLING: {
       CSS: {
         BACKGROUND: {

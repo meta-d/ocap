@@ -101,6 +101,10 @@
       <mat-icon fontSet="material-icons-round">refresh</mat-icon>
       {{ 'Story.Widget.Refresh' | translate: {Default: "Refresh"} }}
     </button>
+    <button cdkMenuItem (click)="explore()">
+      <mat-icon fontSet="material-icons-round">explore</mat-icon>
+      {{ 'Story.Widget.Explore' | translate: {Default: "Explore"} }}
+    </button>
 
     <ng-container *ngIf="navigate$ | async as item">
       <button cdkMenuItem *ngIf="item.show" (click)="navigate(item.dataSettings)">

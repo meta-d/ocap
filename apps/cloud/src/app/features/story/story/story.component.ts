@@ -14,9 +14,10 @@ import {
   ViewChild
 } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
+import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { AgentType, isEqual } from '@metad/ocap-core'
+import { AgentType, C_MEASURES, isEqual } from '@metad/ocap-core'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
@@ -29,8 +30,10 @@ import {
   StoryPointType,
   WidgetComponentType
 } from '@metad/story/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import { StoryExplorerModule } from '@metad/story'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
@@ -39,9 +42,8 @@ import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
-import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+
 
 type ResponsiveBreakpointType = {
   name: string;
@@ -65,6 +67,7 @@ type ResponsiveBreakpointType = {
     NxStoryModule,
     NxDesignerModule,
     StoryToolbarComponent,
+    StoryExplorerModule
   ],
   selector: 'pac-story',
   templateUrl: './story.component.html',
@@ -156,6 +159,10 @@ export class StoryComponent implements OnInit {
   readonly pageKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey']))
   readonly widgetKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey']))
 
+  // Story explorer
+  showExplorer = signal(false)
+  explore = signal(null)
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -192,6 +199,11 @@ export class StoryComponent implements OnInit {
 
     if (params.$language) {
       this.storyOptions.locale = params.$language
+    }
+
+    if (params.explore) {
+      this.showExplorer.set(true)
+      this.explore.set(JSON.parse(atob(params.explore)))
     }
   })
 
@@ -319,5 +331,14 @@ export class StoryComponent implements OnInit {
 
   onToolbarDragEnded(event: CdkDragEnd) {
     this.toolbarComponent.calculateRightSide(event)
+  }
+
+  closeExplorer(event) {
+    this.showExplorer.set(false)
+    this._router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {explore: null},
+      queryParamsHandling: 'merge' // remove to replace all query params by provided
+    })
   }
 }

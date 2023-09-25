@@ -21,6 +21,7 @@ import { NxStoryPointComponent } from './story-point/story-point.component'
 import { NxStoryWidgetComponent } from './story-widget/story-widget.component'
 import { NxStoryComponent } from './story/story.component'
 
+
 @NgModule({
   declarations: [],
   imports: [
@@ -50,7 +51,7 @@ import { NxStoryComponent } from './story/story.component'
     NxStoryComponent,
     NxStoryPointComponent,
     NxStoryWidgetComponent,
-    StoryCommentsComponent
+    StoryCommentsComponent,
   ],
   exports: [NxStoryComponent, NxStoryWidgetComponent, NxStoryPointComponent]
 })

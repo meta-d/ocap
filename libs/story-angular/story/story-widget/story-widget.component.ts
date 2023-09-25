@@ -75,6 +75,7 @@ import { ContentLoaderModule } from '@ngneat/content-loader'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { StoryCommentsComponent } from '../story-comments/story-comments.component'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { ActivatedRoute, Params, Router } from '@angular/router'
 
 interface StoryWidgetState {
   selected: boolean
@@ -115,8 +116,10 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
   private readonly _renderer = inject(Renderer2)
   private readonly _elementRef = inject(ElementRef)
-  private storyCopilotEngine? = inject(StoryCopilotEngineService, {optional: true})
-  private pointComponent? = inject(NxStoryPointComponent, {optional: true})
+  private readonly storyCopilotEngine? = inject(StoryCopilotEngineService, {optional: true})
+  private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
+  private readonly router = inject(Router)
+  private readonly route = inject(ActivatedRoute)
 
   @Input() key: string
 
@@ -805,11 +808,24 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     saveAsYaml(fileName, omit(this.widget, 'id', 'key'))
   }
 
+  async explore() {
+    const dataSettings = await firstValueFrom(this.dataSettings$)
+    const queryParams: Params = { explore: btoa(JSON.stringify({
+      dataSettings: dataSettings,
+      chartAnnotation: dataSettings.chartAnnotation,
+      analytics: dataSettings.analytics,
+    })) }
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge' // remove to replace all query params by provided
+    })
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKeydown(event: KeyboardEvent) {
     if (this.fullscreen) {
       this.fullscreen = false
     }
   }
-
 }

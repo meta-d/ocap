@@ -150,8 +150,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       label: 'ID Only',
     },
   ]
-  // @Input() appearance: MatFormFieldAppearance = 'fill'
-  // @Input() floatLabel: FloatLabelType = 'auto'
+
   @Input() label: string
   @Input() get required(): boolean {
     return this._required
@@ -188,14 +187,6 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   }
   private readonly dataSettings$ = new BehaviorSubject<DataSettings>(null)
 
-  @Input() get entitySet() {
-    return this.entitySet$.value
-  }
-  set entitySet(value) {
-    this.entitySet$.next(value)
-  }
-  private readonly entitySet$ = new BehaviorSubject<EntitySet>(null)
-
   @Input() get entityType() {
     return this.entityType$.value
   }
@@ -215,7 +206,6 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   @Input() coreService: NxCoreService
   @Input() dsCoreService: NgmDSCoreService
 
-  // @Input() calculationEditor: Type<any>
   @Input() syntax: Syntax
   @Input() displayDensity: DisplayDensity | string
   @Input() disabled: boolean
@@ -441,7 +431,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       }
 
       if (members?.length) {
-        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].label || members[0].value}`
+        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].caption || members[0].value}`
         if (members.length > 1) {
           property.caption += `(+${members.length - 1})`  
         }
