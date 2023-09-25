@@ -1,0 +1,10 @@
+:host {
+  @apply flex flex-col justify-start items-stretch bg-slate-100;
+}
+
+.tag.selected {
+  @apply text-amber-500 bg-amber-100;
+}
+.ngm-story-explorer__chart.selected {
+  @apply ring-violet-500;
+}

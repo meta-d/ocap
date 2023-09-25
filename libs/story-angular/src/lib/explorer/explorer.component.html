@@ -1,0 +1,173 @@
+<div class="w-full h-64 shrink-0 flex justify-start items-stretch p-1">
+    <div class="flex flex-col justify-start">
+        <button mat-button (click)="back()">返回</button>
+    </div>
+
+    <div class="flex-1 h-full flex justify-start items-stretch gap-2 p-1 overflow-auto">
+
+        <div class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch bg-white rounded-xl overflow-hidden">
+            <div class="shrink-0 px-1 flex flex-wrap items-center">
+                Measures
+            </div>
+
+            <div class="flex-1 overflow-auto" displayDensity="compact">
+                <mat-selection-list class="w-full" [ngModel]="measures()" (ngModelChange)="onMeasuresChange($event)">
+                    <mat-list-option *ngFor="let item of measureList()" [value]="item.name">
+                      {{item.caption}}
+                    </mat-list-option>
+                </mat-selection-list>
+            </div>
+        </div>
+
+        <div *ngFor="let dim of dimensions(); trackBy: trackByDim" class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch bg-white rounded-xl overflow-hidden">
+            <div class="shrink-0 px-1 flex flex-wrap items-center"
+                cdkDropList
+                [cdkDropListData]="[]"
+            >
+            <div *ngFor="let item of dim.hierarchies" class="tag text-sm block font-bold leading-sm px-2 py-1 rounded-lg cursor-pointer
+                overflow-hidden text-ellipsis whitespace-nowrap"
+                [class.selected]="item.hierarchy === dim.dimension.hierarchy"
+                (click)="toggleHierarchy(item.hierarchy, dim)"
+                cdkDrag
+                [cdkDragData]="item"
+                >
+                <span>
+                    {{item.caption}}
+                </span>
+            </div>
+            </div>
+            <ngm-member-tree class="flex-1 overflow-auto" displayDensity="compact"
+                [dataSettings]="data.dataSettings"
+                [dimension]="dim.dimension"
+                [options]="{
+                    searchable: true
+                }"
+                [ngModel]="slicers[dim.dimension.dimension]"
+                (ngModelChange)="onSlicersChange($event, dim.dimension.dimension)"
+            ></ngm-member-tree>
+        </div>
+    </div>
+</div>
+
+<div class="flex-1 flex justify-center items-center p-2 gap-2 overflow-hidden">
+<!-- 
+    <div class="w-64 h-full bg-white rounded-xl flex justify-start items-stretch overflow-hidden">
+        <ngm-entity-schema class="flex-1 w-full overflow-auto" [dataSettings]="data?.dataSettings"
+            [capacities]="[
+                EntityCapacity.Dimension,
+                EntityCapacity.Hierarchy,
+                EntityCapacity.Measure,
+                EntityCapacity.Indicator,
+                EntityCapacity.Calculation,
+                EntityCapacity.Parameter
+            ]"
+        ></ngm-entity-schema>
+    </div> -->
+
+    <div class="h-full flex-1 flex flex-col justify-start items-stretch gap-2 overflow-hidden">
+        <div class="w-full flex-1 flex justify-start items-stretch gap-2 overflow-hidden">
+            <div *ngIf="visualPanel === 'options'" class="w-80 h-full bg-white rounded-xl flex flex-col justify-start items-stretch overflow-hidden"
+                cdkDropList
+                [cdkDropListData]="rows()"
+                (cdkDropListDropped)="dropRow($event)"
+                [cdkDropListEnterPredicate]="dropRowPredicate"
+            >
+                <div class="font-bold px-1">{{ 'PAC.KEY_WORDS.Dimensions' | translate: {Default: 'Dimensions'} }}</div>
+                <div class="w-full flex flex-col justify-start items-stretch overflow-auto gap-1 p-2">
+                    <ngm-property-select *ngFor="let row of rows(); index as i; trackBy: trackByIndex" class="w-full" editable displayDensity="compact"
+                        showAttributes
+                        [dataSettings]="dataSettings()"
+                        [entityType]="entityType()"
+                        [ngModel]="row"
+                        [capacities]="[
+                            PropertyCapacity.Dimension
+                        ]"
+                        (ngModelChange)="onRowChange($event, i)"
+                        >
+                    </ngm-property-select>
+                </div>
+            </div>
+
+            <div *ngIf="visualPanel === 'visual'" class="w-80 h-full bg-white rounded-xl flex flex-col justify-start items-stretch overflow-auto">
+                <div *ngFor="let group of charts" >
+                    <div class="text-sm p-2">
+                        {{'FORMLY.CHART.' + group.label | translate: {Default: group.label} }}
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button *ngFor="let chart of group.charts" class="ngm-story-explorer__chart m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
+                            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+                            [matTooltip]="'FORMLY.CHART.' + chart.label | translate: {Default: chart.label}"
+                            matTooltipPosition="above"
+                            draggable="true"
+                            [class.selected]="component().label === chart.label"
+                            (click)="createWidget({
+                                label: chart.label,
+                                component: ComponentType.AnalyticalCard,
+                                dataSettings: {
+                                    chartAnnotation: chart.value
+                                }
+                            })"
+                        >
+                            <img [src]="'/assets/icons/charts/' + chart.icon" class="w-12 h-12" alt="{{chart.label}}"
+                                [ngStyle]="{
+                                    transform: chart.rotate ? 'rotate(90deg)' : 'none'
+                                }"
+                            >
+                            <div class="text-xs">{{ 'FORMLY.CHART.' + chart.label | translate: {Default: chart.label} }}</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 bg-white rounded-xl flex flex-col justify-center items-center overflow-hidden">
+                <div class="flex-1 w-full overflow-hidden">
+                    <ngm-analytical-card *ngIf="view === 'chart'" class="w-full h-full group"
+                        [title]="'Data chart for dimensions and measure'"
+                        [dataSettings]="dataSettingsChart()"
+                        [slicers]="_slicers()"
+                        [chartOptions]="chartOptions()"
+                        >
+                    </ngm-analytical-card>
+
+                    <ngm-analytical-grid *ngIf="view === 'table'" class="w-full h-full group overflow-auto"
+                        [title]="'Data grid for dimensions and measure'"
+                        [dataSettings]="dataSettingsGrid()"
+                        [slicers]="_slicers()"
+                        [appearance]="{
+                            displayDensity: DisplayDensity.compact
+                        }"
+                        [options]="{
+                            showToolbar: true,
+                            paging: true,
+                            pageSize: 20,
+                            sticky: true,
+                            sortable: true
+                        }"
+                    ></ngm-analytical-grid>
+                </div>
+                <mat-divider class="w-full"></mat-divider>
+                <div class="w-full flex justify-between items-center px-2">
+                    <mat-button-toggle-group class="ngm-button-group" displayDensity="cosy" ngmAppearance="color" color="accent"
+                        [(ngModel)]="visualPanel"
+                    >
+                        <mat-button-toggle value="visual">Visual</mat-button-toggle>
+                        <mat-button-toggle value="options">Options</mat-button-toggle>
+                    </mat-button-toggle-group>
+
+                    <mat-button-toggle-group class="ngm-button-group" displayDensity="cosy" ngmAppearance="color" color="accent"
+                        [(ngModel)]="view"
+                    >
+                        <mat-button-toggle value="table">Table</mat-button-toggle>
+                        <mat-button-toggle value="chart">Chart</mat-button-toggle>
+                    </mat-button-toggle-group>
+
+                    <div ngmButtonGroup >
+                        <button mat-raised-button color="primary">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+</div>

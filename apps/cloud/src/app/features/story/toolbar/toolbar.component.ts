@@ -29,6 +29,7 @@ import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
 import { DeepPartial, IsNilPipe } from '@metad/core'
 import {
+  CHARTS,
   ParametersComponent,
   PreferencesComponent,
   QuerySettingComponent,
@@ -55,7 +56,7 @@ import { SaveAsTemplateComponent } from '../save-as-template/save-as-template.co
 import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
-import { CHARTS, COMPONENTS, PAGES } from './types'
+import { COMPONENTS, PAGES } from './types'
 
 
 @Component({
