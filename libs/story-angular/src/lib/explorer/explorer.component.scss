@@ -8,3 +8,7 @@
 .ngm-story-explorer__chart.selected {
   @apply ring-violet-500;
 }
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}

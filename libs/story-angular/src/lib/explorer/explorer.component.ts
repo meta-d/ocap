@@ -1,6 +1,6 @@
-import { CdkDrag, CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
+import { CdkDrag, CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, Input, Output, computed, effect, inject, signal } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -25,9 +25,11 @@ import {
   DataSettings,
   Dimension,
   DisplayBehaviour,
+  FilterSelectionType,
   ISlicer,
   assignDeepOmitBlank,
   cloneDeep,
+  compact,
   getEntityDimensions,
   getEntityMeasures,
   nonNullable,
@@ -37,6 +39,9 @@ import { WidgetComponentType } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { filter, map, switchMap } from 'rxjs/operators'
 import { CHARTS, getChartType } from './types'
+import { MatIconModule } from '@angular/material/icon'
+import { ResizerModule } from '@metad/ocap-angular/common'
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 
 @Component({
   standalone: true,
@@ -51,6 +56,8 @@ import { CHARTS, getChartType } from './types'
     MatButtonToggleModule,
     MatDividerModule,
     MatTooltipModule,
+    MatIconModule,
+    MatDialogModule,
     DragDropModule,
     NxTableModule,
     NgmPrismHighlightComponent,
@@ -59,7 +66,8 @@ import { CHARTS, getChartType } from './types'
     NgmMemberTreeComponent,
     AnalyticalCardModule,
     AnalyticalGridModule,
-    PropertyModule
+    PropertyModule,
+    ResizerModule
   ],
   selector: 'ngm-story-explorer',
   templateUrl: 'explorer.component.html',
@@ -70,8 +78,10 @@ export class StoryExplorerComponent {
   DisplayDensity = DisplayDensity
   PropertyCapacity = PropertyCapacity
   ComponentType = WidgetComponentType
+  FilterSelectionType = FilterSelectionType
 
   private readonly dsCoreService = inject(NgmDSCoreService)
+  private readonly _dialog = inject(MatDialog)
 
   @Input()
   get data() {
@@ -89,6 +99,7 @@ export class StoryExplorerComponent {
         })
         this.rows.set(chartAnnotation.dimensions)
         this.columns.set(chartAnnotation.measures)
+        this._dimensions.set(chartAnnotation.dimensions?.map((d) => d.dimension) ?? [])
       }
     }
 
@@ -97,6 +108,12 @@ export class StoryExplorerComponent {
 
   @Output() closed = new EventEmitter<void>()
 
+  @ViewChild('addDimensionsTempl') addDimensionsTempl: TemplateRef<ElementRef>
+
+  private dialogRef: MatDialogRef<ElementRef<any>, any>
+  
+  readonly _dimensionsCache = signal<string[]>([])
+  private _dimensions = signal<string[]>([])
   dimensions = signal<{ dimension: Dimension; caption: string; hierarchies: Dimension[] }[]>([])
 
   readonly entityType = toSignal(
@@ -109,9 +126,15 @@ export class StoryExplorerComponent {
       )
     )
   )
-
+  readonly dimensionList = computed(() => {
+    return getEntityDimensions(this.entityType())
+  })
   readonly measureList = computed(() => {
-    return getEntityMeasures(this.entityType())
+    return getEntityMeasures(this.entityType()).map((property) => ({
+      dimension: C_MEASURES,
+      measure: property.name,
+      caption: property.caption
+    }))
   })
   readonly dataSettings = computed<DataSettings>(() => {
     return pick(this.data?.dataSettings, 'dataSource', 'entitySet') as DataSettings
@@ -147,7 +170,6 @@ export class StoryExplorerComponent {
     chartAnnotation.dimensions = chartAnnotation.dimensions.filter((d) => d.dimension)
     chartAnnotation.measures = chartAnnotation.measures.filter((d) => d.dimension)
 
-    console.log('chartAnnotation:', chartAnnotation)
     return {
       ...(this.data?.dataSettings ?? {}),
       chartAnnotation
@@ -162,10 +184,16 @@ export class StoryExplorerComponent {
     const analytics = {
       ...(this.data?.analytics ?? {}),
       rows: this.rows(),
-      columns: this.measures().map((measure) => ({
-        dimension: C_MEASURES,
-        measure
-      }))
+      columns: [
+        ...this.columns(),
+        ...this.measures().map((measure) => ({
+          dimension: C_MEASURES,
+          measure,
+          formatting: {
+            shortNumber: true
+          }
+        }))
+      ]
     }
     console.log('analytics:', analytics)
     return {
@@ -206,7 +234,7 @@ export class StoryExplorerComponent {
       () => {
         if (this.entityType()) {
           this.dimensions.set(
-            getEntityDimensions(this.entityType()).map(({ name, caption, hierarchies }) => ({
+            getEntityDimensions(this.entityType()).filter(({name}) => this._dimensions().includes(name)) .map(({ name, caption, hierarchies }) => ({
               dimension: {
                 dimension: name,
                 displayBehaviour: DisplayBehaviour.descriptionOnly
@@ -252,19 +280,51 @@ export class StoryExplorerComponent {
   }
 
   dropRowPredicate(item: CdkDrag<Dimension>) {
-    return true
+    return item.dropContainer.id === 'ngm-story-explorer__drop-list-dimensions-container'
   }
 
   dropRow(event: CdkDragDrop<Dimension[]>) {
-    this.rows.set([...this.rows(), { ...event.item.data }])
+    const items = [...this.rows()]
+    if (event.previousContainer === event.container) {
+      moveItemInArray(items, event.previousIndex, event.currentIndex)
+    } else {
+      items.splice(event.currentIndex, 0, { ...event.item.data.dimension })
+    }
+    this.rows.set(items)
+  }
+
+  removeRow(i: number) {
+    const items = [...this.rows()]
+    items.splice(i, 1)
+    this.rows.set(items)
+  }
+
+  dropColumnPredicate(item: CdkDrag<Dimension>) {
+    return item.dropContainer.id === 'ngm-story-explorer__drop-list-measures'
   }
 
   dropColumn(event: CdkDragDrop<Dimension[]>) {
-    this.columns.set([...this.columns(), { ...event.item.data }])
+    const items = [...this.columns()]
+    if (event.previousContainer === event.container) {
+      moveItemInArray(items, event.previousIndex, event.currentIndex)
+    } else {
+      items.splice(event.currentIndex, 0, { ...event.item.data })
+    }
+    this.columns.set(items)
+  }
+
+  removeColumn(i: number) {
+    const items = [...this.columns()]
+    items.splice(i, 1)
+    this.columns.set(items)
   }
 
   onRowChange(row: Dimension, i: number) {
     this.rows.set([...this.rows().slice(0, i), row, ...this.rows().slice(i + 1)])
+  }
+
+  onColumnChange(row: Dimension, i: number) {
+    this.columns.set([...this.columns().slice(0, i), row, ...this.columns().slice(i + 1)])
   }
 
   onMeasuresChange(measures: string[]) {
@@ -281,5 +341,27 @@ export class StoryExplorerComponent {
   createWidget(widget: any) {
     console.log(widget)
     this.component.set(widget)
+  }
+
+  addDimensionToCache(event) {
+    this._dimensionsCache.set([...event])
+  }
+
+  openDimensions() {
+    this._dimensionsCache.set([...this._dimensions()])
+    this.dialogRef = this._dialog.open(this.addDimensionsTempl)
+  }
+
+  addDimensions() {
+    this._dimensions.set([...this._dimensionsCache()])
+    this.dialogRef.close()
+  }
+
+  moveDimension(event: CdkDragDrop<any[]>) {
+    const items = [...this.dimensions()]
+    if (event.previousContainer === event.container) {
+      moveItemInArray(items, event.previousIndex, event.currentIndex)
+      this.dimensions.set(items)
+    } 
   }
 }

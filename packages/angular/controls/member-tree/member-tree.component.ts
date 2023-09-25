@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { FlatTreeControl } from '@angular/cdk/tree'
-import { ChangeDetectionStrategy, Component, EventEmitter, forwardRef, HostBinding, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, EventEmitter, forwardRef, HostBinding, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
-import { DisplayDensity, NgmAppearance, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmAppearance, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   Dimension,
@@ -72,7 +72,7 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   implements OnInit, OnChanges, ControlValueAccessor
 {
   @HostBinding('class.ngm-member-tree') _isMemberTreeComponent = true
-  private dsCoreService? = inject(NgmDSCoreService, { optional: true })
+  // private dsCoreService? = inject(NgmDSCoreService, { optional: true })
   
   @Input() dataSettings: DataSettings
   @Input() dimension: Dimension
