@@ -1,7 +1,3 @@
-# material-theme
+# Material Themes
 
-This library was generated with [Nx](https://nx.dev).
-
-## Running unit tests
-
-Run `nx test material-theme` to execute the unit tests.
+This is a collection of themes for the Material Themes: light and dark.
