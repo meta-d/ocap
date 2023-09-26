@@ -24,6 +24,7 @@ import {
   isEntityType,
   DataSourceSettings,
   assignDeepOmitBlank,
+  assign,
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, findKey, includes, isEmpty, isEqual, isNil, merge, omit, some, sortBy } from 'lodash-es'
@@ -604,32 +605,6 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   /**
-   * 将 Widget 更新到 story 上
-   *
-   * @param story
-   * @param point
-   * @param widget
-   * @returns
-   */
-  _updateStoryWidget(story, point: StoryPoint, widget: StoryWidget) {
-    // points 还是以 id 为查找主键
-    const i = story.points?.findIndex((item) => item.id === point.id)
-    if (i < 0) {
-      throw new Error(`Can't index story point '${point.id}'`)
-    }
-
-    // widgets 以 id 为主键
-    const j = story.points[i].widgets?.findIndex((item) => item.id === widget.id)
-    if (j < 0) {
-      throw new Error(`Can't found story widget '${widget.id}'`)
-    }
-
-    story.points[i].widgets[j] = { ...story.points[i].widgets[j], ...widget }
-
-    return story
-  }
-
-  /**
    * Delete story point by key
    */
   readonly deleteStoryPoint = this.updater((state, key: ID) => {
@@ -684,6 +659,16 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   readonly setCurrentWidget = this.updater((state, widget: StoryWidget) => {
     state.currentWidget = widget
+  })
+
+  /**
+   * Udpate story widget by pageKey and widgetId
+   */
+  readonly updateWidget = this.updater((state, {pageKey, widgetKey, widget}: {pageKey: string; widgetKey: string; widget: StoryWidget}) => {
+    const _widget = state.points.find((item) => item.key === pageKey).widgets.find((item) => item.key === widgetKey)
+    if (_widget) {
+      assign(_widget, widget)
+    }
   })
 
   async createStoryWidget(event: Partial<StoryWidget>) {

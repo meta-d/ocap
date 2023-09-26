@@ -233,7 +233,11 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     zeroSuppression: new FormControl<boolean>(true),
     formatting: new FormControl(),
     parameter: new FormControl(),
-    order: new FormControl<OrderDirection>(null)
+    order: new FormControl<OrderDirection>(null),
+    palette: new FormControl<any>(null),
+    bar: new FormControl<boolean>(null),
+    shapeType: new FormControl<any>(null),
+    chartOptions: new FormControl<any>(null),
   })
   // 初始值
   private readonly _formValue = this.formGroup.value
@@ -639,8 +643,12 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
         })
       })
 
-    // 订阅 formGroup 发回给双向绑定
-    this.formGroup.valueChanges.pipe(untilDestroyed(this)).subscribe((value) => {
+    // subscribe formGroup to export value
+    this.formGroup.valueChanges.pipe(
+      // Update value when property is initialized
+      filter(() => !!this.property$.value),
+      untilDestroyed(this)
+    ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {
         value = {
           ...value,

@@ -67,6 +67,7 @@ export enum NxChartType {
   ColumnStacked100 = 'ColumnStacked100',
   ColumnStackedDual100 = 'ColumnStackedDual100',
   ColumnGrouped = 'ColumnGrouped',
+  ColumnPolar = 'ColumnPolar',
   Bar = 'Bar',
   BarStacked = 'BarStacked',
   BarDual = 'BarDual',

@@ -83,7 +83,7 @@ export function DataSettingsSchema(
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'ngm-formly__row',
+        fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           {
             key: 'dataSource',
@@ -204,7 +204,7 @@ export function hierarchyAttributes(COMMON?) {
 
 export function typeAhead(COMMON) {
   return {
-    fieldGroupClassName: 'ngm-formly__row',
+    fieldGroupClassName: FORMLY_ROW,
     key: 'typeAhead',
     wrappers: ['panel'],
     props: { label: '自动补全' },
@@ -265,7 +265,7 @@ export function SelectionType(className: string, I18N) {
 export function filterOption(className: string, DESIGNER) {
   return [
     {
-      fieldGroupClassName: 'ngm-formly__row',
+      fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [
         SelectionType(className, DESIGNER),
         {

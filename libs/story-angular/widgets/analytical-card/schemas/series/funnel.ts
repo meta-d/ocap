@@ -18,7 +18,7 @@ export function FunnelCapacity(className: string, I18N) {
           key: 'seriesStyle',
           hideExpression: `!field.parent.model.__showSeriesAttributes__`,
           templateOptions: {
-            label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+            label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
             keyShow: '__showSeriesAttributes__'
           },
           fieldGroup: [
@@ -30,7 +30,7 @@ export function FunnelCapacity(className: string, I18N) {
                   key: 'funnelAlign',
                   type: 'select',
                   templateOptions: {
-                    label: I18N.SeriesStyle?.FunnelAlign ?? 'Funnel Align',
+                    label: I18N?.SeriesStyle?.FunnelAlign ?? 'Funnel Align',
                     options: [
                       { value: null, label: 'None' },
                       { value: 'left', label: 'Left' },

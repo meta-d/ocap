@@ -5,7 +5,7 @@ export function Bar3DCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.DDD?.BarSeriesTitle ?? 'Series Attributes',
+      label: I18N?.DDD?.BarSeriesTitle ?? 'Series Attributes',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,
@@ -15,7 +15,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'bevelSize',
               type: 'number',
               props: {
-                label: I18N.DDD?.BevelSize ?? 'Bevel Size',
+                label: I18N?.DDD?.BevelSize ?? 'Bevel Size',
                 placeholder: '0 ~ 1'
               }
             },
@@ -24,7 +24,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'bevelSmoothness',
               type: 'number',
               props: {
-                label: I18N.DDD?.BevelSmoothness ?? 'Bevel Smoothness',
+                label: I18N?.DDD?.BevelSmoothness ?? 'Bevel Smoothness',
                 placeholder: '0 ~ 1'
               }
             },
@@ -33,7 +33,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'stack',
               type: 'input',
               props: {
-                label: I18N.DDD?.Stack ?? 'Stack'
+                label: I18N?.DDD?.Stack ?? 'Stack'
               }
             },
             // {
@@ -41,7 +41,7 @@ export function Bar3DCapacity(className: string, I18N) {
             //   key: 'stackStrategy',
             //   type: 'select',
             //   props: {
-            //     label: I18N.DDD?.StackStrategy ?? 'Stack Strategy',
+            //     label: I18N?.DDD?.StackStrategy ?? 'Stack Strategy',
             //     options: [
             //       { value: null, label: 'None' },
             //       { value: 'color', label: 'color' },
@@ -55,7 +55,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'minHeight',
               type: 'number',
               props: {
-                label: I18N.DDD?.MinHeight ?? 'MinHeight'
+                label: I18N?.DDD?.MinHeight ?? 'MinHeight'
               }
             },
             {
@@ -63,7 +63,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'silent',
               type: 'checkbox',
               props: {
-                label: I18N.DDD?.Silent ?? 'Silent'
+                label: I18N?.DDD?.Silent ?? 'Silent'
               }
             },
             {
@@ -71,7 +71,7 @@ export function Bar3DCapacity(className: string, I18N) {
               key: 'shading',
               type: 'select',
               props: {
-                label: I18N.DDD?.Shading ?? 'Shading',
+                label: I18N?.DDD?.Shading ?? 'Shading',
                 options: [
                   { value: null, label: 'None' },
                   { value: 'color', label: 'color' },
@@ -85,7 +85,7 @@ export function Bar3DCapacity(className: string, I18N) {
         ...AccordionWrappers([
           {
             key: 'itemStyle',
-            label: I18N.DDD?.ItemStyle ?? 'Item Style',
+            label: I18N?.DDD?.ItemStyle ?? 'Item Style',
             fieldGroup: [
               {
                 fieldGroupClassName: FORMLY_ROW,
@@ -110,7 +110,7 @@ function Label(className: string, I18N) {
           key: 'show',
           type: 'toggle',
           props: {
-            label: I18N.DDD?.Show ?? 'Show'
+            label: I18N?.DDD?.Show ?? 'Show'
           }
         },
         {
@@ -118,7 +118,7 @@ function Label(className: string, I18N) {
           key: 'distance',
           type: 'number',
           props: {
-            label: I18N.DDD?.Distance ?? 'Distance'
+            label: I18N?.DDD?.Distance ?? 'Distance'
           }
         },
         {
@@ -126,7 +126,7 @@ function Label(className: string, I18N) {
           key: 'formatter',
           type: 'input',
           props: {
-            label: I18N.DDD?.Formatter ?? 'Formatter'
+            label: I18N?.DDD?.Formatter ?? 'Formatter'
           }
         }
       ]
@@ -135,7 +135,7 @@ function Label(className: string, I18N) {
       key: 'textStyle',
       wrappers: ['panel'],
       props: {
-        label: I18N.DDD?.TextStyle ?? 'Text Style'
+        label: I18N?.DDD?.TextStyle ?? 'Text Style'
       },
       fieldGroup: [
         {
@@ -151,18 +151,18 @@ export function Common3D(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'label',
-      label: I18N.DDD?.Label ?? 'Label',
+      label: I18N?.DDD?.Label ?? 'Label',
       fieldGroup: Label(className, I18N)
     },
     {
       key: 'emphasis',
-      label: I18N.DDD?.Emphasis ?? 'Emphasis',
+      label: I18N?.DDD?.Emphasis ?? 'Emphasis',
       fieldGroup: [
         {
           key: 'itemStyle',
           wrappers: ['panel'],
           props: {
-            label: I18N.DDD?.ItemStyle ?? 'Item Style'
+            label: I18N?.DDD?.ItemStyle ?? 'Item Style'
           },
           fieldGroup: [
             {
@@ -176,7 +176,7 @@ export function Common3D(className: string, I18N) {
           key: 'label',
           wrappers: ['panel'],
           props: {
-            label: I18N.DDD?.Label ?? 'Label'
+            label: I18N?.DDD?.Label ?? 'Label'
           },
           fieldGroup: Label(className, I18N)
         }

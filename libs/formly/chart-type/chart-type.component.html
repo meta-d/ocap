@@ -23,22 +23,6 @@
         <mat-icon fontSet="material-icons-round">more_vert</mat-icon>
       </button>
 
-      <button *ngIf="HAS_ORIENTS[type]" matSuffix mat-icon-button displayDensity="compact"
-        [matMenuTriggerFor]="orientMenu"
-        #mt="matMenuTrigger"
-        [class.active]="mt.menuOpen"
-        (click)="$event.stopPropagation();$event.preventDefault();">
-        <mat-icon fontSet="material-icons-outlined">signpost</mat-icon>
-      </button>
-
-      <button *ngIf="VARIANTS[type]" matSuffix mat-icon-button displayDensity="compact"
-        [matMenuTriggerFor]="variantMenu"
-        #mt="matMenuTrigger"
-        [class.active]="mt.menuOpen"
-        (click)="$event.stopPropagation();$event.preventDefault();">
-        <mat-icon fontSet="material-icons-outlined">subscript</mat-icon>
-      </button>
-
       <button *ngIf="type===NxChartType.GeoMap" matSuffix mat-icon-button displayDensity="compact"
         (click)="$event.stopPropagation();$event.preventDefault();openMap()">
         <mat-icon fontSet="material-icons-outlined">map</mat-icon>
@@ -72,29 +56,6 @@
     <mat-icon>clear</mat-icon>
   </button>
 </div>
-
-<mat-radio-group [(ngModel)]="orient">
-  <mat-menu #orientMenu="matMenu" class="ngm-formly ngm-density__compact">
-    <button mat-menu-item disableRipple *ngFor="let orient of ORIENTS"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button [value]="orient.value">
-        {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
-      </mat-radio-button>
-    </button>
-  </mat-menu>
-</mat-radio-group>
-
-<mat-radio-group [(ngModel)]="variant">
-  <mat-menu #variantMenu="matMenu" class="ngm-formly ngm-density__compact">
-    <button mat-menu-item disableRipple *ngFor="let option of VARIANTS[type]"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button [value]="option.value">
-        {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
-      </mat-radio-button>
-    </button>
-  </mat-menu>
-</mat-radio-group>
-
 
 <ng-template #mapTemp>
   <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
@@ -186,7 +147,7 @@
 <popper-content #copilot class="z-[101]">
   <form (ngSubmit)="copilot.hide();askCopilot()" class="bg-white p-2">
     <div class="relative w-full flex ">
-      <div class="inset-y-0 left-0 flex items-center pointer-events-none">
+      <div class="inset-y-0 left-0 flex items-center pointer-events-none font-notoColorEmoji">
         🤖
       </div>
       <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -200,7 +161,25 @@
 <popper-content #attrs class="z-[101]">
   <div class="flex flex-col bg-white p-2" displayDensity="compact">
     <ngm-input [label]="'FORMLY.CHART.ChartName' | translate: {Default: 'Chart Name'}"
-    [formControl]="name"
+      [formControl]="name"
     ></ngm-input>
+    
+    <div *ngIf="HAS_ORIENTS[type]" class="flex flex-col justify-start items-start">
+      <label class="ngm-input-label">{{ 'FORMLY.CHART.Orient' | translate: {Default: 'Orient'} }}</label>
+      <mat-radio-group [(ngModel)]="orient">
+        <mat-radio-button *ngFor="let orient of ORIENTS" [value]="orient.value">
+          {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div *ngIf="VARIANTS[type]" class="flex flex-col justify-start items-start">
+      <label class="ngm-input-label">{{ 'FORMLY.CHART.Variant' | translate: {Default: 'Variant'} }}</label>
+      <mat-radio-group [(ngModel)]="variant">
+        <mat-radio-button *ngFor="let option of VARIANTS[type]" [value]="option.value">
+          {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
   </div>
 </popper-content>

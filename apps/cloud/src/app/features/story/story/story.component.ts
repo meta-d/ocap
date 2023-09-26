@@ -13,12 +13,12 @@ import {
   signal,
   ViewChild
 } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { AgentType, C_MEASURES, isEqual } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
+import { AgentType, isEqual } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import {
@@ -51,7 +51,6 @@ type ResponsiveBreakpointType = {
   margin: number;
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -153,11 +152,11 @@ export class StoryComponent implements OnInit {
   ]
 
   readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
-  readonly isDark$ = this.appService.isDark$
-  isDirty$ = this.storyService.dirty$
-  isMobile$ = this.storyService.isMobile$
-  readonly pageKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey']))
-  readonly widgetKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey']))
+  readonly isDark = toSignal(this.appService.isDark$)
+  readonly isDirty = toSignal(this.storyService.dirty$)
+  readonly isMobile = toSignal(this.storyService.isMobile$)
+  readonly pageKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey'])))
+  readonly widgetKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey'])))
 
   // Story explorer
   showExplorer = signal(false)
@@ -168,7 +167,7 @@ export class StoryComponent implements OnInit {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private queryParamsSub = this.route.queryParams.subscribe((params) => {
+  private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
     this.logger?.debug(`story 接收的原始 url 参数:`, params)
     this.storyOptions = {}
     if (params.$filters) {
@@ -201,13 +200,13 @@ export class StoryComponent implements OnInit {
       this.storyOptions.locale = params.$language
     }
 
+    this.showExplorer.set(!!params.explore)
     if (params.explore) {
-      this.showExplorer.set(true)
       this.explore.set(JSON.parse(atob(params.explore)))
     }
   })
 
-  private themeSub = this.storyService.themeChanging$.pipe(delay(300)).subscribe(async ([prev, current]) => {
+  private themeSub = this.storyService.themeChanging$.pipe(delay(300), takeUntilDestroyed(),).subscribe(async ([prev, current]) => {
     const story = await firstValueFrom(this.storyService.story$)
     const key = story.key || story.id
     const echartsTheme = story.options?.echartsTheme
@@ -231,13 +230,20 @@ export class StoryComponent implements OnInit {
   })
 
   private _emulatedDeviceSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.emulatedDevice))
+    .pipe(
+      map((options) => options?.emulatedDevice),
+      takeUntilDestroyed(),
+    )
     .subscribe((emulatedDevice) => {
       this.emulatedDevice = emulatedDevice
     })
 
   private echartsThemeSub = this.storyService.echartsTheme$
-    .pipe(filter(Boolean), distinctUntilChanged(isEqual))
+    .pipe(
+      takeUntilDestroyed(),
+      filter(Boolean),
+      distinctUntilChanged(isEqual)
+    )
     .subscribe(async (echartsTheme) => {
       const story = await firstValueFrom(this.storyService.story$)
       const key = story.key || story.id;
@@ -249,7 +255,7 @@ export class StoryComponent implements OnInit {
     })
 
   private isAuthenticatedSub = this.appService.isAuthenticated$
-    .pipe(untilDestroyed(this))
+    .pipe(takeUntilDestroyed())
     .subscribe((isAuthenticated) => {
       this.storyService.setAuthenticated(isAuthenticated)
     })
@@ -337,8 +343,18 @@ export class StoryComponent implements OnInit {
     this.showExplorer.set(false)
     this._router.navigate([], {
       relativeTo: this.route,
-      queryParams: {explore: null},
+      queryParams: {explore: null, widgetKey: null},
       queryParamsHandling: 'merge' // remove to replace all query params by provided
     })
+
+    if (event) {
+      console.log(`Update story widget: ${this.pageKey()}`, event)
+
+      this.storyService.updateWidget({
+        pageKey: this.pageKey(),
+        widgetKey: this.widgetKey(),
+        widget: event
+      })
+    }
   }
 }

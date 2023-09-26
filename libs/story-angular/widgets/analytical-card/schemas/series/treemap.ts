@@ -6,7 +6,7 @@ export function TreemapCapacity(className: string, I18N?) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+      label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,

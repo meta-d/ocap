@@ -11,7 +11,7 @@ export function ItemStyle(className: string, I18N) {
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'ngm-formly__row',
+        fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           SingleColor(className, I18N),
           ...Borders(className, I18N),
@@ -80,7 +80,7 @@ export function ItemStyle(className: string, I18N) {
 //     },
 //     fieldGroup: [
 //       {
-//         fieldGroupClassName: 'ngm-formly__row',
+//         fieldGroupClassName: FORMLY_ROW,
 //         fieldGroup: [
 //           SingleColor(className, I18N),
 //           ...Borders(className, I18N),
@@ -144,7 +144,7 @@ export function ItemStyleAccordionWrappers(className: string, I18N, extensions?)
       label: I18N?.ItemStyle?.Title ?? 'Item Style',
       fieldGroup: [
         {
-          fieldGroupClassName: 'ngm-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             {
               className,
@@ -350,7 +350,7 @@ export function MarkLine(className, I18N) {
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'ngm-formly__row',
+        fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           {
             className,
@@ -365,7 +365,7 @@ export function MarkLine(className, I18N) {
       {
         key: 'lineStyle',
         wrappers: ['panel'],
-        fieldGroupClassName: 'ngm-formly__row',
+        fieldGroupClassName: FORMLY_ROW,
         props: {
           label: I18N?.MarkLine?.LineStyle ?? 'Line Style'
         },
@@ -382,7 +382,7 @@ export function Shadows(className: string, I18N?) {
       key: 'shadowColor',
       type: 'color',
       props: {
-        label: I18N.SHADOW?.SHADOW_COLOR ?? 'Shadow Color',
+        label: I18N?.SHADOW?.SHADOW_COLOR ?? 'Shadow Color',
         placeholder: 'shadowColor'
       }
     },
@@ -391,7 +391,7 @@ export function Shadows(className: string, I18N?) {
       key: 'shadowBlur',
       type: 'input',
       props: {
-        label: I18N.SHADOW?.SHADOW_BLUR ?? 'Shadow Blur',
+        label: I18N?.SHADOW?.SHADOW_BLUR ?? 'Shadow Blur',
         placeholder: 'shadowBlur'
       }
     },
@@ -400,7 +400,7 @@ export function Shadows(className: string, I18N?) {
       key: 'shadowOffsetX',
       type: 'input',
       props: {
-        label: I18N.SHADOW?.SHADOW_OFFSETX ?? 'Shadow OffsetX',
+        label: I18N?.SHADOW?.SHADOW_OFFSETX ?? 'Shadow OffsetX',
         type: 'number',
         placeholder: 'shadowOffsetX'
       }
@@ -410,7 +410,7 @@ export function Shadows(className: string, I18N?) {
       key: 'shadowOffsetY',
       type: 'input',
       props: {
-        label: I18N.SHADOW?.SHADOW_OFFSETY ?? 'Shadow OffsetY',
+        label: I18N?.SHADOW?.SHADOW_OFFSETY ?? 'Shadow OffsetY',
         type: 'number',
         placeholder: 'shadowOffsetY'
       }
@@ -444,7 +444,7 @@ export function EmphasisAccordionWrappers(className: string, I18N, extensions?: 
 //       toggleable: true,
 //       keyShow: keyShow
 //     },
-//     fieldGroupClassName: 'ngm-formly__row',
+//     fieldGroupClassName: FORMLY_ROW,
 //     fieldGroup: Emphasis(className, I18N).fieldGroup
 //   }
 // }
@@ -454,7 +454,7 @@ export function Emphasis(className: string, I18N) {
     key: 'emphasis',
     // wrappers: ['expansion'],
     // defaultValue: C_FORMLY_INITIAL_VALUE,
-    // fieldGroupClassName: 'ngm-formly__row',
+    // fieldGroupClassName: FORMLY_ROW,
     props: {
       label: I18N?.EMPHASIS?.TITLE ?? 'Emphasis',
       icon: 'announcement',
@@ -507,7 +507,7 @@ export function Positions(className: string, I18N) {
       key: 'top',
       type: 'input-inline',
       props: {
-        label: I18N.Common?.TOP ?? 'Top',
+        label: I18N?.Common?.TOP ?? 'Top',
         placeholder: 'top',
         options: [
           {
@@ -558,7 +558,7 @@ export function Positions(className: string, I18N) {
       key: 'right',
       type: 'input-inline',
       props: {
-        label: I18N.Common?.RIGHT ?? 'Right',
+        label: I18N?.Common?.RIGHT ?? 'Right',
         placeholder: 'right',
         options: [
           {
@@ -609,7 +609,7 @@ export function Positions(className: string, I18N) {
       key: 'bottom',
       type: 'input-inline',
       props: {
-        label: I18N.Common?.BOTTOM ?? 'Bottom',
+        label: I18N?.Common?.BOTTOM ?? 'Bottom',
         placeholder: 'bottom',
         options: [
           {
@@ -660,7 +660,7 @@ export function Positions(className: string, I18N) {
       key: 'left',
       type: 'input-inline',
       props: {
-        label: I18N.Common?.LEFT ?? 'Left',
+        label: I18N?.Common?.LEFT ?? 'Left',
         placeholder: 'left',
         options: [
           {
@@ -1008,7 +1008,7 @@ export function Symbols(className: string, I18N) {
       key: 'symbol',
       type: 'select',
       props: {
-        label: I18N.Common?.Symbol ?? 'Symbol',
+        label: I18N?.Common?.Symbol ?? 'Symbol',
         options: SymbolOptions(I18N)
       }
     },
@@ -1018,7 +1018,7 @@ export function Symbols(className: string, I18N) {
       key: 'symbolSize',
       type: 'input',
       props: {
-        label: I18N.Common?.SymbolSize ?? 'Symbol Size',
+        label: I18N?.Common?.SymbolSize ?? 'Symbol Size',
         type: 'number'
       }
     },
@@ -1028,7 +1028,7 @@ export function Symbols(className: string, I18N) {
       key: 'symbolRotate',
       type: 'input',
       props: {
-        label: I18N.Common?.SymbolRotate ?? 'Symbol Rotate',
+        label: I18N?.Common?.SymbolRotate ?? 'Symbol Rotate',
         type: 'number'
       }
     },
@@ -1038,7 +1038,7 @@ export function Symbols(className: string, I18N) {
       key: 'symbolOffset',
       type: 'input',
       props: {
-        label: I18N.Common?.SymbolOffset ?? 'Symbol Offset',
+        label: I18N?.Common?.SymbolOffset ?? 'Symbol Offset',
         type: 'number'
       }
     },
@@ -1059,7 +1059,7 @@ export function Stacks(className: string, I18N) {
       key: 'stack',
       type: 'input',
       props: {
-        label: I18N.Common?.Stack ?? 'Stack'
+        label: I18N?.Common?.Stack ?? 'Stack'
       }
     },
   ]

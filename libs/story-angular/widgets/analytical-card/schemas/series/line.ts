@@ -7,7 +7,7 @@ export function LineCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+      label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
       fieldGroup: [
         SeriesCommon(className, I18N),
         {
@@ -18,7 +18,7 @@ export function LineCapacity(className: string, I18N) {
               key: 'showSymbol',
               type: 'checkbox',
               props: {
-                label: I18N.Line?.ShowSymbol ?? 'Show Symbol'
+                label: I18N?.Line?.ShowSymbol ?? 'Show Symbol'
               }
             },
             {
@@ -26,7 +26,7 @@ export function LineCapacity(className: string, I18N) {
               key: 'showAllSymbol',
               type: 'checkbox',
               props: {
-                label: I18N.Line?.ShowAllSymbol ?? 'Show All Symbol'
+                label: I18N?.Line?.ShowAllSymbol ?? 'Show All Symbol'
               }
             },
 
@@ -37,7 +37,7 @@ export function LineCapacity(className: string, I18N) {
               key: 'smooth',
               type: 'checkbox',
               props: {
-                label: I18N.Line?.Smooth ?? 'Smooth'
+                label: I18N?.Line?.Smooth ?? 'Smooth'
               }
             },
 
@@ -46,7 +46,7 @@ export function LineCapacity(className: string, I18N) {
               key: 'stack',
               type: 'input',
               props: {
-                label: I18N.Line?.Stack ?? 'Stack'
+                label: I18N?.Line?.Stack ?? 'Stack'
               }
             },
             {
@@ -54,7 +54,7 @@ export function LineCapacity(className: string, I18N) {
               key: 'step',
               type: 'select',
               props: {
-                label: I18N.Line?.Step ?? 'Step',
+                label: I18N?.Line?.Step ?? 'Step',
                 options: [
                   { value: true, label: 'True' },
                   { value: false, label: 'False' },

@@ -1,13 +1,13 @@
-import { AccordionWrappers } from "@metad/story/designer"
+import { AccordionWrappers, FORMLY_ROW } from "@metad/story/designer"
 
 export function PolarCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'polar',
-      label: I18N.Polar?.Title ?? 'Polar',
+      label: I18N?.Polar?.Title ?? 'Polar',
       fieldGroup: [
         {
-          fieldGroupClassName: 'ngm-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             {
               key: 'radius',

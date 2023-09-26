@@ -20,7 +20,7 @@ export function SunburstCapacity(className: string, I18N) {
           key: 'seriesStyle',
           hideExpression: `!field.parent.model || !field.parent.model.${keyShow}`,
           props: {
-            label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+            label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
             keyShow
           },
           fieldGroup: [

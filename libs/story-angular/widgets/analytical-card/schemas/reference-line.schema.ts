@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core'
 import { ReferenceLineAggregation, ReferenceLineType, ReferenceLineValueType } from '@metad/ocap-core'
-import { BaseDesignerSchemaService, BaseSchemaState } from '@metad/story/designer'
+import { BaseDesignerSchemaService, BaseSchemaState, FORMLY_ROW } from '@metad/story/designer'
 import { map, Observable } from 'rxjs'
 
 @Injectable()
@@ -34,7 +34,7 @@ export class ReferenceLineSchemaService extends BaseDesignerSchemaService<BaseSc
               removeLabel: ReferenceLine?.removeLabel ?? 'Remove'
             },
             fieldArray: {
-              fieldGroupClassName: 'ngm-formly__row',
+              fieldGroupClassName: FORMLY_ROW,
               fieldGroup: [
                 {
                   className,

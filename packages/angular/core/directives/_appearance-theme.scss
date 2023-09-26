@@ -125,74 +125,8 @@
   }
 
   .mat-button-toggle-group.mat-button-toggle-group-appearance-standard {
-    --border-radius: 1rem;
-    --box-shadow-radius: 6px;
-    border: unset;
-    border-radius: var(--border-radius);
-    overflow: visible;
-
     @include _theme-property($color-config, 'color', '500-contrast');
     @include _theme-property($color-config, 'background-color', 500);
-
-    &:not(.mat-button-toggle-vertical) {
-      .mat-button-toggle {
-        &:first-child {
-          border-top-left-radius: calc(var(--border-radius) - 3px);
-          border-bottom-left-radius: calc(var(--border-radius) - 3px);
-        }
-        &:last-child {
-          border-top-right-radius: calc(var(--border-radius) - 3px);
-          border-bottom-right-radius: calc(var(--border-radius) - 3px);
-        }
-      }
-    }
-    &.mat-button-toggle-vertical {
-      .mat-button-toggle {
-        &:first-child {
-          border-top-left-radius: calc(var(--border-radius) - 3px);
-          border-top-right-radius: calc(var(--border-radius) - 3px);
-        }
-        &:last-child {
-          border-bottom-left-radius: calc(var(--border-radius) - 3px);
-          border-bottom-right-radius: calc(var(--border-radius) - 3px);
-        }
-      }
-    }
-
-    .mat-button-toggle {
-      &:hover, 
-      &.cdk-focused,
-      &:active {
-        box-shadow: rgb(143 155 179 / 16%) 0px 0px 0px var(--box-shadow-radius);
-        z-index: 1;
-      }
-    }
-
-    &.ngm-appearance-outline {
-      --box-shadow-radius: 10px;
-      border: 1px solid mat.get-color-from-palette($foreground, divider);
-      padding: 3px;
-    }
-  }
-
-  .ngm-density__compact .mat-button-toggle-group, .ngm-density__compact.mat-button-toggle-group{
-    --border-radius: 10px;
-    --box-shadow-radius: 5px;
-    line-height: normal;
-    .mat-button-toggle-label-content {
-      line-height: 16px;
-      font-size: .75em;
-    }
-  }
-
-  .ngm-density__cosy .mat-button-toggle-group, .ngm-density__cosy.mat-button-toggle-group{
-    --border-radius: 1rem;
-    --box-shadow-radius: 6px;
-    line-height: normal;
-    .mat-button-toggle-label-content {
-      line-height: 24px;
-      font-size: .85em;
-    }
   }
 
   .mat-chip-list {
@@ -222,6 +156,25 @@
 }
 
 @mixin density($config-or-theme) {
+  .ngm-density__compact .mat-button-toggle-group, .ngm-density__compact.mat-button-toggle-group{
+    --border-radius: 10px;
+    --box-shadow-radius: 5px;
+    line-height: normal;
+    .mat-button-toggle-label-content {
+      line-height: 16px;
+      font-size: .75em;
+    }
+  }
+
+  .ngm-density__cosy .mat-button-toggle-group, .ngm-density__cosy.mat-button-toggle-group{
+    --border-radius: 1rem;
+    --box-shadow-radius: 6px;
+    line-height: normal;
+    .mat-button-toggle-label-content {
+      line-height: 24px;
+      font-size: .85em;
+    }
+  }
 }
 
 @mixin typography($config-or-theme) {

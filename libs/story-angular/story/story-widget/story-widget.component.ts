@@ -205,6 +205,10 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     filter(Boolean),
     map((type) => this._widgetComponents.find((component) => component.type === type))
   )
+  readonly componentProvider = toSignal(this.component$.pipe(
+    filter(Boolean),
+    map((type) => this._widgetComponents.find((component) => component.type === type))
+  ))
   readonly componentCategory$ = this.componentProvider$.pipe(map((componentProvider) => componentProvider?.category))
   readonly componentClasses$ = this.componentCategory$.pipe(
     map((category) => ({
@@ -809,12 +813,15 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   }
 
   async explore() {
-    const dataSettings = await firstValueFrom(this.dataSettings$)
-    const queryParams: Params = { explore: btoa(JSON.stringify({
-      dataSettings: dataSettings,
-      chartAnnotation: dataSettings.chartAnnotation,
-      analytics: dataSettings.analytics,
-    })) }
+    // const dataSettings = await firstValueFrom(this.dataSettings$)
+    const fields = this.componentProvider().mapping.filter((field) => field !== 'styling')
+
+    const queryParams: Params = {
+      widgetKey: this.key,
+      explore: btoa(JSON.stringify({
+        ...pick(this.widget(), ...fields)
+      }))
+    }
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParams,

@@ -41,6 +41,7 @@
   @include indicator-market.color(dark-green-theme.$dark-theme);
 }
 
+@import 'libs/story-angular/src/lib/_index';
 @import './app/_app.component';
 
 html,

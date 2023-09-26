@@ -89,18 +89,18 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
 
   getSchema() {
     return this.chartType$.pipe(
-      withLatestFrom(this.translate.stream('STORY_DESIGNER')),
-      map(([type, STORY_DESIGNER]) => {
-        this.STORY_DESIGNER = STORY_DESIGNER
+      withLatestFrom(this.translate.stream('Story')),
+      map(([type, i18nStory]) => {
+        this.STORY_DESIGNER = i18nStory
         const chartType = this.get((state) => state.model?.dataSettings?.chartAnnotation?.chartType)
-        return this.getBuilderSchema(chartType, STORY_DESIGNER)
+        return this.getBuilderSchema(chartType, i18nStory)
       })
     )
   }
 
-  getBuilderSchema(chartType: ChartType, STORY_DESIGNER?) {
+  getBuilderSchema(chartType: ChartType, i18nStory?) {
     
-    const BUILDER = STORY_DESIGNER?.BUILDER
+    const BUILDER = i18nStory?.Widgets?.Common
 
     const dataSettings = this.generateDataSettingsSchema(BUILDER)
     dataSettings.wrappers = ['expansion']
@@ -116,7 +116,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
           type: 'expansion',
           icon: 'analytics'
         },
-        fieldGroup: this.getChartAnnotationFieldGroup(chartType, BUILDER?.CHART)
+        fieldGroup: this.getChartAnnotationFieldGroup(chartType, i18nStory?.Widgets?.CHART)
       } as unknown,
       ...SelectionVariantExpansion(BUILDER, this.dataSettings$),
       ...PresentationVariantExpansion(BUILDER, this.dataSettings$, this.entityType$, this.properties$)
@@ -133,7 +133,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
             key: 'title',
             type: 'input',
             props: {
-              label: BUILDER?.COMMON?.Title ?? 'Title',
+              label: BUILDER?.Title ?? 'Title',
               required: true
             }
           }
@@ -144,7 +144,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
         key: 'options',
         wrappers: ['expansion'],
         props: {
-          label: BUILDER?.CHART?.Options ?? 'Options'
+          label: i18nStory?.Widgets?.CHART?.Options ?? 'Options'
         },
         fieldGroup: [
           {
@@ -155,7 +155,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                 key: 'hideHeader',
                 type: 'checkbox',
                 props: {
-                  label: BUILDER?.CHART?.HideHeader ?? 'Hide Header'
+                  label: i18nStory?.Widgets?.CHART?.HideHeader ?? 'Hide Header'
                 }
               },
               {
@@ -163,7 +163,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                 key: 'hideDataDownload',
                 type: 'checkbox',
                 props: {
-                  label: BUILDER?.CHART?.HideDataDownload ?? 'Hide Data Download'
+                  label: i18nStory?.Widgets?.CHART?.HideDataDownload ?? 'Hide Data Download'
                 }
               },
               {
@@ -171,7 +171,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                 key: 'hideScreenshot',
                 type: 'checkbox',
                 props: {
-                  label: BUILDER?.CHART?.HideScreenshot ?? 'Hide Screenshot'
+                  label: i18nStory?.Widgets?.CHART?.HideScreenshot ?? 'Hide Screenshot'
                 }
               },
               {
@@ -179,7 +179,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                 key: 'realtimeLinked',
                 type: 'checkbox',
                 props: {
-                  label: BUILDER?.CHART?.RealTimeLinkedAnalysis ?? 'Real Time Linked Analysis'
+                  label: i18nStory?.Widgets?.CHART?.RealTimeLinkedAnalysis ?? 'Real Time Linked Analysis'
                 }
               },
               {
@@ -187,7 +187,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                 key: 'disableContextMenu',
                 type: 'checkbox',
                 props: {
-                  label: BUILDER?.CHART?.DisableContextMenu ?? 'Disable Context Menu'
+                  label: i18nStory?.Widgets?.CHART?.DisableContextMenu ?? 'Disable Context Menu'
                 }
               },
               
@@ -198,88 +198,13 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
       ...AccordionWrappers([
         {
           key: 'chartSettings',
-          label: BUILDER?.CHART?.ChartSettings ?? 'Chart Settings',
+          label: i18nStory?.Widgets?.CHART?.ChartSettings ?? 'Chart Settings',
           toggleable: false,
-          fieldGroup: [
-            {
-              fieldGroupClassName: FORMLY_ROW,
-              fieldGroup: [
-                {
-                  className: FORMLY_W_1_2,
-                  key: 'maximumLimit',
-                  type: 'input',
-                  props: {
-                    label: BUILDER?.CHART?.MaximumLimit ?? 'Maximum Limit',
-                    type: 'number'
-                  }
-                },
-                {
-                  className: FORMLY_W_1_2,
-                  key: 'digitInfo',
-                  type: 'input',
-                  props: {
-                    label: BUILDER?.CHART?.DigitInfo ?? 'Digit Info'
-                  }
-                },
-                {
-                  className: FORMLY_W_1_2,
-                  key: 'trellisHorizontal',
-                  type: 'slider',
-                  props: {
-                    label: BUILDER?.CHART?.TrellisHorizontal ?? 'Trellis Horizontal',
-                    type: 'number',
-                    thumbLabel: true,
-                    autoScale: true,
-                    min: 1,
-                    max: 10
-                  }
-                },
-                {
-                  className: FORMLY_W_1_2,
-                  key: 'universalTransition',
-                  type: 'checkbox',
-                  props: {
-                    label: BUILDER?.CHART?.UniversalTransition ?? 'Universal Transition'
-                  }
-                }
-              ]
-            },
-            {
-              key: 'chartTypes',
-              type: 'array',
-              props: {
-                label: BUILDER?.CHART?.ChartVariants ?? 'Chart Variants',
-                hideDelete: true,
-                sortable: true
-              },
-              fieldArray: {
-                type: 'chart-type',
-                props: {
-                  removable: true
-                }
-              }
-            },
-
-            // {
-            //   key: 'customLogic',
-            //   type: 'code-editor',
-            //   props: {
-            //     label: BUILDER?.CHART?.CustomLogic ?? 'Custom Logic',
-            //     language: 'javascript'
-            //   },
-            //   expressions: {
-            //     hide: (field: FormlyFieldConfig) => {
-            //       return (
-            //         field.parent.parent.model?.dataSettings?.chartAnnotation?.chartType?.type !== NxChartType.Custom
-            //       )
-            //     }
-            //   }
-            // }
-          ]
+          fieldGroup: chartSettingsFieldGroup(i18nStory?.Widgets)
         }
       ]),
 
-      getChartOptionsSchema(chartType, STORY_DESIGNER?.STYLING?.ECHARTS)
+      getChartOptionsSchema(chartType, i18nStory?.STYLING?.ECHARTS)
     ]
   }
 
@@ -517,4 +442,83 @@ export function getChartOptionsSchema(chartType: ChartType, I18N) {
     })
 
     return chartOptions
+}
+
+export function chartSettingsFieldGroup(i18n) {
+  return [
+    {
+      fieldGroupClassName: FORMLY_ROW,
+      fieldGroup: [
+        {
+          className: FORMLY_W_1_2,
+          key: 'maximumLimit',
+          type: 'input',
+          props: {
+            label: i18n?.CHART?.MaximumLimit ?? 'Maximum Limit',
+            type: 'number'
+          }
+        },
+        {
+          className: FORMLY_W_1_2,
+          key: 'digitInfo',
+          type: 'input',
+          props: {
+            label: i18n?.CHART?.DigitInfo ?? 'Digit Info'
+          }
+        },
+        {
+          className: FORMLY_W_1_2,
+          key: 'trellisHorizontal',
+          type: 'slider',
+          props: {
+            label: i18n?.CHART?.TrellisHorizontal ?? 'Trellis Horizontal',
+            type: 'number',
+            thumbLabel: true,
+            autoScale: true,
+            min: 1,
+            max: 10
+          }
+        },
+        {
+          className: FORMLY_W_1_2,
+          key: 'universalTransition',
+          type: 'checkbox',
+          props: {
+            label: i18n?.CHART?.UniversalTransition ?? 'Universal Transition'
+          }
+        }
+      ]
+    },
+    {
+      key: 'chartTypes',
+      type: 'array',
+      props: {
+        label: i18n?.CHART?.ChartVariants ?? 'Chart Variants',
+        hideDelete: true,
+        sortable: true
+      },
+      fieldArray: {
+        type: 'chart-type',
+        props: {
+          removable: true
+        }
+      }
+    },
+
+    // {
+    //   key: 'customLogic',
+    //   type: 'code-editor',
+    //   props: {
+    //     label: i18nStory?.Widgets?.CHART?.CustomLogic ?? 'Custom Logic',
+    //     language: 'javascript'
+    //   },
+    //   expressions: {
+    //     hide: (field: FormlyFieldConfig) => {
+    //       return (
+    //         field.parent.parent.model?.dataSettings?.chartAnnotation?.chartType?.type !== NxChartType.Custom
+    //       )
+    //     }
+    //   }
+    // }
+  ]
 }

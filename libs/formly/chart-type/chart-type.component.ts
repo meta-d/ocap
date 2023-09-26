@@ -48,7 +48,8 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   VARIANTS = {
     Bar: [
       { value: null, label: 'None' },
-      { value: 'polar', label: 'Polar' }
+      { value: 'polar', label: 'Polar' },
+      { value: 'stacked', label: 'Stacked' },
     ],
     Waterfall: [
       {

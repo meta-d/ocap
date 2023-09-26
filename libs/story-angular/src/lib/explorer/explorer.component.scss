@@ -2,6 +2,9 @@
   @apply flex flex-col justify-start items-stretch bg-slate-100;
 }
 
+.tag:not(.selected) {
+  @apply bg-slate-100;
+}
 .tag.selected {
   @apply text-amber-500 bg-amber-100;
 }

@@ -6,7 +6,7 @@ export function Scatter3DCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.DDD?.BarSeriesTitle ?? 'Series Attributes',
+      label: I18N?.DDD?.BarSeriesTitle ?? 'Series Attributes',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,
@@ -17,7 +17,7 @@ export function Scatter3DCapacity(className: string, I18N) {
               key: 'blendMode',
               type: 'select',
               templateOptions: {
-                label: I18N.DDD?.BlendMode ?? 'Blend Mode',
+                label: I18N?.DDD?.BlendMode ?? 'Blend Mode',
                 options: [
                   { value: null, label: 'None' },
                   { value: 'source-over', label: 'alpha 混合' },
@@ -30,7 +30,7 @@ export function Scatter3DCapacity(className: string, I18N) {
               key: 'silent',
               type: 'checkbox',
               props: {
-                label: I18N.DDD?.Silent ?? 'Silent'
+                label: I18N?.DDD?.Silent ?? 'Silent'
               }
             },
           ]
@@ -38,7 +38,7 @@ export function Scatter3DCapacity(className: string, I18N) {
         ...AccordionWrappers([
           {
             key: 'itemStyle',
-            label: I18N.DDD?.ItemStyle ?? 'Item Style',
+            label: I18N?.DDD?.ItemStyle ?? 'Item Style',
             fieldGroup: [
               {
                 fieldGroupClassName: FORMLY_ROW,
