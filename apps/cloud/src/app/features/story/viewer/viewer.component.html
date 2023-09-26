@@ -108,8 +108,8 @@
 
 <ngm-story #storyComponent class="w-full h-full overflow-auto"
     [story]="story"
-    [pageKey]="pageKey$ | async"
-    [widgetKey]="widgetKey$ | async"
+    [pageKey]="pageKey()"
+    [widgetKey]="widgetKey()"
     [watermark]="watermark$ | async"
     [dark]="isDark$ | async"
     [(filterBarOpened)]="globalFilterBarOpened"
@@ -122,6 +122,12 @@
         {{error}}
     </div>
 </div>
+
+<ngm-story-explorer *ngIf="showExplorer()" class="absolute top-0 left-0 w-full h-full z-20"
+    cdkDropListGroup
+    [data]="explore()"
+    (closed)="closeExplorer($event)"
+></ngm-story-explorer>
 
 <mat-menu #timerMenu="matMenu" class="ngm-density__compact mat-color-accent">
     <button mat-menu-item [matMenuTriggerFor]="dataMenu">

@@ -140,7 +140,7 @@
 
 <div *ngIf="error" class="pac-story__error">{{error}}</div>
 
-<ngm-story-explorer *ngIf="showExplorer()" class="absolute top-o left-0 w-full h-full z-10"
+<ngm-story-explorer *ngIf="showExplorer()" class="absolute top-0 left-0 w-full h-full z-20"
     cdkDropListGroup
     [data]="explore()"
     (closed)="closeExplorer($event)"

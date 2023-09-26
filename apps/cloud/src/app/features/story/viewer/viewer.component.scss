@@ -1,5 +1,5 @@
 :host {
-  @apply h-full flex-1 max-w-full;
+  @apply relative h-full flex-1 max-w-full;
 
   &.pac-story-viewer.fullscreen {
     position: fixed;
