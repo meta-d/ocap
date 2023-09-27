@@ -23,7 +23,7 @@ import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, m
 import { getSemanticModelKey } from '@metad/story/core'
 import { nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { ChartSchema, SuggestPromptsSchema } from './types'
+import { ChartSchema, SuggestsSchema } from './types'
 import { calcEntityTypePrompt, CopilotService, registerModel } from '../../../@core'
 
 
@@ -148,8 +148,8 @@ export class InsightService {
     this.model = model
     if (!this._suggestedPrompts()[getSemanticModelKey(model)]) {
       this.registerModel(model)
-      const prompts = await this.suggestPrompts()
-      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(model)]: prompts})
+      const answer = await this.suggestPrompts()
+      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(model)]: answer.suggests})
     }
   }
 
@@ -157,8 +157,8 @@ export class InsightService {
     this.error = null
     this.cube.set(cube)
     if (cube) {
-      const prompts = await this.suggestPrompts()
-      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(this.model) + this.cube().name]: prompts})
+      const answer = await this.suggestPrompts()
+      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(this.model) + this.cube().name]: answer.suggests})
     }
   }
 
@@ -361,7 +361,7 @@ ${this.getEntityTypePrompt(entityType)}
               {
                 name: 'create_suggests',
                 description: 'Should always be used to properly format output',
-                parameters: zodToJsonSchema(SuggestPromptsSchema)
+                parameters: zodToJsonSchema(SuggestsSchema)
               }
             ],
             function_call: { name: 'create_suggests' }

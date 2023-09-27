@@ -3,6 +3,7 @@ import {
   CreateChatCompletionRequest,
   CreateChatCompletionResponseChoicesInner
 } from 'openai'
+import JSON5 from 'json5'
 
 export interface ICopilot {
   enabled?: boolean
@@ -67,6 +68,6 @@ export function getFunctionCall(message: ChatCompletionRequestMessage, name?: st
 
   return {
     name: message.function_call.name,
-    arguments: JSON.parse(message.function_call.arguments)
+    arguments: JSON5.parse(message.function_call.arguments)
   }
 }

@@ -818,9 +818,9 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
     const queryParams: Params = {
       widgetKey: this.key,
-      explore: btoa(JSON.stringify({
+      explore: btoa(unescape(encodeURIComponent(JSON.stringify({
         ...pick(this.widget(), ...fields)
-      }))
+      }))))
     }
     this.router.navigate([], {
       relativeTo: this.route,

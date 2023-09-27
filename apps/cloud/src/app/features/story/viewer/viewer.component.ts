@@ -148,7 +148,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
     this.showExplorer.set(!!params.explore)
     if (params.explore) {
-      this.explore.set(JSON.parse(atob(params.explore)))
+      this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
     }
   })
   constructor(

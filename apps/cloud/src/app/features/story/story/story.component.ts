@@ -202,7 +202,7 @@ export class StoryComponent implements OnInit {
 
     this.showExplorer.set(!!params.explore)
     if (params.explore) {
-      this.explore.set(JSON.parse(atob(params.explore)))
+      this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
     }
   })
 

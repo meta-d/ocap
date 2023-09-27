@@ -19,6 +19,7 @@ import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { NgmChartSettingsComponent } from '@metad/story/widgets/analytical-card'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -45,7 +46,6 @@ import { MatIconModule } from '@angular/material/icon'
 import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { CHARTS, getChartType } from './types'
-import { NgmChartSettingsComponent } from '@metad/story/widgets/analytical-card'
 
 
 @Component({
@@ -156,7 +156,9 @@ export class StoryExplorerComponent {
   readonly entityType = toSignal(
     toObservable(this._data).pipe(
       filter(nonNullable),
-      switchMap(({ dataSettings }) =>
+      map(({ dataSettings }) => dataSettings),
+      filter((dataSettings) => !!(dataSettings?.dataSource && dataSettings?.entitySet)),
+      switchMap((dataSettings) =>
         this.dsCoreService
           .selectEntitySet(dataSettings.dataSource, dataSettings.entitySet)
           .pipe(map(({ entityType }) => entityType))

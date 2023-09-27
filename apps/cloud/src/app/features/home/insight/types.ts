@@ -1,3 +1,4 @@
+import { DataSettings, ISlicer } from '@metad/ocap-core';
 import { z } from 'zod'
 
 const ChartTypes = ['Bar', 'Column', 'Pie'] as const
@@ -53,4 +54,20 @@ export const ChartSchema = z.object({
   ).describe('The slicers used by the chart')
 })
 
-export const SuggestPromptsSchema = z.array(z.string().describe('The suggested prompt')).describe('The suggested prompts')
+export const SuggestsSchema = z.object({
+  suggests: z.array(
+    z.string().describe('The suggested prompt')
+  ).describe('The suggested prompts')
+})
+
+export interface QuestionAnswer {
+  key: string;
+  answering: boolean
+  chartOptions: any
+  dataSettings: DataSettings
+  expanded: boolean
+  isCube: boolean
+  message: string
+  slicers: ISlicer[]
+  title: string
+}

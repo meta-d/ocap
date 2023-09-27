@@ -1,6 +1,6 @@
 <div class="relative flex-1 flex flex-col items-center overflow-auto p-4" [class.pac-indight__expand-model]="showModel() && entityType()">
   <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 gap-4">
-    <mat-expansion-panel *ngFor="let answer of answers(); index as index" class="pac-indight__answer-panel group" togglePosition="before"
+    <mat-expansion-panel *ngFor="let answer of answers(); index as index; trackBy: trackByKey" class="pac-indight__answer-panel group" togglePosition="before"
       [expanded]="answer.expanded"
     >
       <mat-expansion-panel-header class="pac-indight__answer-header">
@@ -13,6 +13,12 @@
           <button mat-icon-button displayDensity="compact" class="shrink-0 opacity-0 group-hover:opacity-100 duration-300"
             (click)="$event.stopPropagation();$event.preventDefault();setPrompt(answer.title)">
             <mat-icon fontSet="material-icons-outlined" >edit</mat-icon>
+          </button>
+
+          <button mat-icon-button displayDensity="compact" class="shrink-0 opacity-0 group-hover:opacity-100 duration-300"
+            [matTooltip]=" 'Story.Widget.Explore' | translate: {Default: 'Explore'} "
+            (click)="$event.stopPropagation();$event.preventDefault();openExplore(answer)">
+            <mat-icon fontSet="material-icons-outlined">explore</mat-icon>
           </button>
           
           <mat-icon fontSet="material-icons-outlined" class="opacity-0 group-hover:opacity-100 duration-300" displayDensity="compact"
@@ -239,3 +245,10 @@
 
 <pac-copilot-enable *ngIf="copilotNotEnabled$ | async" class="z-[101]">
 </pac-copilot-enable>
+
+
+<ngm-story-explorer *ngIf="showExplorer()" class="absolute top-0 left-0 w-full h-full z-20"
+  cdkDropListGroup
+  [data]="explore()"
+  (closed)="closeExplorer($event)"
+></ngm-story-explorer>
