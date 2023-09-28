@@ -202,11 +202,6 @@ export class StoryExplorerComponent {
       {
         dimensions: this.rows().map((row) => ({
           ...row,
-          chartOptions: {
-            dataZoom: {
-              type: 'inside'
-            }
-          }
         })),
         measures: [
           ...this.columns(),
@@ -392,6 +387,7 @@ export class StoryExplorerComponent {
   }
 
   onRowChange(row: Dimension, i: number) {
+    // console.log(`Explorer on row change, rows is`, this.rows(), ` Current row is`, row)
     this.rows.set([...this.rows().slice(0, i), row, ...this.rows().slice(i + 1)])
   }
 

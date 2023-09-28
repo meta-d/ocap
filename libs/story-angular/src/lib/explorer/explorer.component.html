@@ -79,7 +79,7 @@
 </div>
 
 <div class="w-full flex-1 p-2 flex justify-start items-stretch gap-2 overflow-hidden">
-    <div ngmResizer [resizerWidth]="280" class="w-80 relative">
+    <div ngmResizer [resizerWidth]="360" class="relative">
         <div ngmResizerBar resizerBarPosition="right" class="z-10"
             cdkDrag
             cdkDragLockAxis="x"
@@ -95,33 +95,6 @@
                         [cdkDropListData]="rows()"
                         (cdkDropListDropped)="dropRow($event)"
                         [cdkDropListEnterPredicate]="dropRowPredicate">
-                        <ngm-property-select *ngFor="let row of rows(); index as i; trackBy: trackByIndex" class="w-full" editable displayDensity="compact"
-                            showAttributes
-                            [dataSettings]="dataSettings()"
-                            [entityType]="entityType()"
-                            [ngModel]="row"
-                            [capacities]="[
-                                PropertyCapacity.Dimension,
-                                PropertyCapacity.Order
-                            ]"
-                            cdkDrag
-                            [cdkDragData]="row"
-                            (ngModelChange)="onRowChange($event, i)"
-                            >
-                            <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
-                                (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
-                                <mat-icon>clear</mat-icon>
-                            </button>
-
-                            <div class="flex flex-col justify-start items-start">
-                                <mat-radio-group >
-                                    <mat-radio-button *ngFor="let role of DIMENSION_ROLES" [value]="role.value">
-                                        {{ 'FORMLY.PROPERTY_SELECT.' + role.label | translate: {Default: role.label} }}
-                                    </mat-radio-button>
-                                </mat-radio-group>
-                            </div>
-                        </ngm-property-select>
-
 
                         <ngm-chart-property *ngFor="let row of rows(); index as i; trackBy: trackByIndex" class="w-full"
                             removable
@@ -138,6 +111,10 @@
                             cdkDrag
                             [cdkDragData]="row"
                         >
+                            <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+                                (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
+                                <mat-icon>clear</mat-icon>
+                            </button>
                         </ngm-chart-property>
                     </div>
 
@@ -148,25 +125,35 @@
                         [cdkDropListData]="columns()"
                         (cdkDropListDropped)="dropColumn($event)"
                         [cdkDropListEnterPredicate]="dropColumnPredicate">
-                        <ngm-property-select *ngFor="let item of columns(); index as i; trackBy: trackByIndex" class="w-full" editable displayDensity="compact"
-                            showAttributes
-                            [dataSettings]="dataSettings()"
-                            [entityType]="entityType()"
-                            [ngModel]="item"
+
+                        <ngm-chart-property *ngFor="let item of columns(); index as i; trackBy: trackByIndex" class="w-full"
+                            removable
                             [capacities]="[
                                 PropertyCapacity.Measure,
                                 PropertyCapacity.Order,
-                                PropertyCapacity.MeasureAttributes
+                                PropertyCapacity.MeasureAttributes,
+                                PropertyCapacity.MeasureStyle,
+                                PropertyCapacity.MeasureStyleRole,
+                                PropertyCapacity.MeasureStyleShape,
+                                PropertyCapacity.MeasureStylePalette,
+                                PropertyCapacity.MeasureStylePalettePattern,
+                                PropertyCapacity.MeasureStyleReferenceLine,
+                                PropertyCapacity.MeasureStyleChartOptions
                             ]"
+                            [dataSettings]="dataSettings()"
+                            [entityType]="entityType()"
+                            [chartType]="chartType()"
+                            [ngModel]="item"
+                            (ngModelChange)="onColumnChange($event, i)"
+
                             cdkDrag
                             [cdkDragData]="item"
-                            (ngModelChange)="onColumnChange($event, i)"
-                            >
+                        >
                             <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
                                 (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
                                 <mat-icon>clear</mat-icon>
                             </button>
-                        </ngm-property-select>
+                        </ngm-chart-property>
                     </div>
                 </mat-tab>
                 <mat-tab [label]="'Story.Explorer.Display' | translate: {Default: 'Display'} ">
@@ -184,7 +171,7 @@
                 <div class="text-sm p-2">
                     {{'Story.Chart.' + group.label | translate: {Default: group.label} }}
                 </div>
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-4 gap-2">
                     <button *ngFor="let chart of group.charts" class="ngm-story-explorer__chart m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
                         ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
                         [matTooltip]="'Story.Chart.' + chart.label | translate: {Default: chart.label}"

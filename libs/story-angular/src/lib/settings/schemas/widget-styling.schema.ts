@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core'
 import { StoryWidget } from '@metad/story/core'
-import { Appearance, BaseDesignerSchemaService, BaseSchemaState, FORMLY_W_FULL } from '@metad/story/designer'
+import {
+  Appearances,
+  BaseDesignerSchemaService,
+  BaseSchemaState,
+  FORMLY_ROW,
+  FORMLY_W_1_2
+} from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 
 @Injectable()
@@ -10,22 +16,32 @@ export class WidgetStylingSchema extends BaseDesignerSchemaService<BaseSchemaSta
       map((DESIGNER) => {
         return [
           {
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
-              label: DESIGNER?.Widgets?.Common?.ComponentStyling ?? 'Component Styling',
-              expanded: true
+              expandedMulti: true,
+              elevationZ: true,
             },
             fieldGroup: [
               {
                 key: 'component',
                 type: 'styling',
                 props: {
+                  label: DESIGNER?.Widgets?.Common?.ComponentStyling ?? 'Component Styling',
+                  expanded: true,
                 }
+              },
+
+              {
+                key: 'appearance',
+                props: {
+                  label: DESIGNER?.Widgets?.Common?.Appearance ?? 'Appearance',
+                  expanded: true,
+                },
+                fieldGroupClassName: FORMLY_ROW,
+                fieldGroup: Appearances(FORMLY_W_1_2, DESIGNER?.Widgets?.Common)
               }
             ]
-          },
-          Appearance(FORMLY_W_FULL, DESIGNER?.Widgets?.Common)
-          // StylingWidgetSchema(FORMLY_W_1_2, DESIGNER)
+          }
         ]
       })
     )

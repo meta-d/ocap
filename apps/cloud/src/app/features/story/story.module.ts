@@ -36,6 +36,7 @@ import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
+import { NgmFormlyModule } from '@metad/formly'
 
 @NgModule({
   declarations: [],
@@ -53,7 +54,7 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
     }),
 
     // Formly
-    FormlyModule.forRoot({
+    NgmFormlyModule.forRoot({
       types: [
         {
           name: 'styling',
@@ -63,33 +64,23 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
           name: 'image-upload',
           component: PACFormlyImageUploadComponent
         },
-        {
-          name: 'colors',
-          component: PacFormlyColorsComponent
-        }
       ]
     }),
-    PACFormlyJsonModule,
-    FormlyMatToggleModule,
-    FormlyMatSliderModule,
-    MetadFormlyMatModule,
-    PACFormlyChartTypeModule,
-    PACFormlyMatSlicersModule,
-    PACFormlyPropertySelectModule,
-    PACFormlyCodeEditorModule,
-    PACFormlyDesignerModule,
-    PACFormlyEmptyModule,
-    PACFormlyButtonToggleModule,
-    PACFormlyTableModule,
-    MetadFormlyAccordionModule,
-    PACFormlyInputModule,
-    PACFormlySelectModule,
-    FormlyMatCheckboxModule,
-    PACFormlyTextAreaModule,
-    PACFormlySemanticModelModule,
-    PACFormlySortModule,
-    PACFormlyColorPickerModule,
-    PACFormlyEntityTypeModule,
+
+    // MetadFormlyMatModule,
+    // PACFormlyDesignerModule,
+    // PACFormlyEmptyModule,
+    // PACFormlyButtonToggleModule,
+    // PACFormlyTableModule,
+    // MetadFormlyAccordionModule,
+    // PACFormlyInputModule,
+    // PACFormlySelectModule,
+    // FormlyMatCheckboxModule,
+    // PACFormlyTextAreaModule,
+    // PACFormlySemanticModelModule,
+    // PACFormlySortModule,
+    // PACFormlyColorPickerModule,
+    // PACFormlyEntityTypeModule,
 
     NgmCommonModule,
     NgmDialogComponent,

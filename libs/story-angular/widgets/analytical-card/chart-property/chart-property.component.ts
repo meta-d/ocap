@@ -1,7 +1,7 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CommonModule } from '@angular/common'
 import { Component, Input, computed, forwardRef, inject, signal } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -16,7 +16,7 @@ import {
   getScaleChromaticInterpolates
 } from '@metad/components/palette'
 import { PropertyCapacity, PropertyModule } from '@metad/components/property'
-import { NxCoreService } from '@metad/core'
+import { ColorPalettes, NxCoreService } from '@metad/core'
 import { DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
@@ -36,6 +36,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { startCase } from 'lodash-es'
 import { BehaviorSubject, Subscription, distinctUntilChanged, firstValueFrom, from, map } from 'rxjs'
 import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
+import { NgmReferenceLineComponent } from './reference-line.component'
+import { NgmChartMeasureComponent } from './chart-measure.component'
 
 @Component({
   standalone: true,
@@ -55,7 +57,9 @@ import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
     NxChromaticPreviewComponent,
     DensityDirective,
     NgmColorsComponent,
-    NgmDesignerFormComponent
+    NgmDesignerFormComponent,
+    NgmReferenceLineComponent,
+    NgmChartMeasureComponent
   ],
   selector: 'ngm-chart-property',
   templateUrl: 'chart-property.component.html',
@@ -104,7 +108,11 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
   private readonly _entityType = signal<EntityType>(null)
 
+  @Input() chartType: ChartType
+
+
   public interpolateGroups: NgmChromaticInterpolateGroup[]
+  public colorPalettes = ColorPalettes
 
   DIMENSION_ROLES = [
     { label: 'None', value: null },
@@ -144,6 +152,8 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
     { label: 'Scatter', value: 'scatter', icon: 'scatter_plot' }
   ]
 
+  private readonly model = signal(null)
+
   /**
    * 对接 ngm-property-select 的 FormControl, 与当前组件的 formControl 连接
    */
@@ -181,14 +191,14 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public readonly restrictedDimensions$ = new BehaviorSubject<string[]>(null)
 
   get role() {
-    return this.formControl.value?.role
+    return this.model()?.role
   }
   set role(value) {
     this.patchValue({ role: value })
   }
 
   get palette() {
-    return this.formControl.value?.palette?.name
+    return this.model()?.palette?.name
   }
   set palette(value) {
     let interpolate = null
@@ -203,7 +213,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
 
     this.patchValue({
       palette: {
-        ...(this.formControl.value?.palette || {}),
+        ...(this.model()?.palette || {}),
         name: value,
         colors: interpolate?.colors?.map(({ fill }) => fill)
       }
@@ -211,56 +221,63 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
 
   get colors() {
-    return this.formControl.value?.palette?.colors
+    return this.model()?.palette?.colors
   }
   set colors(value) {
     this.patchValue({
       palette: {
-        ...(this.formControl.value?.palette || {}),
+        ...(this.model()?.palette || {}),
         colors: value
       }
     })
   }
 
   get reverse() {
-    return this.formControl.value?.palette?.reverse
+    return this.model()?.palette?.reverse
   }
   set reverse(value) {
     this.patchValue({
       palette: {
-        ...(this.formControl.value?.palette || {}),
+        ...(this.model()?.palette || {}),
         reverse: value
       }
     })
   }
 
   get pattern() {
-    return this.formControl.value?.palette?.pattern
+    return this.model()?.palette?.pattern
   }
   set pattern(value) {
     this.patchValue({
       palette: {
-        ...(this.formControl.value?.palette || {}),
+        ...(this.model()?.palette || {}),
         pattern: value
       }
     })
   }
 
   get shapeType() {
-    return this.formControl.value?.shapeType
+    return this.model()?.shapeType
   }
   set shapeType(value) {
     this.patchValue({ shapeType: value })
   }
   get bar() {
-    return this.formControl.value?.bar
+    return this.model()?.bar
   }
   set bar(value) {
     this.patchValue({ bar: value })
   }
 
+  get referenceLines() {
+    return this.model()?.referenceLines
+  }
+  set referenceLines(value) {
+    this.patchValue({ referenceLines: value })
+  }
+
   get chartOptions() {
-    return this.formControl.value?.chartOptions
+    return this.model()?.chartOptions
   }
   set chartOptions(value) {
     this.patchValue({ chartOptions: value })
@@ -297,60 +314,20 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
       this.interpolateGroups = interpolateGroups
     })
 
-  private valueSub = this.formControl.valueChanges
-    .pipe(distinctUntilChanged(isEqual), takeUntilDestroyed())
+  private valueSub = toObservable(this.model)
+    .pipe(takeUntilDestroyed())
     .subscribe((value) => {
-      this.onChange(value)
+      console.log(`When value changed in chart property`, value)
+      this.onChange?.(value)
     })
-
-  // ngOnInit(): void {
-  //   // 初始化完成后再发送数据
-  //   if (this.field?.props?.entitySet instanceof Observable) {
-  //     this.field.props.entitySet.pipe(untilDestroyed(this)).subscribe((event) => this.entitySet$.next(event))
-  //   } else if (this.field.props.entitySet) {
-  //     this.entitySet$.next(this.field.props.entitySet)
-  //   }
-
-  //   if (this.field?.props?.entityType instanceof Observable) {
-  //     this.field.props.entityType.pipe(untilDestroyed(this)).subscribe((event) => this.entityType$.next(event))
-  //   } else if (this.field.props.entityType) {
-  //     this.entityType$.next(this.field.props.entityType)
-  //     // 注意: 这样的 of(event) 异步事件会紧跟着一个 complete 事件导致 this.entityType$ 被 Complete
-  //     // of(this.field.props.entityType).subscribe(this.entityType$)
-  //   }
-
-  //   if (this.field?.props?.dataSettings instanceof Observable) {
-  //     this.field.props.dataSettings.pipe(untilDestroyed(this)).subscribe((event) => this.dataSettings$.next(event))
-  //   } else if (this.field?.props?.dataSettings) {
-  //     this.dataSettings$.next(this.field.props.dataSettings)
-  //   }
-
-  //   if (this.field?.props?.restrictedDimensions instanceof Observable) {
-  //     this.field.props.restrictedDimensions
-  //       .pipe(untilDestroyed(this))
-  //       .subscribe((event) => this.restrictedDimensions$.next(event))
-  //   } else if (this.field?.props?.restrictedDimensions) {
-  //     this.restrictedDimensions$.next(this.field.props.restrictedDimensions)
-  //   }
-
-  //   this.formControl.valueChanges
-  //     .pipe(startWith(this.formControl.value), distinctUntilChanged(isEqual), untilDestroyed(this))
-  //     .subscribe((value) => {
-  //       this._formControl.setValue(value)
-  //     })
-
-  //   this._formControl.valueChanges.pipe(distinctUntilChanged(isEqual), untilDestroyed(this)).subscribe((value) => {
-  //     this.patchValue(value || {})
-  //   })
-  // }
 
   onChange: (input: any) => void
   onTouched: () => void
 
   writeValue(obj: any): void {
     if (obj) {
-      console.log('writeValue', obj)
       this.formControl.patchValue(obj)
+      this.model.set(obj)
     }
   }
   registerOnChange(fn: any): void {
@@ -364,8 +341,9 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
 
   patchValue(value) {
-    this.formControl.setValue({
-      ...(this.formControl.value || {}),
+    this.model.set({
+      ...this.model(),
+      ...(this.formControl.value ?? {}),
       ...value
     })
   }
@@ -378,85 +356,85 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
     })
   }
 
-  async openReferenceLine() {
-    const title = await firstValueFrom(
-      this.translateService.get('FORMLY.PROPERTY_SELECT.REFERENCE_LINE', { Default: 'Reference Lines' })
-    )
-    this.referenceLineSubscription?.unsubscribe()
-    this.referenceLineSubscription = this.settingsService
-      ?.openSecondDesigner(
-        'MeasureReferenceLine',
-        { referenceLines: this.formControl.value?.referenceLines ?? [] },
-        title,
-        true
-      )
-      .subscribe((result) => {
-        if (result) {
-          this.patchValue({
-            referenceLines: result.referenceLines
-          })
-        }
-      })
-  }
+  // async openReferenceLine() {
+  //   const title = await firstValueFrom(
+  //     this.translateService.get('FORMLY.PROPERTY_SELECT.REFERENCE_LINE', { Default: 'Reference Lines' })
+  //   )
+  //   this.referenceLineSubscription?.unsubscribe()
+  //   this.referenceLineSubscription = this.settingsService
+  //     ?.openSecondDesigner(
+  //       'MeasureReferenceLine',
+  //       { referenceLines: this.model()?.referenceLines ?? [] },
+  //       title,
+  //       true
+  //     )
+  //     .subscribe((result) => {
+  //       if (result) {
+  //         this.patchValue({
+  //           referenceLines: result.referenceLines
+  //         })
+  //       }
+  //     })
+  // }
 
-  async openChartOptions() {
-    const title = await firstValueFrom(
-      this.translateService.get('FORMLY.PROPERTY_SELECT.ChartOptions', { Default: 'Chart Options' })
-    )
-    // 优先使用本度量的形状属性作为图形类型
-    let chartType: ChartType // = await firstValueFrom(this.field?.props?.chartType$ ?? of({}))
-    if (this.shapeType) {
-      chartType = { ...chartType, type: startCase(this.shapeType) }
-    }
+  // async openChartOptions() {
+  //   const title = await firstValueFrom(
+  //     this.translateService.get('FORMLY.PROPERTY_SELECT.ChartOptions', { Default: 'Chart Options' })
+  //   )
+  //   // 优先使用本度量的形状属性作为图形类型
+  //   let chartType: ChartType // = await firstValueFrom(this.field?.props?.chartType$ ?? of({}))
+  //   if (this.shapeType) {
+  //     chartType = { ...chartType, type: startCase(this.shapeType) }
+  //   }
 
-    this.chartOptionsSubscription?.unsubscribe()
-    this.chartOptionsSubscription = this.settingsService
-      ?.openSecondDesigner(
-        'MeasureChartOptions',
-        {
-          chartType,
-          chartOptions: this.formControl.value?.chartOptions ?? {}
-        },
-        title,
-        true
-      )
-      .subscribe((result) => {
-        if (result) {
-          this.patchValue({
-            chartOptions: result.chartOptions
-          })
-        }
-      })
-  }
+  //   this.chartOptionsSubscription?.unsubscribe()
+  //   this.chartOptionsSubscription = this.settingsService
+  //     ?.openSecondDesigner(
+  //       'MeasureChartOptions',
+  //       {
+  //         chartType,
+  //         chartOptions: this.model()?.chartOptions ?? {}
+  //       },
+  //       title,
+  //       true
+  //     )
+  //     .subscribe((result) => {
+  //       if (result) {
+  //         this.patchValue({
+  //           chartOptions: result.chartOptions
+  //         })
+  //       }
+  //     })
+  // }
 
-  async editAttributes() {
-    const title = await firstValueFrom(
-      this.translateService.get('FORMLY.PROPERTY_SELECT.ChartAttributes', { Default: 'Chart Attributes' })
-    )
+  // async editAttributes() {
+  //   const title = await firstValueFrom(
+  //     this.translateService.get('FORMLY.PROPERTY_SELECT.ChartAttributes', { Default: 'Chart Attributes' })
+  //   )
 
-    this.editAttributesSubscription?.unsubscribe()
-    this.editAttributesSubscription = this.settingsService
-      ?.openSecondDesigner(
-        'DimensionChartOptions',
-        {
-          chartOptions: this.formControl.value?.chartOptions ?? {}
-        },
-        title,
-        true
-      )
-      .subscribe((result) => {
-        if (result) {
-          this.patchValue({
-            chartOptions: result.chartOptions
-          })
-        }
-      })
-  }
+  //   this.editAttributesSubscription?.unsubscribe()
+  //   this.editAttributesSubscription = this.settingsService
+  //     ?.openSecondDesigner(
+  //       'DimensionChartOptions',
+  //       {
+  //         chartOptions: this.model()?.chartOptions ?? {}
+  //       },
+  //       title,
+  //       true
+  //     )
+  //     .subscribe((result) => {
+  //       if (result) {
+  //         this.patchValue({
+  //           chartOptions: result.chartOptions
+  //         })
+  //       }
+  //     })
+  // }
 
   onColorsChange(colors: string[]) {
     this.patchValue({
       palette: {
-        ...(this.formControl.value?.palette ?? {}),
+        ...(this.model()?.palette ?? {}),
         name: null
       }
     })

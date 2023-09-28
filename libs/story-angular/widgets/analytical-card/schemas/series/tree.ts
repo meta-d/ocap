@@ -1,4 +1,3 @@
-import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { Positions, UniversalTransition } from '../common'
 import { FORMLY_ROW } from '@metad/story/designer'
 
@@ -11,14 +10,14 @@ export function TreeCapacity(className, I18N?) {
     },
     {
       wrappers: ['accordion'],
-      templateOptions: {
+      props: {
         elevationZ: true
       },
       fieldGroup: [
         {
           key: 'seriesStyle',
           hideExpression: `!field.parent.model || !field.parent.model.${keyShow}`,
-          templateOptions: {
+          props: {
             label: I18N?.Tree?.SeriesStyle?.Title ?? 'Series Style',
             keyShow
           },
@@ -33,7 +32,7 @@ export function TreeCapacity(className, I18N?) {
                 //   className,
                 //   key: 'layout',
                 //   type: 'select',
-                //   templateOptions: {
+                //   props: {
                 //     label: I18N?.Tree?.SeriesStyle?.Layout ?? 'Layout',
                 //     options: [
                 //       { value: 'orthogonal', label: I18N?.Tree?.SeriesStyle?.Orthogonal ?? 'Orthogonal' },
@@ -46,7 +45,7 @@ export function TreeCapacity(className, I18N?) {
                   className,
                   key: 'orient',
                   type: 'select',
-                  templateOptions: {
+                  props: {
                     label: I18N?.Tree?.SeriesStyle?.Orient ?? 'Orient',
                     options: [
                       { value: 'LR', label: 'LR' },
@@ -61,7 +60,7 @@ export function TreeCapacity(className, I18N?) {
                   className,
                   key: 'edgeShape',
                   type: 'select',
-                  templateOptions: {
+                  props: {
                     label: I18N?.Tree?.SeriesStyle?.EdgeShape ?? 'Edge Shape',
                     options: [
                       { value: 'curve', label: 'Curve' },
@@ -73,7 +72,7 @@ export function TreeCapacity(className, I18N?) {
                   className,
                   key: 'edgeForkPosition',
                   type: 'input',
-                  templateOptions: {
+                  props: {
                     label: I18N?.Tree?.SeriesStyle?.EdgeForkPosition ?? 'Edge Fork Position'
                   }
                 },
@@ -82,7 +81,7 @@ export function TreeCapacity(className, I18N?) {
                   className,
                   key: 'symbolSize',
                   type: 'input',
-                  templateOptions: {
+                  props: {
                     label: I18N?.Common?.SymbolSize ?? 'Symbol Size',
                     type: 'number'
                   }
@@ -92,7 +91,7 @@ export function TreeCapacity(className, I18N?) {
                   key: 'initialTreeDepth',
                   type: 'input',
                   defaultValue: 2,
-                  templateOptions: {
+                  props: {
                     label: I18N?.Tree?.SeriesStyle?.InitialTreeDepth ?? 'Initial Tree Depth',
                     type: 'number'
                   }
@@ -108,7 +107,7 @@ export function TreeCapacity(className, I18N?) {
             },
             {
               wrappers: ['accordion'],
-              templateOptions: {
+              props: {
                 elevationZ: true
               },
               fieldGroup: [LeavesExpansion(className, I18N, '__showLeaves__')]
@@ -137,7 +136,7 @@ export function TreeLabel(className, I18N?) {
   return {
     key: 'label',
     wrappers: ['panel'],
-    templateOptions: {
+    props: {
       label: I18N?.Common?.Label ?? 'Label'
     },
     fieldGroupClassName: FORMLY_ROW,
@@ -146,7 +145,7 @@ export function TreeLabel(className, I18N?) {
         className,
         key: 'position',
         type: 'select',
-        templateOptions: {
+        props: {
           label: I18N?.Common?.Position ?? 'Position',
           options: [
             {
@@ -167,9 +166,8 @@ export function TreeLabel(className, I18N?) {
 export function Emphasis(className: string, I18N) {
   return {
     key: 'emphasis',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    templateOptions: {
+    wrappers: ['accordion'],
+    props: {
       label: I18N?.EMPHASIS?.TITLE ?? 'Emphasis',
       toggleable: true
     },
@@ -179,7 +177,7 @@ export function Emphasis(className: string, I18N) {
         className,
         key: 'focus',
         type: 'select',
-        templateOptions: {
+        props: {
           label: I18N?.EMPHASIS?.FOCUS ?? 'Focus',
           options: [
             { value: null, label: 'None' },
@@ -195,7 +193,7 @@ export function Emphasis(className: string, I18N) {
         className,
         key: 'blurScope',
         type: 'select',
-        templateOptions: {
+        props: {
           label: I18N?.EMPHASIS?.BlurScope ?? 'Blur Scope',
           options: [
             { value: null, label: 'None' },

@@ -1,15 +1,15 @@
-<form [formGroup]="formGroup" class="flex-1 max-w-full flex flex-col justify-start items-stretch">
-  <label class="flex item p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">
-    <span *ngIf="label" class="mr-1">{{label}}</span>
-    <ng-container *ngIf="label$ | async as label">
-      <mat-icon *ngIf="label.icon" displayDensity="compact">{{ label.icon }}</mat-icon>
-      <span>
-        {{ 'COMPONENTS.COMMON.'+(label?.label ?? 'DIMENSION_MEASURE') | translate: {Default: label?.label ?? 'Dimension/Measure'} }}
-      </span>
-    </ng-container>
-  </label>
+<label class="flex item p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">
+  <span *ngIf="label" class="mr-1">{{label}}</span>
+  <ng-container *ngIf="label$ | async as label">
+    <mat-icon *ngIf="label.icon" displayDensity="compact">{{ label.icon }}</mat-icon>
+    <span>
+      {{ 'COMPONENTS.COMMON.'+(label?.label ?? 'DIMENSION_MEASURE') | translate: {Default: label?.label ?? 'Dimension/Measure'} }}
+    </span>
+  </ng-container>
+</label>
 
-  <div class="flex items-center w-full max-w-full py-1 px-2 text-xs rounded-md bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+<div class="flex flex-col items-stretch gap-2 w-full max-w-full py-1 px-2 text-xs rounded-md bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+  <form [formGroup]="formGroup" class="flex-1 max-w-full flex justify-start items-center">
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
@@ -109,11 +109,11 @@
     </button>
 
     <ng-content select="[ngmSuffix]"></ng-content>
-  </div>
-</form>
+  </form>
 
-<div *ngIf="showMore()" class="min-h-12 w-full flex justify-center items-center">
-  <ng-content></ng-content>
+  <div *ngIf="showMore()" class="min-h-12 w-full flex justify-center items-center">
+    <ng-content></ng-content>
+  </div>
 </div>
 
 <mat-menu #dimensionMenu="matMenu" class="ngm-formly ngm-density__compact">

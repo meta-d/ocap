@@ -1,8 +1,8 @@
-import { animate, style, transition, trigger } from '@angular/animations'
 import { CommonModule } from '@angular/common'
 import { Component, forwardRef, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
+import { cloneDeep } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
 import { DesignerSchema, STORY_DESIGNER_SCHEMA } from '../types'
 
@@ -11,15 +11,6 @@ import { DesignerSchema, STORY_DESIGNER_SCHEMA } from '../types'
   selector: 'ngm-designer-form',
   templateUrl: 'designer-form.component.html',
   styleUrls: ['designer-form.component.scss'],
-  animations: [
-    trigger('settingsComponent', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)' }),
-        animate(300, style({ transform: 'translateX(0)' }))
-      ]),
-      transition(':leave', [animate(200, style({ 'transform-origin': 'center', transform: 'scale(0.5)' }))])
-    ])
-  ],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, FormlyModule],
   providers: [
     {
@@ -38,13 +29,18 @@ export class NgmDesignerFormComponent implements ControlValueAccessor {
 
   public readonly fields = toSignal(this.schema.getSchema())
 
+  private valueSub = this.formGroup.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
+    this.schema.model = value
+    this.onChange?.(value)
+  })
+
   onChange: (input: any) => void
   onTouched: () => void
 
   writeValue(obj: any): void {
     if (obj) {
-      console.log('writeValue', obj)
       this.formGroup.patchValue(obj)
+      this.model = cloneDeep(obj)
     }
   }
   registerOnChange(fn: any): void {
@@ -58,6 +54,6 @@ export class NgmDesignerFormComponent implements ControlValueAccessor {
   }
 
   onModelChange(event) {
-    console.log(event)
+    // console.log(event)
   }
 }

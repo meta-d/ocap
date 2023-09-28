@@ -16,3 +16,16 @@
     visibility: visible;
   }
 }
+
+.ngm-chart-property__card {
+  @apply p-2 flex flex-col bg-white rounded-lg;
+}
+
+::ng-deep {
+  .ngm-chart-property__palette-trigger.mat-mdc-menu-trigger {
+    @apply my-2;
+    .mdc-button__label {
+      @apply w-full;
+    }
+  }
+}

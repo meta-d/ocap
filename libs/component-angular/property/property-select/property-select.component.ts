@@ -233,10 +233,6 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     formatting: new FormControl(),
     parameter: new FormControl(),
     order: new FormControl<OrderDirection>(null),
-    palette: new FormControl<any>(null),
-    bar: new FormControl<boolean>(null),
-    shapeType: new FormControl<any>(null),
-    chartOptions: new FormControl<any>(null),
   })
   // 初始值
   private readonly _formValue = this.formGroup.value

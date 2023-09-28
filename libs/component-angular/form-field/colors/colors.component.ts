@@ -43,7 +43,7 @@ export class NgmColorsComponent implements ControlValueAccessor {
 
   @Input() label: string
   @Input() placeholder: string
-  @Input() options: { label: string; colors: Array<{colors: string[]; keywords: string[]}> }[]
+  @Input() options: { label: string; colors: Array<{colors: string[]; keywords?: string[]}> }[]
 
   @Input() disabled = false
 

@@ -8,7 +8,7 @@ export class FlexLayoutSchemaService extends BaseDesignerSchemaService<BaseSchem
   getSchema() {
     return of([
       {
-        wrappers: ['expansion'],
+        wrappers: ['accordion'],
         templateOptions: {
           label: '响应页面',
           expanded: true

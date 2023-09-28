@@ -32,7 +32,7 @@
     <mat-icon fontSet="material-icons-outlined">adjust</mat-icon>
   </button>
 
-  <button class="ngm-formly__remove" *ngIf="removable" displayDensity="compact"
+  <button ngmSuffix class="ngm-formly__remove" *ngIf="removable" displayDensity="compact"
     mat-icon-button color="warn"
     (click)="$event.stopPropagation();$event.preventDefault();killMyself()">
     <mat-icon>clear</mat-icon>

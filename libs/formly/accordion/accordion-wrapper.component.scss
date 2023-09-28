@@ -1,0 +1,13 @@
+.mat-expansion-panel-header-description {
+  justify-content: flex-end;
+}
+
+:host::ng-deep {
+  &
+    > .mat-accordion
+    > .mat-expansion-panel
+    > .mat-expansion-panel-header
+    > .mat-content {
+    overflow: visible;
+  }
+}

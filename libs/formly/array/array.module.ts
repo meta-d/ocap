@@ -7,10 +7,10 @@ import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxFormlyArrayComponent } from './array.type'
+import { NgmFormlyArrayComponent } from './array.type'
 
 @NgModule({
-  declarations: [NxFormlyArrayComponent],
+  declarations: [NgmFormlyArrayComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -24,11 +24,11 @@ import { NxFormlyArrayComponent } from './array.type'
       types: [
         {
           name: 'array',
-          component: NxFormlyArrayComponent,
+          component: NgmFormlyArrayComponent,
         },
       ],
     }),
   ],
-  exports: [NxFormlyArrayComponent],
+  exports: [NgmFormlyArrayComponent],
 })
-export class PACFormlyArrayModule {}
+export class NgmFormlyArrayModule {}

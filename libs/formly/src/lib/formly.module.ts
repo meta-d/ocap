@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { ModuleWithProviders, NgModule } from '@angular/core'
-import { MetadFormlyMatModule } from '@metad/formly-mat'
-import { MetadFormlyAccordionModule } from '@metad/formly-mat/accordion'
+import { NgmFormlyAccordionModule } from '@metad/formly/accordion'
 import { PACFormlyButtonToggleModule } from '@metad/formly/button-toggle'
 import { PACFormlyChartTypeModule } from '@metad/formly/chart-type'
 import { FormlyMatCheckboxModule } from '@metad/formly/checkbox'
@@ -22,7 +21,10 @@ import { PACFormlyMatSlicersModule } from '@metad/formly/slicers'
 import { FormlyMatSliderModule } from '@metad/formly/slider'
 import { PACFormlySortModule } from '@metad/formly/sort'
 import { PACFormlyTextAreaModule } from '@metad/formly/textarea'
+import { NgmFormlyArrayModule } from '@metad/formly/array'
 import { ConfigOption, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
+import { MetadFormlyPanelModule } from '@metad/formly-mat/panel'
+import { MetadFormlyMatTabGroupModule } from '@metad/formly-mat/tab-group'
 
 export function validateRequired(err, field: FormlyFieldConfig) {
   return `This field is required`
@@ -47,7 +49,6 @@ export function validateMax(err, field: FormlyFieldConfig) {
     PACFormlyJsonModule,
     FormlyMatToggleModule,
     FormlyMatSliderModule,
-    MetadFormlyMatModule,
     PACFormlyChartTypeModule,
     PACFormlyMatSlicersModule,
     PACFormlyPropertySelectModule,
@@ -56,7 +57,6 @@ export function validateMax(err, field: FormlyFieldConfig) {
     PACFormlyEmptyModule,
     PACFormlyButtonToggleModule,
     PACFormlyTableModule,
-    MetadFormlyAccordionModule,
     PACFormlyInputModule,
     PACFormlySelectModule,
     FormlyMatCheckboxModule,
@@ -64,7 +64,12 @@ export function validateMax(err, field: FormlyFieldConfig) {
     PACFormlySemanticModelModule,
     PACFormlySortModule,
     PACFormlyColorPickerModule,
-    PACFormlyEntityTypeModule
+    PACFormlyEntityTypeModule,
+    MetadFormlyPanelModule,
+    MetadFormlyMatTabGroupModule,
+
+    NgmFormlyArrayModule,
+    NgmFormlyAccordionModule
   ]
 })
 export class NgmFormlyModule {

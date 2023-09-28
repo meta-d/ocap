@@ -383,9 +383,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
     this.editAttributesSubscription?.unsubscribe()
     this.editAttributesSubscription = this.settingsService.openSecondDesigner(
       'DimensionChartOptions',
-      {
-        chartOptions: this.formControl.value?.chartOptions ?? {}
-      },
+      this.formControl.value?.chartOptions ?? {},
       title,
       true
     )
@@ -393,7 +391,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
       .subscribe((result) => {
         if (result) {
           this.patchValue({
-            chartOptions: result.chartOptions
+            chartOptions: result
           })
         }
       })

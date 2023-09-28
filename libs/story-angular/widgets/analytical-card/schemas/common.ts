@@ -343,9 +343,6 @@ export function EmphasisAccordionWrappers(className: string, I18N, extensions?: 
 export function Emphasis(className: string, I18N) {
   return {
     key: 'emphasis',
-    // wrappers: ['expansion'],
-    // defaultValue: C_FORMLY_INITIAL_VALUE,
-    // fieldGroupClassName: FORMLY_ROW,
     props: {
       label: I18N?.EMPHASIS?.TITLE ?? 'Emphasis',
       icon: 'announcement',

@@ -4,7 +4,10 @@ import { PropertyCapacity } from '@metad/components/property'
 import { ColorPalettes } from '@metad/core'
 import { PropertyCapacity as FormlyPropertyCapacity } from '@metad/components/property'
 import {
+  AccordionWrappers,
   DataSettingsSchemaService,
+  FORMLY_GAP_2,
+  FORMLY_MY_2,
   FORMLY_ROW,
   FORMLY_W_1_2,
   PresentationVariantExpansion,
@@ -36,167 +39,170 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
       ...PresentationVariantExpansion(Widgets?.Common, this.dataSettings$, this.entityType$, this.properties$),
     )
 
-    dataSettings.wrappers = ['expansion']
-
     const className = FORMLY_W_1_2
     return [
       {
         wrappers: ['panel'],
-        templateOptions: {
+        props: {
           padding: true
         },
         fieldGroup: [
           {
             key: 'title',
             type: 'input',
-            templateOptions: {
+            props: {
               label: Widgets?.Common?.Title ?? 'Title',
               required: true
             }
           }
         ]
       },
-      dataSettings,
-
-      {
-        key: 'options',
-        wrappers: ['expansion'],
-        templateOptions: {
-          label: Widgets?.AnalyticalGrid?.GridOptions ?? 'Grid Options',
-          expanded: true
+      ...AccordionWrappers([
+        {
+          key: 'dataSettings',
+          label: Widgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
+          toggleable: false,
+          expanded: true,
+          fieldGroup: dataSettings.fieldGroup[0].fieldGroup
         },
-        fieldGroup: [
-          {
-            fieldGroupClassName: FORMLY_ROW,
-            fieldGroup: [
-              {
-                className,
-                key: 'showToolbar',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
+        {
+          key: 'options',
+          label: Widgets?.AnalyticalGrid?.GridOptions ?? 'Grid Options',
+          toggleable: false,
+          expanded: true,
+          fieldGroup: [
+            {
+              fieldGroupClassName: FORMLY_ROW,
+              fieldGroup: [
+                {
+                  className,
+                  key: 'showToolbar',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
+                  }
+                },
+                {
+                  
+                  className,
+                  key: 'hideDataDownload',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.HideDataDownload ?? 'Hide Data Download'
+                  }
+                },
+                {
+                  className,
+                  key: 'strip',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.Strip ?? 'Strip'
+                  }
+                },
+                {
+                  className,
+                  key: 'grid',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.Grid ?? 'Grid'
+                  }
+                },
+                {
+                  className,
+                  key: 'sticky',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.TableHeaderSticky ?? 'Table Header Sticky'
+                  }
+                },
+                {
+                  className,
+                  key: 'sortable',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.Sortable ?? 'Sortable'
+                  }
+                },
+                {
+                  className,
+                  key: 'selectable',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.ColumnSelectable ?? 'Column Selectable'
+                  }
+                },
+              ]
+            },
+  
+            {
+              fieldGroupClassName: FORMLY_ROW,
+              fieldGroup: [
+                {
+                  className,
+                  key: 'paging',
+                  type: 'checkbox',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.Paging ?? 'Paging'
+                  }
+                },
+                {
+                  className,
+                  key: 'pageSize',
+                  type: 'input',
+                  props: {
+                    type: 'number',
+                    label: Widgets?.AnalyticalGrid?.PageSize ?? 'Page Size'
+                  }
+                },
+  
+                {
+                  className,
+                  key: 'initialRowLevel',
+                  type: 'input',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.InitialRowLevel ?? 'Initial Row Level',
+                    type: 'number'
+                  }
+                },
+                {
+                  className,
+                  key: 'initialColumnLevel',
+                  type: 'input',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.InitialColumnLevel ?? 'Initial Column Level',
+                    type: 'number'
+                  }
+                },
+  
+                {
+                  className,
+                  key: 'digitsInfo',
+                  type: 'input',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.DigitsInfo ?? 'Digits Info',
+                  }
+                },
+                {
+                  className,
+                  key: 'unit',
+                  type: 'input',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.Unit ?? 'Unit',
+                  }
+                },
+                {
+                  className,
+                  key: 'currencyCode',
+                  type: 'input',
+                  props: {
+                    label: Widgets?.AnalyticalGrid?.CurrencyCode ?? 'Currency Code',
+                  }
                 }
-              },
-              {
-                
-                className,
-                key: 'hideDataDownload',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.HideDataDownload ?? 'Hide Data Download'
-                }
-              },
-              {
-                className,
-                key: 'strip',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.Strip ?? 'Strip'
-                }
-              },
-              {
-                className,
-                key: 'grid',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.Grid ?? 'Grid'
-                }
-              },
-              {
-                className,
-                key: 'sticky',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.TableHeaderSticky ?? 'Table Header Sticky'
-                }
-              },
-              {
-                className,
-                key: 'sortable',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.Sortable ?? 'Sortable'
-                }
-              },
-              {
-                className,
-                key: 'selectable',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.ColumnSelectable ?? 'Column Selectable'
-                }
-              },
-            ]
-          },
-
-          {
-            fieldGroupClassName: FORMLY_ROW,
-            fieldGroup: [
-              {
-                className,
-                key: 'paging',
-                type: 'checkbox',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.Paging ?? 'Paging'
-                }
-              },
-              {
-                className,
-                key: 'pageSize',
-                type: 'input',
-                templateOptions: {
-                  type: 'number',
-                  label: Widgets?.AnalyticalGrid?.PageSize ?? 'Page Size'
-                }
-              },
-
-              {
-                className,
-                key: 'initialRowLevel',
-                type: 'input',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.InitialRowLevel ?? 'Initial Row Level',
-                  type: 'number'
-                }
-              },
-              {
-                className,
-                key: 'initialColumnLevel',
-                type: 'input',
-                templateOptions: {
-                  label: Widgets?.AnalyticalGrid?.InitialColumnLevel ?? 'Initial Column Level',
-                  type: 'number'
-                }
-              },
-
-              {
-                className,
-                key: 'digitsInfo',
-                type: 'input',
-                props: {
-                  label: Widgets?.AnalyticalGrid?.DigitsInfo ?? 'Digits Info',
-                }
-              },
-              {
-                className,
-                key: 'unit',
-                type: 'input',
-                props: {
-                  label: Widgets?.AnalyticalGrid?.Unit ?? 'Unit',
-                }
-              },
-              {
-                className,
-                key: 'currencyCode',
-                type: 'input',
-                props: {
-                  label: Widgets?.AnalyticalGrid?.CurrencyCode ?? 'Currency Code',
-                }
-              }
-            ]
-          }
-        ]
-      }
+              ]
+            }
+          ]
+        },
+      ], {expandedMulti: true}),
     ] as any
   }
 }
@@ -212,7 +218,7 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'showToolbar',
           type: 'toggle',
-          templateOptions: {
+          props: {
             label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
           }
         }
@@ -226,7 +232,7 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'exportExcel',
           type: 'toggle',
-          templateOptions: {
+          props: {
             label: Widgets?.AnalyticalGrid?.exportExcel ?? 'Export Excel'
           }
         },
@@ -234,7 +240,7 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'columnPinning',
           type: 'toggle',
-          templateOptions: {
+          props: {
             label: Widgets?.AnalyticalGrid?.columnPinning ?? 'Column Pinning'
           }
         }
@@ -248,13 +254,13 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'allowFiltering',
           type: 'toggle',
-          templateOptions: { label: 'Allow Filtering' }
+          props: { label: 'Allow Filtering' }
         },
         {
           className,
           key: 'filterMode',
           type: 'select',
-          templateOptions: {
+          props: {
             label: 'Allow Filtering',
             options: [
               { value: 'quickFilter', label: 'Quick Filter' },
@@ -273,7 +279,7 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'resizable',
           type: 'checkbox',
-          templateOptions: {
+          props: {
             label: 'Resizable'
           }
         },
@@ -281,7 +287,7 @@ export function GridOptionsSchema(className: string, Widgets) {
           className,
           key: 'width',
           type: 'input',
-          templateOptions: {
+          props: {
             type: 'number',
             label: 'Width'
           }
@@ -295,11 +301,12 @@ export function GridOptionsSchema(className: string, Widgets) {
 export function AnalyticsAnnotationSchema(Widgets, dataSettings$: Observable<DataSettings>, entityType$: Observable<EntityType>) {
   return {
     key: 'analytics',
+    fieldGroupClassName: FORMLY_GAP_2 + ' ' + FORMLY_MY_2,
     fieldGroup: [
       {
         key: 'rows',
         type: 'array',
-        templateOptions: {
+        props: {
           label: Widgets?.AnalyticalGrid?.Rows ?? 'Rows',
           hideDelete: true
         },
@@ -327,13 +334,13 @@ export function AnalyticsAnnotationSchema(Widgets, dataSettings$: Observable<Dat
       {
         key: 'columns',
         type: 'array',
-        templateOptions: {
+        props: {
           label: Widgets?.AnalyticalGrid?.Columns ?? 'Columns',
           hideDelete: true
         },
         fieldArray: {
           type: 'property-select',
-          templateOptions: {
+          props: {
             required: true,
             removable: true,
             sortable: true,

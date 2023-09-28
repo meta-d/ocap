@@ -69,10 +69,8 @@ export class NgmChartSettingsComponent implements ControlValueAccessor {
 
   writeValue(obj: any): void {
     if (obj) {
-      console.log('writeValue', obj)
       this.formGroup.patchValue(obj)
       this.model = cloneDeep(obj)
-      // assign(this.model, cloneDeep(obj))
     }
   }
   registerOnChange(fn: any): void {

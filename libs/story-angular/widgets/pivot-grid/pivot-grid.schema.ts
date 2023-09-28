@@ -1,8 +1,7 @@
 import { Injectable, Injector } from '@angular/core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { getEntityProperty } from '@metad/ocap-core'
-import { DataSettingsSchemaService, SelectionVariant } from '@metad/story/designer'
-import { GridSelectionMode } from 'igniteui-angular'
+import { DataSettingsSchemaService } from '@metad/story/designer'
 import { isNil, negate } from 'lodash-es'
 import { combineLatest } from 'rxjs'
 import { map, startWith } from 'rxjs/operators'
@@ -30,10 +29,8 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
     const dataSettings = this.generateDataSettingsSchema(
       BUILDER,
       this.analytics,
-      SelectionVariant(BUILDER, this.dataSettings$)
+      // SelectionVariant(BUILDER, this.dataSettings$)
     )
-    // dataSettings.wrappers = ['expansion']
-    // dataSettings.templateOptions.enableSelectFields = true
 
     const schema = [
       {
@@ -54,7 +51,6 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
       },
       dataSettings,
       // {
-      //   wrappers: ['expansion'],
       //   templateOptions: {
       //     label: '数据配置',
       //     enableSelectFields: true,
@@ -66,7 +62,6 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
       // },
       {
         key: 'options',
-        wrappers: ['expansion'],
         templateOptions: {
           label: BUILDER.PIVOT_GRID?.OPTIONS ?? 'Grid Options',
           expanded: true
@@ -157,7 +152,7 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
                 .map((propertyPath) => getEntityProperty(entityType, propertyPath))
                 .filter(negate(isNil))
                 .map((property) => {
-                  return { value: property.name, label: property.label || property.name }
+                  return { value: property.name, label: property.caption || property.name }
                 })
             })
           )
@@ -290,9 +285,9 @@ export function GridOptionsSchema(BUILDER) {
       templateOptions: {
         label: BUILDER?.PIVOT_GRID?.ColumnSelection ?? 'Column Selection',
         options: [
-          { value: GridSelectionMode.none, label: 'None' },
-          { value: GridSelectionMode.single, label: 'Single' },
-          { value: GridSelectionMode.multiple, label: 'Multiple' }
+          // { value: GridSelectionMode.none, label: 'None' },
+          // { value: GridSelectionMode.single, label: 'Single' },
+          // { value: GridSelectionMode.multiple, label: 'Multiple' }
         ]
       }
     },
