@@ -1,4 +1,3 @@
-import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { AccordionWrappers, FORMLY_ROW, FORMLY_W_FULL } from '@metad/story/designer'
 import { LineStyle } from './axis'
 
@@ -65,77 +64,6 @@ export function ItemStyle(className: string, I18N) {
     ]
   }
 }
-
-// /**
-//  * @deprecated use ItemStyleAccordionWrappers
-//  */
-// export function ItemStyleExpansion(className: string, I18N, keyShow: string, extensions?) {
-//   return {
-//     key: 'itemStyle',
-//     hideExpression: `!field.form.value.` + keyShow,
-//     props: {
-//       label: I18N?.ItemStyle?.Title ?? 'Item Style',
-//       toggleable: true,
-//       keyShow: keyShow
-//     },
-//     fieldGroup: [
-//       {
-//         fieldGroupClassName: FORMLY_ROW,
-//         fieldGroup: [
-//           SingleColor(className, I18N),
-//           ...Borders(className, I18N),
-
-//           // for CanvasRenderingContext2D
-//           {
-//             className,
-//             key: 'borderCap',
-//             type: 'select',
-//             props: {
-//               label: I18N?.Common?.BorderCap ?? 'Border Cap',
-//               placeholder: 'lineCap',
-//               options: [
-//                 { value: null, label: 'None' },
-//                 { value: 'butt', label: 'butt' },
-//                 { value: 'round', label: 'round' },
-//                 { value: 'square', label: 'square' }
-//               ]
-//             }
-//           },
-//           {
-//             className,
-//             key: 'borderJoin',
-//             type: 'select',
-//             props: {
-//               label: I18N?.Common?.BorderJoin ?? 'Border Join',
-//               placeholder: 'lineJoin',
-//               options: [
-//                 { value: null, label: 'None' },
-//                 { value: 'bevel', label: 'bevel' },
-//                 { value: 'round', label: 'round' },
-//                 { value: 'miter', label: 'miter' }
-//               ]
-//             }
-//           },
-//           {
-//             className,
-//             key: 'borderMiterLimit',
-//             type: 'input',
-//             props: {
-//               label: I18N?.Common?.BorderMiterLimit ?? 'Border Miter Limit',
-//               placeholder: 'Default is 10.0',
-//               type: 'number'
-//             }
-//           },
-
-//           ...Shadows(className, I18N),
-//           Opacity(className, I18N),
-
-//           ...(extensions ?? [])
-//         ]
-//       }
-//     ]
-//   }
-// }
 
 export function ItemStyleAccordionWrappers(className: string, I18N, extensions?) {
   return AccordionWrappers([
@@ -304,75 +232,56 @@ export function SelectedMode(className: string, I18N) {
   }
 }
 
-export function SelectExpansion(className: string, I18N, keyShow: string) {
-  return {
-    key: 'select',
-    hideExpression: `!field.parent && !field.parent.model.` + keyShow,
-    props: {
+export function SelectAccordionWrappers(className: string, I18N) {
+  return AccordionWrappers([
+    {
+      key: 'select',
       label: I18N?.Select?.Title ?? 'Select',
-      toggleable: true,
-      keyShow: keyShow
-    },
-    fieldGroup: [
-      {
-        key: 'disabled',
-        type: 'toggle',
-        props: {
-          label: I18N?.Common?.Disabled ?? 'Disabled'
-        }
-      },
-      ItemStyle(className, I18N)
-    ]
-  }
-}
-
-export function MarkLineExpansion(className: string, I18N, keyShow: string) {
-  return {
-    key: 'markLine',
-    hideExpression: `!field.parent && !field.parent.model.` + keyShow,
-    props: {
-      label: I18N?.MarkLine?.Title ?? 'Mark Line',
-      toggleable: true,
-      keyShow: keyShow
-    },
-    fieldGroup: MarkLine(className, I18N).fieldGroup
-  }
-}
-
-export function MarkLine(className, I18N) {
-  return {
-    key: 'markLine',
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    wrappers: ['expansion'],
-    props: {
-      label: I18N?.MarkLine?.Title ?? 'Mark Line',
-      toggleable: true
-    },
-    fieldGroup: [
-      {
-        fieldGroupClassName: FORMLY_ROW,
-        fieldGroup: [
-          {
-            className,
-            key: 'silent',
-            type: 'checkbox',
-            props: {
-              label: I18N?.Common?.Silent ?? 'Silent'
-            }
+      fieldGroup: [
+        {
+          key: 'disabled',
+          type: 'toggle',
+          props: {
+            label: I18N?.Common?.Disabled ?? 'Disabled'
           }
-        ]
-      },
-      {
-        key: 'lineStyle',
-        wrappers: ['panel'],
-        fieldGroupClassName: FORMLY_ROW,
-        props: {
-          label: I18N?.MarkLine?.LineStyle ?? 'Line Style'
         },
-        fieldGroup: LineStyle(className, I18N)
-      }
-    ]
-  }
+        ItemStyle(className, I18N)
+      ]
+    }
+  ])
+}
+
+export function MarkLineAccordionWrappers(className: string, I18N) {
+  return AccordionWrappers([
+    {
+      key: 'markLine',
+      label: I18N?.MarkLine?.Title ?? 'Mark Line',
+      fieldGroup: [
+        {
+          fieldGroupClassName: FORMLY_ROW,
+          fieldGroup: [
+            {
+              className,
+              key: 'silent',
+              type: 'checkbox',
+              props: {
+                label: I18N?.Common?.Silent ?? 'Silent'
+              }
+            }
+          ]
+        },
+        {
+          key: 'lineStyle',
+          wrappers: ['panel'],
+          fieldGroupClassName: FORMLY_ROW,
+          props: {
+            label: I18N?.MarkLine?.LineStyle ?? 'Line Style'
+          },
+          fieldGroup: LineStyle(className, I18N)
+        }
+      ]
+    }
+  ])
 }
 
 export function Shadows(className: string, I18N?) {
@@ -430,24 +339,6 @@ export function EmphasisAccordionWrappers(className: string, I18N, extensions?: 
     }
   ])
 }
-
-// /**
-//  * 
-//  * @deprecated use EmphasisAccordionWrappers
-//  */
-// export function EmphasisExpansion(className: string, I18N, keyShow: string) {
-//   return {
-//     key: 'emphasis',
-//     hideExpression: `!field.parent && !field.parent.model.` + keyShow,
-//     props: {
-//       label: I18N?.EMPHASIS?.TITLE ?? 'Emphasis',
-//       toggleable: true,
-//       keyShow: keyShow
-//     },
-//     fieldGroupClassName: FORMLY_ROW,
-//     fieldGroup: Emphasis(className, I18N).fieldGroup
-//   }
-// }
 
 export function Emphasis(className: string, I18N) {
   return {
@@ -1329,4 +1220,20 @@ export function AreaStyles(className: string, I18N) {
     Opacity(className, I18N),
     ...Shadows(className, I18N)
   ]
+}
+
+export function BackgroundStyleAccordionWrappers(className: string, I18N, extensions?: any[]) {
+  return AccordionWrappers([
+    {
+      key: 'backgroundStyle',
+      label: I18N?.Bar?.Background ?? 'Background',
+      fieldGroup: [
+        SingleColor(className, I18N),
+        ...Borders(className, I18N),
+        ...Shadows(className, I18N),
+        Opacity(className, I18N),
+        ...(extensions ?? [])
+      ]
+    }
+  ])
 }

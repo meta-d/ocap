@@ -1,6 +1,5 @@
 :host {
-  display: flex;
-  flex: 1;
+  @apply flex-1 flex flex-col;
 }
 
 .ngm-property-select__create-calculation {

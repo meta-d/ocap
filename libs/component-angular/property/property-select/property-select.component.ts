@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -9,7 +9,6 @@ import {
   DataSettings,
   Dimension,
   DisplayBehaviour,
-  EntitySet,
   EntityType,
   FilterSelectionType,
   getEntityProperty,
@@ -410,7 +409,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       })
     )
 
-  public readonly selectTrigger$ = combineLatest([
+  private readonly selectTrigger$ = combineLatest([
     this.property$.pipe(startWith(null)),
     this.hierarchy$.pipe(startWith(null)),
     this.level$.pipe(startWith(null)),
@@ -443,6 +442,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       return property
     })
   )
+
+  public readonly selectTrigger = toSignal(this.selectTrigger$)
 
   get caption() {
     return this.formGroup.get('caption').value
@@ -585,6 +586,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   get showOrder() {
     return this.capacities?.includes(PropertyCapacity.Order)
   }
+
+  showMore = signal(false)
 
   private onChange: any
   private onTouched: any

@@ -1115,7 +1115,7 @@ export const ZhHans = {
         GRID: {
           GRID: '网格',
           SHOW: '是否显示',
-          CONTAIN_LABEL: '是否包含刻度标签',
+          CONTAIN_LABEL: '包含刻度标签',
           BACKGROUND_COLOR: '背景颜色',
           BORDER_COLOR: '边框颜色',
           BORDER_WIDTH: '边框粗细'

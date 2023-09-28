@@ -101,17 +101,44 @@
                             [entityType]="entityType()"
                             [ngModel]="row"
                             [capacities]="[
-                                PropertyCapacity.Dimension
+                                PropertyCapacity.Dimension,
+                                PropertyCapacity.Order
                             ]"
                             cdkDrag
                             [cdkDragData]="row"
                             (ngModelChange)="onRowChange($event, i)"
                             >
-                            <button displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+                            <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
                                 (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
                                 <mat-icon>clear</mat-icon>
                             </button>
+
+                            <div class="flex flex-col justify-start items-start">
+                                <mat-radio-group >
+                                    <mat-radio-button *ngFor="let role of DIMENSION_ROLES" [value]="role.value">
+                                        {{ 'FORMLY.PROPERTY_SELECT.' + role.label | translate: {Default: role.label} }}
+                                    </mat-radio-button>
+                                </mat-radio-group>
+                            </div>
                         </ngm-property-select>
+
+
+                        <ngm-chart-property *ngFor="let row of rows(); index as i; trackBy: trackByIndex" class="w-full"
+                            removable
+                            [capacities]="[
+                                PropertyCapacity.Dimension,
+                                PropertyCapacity.Order,
+                                PropertyCapacity.DimensionChart
+                            ]"
+                            [dataSettings]="dataSettings()"
+                            [entityType]="entityType()"
+                            [ngModel]="row"
+                            (ngModelChange)="onRowChange($event, i)"
+
+                            cdkDrag
+                            [cdkDragData]="row"
+                        >
+                        </ngm-chart-property>
                     </div>
 
                     <div class="font-bold px-2 py-1">{{ 'PAC.KEY_WORDS.Measures' | translate: {Default: 'Measures'} }}</div>
@@ -127,13 +154,15 @@
                             [entityType]="entityType()"
                             [ngModel]="item"
                             [capacities]="[
-                                PropertyCapacity.Measure
+                                PropertyCapacity.Measure,
+                                PropertyCapacity.Order,
+                                PropertyCapacity.MeasureAttributes
                             ]"
                             cdkDrag
                             [cdkDragData]="item"
                             (ngModelChange)="onColumnChange($event, i)"
                             >
-                            <button displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+                            <button ngmSuffix displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
                                 (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
                                 <mat-icon>clear</mat-icon>
                             </button>

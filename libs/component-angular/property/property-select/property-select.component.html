@@ -14,10 +14,9 @@
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
     <mat-select #propertySelect formControlName="dimension" panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
-      [required]="required"
-      *ngrxLet="selectTrigger$ as selectTrigger">
-      <mat-select-trigger *ngIf="selectTrigger" class="flex items-center overflow-hidden">
-        <ngm-entity-property hiddenIcon [property]="selectTrigger" class="flex-1" ></ngm-entity-property>
+      [required]="required">
+      <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
+        <ngm-entity-property hiddenIcon [property]="selectTrigger()" class="flex-1" ></ngm-entity-property>
 
         <div class="flex items-center">
           <button mat-icon-button *ngIf="showAttributes" [displayDensity]="displayDensity"
@@ -104,10 +103,18 @@
       </mat-optgroup>
     </mat-select>
 
-    <ng-content></ng-content>
+    <button matSuffix mat-icon-button [displayDensity]="displayDensity" (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
+      <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
+      <mat-icon *ngIf="showMore()">expand_less</mat-icon>
+    </button>
 
+    <ng-content select="[ngmSuffix]"></ng-content>
   </div>
 </form>
+
+<div *ngIf="showMore()" class="min-h-12 w-full flex justify-center items-center">
+  <ng-content></ng-content>
+</div>
 
 <mat-menu #dimensionMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item *ngIf="showDisplayAs()" disableRipple [matMenuTriggerFor]="displayMenu">

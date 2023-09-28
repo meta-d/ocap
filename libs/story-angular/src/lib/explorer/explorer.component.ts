@@ -19,10 +19,11 @@ import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { NgmChartSettingsComponent } from '@metad/story/widgets/analytical-card'
+import { NgmChartPropertyComponent, NgmChartSettingsComponent } from '@metad/story/widgets/analytical-card'
 import {
   C_MEASURES,
   ChartAnnotation,
+  ChartDimensionRoleType,
   ChartOrient,
   DataSettings,
   Dimension,
@@ -46,6 +47,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { CHARTS, getChartType } from './types'
+import { MatRadioModule } from '@angular/material/radio'
 
 
 @Component({
@@ -64,6 +66,7 @@ import { CHARTS, getChartType } from './types'
     MatIconModule,
     MatDialogModule,
     MatTabsModule,
+    MatRadioModule,
     DragDropModule,
     NxTableModule,
     NgmPrismHighlightComponent,
@@ -76,7 +79,8 @@ import { CHARTS, getChartType } from './types'
     ResizerModule,
     NgmEntityPropertyComponent,
     NgmSearchComponent,
-    NgmChartSettingsComponent
+    NgmChartSettingsComponent,
+    NgmChartPropertyComponent
   ],
   selector: 'ngm-story-explorer',
   templateUrl: 'explorer.component.html',
@@ -146,6 +150,16 @@ export class StoryExplorerComponent {
   @ViewChild('addDimensionsTempl') addDimensionsTempl: TemplateRef<ElementRef>
 
   private dialogRef: MatDialogRef<ElementRef<any>, any>
+  
+  DIMENSION_ROLES = [
+    { label: 'None', value: null },
+    { label: 'Category', value: ChartDimensionRoleType.Category },
+    { label: 'Category2', value: ChartDimensionRoleType.Category2 },
+    { label: 'Group', value: ChartDimensionRoleType.Group },
+    { label: 'Stacked', value: ChartDimensionRoleType.Stacked },
+    // { label: 'Color', value: ChartDimensionRoleType.Color }, 应该是还未支持
+    { label: 'Trellis', value: ChartDimensionRoleType.Trellis }
+  ]
   
   measureSearch = new FormControl('')
 
@@ -378,7 +392,6 @@ export class StoryExplorerComponent {
   }
 
   onRowChange(row: Dimension, i: number) {
-    console.log(this.rows(), row)
     this.rows.set([...this.rows().slice(0, i), row, ...this.rows().slice(i + 1)])
   }
 
