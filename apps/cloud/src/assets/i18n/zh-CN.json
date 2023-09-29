@@ -2684,7 +2684,8 @@
       "Cancel": "取消",
       "Search": "搜索",
       "Options": "配置",
-      "Clear": "清空"
+      "Clear": "清空",
+      "Reset": "重置"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "参考线",
@@ -2723,9 +2724,11 @@
       "Options": "配置"
     },
     "CHART": {
+      "GeoMapConfig": "地理配置",
       "ChartType": "图形类型",
       "CustomCode": "自定义代码",
       "AutomaticallyGenerateCode": "根据注释自动生成代码",
+      "ChartOptions": "图形属性",
       "None": "无",
       "Horizontal": "横向",
       "Vertical": "纵向",

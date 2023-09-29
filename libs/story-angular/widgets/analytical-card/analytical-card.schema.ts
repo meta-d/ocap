@@ -1,4 +1,6 @@
 import { inject, Injectable } from '@angular/core'
+import { PropertyCapacity as FormlyPropertyCapacity, PropertyCapacity } from '@metad/components/property'
+import { ColorPalettes } from '@metad/core'
 import {
   ChartAnnotation,
   ChartOptions,
@@ -9,12 +11,8 @@ import {
   isMeasure,
   SelectionPresentationVariant
 } from '@metad/ocap-core'
-import { PropertyCapacity } from '@metad/components/property'
-import { PropertyCapacity as FormlyPropertyCapacity } from '@metad/components/property'
 import {
   AccordionWrappers,
-  BaseDesignerSchemaService,
-  BaseSchemaState,
   DataSettingsSchemaService,
   DesignerSchema,
   FORMLY_GAP_2,
@@ -25,7 +23,9 @@ import {
   SchemaState,
   SelectionVariantExpansion
 } from '@metad/story/designer'
+import { TranslateService } from '@ngx-translate/core'
 import { isEmpty, isEqual } from 'lodash-es'
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs'
 import { distinctUntilChanged, map, withLatestFrom } from 'rxjs/operators'
 import {
   AllCapacity,
@@ -39,10 +39,6 @@ import {
   TooltipCapacity,
   VisualMapCapacity
 } from './schemas'
-import { ColorPalettes } from '@metad/core'
-import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs'
-import { TranslateService } from '@ngx-translate/core'
-
 
 export interface AnalyticalCardSchemaState extends SchemaState {
   model: {
@@ -103,10 +99,10 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
   }
 
   getBuilderSchema(chartType: ChartType, i18nStory?) {
-    
     const BUILDER = i18nStory?.Widgets?.Common
 
-    const dataSettings = this.generateDataSettingsSchema(BUILDER,
+    const dataSettings = this.generateDataSettingsSchema(
+      BUILDER,
       {
         key: 'chartAnnotation',
         props: {
@@ -193,8 +189,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
                   props: {
                     label: i18nStory?.Widgets?.CHART?.DisableContextMenu ?? 'Disable Context Menu'
                   }
-                },
-                
+                }
               ]
             }
           ]
@@ -247,9 +242,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
               FormlyPropertyCapacity.MeasureStyleReferenceLine,
               FormlyPropertyCapacity.MeasureStyleChartOptions
             ],
-            colors: [
-              ...ColorPalettes
-            ]
+            colors: [...ColorPalettes]
           }
         }
       },
@@ -269,11 +262,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
             dataSettings: this.dataSettings$,
             entityType: this.entityType$,
             restrictedDimensions: this.restrictedDimensions$,
-            capacities: [
-              PropertyCapacity.Dimension,
-              PropertyCapacity.Order,
-              FormlyPropertyCapacity.DimensionChart
-            ]
+            capacities: [PropertyCapacity.Dimension, PropertyCapacity.Order, FormlyPropertyCapacity.DimensionChart]
           }
         }
       }
@@ -307,15 +296,8 @@ export class MeasureChartOptionsSchemaService implements DesignerSchema<ChartOpt
   }
 
   getSchema() {
-    return combineLatest([
-      this.storyDesigner$.pipe(
-        map((i18n) => i18n?.STYLING?.ECHARTS)
-      ),
-      this.chartType$
-    ]).pipe(
-      map(([ECHARTS, chartType]) =>
-        this.getChartOptions(chartType, ECHARTS).fieldGroup
-      )
+    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)), this.chartType$]).pipe(
+      map(([ECHARTS, chartType]) => this.getChartOptions(chartType, ECHARTS).fieldGroup)
     )
   }
 
@@ -398,7 +380,7 @@ export class DimensionChartOptionsSchemaService implements DesignerSchema<ChartO
                 }
               ]
             }
-          ]),
+          ])
         ]
       })
     )
@@ -406,62 +388,76 @@ export class DimensionChartOptionsSchemaService implements DesignerSchema<ChartO
 }
 
 @Injectable()
-export class ChartOptionsSchemaService extends BaseDesignerSchemaService<BaseSchemaState> {
+export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
+  protected translate = inject(TranslateService)
+  get model() {
+    return this.model$.value
+  }
+  set model(value) {
+    this.model$.next(value)
+  }
+  private readonly model$ = new BehaviorSubject<ChartOptions>(null)
 
-  public readonly storyDesigner$ = this.translate.stream('STORY_DESIGNER')
+  get chartType() {
+    return this.chartType$.value
+  }
+  set chartType(value) {
+    this.chartType$.next(value)
+  }
+  private readonly chartType$ = new BehaviorSubject<ChartType>(null)
+
+  getTitle(): Observable<string> {
+    return of(`Chart options`)
+  }
+  public readonly storyDesigner$ = this.translate.stream('Story')
 
   getSchema() {
-    return this.storyDesigner$.pipe(
-      map((STORY_DESIGNER) => STORY_DESIGNER?.STYLING?.ECHARTS),
-      map((ECHARTS) => {
-        const chartType = this.get((state) => state.model)
-
-        return [
-          getChartOptionsSchema(chartType, ECHARTS)
-        ] as any
+    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)), this.chartType$]).pipe(
+      map(([ECHARTS, chartType]) => {
+        return getChartOptionsSchema(chartType, ECHARTS).fieldGroup
       })
     )
   }
 }
 
 export function getChartOptionsSchema(chartType: ChartType, I18N) {
-    const className = FORMLY_W_1_2
-    const chartOptions: any = {
-      key: 'chartOptions',
-      fieldGroup: [...GlobalCapacity(className, I18N)]
-    }
+  const className = FORMLY_W_1_2
+  const chartOptions: any = {
+    key: 'chartOptions',
+    fieldGroup: [...GlobalCapacity(className, I18N)]
+  }
 
-    if (!chartType) {
-      return chartOptions
-    }
-
-    let capacityMatrix
-    const capacityName = chartType.type + (chartType.variant ?? '')
-    if (CapacityMatrix[capacityName]) {
-      capacityMatrix = CapacityMatrix[capacityName]
-    } else if (CapacityMatrix[chartType.type]) {
-      capacityMatrix = CapacityMatrix[chartType.type]
-    }
-
-    capacityMatrix?.forEach((capacity) => {
-      const fieldGroup = capacity(FORMLY_W_1_2, I18N)
-      if (Array.isArray(fieldGroup)) {
-        chartOptions.fieldGroup.push(...fieldGroup)
-      } else {
-        chartOptions.fieldGroup.push(fieldGroup)
-      }
-    })
-
-    AllCapacity.forEach((capacity) => {
-      const fieldGroup = capacity(FORMLY_W_1_2, I18N)
-      if (Array.isArray(fieldGroup)) {
-        chartOptions.fieldGroup.push(...fieldGroup)
-      } else {
-        chartOptions.fieldGroup.push(fieldGroup)
-      }
-    })
-
+  if (!chartType) {
     return chartOptions
+  }
+
+  let capacityMatrix
+  const capacityName = chartType.type + (chartType.variant ?? '')
+  if (CapacityMatrix[capacityName]) {
+    capacityMatrix = CapacityMatrix[capacityName]
+  } else if (CapacityMatrix[chartType.type]) {
+    capacityMatrix = CapacityMatrix[chartType.type]
+  }
+
+  capacityMatrix?.forEach((capacity) => {
+    const fieldGroup = capacity(FORMLY_W_1_2, I18N)
+    if (Array.isArray(fieldGroup)) {
+      chartOptions.fieldGroup.push(...fieldGroup)
+    } else {
+      chartOptions.fieldGroup.push(fieldGroup)
+    }
+  })
+
+  AllCapacity.forEach((capacity) => {
+    const fieldGroup = capacity(FORMLY_W_1_2, I18N)
+    if (Array.isArray(fieldGroup)) {
+      chartOptions.fieldGroup.push(...fieldGroup)
+    } else {
+      chartOptions.fieldGroup.push(fieldGroup)
+    }
+  })
+
+  return chartOptions
 }
 
 export function chartSettingsFieldGroup(i18n) {
@@ -523,7 +519,7 @@ export function chartSettingsFieldGroup(i18n) {
           removable: true
         }
       }
-    },
+    }
 
     // {
     //   key: 'customLogic',

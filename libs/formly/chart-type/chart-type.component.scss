@@ -1,11 +1,3 @@
 :host {
   @apply flex-1 flex flex-col border border-transparent;
-
-  &.pac-formly-chart-type__custom-code {
-    @apply border-dashed border-slate-300 rounded-sm;
-  }
-}
-
-.mat-mdc-input-element {
-  @apply text-slate-900 bg-gray-50 p-1 outline-none text-sm;
 }

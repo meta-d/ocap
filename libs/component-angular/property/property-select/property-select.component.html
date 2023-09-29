@@ -19,6 +19,12 @@
         <ngm-entity-property hiddenIcon [property]="selectTrigger()" class="flex-1" ></ngm-entity-property>
 
         <div class="flex items-center">
+
+          <button matSuffix mat-icon-button [displayDensity]="displayDensity" (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
+            <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
+            <mat-icon *ngIf="showMore()">expand_less</mat-icon>
+          </button>
+
           <button mat-icon-button *ngIf="showAttributes" [displayDensity]="displayDensity"
             [matMenuTriggerFor]="dimensionMenu"
             #mt="matMenuTrigger"
@@ -43,7 +49,6 @@
               <mat-icon>straighten</mat-icon>
           </button>
           
-          <ng-content select="[ngmSuffix]"></ng-content>
         </div>
       </mat-select-trigger>
 
@@ -102,11 +107,6 @@
         </mat-option>
       </mat-optgroup>
     </mat-select>
-
-    <button matSuffix mat-icon-button [displayDensity]="displayDensity" (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
-      <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
-      <mat-icon *ngIf="showMore()">expand_less</mat-icon>
-    </button>
 
     <ng-content select="[ngmSuffix]"></ng-content>
   </form>

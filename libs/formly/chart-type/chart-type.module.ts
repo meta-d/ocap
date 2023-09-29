@@ -4,7 +4,6 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
-import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
@@ -19,6 +18,7 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { NgmDesignerFormComponent } from '@metad/story/designer'
 
 @NgModule({
   declarations: [PACFormlyChartTypeComponent],
@@ -43,6 +43,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     NgmCommonModule,
     ResizerModule,
     NgxPopperjsModule,
+    NgmDesignerFormComponent,
     FormlyModule.forChild({
       types: [
         {
