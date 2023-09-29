@@ -182,7 +182,7 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     super()
     effect(() => {
       this.schema.chartType = this.chartType()
-    })
+    }, {allowSignalWrites: true})
   }
 
   ngOnInit(): void {

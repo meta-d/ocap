@@ -5,7 +5,6 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
-import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatRadioModule } from '@angular/material/radio'
@@ -33,8 +32,7 @@ import {
 } from '@metad/ocap-core'
 import { NgmDesignerFormComponent, NxDesignerModule, NxSettingsPanelService, STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { startCase } from 'lodash-es'
-import { BehaviorSubject, Subscription, distinctUntilChanged, firstValueFrom, from, map } from 'rxjs'
+import { BehaviorSubject, Subscription, distinctUntilChanged, from, map } from 'rxjs'
 import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
 import { NgmReferenceLineComponent } from './reference-line.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
@@ -82,7 +80,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public settingsService? = inject(NxSettingsPanelService, { optional: true })
   public translateService = inject(TranslateService)
 
-  @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() capacities: PropertyCapacity[]
   @Input() get removable() {
     return this._removable()

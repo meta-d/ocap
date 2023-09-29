@@ -14,7 +14,6 @@ import { PACFormlyInputModule } from '@metad/formly/input'
 import { PACFormlyJsonModule } from '@metad/formly/json'
 import { PACFormlyTableModule } from '@metad/formly/mat-table'
 import { FormlyMatToggleModule } from '@metad/formly/mat-toggle'
-import { PACFormlyPropertySelectModule } from '@metad/formly/property-select'
 import { PACFormlySelectModule } from '@metad/formly/select'
 import { PACFormlySemanticModelModule } from '@metad/formly/semantic-model'
 import { PACFormlyMatSlicersModule } from '@metad/formly/slicers'
@@ -51,7 +50,6 @@ export function validateMax(err, field: FormlyFieldConfig) {
     FormlyMatSliderModule,
     PACFormlyChartTypeModule,
     PACFormlyMatSlicersModule,
-    PACFormlyPropertySelectModule,
     PACFormlyCodeEditorModule,
     PACFormlyDesignerModule,
     PACFormlyEmptyModule,

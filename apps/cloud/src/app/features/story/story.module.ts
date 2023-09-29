@@ -37,6 +37,7 @@ import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from 
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
 import { NgmFormlyModule } from '@metad/formly'
+import { NgmFormlyChartPropertModule } from '@metad/story/widgets/analytical-card'
 
 @NgModule({
   declarations: [],
@@ -66,21 +67,7 @@ import { NgmFormlyModule } from '@metad/formly'
         },
       ]
     }),
-
-    // MetadFormlyMatModule,
-    // PACFormlyDesignerModule,
-    // PACFormlyEmptyModule,
-    // PACFormlyButtonToggleModule,
-    // PACFormlyTableModule,
-    // MetadFormlyAccordionModule,
-    // PACFormlyInputModule,
-    // PACFormlySelectModule,
-    // FormlyMatCheckboxModule,
-    // PACFormlyTextAreaModule,
-    // PACFormlySemanticModelModule,
-    // PACFormlySortModule,
-    // PACFormlyColorPickerModule,
-    // PACFormlyEntityTypeModule,
+    NgmFormlyChartPropertModule,
 
     NgmCommonModule,
     NgmDialogComponent,

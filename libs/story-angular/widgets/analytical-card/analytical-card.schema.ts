@@ -221,7 +221,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
           sortable: true
         },
         fieldArray: {
-          type: 'property-select',
+          type: 'chart-property',
           props: {
             required: true,
             removable: true,
@@ -254,7 +254,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
           hideDelete: true
         },
         fieldArray: {
-          type: 'property-select',
+          type: 'chart-property',
           props: {
             required: true,
             removable: true,
