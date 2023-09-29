@@ -23,7 +23,8 @@ import { FieldArrayType } from '@ngx-formly/core'
 
     <div class="text-sm flex justify-between items-center">
       <div><span *ngIf="props.labelField">{{model[i]?.[props.labelField]}}</span></div>
-      <button *ngIf="!to.hideDelete" class="ngm-formly__remove" mat-icon-button color="warn" (click)="remove(i)">
+      <button *ngIf="!to.hideDelete" class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
+        (click)="remove(i)">
         <mat-icon>clear</mat-icon>
       </button>
     </div>

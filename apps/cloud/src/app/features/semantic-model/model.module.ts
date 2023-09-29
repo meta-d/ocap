@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core'
+import { MetadFormlyExpansionModule } from '@metad/formly-mat/expansion'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { SemanticModelRoutingModule } from './model-routing.module'
@@ -10,22 +11,12 @@ import { SemanticModelRoutingModule } from './model-routing.module'
     MaterialModule,
     SemanticModelRoutingModule,
 
-    NgxPermissionsModule
+    NgxPermissionsModule,
 
-    // // Formly
-    // FormlyModule.forRoot({
-    //   validationMessages: [{ name: 'required', message: 'This field is required' }]
-    // }),
-    // FormlyMatToggleModule,
-    // MetadFormlyMatModule,
-    // MetadFormlyEmptyModule,
-    // PACFormlyMatSlicersModule,
-    // PACFormlyPropertySelectModule,
-    // PACFormlyCodeEditorModule,
-    // FormlyMatCheckboxModule,
-    // PACFormlyInputModule,
-    // PACFormlySelectModule,
-    // PACFormlyTextAreaModule
+    /**
+     * @deprecated use accordion
+     */
+    MetadFormlyExpansionModule
   ],
   providers: []
 })
