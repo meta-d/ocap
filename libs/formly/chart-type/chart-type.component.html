@@ -1,5 +1,5 @@
 <label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{'FORMLY.CHART.ChartType' | translate: {Default: 'Chart Type'} }}</label>
-<div class="flex flex-col py-1 px-2 rounded-md bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+<div class="flex flex-col p-1 rounded-lg ring-offset-1 ring-2 bg-gray-100 ring-transparent hover:ring-yellow-500/50">
   <div class="flex items-center w-full max-w-full text-xs">
     <div class="pac-formly-chart-type__prefix">
       <ng-content class="ngm-prefix"></ng-content>
@@ -45,7 +45,7 @@
     </button>
   </div>
 
-  <div *ngIf="showMore()" class="min-h-12 w-full flex flex-col justify-start items-stretch gap-2 mt-2">
+  <div *ngIf="showMore()" class="min-h-12 w-full flex flex-col justify-start items-stretch gap-1 mt-2">
 
     <div class="flex flex-col justify-start items-start gap-2 rounded-lg p-2 bg-white" displayDensity="compact">
       <div class="flex items-center text-sm">

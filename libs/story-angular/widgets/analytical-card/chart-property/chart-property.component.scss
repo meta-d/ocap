@@ -1,6 +1,6 @@
 :host {
-  display: flex;
-  flex: 1;
+  --mat-expansion-header-text-size: 12px;
+  @apply flex-1 flex;
 
   .ngm-property-select {
     flex: 1;
@@ -19,6 +19,9 @@
 
 .ngm-chart-property__card {
   @apply p-2 flex flex-col bg-white rounded-lg;
+}
+.ngm-chart-property__card-title {
+  @apply text-sm font-semibold;
 }
 
 ::ng-deep {

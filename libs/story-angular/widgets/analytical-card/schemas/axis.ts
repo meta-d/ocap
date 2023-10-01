@@ -390,7 +390,7 @@ export function ValueAxis(className: string, I18N?) {
           }
         },
         {
-          hideExpression: `!model || model.scale`,
+          hideExpression: `!!model && model.scale`,
           className,
           key: 'min',
           type: 'slider',
@@ -403,7 +403,7 @@ export function ValueAxis(className: string, I18N?) {
           }
         },
         {
-          hideExpression: `!model || model.scale`,
+          hideExpression: `!!model && model.scale`,
           className,
           key: 'max',
           type: 'slider',

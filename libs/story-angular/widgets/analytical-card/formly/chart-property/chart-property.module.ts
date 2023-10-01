@@ -10,8 +10,8 @@ import { NgmColorsComponent } from '@metad/components/form-field'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgmFormlyChartPropertyComponent } from './property-select.component'
-import { NgmChartPropertyComponent } from '../chart-property/chart-property.component'
+import { NgmFormlyChartPropertyComponent } from './chart-property.component'
+import { NgmChartPropertyComponent } from '../../chart-property/chart-property.component'
 
 @NgModule({
   declarations: [NgmFormlyChartPropertyComponent],

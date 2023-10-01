@@ -28,19 +28,19 @@
             cdkDropList cdkDropListOrientation="horizontal"
             [cdkDropListData]="dimensions()"
             (cdkDropListDropped)="moveDimension($event)">
-            <div *ngFor="let dim of dimensions(); trackBy: trackByDim" class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch bg-white rounded-xl overflow-hidden"
+            <div *ngFor="let dim of dimensions(); trackBy: trackByDim" class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch rounded-xl overflow-hidden
+                bg-white"
                 cdkDrag
                 [cdkDragData]="dim"
             >
                 <div class="shrink-0 p-1 flex flex-wrap items-center gap-1">
                     <div *ngFor="let item of dim.hierarchies" class="tag text-sm block font-bold leading-sm px-2 py-1 rounded-lg cursor-pointer
                         overflow-hidden text-ellipsis whitespace-nowrap"
-                        [class.selected]="item.hierarchy === dim.dimension.hierarchy"
+                        [class.selected]="item.hierarchy === (dim.dimension.hierarchy ?? dim.dimension.dimension)"
+                        [class.slicered]="slicers()[item.dimension]?.members?.length"
                         (click)="toggleHierarchy(dim.dimension.dimension, item.hierarchy === dim.dimension.hierarchy ? null : item.hierarchy)"
                         >
-                        <span>
-                            {{item.caption}}
-                        </span>
+                        <span>{{item.caption}}</span>
                     </div>
                 </div>
                 <ngm-member-tree class="flex-1 overflow-auto" displayDensity="compact"
@@ -88,7 +88,7 @@
         <div *ngIf="visualPanel === 'options'" class="h-full bg-white rounded-xl flex flex-col justify-start items-stretch overflow-hidden" >
             <mat-tab-group class="overflow-hidden" fitInkBarToContent preserveContent>
                 <mat-tab [label]="'Story.Explorer.Data' | translate: {Default: 'Data'} ">
-                    <div class="font-bold px-2 py-1">{{ 'PAC.KEY_WORDS.Dimensions' | translate: {Default: 'Dimensions'} }}</div>
+                    <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.Dimensions' | translate: {Default: 'Dimensions'} }}</div>
                     <div class="pac-cdk-drop__list min-h-28 w-full flex flex-col justify-start items-stretch overflow-auto gap-1 p-2"
                         id="ngm-story-explorer__drop-list-rows"
                         cdkDropList
@@ -118,7 +118,7 @@
                         </ngm-chart-property>
                     </div>
 
-                    <div class="font-bold px-2 py-1">{{ 'PAC.KEY_WORDS.Measures' | translate: {Default: 'Measures'} }}</div>
+                    <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.Measures' | translate: {Default: 'Measures'} }}</div>
                     <div class="pac-cdk-drop__list min-h-28 w-full flex flex-col justify-start items-stretch overflow-auto gap-1 p-2"
                         id="ngm-story-explorer__drop-list-columns"
                         cdkDropList
@@ -155,10 +155,14 @@
                             </button>
                         </ngm-chart-property>
                     </div>
+
+                    <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.ChartOptions' | translate: {Default: 'Chart Options'} }}</div>
+                    <ngm-chart-type-form class="text-sm" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
+                    
                 </mat-tab>
                 <mat-tab [label]="'Story.Explorer.Display' | translate: {Default: 'Display'} ">
                     <div *ngIf="component().component === ComponentType.AnalyticalCard" >
-                        <ngm-chart-settings class="w-full" [(ngModel)]="chartSettings"
+                        <ngm-chart-settings class="w-full text-sm" [(ngModel)]="chartSettings"
                             [chartType]="chartType()"
                         ></ngm-chart-settings>
                     </div>

@@ -206,7 +206,7 @@ export class BaseSlicersComponent {
       const dialogRef = this._dialog.open(NgmValueHelpComponent, {
         viewContainerRef: this.viewContainerRef,
         data: {
-          dimension: pick(slicer, 'dimension', 'hierarchy'),
+          dimension: pick(slicer?.dimension, 'dimension', 'hierarchy', 'displayBehaviour'),
           slicer: slicer,
           dataSettings: this.dataSettings,
           options: {

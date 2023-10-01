@@ -10,8 +10,8 @@ import { BehaviorSubject, Observable, map } from 'rxjs'
 
 @Component({
   selector: 'ngm-formly-chart-property',
-  templateUrl: './property-select.component.html',
-  styleUrls: ['./property-select.component.scss']
+  templateUrl: './chart-property.component.html',
+  styleUrls: ['./chart-property.component.scss']
 })
 export class NgmFormlyChartPropertyComponent extends FieldType<{
   capacities: PropertyCapacity[];

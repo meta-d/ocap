@@ -7,12 +7,12 @@ import { isEqual, isNil, isString, omit } from '@metad/ocap-core'
 import { FieldType } from '@ngx-formly/core'
 import { NgmCopilotService, NxChartType } from '@metad/core'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, distinctUntilChanged, firstValueFrom, map } from 'rxjs'
-import { CHART_TYPES, GeoProjections } from './types'
+import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { TranslateService } from '@ngx-translate/core'
 import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { CHART_TYPES, GeoProjections } from './types'
 
 
 @Component({

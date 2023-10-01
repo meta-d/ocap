@@ -6,9 +6,7 @@
 }
 
 .pac-cube-structure-drop {
-  border: 1px dashed grey;
-  padding: 1rem;
-  margin: 2px;
+  @apply rounded-md m-1 border border-dashed border-slate-200 p-4;
 }
 
 .pac-cube__join-table-container {

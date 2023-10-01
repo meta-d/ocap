@@ -1,6 +1,19 @@
 import { CdkDrag, CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+  TemplateRef,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  signal
+} from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -19,7 +32,7 @@ import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { NgmChartPropertyComponent, NgmChartSettingsComponent } from '@metad/story/widgets/analytical-card'
+import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmFormlyChartTypeComponent } from '@metad/story/widgets/analytical-card'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -48,7 +61,6 @@ import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { CHARTS, getChartType } from './types'
 import { MatRadioModule } from '@angular/material/radio'
-
 
 @Component({
   standalone: true,
@@ -80,14 +92,12 @@ import { MatRadioModule } from '@angular/material/radio'
     NgmEntityPropertyComponent,
     NgmSearchComponent,
     NgmChartSettingsComponent,
-    NgmChartPropertyComponent
+    NgmChartPropertyComponent,
+    NgmFormlyChartTypeComponent
   ],
   selector: 'ngm-story-explorer',
   templateUrl: 'explorer.component.html',
   styleUrls: ['explorer.component.scss'],
-  host: {
-    class: 'ngm-story-explorer'
-  }
 })
 export class StoryExplorerComponent {
   EntityCapacity = EntityCapacity
@@ -95,6 +105,8 @@ export class StoryExplorerComponent {
   PropertyCapacity = PropertyCapacity
   ComponentType = WidgetComponentType
   FilterSelectionType = FilterSelectionType
+
+  @HostBinding('class.ngm-story-explorer') isStoryExplorerComponent = true
 
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly _dialog = inject(MatDialog)
@@ -106,8 +118,6 @@ export class StoryExplorerComponent {
   set data(value: any) {
     this._data.set(value)
     if (value) {
-      console.log(value)
-
       const chartAnnotation = value?.dataSettings?.chartAnnotation
       const analytics = value?.dataSettings?.analytics
       if (chartAnnotation) {
@@ -121,11 +131,11 @@ export class StoryExplorerComponent {
         this._dimensions.set(chartAnnotation.dimensions?.map((d) => d.dimension) ?? [])
         this._chartSettings.set({
           chartOptions: value.chartOptions,
-          chartSettings: value.chartSettings,
+          chartSettings: value.chartSettings
         })
         this.visualPanel = 'visual'
         this.view = 'chart'
-      } else if(analytics) {
+      } else if (analytics) {
         this.component.set({
           label: null,
           component: WidgetComponentType.AnalyticalGrid,
@@ -141,7 +151,6 @@ export class StoryExplorerComponent {
         this.view = 'table'
       }
     }
-
   }
   private readonly _data = signal<{ dataSettings: DataSettings; chartAnnotation: ChartAnnotation }>(null)
 
@@ -150,7 +159,7 @@ export class StoryExplorerComponent {
   @ViewChild('addDimensionsTempl') addDimensionsTempl: TemplateRef<ElementRef>
 
   private dialogRef: MatDialogRef<ElementRef<any>, any>
-  
+
   DIMENSION_ROLES = [
     { label: 'None', value: null },
     { label: 'Category', value: ChartDimensionRoleType.Category },
@@ -160,7 +169,7 @@ export class StoryExplorerComponent {
     // { label: 'Color', value: ChartDimensionRoleType.Color }, 应该是还未支持
     { label: 'Trellis', value: ChartDimensionRoleType.Trellis }
   ]
-  
+
   measureSearch = new FormControl('')
 
   readonly _dimensionsCache = signal<string[]>([])
@@ -182,13 +191,20 @@ export class StoryExplorerComponent {
   readonly dimensionList = computed(() => {
     return getEntityDimensions(this.entityType())
   })
-  readonly measureList = toSignal(toObservable(this.entityType).pipe(
-    map(getEntityMeasures),
-    combineLatestWith(this.measureSearch.valueChanges.pipe(startWith(''))),
-    map(([measures, search]) => {
-      return search ? measures.filter((measure) => measure.name.toLowerCase().includes(search.toLowerCase()) ||
-        measure.caption.toLowerCase().includes(search.toLowerCase())) : measures
-    }))
+  readonly measureList = toSignal(
+    toObservable(this.entityType).pipe(
+      map(getEntityMeasures),
+      combineLatestWith(this.measureSearch.valueChanges.pipe(startWith(''))),
+      map(([measures, search]) => {
+        return search
+          ? measures.filter(
+              (measure) =>
+                measure.name.toLowerCase().includes(search.toLowerCase()) ||
+                measure.caption.toLowerCase().includes(search.toLowerCase())
+            )
+          : measures
+      })
+    )
   )
 
   readonly dataSettings = computed<DataSettings>(() => {
@@ -197,15 +213,19 @@ export class StoryExplorerComponent {
   readonly dataSettingsChart = computed(() => {
     const chartAnnotation = assignDeepOmitBlank(
       {
-        ...cloneDeep(omit(this.component()?.dataSettings?.chartAnnotation ?? this.data?.chartAnnotation ?? {}, 'dimensions', 'measures') )
+        ...cloneDeep(
+          omit(
+            this.component()?.dataSettings?.chartAnnotation ?? this.data?.chartAnnotation ?? {},
+            'dimensions',
+            'measures'
+          )
+        )
       },
       {
         dimensions: this.rows().map((row) => ({
-          ...row,
+          ...row
         })),
-        measures: [
-          ...this.columns(),
-        ]
+        measures: [...this.columns()]
       },
       5
     )
@@ -217,7 +237,9 @@ export class StoryExplorerComponent {
       ...(this.data?.dataSettings ?? {}),
       chartAnnotation,
       selectionVariant: {
-        selectOptions: Object.values(this.slicers()).map((slicer) => slicer).filter((slicer) => slicer?.members?.length)
+        selectOptions: Object.values(this.slicers())
+          .map((slicer) => slicer)
+          .filter((slicer) => slicer?.members?.length)
       }
     }
   })
@@ -230,9 +252,7 @@ export class StoryExplorerComponent {
     const analytics = {
       ...(this.data?.analytics ?? {}),
       rows: this.rows(),
-      columns: [
-        ...this.columns(),
-      ]
+      columns: [...this.columns()]
     }
 
     console.log(`Explorer analytics:`, analytics)
@@ -241,7 +261,10 @@ export class StoryExplorerComponent {
       ...(this.data?.dataSettings ?? {}),
       analytics,
       selectionVariant: {
-        selectOptions: Object.values(this.slicers()).map((slicer) => slicer).filter(nonNullable).filter((slicer) => slicer?.members?.length)
+        selectOptions: Object.values(this.slicers())
+          .map((slicer) => slicer)
+          .filter(nonNullable)
+          .filter((slicer) => slicer?.members?.length)
       }
     } as DataSettings
   })
@@ -261,11 +284,30 @@ export class StoryExplorerComponent {
         dimensions: [{}],
         measures: [{}]
       }
-    }
+    } as DataSettings
   })
   readonly chartType = computed(() => {
     return this.component()?.dataSettings?.chartAnnotation?.chartType
   })
+
+  get chartTypeChartOptions() {
+    return this.component()?.dataSettings?.chartAnnotation?.chartType?.chartOptions
+  }
+  set chartTypeChartOptions(value) {
+    this.component.set({
+      ...this.component(),
+      dataSettings: {
+        ...this.component().dataSettings,
+        chartAnnotation: {
+          ...this.component().dataSettings.chartAnnotation,
+          chartType: {
+            ...this.component().dataSettings.chartAnnotation.chartType,
+            chartOptions: value
+          }
+        }
+      }
+    })
+  }
 
   view: 'table' | 'chart' = 'table'
   visualPanel: 'visual' | 'options' = 'visual'
@@ -276,27 +318,28 @@ export class StoryExplorerComponent {
   }
   set chartSettings(value) {
     this._chartSettings.set(value)
-    console.log(`ChartSettings: `, this._chartSettings())
   }
-  private _chartSettings = signal<{chartSettings?: any; chartOptions?: any}>({})
+  private _chartSettings = signal<{ chartSettings?: any; chartOptions?: any }>({})
 
   constructor() {
     effect(
       () => {
         if (this.entityType()) {
           this.dimensions.set(
-            getEntityDimensions(this.entityType()).filter(({name}) => this._dimensions().includes(name)).map(({ name, caption, hierarchies }) => ({
-              dimension: {
-                dimension: name,
-                displayBehaviour: DisplayBehaviour.descriptionOnly
-              },
-              caption,
-              hierarchies: hierarchies.map((hierarchy) => ({
-                dimension: name,
-                hierarchy: hierarchy.name,
-                caption: hierarchy.caption
+            getEntityDimensions(this.entityType())
+              .filter(({ name }) => this._dimensions().includes(name))
+              .map(({ name, caption, hierarchies }) => ({
+                dimension: {
+                  dimension: name,
+                  displayBehaviour: DisplayBehaviour.descriptionOnly
+                },
+                caption,
+                hierarchies: hierarchies.map((hierarchy) => ({
+                  dimension: name,
+                  hierarchy: hierarchy.name,
+                  caption: hierarchy.caption
+                }))
               }))
-            }))
           )
         }
       },
@@ -349,7 +392,9 @@ export class StoryExplorerComponent {
     if (event.previousContainer === event.container) {
       moveItemInArray(items, event.previousIndex, event.currentIndex)
     } else {
-      items.splice(event.currentIndex, 0, 
+      items.splice(
+        event.currentIndex,
+        0,
         isString(event.item.data.dimension) ? { ...event.item.data } : { ...event.item.data.dimension }
       )
     }
@@ -371,11 +416,11 @@ export class StoryExplorerComponent {
     if (event.previousContainer === event.container) {
       moveItemInArray(items, event.previousIndex, event.currentIndex)
     } else {
-      items.splice(event.currentIndex, 0, { 
+      items.splice(event.currentIndex, 0, {
         dimension: C_MEASURES,
         measure: event.item.data.name,
         caption: event.item.data.caption
-       })
+      })
     }
     this.columns.set(items)
   }
@@ -397,8 +442,11 @@ export class StoryExplorerComponent {
   }
 
   onSlicersChange(slicer: ISlicer, dimension: string) {
-    // Toggle hierarchy for the dimension
-    this.setHierarchy(dimension, slicer.members?.length ? (slicer.dimension.hierarchy || slicer.dimension.dimension) : null)
+    // // Toggle hierarchy for the dimension
+    // this.setHierarchy(
+    //   dimension,
+    //   slicer.members?.length ? slicer.dimension.hierarchy || slicer.dimension.dimension : null
+    // )
 
     // Set slicer for the dimension
     this.slicers.set({
@@ -433,13 +481,15 @@ export class StoryExplorerComponent {
     if (event.previousContainer === event.container) {
       moveItemInArray(items, event.previousIndex, event.currentIndex)
       this.dimensions.set(items)
-    } 
+    }
   }
 
   close() {
     this.closed.emit({
-      dataSettings: this.component().component === WidgetComponentType.AnalyticalCard ? this.dataSettingsChart() :
-        this.dataSettingsGrid(),
+      dataSettings:
+        this.component().component === WidgetComponentType.AnalyticalCard
+          ? this.dataSettingsChart()
+          : this.dataSettingsGrid(),
       chartSettings: this.chartSettings?.chartSettings,
       chartOptions: this.chartSettings?.chartOptions
     })

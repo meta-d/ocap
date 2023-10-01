@@ -3,11 +3,15 @@
 }
 
 .tag:not(.selected) {
-  @apply bg-slate-100;
+  @apply bg-slate-50;
 }
 .tag.selected {
+  @apply bg-slate-200;
+}
+.tag.selected.slicered {
   @apply text-amber-500 bg-amber-100;
 }
+
 .ngm-story-explorer__chart.selected {
   @apply ring-violet-500;
 }

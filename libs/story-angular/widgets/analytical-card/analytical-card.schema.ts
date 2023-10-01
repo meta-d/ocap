@@ -9,6 +9,7 @@ import {
   getEntityProperty,
   isIndicatorMeasureProperty,
   isMeasure,
+  omit,
   SelectionPresentationVariant
 } from '@metad/ocap-core'
 import {
@@ -390,6 +391,7 @@ export class DimensionChartOptionsSchemaService implements DesignerSchema<ChartO
 @Injectable()
 export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
   protected translate = inject(TranslateService)
+
   get model() {
     return this.model$.value
   }
@@ -406,16 +408,17 @@ export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
   }
   private readonly chartType$ = new BehaviorSubject<ChartType>(null)
 
+  public readonly storyDesigner$ = this.translate.stream('Story')
+
   getTitle(): Observable<string> {
     return of(`Chart options`)
   }
-  public readonly storyDesigner$ = this.translate.stream('Story')
 
   getSchema() {
-    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)), this.chartType$]).pipe(
-      map(([ECHARTS, chartType]) => {
-        return getChartOptionsSchema(chartType, ECHARTS).fieldGroup
-      })
+    return combineLatest([this.storyDesigner$.pipe(map((i18n) => i18n?.STYLING?.ECHARTS)),
+      this.chartType$.pipe(map((chartType) => omit(chartType, 'chartOptions')), distinctUntilChanged(isEqual))
+    ]).pipe(
+      map(([ECHARTS, chartType]) => getChartOptionsSchema(chartType, ECHARTS).fieldGroup)
     )
   }
 }

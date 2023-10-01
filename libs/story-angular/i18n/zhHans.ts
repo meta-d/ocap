@@ -736,7 +736,10 @@ export const ZhHans = {
       Table: '表格',
       Chart: '图形',
       ShowDimensions: '显示维度',
-      BringMoreDimensions: '从您的数据集中引入更多维度并开始探索'
+      BringMoreDimensions: '从您的数据集中引入更多维度并开始探索',
+      ChartOptions: '图形配置',
+      Dimensions: '维度',
+      Measures: '度量',
     },
     Chart: {
       ChartType: '图形类型',

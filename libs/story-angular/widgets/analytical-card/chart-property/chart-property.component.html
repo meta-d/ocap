@@ -16,10 +16,10 @@
     <ng-content select="[ngmSuffix]"></ng-content>
   </div>
 
-  <div class="w-full flex flex-col items-stretch gap-2">
+  <div class="w-full flex flex-col items-stretch gap-1">
     <ng-container *ngIf="showChartAttributes && isDimension()">
       <div class="ngm-chart-property__card">
-        <label class="flex justify-start items-center px-2 py-1">
+        <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
           <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">category</mat-icon>
           <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}</span>
         </label>
@@ -29,11 +29,18 @@
           </mat-radio-button>
         </mat-radio-group>
       </div>
-      <ngm-designer-form class="w-full" [(ngModel)]="chartOptions"></ngm-designer-form>
+
+      <div class="ngm-chart-property__card">
+        <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
+          <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
+          <span>{{ 'FORMLY.PROPERTY_SELECT.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
+        </label>
+        <ngm-designer-form class="w-full text-sm" [(ngModel)]="chartOptions"></ngm-designer-form>
+      </div>
     </ng-container>
 
     <div *ngIf="showMeasureRole" class="ngm-chart-property__card">
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">category</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}</span>
       </label>
@@ -45,7 +52,7 @@
     </div>
 
     <div *ngIf="showMeasureShape" class="ngm-chart-property__card">
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">interests</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.Shape' | translate: {Default: 'Shape'} }}...</span>
       </label>
@@ -60,7 +67,7 @@
     </div>
 
     <div *ngIf="showColorPalette" class="ngm-chart-property__card">
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">texture</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.Pattern' | translate: {Default: 'Pattern'} }}</span>
       </label>
@@ -73,7 +80,7 @@
         </mat-radio-button>
       </mat-radio-group>
     
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">style</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.Style' | translate: {Default: 'Style'} }}</span>
       </label>
@@ -110,21 +117,21 @@
     <!-- End -->
 
     <div *ngIf="showMeasureReferenceLine" class="ngm-chart-property__card">
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">trending_flat</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.REFERENCE_LINE' | translate: {Default: 'Reference Line'} }}</span>
       </label>
 
-      <ngm-reference-line class="w-full" [(ngModel)]="referenceLines"></ngm-reference-line>
+      <ngm-reference-line class="w-full text-sm" [(ngModel)]="referenceLines"></ngm-reference-line>
     </div>
 
     <div *ngIf="showMeasureChartOptions" class="ngm-chart-property__card">
-      <label class="flex justify-start items-center px-2 py-1">
+      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
         <span>{{ 'FORMLY.PROPERTY_SELECT.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
       </label>
 
-      <ngm-chart-measure-form class="w-full" [(ngModel)]="chartOptions"
+      <ngm-chart-measure-form class="w-full text-sm" [(ngModel)]="chartOptions"
         [chartType]="chartType"
       ></ngm-chart-measure-form>
     </div>
