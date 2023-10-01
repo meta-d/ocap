@@ -740,6 +740,8 @@ export const ZhHans = {
       ChartOptions: '图形配置',
       Dimensions: '维度',
       Measures: '度量',
+      And: '和',
+      By: '按'
     },
     Chart: {
       ChartType: '图形类型',

@@ -32,7 +32,7 @@ import {
 } from '@metad/ocap-core'
 import { NgmDesignerFormComponent, NxDesignerModule, NxSettingsPanelService, STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { BehaviorSubject, Subscription, distinctUntilChanged, from, map } from 'rxjs'
+import { BehaviorSubject, distinctUntilChanged, from, map } from 'rxjs'
 import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
 import { NgmReferenceLineComponent } from './reference-line.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
@@ -296,10 +296,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
     return this.property()?.role === AggregationRole.measure
   })
 
-  private chartOptionsSubscription: Subscription
-  private referenceLineSubscription: Subscription
-  private editAttributesSubscription: Subscription
-
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -314,10 +310,14 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   private valueSub = toObservable(this.model)
     .pipe(takeUntilDestroyed())
     .subscribe((value) => {
-      console.log(`When value changed in chart property`, value)
       this.onChange?.(value)
     })
-
+  private formControSub = this.formControl.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
+    this.model.set({
+      ...this.model(),
+      ...(value ?? {})
+    })
+  })
   onChange: (input: any) => void
   onTouched: () => void
 
@@ -352,81 +352,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
       property
     })
   }
-
-  // async openReferenceLine() {
-  //   const title = await firstValueFrom(
-  //     this.translateService.get('FORMLY.PROPERTY_SELECT.REFERENCE_LINE', { Default: 'Reference Lines' })
-  //   )
-  //   this.referenceLineSubscription?.unsubscribe()
-  //   this.referenceLineSubscription = this.settingsService
-  //     ?.openSecondDesigner(
-  //       'MeasureReferenceLine',
-  //       { referenceLines: this.model()?.referenceLines ?? [] },
-  //       title,
-  //       true
-  //     )
-  //     .subscribe((result) => {
-  //       if (result) {
-  //         this.patchValue({
-  //           referenceLines: result.referenceLines
-  //         })
-  //       }
-  //     })
-  // }
-
-  // async openChartOptions() {
-  //   const title = await firstValueFrom(
-  //     this.translateService.get('FORMLY.PROPERTY_SELECT.ChartOptions', { Default: 'Chart Options' })
-  //   )
-  //   // 优先使用本度量的形状属性作为图形类型
-  //   let chartType: ChartType // = await firstValueFrom(this.field?.props?.chartType$ ?? of({}))
-  //   if (this.shapeType) {
-  //     chartType = { ...chartType, type: startCase(this.shapeType) }
-  //   }
-
-  //   this.chartOptionsSubscription?.unsubscribe()
-  //   this.chartOptionsSubscription = this.settingsService
-  //     ?.openSecondDesigner(
-  //       'MeasureChartOptions',
-  //       {
-  //         chartType,
-  //         chartOptions: this.model()?.chartOptions ?? {}
-  //       },
-  //       title,
-  //       true
-  //     )
-  //     .subscribe((result) => {
-  //       if (result) {
-  //         this.patchValue({
-  //           chartOptions: result.chartOptions
-  //         })
-  //       }
-  //     })
-  // }
-
-  // async editAttributes() {
-  //   const title = await firstValueFrom(
-  //     this.translateService.get('FORMLY.PROPERTY_SELECT.ChartAttributes', { Default: 'Chart Attributes' })
-  //   )
-
-  //   this.editAttributesSubscription?.unsubscribe()
-  //   this.editAttributesSubscription = this.settingsService
-  //     ?.openSecondDesigner(
-  //       'DimensionChartOptions',
-  //       {
-  //         chartOptions: this.model()?.chartOptions ?? {}
-  //       },
-  //       title,
-  //       true
-  //     )
-  //     .subscribe((result) => {
-  //       if (result) {
-  //         this.patchValue({
-  //           chartOptions: result.chartOptions
-  //         })
-  //       }
-  //     })
-  // }
 
   onColorsChange(colors: string[]) {
     this.patchValue({

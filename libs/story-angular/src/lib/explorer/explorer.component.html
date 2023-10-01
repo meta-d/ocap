@@ -98,11 +98,7 @@
 
                         <ngm-chart-property *ngFor="let row of rows(); index as i; trackBy: trackByIndex" class="w-full"
                             removable
-                            [capacities]="[
-                                PropertyCapacity.Dimension,
-                                PropertyCapacity.Order,
-                                PropertyCapacity.DimensionChart
-                            ]"
+                            [capacities]="dimensionCapacities()"
                             [dataSettings]="dataSettings()"
                             [entityType]="entityType()"
                             [ngModel]="row"
@@ -128,18 +124,7 @@
 
                         <ngm-chart-property *ngFor="let item of columns(); index as i; trackBy: trackByIndex" class="w-full"
                             removable
-                            [capacities]="[
-                                PropertyCapacity.Measure,
-                                PropertyCapacity.Order,
-                                PropertyCapacity.MeasureAttributes,
-                                PropertyCapacity.MeasureStyle,
-                                PropertyCapacity.MeasureStyleRole,
-                                PropertyCapacity.MeasureStyleShape,
-                                PropertyCapacity.MeasureStylePalette,
-                                PropertyCapacity.MeasureStylePalettePattern,
-                                PropertyCapacity.MeasureStyleReferenceLine,
-                                PropertyCapacity.MeasureStyleChartOptions
-                            ]"
+                            [capacities]="measureCapacities()"
                             [dataSettings]="dataSettings()"
                             [entityType]="entityType()"
                             [chartType]="chartType()"
@@ -156,9 +141,10 @@
                         </ngm-chart-property>
                     </div>
 
-                    <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.ChartOptions' | translate: {Default: 'Chart Options'} }}</div>
-                    <ngm-chart-type-form class="text-sm" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
-                    
+                    <ng-container *ngIf="component().component === ComponentType.AnalyticalCard">
+                        <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.ChartOptions' | translate: {Default: 'Chart Options'} }}</div>
+                        <ngm-chart-type-form class="text-sm" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
+                    </ng-container>
                 </mat-tab>
                 <mat-tab [label]="'Story.Explorer.Display' | translate: {Default: 'Display'} ">
                     <div *ngIf="component().component === ComponentType.AnalyticalCard" >
@@ -204,7 +190,7 @@
     <div class="flex-1 bg-white rounded-xl flex flex-col justify-center items-center overflow-hidden">
         <div class="flex-1 w-full overflow-hidden">
             <ngm-analytical-card *ngIf="view === 'chart'" class="w-full h-full group"
-                [title]="'Data chart for dimensions and measure'"
+                [title]="chartTitle()"
                 [dataSettings]="dataSettingsChart()"
                 [chartOptions]="chartSettings.chartOptions"
                 [chartSettings]="chartSettings.chartSettings"
@@ -212,7 +198,7 @@
             </ngm-analytical-card>
 
             <ngm-analytical-grid *ngIf="view === 'table'" class="w-full h-full group overflow-auto"
-                [title]="'Data grid for dimensions and measure'"
+                [title]="chartTitle()"
                 [dataSettings]="dataSettingsGrid()"
                 [appearance]="{
                     displayDensity: DisplayDensity.compact
