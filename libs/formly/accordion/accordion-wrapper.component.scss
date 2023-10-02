@@ -1,5 +1,6 @@
 .mat-expansion-panel-header-description {
   justify-content: flex-end;
+  flex: 0;
 }
 
 :host::ng-deep {

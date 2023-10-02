@@ -39,7 +39,7 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
       ...PresentationVariantExpansion(Widgets?.Common, this.dataSettings$, this.entityType$, this.properties$),
     )
 
-    const className = FORMLY_W_1_2
+    
     return [
       {
         wrappers: ['panel'],
@@ -65,237 +65,243 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
           expanded: true,
           fieldGroup: dataSettings.fieldGroup[0].fieldGroup
         },
-        {
-          key: 'options',
-          label: Widgets?.AnalyticalGrid?.GridOptions ?? 'Grid Options',
-          toggleable: false,
-          expanded: true,
-          fieldGroup: [
-            {
-              fieldGroupClassName: FORMLY_ROW,
-              fieldGroup: [
-                {
-                  className,
-                  key: 'showToolbar',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
-                  }
-                },
-                {
-                  
-                  className,
-                  key: 'hideDataDownload',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.HideDataDownload ?? 'Hide Data Download'
-                  }
-                },
-                {
-                  className,
-                  key: 'strip',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.Strip ?? 'Strip'
-                  }
-                },
-                {
-                  className,
-                  key: 'grid',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.Grid ?? 'Grid'
-                  }
-                },
-                {
-                  className,
-                  key: 'sticky',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.TableHeaderSticky ?? 'Table Header Sticky'
-                  }
-                },
-                {
-                  className,
-                  key: 'sortable',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.Sortable ?? 'Sortable'
-                  }
-                },
-                {
-                  className,
-                  key: 'selectable',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.ColumnSelectable ?? 'Column Selectable'
-                  }
-                },
-              ]
-            },
-  
-            {
-              fieldGroupClassName: FORMLY_ROW,
-              fieldGroup: [
-                {
-                  className,
-                  key: 'paging',
-                  type: 'checkbox',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.Paging ?? 'Paging'
-                  }
-                },
-                {
-                  className,
-                  key: 'pageSize',
-                  type: 'input',
-                  props: {
-                    type: 'number',
-                    label: Widgets?.AnalyticalGrid?.PageSize ?? 'Page Size'
-                  }
-                },
-  
-                {
-                  className,
-                  key: 'initialRowLevel',
-                  type: 'input',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.InitialRowLevel ?? 'Initial Row Level',
-                    type: 'number'
-                  }
-                },
-                {
-                  className,
-                  key: 'initialColumnLevel',
-                  type: 'input',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.InitialColumnLevel ?? 'Initial Column Level',
-                    type: 'number'
-                  }
-                },
-  
-                {
-                  className,
-                  key: 'digitsInfo',
-                  type: 'input',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.DigitsInfo ?? 'Digits Info',
-                  }
-                },
-                {
-                  className,
-                  key: 'unit',
-                  type: 'input',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.Unit ?? 'Unit',
-                  }
-                },
-                {
-                  className,
-                  key: 'currencyCode',
-                  type: 'input',
-                  props: {
-                    label: Widgets?.AnalyticalGrid?.CurrencyCode ?? 'Currency Code',
-                  }
-                }
-              ]
-            }
-          ]
-        },
       ], {expandedMulti: true}),
+      ...getGridOptionsSchema(Widgets)
     ] as any
   }
 }
 
-
-export function GridOptionsSchema(className: string, Widgets) {
-
-  return [
+export function getGridOptionsSchema(Widgets) {
+  const className = FORMLY_W_1_2
+  return AccordionWrappers([
     {
-      fieldGroupClassName: FORMLY_ROW,
+      key: 'options',
+      label: Widgets?.AnalyticalGrid?.GridOptions ?? 'Grid Options',
+      toggleable: false,
+      expanded: true,
       fieldGroup: [
         {
-          className,
-          key: 'showToolbar',
-          type: 'toggle',
-          props: {
-            label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
-          }
+          fieldGroupClassName: FORMLY_ROW,
+          fieldGroup: [
+            {
+              className,
+              key: 'showToolbar',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
+              }
+            },
+            {
+              
+              className,
+              key: 'hideDataDownload',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.HideDataDownload ?? 'Hide Data Download'
+              }
+            },
+            {
+              className,
+              key: 'strip',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.Strip ?? 'Strip'
+              }
+            },
+            {
+              className,
+              key: 'grid',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.Grid ?? 'Grid'
+              }
+            },
+            {
+              className,
+              key: 'sticky',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.TableHeaderSticky ?? 'Table Header Sticky'
+              }
+            },
+            {
+              className,
+              key: 'sortable',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.Sortable ?? 'Sortable'
+              }
+            },
+            {
+              className,
+              key: 'selectable',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.ColumnSelectable ?? 'Column Selectable'
+              }
+            },
+          ]
+        },
+
+        {
+          fieldGroupClassName: FORMLY_ROW,
+          fieldGroup: [
+            {
+              className,
+              key: 'paging',
+              type: 'checkbox',
+              props: {
+                label: Widgets?.AnalyticalGrid?.Paging ?? 'Paging'
+              }
+            },
+            {
+              className,
+              key: 'pageSize',
+              type: 'input',
+              props: {
+                type: 'number',
+                label: Widgets?.AnalyticalGrid?.PageSize ?? 'Page Size'
+              }
+            },
+
+            {
+              className,
+              key: 'initialRowLevel',
+              type: 'input',
+              props: {
+                label: Widgets?.AnalyticalGrid?.InitialRowLevel ?? 'Initial Row Level',
+                type: 'number'
+              }
+            },
+            {
+              className,
+              key: 'initialColumnLevel',
+              type: 'input',
+              props: {
+                label: Widgets?.AnalyticalGrid?.InitialColumnLevel ?? 'Initial Column Level',
+                type: 'number'
+              }
+            },
+
+            {
+              className,
+              key: 'digitsInfo',
+              type: 'input',
+              props: {
+                label: Widgets?.AnalyticalGrid?.DigitsInfo ?? 'Digits Info',
+              }
+            },
+            {
+              className,
+              key: 'unit',
+              type: 'input',
+              props: {
+                label: Widgets?.AnalyticalGrid?.Unit ?? 'Unit',
+              }
+            },
+            {
+              className,
+              key: 'currencyCode',
+              type: 'input',
+              props: {
+                label: Widgets?.AnalyticalGrid?.CurrencyCode ?? 'Currency Code',
+              }
+            }
+          ]
         }
       ]
     },
-
-    {
-      fieldGroupClassName: FORMLY_ROW,
-      fieldGroup: [
-        {
-          className,
-          key: 'exportExcel',
-          type: 'toggle',
-          props: {
-            label: Widgets?.AnalyticalGrid?.exportExcel ?? 'Export Excel'
-          }
-        },
-        {
-          className,
-          key: 'columnPinning',
-          type: 'toggle',
-          props: {
-            label: Widgets?.AnalyticalGrid?.columnPinning ?? 'Column Pinning'
-          }
-        }
-      ]
-    },
-
-    {
-      fieldGroupClassName: FORMLY_ROW,
-      fieldGroup: [
-        {
-          className,
-          key: 'allowFiltering',
-          type: 'toggle',
-          props: { label: 'Allow Filtering' }
-        },
-        {
-          className,
-          key: 'filterMode',
-          type: 'select',
-          props: {
-            label: 'Allow Filtering',
-            options: [
-              { value: 'quickFilter', label: 'Quick Filter' },
-              { value: 'excelStyleFilter', label: 'Excel Style Filter' }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      fieldGroupClassName: FORMLY_ROW,
-      key: 'column',
-      wrappers: ['panel'],
-      fieldGroup: [
-        {
-          className,
-          key: 'resizable',
-          type: 'checkbox',
-          props: {
-            label: 'Resizable'
-          }
-        },
-        {
-          className,
-          key: 'width',
-          type: 'input',
-          props: {
-            type: 'number',
-            label: 'Width'
-          }
-        }
-      ]
-    }
-  ]
+  ])
 }
+
+// export function GridOptionsSchema(className: string, Widgets) {
+
+//   return [
+//     {
+//       fieldGroupClassName: FORMLY_ROW,
+//       fieldGroup: [
+//         {
+//           className,
+//           key: 'showToolbar',
+//           type: 'toggle',
+//           props: {
+//             label: Widgets?.AnalyticalGrid?.showToolbar ?? 'Show Toolbar'
+//           }
+//         }
+//       ]
+//     },
+
+//     {
+//       fieldGroupClassName: FORMLY_ROW,
+//       fieldGroup: [
+//         {
+//           className,
+//           key: 'exportExcel',
+//           type: 'toggle',
+//           props: {
+//             label: Widgets?.AnalyticalGrid?.exportExcel ?? 'Export Excel'
+//           }
+//         },
+//         {
+//           className,
+//           key: 'columnPinning',
+//           type: 'toggle',
+//           props: {
+//             label: Widgets?.AnalyticalGrid?.columnPinning ?? 'Column Pinning'
+//           }
+//         }
+//       ]
+//     },
+
+//     {
+//       fieldGroupClassName: FORMLY_ROW,
+//       fieldGroup: [
+//         {
+//           className,
+//           key: 'allowFiltering',
+//           type: 'toggle',
+//           props: { label: 'Allow Filtering' }
+//         },
+//         {
+//           className,
+//           key: 'filterMode',
+//           type: 'select',
+//           props: {
+//             label: 'Allow Filtering',
+//             options: [
+//               { value: 'quickFilter', label: 'Quick Filter' },
+//               { value: 'excelStyleFilter', label: 'Excel Style Filter' }
+//             ]
+//           }
+//         }
+//       ]
+//     },
+//     {
+//       fieldGroupClassName: FORMLY_ROW,
+//       key: 'column',
+//       wrappers: ['panel'],
+//       fieldGroup: [
+//         {
+//           className,
+//           key: 'resizable',
+//           type: 'checkbox',
+//           props: {
+//             label: 'Resizable'
+//           }
+//         },
+//         {
+//           className,
+//           key: 'width',
+//           type: 'input',
+//           props: {
+//             type: 'number',
+//             label: 'Width'
+//           }
+//         }
+//       ]
+//     }
+//   ]
+// }
 
 
 export function AnalyticsAnnotationSchema(Widgets, dataSettings$: Observable<DataSettings>, entityType$: Observable<EntityType>) {

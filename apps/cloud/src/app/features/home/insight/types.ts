@@ -65,6 +65,8 @@ export interface QuestionAnswer {
   answering: boolean
   chartOptions: any
   dataSettings: DataSettings
+  chartSettings: any
+  options?: any
   expanded: boolean
   isCube: boolean
   message: string

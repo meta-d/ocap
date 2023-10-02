@@ -299,7 +299,7 @@ export class InsightComponent {
         )
         .onAction()
         .subscribe(() => {
-          this.router.navigate([`/story/${result.storyId}`], {
+          this.router.navigate([`/story/${result.storyId}/edit`], {
             queryParams: {
               pageKey: result.pageKey,
               widgetKey: result.key
@@ -315,9 +315,15 @@ export class InsightComponent {
   }
 
   closeExplorer(event) {
-    console.log(event)
     this.showExplorer.set(false)
-    this.updateAnswer(this.explore().key, event)
+    this.updateAnswer(this.explore().key, {
+      ...event,
+      dataSettings: {
+        ...event.dataSettings,
+        selectionVariant: null
+      },
+      slicers: event.dataSettings.selectionVariant?.selectOptions ?? []
+    })
   }
 
   updateAnswer(key: string, event: Partial<QuestionAnswer>) {

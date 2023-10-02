@@ -48,9 +48,8 @@
         <ngm-analytical-card *ngIf="answer.dataSettings" class="h-[300px]" 
           [dataSettings]="answer.dataSettings"
           [chartOptions]="answer.chartOptions"
-          [chartSettings]="{}"
-          [options]="{
-          }"
+          [chartSettings]="answer.chartSettings"
+          [options]="answer.options"
           [slicers]="answer.slicers"
         >
           <button mat-icon-button ngmAction displayDensity="cosy" class="ngm-menu-trigger opacity-20 group-hover:opacity-100 duration-200"

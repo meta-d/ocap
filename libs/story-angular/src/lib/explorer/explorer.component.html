@@ -1,6 +1,6 @@
 <div class="relative w-full h-64 shrink-0 flex justify-start items-stretch p-1" ngmResizer [resizerHeight]="230">
     <div class="flex flex-col justify-start">
-        <button mat-button (click)="back()">{{ 'Story.Common.Back' | translate: {Default: 'Back'} }}</button>
+        <button mat-stroked-button color="primary" (click)="back()">{{ 'Story.Common.Back' | translate: {Default: 'Back'} }}</button>
     </div>
 
     <div class="flex-1 h-full flex justify-start items-stretch gap-2 p-1 overflow-auto">
@@ -147,11 +147,14 @@
                     </ng-container>
                 </mat-tab>
                 <mat-tab [label]="'Story.Explorer.Display' | translate: {Default: 'Display'} ">
-                    <div *ngIf="component().component === ComponentType.AnalyticalCard" >
+                    <div *ngIf="component().component === ComponentType.AnalyticalCard">
                         <ngm-chart-settings class="w-full text-sm" [(ngModel)]="chartSettings"
                             [chartType]="chartType()"
                         ></ngm-chart-settings>
                     </div>
+                    <ngm-grid-settings *ngIf="component().component === ComponentType.AnalyticalGrid" class="w-full text-sm"
+                        [(ngModel)]="gridSettings"
+                    ></ngm-grid-settings>
                 </mat-tab>
             </mat-tab-group>
         </div>
@@ -194,6 +197,7 @@
                 [dataSettings]="dataSettingsChart()"
                 [chartOptions]="chartSettings.chartOptions"
                 [chartSettings]="chartSettings.chartSettings"
+                (explain)="setExplains($event)"
                 >
             </ngm-analytical-card>
 
@@ -203,13 +207,8 @@
                 [appearance]="{
                     displayDensity: DisplayDensity.compact
                 }"
-                [options]="{
-                    showToolbar: true,
-                    paging: true,
-                    pageSize: 20,
-                    sticky: true,
-                    sortable: true
-                }"
+                [options]="gridSettings.options"
+                (explain)="setExplains($event)"
             ></ngm-analytical-grid>
         </div>
         <mat-divider class="w-full"></mat-divider>
@@ -237,6 +236,10 @@
             </mat-button-toggle-group>
 
             <div ngmButtonGroup>
+                <button mat-button (click)="openExplain()">
+                    <mat-icon fontSet="material-icons-round">code</mat-icon>
+                    {{ 'Story.Widget.Explain' | translate: {Default: "Explain"} }}
+                </button>
                 <button mat-raised-button color="primary" (click)="close()">
                     {{ 'Story.Common.Confirm' | translate: {Default: 'Confirm'} }}
                 </button>

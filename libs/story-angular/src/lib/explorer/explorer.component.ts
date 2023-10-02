@@ -35,6 +35,7 @@ import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmFormlyChartTypeComponent } from '@metad/story/widgets/analytical-card'
+import { NgmGridSettingsComponent } from '@metad/story/widgets/analytical-grid'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -47,7 +48,6 @@ import {
   Measure,
   assignDeepOmitBlank,
   cloneDeep,
-  compact,
   getEntityDimensions,
   getEntityLevel,
   getEntityMeasures,
@@ -64,6 +64,8 @@ import { combineLatestWith, filter, map, startWith, switchMap } from 'rxjs/opera
 import { MatIconModule } from '@angular/material/icon'
 import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { CHARTS, getChartType } from './types'
+import { firstValueFrom } from 'rxjs'
+import { ExplainComponent } from '@metad/story/story'
 
 
 @Component({
@@ -97,7 +99,8 @@ import { CHARTS, getChartType } from './types'
     NgmSearchComponent,
     NgmChartSettingsComponent,
     NgmChartPropertyComponent,
-    NgmFormlyChartTypeComponent
+    NgmFormlyChartTypeComponent,
+    NgmGridSettingsComponent
   ],
   selector: 'ngm-story-explorer',
   templateUrl: 'explorer.component.html',
@@ -152,6 +155,9 @@ export class StoryExplorerComponent {
         this._dimensions.set(
           [...analytics.rows, ...analytics.columns].filter((d) => d.dimension !== C_MEASURES).map((d) => pick(d, 'dimension', 'hierarchy'))
         )
+        this.gridSettings = {
+          options: value.options
+        }
         this.visualPanel = 'options'
         this.view = 'table'
       }
@@ -355,6 +361,20 @@ export class StoryExplorerComponent {
   }
   private _chartSettings = signal<{ chartSettings?: any; chartOptions?: any }>({})
 
+  get gridSettings() {
+    return this._gridSettings()
+  }
+  set gridSettings(value) {
+    this._gridSettings.set(value)
+  }
+  private _gridSettings = signal<{ options?: any }>({options: {
+    showToolbar: true,
+    paging: true,
+    pageSize: 20,
+    sticky: true,
+    sortable: true
+  }})
+
   readonly dimensionCapacities = computed(() => {
     if (this.component().component === WidgetComponentType.AnalyticalCard) {
       return [
@@ -393,6 +413,9 @@ export class StoryExplorerComponent {
       ]
     }
   })
+
+  explains = signal<any[]>([])
+
   constructor() {
     effect(
       () => {
@@ -508,7 +531,6 @@ export class StoryExplorerComponent {
   }
 
   onColumnChange(row: Dimension, i: number) {
-    console.log(this.columns(), row)
     this.columns.set([...this.columns().slice(0, i), row, ...this.columns().slice(i + 1)])
   }
 
@@ -569,14 +591,28 @@ export class StoryExplorerComponent {
     }
   }
 
+  setExplains(explains) {
+    this.explains.set(explains)
+  }
+
+  async openExplain() {
+    await firstValueFrom(this._dialog.open(ExplainComponent, {
+      data: [...(this.explains() ?? []), {slicers: this.slicers()}]}
+    ).afterClosed())
+  }
+
   close() {
-    this.closed.emit({
-      dataSettings:
-        this.component().component === WidgetComponentType.AnalyticalCard
-          ? this.dataSettingsChart()
-          : this.dataSettingsGrid(),
-      chartSettings: this.chartSettings?.chartSettings,
-      chartOptions: this.chartSettings?.chartOptions
-    })
+    if (this.component().component === WidgetComponentType.AnalyticalCard) {
+      this.closed.emit({
+        dataSettings: this.dataSettingsChart(),
+        chartSettings: this.chartSettings?.chartSettings,
+        chartOptions: this.chartSettings?.chartOptions,
+      })
+    } else {
+      this.closed.emit({
+        dataSettings:this.dataSettingsGrid(),
+        options: this.gridSettings?.options,
+      })
+    }
   }
 }
