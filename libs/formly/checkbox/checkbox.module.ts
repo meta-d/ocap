@@ -6,10 +6,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyMatFormFieldModule } from '@ngx-formly/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import { FormlyFieldCheckboxComponent } from './checkbox.type';
+import { NgmFormlyCheckboxComponent } from './checkbox.type';
 
 @NgModule({
-  declarations: [FormlyFieldCheckboxComponent],
+  declarations: [NgmFormlyCheckboxComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -21,7 +21,7 @@ import { FormlyFieldCheckboxComponent } from './checkbox.type';
       types: [
         {
           name: 'checkbox',
-          component: FormlyFieldCheckboxComponent,
+          component: NgmFormlyCheckboxComponent,
           // wrappers: ['form-field'],
         },
         {
@@ -32,4 +32,4 @@ import { FormlyFieldCheckboxComponent } from './checkbox.type';
     }),
   ],
 })
-export class FormlyMatCheckboxModule {}
+export class NgmFormlyMatCheckboxModule {}

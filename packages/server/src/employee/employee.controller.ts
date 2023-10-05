@@ -289,8 +289,8 @@ export class EmployeeController extends CrudController<Employee> {
 	 * @param filter 
 	 * @returns 
 	 */
-	@UseGuards(PermissionGuard)
-	@Permissions(PermissionsEnum.ORG_INCOMES_VIEW)
+	// @UseGuards(PermissionGuard)
+	// @Permissions(PermissionsEnum.ORG_INCOMES_VIEW)
 	@Get('pagination')
 	@UsePipes(new ValidationPipe({ transform: true }))
 	async pagination(

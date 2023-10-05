@@ -20,12 +20,11 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
             key: 'options',
             fieldGroup: [
               {
-                fieldGroupClassName: FORMLY_ROW,
-                wrappers: ['expansion'],
+                wrappers: ['panel'],
                 props: {
-                  label: BUILDER?.Swiper?.Options ?? 'Options',
-                  expanded: true
+                  padding: true
                 },
+                fieldGroupClassName: FORMLY_ROW,
                 fieldGroup: [
                   {
                     className,
@@ -241,13 +240,13 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
               {
                 key: 'slides',
                 type: 'table-inline',
-                wrappers: ['expansion'],
+                wrappers: ['panel'],
                 props: {
                   label: BUILDER?.Swiper?.Slides ?? 'Slides',
-                  expanded: true
+                  padding: true
                 },
                 fieldArray: {
-                  fieldGroupClassName: 'ngm-formly__row',
+                  fieldGroupClassName: FORMLY_ROW,
                   fieldGroup: [
                     {
                       key: 'type',
@@ -299,7 +298,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.Autoplay ?? 'Autoplay',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'ngm-formly__row',
+                      fieldGroupClassName: FORMLY_ROW,
                       fieldGroup: [
                         {
                           className,
@@ -365,7 +364,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.Pagination ?? 'Pagination',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'ngm-formly__row',
+                      fieldGroupClassName: FORMLY_ROW,
                       fieldGroup: [
                         {
                           className,
@@ -422,7 +421,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                   label: BUILDER?.Swiper?.KeyboardControl ?? 'Keyboard Control',
                   fieldGroup: [
                     {
-                      fieldGroupClassName: 'ngm-formly__row',
+                      fieldGroupClassName: FORMLY_ROW,
                       fieldGroup: [
                         {
                           className,
@@ -455,10 +454,10 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
               ]),
 
               {
-                fieldGroupClassName: 'ngm-formly__row',
+                fieldGroupClassName: FORMLY_ROW,
                 key: 'breakpoints',
                 type: 'table-inline',
-                wrappers: ['expansion'],
+                wrappers: ['accordion'],
                 props: {
                   label: BUILDER?.Swiper?.Breakpoints ?? 'Breakpoints',
                   expanded: true

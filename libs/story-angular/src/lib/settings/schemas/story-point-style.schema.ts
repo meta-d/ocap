@@ -11,7 +11,7 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
         return [
           {
             key: 'canvas',
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.CANVAS?.TITLE ?? 'Canvas'
             },
@@ -19,7 +19,7 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
             fieldGroup: StylingCssSchema(FORMLY_W_1_2, DESIGNER)
           },
           {
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.STORY_PAGE?.DefaultBackground ?? 'Default Background'
             },
@@ -35,7 +35,7 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
           },
           {
             key: 'pageSize',
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.STORY_PAGE?.PAGE_SIZE ?? 'Page Size'
             },

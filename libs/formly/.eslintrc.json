@@ -17,7 +17,7 @@
           "error",
           {
             "type": "element",
-            "prefix": "pac-formly",
+            "prefix": "pac-formly|ngm-formly",
             "style": "kebab-case"
           }
         ]

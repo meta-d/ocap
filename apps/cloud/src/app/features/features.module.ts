@@ -12,6 +12,7 @@ import { DataSource, Type } from '@metad/ocap-core'
 import { LetDirective } from '@ngrx/component'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { NxTableModule } from '@metad/components/table'
+import { NgmFormlyModule } from '@metad/formly'
 import { NgmCopilotService } from '@metad/core'
 import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
@@ -50,7 +51,10 @@ import { FeaturesComponent } from './features.component'
     CopilotChatComponent,
     NxTableModule.forRoot(),
     DensityDirective,
-    CopilotGlobalComponent
+    CopilotGlobalComponent,
+
+    // Formly
+    NgmFormlyModule.forRoot({}),
   ],
   providers: [
     DirtyCheckGuard,

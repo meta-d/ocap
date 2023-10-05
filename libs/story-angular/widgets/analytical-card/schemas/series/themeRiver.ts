@@ -16,7 +16,7 @@ export function ThemeRiverCapacity(className: string, I18N) {
               key: 'boundaryGap',
               type: 'json',
               props: {
-                label: I18N.SeriesStyle?.BoundaryGap ?? 'Boundary Gap',
+                label: I18N?.SeriesStyle?.BoundaryGap ?? 'Boundary Gap',
                 placeholder: '["10%", "10%"]',
                 autosize: true
               }

@@ -39,7 +39,8 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Bar,
-            orient: ChartOrient.vertical
+            orient: ChartOrient.vertical,
+            variant: 'stacked'
           },
           dimensions: [
             {},
@@ -56,7 +57,8 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Bar,
-            orient: ChartOrient.horizontal
+            orient: ChartOrient.horizontal,
+            variant: 'stacked'
           },
           dimensions: [
             {},
@@ -108,6 +110,25 @@ export const CHARTS: ChartGroup[] = [
           measures: [{}]
         },
         icon: 'bar-polar-bg.svg'
+      },
+      {
+        label: NxChartType.ColumnPolar,
+        value: {
+          chartType: {
+            type: NxChartType.Bar,
+            orient: ChartOrient.vertical,
+            variant: 'polar',
+            chartOptions: {
+              seriesStyle: {
+                colorBy: 'data',
+                roundCap: true
+              }
+            }
+          },
+          dimensions: [{}],
+          measures: [{}]
+        },
+        icon: 'column-polar-stacked.jpg'
       },
       {
         label: NxChartType.Histogram,
@@ -511,6 +532,20 @@ export const CHARTS: ChartGroup[] = [
           dimensions: [],
           measures: [{}, {}, {}]
         }
+      },
+      {
+        label: NxChartType.Radar,
+        icon: 'radar.jpg',
+        value: {
+          chartType: {
+            type: NxChartType.Radar,
+            chartOptions: {
+              seriesStyle: {}
+            }
+          },
+          dimensions: [{}],
+          measures: [{}]
+        }
       }
     ]
   },
@@ -606,12 +641,22 @@ export const CHARTS: ChartGroup[] = [
   }
 ]
 
+/**
+ * Find Chart Type by type/variant/orient
+ * @param chartType 
+ * @returns 
+ */
 export function getChartType(chartType: ChartType) {
   for(const group of CHARTS) {
     for(const chart of group.charts) {
-      if(chart.value.chartType.type === chartType?.type) {
+      if(chart.value.chartType.type === chartType?.type &&
+        (chartType?.variant ? chart.value.chartType.variant === chartType?.variant : true) &&
+        (chartType?.orient ? chart.value.chartType.orient === chartType?.orient : true)
+        ) {
         return chart
       }
     }
   }
+
+  throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)
 }

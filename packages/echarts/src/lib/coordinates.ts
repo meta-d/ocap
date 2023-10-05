@@ -34,9 +34,6 @@ export function gatherCoordinates(coordinates: ICoordinate[], type: 'pie' | stri
   }
 
   coordinates.forEach((coordinate, gridIndex) => {
-    // if (coordinate.title) {
-    //   echartsOptions.title.push(coordinate.title)
-    // }
     echartsOptions.grid.push(coordinate.grid)
 
     coordinate.datasets.forEach(({ dataset, series }) => {

@@ -1,3 +1,4 @@
+import { FORMLY_ROW } from '@metad/story/designer'
 import { ItemStyle } from './common'
 
 export function GeoCapacity(className: string, I18N) {
@@ -17,10 +18,10 @@ export function GeoCapacity(className: string, I18N) {
           key: 'geo',
           hideExpression: `!field.parent.model || !field.parent.model.` + showKey,
           templateOptions: {
-            label: I18N.Geo?.Title ?? 'Geo',
+            label: I18N?.Geo?.Title ?? 'Geo',
             keyShow: showKey
           },
-          fieldGroupClassName: 'ngm-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [ItemStyle(className, I18N)]
         }
       ]

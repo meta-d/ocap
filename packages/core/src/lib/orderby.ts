@@ -14,7 +14,7 @@ export enum OrderDirection {
 /**
  * 对非结构化的 orderby 字符串进行解构, 支持中间有空格的字段名称
  * 
- * `"[ZCALMONTH                     Z_H_MONTH_01] desc"` to `["[ZCALMONTH                     Z_H_MONTH_01]", "DESC"]`
+ * `"[Calendar] desc"` to `["[Calendar]", "DESC"]`
  */
 export function deconstructOrderby(orderby: OrderBy): {
   by: string

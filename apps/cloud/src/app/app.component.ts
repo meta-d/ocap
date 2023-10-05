@@ -67,7 +67,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     combineLatest([this.appService.isMobile$, this.store.preferredTheme$])
     .subscribe(([isMobile, preferredTheme]) => {
-      const [primaryTheme, primaryColor] = preferredTheme.split('-')
+      const [primaryTheme, primaryColor] = (preferredTheme ?? '').split('-')
       preferredTheme = preferredTheme ?? ThemesEnum.default
       const theme = `ngm-theme-${preferredTheme} ${primaryTheme} ${preferredTheme}`
       // for body

@@ -8,6 +8,7 @@
   <span>
     <b>{{ recordType }}</b>
     {{ 'COMPONENTS.COUNTDOWN_CONFIRMATION.WAS' | translate: {Default: 'Waiting seconds'} }}
+    {{ countDownConfig.leftTime }}
     {{
       (isEnabled ? ('COMPONENTS.COUNTDOWN_CONFIRMATION.ENABLED' | translate: {Default: 'Enabled'}) : ('COMPONENTS.COUNTDOWN_CONFIRMATION.DISABLED' | translate: {Default: 'Disabled'})) +
         '?'

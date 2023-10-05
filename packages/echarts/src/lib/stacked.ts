@@ -27,7 +27,7 @@ import { IDataset, SeriesComponentType, totalMeasureName } from './types'
  * * Calculate two-dimensional array for DateSet
  * * Calculate ECharts component config for series of category2 dimension members
  * * Tooltip ?
- * 
+ *
  * @param results
  * @param measure
  * @param chartAnnotation
@@ -66,12 +66,18 @@ export function stackedForMeasure(
       ...measure,
       member: category2Value,
       id: category2Value.value + measure.measure,
-      name: category2Value.label + measure.measure,
-      caption: category2Value.label,
+      name: category2Value.caption + measure.measure,
+      caption: category2Value.caption,
       property: measureProperty,
       measure: getPropertyMeasure(measure),
       formatting: measure.formatting,
-      seriesStack: category2.role === ChartDimensionRoleType.Stacked ? getPropertyMeasure(measure) : null,
+      seriesStack: (
+        category2.role
+          ? category2.role === ChartDimensionRoleType.Stacked
+          : chartAnnotation.chartType.variant === 'stacked'
+      )
+        ? getPropertyMeasure(measure)
+        : null,
       seriesLayoutBy: 'row',
       valueAxisIndex,
       dataMin,
@@ -82,9 +88,9 @@ export function stackedForMeasure(
   })
 
   const categoryValueTexts = new Map()
-  categoryValues.forEach(({ value, label }) => categoryValueTexts.set(value, label))
+  categoryValues.forEach(({ value, caption }) => categoryValueTexts.set(value, caption))
   const category2ValueTexts = new Map()
-  category2Values.forEach(({ value, label }) => category2ValueTexts.set(value, label))
+  category2Values.forEach(({ value, caption }) => category2ValueTexts.set(value, caption))
   const tooltip = getEChartsMatrixTooltip(
     options?.tooltip,
     getChartCategory(chartAnnotation),
@@ -112,11 +118,11 @@ export function stackedForMeasure(
 
 /**
  * 将一维数组 items 按照 category 和 category2 维度, 与 measure 为单元格转换成二位数组
- * 
+ *
  * Capacities:
  * * Sort category dimension by member key and order in dimension
  * * Sort category2 dimension by cell measure value of category last member column and order in measure
- * 
+ *
  * @param items
  * @param entityType
  * @param category
@@ -143,19 +149,25 @@ export function getMatrixForMeasure(
     itemsMap.set(`${item[categoryName]}/${item[category2Name]}`, item)
   })
 
-  let categoryValues = uniqBy(items, categoryName).map((x) => ({
-    value: x[categoryName],
-    label: x[categoryTextName],
-    caption: x[categoryTextName],
-  } as IMember))
+  let categoryValues = uniqBy(items, categoryName).map(
+    (x) =>
+      ({
+        value: x[categoryName],
+        label: x[categoryTextName],
+        caption: x[categoryTextName]
+      } as IMember)
+  )
   if (category.order) {
     categoryValues = orderBy(categoryValues, ['value'], [lowerCase(category.order) as 'asc' | 'desc'])
   }
-  let category2Values = uniqBy(items, category2Name).map((x) => ({
-    value: x[category2Name],
-    label: x[category2TextName],
-    caption: x[category2TextName],
-  } as IMember))
+  let category2Values = uniqBy(items, category2Name).map(
+    (x) =>
+      ({
+        value: x[category2Name],
+        label: x[category2TextName],
+        caption: x[category2TextName]
+      } as IMember)
+  )
   if (measure.order) {
     const lastCategory = categoryValues[categoryValues.length - 1]
     category2Values = sortBy(category2Values, (member) => {
@@ -169,7 +181,7 @@ export function getMatrixForMeasure(
       category2Values = category2Values.reverse()
     }
   }
-  
+
   const dataset = category2Values.map(({ value: category2Value }, i) => {
     const values = categoryValues.map(({ value: categoryValue }) => {
       const item = itemsMap.get(`${categoryValue}/${category2Value}`)
@@ -200,7 +212,7 @@ export function getMatrixForMeasure(
       // ]
     ],
     dataMin: minBy(items, (o) => o[measureName])?.[measureName],
-    dataMax: maxBy(items, (o) => o[measureName])?.[measureName],
+    dataMax: maxBy(items, (o) => o[measureName])?.[measureName]
   }
 }
 

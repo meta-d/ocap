@@ -1,3 +1,5 @@
+import { FORMLY_ROW } from "@metad/story/designer"
+
 export function TitleCapacity(className: string, I18N) {
   const showKey = '__showTitle__'
   return [
@@ -15,17 +17,17 @@ export function TitleCapacity(className: string, I18N) {
           key: 'title',
           hideExpression: `!field.parent.model || !field.parent.model.` + showKey,
           props: {
-            label: I18N.Title?.Title ?? 'Title',
+            label: I18N?.Title?.Title ?? 'Title',
             keyShow: showKey
           },
-          fieldGroupClassName: 'ngm-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             {
               className,
               key: 'text',
               type: 'input',
               props: {
-                label: I18N.Title?.Text ?? 'Text',
+                label: I18N?.Title?.Text ?? 'Text',
               }
             },
             {
@@ -33,7 +35,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'link',
               type: 'input',
               props: {
-                label: I18N.Title?.Link ?? 'Link',
+                label: I18N?.Title?.Link ?? 'Link',
               }
             },
             {
@@ -41,7 +43,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'subtext',
               type: 'input',
               props: {
-                label: I18N.Title?.SubText ?? 'SubText',
+                label: I18N?.Title?.SubText ?? 'SubText',
               }
             },
             {
@@ -49,7 +51,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'sublink',
               type: 'input',
               props: {
-                label: I18N.Title?.SubLink ?? 'SubLink',
+                label: I18N?.Title?.SubLink ?? 'SubLink',
               }
             },
 
@@ -58,7 +60,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'left',
               type: 'input',
               props: {
-                label: I18N.Title?.Left ?? 'Left',
+                label: I18N?.Title?.Left ?? 'Left',
               }
             },
             {
@@ -66,7 +68,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'top',
               type: 'input',
               props: {
-                label: I18N.Title?.Top ?? 'Top',
+                label: I18N?.Title?.Top ?? 'Top',
               }
             },
             {
@@ -74,7 +76,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'right',
               type: 'input',
               props: {
-                label: I18N.Title?.Right ?? 'Right',
+                label: I18N?.Title?.Right ?? 'Right',
               }
             },
             {
@@ -82,7 +84,7 @@ export function TitleCapacity(className: string, I18N) {
               key: 'bottom',
               type: 'input',
               props: {
-                label: I18N.Title?.Bottom ?? 'Bottom',
+                label: I18N?.Title?.Bottom ?? 'Bottom',
               }
             },
             {
@@ -90,12 +92,12 @@ export function TitleCapacity(className: string, I18N) {
               key: 'textAlign',
               type: 'select',
               props: {
-                label: I18N.Common?.TextAlign?.Title ?? 'Title',
+                label: I18N?.Common?.TextAlign?.Title ?? 'Title',
                 options: [
-                  { value: 'auto', label: I18N.Common?.TextAlign?.Auto ?? 'Auto' },
-                  { value: 'left', label: I18N.Common?.TextAlign?.Left ?? 'Left' },
-                  { value: 'right', label: I18N.Common?.TextAlign?.Right ?? 'Right' },
-                  { value: 'center', label: I18N.Common?.TextAlign?.Center ?? 'Center' }
+                  { value: 'auto', label: I18N?.Common?.TextAlign?.Auto ?? 'Auto' },
+                  { value: 'left', label: I18N?.Common?.TextAlign?.Left ?? 'Left' },
+                  { value: 'right', label: I18N?.Common?.TextAlign?.Right ?? 'Right' },
+                  { value: 'center', label: I18N?.Common?.TextAlign?.Center ?? 'Center' }
                 ]
               }
             }

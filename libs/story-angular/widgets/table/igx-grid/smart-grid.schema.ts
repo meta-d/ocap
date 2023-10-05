@@ -47,9 +47,6 @@ export class SmartGridSettingsSchemaService extends PivotGridSchemaService {
       this.selectionVariant as any
     )
 
-    dataSettings.wrappers = ['expansion']
-    dataSettings.templateOptions.enableSelectFields = true
-
     return [
       {
         wrappers: ['panel'],
@@ -71,7 +68,6 @@ export class SmartGridSettingsSchemaService extends PivotGridSchemaService {
 
       {
         key: 'options',
-        wrappers: ['expansion'],
         templateOptions: {
           label: 'Grid Options',
         },

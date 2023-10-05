@@ -60,10 +60,10 @@
   </cdk-virtual-scroll-viewport>
 
   <div *ngIf="indicatorDataSource.isEmpty()" class="pac-indicator-market__empty">
-    <div class="signal text-2xl font-notoColorEmoji">🛒</div>
+    <div class="signal font-notoColorEmoji">🛒</div>
     <span>{{ 'IndicatorApp.Empty' | translate: {Default: 'Empty'} }}, 
       {{ 'IndicatorApp.Goto' | translate: {Default: 'Please go to'} }}
-      <a [routerLink]="['/indicator/market']" >{{ 'IndicatorApp.IndicatorMarket' | translate: {Default: 'Indicator Market'} }}</a>
+      <a class="underline" [routerLink]="['/indicator/market']" >{{ 'IndicatorApp.IndicatorMarket' | translate: {Default: 'Indicator Market'} }}</a>
       {{ 'IndicatorApp.ApplyIndicatorPermission' | translate: {Default: 'apply indicator permission'} }}
     </span>
   </div>
@@ -80,7 +80,7 @@
   <div class="pac-indicator-app__options flex flex-col gap-2 p-2">
 
     <label>{{ 'IndicatorApp.TimeGranularity' | translate: {Default: 'Time Granularity'} }}</label>
-    <mat-button-toggle-group ngmAppearance="outline" color="accent" displayDensity="cosy"
+    <mat-button-toggle-group ngmAppearance="hero" color="accent" displayDensity="cosy"
       [(ngModel)]="timeGranularity" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
       <mat-button-toggle [value]="TIME_GRANULARITY.Year">
         {{ 'COMPONENTS.DATE_PICKER.Year' | translate: {Default: 'Year'} }}

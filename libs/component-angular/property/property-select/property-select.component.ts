@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -9,7 +9,6 @@ import {
   DataSettings,
   Dimension,
   DisplayBehaviour,
-  EntitySet,
   EntityType,
   FilterSelectionType,
   getEntityProperty,
@@ -233,7 +232,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     zeroSuppression: new FormControl<boolean>(true),
     formatting: new FormControl(),
     parameter: new FormControl(),
-    order: new FormControl<OrderDirection>(null)
+    order: new FormControl<OrderDirection>(null),
   })
   // 初始值
   private readonly _formValue = this.formGroup.value
@@ -406,7 +405,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       })
     )
 
-  public readonly selectTrigger$ = combineLatest([
+  private readonly selectTrigger$ = combineLatest([
     this.property$.pipe(startWith(null)),
     this.hierarchy$.pipe(startWith(null)),
     this.level$.pipe(startWith(null)),
@@ -439,6 +438,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       return property
     })
   )
+
+  public readonly selectTrigger = toSignal(this.selectTrigger$)
 
   get caption() {
     return this.formGroup.get('caption').value
@@ -582,6 +583,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     return this.capacities?.includes(PropertyCapacity.Order)
   }
 
+  showMore = signal(false)
+
   private onChange: any
   private onTouched: any
 
@@ -639,8 +642,12 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
         })
       })
 
-    // 订阅 formGroup 发回给双向绑定
-    this.formGroup.valueChanges.pipe(untilDestroyed(this)).subscribe((value) => {
+    // subscribe formGroup to export value
+    this.formGroup.valueChanges.pipe(
+      // Update value when property is initialized
+      filter(() => !!this.property$.value),
+      untilDestroyed(this)
+    ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {
         value = {
           ...value,

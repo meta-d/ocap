@@ -56,7 +56,7 @@ export function DataZoomAttributes(className: string, I18N) {
       key: 'filterMode',
       type: 'select-inline',
       props: {
-        label: dataZoomI18n?.FILTER_MODE,
+        label: dataZoomI18n?.FILTER_MODE ?? 'Filter Mode',
         options: [
           { value: null, label: I18N?.Common?.None ?? 'Default' },
           { value: 'filter', label: 'Filter' },
@@ -119,7 +119,7 @@ export function DataZoomAttributes(className: string, I18N) {
       key: 'startValue',
       type: 'input-inline',
       props: {
-        label: dataZoomI18n?.START_VALUE
+        label: dataZoomI18n?.START_VALUE ?? 'Start Value'
       },
       expressions: {
         hide: `!model || model.start !== null && model.start !== undefined`
@@ -130,7 +130,7 @@ export function DataZoomAttributes(className: string, I18N) {
       key: 'endValue',
       type: 'input-inline',
       props: {
-        label: dataZoomI18n?.END_VALUE
+        label: dataZoomI18n?.END_VALUE ?? 'End Value'
       },
       expressions: {
         hide: `!model || model.end !== null && model.end !== undefined`
@@ -141,7 +141,7 @@ export function DataZoomAttributes(className: string, I18N) {
       key: 'minSpan',
       type: 'slider',
       props: {
-        label: dataZoomI18n?.MIN_SPAN,
+        label: dataZoomI18n?.MIN_SPAN ?? 'Min Span',
         type: 'number',
         placeholder: '0 ~ 100',
         thumbLabel: true,
@@ -152,7 +152,7 @@ export function DataZoomAttributes(className: string, I18N) {
       key: 'maxSpan',
       type: 'slider',
       props: {
-        label: dataZoomI18n?.MAX_SPAN,
+        label: dataZoomI18n?.MAX_SPAN ?? 'Max Span',
         type: 'number',
         placeholder: '0 ~ 100',
         thumbLabel: true,
@@ -200,9 +200,9 @@ export function DataZoomAttributes(className: string, I18N) {
         label: dataZoomI18n?.PreventDefaultMouseMove ?? 'Prevent Default Mouse Move'
       }
     },
-    MouseMode('zoomOnMouseWheel', dataZoomI18n?.zoomOnMouseWheel ?? 'zoomOnMouseWheel', className, dataZoomI18n),
-    MouseMode('moveOnMouseMove', dataZoomI18n?.moveOnMouseMove ?? 'moveOnMouseMove', className, dataZoomI18n),
-    MouseMode('moveOnMouseWheel ', dataZoomI18n?.moveOnMouseWheel ?? 'moveOnMouseWheel ', className, dataZoomI18n)
+    MouseMode('zoomOnMouseWheel', dataZoomI18n?.zoomOnMouseWheel ?? 'Zoom On Mouse Wheel', className, dataZoomI18n),
+    MouseMode('moveOnMouseMove', dataZoomI18n?.moveOnMouseMove ?? 'Move on Mouse Move', className, dataZoomI18n),
+    MouseMode('moveOnMouseWheel ', dataZoomI18n?.moveOnMouseWheel ?? 'Move on Mouse Wheel ', className, dataZoomI18n)
   ]
 }
 

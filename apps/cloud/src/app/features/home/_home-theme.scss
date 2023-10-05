@@ -1,21 +1,17 @@
 @use 'sass:map';
 @use 'sass:color';
 @use '@angular/material' as mat;
-@use './insight/insight-theme' as insight;
 @use './dashboard/dashboard-theme' as dashboard;
 
 @mixin color($theme) {
-  @include insight.color($theme);
   @include dashboard.color($theme);
 }
 
 @mixin typography($theme) {
-  @include insight.typography($theme);
   @include dashboard.typography($theme);
 }
 
 @mixin density($theme) {
-  @include insight.density($theme);
   @include dashboard.density($theme);
 }
 

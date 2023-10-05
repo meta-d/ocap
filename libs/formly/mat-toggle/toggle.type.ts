@@ -8,11 +8,11 @@ interface ToggleProps extends FormlyFieldProps {
 }
 
 export interface FormlyToggleFieldConfig extends FormlyFieldConfig<ToggleProps> {
-  type: 'toggle' | Type<FormlyFieldToggle>;
+  type: 'toggle' | Type<NgmFormlyToggleComponent>;
 }
 
 @Component({
-  selector: 'formly-field-mat-toggle',
+  selector: 'ngm-formly-mat-toggle',
   template: `
     <mat-slide-toggle class="text-sm"
       [id]="id"
@@ -29,7 +29,7 @@ export interface FormlyToggleFieldConfig extends FormlyFieldConfig<ToggleProps> 
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['toggle.type.scss']
 })
-export class FormlyFieldToggle extends FieldType<FieldTypeConfig<ToggleProps>> {
+export class NgmFormlyToggleComponent extends FieldType<FieldTypeConfig<ToggleProps>> {
   @ViewChild(MatSlideToggle, { static: true }) slideToggle!: MatSlideToggle;
   override defaultOptions = {
     props: {

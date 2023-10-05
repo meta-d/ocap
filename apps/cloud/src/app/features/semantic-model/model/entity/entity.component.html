@@ -1,4 +1,4 @@
-<mat-toolbar class="pac-nav-toolbar flex" displayDensity="compact">
+<div class="pac-nav-toolbar w-full flex p-1" displayDensity="compact">
     <button mat-icon-button displayDensity="cosy" (click)="drawer.toggle()">
         <mat-icon fontSet="material-icons-round">segment</mat-icon>
     </button>
@@ -42,7 +42,7 @@
             <span *ngIf="(isMobile$ | async)==false">{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
         </div>
     </button>
-</mat-toolbar>
+</div>
 
 <mat-drawer-container class="flex-1" autosize [hasBackdrop]="false">
     <mat-drawer #designerDrawer class="ngm-story__designer-drawer mat-elevation-z"
@@ -52,7 +52,7 @@
         [opened]="detailsOpen"
         (openedChange)="onDesignerDrawerChange($event)"
     >
-        <ngm-settings-panel class="pac-model__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+        <ngm-settings-panel class="pac-model__settings-container"
             liveMode
             (opened)="detailsOpen=true"
         >

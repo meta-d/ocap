@@ -1,0 +1,34 @@
+:host {
+  --mat-expansion-header-text-size: 12px;
+  @apply flex-1 flex;
+
+  .ngm-property-select {
+    flex: 1;
+  }
+}
+
+.ngm-formly__remove {
+  visibility: hidden;
+}
+
+.ngm-property-select:hover {
+  .ngm-formly__remove {
+    visibility: visible;
+  }
+}
+
+.ngm-chart-property__card {
+  @apply p-2 flex flex-col bg-white rounded-lg;
+}
+.ngm-chart-property__card-title {
+  @apply text-sm font-semibold;
+}
+
+::ng-deep {
+  .ngm-chart-property__palette-trigger.mat-mdc-menu-trigger {
+    @apply my-2;
+    .mdc-button__label {
+      @apply w-full;
+    }
+  }
+}

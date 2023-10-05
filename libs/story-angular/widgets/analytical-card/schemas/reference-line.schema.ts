@@ -1,40 +1,44 @@
-import { Injectable, Injector } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { ReferenceLineAggregation, ReferenceLineType, ReferenceLineValueType } from '@metad/ocap-core'
-import { BaseDesignerSchemaService, BaseSchemaState } from '@metad/story/designer'
-import { map, Observable } from 'rxjs'
+import { DesignerSchema, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { TranslateService } from '@ngx-translate/core'
+import { BehaviorSubject, Observable, map } from 'rxjs'
 
 @Injectable()
-export class ReferenceLineSchemaService extends BaseDesignerSchemaService<BaseSchemaState> {
-  public readonly storyDesigner$ = this.translate.stream('STORY_DESIGNER')
-
-  constructor(public injector: Injector) {
-    super(injector)
+export class ReferenceLineSchemaService implements DesignerSchema<any> {
+  protected translate = inject(TranslateService)
+  get model() {
+    return this.model$.value
   }
+  set model(value) {
+    this.model$.next(value)
+  }
+  private readonly model$ = new BehaviorSubject<any>(null)
+
+  public readonly storyDesigner$ = this.translate.stream('Story.Widgets')
 
   getTitle(): Observable<string> {
     return this.storyDesigner$.pipe(
-      map((STORY_DESIGNER) => STORY_DESIGNER?.BUILDER?.CHART?.ReferenceLine?.Title ?? 'Create Reference Lines')
+      map((i18n) => i18n?.CHART?.ReferenceLine?.Title ?? 'Create Reference Lines')
     )
   }
 
   getSchema() {
     return this.storyDesigner$.pipe(
-      map((STORY_DESIGNER) => STORY_DESIGNER?.BUILDER?.CHART?.ReferenceLine),
+      map((i18n) => i18n?.CHART?.ReferenceLine),
       map((ReferenceLine) => {
-        const className = 'ngm-formly__col ngm-formly__col-6'
+        const className = FORMLY_W_1_2
         return [
           {
             key: 'referenceLines',
-            wrappers: ['panel'],
-            type: 'array-tabs',
-            templateOptions: {
-              label: ReferenceLine?.ReferenceLine ?? 'Reference Line',
+            type: 'array',
+            props: {
               padding: true,
               labelField: 'label',
               removeLabel: ReferenceLine?.removeLabel ?? 'Remove'
             },
             fieldArray: {
-              fieldGroupClassName: 'ngm-formly__row',
+              fieldGroupClassName: FORMLY_ROW,
               fieldGroup: [
                 {
                   className,

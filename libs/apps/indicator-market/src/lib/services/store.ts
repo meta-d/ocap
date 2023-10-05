@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core'
-import { IBusinessAreaUser, IComment, IFavorite, ISemanticModel } from '@metad/contracts'
+import { BusinessType, IBusinessAreaUser, IComment, IFavorite, ISemanticModel } from '@metad/contracts'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ComponentStore } from '@metad/store'
 import { createEntityAdapter, EntityAdapter, EntityState, Update } from '@ngrx/entity'
 import {
   BusinessAreasService,
-  BusinessType,
   convertIndicatorResult,
   convertNewSemanticModelResult,
   FavoritesService,
@@ -17,6 +16,7 @@ import { assign, includes, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
 import { combineLatest, firstValueFrom, Observable, Subject } from 'rxjs'
 import { concatMap, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorState, TagEnum } from '../types'
+
 
 type DataSources = {
   [id: string]: {

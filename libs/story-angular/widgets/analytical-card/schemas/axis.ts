@@ -98,7 +98,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'position',
           type: 'select',
           props: {
-            label: I18N.CATEGORY_AXIS?.Position ?? 'Position',
+            label: I18N?.CATEGORY_AXIS?.Position ?? 'Position',
             options: [
               { value: null, label: 'None' },
               { value: 'top', label: 'Top' },
@@ -111,7 +111,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'offset',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.Offset ?? 'Offset',
+            label: I18N?.CATEGORY_AXIS?.Offset ?? 'Offset',
             type: 'number'
           }
         },
@@ -121,7 +121,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'showName',
           type: 'toggle',
           props: {
-            label: I18N.CATEGORY_AXIS?.ShowName ?? 'Show Name'
+            label: I18N?.CATEGORY_AXIS?.ShowName ?? 'Show Name'
           }
         },
 
@@ -131,7 +131,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'name',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.Name ?? 'Name'
+            label: I18N?.CATEGORY_AXIS?.Name ?? 'Name'
           }
         },
         {
@@ -140,7 +140,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'nameLocation',
           type: 'select',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameLocation ?? 'Name Location',
+            label: I18N?.CATEGORY_AXIS?.NameLocation ?? 'Name Location',
             options: [
               { value: null, label: 'None' },
               { value: 'start', label: 'Start' },
@@ -155,7 +155,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'nameGap',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameGap ?? 'Name Gap',
+            label: I18N?.CATEGORY_AXIS?.NameGap ?? 'Name Gap',
             type: 'number'
           }
         },
@@ -165,7 +165,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'nameRotate',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameRotate ?? 'Name Rotate',
+            label: I18N?.CATEGORY_AXIS?.NameRotate ?? 'Name Rotate',
             type: 'number'
           }
         },
@@ -174,7 +174,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'inverse',
           type: 'checkbox',
           props: {
-            label: I18N.CATEGORY_AXIS?.Inverse ?? 'Inverse'
+            label: I18N?.CATEGORY_AXIS?.Inverse ?? 'Inverse'
           }
         },
         {
@@ -182,7 +182,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'boundaryGap',
           type: 'checkbox',
           props: {
-            label: I18N.CATEGORY_AXIS?.BoundaryGap ?? 'Boundary Gap'
+            label: I18N?.CATEGORY_AXIS?.BoundaryGap ?? 'Boundary Gap'
           }
         },
         {
@@ -190,7 +190,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'min',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.Min ?? 'Min'
+            label: I18N?.CATEGORY_AXIS?.Min ?? 'Min'
           }
         },
         {
@@ -198,7 +198,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'max',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.Max ?? 'Max'
+            label: I18N?.CATEGORY_AXIS?.Max ?? 'Max'
           }
         },
         {
@@ -206,7 +206,7 @@ export function CategoryAxis(className: string, I18N?) {
           key: 'silent',
           type: 'checkbox',
           props: {
-            label: I18N.CATEGORY_AXIS?.Silent ?? 'Silent'
+            label: I18N?.CATEGORY_AXIS?.Silent ?? 'Silent'
           }
         }
       ]
@@ -310,7 +310,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'show',
           type: 'checkbox',
           props: {
-            label: I18N.VALUE_AXIS?.SHOW ?? 'Show'
+            label: I18N?.VALUE_AXIS?.SHOW ?? 'Show'
           }
         },
         {
@@ -318,7 +318,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'showName',
           type: 'toggle',
           props: {
-            label: I18N.CATEGORY_AXIS?.ShowName ?? 'Show Name'
+            label: I18N?.CATEGORY_AXIS?.ShowName ?? 'Show Name'
           }
         },
 
@@ -328,7 +328,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'name',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.Name ?? 'Name'
+            label: I18N?.CATEGORY_AXIS?.Name ?? 'Name'
           }
         },
         {
@@ -337,7 +337,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'nameLocation',
           type: 'select',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameLocation ?? 'Name Location',
+            label: I18N?.CATEGORY_AXIS?.NameLocation ?? 'Name Location',
             options: [
               { value: null, label: 'None' },
               { value: 'start', label: 'Start' },
@@ -352,7 +352,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'nameGap',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameGap ?? 'Name Gap',
+            label: I18N?.CATEGORY_AXIS?.NameGap ?? 'Name Gap',
             type: 'number'
           }
         },
@@ -362,7 +362,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'nameRotate',
           type: 'input',
           props: {
-            label: I18N.CATEGORY_AXIS?.NameRotate ?? 'Name Rotate',
+            label: I18N?.CATEGORY_AXIS?.NameRotate ?? 'Name Rotate',
             type: 'number'
           }
         },
@@ -371,7 +371,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'splitNumber',
           type: 'slider',
           props: {
-            label: I18N.VALUE_AXIS?.SplitNumber ?? 'Split Number',
+            label: I18N?.VALUE_AXIS?.SplitNumber ?? 'Split Number',
             type: 'number',
             placeholder: 'splitNumber',
             thumbLabel: true,
@@ -385,17 +385,17 @@ export function ValueAxis(className: string, I18N?) {
           key: 'scale',
           type: 'checkbox',
           props: {
-            label: I18N.VALUE_AXIS?.ValueScale ?? 'Value Scale',
+            label: I18N?.VALUE_AXIS?.ValueScale ?? 'Value Scale',
             placeholder: 'scale'
           }
         },
         {
-          hideExpression: `!model || model.scale`,
+          hideExpression: `!!model && model.scale`,
           className,
           key: 'min',
           type: 'slider',
           props: {
-            label: I18N.VALUE_AXIS?.Min ?? 'Min',
+            label: I18N?.VALUE_AXIS?.Min ?? 'Min',
             type: 'number',
             placeholder: 'min',
             thumbLabel: true,
@@ -403,12 +403,12 @@ export function ValueAxis(className: string, I18N?) {
           }
         },
         {
-          hideExpression: `!model || model.scale`,
+          hideExpression: `!!model && model.scale`,
           className,
           key: 'max',
           type: 'slider',
           props: {
-            label: I18N.VALUE_AXIS?.Max ?? 'Max',
+            label: I18N?.VALUE_AXIS?.Max ?? 'Max',
             type: 'number',
             placeholder: 'max',
             thumbLabel: true,
@@ -420,7 +420,7 @@ export function ValueAxis(className: string, I18N?) {
           key: 'position',
           type: 'select',
           props: {
-            label: I18N.CATEGORY_AXIS?.Position ?? 'Position',
+            label: I18N?.CATEGORY_AXIS?.Position ?? 'Position',
             options: [
               { value: null, label: I18N?.Common?.None ?? 'None' },
               { value: 'left', label: I18N?.Common?.Left ?? 'Left' },

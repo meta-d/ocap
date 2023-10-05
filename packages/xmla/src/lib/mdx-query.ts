@@ -160,7 +160,7 @@ export function getMDXProperty(entityType: EntityType, path: string | Dimension)
 
   if (isString(path)) {
     const property = getEntityProperty(entityType, path)
-    if (property.role === AggregationRole.measure) {
+    if (property?.role === AggregationRole.measure) {
       return {
         dimension: C_MEASURES,
         members: [path]
@@ -170,7 +170,15 @@ export function getMDXProperty(entityType: EntityType, path: string | Dimension)
         dimension: property.name
       }
     } else {
-      throw new Error(`Can't find entity property for name '${path}'`)
+      const property = getEntityHierarchy(entityType, path)
+      if (property) {
+        return {
+          dimension: property.dimension,
+          hierarchy: property.name,
+        }
+      }
+
+      throw new Error(`Can't find property '${path}' in entity '${entityType.name}'`)
     }
   }
 

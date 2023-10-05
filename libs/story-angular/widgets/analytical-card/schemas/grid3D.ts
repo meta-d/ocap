@@ -1,15 +1,21 @@
-import { AccordionWrappers } from "@metad/story/designer";
-import { AxisLabelAccordionWrappers, AxisLineAccordionWrappers, AxisPointerAccordionWrappers, AxisTickAccordionWrappers, SplitLineAccordionWrappers } from "./axis";
-import { Positions, WidthHeight } from "./common";
+import { AccordionWrappers, FORMLY_ROW } from '@metad/story/designer'
+import {
+  AxisLabelAccordionWrappers,
+  AxisLineAccordionWrappers,
+  AxisPointerAccordionWrappers,
+  AxisTickAccordionWrappers,
+  SplitLineAccordionWrappers
+} from './axis'
+import { Positions, WidthHeight } from './common'
 
 export function Grid3DCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'grid3D',
-      label: I18N.DDD?.GridTitle ?? 'Grid 3D',
+      label: I18N?.DDD?.GridTitle ?? 'Grid 3D',
       fieldGroup: [
         {
-          fieldGroupClassName: 'ngm-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             ...Positions(className, I18N),
             ...WidthHeight(className, I18N),
@@ -18,7 +24,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'boxWidth',
               type: 'input',
               props: {
-                label: I18N.DDD?.BoxWidth ?? 'Box Width',
+                label: I18N?.DDD?.BoxWidth ?? 'Box Width',
                 type: 'number'
               }
             },
@@ -27,7 +33,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'boxHeight',
               type: 'input',
               props: {
-                label: I18N.DDD?.BoxHeight ?? 'Box Height',
+                label: I18N?.DDD?.BoxHeight ?? 'Box Height',
                 type: 'number'
               }
             },
@@ -36,7 +42,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'boxDepth',
               type: 'input',
               props: {
-                label: I18N.DDD?.BoxDepth ?? 'Box Depth',
+                label: I18N?.DDD?.BoxDepth ?? 'Box Depth',
                 type: 'number'
               }
             },
@@ -45,9 +51,9 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'environment',
               type: 'json',
               props: {
-                label: I18N.DDD?.Environment ?? 'Environment',
+                label: I18N?.DDD?.Environment ?? 'Environment',
                 placeholder: 'json',
-                autosize: true,
+                autosize: true
               }
             },
             {
@@ -55,7 +61,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'light',
               type: 'json',
               props: {
-                label: I18N.DDD?.Light ?? 'Light',
+                label: I18N?.DDD?.Light ?? 'Light',
                 placeholder: 'json',
                 autosize: true,
                 autosizeMinRows: 2
@@ -66,7 +72,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'postEffect',
               type: 'json',
               props: {
-                label: I18N.DDD?.PostEffect ?? 'Post Effect',
+                label: I18N?.DDD?.PostEffect ?? 'Post Effect',
                 placeholder: 'json',
                 autosize: true,
                 autosizeMinRows: 2
@@ -77,19 +83,19 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'viewControl',
               type: 'json',
               props: {
-                label: I18N.DDD?.ViewControl ?? 'View Control',
+                label: I18N?.DDD?.ViewControl ?? 'View Control',
                 placeholder: 'json',
                 autosize: true,
                 autosizeMinRows: 2
               }
-            },
+            }
           ]
         },
         {
           key: 'temporalSuperSampling',
           wrappers: ['panel'],
           props: {
-            label: I18N.DDD?.TemporalSuperSampling ?? 'Temporal Super Sampling',
+            label: I18N?.DDD?.TemporalSuperSampling ?? 'Temporal Super Sampling'
           },
           fieldGroup: [
             {
@@ -97,7 +103,7 @@ export function Grid3DCapacity(className: string, I18N) {
               key: 'enable',
               type: 'toggle',
               props: {
-                label: I18N.DDD?.Enable ?? 'Enable',
+                label: I18N?.DDD?.Enable ?? 'Enable',
                 type: 'number'
               }
             }

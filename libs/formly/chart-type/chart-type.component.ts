@@ -1,36 +1,53 @@
-import { ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, TemplateRef, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
-import { cloneDeep, isNil, isString } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
+import { isEqual, isNil, isString, omit } from '@metad/ocap-core'
 import { FieldType } from '@ngx-formly/core'
 import { NgmCopilotService, NxChartType } from '@metad/core'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, firstValueFrom } from 'rxjs'
-import { CHART_TYPES, GeoProjections } from './types'
+import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { TranslateService } from '@ngx-translate/core'
-import { NxSettingsPanelService } from '@metad/story/designer'
+import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
+import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { CHART_TYPES, GeoProjections } from './types'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-formly-chart-type',
   templateUrl: './chart-type.component.html',
-  styleUrls: ['chart-type.component.scss']
+  styleUrls: ['chart-type.component.scss'],
+  providers: [
+    {
+      provide: STORY_DESIGNER_SCHEMA,
+      useClass: ChartOptionsSchemaService
+    },
+  ]
 })
 export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   @HostBinding('class.pac-formly-chart-type') readonly _hostClass = true
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NxChartType = NxChartType
-  GeoProjections = GeoProjections
+  GeoProjections = [
+    {
+      key: null,
+      caption: '--'
+    },
+    ...GeoProjections.map((geoProjection) => ({
+      key: geoProjection,
+      caption: geoProjection
+    }))
+  ]
 
-  private readonly _dialog = inject(MatDialog)
   private readonly formlyArray? = inject(MetadFormlyArrayComponent,{ optional: true })
-  private readonly translateService = inject(TranslateService)
-  private readonly settingsService = inject(NxSettingsPanelService)
+  private readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
+  private copilotService = inject(NgmCopilotService)
+
+  @ViewChild('mapTemp') mapTemplate: TemplateRef<unknown>
 
   ORIENTS = [
     { value: 'horizontal', label: 'Horizontal', icon: 'align_horizontal_left' },
@@ -48,7 +65,8 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   VARIANTS = {
     Bar: [
       { value: null, label: 'None' },
-      { value: 'polar', label: 'Polar' }
+      { value: 'polar', label: 'Polar' },
+      { value: 'stacked', label: 'Stacked' },
     ],
     Waterfall: [
       {
@@ -78,14 +96,6 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     ]
   }
 
-  private copilotService = inject(NgmCopilotService)
-
-  @ViewChild('mapTemp') mapTemplate: TemplateRef<unknown>
-
-  get chartType() {
-    return this.chartTypeForm.value
-  }
-
   chartTypeForm = new FormGroup({
     name: new FormControl(null),
     type: new FormControl(null),
@@ -101,10 +111,10 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     return this.chartTypeForm.get('type') as FormControl
   }
   get type() {
-    return this.chartType?.type
+    return this.chartType()?.type
   }
   get typeLabel() {
-    return this.getChartType(this.chartType?.type)?.label
+    return this.getChartType(this.chartType()?.type)?.label
   }
 
   chartTypeGroups = CHART_TYPES
@@ -128,6 +138,15 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     this.chartTypeForm.patchValue({ scripts: value })
   }
 
+  get chartOptions() {
+    return this.chartTypeForm.value?.chartOptions
+  }
+  set chartOptions(value) {
+    this.chartTypeForm.patchValue({
+      chartOptions: value
+    })
+  }
+
   // Form for geomap type
   mapFormGroup = new FormGroup({
     map: new FormControl(null),
@@ -141,8 +160,10 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     return this.field.props?.['removable']
   }
 
-  @HostBinding('class.pac-formly-chart-type__custom-code')
-  showCustomCode = false
+  showMore = signal(false)
+  showCustomCode = signal(false)
+
+  chartType = toSignal(this.chartTypeForm.valueChanges.pipe(map((value) => omit(value, 'chartOptions')), distinctUntilChanged(isEqual)))
 
   prompt = ''
   answering = false
@@ -153,6 +174,13 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     theme: 'vs',
     language: 'javascript',
     automaticLayout: true
+  }
+
+  constructor() {
+    super()
+    effect(() => {
+      this.schema.chartType = this.chartType()
+    }, {allowSignalWrites: true})
   }
 
   ngOnInit(): void {
@@ -167,13 +195,8 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     })
   }
 
-  async openMap() {
-    this.mapFormGroup.patchValue({
-      ...this.field.formControl.value,
-    })
-    
-    const result = await firstValueFrom(this._dialog.open(this.mapTemplate, { panelClass: 'ngm-dialog-container' }).afterClosed())
-    if (result) {
+  confirmMap(ok?: boolean) {
+    if (ok) {
       this.field.formControl.setValue({
         ...this.mapFormGroup.value,
         ...this.chartTypeForm.value
@@ -181,6 +204,7 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     } else {
       this.mapFormGroup.reset()
     }
+    this.mapFormGroup.markAsPristine()
   }
 
   getChartType(type: string) {
@@ -195,27 +219,6 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
       })
     })
     return chart
-  }
-
-  async openChartOptions() {
-    const title = await firstValueFrom(
-      this.translateService.get('FORMLY.PROPERTY_SELECT.ChartOptions', { Default: 'Chart Options' })
-    )
-
-    const result = this.settingsService.openSecondDesigner(
-      'ChartOptions',
-      cloneDeep(this.field.formControl.value),
-      title,
-      true
-    )
-    .pipe(untilDestroyed(this))
-    .subscribe((result) => {
-      if (result) {
-        this.chartTypeForm.patchValue({
-          chartOptions: cloneDeep(result.chartOptions)
-        })
-      }
-    })
   }
 
   killMyself() {

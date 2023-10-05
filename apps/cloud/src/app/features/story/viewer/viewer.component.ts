@@ -12,7 +12,8 @@ import {
   Renderer2,
   ViewChild,
   ViewContainerRef,
-  inject
+  inject,
+  signal
 } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -45,7 +46,8 @@ import { AppService } from '../../../app.service'
 import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { StoryScales, downloadStory } from '../types'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { StoryExplorerModule } from '@metad/story'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -59,6 +61,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
     TranslateModule,
     OcapCoreModule,
     NxStoryModule,
+    StoryExplorerModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-story-viewer',
@@ -109,14 +112,14 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     return this.story?.points?.length > 1
   }
 
-  readonly pageKey$ = this.route.queryParams.pipe(
+  readonly pageKey = toSignal(this.route.queryParams.pipe(
     startWith(this.route.snapshot.queryParams),
     map((queryParams) => queryParams['pageKey'])
-  )
-  readonly widgetKey$ = this.route.queryParams.pipe(
+  ))
+  readonly widgetKey = toSignal(this.route.queryParams.pipe(
     startWith(this.route.snapshot.queryParams),
     map((queryParams) => queryParams['widgetKey'])
-  )
+  ))
   readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark$ = this.appService.isDark$
   public readonly isAuthenticated$ = this.storyService.isAuthenticated$
@@ -125,6 +128,10 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   public readonly scale = toSignal(this.storyService.storyOptions$.pipe(
     map((options) => options?.scale ?? 100)
   ))
+
+  // Story explorer
+  showExplorer = signal(false)
+  explore = signal(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -138,6 +145,12 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   
+  private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
+    this.showExplorer.set(!!params.explore)
+    if (params.explore) {
+      this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
+    }
+  })
   constructor(
     public appService: AppService,
     public storyService: NxStoryService,
@@ -298,6 +311,25 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
 
   resetScalePan() {
     this.storyComponent.resetScalePanState()
+  }
+
+  closeExplorer(event) {
+    this.showExplorer.set(false)
+    this._router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {explore: null, widgetKey: null},
+      queryParamsHandling: 'merge' // remove to replace all query params by provided
+    })
+
+    if (event) {
+      console.log(`Update story widget: ${this.pageKey()}`, event)
+
+      this.storyService.updateWidget({
+        pageKey: this.pageKey(),
+        widgetKey: this.widgetKey(),
+        widget: event
+      })
+    }
   }
 
   @HostListener('document:keydown.escape', ['$event'])

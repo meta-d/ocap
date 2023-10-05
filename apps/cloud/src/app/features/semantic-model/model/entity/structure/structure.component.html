@@ -1,8 +1,8 @@
 <ngm-splitter [type]="SplitterType.Vertical" class="flex-1">
     <ngm-splitter-pane>
-        <div *ngIf="expression$ | async as expression; else tables" class="w-full h-full">
+        <div *ngIf="expression(); else tables" class="w-full h-full">
             <ngm-editor-sql #editor class="w-full h-full"
-                [ngModel]="expression"
+                [ngModel]="expression()"
                 (ngModelChange)="changeExpression($event)"
                 >
             </ngm-editor-sql>
@@ -111,7 +111,7 @@
 </ngm-splitter>
 
 <ng-template #tables>
-<div class="pac-cube-structure-drop w-full h-full"
+<div class="pac-cube-structure-drop w-full"
   cdkDropList
   [cdkDropListData]="tables$ | async"
   (cdkDropListDropped)="drop($event)"

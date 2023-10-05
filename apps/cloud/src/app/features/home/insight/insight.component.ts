@@ -33,6 +33,8 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService } from '../../../@core'
 import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
+import { StoryExplorerModule } from '@metad/story'
+import { QuestionAnswer } from './types'
 
 
 @Component({
@@ -55,7 +57,8 @@ import { InsightService } from './insight.service'
     NxSelectionModule,
     NgmEntityPropertyComponent,
 
-    CopilotEnableComponent
+    CopilotEnableComponent,
+    StoryExplorerModule
   ],
   selector: 'pac-home-insight',
   templateUrl: 'insight.component.html',
@@ -87,7 +90,7 @@ export class InsightComponent {
     return this.insightService.suggestedPrompts
   }
 
-  readonly answers = signal([])
+  readonly answers = signal<QuestionAnswer[]>([])
 
   answering = false
   askController: AbortController
@@ -128,6 +131,9 @@ export class InsightComponent {
   })
 
   showModel = signal(null)
+  // Story explorer
+  showExplorer = signal(false)
+  explore = signal(null)
 
   private promptControlSub = this.promptControl.valueChanges.pipe(takeUntilDestroyed())
     .subscribe(() => (this.insightService.error = ''))
@@ -145,6 +151,9 @@ export class InsightComponent {
   }
   compareWithName(a, b) {
     return a?.name === b?.name
+  }
+  trackByKey(index, item) {
+    return item?.key
   }
 
   setPrompt(prompt: string) {
@@ -207,11 +216,12 @@ export class InsightComponent {
     this.askController = new AbortController()
     this.answering = true
 
-    const _answer = {
+    const _answer  = {
+      key: uuid(),
       title: prompt,
       expanded: true,
       answering: true
-    }
+    } as QuestionAnswer
 
     // Append answer
     this.answers.set([...this.answers(), _answer])
@@ -230,7 +240,7 @@ export class InsightComponent {
         ...answer,
         expanded: true,
         answering: false
-      },
+      } as QuestionAnswer,
       ...this.answers().slice(index + 1)
     ])
 
@@ -289,7 +299,7 @@ export class InsightComponent {
         )
         .onAction()
         .subscribe(() => {
-          this.router.navigate([`/story/${result.storyId}`], {
+          this.router.navigate([`/story/${result.storyId}/edit`], {
             queryParams: {
               pageKey: result.pageKey,
               widgetKey: result.key
@@ -297,6 +307,35 @@ export class InsightComponent {
           })
         })
     }
+  }
+
+  async openExplore(answer) {
+    this.showExplorer.set(true)
+    this.explore.set(answer)
+  }
+
+  closeExplorer(event) {
+    this.showExplorer.set(false)
+    this.updateAnswer(this.explore().key, {
+      ...event,
+      dataSettings: {
+        ...event.dataSettings,
+        selectionVariant: null
+      },
+      slicers: event.dataSettings.selectionVariant?.selectOptions ?? []
+    })
+  }
+
+  updateAnswer(key: string, event: Partial<QuestionAnswer>) {
+    const index = this.answers().findIndex((n) => n.key === key)
+    this.answers.set([
+      ...this.answers().slice(0, index),
+      {
+        ...this.answers()[index],
+        ...event
+      },
+      ...this.answers().slice(index + 1)
+    ])
   }
 }
 

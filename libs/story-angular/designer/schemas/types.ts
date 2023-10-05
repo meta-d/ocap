@@ -1,7 +1,7 @@
+import { NxCoreService, TIME_GRANULARITY_SEQUENCES, TypeAheadType } from '@metad/core'
 import { DisplayDensity, ISelectOption } from '@metad/ocap-angular/core'
 import { DataSource, FilterSelectionType, isNil } from '@metad/ocap-core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
-import { NxCoreService, TIME_GRANULARITY_SEQUENCES, TypeAheadType } from '@metad/core'
 import { Observable, combineLatest, throwError } from 'rxjs'
 import { catchError, map, switchMap, tap } from 'rxjs/operators'
 
@@ -13,6 +13,8 @@ export const FORMLY_W_2_3 = 'ngm-formly__col ngm-formly__col-8'
 export const FORMLY_W_1_2 = 'ngm-formly__col ngm-formly__col-6'
 export const FORMLY_W_NONE = 'ngm-formly__col_none'
 export const FORMLY_ROW = 'ngm-formly__row'
+export const FORMLY_MY_2 = 'ngm-formly__my-2'
+export const FORMLY_GAP_2 = 'ngm-formly__gap-2'
 
 export function AccordionWrappers(
   expansions: {
@@ -22,9 +24,11 @@ export function AccordionWrappers(
     showKey?: string
     expanded?: boolean
     toggleable?: boolean
-  }[]
+  }[],
+  options?: {
+    expandedMulti?: boolean
+  }
 ) {
-
   return [
     ...expansions.map(({ key, showKey }) => ({
       key: showKey ?? `__show${key}__`,
@@ -32,22 +36,15 @@ export function AccordionWrappers(
     })),
     {
       wrappers: ['accordion'],
-      templateOptions: {
-        elevationZ: true
-      },
       props: {
-        elevationZ: true
+        elevationZ: true,
+        expandedMulti: options?.expandedMulti ?? false
       },
       fieldGroup: [
         ...expansions.map(({ key, label, showKey, fieldGroup, expanded, toggleable }) => {
           showKey = showKey ?? `__show${key}__`
           const expansion = {
             key,
-            templateOptions: {
-              label,
-              keyShow: showKey,
-              expanded
-            },
             props: {
               label,
               keyShow: showKey,
@@ -67,6 +64,15 @@ export function AccordionWrappers(
   ]
 }
 
+/**
+ * Provide formly schema for data settings
+ *
+ * @param BUILDER i18n
+ * @param dataSources$
+ * @param dataSource$
+ * @param fieldGroups
+ * @returns
+ */
 export function DataSettingsSchema(
   BUILDER,
   dataSources$: Observable<ISelectOption[]>,
@@ -74,79 +80,88 @@ export function DataSettingsSchema(
   ...fieldGroups
 ) {
   return {
-    key: 'dataSettings',
-    wrappers: ['expansion'],
+    wrappers: ['accordion'],
     props: {
-      label: BUILDER?.DATA_SETTINGS ?? 'Data Settings',
-      required: true,
-      expanded: true
+      elevationZ: true,
     },
     fieldGroup: [
       {
-        fieldGroupClassName: 'ngm-formly__row',
+        key: 'dataSettings',
+        props: {
+          label: BUILDER?.DATA_SETTINGS ?? 'Data Settings',
+          required: true,
+          expanded: true
+        },
         fieldGroup: [
           {
-            key: 'dataSource',
-            type: 'semantic-model',
-            className: CLASS_NAME_COL6,
-            props: {
-              label: BUILDER?.SemanticModel ?? 'Semantic Model',
-              required: true,
-              options: dataSources$
-            }
-          },
-          {
-            key: 'entitySet',
-            type: 'ngm-select',
-            className: CLASS_NAME_COL6,
-            props: {
-              label: BUILDER?.Entity ?? 'Entity',
-              searchable: true,
-              required: true,
-            },
-            expressions: {
-              hide: `!model || !model.dataSource`
-            },
-            hooks: {
-              onInit: (field: FormlyFieldConfig) => {
-                if (!(field.className && field.className.indexOf('formly-loader') > -1)) {
-                  field.className = `${field.className} formly-loader`
+            fieldGroupClassName: FORMLY_ROW,
+            fieldGroup: [
+              {
+                key: 'dataSource',
+                type: 'semantic-model',
+                className: CLASS_NAME_COL6,
+                props: {
+                  label: BUILDER?.SemanticModel ?? 'Semantic Model',
+                  required: true,
+                  options: dataSources$
                 }
-                field.props.options = dataSource$.pipe(
-                  tap(() => {
-                    field.className = field.className.includes('formly-loader') ? field.className : `${field.className} formly-loader`
-                  }),
-                  switchMap((dataSource: DataSource) =>
-                    combineLatest([
-                      dataSource.discoverMDCubes(), //.pipe(tap((options) => console.warn(options))),
-                      dataSource.selectSchema() //.pipe(tap((options) => console.warn(options)))
-                    ])
-                  ),
-                  map(([cubes, schema]) => {
-                    return cubes.map((cube: any) => ({
-                      value: cube.name,
-                      label: cube.caption,
-                      // @todo
-                      icon: schema?.cubes?.find((item) => item.name === cube.name)
-                        ? 'star_outline'
-                        : cube.cubeType === 'VIRTUAL CUBE'
-                        ? 'dataset_linked'
-                        : null,
-                      fontSet: 'material-icons-outlined'
-                    }))
-                  }),
-                  catchError((err) => {
-                    field.className = field.className.split('formly-loader').join('')
-                    return throwError(() => err)
-                  }),
-                  tap(() => (field.className = field.className.split('formly-loader').join('')))
-                )
+              },
+              {
+                key: 'entitySet',
+                type: 'ngm-select',
+                className: CLASS_NAME_COL6,
+                props: {
+                  label: BUILDER?.Entity ?? 'Entity',
+                  searchable: true,
+                  required: true
+                },
+                expressions: {
+                  hide: `!model || !model.dataSource`
+                },
+                hooks: {
+                  onInit: (field: FormlyFieldConfig) => {
+                    if (!(field.className && field.className.indexOf('formly-loader') > -1)) {
+                      field.className = `${field.className} formly-loader`
+                    }
+                    field.props.options = dataSource$.pipe(
+                      tap(() => {
+                        field.className = field.className.includes('formly-loader')
+                          ? field.className
+                          : `${field.className} formly-loader`
+                      }),
+                      switchMap((dataSource: DataSource) =>
+                        combineLatest([
+                          dataSource.discoverMDCubes(), //.pipe(tap((options) => console.warn(options))),
+                          dataSource.selectSchema() //.pipe(tap((options) => console.warn(options)))
+                        ])
+                      ),
+                      map(([cubes, schema]) => {
+                        return cubes.map((cube: any) => ({
+                          value: cube.name,
+                          label: cube.caption,
+                          // @todo
+                          icon: schema?.cubes?.find((item) => item.name === cube.name)
+                            ? 'star_outline'
+                            : cube.cubeType === 'VIRTUAL CUBE'
+                            ? 'dataset_linked'
+                            : null,
+                          fontSet: 'material-icons-outlined'
+                        }))
+                      }),
+                      catchError((err) => {
+                        field.className = field.className.split('formly-loader').join('')
+                        return throwError(() => err)
+                      }),
+                      tap(() => (field.className = field.className.split('formly-loader').join('')))
+                    )
+                  }
+                }
               }
-            }
-          }
+            ]
+          },
+          ...fieldGroups
         ]
-      },
-      ...fieldGroups
+      }
     ]
   }
 }
@@ -174,9 +189,9 @@ export function filterAttributes(className: string, COMMON) {
 
 /**
  * Attributes schema for hierarchy
- * 
- * @param COMMON 
- * @returns 
+ *
+ * @param COMMON
+ * @returns
  */
 export function hierarchyAttributes(COMMON?) {
   return [
@@ -188,7 +203,7 @@ export function hierarchyAttributes(COMMON?) {
         label: COMMON?.initialHierarchyLevel ?? 'Initial Hierarchy Level',
         type: 'number',
         max: 10,
-        thumbLabel: true,
+        thumbLabel: true
       }
     },
     {
@@ -196,7 +211,7 @@ export function hierarchyAttributes(COMMON?) {
       key: 'showAllMember',
       type: 'checkbox',
       props: {
-        label: COMMON?.ShowAllMember ?? 'Show All Member',
+        label: COMMON?.ShowAllMember ?? 'Show All Member'
       }
     }
   ]
@@ -204,7 +219,7 @@ export function hierarchyAttributes(COMMON?) {
 
 export function typeAhead(COMMON) {
   return {
-    fieldGroupClassName: 'ngm-formly__row',
+    fieldGroupClassName: FORMLY_ROW,
     key: 'typeAhead',
     wrappers: ['panel'],
     props: { label: '自动补全' },
@@ -265,7 +280,7 @@ export function SelectionType(className: string, I18N) {
 export function filterOption(className: string, DESIGNER) {
   return [
     {
-      fieldGroupClassName: 'ngm-formly__row',
+      fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [
         SelectionType(className, DESIGNER),
         {
@@ -498,7 +513,7 @@ export function BackgroundProperties(className?: string, TRANSLATE?) {
           {
             value: 'scroll, local',
             label: 'Scroll, Local'
-          },
+          }
         ]
       }
     },
@@ -787,7 +802,7 @@ export function displayDensity(COMMON) {
 export function Appearance(className: string, COMMON) {
   return {
     key: 'appearance',
-    wrappers: ['expansion'],
+    wrappers: ['accordion'],
     props: {
       label: COMMON?.Appearance ?? 'Appearance',
       expanded: true
@@ -799,7 +814,7 @@ export function Appearance(className: string, COMMON) {
 
 export function Appearances(className: string, COMMON) {
   return [
-    displayDensity(COMMON),
+    displayDensity(COMMON)
     // {
     //   className,
     //   key: 'appearance',
