@@ -9,7 +9,7 @@
         (modelChange)="onFormChange(model)">
     </formly-form>
 
-    <div *ngIf="model.preferences?.exposeXmla" class="w-full overflow-auto">
+    <div *ngIf="model.preferences?.exposeXmla" class="w-full overflow-auto mt-2">
         <a [href]="xmlaUrl">{{xmlaUrl}}</a>
     </div>
 </mat-dialog-content>

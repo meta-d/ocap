@@ -1,23 +1,22 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Injectable } from '@angular/core'
-import { IStory, IStoryWidget } from '@metad/contracts'
+import { Injectable, inject } from '@angular/core'
+import { BusinessType, IStory, IStoryWidget } from '@metad/contracts'
 import { hierarchize } from '@metad/ocap-core'
 import { StoryWidget } from '@metad/story/core'
 import { combineLatestWith, map } from 'rxjs'
 import { C_API_STORY_WIDGET } from './constants'
 import { FavoritesService } from './favorite.service'
-import { BusinessType, convertStoryResult, convertStoryWidget, convertStoryWidgetResult } from './types'
+import { convertStoryResult, convertStoryWidget, convertStoryWidgetResult } from './types'
 import { BusinessAreaUserService } from './business-area-user.service'
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class WidgetsService {
-  constructor(
-    private httpClient: HttpClient,
-    private userBusinessAreas: BusinessAreaUserService,
-    private favoritesService: FavoritesService
-  ) {}
+  private httpClient = inject(HttpClient)
+  private userBusinessAreas = inject(BusinessAreaUserService)
+  private favoritesService = inject(FavoritesService)
 
   getAll(relations: Array<string> = []) {
     let params = new HttpParams()

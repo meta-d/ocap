@@ -644,14 +644,14 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
   }
 }
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormlyModule, TranslateModule, ReactiveFormsModule, DesignerWidgetComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-formly-widget-designer',
   template: `
-<div *ngIf="props?.label" class="p-4">{{props.label}}</div>
+<!-- <div *ngIf="props?.label" class="p-4">{{props.label}}</div> -->
 <pac-designer-widget class="ngm-density__compact" [formControl]="$any(formControl)"></pac-designer-widget>`,
   styles: [
     `

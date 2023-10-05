@@ -1226,6 +1226,70 @@
     "Users": {
       "NoMoreOrganizations": "没有更多的组织可添加"
     },
+    "Feature": {
+      "Features": {
+        "FEATURE_HOME": {
+          "Name": "首页",
+          "Description": "首页展示用户常用功能"
+        },
+        "FEATURE_DASHBOARD": {
+          "Name": "仪表板",
+          "Description": "转到仪表板，查看收藏，故事目录，趋势和智慧洞察"
+        },
+        "FEATURE_HOME_CATALOG": {
+          "Name": "目录",
+          "Description": "用户拥有的故事仪表板，指标等目录"
+        },
+        "FEATURE_HOME_TREND": {
+          "Name": "趋势",
+          "Description": "组织内公开的故事仪表板热度趋势"
+        },
+        "FEATURE_HOME_INSIGHT": {
+          "Name": "洞察",
+          "Description": "智慧洞察，使用 AI 辅助数据分析"
+        },
+        "FEATURE_ROLES_PERMISSION": {
+          "Name": "角色权限",
+          "Description": "维护系统角色和权限"
+        },
+        "FEATURE_COPILOT": {
+          "Name": "AI 副驾驶",
+          "Description": "配置和使用 AI 副驾驶功能"
+        },
+        "FEATURE_MODEL": {
+          "Name": "语义模型",
+          "Description": "启用语义模型功能"
+        },
+        "FEATURE_PROJECT": {
+          "Name": "项目",
+          "Description": "启用项目工作空间功能"
+        },
+        "FEATURE_STORY": {
+          "Name": "故事",
+          "Description": "启用故事仪表板功能，制作，分享和浏览故事仪表板"
+        },
+        "FEATURE_INDICATOR": {
+          "Name": "指标",
+          "Description": "启用指标功能，注册，发布和申请查看业务指标数据"
+        },
+        "FEATURE_INDICATOR_REGISTER": {
+          "Name": "指标注册",
+          "Description": "启用指标注册功能，注册数据指标"
+        },
+        "FEATURE_INDICATOR_MARKET": {
+          "Name": "指标市场",
+          "Description": "启用指标市场功能，发布、浏览和申请指标"
+        },
+        "FEATURE_INDICATOR_APP": {
+          "Name": "指标应用",
+          "Description": "启用指标应用程序，浏览有权限的指标"
+        },
+        "FEATURE_BUSINESS_AREA": {
+          "Name": "业务域",
+          "Description": "启用业务域功能，创建和使用业务域"
+        }
+      }
+    },
     "title": {
       "short": "分析云"
     },

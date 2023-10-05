@@ -143,16 +143,15 @@
 
                     <ng-container *ngIf="component().component === ComponentType.AnalyticalCard">
                         <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.ChartOptions' | translate: {Default: 'Chart Options'} }}</div>
-                        <ngm-chart-type-form class="text-sm" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
+                        <ngm-chart-type-form class="text-sm" displayDensity="compact" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
                     </ng-container>
                 </mat-tab>
                 <mat-tab [label]="'Story.Explorer.Display' | translate: {Default: 'Display'} ">
-                    <div *ngIf="component().component === ComponentType.AnalyticalCard">
-                        <ngm-chart-settings class="w-full text-sm" [(ngModel)]="chartSettings"
-                            [chartType]="chartType()"
-                        ></ngm-chart-settings>
-                    </div>
-                    <ngm-grid-settings *ngIf="component().component === ComponentType.AnalyticalGrid" class="w-full text-sm"
+                    <ngm-chart-settings *ngIf="component().component === ComponentType.AnalyticalCard" class="w-full text-sm" displayDensity="compact"
+                        [(ngModel)]="chartSettings"
+                        [chartType]="chartType()"
+                    ></ngm-chart-settings>
+                    <ngm-grid-settings *ngIf="component().component === ComponentType.AnalyticalGrid" class="w-full text-sm" displayDensity="compact"
                         [(ngModel)]="gridSettings"
                     ></ngm-grid-settings>
                 </mat-tab>

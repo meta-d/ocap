@@ -8,7 +8,8 @@
     <div class="text-base flex">{{user()?.email}}</div>
   </div>
 
-  <nav mat-tab-nav-bar class="pac-tab-nav-bar" color="accent" mat-align-tabs="center" mat-stretch-tabs="false" disableRipple class="w-full">
+  <nav mat-tab-nav-bar class="pac-tab-nav-bar w-full" color="accent" mat-align-tabs="center" mat-stretch-tabs="false" disableRipple
+    [tabPanel]="tabPanel">
     <span mat-tab-link [routerLink]="['profile']"
       routerLinkActive #rla="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"

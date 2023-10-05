@@ -125,7 +125,7 @@
   }
 
   .ngm-formly__row {
-    @apply grid grid-cols-12 gap-4;
+    @apply grid grid-cols-12 gap-x-4;
   }
   .ngm-formly__col-12 {
     @apply col-span-12 max-w-full;

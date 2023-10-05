@@ -41,7 +41,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
 
-  @HostBinding('class.ngm-theme-dark.dark') isDarkTheme = true
+  @HostBinding('class.ngm-theme-dark') @HostBinding('class.dark')isDarkTheme = true
   @HostBinding('class.indicator-market-app') isIndicatoryMarketComponent = true
   @HostBinding('class.searching') searching = false
 

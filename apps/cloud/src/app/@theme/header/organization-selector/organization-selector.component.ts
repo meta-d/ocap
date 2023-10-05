@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnInit, inject } from '@angular/core'
+import { Component, DestroyRef, OnInit, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Ability } from '@casl/ability'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { nonNullable } from '@metad/core'
 import { uniqBy } from 'lodash-es'
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs'
@@ -12,7 +12,7 @@ import { AbilityActions, IOrganization, Store, UsersOrganizationsService } from 
 import { OrgAvatarComponent } from '../../../@shared'
 import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 
-@UntilDestroy()
+
 @Component({
   standalone: true,
   selector: 'pac-organization-selector',
@@ -23,6 +23,7 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
   private readonly store = inject(Store)
   private readonly userOrganizationService = inject(UsersOrganizationsService)
   private readonly ability = inject(Ability)
+  private readonly destroyRef = inject(DestroyRef)
 
   selectedOrganization: IOrganization
 
@@ -76,7 +77,7 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
             ]
           : organizations
       ),
-      untilDestroyed(this),
+      takeUntilDestroyed(),
       shareReplay(1)
     )
 
@@ -94,7 +95,7 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
           this.selectedOrganization = organization
           this.store.featureOrganizations = organization.featureOrganizations ?? []
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
   }
@@ -108,7 +109,10 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
       this.store.selectedOrganization = null
       this.store.organizationId = null
       this.store.selectedEmployee = null
-      this.selectedOrganization = { name: 'All Org', id: null } as IOrganization
+      this.selectedOrganization = {
+        name: this.getTranslation('PAC.Header.Organization.AllOrg', { Default: 'All Org' }),
+        id: null
+      } as IOrganization
     }
   }
 }

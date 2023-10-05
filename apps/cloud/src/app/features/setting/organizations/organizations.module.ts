@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { FormlyMatToggleModule } from '@ngx-formly/material/toggle'
 import { NxTableModule } from '@metad/components/table'
 import { OrgAvatarComponent, OrgAvatarEditorComponent, SharedModule } from '../../../@shared'
 import { OrganizationMutationComponent } from './organization-mutation/organization-mutation.component'
@@ -12,7 +11,6 @@ import { OrganizationsComponent } from './organizations.component'
   imports: [
     SharedModule,
     FormsModule,
-    FormlyMatToggleModule,
     ReactiveFormsModule,
     OrganizationsRoutingModule,
     NxTableModule,

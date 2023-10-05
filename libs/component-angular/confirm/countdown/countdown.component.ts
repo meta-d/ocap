@@ -1,9 +1,9 @@
-import { Component, HostBinding } from '@angular/core'
-import { MatDialogRef } from '@angular/material/dialog'
+import { Component, HostBinding, inject } from '@angular/core'
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { CountdownConfig, CountdownEvent, CountdownTimer } from '@metad/components/countdown'
 
 @Component({
-  selector: 'pac-countdown-confirmation',
+  selector: 'ngm-countdown-confirmation',
   templateUrl: 'countdown.component.html',
   styles: [
     `
@@ -16,13 +16,21 @@ import { CountdownConfig, CountdownEvent, CountdownTimer } from '@metad/componen
   providers: [CountdownTimer]
 })
 export class CountdownConfirmationComponent {
-  recordType: string
-  isEnabled: boolean
-  countDownConfig: CountdownConfig = { leftTime: 5 }
-
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
-  constructor(protected dialogRef: MatDialogRef<CountdownConfirmationComponent>) {}
+  protected dialogRef: MatDialogRef<CountdownConfirmationComponent> = inject(MatDialogRef)
+  private data = inject(MAT_DIALOG_DATA)
+
+  recordType: string
+  isEnabled: boolean
+  countDownConfig: CountdownConfig = { leftTime: 10 }
+
+  constructor() {
+    if (this.data) {
+      this.recordType = this.data.recordType
+      this.isEnabled = this.data.isEnabled
+    }
+  }
 
   handleActionEvent(e: CountdownEvent) {
     if (e.action === 'done') {

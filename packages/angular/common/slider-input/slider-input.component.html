@@ -1,5 +1,5 @@
-<div class="flex justify-start items-center text-sm p-1">
-    <label class="flex-1 whitespace-nowrap">{{label}}</label>
+<div class="flex justify-start items-center text-sm p-1" [title]="label">
+    <label class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{{label}}</label>
   
     <input matInput type="number" [(ngModel)]="model" [disabled]="disabled" (ngModelChange)="onValueChange($event)">
     <span *ngIf="unit">{{unit}}</span>

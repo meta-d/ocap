@@ -7,9 +7,6 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
   selector: 'pac-settings',
   template: `
     <div class="z-10 flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4 md:pr-0">
-      <!-- <h2 class="text-lg">
-    {{ 'PAC.MENU.Settings' | translate: {Default: 'Settings'} }}
-  </h2> -->
       <ul class="pac-nav__tab-bar flex-1 py-2 bg-slate-200 rounded-lg shadow-lg dark:bg-bluegray-800">
         <li
           class="pac-nav__tab-bar flex justify-start items-center px-4 py-2 cursor-pointer text-slate-600 dark:text-bluegray-100"
@@ -28,8 +25,7 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
       </ul>
     </div>
 
-    <div
-      [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
+    <div [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
       class="pac-nav__router relative flex-1"
     >
       <router-outlet #o="outlet"></router-outlet>
@@ -48,11 +44,6 @@ export class PACSettingComponent {
     distinctUntilChanged(),
     map(() => {
       return [
-        // {
-        //   link: 'general',
-        //   label: 'General',
-        //   icon: 'settings'
-        // },
         {
           link: 'account',
           label: 'Account',
@@ -90,15 +81,6 @@ export class PACSettingComponent {
             permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
           }
         },
-        // {
-        //   link: 'notification-destinations',
-        //   label: 'PAC.KEY_WORDS.NOTIFICATION_DESTINATION',
-        //   icon: 'notifications',
-        //   data: {
-        //     permissionKeys: [AnalyticsPermissionsEnum.DATA_SOURCE_EDIT]
-        //   }
-        // },
-
         {
           link: 'users',
           label: 'User',

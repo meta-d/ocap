@@ -45,13 +45,13 @@
 
   &.ngm-appearance-outline {
     --box-shadow-radius: 10px;
-    @apply border-slate-100 border-solid border p-1;
+    @apply border-slate-100 border-solid border p-1 dark:border-slate-800;
   }
 
   &.ngm-appearance-hero {
     --border-radius: 1.5rem;
     --mat-standard-button-toggle-divider-color: theme(colors.transparent);
-    @apply p-1.5 bg-slate-100;
+    @apply p-1.5 bg-slate-100 dark:bg-slate-500/10;
     .mat-button-toggle.mat-button-toggle-appearance-standard {
       border-radius: calc(var(--border-radius) - 3px);
       &:not(.mat-button-toggle-checked) {

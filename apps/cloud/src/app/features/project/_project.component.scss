@@ -1,3 +1,6 @@
+.pac-project__router-link {
+  @apply hover:bg-slate-100;
+}
 .pac-project__router-link.active {
   @apply bg-slate-100 hover:bg-slate-200 dark:bg-slate-100/10 dark:hover:bg-slate-200/10;
 }

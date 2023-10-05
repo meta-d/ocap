@@ -43,9 +43,7 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     }))
   ]
 
-  private readonly _dialog = inject(MatDialog)
   private readonly formlyArray? = inject(MetadFormlyArrayComponent,{ optional: true })
-  private readonly translateService = inject(TranslateService)
   private readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
   private copilotService = inject(NgmCopilotService)
 

@@ -1,23 +1,9 @@
 /* eslint-disable @typescript-eslint/member-ordering */
-import {
-  AnalyticsPermissionsEnum,
-  IDataSource,
-  IIndicator,
-  ISemanticModel,
-  IStory,
-  IStoryWidget,
-  IndicatorOptionFields,
-  PermissionsEnum
-} from '@metad/contracts'
+import { IDataSource, IIndicator, ISemanticModel, IStory, IStoryWidget, IndicatorOptionFields } from '@metad/contracts'
 import { Indicator as OCAPIndicator, SemanticModel, isNil, omit, omitBy, pick } from '@metad/ocap-core'
 import { Story, StoryConnection, StoryModel, StoryPoint, StoryWidget, uuid } from '@metad/story/core'
 import { convertNewSemanticModelResult } from './models.service'
 
-export enum BusinessType {
-  SEMANTIC_MODEL = 'SEMANTIC_MODEL',
-  STORY = 'STORY',
-  INDICATOR = 'INDICATOR'
-}
 
 export enum ThemesEnum {
   default = 'default',
@@ -39,11 +25,7 @@ export const SystemPrivacyFields = [
   'visibility'
 ]
 
-const SYSTEM_FIELDS = [
-  'id',
-  'name',
-  ...SystemPrivacyFields
-]
+const SYSTEM_FIELDS = ['id', 'name', ...SystemPrivacyFields]
 
 export interface Indicator extends Partial<OCAPIndicator>, Omit<IIndicator, 'type'> {
   //
@@ -189,190 +171,4 @@ export function convertIndicatorResult(result: IIndicator): any {
     ...omit(result, 'options'),
     ...(result.options ?? {})
   } as any
-}
-
-// /**
-//  * @deprecated
-//  */
-// export enum FeatureEnum {
-//   FEATURE_DASHBOARD = 'FEATURE_DASHBOARD',
-//   FEATURE_TIME_TRACKING = 'FEATURE_TIME_TRACKING',
-//   FEATURE_ESTIMATE = 'FEATURE_ESTIMATE',
-//   FEATURE_ESTIMATE_RECEIVED = 'FEATURE_ESTIMATE_RECEIVED',
-//   FEATURE_INVOICE = 'FEATURE_INVOICE',
-//   FEATURE_INVOICE_RECURRING = 'FEATURE_INVOICE_RECURRING',
-//   FEATURE_INVOICE_RECEIVED = 'FEATURE_INVOICE_RECEIVED',
-//   FEATURE_INCOME = 'FEATURE_INCOME',
-//   FEATURE_EXPENSE = 'FEATURE_EXPENSE',
-//   FEATURE_PAYMENT = 'FEATURE_PAYMENT',
-//   FEATURE_PROPOSAL = 'FEATURE_PROPOSAL',
-//   FEATURE_PROPOSAL_TEMPLATE = 'FEATURE_PROPOSAL_TEMPLATE',
-//   FEATURE_PIPELINE = 'FEATURE_PIPELINE',
-//   FEATURE_PIPELINE_DEAL = 'FEATURE_PIPELINE_DEAL',
-//   FEATURE_DASHBOARD_TASK = 'FEATURE_DASHBOARD_TASK',
-//   FEATURE_TEAM_TASK = 'FEATURE_TEAM_TASK',
-//   FEATURE_MY_TASK = 'FEATURE_MY_TASK',
-//   FEATURE_JOB = 'FEATURE_JOB',
-//   FEATURE_EMPLOYEES = 'FEATURE_EMPLOYEES',
-//   FEATURE_EMPLOYEE_TIME_ACTIVITY = 'FEATURE_EMPLOYEE_TIME_ACTIVITY',
-//   FEATURE_EMPLOYEE_TIMESHEETS = 'FEATURE_EMPLOYEE_TIMESHEETS',
-//   FEATURE_EMPLOYEE_APPOINTMENT = 'FEATURE_EMPLOYEE_APPOINTMENT',
-//   FEATURE_EMPLOYEE_APPROVAL = 'FEATURE_EMPLOYEE_APPROVAL',
-//   FEATURE_EMPLOYEE_APPROVAL_POLICY = 'FEATURE_EMPLOYEE_APPROVAL_POLICY',
-//   FEATURE_EMPLOYEE_LEVEL = 'FEATURE_EMPLOYEE_LEVEL',
-//   FEATURE_EMPLOYEE_POSITION = 'FEATURE_EMPLOYEE_POSITION',
-//   FEATURE_EMPLOYEE_TIMEOFF = 'FEATURE_EMPLOYEE_TIMEOFF',
-//   FEATURE_EMPLOYEE_RECURRING_EXPENSE = 'FEATURE_EMPLOYEE_RECURRING_EXPENSE',
-//   FEATURE_EMPLOYEE_CANDIDATE = 'FEATURE_EMPLOYEE_CANDIDATE',
-//   FEATURE_MANAGE_INTERVIEW = 'FEATURE_MANAGE_INTERVIEW',
-//   FEATURE_MANAGE_INVITE = 'FEATURE_MANAGE_INVITE',
-//   FEATURE_ORGANIZATION = 'FEATURE_ORGANIZATION',
-//   FEATURE_ORGANIZATION_EQUIPMENT = 'FEATURE_ORGANIZATION_EQUIPMENT',
-//   FEATURE_ORGANIZATION_INVENTORY = 'FEATURE_ORGANIZATION_INVENTORY',
-//   FEATURE_ORGANIZATION_TAG = 'FEATURE_ORGANIZATION_TAG',
-//   FEATURE_ORGANIZATION_VENDOR = 'FEATURE_ORGANIZATION_VENDOR',
-//   FEATURE_ORGANIZATION_PROJECT = 'FEATURE_ORGANIZATION_PROJECT',
-//   FEATURE_ORGANIZATION_DEPARTMENT = 'FEATURE_ORGANIZATION_DEPARTMENT',
-//   FEATURE_ORGANIZATION_TEAM = 'FEATURE_ORGANIZATION_TEAM',
-//   FEATURE_ORGANIZATION_DOCUMENT = 'FEATURE_ORGANIZATION_DOCUMENT',
-//   FEATURE_ORGANIZATION_EMPLOYMENT_TYPE = 'FEATURE_ORGANIZATION_EMPLOYMENT_TYPE',
-//   FEATURE_ORGANIZATION_RECURRING_EXPENSE = 'FEATURE_ORGANIZATION_RECURRING_EXPENSE',
-//   FEATURE_ORGANIZATION_HELP_CENTER = 'FEATURE_ORGANIZATION_HELP_CENTER',
-//   FEATURE_CONTACT = 'FEATURE_CONTACT',
-//   FEATURE_GOAL = 'FEATURE_GOAL',
-//   FEATURE_GOAL_REPORT = 'FEATURE_GOAL_REPORT',
-//   FEATURE_GOAL_SETTING = 'FEATURE_GOAL_SETTING',
-//   FEATURE_REPORT = 'FEATURE_REPORT',
-//   FEATURE_USER = 'FEATURE_USER',
-//   FEATURE_ORGANIZATIONS = 'FEATURE_ORGANIZATIONS',
-//   FEATURE_APP_INTEGRATION = 'FEATURE_APP_INTEGRATION',
-//   FEATURE_SETTING = 'FEATURE_SETTING',
-//   FEATURE_EMAIL_HISTORY = 'FEATURE_EMAIL_HISTORY',
-//   FEATURE_EMAIL_TEMPLATE = 'FEATURE_EMAIL_TEMPLATE',
-//   FEATURE_IMPORT_EXPORT = 'FEATURE_IMPORT_EXPORT',
-//   FEATURE_FILE_STORAGE = 'FEATURE_FILE_STORAGE',
-//   FEATURE_PAYMENT_GATEWAY = 'FEATURE_PAYMENT_GATEWAY',
-//   FEATURE_SMS_GATEWAY = 'FEATURE_SMS_GATEWAY',
-//   FEATURE_SMTP = 'FEATURE_SMTP',
-//   FEATURE_ROLES_PERMISSION = 'FEATURE_ROLES_PERMISSION'
-// }
-
-// /**
-//  * @deprecated
-//  */
-// export enum AnalyticsFeatures {
-//   FEATURE_BUSINESS_GROUP = 'FEATURE_BUSINESS_GROUP',
-//   FEATURE_INDICATOR = 'FEATURE_INDICATOR',
-//   FEATURE_INDICATOR_MARKET = 'FEATURE_INDICATOR_MARKET',
-//   FEATURE_INDICATOR_REGISTER = 'FEATURE_INDICATOR_REGISTER',
-//   FEATURE_INDICATOR_MY = 'FEATURE_INDICATOR_MY',
-//   FEATURE_INDICATOR_VIEWER = 'FEATURE_INDICATOR_VIEWER',
-//   FEATURE_STORY = 'FEATURE_STORY',
-//   FEATURE_STORY_CREATION = 'FEATURE_STORY_CREATION',
-//   FEATURE_STORY_VIEWER = 'FEATURE_STORY_VIEWER',
-//   FEATURE_STORY_MARKET = 'FEATURE_STORY_MARKET',
-//   FEATURE_MODEL = 'FEATURE_MODEL',
-//   FEATURE_MODEL_CREATION = 'FEATURE_MODEL_CREATION',
-//   FEATURE_MODEL_VIEWER = 'FEATURE_MODEL_VIEWER',
-//   FEATURE_SUBSCRIPTION = 'FEATURE_SUBSCRIPTION',
-//   FEATURE_INSIGHT = 'FEATURE_INSIGHT',
-//   FEATURE_INSIGHT_ADMIN = 'FEATURE_INSIGHT_ADMIN',
-//   FEATURE_INSIGHT_VIEWER = 'FEATURE_INSIGHT_VIEWER'
-// }
-
-// /**
-//  * @deprecated
-//  */
-// export enum RolesEnum {
-//   SUPER_ADMIN = 'SUPER_ADMIN',
-//   ADMIN = 'ADMIN',
-//   DATA_ENTRY = 'DATA_ENTRY',
-//   EMPLOYEE = 'EMPLOYEE',
-//   CANDIDATE = 'CANDIDATE',
-//   MANAGER = 'MANAGER',
-//   VIEWER = 'VIEWER',
-//   TRIAL = 'TRIAL'
-// }
-
-// /**
-//  * @deprecated
-//  */
-// export enum OrganizationPermissionsEnum {
-//   ALLOW_MANUAL_TIME = 'allowManualTime',
-//   ALLOW_MODIFY_TIME = 'allowModifyTime',
-//   ALLOW_DELETE_TIME = 'allowDeleteTime',
-//   ALLOW_FUTURE_DATE = 'futureDateAllowed'
-// }
-
-export enum IndicatorType {
-  BASIC = 'BASIC',
-  DERIVE = 'DERIVE'
-}
-
-/**
- * @deprecated
- */
-export const PermissionGroups = {
-  //Permissions which can be given to any role
-  GENERAL: [
-    PermissionsEnum.ADMIN_DASHBOARD_VIEW,
-    PermissionsEnum.ORG_INVITE_VIEW,
-    PermissionsEnum.ORG_INVITE_EDIT,
-    PermissionsEnum.POLICY_VIEW,
-    PermissionsEnum.POLICY_EDIT,
-    PermissionsEnum.ORG_TAGS_EDIT,
-    PermissionsEnum.VIEW_ALL_EMAILS,
-    PermissionsEnum.VIEW_ALL_EMAIL_TEMPLATES,
-    PermissionsEnum.ORG_HELP_CENTER_EDIT,
-    PermissionsEnum.ORG_CONTACT_EDIT,
-    PermissionsEnum.ORG_CONTACT_VIEW,
-    PermissionsEnum.ORG_TEAM_EDIT,
-    PermissionsEnum.ORG_CONTRACT_EDIT,
-    PermissionsEnum.EVENT_TYPES_VIEW,
-    PermissionsEnum.VIEW_ALL_ACCOUNTING_TEMPLATES,
-
-    // DataSource
-    AnalyticsPermissionsEnum.DATA_SOURCE_VIEW,
-    AnalyticsPermissionsEnum.DATA_SOURCE_EDIT,
-    // Semantic Model
-    AnalyticsPermissionsEnum.MODELS_VIEW,
-    AnalyticsPermissionsEnum.MODELS_EDIT,
-    // Story
-    AnalyticsPermissionsEnum.STORIES_VIEW,
-    AnalyticsPermissionsEnum.STORIES_EDIT,
-    // BusinessGroup
-    AnalyticsPermissionsEnum.BUSINESS_AREA_VIEW,
-    AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT,
-    // Indicator
-    AnalyticsPermissionsEnum.INDICATOR_VIEW,
-    AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
-    AnalyticsPermissionsEnum.INDICATOR_EDIT,
-    // Insight
-    AnalyticsPermissionsEnum.INSIGHT_VIEW,
-    AnalyticsPermissionsEnum.INSIGHT_EDIT,
-    // Subscription
-    AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
-    AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT
-  ],
-
-  //Readonly permissions, are only enabled for admin role
-  ADMINISTRATION: [
-    PermissionsEnum.ORG_EMPLOYEES_VIEW,
-    PermissionsEnum.ORG_EMPLOYEES_EDIT,
-    PermissionsEnum.ORG_USERS_VIEW,
-    PermissionsEnum.ORG_USERS_EDIT,
-    PermissionsEnum.ALL_ORG_VIEW,
-    PermissionsEnum.ALL_ORG_EDIT,
-    PermissionsEnum.CHANGE_SELECTED_ORGANIZATION,
-    PermissionsEnum.CHANGE_ROLES_PERMISSIONS,
-    PermissionsEnum.SUPER_ADMIN_EDIT,
-    PermissionsEnum.PUBLIC_PAGE_EDIT,
-    PermissionsEnum.INTEGRATION_VIEW,
-    PermissionsEnum.FILE_STORAGE_VIEW,
-    PermissionsEnum.SMS_GATEWAY_VIEW,
-    PermissionsEnum.CUSTOM_SMTP_VIEW,
-    PermissionsEnum.IMPORT_EXPORT_VIEW,
-    PermissionsEnum.ACCESS_DELETE_ACCOUNT,
-    PermissionsEnum.ACCESS_DELETE_ALL_DATA
-  ]
 }

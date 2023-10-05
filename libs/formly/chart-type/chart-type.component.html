@@ -45,9 +45,9 @@
     </button>
   </div>
 
-  <div *ngIf="showMore()" class="min-h-12 w-full flex flex-col justify-start items-stretch gap-1 mt-2">
+  <div *ngIf="showMore()" class="min-h-12 w-full flex flex-col justify-start items-stretch gap-1 mt-2" displayDensity="compact">
 
-    <div class="flex flex-col justify-start items-start gap-2 rounded-lg p-2 bg-white" displayDensity="compact">
+    <div class="flex flex-col justify-start items-start gap-2 rounded-lg p-2 bg-white" >
       <div class="flex items-center text-sm">
         <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="text-slate-900">edit_attributes</mat-icon>
         <span>{{ 'FORMLY.CHART.ChartType' | translate: {Default: 'Chart Type'} }}</span>
@@ -76,8 +76,7 @@
       </div>
     </div>
 
-    <form *ngIf="type===NxChartType.GeoMap" [formGroup]="mapFormGroup" class="flex flex-col justify-start items-start gap-2 rounded-lg p-2 bg-white"
-      displayDensity="compact">
+    <form *ngIf="type===NxChartType.GeoMap" [formGroup]="mapFormGroup" class="flex flex-col justify-start items-start gap-2 rounded-lg p-2 bg-white">
       <div class="flex items-center text-sm">
         <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="text-slate-900">map</mat-icon>
         <span>{{ 'FORMLY.CHART.GeoMapConfig' | translate: {Default: 'GeoMap Config'} }}</span>

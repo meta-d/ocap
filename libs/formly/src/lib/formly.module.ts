@@ -3,7 +3,7 @@ import { ModuleWithProviders, NgModule } from '@angular/core'
 import { NgmFormlyAccordionModule } from '@metad/formly/accordion'
 import { PACFormlyButtonToggleModule } from '@metad/formly/button-toggle'
 import { PACFormlyChartTypeModule } from '@metad/formly/chart-type'
-import { FormlyMatCheckboxModule } from '@metad/formly/checkbox'
+import { NgmFormlyMatCheckboxModule } from '@metad/formly/checkbox'
 import { PACFormlyCodeEditorModule } from '@metad/formly/code-editor'
 import { PACFormlyColorPickerModule } from '@metad/formly/color-picker'
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
@@ -13,7 +13,7 @@ import { PACFormlyEntityTypeModule } from '@metad/formly/entity-type'
 import { PACFormlyInputModule } from '@metad/formly/input'
 import { PACFormlyJsonModule } from '@metad/formly/json'
 import { PACFormlyTableModule } from '@metad/formly/mat-table'
-import { FormlyMatToggleModule } from '@metad/formly/mat-toggle'
+import { NgmFormlyMatToggleModule } from '@metad/formly/mat-toggle'
 import { PACFormlySelectModule } from '@metad/formly/select'
 import { PACFormlySemanticModelModule } from '@metad/formly/semantic-model'
 import { PACFormlyMatSlicersModule } from '@metad/formly/slicers'
@@ -46,7 +46,7 @@ export function validateMax(err, field: FormlyFieldConfig) {
   imports: [CommonModule],
   exports: [
     PACFormlyJsonModule,
-    FormlyMatToggleModule,
+    NgmFormlyMatToggleModule,
     FormlyMatSliderModule,
     PACFormlyChartTypeModule,
     PACFormlyMatSlicersModule,
@@ -57,7 +57,7 @@ export function validateMax(err, field: FormlyFieldConfig) {
     PACFormlyTableModule,
     PACFormlyInputModule,
     PACFormlySelectModule,
-    FormlyMatCheckboxModule,
+    NgmFormlyMatCheckboxModule,
     PACFormlyTextAreaModule,
     PACFormlySemanticModelModule,
     PACFormlySortModule,
@@ -78,8 +78,8 @@ export class NgmFormlyModule {
         ...FormlyModule.forRoot({
           validationMessages: [
             { name: 'required', message: validateRequired },
-            { name: 'minlength', message: validateMinLength },
-            { name: 'maxlength', message: validateMaxLength },
+            { name: 'minLength', message: validateMinLength },
+            { name: 'maxLength', message: validateMaxLength },
             { name: 'min', message: validateMin },
             { name: 'max', message: validateMax },
             ...(options?.validationMessages ?? [])
