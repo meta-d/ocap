@@ -10,7 +10,7 @@
   $accent: map.get($config, accent);
 
   .pac-model-entity-calculation {
-    .cdk-drop-list.nx-property-modeling__empty {
+    .cdk-drop-list.ngm-property-modeling__empty {
       border: 1px dashed mat.get-color-from-palette($foreground, divider);
     }
 
@@ -22,7 +22,7 @@
 
 @mixin density($config-or-theme) {
   .pac-model-entity-calculation {
-    .cdk-drop-list.nx-property-modeling__empty {
+    .cdk-drop-list.ngm-property-modeling__empty {
       min-height: 50px;
       // border-radius: .25rem;
       margin-bottom: 1rem;

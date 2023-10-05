@@ -47,11 +47,11 @@
                     <ng-container *ngSwitchCase="Semantics.CurrencyCode">
                         <ng-template igxCell let-cell="cell" let-val>
                             <span *ngIf="cell.row.rowData[field.name] === 0"
-                                class="nx-semantic--currency-amount igx-grid__td-text">-</span>
+                                class="ngm-semantic--currency-amount igx-grid__td-text">-</span>
                             <span *ngIf="cell.row.rowData[field.name] > 0"
-                                class="nx-semantic--currency-amount igx-grid__td-text">{{val | currency:cell.row.rowData[field.unit.name]:'symbol-narrow'}}</span>
+                                class="ngm-semantic--currency-amount igx-grid__td-text">{{val | currency:cell.row.rowData[field.unit.name]:'symbol-narrow'}}</span>
                             <span *ngIf="cell.row.rowData[field.name] < 0"
-                                class="nx-semantic--currency-amount nx-semantic--currency-amount-negative igx-grid__td-text">({{-val | currency:cell.row.rowData[field.unit.name]:'symbol-narrow'}})</span>
+                                class="ngm-semantic--currency-amount ngm-semantic--currency-amount-negative igx-grid__td-text">({{-val | currency:cell.row.rowData[field.unit.name]:'symbol-narrow'}})</span>
                         </ng-template>
                     </ng-container>
                     <ng-container *ngSwitchCase="Semantics.UnitOfMeasure">
@@ -149,13 +149,13 @@
     </igx-grid-toolbar>
 
     <igx-grid-footer>
-        <div class="nx-smart-grid--selection-summaries" *ngIf="options?.showSelectionSummary">
+        <div class="ngm-smart-grid--selection-summaries" *ngIf="options?.showSelectionSummary">
             <div *ngFor="let summary of selectionSummaries" class="summaries-data-wrapper" [ngClass]="grid.displayDensity">
                 <span class="igx-grid-summary__label">{{ summary.label }}</span>
                 <span class="igx-grid-summary__result">{{ format(summary.summaryResult) }}</span>
             </div>
         </div>
-        <ng-content select=".nx-smart-grid--footer"></ng-content>
+        <ng-content select=".ngm-smart-grid--footer"></ng-content>
     </igx-grid-footer>
     
     <!-- <ng-template igxToolbarCustomContent let-treeGrid="grid">
@@ -182,6 +182,6 @@
 </igx-grid>
 
 <div *ngIf="contextmenu===true">
-    <nx-context-menu [x]="contextmenuX" [y]="contextmenuY" [cell]="clickedCell">
-    </nx-context-menu>
+    <ngm-context-menu [x]="contextmenuX" [y]="contextmenuY" [cell]="clickedCell">
+    </ngm-context-menu>
 </div>

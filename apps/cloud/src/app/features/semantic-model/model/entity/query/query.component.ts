@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core'
 import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { measureFormatter, QueryReturn, serializeUniqueName } from '@metad/ocap-core'
 import { BaseEditorDirective } from '@metad/components/editor'
@@ -14,6 +14,8 @@ import { MODEL_TYPE } from '../../types'
 import { serializePropertyUniqueName } from '../../utils'
 import { ModelEntityService } from '../entity.service'
 import { effectAction } from '@metad/ocap-angular/core'
+import { Store } from '@metad/cloud/state'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,8 +25,12 @@ import { effectAction } from '@metad/ocap-angular/core'
 })
 export class EntityQueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE
+  
+  private readonly store = inject(Store)
 
   @ViewChild('editor') editor!: BaseEditorDirective
+
+  themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
   queryKey: string
   statement = ''

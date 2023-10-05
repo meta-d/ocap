@@ -1,16 +1,16 @@
-<div class="nx-story-widget__content" [ngClass]="componentClasses$ | async"
+<div class="ngm-story-widget__content" [ngClass]="componentClasses$ | async"
   [ngStyle]="widgetStyle$ | async"
   [cdkContextMenuTriggerFor]="context_menu">
-  <div class="nx-story-widget__component-container">
+  <div class="ngm-story-widget__component-container">
     <ng-container #anchor></ng-container>
   </div>
   
-  <facebook-content-loader *ngIf="placeholder$ | async" class="nx-story-widget__placeholder"
+  <facebook-content-loader *ngIf="placeholder$ | async" class="ngm-story-widget__placeholder"
     [animate]="false">
   </facebook-content-loader>
 </div>
 
-<div class="nx-story-widget__fab-menu flex flex-col justify-start items-center gap-2"
+<div class="ngm-story-widget__fab-menu flex flex-col justify-start items-center gap-2"
   cdkDragLockAxis="y"
   cdkDrag
   [cdkDragDisabled]="editable"
@@ -30,10 +30,10 @@
       [cdkConnectedOverlayOrigin]="trigger"
       [cdkConnectedOverlayOpen]="isCommentOpen"
     >
-      <nx-story-comments class="nx-story-widget__comments"
+      <ngm-story-comments class="ngm-story-widget__comments"
         [comments]="comments"
         (createComment)="onCreateComment($event)">
-      </nx-story-comments>
+      </ngm-story-comments>
 
     </ng-template>
   </ng-container>
@@ -100,6 +100,10 @@
     <button cdkMenuItem (click)="refresh(true)">
       <mat-icon fontSet="material-icons-round">refresh</mat-icon>
       {{ 'Story.Widget.Refresh' | translate: {Default: "Refresh"} }}
+    </button>
+    <button cdkMenuItem (click)="explore()">
+      <mat-icon fontSet="material-icons-outlined">explore</mat-icon>
+      {{ 'Story.Widget.Explore' | translate: {Default: "Explore"} }}
     </button>
 
     <ng-container *ngIf="navigate$ | async as item">

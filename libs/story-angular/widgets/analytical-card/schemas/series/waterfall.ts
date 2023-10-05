@@ -1,14 +1,11 @@
 import { AccordionWrappers, FORMLY_ROW } from '@metad/story/designer'
 import {
-  Borders,
+  BackgroundStyleAccordionWrappers,
   EmphasisAccordionWrappers,
   ItemStyleAccordionWrappers,
-  MarkLineExpansion,
-  Opacity,
-  SelectExpansion,
+  MarkLineAccordionWrappers,
+  SelectAccordionWrappers,
   SeriesCommon,
-  Shadows,
-  SingleColor,
   Stacks
 } from '../common'
 import { LabelAccordionWrappers, LabelLineAccordionWrappers } from './label'
@@ -17,7 +14,7 @@ export function WaterfallCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+      label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,
@@ -115,49 +112,10 @@ export function WaterfallCapacity(className: string, I18N) {
         ...LabelAccordionWrappers(className, I18N),
         ...LabelLineAccordionWrappers(className, I18N),
         ...EmphasisAccordionWrappers(className, I18N),
-        {
-          key: '__showSelect__',
-          type: 'empty'
-        },
-        {
-          key: '__showMarkLine__',
-          type: 'empty'
-        },
-        {
-          key: 'showBackground',
-          type: 'empty'
-        },
-        {
-          wrappers: ['accordion'],
-          props: {
-            elevationZ: true
-          },
-          fieldGroup: [
-            SelectExpansion(className, I18N, '__showSelect__'),
-            MarkLineExpansion(className, I18N, '__showMarkLine__'),
-            BackgroundStyleExpansion(className, I18N, 'showBackground')
-          ]
-        }
+        ...BackgroundStyleAccordionWrappers(className, I18N),
+        ...SelectAccordionWrappers(className, I18N),
+        ...MarkLineAccordionWrappers(className, I18N)
       ]
     }
   ])
-}
-
-function BackgroundStyleExpansion(className: string, I18N, keyShow: string) {
-  return {
-    key: 'backgroundStyle',
-    hideExpression: `!field.parent && !field.parent.model.` + keyShow,
-    props: {
-      label: I18N?.Bar?.Background ?? 'Background',
-      toggleable: true,
-      keyShow: keyShow
-    },
-    fieldGroupClassName: FORMLY_ROW,
-    fieldGroup: [
-      SingleColor(className, I18N),
-      ...Borders(className, I18N),
-      ...Shadows(className, I18N),
-      Opacity(className, I18N)
-    ]
-  }
 }

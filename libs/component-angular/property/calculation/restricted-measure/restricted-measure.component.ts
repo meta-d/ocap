@@ -31,7 +31,7 @@ import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.c
 
 @Component({
   standalone: true,
-  selector: 'nx-restricted-measure',
+  selector: 'ngm-restricted-measure',
   templateUrl: './restricted-measure.component.html',
   styleUrls: ['./restricted-measure.component.scss'],
   providers: [

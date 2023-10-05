@@ -15,7 +15,7 @@
       <mat-icon fontSet="material-icons-outlined">warning</mat-icon>
     </button>
     <!-- Loading spinner icon -->
-    <mat-spinner class="nx-analytical-card--loading"
+    <mat-spinner class="ngm-analytical-card--loading"
       [style.opacity]="(isLoading$ | async) ? '1' : '0'"
       [style.visibility]="(isLoading$ | async) ? 'visible' : 'hidden'"
       [diameter]="18"
@@ -72,12 +72,12 @@
 </div>
 
 <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
-  <nx-slicers inline editable [slicers]="selectOptions$ | async"
+  <ngm-slicers inline editable [slicers]="selectOptions$ | async"
     [dataSettings]="dataSettings$ | async"
     [limit]="5"
     (valueChange)="setSelectOptions($event)"
     (click)="$event.stopPropagation()"
-  ></nx-slicers>
+  ></ngm-slicers>
 </mat-menu>
 
 <div *ngIf="placeholder$ | async" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">

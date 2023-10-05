@@ -25,7 +25,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor'
     MonacoEditorModule,
     ButtonGroupDirective
   ],
-  selector: 'nx-theme-builder',
+  selector: 'ngm-theme-builder',
   templateUrl: './theme-builder.component.html',
   styleUrls: ['./theme-builder.component.scss']
 })

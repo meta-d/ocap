@@ -12,18 +12,18 @@
 
 
   .cdk-overlay-pane {
-    .nx-property-select__panel {
+    .ngm-property-select__panel {
       @apply mt-2;
     }
 
     &.mat-mdc-select-panel-above {
-      .nx-property-select__panel {
+      .ngm-property-select__panel {
         @apply mb-2;
       }
     }
   }
   
-  .nx-property-select__panel {
+  .ngm-property-select__panel {
     .mat-mdc-optgroup .mat-mdc-option {
       &:not(.mat-option-multiple) {
         padding-left: 16px;
@@ -37,23 +37,23 @@
         @apply w-full;
       }
 
-      &.nx-property-select__action {
+      &.ngm-property-select__action {
         background-color: unset;
       }
     }
-    .nx-property > .mat-icon {
+    .ngm-property > .mat-icon {
       margin-right: 0;
     }
   }
 
-  .nx-property-array__empty {
-    .nx-property-array__container {
+  .ngm-property-array__empty {
+    .ngm-property-array__container {
       border: 1px dashed mat.get-color-from-palette($foreground, divider);
       border-radius: 5px;
     }
   }
 
-  .nx-property-select__parameter-menu {
+  .ngm-property-select__parameter-menu {
     .mat-mdc-menu-item {
       display: flex;
       align-items: center;
@@ -65,8 +65,8 @@
     }
   }
 
-  .nx-property-modeling {
-    .cdk-drop-list.nx-property-modeling__empty {
+  .ngm-property-modeling {
+    .cdk-drop-list.ngm-property-modeling__empty {
       border: 1px dashed mat.get-color-from-palette($foreground, divider);
     }
   }
@@ -75,7 +75,7 @@
 
 @mixin density($config-or-theme) {
 
-  .nx-property-select {
+  .ngm-property-select {
     @include mat.form-field-density(-1);
     font-size: 12px;
 
@@ -87,8 +87,8 @@
     }
   }
 
-  .nx-property-modeling {
-    .cdk-drop-list.nx-property-modeling__empty {
+  .ngm-property-modeling {
+    .cdk-drop-list.ngm-property-modeling__empty {
       min-height: 50px;
       border-radius: .25rem;
       margin-bottom: 1rem;

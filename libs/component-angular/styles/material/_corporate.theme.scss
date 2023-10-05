@@ -19,9 +19,9 @@ $mat-theme-corporate: mat.define-light-theme(
 // $config: if(_mat-is-theme-object($mat-theme-corporate),
 //     mat.get-color-config($mat-theme-corporate), $mat-theme-corporate);
 // for Material Components theming
-.nx-theme-corporate {
+.ngm-theme-corporate {
   // @include mat.all-component-colors($thin-theme);
-  @include nx-mat-theme((
+  @include ngm-mat-theme((
     color: mat.get-color-config($mat-theme-corporate),
     typography: null,
     density: null,

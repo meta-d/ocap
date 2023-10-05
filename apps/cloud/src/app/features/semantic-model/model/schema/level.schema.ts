@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { DimensionType, getLevelsHierarchy, PropertyLevel } from '@metad/ocap-core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -14,6 +15,7 @@ import {
   SemanticsExpansion,
 } from './common'
 import { HierarchySchemaService } from './hierarchy.schema'
+
 
 @Injectable()
 export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
@@ -67,6 +69,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
       })
       return options
     }),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -88,8 +91,8 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
                 },
                 fieldGroup: [this.levelModeling]
               },
-              this.role as any
-            ]
+              // this.role as any
+            ] as FormlyFieldConfig[]
           }
         ]
       })
@@ -160,7 +163,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             },
             {
               key: 'column',
-              type: 'nx-select',
+              type: 'ngm-select',
               className,
               props: {
                 label: LEVEL?.Column ?? 'Column',
@@ -190,7 +193,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'nameColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.NameColumn ?? 'Name Column',
                 searchable: true,
@@ -200,7 +203,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'captionColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.CaptionColumn ?? 'Caption Column',
                 searchable: true,
@@ -210,7 +213,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'ordinalColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.OrdinalColumn ?? 'Ordinal Column',
                 searchable: true,
@@ -220,7 +223,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'parentColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ParentColumn ?? 'Parent Column',
                 searchable: true,
@@ -238,7 +241,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'table',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.Table ?? 'Table',
                 icon: 'table_view',
@@ -304,7 +307,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
               fieldGroup: [
                 {
                   key: 'name',
-                  type: 'nx-select',
+                  type: 'ngm-select',
                   props: {
                     label: LEVEL?.Table ?? 'Table',
                     searchable: true,
@@ -316,7 +319,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'parentColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ParentColumn ?? 'Parent Column',
                 searchable: true
@@ -335,7 +338,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
             {
               className,
               key: 'childColumn',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: LEVEL?.ChildColumn ?? 'Child Column',
                 searchable: true
@@ -384,7 +387,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
                   {
                     className,
                     key: 'column',
-                    type: 'nx-select',
+                    type: 'ngm-select',
                     props: {
                       label: LEVEL?.Column ?? 'Column',
                       searchable: true,
@@ -427,26 +430,4 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
     }
   }
 
-  // get levelProperty() {
-  //   return {
-  //     fieldGroupClassName: FORMLY_ROW,
-  //     key: 'property',
-  //     wrappers: ['expansion'],
-  //     props: {
-  //       label: 'Attributes'
-  //       // enableSelectFields: true,
-  //     },
-  //     fieldGroup: [
-  //       this.semantic,
-  //       this.calendarFormatter,
-  //       {
-  //         key: 'parentChild',
-  //         type: 'checkbox',
-  //         props: {
-  //           label: 'Parent Child'
-  //         }
-  //       }
-  //     ]
-  //   }
-  // }
 }

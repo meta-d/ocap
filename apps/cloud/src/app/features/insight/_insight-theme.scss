@@ -27,7 +27,7 @@
       padding: 0;
     }
 
-    .nx-story-widget__component-container {
+    .ngm-story-widget__component-container {
       box-shadow: unset;
     }
     .mat-card {
@@ -46,16 +46,16 @@
     .pac-insight-widget {
       flex: 1;
 
-      nx-analytical-card {
+      ngm-analytical-card {
         height: 300px;
       }
 
-      nx-kpi-card {
+      ngm-kpi-card {
         height: 200px;
-        .nx-kpi--data-point {
+        .ngm-kpi--data-point {
           font-size: 3rem;
           line-height: 4rem;
-          .nx-kpi--title, .nx-object-number--short-unit {
+          .ngm-kpi--title, .ngm-object-number--short-unit {
             font-size: 2rem;
           }
         }

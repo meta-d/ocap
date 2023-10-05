@@ -22,4 +22,4 @@ $mat-theme: mat.define-light-theme(
 // @include mat.core();
 // Include all theme styles for the mat components.
 // @include mat.all-component-themes($mat-theme);
-@include nx-mat-theme($mat-theme);
+@include ngm-mat-theme($mat-theme);

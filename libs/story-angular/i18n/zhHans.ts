@@ -50,7 +50,9 @@ export const ZhHans = {
       Public: '公开',
       ReUpload: '重新上传',
       Widget: '部件',
-      ConfirmDeleteInfo: '在实际保存之前不会从服务器上删除'
+      ConfirmDeleteInfo: '在实际保存之前不会从服务器上删除',
+      Back: '返回',
+      Confirm: '确认'
     },
     Shares: {
       VisibilityChanged: '可见性已更改',
@@ -72,7 +74,7 @@ export const ZhHans = {
       GenerateLinkToPreview: '生成链接以预览',
       InitialPage: '初始页面',
       Default: '默认',
-      SemanticModelPublicFirst: '请先将语义模型可见性更改为公开！',
+      SemanticModelPublicFirst: '请先将语义模型可见性更改为公开！'
     },
     Designer: {
       LookingEmpty: '这个故事看起来有些空洞',
@@ -126,7 +128,7 @@ export const ZhHans = {
       ThumbnailUrl: '缩略图链接',
       Models: '模型',
       AddSemanticModels: '添加语义模型',
-      PreviewExceedsMaximum: '文件大小超过限制',
+      PreviewExceedsMaximum: '文件大小超过限制'
     },
     Preferences: {
       Title: '首选项',
@@ -296,7 +298,8 @@ export const ZhHans = {
       Navigate: '导航',
       PinHome: '固定到首页',
       Share: '分享',
-      Download: '下载'
+      Download: '下载',
+      Explore: '探索'
     },
     LinkedAnalysis: {
       Title: '联动分析',
@@ -415,7 +418,7 @@ export const ZhHans = {
         Color_Primary: '主色',
         Color_Accent: '强调色',
         Color_Warn: '警告色',
-        Preview: '预览',
+        Preview: '预览'
       },
       FilterBar: {
         Title: '过滤器栏',
@@ -495,7 +498,7 @@ export const ZhHans = {
         Unit: '度量单位',
         CurrencyCode: '货币码',
         Bar: '栏',
-        IsBar: '条型状',
+        IsBar: '条型状'
       },
       InputControl: {
         Title: '输入控制器',
@@ -559,7 +562,7 @@ export const ZhHans = {
         DisablePagination: '禁用分页',
         Disabled: '禁用',
         Details: '详情',
-        StretchTabs: '拉伸',
+        StretchTabs: '拉伸'
       },
       WIDGET: {
         ANALYTICAL_CARD: '分析卡片',
@@ -657,6 +660,47 @@ export const ZhHans = {
       },
       Video: {
         VideoUrl: '视频链接'
+      },
+      CHART: {
+        DIMENSIONS: '维度',
+        MEASURES: '度量',
+        RealTimeLinkedAnalysis: '实时联动分析',
+        DisableContextMenu: '禁用上下文菜单',
+        ShowDataButton: '显示数据按钮',
+        HideHeader: '隐藏标题栏',
+        HideDataDownload: '隐藏数据下载',
+        HideScreenshot: '隐藏截图',
+        MaximumLimit: '最大数据量限制',
+        DigitInfo: '数字格式',
+        TrellisHorizontal: '格子横向个数',
+        UniversalTransition: '全局过渡动画',
+        CustomLogic: '自定义逻辑',
+        Color: '颜色',
+        Enabled: '启用',
+        ShowDecal: '显示贴花',
+        Decals: '贴花图案',
+        Options: '选项',
+        ChartSettings: '图形配置',
+        ChartVariants: '图形变型',
+        Stacked: '堆叠',
+        ReferenceLine: {
+          Title: '创建参考线',
+          ReferenceLine: '参考线',
+          removeLabel: '删除',
+          Label: '名称',
+          Type: '展示类型',
+          MarkLine: '标记线',
+          MarkPoint: '标记点',
+          ValueType: '值类型',
+          Fixed: '固定',
+          Dynamic: '动态',
+          Value: '值',
+          Aggregation: '聚合类型',
+          Min: '最小值',
+          Max: '最大值',
+          Average: '平均值',
+          Median: '中位数'
+        }
       }
     },
     Explain: {
@@ -681,7 +725,99 @@ export const ZhHans = {
       Theme: '主题',
       ConfirmApply: '应用模板将覆盖故事中的所有页面。你想继续吗？',
       Tags: '标签',
-      PreviewExceedsMaximum: '文件大小超过限制',
+      PreviewExceedsMaximum: '文件大小超过限制'
+    },
+    Explorer: {
+      AddDimensions: '添加维度',
+      Data: '数据',
+      Display: '显示',
+      Visual: '可视化',
+      Options: '选项',
+      Table: '表格',
+      Chart: '图形',
+      ShowDimensions: '显示维度',
+      BringMoreDimensions: '从您的数据集中引入更多维度并开始探索',
+      ChartOptions: '图形配置',
+      Dimensions: '维度',
+      Measures: '度量',
+      And: '和',
+      By: '按'
+    },
+    Chart: {
+      ChartType: '图形类型',
+      CustomCode: '自定义代码',
+      AutomaticallyGenerateCode: '根据注释自动生成代码',
+      None: '无',
+      Horizontal: '横向',
+      Vertical: '纵向',
+      Doughnut: '环形图',
+      Doughnut2: '细环形图',
+      Nightingale: '南丁格尔',
+      Nightingale2: '南丁格尔2',
+      Polar: '极坐标',
+      Comparison: '比较',
+      Pie: '饼图',
+      Bar: '柱图',
+      Waterfall: '瀑布图',
+      Map: '地理',
+      Histogram: '直方图',
+      Trend: '趋势',
+      Line: '线图',
+      Line2: '纵向线图',
+      Area: '面积图',
+      AreaStacked: '堆积面积图',
+      'Theme River': '河流图',
+      ThemeRiver: '河流图',
+      Correlation: '相关',
+      Scatterplot: '散点图',
+      Scatter: '散点图',
+      Bubble: '气泡图',
+      'Cluster Bubble': '集群气泡图',
+      'Packed Bubble': '包气泡图',
+      'Radial Scatter': '雷达散点图',
+      Distribution: '分布',
+      'Heat Map': '热点图',
+      Heatmap: '热点图',
+      'Box plot': '盒须图',
+      Boxplot: '盒须图',
+      Tree: '树图',
+      'Tree Map': '矩阵树图',
+      Treemap: '矩阵树图',
+      Sunburst: '旭日图',
+      Sankey: '桑基图',
+      Radar: '雷达图',
+      Reverse: '反向',
+      Funnel: '漏斗图',
+      Calendar: '日历',
+      Radial: '雷达',
+      '3D': '三维',
+      Geo: '地理',
+      Custom: '自定义',
+      GeoMap: '地理图',
+      MapName: '地图名称',
+      MapUrl: '地理文件链接',
+      MapProjection: '地图投影',
+      IsTopoJSON: '是 TopoJSON 格式',
+      FeatureObjectNames: 'Feature 对象名称',
+      'Bar 3D': '三维柱形',
+      Bar3D: '三维柱形',
+      'Line 3D': '三维线图',
+      Line3D: '三维线图',
+      'Scatter 3D': '三维散点',
+      Scatter3D: '三维散点',
+      Column: '柱条形图',
+      ColumnStacked: '堆积柱图',
+      ColumnPolar: '极坐标柱图',
+      BarStacked: '堆积条形图',
+      BarPolar: '极坐标条形图',
+      BarPolarBackground: '极坐标背景柱图',
+      Combination: '组合图',
+      BarTrellis: '柱形图矩阵',
+      Ask: '提问',
+      ChartName: '图形名称',
+      Stacked: '堆叠',
+      Variant: '变型',
+      Orient: '方向'
     },
     STYLING: {
       CSS: {
@@ -794,8 +930,10 @@ export const ZhHans = {
           UniversalTransition: '全局过渡动画',
           Label: '标签',
           Position: '位置',
-          Left: '左侧',
-          Right: '右侧',
+          Left: '左',
+          Right: '右',
+          Top: '上',
+          Bottom: '下',
           Silent: '静默',
           Cursor: '光标',
           Cursor_Auto: '自动',
@@ -813,6 +951,7 @@ export const ZhHans = {
           SelectedMode_None: '无',
           SelectedMode_Single: '单选',
           SelectedMode_Multiple: '多选',
+          SelectedMode_False: '禁用',
           SelectedMode_Series: '系列',
           Formatter: '格式化',
           Rotate: '旋转',
@@ -830,14 +969,23 @@ export const ZhHans = {
           SymbolSize: '符号大小',
           SymbolRotate: '符号旋转',
           SymbolOffset: '符号位移',
-          Stack: '堆积',
+          Stack: '堆叠',
           TextAlign: {
             Title: '文本对齐',
             Auto: '自动',
             Left: '靠左',
             Right: '靠右',
             Center: '居中'
-          }
+          },
+          Name: '名称',
+          LegendHoverLink: '图例联动高亮',
+          Position_Auto: '自动',
+          Position_Left: '靠左',
+          Position_Right: '靠右',
+          Position_Top: '靠上',
+          Position_Bottom: '靠下',
+          Position_Middle: '居中',
+          Position_Center: '居中'
         },
         Global: {
           Title: '全局',
@@ -883,7 +1031,26 @@ export const ZhHans = {
           Max: '最大值'
         },
         Axis: {
-          Title: '轴'
+          Title: '轴',
+          Name: '名称',
+          NameLocation: '名称位置',
+          NameGap: '名称间隙',
+          NameRotate: '名称旋转',
+          MinorSplitLine: '次分割线',
+          AxisTick: {
+            Title: '轴刻度',
+            Show: '显示',
+            AlignWithLabel: '与标签对齐',
+            Interval: '间隔',
+            Inside: '在内侧',
+            Length: '长度'
+          },
+          MinorTick: {
+            Title: '次刻度',
+            Show: '显示',
+            SplitNumber: '分格数',
+            Length: '长度'
+          }
         },
         SingleAxis: {
           Title: '单轴'
@@ -939,10 +1106,21 @@ export const ZhHans = {
           Overflow_Break: '间断',
           Overflow_BreakAll: '间断所有'
         },
+        AxisPointer: {
+          Title: '轴指针',
+          Show: '显示',
+          Type: '类型',
+          Snap: '对齐',
+          Handle: {
+            Title: '手柄',
+            Show: '显示',
+            Type: '类型'
+          }
+        },
         GRID: {
           GRID: '网格',
           SHOW: '是否显示',
-          CONTAIN_LABEL: '是否包含刻度标签',
+          CONTAIN_LABEL: '包含刻度标签',
           BACKGROUND_COLOR: '背景颜色',
           BORDER_COLOR: '边框颜色',
           BORDER_WIDTH: '边框粗细'
@@ -957,10 +1135,18 @@ export const ZhHans = {
           LEGEND_RIGHT: '右侧的距离',
           LEGEND_BOTTOM: '下侧的距离',
           LEGEND_ORIENT: '布局朝向',
-          LEGEND_ALIGN: '对齐',
+          Align: '对齐',
+          Align_Auto: '自动',
+          Align_Left: '左对齐',
+          Align_Right: '右对齐',
           ItemGap: '元素间距',
           ItemWidth: '元素宽度',
-          ItemHeight: '元素高度'
+          ItemHeight: '元素高度',
+          InactiveColor: '非激活颜色',
+          InactiveBorderColor: '非激活边框颜色',
+          InactiveBorderWidth: '非激活边框宽度',
+          IconSymbol: '图标符号',
+          TextStyle: '文字样式'
         },
         TOOLTIP: {
           TITLE: '提示框',
@@ -974,7 +1160,23 @@ export const ZhHans = {
           AxisPointer: '轴指针',
           Type: '类型',
           Axis: '轴',
-          Snap: '快照'
+          Snap: '快照',
+          AlwaysShowContent: '永远显示',
+          TriggerOn: '触发条件',
+          ShowDelay: '延迟显示',
+          HideDelay: '延迟隐藏',
+          Enterable: '鼠标进入',
+          Confine: '限制在图表的区域内',
+          ClassName: 'CSS 类',
+          TransitionDuration: '移动动画时间',
+          Position: '位置',
+          BackgroundColor: '背景颜色',
+          BorderColor: '边框颜色',
+          BorderWidth: '边框宽度',
+          Padding: '内边距',
+          Order: '排列顺序',
+          TextStyle: '文本样式',
+          ExtraCssText: '附加样式'
         },
         TEXT: {
           TEXTSTYLE: '全局的字体样式',
@@ -984,6 +1186,7 @@ export const ZhHans = {
           TEXTSTYLE_FONTSIZE: '文字的字体大小'
         },
         DATAZOOM_STYLE: {
+          None: '无',
           DATAZOOM: '数据缩放',
           ORIENT: '布局方式',
           ORIENT_HORIZONTAL: '水平',
@@ -997,7 +1200,24 @@ export const ZhHans = {
           YAXIS_INDEX: '控制的 Y 轴',
           MIN_SPAN: '窗口最小值',
           MAX_SPAN: '窗口最大值',
-          ZOOM_LOCK: '锁定窗口大小'
+          ZOOM_LOCK: '锁定窗口大小',
+          Type_none: '无',
+          Type_inside: '内置',
+          Type_slider: '滑动条',
+          Type_sliderInside: '内置+滑动条',
+          RangeMode: '范围模式',
+          MinValueSpan: '最小实际值',
+          MaxValueSpan: '最大实际值',
+          Throttle: '刷新频率',
+          PreventDefaultMouseMove: '阻止默认的鼠标移动',
+          MouseMode_true: '不按功能键',
+          MouseMode_false: '不触发',
+          MouseMode_shift: '按住 SHIFT 触发',
+          MouseMode_ctrl: '按住 CTRL 触发',
+          MouseMode_alt: '按住 ALT 触发',
+          zoomOnMouseWheel: '鼠标滚动缩放',
+          moveOnMouseMove: '鼠标移动移动',
+          moveOnMouseWheel: '鼠标滚动移动'
         },
         SERIE_STYLE: {
           TITLE: '系列统一属性',
@@ -1069,7 +1289,9 @@ export const ZhHans = {
           Focus_None: '无',
           Focus_Self: '自己',
           Focus_Series: '系列',
-          Scale: '缩放'
+          Focus_Adjacency: '相邻',
+          Scale: '缩放',
+          ScaleSize: '缩放大小'
         },
         ITEM_STYLE: {
           TITLE: '单个体样式',
@@ -1088,16 +1310,36 @@ export const ZhHans = {
         SeriesStyle: {
           Title: '系列属性',
           HasAll: '有 All 成员',
-          FunnelAlign: '漏斗对齐'
+          FunnelAlign: '漏斗对齐',
+          BoundaryGap: '边界间隙'
         },
         DDD: {
           GridTitle: '3D网格',
-          BoxWidth: '柱形宽度',
-          BoxHeight: '柱形高度',
-          BoxDepth: '柱形深度',
+          BoxWidth: '宽度',
+          BoxHeight: '高度',
+          BoxDepth: '深度',
           Light: '光线',
           BarSeriesTitle: '系列属性',
-          Shading: '明暗法'
+          Shading: '明暗法',
+          Environment: '环境贴图',
+          PostEffect: '后处理特效',
+          TemporalSuperSampling: '分帧超采样',
+          Enable: '启用',
+          ViewControl: '视角控制',
+          BevelSize: '倒角尺寸',
+          BevelSmoothness: '倒角圆润度',
+          Stack: '堆叠',
+          StackStrategy: '堆叠策略',
+          MinHeight: '最小高度',
+          Silent: '不响应',
+          Label: '标签',
+          ItemStyle: '元素样式',
+          Show: '显示',
+          Distance: '距离',
+          Formatter: '格式',
+          TextStyle: '文本样式',
+          Emphasis: '高亮',
+          BlendMode: '混合模式'
         },
         Select: {
           Title: '选中样式'
@@ -1120,12 +1362,17 @@ export const ZhHans = {
           OutofRange: '范围外的',
           Text: '描述',
           SymbolSize: '符号大小',
+          ColorLightness: '颜色亮度',
           Inverse: '倒转',
           Min: '最小值',
           Max: '最大值',
           Range: '预选中范围',
           SplitNumber: '分割数量',
-          Precision: '数字精度'
+          Precision: '数字精度',
+          Pieces: '分段',
+          ShowLabel: '显示标签',
+          ItemSymbol: '元素符号',
+          ItemGap: '元素间距'
         },
         Calendar: {
           Title: '日历',
@@ -1135,7 +1382,14 @@ export const ZhHans = {
         SplitLine: {
           Title: '分割线',
           Show: '显示',
-          LineStyle: '线样式'
+          LineStyle: '线样式',
+          Interval: '间隔'
+        },
+        SplitArea: {
+          Title: '分割区域',
+          Show: '显示',
+          AreaStyle: '区域样式',
+          Interval: '间隔'
         },
         LineStyle: {
           Title: '线样式',
@@ -1160,10 +1414,42 @@ export const ZhHans = {
           TextShadowOffsetX: '文本阴影偏移X',
           TextShadowOffsetY: '文本阴影偏移Y',
           Overflow: '溢出',
-          Ellipsis: '省略'
+          Overflow_Null: '无',
+          Overflow_Truncate: '截断',
+          Overflow_Break: '间断',
+          Overflow_BreakAll: '间断所有',
+          Ellipsis: '省略',
+          Align: '对齐',
+          Align_Auto: '自动',
+          Align_Left: '左',
+          Align_Center: '中',
+          Align_Right: '右',
+          Color: '文本颜色',
+          FontStyle: '文本样式',
+          FontStyle_Auto: '自动',
+          FontStyle_Normal: '正常',
+          FontStyle_Italic: '倾斜 Italic',
+          FontStyle_Oblique: '倾斜 Oblique',
+          FontWeight: '字重',
+          FontFamily: '字体',
+          FontSize: '字体大小',
+          LineHeight: '行高',
+          VerticalAlign: '垂直对齐',
+          VerticalAlign_Auto: '自动',
+          VerticalAlign_Top: '顶部',
+          VerticalAlign_Middle: '居中',
+          VerticalAlign_Bottom: '底部',
+          RichText: '富文本'
         },
         Geo: {
-          Title: '地理组件'
+          Title: '地理组件',
+          Center: '中心',
+          Aggregator: '聚合函数',
+          AspectScale: '长宽比',
+          BoundingCoords: '地图范围',
+          NameProperty: 'GeoJSON 属性名称',
+          ShowLegendSymbol: '显示图例标识',
+          Zoom: '缩放比例'
         },
         Title: {
           Title: '标题',
@@ -1192,7 +1478,7 @@ export const ZhHans = {
           ShowSymbol: '显示符号',
           ShowAllSymbol: '显示所有符号',
           Smooth: '平滑',
-          Stack: '堆积',
+          Stack: '堆叠',
           Step: '分步',
           AreaStyle: '面积样式',
           Origin: '源'
@@ -1225,7 +1511,10 @@ export const ZhHans = {
           AlignTo_edge: '文字对齐',
           EdgeDistance: '文字边距',
           BleedMargin: '出血线大小',
-          DistanceToLabelLine: '文字与线间距'
+          DistanceToLabelLine: '文字与线间距',
+          PercentPrecision: '百分比精度',
+          StillShowZeroSum: '零数据仍显示扇区',
+          AvoidLabelOverlap: '防止标签重叠'
         },
         Sankey: {
           HasAll: '有 All 成员',
@@ -1252,7 +1541,13 @@ export const ZhHans = {
           VisualMin: '最小可视',
           VisualMax: '最大可视',
           LevelsOptions: '层级属性',
-          GapWidth: '间隙宽度'
+          GapWidth: '间隙宽度',
+          DragRoam: '拖拽漫游',
+          DragRoam_default: '默认',
+          DragRoam_false: '关闭',
+          DragRoam_scale: '缩放',
+          DragRoam_move: '平移',
+          DragRoam_all: '缩放和平移'
         },
         Sunburst: {
           Label: '标签',
@@ -1266,6 +1561,25 @@ export const ZhHans = {
         },
         Heatmap: {
           DateFormatter: '日期格式'
+        },
+        Label: {
+          Title: '标签'
+        },
+        LabelLine: {
+          ShowAbove: '图形上方',
+          Smooth: '平滑',
+          FirstLength: '第一段的长度',
+          SecondLength: '第二段的长度',
+          MinTurnAngle: '最小转弯角度',
+          MaxSurfaceAngle: '最大表面角度'
+        },
+        LabelLayout: {
+          Title: '标签布局',
+          HideOverlap: '隐藏重叠',
+          MoveOverlap: '挪动防止重叠',
+          MoveOverlap_none: '无',
+          MoveOverlap_shiftX: '水平依次位移',
+          MoveOverlap_shiftY: '垂直依次位移'
         },
         Waterfall: {
           Accumulate: '累计'

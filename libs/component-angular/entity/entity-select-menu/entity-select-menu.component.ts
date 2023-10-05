@@ -7,7 +7,7 @@ import { BehaviorSubject, interval } from 'rxjs'
 import { debounce, map, startWith, switchMap } from 'rxjs/operators'
 
 @Component({
-  selector: 'nx-entity-select-menu',
+  selector: 'ngm-entity-select-menu',
   templateUrl: './entity-select-menu.component.html',
   styleUrls: ['./entity-select-menu.component.scss'],
 })

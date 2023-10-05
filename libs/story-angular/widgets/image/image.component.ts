@@ -19,7 +19,7 @@ export interface ImageWidgetOptions {
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule],
-  selector: 'nx-story-widget-image',
+  selector: 'ngm-story-widget-image',
   templateUrl: './image.component.html',
   styleUrls: ['./image.component.scss']
 })

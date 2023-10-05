@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
@@ -14,11 +15,11 @@ import { MatTabsModule } from '@angular/material/tabs'
 import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
+import { AnalyticsFeatures, FeatureEnum, Store, routeAnimations } from '../../@core'
 import { AppService } from '../../app.service'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   imports: [
@@ -46,7 +47,16 @@ import { AppService } from '../../app.service'
   ],
   selector: 'pac-home',
   template: `
-    <nav mat-tab-nav-bar [tabPanel]="tabPanel" mat-stretch-tabs="false" mat-align-tabs="start" color="accent" disableRipple displayDensity="cosy" class="pac-home__navigation p-0 sm:px-2 md:px-8">
+    <nav
+      mat-tab-nav-bar
+      [tabPanel]="tabPanel"
+      mat-stretch-tabs="false"
+      mat-align-tabs="start"
+      color="accent"
+      disableRipple
+      displayDensity="cosy"
+      class="pac-home__navigation p-0 sm:px-2 md:px-8"
+    >
       <span
         mat-tab-link
         routerLink="."
@@ -57,7 +67,7 @@ import { AppService } from '../../app.service'
       >
         {{ 'PAC.MENU.HOME.TODAY' | translate: { Default: 'Today' } }}
       </span>
-      <span
+      <span *ngIf="hasFeatureEnabled(AnalyticsFeatures.FEATURE_HOME_CATALOG)"
         mat-tab-link
         routerLink="./catalog"
         routerLinkActive
@@ -68,6 +78,7 @@ import { AppService } from '../../app.service'
         {{ 'PAC.MENU.HOME.Catalog' | translate: { Default: 'Catalog' } }}
       </span>
       <span
+        *ngIf="hasFeatureEnabled(AnalyticsFeatures.FEATURE_HOME_TREND)"
         mat-tab-link
         routerLink="./trending"
         routerLinkActive
@@ -77,7 +88,8 @@ import { AppService } from '../../app.service'
       >
         {{ 'PAC.MENU.HOME.Trending' | translate: { Default: 'Trending' } }}
       </span>
-      <span *ngIf="copilotEnabled$ | async"
+      <span
+        *ngIf="copilotEnabled() && hasFeatureEnabled(AnalyticsFeatures.FEATURE_HOME_INSIGHT)"
         mat-tab-link
         routerLink="./insight"
         routerLinkActive
@@ -88,9 +100,13 @@ import { AppService } from '../../app.service'
         {{ 'PAC.MENU.HOME.Insight' | translate: { Default: 'Insight' } }}
       </span>
     </nav>
-  <mat-tab-nav-panel #tabPanel class="flex-1 overflow-auto">
-    <router-outlet #o="outlet"></router-outlet>
-  </mat-tab-nav-panel>
+    <mat-tab-nav-panel
+      #tabPanel
+      class="relative flex-1 overflow-auto"
+      [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path"
+    >
+      <router-outlet #o="outlet"></router-outlet>
+    </mat-tab-nav-panel>
   `,
   styles: [
     `
@@ -102,10 +118,19 @@ import { AppService } from '../../app.service'
         flex-direction: column;
       }
     `
-  ]
+  ],
+  animations: [routeAnimations],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
   private readonly appService = inject(AppService)
+  private readonly store = inject(Store)
+  public readonly copilotEnabled = toSignal(this.appService.copilotEnabled$)
 
-  public readonly copilotEnabled$ = this.appService.copilotEnabled$
+  FeatureEnum = FeatureEnum
+  AnalyticsFeatures = AnalyticsFeatures
+
+  hasFeatureEnabled(featureKey: FeatureEnum | AnalyticsFeatures) {
+    return this.store.hasFeatureEnabled(featureKey)
+  }
 }

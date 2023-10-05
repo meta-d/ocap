@@ -20,11 +20,11 @@ export declare interface NxMicroTableOptions {
 
 @UntilDestroy()
 @Component({
-  selector: 'nx-micro-table',
+  selector: 'ngm-micro-table',
   templateUrl: './micro-table.component.html',
   styleUrls: ['./micro-table.component.scss'],
   host: {
-    class: 'nx-micro-table'
+    class: 'ngm-micro-table'
   }
 })
 export class NxMicroTableComponent implements OnInit, AfterViewInit {

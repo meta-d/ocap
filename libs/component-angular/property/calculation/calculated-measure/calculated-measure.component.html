@@ -1,8 +1,8 @@
 <mat-drawer-container class="flex flex-1" [hasBackdrop]="false" autosize >
-    <mat-drawer #drawer mode="side" position="end" ngmResizer [resizerWidth]="330" class="nx-calculated-measure__drawer"
+    <mat-drawer #drawer mode="side" position="end" ngmResizer [resizerWidth]="330" class="ngm-calculated-measure__drawer"
         [opened]="opened"
         (openedChange)="$event?helper.realignInkBar():''">
-        <mat-tab-group #helper class="nx-calculated-measure__helpers" mat-stretch-tabs="false" >
+        <mat-tab-group #helper class="ngm-calculated-measure__helpers" mat-stretch-tabs="false" >
             <mat-tab [label]="'COMPONENTS.CALCULATION.DIMENSION_MEMBERS' | translate: {Default: 'Dimension Members'}"
                 id="ngm-calculated-measure__entity-schema"
                 cdkDropList
@@ -60,7 +60,7 @@
                             >
                                 <div class="flex justify-between items-center">
                                     <ngm-entity-property class="flex-1" [property]="property"></ngm-entity-property>
-                                    <button mat-icon-button displayDensity="cosy" class="nx-calculated-measure__parameter-edit" (click)="openCreateParameter(property)">
+                                    <button mat-icon-button displayDensity="cosy" class="ngm-calculated-measure__parameter-edit" (click)="openCreateParameter(property)">
                                         <mat-icon fontSet="material-icons-round">edit</mat-icon>
                                     </button>
                                 </div>
@@ -117,7 +117,7 @@
            </span>
 
            <div class="flex justify-around items-center gap-2">
-                <button mat-icon-button displayDensity="cosy" class="nx-calculated-measure__drawer-anchor"
+                <button mat-icon-button displayDensity="cosy" class="ngm-calculated-measure__drawer-anchor"
                     (click)="drawer.toggle()"
                 >
                     <mat-icon *ngIf="drawer.opened">chevron_right</mat-icon>
@@ -126,7 +126,7 @@
            </div>
         </div>
 
-        <nx-editor-mdx-member #editor class="nx-calculated-measure__monaco-editor flex-1"
+        <ngm-editor-mdx-member #editor class="ngm-calculated-measure__monaco-editor flex-1"
             id="ngm-calculated-editor"
             cdkDropList
             [cdkDropListData]="calculations"
@@ -135,8 +135,8 @@
             [disabled]="disabled"
             [(ngModel)]="statement"
             >
-        </nx-editor-mdx-member>
-        <nx-editor-sql *ngIf="syntax===Syntax.SQL" class="nx-calculated-measure__monaco-editor flex-1"
+        </ngm-editor-mdx-member>
+        <ngm-editor-sql *ngIf="syntax===Syntax.SQL" class="ngm-calculated-measure__monaco-editor flex-1"
             id="ngm-calculated-editor"
             cdkDropList
             [cdkDropListData]="calculations"
@@ -145,6 +145,6 @@
             [disabled]="disabled"
             [(ngModel)]="statement"
         >
-        </nx-editor-sql>
+        </ngm-editor-sql>
     </mat-drawer-content>
 </mat-drawer-container>

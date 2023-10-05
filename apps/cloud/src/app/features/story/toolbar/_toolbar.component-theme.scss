@@ -1,40 +1,18 @@
 $button-compact-size: 1.5rem;
-@mixin nx-story-toolbar($config-or-theme) {
+@mixin ngm-story-toolbar($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $primary: map-get($config, primary);
 
-  .nx-story__toolbar {
-    &.compact {
-      .mat-toolbar {
-        .mat-icon {
-          line-height: 18px;
-        }
-      }
-    }
 
-    .mat-divider.mat-divider-vertical {
-      @apply mx-4 h-8;
-    }
-    .nx-story__toolbar-button {
-      margin: 0 0.25rem;
-    }
-    .nx-story__toolbar-title {
-      font-size: 0.75rem;
-      line-height: 0.75rem;
-    }
-    .cdk-menu-item.mat-button.active {
-      background-color: mat.get-color-from-palette($primary, 200);
-    }
-  }
 }
 
-@mixin nx-story-toolbar__not-fullscreen($config-or-theme) {
+@mixin ngm-story-toolbar__not-fullscreen($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $primary: map-get($config, primary);
 
-  // .nx-story__toolbar {
+  // .ngm-story__toolbar {
   //   &.compact {
-  //     .nx-story__toolbar-title {
+  //     .ngm-story__toolbar-title {
   //       height: 0;
   //       opacity: 0;
   //     }

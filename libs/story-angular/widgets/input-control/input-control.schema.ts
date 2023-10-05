@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core'
+import { PropertyCapacity } from '@metad/components/property'
+import { ControlType, NxCoreService } from '@metad/core'
 import {
   FilterSelectionType,
   getEntityProperty,
@@ -8,11 +10,9 @@ import {
   ParameterProperty,
   Property
 } from '@metad/ocap-core'
-import { FormlyFieldConfig } from '@ngx-formly/core'
-import { PropertyCapacity } from '@metad/components/property'
-import { ControlType, NxCoreService } from '@metad/core'
 import { FilterControlType } from '@metad/story/core'
 import {
+  AccordionWrappers,
   ColorOptions,
   DataSettingsSchemaService,
   DataTable,
@@ -23,6 +23,7 @@ import {
   hierarchyAttributes,
   SelectionType
 } from '@metad/story/designer'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { combineLatest, distinctUntilChanged, map, startWith, withLatestFrom } from 'rxjs'
 import { determineControlType } from './types'
 
@@ -79,7 +80,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
       {
         key: 'defaultMembers',
         type: 'empty',
-        className: FORMLY_W_FULL,
+        className: FORMLY_W_FULL
       }
     ]
 
@@ -172,7 +173,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
     }
 
     if (controlType === ControlType.dropDownList) {
-      optionsFieldGroup.push(DataTable('nx-formly__col nx-formly__col-12', i18nStoryWidgets?.Filter))
+      optionsFieldGroup.push(DataTable('ngm-formly__col ngm-formly__col-12', i18nStoryWidgets?.Filter))
     }
 
     return [
@@ -192,65 +193,29 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
           }
         ]
       },
-      dataSettings,
-      {
-        key: 'options',
-        wrappers: ['expansion'],
-        props: {
-          label: i18nStoryWidgets?.InputControl?.Options ?? 'Options',
-          expanded: true
+      ...AccordionWrappers([
+        {
+          key: 'dataSettings',
+          label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
+          toggleable: false,
+          expanded: true,
+          fieldGroup: dataSettings.fieldGroup[0].fieldGroup
         },
-        fieldGroup: [
-          {
-            fieldGroupClassName: FORMLY_ROW,
-            fieldGroup: [
-              // {
-              //   className: 'nx-formly__col nx-formly__col-12',
-              //   key: 'dimension',
-              //   type: 'input-control',
-              //   props: {
-              //     dataSettings: this.dataSettings$,
-              //     entityType: this.entityType$,
-              //     capacities: [PropertyCapacity.Dimension, PropertyCapacity.Parameter, PropertyCapacity.MeasureControl]
-              //   }
-              // },
-              ...optionsFieldGroup
-            ]
-          }
-        ]
-      }
+        {
+          key: 'options',
+          label: i18nStoryWidgets?.InputControl?.Options ?? 'Options',
+          toggleable: false,
+          expanded: true,
+          fieldGroup: [
+            {
+              fieldGroupClassName: FORMLY_ROW,
+              fieldGroup: [...optionsFieldGroup]
+            }
+          ]
+        }
+      ], {expandedMulti: true})
     ]
   }
-
-  // get timeFilters() {
-  //   return [
-  //     {
-  //       key: 'Full Period',
-  //       type: 'select',
-  //       props: {
-  //         label: 'Full Period',
-  //         placeholder: 'Select Full Period',
-  //         options: [
-  //           { label: 'Year', value: 'Year' },
-  //           { label: 'Month', value: 'Month' }
-  //         ]
-  //       }
-  //     },
-  //     {
-  //       key: 'To Date',
-  //       type: 'select',
-  //       props: {
-  //         label: 'To Date',
-  //         placeholder: 'Select To Date',
-  //         options: [
-  //           { label: 'Year', value: 'Year' },
-  //           { label: 'Quarter', value: 'Quarter' },
-  //           { label: 'Month', value: 'Month' }
-  //         ]
-  //       }
-  //     }
-  //   ]
-  // }
 }
 
 function ParameterSchema(property: ParameterProperty, className: string, I18N) {
@@ -404,7 +369,7 @@ function InputControlControlType(className: string, InputControl) {
   }
 }
 
-function MeasureControlFieldGroup(className: string, I18N,) {
+function MeasureControlFieldGroup(className: string, I18N) {
   return [
     {
       className,
@@ -434,7 +399,7 @@ function MeasureControlFieldGroup(className: string, I18N,) {
       key: 'hideSingleSelectionIndicator',
       type: 'checkbox',
       props: {
-        label: I18N?.InputControl?.HideSelectionIndicator ?? 'Hide Selection Indicator',
+        label: I18N?.InputControl?.HideSelectionIndicator ?? 'Hide Selection Indicator'
       }
     },
 
@@ -443,8 +408,8 @@ function MeasureControlFieldGroup(className: string, I18N,) {
       key: 'highlighted',
       type: 'checkbox',
       props: {
-        label: I18N?.InputControl?.HighlightedOptions ?? 'Highlighted Options',
+        label: I18N?.InputControl?.HighlightedOptions ?? 'Highlighted Options'
       }
-    },
+    }
   ]
 }

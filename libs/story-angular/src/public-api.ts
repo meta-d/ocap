@@ -3,3 +3,4 @@
  */
 
 export * from './lib/settings/index'
+export * from './lib/explorer/index'

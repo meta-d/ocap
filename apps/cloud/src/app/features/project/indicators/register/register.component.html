@@ -18,7 +18,7 @@
         {{ 'PAC.MENU.INDICATOR.DownloadAsTemplate' | translate: {Default: "Download as Template"} }}
       </button>
   
-      <button mat-raised-button *ngIf="type !== 'copy' && (indicator$ | async) as indicator" displayDensity="cosy"
+      <button mat-raised-button *ngIf="type !== 'copy' && (indicator$ | async) as indicator" color="primary" displayDensity="cosy"
         (click)="copy(indicator)">
         {{ 'PAC.ACTIONS.COPY' | translate: {Default: "Copy"} }}
       </button>
@@ -190,11 +190,11 @@
       ></ngm-select>
   
       <div class="col-span-1 sm:col-span-2 text-base font-medium">{{ 'PAC.INDICATOR.REGISTER.RestrictiveCondition' | translate: {Default: 'Restrictive Condition'} }}</div>
-      <nx-slicers class="col-span-1 sm:col-span-2" editable inline
+      <ngm-slicers class="col-span-1 sm:col-span-2" editable inline
         [dataSettings]="dataSettings$ | async"
         [capacities]="[SlicersCapacity.CombinationSlicer]"
         formControlName="filters"
-      ></nx-slicers>
+      ></ngm-slicers>
     </div>
 
   </form> -->

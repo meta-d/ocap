@@ -6,7 +6,7 @@ import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatIconRegistry } from '@angular/material/icon'
 import { DomSanitizer, Title } from '@angular/platform-browser'
 import { ThemesEnum } from '@metad/cloud/state'
-import { nonNullable } from '@metad/core'
+import { nonBlank, nonNullable } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest } from 'rxjs'
@@ -65,17 +65,20 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    combineLatest([
-      this.appService.isMobile$,
-      this.store.preferredTheme$.pipe(map((theme) => `nx-theme-${theme ?? ThemesEnum.default}`))
-    ]).subscribe(([isMobile, theme]) => {
+    combineLatest([this.appService.isMobile$, this.store.preferredTheme$])
+    .subscribe(([isMobile, preferredTheme]) => {
+      const [primaryTheme, primaryColor] = (preferredTheme ?? '').split('-')
+      preferredTheme = preferredTheme ?? ThemesEnum.default
+      const theme = `ngm-theme-${preferredTheme} ${primaryTheme} ${preferredTheme}`
       // for body
       const body = this.document.getElementsByTagName('body')[0]
-      const bodyThemeRemove = Array.from(body.classList).filter((item: string) => item.includes('-theme'))
+      const bodyThemeRemove = Array.from(body.classList).filter(
+        (item: string) => item.includes('-theme') || item.startsWith('light') || item.startsWith('dark')
+      )
       if (bodyThemeRemove.length) {
         body.classList.remove(...bodyThemeRemove)
       }
-      theme.split(' ').forEach((value) => {
+      theme.split(' ').filter(nonBlank).forEach((value) => {
         this.renderer.addClass(body, value)
       })
 

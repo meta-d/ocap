@@ -1,25 +1,31 @@
-<form [formGroup]="formGroup" class="flex-1 max-w-full flex flex-col justify-start items-stretch">
-  <label class="flex item p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">
-    <span *ngIf="label" class="mr-1">{{label}}</span>
-    <ng-container *ngIf="label$ | async as label">
-      <mat-icon *ngIf="label.icon" displayDensity="compact">{{ label.icon }}</mat-icon>
-      <span>
-        {{ 'COMPONENTS.COMMON.'+(label?.label ?? 'DIMENSION_MEASURE') | translate: {Default: label?.label ?? 'Dimension/Measure'} }}
-      </span>
-    </ng-container>
-  </label>
+<label class="flex item p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">
+  <span *ngIf="label" class="mr-1">{{label}}</span>
+  <ng-container *ngIf="label$ | async as label">
+    <mat-icon *ngIf="label.icon" displayDensity="compact">{{ label.icon }}</mat-icon>
+    <span>
+      {{ 'COMPONENTS.COMMON.'+(label?.label ?? 'DIMENSION_MEASURE') | translate: {Default: label?.label ?? 'Dimension/Measure'} }}
+    </span>
+  </ng-container>
+</label>
 
-  <div class="flex items-center w-full max-w-full py-1 px-2 text-xs rounded-md bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+<div class="flex flex-col items-stretch gap-2 w-full max-w-full p-1 text-xs rounded-lg 
+  bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+  <form [formGroup]="formGroup" class="flex-1 max-w-full flex justify-start items-center">
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
-    <mat-select #propertySelect formControlName="dimension" panelClass="nx-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
-      [required]="required"
-      *ngrxLet="selectTrigger$ as selectTrigger">
-      <mat-select-trigger *ngIf="selectTrigger" class="flex items-center overflow-hidden">
-        <ngm-entity-property hiddenIcon [property]="selectTrigger" class="flex-1" ></ngm-entity-property>
+    <mat-select #propertySelect formControlName="dimension" panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
+      [required]="required">
+      <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
+        <ngm-entity-property hiddenIcon [property]="selectTrigger()" class="flex-1" ></ngm-entity-property>
 
         <div class="flex items-center">
+
+          <button matSuffix mat-icon-button [displayDensity]="displayDensity" (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
+            <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
+            <mat-icon *ngIf="showMore()">expand_less</mat-icon>
+          </button>
+
           <button mat-icon-button *ngIf="showAttributes" [displayDensity]="displayDensity"
             [matMenuTriggerFor]="dimensionMenu"
             #mt="matMenuTrigger"
@@ -44,7 +50,6 @@
               <mat-icon>straighten</mat-icon>
           </button>
           
-          <ng-content select="[ngmSuffix]"></ng-content>
         </div>
       </mat-select-trigger>
 
@@ -60,9 +65,9 @@
         <mat-option *ngFor="let property of calculations$ | async" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
-        <mat-option *ngIf="editable" class="nx-property-select__action" [value]="null"
+        <mat-option *ngIf="editable" class="ngm-property-select__action" [value]="null"
           (click)="$event.stopPropagation();$event.preventDefault();">
-          <button mat-button color="primary" ngmAppearance="dashed" class="nx-property-select__create-calculation w-full"
+          <button mat-button color="primary" ngmAppearance="dashed" class="ngm-property-select__create-calculation w-full"
             (click)="$event.stopPropagation();onCreateCalculation($event)">
             <div class="flex justify-center items-center">
               <mat-icon>add</mat-icon>
@@ -104,12 +109,15 @@
       </mat-optgroup>
     </mat-select>
 
+    <ng-content select="[ngmSuffix]"></ng-content>
+  </form>
+
+  <div *ngIf="showMore()" class="min-h-12 w-full flex justify-center items-center">
     <ng-content></ng-content>
-
   </div>
-</form>
+</div>
 
-<mat-menu #dimensionMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #dimensionMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item *ngIf="showDisplayAs()" disableRipple [matMenuTriggerFor]="displayMenu">
     <mat-icon class="shrink-0">dvr</mat-icon>
     <span>{{ 'COMPONENTS.PROPERTY.DisplayAs' | translate: {Default: "Display As"} }}...</span>
@@ -169,7 +177,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="displayBehaviour">
-  <mat-menu #displayMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #displayMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let behaviour of DISPLAY_BEHAVIOUR_LIST"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="behaviour.value">
@@ -180,7 +188,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="memberCaption">
-  <mat-menu #labelMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #labelMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple
       (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property" [value]="null">
@@ -198,7 +206,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="level">
-  <mat-menu #hierarchyMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #hierarchyMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple [matMenuTriggerFor]="hierarchiesMenu">
       <mat-icon class="shrink-0" fontSet="material-icons-outlined">account_tree</mat-icon>
       <span>{{ 'COMPONENTS.PROPERTY.HIERARCHY' | translate: {Default: "Hierarchy"} }}...</span>
@@ -251,7 +259,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="hierarchy">
-  <mat-menu #hierarchiesMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #hierarchiesMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property" [value]="null">
         {{ 'COMPONENTS.PROPERTY.Default' | translate: {Default: "Default"} }}
@@ -260,7 +268,7 @@
     <button mat-menu-item disableRipple *ngFor="let property of hierarchies$ | async; trackBy: trackByName"
       (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property" [value]="property.name">
-        <ngm-entity-property class="w-full" hiddenIcon [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.descriptionAndId"></ngm-entity-property>
+        <ngm-entity-property class="w-full" hiddenIcon [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto"></ngm-entity-property>
       </mat-radio-button>
     </button>
   </mat-menu>
@@ -275,7 +283,7 @@
   </button>
 </mat-menu>
 
-<mat-menu #propertiesMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #propertiesMenu="matMenu" class="ngm-formly ngm-density__compact">
   <mat-selection-list [(ngModel)]="properties" displayDensity="compact">
     <mat-list-option *ngFor="let property of properties$ | async" [value]="property.name"
       (click)="$event.stopPropagation();">
@@ -285,7 +293,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="parameter">
-  <mat-menu #memberMenu="matMenu" class="nx-property-select__parameter-menu ngm-density__compact">
+  <mat-menu #memberMenu="matMenu" class="ngm-property-select__parameter-menu ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button [value]="null">
         {{ 'COMPONENTS.COMMON.None' | translate: {Default: "None"} }}

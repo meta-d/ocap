@@ -1,8 +1,7 @@
 :host {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  @apply relative h-full flex-1 flex flex-col bg-white;
+
+  --mat-sidenav-content-background-color: theme(colors.white);
 
   &.pac-fullscreen {
     position: fixed;
@@ -13,16 +12,14 @@
 }
 
 .pac-model-entity__workspace {
-  display: flex;
-  flex-direction: column;
-}
-.pac-model-entity__workspace-router {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  @apply flex flex-col;
 }
 
-.nx-property-modeling {
+.pac-model-entity__workspace-router {
+  @apply flex flex-col bg-white rounded-lg overflow-hidden shadow-lg border border-solid border-slate-200 m-1;
+}
+
+.ngm-property-modeling {
   height: 100%;
   max-height: 100%;
   overflow-y: auto;
@@ -32,6 +29,10 @@
   margin: 5px 0;
 }
 
-// .pac-model__settings-container {
-//   width: 300px;
-// }
+.mat-drawer.mat-drawer-side {
+  @apply border-0;
+}
+
+.pac-model__settings-container {
+  @apply bg-white rounded-lg overflow-hidden shadow-lg border border-solid border-slate-200 m-1;
+}

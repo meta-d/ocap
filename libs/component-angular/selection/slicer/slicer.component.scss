@@ -5,16 +5,16 @@
     display: block;
   }
 
-  .nx-slicer__remove {
+  .ngm-slicer__remove {
     opacity: 0;
   }
   &:hover {
-    .nx-slicer__remove {
+    .ngm-slicer__remove {
       opacity: 1;
     }
   }
 
-  .nx-slicer__label {
+  .ngm-slicer__label {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

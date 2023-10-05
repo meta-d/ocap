@@ -86,7 +86,7 @@ import { ModelQueryService, uuid } from '../../@core'
   providers: []
 })
 export class QueryCreationDialogComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   formGroup = new FormGroup({
     name: new FormControl(null, [Validators.required]),

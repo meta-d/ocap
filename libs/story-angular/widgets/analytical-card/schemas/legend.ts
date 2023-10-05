@@ -1,4 +1,4 @@
-import { AccordionWrappers } from '@metad/story/designer'
+import { AccordionWrappers, FORMLY_ROW } from '@metad/story/designer'
 import { LineStyle } from './axis'
 import { ItemStyleAccordionWrappers, Orient, PaddingJSON, SymbolOptions, TextStyles, WidthHeight } from './common'
 
@@ -6,7 +6,7 @@ export function LegendCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'legend',
-      label: I18N.LEGEND?.TITLE ?? 'Legend',
+      label: I18N?.LEGEND?.TITLE ?? 'Legend',
       fieldGroup: [
         ...Legend(className, I18N),
         ...ItemStyleAccordionWrappers(className, I18N),
@@ -21,7 +21,7 @@ export function LegendCapacity(className: string, I18N) {
             label: I18N?.LEGEND?.TextStyle ?? 'Text Style',
             fieldGroup: [
               {
-                fieldGroupClassName: 'nx-formly__row',
+                fieldGroupClassName: FORMLY_ROW,
                 fieldGroup: TextStyles(className, I18N)
               }
             ]
@@ -35,7 +35,7 @@ export function LegendCapacity(className: string, I18N) {
 export function Legend(className: string, I18N) {
   return [
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [
         {
           className,

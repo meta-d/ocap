@@ -1,6 +1,6 @@
-<div class="flex-1 flex flex-col items-center overflow-auto p-4">
-  <mat-accordion class="flex-1 w-full md:w-1/2 lg:1/3 gap-4">
-    <mat-expansion-panel *ngFor="let answer of answers; index as index" class="pac-indight__answer-panel group" togglePosition="before"
+<div class="relative flex-1 flex flex-col items-center overflow-auto p-4" [class.pac-indight__expand-model]="showModel() && entityType()">
+  <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 gap-4">
+    <mat-expansion-panel *ngFor="let answer of answers(); index as index; trackBy: trackByKey" class="pac-indight__answer-panel group" togglePosition="before"
       [expanded]="answer.expanded"
     >
       <mat-expansion-panel-header class="pac-indight__answer-header">
@@ -14,8 +14,15 @@
             (click)="$event.stopPropagation();$event.preventDefault();setPrompt(answer.title)">
             <mat-icon fontSet="material-icons-outlined" >edit</mat-icon>
           </button>
+
+          <button mat-icon-button displayDensity="compact" class="shrink-0 opacity-0 group-hover:opacity-100 duration-300"
+            [matTooltip]=" 'Story.Widget.Explore' | translate: {Default: 'Explore'} "
+            (click)="$event.stopPropagation();$event.preventDefault();openExplore(answer)">
+            <mat-icon fontSet="material-icons-outlined">explore</mat-icon>
+          </button>
           
-          <mat-icon fontSet="material-icons-outlined" class="opacity-0 group-hover:opacity-100 duration-300" [matTooltip]="answer.message" displayDensity="compact">question_answer</mat-icon>
+          <mat-icon fontSet="material-icons-outlined" class="opacity-0 group-hover:opacity-100 duration-300" displayDensity="compact"
+            [matTooltip]="answer.message">question_answer</mat-icon>
 
           <button mat-icon-button displayDensity="compact" class="opacity-0 group-hover:opacity-100 duration-300"
             [disabled]="!answer.isCube"
@@ -27,7 +34,7 @@
         </mat-panel-description>
 
         <button mat-icon-button displayDensity="compact" ngmAppearance="danger" class="opacity-0 group-hover:opacity-100 duration-300"
-          (click)="$event.stopPropagation();$event.preventDefault();answers.splice(index, 1)">
+          (click)="$event.stopPropagation();$event.preventDefault();removeAnswer(index)">
           <mat-icon>close</mat-icon>
         </button>
       </mat-expansion-panel-header>
@@ -41,9 +48,8 @@
         <ngm-analytical-card *ngIf="answer.dataSettings" class="h-[300px]" 
           [dataSettings]="answer.dataSettings"
           [chartOptions]="answer.chartOptions"
-          [chartSettings]="{}"
-          [options]="{
-          }"
+          [chartSettings]="answer.chartSettings"
+          [options]="answer.options"
           [slicers]="answer.slicers"
         >
           <button mat-icon-button ngmAction displayDensity="cosy" class="ngm-menu-trigger opacity-20 group-hover:opacity-100 duration-200"
@@ -59,29 +65,54 @@
 
       <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
         <div class="text-base font-semibold">{{ 'COMPONENTS.SELECTION.Slicers' | translate: {Default: "Slicers"} }}</div>
-        <nx-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
+        <ngm-slicers class="overflow-hidden" inline editable [slicers]="answer.slicers"
           [dataSettings]="answer.dataSettings"
           [limit]="5"
           [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]"
           (valueChange)="answer.slicers = $event"
           (click)="$event.stopPropagation()"
-        ></nx-slicers>
+        ></ngm-slicers>
       </mat-menu>
       
       
     </mat-expansion-panel>
   </mat-accordion>
 
-  <div class="h-[90px] w-full flex shrink-0"></div>
+  <div *ngIf="!answers()?.length" class="pac-insight-quick-guide flex-1 w-full md:w-1/2 lg:1/3">
+    <div class="my-8 text-3xl">{{ 'PAC.Home.Insight.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}:</div>
+    <div class="italic my-4">
+      {{ 'PAC.Home.Insight.AskAICopilotDesc' | translate: {Default: 'You can ask questions about your data, and immediately see your answers as visualizations. These visualizations can always be added to your story.'} }}
+    </div>
+
+    <div><span class="font-notoColorEmoji text-lg">💡</span>{{ 'PAC.Home.Insight.ForExample' | translate: {Default: 'for example'} }}:</div>
+    <ul class="list-disc">
+      <li *ngFor="let prompt of suggestedPrompts()" class="shadow-sm rounded-lg border border-slate-100 p-1 my-1 flex justify-start items-center">
+        <button mat-icon-button displayDensity="compact" [matTooltip]="'PAC.Home.Insight.UseThisPrompt' | translate: {Default: 'Use this prompt'}"
+          (click)="setPrompt(prompt)" >
+          <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+        </button>
+        <a class="cursor-pointer" (click)="askCopilot(prompt)">{{prompt}}</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="pac-insight__bottom-padding w-full flex shrink-0"></div>
 </div>
 
-<div class="absolute bottom-0 w-full flex flex-col p-4 bg-bluegray-100/50 dark:bg-white/10 backdrop-blur-lg">
-  <div class="pac-insight__search-bar ngm-density__cosy flex flex-wrap justify-center items-center p-2 gap-2">
+<div class="absolute bottom-0 w-full flex flex-col p-4 bg-bluegray-100/50 dark:bg-white/10 backdrop-blur-lg" cdkDropListGroup>
+  <div class="pac-insight__search-bar ngm-density__cosy relative w-full md:w-1/2 lg:1/3 mx-auto flex flex-wrap justify-start items-center p-2 gap-2">
+    <button *ngIf="entityType()" mat-icon-button class="absolute -left-8" style="position: absolute;" (click)="showModel.set(!showModel())">
+      <mat-icon *ngIf="!showModel()" fontSet="material-icons-round">expand_less</mat-icon>
+      <mat-icon *ngIf="showModel()" fontSet="material-icons-round">expand_more</mat-icon>
+    </button>
+
     <div class="flex items-center gap-2">
+
       <div class="rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500">
         <mat-select class="ngm-select-element w-20 rounded-md p-3 flex items-center bg-white dark:bg-bluegray-700"
           style="width: 200px; display: flex; align-items: center;"
           placeholder="{{'PAC.KEY_WORDS.SelectSemanticModel' | translate: { Default: 'Select semantic model' } }}"
+          panelClass="ngm-select-panel ngm-density__cosy"
           [panelWidth]="400"
           [compareWith]="compareWithId"
           [ngModel]="model"
@@ -109,14 +140,15 @@
       <div *ngIf="hasCube$ | async as hasCube" class="rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500">
         <mat-select class="ngm-select-element w-10 rounded-md p-3 flex items-center bg-white dark:bg-bluegray-700" style="width: 100px; display: flex; align-items: center;"
           placeholder="{{'PAC.KEY_WORDS.Cube' | translate: { Default: 'Cube' } }}"
-          panelClass="ngm-select-panel"
+          panelClass="ngm-select-panel ngm-density__cosy"
           [panelWidth]="300"
           [compareWith]="compareWithName"
           [ngModel]="cube"
           (ngModelChange)="onCubeChange($event)"
           (click)="$event.stopPropagation();">
+          
           <mat-option *ngFor="let cube of cubes$ | async" [value]="cube" class="group">
-            <div class="flex justify-between items-baseline">
+            <div class="w-full flex justify-between items-baseline">
               <span class="overflow-hidden text-ellipsis whitespace-nowrap">
                 {{cube.caption}}
               </span>
@@ -130,18 +162,23 @@
         </mat-select>
       </div>
     </div>
-    <div class="w-full md:w-1/2 lg:w-1/3 rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500"
+    <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full md:w-1/2 lg:w-1/3 rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500"
       [class.bg-gradient-to-r]="model && ((hasCube$ | async) ? cube : true)"
       [class.ngm-background-animate]="answering"
+
+      cdkDropList
+      [cdkDropListData]="[]"
+      (cdkDropListDropped)="dropModelProperty($event)"
+      [cdkDropListEnterPredicate]="dropPredicate"
     >
-      <form class="flex rounded-md px-2 py-1 bg-white dark:bg-bluegray-700">
+      <form class="flex rounded-md px-2 py-1 overflow-hidden bg-white dark:bg-bluegray-700">
         <mat-chip-grid #chipGrid>
           <div class="px-2 left-0 flex items-center">
             <div *ngIf="suggesting" class="pac-insight__suggesting emoji-loader text-base" [matTooltip]=" 'PAC.KEY_WORDS.SuggestingPrompts' | translate: { Default: 'Suggesting prompts' } "></div>
-            <span *ngIf="!suggesting">🤖</span>
+            <span *ngIf="!suggesting" class="font-notoColorEmoji">🤖</span>
           </div>
         </mat-chip-grid>
-        <input #promptInput type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        <input #promptInput type="text" id="simple-search" class="border-none outline-none text-gray-900 text-sm block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder=" {{'PAC.KEY_WORDS.Ask' | translate: { Default: 'Ask' } }}..." required
           matInput [matAutocomplete]="auto"
           [matChipInputFor]="chipGrid"
@@ -157,6 +194,43 @@
       </form>
     </div>
   </div>
+
+  <div *ngIf="showModel() && entityType()" class="h-60 w-full md:w-1/2 lg:1/3 mx-auto overflow-auto">
+    <div>
+      <span class="font-bold">{{ 'PAC.KEY_WORDS.Dimensions' | translate: {Default: 'Dimensions'} }}:</span>
+      <mat-chip-listbox cdkDropList
+        [cdkDropListData]="[]">
+        <mat-chip-option *ngFor="let dimension of dimensions()"
+          cdkDrag
+          [cdkDragData]="dimension">
+          {{dimension.caption}}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+
+    <div>
+      <span class="font-bold">{{ 'PAC.KEY_WORDS.Measures' | translate: {Default: 'Measures'} }}:</span>
+      <mat-chip-listbox cdkDropList
+        [cdkDropListData]="[]">
+        <mat-chip-option *ngFor="let measure of measures()"
+          cdkDrag
+          [cdkDragData]="measure">
+          <ngm-entity-property [property]="measure" displayBehaviour="descriptionOnly"></ngm-entity-property>
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+    <div>
+      <span class="font-bold">{{ 'PAC.KEY_WORDS.Indicators' | translate: {Default: 'Indicators'} }}:</span>
+      <mat-chip-listbox cdkDropList
+        [cdkDropListData]="[]">
+        <mat-chip-option *ngFor="let measure of indicators()"
+          cdkDrag
+          [cdkDragData]="measure">
+          {{measure.caption}}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+  </div>
 </div>
 
 <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)" class="pac-insight__autocomplete ngm-autocomplete-panel ngm-density__cosy">
@@ -170,3 +244,10 @@
 
 <pac-copilot-enable *ngIf="copilotNotEnabled$ | async" class="z-[101]">
 </pac-copilot-enable>
+
+
+<ngm-story-explorer *ngIf="showExplorer()" class="absolute top-0 left-0 w-full h-full z-20"
+  cdkDropListGroup
+  [data]="explore()"
+  (closed)="closeExplorer($event)"
+></ngm-story-explorer>

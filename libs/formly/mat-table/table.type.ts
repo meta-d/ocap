@@ -64,7 +64,7 @@ export class PACFormlyTableComponent extends FieldArrayType implements OnInit {
   open(): void {
     this._dialog
       .open(this.dialogRef, {
-        panelClass: ['nx-dialog-container', 'pac-formly__table'],
+        panelClass: ['ngm-dialog-container', 'pac-formly__table'],
         viewContainerRef: this._viewContainerRef
       })
       .afterClosed()

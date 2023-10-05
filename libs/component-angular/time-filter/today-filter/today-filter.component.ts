@@ -12,7 +12,7 @@ import { filter } from 'rxjs/operators'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'nx-today-filter',
+  selector: 'ngm-today-filter',
   templateUrl: './today-filter.component.html',
   styleUrls: ['./today-filter.component.scss'],
   providers: [
@@ -27,7 +27,7 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   TimeGranularity = TimeGranularity
   TIME_GRANULARITY_SEQUENCES = TIME_GRANULARITY_SEQUENCES
 
-  @HostBinding('class.nx-today-filter') _hostClass = true
+  @HostBinding('class.ngm-today-filter') _hostClass = true
 
   private coreService = inject(NxCoreService)
   private dsCoreService = inject(NgmDSCoreService)
@@ -88,7 +88,7 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
 }
 
 @Component({
-  selector: 'nx-quarter-filter',
+  selector: 'ngm-quarter-filter',
   template: `<mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
     <mat-label>{{ 'COMPONENTS.TIME_FILTER.TODAY' | translate: {Default: 'Today'} }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" />
@@ -168,7 +168,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'nx-month-filter',
+  selector: 'ngm-month-filter',
   template: `<input matInput [matDatepicker]="dp" [formControl]="date" />
 <mat-datepicker
   #dp
@@ -246,7 +246,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
 }
 
 @Component({
-  selector: 'nx-year-filter',
+  selector: 'ngm-year-filter',
   template: `<mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
     <mat-label>{{ 'COMPONENTS.TIME_FILTER.TODAY' | translate: {Default: 'Today'} }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" />

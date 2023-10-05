@@ -9,8 +9,8 @@
   $primary: map.get($config, primary);
   $accent: map.get($config, accent);
 
-  .nx-settings-panel {
-    .nx-settings-panel__drawer-content {
+  .ngm-settings-panel {
+    .ngm-settings-panel__drawer-content {
       background-color: mat.get-color-from-palette($background, card);
 
       .mat-mdc-tab-body-wrapper {

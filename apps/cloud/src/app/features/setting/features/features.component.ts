@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core'
-import { Router } from '@angular/router'
-import { IOrganization } from '../../../@core'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Router } from '@angular/router'
+import { IOrganization, routeAnimations } from '../../../@core'
+import { TranslationBaseComponent } from '../../../@shared/'
 
 
 @Component({
   selector: 'pac-features',
   templateUrl: './features.component.html',
   styleUrls: ['./features.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [routeAnimations]
 })
 export class PACFeaturesComponent extends TranslationBaseComponent implements OnInit {
   private router = inject(Router)
@@ -17,9 +18,12 @@ export class PACFeaturesComponent extends TranslationBaseComponent implements On
   tabs: any[]
   organization: IOrganization
 
+  private langSub = this.translateService.onLangChange.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.loadTabs()
+  })
+
   ngOnInit(): void {
     this.loadTabs()
-    this._applyTranslationOnTabs()
   }
 
   loadTabs() {
@@ -37,12 +41,6 @@ export class PACFeaturesComponent extends TranslationBaseComponent implements On
 
   getRoute(tab: string): string {
     return `/settings/features/${tab}`
-  }
-
-  private _applyTranslationOnTabs() {
-    this.translateService.onLangChange.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.loadTabs()
-    })
   }
 
   navigate(url) {

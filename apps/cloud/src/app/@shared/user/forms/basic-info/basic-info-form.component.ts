@@ -67,7 +67,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
     const password = this.password
       ? [
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'password',
             type: 'input',
             props: {
@@ -78,7 +78,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'confirmPassword',
             type: 'input',
             props: {
@@ -92,10 +92,10 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
       : []
     this.fields = [
       {
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'firstName',
             type: 'input',
             props: {
@@ -105,7 +105,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'lastName',
             type: 'input',
             props: {
@@ -116,7 +116,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           },
 
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'username',
             type: 'input',
             props: {
@@ -126,7 +126,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'email',
             type: 'input',
             props: {
@@ -138,7 +138,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           },
           ...password,
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'roleId',
             type: 'select',
             props: {
@@ -153,7 +153,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'nx-formly__col nx-formly__col-6',
+            className: 'ngm-formly__col ngm-formly__col-6',
             key: 'preferredLanguage',
             type: 'select',
             props: {
@@ -169,7 +169,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
         }
       },
       {
-        className: 'nx-formly__col nx-formly__col-6',
+        className: 'ngm-formly__col ngm-formly__col-6',
         key: 'imageUrl',
         type: 'input',
         props: {

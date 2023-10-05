@@ -9,43 +9,11 @@ export function VisualMapCapacity(className: string, I18N?) {
   }])
 }
 
-// export function VisualMapsCapacity(className: string, I18N?) {
-//   const keyShow = '__showVisualMaps__'
-//   return [
-//     {
-//       key: keyShow,
-//       type: 'empty'
-//     },
-//     {
-//       wrappers: ['accordion'],
-//       props: {
-//         elevationZ: true
-//       },
-//       fieldGroup: [
-//         {
-//           key: 'visualMaps',
-//           type: 'array-tabs',
-//           hideExpression: `!field.parent.model || !field.parent.model.` + keyShow,
-//           props: {
-//             label: I18N?.VisualMap?.Title ?? 'VisualMaps',
-//             labelField: 'type',
-//             removeLabel: I18N?.VisualMap?.RemoveLabel ?? 'Remove',
-//             keyShow
-//           },
-//           fieldArray: {
-//             fieldGroup: VisualMap(className, I18N)
-//           }
-//         }
-//       ]
-//     }
-//   ]
-// }
-
 export function VisualMap(className: string, I18N?) {
   const isNotPiecewise = `!model || model.type !== 'piecewise'`
   return [
     {
-      className: 'nx-formly__pb-2',
+      className: 'ngm-formly__pb-2',
       fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [
         {
@@ -72,7 +40,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'show',
           type: 'toggle',
           props: {
-            label: I18N.VisualMap?.Show ?? 'Show'
+            label: I18N?.VisualMap?.Show ?? 'Show'
           }
         },
 
@@ -83,7 +51,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'inverse',
           type: 'checkbox',
           props: {
-            label: I18N.VisualMap?.Inverse ?? 'Inverse'
+            label: I18N?.VisualMap?.Inverse ?? 'Inverse'
           }
         },
 
@@ -92,7 +60,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'realtime',
           type: 'checkbox',
           props: {
-            label: I18N.VisualMap?.Realtime ?? 'Realtime'
+            label: I18N?.VisualMap?.Realtime ?? 'Realtime'
           }
         },
         {
@@ -100,7 +68,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'calculable',
           type: 'checkbox',
           props: {
-            label: I18N.VisualMap?.Calculable ?? 'Calculable'
+            label: I18N?.VisualMap?.Calculable ?? 'Calculable'
           }
         },
         {
@@ -108,7 +76,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'min',
           type: 'input',
           props: {
-            label: I18N.VisualMap?.Min ?? 'Min',
+            label: I18N?.VisualMap?.Min ?? 'Min',
             type: 'number'
           }
         },
@@ -117,7 +85,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'max',
           type: 'input',
           props: {
-            label: I18N.VisualMap?.Max ?? 'Max',
+            label: I18N?.VisualMap?.Max ?? 'Max',
             type: 'number'
           }
         },
@@ -126,7 +94,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'range',
           type: 'json',
           props: {
-            label: I18N.VisualMap?.Range ?? 'Range',
+            label: I18N?.VisualMap?.Range ?? 'Range',
             placeholder: `[number, number]`,
             autosize: true
           }
@@ -136,7 +104,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'showLabel',
           type: 'checkbox',
           props: {
-            label: I18N.VisualMap?.ShowLabel ?? 'Show Label'
+            label: I18N?.VisualMap?.ShowLabel ?? 'Show Label'
           }
         },
         {
@@ -144,7 +112,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'text',
           type: 'json',
           props: {
-            label: I18N.VisualMap?.Text ?? 'Text',
+            label: I18N?.VisualMap?.Text ?? 'Text',
             placeholder: `["High", "Low"]`,
             autosize: true
           }
@@ -154,7 +122,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'precision',
           type: 'input',
           props: {
-            label: I18N.VisualMap?.Precision ?? 'Precision',
+            label: I18N?.VisualMap?.Precision ?? 'Precision',
             type: 'number'
           }
         },
@@ -163,7 +131,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'splitNumber',
           type: 'input',
           props: {
-            label: I18N.VisualMap?.SplitNumber ?? 'Split Number',
+            label: I18N?.VisualMap?.SplitNumber ?? 'Split Number',
             type: 'number'
           },
           expressions: {
@@ -175,7 +143,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'pieces',
           type: 'json',
           props: {
-            label: I18N.VisualMap?.Pieces ?? 'Pieces',
+            label: I18N?.VisualMap?.Pieces ?? 'Pieces',
             autosize: true
           },
           expressions: {
@@ -187,7 +155,7 @@ export function VisualMap(className: string, I18N?) {
           key: 'itemGap',
           type: 'input',
           props: {
-            label: I18N.VisualMap?.ItemGap ?? 'Item Gap',
+            label: I18N?.VisualMap?.ItemGap ?? 'Item Gap',
             type: 'number'
           },
           expressions: {
@@ -212,14 +180,14 @@ export function VisualMap(className: string, I18N?) {
     ...AccordionWrappers([
       {
         key: 'inRange',
-        label: I18N.VisualMap?.InRange ?? 'In Range',
+        label: I18N?.VisualMap?.InRange ?? 'In Range',
         fieldGroup: [
           {
             key: 'color',
             type: 'json',
             props: {
-              label: I18N.Common?.Color ?? 'Color',
-              placeholder: I18N.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
+              label: I18N?.Common?.Color ?? 'Color',
+              placeholder: I18N?.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
               autosize: true
             }
           },
@@ -227,7 +195,7 @@ export function VisualMap(className: string, I18N?) {
             key: 'symbolSize',
             type: 'json',
             props: {
-              label: I18N.VisualMap?.SymbolSize ?? 'SymbolSize',
+              label: I18N?.VisualMap?.SymbolSize ?? 'SymbolSize',
               placeholder: `[number, number]`,
               autosize: true
             }
@@ -236,7 +204,7 @@ export function VisualMap(className: string, I18N?) {
             key: 'colorLightness',
             type: 'json',
             props: {
-              label: I18N.VisualMap?.ColorLightness ?? 'Color Lightness',
+              label: I18N?.VisualMap?.ColorLightness ?? 'Color Lightness',
               placeholder: `[number, number]`,
               autosize: true
             }
@@ -245,14 +213,14 @@ export function VisualMap(className: string, I18N?) {
       },
       {
         key: 'outOfRange',
-        label: I18N.VisualMap?.OutofRange ?? 'Out of Range',
+        label: I18N?.VisualMap?.OutofRange ?? 'Out of Range',
         fieldGroup: [
           {
             key: 'color',
             type: 'json',
             props: {
-              label: I18N.Common?.Color ?? 'Color',
-              placeholder: I18N.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
+              label: I18N?.Common?.Color ?? 'Color',
+              placeholder: I18N?.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
               autosize: true
             }
           },
@@ -260,7 +228,7 @@ export function VisualMap(className: string, I18N?) {
             key: 'symbolSize',
             type: 'json',
             props: {
-              label: I18N.VisualMap?.SymbolSize ?? 'SymbolSize',
+              label: I18N?.VisualMap?.SymbolSize ?? 'SymbolSize',
               placeholder: `[number, number]`,
               autosize: true
             }
@@ -269,7 +237,7 @@ export function VisualMap(className: string, I18N?) {
             key: 'colorLightness',
             type: 'json',
             props: {
-              label: I18N.VisualMap?.ColorLightness ?? 'Color Lightness',
+              label: I18N?.VisualMap?.ColorLightness ?? 'Color Lightness',
               placeholder: `[number]`,
               autosize: true
             }
@@ -278,21 +246,21 @@ export function VisualMap(className: string, I18N?) {
       },
       {
         key: 'controller',
-        label: I18N.VisualMap?.Controller ?? 'Controller',
+        label: I18N?.VisualMap?.Controller ?? 'Controller',
         fieldGroup: [
           {
             key: 'inRange',
             wrappers: ['panel'],
             props: {
-              label: I18N.VisualMap?.InRange ?? 'In Range'
+              label: I18N?.VisualMap?.InRange ?? 'In Range'
             },
             fieldGroup: [
               {
                 key: 'color',
                 type: 'json',
                 props: {
-                  label: I18N.Common?.Color ?? 'Color',
-                  placeholder: I18N.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
+                  label: I18N?.Common?.Color ?? 'Color',
+                  placeholder: I18N?.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
                   autosize: true
                 }
               }
@@ -302,15 +270,15 @@ export function VisualMap(className: string, I18N?) {
             key: 'outOfRange',
             wrappers: ['panel'],
             props: {
-              label: I18N.VisualMap?.OutofRange ?? 'Out of Range'
+              label: I18N?.VisualMap?.OutofRange ?? 'Out of Range'
             },
             fieldGroup: [
               {
                 key: 'color',
                 type: 'json',
                 props: {
-                  label: I18N.Common?.Color ?? 'Color',
-                  placeholder: I18N.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
+                  label: I18N?.Common?.Color ?? 'Color',
+                  placeholder: I18N?.Common?.ColorJSONPlaceholder ?? 'Color by JSON format',
                   autosize: true
                 }
               }

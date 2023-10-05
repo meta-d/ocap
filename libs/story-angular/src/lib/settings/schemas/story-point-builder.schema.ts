@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core'
 import { StoryPoint } from '@metad/story/core'
-import { BaseDesignerSchemaService, SchemaState } from '@metad/story/designer'
+import { BaseDesignerSchemaService, FORMLY_ROW, FORMLY_W_1_2, SchemaState } from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 import { gridsterOptions } from './types'
 
@@ -25,17 +25,21 @@ export class StoryPointBuilderSchema extends BaseDesignerSchemaService<StoryPoin
   }
 
   getGridOptions(I18NGridOptions) {
-    const className = 'nx-formly__col nx-formly__col-6'
+    const className = FORMLY_W_1_2
     return {
-      key: 'gridOptions',
-      wrappers: ['expansion'],
+      wrappers: ['accordion'],
       props: {
-        label: I18NGridOptions?.TITLE ?? 'Grid Layout',
-        expanded: true
+        expandedMulti: true,
+        elevationZ: true,
       },
       fieldGroup: [
         {
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
+          key: 'gridOptions',
+          props: {
+            label: I18NGridOptions?.TITLE ?? 'Grid Layout',
+            expanded: true
+          },
           fieldGroup: gridsterOptions(className, I18NGridOptions)
         }
       ]

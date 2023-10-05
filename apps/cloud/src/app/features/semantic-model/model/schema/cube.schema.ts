@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core'
+import { nonBlank } from '@metad/core'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { Cube } from '@metad/ocap-core'
+import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { untilDestroyed } from '@ngneat/until-destroy'
 import { Observable } from 'rxjs'
 import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { EntitySchemaService } from './entity-schema.service'
 import { CubeSchemaState } from './types'
-import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
-import { nonBlank } from '@metad/core'
+import { FormlyFieldConfig } from '@ngx-formly/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+
 
 @Injectable()
 export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaState<T>> {
@@ -55,7 +58,7 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
     filter(nonBlank),
     switchMap((table) => this.modelService.selectOriginalEntityProperties(table)),
     map((properties) => [
-      { 
+      {
         value: null,
         key: null,
         caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
@@ -68,32 +71,31 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
     ])
   )
 
+  public readonly cube = toSignal(this.cube$)
+
   SCHEMA: any
 
   getSchema() {
     return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
       map((SCHEMA) => {
         this.SCHEMA = SCHEMA
-
+        const CUBE = this.SCHEMA?.CUBE
         return [
           {
             type: 'tabs',
-            fieldGroup: [this.builder, this.dataDistribution]
+            fieldGroup: [
+              {
+                props: {
+                  label: CUBE?.TITLE ?? 'Cube',
+                  icon: 'crop_free'
+                },
+                fieldGroup: [this.cubeModeling]
+              }
+            ] 
           }
-        ]
+        ] as FormlyFieldConfig[]
       })
     )
-  }
-
-  get builder(): any {
-    const CUBE = this.SCHEMA?.CUBE
-    return {
-      props: {
-        label: CUBE?.TITLE ?? 'Cube',
-        icon: 'crop_free'
-      },
-      fieldGroup: [this.cubeModeling]
-    }
   }
 
   get cubeModeling() {
@@ -102,10 +104,10 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
     const className = FORMLY_W_1_2
     return {
       key: 'modeling',
-      wrappers: ['expansion'],
+      wrappers: ['panel'],
       props: {
         label: CUBE?.Modeling ?? 'Modeling',
-        expanded: true
+        padding: true
       },
       fieldGroup: [
         {
@@ -140,7 +142,7 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
             {
               className,
               key: 'defaultMeasure',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: CUBE?.DefaultMeasure ?? 'Default Measure',
                 options: this.measures$,
@@ -215,7 +217,7 @@ export function Tables(COMMON, tables$: Observable<ISelectOption[]>) {
       fieldGroup: [
         {
           key: 'name',
-          type: 'nx-select',
+          type: 'ngm-select',
           props: {
             label: COMMON?.Table ?? 'Table',
             searchable: true,

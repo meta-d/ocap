@@ -17,7 +17,7 @@ import { NxCoreModule, nonNullable } from '@metad/core'
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, NxCoreModule],
-  selector: 'nx-object-number',
+  selector: 'ngm-object-number',
   templateUrl: './object-number.component.html',
   styleUrls: ['./object-number.component.scss']
 })

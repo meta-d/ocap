@@ -7,55 +7,41 @@ import { map } from 'rxjs/operators'
 export class KpiStylingSchema extends BaseDesignerSchemaService<BaseSchemaState<StoryWidget['styling']>> {
   getSchema() {
     return this.translate.stream('Story').pipe(
-      map((STORY) => {
-        return [
-          {
-            wrappers: ['expansion'],
-            props: {
-              label: STORY?.Widgets?.Common?.ComponentStyling ?? 'Component Styling',
-              expanded: false
-            },
-            fieldGroup: [
-              {
-                key: 'component',
-                type: 'styling',
-                props: {
-                }
-              }
-            ]
+      map((STORY) => [
+        {
+          wrappers: ['accordion'],
+          props: {
+            expandedMulti: true,
+            elevationZ: true
           },
-          {
-            wrappers: ['expansion'],
-            props: {
-              label: STORY?.Widgets?.Common?.TitleStyling ?? 'Title Styling',
-              expanded: false
-            },
-            fieldGroup: [
-              {
-                key: 'title',
-                type: 'styling',
-                props: {
-                }
+          fieldGroup: [
+            {
+              key: 'component',
+              type: 'styling',
+              props: {
+                label: STORY?.Widgets?.Common?.ComponentStyling ?? 'Component Styling',
+                expanded: false
               }
-            ]
-          },
-          {
-            wrappers: ['expansion'],
-            props: {
-              label: STORY?.Widgets?.Common?.ValueStyling ?? 'Value Styling',
-              expanded: false
             },
-            fieldGroup: [
-              {
-                key: 'value',
-                type: 'styling',
-                props: {
-                }
+            {
+              key: 'title',
+              type: 'styling',
+              props: {
+                label: STORY?.Widgets?.Common?.TitleStyling ?? 'Title Styling',
+                expanded: false
               }
-            ]
-          },
-        ]
-      })
+            },
+            {
+              key: 'value',
+              type: 'styling',
+              props: {
+                label: STORY?.Widgets?.Common?.ValueStyling ?? 'Value Styling',
+                expanded: false
+              }
+            }
+          ]
+        }
+      ])
     )
   }
 }

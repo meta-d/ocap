@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { MatFormFieldModule } from '@angular/material/form-field'
 import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
@@ -15,7 +16,7 @@ import { Observable, isObservable, of } from 'rxjs'
   host: {
     class: 'pac-formly-input'
   },
-  imports: [CommonModule, ReactiveFormsModule, FormlyModule, OcapCoreModule, NgmInputComponent]
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, FormlyModule, OcapCoreModule, NgmInputComponent]
 })
 export class PACFormlyInputComponent extends FieldType implements OnInit {
   public options$: Observable<ISelectOption[]>

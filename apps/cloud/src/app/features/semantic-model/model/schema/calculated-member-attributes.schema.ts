@@ -110,7 +110,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
             fieldGroup: [
               {
                 key: 'dimension',
-                type: 'nx-select',
+                type: 'ngm-select',
                 className,
                 props: {
                   label: COMMON?.Dimension ?? 'Dimension',
@@ -127,7 +127,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
               },
               {
                 key: 'hierarchy',
-                type: 'nx-select',
+                type: 'ngm-select',
                 className,
                 props: {
                   label: COMMON?.Hierarchy ?? 'Hierarchy',

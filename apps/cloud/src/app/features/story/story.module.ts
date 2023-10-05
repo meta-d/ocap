@@ -8,7 +8,6 @@ import { NgmDialogComponent } from '@metad/components/dialog'
 import { NxTableModule } from '@metad/components/table'
 import { PACFormlyButtonToggleModule } from '@metad/formly/button-toggle'
 import { PACFormlyChartTypeModule } from '@metad/formly/chart-type'
-import { FormlyMatCheckboxModule } from '@metad/formly/checkbox'
 import { PACFormlyCodeEditorModule } from '@metad/formly/code-editor'
 import { PACFormlyColorPickerModule } from '@metad/formly/color-picker'
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
@@ -18,7 +17,6 @@ import { PACFormlyEntityTypeModule } from '@metad/formly/entity-type'
 import { PACFormlyInputModule } from '@metad/formly/input'
 import { PACFormlyJsonModule } from '@metad/formly/json'
 import { PACFormlyTableModule } from '@metad/formly/mat-table'
-import { FormlyMatToggleModule } from '@metad/formly/mat-toggle'
 import { PACFormlyPropertySelectModule } from '@metad/formly/property-select'
 import { PACFormlySelectModule } from '@metad/formly/select'
 import { PACFormlySemanticModelModule } from '@metad/formly/semantic-model'
@@ -36,6 +34,8 @@ import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
+import { NgmFormlyModule } from '@metad/formly'
+import { NgmFormlyChartPropertModule } from '@metad/story/widgets/analytical-card'
 
 @NgModule({
   declarations: [],
@@ -53,7 +53,7 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
     }),
 
     // Formly
-    FormlyModule.forRoot({
+    NgmFormlyModule.forRoot({
       types: [
         {
           name: 'styling',
@@ -63,33 +63,9 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
           name: 'image-upload',
           component: PACFormlyImageUploadComponent
         },
-        {
-          name: 'colors',
-          component: PacFormlyColorsComponent
-        }
       ]
     }),
-    PACFormlyJsonModule,
-    FormlyMatToggleModule,
-    FormlyMatSliderModule,
-    MetadFormlyMatModule,
-    PACFormlyChartTypeModule,
-    PACFormlyMatSlicersModule,
-    PACFormlyPropertySelectModule,
-    PACFormlyCodeEditorModule,
-    PACFormlyDesignerModule,
-    PACFormlyEmptyModule,
-    PACFormlyButtonToggleModule,
-    PACFormlyTableModule,
-    MetadFormlyAccordionModule,
-    PACFormlyInputModule,
-    PACFormlySelectModule,
-    FormlyMatCheckboxModule,
-    PACFormlyTextAreaModule,
-    PACFormlySemanticModelModule,
-    PACFormlySortModule,
-    PACFormlyColorPickerModule,
-    PACFormlyEntityTypeModule,
+    NgmFormlyChartPropertModule,
 
     NgmCommonModule,
     NgmDialogComponent,

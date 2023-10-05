@@ -20,7 +20,7 @@ import { EntityType, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { convertQueryResultColumns } from '@metad/core'
-import { CopilotService, ToastrService, calcEntityTypePrompt } from 'apps/cloud/src/app/@core'
+import { CopilotService, Store, ToastrService, calcEntityTypePrompt } from 'apps/cloud/src/app/@core'
 import { CopilotChatComponent, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isEqual, isPlainObject } from 'lodash-es'
 import { NgxPopperjsContentComponent, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -54,9 +54,12 @@ export class QueryComponent extends TranslationBaseComponent implements OnDestro
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly route = inject(ActivatedRoute)
   private readonly _toastrService = inject(ToastrService)
+  private readonly store = inject(Store)
 
   @ViewChild('editor') editor!: BaseEditorDirective
   @ViewChild('copilotChat') copilotChat!: CopilotChatComponent
+
+  themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
   queryKey: string
   // statement = ''

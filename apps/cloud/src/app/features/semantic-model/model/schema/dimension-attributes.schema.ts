@@ -74,7 +74,7 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
             {
               className: FORMLY_W_1_2,
               key: 'defaultHierarchy',
-              type: 'nx-select',
+              type: 'ngm-select',
               props: {
                 label: DIMENSION?.DefaultHierarchy ?? 'Default Hierarchy',
                 options: this.hierarchies$.pipe(

@@ -14,7 +14,7 @@ export function PieCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'seriesStyle',
-      label: I18N.SeriesStyle?.Title ?? 'Series Attributes',
+      label: I18N?.SeriesStyle?.Title ?? 'Series Attributes',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,
@@ -197,7 +197,7 @@ export function PieLabel(className: string, I18N) {
   return [
     ...Labels(className, I18N),
     // {
-    //   className: 'nx-formly__col nx-formly__col-12',
+    //   className: 'ngm-formly__col ngm-formly__col-12',
     //   key: 'show',
     //   type: 'toggle',
     //   props: {

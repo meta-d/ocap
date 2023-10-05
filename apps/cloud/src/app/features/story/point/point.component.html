@@ -3,13 +3,13 @@
 </facebook-content-loader>
 
 <div class="pac-story-point-viewer block w-full h-full">
-    <nx-story-point *ngIf="pointKey()" class="w-full h-full"
+    <ngm-story-point *ngIf="pointKey()" class="w-full h-full"
         ngmTransformScale
         [ngStyle]="storySizeStyles()"
         [key]="pointKey()"
         [opened]="true"
     >
-    </nx-story-point>
+    </ngm-story-point>
 </div>
 
 <div class="pac-story-bar absolute left-4 top-16 max-w-[46px] p-2 flex flex-col justify-start items-center gap-2

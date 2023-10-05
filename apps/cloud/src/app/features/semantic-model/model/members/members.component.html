@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <nx-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
+  <ngm-table class="overflow-hidden rounded-lg border border-gray-200 mt-2"
     paging
     [data]="members"
     [columns]="[
@@ -46,7 +46,7 @@
         cellTemplate: actionTempl
       }
     ]"
-  ></nx-table>
+  ></ngm-table>
 </div>
 
 <ng-template #userTempl let-user>

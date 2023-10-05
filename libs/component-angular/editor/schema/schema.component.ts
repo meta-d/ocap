@@ -5,11 +5,11 @@ import { BaseEditorDirective } from '../editor.directive'
 
 
 @Component({
-  selector: 'nx-editor-schema',
+  selector: 'ngm-editor-schema',
   templateUrl: './schema.component.html',
   styleUrls: ['./schema.component.scss'],
   host: {
-    class: 'nx-editor-schema',
+    class: 'ngm-editor-schema',
   },
   providers: [
     {

@@ -11,15 +11,15 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
         return [
           {
             key: 'canvas',
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.CANVAS?.TITLE ?? 'Canvas'
             },
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: StylingCssSchema(FORMLY_W_1_2, DESIGNER)
           },
           {
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.STORY_PAGE?.DefaultBackground ?? 'Default Background'
             },
@@ -35,7 +35,7 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
           },
           {
             key: 'pageSize',
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
               label: DESIGNER?.STYLING?.STORY_PAGE?.PAGE_SIZE ?? 'Page Size'
             },
@@ -57,7 +57,7 @@ export class StoryPointStylingSchema extends BaseDesignerSchemaService<BaseSchem
                 fieldGroup: [
                   {
                     key: 'size',
-                    type: 'nx-select',
+                    type: 'ngm-select',
                     props: {
                       label: '预设大小',
                       options: [

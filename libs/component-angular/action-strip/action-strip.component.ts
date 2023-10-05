@@ -58,7 +58,7 @@ export class IgxActionStripMenuItemDirective {
  * </igx-action-strip>
  */
 @Component({
-    selector: 'nx-action-strip',
+    selector: 'ngm-action-strip',
     templateUrl: 'action-strip.component.html'
 })
 
@@ -167,10 +167,10 @@ export class IgxActionStripComponent implements AfterContentInit, AfterViewInit 
      */
     @HostBinding('attr.class')
     public get hostClasses(): string {
-        const classes = [this.getComponentDensityClass('nx-action-strip')];
+        const classes = [this.getComponentDensityClass('ngm-action-strip')];
         // The custom classes should be at the end.
-        if (!classes.includes('nx-action-strip')) {
-            classes.push('nx-action-strip');
+        if (!classes.includes('ngm-action-strip')) {
+            classes.push('ngm-action-strip');
         }
         classes.push(this.hostClass);
         return classes.join(' ');

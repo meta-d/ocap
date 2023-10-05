@@ -19,12 +19,12 @@ import { BehaviorSubject, combineLatest, map, Observable, shareReplay, startWith
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-time-filter-editor',
+  selector: 'ngm-time-filter-editor',
   templateUrl: './time-filter-editor.component.html',
   styleUrls: ['./time-filter-editor.component.scss']
 })
 export class NxTimeFilterEditorComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   @Input() get entityType() {
     return this.entityType$.value

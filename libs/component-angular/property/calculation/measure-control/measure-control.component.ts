@@ -15,7 +15,7 @@ import { BehaviorSubject } from 'rxjs'
 import { map, tap } from 'rxjs/operators'
 
 @Component({
-  selector: 'nx-measure-control',
+  selector: 'ngm-measure-control',
   templateUrl: './measure-control.component.html',
   styles: [
     `
@@ -23,7 +23,7 @@ import { map, tap } from 'rxjs/operators'
         max-height: 100%;
         overflow-y: auto;
       }
-      .nx-cdk__drag-list {
+      .ngm-cdk__drag-list {
         &.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
           transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
         }

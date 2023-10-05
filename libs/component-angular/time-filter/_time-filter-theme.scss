@@ -14,12 +14,12 @@
 }
 
 @mixin density($config-or-theme) {
-  .ngm-density__cosy.nx-today-filter,
-  .ngm-density__cosy .nx-today-filter {
+  .ngm-density__cosy.ngm-today-filter,
+  .ngm-density__cosy .ngm-today-filter {
     @include mat.form-field-density(-3);
   }
-  .ngm-density__compact.nx-today-filter,
-  .ngm-density__compact .nx-today-filter {
+  .ngm-density__compact.ngm-today-filter,
+  .ngm-density__compact .ngm-today-filter {
     @include mat.form-field-density(-5);
   }
 }

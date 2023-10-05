@@ -18,7 +18,7 @@ interface InsightCreationState {
 })
 export class InsightCreationComponent extends ComponentStore<InsightCreationState> implements OnInit {
 
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   // public readonly dataSource$ = this.select((state) => state.dataSourceName).pipe(
   //   filter((value) => !!value),

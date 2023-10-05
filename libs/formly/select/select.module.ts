@@ -19,7 +19,7 @@ import { PACFormlySelectComponent } from './select.type'
           extends: 'select-inline',
         },
         {
-          name: 'nx-select',
+          name: 'ngm-select',
           extends: 'select',
           defaultOptions: {
             props: {

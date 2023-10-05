@@ -2,12 +2,11 @@ import { Injectable } from '@angular/core'
 import { StoryWidget } from '@metad/story/core'
 import {
   AccordionWrappers,
-  Appearance,
+  Appearances,
   BaseDesignerSchemaService,
   BaseSchemaState,
   FORMLY_ROW,
   FORMLY_W_1_2,
-  FORMLY_W_FULL
 } from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 
@@ -18,20 +17,33 @@ export class AnalyticalGridStylingSchema extends BaseDesignerSchemaService<BaseS
       map((i18n) => {
         return [
           {
-            wrappers: ['expansion'],
+            wrappers: ['accordion'],
             props: {
-              label: i18n?.Common?.ComponentStyling ?? 'Component Styling',
-              expanded: true
+              expandedMulti: true,
+              elevationZ: true,
             },
             fieldGroup: [
               {
                 key: 'component',
                 type: 'styling',
-                props: {}
+                props: {
+                  label: i18n?.Common?.ComponentStyling ?? 'Component Styling',
+                  expanded: true
+                }
+              },
+
+              {
+                key: 'appearance',
+                props: {
+                  label: i18n?.Common?.Appearance ?? 'Appearance',
+                  expanded: true,
+                },
+                fieldGroupClassName: FORMLY_ROW,
+                fieldGroup: Appearances(FORMLY_W_1_2, i18n?.Common)
               }
             ]
           },
-          Appearance(FORMLY_W_FULL, i18n?.Common),
+
           ...AccordionWrappers([
             {
               key: 'bar',

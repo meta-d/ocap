@@ -7,7 +7,7 @@
       (ngModelChange)="setFormula($event)"
       (keyDown)="onEditorKeyDown($event)"
     ></ngm-formula-editor>
-    <nx-calculated-measure *ngIf="entityType().syntax === Syntax.MDX" class="flex-1 w-full h-full"
+    <ngm-calculated-measure *ngIf="entityType().syntax === Syntax.MDX" class="flex-1 w-full h-full"
       [syntax]="Syntax.MDX"
       [dataSettings]="dataSettings()"
       [entityType]="entityType()"
@@ -15,7 +15,7 @@
       (ngModelChange)="setFormula($event)"
       (keyDown)="onEditorKeyDown($event)"
     >
-    </nx-calculated-measure>
+    </ngm-calculated-measure>
 
     <ng-template #contentLoader>
       <content-loader class="overflow-hidden">
@@ -64,12 +64,12 @@
 
                 </mat-expansion-panel-header>
 
-                <div id="property-modeling-rows" class="pac-cdk-drop__list pb-2" [ngClass]="{'nx-property-modeling__empty': !rows?.length}"
+                <div id="property-modeling-rows" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !rows?.length}"
                   cdkDropList
                   [cdkDropListData]="rows"
                   (cdkDropListDropped)="drop($event)"
                 >
-                  <nx-property-select *ngFor="let property of rows; index as i; trackBy: trackByIndex" displayDensity="compact"
+                  <ngm-property-select *ngFor="let property of rows; index as i; trackBy: trackByIndex" displayDensity="compact"
                     [dataSettings]="dataSettings()"
                     [entityType]="entityType()"
                     [capacities]="propertyCapacities"
@@ -85,7 +85,7 @@
                     </button>
 
                     <div class="property-modeling-custom-placeholder" *cdkDragPlaceholder></div>
-                  </nx-property-select>
+                  </ngm-property-select>
                 </div>
               </mat-expansion-panel>
               <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
@@ -100,10 +100,10 @@
                     </button>
                   </div>
                 </mat-expansion-panel-header>
-                <div id="property-modeling-columns" class="pac-cdk-drop__list pb-2" [ngClass]="{'nx-property-modeling__empty': !columns?.length}"
+                <div id="property-modeling-columns" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !columns?.length}"
                   cdkDropList [cdkDropListData]="columns" (cdkDropListDropped)="drop($event)"
                 >
-                  <nx-property-select *ngFor="let property of columns; index as i; trackBy: trackByIndex" displayDensity="compact"
+                  <ngm-property-select *ngFor="let property of columns; index as i; trackBy: trackByIndex" displayDensity="compact"
                     [dataSettings]="dataSettings()"
                     [entityType]="entityType()"
                     [capacities]="propertyCapacities"
@@ -118,7 +118,7 @@
                       <mat-icon>clear</mat-icon>
                     </button>
                     <div class="property-modeling-custom-placeholder" *cdkDragPlaceholder></div>
-                  </nx-property-select>
+                  </ngm-property-select>
                 </div>
               </mat-expansion-panel>
             
@@ -135,7 +135,7 @@
                   </div>
                 </mat-expansion-panel-header>
                 
-                <div id="property-modeling-slicers" class="pac-cdk-drop__list pb-2" [ngClass]="{'nx-property-modeling__empty': !slicers?.length}"
+                <div id="property-modeling-slicers" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !slicers?.length}"
                   cdkDropList [cdkDropListData]="slicers" (cdkDropListDropped)="drop($event)"
                 >
                   <ngm-smart-filter *ngFor="let slicer of slicers$ | async; index as i; trackBy: trackByDim"

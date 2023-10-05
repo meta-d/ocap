@@ -28,7 +28,7 @@ export interface CalculationEditorData {
 
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'nx-calculation-editor',
+  selector: 'ngm-calculation-editor',
   templateUrl: './calculation-editor.component.html',
   styleUrls: ['./calculation-editor.component.scss'],
 })

@@ -62,6 +62,7 @@
     }
   }
 
+  // For mat icon
   .mat-icon {
     &.ngm-density__cosy {
       @include icon-cosy();
@@ -71,15 +72,17 @@
     }
   }
 
-  .mat-accordion.ngm-density__compact {
-    .mat-expansion-panel-header:not(.mat-expanded) {
-      height: 38px;
-    }
+  // For accordion expansion
+  .ngm-density__compact.mat-accordion, .ngm-density__compact .mat-accordion {
+    --mat-expansion-header-collapsed-state-height: 34px;
+    --mat-expansion-header-expanded-state-height: 50px;
+
     .mat-expansion-panel-header {
       padding: 0 14px;
     }
   }
 
+  // For toolbar
   .mat-toolbar.ngm-density__compact {
     &.mat-toolbar-multiple-rows {
       min-height: 58px;
@@ -93,11 +96,6 @@
 
     .mat-toolbar-row {
       padding: 0 6px;
-    }
-  }
-
-  .mat-button-toggle-group {
-    .ngm-density__compact {
     }
   }
 }

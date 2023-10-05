@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -9,7 +9,6 @@ import {
   DataSettings,
   Dimension,
   DisplayBehaviour,
-  EntitySet,
   EntityType,
   FilterSelectionType,
   getEntityProperty,
@@ -89,7 +88,7 @@ export enum PropertyCapacity {
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-property-select',
+  selector: 'ngm-property-select',
   templateUrl: './property-select.component.html',
   styleUrls: ['./property-select.component.scss'],
   providers: [
@@ -126,7 +125,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   DisplayDensity = DisplayDensity
   CalculationType = CalculationType
 
-  @HostBinding('class.nx-property-select') isPropertySelect = true
+  @HostBinding('class.ngm-property-select') isPropertySelect = true
 
   private readonly _dialog? = inject(MatDialog, {optional: true})
   private readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})
@@ -150,8 +149,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       label: 'ID Only',
     },
   ]
-  // @Input() appearance: MatFormFieldAppearance = 'fill'
-  // @Input() floatLabel: FloatLabelType = 'auto'
+
   @Input() label: string
   @Input() get required(): boolean {
     return this._required
@@ -188,14 +186,6 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   }
   private readonly dataSettings$ = new BehaviorSubject<DataSettings>(null)
 
-  @Input() get entitySet() {
-    return this.entitySet$.value
-  }
-  set entitySet(value) {
-    this.entitySet$.next(value)
-  }
-  private readonly entitySet$ = new BehaviorSubject<EntitySet>(null)
-
   @Input() get entityType() {
     return this.entityType$.value
   }
@@ -215,7 +205,6 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
   @Input() coreService: NxCoreService
   @Input() dsCoreService: NgmDSCoreService
 
-  // @Input() calculationEditor: Type<any>
   @Input() syntax: Syntax
   @Input() displayDensity: DisplayDensity | string
   @Input() disabled: boolean
@@ -243,7 +232,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     zeroSuppression: new FormControl<boolean>(true),
     formatting: new FormControl(),
     parameter: new FormControl(),
-    order: new FormControl<OrderDirection>(null)
+    order: new FormControl<OrderDirection>(null),
   })
   // 初始值
   private readonly _formValue = this.formGroup.value
@@ -416,7 +405,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       })
     )
 
-  public readonly selectTrigger$ = combineLatest([
+  private readonly selectTrigger$ = combineLatest([
     this.property$.pipe(startWith(null)),
     this.hierarchy$.pipe(startWith(null)),
     this.level$.pipe(startWith(null)),
@@ -441,7 +430,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       }
 
       if (members?.length) {
-        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].label || members[0].value}`
+        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].caption || members[0].value}`
         if (members.length > 1) {
           property.caption += `(+${members.length - 1})`  
         }
@@ -449,6 +438,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       return property
     })
   )
+
+  public readonly selectTrigger = toSignal(this.selectTrigger$)
 
   get caption() {
     return this.formGroup.get('caption').value
@@ -592,6 +583,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     return this.capacities?.includes(PropertyCapacity.Order)
   }
 
+  showMore = signal(false)
+
   private onChange: any
   private onTouched: any
 
@@ -649,8 +642,12 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
         })
       })
 
-    // 订阅 formGroup 发回给双向绑定
-    this.formGroup.valueChanges.pipe(untilDestroyed(this)).subscribe((value) => {
+    // subscribe formGroup to export value
+    this.formGroup.valueChanges.pipe(
+      // Update value when property is initialized
+      filter(() => !!this.property$.value),
+      untilDestroyed(this)
+    ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {
         value = {
           ...value,

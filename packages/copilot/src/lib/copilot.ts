@@ -4,7 +4,7 @@ import {
   CreateChatCompletionResponse,
   CreateChatCompletionResponseChoicesInner
 } from 'openai'
-import { Observable, catchError, of, switchMap, tap, throwError } from 'rxjs'
+import { Observable, catchError, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AIOptions, AI_PROVIDERS, CopilotChatMessage, CopilotChatResponseChoice, ICopilot } from './types'
 
@@ -33,6 +33,12 @@ export class CopilotService {
   }
   get modelsUrl() {
     return (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) + '/v1/models'
+  }
+
+  constructor(copilot?: ICopilot) {
+    if (copilot) {
+      this.copilot = copilot
+    }
   }
 
   async createChat(

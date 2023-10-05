@@ -60,8 +60,8 @@
   }
 
   .pac-story-widget-feed {
-    .nx-story-widget__content {
-      &.nx-story-widget__card, &.nx-story-widget__table {
+    .ngm-story-widget__content {
+      &.ngm-story-widget__card, &.ngm-story-widget__table {
         background: mat.get-color-from-palette($background, card);
         border-radius: 5px;
         color: mat.get-color-from-palette($foreground, text);

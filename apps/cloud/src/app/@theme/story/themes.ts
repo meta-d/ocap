@@ -27,14 +27,14 @@ export function subscribeStoryTheme(storyService: NxStoryService, coreService: N
     const echartsTheme = story.options?.echartsTheme
 
     if (prev === 'light' || !prev) {
-      renderer.removeClass(elementRef.nativeElement, 'nx-theme-default')
+      renderer.removeClass(elementRef.nativeElement, 'ngm-theme-default')
     }
     if (prev) {
-      renderer.removeClass(elementRef.nativeElement, 'nx-theme-' + prev)
+      renderer.removeClass(elementRef.nativeElement, 'ngm-theme-' + prev)
       renderer.removeClass(elementRef.nativeElement, prev)
     }
     if (current) {
-      renderer.addClass(elementRef.nativeElement, 'nx-theme-' + current)
+      renderer.addClass(elementRef.nativeElement, 'ngm-theme-' + current)
       renderer.addClass(elementRef.nativeElement, current)
       if (echartsTheme?.[current]) {
         coreService.changeTheme(`${current}-${key}`)

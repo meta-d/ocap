@@ -4,12 +4,24 @@ ARG PORT
 FROM node:18-alpine AS build
 
 LABEL maintainer="meta.digital.cloud@gmail.com"
+LABEL org.opencontainers.image.source https://github.com/meta-d/ocap
 
 ENV CI=true
 
-RUN apk --update add bash && \
-    apk add --no-cache --virtual build-dependencies dos2unix gcc g++ git make python3 vips-dev && \
-    mkdir /srv/pangolin && chown -R node:node /srv/pangolin
+# Set Python interpreter for `node-gyp` to use
+ENV PYTHON /usr/bin/python
+
+RUN apk --update add bash && npm i -g npm \
+    && apk add --no-cache --virtual build-dependencies dos2unix gcc g++ git make python3 vips-dev
+
+# Output Python3 version
+RUN python3 --version
+
+RUN npm install --quiet node-gyp@9.3.1 -g
+RUN npm install yarn -g --force
+RUN mkdir /srv/pangolin && chown -R node:node /srv/pangolin
+
+USER node:node
 
 WORKDIR /srv/pangolin
 

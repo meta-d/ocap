@@ -5,7 +5,7 @@
 </header>
 
 <div mat-dialog-content [formGroup]="formGroup">
-  <div class="nx-timer-editor__header" >
+  <div class="ngm-timer-editor__header" >
     <mat-form-field appearance="fill">
       <mat-label>{{ 'COMPONENTS.TIME_FILTER.CURRENT_DATE' | translate: {Default: "Current Date"} }}</mat-label>
       <mat-select formControlName="currentDate">
@@ -121,7 +121,7 @@
     </mat-expansion-panel>
   </mat-accordion>
 
-  <button mat-stroked-button class="nx-timer-editor__add" color="primary" ngmAppearance="dashed" (click)="addRange($event)">
+  <button mat-stroked-button class="ngm-timer-editor__add" color="primary" ngmAppearance="dashed" (click)="addRange($event)">
     <mat-icon>add</mat-icon>{{ 'COMPONENTS.TIME_FILTER.ADD_TIME_RANGE' | translate: {Default: "Add Time Range"} }}
   </button>
 

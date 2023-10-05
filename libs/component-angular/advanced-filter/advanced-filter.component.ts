@@ -64,15 +64,15 @@ class ExpressionOperandItem extends ExpressionItem {
 }
 
 @Component({
-  selector: 'nx-advanced-filter',
+  selector: 'ngm-advanced-filter',
   templateUrl: './advanced-filter.component.html',
   styleUrls: ['./advanced-filter.component.scss'],
   host: {
-    class: 'nx-advanced-filter'
+    class: 'ngm-advanced-filter'
   },
 })
 export class NxAdvancedFilterComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
   PropertyCapacity = PropertyCapacity
   /**
    * @hidden @internal

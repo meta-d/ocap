@@ -5,8 +5,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { NxTableModule } from '@metad/components/table'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
 import { ICertification, IProject, IUser, ProjectService, Store, ToastrService } from '../../../@core'
@@ -15,14 +14,15 @@ import {
   UserProfileComponent,
   UserProfileInlineComponent,
   UserRoleSelectComponent,
-  userLabel
+  userLabel,
+  TranslationBaseComponent
 } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { ProjectComponent } from '../project.component'
 import { uniq } from 'lodash-es'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   imports: [
@@ -81,7 +81,8 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
     .pipe(
       switchMap(([, projectId]) =>
         this.projectService.getOne(projectId ?? null, ['owner', 'members', 'certifications'])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((project) => {
       this.project = project
@@ -96,7 +97,10 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
     })
 
   private _searchSub = this.searchControl.valueChanges
-    .pipe(map((text) => text?.trim().toLowerCase()))
+    .pipe(
+      map((text) => text?.trim().toLowerCase()),
+      takeUntilDestroyed()
+    )
     .subscribe((text) => {
       this.members = (
         text

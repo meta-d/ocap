@@ -8,7 +8,7 @@ import { ActivatedRoute } from '@angular/router'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { UntilDestroy } from '@ngneat/until-destroy'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { ModelsService } from '@metad/cloud/state'
 import { NxTableModule } from '@metad/components/table'
 import { ISemanticModel, IUser, Store, ToastrService } from 'apps/cloud/src/app/@core'
@@ -71,10 +71,8 @@ export class ModelMembersComponent extends TranslationBaseComponent {
 
   public readonly refresh$ = new BehaviorSubject<void>(null)
 
-  private id$ = this.modelComponent.id$
-
   // Subscribers
-  private _modelDetailSub = combineLatest([this.refresh$, this.id$])
+  private _modelDetailSub = combineLatest([this.refresh$, this.modelComponent.id$])
     .pipe(switchMap(([, id]) => this.modelsService.getById(id ?? null, ['owner', 'members'])))
     .subscribe((semanticModel) => {
       this.semanticModel = semanticModel

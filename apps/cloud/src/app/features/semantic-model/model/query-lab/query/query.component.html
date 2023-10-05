@@ -139,7 +139,8 @@
                 </mat-toolbar>
 
                 <ng-container [ngSwitch]="useMDX()">
-                    <nx-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                        [theme]="themeName()"
                         [(ngModel)]="statement"
                         (selectionChange)="onSelectionChange($event)"
                         (keyDown)="onEditorKeyDown($event)"
@@ -149,9 +150,10 @@
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
-                    </nx-editor-mdx>
+                    </ngm-editor-mdx>
         
-                    <nx-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                        [theme]="themeName()"
                         [entitySets]="tables$ | async"
                         [actions]="sqlEditorActions"
                         [(ngModel)]="statement"
@@ -164,7 +166,7 @@
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
-                    </nx-editor-sql>
+                    </ngm-editor-sql>
                 </ng-container>
 
             </ngm-splitter-pane>
@@ -239,11 +241,11 @@
                             </div>
                         </div>
 
-                        <nx-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result striped"
+                        <ngm-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result striped"
                             [columns]="activeResult?.columns"
                             [data]="activeResult?.preview"
                             [paging]="true"
-                        ></nx-table>
+                        ></ngm-table>
                     </ng-container>
                 </mat-tab-nav-panel>
         

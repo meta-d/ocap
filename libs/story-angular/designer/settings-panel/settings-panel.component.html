@@ -1,6 +1,6 @@
 <mat-drawer-container class="h-full" autoresize waResizeBox="content-box" (waResizeObserver)="onResize($event)">
-    <mat-drawer #drawer mode="over" position="end" [(opened)]="drawerOpened" class="nx-settings-panel__drawer">
-        <mat-toolbar class="nx-settings-panel__drawer-drawer flex justify-start items-center gap-2">
+    <mat-drawer #drawer mode="over" position="end" [(opened)]="drawerOpened" class="ngm-settings-panel__drawer">
+        <mat-toolbar class="ngm-settings-panel__drawer-drawer flex justify-start items-center gap-2">
             <button mat-icon-button type="button" displayDensity="cosy" (click)="closeDrawer()">
                 <span class="flex">
                     <mat-icon>chevron_right</mat-icon>
@@ -14,7 +14,7 @@
                 <mat-icon>done</mat-icon>
             </button>
 
-            <button mat-icon-button type="button" displayDensity="cosy" ngmAppearance="danger" class="nx-settings-panel__drawer-cancel"
+            <button mat-icon-button type="button" displayDensity="cosy" ngmAppearance="danger" class="ngm-settings-panel__drawer-cancel"
                 [matTooltip]="'STORY.DESIGNER.DELETE' | translate: {Default: 'Delete'}"
                 (click)="remove()">
                 <mat-icon fontSet="material-icons-round">
@@ -27,7 +27,7 @@
             <ng-template [cdkPortalOutlet]="drawerPortal"></ng-template>
         </div>
     </mat-drawer>
-    <mat-drawer-content class="nx-settings-panel__drawer-content">
+    <mat-drawer-content class="ngm-settings-panel__drawer-content">
         <ng-template [cdkPortalOutlet]="settingsPortal"></ng-template>
 
         <mat-tab-group #tabGroup class="h-full"

@@ -17,7 +17,7 @@ import { SlicersCapacity } from '../types'
 
 
 @Component({
-  selector: 'nx-slicer-bar',
+  selector: 'ngm-slicer-bar',
   templateUrl: 'slicer-bar.component.html',
   styleUrls: ['slicer-bar.component.scss']
 })
@@ -25,7 +25,7 @@ export class SlicerBarComponent extends BaseSlicersComponent implements OnInit {
   DisplayBehaviour = DisplayBehaviour
   SlicersCapacity = SlicersCapacity
 
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   @Input() get slicers() {
     return this.slicers$.value

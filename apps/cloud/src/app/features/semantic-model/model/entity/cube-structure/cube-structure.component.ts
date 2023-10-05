@@ -17,6 +17,7 @@ import { map, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -75,7 +76,7 @@ export class ModelCubeStructureComponent {
     role: AggregationRole.measure
   } as PropertyMeasure))))
 
-  public readonly calculatedMembers$ = this.cubeState.calculatedMembers$.pipe(
+  public readonly calculatedMembers = toSignal(this.cubeState.calculatedMembers$.pipe(
     map((members) => {
       return members?.map((member) => ({
         ...member,
@@ -83,7 +84,7 @@ export class ModelCubeStructureComponent {
         calculationType: CalculationType.Calculated
       } as Partial<CalculatedMember>))
     })
-  )
+  ))
 
   /** The selection for checklist */
   checklistSelection = new SelectionModel<string>()

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import { Dimension, nonNullable } from '@metad/ocap-core'
 import { PropertyCapacity } from '@metad/components/property'
 import {
+  AccordionWrappers,
   DataSettingsSchemaService,
   FORMLY_ROW,
   FORMLY_W_1_2,
@@ -31,7 +32,23 @@ export class StoryFilterBarSchemaService<T extends SchemaState = SchemaState> ex
     return combineLatest([this.translate.stream('Story'), this.translate.stream('DateVariable')]).pipe(
       map(([STORY_DESIGNER, DateVariable]) => {
         this.STORY_DESIGNER = STORY_DESIGNER
-        return [this.filterBarDataSettings, this.getOptions(DateVariable)]
+        const i18nStoryWidgets = STORY_DESIGNER?.Widgets
+        return AccordionWrappers([
+          {
+            key: 'dataSettings',
+            label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
+            toggleable: false,
+            expanded: true,
+            fieldGroup: this.filterBarDataSettings.fieldGroup[0].fieldGroup
+          },
+          {
+            key: 'options',
+            label: i18nStoryWidgets?.FilterBar?.OPTIONS ?? 'Options',
+            toggleable: false,
+            expanded: true,
+            fieldGroup: this.getOptions(DateVariable).fieldGroup
+          }
+        ], {expandedMulti: true})
       })
     )
   }
@@ -76,7 +93,7 @@ export class StoryFilterBarSchemaService<T extends SchemaState = SchemaState> ex
     const FILTER_BAR = this.STORY_DESIGNER.Widgets?.FilterBar
     return {
       key: 'options',
-      wrappers: ['expansion'],
+      wrappers: ['accordion'],
       templateOptions: {
         label: FILTER_BAR?.OPTIONS ?? 'Options',
         expanded: true

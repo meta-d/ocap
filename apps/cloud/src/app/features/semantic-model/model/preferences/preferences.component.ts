@@ -7,7 +7,7 @@ import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { cloneDeep, merge } from 'lodash-es'
 import { firstValueFrom, map } from 'rxjs'
 import { LANGUAGES, Visibility } from '../../../../@core/types'
-import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/translation-base.component'
+import { TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
   selector: 'pac-model-preferences',
@@ -15,7 +15,7 @@ import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/tr
   styleUrls: ['./preferences.component.scss']
 })
 export class ModelPreferencesComponent extends TranslationBaseComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public data: Partial<NgmSemanticModel> = inject(MAT_DIALOG_DATA)
   private readonly dataSourceService = inject(DataSourceService)
@@ -152,7 +152,8 @@ export class ModelPreferencesComponent extends TranslationBaseComponent implemen
             key: 'exposeXmla',
             type: 'toggle',
             props: {
-              label: TRANSLATE?.EnableExposeXMLA ?? 'Expose XMLA Service'
+              label: TRANSLATE?.EnableExposeXMLA ?? 'Expose XMLA Service',
+              placeholder: TRANSLATE?.EnableExposeXMLA ?? 'Expose XMLA Service',
             }
           }
         ]

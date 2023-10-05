@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { AbstractControl } from '@angular/forms'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { DimensionType, EntityProperty, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
 import { nonBlank, nonNullable } from '@metad/core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
-import { distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
 import { SemanticsExpansion } from './common'
 import { CubeSchemaService } from './cube.schema'
+
 
 @Injectable()
 export class DimensionSchemaService<T extends EntityProperty = PropertyDimension> extends CubeSchemaService<T> {
@@ -34,6 +38,23 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
         })) ?? []
     ),
   )
+  readonly sharedDimensions$ = this.select((state) => state.dimensions)
+  readonly otherDimensions$ = combineLatest([this.dimension$.pipe(map((dimension) => dimension?.__id__)), this.cube$.pipe(map((cube) => cube?.dimensions))])
+    .pipe(
+      map(([id, dimensions]) => dimensions?.filter((dimension) => dimension.__id__ !== id) ?? [])
+    )
+
+  dimensions = toSignal(combineLatest([
+    this.sharedDimensions$,
+    this.otherDimensions$
+  ]).pipe(
+    map(([sharedDimensions, dimensions]) => {
+      return [
+        ...(dimensions ?? []),
+        ...(sharedDimensions ?? [])
+      ]
+    })
+  ))
 
   DIMENSION: any
   rt = false
@@ -50,7 +71,7 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
         return [
           {
             type: 'tabs',
-            fieldGroup: [this.builder, this.dataDistribution]
+            fieldGroup: [this.builder]
           }
         ]
       })
@@ -68,15 +89,21 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
           key: 'cube',
           type: 'empty'
         },
-        DimensionModeling(this.SCHEMA, this.hierarchyOptions$, this.factFields$, this.rt, this.isCube)
+        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.dimensions(), this.rt, this.isCube)
       ]
+    }
+  }
+  
+  getTranslationFun() {
+    return (key: string, interpolateParams?: any) => {
+      return this.getTranslation(key, interpolateParams)
     }
   }
 }
 
 /**
  *
- * @param SCHEMA I18N
+ * @param i18n I18N
  * @param hierarchies$ 运行时的层次结构选项
  * @param factColumns$ 事实表的列选项
  * @param rt
@@ -84,14 +111,16 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
  * @returns
  */
 export function DimensionModeling(
-  SCHEMA,
+  i18n,
+  translate,
   hierarchies$: Observable<ISelectOption[]>,
   factColumns$: Observable<ISelectOption[]>,
+  dimensions: PropertyDimension[],
   rt = false,
   isCube = false
 ) {
-  const DIMENSION = SCHEMA?.DIMENSION
-  const COMMON = SCHEMA?.COMMON
+  const DIMENSION = i18n?.DIMENSION
+  const COMMON = i18n?.COMMON
 
   const className = FORMLY_W_1_2
   return {
@@ -113,6 +142,14 @@ export function DimensionModeling(
               label: DIMENSION?.Name ?? 'Name',
               readonly: rt,
               required: true
+            },
+            validators: {
+              name: {
+                expression: (c: AbstractControl) => !(!c.value || dimensions.find((item) => item.name === c.value)),
+                message: (error: any, field: FormlyFieldConfig) => field.formControl.value ? 
+                  translate('PAC.Messages.AlreadyExists', {Default: `Name already exists`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})}) : 
+                  translate('PAC.Messages.IsRequired', {Default: `Name is required`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})})
+              }
             }
           },
           {
@@ -129,7 +166,7 @@ export function DimensionModeling(
             type: 'textarea',
             props: {
               label: COMMON?.Description ?? 'Description',
-              rows: 1,
+              autosizeMinRows: 2,
               autosize: true
             }
           },
@@ -138,7 +175,7 @@ export function DimensionModeling(
                 {
                   // 只有内联维度才需要(才可能)设置此属性
                   key: 'foreignKey',
-                  type: 'nx-select',
+                  type: 'ngm-select',
                   className,
                   props: {
                     label: DIMENSION?.ForeignKey ?? 'Foreign Key',

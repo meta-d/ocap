@@ -14,7 +14,7 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
   $foreground: map.get($config, foreground);
 
   // Story widget page
-  .nx-story-widget.pac-story-widget-viewer {
+  .ngm-story-widget.pac-story-widget-viewer {
     background-color: mat.get-color-from-palette($background, background);
     color: mat.get-color-from-palette($foreground, text);
   }
@@ -43,13 +43,13 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
     }
   }
 
-  .nx-story-designer {
+  .ngm-story-designer {
     --story-fullscreen-top: 0;
     background-color: mat.get-color-from-palette($background, background);
 
-    @include nx-story-toolbar($theme);
-    &:not(.nx-story--fullscreen) {
-      @include nx-story-toolbar__not-fullscreen($theme);
+    @include ngm-story-toolbar($theme);
+    &:not(.ngm-story--fullscreen) {
+      @include ngm-story-toolbar__not-fullscreen($theme);
     }
 
     /**
@@ -62,22 +62,22 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
       min-width: unset;
     }
 
-    .nx-story-primary--add {
+    .ngm-story-primary--add {
       position: absolute;
       bottom: 2rem;
       right: 2rem;
       z-index: 1;
     }
 
-    &.nx-story--fullscreen {
-      .nx-story__container {
+    &.ngm-story--fullscreen {
+      .ngm-story__container {
         position: fixed;
         width: 100%;
         top: var(--story-fullscreen-top);
         height: 100%;
         transition: all 500ms $ease-in-out-curve-function;
       }
-      .nx-story__toolbar {
+      .ngm-story__toolbar {
         opacity: 0;
         transition: all 500ms $ease-in-out-curve-function;
 
@@ -88,8 +88,8 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
       }
     }
 
-    .nx-story__container {
-      .nx-story__device-size-bar {
+    .ngm-story__container {
+      .ngm-story__device-size-bar {
         .layout-size {
           background-color: mat.get-color-from-palette($foreground, divider);
           border-color: lightgrey;
@@ -99,7 +99,7 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
   }
 
   // Story designer pannel
-  .mat-drawer.nx-story__designer-drawer {
+  .mat-drawer.ngm-story__designer-drawer {
     &.mat-elevation-z8 {
       border: unset;
       max-width: 100%;

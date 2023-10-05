@@ -4,42 +4,42 @@
 
 <ng-container [ngSwitch]="point.type">
     <ng-container *ngSwitchCase="STORY_POINT_TYPE.Responsive">
-        <nx-flex-layout *ngIf="responsive$ | async as responsive" class="nx-story-point__responsive" 
+        <ngm-flex-layout *ngIf="responsive$ | async as responsive" class="ngm-story-point__responsive" 
             [editable]="editable"
             [flexLayout]="responsive">
-        </nx-flex-layout>
+        </ngm-flex-layout>
     </ng-container>
     
-    <div *ngSwitchDefault class="nx-story-point__page w-full"
+    <div *ngSwitchDefault class="ngm-story-point__page w-full"
         [ngClass]="{
-            'nx-story-point__size-continuous-height': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.continuousHeight,
-            'nx-story-point__size-a4': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A4',
-            'nx-story-point__size-a3': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A3'
+            'ngm-story-point__size-continuous-height': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.continuousHeight,
+            'ngm-story-point__size-a4': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A4',
+            'ngm-story-point__size-a3': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A3'
         }"
         resizeObserver [resizeDebounceTime]="100" (sizeChange)="onResize($event)"
         [cdkContextMenuTriggerFor]="context_menu"
     >
-        <gridster class="nx-story__layout" [options]="gridOptions$ | async" (contextmenu)="onGridContextmenu($event)" >
-            <gridster-item *ngFor="let widget of widgets$ | async; trackBy: trackWidget" class="nx-story__widget group"
+        <gridster class="ngm-story__layout" [options]="gridOptions$ | async" (contextmenu)="onGridContextmenu($event)" >
+            <gridster-item *ngFor="let widget of widgets$ | async; trackBy: trackWidget" class="ngm-story__widget group"
                 [item]="widget.position"
                 [ngStyle]="{'z-index': widget.key===currentWidget?.key ? maxLayerIndex : widget.position.layerIndex}"
                 [class.editable]="editable"
                 [class.active]="widget.key===currentWidget?.key"
-                [class.nx-fullscreen]="widget.fullscreen"
-                [class.nx-story__focus]="focus === widget.key"
+                [class.ngm-fullscreen]="widget.fullscreen"
+                [class.ngm-story__focus]="focus === widget.key"
                 (itemChange)="onGridsterItemChange($event, widget)"
                 (click)="onWidgetItemClick($event, widget, widgetComponent)"
             >
-                <nx-story-widget #widgetComponent
+                <ngm-story-widget #widgetComponent
                     [selected]="widget.key===currentWidget?.key"
                     [editable]="editable"
                     [key]="widget.key"
                     (fullscreenChange)="onFullscreenChange($event, widget);"
                     (focusChange)="onFocus(widget.key)">
-                </nx-story-widget>
-                <!-- <div *ngIf="editable" class="nx-drag-handler"></div> -->
-                <div *ngIf="editable && (resizingWidgetKey === widget.key || !resizingWidgetKey)" class="nx-story__layout-widget-size absolute -top-6 right-0 text-xs font-semibold py-1 px-2 rounded text-gray-600 bg-orange-200 last:mr-0 mr-1 hidden group-hover:inline-block"
-                    [class.nx-story__layout-widget-size-show]="resizingWidgetKey === widget.key"
+                </ngm-story-widget>
+                <!-- <div *ngIf="editable" class="ngm-drag-handler"></div> -->
+                <div *ngIf="editable && (resizingWidgetKey === widget.key || !resizingWidgetKey)" class="ngm-story__layout-widget-size absolute -top-6 right-0 text-xs font-semibold py-1 px-2 rounded text-gray-600 bg-orange-200 last:mr-0 mr-1 hidden group-hover:inline-block"
+                    [class.ngm-story__layout-widget-size-show]="resizingWidgetKey === widget.key"
                 >
                     {{widget.position.cols}}x{{widget.position.rows}}
                 </div>
@@ -49,7 +49,7 @@
     </div>
 </ng-container>
 
-<div *ngIf="quickStart$ | async;" class="nx-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
+<div *ngIf="quickStart$ | async;" class="ngm-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
     <div class="relative p-12 rounded-xl flex flex-col justify-center items-center bg-white dark:bg-bluegray-800">
         <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="closeQuickStart()">
             <mat-icon>close</mat-icon>
@@ -64,16 +64,16 @@
         </div>
     
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            <div class="nx-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalCard)">
+            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalCard)">
                 {{ 'Story.Widget.AnalyticalCard' | translate: {Default: 'Chart'} }}
             </div>
-            <div class="nx-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalGrid)">
+            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalGrid)">
                 {{ 'Story.Widget.AnalyticalGrid' | translate: {Default: 'Table'} }}
             </div>
-            <div class="nx-story__quick-start-widget" (click)="createWidget(ComponentType.InputControl)">
+            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.InputControl)">
                 {{ 'Story.Widget.InputControl' | translate: {Default: 'Input Control'} }}
             </div>
-            <div class="nx-story__quick-start-widget" (click)="createWidget(ComponentType.KpiCard)">
+            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.KpiCard)">
                 {{ 'Story.Widget.KpiCard' | translate: {Default: 'KPI'} }}
             </div>
         </div>
@@ -81,7 +81,7 @@
 </div>
 
 <ng-template #defaultTemplate let-widget let-laneKey="laneKey" let-editable="editable" let-selected="selected">
-    <nx-story-widget [key]="widget.key" [laneKey]="laneKey" [editable]="editable" [selected]="selected" style="width: 100%;height: 100%;"></nx-story-widget>
+    <ngm-story-widget [key]="widget.key" [laneKey]="laneKey" [editable]="editable" [selected]="selected" style="width: 100%;height: 100%;"></ngm-story-widget>
 </ng-template>
 
 <ng-template #context_menu>

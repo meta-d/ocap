@@ -1,23 +1,16 @@
-import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute } from '@angular/router'
+import { CountdownConfirmationComponent } from '@metad/components/confirm'
 import { IFeature, IFeatureOrganization, IFeatureToggle } from '@metad/contracts'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { TranslateService } from '@ngx-translate/core'
-import { CountdownConfirmationComponent } from '@metad/components/confirm'
 import { combineLatest, firstValueFrom, of } from 'rxjs'
-import {
-  distinctUntilChanged,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-  tap,
-  withLatestFrom
-} from 'rxjs/operators'
+import { distinctUntilChanged, map, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
 import { FeatureService, FeatureStoreService, Store } from '../../@core/services'
 import { TranslationBaseComponent } from '../language/translation-base.component'
+
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -25,7 +18,13 @@ import { TranslationBaseComponent } from '../language/translation-base.component
   templateUrl: './feature-toggle.component.html',
   styleUrls: ['./feature-toggle.component.scss']
 })
-export class FeatureToggleComponent extends TranslationBaseComponent implements OnInit, OnChanges {
+export class FeatureToggleComponent extends TranslationBaseComponent implements OnInit {
+  private readonly _activatedRoute = inject(ActivatedRoute)
+  private readonly _featureService = inject(FeatureService)
+  private readonly _featureStoreService = inject(FeatureStoreService)
+  private readonly _storeService = inject(Store)
+  private readonly _matDialog = inject(MatDialog)
+
   loading = false
   featureToggles = []
   featureTogglesDefinitions: IFeatureToggle[] = []
@@ -34,7 +33,7 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
     startWith(this._activatedRoute.snapshot.data),
     map((data) => data?.isOrganization),
     distinctUntilChanged(),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly organization$ = this._storeService.selectedOrganization$
@@ -52,20 +51,9 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
       }
       return this._featureStoreService.loadFeatureOrganizations(['feature'], request).pipe(map(({ items }) => items))
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
-
-  constructor(
-    private readonly _activatedRoute: ActivatedRoute,
-    private readonly _featureService: FeatureService,
-    private readonly _featureStoreService: FeatureStoreService,
-    private readonly _storeService: Store,
-    public readonly translationService: TranslateService,
-    private readonly _matDialog: MatDialog
-  ) {
-    super()
-  }
 
   ngOnInit(): void {
     combineLatest([this.featureTenant$, this.featureOrganizations$])
@@ -99,26 +87,24 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
       .subscribe()
   }
 
-  ngOnChanges(change: SimpleChanges): void {}
-
   getFeatures() {
     this._featureStoreService.loadFeatures(['children']).pipe(untilDestroyed(this)).subscribe()
   }
 
-  async featureChanged(event: boolean, feature: IFeature) {
+  async featureChanged(isEnabled: boolean, feature: IFeature) {
     const result = await firstValueFrom(
       this._matDialog
         .open(CountdownConfirmationComponent, {
-          // context: {
-          // 	recordType: feature.description,
-          // 	isEnabled: isEnabled
-          // },
+          data: {
+          	recordType: feature.description,
+          	isEnabled: isEnabled
+          },
         })
         .afterClosed()
     )
 
     if (result) {
-      await this.emitFeatureToggle({ feature, isEnabled: !!event })
+      await this.emitFeatureToggle({ feature, isEnabled: !!isEnabled })
     } else {
       if (!environment.IS_ELECTRON) {
         window.location.reload()
@@ -126,18 +112,18 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
     }
   }
 
-  async emitFeatureToggle({feature, isEnabled}: { feature: IFeature; isEnabled: boolean }) {
+  async emitFeatureToggle({ feature, isEnabled }: { feature: IFeature; isEnabled: boolean }) {
     const isOrganization = await firstValueFrom(this.isOrganization$)
     const organization = await firstValueFrom(this.organization$)
     const { id: featureId } = feature
-        const request = {
-          featureId,
-          isEnabled
-        }
-        if (organization && isOrganization) {
-          const { id: organizationId } = organization
-          request['organizationId'] = organizationId
-        }
+    const request = {
+      featureId,
+      isEnabled
+    }
+    if (organization && isOrganization) {
+      const { id: organizationId } = organization
+      request['organizationId'] = organizationId
+    }
     await firstValueFrom(this._featureStoreService.changedFeature(request))
     if (!environment.IS_ELECTRON) {
       window.location.reload()

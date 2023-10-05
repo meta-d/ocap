@@ -62,11 +62,11 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
     NxEditorModule,
     HighlightDirective,
   ],
-  selector: 'nx-calculated-measure',
+  selector: 'ngm-calculated-measure',
   templateUrl: './calculated-measure.component.html',
   styleUrls: ['./calculated-measure.component.scss'],
   host: {
-    class: 'nx-calculated-measure'
+    class: 'ngm-calculated-measure'
   },
   providers: [
     {

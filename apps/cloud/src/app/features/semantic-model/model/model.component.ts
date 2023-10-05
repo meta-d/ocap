@@ -9,6 +9,7 @@ import {
   ViewContainerRef,
   inject
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -50,14 +51,15 @@ import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
 
+
 @UntilDestroy({ checkProperties: true })
 @Component({
-  selector: 'pac-model',
+  selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
   providers: [NxSettingsPanelService, SemanticModelService, ModelCopilotEngineService],
   host: {
-    class: 'nx-story-model'
+    class: 'ngm-semanctic-model'
   },
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -97,6 +99,7 @@ export class ModelComponent extends TranslationBaseComponent {
     filter(Boolean),
     map(decodeURIComponent),
     distinctUntilChanged(),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -154,7 +157,6 @@ export class ModelComponent extends TranslationBaseComponent {
   )
   public readonly isDirty$ = this.modelService.dirty$
   public readonly stories$ = this.modelService.stories$
-  public readonly currentEntity$ = this.modelService.currentEntity$
   public readonly currentEntityType$ = this.modelService.currentEntityType$
 
   public readonly virtualCubes$ = this.modelService.virtualCubes$
@@ -314,7 +316,7 @@ export class ModelComponent extends TranslationBaseComponent {
   }
 
   createIndicator() {
-    this.router.navigate(['/project/indicator'], {
+    this.router.navigate(['/project/indicators/new'], {
       queryParams: {
         modelId: this.model.id
       }

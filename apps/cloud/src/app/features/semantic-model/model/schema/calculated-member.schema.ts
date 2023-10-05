@@ -21,7 +21,7 @@ export class CalculatedMemberSchemaService extends CalculatedMemberAttributesSch
     //       {
     //         key: 'name',
     //         type: 'input',
-    //         className: 'nx-formly__col nx-formly__col-4',
+    //         className: 'ngm-formly__col ngm-formly__col-4',
     //         props: {
     //           label: COMMON?.Name ?? 'Name'
     //         }
@@ -29,7 +29,7 @@ export class CalculatedMemberSchemaService extends CalculatedMemberAttributesSch
     //       {
     //         key: 'value',
     //         type: 'input',
-    //         className: 'nx-formly__col nx-formly__col-8',
+    //         className: 'ngm-formly__col ngm-formly__col-8',
     //         props: {
     //           label: COMMON?.Value ?? 'Value'
     //         }

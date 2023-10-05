@@ -7,7 +7,7 @@
   $accent: map.get($config, accent);
   $foreground: map.get($config, foreground);
   
-  .nx-table {
+  .ngm-table {
     th.mat-mdc-header-cell, td.mat-mdc-cell, td.mat-mdc-footer-cell {
       border-right: 1px solid mat.get-color-from-palette($foreground, divider);
     }
@@ -17,7 +17,7 @@
     }
 
     .cdk-header-cell {
-      .nx-header-cell {
+      .ngm-header-cell {
         .searchable-icon {
           opacity: 0;
           transition: all 200ms;
@@ -53,7 +53,7 @@
 }
 
 @mixin density($config-or-theme) {
-  .nx-table {
+  .ngm-table {
     th.mat-mdc-header-cell, td.mat-mdc-cell, td.mat-mdc-footer-cell {
       padding: 0 5px;
     }

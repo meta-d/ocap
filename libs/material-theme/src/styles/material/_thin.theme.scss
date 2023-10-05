@@ -73,7 +73,7 @@ $dark-theme: map.deep-merge(
   )
 );
 
-.nx-theme-thin {
+.ngm-theme-thin {
   // Include all theme styles for the mat components.
   @include mat.all-component-colors($dark-theme);
   @include components.all-component-colors($dark-theme);

@@ -87,7 +87,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
   ]
 
   /**
-   * 对接 nx-property-select 的 FormControl, 与当前组件的 formControl 连接
+   * 对接 ngm-property-select 的 FormControl, 与当前组件的 formControl 连接
    */
   _formControl = new FormControl()
 
@@ -383,9 +383,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
     this.editAttributesSubscription?.unsubscribe()
     this.editAttributesSubscription = this.settingsService.openSecondDesigner(
       'DimensionChartOptions',
-      {
-        chartOptions: this.formControl.value?.chartOptions ?? {}
-      },
+      this.formControl.value?.chartOptions ?? {},
       title,
       true
     )
@@ -393,7 +391,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
       .subscribe((result) => {
         if (result) {
           this.patchValue({
-            chartOptions: result.chartOptions
+            chartOptions: result
           })
         }
       })

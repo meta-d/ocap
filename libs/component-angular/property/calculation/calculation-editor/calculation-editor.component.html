@@ -1,4 +1,4 @@
-<div class="nx-theme-dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+<div class="ngm-theme-dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
     <div class="w-full flex justify-start items-center mb-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
       <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
       <span class="text-lg pointer-events-none">
@@ -77,14 +77,14 @@
     <ng-container [ngSwitch]="calculationType.value">
         <ng-container *ngSwitchCase="CALCULATION_TYPE.Calculated">
             <!-- <ng-container [ngSwitch]="syntax">
-                <nx-calculation-sql *ngSwitchCase="SYNTAX.SQL"
+                <ngm-calculation-sql *ngSwitchCase="SYNTAX.SQL"
                     [dataSettings]="dataSettings"
                     [entityType]="entityType"
                     [coreService]="coreService"
                     [(ngModel)]="calculation"
                 >
-                </nx-calculation-sql> -->
-                <nx-calculated-measure story opened class="max-w-full w-[1000px] h-full"
+                </ngm-calculation-sql> -->
+                <ngm-calculated-measure story opened class="max-w-full w-[1000px] h-full"
                     [dsCoreService]="dsCoreService"
                     [dataSettings]="dataSettings"
                     [entityType]="entityType"
@@ -92,24 +92,24 @@
                     [syntax]="syntax"
                     [(ngModel)]="formula"
                     >
-                </nx-calculated-measure>
+                </ngm-calculated-measure>
             <!-- </ng-container> -->
         </ng-container>
         
-        <nx-restricted-measure *ngSwitchCase="CALCULATION_TYPE.Restricted" class="sub-calculation"
+        <ngm-restricted-measure *ngSwitchCase="CALCULATION_TYPE.Restricted" class="sub-calculation"
             [coreService]="coreService"
             [dataSettings]="dataSettings"
             [entityType]="entityType"
             [(ngModel)]="calculation">
-        </nx-restricted-measure>
+        </ngm-restricted-measure>
 
-        <nx-conditional-aggregation *ngSwitchCase="CALCULATION_TYPE.Aggregation" class="sub-calculation"
+        <ngm-conditional-aggregation *ngSwitchCase="CALCULATION_TYPE.Aggregation" class="sub-calculation"
             [coreService]="coreService"
             [dsCoreService]="dsCoreService"
             [dataSettings]="dataSettings"
             [entityType]="entityType"
             [(ngModel)]="calculation">
-        </nx-conditional-aggregation>
+        </ngm-conditional-aggregation>
 
         <pac-calculation-variance *ngSwitchCase="CALCULATION_TYPE.Variance" class="sub-calculation"
             [dsCoreService]="dsCoreService"
@@ -118,11 +118,11 @@
             [(ngModel)]="calculation"
         ></pac-calculation-variance>
 
-        <nx-measure-control *ngSwitchCase="CALCULATION_TYPE.MeasureControl" class="sub-calculation"
+        <ngm-measure-control *ngSwitchCase="CALCULATION_TYPE.MeasureControl" class="sub-calculation"
             [(ngModel)]="calculation"
             [entityType]="entityType"
             >
-        </nx-measure-control>
+        </ngm-measure-control>
     </ng-container>
     
 </div>

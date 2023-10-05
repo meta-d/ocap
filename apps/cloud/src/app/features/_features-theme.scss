@@ -48,14 +48,11 @@ $sidebar-collapsed-width: 40px;
   }
 
   .mat-toolbar.pac__shell-bar {
-    @apply relative text-slate-300;
     // position: relative; // 使 z-index 生效的属性
     z-index: 2;
     // justify-content: space-between;
     height: $shell-bar-height;
     padding: 0 .5rem;
-    background-color: mat.get-color-from-palette($primary, 'darker');
-    // color: mat.get-color-from-palette($primary, 'darker-contrast');
 
     .mat-mdc-tab-link {
       height: $shell-bar-height;
@@ -86,9 +83,9 @@ $sidebar-collapsed-width: 40px;
   }
 
   .pac__toolbar.mat-toolbar {
-    background-color: mat.get-color-from-palette($primary, 100);
-    color: mat.get-color-from-palette($primary);
-    border-bottom: 1px solid mat.get-color-from-palette($foreground, divider);
+    // background-color: mat.get-color-from-palette($primary, 100);
+    // color: mat.get-color-from-palette($primary);
+    // border-bottom: 1px solid mat.get-color-from-palette($foreground, divider);
     padding: 0;
     
     .mat-mdc-tab-nav-bar {

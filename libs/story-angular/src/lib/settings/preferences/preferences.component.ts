@@ -10,7 +10,7 @@ import { PreferencesSchema } from './schema'
 import { pick } from '@metad/ocap-core'
 
 @Component({
-  selector: 'nx-settings-preferences',
+  selector: 'ngm-settings-preferences',
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss']
 })

@@ -44,7 +44,7 @@ export class MarkdownTooltipDirective {
 }
 
 @Component({
-  selector: 'nx-markdown-tooltip',
+  selector: 'ngm-markdown-tooltip',
   template: `<mat-card>
     <mat-card-content>
       <div [innerHTML]="markdown | markdown"></div>

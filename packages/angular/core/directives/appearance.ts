@@ -38,6 +38,17 @@ export class AppearanceDirective extends _NgmAppearanceBase implements CanColor,
   }
 
   @Input()
+  @HostBinding('class.ngm-appearance-hero')
+  get hero(): boolean {
+    return this.ngmAppearance === 'hero'
+  }
+  set hero(value: boolean) {
+    if (coerceBooleanProperty(value)) {
+      this.ngmAppearance = 'hero'
+    }
+  }
+
+  @Input()
   @HostBinding('class.ngm-appearance-acrylic')
   get acrylic(): boolean {
     return this.ngmAppearance === 'acrylic'

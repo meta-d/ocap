@@ -60,7 +60,7 @@
 </mat-toolbar>
 
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize cdkDropListGroup>
-    <mat-drawer #drawer class="nx-story__designer-drawer mat-elevation-z"
+    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
         opened
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
         ngmResizer [resizerWidth]="230"
@@ -82,7 +82,6 @@
                     [cdkDropListData]="entities$ | async"
                     (cdkDropListDropped)="drop($event)"
                     [cdkDropListEnterPredicate]="entityPredicate"
-                    *ngrxLet="currentEntity$ as current"
                 >
                   <div class="max-h-full overflow-y-auto">
                     <a mat-list-item *ngFor="let entity of entities$ | async; trackBy: trackById" class="pac-model__nav-item"
@@ -118,12 +117,12 @@
                         <mat-icon class="pac-model__nav-icon" displayDensity="compact" fontSet="material-icons-outlined">dataset_linked</mat-icon>
                         <ngm-display-behaviour class="flex-1"
                             [option]="{value: entity.name, label: entity.caption}"></ngm-display-behaviour>
-                        <nx-action-strip #actionStrip [hidden]="true">
+                        <ngm-action-strip #actionStrip [hidden]="true">
                             <button mat-icon-button color="warn" displayDensity="cosy"
                                 (click)="$event.stopPropagation();$event.preventDefault();deleteEntity(entity.__id__)">
                                 <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
                             </button>
-                        </nx-action-strip>
+                        </ngm-action-strip>
                     </a>
                   </div>
                 </mat-nav-list>
@@ -194,7 +193,7 @@
                                     >
                                 </ngm-display-behaviour>
 
-                                <nx-action-strip #actionStrip [hidden]="true">
+                                <ngm-action-strip #actionStrip [hidden]="true">
                                     <button mat-icon-button *ngIf="isWasm && entity.sourceUrl" displayDensity="compact"
                                         (click)="$event.stopPropagation();$event.preventDefault();editTable(entity)">
                                         <mat-icon>edit</mat-icon>
@@ -203,7 +202,7 @@
                                         (click)="$event.stopPropagation();$event.preventDefault();deleteTable(entity)">
                                         <mat-icon>delete</mat-icon>
                                     </button>
-                                </nx-action-strip>
+                                </ngm-action-strip>
                             </mat-list-item>
                         </mat-nav-list>
                     </cdk-virtual-scroll-viewport>
@@ -244,8 +243,7 @@
                 ></div>
             </mat-drawer>
 
-            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
-                >
+            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
                 <router-outlet #o="outlet"></router-outlet>
             </mat-drawer-content>
         </mat-drawer-container>

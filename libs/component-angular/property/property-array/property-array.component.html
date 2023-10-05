@@ -1,4 +1,4 @@
-<div class="nx-property-array__container flex flex-col justify-start items-stretch"
+<div class="ngm-property-array__container flex flex-col justify-start items-stretch"
   cdkDropList
   (cdkDropListDropped)="drop($event)">
 
@@ -6,7 +6,7 @@
     {{ 'COMPONENTS.PROPERTY.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
   </button>
 
-  <nx-property-select class="group" cdkDragBoundary=".nx-property-array__container" cdkDrag
+  <ngm-property-select class="group" cdkDragBoundary=".ngm-property-array__container" cdkDrag
     *ngFor="let item of formArray.controls; let i = index"
     [formControl]="$any(item)"
     [dataSettings]="dataSettings"
@@ -23,7 +23,7 @@
       <mat-icon>clear</mat-icon>
     </button>
 
-  </nx-property-select>
+  </ngm-property-select>
 </div>
 
 <button *ngIf="!isEmpty" class="add" mat-button color="primary" ngmAppearance="dashed" (click)="add()">

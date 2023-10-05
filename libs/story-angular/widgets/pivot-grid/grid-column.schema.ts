@@ -17,10 +17,10 @@ export class GridColumnSchema extends DesignerSchemaService {
         },
         fieldGroup: [
           {
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: [
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'name',
                 type: 'input',
                 templateOptions: {
@@ -29,7 +29,7 @@ export class GridColumnSchema extends DesignerSchemaService {
                 },
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'label',
                 type: 'input',
                 templateOptions: {
@@ -37,19 +37,19 @@ export class GridColumnSchema extends DesignerSchemaService {
                 },
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'filterable',
                 type: 'toggle',
                 templateOptions: { label: 'Filterable' },
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'groupable',
                 type: 'toggle',
                 templateOptions: { label: 'Groupable' },
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'sortable',
                 type: 'toggle',
                 templateOptions: { label: 'Sortable' },

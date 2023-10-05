@@ -1,10 +1,9 @@
-<nx-property-select class="max-w-full"
+<ngm-property-select class="max-w-full"
   [label]="props?.label"
   [formControl]="_formControl"
   [editable]="true"
   [showAttributes]="true"
   [dataSettings]="dataSettings$ | async"
-  [entitySet]="entitySet$ | async"
   [entityType]="entityType$ | async"
   [restrictedDimensions]="restrictedDimensions$ | async"
   [coreService]="coreService"
@@ -33,14 +32,14 @@
     <mat-icon fontSet="material-icons-outlined">adjust</mat-icon>
   </button>
 
-  <button class="nx-formly__remove" *ngIf="removable" displayDensity="compact"
+  <button ngmSuffix class="ngm-formly__remove" *ngIf="removable" displayDensity="compact"
     mat-icon-button color="warn"
     (click)="$event.stopPropagation();$event.preventDefault();killMyself()">
     <mat-icon>clear</mat-icon>
   </button>
-</nx-property-select>
+</ngm-property-select>
 
-<mat-menu #chartMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #chartMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item disableRipple [matMenuTriggerFor]="roleMenu">
     <mat-icon class="shrink-0" fontSet="material-icons-outlined">category</mat-icon>
     <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}...</span>
@@ -54,7 +53,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="role">
-  <mat-menu #roleMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #roleMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let role of DIMENSION_ROLES"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="role.value">
@@ -64,7 +63,7 @@
   </mat-menu>
 </mat-radio-group>
 
-<mat-menu #measureMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #measureMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item *ngIf="showMeasureRole" disableRipple [matMenuTriggerFor]="measureRoleMenu">
     <mat-icon class="shrink-0" fontSet="material-icons-outlined">category</mat-icon>
     <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}...</span>
@@ -102,7 +101,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="role">
-  <mat-menu #measureRoleMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #measureRoleMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple *ngFor="let role of MEASURE_ROLES"
       (click)="$event.stopPropagation();">
       <mat-radio-button [value]="role.value">
@@ -112,7 +111,7 @@
   </mat-menu>
 </mat-radio-group>
 
-<mat-menu #colorMenu="matMenu" class="nx-formly ngm-density__compact">
+<mat-menu #colorMenu="matMenu" class="ngm-formly ngm-density__compact">
   <button mat-menu-item *ngIf="showMeasurePalettePattern" disableRipple [matMenuTriggerFor]="patternMenu">
     <mat-icon class="shrink-0" fontSet="material-icons-outlined">texture</mat-icon>
     <span>{{ 'FORMLY.PROPERTY_SELECT.Pattern' | translate: {Default: 'Pattern'} }}</span>
@@ -141,7 +140,7 @@
 </mat-menu>
 
 <mat-radio-group [(ngModel)]="palette" displayDensity="cosy">
-  <mat-menu #paletteMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #paletteMenu="matMenu" class="ngm-formly ngm-density__compact">
 
     <ng-template matMenuContent>
       <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
@@ -158,7 +157,7 @@
         <button mat-menu-item disableRipple *ngFor="let interpolate of group.values"
           (click)="$event.stopPropagation();">
           <mat-radio-button [value]="interpolate.name" class="ngm-radio-button__property flex-1 w-full">
-            <nx-chromatic-preview class="flex-1 w-full" [interpolate]="interpolate"></nx-chromatic-preview>
+            <ngm-chromatic-preview class="flex-1 w-full" [interpolate]="interpolate"></ngm-chromatic-preview>
           </mat-radio-button>
         </button>
       </ng-container>
@@ -168,7 +167,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="shapeType">
-  <mat-menu #shapeMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #shapeMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button [value]="null">
         {{ 'FORMLY.PROPERTY_SELECT.None' | translate: {Default: 'None'} }}
@@ -184,7 +183,7 @@
 </mat-radio-group>
 
 <mat-radio-group [(ngModel)]="pattern">
-  <mat-menu #patternMenu="matMenu" class="nx-formly ngm-density__compact">
+  <mat-menu #patternMenu="matMenu" class="ngm-formly ngm-density__compact">
     <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
       <mat-radio-button [value]="null">
         {{ 'FORMLY.PROPERTY_SELECT.None' | translate: {Default: 'None'} }}

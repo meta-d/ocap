@@ -79,11 +79,11 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'nx-story',
+  selector: 'ngm-story',
   templateUrl: './story.component.html',
   styleUrls: ['./story.component.scss'],
   host: {
-    class: 'nx-story'
+    class: 'ngm-story'
   },
   providers: [NgmSmartFilterBarService],
   imports: [
@@ -170,7 +170,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   @ViewChildren(NxStoryPointComponent) storyPointComponents: QueryList<NxStoryPointComponent>
   @ViewChild('panDragHandler', { read: CdkDrag }) cdkDrag: CdkDrag
 
-  @HostBinding('class.nx-story--fullscreen')
+  @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
 
   readonly preferences = toSignal(this.storyService.preferences$)

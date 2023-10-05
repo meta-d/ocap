@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { NgmMatSelectComponent } from '@metad/ocap-angular/common'
+import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { map } from 'rxjs/operators'
@@ -16,7 +16,7 @@ import { MaterialModule } from '../material.module'
     ReactiveFormsModule,
     MaterialModule,
     TranslateModule,
-    NgmMatSelectComponent,
+    NgmSelectComponent,
     ButtonGroupDirective,
     DensityDirective
   ],

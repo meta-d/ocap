@@ -720,6 +720,6 @@ export class FeaturesComponent implements OnInit {
   }
 
   async createIndicator() {
-    this.router.navigate(['project', 'indicator'])
+    this.router.navigate(['project', 'indicators', 'new'])
   }
 }

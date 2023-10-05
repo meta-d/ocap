@@ -81,15 +81,15 @@ export class NgmValueHelpComponent implements OnInit {
   set dataSettings(value) {
     this.dataSettings$.set(value)
   }
-  private dataSettings$ = signal<DataSettings>(null) // new BehaviorSubject<DataSettings>(null)
+  private dataSettings$ = signal<DataSettings>(null)
 
   @Input() get dimension(): Dimension {
-    return this.dimension$()
+    return this._dimension()
   }
   set dimension(value) {
-    this.dimension$.set(value)
+    this._dimension.set(value)
   }
-  private dimension$ = signal<Dimension>(null) // new BehaviorSubject<Dimension>(null)
+  private _dimension = signal<Dimension>(null)
 
   @Input() options = {
     stickyHeader: true
@@ -184,7 +184,7 @@ export class NgmValueHelpComponent implements OnInit {
   presentation: PresentationEnum
   expandAvailables = false
 
-  entityType = toSignal(
+  readonly entityType = toSignal(
     toObservable(this.dataSettings$).pipe(
       filter((dataSettings) => !!dataSettings?.dataSource && !!dataSettings?.entitySet),
       switchMap((dataSettings) => this.dsCoreService.selectEntitySet(dataSettings.dataSource, dataSettings.entitySet)),
@@ -192,9 +192,9 @@ export class NgmValueHelpComponent implements OnInit {
     )
   )
 
-  hierarchies = computed<PropertyHierarchy[]>(() => {
+  readonly hierarchies = computed<PropertyHierarchy[]>(() => {
     const entityType = this.entityType()
-    const dimension = this.dimension$()
+    const dimension = this._dimension()
     if (entityType && dimension) {
       const hierarchies = getEntityProperty(entityType, dimension)?.hierarchies
       if (hierarchies?.length) {

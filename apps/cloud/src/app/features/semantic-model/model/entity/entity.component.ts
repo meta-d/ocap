@@ -10,6 +10,7 @@ import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/op
 import { AppService } from '../../../../app.service'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -35,6 +36,8 @@ export class ModelEntityComponent implements OnInit {
 
   private zIndex = 3
   detailsOpen = false
+
+  public readonly cube = toSignal(this.entityService.cube$)
 
   public readonly entityId$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
@@ -71,11 +74,7 @@ export class ModelEntityComponent implements OnInit {
   private errorSub = this.error$.pipe(untilDestroyed(this)).subscribe((err) => {
     this.toastrService.error(err)
   })
-
-  private entityTypeSub = this.entityService.entityType$.subscribe((entityType) => {
-
-  })
-
+  
   ngOnInit() {
     this.entityService.setSelectedProperty(null)
   }

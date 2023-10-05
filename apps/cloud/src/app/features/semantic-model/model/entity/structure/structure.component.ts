@@ -1,34 +1,41 @@
 import { CdkDrag, CdkDragDrop, CdkDragRelease, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, OnInit } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  HostBinding,
+  OnInit,
+  inject
+} from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { NxCoreService, nonBlank } from '@metad/core'
 import { SplitterType } from '@metad/ocap-angular/common'
+import { effectAction } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
-  getEntityDimensions,
-  getEntityMeasures,
   Join,
-  pick,
   Property,
   PropertyDimension,
   PropertyHierarchy,
   PropertyLevel,
   PropertyMeasure,
-  Table
+  Table,
+  getEntityDimensions,
+  getEntityMeasures,
+  pick
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { NxCoreService, nonBlank } from '@metad/core'
 import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { isEmpty, values } from 'lodash-es'
-import { combineLatest, firstValueFrom, Observable } from 'rxjs'
+import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { TranslationBaseComponent } from '../../../../../@shared'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { newDimensionFromColumn } from '../types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { effectAction } from '@metad/ocap-angular/core'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-structure',
@@ -39,11 +46,20 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
   @HostBinding('class.pac-model-cube-structure') _isModelCubeStructure = true
   SplitterType = SplitterType
 
+  public coreService = inject(NxCoreService)
+  public modelService = inject(SemanticModelService)
+  public entityService = inject(ModelEntityService)
+  private readonly _toastrService = inject(ToastrService)
+  private readonly _cdr = inject(ChangeDetectorRef)
+  private readonly _destroyRef = inject(DestroyRef)
+
   dimensions: Property[] = []
   measures: Property[] = []
   allVisible = false
   get visibleIndeterminate() {
-    return !!(this.dimensions.find((item) => item.visible) || this.measures.find((item) => item.visible)) && this.allVisible
+    return (
+      !!(this.dimensions.find((item) => item.visible) || this.measures.find((item) => item.visible)) && this.allVisible
+    )
   }
   get visibleEmpty() {
     return !(this.dimensions.find((item) => item.visible) || this.measures.find((item) => item.visible))
@@ -62,12 +78,13 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     shareReplay(1)
   )
   public readonly fectTableFieldOptions$ = this.fectTableFields$.pipe(
-    map((properties) => properties.map((property) => ({
-      key: property.name,
-      value: property,
-      caption: property.caption,
-
-    })))
+    map((properties) =>
+      properties.map((property) => ({
+        key: property.name,
+        value: property,
+        caption: property.caption
+      }))
+    )
   )
 
   options$ = combineLatest([this.modelService.wordWrap$, this.coreService.onThemeChange()]).pipe(
@@ -78,7 +95,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     tap((options) => console.debug(`[pac-model-structure] editor options`, options))
   )
 
-  public readonly expression$ = this.entityService.cube$.pipe(map((cube) => cube?.expression))
+  public readonly expression = toSignal(this.entityService.cube$.pipe(map((cube) => cube?.expression)))
 
   private _tableJoins = {}
   private _tableTypes = {}
@@ -104,15 +121,6 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       )
       this._cdr.detectChanges()
     })
-  constructor(
-    public coreService: NxCoreService,
-    public modelService: SemanticModelService,
-    public entityService: ModelEntityService,
-    private _toastrService: ToastrService,
-    private _cdr: ChangeDetectorRef
-  ) {
-    super()
-  }
 
   ngOnInit(): void {
     this.fectTableFields$
@@ -122,7 +130,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
           this.entityService.select((state) => state.measures)
         ),
         filter(([properties, dimensions, measures]) => isEmpty(this.dimensions) && isEmpty(this.measures)),
-        untilDestroyed(this)
+        takeUntilDestroyed(this._destroyRef)
       )
       .subscribe(([properties, dimensions, measures]) => {
         this.dimensions =
@@ -132,7 +140,9 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
           )
         this.measures =
           measures ??
-          properties.filter((item) => item.role === AggregationRole.measure || item.dataType?.toLowerCase() === 'numeric')
+          properties.filter(
+            (item) => item.role === AggregationRole.measure || item.dataType?.toLowerCase() === 'numeric'
+          )
         this._cdr.detectChanges()
       })
   }
@@ -161,19 +171,24 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
   }
 
   async confirmOverwriteCube() {
-    if (!this.dimensions.filter((item) => item.visible).length && !this.measures.filter((item) => item.visible).length) {
-      this._toastrService.warning('PAC.MODEL.ENTITY.PleaseSelectFields', {Default: 'Please select fields!'})
+    if (
+      !this.dimensions.filter((item) => item.visible).length &&
+      !this.measures.filter((item) => item.visible).length
+    ) {
+      this._toastrService.warning('PAC.MODEL.ENTITY.PleaseSelectFields', { Default: 'Please select fields!' })
       return false
     }
 
     const cube = await firstValueFrom(this.entityService.cube$)
     if (cube.dimensions?.length || cube.measures?.length) {
-      return await firstValueFrom(this._toastrService.confirm({
-        code: 'PAC.MODEL.ENTITY.ConfirmOverwriteCube',
-        params: {
-          Default: 'The cube configured. Confirm overwrite?'
-        }
-      }))
+      return await firstValueFrom(
+        this._toastrService.confirm({
+          code: 'PAC.MODEL.ENTITY.ConfirmOverwriteCube',
+          params: {
+            Default: 'The cube configured. Confirm overwrite?'
+          }
+        })
+      )
     }
 
     return true
@@ -192,7 +207,11 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     const dimensions = this.dimensions
       .filter((item) => item.visible)
       // Xmla 数据源的直接同步，sql 数据源的 1 生成 olap 维度 2 生成 sql 维度
-      .map((item) => modelType === MODEL_TYPE.XMLA ? {...item, __id__: uuid(),} : newDimensionFromColumn(item, modelType === MODEL_TYPE.OLAP))
+      .map((item) =>
+        modelType === MODEL_TYPE.XMLA
+          ? { ...item, __id__: uuid() }
+          : newDimensionFromColumn(item, modelType === MODEL_TYPE.OLAP)
+      )
 
     const measures = this.measures
       .filter((item) => item.visible)
@@ -219,6 +238,29 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
         measures: this.measures
       })
     )
+  }
+
+  async createDimension() {
+    const levels = this.dimensions.filter((item) => item.visible)
+    this.entityService.addDimension({
+      __id__: uuid(),
+      name: '',
+      hierarchies: [
+        {
+          __id__: uuid(),
+          name: '',
+          hasAll: true,
+          levels: levels.map((property) => ({
+            __id__: uuid(),
+            name: property.name,
+            caption: property.caption,
+            column: property.name
+          }))
+        }
+      ]
+    })
+
+    this.toggleVisibleAll(false)
   }
 
   /**
@@ -281,7 +323,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     if (!this._tableJoins[table.__id__]) {
       this._tableJoins[table.__id__] = this.tables$.pipe(
         map((tables) => tables.find(({ __id__ }) => __id__ === table.__id__)?.join),
-        untilDestroyed(this),
+        takeUntilDestroyed(this._destroyRef),
         shareReplay(1)
       )
     }
@@ -291,22 +333,18 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
   selectTableType(table: Table) {
     if (!this._tableTypes[table?.name]) {
       this._tableTypes[table?.name] = this.modelService.selectOriginalEntityType(table?.name).pipe(
-        map((entityType) => values(entityType?.properties).map((property) => ({
-          value: property,
-          key: property.name,
-          caption: property.caption
-        }))),
-        untilDestroyed(this),
+        map((entityType) =>
+          values(entityType?.properties).map((property) => ({
+            value: property,
+            key: property.name,
+            caption: property.caption
+          }))
+        ),
+        takeUntilDestroyed(this._destroyRef),
         shareReplay(1)
       )
     }
     return this._tableTypes[table?.name]
-  }
-
-  setModel(event) {
-    // 不再从编辑器修改模型
-    // this.entityService.setCube(event.cube)
-    // this.entityService.setEntityType(event.entityType)
   }
 
   changeExpression(value) {

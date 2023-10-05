@@ -17,16 +17,16 @@
 @use '../components/color-theme' as color;
 
 
-@mixin nx-mat-theme($theme-or-color-config) {
+@mixin ngm-mat-theme($theme-or-color-config) {
 
   // @include breadcrumb.theme($theme-or-color-config);
   @include entity.theme($theme-or-color-config);
   // @include smart-filter.theme($theme-or-color-config);
   @include selection.theme($theme-or-color-config);
-  // @include nx-scrollbar-theme($theme-or-color-config);
+  // @include ngm-scrollbar-theme($theme-or-color-config);
   // @include mat-expansion-panel-ext-theme($theme-or-color-config);
   @include tab-theme.theme($theme-or-color-config);
-  // @include nx-markdown-theme($theme-or-color-config);
+  // @include ngm-markdown-theme($theme-or-color-config);
   @include smart-micro.theme($theme-or-color-config);
   
   @include action-strip.theme($theme-or-color-config);
@@ -48,12 +48,12 @@
 }
 
 @mixin all-component-colors($theme-or-color-config) {
-  // @include nx-scrollbar-color($theme-or-color-config);
+  // @include ngm-scrollbar-color($theme-or-color-config);
   // @include mat-expansion-panel-ext-color($theme-or-color-config);
   @include tab-theme.color($theme-or-color-config);
-  // @include nx-cdk-overlay-color($theme-or-color-config);
-  // @include nx-markdown-color($theme-or-color-config);
-  // @include nx-color-color($theme-or-color-config);
+  // @include ngm-cdk-overlay-color($theme-or-color-config);
+  // @include ngm-markdown-color($theme-or-color-config);
+  // @include ngm-color-color($theme-or-color-config);
   // @include breadcrumb.color($theme-or-color-config);
   @include entity.color($theme-or-color-config);
   // @include smart-filter.color($theme-or-color-config);

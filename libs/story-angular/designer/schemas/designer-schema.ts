@@ -2,17 +2,17 @@ import { NxStoryService } from '@metad/story/core'
 import { map } from 'rxjs/operators'
 import { BackgroundProperties, Borders, BoxShadow, FORMLY_ROW, FontCss, Layout, Size } from './types'
 
-export function StylingWidgetSchema(className: string, DESIGNER) {
-  return {
-    key: 'widget',
-    wrappers: ['expansion'],
-    templateOptions: {
-      label: DESIGNER?.Common?.Widget ?? 'Widget',
-      expanded: true
-    },
-    fieldGroup: StylingCssSchema(className, DESIGNER)
-  }
-}
+// export function StylingWidgetSchema(className: string, DESIGNER) {
+//   return {
+//     key: 'widget',
+//     wrappers: ['expansion'],
+//     templateOptions: {
+//       label: DESIGNER?.Common?.Widget ?? 'Widget',
+//       expanded: true
+//     },
+//     fieldGroup: StylingCssSchema(className, DESIGNER)
+//   }
+// }
 
 export function StylingCssSchema(className: string, DESIGNER) {
   return [
@@ -54,7 +54,7 @@ export function StylingCssSchema(className: string, DESIGNER) {
         label: DESIGNER?.STYLING?.CSS?.FONT?.TITLE ?? 'Font'
       },
       fieldGroupClassName: FORMLY_ROW,
-      fieldGroup: FontCss('nx-formly__col nx-formly__col-4', DESIGNER?.STYLING?.CSS?.FONT)
+      fieldGroup: FontCss('ngm-formly__col ngm-formly__col-4', DESIGNER?.STYLING?.CSS?.FONT)
     }
   ]
 }

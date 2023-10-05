@@ -1,4 +1,4 @@
-<nav class="flex p-4 bg-white">
+<nav class="flex p-4">
     <ol class="inline-flex items-center space-x-1 md:space-x-3">
       <li class="inline-flex items-center text-xl">
         <a [routerLink]="'/indicator/market'">
@@ -21,7 +21,7 @@
     </ol>
 </nav>
 
-<div *ngIf="indicator() as indicator" class="flex-1 px-8 py-4 flex flex-col gap-4 overflow-auto bg-slate-50">
+<div *ngIf="indicator() as indicator" class="flex-1 px-8 py-4 flex flex-col gap-4 overflow-auto bg-slate-50 dark:bg-slate-50/10">
     <mat-card class="p-4 flex gap-4 text-lg">
         <div class="flex gap-4 text-lg">
             <div class="text-right">
@@ -185,7 +185,7 @@
                     {{ 'PAC.INDICATOR.REGISTER.FILTERS' | translate }}:
                 </div>
                 <div class="col-span-3">
-                    <nx-slicers [slicers]="indicator.options?.filters" [limit]="5"></nx-slicers>
+                    <ngm-slicers [slicers]="indicator.options?.filters" [limit]="5"></ngm-slicers>
                 </div>
             </div>
         </mat-card-content>

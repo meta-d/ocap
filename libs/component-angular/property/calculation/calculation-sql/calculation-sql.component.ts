@@ -7,11 +7,11 @@ import { BehaviorSubject } from 'rxjs'
 import { map } from 'rxjs/operators'
 
 @Component({
-  selector: 'nx-calculation-sql',
+  selector: 'ngm-calculation-sql',
   templateUrl: './calculation-sql.component.html',
   styleUrls: ['./calculation-sql.component.scss'],
   host: {
-    class: 'nx-calculation-sql',
+    class: 'ngm-calculation-sql',
   },
   providers: [
     {

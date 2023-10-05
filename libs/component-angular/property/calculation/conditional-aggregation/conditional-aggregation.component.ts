@@ -32,7 +32,7 @@ import { PropertyCapacity } from '../../property-select/property-select.componen
 
 @Component({
   standalone: true,
-  selector: 'nx-conditional-aggregation',
+  selector: 'ngm-conditional-aggregation',
   templateUrl: './conditional-aggregation.component.html',
   styleUrls: ['./conditional-aggregation.component.scss'],
   providers: [

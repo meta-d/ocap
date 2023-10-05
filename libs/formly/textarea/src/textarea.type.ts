@@ -13,14 +13,14 @@ interface TextAreaProps extends FormlyFieldProps {
 }
 
 export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaProps> {
-  type: 'textarea' | Type<FormlyFieldTextArea>;
+  type: 'textarea' | Type<FormlyFieldTextAreaComponent>;
 }
 
 @Component({
-  selector: 'formly-field-mat-textarea',
+  selector: 'pac-formly-textarea',
   template: `
 <label *ngIf="props?.label" class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to.label}}</label>
-<textarea 
+<textarea class="ngm-input-element"
   matInput
   [id]="id"
   [readonly]="props.readonly"
@@ -47,12 +47,12 @@ export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaPro
   providers: [
     // fix for https://github.com/ngx-formly/ngx-formly/issues/1688
     // rely on formControl value instead of elementRef which return empty value in Firefox.
-    { provide: MAT_INPUT_VALUE_ACCESSOR, useExisting: FormlyFieldTextArea },
+    { provide: MAT_INPUT_VALUE_ACCESSOR, useExisting: FormlyFieldTextAreaComponent },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./textarea.type.scss'],
 })
-export class FormlyFieldTextArea extends FieldType<FieldTypeConfig<TextAreaProps>> {
+export class FormlyFieldTextAreaComponent extends FieldType<FieldTypeConfig<TextAreaProps>> {
   override defaultOptions = {
     props: {
       cols: 1,

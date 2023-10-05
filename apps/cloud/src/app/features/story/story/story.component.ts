@@ -13,11 +13,12 @@ import {
   signal,
   ViewChild
 } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
+import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { AgentType, isEqual } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import {
@@ -29,8 +30,10 @@ import {
   StoryPointType,
   WidgetComponentType
 } from '@metad/story/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import { StoryExplorerModule } from '@metad/story'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
@@ -39,9 +42,8 @@ import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
-import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+
 
 type ResponsiveBreakpointType = {
   name: string;
@@ -49,7 +51,6 @@ type ResponsiveBreakpointType = {
   margin: number;
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -65,12 +66,13 @@ type ResponsiveBreakpointType = {
     NxStoryModule,
     NxDesignerModule,
     StoryToolbarComponent,
+    StoryExplorerModule
   ],
   selector: 'pac-story',
   templateUrl: './story.component.html',
   styleUrls: ['./story.component.scss'],
   host: {
-    class: 'nx-story-designer'
+    class: 'ngm-story-designer'
   },
   providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService, StoryCopilotEngineService]
 })
@@ -97,7 +99,7 @@ export class StoryComponent implements OnInit {
   @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent;
   @ViewChild('storyContainer') storyContainer: ElementRef<any>
   @ViewChild(NxStoryComponent) storyComponent: NxStoryComponent
-  @HostBinding('class.nx-story--fullscreen')
+  @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
   zIndex = 4
 
@@ -150,18 +152,22 @@ export class StoryComponent implements OnInit {
   ]
 
   readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
-  readonly isDark$ = this.appService.isDark$
-  isDirty$ = this.storyService.dirty$
-  isMobile$ = this.storyService.isMobile$
-  readonly pageKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey']))
-  readonly widgetKey$ = this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey']))
+  readonly isDark = toSignal(this.appService.isDark$)
+  readonly isDirty = toSignal(this.storyService.dirty$)
+  readonly isMobile = toSignal(this.storyService.isMobile$)
+  readonly pageKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey'])))
+  readonly widgetKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey'])))
+
+  // Story explorer
+  showExplorer = signal(false)
+  explore = signal(null)
 
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private queryParamsSub = this.route.queryParams.subscribe((params) => {
+  private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
     this.logger?.debug(`story 接收的原始 url 参数:`, params)
     this.storyOptions = {}
     if (params.$filters) {
@@ -193,22 +199,27 @@ export class StoryComponent implements OnInit {
     if (params.$language) {
       this.storyOptions.locale = params.$language
     }
+
+    this.showExplorer.set(!!params.explore)
+    if (params.explore) {
+      this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
+    }
   })
 
-  private themeSub = this.storyService.themeChanging$.pipe(delay(300)).subscribe(async ([prev, current]) => {
+  private themeSub = this.storyService.themeChanging$.pipe(delay(300), takeUntilDestroyed(),).subscribe(async ([prev, current]) => {
     const story = await firstValueFrom(this.storyService.story$)
     const key = story.key || story.id
     const echartsTheme = story.options?.echartsTheme
 
     if (prev === 'light' || !prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'nx-theme-default')
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-default')
     }
     if (prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'nx-theme-' + prev)
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
       this.renderer.removeClass(this.storyContainer.nativeElement, prev)
     }
     if (current) {
-      this.renderer.addClass(this.storyContainer.nativeElement, 'nx-theme-' + current)
+      this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
       this.renderer.addClass(this.storyContainer.nativeElement, current)
       if (echartsTheme?.[current]) {
         this.coreService.changeTheme(`${current}-${key}`)
@@ -219,13 +230,20 @@ export class StoryComponent implements OnInit {
   })
 
   private _emulatedDeviceSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.emulatedDevice))
+    .pipe(
+      map((options) => options?.emulatedDevice),
+      takeUntilDestroyed(),
+    )
     .subscribe((emulatedDevice) => {
       this.emulatedDevice = emulatedDevice
     })
 
   private echartsThemeSub = this.storyService.echartsTheme$
-    .pipe(filter(Boolean), distinctUntilChanged(isEqual))
+    .pipe(
+      takeUntilDestroyed(),
+      filter(Boolean),
+      distinctUntilChanged(isEqual)
+    )
     .subscribe(async (echartsTheme) => {
       const story = await firstValueFrom(this.storyService.story$)
       const key = story.key || story.id;
@@ -237,7 +255,7 @@ export class StoryComponent implements OnInit {
     })
 
   private isAuthenticatedSub = this.appService.isAuthenticated$
-    .pipe(untilDestroyed(this))
+    .pipe(takeUntilDestroyed())
     .subscribe((isAuthenticated) => {
       this.storyService.setAuthenticated(isAuthenticated)
     })
@@ -319,5 +337,24 @@ export class StoryComponent implements OnInit {
 
   onToolbarDragEnded(event: CdkDragEnd) {
     this.toolbarComponent.calculateRightSide(event)
+  }
+
+  closeExplorer(event) {
+    this.showExplorer.set(false)
+    this._router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {explore: null, widgetKey: null},
+      queryParamsHandling: 'merge' // remove to replace all query params by provided
+    })
+
+    if (event) {
+      console.log(`Update story widget: ${this.pageKey()}`, event)
+
+      this.storyService.updateWidget({
+        pageKey: this.pageKey(),
+        widgetKey: this.widgetKey(),
+        widget: event
+      })
+    }
   }
 }

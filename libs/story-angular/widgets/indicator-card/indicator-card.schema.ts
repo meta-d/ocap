@@ -67,7 +67,7 @@ export class IndicatorCardSchemaService extends DataSettingsSchemaService {
           {
             className,
             key: 'code',
-            type: 'nx-select',
+            type: 'ngm-select',
             props: {
               label: IndicatorCard?.Indicator ?? 'Indicator',
               searchable: true,

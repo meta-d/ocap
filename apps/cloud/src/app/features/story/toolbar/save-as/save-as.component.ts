@@ -18,11 +18,11 @@
 //     FormsModule,
 //     TranslateModule
 //   ],
-//   selector: 'nx-story-save-as',
+//   selector: 'ngm-story-save-as',
 //   templateUrl: './save-as.component.html',
 //   styles: [``],
 //   host: {
-//     class: 'nx-dialog-container'
+//     class: 'ngm-dialog-container'
 //   }
 // })
 // export class StorySaveAsComponent implements OnInit {

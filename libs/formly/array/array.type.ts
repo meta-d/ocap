@@ -4,10 +4,11 @@ import { FormArray } from '@angular/forms';
 import { FieldArrayType } from '@ngx-formly/core'
 
 @Component({
-  selector: 'pac-formly-array',
+  selector: 'ngm-formly-array',
   template: `
-<div class="nx-formly__title">{{ to.label }}</div>
-<div class="nx-formly-cdk__drag-list flex flex-col justify-start items-stretch" [class.empty]="!field.fieldGroup?.length" 
+<div *ngIf="to.label" class="ngm-formly__title">{{ to.label }}</div>
+<div class="ngm-formly-cdk__drag-list flex flex-col justify-start items-stretch"
+  [class.empty]="!field.fieldGroup?.length" 
   cdkDropList
   (cdkDropListDropped)="drop($event)">
 
@@ -17,20 +18,24 @@ import { FieldArrayType } from '@ngx-formly/core'
     </div>
   </button>
 
-  <div *ngFor="let field of field.fieldGroup; let i = index;" class="nx-formly__array-row"
-    cdkDragBoundary=".nx-formly-cdk__drag-list" cdkDrag>
+  <div *ngFor="let field of field.fieldGroup; let i = index;" class="ngm-formly__array-row"
+    cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
 
+    <div class="text-sm flex justify-between items-center">
+      <div><span *ngIf="props.labelField">{{model[i]?.[props.labelField]}}</span></div>
+      <button *ngIf="!to.hideDelete" class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
+        (click)="remove(i)">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </div>
     <formly-field class="flex-1" [field]="field"></formly-field>
-
-    <button *ngIf="!to.disableDelete" class="nx-formly__remove" mat-icon-button color="warn" (click)="remove(i)">
-      <mat-icon>clear</mat-icon>
-    </button>
-
-    <div class="nx-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
+    <div class="ngm-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
   </div>
 </div>
 
-<button *ngIf="field.fieldGroup?.length" mat-button color="primary" type="button" ngmAppearance="dashed" (click)="add()">
+<button *ngIf="field.fieldGroup?.length" mat-button color="primary" type="button" ngmAppearance="dashed"
+  class="w-full"
+  (click)="add()">
   <div class="flex items-center">
     <mat-icon>add</mat-icon>
     <span>{{ 'FORMLY.COMMON.ADD' | translate: {Default: 'Add'} }} {{to.label}}</span>
@@ -38,20 +43,11 @@ import { FieldArrayType } from '@ngx-formly/core'
 </button>
 `,
   host: {
-    class: 'pac-formly-array'
+    class: 'ngm-formly-array'
   },
-  styles: [
-`
-:host {
-  flex: 1;
-}
-.nx-formly-cdk__drag-placeholder {
-  min-height: 60px;
-}
-`,
-  ]
+  styleUrls: ['array.type.scss'],
 })
-export class NxFormlyArrayComponent extends FieldArrayType {
+export class NgmFormlyArrayComponent extends FieldArrayType {
 
   drop(event: CdkDragDrop<string[]>) {
     if (!Array.isArray(this.field.fieldGroup) || !Array.isArray(this.field.model)) {

@@ -1,4 +1,4 @@
-<div role="tooltip" class="z-50">
+<div role="tooltip" class="z-50 dark:text-white">
   <div class="px-3 py-2 border-b flex items-center border-gray-200 rounded-t-lg dark:border-gray-600">
     <h3 class="mb-0 font-semibold">
       {{ 'PAC.MENU.UserSettings' | translate: { Default: 'User Settings' } }}
@@ -8,27 +8,53 @@
       {{ isAuthenticated$ | async | user }}
     </span>
   </div>
-  <div class="w-[220px] flex flex-col justify-start items-stretch p-4" *ngIf="isAuthenticated$ | async as user">
-      <div class="flex flex-col justify-start items-stretch p-2">
-          <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
-            [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
-            [displayBehaviour]="DisplayBehaviour.descriptionOnly"
-            [selectOptions]="languages"
-            [ngModel]="preferredLanguage$ | async"
-            (ngModelChange)="onLanguageSelect($event)"
-          >
-            <mat-icon ngmSuffix>translate</mat-icon>
-          </ngm-select>
-      </div>
+  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4" *ngIf="isAuthenticated$ | async as user">
+    <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
+      [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
+      [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+      [selectOptions]="languages"
+      [ngModel]="preferredLanguage$ | async"
+      (ngModelChange)="onLanguageSelect($event)"
+    >
+      <mat-icon ngmSuffix>translate</mat-icon>
+    </ngm-select>
+
+    <!-- not yet complete
+    <ngm-select [label]="'PAC.MENU.GENERAL.THEME' | translate: { Default: 'Theme' }"
+      [placeholder]="'PAC.MENU.GENERAL.ThemePlaceholder' | translate: { Default: 'Select Theme' }"
+      [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+      [valueKey]="'key'"
+      [selectOptions]="[
+        {
+          key: 'light',
+          caption: 'Light',
+          icon: 'light_mode'
+        },
+        {
+          key: 'dark',
+          caption: 'Dark',
+          icon: 'dark_mode'
+        },
+        {
+          key: 'dark-green',
+          caption: 'Dark Green',
+          icon: 'dark_mode'
+        }
+      ]"
+      [ngModel]="preferredTheme$ | async"
+      (ngModelChange)="onThemeSelect($event)"
+    >
+      <mat-icon ngmSuffix>dark_mode</mat-icon>
+    </ngm-select> -->
 
     <button mat-button (click)="onProfile()">
       <mat-icon>account_circle</mat-icon>
-      <span>{{ 'PAC.menu.profile' | translate }}</span>
+      <span>{{ 'PAC.MENU.UserProfile' | translate: {Default: 'User Profile'} }}</span>
     </button>
 
     <button mat-button (click)="onLogoutClick()">
       <mat-icon>settings_power</mat-icon>
-      <span>{{ 'PAC.menu.logout' | translate }}</span>
+      <span>{{ 'PAC.MENU.Logout' | translate: {Default: 'Logout'} }}</span>
     </button>
   </div>
 </div>

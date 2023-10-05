@@ -1,13 +1,14 @@
 import { Component, OnDestroy, computed, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { BusinessAreasService, BusinessType } from '@metad/cloud/state'
+import { BusinessAreasService } from '@metad/cloud/state'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { BehaviorSubject, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs'
 import { BusinessAreaInfoFormComponent } from '../area-info-form/area-info-form.component'
 import { BusinessAreaUsersComponent } from '../area-users/area-users.component'
 import { BusinessAreaComponent } from '../business-area.component'
+import { BusinessType } from '@metad/contracts'
 
 @Component({
   standalone: true,
@@ -45,7 +46,7 @@ export class EditBusinessAreaComponent implements OnDestroy {
     effect(
       () => {
         if (this.businessArea()) {
-          this.businessAreaComponent.setCurrentBusinessArea(this.businessArea())
+          this.businessAreaComponent.setCurrentLink(this.businessArea())
         }
       },
       { allowSignalWrites: true }
@@ -57,6 +58,6 @@ export class EditBusinessAreaComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.businessAreaComponent.setCurrentBusinessArea(null)
+    this.businessAreaComponent.setCurrentLink(null)
   }
 }

@@ -1,7 +1,7 @@
 <form [formGroup]="form" (ngSubmit)="onGo()" novalidate >
-  <div class="nx-smart-filter-bar--content grid grid-cols-1 gap-2">
+  <div class="ngm-smart-filter-bar--content grid grid-cols-1 gap-2">
 
-    <nx-today-filter *ngIf="options?.today?.enable" class="nx-smart-filter-bar_filter col"
+    <ngm-today-filter *ngIf="options?.today?.enable" class="ngm-smart-filter-bar_filter col"
       [granularity]="options.today?.granularity"
       [granularitySequence]="options.today?.granularitySequence"
       [defaultValue]="options.today?.defaultValue"
@@ -9,9 +9,9 @@
       [appearance]="styling?.appearance"
       [displayDensity]="styling?.appearance?.displayDensity"
       >
-    </nx-today-filter>
+    </ngm-today-filter>
 
-    <div *ngFor="let control of controls$ | async; trackBy: trackByName" class="nx-smart-filter-bar_filter col"
+    <div *ngFor="let control of controls$ | async; trackBy: trackByName" class="ngm-smart-filter-bar_filter col"
       [ngClass]="{actived: control.name === selected}"
       (click)="onSelectField({name: control.name, event: $event, type: control.controlType})">
 
@@ -72,9 +72,9 @@
     <!-- <mat-error *ngIf="form.get(control.name).errors?.required">*必输</mat-error> -->
     </div>
 
-    <ng-content select=".nx-custom-filter"></ng-content>
+    <ng-content select=".ngm-custom-filter"></ng-content>
 
-    <div class="nx-smart-filter-bar_go flex flex-wrap justify-end items-end gap-2 mx-2">
+    <div class="ngm-smart-filter-bar_go flex flex-wrap justify-end items-end gap-2 mx-2">
 
       <button *ngIf="(syntax$ | async) === Syntax.SQL" type="button" mat-stroked-button color="accent" ngmAppearance="dashed"
         class="focus:outline outline-offset-2"

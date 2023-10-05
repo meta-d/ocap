@@ -5,7 +5,7 @@ import { WatermarkHandler } from './watermark.handler'
 
 @Component({
   encapsulation: ViewEncapsulation.ShadowDom,
-  selector: 'nx-trial-watermark',
+  selector: 'ngm-trial-watermark',
   templateUrl: './trial-watermark.component.html',
   styleUrls: ['./trial-watermark.component.scss']
 })

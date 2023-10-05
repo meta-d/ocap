@@ -24,7 +24,7 @@
       <mat-checkbox
         [checked]="isSelected(node.raw)"
         [indeterminate]="isPartiallySelected(node)"
-        (change)="itemSelectionToggle(node)"
+        (change)="itemSelectionToggle(node, $event)"
       >
         <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
           [option]="{value: node.key, caption: node.caption}"

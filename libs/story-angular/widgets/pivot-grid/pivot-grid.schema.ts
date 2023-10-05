@@ -1,8 +1,7 @@
 import { Injectable, Injector } from '@angular/core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { getEntityProperty } from '@metad/ocap-core'
-import { DataSettingsSchemaService, SelectionVariant } from '@metad/story/designer'
-import { GridSelectionMode } from 'igniteui-angular'
+import { DataSettingsSchemaService } from '@metad/story/designer'
 import { isNil, negate } from 'lodash-es'
 import { combineLatest } from 'rxjs'
 import { map, startWith } from 'rxjs/operators'
@@ -30,10 +29,8 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
     const dataSettings = this.generateDataSettingsSchema(
       BUILDER,
       this.analytics,
-      SelectionVariant(BUILDER, this.dataSettings$)
+      // SelectionVariant(BUILDER, this.dataSettings$)
     )
-    // dataSettings.wrappers = ['expansion']
-    // dataSettings.templateOptions.enableSelectFields = true
 
     const schema = [
       {
@@ -54,7 +51,6 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
       },
       dataSettings,
       // {
-      //   wrappers: ['expansion'],
       //   templateOptions: {
       //     label: '数据配置',
       //     enableSelectFields: true,
@@ -66,7 +62,6 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
       // },
       {
         key: 'options',
-        wrappers: ['expansion'],
         templateOptions: {
           label: BUILDER.PIVOT_GRID?.OPTIONS ?? 'Grid Options',
           expanded: true
@@ -157,7 +152,7 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
                 .map((propertyPath) => getEntityProperty(entityType, propertyPath))
                 .filter(negate(isNil))
                 .map((property) => {
-                  return { value: property.name, label: property.label || property.name }
+                  return { value: property.name, label: property.caption || property.name }
                 })
             })
           )
@@ -169,16 +164,16 @@ export class PivotGridSchemaService extends DataSettingsSchemaService {
         },
         fieldGroup: [
           {
-            fieldGroupClassName: 'nx-formly__row',
+            fieldGroupClassName: 'ngm-formly__row',
             fieldGroup: [
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'filterable',
                 type: 'toggle',
                 templateOptions: { label: 'Column Filterable' }
               },
               {
-                className: 'nx-formly__col nx-formly__col-6',
+                className: 'ngm-formly__col ngm-formly__col-6',
                 key: 'groupable',
                 type: 'toggle',
                 templateOptions: { label: 'Column Groupable' }
@@ -201,11 +196,11 @@ export function GridOptionsSchema(BUILDER) {
 
   return [
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         // displayDensity(),
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'showToolbar',
           type: 'toggle',
           templateOptions: {
@@ -216,10 +211,10 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'exportExcel',
           type: 'toggle',
           templateOptions: {
@@ -227,7 +222,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'columnPinning',
           type: 'toggle',
           templateOptions: {
@@ -238,16 +233,16 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'allowFiltering',
           type: 'toggle',
           templateOptions: { label: 'Allow Filtering' }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'filterMode',
           type: 'select',
           templateOptions: {
@@ -262,10 +257,10 @@ export function GridOptionsSchema(BUILDER) {
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'paging',
           type: 'checkbox',
           templateOptions: {
@@ -273,7 +268,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'pageSize',
           type: 'input',
           templateOptions: {
@@ -290,20 +285,20 @@ export function GridOptionsSchema(BUILDER) {
       templateOptions: {
         label: BUILDER?.PIVOT_GRID?.ColumnSelection ?? 'Column Selection',
         options: [
-          { value: GridSelectionMode.none, label: 'None' },
-          { value: GridSelectionMode.single, label: 'Single' },
-          { value: GridSelectionMode.multiple, label: 'Multiple' }
+          // { value: GridSelectionMode.none, label: 'None' },
+          // { value: GridSelectionMode.single, label: 'Single' },
+          // { value: GridSelectionMode.multiple, label: 'Multiple' }
         ]
       }
     },
 
     {
-      fieldGroupClassName: 'nx-formly__row',
+      fieldGroupClassName: 'ngm-formly__row',
       key: 'column',
       wrappers: ['panel'],
       fieldGroup: [
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'resizable',
           type: 'checkbox',
           templateOptions: {
@@ -311,7 +306,7 @@ export function GridOptionsSchema(BUILDER) {
           }
         },
         {
-          className: 'nx-formly__col nx-formly__col-6',
+          className: 'ngm-formly__col ngm-formly__col-6',
           key: 'width',
           type: 'input',
           templateOptions: {

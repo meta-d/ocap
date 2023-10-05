@@ -18,7 +18,7 @@ export interface TodayWidgetOptions {
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule, ReactiveFormsModule, DensityDirective, NxTimeFilterModule],
-  selector: 'nx-story-widget-today',
+  selector: 'ngm-story-widget-today',
   templateUrl: './today.component.html',
   styleUrls: ['./today.component.scss']
 })

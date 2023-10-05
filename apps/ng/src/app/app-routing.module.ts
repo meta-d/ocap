@@ -38,6 +38,10 @@ const routes: Routes = [
   {
     path: 'explorer',
     component: ExplorerComponent
+  },
+  {
+    path: 'langchain',
+    loadChildren: () => import('./langchain/langchain.module').then((m) => m.LangChainModule)
   }
   // { path: '', redirectTo: 'pages', pathMatch: 'full' },
   // { path: '**', redirectTo: 'pages' }

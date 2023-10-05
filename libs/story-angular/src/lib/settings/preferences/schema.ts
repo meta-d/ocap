@@ -19,30 +19,26 @@ export function PreferencesSchema(Story: any) {
 
   return [
     {
-      wrappers: ['expansion'],
+      wrappers: ['accordion'],
       props: {
-        label: Story?.Widgets?.Common?.StoryStyling ?? 'Story Styling',
-        expanded: false
+        elevationZ: true
       },
       fieldGroup: [
         {
           key: 'storyStyling',
           type: 'styling',
-          props: {}
-        }
-      ]
-    },
-    {
-      wrappers: ['expansion'],
-      props: {
-        label: Story?.Preferences?.PageStyles ?? 'Page Styles',
-        expanded: false
-      },
-      fieldGroup: [
+          props: {
+            label: Story?.Widgets?.Common?.StoryStyling ?? 'Story Styling',
+            expanded: false
+          }
+        },
         {
           key: 'pageStyling',
           type: 'styling',
-          props: {}
+          props: {
+            label: Story?.Preferences?.PageStyles ?? 'Page Styles',
+            expanded: false
+          }
         }
       ]
     },

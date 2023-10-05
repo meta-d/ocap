@@ -18,7 +18,7 @@ $theme: (
   backdrop-back-background: backdrop-background,
   
   /* fullscreen */
-  nx-fullscreen-card-background: $popover-background,
+  ngm-fullscreen-card-background: $popover-background,
 
   /* Slide out component */
   slide-out-background: $popover-background,
@@ -89,7 +89,7 @@ $theme: (
 
   menu-item-divider-width: 0,
 
-  nx-chip-background: $blurred-background-color,
+  ngm-chip-background: $blurred-background-color,
 
   smart-filter-input-background: $blurred-background-color,
   tag-hover-background: $blurred-background-color,
@@ -102,13 +102,13 @@ $theme: (
   grid-striped-background: $blurred-background-color,
   grid-bordered-color: rgb(4, 6, 32),
   
-  nx-neutral-color: color-basic-300,
+  ngm-neutral-color: color-basic-300,
 
   // Text Font
   text-subtitle-font-weight: 200,
 );
 
-$theme: map-merge($nx-mapping, $theme);
+$theme: map-merge($ngm-mapping, $theme);
 
 // register the theme
 $nb-themes: nb-register-theme($theme, thin, dark);

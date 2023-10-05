@@ -3,21 +3,21 @@
 
 @import '../core/index';
 
-$nx-smart-micro-minimum-height: 2rem !default;
+$ngm-smart-micro-minimum-height: 2rem !default;
 
-$nx-smart-micro-height-desktop: 2.5rem !default;
-$nx-smart-micro-maximum-height-desktop: 3rem !default;
-$nx-smart-micro-minimum-height-desktop: $nx-smart-micro-minimum-height !default;
+$ngm-smart-micro-height-desktop: 2.5rem !default;
+$ngm-smart-micro-maximum-height-desktop: 3rem !default;
+$ngm-smart-micro-minimum-height-desktop: $ngm-smart-micro-minimum-height !default;
 
-$nx-smart-micro-height-mobile: 3rem !default;
-$nx-smart-micro-maximum-height-mobile: $nx-smart-micro-height-mobile !default;
-$nx-smart-micro-minimum-height-mobile: $nx-smart-micro-minimum-height !default;
+$ngm-smart-micro-height-mobile: 3rem !default;
+$ngm-smart-micro-maximum-height-mobile: $ngm-smart-micro-height-mobile !default;
+$ngm-smart-micro-minimum-height-mobile: $ngm-smart-micro-minimum-height !default;
 
-$nx-smart-micro-desktop-density-config: (
+$ngm-smart-micro-desktop-density-config: (
   height: (
-    default: $nx-smart-micro-height-desktop,
-    maximum: $nx-smart-micro-maximum-height-desktop,
-    minimum: $nx-smart-micro-minimum-height-desktop,
+    default: $ngm-smart-micro-height-desktop,
+    maximum: $ngm-smart-micro-maximum-height-desktop,
+    minimum: $ngm-smart-micro-minimum-height-desktop,
   ),
   font-size: (
     default: 1rem,
@@ -26,11 +26,11 @@ $nx-smart-micro-desktop-density-config: (
   )
 ) !default;
 
-$nx-smart-micro-mobile-density-config: (
+$ngm-smart-micro-mobile-density-config: (
   height: (
-    default: $nx-smart-micro-height-mobile,
-    maximum: $nx-smart-micro-maximum-height-mobile,
-    minimum: $nx-smart-micro-minimum-height-mobile,
+    default: $ngm-smart-micro-height-mobile,
+    maximum: $ngm-smart-micro-maximum-height-mobile,
+    minimum: $ngm-smart-micro-minimum-height-mobile,
   ),
   font-size: (
     default: 1rem,
@@ -44,7 +44,7 @@ $nx-smart-micro-mobile-density-config: (
   $background: map-get($config, background);
   $primary: map-get($config, primary);
 
-  .nx-micro-table {
+  .ngm-micro-table {
     display: block;
     overflow: auto;
     table.mat-table {
@@ -69,13 +69,13 @@ $nx-smart-micro-mobile-density-config: (
       text-align: left;
     }
   
-    .mat-cell.nx-micro-table--dimension {
+    .mat-cell.ngm-micro-table--dimension {
       text-align: left;
     }
   }
 }
 
-@mixin _nx-smart-micro-height($height, $font-size) {
+@mixin _ngm-smart-micro-height($height, $font-size) {
   tr.mat-header-row, tr.mat-row, tr.mat-footer-row {
     height: $height;
   }
@@ -85,8 +85,8 @@ $nx-smart-micro-mobile-density-config: (
 }
 
 @mixin density($config-or-theme) {
-  .nx-micro-table.ngm-density__compact {
-    @include _nx-smart-micro-height(2rem, .75rem);
+  .ngm-micro-table.ngm-density__compact {
+    @include _ngm-smart-micro-height(2rem, .75rem);
   }
 }
 

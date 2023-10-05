@@ -1,12 +1,12 @@
 @use '@angular/material' as mat;
 
 
-@mixin nx-markdown-color($config-or-theme) {
+@mixin ngm-markdown-color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $foreground: map-get($config, foreground);
   $primary: map-get($config, primary);
 
-  .nx-markdown {
+  .ngm-markdown {
     pre {
       background-color: whitesmoke;
       border-radius: 5px;
@@ -22,21 +22,21 @@
   }
 }
 
-@mixin nx-markdown-density($config-or-theme) {
+@mixin ngm-markdown-density($config-or-theme) {
 }
 
-@mixin nx-markdown-theme($theme-or-color-config) {
+@mixin ngm-markdown-theme($theme-or-color-config) {
   $theme: mat-private-legacy-get-theme($theme-or-color-config);
-  @include mat-private-check-duplicate-theme-styles($theme, 'nx-markdown') {
+  @include mat-private-check-duplicate-theme-styles($theme, 'ngm-markdown') {
     $color: mat.get-color-config($theme);
     $density: mat.get-density-config($theme);
     $typography: mat-get-typography-config($theme);
 
     @if $color != null {
-      @include nx-markdown-color($color);
+      @include ngm-markdown-color($color);
     }
     @if $density != null {
-      @include nx-markdown-density($density);
+      @include ngm-markdown-density($density);
     }
     // @if $typography != null {
     //   @include mat.button-toggle-typography($typography);

@@ -249,7 +249,7 @@
 
 //   abstract resize()
 
-//   @HostBinding('class.nx-smart-chart')
+//   @HostBinding('class.ngm-smart-chart')
 //   get isSmartChart() {
 //     return true
 //   }

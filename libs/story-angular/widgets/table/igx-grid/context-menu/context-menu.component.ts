@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
 
 @Component({
-  selector: 'nx-context-menu',
+  selector: 'ngm-context-menu',
   templateUrl: './context-menu.component.html',
   styleUrls: ['./context-menu.component.scss'],
 })

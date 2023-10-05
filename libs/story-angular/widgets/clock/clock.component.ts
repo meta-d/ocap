@@ -11,7 +11,7 @@ export interface NxWidgetClockOptions {
 }
 
 @Component({
-  selector: 'nx-story-widget-clock',
+  selector: 'ngm-story-widget-clock',
   template: `<div
     ngmTransformScale
     width="600"

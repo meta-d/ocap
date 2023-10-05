@@ -1,3 +1,5 @@
+import { FORMLY_ROW } from "@metad/story/designer"
+
 export function GlobalCapacity(className: string, I18N?) {
   return [
     {
@@ -10,7 +12,7 @@ export function GlobalCapacity(className: string, I18N?) {
           props: {
             label: I18N?.Global?.Title ?? 'Global'
           },
-          fieldGroupClassName: 'nx-formly__row',
+          fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             {
               className,

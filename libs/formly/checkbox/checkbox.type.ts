@@ -12,7 +12,6 @@ import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { FieldType, FormlyFieldProps } from '@ngx-formly/material/form-field';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { FocusMonitor } from '@angular/cdk/a11y';
-import { FormlyFieldCheckbox } from '@ngx-formly/material/checkbox';
 
 interface CheckboxProps extends FormlyFieldProps {
   indeterminate?: boolean;
@@ -20,11 +19,11 @@ interface CheckboxProps extends FormlyFieldProps {
 }
 
 export interface FormlyCheckboxFieldConfig extends FormlyFieldConfig<CheckboxProps> {
-  type: 'checkbox' | Type<FormlyFieldCheckbox>;
+  type: 'checkbox' | Type<NgmFormlyCheckboxComponent>;
 }
 
 @Component({
-  selector: 'pac-formly-field-mat-checkbox',
+  selector: 'ngm-formly-mat-checkbox',
   template: `
     <mat-checkbox
       [formControl]="formControl"
@@ -47,7 +46,7 @@ export interface FormlyCheckboxFieldConfig extends FormlyFieldConfig<CheckboxPro
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./checkbox.type.scss'],
 })
-export class FormlyFieldCheckboxComponent
+export class NgmFormlyCheckboxComponent
   extends FieldType<FieldTypeConfig<CheckboxProps>>
   implements AfterViewInit, AfterViewChecked, OnDestroy
 {

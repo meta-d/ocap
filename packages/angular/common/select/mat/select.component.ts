@@ -152,6 +152,10 @@ export class NgmMatSelectComponent
   onChange: (input: any) => void
   onTouched: () => void
 
+  constructor(_elementRef: ElementRef) {
+    super(_elementRef)
+  }
+
   ngOnInit() {
     this.formControl.valueChanges
       .pipe(

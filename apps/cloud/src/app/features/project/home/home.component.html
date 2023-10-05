@@ -4,7 +4,7 @@
     </div>
 
     <div class="flex gap-4">
-        <button class="group w-40 h-30 flex flex-col justify-center items-center bg-white rounded-xl border border-transparent hover:border-bluegray-200 dark:bg-gray-700 cursor-pointer ring-2 ring-offset-2 ring-transparent focus:ring-bluegray-200"
+        <button class="pac-creation-card group w-40 h-30"
             (click)="createStory()">
             <svg width="100" height="100">
               <circle cx="50" cy="50" r="40" class="fill-bluegray-100 group-hover:fill-bluegray-200 group-focus:fill-bluegray-200"/>
@@ -16,7 +16,7 @@
             </span>
         </button>
 
-        <button class="group w-40 h-30 flex flex-col justify-center items-center bg-white rounded-xl border border-transparent hover:border-bluegray-200 dark:bg-gray-700 cursor-pointer ring-2 ring-offset-2 ring-transparent focus:ring-bluegray-200"
+        <button class="pac-creation-card group w-40 h-30"
             (click)="fromTemplate()">
             <svg class="my-2" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0 0v20h40V0H0Z" fill="#FDD663"></path>
@@ -28,15 +28,17 @@
             </span>
         </button>
 
-        <div class="flex items-center justify-center w-60 h-40">
-            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+        <div class="pac-creation-card pac-creation-card__upload w-60 h-40">
+            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-full rounded-lg cursor-pointer">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="mb-2 text-sm">
                         <span class="font-semibold">
                             {{ 'PAC.Project.ClicktoUpload' | translate: {Default: 'Click to upload'} }}
                             </span> {{ 'PAC.Project.OrDragandDrop' | translate: {Default: 'or drag and drop'} }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ 'PAC.Project.StoryJsonFile' | translate: {Default: 'Story json file'} }}</p>
+                    <p class="text-xs">{{ 'PAC.Project.StoryJsonFile' | translate: {Default: 'Story json file'} }}</p>
                 </div>
                 <input id="dropzone-file" #fileUpload type="file" class="hidden" (input)="onFileInput($event)"
                     (click)="fileUpload.value=null;"/>
@@ -58,18 +60,18 @@
             {{ 'PAC.Project.Manage' | translate: {Default: 'Manage'} }}
         </div>
 
-        <div class="w-60 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 group">
+        <div class="pac-confirm-card pac-confirm-card__delete w-60 group">
             <div class="flex flex-col items-center p-4 gap-2">
-                <h5 class="mb-1 text-base font-medium text-gray-900 dark:text-white">
+                <h5 class="mb-1 text-base font-medium">
                     {{ 'PAC.Project.DeleteProject' | translate: { Default: 'Delete project' } }}
                 </h5>
 
-                <div ngmButtonGroup class="p-0 h-0 overflow-hidden group-hover:h-10 group-hover:p-1 transition-all duration-300">
+                <div ngmButtonGroup class="pac-confirm-card__delete-actions h-0 overflow-hidden group-hover:h-10 transition-all duration-300">
                     <button mat-stroked-button color="warn" displayDensity="cosy" (click)="deleteProject()">
-                    <div class="flex items-center">
-                        <mat-icon fontSet="material-icons-outlined">delete_outline</mat-icon>
-                        {{ 'PAC.Project.ConfirmDelete' | translate: { Default: 'Confirm delete' } }}
-                    </div>
+                        <div class="flex items-center">
+                            <mat-icon fontSet="material-icons-outlined">delete_outline</mat-icon>
+                            {{ 'PAC.Project.ConfirmDelete' | translate: { Default: 'Confirm delete' } }}
+                        </div>
                     </button>
                 </div>
             </div>

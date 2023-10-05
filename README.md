@@ -74,6 +74,7 @@ Main features:
   * **AI Copilot**: assist users quickly design and implement story dashboards.
 
 Basic feartures of the platform:
+
 * Multi-tenant
 * Multiple Organizations Management
 * Home Dashboard

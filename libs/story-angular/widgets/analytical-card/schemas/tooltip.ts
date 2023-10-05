@@ -5,7 +5,7 @@ export function TooltipCapacity(className: string, I18N) {
   return AccordionWrappers([
     {
       key: 'tooltip',
-      label: I18N.TOOLTIP?.TITLE ?? 'Tooltip',
+      label: I18N?.TOOLTIP?.TITLE ?? 'Tooltip',
       fieldGroup: [
         {
           fieldGroupClassName: FORMLY_ROW,

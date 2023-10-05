@@ -1,3 +1,7 @@
 :host {
     @apply w-full;
 }
+
+.mat-mdc-slide-toggle {
+    @apply inline-flex;
+}

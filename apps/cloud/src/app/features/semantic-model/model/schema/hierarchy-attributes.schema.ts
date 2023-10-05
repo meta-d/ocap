@@ -18,8 +18,10 @@ export class HierarchyAttributesSchema extends HierarchySchemaService<PropertyHi
 
         const dimensionModeling = DimensionModeling(
           SCHEMA,
+          this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
+          this.dimensions()
         )
         dimensionModeling.key = 'dimension'
         return [

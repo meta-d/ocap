@@ -114,7 +114,7 @@ export class FilterBarFieldSchemaService<T extends SchemaState = SchemaState> ex
     }
     return [
       {
-        fieldGroupClassName: 'nx-formly__row',
+        fieldGroupClassName: 'ngm-formly__row',
         fieldGroup: [
           ...filterAttributes(className, STORY_DESIGNER?.Common),
           {

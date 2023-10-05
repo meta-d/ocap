@@ -25,12 +25,12 @@ import { TranslateModule } from '@ngx-translate/core'
 
     ButtonGroupDirective
   ],
-  selector: 'nx-confirm-unique',
+  selector: 'ngm-confirm-unique',
   templateUrl: './confirm-unique.component.html',
   styleUrls: ['./confirm-unique.component.scss']
 })
 export class ConfirmUniqueComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   value: string
   constructor(@Inject(MAT_DIALOG_DATA) public data: string, private _dialogRef: MatDialogRef<ConfirmUniqueComponent>) {}

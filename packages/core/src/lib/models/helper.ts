@@ -2,7 +2,7 @@ import { Semantics } from '../annotations'
 import { mapTimeGranularitySemantic, TimeGranularity } from '../filter'
 import { Dimension, getPropertyName, IMember, isDimension, ISlicer, isMeasure, Measure, Member } from '../types'
 import { assignDeepOmitBlank, isEmpty, isNil, isString, omit, omitBy } from '../utils'
-import { CalculationProperty, CalculationType, isCalculationProperty } from './calculated'
+import { CalculationProperty, CalculationType, isCalculationProperty, isIndicatorMeasureProperty, RestrictedMeasureProperty } from './calculated'
 import { AggregationRole, EntityProperty, PropertyAttributes } from './property'
 import {
   Cube,
@@ -139,6 +139,10 @@ export function getEntityMeasures(entityType: EntityType): PropertyMeasure[] {
   return Object.values(entityType.properties).filter(
     (property) => property.role === AggregationRole.measure && (isNil(property.visible) || property.visible)
   )
+}
+
+export function getEntityIndicators(entityType: EntityType): RestrictedMeasureProperty[] {
+  return getEntityMeasures(entityType).filter(isIndicatorMeasureProperty)
 }
 
 export function getEntityDefaultMeasure(entityType: EntityType) {

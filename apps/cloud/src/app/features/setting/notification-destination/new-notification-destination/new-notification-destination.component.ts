@@ -12,7 +12,7 @@ import { convertConfigurationSchema, IMG_ROOT, PACNotificationDestinationsServic
   styleUrls: ['./new-notification-destination.component.scss']
 })
 export class NewNotificationDestinationComponent implements OnInit {
-  @HostBinding('class.nx-dialog-container') isDialogContainer = true
+  @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   IMG_ROOT = IMG_ROOT
   destinationTypes$ = this.destinationService.getTypes()

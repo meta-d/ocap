@@ -18,12 +18,28 @@
 }
 
 .pac-indight__answer-header.mat-expansion-panel-header {
-  @apply px-2;
+  @apply pr-2;
 }
 
 .ngm-select-element:focus {
   @apply bg-white;
 }
-.mdc-text-field__input.mat-mdc-input-element {
-  @apply h-7;
+
+.mat-mdc-input-element.mat-mdc-autocomplete-trigger {
+  @apply ml-0 h-6;
+}
+
+.pac-insight__bottom-padding {
+  height: 90px;
+}
+.pac-indight__expand-model {
+  .pac-insight__bottom-padding {
+    height: 285px;
+  }
+}
+
+.pac-insight__ask-input {
+  .cdk-drag-placeholder {
+    @apply absolute left-0 top-0;
+  }
 }

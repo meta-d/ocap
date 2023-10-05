@@ -1,4 +1,4 @@
-<mat-accordion class="nx-accordion" displayMode="flat" togglePosition="before" [multi]="true" cdkDropListGroup>
+<mat-accordion class="ngm-accordion" displayMode="flat" togglePosition="before" [multi]="true" cdkDropListGroup>
   <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
@@ -11,24 +11,24 @@
         </button>
       </mat-panel-description>
     </mat-expansion-panel-header>
-    <div id="property-modeling-rows" [ngClass]="{'nx-property-modeling__empty': !rows.length}"
+    <div id="property-modeling-rows" [ngClass]="{'ngm-property-modeling__empty': !rows.length}"
       cdkDropList
       [cdkDropListData]="rows" 
       [cdkDropListConnectedTo]="['list-dimensions']"
       (cdkDropListDropped)="drop($event)"
     >
-      <nx-property-select *ngFor="let item of rows; let index = index" cdkDrag
+      <ngm-property-select *ngFor="let item of rows; let index = index" cdkDrag
         [dataSettings]="dataSettings"
         [entityType]="entityType"
         [ngModel]="item"
         (ngModelChange)="onPropertyChange(item, $event)"
       >
         <mat-icon matPrefix cdkDragHandle>drag_indicator</mat-icon>
-        <button class="nx-formly__remove" mat-icon-button color="warn"
+        <button class="ngm-formly__remove" mat-icon-button color="warn"
           (click)="$event.stopPropagation();$event.preventDefault();remove(rows, index)">
           <mat-icon>clear</mat-icon>
         </button>
-      </nx-property-select>
+      </ngm-property-select>
     </div>
   </mat-expansion-panel>
   <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
@@ -44,20 +44,20 @@
       </mat-panel-description>
     </mat-expansion-panel-header>
     <div cdkDropList [cdkDropListData]="columns" (cdkDropListDropped)="drop($event)"
-      [ngClass]="{'nx-property-modeling__empty': !columns.length}"
+      [ngClass]="{'ngm-property-modeling__empty': !columns.length}"
     >
-      <nx-property-select *ngFor="let item of columns; let index = index" cdkDrag
+      <ngm-property-select *ngFor="let item of columns; let index = index" cdkDrag
         [dataSettings]="dataSettings"
         [entityType]="entityType"
         [ngModel]="item"
         (ngModelChange)="onPropertyChange(item, $event)"
       >
         <mat-icon matPrefix cdkDragHandle>drag_indicator</mat-icon>
-        <button class="nx-formly__remove" mat-icon-button color="warn"
+        <button class="ngm-formly__remove" mat-icon-button color="warn"
           (click)="$event.stopPropagation();$event.preventDefault();remove(columns, index)">
           <mat-icon>clear</mat-icon>
         </button>
-      </nx-property-select>
+      </ngm-property-select>
     </div>
   </mat-expansion-panel>
 
@@ -76,19 +76,19 @@
 
 <!-- 
     <div cdkDropList [cdkDropListData]="filters" (cdkDropListDropped)="drop($event)"
-      [ngClass]="{'nx-property-modeling__empty': !filters.length}"
+      [ngClass]="{'ngm-property-modeling__empty': !filters.length}"
     >
-      <nx-property-select *ngFor="let item of filters; let index = index" cdkDrag
+      <ngm-property-select *ngFor="let item of filters; let index = index" cdkDrag
         [dataSettings]="dataSettings"
         [entityType]="entityType"
         [ngModel]="item"
         (ngModelChange)="onPropertyChange(item, $event)"
       >
-        <button class="nx-formly__remove" mat-icon-button color="warn"
+        <button class="ngm-formly__remove" mat-icon-button color="warn"
           (click)="$event.stopPropagation();$event.preventDefault();remove(filters, index)">
           <mat-icon>clear</mat-icon>
         </button>
-      </nx-property-select>
+      </ngm-property-select>
     </div> -->
 
   </mat-expansion-panel>
