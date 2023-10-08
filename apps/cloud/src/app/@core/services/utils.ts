@@ -3,15 +3,13 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   AgentType,
   DataSourceOptions,
-  EntityType,
-  getEntityDimensions,
-  getEntityMeasures,
   isNil,
   omit,
   Syntax
 } from '@metad/ocap-core'
 import { NgmSemanticModel } from '@metad/cloud/state'
 import { getSemanticModelKey } from '@metad/story/core'
+
 
 export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreService, wasmAgent: WasmAgentService) {
   const agentType = isNil(model.dataSource)
@@ -109,28 +107,5 @@ export function registerWasmAgentModel(wasmAgent: WasmAgentService, model: NgmSe
     ...model,
     name: getSemanticModelKey(model),
     catalog: model.catalog ?? 'main'
-  })
-}
-
-export function calcEntityTypePrompt(entityType: EntityType) {
-  return JSON.stringify({
-    name: entityType.name,
-    caption: entityType.caption,
-    dimensions: getEntityDimensions(entityType).map((dimension) => ({
-      name: dimension.name,
-      caption: dimension.caption,
-      hierarchies: dimension.hierarchies?.map((item) => ({
-        name: item.name,
-        caption: item.name,
-        levels: item.levels?.map((item) => ({
-          name: item.name,
-          caption: item.caption
-        }))
-      }))
-    })),
-    measures: getEntityMeasures(entityType).map((item) => ({
-      name: item.name,
-      caption: item.caption
-    }))
   })
 }

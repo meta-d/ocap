@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -32,13 +32,12 @@ import {
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, switchMap, startWith, combineLatestWith } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, shareReplay, switchMap, startWith, combineLatestWith, debounceTime } from 'rxjs/operators'
 import { FormattingComponent } from '@metad/components/entity'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreService } from '@metad/core'
 import { MatSelect, MatSelectModule } from '@angular/material/select'
 import { getEntityMeasures, PropertyAttributes } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ControlOptions, NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
@@ -58,7 +57,7 @@ import { MatListModule } from '@angular/material/list'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatBadgeModule } from '@angular/material/badge'
 import { LetDirective } from '@ngrx/component'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 
 
@@ -84,7 +83,6 @@ export enum PropertyCapacity {
   DimensionChart = 'DimensionChart'
 }
 
-@UntilDestroy()
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -129,6 +127,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
 
   private readonly _dialog? = inject(MatDialog, {optional: true})
   private readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})
+  private readonly _destroyRef = inject(DestroyRef)
   private readonly _translateService = inject(TranslateService)
 
   readonly DISPLAY_BEHAVIOUR_LIST = [
@@ -158,6 +157,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     this._required = coerceBooleanProperty(value)
   }
   private _required: boolean
+
   @Input() value: Dimension | Measure
 
   @Input() capacities: PropertyCapacity[]
@@ -383,7 +383,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
         })
       )
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -611,7 +611,7 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
       this.dimensionControl.valueChanges
     ]).pipe(
       map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
-      untilDestroyed(this)
+      takeUntilDestroyed(this._destroyRef),
     ).subscribe(this.property$)
 
   }
@@ -626,16 +626,15 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     /**
      * 对字段变化的监听去清空后续字段值, 监听要放在初始值初始化之后
      */
-    this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), untilDestroyed(this))
+    this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef),)
       .subscribe((dimension) => {
-        // console.log(`property select dimension: %s`, dimension, this._formValue)
         this.formGroup.setValue({
           ...this._formValue,
           dimension,
         } as any)
       })
 
-    this.hierarchyControl.valueChanges.pipe(distinctUntilChanged(), untilDestroyed(this))
+    this.hierarchyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef),)
       .subscribe(() => {
         this.formGroup.patchValue({
           level: null,
@@ -646,7 +645,8 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     this.formGroup.valueChanges.pipe(
       // Update value when property is initialized
       filter(() => !!this.property$.value),
-      untilDestroyed(this)
+      debounceTime(100),
+      takeUntilDestroyed(this._destroyRef),
     ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {
         value = {
@@ -674,6 +674,11 @@ export class PropertySelectComponent implements ControlValueAccessor, OnInit, Af
     } else if(isMeasure(value)) {
       if (value.measure) {
         // 借用 dimension 属性表达 measure property
+        // Firstly, trigger dimension value init
+        this.formGroup.patchValue({
+          dimension: value.measure,
+        })
+        // Then, patch measure properties
         this.formGroup.patchValue({
           ...value,
           dimension: value.measure
