@@ -322,6 +322,21 @@ export function DimensionProperties(properties: string[]) {
 }
 
 /**
+ * Properties function
+ * 
+ * @param expression dimension member expression
+ * @param property name of property
+ * @returns dimension member's property expression
+ */
+export function Properties(expression: string, property: string) {
+    return `${expression}.Properties("${property}")`
+}
+
+export function CurrentMemberProperties(MemberOrSetExpression: string, property: string) {
+    return Properties(CurrentMember(MemberOrSetExpression), property)
+}
+
+/**
  * Applies a set to each member of another set, and then joins the resulting sets by union.
  * Alternatively, this function returns a concatenated string created by evaluating a string expression over a set.
  * 

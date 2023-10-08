@@ -14,7 +14,6 @@ import {
   getEntityDimensions,
   isEntityType
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import JSON5 from 'json5'
@@ -27,7 +26,6 @@ import { ChartSchema, SuggestsSchema } from './types'
 import { calcEntityTypePrompt, CopilotService, registerModel } from '../../../@core'
 
 
-@UntilDestroy()
 @Injectable()
 export class InsightService {
   private modelsService = inject(ModelsService)
@@ -325,11 +323,17 @@ ${this.getEntityTypePrompt(entityType)}
     }
   }
 
+  /**
+   * Suggest AI prompts for the cube or random 10 cubes related to the entity type info of the cube
+   * 
+   * @param cube 
+   * @returns 
+   */
   async suggestPrompts(cube?: Cube) {
     this.suggesting = true
     try {
       let prompt = ''
-      // 指定 Cube 或者随机 10 个 Cube 或表信息
+      // Specify the Cube or 10 random Cubes or Tables information
       if (cube) {
         prompt = await this.getEntityTypePrompt(await this.getEntityType(cube.name))
       } else {
@@ -339,16 +343,14 @@ ${this.getEntityTypePrompt(entityType)}
         [
           {
             role: CopilotChatMessageRoleEnum.System,
-            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的问题(use language: ${this.language()}) in json format，不用解释。
+            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
   例如：
   多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
-  回答：[
-    "访问量走势, 线条平滑，线粗5",
-    "按产品类别统计访问量, 显示图例",
-    "2023年某产品的访问量走势",
-  ]
-  `
-          },
+  回答：${JSON.stringify(this.translateService.instant('PAC.Home.Insight.PromptExamplesForVisit', {Default: [
+    "the trend of visit, line is smooth and width 5",
+    "visits by product category, show legend",
+    "visit trend of some product in 2023 year"
+  ]}))}`},
           {
             role: CopilotChatMessageRoleEnum.User,
             content: `多维数据模型信息为：${prompt}\n回答：`

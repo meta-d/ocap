@@ -34,7 +34,8 @@ export enum RequestMethodEnum {
 }
 
 export const LANGUAGES = [
-  { value: 'zh-CN', label: '简体中文' },
+  { value: 'zh-CN', label: '中文' }, // Is it necessary to keep this or use `zh` ?
+  { value: 'zh-Hans', label: '简体中文' },
   { value: 'zh-Hant', label: '繁体中文' },
   { value: 'en', label: 'English' }
 ]
