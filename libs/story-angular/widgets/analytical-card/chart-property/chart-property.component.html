@@ -21,19 +21,20 @@
       <div class="ngm-chart-property__card">
         <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
           <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">category</mat-icon>
-          <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}</span>
+          <span>{{ 'Story.ChartProperty.Role' | translate: {Default: 'Role'} }}</span>
         </label>
-        <mat-radio-group [(ngModel)]="role">
-          <mat-radio-button *ngFor="let role of DIMENSION_ROLES" [value]="role.value">
-            {{ 'FORMLY.PROPERTY_SELECT.' + role.label | translate: {Default: role.label} }}
-          </mat-radio-button>
-        </mat-radio-group>
+
+        <mat-button-toggle-group [(ngModel)]="role" ngmAppearance="hero" color="accent" class="self-start">
+          <mat-button-toggle *ngFor="let role of DIMENSION_ROLES" [value]="role.value">
+            {{ 'Story.ChartProperty.' + role.label | translate: {Default: role.label} }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
 
       <div class="ngm-chart-property__card">
         <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
           <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
-          <span>{{ 'FORMLY.PROPERTY_SELECT.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
+          <span>{{ 'Story.ChartProperty.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
         </label>
         <ngm-designer-form class="w-full text-sm" [(ngModel)]="chartOptions"></ngm-designer-form>
       </div>
@@ -42,55 +43,58 @@
     <div *ngIf="showMeasureRole" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">category</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.Role' | translate: {Default: 'Role'} }}</span>
+        <span>{{ 'Story.ChartProperty.Role' | translate: {Default: 'Role'} }}</span>
       </label>
-      <mat-radio-group [(ngModel)]="role">
-        <mat-radio-button *ngFor="let role of MEASURE_ROLES" [value]="role.value">
-          {{ 'FORMLY.PROPERTY_SELECT.' + role.label | translate: {Default: role.label} }}
-        </mat-radio-button>
-      </mat-radio-group>
+
+      <mat-button-toggle-group [(ngModel)]="role" ngmAppearance="hero" color="accent" class="self-start">
+        <mat-button-toggle *ngFor="let role of MEASURE_ROLES" [value]="role.value">
+          {{ 'Story.ChartProperty.' + role.label | translate: {Default: role.label} }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
 
     <div *ngIf="showMeasureShape" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">interests</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.Shape' | translate: {Default: 'Shape'} }}...</span>
+        <span>{{ 'Story.ChartProperty.Shape' | translate: {Default: 'Shape'} }}...</span>
       </label>
-      <mat-radio-group [(ngModel)]="shapeType">
-        <mat-radio-button [value]="null">
-          {{ 'FORMLY.PROPERTY_SELECT.None' | translate: {Default: 'None'} }}
-        </mat-radio-button>
-        <mat-radio-button *ngFor="let shape of SHAPE_TYPES" [value]="shape.value">
-          {{ 'FORMLY.PROPERTY_SELECT.' + shape.label | translate: {Default: shape.label} }}
-        </mat-radio-button>
-      </mat-radio-group>
+
+      <mat-button-toggle-group [(ngModel)]="shapeType" ngmAppearance="hero" color="accent" class="self-start">
+        <mat-button-toggle [value]="null">
+          {{ 'Story.ChartProperty.None' | translate: {Default: 'None'} }}
+        </mat-button-toggle>
+        <mat-button-toggle *ngFor="let shape of SHAPE_TYPES" [value]="shape.value">
+          {{ 'Story.ChartProperty.' + shape.label | translate: {Default: shape.label} }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
 
     <div *ngIf="showMeasurePalettePattern" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">texture</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.Pattern' | translate: {Default: 'Pattern'} }}</span>
+        <span>{{ 'Story.ChartProperty.Pattern' | translate: {Default: 'Pattern'} }}</span>
       </label>
-      <mat-radio-group [(ngModel)]="pattern">
-        <mat-radio-button [value]="null">
-          {{ 'FORMLY.PROPERTY_SELECT.None' | translate: {Default: 'None'} }}
-        </mat-radio-button>
-        <mat-radio-button *ngFor="let item of PATTERNS" [value]="item.value">
+
+      <mat-button-toggle-group [(ngModel)]="pattern" ngmAppearance="hero" color="accent" class="self-start">
+        <mat-button-toggle [value]="null">
+          {{ 'Story.ChartProperty.None' | translate: {Default: 'None'} }}
+        </mat-button-toggle>
+        <mat-button-toggle *ngFor="let item of PATTERNS" [value]="item.value">
           {{item.label}}
-        </mat-radio-button>
-      </mat-radio-group>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
 
     <div *ngIf="showColorPalette" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">style</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.Style' | translate: {Default: 'Style'} }}</span>
+        <span>{{ 'Story.ChartProperty.Style' | translate: {Default: 'Style'} }}</span>
       </label>
 
       <button mat-flat-button displayDensity="comfortable" class="ngm-chart-property__palette-trigger w-full" [matMenuTriggerFor]="paletteMenu">
         <div class="w-full flex items-center">
           <mat-icon fontSet="material-icons-outlined">palette</mat-icon>
-          <span>{{ 'FORMLY.PROPERTY_SELECT.Palette' | translate: {Default: 'Palette'} }}</span>
+          <span>{{ 'Story.ChartProperty.Palette' | translate: {Default: 'Palette'} }}</span>
           <span class="flex-1"></span>
           
           <mat-icon fontSet="material-icons-outlined">arrow_right</mat-icon>
@@ -98,7 +102,7 @@
       </button>
 
       <div class="flex justify-start items-center">
-        <ngm-colors class="flex-1" [label]=" 'FORMLY.PROPERTY_SELECT.Colors' | translate: {Default: 'Colors'} "
+        <ngm-colors class="flex-1" [label]=" 'Story.ChartProperty.Colors' | translate: {Default: 'Colors'} "
           [options]="colorPalettes"
           [(ngModel)]="colors"
           (ngModelChange)="onColorsChange($event)"
@@ -112,7 +116,7 @@
       <mat-checkbox [(ngModel)]="bar">
         <div class="flex-1 flex items-center">
           <mat-icon class="shrink-0" fontSet="material-icons-outlined">sort</mat-icon>
-          <span>{{ 'FORMLY.PROPERTY_SELECT.BarChart' | translate: {Default: 'Bar Chart'} }}</span>
+          <span>{{ 'Story.ChartProperty.BarChart' | translate: {Default: 'Bar Chart'} }}</span>
         </div>
       </mat-checkbox>
     </div>
@@ -121,7 +125,7 @@
     <div *ngIf="showMeasureReferenceLine" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">trending_flat</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.REFERENCE_LINE' | translate: {Default: 'Reference Line'} }}</span>
+        <span>{{ 'Story.ChartProperty.ReferenceLine' | translate: {Default: 'Reference Line'} }}</span>
       </label>
 
       <ngm-reference-line class="w-full text-sm" [(ngModel)]="referenceLines"></ngm-reference-line>
@@ -130,7 +134,7 @@
     <div *ngIf="showMeasureChartOptions" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
         <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
-        <span>{{ 'FORMLY.PROPERTY_SELECT.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
+        <span>{{ 'Story.ChartProperty.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
       </label>
 
       <ngm-chart-measure-form class="w-full text-sm" [(ngModel)]="chartOptions"
@@ -142,12 +146,11 @@
 
 
 <mat-radio-group [(ngModel)]="palette" displayDensity="cosy">
-  <mat-menu #paletteMenu="matMenu" class="ngm-formly ngm-density__compact">
-
+  <mat-menu #paletteMenu="matMenu" class="ngm-density__compact">
     <ng-template matMenuContent>
       <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
         <mat-radio-button class="ngm-radio-button__property" [value]="null">
-          {{ 'FORMLY.PROPERTY_SELECT.None' | translate: {Default: 'None'} }}
+          {{ 'Story.ChartProperty.None' | translate: {Default: 'None'} }}
         </mat-radio-button>
       </button>
   

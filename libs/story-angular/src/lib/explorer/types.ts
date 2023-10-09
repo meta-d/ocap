@@ -1,4 +1,4 @@
-import { ChartAnnotation, ChartDimensionRoleType, ChartMeasureRoleType, ChartOrient, ChartType } from '@metad/ocap-core'
+import { ChartAnnotation, ChartDimensionRoleType, ChartMeasureRoleType, ChartOrient, ChartType, pick } from '@metad/ocap-core'
 import { DeepPartial, NxChartType } from '@metad/core'
 
 export interface ChartGroup {
@@ -656,6 +656,10 @@ export function getChartType(chartType: ChartType) {
         return chart
       }
     }
+  }
+
+  if (chartType?.variant || chartType?.orient) {
+    return getChartType(pick(chartType, 'type') as ChartType)
   }
 
   throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)

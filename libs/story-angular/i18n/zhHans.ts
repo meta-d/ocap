@@ -819,6 +819,36 @@ export const ZhHans = {
       Variant: '变型',
       Orient: '方向'
     },
+    ChartProperty: {
+      ReferenceLine: '参考线',
+      None: '默认',
+      Category: '类别',
+      Category2: '类别2',
+      Group: '分组',
+      Stacked: '堆叠',
+      Color: '颜色',
+      Trellis: '格子',
+      Axis1: '轴1',
+      Axis2: '轴2',
+      Axis3: '轴3',
+      Size: '大小',
+      Lightness: '明度',
+      SizeLightness: '大小和明度',
+      Tooltip: '提示信息',
+      Bar: '柱形',
+      Line: '线形',
+      Scatter: '散点',
+      Pattern: '图案',
+      Palette: '调色板',
+      Invert: '反转',
+      Role: '角色',
+      Shape: '形状',
+      Style: '样式',
+      ChartOptions: '图形属性',
+      ChartAttributes: '图形属性',
+      BarChart: '条形图',
+      Colors: '颜色'
+    },
     STYLING: {
       CSS: {
         BACKGROUND: {

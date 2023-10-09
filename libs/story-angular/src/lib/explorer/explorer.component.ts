@@ -129,11 +129,17 @@ export class StoryExplorerComponent {
       const chartAnnotation = value?.dataSettings?.chartAnnotation
       const analytics = value?.dataSettings?.analytics
       if (chartAnnotation) {
-        this.component.set({
+        const component = {
           component: WidgetComponentType.AnalyticalCard,
-          label: getChartType(chartAnnotation.chartType)?.label as NxChartType,
+          label: '' as NxChartType,
           dataSettings: value.dataSettings
-        })
+        }
+        try {
+          component.label = getChartType(chartAnnotation.chartType)?.label as NxChartType
+        } catch(err) {
+          console.error(err)
+        }
+        this.component.set(component)
         this.rows.set(chartAnnotation.dimensions)
         this.columns.set(chartAnnotation.measures)
         this._dimensions.set(chartAnnotation.dimensions?.map((d) => pick(d, 'dimension', 'hierarchy')) ?? [])

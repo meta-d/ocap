@@ -1,5 +1,5 @@
 <div class="relative flex-1 flex flex-col items-center overflow-auto p-4" [class.pac-indight__expand-model]="showModel() && entityType()">
-  <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 gap-4">
+  <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 flex flex-col gap-1">
     <mat-expansion-panel *ngFor="let answer of answers(); index as index; trackBy: trackByKey" class="pac-indight__answer-panel group" togglePosition="before"
       [expanded]="answer.expanded"
     >

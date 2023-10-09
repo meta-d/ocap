@@ -16,7 +16,7 @@ import {
 } from '@metad/components/palette'
 import { PropertyCapacity, PropertyModule } from '@metad/components/property'
 import { ColorPalettes, NxCoreService } from '@metad/core'
-import { DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { AppearanceDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -36,6 +36,7 @@ import { BehaviorSubject, distinctUntilChanged, from, map } from 'rxjs'
 import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
 import { NgmReferenceLineComponent } from './reference-line.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
 
 @Component({
   standalone: true,
@@ -48,12 +49,14 @@ import { NgmChartMeasureComponent } from './chart-measure.component'
     MatMenuModule,
     MatRadioModule,
     MatCheckboxModule,
+    MatButtonToggleModule,
     TranslateModule,
 
     PropertyModule,
     NxDesignerModule,
     NxChromaticPreviewComponent,
     DensityDirective,
+    AppearanceDirective,
     NgmColorsComponent,
     NgmDesignerFormComponent,
     NgmReferenceLineComponent,
@@ -81,13 +84,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public translateService = inject(TranslateService)
 
   @Input() capacities: PropertyCapacity[]
-  @Input() get removable() {
-    return this._removable()
-  }
-  set removable(value: string | boolean) {
-    this._removable.set(coerceBooleanProperty(value))
-  }
-  private readonly _removable = signal(false)
 
   @Input() get dataSettings(): DataSettings {
     return this._dataSettings()
