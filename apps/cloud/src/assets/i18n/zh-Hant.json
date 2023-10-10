@@ -2,7 +2,7 @@
   "MENU": {
     "TENANT": "集團",
     "ORGANIZATION": "公司",
-    "DASHBOARD": "儀錶盤",
+    "DASHBOARD": "儀表盤",
     "INDICATOR": "指標",
     "INDICATOR_MARKET": "市場",
     "INDICATOR_APP": "指標應用",
@@ -118,8 +118,8 @@
       "CreateBy": "創建人",
       "Actions": "操作",
       "Active": "啟用",
-      "EmailTemplates": "郵件模闆",
-      "TemplateName": "模闆名稱",
+      "EmailTemplates": "郵件模板",
+      "TemplateName": "模板名稱",
       "Language": "語言",
       "Subject": "主題",
       "EmailBody": "郵件正文",
@@ -162,7 +162,7 @@
     "MENU": {
       "Certification": "認證",
       "Copilot": "副駕駛",
-      "Dashboard": "儀錶闆",
+      "Dashboard": "儀表板",
       "Semantic Model": "語義模型",
       "Story": "故事",
       "Indicator": "指標",
@@ -178,7 +178,7 @@
       "Business Area": "業務域",
       "Role & Permission": "角色 & 權限",
       "Feature": "功能",
-      "Email Template": "郵件模闆",
+      "Email Template": "郵件模板",
       "Custom SMTP": "自定義 SMTP",
       "AGENT": "代理",
       "LOCAL_AGENT": "本地代理",
@@ -238,7 +238,7 @@
         "Trending": "熱門",
         "Insight": "洞察",
         "MyCatalog": "我的目錄",
-        "HELLO": "妳好",
+        "HELLO": "你好",
         "SEARCH": "搜索",
         "AskaQuestion": "詢問一個問題",
         "Recents": "最近訪問",
@@ -256,7 +256,7 @@
         "HaveStories": "擁有 {{quantity}} 個故事",
         "CreateYourFirstIndicator": "創建第一個指標",
         "HaveIndicators": "擁有 {{quantity}} 個指標",
-        "UpdateLayout": "更新佈局"
+        "UpdateLayout": "更新布局"
       },
       "USER": {
         "BASIC": "基本屬性"
@@ -308,7 +308,7 @@
       "INDICATOR": {
         "REGISTER_INDICATOR": "註冊指標",
         "BATCH_UPLOAD": "批量上傳",
-        "DownloadAsTemplate": "下載為模闆",
+        "DownloadAsTemplate": "下載為模板",
         "INDICATOR_MARKET": "指標市場",
         "INDICATOR_MARKET_DESC": "瀏覽指標，申請指標權限"
       },
@@ -342,7 +342,7 @@
       "Add": "添加",
       "Cancel": "取消",
       "New": "新建",
-      "Release": "發佈",
+      "Release": "發布",
       "Open": "打開",
       "Upload": "上傳",
       "Remove": "刪除",
@@ -350,7 +350,7 @@
       "CreateIndicator": "創建指標",
       "ADD_CALCULATED_MEMBER": "新增計算成員",
       "CREATE_STORY": "創建故事",
-      "COPY": "復制",
+      "COPY": "復製",
       "CREATE": "創建",
       "CANCEL": "取消",
       "SUBMIT": "提交",
@@ -388,9 +388,9 @@
       "Connect": "連接",
       "Uploading": "上傳中",
       "Search": "搜索",
-      "Copy": "復制",
+      "Copy": "復製",
       "NewTag": "新建標簽",
-      "Duplicate": "復制"
+      "Duplicate": "復製"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "組織更新成功",
@@ -400,7 +400,7 @@
       "NameAlreadyExist": "名稱已存在",
       "Required": "必輸",
       "Update": "更新",
-      "StoryRunWithWasmModelOnMobileWarn": "在移動端上分析 WASM 模型可能會有性能限制，謹慎使用",
+      "StoryRunWithWasmModelOnMobileWarn": "在移動端上分析 WASM 模型可能會有性能限製，謹慎使用",
       "PasswordChange": "密碼修改",
       "NewVersionUpdate": "已獲取新版本。現在更新?",
       "CreateStoryWidgetSuccess": "創建故事部件成功",
@@ -497,7 +497,7 @@
         "CreateIndicator": "創建指標",
         "RestrictiveCondition": "限定條件",
         "Aggregator": "聚合類型",
-        "Calendar": "日歴維度",
+        "Calendar": "日歷維度",
         "Tags": "標簽",
         "IndicatorNotFound": "指標未找到",
         "DeleteIndicator": "刪除指標"
@@ -547,7 +547,7 @@
       "Authorization": "授權",
       "IndicatorTemplateFileName": "指標模版",
       "PermissionRequested": "權限已申請",
-      "PermissionApproved": "權限已批准",
+      "PermissionApproved": "權限已批準",
       "PermissionRefused": "申請被拒絕",
       "DeleteIndicator": "刪除指標",
       "All": "所有",
@@ -593,7 +593,7 @@
         "TITLE": "查詢",
         "SaveAsModel": "另存為模型",
         "SaveAsDBInit": "另存為數據庫初始化腳本",
-        "TableSchema": "錶結構",
+        "TableSchema": "表結構",
         "New": "新建查詢",
         "TotalRecords": "總記錄數",
         "PreviewTop1000": "最大預覽 1000 條",
@@ -616,11 +616,11 @@
       "MODEL": {
         "Entities": "實體",
         "TITLE": "模型",
-        "TABLES": "數據錶",
+        "TABLES": "數據表",
         "Preferences": "首選項",
         "New": "新建",
-        "NewTable": "新建錶",
-        "UploadTable": "上傳錶",
+        "NewTable": "新建表",
+        "UploadTable": "上傳表",
         "RefreshSchema": "刷新元數據",
         "Name": "名稱",
         "Description": "描述",
@@ -643,8 +643,8 @@
         "Visibility_Private": "私有",
         "RemoveDBInitScript": "刪除數據庫初始化腳本",
         "CopilotDefaultPrompts": [
-          "將錶創建為立方體",
-          "將錶創建為維度"
+          "將表創建為立方體",
+          "將表創建為維度"
         ],
         "CopilotName": "建模"
       },
@@ -659,9 +659,9 @@
         "INPUT_NAME": "輸入名稱",
         "LABEL": "標簽",
         "INPUT_LABEL": "輸入標簽",
-        "TABLE": "錶",
-        "PICK_ONE_TABLE": "選擇一個錶",
-        "CUBE_TABLE": "立方體的錶",
+        "TABLE": "表",
+        "PICK_ONE_TABLE": "選擇一個表",
+        "CUBE_TABLE": "立方體的表",
         "Field": "字段",
         "Measure": "度量",
         "AssociatedDimension": "關聯維度",
@@ -670,14 +670,14 @@
         "Caption": "標簽"
       },
       "CREATE_TABLE": {
-        "TITLE": "添加錶",
+        "TITLE": "添加表",
         "Name": "名稱",
         "Type": "類型",
         "Url": "鏈接",
         "Delimiter": "分隔符",
         "AddFile": "添加文件",
         "DataPreview": "數據預覽",
-        "InputTableName": "輸入錶名稱",
+        "InputTableName": "輸入表名稱",
         "HasHeader": "第一行是標題",
         "DefaultDelimiter": "默認：,",
         "DragandDropFile": "拖拽上傳文件",
@@ -699,7 +699,7 @@
         "RightKey": "右鍵",
         "Equal": "等於",
         "OnekeyGeneration": "一鍵生成",
-        "OnekeyGenerateModel": "根據錶字段劃分一鍵生成模型",
+        "OnekeyGenerateModel": "根據表字段劃分一鍵生成模型",
         "SourceFields": "源字段",
         "OnekeySync": "一鍵同步",
         "OnekeySyncModel": "根據源模型定義一鍵同步模型",
@@ -712,7 +712,7 @@
       },
       "DIMENSION": {
         "Levels": "層級",
-        "DimensionTables": "維度錶",
+        "DimensionTables": "維度表",
         "DataPreview": "數據預覽",
         "Count": "計數",
         "EditAttributes": "編輯屬性",
@@ -729,7 +729,7 @@
         "ImportMethod": "導入方式",
         "Cover": "覆蓋",
         "Append": "追加",
-        "Merge": "合併",
+        "Merge": "合並",
         "Uploaded": "已上傳",
         "Records": "條記錄",
         "Preview50": "預覽前 50 條記錄",
@@ -739,8 +739,8 @@
       "SCHEMA": {
         "COMMON": {
           "DATA": "數據",
-          "Table": "錶",
-          "FactTable": "事實錶",
+          "Table": "表",
+          "FactTable": "事實表",
           "SQLExpression": {
             "Dialect": "方言",
             "Content": "值"
@@ -754,7 +754,7 @@
           "Column": "字段",
           "Description": "描述",
           "ForeignKey": "外鍵",
-          "ParentChild": "父子層級關繫",
+          "ParentChild": "父子層級關系",
           "Semantics": "語義",
           "Semantic": "語義類型",
           "Formatter": "格式化",
@@ -763,11 +763,11 @@
           "Visible": "是否顯示",
           "DataType": "數據類型",
           "Property": "屬性",
-          "KeyExpression": "鍵錶達式",
-          "NameExpression": "名稱錶達式",
-          "CaptionExpression": "說明錶達式",
-          "OrdinalExpression": "順序錶達式",
-          "ParentExpression": "父字段錶達式",
+          "KeyExpression": "鍵表達式",
+          "NameExpression": "名稱表達式",
+          "CaptionExpression": "說明表達式",
+          "OrdinalExpression": "順序表達式",
+          "ParentExpression": "父字段表達式",
           "Enabled": "啟用",
           "Cache": "緩存",
           "Caption": "標簽",
@@ -780,7 +780,7 @@
           "Modeling": "建模",
           "Name": "名稱",
           "Label": "標簽",
-          "Table": "錶",
+          "Table": "表",
           "DefaultMeasure": "默認度量"
         },
         "DimensionUsage": {
@@ -793,33 +793,33 @@
           "Label": "標簽",
           "DimensionType": "維度類型",
           "DefaultHierarchy": "默認層次結構",
-          "KeyExpression": "鍵錶達式",
+          "KeyExpression": "鍵表達式",
           "SQLExpression": {
             "Dialect": "方言",
             "Content": "值"
           },
           "CaptionColumn": "文本字段",
-          "Column": "維度錶主鍵",
-          "ForeignKey": "事實錶外鍵"
+          "Column": "維度表主鍵",
+          "ForeignKey": "事實表外鍵"
         },
         "HIERARCHY": {
           "TITLE": "層次結構",
           "Modeling": "建模",
           "Name": "名稱",
           "Label": "標簽",
-          "DimensionTable": "維度錶",
-          "TableName": "錶名",
+          "DimensionTable": "維度表",
+          "TableName": "表名",
           "HasAll": "有 All 成員",
           "AllMemberName": "All 成員名稱",
           "AllMemberCaption": "All 成員標簽",
           "AllLevelName": "All 層級名稱",
           "PrimaryKey": "主鍵",
-          "PrimaryKeyTable": "主鍵錶",
-          "JoinTable": "關聯錶",
-          "Table": "錶",
+          "PrimaryKeyTable": "主鍵表",
+          "JoinTable": "關聯表",
+          "Table": "表",
           "LeftKey": "左鍵",
           "RightKey": "右鍵",
-          "RightAlias": "右錶別名",
+          "RightAlias": "右表別名",
           "DefaultMember": "默認成員"
         },
         "LEVEL": {
@@ -828,7 +828,7 @@
           "Name": "名稱",
           "Label": "標簽",
           "Property": "屬性",
-          "PropertyExpression": "屬性錶達式",
+          "PropertyExpression": "屬性表達式",
           "Dialect": "方言",
           "Content": "值",
           "Column": "字段",
@@ -837,7 +837,7 @@
           "Type_String": "字符串",
           "Type_Integer": "整數",
           "Type_Numeric": "數值",
-          "Type_Boolean": "佈爾",
+          "Type_Boolean": "布爾",
           "Type_Date": "日期",
           "Type_Time": "時間",
           "Type_Timestamp": "時間戳",
@@ -849,12 +849,12 @@
           "ChildColumn": "子字段",
           "NullParentValue": "父字段空",
           "TimeLevelType": "層級時間類型",
-          "Table": "錶",
+          "Table": "表",
           "HideMemberIf": "隱藏成員",
-          "ClosureTable": "閉合錶",
-          "KeyExpression": "鍵錶達式",
-          "CaptionExpression": "說明錶達式",
-          "ParentChild": "父子層級關繫",
+          "ClosureTable": "閉合表",
+          "KeyExpression": "鍵表達式",
+          "CaptionExpression": "說明表達式",
+          "ParentChild": "父子層級關系",
           "Semantics": "語義",
           "SQLExpression": {
             "Dialect": "方言",
@@ -871,7 +871,7 @@
           "Title": "度量",
           "Aggregator": "聚合類型",
           "FormatString": "格式化",
-          "MeasureExpression": "度量錶達式",
+          "MeasureExpression": "度量表達式",
           "FORMATTING": {
             "Title": "數據格式",
             "ShortNumber": "縮寫數字",
@@ -881,13 +881,13 @@
         }
       },
       "AccessControl": {
-        "Title": "訪問控制",
+        "Title": "訪問控製",
         "Name": "名稱",
         "NewRole": "新建角色",
         "RoleCreate": "角色創建",
         "Cubes": "多維數據集",
-        "Access": "訪問控制",
-        "Overview": "訪問控制概覽",
+        "Access": "訪問控製",
+        "Overview": "訪問控製概覽",
         "RolesManage": "角色管理",
         "UsersManage": "用戶管理",
         "RoleOverview": "角色概覽",
@@ -904,7 +904,7 @@
         "BottomLevel": "最低層級",
         "Roles": "角色",
         "Type": "類型",
-        "SingleRole": "標准角色",
+        "SingleRole": "標準角色",
         "UnionRole": "復合角色",
         "DimensionHierarchyAlreadyExists": "維度或層次結構已存在！",
         "MemberAlreadyExists": "成員已存在！",
@@ -1025,9 +1025,9 @@
       "Bookmark": "收藏",
       "Fullscreen": "全屏",
       "ExitFullscreen": "退出全屏",
-      "Released": "已發佈",
+      "Released": "已發布",
       "Draft": "草稿",
-      "ConfirmChangingReleasedStory": "故事已經發佈，確認再次編輯嗎",
+      "ConfirmChangingReleasedStory": "故事已經發布，確認再次編輯嗎",
       "GlobalFilterBar": "全局過濾器",
       "BorderImageSlice": "邊框切片",
       "Shadow": "陰影",
@@ -1074,16 +1074,16 @@
       "CertificationAlreadyAdded": "認證已添加",
       "DefaultProject": "默認",
       "Name": "名稱",
-      "WhatIsTheName": "妳的項目名稱",
+      "WhatIsTheName": "你的項目名稱",
       "Description": "描述",
-      "DescriptionPlaceholder": "妳的項目描述",
+      "DescriptionPlaceholder": "你的項目描述",
       "DefaultCollection": "默認",
       "Home": "首頁",
       "Bookmarks": "收藏夾",
       "Collection": "工作集",
       "Collections": "工作集",
       "CollectionName": "名稱",
-      "WhatIsTheCollectionName": "妳工作集的名稱",
+      "WhatIsTheCollectionName": "你工作集的名稱",
       "CollectionPlaceholder": "應該放在哪個工作集內",
       "MoveToCollection": "移動到工作集",
       "SemanticModels": "語義模型",
@@ -1092,13 +1092,13 @@
       "NewCollection": "新建集",
       "RemoveCollection": "刪除集",
       "NewStory": "新建故事",
-      "Release": "發佈",
-      "Rerelease": "重新發佈",
+      "Release": "發布",
+      "Rerelease": "重新發布",
       "Archive": "下線",
       "ConfirmArchiveStory": "確定要下線此故事嗎？",
       "MoveTo": "移動到",
-      "Copy": "復制",
-      "CopyStory": "復制故事",
+      "Copy": "復製",
+      "CopyStory": "復製故事",
       "Remove": "刪除",
       "AddModel": "添加模型",
       "RemoveModel": "刪除模型",
@@ -1111,7 +1111,7 @@
       "ProjectMembers": "項目成員",
       "Inner": "內部",
       "Public": "公開",
-      "StoryReleased": "故事發佈",
+      "StoryReleased": "故事發布",
       "ProjectOwner": "項目所有者",
       "TransferOwnership": "轉移所有權",
       "CreateStory": "創建故事",
@@ -1121,7 +1121,7 @@
       "AddModels": "添加語義模型",
       "ManageIndicators": "管理指標",
       "Indicators": "指標",
-      "Templates": "模闆",
+      "Templates": "模板",
       "AddSemanticModels": "添加語義模型",
       "New": "新建",
       "Files": "文件"
@@ -1136,12 +1136,12 @@
       "Copilot": "Copilot",
       "AICopilot": "AI 副駕駛",
       "EnableCopilot": "啟用 Copilot",
-      "GetYourApiKey": "獲取妳的 API Key",
+      "GetYourApiKey": "獲取你的 API Key",
       "ProvideOpenaiApiKey": "請提供 Openai API Key?",
       "Provider": "提供商",
-      "YourAIPairProgrammer": "妳的 AI 配對程序員!",
-      "LetYourAIPairProgrammerEdits": "讓妳的 AI 配對程序員修改一下!",
-      "SelectSomeCode": "選擇代碼，讓妳的 AI 配對程序員修改一下!",
+      "YourAIPairProgrammer": "你的 AI 配對程序員!",
+      "LetYourAIPairProgrammerEdits": "讓你的 AI 配對程序員修改一下!",
+      "SelectSomeCode": "選擇代碼，讓你的 AI 配對程序員修改一下!",
       "ThinkingHard": "努力思考中...",
       "StopGenerating": "停止生成",
       "ClearMessages": "清空消息",
@@ -1149,7 +1149,7 @@
       "Resubmit": "重新提交",
       "Model": "模型",
       "Options": "選項",
-      "UseSystemPrompt": "使用繫統提示",
+      "UseSystemPrompt": "使用系統提示",
       "ExamplesOfPrompts": "提示語示例",
       "APIKey": "API 密鑰",
       "APIHost": "API 主機",
@@ -1157,17 +1157,26 @@
         "Set story theme dark": "設置故事暗黑主題",
         "Set story gradient background color sense of technology": "設置故事背景為科技感漸變色",
         "Set widget transparent background": "設置部件透明背景",
-        "Chart series set line smooth": "圖形繫列設定線平滑",
-        "Chart series set bar max width 20, rounded, shadow": "圖形繫列設定條形圖最大寬度 20，圓角，陰影",
-        "Chart series add average mark line": "圖形繫列添加平均標記線",
+        "Chart series set line smooth": "圖形系列設定線平滑",
+        "Chart series set bar max width 20, rounded, shadow": "圖形系列設定條形圖最大寬度 20，圓角，陰影",
+        "Chart series add average mark line": "圖形系列添加平均標記線",
         "Chart category axis line width 2, show axis tick": "圖形分類軸線寬度 2，顯示軸線刻度",
         "Data analysis": "分析數據"
       }
     },
     "Home": {
       "Insight": {
+        "Title": "💡智慧洞察",
         "CreateSemanticModelForUse": "添加到故事：創建語義模型後才能使用",
-        "AddWidgetToStoryTitle": "將部件添加到故事"
+        "AddWidgetToStoryTitle": "將微件添加到故事",
+        "AskAICopilot": "向 AI 副駕駛詢問問題",
+        "AskAICopilotDesc": "您可以針對您的數據提出問題，並立即將答案以可視化形式呈現。這些可視化圖表最終可以添加到您的故事中。",
+        "ForExample": "例如",
+        "PromptExamplesForVisit": [
+          "訪問量走勢, 線條平滑，線粗5",
+          "按產品類別統計訪問量, 顯示圖例",
+          "2023年某產品的訪問量走勢"
+        ]
       }
     },
     "ApprovalPolicy": {
@@ -1176,13 +1185,13 @@
     },
     "Onboarding": {
       "Welcome": "歡迎使用 Metad 分析平臺",
-      "WelcomeInfo": "看起來一切都正常。 現在讓我們認識您，連接到妳的數據，併開始為您尋找一些答案！",
+      "WelcomeInfo": "看起來一切都正常。 現在讓我們認識您，連接到你的數據，並開始為您尋找一些答案！",
       "LetGetStarted": "讓我們開始吧",
-      "FeelStuck": "如果您感到睏惑",
+      "FeelStuck": "如果您感到困惑",
       "OurGuide": "我們的入門指南",
       "ClickAway": "只需一次點擊即可獲得",
       "WhatsPreferredLanguage": "您更喜歡哪種語言？",
-      "PreferredLanguageDescription": "這種語言將會被用於Metad分析平臺中，併且將會是新用戶的默認語言。",
+      "PreferredLanguageDescription": "這種語言將會被用於Metad分析平臺中，並且將會是新用戶的默認語言。",
       "Next": "下一步",
       "WhatCallYou": "我們應該怎麽稱呼您",
       "CompanyTeamName": "公司或組織名稱",
@@ -1195,13 +1204,13 @@
       "ConfirmYourPassword": "確認密碼",
       "PasswordMustMatch": "密碼不一致",
       "WantGenerateDemo": "是否想要生成演示數據",
-      "GenerateDemoDescription": "繫統將從服務器鏈接上下載演示數據文件，併將數據導入至繫統數據庫中，然後創建相應的演示樣例",
+      "GenerateDemoDescription": "系統將從服務器鏈接上下載演示數據文件，並將數據導入至系統數據庫中，然後創建相應的演示樣例",
       "Skip": "跳過",
       "Generate": "生成",
       "Retry": "重試",
       "AddYourData": "添加您的數據",
-      "ReadyExploringYourData": "准備好開始探索您的數據了嗎？在下面添加它吧。",
-      "NotReadySample": "還沒有准備好？跳過併玩玩我們的示例吧。",
+      "ReadyExploringYourData": "準備好開始探索您的數據了嗎？在下面添加它吧。",
+      "NotReadySample": "還沒有準備好？跳過並玩玩我們的示例吧。",
       "DisplayName": "顯示名稱",
       "NameRequired": "名稱不能為空",
       "AddDataLater": "我稍後添加我的數據",
@@ -1222,6 +1231,70 @@
     },
     "Users": {
       "NoMoreOrganizations": "沒有更多的組織可添加"
+    },
+    "Feature": {
+      "Features": {
+        "FEATURE_HOME": {
+          "Name": "首頁",
+          "Description": "首頁展示用戶常用功能"
+        },
+        "FEATURE_DASHBOARD": {
+          "Name": "儀表板",
+          "Description": "轉到儀表板，查看收藏，故事目錄，趨勢和智慧洞察"
+        },
+        "FEATURE_HOME_CATALOG": {
+          "Name": "目錄",
+          "Description": "用戶擁有的故事儀表板，指標等目錄"
+        },
+        "FEATURE_HOME_TREND": {
+          "Name": "趨勢",
+          "Description": "組織內公開的故事儀表板熱度趨勢"
+        },
+        "FEATURE_HOME_INSIGHT": {
+          "Name": "洞察",
+          "Description": "智慧洞察，使用 AI 輔助數據分析"
+        },
+        "FEATURE_ROLES_PERMISSION": {
+          "Name": "角色權限",
+          "Description": "維護系統角色和權限"
+        },
+        "FEATURE_COPILOT": {
+          "Name": "AI 副駕駛",
+          "Description": "配置和使用 AI 副駕駛功能"
+        },
+        "FEATURE_MODEL": {
+          "Name": "語義模型",
+          "Description": "啟用語義模型功能"
+        },
+        "FEATURE_PROJECT": {
+          "Name": "項目",
+          "Description": "啟用項目工作空間功能"
+        },
+        "FEATURE_STORY": {
+          "Name": "故事",
+          "Description": "啟用故事儀表板功能，製作，分享和瀏覽故事儀表板"
+        },
+        "FEATURE_INDICATOR": {
+          "Name": "指標",
+          "Description": "啟用指標功能，註冊，發布和申請查看業務指標數據"
+        },
+        "FEATURE_INDICATOR_REGISTER": {
+          "Name": "指標註冊",
+          "Description": "啟用指標註冊功能，註冊數據指標"
+        },
+        "FEATURE_INDICATOR_MARKET": {
+          "Name": "指標市場",
+          "Description": "啟用指標市場功能，發布、瀏覽和申請指標"
+        },
+        "FEATURE_INDICATOR_APP": {
+          "Name": "指標應用",
+          "Description": "啟用指標應用程序，瀏覽有權限的指標"
+        },
+        "FEATURE_BUSINESS_AREA": {
+          "Name": "業務域",
+          "Description": "啟用業務域功能，創建和使用業務域"
+        }
+      }
     },
     "title": {
       "short": "分析雲"
@@ -1255,18 +1328,18 @@
     "connection": {
       "menu": {
         "data-sources": "數據源",
-        "connections": "繫統連接"
+        "connections": "系統連接"
       }
     },
 
     "ORGANIZATIONS_PAGE": {
       "PERMISSIONS": {
-        "ADMIN_DASHBOARD_VIEW": "查看 Admin 儀錶盤",
+        "ADMIN_DASHBOARD_VIEW": "查看 Admin 儀表盤",
         "ORG_COPILOT_EDIT": "配置 Copilot",
         "MODELS_VIEW": "查看模型",
         "MODELS_EDIT": "編輯模型",
-        "STORIES_VIEW": "查看故事看闆",
-        "STORIES_EDIT": "編輯故事看闆",
+        "STORIES_VIEW": "查看故事看板",
+        "STORIES_EDIT": "編輯故事看板",
         "BUSINESS_AREA_VIEW": "查看業務域",
         "BUSINESS_AREA_EDIT": "編輯業務域",
         "INDICATOR_VIEW": "查看指標",
@@ -1369,7 +1442,7 @@
         "IMPORT_EXPORT_VIEW": "View Import/Export",
         "ORG_JOB_EMPLOYEE_VIEW": "查看任務員工",
         "ORG_JOB_MATCHING_VIEW": "查看任務匹配",
-        "TENANT_SETTINGS": "租戶設置錶",
+        "TENANT_SETTINGS": "租戶設置表",
         "ACCESS_DELETE_ACCOUNT": "訪問刪除賬號",
         "ACCESS_DELETE_ALL_DATA": "訪問刪除所有數據",
         "ORG_DEMO_EDIT": "維護組織演示樣例"
@@ -1436,8 +1509,8 @@
     "WIDGET": {
       "MENU": {
         "LINKED_ANALYSIS": "關聯分析",
-        "COPY": "復制",
-        "COPY_TO": "復制到",
+        "COPY": "復製",
+        "COPY_TO": "復製到",
         "DUPLICATE": "復印",
         "ADD": "添加",
         "FULLSCREEN": "全屏",
@@ -1451,7 +1524,7 @@
         "REFRESH": "刷新",
         "REMOVE": "刪除",
         "NEW_RESPONSIVE_PAGE": "新響應頁面",
-        "NEW_CANVAS_PAGE": "新畫佈頁面"
+        "NEW_CANVAS_PAGE": "新畫布頁面"
       }
     },
     "WIDGETS": {
@@ -1478,7 +1551,7 @@
       "Float_Label": "浮動標簽",
       "Display_Density": "顯示密度",
       "Label": "標簽",
-      "Placeholder": "佔位符",
+      "Placeholder": "占位符",
       "Widget": "組件",
       "OPTIONS": "設置",
       "DensityComfortable": "舒適",
@@ -1486,8 +1559,8 @@
       "DensityCompact": "緊湊",
       "Title": "標題",
       "Autocomplete": "自動補全",
-      "ControlType": "控制器類型",
-      "ControlOptions": "控制器選項",
+      "ControlType": "控製器類型",
+      "ControlOptions": "控製器選項",
       "SelectionType": "值類型",
       "SingleValue": "單值",
       "MultiValue": "多值",
@@ -1555,49 +1628,9 @@
       },
       "WIDGET": {
         "ANALYTICAL_CARD": "分析卡片",
-        "ACCOUNTING_STATEMENT": "財務報錶",
+        "ACCOUNTING_STATEMENT": "財務報表",
         "INDICATOR_CARD": "指標卡片",
         "TABSET": "選項卡"
-      },
-      "CHART": {
-        "DIMENSIONS": "維度",
-        "MEASURES": "度量",
-        "RealTimeLinkedAnalysis": "實時聯動分析",
-        "DisableContextMenu": "禁用上下文菜單",
-        "ShowDataButton": "顯示數據按鈕",
-        "HideHeader": "隱藏標題欄",
-        "HideDataDownload": "隱藏數據下載",
-        "HideScreenshot": "隱藏截圖",
-        "MaximumLimit": "最大數據量限制",
-        "DigitInfo": "數字格式",
-        "TrellisHorizontal": "格子橫嚮個數",
-        "UniversalTransition": "全局過渡動畫",
-        "CustomLogic": "自定義邏輯",
-        "Color": "顏色",
-        "Enabled": "啟用",
-        "ShowDecal": "顯示貼花",
-        "Decals": "貼花圖案",
-        "Options": "選項",
-        "ChartSettings": "圖形配置",
-        "ChartVariants": "圖形變體",
-        "ReferenceLine": {
-          "Title": "創建參考線",
-          "ReferenceLine": "參考線",
-          "removeLabel": "刪除",
-          "Label": "名稱",
-          "Type": "展示類型",
-          "MarkLine": "標記線",
-          "MarkPoint": "標記點",
-          "ValueType": "值類型",
-          "Fixed": "固定",
-          "Dynamic": "動態",
-          "Value": "值",
-          "Aggregation": "聚合類型",
-          "Min": "最小值",
-          "Max": "最大值",
-          "Average": "平均值",
-          "Median": "中位數"
-        }
       },
       "SELECTION_PRESENTATION_VARIANTS": {
         "TITLE": "選擇展示變式"
@@ -1613,7 +1646,7 @@
         "USER_DEFINED_DATA": "用戶自定義數據",
         "Value": "值",
         "Label": "標簽",
-        "PanelWidth": "下拉面闆寬度"
+        "PanelWidth": "下拉面板寬度"
       },
       "IndicatorCard": {
         "Options": "指標配置",
@@ -1633,13 +1666,13 @@
       },
       "AccountingStatement": {
         "Options": "配置",
-        "TableName": "錶名稱",
+        "TableName": "表名稱",
         "Denominator": "縮放因子",
         "DenominatorUnit": "縮放後單位",
         "MeasuresOptions": "度量設置",
         "Measure": "度量",
         "PeriodFunctionsCURRENT": "當期",
-        "PeriodFunctionsYTD": "年纍計",
+        "PeriodFunctionsYTD": "年累計",
         "PeriodFunctionsPYSM": "去年同期",
         "PeriodFunctionsMPM": "上期",
         "PeriodFunctionsYOY": "同比",
@@ -1648,7 +1681,7 @@
         "IsRatio": "比率",
         "IsSemanticColor": "語義顏色",
         "ReverseSemanticColor": "反轉顏色",
-        "Indicators": "指標列錶配置",
+        "Indicators": "指標列表配置",
         "Indicator": "指標",
         "IndicatorAlias": "別名",
         "GroupName": "分組名",
@@ -1682,7 +1715,7 @@
           "BorderStyle": "邊框樣式"
         },
         "LAYOUT": {
-          "TITLE": "佈局",
+          "TITLE": "布局",
           "Padding": "填充空白",
           "Margin": "邊緣空白",
           "Overflow": "溢出"
@@ -1726,7 +1759,7 @@
       },
 
       "CANVAS": {
-        "TITLE": "畫佈"
+        "TITLE": "畫布"
       },
 
       "STORY_PAGE": {
@@ -1757,7 +1790,7 @@
           "BorderType": "邊框類型",
           "BorderJoin": "邊框連接",
           "BorderCap": "邊框帽",
-          "BorderMiterLimit": "邊框斜接限制",
+          "BorderMiterLimit": "邊框斜接限製",
           "UniversalTransition": "全局過渡動畫",
           "Label": "標簽",
           "Position": "位置",
@@ -1772,9 +1805,9 @@
           "Cursor_Move": "移動",
           "ColorBy": "按著色",
           "ColorBy_Auto": "自動",
-          "ColorBy_SameSeries": "相同繫列",
+          "ColorBy_SameSeries": "相同系列",
           "ColorBy_DataItems": "數據項",
-          "SeriesLayoutBy": "數據佈局",
+          "SeriesLayoutBy": "數據布局",
           "Auto": "自動",
           "Column": "列",
           "Row": "行",
@@ -1783,16 +1816,16 @@
           "SelectedMode_Single": "單選",
           "SelectedMode_Multiple": "多選",
           "SelectedMode_False": "禁用",
-          "SelectedMode_Series": "繫列",
+          "SelectedMode_Series": "系列",
           "Formatter": "格式化",
           "Rotate": "旋轉",
           "Enabled": "啟用",
           "Width": "寬度",
           "Height": "高度",
           "Disabled": "禁用",
-          "Orient": "方嚮",
-          "Horizontal": "橫嚮",
-          "Vertical": "縱嚮",
+          "Orient": "方向",
+          "Horizontal": "橫向",
+          "Vertical": "縱向",
           "None": "無",
           "Padding": "填充空白",
           "Radius": "半徑",
@@ -1800,7 +1833,7 @@
           "SymbolSize": "符號大小",
           "SymbolRotate": "符號旋轉",
           "SymbolOffset": "符號位移",
-          "Stack": "堆積",
+          "Stack": "堆疊",
           "TextAlign": {
             "Title": "文本對齊",
             "Auto": "自動",
@@ -1965,7 +1998,7 @@
           "LEGEND_TOP": "上側的距離",
           "LEGEND_RIGHT": "右側的距離",
           "LEGEND_BOTTOM": "下側的距離",
-          "LEGEND_ORIENT": "佈局朝嚮",
+          "LEGEND_ORIENT": "布局朝向",
           "Align": "對齊",
           "Align_Auto": "自動",
           "Align_Left": "左對齊",
@@ -1997,7 +2030,7 @@
           "ShowDelay": "延遲顯示",
           "HideDelay": "延遲隱藏",
           "Enterable": "鼠標進入",
-          "Confine": "限制在圖錶的區域內",
+          "Confine": "限製在圖表的區域內",
           "ClassName": "CSS 類",
           "TransitionDuration": "移動動畫時間",
           "Position": "位置",
@@ -2019,7 +2052,7 @@
         "DATAZOOM_STYLE": {
           "None": "無",
           "DATAZOOM": "數據縮放",
-          "ORIENT": "佈局方式",
+          "ORIENT": "布局方式",
           "ORIENT_HORIZONTAL": "水平",
           "ORIENT_VERTICAL": "豎直",
           "DATAZOOM_TYPE": "類型",
@@ -2028,7 +2061,7 @@
           "END": "結束",
           "START_VALUE": "起始數值",
           "END_VALUE": "結束數值",
-          "YAXIS_INDEX": "控制的 Y 軸",
+          "YAXIS_INDEX": "控製的 Y 軸",
           "MIN_SPAN": "窗口最小值",
           "MAX_SPAN": "窗口最大值",
           "ZOOM_LOCK": "鎖定窗口大小",
@@ -2051,23 +2084,23 @@
           "moveOnMouseWheel": "鼠標滾動移動"
         },
         "SERIE_STYLE": {
-          "TITLE": "繫列統一屬性",
-          "SERIES": "Echarts繫列",
-          "SERIES_TYPE": "Echarts繫列類型",
+          "TITLE": "系列統一屬性",
+          "SERIES": "Echarts系列",
+          "SERIES_TYPE": "Echarts系列類型",
           "ITEMS_TYLE": "圖形樣式",
           "GRADIENT_STYLE": "漸變類型",
           "LINESTYLE": "線條樣式",
           "LINEAR_X0": "線性漸變X0參數",
           "LINEAR_Y0": "線性漸變Y0參數",
-          "RADIAL_R": "徑嚮漸變半徑參數",
+          "RADIAL_R": "徑向漸變半徑參數",
           "LINEAR_X2": "線性漸變X2參數",
           "LINEAR_Y2": "線性漸變Y2參數",
           "LINEWIDTH": "線寬",
           "LINE_TYPE": "線的類型",
           "LINESHADOW_BLUR": "圖形陰影的模糊大小",
           "LINESHADOW_COLOR": "陰影顏色",
-          "LINESHADOW_OFFSETX": "陰影水平方嚮上的偏移距離",
-          "LINESHAODW_OFFSETY": "陰影垂直方嚮上的偏移距離",
+          "LINESHADOW_OFFSETX": "陰影水平方向上的偏移距離",
+          "LINESHAODW_OFFSETY": "陰影垂直方向上的偏移距離",
           "SMOOTH": "是否平滑曲線顯示",
           "COLOR_STOPS": "漸變顏色參數",
           "OFFSET": "0-100%的顏色",
@@ -2114,12 +2147,12 @@
           "FOCUS": "聚焦",
           "BlurScope": "模糊範圍",
           "BlurScope_None": "無",
-          "BlurScope_CoordinateSystem": "坐標繫統",
-          "BlurScope_Series": "繫列",
+          "BlurScope_CoordinateSystem": "坐標系統",
+          "BlurScope_Series": "系列",
           "BlurScope_Global": "全局",
           "Focus_None": "無",
           "Focus_Self": "自己",
-          "Focus_Series": "繫列",
+          "Focus_Series": "系列",
           "Focus_Adjacency": "相鄰",
           "Scale": "縮放",
           "ScaleSize": "縮放大小"
@@ -2139,7 +2172,7 @@
           "Decals": "貼花圖案"
         },
         "SeriesStyle": {
-          "Title": "繫列屬性",
+          "Title": "系列屬性",
           "HasAll":"有 All 成員",
           "FunnelAlign": "漏鬥對齊",
           "BoundaryGap": "邊界間隙"
@@ -2150,13 +2183,13 @@
           "BoxHeight": "高度",
           "BoxDepth": "深度",
           "Light": "光線",
-          "BarSeriesTitle": "繫列屬性",
+          "BarSeriesTitle": "系列屬性",
           "Shading": "明暗法",
           "Environment": "環境貼圖",
           "PostEffect": "後處理特效",
-          "TemporalSuperSampling": "分幀超採樣",
+          "TemporalSuperSampling": "分幀超采樣",
           "Enable": "啟用",
-          "ViewControl": "視角控制",
+          "ViewControl": "視角控製",
           "BevelSize": "倒角尺寸",
           "BevelSmoothness": "倒角圓潤度",
           "Stack": "堆疊",
@@ -2188,7 +2221,7 @@
           "Show": "顯示",
           "Realtime": "實時",
           "Calculable": "可計算",
-          "Controller": "控制器",
+          "Controller": "控製器",
           "InRange": "範圍內的",
           "OutofRange": "範圍外的",
           "Text": "描述",
@@ -2206,7 +2239,7 @@
           "ItemGap": "元素間距"
         },
         "Calendar": {
-          "Title": "日歴",
+          "Title": "日歷",
           "ItemStyle": "元素樣式",
           "CellSize": "單元格大小"
         },
@@ -2309,15 +2342,15 @@
           "ShowSymbol": "顯示符號",
           "ShowAllSymbol": "顯示所有符號",
           "Smooth": "平滑",
-          "Stack": "堆積",
+          "Stack": "堆疊",
           "Step": "分步",
           "AreaStyle": "面積樣式",
           "Origin": "源"
         },
         "Tree": {
           "SeriesStyle": {
-            "Title": "繫列樣式",
-            "Layout": "佈局方式",
+            "Title": "系列樣式",
+            "Layout": "布局方式",
             "Orthogonal": "直角",
             "Radial": "雷達",
             "Orient": "方位",
@@ -2332,7 +2365,7 @@
           "Center": "中心",
           "Radius": "半徑",
           "MinShowLabelAngle": "最小顯示標簽角度",
-          "Clockwise": "順時針方嚮",
+          "Clockwise": "順時針方向",
           "StartAngle": "開始角度",
           "MinAngle": "最小顯示角度",
           "SelectedOffset": "選中偏移",
@@ -2352,7 +2385,7 @@
           "NodeWidth": "節點寬度",
           "NodeGap": "節點間隙",
           "NodeAlign": "節點對齊",
-          "LayoutIterations": "佈局叠代",
+          "LayoutIterations": "布局叠代",
           "Draggable": "可拖拽",
           "LineStyle": "線樣式",
           "Curveness": "平滑",
@@ -2402,10 +2435,10 @@
           "FirstLength": "第一段的長度",
           "SecondLength": "第二段的長度",
           "MinTurnAngle": "最小轉彎角度",
-          "MaxSurfaceAngle": "最大錶面角度"
+          "MaxSurfaceAngle": "最大表面角度"
         },
         "LabelLayout": {
-          "Title": "標簽佈局",
+          "Title": "標簽布局",
           "HideOverlap": "隱藏重疊",
           "MoveOverlap": "挪動防止重疊",
           "MoveOverlap_none": "無",
@@ -2413,7 +2446,7 @@
           "MoveOverlap_shiftY": "垂直依次位移"
         },
         "Waterfall": {
-          "Accumulate": "纍計"
+          "Accumulate": "累計"
         }
       }
     }
@@ -2434,7 +2467,7 @@
       "None": "無",
       "DIMENSION_MEASURE": "維度/度量",
       "Parameter": "參數",
-      "Measure Control": "度量控制",
+      "Measure Control": "度量控製",
       "Measure": "度量",
       "Calculation": "計算",
       "Dimension": "維度",
@@ -2442,7 +2475,7 @@
       "Level": "層級",
       "Measure Group": "度量組",
       "Indicator": "指標",
-      "Calendar": "日歴",
+      "Calendar": "日歷",
       "Address.Country": "國家",
       "DisplayBehaviour": "顯示行為",
       "DisplayBehaviour_Auto": "自動",
@@ -2477,9 +2510,9 @@
       "MEMBERS": "成員",
       "HIERARCHY": "層次結構",
       "ADD_PARAMETER_MEMBER": "添加成員",
-      "MEASURE_CONTROLS": "度量控制",
+      "MEASURE_CONTROLS": "度量控製",
       "CREATE_CALCULATION": "創建計算",
-      "CREATE_MEASURE_CONTROL": "創建度量控制",
+      "CREATE_MEASURE_CONTROL": "創建度量控製",
       "REFERENCE_LINE": "參考線",
       "Input": "輸入",
       "Select": "選擇",
@@ -2496,7 +2529,7 @@
       "EditFormula": "編輯公式",
       "UnbookedData": "無成員數據",
       "ZeroSuppression": "清零",
-      "PropertyList": "屬性列錶",
+      "PropertyList": "屬性列表",
       "DisplayHierarchy": "包含父級層級",
       "CreateParameter": "創建參數",
       "CurrentMember": "當前成員",
@@ -2536,7 +2569,7 @@
       "VARIANCE_MEASURE": "差值度量",
       "AGGREGATION": "聚合",
       "DIMENSION_TO_MEASURE": "維度轉度量",
-      "MEASURE_CONTROL": "度量控制",
+      "MEASURE_CONTROL": "度量控製",
       "PROPERTIES": "屬性",
       "OPERATION": "運算",
       "VALUE": "值",
@@ -2550,7 +2583,7 @@
       "ExcludeConditions": "排除條件",
       "Compare": "比",
       "To": "較",
-      "BaseDimension": "基准維度",
+      "BaseDimension": "基準維度",
       
       "SetNoDataasZero": "將無數據當作零",
       "CalculateasPercentage": "計算為百分比",
@@ -2612,14 +2645,29 @@
         "VALUE_FROM": "從",
         "VALUE_TO": "至",
         "MEASURE": "度量",
-        "MeasureSelectPlaceholder": "選擇或新建一個度量"
+        "MeasureSelectPlaceholder": "選擇或新建一個度量",
+        "Equal": "等於",
+        "NotEqual": "不等於",
+        "LessThan": "小於",
+        "GreaterThan": "大於",
+        "LessEqual": "小於等於",
+        "GreaterEqual": "大於等於",
+        "Between": "介於",
+        "NotBetween": "不介於",
+        "TopCount": "前 N 個",
+        "BottomCount": "後 N 個",
+        "TopPercent": "前百分比的",
+        "BottomPercent": "後百分比的",
+        "TopSum": "前總數",
+        "BottomSum": "後總數"
+
       },
       "SLICER": {
         "ADVANCED_SLICER": "高級切片器",
         "ADVANCED_FILTER": "組合切片器"
       },
       "DateFunctions": {
-        "SYSTEMTIME": "繫統時間",
+        "SYSTEMTIME": "系統時間",
         "TODAY": "今天"
       }
     },
@@ -2636,12 +2684,12 @@
     "TIME_FILTER": {
       "SET_DATE_RANGE": "為 {{property}} 設置時間區間",
       "CURRENT_DATE": "當前日期",
-      "SYSTEM_DATE": "繫統時間",
+      "SYSTEM_DATE": "系統時間",
       "USER_CURRENT_DATE": "用戶當前時間",
       "ADD_TIME_RANGE": "添加時間區間",
       "RANGE": "區間",
       "RANGE_TYPE": "區間類型",
-      "RANGE_TYPE_STANDARD": "標准",
+      "RANGE_TYPE_STANDARD": "標準",
       "RANGE_TYPE_OFFSET": "偏移",
       "GRANULARITY": "粒度",
       "YEAR": "年",
@@ -2653,7 +2701,7 @@
       "LOOK_AHEAD": "展望",
       "CURRENT_PERIOD": "當前時間",
       "FORMATTER": "格式",
-      "OFFSET_DIRECTION": "偏移方嚮",
+      "OFFSET_DIRECTION": "偏移方向",
       "OFFSET_AMOUNT": "偏移量",
       "SETTINGS_FOR_USERS": "為用戶設置",
       "ALLOW_MODIFY_SELECTIONS": "允許查看者修改選擇",
@@ -2721,7 +2769,8 @@
       "Cancel": "取消",
       "Search": "搜索",
       "Options": "配置",
-      "Clear": "清空"
+      "Clear": "清空",
+      "Reset": "重置"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "參考線",
@@ -2729,7 +2778,7 @@
       "Category": "類別",
       "Category2": "類別2",
       "Group": "分組",
-      "Stacked": "堆積",
+      "Stacked": "堆疊",
       "Color": "顏色",
       "Trellis": "格子",
       "Axis1": "軸1",
@@ -2743,7 +2792,7 @@
       "Line": "線形",
       "Scatter": "散點",
       "Pattern": "圖案",
-      "Palette": "調色闆",
+      "Palette": "調色板",
       "Invert": "反轉",
       "Role": "角色",
       "Shape": "形狀",
@@ -2760,12 +2809,14 @@
       "Options": "配置"
     },
     "CHART": {
+      "GeoMapConfig": "地理配置",
       "ChartType": "圖形類型",
       "CustomCode": "自定義代碼",
       "AutomaticallyGenerateCode": "根據註釋自動生成代碼",
+      "ChartOptions": "圖形屬性",
       "None": "無",
-      "Horizontal": "橫嚮",
-      "Vertical": "縱嚮",
+      "Horizontal": "橫向",
+      "Vertical": "縱向",
       "Doughnut": "環形圖",
       "Doughnut2": "細環形圖",
       "Nightingale": "南丁格爾",
@@ -2774,12 +2825,12 @@
       "Comparison": "比較",
       "Pie": "餅圖",
       "Bar": "柱圖",
-      "Waterfall": "瀑佈圖",
+      "Waterfall": "瀑布圖",
       "Map": "地理",
       "Histogram": "直方圖",
       "Trend": "趨勢",
       "Line": "線圖",
-      "Line2": "縱嚮線圖",
+      "Line2": "縱向線圖",
       "Area": "面積圖",
       "AreaStacked": "堆積面積圖",
       "Theme River": "河流圖",
@@ -2791,7 +2842,7 @@
       "Cluster Bubble": "集群氣泡圖",
       "Packed Bubble": "包氣泡圖",
       "Radial Scatter": "雷達散點圖",
-      "Distribution": "分佈",
+      "Distribution": "分布",
       "Heat Map": "熱點圖",
       "Heatmap": "熱點圖",
       "Box plot": "盒須圖",
@@ -2802,9 +2853,9 @@
       "Sunburst": "旭日圖",
       "Sankey": "桑基圖",
       "Radar": "雷達圖",
-      "Reverse": "反嚮",
+      "Reverse": "反向",
       "Funnel": "漏鬥圖",
-      "Calendar": "日歴",
+      "Calendar": "日歷",
       "Radial": "雷達",
       "3D": "三維",
       "Geo": "地理",
@@ -2829,7 +2880,10 @@
       "Combination": "組合圖",
       "BarTrellis": "柱形圖矩陣",
       "Ask": "提問",
-      "ChartName": "圖形名稱"
+      "ChartName": "圖形名稱",
+      "Stacked": "堆疊",
+      "Variant": "變型",
+      "Orient": "方向"
     },
     "Select": {
       "UnableLoadOptionList": "無法加載可選項"
@@ -2865,7 +2919,7 @@
       "password": "密碼重置",
 			"welcome-user": "歡迎用戶",
       "invite-user": "邀請用戶",
-      "TEMPLATE_NAMES": "模闆名稱"
+      "TEMPLATE_NAMES": "模板名稱"
     }
   },
   "TOASTR": {
@@ -2876,12 +2930,12 @@
       "ERRORS": "錯誤",
       "INVITES_DELETE": "刪除邀請 {{email}}",
       "INVITES_RESULT": "成功邀請 {{total}} 人, 忽略 {{ignored}} 人",
-      "EMAIL_TEMPLATE_SAVED": "郵件模闆保存",
+      "EMAIL_TEMPLATE_SAVED": "郵件模板保存",
       "CUSTOM_SMTP_UPDATED": "自定義 SMTP 更新"
     }
   },
   "The name is required": "名稱必輸",
-  "Must be unique from the table name": "不能與錶名重復",
+  "Must be unique from the table name": "不能與表名重復",
   "Initializing": "初始化中",
   "offline": "離線",
   "online": "在線",

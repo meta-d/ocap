@@ -59,20 +59,22 @@
       
       <div *ngIf="HAS_ORIENTS[type]" class="flex flex-col justify-start items-start">
         <label class="ngm-input-label">{{ 'FORMLY.CHART.Orient' | translate: {Default: 'Orient'} }}</label>
-        <mat-radio-group [(ngModel)]="orient">
-          <mat-radio-button *ngFor="let orient of ORIENTS" [value]="orient.value">
+
+        <mat-button-toggle-group [(ngModel)]="orient" ngmAppearance="hero" color="accent" class="self-start">
+          <mat-button-toggle *ngFor="let orient of ORIENTS" [value]="orient.value">
             {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
-          </mat-radio-button>
-        </mat-radio-group>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
 
       <div *ngIf="VARIANTS[type]" class="flex flex-col justify-start items-start">
         <label class="ngm-input-label">{{ 'FORMLY.CHART.Variant' | translate: {Default: 'Variant'} }}</label>
-        <mat-radio-group [(ngModel)]="variant">
-          <mat-radio-button *ngFor="let option of VARIANTS[type]" [value]="option.value">
+
+        <mat-button-toggle-group [(ngModel)]="variant" ngmAppearance="hero" color="accent" class="self-start">
+          <mat-button-toggle *ngFor="let option of VARIANTS[type]" [value]="option.value">
             {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
-          </mat-radio-button>
-        </mat-radio-group>
+          </mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
     </div>
 

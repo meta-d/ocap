@@ -2645,7 +2645,22 @@
         "VALUE_FROM": "从",
         "VALUE_TO": "至",
         "MEASURE": "度量",
-        "MeasureSelectPlaceholder": "选择或新建一个度量"
+        "MeasureSelectPlaceholder": "选择或新建一个度量",
+        "Equal": "等于",
+        "NotEqual": "不等于",
+        "LessThan": "小于",
+        "GreaterThan": "大于",
+        "LessEqual": "小于等于",
+        "GreaterEqual": "大于等于",
+        "Between": "介于",
+        "NotBetween": "不介于",
+        "TopCount": "前 N 个",
+        "BottomCount": "后 N 个",
+        "TopPercent": "前百分比的",
+        "BottomPercent": "后百分比的",
+        "TopSum": "前总数",
+        "BottomSum": "后总数"
+
       },
       "SLICER": {
         "ADVANCED_SLICER": "高级切片器",

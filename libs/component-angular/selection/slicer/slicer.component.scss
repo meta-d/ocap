@@ -20,3 +20,7 @@
     overflow: hidden;
   }
 }
+
+.mat-mdc-chip.mat-mdc-standard-chip {
+  --mdc-chip-container-height: auto;
+}

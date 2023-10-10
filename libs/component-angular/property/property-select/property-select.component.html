@@ -16,12 +16,12 @@
     </div>
     <mat-select #propertySelect formControlName="dimension" panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
       [required]="required">
-      <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
+      <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden pl-2">
         <ngm-entity-property hiddenIcon [property]="selectTrigger()" class="flex-1" ></ngm-entity-property>
 
-        <div class="flex items-center">
+        <div class="flex items-center" displayDensity="compact">
 
-          <button matSuffix mat-icon-button [displayDensity]="displayDensity" (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
+          <button matSuffix mat-icon-button (click)="$event.stopPropagation();$event.preventDefault();showMore.set(!showMore())">
             <mat-icon *ngIf="!showMore()">expand_more</mat-icon>
             <mat-icon *ngIf="showMore()">expand_less</mat-icon>
           </button>

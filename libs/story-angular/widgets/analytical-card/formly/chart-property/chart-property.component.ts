@@ -1,9 +1,9 @@
-import { Component, DestroyRef, OnInit, Optional, inject } from '@angular/core'
+import { Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormArray } from '@angular/forms'
 import { PropertyCapacity } from '@metad/components/property'
-import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
 import { ChartType, DataSettings, EntitySet, EntityType } from '@metad/ocap-core'
+import { NgmFormlyArrayComponent } from '@metad/formly/array'
 import { FieldType, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core'
 import { BehaviorSubject, Observable, map } from 'rxjs'
 
@@ -18,6 +18,7 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
   chartType$: Observable<ChartType>;
 } & FormlyFieldConfig<FormlyFieldProps & { [additionalProperties: string]: any; }>> implements OnInit {
   private readonly destroyRef = inject(DestroyRef)
+  private readonly parentArray? = inject(NgmFormlyArrayComponent, {optional: true})
 
   get formControl() {
     return super.formControl as FormControl
@@ -33,13 +34,6 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
   public readonly entityType$ = new BehaviorSubject<EntityType>(null)
   public readonly syntax$ = this.entityType$.pipe(map((entityType) => entityType?.syntax))
   public readonly restrictedDimensions$ = new BehaviorSubject<string[]>(null)
-
-  constructor(
-    @Optional()
-    private formlyArray?: MetadFormlyArrayComponent
-  ) {
-    super()
-  }
 
   ngOnInit(): void {
     // 初始化完成后再发送数据
@@ -73,7 +67,7 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
   killMyself() {
     if (this.field.form instanceof FormArray) {
       const index = this.field.parent.fieldGroup.indexOf(this.field)
-      this.formlyArray?.remove(index)
+      this.parentArray?.remove(index)
     } else {
       const index = this.field.parent.fieldGroup.findIndex((field) => field.key === this.field.key)
       if (index > -1) {
