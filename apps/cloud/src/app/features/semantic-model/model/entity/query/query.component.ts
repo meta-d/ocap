@@ -1,21 +1,21 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core'
-import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
-import { measureFormatter, QueryReturn, serializeUniqueName } from '@metad/ocap-core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { Store } from '@metad/cloud/state'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { convertQueryResultColumns } from '@metad/core'
+import { convertQueryResultColumns, nonBlank } from '@metad/core'
+import { effectAction } from '@metad/ocap-angular/core'
+import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
+import { QueryReturn, measureFormatter, serializeUniqueName } from '@metad/ocap-core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isPlainObject } from 'lodash-es'
 import { BehaviorSubject, EMPTY, Observable, firstValueFrom } from 'rxjs'
-import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators'
+import { catchError, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { serializePropertyUniqueName } from '../../utils'
 import { ModelEntityService } from '../entity.service'
-import { effectAction } from '@metad/ocap-angular/core'
-import { Store } from '@metad/cloud/state'
-import { toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,7 +25,11 @@ import { toSignal } from '@angular/core/rxjs-interop'
 })
 export class EntityQueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE
-  
+
+  public readonly modelService = inject(SemanticModelService)
+  private readonly modelComponent = inject(ModelComponent)
+  private readonly entityService = inject(ModelEntityService)
+  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly store = inject(Store)
 
   @ViewChild('editor') editor!: BaseEditorDirective
@@ -53,16 +57,9 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   data
   error: string
 
-  constructor(
-    public modelService: SemanticModelService,
-    private modelComponent: ModelComponent,
-    private entityService: ModelEntityService,
-    private _cdr: ChangeDetectorRef
-  ) {
-    super()
-  }
+  showQueryResult = signal(false)
 
-  query = effectAction((origin$: Observable<string>) => {
+  readonly query = effectAction((origin$: Observable<string>) => {
     return origin$.pipe(
       tap((statement) => {
         if (statement) {
@@ -73,8 +70,12 @@ export class EntityQueryComponent extends TranslationBaseComponent {
           this.loading$.next(false)
         }
       }),
+      filter(nonBlank),
       switchMap((statement) => {
-        return statement ? this.modelService.dataSource.query({ statement }).pipe(
+        // Show query result or progress status
+        this.showQueryResult.set(true)
+        // Query data
+        return this.modelService.dataSource.query({ statement }).pipe(
           catchError((error) => {
             console.error(error)
             this.error = error
@@ -87,29 +88,28 @@ export class EntityQueryComponent extends TranslationBaseComponent {
               this._cdr.detectChanges()
               return
             }
-    
+
             const columns = convertQueryResultColumns(schema)
-    
+
             if (isPlainObject(data)) {
               columns.push(...typeOfObj(data))
               data = [data]
             }
-    
+
             this.data = data
             this.columns = columns
-    
+
             console.group(`sql results`)
             console.debug(`statement`, statement)
             console.debug(`data`, data)
             console.debug(`columns`, columns)
             console.groupEnd()
-    
-            this._cdr.detectChanges()
           }),
           finalize(() => {
             this.loading$.next(false)
             this._cdr.detectChanges()
-          })) : EMPTY
+          })
+        )
       })
     )
   })

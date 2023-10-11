@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, OnInit, Optional, Output } from '@angular/core'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { MatButtonModule } from '@angular/material/button'
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog'
+import { MatDialogModule } from '@angular/material/dialog'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { FormGroup } from '@angular/forms'
@@ -50,7 +50,8 @@ import { CommonModule } from '@angular/common'
     `
   ]
 })
-export class NgmDialogComponent implements OnInit {
+export class NgmDialogComponent {
+  
   @Input() title: string
   @Input() applyLabel: string
   @Input() cancelLabel: string
@@ -59,14 +60,8 @@ export class NgmDialogComponent implements OnInit {
   @Output() apply = new EventEmitter()
   @Output() cancel = new EventEmitter()
 
-  constructor(
-    @Optional()
-    public dialogRef: MatDialogRef<NgmDialogComponent> ) {}
-
-  ngOnInit() {}
-
   onApply() {
     this.apply.emit(this.form?.value)
-    this.dialogRef?.close(this.form?.value)
+    // this.dialogRef?.close(this.form?.value)
   }
 }

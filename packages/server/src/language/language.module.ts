@@ -5,6 +5,7 @@ import { LanguageService } from './language.service';
 import { LanguageController } from './language.controller';
 import { Language } from './language.entity';
 import { UserModule } from '../user/user.module';
+import { CommandHandlers } from './commands/handlers';
 
 @Module({
 	imports: [
@@ -15,7 +16,7 @@ import { UserModule } from '../user/user.module';
 		UserModule
 	],
 	controllers: [LanguageController],
-	providers: [LanguageService],
+	providers: [LanguageService, ...CommandHandlers],
 	exports: [LanguageService]
 })
 export class LanguageModule {}

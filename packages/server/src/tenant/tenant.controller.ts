@@ -25,6 +25,7 @@ import { Tenant } from './tenant.entity';
 import { TenantService } from './tenant.service';
 import { UserCreateCommand } from '../user/commands';
 import { FeatureBulkCreateCommand } from '../feature/commands';
+import { LanguageInitCommand } from '../language';
 
 @ApiTags('Tenant')
 @Controller()
@@ -144,6 +145,7 @@ export class TenantController extends CrudController<Tenant> {
 		if (defaultTenant.success) {
 			throw new BadRequestException('Tenant already exists');
 		}
+		await this.commandBus.execute(new LanguageInitCommand())
 		await this.commandBus.execute(new FeatureBulkCreateCommand())
 		const user = await this.commandBus.execute(new UserCreateCommand(entity.superAdmin))
 		return await this.tenantService.onboardTenant(entity, user);

@@ -4,7 +4,7 @@
     </h4>
 </header>
 
-<mat-dialog-content class="mat-typography" displayDensity="cosy">
+<mat-dialog-content class="mat-typography">
     <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch gap-2">
         <div>{{ 'COMPONENTS.SELECTION.ADVANCED_SLICER.CONTEXT' | translate: {Default: "Context"} }}</div>
 
@@ -16,26 +16,27 @@
             [capacities]="[PropertyCapacity.Dimension]"
         ></ngm-property-array>
 
-        <ngm-select formControlName="operator" [label]="'COMPONENTS.SELECTION.ADVANCED_SLICER.OPERATOR' | translate: {Default: 'Operator'}"
-            [selectOptions]="operators"
+        <ngm-select formControlName="operator"
+            [label]="'COMPONENTS.SELECTION.ADVANCED_SLICER.OPERATOR' | translate: {Default: 'Operator'}"
+            [selectOptions]="advancedSlicerOperators()"
         >
             <ng-template ngmOptionContent let-operator>
-                <ngm-display-behaviour class="flex-1" [option]="operator" [displayBehaviour]="DisplayBehaviour.descriptionAndId"></ngm-display-behaviour>
+                <ngm-display-behaviour class="flex-1" [option]="operator" [displayBehaviour]="DisplayBehaviour.auto"></ngm-display-behaviour>
             </ng-template>
-            <mat-slide-toggle ngmSuffix *ngIf="hasOther$ | async" formControlName="other" (click)="$event.stopPropagation();">
+            <mat-slide-toggle ngmSuffix *ngIf="hasOther()" formControlName="other" (click)="$event.stopPropagation();">
                 {{ 'COMPONENTS.SELECTION.ADVANCED_SLICER.ENABLE_OTHER' | translate: {Default: "Enable Other"} }}
             </mat-slide-toggle>
         </ngm-select>
 
-        <div class="flex justify-start items-center gap-2" formArrayName="value" *ngrxLet="to$ as to">
-            <ngm-parameter-select [label]=" to ? ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE_FROM' | translate: {Default: 'From'}) : ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE' | translate: {Default: 'Value'}) "
+        <div class="flex justify-start items-center gap-2" formArrayName="value">
+            <ngm-parameter-select [label]=" to() ? ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE_FROM' | translate: {Default: 'From'}) : ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE' | translate: {Default: 'Value'}) "
                 [dataSettings]="dataSettings"
                 [entityType]="entityType$ | async"
                 [coreService]="coreService"
                 formControlName="0"
                 >
             </ngm-parameter-select>
-            <ngm-parameter-select *ngIf="to"
+            <ngm-parameter-select *ngIf="to()"
                 [label]=" 'COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE_TO' | translate: {Default: 'To'} "
                 [dataSettings]="dataSettings"
                 [entityType]="entityType$ | async"
@@ -52,6 +53,7 @@
         </ngm-measure-select>
     </form>
 </mat-dialog-content>
+
 <mat-dialog-actions>
     <button mat-button>
         {{ 'COMPONENTS.COMMON.RESET' | translate: {Default: "Reset"} }}

@@ -15,7 +15,7 @@ import {
 } from '@metad/ocap-core'
 import { addCalculatedMember, sortWithMembers, withCalculationMembers } from './calculation'
 import { MDXHierarchyFilter, MDXProperty } from './filter'
-import { BottomCount, CurrentMember, DimensionProperties, Filter, Order, OrderFlag, Ordinal, TopCount } from './functions'
+import { BottomCount, CurrentMemberProperties, DimensionProperties, Filter, Order, OrderFlag, TopCount } from './functions'
 import { IntrinsicMemberProperties } from './reference'
 import { mapHierarchyFilterToSAPVariable, SAPVariableParameter, serializeSAPVariables } from './sap'
 import { generateSlicersStatement, generateTopCount } from './slicer'
@@ -219,12 +219,14 @@ export function serializeOrderRank(axis: EngineAxis,
  * @returns 
  */
 export function serializeOrder(statement: string, orderbys: Array<MDXProperty>) {
-  orderbys?.forEach(({ dimension, members, order }) => {
+  orderbys?.forEach(({ dimension, hierarchy, members, order }) => {
     order = order === OrderFlag.DESC ? OrderFlag.BDESC : order === OrderFlag.ASC ? OrderFlag.BASC : order
     if (dimension === C_MEASURES) {
       statement = Order(statement, measureFormatter(getMemberValue(members[0])), order)
     } else {
-      statement = Order(statement, Ordinal(CurrentMember(dimension)), order)
+      // statement = Order(statement, Ordinal(CurrentMember(dimension)), order)
+      // Order({[Department]}, [Department].CurrentMember.Ordinal, BDESC) to Order({[Department]}, [Department].CurrentMember.Properties("MEMBER_ORDINAL"), BDESC)
+      statement = Order(statement, CurrentMemberProperties(hierarchy, IntrinsicMemberProperties[IntrinsicMemberProperties.MEMBER_ORDINAL]), order)
     }
   })
 

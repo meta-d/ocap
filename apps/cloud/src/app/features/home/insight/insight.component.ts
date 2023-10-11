@@ -35,6 +35,7 @@ import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '
 import { InsightService } from './insight.service'
 import { StoryExplorerModule } from '@metad/story'
 import { QuestionAnswer } from './types'
+import { Title } from '@angular/platform-browser'
 
 
 @Component({
@@ -71,6 +72,7 @@ export class InsightComponent {
   private _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private router = inject(Router)
+  private readonly _title = inject(Title)
   private translateService = inject(TranslateService)
   private _toastrService = inject(ToastrService)
   private insightService = inject(InsightService)
@@ -137,6 +139,10 @@ export class InsightComponent {
 
   private promptControlSub = this.promptControl.valueChanges.pipe(takeUntilDestroyed())
     .subscribe(() => (this.insightService.error = ''))
+
+  private pageTitleSub = this.translateService.stream('PAC.Home.Insight.Title', {Default: '💡Smart Insights'}).pipe(
+      takeUntilDestroyed(),
+    ).subscribe((title) => this._title.setTitle(title))
 
   constructor() {
     effect(() => {

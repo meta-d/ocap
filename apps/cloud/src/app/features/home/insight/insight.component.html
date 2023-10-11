@@ -1,5 +1,5 @@
 <div class="relative flex-1 flex flex-col items-center overflow-auto p-4" [class.pac-indight__expand-model]="showModel() && entityType()">
-  <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 gap-4">
+  <mat-accordion *ngIf="answers()?.length" class="flex-1 w-full md:w-1/2 lg:1/3 flex flex-col gap-1">
     <mat-expansion-panel *ngFor="let answer of answers(); index as index; trackBy: trackByKey" class="pac-indight__answer-panel group" togglePosition="before"
       [expanded]="answer.expanded"
     >
@@ -9,34 +9,35 @@
             {{ answer.title }}
           </span>
         </mat-panel-title>
-        <mat-panel-description class="flex justify-end gap-2">
-          <button mat-icon-button displayDensity="compact" class="shrink-0 opacity-0 group-hover:opacity-100 duration-300"
+
+        <div class="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 duration-300">
+          <button mat-icon-button displayDensity="compact" class="shrink-0"
             (click)="$event.stopPropagation();$event.preventDefault();setPrompt(answer.title)">
             <mat-icon fontSet="material-icons-outlined" >edit</mat-icon>
           </button>
 
-          <button mat-icon-button displayDensity="compact" class="shrink-0 opacity-0 group-hover:opacity-100 duration-300"
+          <button mat-icon-button displayDensity="compact" class="shrink-0"
             [matTooltip]=" 'Story.Widget.Explore' | translate: {Default: 'Explore'} "
             (click)="$event.stopPropagation();$event.preventDefault();openExplore(answer)">
             <mat-icon fontSet="material-icons-outlined">explore</mat-icon>
           </button>
           
-          <mat-icon fontSet="material-icons-outlined" class="opacity-0 group-hover:opacity-100 duration-300" displayDensity="compact"
+          <mat-icon fontSet="material-icons-outlined" class="shrink-0" displayDensity="compact"
             [matTooltip]="answer.message">question_answer</mat-icon>
 
-          <button mat-icon-button displayDensity="compact" class="opacity-0 group-hover:opacity-100 duration-300"
+          <button mat-icon-button displayDensity="compact" class="shrink-0"
             [disabled]="!answer.isCube"
             (click)="$event.stopPropagation();$event.preventDefault();addToStory(answer)">
             <mat-icon fontSet="material-icons-outlined"
               [matTooltip]=" !answer.isCube ? ('PAC.Home.Insight.CreateSemanticModelForUse' | translate: {Default: 'Add to story: create semantic model for use'}) : '' "
             >addchart</mat-icon>
           </button>
-        </mat-panel-description>
 
-        <button mat-icon-button displayDensity="compact" ngmAppearance="danger" class="opacity-0 group-hover:opacity-100 duration-300"
-          (click)="$event.stopPropagation();$event.preventDefault();removeAnswer(index)">
-          <mat-icon>close</mat-icon>
-        </button>
+          <button mat-icon-button displayDensity="compact" ngmAppearance="danger" class="shrink-0"
+            (click)="$event.stopPropagation();$event.preventDefault();removeAnswer(index)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
       </mat-expansion-panel-header>
 
       <div *ngIf="answer.answering; else content" class="h-[300px] flex justify-center items-center">
@@ -73,8 +74,6 @@
           (click)="$event.stopPropagation()"
         ></ngm-slicers>
       </mat-menu>
-      
-      
     </mat-expansion-panel>
   </mat-accordion>
 
@@ -86,7 +85,9 @@
 
     <div><span class="font-notoColorEmoji text-lg">💡</span>{{ 'PAC.Home.Insight.ForExample' | translate: {Default: 'for example'} }}:</div>
     <ul class="list-disc">
-      <li *ngFor="let prompt of suggestedPrompts()" class="shadow-sm rounded-lg border border-slate-100 p-1 my-1 flex justify-start items-center">
+      <li *ngFor="let prompt of suggestedPrompts()" class="shadow-sm rounded-lg border p-1 my-1 flex justify-start items-center
+        border-slate-100 hover:bg-slate-100
+      ">
         <button mat-icon-button displayDensity="compact" [matTooltip]="'PAC.Home.Insight.UseThisPrompt' | translate: {Default: 'Use this prompt'}"
           (click)="setPrompt(prompt)" >
           <mat-icon fontSet="material-icons-outlined">edit</mat-icon>

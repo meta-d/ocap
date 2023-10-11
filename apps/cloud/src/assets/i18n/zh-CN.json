@@ -1166,11 +1166,17 @@
     },
     "Home": {
       "Insight": {
+        "Title": "💡智慧洞察",
         "CreateSemanticModelForUse": "添加到故事：创建语义模型后才能使用",
         "AddWidgetToStoryTitle": "将微件添加到故事",
         "AskAICopilot": "向 AI 副驾驶询问问题",
         "AskAICopilotDesc": "您可以针对您的数据提出问题，并立即将答案以可视化形式呈现。这些可视化图表最终可以添加到您的故事中。",
-        "ForExample": "例如"
+        "ForExample": "例如",
+        "PromptExamplesForVisit": [
+          "访问量走势, 线条平滑，线粗5",
+          "按产品类别统计访问量, 显示图例",
+          "2023年某产品的访问量走势"
+        ]
       }
     },
     "ApprovalPolicy": {
@@ -2639,7 +2645,22 @@
         "VALUE_FROM": "从",
         "VALUE_TO": "至",
         "MEASURE": "度量",
-        "MeasureSelectPlaceholder": "选择或新建一个度量"
+        "MeasureSelectPlaceholder": "选择或新建一个度量",
+        "Equal": "等于",
+        "NotEqual": "不等于",
+        "LessThan": "小于",
+        "GreaterThan": "大于",
+        "LessEqual": "小于等于",
+        "GreaterEqual": "大于等于",
+        "Between": "介于",
+        "NotBetween": "不介于",
+        "TopCount": "前 N 个",
+        "BottomCount": "后 N 个",
+        "TopPercent": "前百分比的",
+        "BottomPercent": "后百分比的",
+        "TopSum": "前总数",
+        "BottomSum": "后总数"
+
       },
       "SLICER": {
         "ADVANCED_SLICER": "高级切片器",

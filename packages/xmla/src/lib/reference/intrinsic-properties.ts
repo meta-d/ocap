@@ -8,4 +8,5 @@ export enum IntrinsicMemberProperties {
     MEMBER_TYPE,
     LEVEL_NUMBER,
     CHILDREN_CARDINALITY,
+    MEMBER_ORDINAL
 }

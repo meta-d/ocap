@@ -1166,8 +1166,17 @@
     },
     "Home": {
       "Insight": {
+        "Title": "💡智慧洞察",
         "CreateSemanticModelForUse": "添加到故事：创建语义模型后才能使用",
-        "AddWidgetToStoryTitle": "将部件添加到故事"
+        "AddWidgetToStoryTitle": "将微件添加到故事",
+        "AskAICopilot": "向 AI 副驾驶询问问题",
+        "AskAICopilotDesc": "您可以针对您的数据提出问题，并立即将答案以可视化形式呈现。这些可视化图表最终可以添加到您的故事中。",
+        "ForExample": "例如",
+        "PromptExamplesForVisit": [
+          "访问量走势, 线条平滑，线粗5",
+          "按产品类别统计访问量, 显示图例",
+          "2023年某产品的访问量走势"
+        ]
       }
     },
     "ApprovalPolicy": {
@@ -1222,6 +1231,70 @@
     },
     "Users": {
       "NoMoreOrganizations": "没有更多的组织可添加"
+    },
+    "Feature": {
+      "Features": {
+        "FEATURE_HOME": {
+          "Name": "首页",
+          "Description": "首页展示用户常用功能"
+        },
+        "FEATURE_DASHBOARD": {
+          "Name": "仪表板",
+          "Description": "转到仪表板，查看收藏，故事目录，趋势和智慧洞察"
+        },
+        "FEATURE_HOME_CATALOG": {
+          "Name": "目录",
+          "Description": "用户拥有的故事仪表板，指标等目录"
+        },
+        "FEATURE_HOME_TREND": {
+          "Name": "趋势",
+          "Description": "组织内公开的故事仪表板热度趋势"
+        },
+        "FEATURE_HOME_INSIGHT": {
+          "Name": "洞察",
+          "Description": "智慧洞察，使用 AI 辅助数据分析"
+        },
+        "FEATURE_ROLES_PERMISSION": {
+          "Name": "角色权限",
+          "Description": "维护系统角色和权限"
+        },
+        "FEATURE_COPILOT": {
+          "Name": "AI 副驾驶",
+          "Description": "配置和使用 AI 副驾驶功能"
+        },
+        "FEATURE_MODEL": {
+          "Name": "语义模型",
+          "Description": "启用语义模型功能"
+        },
+        "FEATURE_PROJECT": {
+          "Name": "项目",
+          "Description": "启用项目工作空间功能"
+        },
+        "FEATURE_STORY": {
+          "Name": "故事",
+          "Description": "启用故事仪表板功能，制作，分享和浏览故事仪表板"
+        },
+        "FEATURE_INDICATOR": {
+          "Name": "指标",
+          "Description": "启用指标功能，注册，发布和申请查看业务指标数据"
+        },
+        "FEATURE_INDICATOR_REGISTER": {
+          "Name": "指标注册",
+          "Description": "启用指标注册功能，注册数据指标"
+        },
+        "FEATURE_INDICATOR_MARKET": {
+          "Name": "指标市场",
+          "Description": "启用指标市场功能，发布、浏览和申请指标"
+        },
+        "FEATURE_INDICATOR_APP": {
+          "Name": "指标应用",
+          "Description": "启用指标应用程序，浏览有权限的指标"
+        },
+        "FEATURE_BUSINESS_AREA": {
+          "Name": "业务域",
+          "Description": "启用业务域功能，创建和使用业务域"
+        }
+      }
     },
     "title": {
       "short": "分析云"
@@ -1559,46 +1632,6 @@
         "INDICATOR_CARD": "指标卡片",
         "TABSET": "选项卡"
       },
-      "CHART": {
-        "DIMENSIONS": "维度",
-        "MEASURES": "度量",
-        "RealTimeLinkedAnalysis": "实时联动分析",
-        "DisableContextMenu": "禁用上下文菜单",
-        "ShowDataButton": "显示数据按钮",
-        "HideHeader": "隐藏标题栏",
-        "HideDataDownload": "隐藏数据下载",
-        "HideScreenshot": "隐藏截图",
-        "MaximumLimit": "最大数据量限制",
-        "DigitInfo": "数字格式",
-        "TrellisHorizontal": "格子横向个数",
-        "UniversalTransition": "全局过渡动画",
-        "CustomLogic": "自定义逻辑",
-        "Color": "颜色",
-        "Enabled": "启用",
-        "ShowDecal": "显示贴花",
-        "Decals": "贴花图案",
-        "Options": "选项",
-        "ChartSettings": "图形配置",
-        "ChartVariants": "图形变体",
-        "ReferenceLine": {
-          "Title": "创建参考线",
-          "ReferenceLine": "参考线",
-          "removeLabel": "删除",
-          "Label": "名称",
-          "Type": "展示类型",
-          "MarkLine": "标记线",
-          "MarkPoint": "标记点",
-          "ValueType": "值类型",
-          "Fixed": "固定",
-          "Dynamic": "动态",
-          "Value": "值",
-          "Aggregation": "聚合类型",
-          "Min": "最小值",
-          "Max": "最大值",
-          "Average": "平均值",
-          "Median": "中位数"
-        }
-      },
       "SELECTION_PRESENTATION_VARIANTS": {
         "TITLE": "选择展示变式"
       },
@@ -1800,7 +1833,7 @@
           "SymbolSize": "符号大小",
           "SymbolRotate": "符号旋转",
           "SymbolOffset": "符号位移",
-          "Stack": "堆积",
+          "Stack": "堆叠",
           "TextAlign": {
             "Title": "文本对齐",
             "Auto": "自动",
@@ -2309,7 +2342,7 @@
           "ShowSymbol": "显示符号",
           "ShowAllSymbol": "显示所有符号",
           "Smooth": "平滑",
-          "Stack": "堆积",
+          "Stack": "堆叠",
           "Step": "分步",
           "AreaStyle": "面积样式",
           "Origin": "源"
@@ -2612,7 +2645,22 @@
         "VALUE_FROM": "从",
         "VALUE_TO": "至",
         "MEASURE": "度量",
-        "MeasureSelectPlaceholder": "选择或新建一个度量"
+        "MeasureSelectPlaceholder": "选择或新建一个度量",
+        "Equal": "等于",
+        "NotEqual": "不等于",
+        "LessThan": "小于",
+        "GreaterThan": "大于",
+        "LessEqual": "小于等于",
+        "GreaterEqual": "大于等于",
+        "Between": "介于",
+        "NotBetween": "不介于",
+        "TopCount": "前 N 个",
+        "BottomCount": "后 N 个",
+        "TopPercent": "前百分比的",
+        "BottomPercent": "后百分比的",
+        "TopSum": "前总数",
+        "BottomSum": "后总数"
+
       },
       "SLICER": {
         "ADVANCED_SLICER": "高级切片器",
@@ -2721,7 +2769,8 @@
       "Cancel": "取消",
       "Search": "搜索",
       "Options": "配置",
-      "Clear": "清空"
+      "Clear": "清空",
+      "Reset": "重置"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "参考线",
@@ -2729,7 +2778,7 @@
       "Category": "类别",
       "Category2": "类别2",
       "Group": "分组",
-      "Stacked": "堆积",
+      "Stacked": "堆叠",
       "Color": "颜色",
       "Trellis": "格子",
       "Axis1": "轴1",
@@ -2760,9 +2809,11 @@
       "Options": "配置"
     },
     "CHART": {
+      "GeoMapConfig": "地理配置",
       "ChartType": "图形类型",
       "CustomCode": "自定义代码",
       "AutomaticallyGenerateCode": "根据注释自动生成代码",
+      "ChartOptions": "图形属性",
       "None": "无",
       "Horizontal": "横向",
       "Vertical": "纵向",
@@ -2829,7 +2880,10 @@
       "Combination": "组合图",
       "BarTrellis": "柱形图矩阵",
       "Ask": "提问",
-      "ChartName": "图形名称"
+      "ChartName": "图形名称",
+      "Stacked": "堆叠",
+      "Variant": "变型",
+      "Orient": "方向"
     },
     "Select": {
       "UnableLoadOptionList": "无法加载可选项"

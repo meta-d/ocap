@@ -1,4 +1,4 @@
-import { Component, HostBinding, Inject, Input, Optional, inject } from '@angular/core'
+import { Component, HostBinding, Inject, Input, Optional, computed, inject } from '@angular/core'
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -7,83 +7,82 @@ import {
   DataSettings,
   DisplayBehaviour,
   EntityType,
-  getEntityMeasures,
   nonNullable
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { PropertyCapacity } from '@metad/components/property'
 import { NxCoreService } from '@metad/core'
 import { BehaviorSubject, Observable } from 'rxjs'
-import { filter, map, shareReplay, startWith, switchMap } from 'rxjs/operators'
+import { filter, map, startWith, switchMap } from 'rxjs/operators'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { TranslateService } from '@ngx-translate/core'
 
 const ADVANCED_SLICER_OPERATORS = [
   {
     value: AdvancedSlicerOperator.Equal,
-    label: '等于'
+    label: 'Equal'
   },
   {
     value: AdvancedSlicerOperator.NotEqual,
-    label: '不等于'
+    label: 'Not Equal'
   },
   {
     value: AdvancedSlicerOperator.LessThan,
-    label: '小于'
+    label: 'Less Than'
   },
   {
     value: AdvancedSlicerOperator.GreaterThan,
-    label: '大于'
+    label: 'Greater Than'
   },
   {
     value: AdvancedSlicerOperator.LessEqual,
-    label: '小于等于'
+    label: 'Less Equal'
   },
   {
     value: AdvancedSlicerOperator.GreaterEqual,
-    label: '大于等于'
+    label: 'Greater Equal'
   },
   {
     value: AdvancedSlicerOperator.Between,
-    label: '介于',
+    label: 'Between',
     valueSize: 2
   },
   {
     value: AdvancedSlicerOperator.NotBetween,
-    label: '不介于',
+    label: 'NotBetween',
     valueSize: 2
   },
   {
     value: AdvancedSlicerOperator.TopCount,
-    label: '前 N 的',
+    label: 'Top Count',
     hasOther: true
   },
   {
     value: AdvancedSlicerOperator.BottomCount,
-    label: '后 N 的',
+    label: 'Bottom Count',
     hasOther: true
   },
   {
     value: AdvancedSlicerOperator.TopPercent,
-    label: '前百分比的',
+    label: 'Top Percent',
     hasOther: true
   },
   {
     value: AdvancedSlicerOperator.BottomPercent,
-    label: '后百分比的',
+    label: 'Bottom Percent',
     hasOther: true
   },
   {
     value: AdvancedSlicerOperator.TopSum,
-    label: '前总数',
+    label: 'Top Sum',
     hasOther: true
   },
   {
     value: AdvancedSlicerOperator.BottomSum,
-    label: '后总数',
+    label: 'Bottom Sum',
     hasOther: true
   }
 ]
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-advanced-slicer',
   templateUrl: './advanced-slicer.component.html',
@@ -94,9 +93,11 @@ export class AdvancedSlicerComponent {
   DisplayBehaviour = DisplayBehaviour
   PropertyCapacity = PropertyCapacity
 
-  operators = ADVANCED_SLICER_OPERATORS
-
-  public coreService = inject(NxCoreService)
+  public readonly coreService = inject(NxCoreService)
+  public readonly dsCoreService = inject(NgmDSCoreService)
+  private readonly translateService = inject(TranslateService)
+  private readonly _formBuilder = inject(FormBuilder)
+  private readonly dialogRef?  = inject<MatDialogRef<AdvancedSlicerComponent>>(MatDialogRef)
 
   @Input() get dataSettings(): DataSettings {
     return this.dataSettings$.value
@@ -121,32 +122,38 @@ export class AdvancedSlicerComponent {
     map(({ entityType }) => entityType)
   )
 
-  public readonly operator$ = this.formGroup.valueChanges.pipe(
+  public readonly operator = toSignal(this.formGroup.valueChanges.pipe(
     startWith(this.formGroup.value),
     map(({ operator }) => {
       operator = operator || this.formGroup.value.operator
       return ADVANCED_SLICER_OPERATORS.find((item) => item.value === operator)
     }),
-    shareReplay(1)
-  )
-  public readonly to$ = this.operator$.pipe(map((operator) => operator?.valueSize === 2))
-  public readonly hasOther$ = this.operator$.pipe(map((operator) => operator?.hasOther))
+  ))
+  public readonly to = computed(() => this.operator()?.valueSize === 2)
+  public readonly hasOther = computed(() => this.operator()?.hasOther)
 
-  private _operatorChanged = this.formGroup.get('operator').valueChanges.subscribe((operator) => {
-    if (ADVANCED_SLICER_OPERATORS.find((item) => item.value === operator)?.valueSize !== 2) {
-      this.formGroup.patchValue({
-        value: [this.formGroup.value.value[0], null]
-      })
-    }
-  })
+  public readonly advancedSlicerOperators = toSignal(
+    this.translateService.stream('COMPONENTS.SELECTION.ADVANCED_SLICER').pipe(
+      map((i18n) => ADVANCED_SLICER_OPERATORS.map((item) => ({
+        ...item,
+        label: i18n[item.value] ?? item.label
+      })))
+    )
+  )
+
+  private _operatorChanged = this.formGroup.get('operator').valueChanges.pipe(takeUntilDestroyed())
+    .subscribe((operator) => {
+      if (ADVANCED_SLICER_OPERATORS.find((item) => item.value === operator)?.valueSize !== 2) {
+        this.formGroup.patchValue({
+          value: [this.formGroup.value.value[0], null]
+        })
+      }
+    })
 
   constructor(
-    public dsCoreService: NgmDSCoreService,
-    private readonly _formBuilder: FormBuilder,
     @Optional()
     @Inject(MAT_DIALOG_DATA)
     public data,
-    public dialogRef?: MatDialogRef<AdvancedSlicerComponent>
   ) {
     this.dataSettings = this.data?.dataSettings
 

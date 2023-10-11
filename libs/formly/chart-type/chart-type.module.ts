@@ -7,7 +7,6 @@ import { MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
-import { MatRadioModule } from '@angular/material/radio'
 import { MatSelectModule } from '@angular/material/select'
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
@@ -19,6 +18,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmDesignerFormComponent } from '@metad/story/designer'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
 
 @NgModule({
   declarations: [PACFormlyChartTypeComponent],
@@ -31,11 +31,11 @@ import { NgmDesignerFormComponent } from '@metad/story/designer'
     MatButtonModule,
     MatSelectModule,
     MatMenuModule,
-    MatRadioModule,
     MatDialogModule,
     MatInputModule,
     MatCheckboxModule,
     MatTooltipModule,
+    MatButtonToggleModule,
     MonacoEditorModule,
     TranslateModule,
     ButtonGroupDirective,
@@ -44,6 +44,7 @@ import { NgmDesignerFormComponent } from '@metad/story/designer'
     ResizerModule,
     NgxPopperjsModule,
     NgmDesignerFormComponent,
+    
     FormlyModule.forChild({
       types: [
         {

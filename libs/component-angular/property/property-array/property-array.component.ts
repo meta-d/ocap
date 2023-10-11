@@ -6,29 +6,27 @@ import {
   Component,
   HostBinding,
   Input,
-  OnInit,
-  forwardRef
+  forwardRef,
+  inject
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import {
   AbstractControl,
   ControlValueAccessor,
+  FormBuilder,
   NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-  UntypedFormBuilder
+  ReactiveFormsModule
 } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { NxCoreService } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { DataSettings, Dimension, EntityType, Measure } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
+import { DataSettings, Dimension, EntityType, Measure, isEmpty } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxCoreService } from '@metad/core'
-import { isEmpty } from 'lodash-es'
 import { filter } from 'rxjs/operators'
 import { PropertyCapacity, PropertySelectComponent } from '../property-select/property-select.component'
 
-@UntilDestroy()
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,7 +51,10 @@ import { PropertyCapacity, PropertySelectComponent } from '../property-select/pr
     PropertySelectComponent
   ]
 })
-export class PropertyArrayComponent implements OnInit, ControlValueAccessor {
+export class PropertyArrayComponent implements ControlValueAccessor {
+  private readonly formBuilder = inject(FormBuilder)
+  private readonly _cdr = inject(ChangeDetectorRef)
+
   @Input() dataSettings: DataSettings
   @Input() entityType: EntityType
   @Input() coreService: NxCoreService
@@ -68,28 +69,29 @@ export class PropertyArrayComponent implements OnInit, ControlValueAccessor {
   }
 
   private onChange: any
+  private onTouched: any
 
-  constructor(private formBuilder: UntypedFormBuilder, private _cdr: ChangeDetectorRef) {}
-
-  ngOnInit() {
-    this.formArray.valueChanges
-      .pipe(
-        filter((value) => !isEmpty(value)),
-        untilDestroyed(this)
-      )
-      .subscribe((value) => {
-        this.onChange?.(value)
-      })
-  }
+  private valueSub = this.formArray.valueChanges
+    .pipe(
+      filter((value) => !isEmpty(value)),
+      takeUntilDestroyed()
+    )
+    .subscribe((value) => {
+      this.onChange?.(value)
+    })
 
   writeValue(obj: any): void {
-    this.setValue(obj || [])
+    this.setValue(obj ?? [])
   }
   registerOnChange(fn: any): void {
     this.onChange = fn
   }
-  registerOnTouched(fn: any): void {}
-  setDisabledState?(isDisabled: boolean): void {}
+  registerOnTouched(fn: any): void {
+    this.onTouched = fn
+  }
+  setDisabledState?(isDisabled: boolean): void {
+    isDisabled ? this.formArray.disable() : this.formArray.enable()
+  }
 
   create(item?) {
     return this.formBuilder.control(

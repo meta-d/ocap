@@ -1,4 +1,3 @@
-
 <div class="flex justify-start items-center">
   <button type="button" mat-icon-button *ngIf="editable" [disabled]="disabled" displayDensity="cosy"
     (click)="editSlicer()">
@@ -6,7 +5,6 @@
   </button>
 
   <span *ngIf="title$ | async as title">{{title}}</span>
-  <!-- <span *ngIf="isAdvancedSlicer$ | async">{{ 'COMPONENTS.SELECTION.SLICER.ADVANCED_SLICER' | translate: {Default: "Advanced Slicer"} }}</span> -->
 
   <button *ngIf="editable" mat-icon-button [disabled]="disabled" displayDensity="cosy" class="ngm-slicer__remove"
     (click)="remove()">
@@ -31,6 +29,6 @@
     +{{ more() }}
   </mat-chip-option>
   <mat-chip-option *ngIf="advancedSlicer$ | async as advancedSlicer" [matTooltip]="advancedSlicer">
-    <span>{{ advancedSlicer }}</span>
+    <div class="whitespace-normal">{{ advancedSlicer }}</div>
   </mat-chip-option>
 </mat-chip-listbox>

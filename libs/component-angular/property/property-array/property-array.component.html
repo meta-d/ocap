@@ -15,10 +15,9 @@
     [dsCoreService]="dsCoreService"
     [capacities]="capacities"
   >
-
     <mat-icon ngmPrefix cdkDragHandle>drag_indicator</mat-icon>
 
-    <button mat-icon-button color="warn" class="opacity-0 group-hover:opacity-100"
+    <button ngmSuffix mat-icon-button color="warn" class="opacity-0 group-hover:opacity-100" displayDensity="compact"
       (click)="remove(i); $event.stopPropagation(); $event.preventDefault()">
       <mat-icon>clear</mat-icon>
     </button>
