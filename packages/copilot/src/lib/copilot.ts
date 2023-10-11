@@ -182,11 +182,29 @@ export class CopilotService {
 }
 
 export interface CopilotEngine {
+  /**
+   * Copilot engine name
+   */
   name?: string
+  /**
+   * AI Configuration
+   */
   aiOptions: AIOptions
+  /**
+   * System prompt
+   */
   systemPrompt: string
+  /**
+   * Predefined prompts
+   */
   prompts: string[]
+  /**
+   * Conversations
+   */
   conversations: CopilotChatMessage[]
+  /**
+   * Placeholder in ask input
+   */
   placeholder?: string
 
   process(
@@ -196,5 +214,10 @@ export interface CopilotEngine {
   preprocess(prompt: string, options?: any)
   postprocess(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
 
-  dropCopilot?(event)
+  /**
+   * Drop copilot data
+   * 
+   * @param event 
+   */
+  dropCopilot?(event);
 }

@@ -105,14 +105,15 @@
                     </div>
 
                     <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
-                        <div class="ngm-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story-designer__template 
+                            bg-gray-50 dark:hover:bg-bray-800 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:border-amber-500 focus:border-amber-400"
                             (click)="storyService.createStoryPoint(STORY_POINT_TYPE.Canvas)">
                             <div>
                                 {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
                             </div>
                         </div>
 
-                        <div class="ngm-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story-designer__template bg-gray-50 dark:hover:bg-bray-800 dark:bg-neutral-900 hover:bg-gray-100  dark:hover:bg-neutral-800 hover:border-amber-500 focus:border-amber-400"
                             (click)="toolbarService.openTemplates()">
                             <div>
                                 {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}

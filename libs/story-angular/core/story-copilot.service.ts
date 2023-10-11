@@ -1,40 +1,70 @@
 import { inject, Injectable } from '@angular/core'
-import { AIOptions, BusinessOperation, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { toSignal } from '@angular/core/rxjs-interop'
+import {
+  AIOptions,
+  BusinessOperation,
+  CopilotChatMessage,
+  CopilotChatMessageRoleEnum,
+  CopilotEngine
+} from '@metad/copilot'
 import { NgmCopilotService } from '@metad/core'
-import { CreateChatCompletionResponseChoicesInner } from 'openai'
+import { TranslateService } from '@ngx-translate/core'
 import JSON5 from 'json5'
+import { NGXLogger } from 'ngx-logger'
+import { CreateChatCompletionResponseChoicesInner } from 'openai'
+import { map, Observable, of, switchMap } from 'rxjs'
 import { NxStoryService } from './story.service'
-import { Observable, of, switchMap } from 'rxjs'
+import { I18N_STORY_NAMESPACE } from './types'
 
-@UntilDestroy({ checkProperties: true })
+const Commands = [
+  {
+    command: 'story',
+    description: 'New story',
+  }
+]
+
+
 @Injectable()
 export class StoryCopilotEngineService implements CopilotEngine {
   private copilotService = inject(NgmCopilotService)
   private storyService = inject(NxStoryService)
-  
+  private translateService = inject(TranslateService)
+  private readonly logger = inject(NGXLogger)
+
   currentWidgetCopilot: CopilotEngine
-  
-  prompts = [
-    'Set story theme dark',
-    'Set story gradient background color sense of technology',
-    'Set widget transparent background',
-    'Chart series set line smooth',
-    'Chart series set bar max width 20, rounded, shadow',
-    'Chart series add average mark line',
-    'Chart category axis line width 2, show axis tick',
-    'Data analysis',
-  ]
+
+  private readonly _prompts = toSignal(
+    this.translateService.get(`${I18N_STORY_NAMESPACE}.Copilot.PredefinedPrompts`).pipe(
+      map((i18n) => {
+        return (
+          i18n ?? [
+            '/story Set story theme dark',
+            '/story-style Set story gradient background color sense of technology',
+            '/widget-style Set widget transparent background',
+            '/chart Chart series set line smooth',
+            '/chart Chart series set bar max width 20, rounded, shadow',
+            '/chart Chart series add average mark line',
+            '/chart Chart category axis line width 2, show axis tick',
+            '/widget Data analysis'
+          ]
+        )
+      })
+    )
+  )
   aiOptions = {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
   } as AIOptions
   conversations: CopilotChatMessage[]
 
+  get prompts() {
+    return this._prompts()
+  }
+
   businessAreas = [
     {
       businessArea: '故事',
-      action: 'StoryStyle',
+      action: 'story-style',
       prompts: {
         zhHans: '故事样式'
       },
@@ -157,11 +187,12 @@ export class StoryCopilotEngineService implements CopilotEngine {
 `
   }
 
-  // async process(prompt: string, options?: { signal?: AbortSignal }): Promise<CopilotChatMessage[]> {
-  //   return await this.postprocess(prompt, [])
-  // }
+  preprocess(prompt: string) {
+    this.logger.debug(`Preprocess - Classify the problem: ${prompt}`)
+    // a regex match `/command `
+    const match = prompt.match(/^\/(.*)\s+/i)
+    const command = match?.[1]
 
-  async preprocess(prompt: string) {
     return [
       {
         role: CopilotChatMessageRoleEnum.System,
@@ -177,30 +208,21 @@ export class StoryCopilotEngineService implements CopilotEngine {
   }
 
   async dataAnalysis(prompt: string, options?) {
-    this.currentWidgetCopilot?.process({prompt}, options)
+    this.currentWidgetCopilot?.process({ prompt }, options)
   }
 
-  process({prompt}, options?: { action?: string; }): Observable<string | CopilotChatMessage[]> {
-    return of(prompt)
-      .pipe(
-        switchMap(async () => {
-          const choices = await this.copilotService.createChat(await this.preprocess(prompt), {
-            ...(options ?? {}),
-            request: {
-              temperature: 0.2
-            }
-          })
+  process({ prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
+    this.logger.debug(`process ask: ${prompt}`)
 
-          return choices
-        }),
-        switchMap((choices) => this.postprocess(prompt, choices))
-      )
+    return this.copilotService
+      .chatCompletions(this.preprocess(prompt), {
+        ...this.aiOptions,
+        temperature: 0.2
+      })
+      .pipe(switchMap(({ choices }) => this.postprocess(prompt, choices)))
   }
 
-  postprocess(
-    prompt: string,
-    choices: CreateChatCompletionResponseChoicesInner[]
-  ) {
+  postprocess(prompt: string, choices: CreateChatCompletionResponseChoicesInner[]) {
     let res
     try {
       res = JSON5.parse(choices[0].message.content)
@@ -218,7 +240,7 @@ export class StoryCopilotEngineService implements CopilotEngine {
       if (res.action === 'DataAnalysis') {
         return of(prompt).pipe(
           switchMap(() => {
-            return this.currentWidgetCopilot.process({prompt}, {action: 'DataAnalysis'})
+            return this.currentWidgetCopilot.process({ prompt }, { action: 'DataAnalysis' })
           })
         )
       }
@@ -286,5 +308,4 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
     return of(messages)
   }
-  
 }

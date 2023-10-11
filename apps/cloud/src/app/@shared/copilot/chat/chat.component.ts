@@ -17,7 +17,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { RouterModule } from '@angular/router'
 import { CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
@@ -33,13 +33,14 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { CreateChatCompletionRequest } from 'openai'
-import { delay, firstValueFrom, map, scan, Subscription } from 'rxjs'
+import { BehaviorSubject, delay, firstValueFrom, map, scan, startWith, Subscription } from 'rxjs'
 import { CopilotService, getErrorMessage, Store } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
 import { UserAvatarComponent } from '../../user'
 import { CopilotEnableComponent } from '../enable/enable.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { HighlightDirective } from '@metad/components/core'
 
 
 @Component({
@@ -54,7 +55,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     <span *ngIf="characterLength < 4000" class="inline-block w-2 h-2 bg-gray-300 rounded-full"></span>
     {{ characterLength }}
   </span>`,
-  styles: [``],
+  styles: [`:host {}`],
   imports: [CommonModule, MatTooltipModule, TranslateModule],
   host: {
     class: 'pac-copilot-token'
@@ -199,6 +200,7 @@ export class CopilotMessageDirective implements OnChanges {
     DensityDirective,
     UserPipe,
     UserAvatarComponent,
+    HighlightDirective,
 
     NxTableModule,
 
@@ -341,7 +343,15 @@ export class CopilotChatComponent {
       this.openaiOptions.n = value
     }
   }
-  prompt = ''
+
+  public promptControl = new FormControl<string>('')
+  get prompt() {
+    return this.promptControl.value
+  }
+  set prompt(value) {
+    this.promptControl.setValue(value)
+  }
+
   /**
    * 当前 Asking prompt
    */
@@ -366,7 +376,7 @@ export class CopilotChatComponent {
     },
   ]
 
-  public readonly copilotNotEnabled$ = this.copilotService.notEnabled$
+  public readonly copilotNotEnabled = toSignal(this.copilotService.notEnabled$)
 
   private readonly lastConversation = computed(() => {
     // Get last conversation messages
@@ -398,6 +408,11 @@ export class CopilotChatComponent {
     }
     return lastMessages.reverse()
   })
+
+  public readonly filteredPrompts$ = this.promptControl.valueChanges.pipe(
+    startWith(''),
+    map((text) => text ? this.prompts?.filter((item) => item.includes(text)) ?? [] : [])
+  )
 
   // Subscribers
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {

@@ -849,6 +849,18 @@ export const ZhHans = {
       BarChart: '条形图',
       Colors: '颜色'
     },
+    Copilot: {
+      PredefinedPrompts: [
+        '/story 设置为暗色主题',
+        '/story-style 设置科技感渐变色背景颜色',
+        '/widget-style Set widget transparent background',
+        '/chart Chart series set line smooth',
+        '/chart Chart series set bar max width 20, rounded, shadow',
+        '/chart Chart series add average mark line',
+        '/chart Chart category axis line width 2, show axis tick',
+        '/widget Data analysis',
+      ]
+    },
     STYLING: {
       CSS: {
         BACKGROUND: {

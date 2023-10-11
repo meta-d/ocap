@@ -28,6 +28,8 @@ import { IStoryWidget } from '@metad/core'
 import { GridsterConfig, GridsterItem } from 'angular-gridster2'
 import ShortUniqueId from 'short-unique-id'
 
+export const I18N_STORY_NAMESPACE = 'Story'
+
 export const uuid = new ShortUniqueId({ length: 10 })
 
 export type ID = string
