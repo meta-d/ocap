@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
 import { inject, Inject, Injectable, Injector, Optional } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -191,6 +191,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
   )
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
+  public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
   public readonly pageStates$ = this.select((state) => state.points).pipe(filter(nonNullable))
   readonly points$ = this.pageStates$.pipe(
@@ -436,8 +437,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
     return result
   }
 
-  async getDefaultDataSource() {
-    const story = await firstValueFrom(this.story$)
+  getDefaultDataSource() {
+    const story = this.story
     const defaultModel = story.models?.[0]
     return {
       dataSource: defaultModel?.key,
@@ -531,11 +532,16 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   }
 
+  /**
+   * New story page
+   * 
+   * @param page 
+   */
   async newStoryPage(page: Partial<StoryPoint>) {
     const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
     if (name) {
-      const key = uuid()
-      this.addStoryPage({
+      const key = page.key ?? uuid()
+      const _page = {
         ...page,
         type: page.type ?? StoryPointType.Canvas,
         key,
@@ -546,8 +552,11 @@ export class NxStoryService extends ComponentStore<StoryState> {
           ...widget,
           key: widget.key ?? uuid(),
         }))
-      })
+      }
+      this.addStoryPage(_page)
       this.setCurrentPageKey(key)
+
+      return _page
     }  
   }
 
@@ -679,15 +688,15 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  async createStoryWidget(event: Partial<StoryWidget>) {
-    const currentPageKey = await firstValueFrom(this.currentPageKey$)
+  createStoryWidget(event: Partial<StoryWidget>) {
+    const currentPageKey = this.currentPageKey()
 
     this._storyEvent$.next({
       key: currentPageKey,
       type: StoryEventType.CREATE_WIDGET,
       data: {
         ...event,
-        dataSettings: await this.getDefaultDataSource()
+        dataSettings: this.getDefaultDataSource()
       }
     })
   }

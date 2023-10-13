@@ -15,7 +15,7 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, map, Observable, of, switchMap, tap } from 'rxjs'
 import { NxStoryService } from '../story.service'
 import { I18N_STORY_NAMESPACE } from '../types'
-import { createStoryPage, logResult, smartDiscover, smartDiscoverStoryPages } from './discover'
+import { createStoryPage, discoverPageWidgets, logResult, smartDiscover } from './discover'
 
 const Commands = [
   {
@@ -209,7 +209,9 @@ export class StoryCopilotEngineService implements CopilotEngine {
         entityType: this.entityType(),
         options: this.aiOptions
       }).pipe(
-        switchMap(smartDiscoverStoryPages),
+        tap(logResult),
+        switchMap(createStoryPage),
+        switchMap(discoverPageWidgets),
         tap(logResult)
       )
     }
