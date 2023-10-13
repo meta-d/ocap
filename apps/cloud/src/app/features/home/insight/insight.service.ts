@@ -20,10 +20,10 @@ import JSON5 from 'json5'
 import { uniq, upperFirst } from 'lodash-es'
 import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, map, switchMap } from 'rxjs'
 import { getSemanticModelKey } from '@metad/story/core'
-import { nonNullable } from '@metad/core'
+import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ChartSchema, SuggestsSchema } from './types'
-import { calcEntityTypePrompt, CopilotService, registerModel } from '../../../@core'
+import { CopilotService, registerModel } from '../../../@core'
 
 
 @Injectable()
@@ -257,7 +257,7 @@ ${this.getDataSettingsPrompt()}
         {
           role: CopilotChatMessageRoleEnum.User,
           content: `多维数据模型信息为：
-${this.getEntityTypePrompt(entityType)}
+${calcEntityTypePrompt(entityType)}
 问题：${prompt}
 回答：`
         }
@@ -335,7 +335,7 @@ ${this.getEntityTypePrompt(entityType)}
       let prompt = ''
       // Specify the Cube or 10 random Cubes or Tables information
       if (cube) {
-        prompt = await this.getEntityTypePrompt(await this.getEntityType(cube.name))
+        prompt = await calcEntityTypePrompt(await this.getEntityType(cube.name))
       } else {
         prompt = await this.getRandomEntityTypes(10)
       }
@@ -382,7 +382,7 @@ ${this.getEntityTypePrompt(entityType)}
   }
 
   getCubesPromptInfo(entityTypes: EntityType[]) {
-    return entityTypes.map((cube) => this.getEntityTypePrompt(cube))
+    return entityTypes.map((cube) => calcEntityTypePrompt(cube))
   }
 
   /**
@@ -541,10 +541,6 @@ ${JSON.stringify([
   "limit": // Limit number of results
 }    
 `
-  }
-
-  getEntityTypePrompt(entityType: EntityType) {
-    return calcEntityTypePrompt(entityType)
   }
 
 }

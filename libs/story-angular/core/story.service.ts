@@ -540,13 +540,21 @@ export class NxStoryService extends ComponentStore<StoryState> {
         type: page.type ?? StoryPointType.Canvas,
         key,
         name,
-        storyId: this.story.id
+        storyId: this.story.id,
+        // Add widgets
+        widgets: page.widgets?.map((widget) => ({
+          ...widget,
+          key: widget.key ?? uuid(),
+        }))
       })
       this.setCurrentPageKey(key)
     }  
   }
 
-  readonly addStoryPage = this.updater((state, input: StoryPoint) => {
+  /**
+   * Add page into story internal
+   */
+  private readonly addStoryPage = this.updater((state, input: StoryPoint) => {
     state.points = state.points || []
     state.points.push({
       key: input.key,

@@ -712,7 +712,8 @@ export const ZhHans = {
       ChartOptions: '图形配置',
       Options: '配置',
       Data: '数据',
-      Slicers: '切片器'
+      Slicers: '切片器',
+      DataSettings: '数据配置',
     },
     Template: {
       TemplateDelete: '删除模板',

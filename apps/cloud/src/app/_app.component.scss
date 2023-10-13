@@ -18,10 +18,15 @@
   --ngm-primary-color: theme(colors.green.500);
   --ngm-text-primary-color: theme(colors.green.100);
 }
+.dark.thin {
+  --ngm-bg-color: rgb(46 16 101); // bg-violet-950
+  --ngm-primary-color: theme(colors.green.500);
+  --ngm-text-primary-color: theme(colors.green.100);
+}
 
 body,
 .light {
-  --ngm-bg-color: theme(colors.gray.100);
+  --ngm-bg-color: theme(colors.gray.50);
   --ngm-card-bg-color: theme(colors.white);
   --ngm-card-border-color: theme(colors.gray.100);
 

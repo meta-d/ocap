@@ -1,20 +1,21 @@
-import { inject, Injectable } from '@angular/core'
+import { inject, Injectable, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import {
   AIOptions,
   BusinessOperation,
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
-  CopilotEngine
+  CopilotChatResponseChoice,
+  CopilotEngine,
 } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import JSON5 from 'json5'
 import { NGXLogger } from 'ngx-logger'
-import { CreateChatCompletionResponseChoicesInner } from 'openai'
-import { map, Observable, of, switchMap } from 'rxjs'
-import { NxStoryService } from './story.service'
-import { I18N_STORY_NAMESPACE } from './types'
+import { BehaviorSubject, map, Observable, of, switchMap, tap } from 'rxjs'
+import { NxStoryService } from '../story.service'
+import { I18N_STORY_NAMESPACE } from '../types'
+import { createStoryPage, logResult, smartDiscover, smartDiscoverStoryPages } from './discover'
 
 const Commands = [
   {
@@ -187,24 +188,33 @@ export class StoryCopilotEngineService implements CopilotEngine {
 `
   }
 
+  private readonly dataSource = signal('rshEYUmoSJ')
+  private readonly entity$ = new BehaviorSubject<string>('Sales')
+  private readonly entityType = toSignal(this.entity$.pipe(
+    switchMap((entity) => entity ? this.storyService.selectEntityType({dataSource: this.dataSource(), entitySet: entity}) : of(null))
+  ))
+
   preprocess(prompt: string) {
     this.logger.debug(`Preprocess - Classify the problem: ${prompt}`)
     // a regex match `/command `
-    const match = prompt.match(/^\/(.*)\s+/i)
+    const match = prompt.match(/^\/([a-zA-Z\-]*)\s+/i)
     const command = match?.[1]
 
-    return [
-      {
-        role: CopilotChatMessageRoleEnum.System,
-        content: this.systemPrompt
-      },
-      {
-        role: CopilotChatMessageRoleEnum.User,
-        content: `请回答
-问题：${prompt}
-答案：`
-      }
-    ]
+    if (command === 'story') {
+      return smartDiscover({
+        dataSource: this.dataSource(),
+        storyService: this.storyService,
+        copilotService: this.copilotService,
+        prompt,
+        entityType: this.entityType(),
+        options: this.aiOptions
+      }).pipe(
+        switchMap(smartDiscoverStoryPages),
+        tap(logResult)
+      )
+    }
+  
+    return of(null)
   }
 
   async dataAnalysis(prompt: string, options?) {
@@ -214,15 +224,15 @@ export class StoryCopilotEngineService implements CopilotEngine {
   process({ prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
     this.logger.debug(`process ask: ${prompt}`)
 
-    return this.copilotService
-      .chatCompletions(this.preprocess(prompt), {
-        ...this.aiOptions,
-        temperature: 0.2
+    return this.preprocess(prompt).pipe(
+      switchMap(createStoryPage),
+      map(() => {
+        return 'OK'
       })
-      .pipe(switchMap(({ choices }) => this.postprocess(prompt, choices)))
+    )
   }
 
-  postprocess(prompt: string, choices: CreateChatCompletionResponseChoicesInner[]) {
+  postprocess(prompt: string, choices: CopilotChatResponseChoice[]) {
     let res
     try {
       res = JSON5.parse(choices[0].message.content)

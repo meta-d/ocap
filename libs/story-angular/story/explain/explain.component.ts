@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NgmPrismHighlightComponent } from '@metad/components/prism'
 import { NxTableModule } from '@metad/components/table'
 import { convertQueryResultColumns, nonNullable } from '@metad/core'
+import { isDataSettings } from '@metad/ocap-core'
 import { uuid } from '@metad/story/core'
 import { NxStorySharedModule } from '../shared.module'
 
@@ -29,6 +30,15 @@ export class ExplainComponent implements OnInit {
           error: item.error
         })
       }
+
+      if (isDataSettings(item)) {
+        this.explains.push({
+          key: uuid(),
+          type: 'dataSettings',
+          data: item
+        })
+      }
+
       if (item.stats) {
         this.explains.push({
           key: uuid(),

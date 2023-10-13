@@ -1,8 +1,8 @@
+import { ISemanticModel } from '@metad/contracts'
 import { AgentType, DataSourceOptions, isEmpty, isNil, nonNullable, Syntax } from '@metad/ocap-core'
 import { combineLatest, firstValueFrom, Observable, tap } from 'rxjs'
 import { NxStoryStore } from './story-store.service'
 import { ComponentStyling, StoryModel } from './types'
-import { ISemanticModel } from '@metad/contracts'
 
 export function getSemanticModelKey(model: StoryModel | ISemanticModel) {
   return model?.key ?? model?.name

@@ -9,6 +9,7 @@
   <mat-nav-list class="ngm-nav-list my-2 flex-1 overflow-auto">
     <mat-list-item *ngFor="let item of explains" class="flex group/item mb-2" [class.active]="explain?.key === item.key"
       (click)="activeLink(item)">
+     <span *ngIf="item.type === 'dataSettings'" class="flex-1">{{ 'Story.Explain.DataSettings' | translate: {Default: 'Data Settings'} }}</span>
      <span *ngIf="item.type === 'statements'" class="flex-1">{{ 'Story.Explain.ExecuteStatements' | translate: {Default: 'Execute Statements'} }}</span>
      <span *ngIf="item.type === 'data'" class="flex-1">{{ 'Story.Explain.Data' | translate: {Default: 'Data'} }}</span>
      <span *ngIf="item.type === 'error'" class="flex-1">{{ 'Story.Explain.Error' | translate: {Default: 'Error'} }}</span>
@@ -27,6 +28,15 @@
 </div>
 
 <div class="flex flex-col overflow-auto">
+
+  <div *ngIf="explain?.type === 'dataSettings'">
+    <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.DataSettings' | translate: {Default: 'Data Settings'} }}:</h5>
+    <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
+      [code]="explain.data | json"
+      language="json">
+    </ngm-prism-highlight>
+  </div>
+
   <div *ngIf="explain?.type === 'statements'">
     <div *ngFor="let statement of explain.statements">
       <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Statement' | translate: {Default: 'Statement'} }}:</h5>

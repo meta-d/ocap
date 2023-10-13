@@ -79,7 +79,8 @@ gridster {
 }
 
 .ngm-story__quick-start-widget {
-  @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-gray-300 border-dashed  dark:hover:bg-gray-600 hover:border-amber-500 focus:border-amber-400;
+  @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+    border-gray-300 active:bg-gray-200 active:shadow-lg dark:hover:bg-gray-600 hover:border-amber-300 active:border-amber-500;
   @apply sm:p-16;
   @apply dark:bg-gray-700;
 }

@@ -217,10 +217,14 @@ export class StoryComponent implements OnInit {
     if (prev) {
       this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
       this.renderer.removeClass(this.storyContainer.nativeElement, prev)
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'dark')
     }
     if (current) {
       this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
       this.renderer.addClass(this.storyContainer.nativeElement, current)
+      if (current === 'thin') {
+        this.renderer.addClass(this.storyContainer.nativeElement, 'dark')
+      }
       if (echartsTheme?.[current]) {
         this.coreService.changeTheme(`${current}-${key}`)
       } else {
