@@ -16,6 +16,8 @@ import { BehaviorSubject, map, Observable, of, switchMap, tap } from 'rxjs'
 import { NxStoryService } from '../story.service'
 import { I18N_STORY_NAMESPACE } from '../types'
 import { createStoryPage, discoverPageWidgets, logResult, smartDiscover } from './discover'
+import { pick } from '@metad/ocap-core'
+
 
 const Commands = [
   {
@@ -207,11 +209,11 @@ export class StoryCopilotEngineService implements CopilotEngine {
         copilotService: this.copilotService,
         prompt,
         entityType: this.entityType(),
-        options: this.aiOptions
+        options: pick(this.aiOptions, 'model', 'temperature')
       }).pipe(
         tap(logResult),
         switchMap(createStoryPage),
-        switchMap(discoverPageWidgets),
+        // switchMap(discoverPageWidgets),
         tap(logResult)
       )
     }
@@ -227,7 +229,7 @@ export class StoryCopilotEngineService implements CopilotEngine {
     this.logger.debug(`process ask: ${prompt}`)
 
     return this.preprocess(prompt).pipe(
-      switchMap(createStoryPage),
+      // switchMap(createStoryPage),
       map(() => {
         return 'OK'
       })

@@ -11,7 +11,7 @@
 
         <ng-container *ngIf="isNotMobile$ | async">
             <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
-                <span *ngIf="isDirty$ | async" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+                <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
                 <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
                 <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
             </button>
@@ -254,7 +254,7 @@
 <ng-template #mobileMenu>
     <div cdkMenu>
         <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative">
-            <span *ngIf="isDirty$ | async" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
             <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
             <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
         </button>
@@ -275,8 +275,8 @@
 
 <ng-template #generalMenu>
     <div cdkMenu>
-        <button cdkMenuItem [disabled]="!(isDirty$ | async)" (click)="saveModel()">
-            <mat-icon fontSet="material-icons-outlined" [color]="(isDirty$ | async)?'accent':''">save</mat-icon>
+        <button cdkMenuItem [disabled]="!isDirty()" (click)="saveModel()">
+            <mat-icon fontSet="material-icons-outlined" [color]="isDirty() ?'accent':''">save</mat-icon>
             <span>{{ 'PAC.ACTIONS.SAVE' | translate: {Default: "Save"} }}</span>
         </button>
 

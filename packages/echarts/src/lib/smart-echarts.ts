@@ -125,54 +125,58 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
               console.error(error)
               this.error$.next(error.message)
               customLogic = null
-              throw new Error(`Custom logic error: ` + error.message)
+              throw new Error(`Can't create custom script function, error: ` + error.message)
             }
 
             if (customLogic) {
-               /**
-                * call custom function and merge custom echarts glabel options
-                * return {
-                *   optiohns, // Echarts options
-                *   onClick // click event callback function
-                * }
-                */
-              let customContext = customLogic(data, chartAnnotation, entityType, settings.locale, this.echarts, {
-                echarts: {
-                  time,
-                  format,
-                  use,
-                  registerMap,
-                  getMap,
-                  graphic
-                },
-                getEntityHierarchy,
-                getEntityProperty,
-                getPropertyCaption,
-                getDefaultHierarchy,
-                stringifyProperty,
-                isVisible,
-                isWrapBrackets,
-                wrapBrackets,
-                unwrapBrackets,
-                wrapHierarchyValue,
-                fromFetch,
-                lastValueFrom,
-                assignDeepOmitBlank,
-                omitBlank,
-                formatting
-              }, data)
-                
-              if (customContext) {
-                // Support custom function return a promise or a object
-                customContext = await Promise.resolve(customContext)
-                context = {
-                  ...customContext,
-                  echartsOptions: assignDeepOmitBlank(customContext.options, pickEChartsGlobalOptions(chartOptions), Number.MAX_SAFE_INTEGER)
+              try {
+                /**
+                  * call custom function and merge custom echarts glabel options
+                  * return {
+                  *   optiohns, // Echarts options
+                  *   onClick // click event callback function
+                  * }
+                  */
+                let customContext = customLogic(data, chartAnnotation, entityType, settings.locale, this.echarts, {
+                  echarts: {
+                    time,
+                    format,
+                    use,
+                    registerMap,
+                    getMap,
+                    graphic
+                  },
+                  getEntityHierarchy,
+                  getEntityProperty,
+                  getPropertyCaption,
+                  getDefaultHierarchy,
+                  stringifyProperty,
+                  isVisible,
+                  isWrapBrackets,
+                  wrapBrackets,
+                  unwrapBrackets,
+                  wrapHierarchyValue,
+                  fromFetch,
+                  lastValueFrom,
+                  assignDeepOmitBlank,
+                  omitBlank,
+                  formatting
+                }, data)
+                  
+                if (customContext) {
+                  // Support custom function return a promise or a object
+                  customContext = await Promise.resolve(customContext)
+                  context = {
+                    ...customContext,
+                    echartsOptions: assignDeepOmitBlank(customContext.options, pickEChartsGlobalOptions(chartOptions), Number.MAX_SAFE_INTEGER)
+                  }
                 }
+              } catch(err: any) {
+                throw new Error(`Execute custom script error: ` + err.message)
               }
             }
           } else {
-            throw new Error(`Not provide custom logic for 'Custom' chart type!`)
+            throw new Error(`Not provide script for 'Custom' chart type!`)
           }
         }
 

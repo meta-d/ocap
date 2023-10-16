@@ -28,6 +28,7 @@ import {
   filter,
   map,
   shareReplay,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs/operators'
@@ -183,21 +184,20 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
       return this._saveModel()
     }
   })
+
   public dirty$ = combineLatest([
-    this.dirtyCheckQuery.isDirty$,
-    this.entities$.pipe(
-      map((entities) => {
-        const entity = entities.find((entity) => entity.dirty)
-        return !!entity
-      })
-    )
+    this.dirtyCheckQuery.isDirty$.pipe(startWith(false)),
+    this.entities$.pipe(map((entities) => entities.some((entity) => entity.dirty)))
   ]).pipe(
     map(([isDirty, entities]) => isDirty || entities),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
+
   private _saved$ = new Subject<void>()
   public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
+
   constructor(
     private modelsService: ModelsService,
     private dsCoreService: NgmDSCoreService,

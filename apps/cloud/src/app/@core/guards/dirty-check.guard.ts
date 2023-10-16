@@ -5,21 +5,22 @@ import { TranslateService } from '@ngx-translate/core'
 import { ConfirmSnackBar } from '@metad/components/confirm'
 import { Observable, defer, isObservable, merge, of } from 'rxjs'
 import { map, switchMap, take } from 'rxjs/operators'
-import { DirtyComponent } from './dirty-component'
+import { IsDirty } from '@metad/core'
+
 
 @Injectable()
 export class DirtyCheckGuard  {
   private translateService = inject(TranslateService)
   private _snackBar = inject(MatSnackBar)
 
-  canDeactivate(component: DirtyComponent, currentRoute: ActivatedRouteSnapshot): Observable<boolean> {
+  canDeactivate(component: IsDirty, currentRoute: ActivatedRouteSnapshot): Observable<boolean> {
     let dirty$: Observable<boolean>
     const componentDirty = component.isDirty$
 
     if (typeof componentDirty === 'function') {
       dirty$ = defer(() => toObservable(componentDirty()))
     } else {
-      dirty$ = toObservable(componentDirty)
+      dirty$ = toObservable(component.isDirty())
     }
 
     return dirty$.pipe(

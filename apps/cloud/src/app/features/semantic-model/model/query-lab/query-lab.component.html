@@ -9,7 +9,7 @@
       [active]="rla.isActive"
       cdkDrag [cdkDragData]="query" cdkDragBoundary=".pac-model-query__nav" 
     >
-      <span *ngIf="isDirty(query.key)" class="pac-badge-status-dot"></span>
+      <span *ngIf="isQueryDirty(query.key)" class="pac-badge-status-dot"></span>
       <span class="pac-nav-tab__label max-w-[200px] overflow-hidden text-ellipsis"
         [matTooltip]="query.name"
         [matTooltipShowDelay]="1000"

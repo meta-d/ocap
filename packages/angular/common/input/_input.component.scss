@@ -50,3 +50,7 @@
     border-color: var(--mdc-theme-error);
   }
 }
+
+textarea.ngm-input-element {
+  @apply min-h-[50px];
+}

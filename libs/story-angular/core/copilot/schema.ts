@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { DimensionSchema } from '@metad/core'
+import { DimensionSchema, MeasureSchema } from '@metad/core'
 import { WidgetComponentType } from '../types'
 import { ChartSchema } from './chart-schema'
 
@@ -93,8 +93,14 @@ export const StoryWidgetSchema = z.object({
   })
 })
 
+export const StoryWidgetGridSchema = z.object({
+  rows: z.array(DimensionSchema),
+  columns: z.array(MeasureSchema),
+})
+
 export const discoverStory = {
   model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2,
   functions: [
     {
       name: 'discover-story',
@@ -104,8 +110,10 @@ export const discoverStory = {
   ],
   function_call: { name: 'discover-story' }
 }
+
 export const discoverStoryPage = {
   model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2,
   functions: [
     {
       name: 'discover-story-page',
@@ -118,6 +126,7 @@ export const discoverStoryPage = {
 
 export const discoverStoryWidget = {
   model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2,
   functions: [
     {
       name: 'discover-story-widget',
@@ -126,4 +135,30 @@ export const discoverStoryWidget = {
     }
   ],
   function_call: { name: 'discover-story-widget' }
+}
+
+export const discoverWidgetChart = {
+  model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2,
+  functions: [
+    {
+      name: 'discover-story-widget-chart',
+      description: 'Should always be used to properly format output',
+      parameters: zodToJsonSchema(ChartSchema)
+    }
+  ],
+  function_call: { name: 'discover-story-widget-chart' }
+}
+
+export const discoverWidgetGrid = {
+  model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2,
+  functions: [
+    {
+      name: 'discover-story-widget-grid',
+      description: 'Should always be used to properly format output',
+      parameters: zodToJsonSchema(StoryWidgetGridSchema)
+    }
+  ],
+  function_call: { name: 'discover-story-widget-grid' }
 }

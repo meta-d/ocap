@@ -16,7 +16,7 @@
 }
 
 .pac-model-entity__workspace-router {
-  @apply flex flex-col bg-white rounded-lg overflow-hidden shadow-lg border border-solid border-slate-200 m-1;
+  @apply flex flex-col rounded-lg overflow-hidden shadow-lg mb-1 mr-1 border border-solid border-slate-200 bg-white;
 }
 
 .ngm-property-modeling {
@@ -34,5 +34,5 @@
 }
 
 .pac-model__settings-container {
-  @apply bg-white rounded-lg overflow-hidden shadow-lg border border-solid border-slate-200 m-1;
+  @apply rounded-lg overflow-hidden shadow-lg mb-1 mr-1 border border-solid border-slate-200 bg-white;
 }
