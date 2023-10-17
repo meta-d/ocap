@@ -17,7 +17,7 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatTabGroup } from '@angular/material/tabs'
 import { nonNullable } from '@metad/core'
-import { filter, map } from 'rxjs/operators'
+import { debounceTime, filter, map } from 'rxjs/operators'
 import { NxSettingsPanelService } from './settings-panel.service'
 import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE, STORY_DESIGNER_SCHEMA } from '../types'
 
@@ -30,7 +30,7 @@ import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE, STORY_DESIGNER_SCHEMA } 
     class: 'ngm-settings-panel'
   }
 })
-export class NxSettingsPanelComponent implements OnChanges {
+export class NgmSettingsPanelComponent implements OnChanges {
   public settingsService = inject(NxSettingsPanelService)
   private _cdr = inject(ChangeDetectorRef)
   private _viewContainerRef = inject(ViewContainerRef)
@@ -68,6 +68,7 @@ export class NxSettingsPanelComponent implements OnChanges {
   // Subscribers
   private _settingsComponentSub = this.settingsService.settingsComponent$
     .pipe(
+      debounceTime(100),
       filter(nonNullable),
       map((settingsComponent) => {
         if (!settingsComponent.settingsPortals) {

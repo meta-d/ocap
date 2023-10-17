@@ -14,10 +14,10 @@ import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxComponentSettingsComponent } from './component-form/formly-form.component'
 import { DesignerPanelComponent } from './panel/panel.component'
-import { NxSettingsPanelComponent } from './settings-panel/settings-panel.component'
+import { NgmSettingsPanelComponent } from './settings-panel/settings-panel.component'
 
 @NgModule({
-  declarations: [NxSettingsPanelComponent, NxComponentSettingsComponent, DesignerPanelComponent],
+  declarations: [NgmSettingsPanelComponent, NxComponentSettingsComponent, DesignerPanelComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -36,6 +36,6 @@ import { NxSettingsPanelComponent } from './settings-panel/settings-panel.compon
     // OCAP Modules
     OcapCoreModule,
   ],
-  exports: [NxSettingsPanelComponent, NxComponentSettingsComponent, DesignerPanelComponent]
+  exports: [NgmSettingsPanelComponent, NxComponentSettingsComponent, DesignerPanelComponent]
 })
 export class NxDesignerModule {}

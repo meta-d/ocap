@@ -66,6 +66,10 @@ export const StoryPageSchema = z.object({
     .describe('The array of widgets in the page')
 })
 
+export const StoryWidgetGridSchema = z.object({
+  rows: z.array(DimensionSchema),
+  columns: z.array(MeasureSchema),
+})
 
 export const StoryWidgetSchema = z.object({
   title: z.string().describe(`Title of the widget`),
@@ -84,18 +88,11 @@ export const StoryWidgetSchema = z.object({
     ])
     .describe('The component type of widget'),
   
-  dataSettings: z.object({
-    chartAnnotation: ChartSchema.optional().describe('Chart settings for AnalyticalCard widget'),
-    analytics: z.object({
-      rows: z.array(DimensionSchema),
-      columns: z.array(DimensionSchema),
-    }).optional().describe('Grid settings for AnalyticalGrid widget'),
+  chartAnnotation: ChartSchema.optional().describe('Chart settings when component type of widget is AnalyticalCard'),
+  analytics: StoryWidgetGridSchema.optional().describe('Grid settings when component type of widget is AnalyticalGrid;'),
+  gridSettings: z.object({
+    showToolbar: z.boolean().default(true).optional().describe('Show toolbar in AnalyticalGrid widget'),
   })
-})
-
-export const StoryWidgetGridSchema = z.object({
-  rows: z.array(DimensionSchema),
-  columns: z.array(MeasureSchema),
 })
 
 export const discoverStory = {

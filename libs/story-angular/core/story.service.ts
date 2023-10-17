@@ -217,14 +217,13 @@ export class NxStoryService extends ComponentStore<StoryState> {
     displayPoints?.findIndex((item) => item.key === currentPageKey)
   )
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
-    map(([currentPageKey, pageStates]) => {
-      return pageStates.find((pageState) => pageState.key === currentPageKey)
-    })
+    map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
   public readonly currentPageWidgets$ = this.currentPage$.pipe(
     map((pageState) => pageState?.widgets),
   )
-  readonly currentWidget$ = this.select((state) => state.currentWidget)
+  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state.storyPoint)))
+  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
@@ -695,8 +694,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
       key: currentPageKey,
       type: StoryEventType.CREATE_WIDGET,
       data: {
+        dataSettings: this.getDefaultDataSource(),
         ...event,
-        dataSettings: this.getDefaultDataSource()
       }
     })
   }
@@ -1018,9 +1017,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  async removeCurrentWidget() {
-    const currentPageKey = await firstValueFrom(this.currentPageKey$)
-    const currentWidget = await firstValueFrom(this.currentWidget$)
+  removeCurrentWidget() {
+    const currentPageKey = this.currentPageKey()
+    const currentWidget = this.currentWidget()
 
     this._storyEvent$.next({
       key: currentPageKey,

@@ -1153,6 +1153,7 @@
       "ExamplesOfPrompts": "提示语示例",
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
+      "AskAICopilot": "向 AI 副驾驶询问问题",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

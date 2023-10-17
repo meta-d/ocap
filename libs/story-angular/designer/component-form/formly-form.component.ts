@@ -1,10 +1,10 @@
 import { animate, style, transition, trigger } from '@angular/animations'
-import { Component, Inject, OnInit, Output } from '@angular/core'
+import { Component, DestroyRef, Output, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormGroup } from '@angular/forms'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core'
-import { isEqual, cloneDeep } from 'lodash-es'
-import { EMPTY, isObservable, Observable, of, Subject, timer } from 'rxjs'
+import { cloneDeep, isEqual } from 'lodash-es'
+import { EMPTY, Observable, Subject, isObservable, of, timer } from 'rxjs'
 import {
   catchError,
   debounceTime,
@@ -13,17 +13,16 @@ import {
   map,
   shareReplay,
   skipUntil,
-  switchMap
+  switchMap,
 } from 'rxjs/operators'
 import {
   DesignerSchema,
-  SettingsComponent,
   STORY_DESIGNER_FORM,
   STORY_DESIGNER_LIVE_MODE,
-  STORY_DESIGNER_SCHEMA
+  STORY_DESIGNER_SCHEMA,
+  SettingsComponent
 } from '../types'
 
-@UntilDestroy()
 @Component({
   selector: 'ngm-component-settings',
   templateUrl: 'formly-form.component.html',
@@ -38,8 +37,15 @@ import {
     ])
   ]
 })
-export class NxComponentSettingsComponent implements OnInit {
+export class NxComponentSettingsComponent {
   // @HostBinding('@settingsComponent') public settingsComponent
+  private readonly destroyRef = inject(DestroyRef)
+  private _settingsComponent: SettingsComponent = inject(STORY_DESIGNER_FORM)
+  private schema: DesignerSchema = inject(STORY_DESIGNER_SCHEMA)
+  public liveMode: boolean = inject(STORY_DESIGNER_LIVE_MODE)
+
+  private _modelChange$ = new Subject<unknown>()
+  @Output() modelChange = this._modelChange$.pipe(debounceTime(500))
 
   initial = true
   model = {}
@@ -49,57 +55,46 @@ export class NxComponentSettingsComponent implements OnInit {
   public readonly title$ = this.schema.getTitle()
 
   public fields$: Observable<{ fields: FormlyFieldConfig[]; formGroup: FormGroup }[]> = this.schema.getSchema().pipe(
-    debounceTime(100),
     map((fields) => [{ fields, formGroup: new FormGroup({}) }]),
     catchError((err) => {
       console.error(err)
       return EMPTY
     }),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
-  private _modelChange$ = new Subject<unknown>()
-  @Output() modelChange = this._modelChange$.pipe(debounceTime(500))
 
-  constructor(
-    @Inject(STORY_DESIGNER_FORM) private _settingsComponent: SettingsComponent,
-    @Inject(STORY_DESIGNER_SCHEMA) private schema: DesignerSchema,
-    @Inject(STORY_DESIGNER_LIVE_MODE) public liveMode: boolean,
-  ) {}
+  public readonly formlyForms = toSignal(this.fields$)
 
-  ngOnInit(): void {
-    ;(isObservable(this._settingsComponent.model) ? this._settingsComponent.model : of(this._settingsComponent.model))
-      .pipe(
-        filter((model) => !!model && (this.initial || !isEqual(model, this.model))),
-        untilDestroyed(this)
-      )
-      .subscribe((model) => {
-        this.initial = false
-        // console.log(`[NxComponentSettingsComponent] 开始设置 Model`, model)
-        this.model = cloneDeep(model)
-        this.schema.model = model
-        // console.log(`[NxComponentSettingsComponent] 设置完毕 Model`)
-      })
-
-    this.fields$
-      .pipe(
-        switchMap((items) => {
-          const { formGroup } = items[0]
-          return formGroup.valueChanges
-        }),
-        // 跳过初始值
-        skipUntil(timer(1000)),
-        debounceTime(500),
-        distinctUntilChanged(isEqual),
-        untilDestroyed(this)
-      )
-      .subscribe((value) => {
-        this.schema.model = value
-        if (this.liveMode && !this.initial) {
-          // 为什么原来不是 Submit form Value ?
-          this.onSubmit(value)
-        }
-      })
-  }
+  private modelSub = (isObservable(this._settingsComponent.model) ? this._settingsComponent.model : of(this._settingsComponent.model))
+    .pipe(
+      filter((model) => !!model && (this.initial || !isEqual(model, this.model))),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe((model) => {
+      this.initial = false
+      this.model = cloneDeep(model)
+      this.schema.model = model
+    })
+  private valueSub = this.fields$
+    .pipe(
+      switchMap((items) => {
+        const { formGroup } = items[0]
+        return formGroup.valueChanges
+      }),
+      // 跳过初始值
+      skipUntil(timer(1000)),
+      debounceTime(500),
+      distinctUntilChanged(isEqual),
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe((value) => {
+      this.schema.model = value
+      if (this.liveMode && !this.initial) {
+        // 为什么原来不是 Submit form Value ?
+        this.onSubmit(value)
+      }
+    })
 
   onSubmit(value?) {
     this._settingsComponent.submit.next(value ?? this.model)

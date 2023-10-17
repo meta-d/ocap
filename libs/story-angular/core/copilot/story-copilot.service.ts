@@ -12,19 +12,12 @@ import { NgmCopilotService } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import JSON5 from 'json5'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, map, Observable, of, switchMap, tap } from 'rxjs'
+import { BehaviorSubject, combineLatest, map, Observable, of, switchMap } from 'rxjs'
 import { NxStoryService } from '../story.service'
 import { I18N_STORY_NAMESPACE } from '../types'
-import { createStoryPage, discoverPageWidgets, logResult, smartDiscover } from './discover'
 import { pick } from '@metad/ocap-core'
-
-
-const Commands = [
-  {
-    command: 'story',
-    description: 'New story',
-  }
-]
+import { CopilotChartConversation } from './types'
+import { CopilotCommands$, getCommand } from './commands/index'
 
 
 @Injectable()
@@ -36,24 +29,40 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
   currentWidgetCopilot: CopilotEngine
 
-  private readonly _prompts = toSignal(
-    this.translateService.get(`${I18N_STORY_NAMESPACE}.Copilot.PredefinedPrompts`).pipe(
-      map((i18n) => {
-        return (
-          i18n ?? [
-            '/story Set story theme dark',
-            '/story-style Set story gradient background color sense of technology',
-            '/widget-style Set widget transparent background',
-            '/chart Chart series set line smooth',
-            '/chart Chart series set bar max width 20, rounded, shadow',
-            '/chart Chart series add average mark line',
-            '/chart Chart category axis line width 2, show axis tick',
-            '/widget Data analysis'
-          ]
+  private readonly _prompts = toSignal(CopilotCommands$.pipe(
+    map((CopilotCommands) => {
+      return Object.keys(CopilotCommands).reduce((acc, key) => {
+        console.log(key, CopilotCommands[key])
+        CopilotCommands[key].examples?.forEach((example) => {
+          acc.push({
+            command: CopilotCommands[key].name,
+            prompt: example
+          })
+        })
+        return acc
+      }, []).map(({command, prompt}) => {
+        return this.translateService.stream(`${I18N_STORY_NAMESPACE}.Copilot.Examples.${prompt}`, {Default: prompt}).pipe(
+          map((prompt) => `/${command} ${prompt}`)
         )
       })
-    )
-  )
+    }),
+    switchMap((i18nCommands) => combineLatest(i18nCommands))
+  ), {initialValue: []})
+  
+  // toSignal(
+  //   this.translateService.stream(`${I18N_STORY_NAMESPACE}.Copilot.PredefinedPrompts`, {Default: [
+  //     '/story Set story theme dark',
+  //     '/story-style Set story gradient background color sense of technology',
+  //     '/add-widget Sales amount by customer\'s region',
+  //     '/widget-style Set widget transparent background',
+  //     '/chart Chart series set line smooth',
+  //     '/chart Chart series set bar max width 20, rounded, shadow',
+  //     '/chart Chart series add average mark line',
+  //     '/chart Chart category axis line width 2, show axis tick',
+  //     '/widget Data analysis',
+  //     '/clear'
+  //   ]})
+  // )
   aiOptions = {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
@@ -198,27 +207,7 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
   preprocess(prompt: string) {
     this.logger.debug(`Preprocess - Classify the problem: ${prompt}`)
-    // a regex match `/command `
-    const match = prompt.match(/^\/([a-zA-Z\-]*)\s+/i)
-    const command = match?.[1]
-
-    if (command === 'story') {
-      return smartDiscover({
-        dataSource: this.dataSource(),
-        storyService: this.storyService,
-        copilotService: this.copilotService,
-        prompt,
-        entityType: this.entityType(),
-        options: pick(this.aiOptions, 'model', 'temperature')
-      }).pipe(
-        tap(logResult),
-        switchMap(createStoryPage),
-        // switchMap(discoverPageWidgets),
-        tap(logResult)
-      )
-    }
-  
-    return of(null)
+    
   }
 
   async dataAnalysis(prompt: string, options?) {
@@ -227,13 +216,30 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
   process({ prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
     this.logger.debug(`process ask: ${prompt}`)
+    // a regex match `/command `
+    const match = prompt.match(/^\/([a-zA-Z\-]*)\s*/i)
+    const command = match?.[1]
 
-    return this.preprocess(prompt).pipe(
-      // switchMap(createStoryPage),
-      map(() => {
-        return 'OK'
-      })
-    )
+    if (getCommand(command)) {
+      return getCommand(command).processor({
+        dataSource: this.dataSource(),
+        storyService: this.storyService,
+        copilotService: this.copilotService,
+        prompt,
+        entityType: this.entityType(),
+        options: pick(this.aiOptions, 'model', 'temperature'),
+        logger: this.logger
+      }).pipe(
+        map((copilot: Partial<CopilotChartConversation>) => {
+          return copilot.error ? '❌指令执行出错：' + copilot.error : '✅指令执行完成'
+        })
+      )
+    } else if (command === 'clear') {
+      this.conversations = []
+      return of([])
+    }
+
+    throw new Error(`❌无法识别的指令：${prompt}`)
   }
 
   postprocess(prompt: string, choices: CopilotChatResponseChoice[]) {

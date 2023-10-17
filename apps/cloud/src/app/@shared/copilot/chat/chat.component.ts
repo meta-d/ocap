@@ -5,23 +5,18 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
-  Directive,
   effect,
   ElementRef,
   EventEmitter,
   inject,
   Input,
-  OnChanges,
   Output,
-  Renderer2,
   signal,
-  SimpleChanges,
   ViewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { HighlightDirective } from '@metad/components/core'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatTooltipModule } from '@angular/material/tooltip'
 import { RouterModule } from '@angular/router'
 import { CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { DensityDirective } from '@metad/ocap-angular/core'
@@ -43,37 +38,8 @@ import { UserPipe } from '../../pipes'
 import { UserAvatarComponent } from '../../user'
 import { CopilotEnableComponent } from '../enable/enable.component'
 import { MatAutocomplete, MatAutocompleteActivatedEvent } from '@angular/material/autocomplete'
+import { CopilotChatTokenComponent } from '../token/token.component'
 
-
-@Component({
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'pac-copilot-token',
-  template: `<span
-    class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300"
-    matTooltip="{{ 'PAC.Copilot.CharacterLength' | translate: { Default: 'Character length' } }}"
-  >
-    <span *ngIf="characterLength >= 4000" class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
-    <span *ngIf="characterLength < 4000" class="inline-block w-2 h-2 bg-gray-300 rounded-full"></span>
-    {{ characterLength }}
-  </span>`,
-  styles: [`:host {}`],
-  imports: [CommonModule, MatTooltipModule, TranslateModule],
-  host: {
-    class: 'pac-copilot-token'
-  }
-})
-export class CopilotChatTokenComponent implements OnChanges {
-  @Input() content: string
-
-  characterLength = 0
-
-  ngOnChanges({ content }: SimpleChanges): void {
-    if (content) {
-      this.characterLength = content.currentValue?.length
-    }
-  }
-}
 
 // /**
 //  * @deprecated 暂时不用了
@@ -181,7 +147,6 @@ export class CopilotChatTokenComponent implements OnChanges {
 //     return text
 //   }
 // }
-
 
 @Component({
   standalone: true,
@@ -361,6 +326,9 @@ export class CopilotChatComponent {
 
   readonly answering = signal(false)
 
+  readonly historyQuestions = signal<string[]>([])
+  private readonly historyIndex = signal(-1)
+
   askController: AbortController
   askSubscriber: Subscription
 
@@ -443,6 +411,11 @@ export class CopilotChatComponent {
   }
 
   async askCopilotStream(prompt: string, newConversation?: boolean) {
+    // Reset history index
+    this.historyIndex.set(-1)
+    // Add to history
+    this.historyQuestions.set([prompt, ...this.historyQuestions()])
+    // Clear prompt in input
     this.prompt = ''
 
     // Get last conversation messages
@@ -513,16 +486,19 @@ export class CopilotChatComponent {
           },
           complete: () => {
             this.answering.set(false)
-            let conversations = [...this.conversations]
-            if (!conversations[assistantIndex].content) {
-              conversations.splice(assistantIndex, 1)
+            // Not cleared
+            if (this.conversations.length) {
+              let conversations = [...this.conversations]
+              if (!conversations[assistantIndex].content) {
+                conversations.splice(assistantIndex, 1)
+              }
+              if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
+                conversations.splice(conversations.length - 1, 1)
+              }
+              this.conversations = conversations
+              this.conversationsChange.emit(this.conversations)
+              this._cdr.detectChanges()
             }
-            if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
-              conversations.splice(conversations.length - 1, 1)
-            }
-            this.conversations = conversations
-            this.conversationsChange.emit(this.conversations)
-            this._cdr.detectChanges()
           }
         })
       } catch (err) {
@@ -697,6 +673,23 @@ export class CopilotChatComponent {
       const activatedPrompt = this.activatedPrompt || this.filteredPrompts()[0]
       if (activatedPrompt) {
         this.prompt = activatedPrompt
+      }
+    }
+
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      
+      const historyQuestions = this.historyQuestions()
+      if (historyQuestions.length) {
+        if (event.key === 'ArrowUp' && this.historyIndex() < historyQuestions.length - 1) {
+          this.historyIndex.set(this.historyIndex() + 1)
+        } else if (event.key === 'ArrowDown' && this.historyIndex() > -1) {
+          this.historyIndex.set(this.historyIndex() - 1)
+        } else {
+          return
+        }
+
+        this.prompt = historyQuestions[this.historyIndex()] ?? ''
       }
     }
   }

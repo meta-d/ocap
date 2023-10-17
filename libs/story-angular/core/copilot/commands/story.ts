@@ -1,22 +1,11 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
-import { NgmCopilotService, calcEntityTypePrompt } from '@metad/core'
-import { EntityType, omitBlank } from '@metad/ocap-core'
+import { calcEntityTypePrompt } from '@metad/core'
+import { omitBlank } from '@metad/ocap-core'
 import { combineLatest, concat, from, of } from 'rxjs'
-import { map, tap, switchMap } from 'rxjs/operators'
-import { NxStoryService } from '../story.service'
-import { StoryPointType, StoryWidget, WidgetComponentType, uuid } from '../types'
-import { discoverStory, discoverWidgetChart, discoverWidgetGrid } from './schema'
-
-export interface CopilotChartConversation {
-  dataSource: string
-  storyService: NxStoryService
-  copilotService: NgmCopilotService
-  prompt: string
-  options: any
-  entityType: EntityType
-  response?: { arguments: any } | any
-  error?: string | Error
-}
+import { map, switchMap, tap } from 'rxjs/operators'
+import { StoryPointType, StoryWidget, WidgetComponentType, uuid } from '../../types'
+import { discoverStory, discoverWidgetChart, discoverWidgetGrid } from '../schema'
+import { CopilotChartConversation } from '../types'
 
 /**
  * Create story dashboard that contains multiple story pages.
@@ -76,7 +65,7 @@ export function createStoryPage(copilot: CopilotChartConversation) {
           key: uuid(),
           dataSettings: {
             dataSource,
-            entitySet: entityType.name,
+            entitySet: entityType.name
           }
         }
       })
@@ -93,7 +82,7 @@ export function createStoryPage(copilot: CopilotChartConversation) {
           widgets
         })
       ).pipe(
-        map((page) => ({...copilot, response: page})),
+        map((page) => ({ ...copilot, response: page })),
         switchMap(discoverPageWidgets)
       )
     })
@@ -102,27 +91,25 @@ export function createStoryPage(copilot: CopilotChartConversation) {
 
 /**
  * Concurrently create widgets in the page
- * 
- * @param copilot 
- * @returns 
+ *
+ * @param copilot
+ * @returns
  */
 export function discoverPageWidgets(copilot: CopilotChartConversation) {
   const { copilotService, storyService, response: page, entityType } = copilot
   return page.widgets?.length
-    ? combineLatest(page.widgets.map((widget) => chatStoryWidget(copilot, widget))).pipe(
-        map(() => copilot)
-      )
+    ? combineLatest(page.widgets.map((widget) => chatStoryWidget1(copilot, widget))).pipe(map(() => copilot))
     : of(copilot)
 }
 
 /**
  * Chat with copilot to create a widget in the page
- * 
- * @param copilot 
- * @param widget 
- * @returns 
+ *
+ * @param copilot
+ * @param widget
+ * @returns
  */
-export function chatStoryWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
+export function chatStoryWidget1(copilot: CopilotChartConversation, widget: StoryWidget) {
   const { copilotService, storyService, response: page, entityType } = copilot
 
   const componentType = widget.component

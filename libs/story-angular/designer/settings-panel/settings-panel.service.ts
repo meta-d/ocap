@@ -1,19 +1,11 @@
 import { ComponentPortal } from '@angular/cdk/portal'
-import { Injectable, Injector, ViewContainerRef, effect, inject, signal } from '@angular/core'
+import { Injectable, Injector, ViewContainerRef, inject } from '@angular/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { uuid } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, EMPTY, from, Observable, of, Subject } from 'rxjs'
-import { distinctUntilChanged, filter, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
-import {
-  DesignerComponentProvider,
-  DesignerComponentType,
-  SettingsComponent,
-  STORY_DESIGNER_COMPONENT,
-  STORY_DESIGNER_FORM,
-  STORY_DESIGNER_LIVE_MODE,
-  STORY_DESIGNER_SCHEMA
-} from '../types'
+import { BehaviorSubject, EMPTY, Observable, Subject, combineLatest, from, of } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { DesignerComponentProvider, DesignerComponentType, STORY_DESIGNER_COMPONENT, SettingsComponent } from '../types'
 
 interface LocalSettingsComponent extends SettingsComponent {
   components: Array<DesignerComponentType<unknown>>
@@ -25,14 +17,13 @@ interface LocalSettingsComponent extends SettingsComponent {
 
 @Injectable()
 export class NxSettingsPanelService {
-
   private _viewContainerRef = inject(ViewContainerRef)
   protected injector = inject(Injector)
-  private components?: Array<DesignerComponentProvider> = inject(STORY_DESIGNER_COMPONENT, {optional: true})
-  protected logger? = inject(NGXLogger, {optional: true})
+  private components?: Array<DesignerComponentProvider> = inject(STORY_DESIGNER_COMPONENT, { optional: true })
+  protected logger? = inject(NGXLogger, { optional: true })
 
   // public readonly opened$ = signal(false)
-  
+
   liveMode: boolean
 
   drawerSubmit$ = new Subject<boolean>()
@@ -52,89 +43,6 @@ export class NxSettingsPanelService {
       if (!settingsComponent) {
         return null
       }
-
-      // if (!settingsComponent.settingsPortals) {
-      //   if (settingsComponent.components) {
-      //     settingsComponent.settingsPortals = settingsComponent.components.map(
-      //       ({ icon, label, component, schema, model, submit }) => {
-      //         const injector = Injector.create({
-      //           providers: [
-      //             [
-      //               {
-      //                 provide: STORY_DESIGNER_FORM,
-      //                 useValue: {
-      //                   model,
-      //                   submit
-      //                 }
-      //               }
-      //             ]
-      //           ],
-      //           parent: this.injector
-      //         })
-
-      //         const injector2 = Injector.create({
-      //           providers: [
-      //             [
-      //               ...(schema ? [
-      //                 {
-      //                   provide: STORY_DESIGNER_SCHEMA,
-      //                   useClass: schema
-      //                 }
-      //               ] : []),
-      //               {
-      //                 provide: STORY_DESIGNER_LIVE_MODE,
-      //                 useValue: settingsComponent.liveMode ?? this.liveMode
-      //               }
-      //             ]
-      //           ],
-      //           parent: injector
-      //         })
-
-      //         return {
-      //           icon,
-      //           label,
-      //           portal: new ComponentPortal(component, null, injector2)
-      //         }
-      //       }
-      //     )
-      //   } else {
-      //     const injector = Injector.create({
-      //       providers: [
-      //         [
-      //           {
-      //             provide: STORY_DESIGNER_FORM,
-      //             useValue: settingsComponent
-      //           }
-      //         ]
-      //       ],
-      //       parent: this.injector
-      //     })
-
-      //     const injector2 = Injector.create({
-      //       providers: [
-      //         [
-      //           ...(settingsComponent.schema ? [
-      //             {
-      //               provide: STORY_DESIGNER_SCHEMA,
-      //               useClass: settingsComponent.schema
-      //             }
-      //           ] : []),
-      //           {
-      //             provide: STORY_DESIGNER_LIVE_MODE,
-      //             useValue: settingsComponent.liveMode ?? this.liveMode
-      //           }
-      //         ]
-      //       ],
-      //       parent: injector
-      //     })
-
-      //     settingsComponent.settingsPortals = new ComponentPortal(
-      //       settingsComponent.container,
-      //       this._viewContainerRef,
-      //       injector2
-      //     )
-      //   }
-      // }
 
       this._settingsComponents[settingsComponent.id] = settingsComponent
       return this._settingsComponents[settingsComponent.id]
@@ -170,7 +78,7 @@ export class NxSettingsPanelService {
       map((schema) => ({
         ...componentProvider,
         schema
-      })),
+      }))
     )
   }
 
@@ -219,10 +127,10 @@ export class NxSettingsPanelService {
 
   /**
    * model 必须提供初始值(非 null)才行. 这个需要修正
-   * 
+   *
    * @param id
    * @param tabs
-   * @returns 
+   * @returns
    */
   openTabsDesigner<T>(id: string, tabs: Array<DesignerComponentType<any>>) {
     return (

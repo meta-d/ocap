@@ -14,3 +14,7 @@ pac-story-toolbar.pac-story-toolbar {
     line-height: 0.75rem;
   }
 }
+
+.pac-story-designer__menu-trigger.active {
+  @apply bg-gray-400/20;
+}

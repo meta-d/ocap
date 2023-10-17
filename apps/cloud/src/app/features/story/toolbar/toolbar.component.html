@@ -109,7 +109,7 @@
             <mat-icon *ngIf="showDetails==='widgets'&&!onRight||showDetails!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
         </button>
 
-        <button mat-icon-button class="mat-menu-trigger text-lg"
+        <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
             matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
             matTooltipPosition="after"
             [class.active]="showDetails==='copilot'"
@@ -471,18 +471,18 @@
 
         <mat-divider></mat-divider>
 
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="copyWidget()">
             {{ 'Story.Toolbar.COPY.COPY' | translate: {Default: "Copy"} }}
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             [cdkMenuTriggerFor]="copyToMenu">
             {{ 'Story.Toolbar.COPY.COPY_TO' | translate: {Default: "Copy to"} }}...
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="duplicateWidget()">
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
@@ -504,18 +504,18 @@
 
 <ng-template #copyMenu>
     <div cdkMenu displayDensity="cosy">
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="copyWidget()">
             {{ 'Story.Toolbar.COPY.COPY' | translate: {Default: "Copy"} }}
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             [cdkMenuTriggerFor]="copyToMenu">
             {{ 'Story.Toolbar.COPY.COPY_TO' | translate: {Default: "Copy to"} }}...
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="duplicateWidget()">
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>

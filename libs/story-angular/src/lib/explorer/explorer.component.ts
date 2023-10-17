@@ -34,7 +34,7 @@ import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmFormlyChartTypeComponent } from '@metad/story/widgets/analytical-card'
+import { CHARTS, NgmChartPropertyComponent, NgmChartSettingsComponent, NgmFormlyChartTypeComponent, getChartType } from '@metad/story/widgets/analytical-card'
 import { NgmGridSettingsComponent } from '@metad/story/widgets/analytical-grid'
 import {
   C_MEASURES,
@@ -63,7 +63,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { combineLatestWith, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { MatIconModule } from '@angular/material/icon'
 import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { CHARTS, getChartType } from './types'
 import { firstValueFrom } from 'rxjs'
 import { ExplainComponent } from '@metad/story/story'
 

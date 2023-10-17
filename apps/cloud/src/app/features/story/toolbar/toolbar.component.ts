@@ -29,7 +29,6 @@ import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
 import { DeepPartial, IsNilPipe } from '@metad/core'
 import {
-  CHARTS,
   ParametersComponent,
   PreferencesComponent,
   QuerySettingComponent,
@@ -57,6 +56,7 @@ import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
+import { CHARTS } from '@metad/story/widgets/analytical-card'
 
 
 @Component({
@@ -170,7 +170,6 @@ export class StoryToolbarComponent implements OnInit {
     map(([isDirty, saving]) => !isDirty || saving)
   )
   public readonly pointList$ = this.storyService.points$
-  public readonly isWidgetSelected$ = this.storyService.currentWidget$
   public readonly isCopyWidgetSelected$ = this.storyService.copySelectedWidget$
 
   public readonly isMobile$ = this.storyService.isMobile$
@@ -180,6 +179,8 @@ export class StoryToolbarComponent implements OnInit {
 
   public readonly creatingWidget$ = this.toolbarService.creatingWidget$
   public readonly isPanMode$ = this.storyService.isPanMode$
+
+  public readonly isWidgetSelected = computed(() => !this.storyService.currentWidget())
 
   /**
   |--------------------------------------------------------------------------

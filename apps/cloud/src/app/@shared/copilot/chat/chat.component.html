@@ -83,7 +83,19 @@
         </div>
     </ng-container>
 
-    <div class="flex-1"></div>
+    <div class="flex-1 flex flex-col justify-center items-center gap-1">
+        <ng-container *ngIf="!conversations?.length">
+            <div class="text-lg">
+                <span class="text-xl">💡</span>{{ 'PAC.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">/Command</span> + prompt
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">CTRL + Enter</span> send prompt
+            </div>
+        </ng-container>
+    </div>
     
     <!-- <ng-container *ngIf="prompts?.length">
         <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
@@ -112,11 +124,11 @@
     
 </div>
 
-<div class="relative p-2 m-3 border border-gray-200 rounded-lg shadow-sm"
+<div class="relative m-3 border border-gray-200 rounded-lg shadow-sm"
     [class.pac-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    <div *ngIf="answering()" class="absolute w-full h-full t-0 l-0 flex justify-center items-center">
+    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center">
         <button mat-stroked-button displayDensity="cosy" class="rounded-full"
             (click)="$event.stopPropagation();stopGenerating()">
             <div class="copilot-message-stop flex items-center">
@@ -128,8 +140,7 @@
         </button>
     </div>
 
-    <div class="flex flex-col" >
-
+    <div class="flex flex-col p-2" >
         <textarea #userInput matInput class="flex-1" [placeholder]="placeholder"
             [formControl]="promptControl"
             cdkTextareaAutosize

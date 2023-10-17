@@ -69,7 +69,7 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
   }
 }
 
-export function getGridOptionsSchema(Widgets) {
+export function getGridOptionsSchema(Widgets: any) {
   const className = FORMLY_W_1_2
   return AccordionWrappers([
     {
