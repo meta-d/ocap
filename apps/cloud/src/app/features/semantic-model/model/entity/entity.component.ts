@@ -11,6 +11,7 @@ import { AppService } from '../../../../app.service'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { ModelCopilotEngineService } from '../copilot'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -26,6 +27,7 @@ export class ModelEntityComponent implements OnInit {
   private modelService = inject(SemanticModelService)
   private entityService = inject(ModelEntityService)
   public settingsService = inject(NxSettingsPanelService)
+  public copilotEngineService = inject(ModelCopilotEngineService)
   private toastrService = inject(ToastrService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
@@ -77,6 +79,7 @@ export class ModelEntityComponent implements OnInit {
   
   ngOnInit() {
     this.entityService.setSelectedProperty(null)
+    this.copilotEngineService.entityService = this.entityService
   }
 
   drop(event: CdkDragDrop<string[]>) {

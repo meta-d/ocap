@@ -3,6 +3,7 @@ import { MetadFormlyExpansionModule } from '@metad/formly-mat/expansion'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { SemanticModelRoutingModule } from './model-routing.module'
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 
 @NgModule({
   declarations: [],
@@ -16,7 +17,12 @@ import { SemanticModelRoutingModule } from './model-routing.module'
     /**
      * @deprecated use accordion
      */
-    MetadFormlyExpansionModule
+    MetadFormlyExpansionModule,
+
+    LoggerModule.forRoot({
+      level: NgxLoggerLevel.DEBUG,
+      serverLogLevel: NgxLoggerLevel.ERROR
+    }),
   ],
   providers: []
 })

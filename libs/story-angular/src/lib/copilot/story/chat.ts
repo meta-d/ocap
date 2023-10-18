@@ -2,7 +2,7 @@ import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { omitBlank, pick } from '@metad/ocap-core'
 import {
-  CopilotChartConversation,
+  StoryCopilotChatConversation,
   StoryPoint,
   StoryPointType,
   StoryWidget,
@@ -22,7 +22,7 @@ import { discoverStory } from './schema'
  *
  * @param prompt
  */
-export function smartDiscover(copilot: CopilotChartConversation) {
+export function smartDiscover(copilot: StoryCopilotChatConversation) {
   const { copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert. Please provide several analysis theme pages that can be created based on the cube information and the question.
@@ -59,11 +59,11 @@ The cube is ${calcEntityTypePrompt(entityType)}`
     )
 }
 
-export function createStoryPage(copilot: CopilotChartConversation) {
+export function createStoryPage(copilot: StoryCopilotChatConversation) {
   const { dataSource, storyService, response, entityType } = copilot
   const pages = response.arguments.pages
 
-  return concat<CopilotChartConversation[]>(
+  return concat<StoryCopilotChatConversation[]>(
     ...pages.map((page) => {
       const pageKey = uuid()
       const widgets = page.widgets?.map((widget) => {
@@ -102,7 +102,7 @@ export function createStoryPage(copilot: CopilotChartConversation) {
  * @param copilot
  * @returns
  */
-export function discoverPageWidgets(copilot: CopilotChartConversation) {
+export function discoverPageWidgets(copilot: StoryCopilotChatConversation) {
   const { copilotService, storyService, response: page, entityType } = copilot
   return page.widgets?.length
     ? combineLatest(page.widgets.map((widget) => chatStoryWidget(copilot, widget))).pipe(map(() => copilot))
@@ -116,7 +116,7 @@ export function discoverPageWidgets(copilot: CopilotChartConversation) {
  * @param widget
  * @returns
  */
-export function chatStoryWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
+export function chatStoryWidget(copilot: StoryCopilotChatConversation, widget: StoryWidget) {
   const { copilotService, storyService, response: page, entityType } = copilot
 
   const componentType = widget.component

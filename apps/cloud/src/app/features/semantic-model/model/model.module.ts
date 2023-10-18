@@ -39,7 +39,9 @@ import { TranslateModule } from '@ngx-translate/core'
 import { CommonModule } from '@angular/common'
 import { LetDirective } from '@ngrx/component'
 import { CdkMenuModule } from '@angular/cdk/menu'
+import { registerModelCommands } from './copilot'
 
+registerModelCommands()
 
 @NgModule({
   declarations: [

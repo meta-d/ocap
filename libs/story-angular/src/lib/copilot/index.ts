@@ -1,16 +1,17 @@
 export * from './control/index'
 
-import { registerCommand } from '@metad/story/core'
+import { registerCommand } from '@metad/copilot'
+import { StoryCopilotCommandArea } from '@metad/story/core'
+import { ChartCommand } from './chart'
 import { ControlCommand } from './control/index'
 import { GridCommand } from './grid'
-import { ChartCommand } from './chart'
 import { StoryCommand } from './story'
 import { StyleCommand } from './style'
 
 export function registerStoryCommands() {
-    registerCommand(ControlCommand)
-    registerCommand(GridCommand)
-    registerCommand(ChartCommand)
-    registerCommand(StoryCommand)
-    registerCommand(StyleCommand)
+  registerCommand(StoryCopilotCommandArea, ControlCommand)
+  registerCommand(StoryCopilotCommandArea, GridCommand)
+  registerCommand(StoryCopilotCommandArea, ChartCommand)
+  registerCommand(StoryCopilotCommandArea, StoryCommand)
+  registerCommand(StoryCopilotCommandArea, StyleCommand)
 }

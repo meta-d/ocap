@@ -1,22 +1,15 @@
 import { NgmCopilotService } from '@metad/core'
 import { EntityType } from '@metad/ocap-core'
+import { CopilotChatConversation } from '@metad/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { NxStoryService } from '../story.service'
 
-export interface CopilotChartConversation {
+export interface StoryCopilotChatConversation extends CopilotChatConversation {
   dataSource: string
   storyService: NxStoryService
   copilotService: NgmCopilotService
-  command: string
-  prompt: string
-  options: any
   entityType: EntityType
-  response?: { arguments: any } | any
-  error?: string | Error
   logger?: NGXLogger
 }
 
-export const CopilotDefaultOptions = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2
-}
+export const StoryCopilotCommandArea = 'Story'

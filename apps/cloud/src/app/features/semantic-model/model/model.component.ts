@@ -43,12 +43,12 @@ import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
-import { ModelCopilotEngineService } from './model-copilot.service'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
 import { IsDirty } from '@metad/core'
+import { ModelCopilotEngineService } from './copilot'
 
 
 @Component({

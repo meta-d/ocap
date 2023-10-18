@@ -1,3 +1,4 @@
+import { CopilotCommand } from "@metad/copilot";
 import { editChartWidgetCommand } from "./chat";
 
 export const ChartCommand = {
@@ -7,4 +8,4 @@ export const ChartCommand = {
       'change to doughnut chart with rounded corner item'
     ],
     processor: editChartWidgetCommand
-}
+} as CopilotCommand

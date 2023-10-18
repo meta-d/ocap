@@ -1,3 +1,4 @@
+import { CopilotCommand } from "@metad/copilot";
 import { editGridWidgetCommand } from "./chat";
 
 export const GridCommand = {
@@ -7,4 +8,4 @@ export const GridCommand = {
       'add dimension "XXXX" to grid',
     ],
     processor: editGridWidgetCommand
-}
+} as CopilotCommand

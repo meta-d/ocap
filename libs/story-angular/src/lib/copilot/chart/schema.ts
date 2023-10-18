@@ -1,3 +1,4 @@
+import { CopilotDefaultOptions } from '@metad/copilot'
 import { DimensionSchema, MeasureSchema } from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, flatten, omit } from '@metad/ocap-core'
 import { fixDimension } from '@metad/story/core'
@@ -74,8 +75,7 @@ export const ChartWidgetSchema = z.object({
 })
 
 export const editWidgetChart = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
+  ...CopilotDefaultOptions,
   functions: [
     {
       name: 'edit-story-widget-chart',

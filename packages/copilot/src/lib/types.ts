@@ -71,3 +71,41 @@ export function getFunctionCall(message: ChatCompletionRequestMessage, name?: st
     arguments: JSON5.parse(message.function_call.arguments)
   }
 }
+
+export function getCommandPrompt(prompt: string) {
+  // a regex match `/command `
+  const match = prompt.match(/\/([a-zA-Z\-]*)\s*/i)
+  const command = match?.[1]
+
+  return {
+    command,
+    prompt: prompt.replace(`/${command}`, '').trim()
+  }
+}
+
+export interface CopilotChatConversation {
+  command: string
+  prompt: string
+  options: any
+  response?: { arguments: any } | any
+  error?: string | Error
+
+  logger?: {
+    trace(message?: any | (() => any), ...additional: any[]): void;
+    debug(message?: any | (() => any), ...additional: any[]): void;
+    info(message?: any | (() => any), ...additional: any[]): void;
+    log(message?: any | (() => any), ...additional: any[]): void;
+    warn(message?: any | (() => any), ...additional: any[]): void;
+    error(message?: any | (() => any), ...additional: any[]): void;
+    fatal(message?: any | (() => any), ...additional: any[]): void;
+  }
+}
+
+export const CopilotDefaultOptions = {
+  model: 'gpt-3.5-turbo-0613',
+  temperature: 0.2
+}
+
+export function nonNullable<T>(value: T): value is NonNullable<T> {
+  return value != null
+}

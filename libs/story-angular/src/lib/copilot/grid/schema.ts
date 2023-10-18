@@ -1,3 +1,4 @@
+import { CopilotDefaultOptions } from '@metad/copilot'
 import { DimensionSchema } from '@metad/core'
 import { AnalyticsAnnotation, EntityType } from '@metad/ocap-core'
 import { fixDimension } from '@metad/story/core'
@@ -43,8 +44,7 @@ export const GridWidgetSchema = z.object({
 })
 
 export const editWidgetGrid = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
+  ...CopilotDefaultOptions,
   functions: [
     {
       name: 'edit-story-widget-grid',

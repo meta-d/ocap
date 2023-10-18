@@ -200,13 +200,13 @@
             {{ 'PAC.Copilot.Options' | translate: {Default: 'Options'} }}
         </div>
 
-        <section *ngIf="systemPrompt" [matTooltip]="systemPrompt">
+        <section *ngIf="systemPrompt" [matTooltip]="systemPrompt" matTooltipPosition="above">
             <mat-checkbox [(ngModel)]="useSystemPrompt">
                 {{ 'PAC.Copilot.UseSystemPrompt' | translate: {Default: 'Use System Prompt'} }}
             </mat-checkbox>
         </section>
 
-        <div class="py-2 font-notoColorEmoji flex justify-between">
+        <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
             <label class="flex-1">
                 {{ 'PAC.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
             </label>
@@ -218,7 +218,9 @@
 
         <ngm-search class="w-full" [formControl]="searchModel"></ngm-search>
         <mat-selection-list class="flex flex-col gap-2 max-h-[120px] overflow-auto"
-            [(ngModel)]="model" [multiple]="false">
+            [(ngModel)]="selectedModel"
+            [multiple]="false"
+            (ngModelChange)="changeSelectedModel($event)">
             <mat-list-option *ngFor="let model of models()" [value]="model.id">
                 {{model.label}}
             </mat-list-option>

@@ -39,6 +39,7 @@ import {
 import { SemanticModelService } from '../model.service'
 import { ModelCubeState, ModelDesignerType, MODEL_TYPE, PACModelState, EntityPreview } from '../types'
 import { newDimensionFromColumn } from './types'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @UntilDestroy({ checkProperties: true })
 @Injectable()
@@ -62,6 +63,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     untilDestroyed(this),
     shareReplay(1)
   )
+  public readonly entityType = toSignal(this.entityType$)
+  
   public readonly originalEntityType$ = this.entityName$.pipe(
     switchMap((name) => this.modelService.selectOriginalEntityType(name)),
     untilDestroyed(this),

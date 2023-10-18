@@ -1,8 +1,9 @@
 import { DimensionSchema, MeasureSchema } from '@metad/core'
-import { CopilotDefaultOptions, WidgetComponentType } from '@metad/story/core'
+import { WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ChartSchema } from '../chart/schema'
+import { CopilotDefaultOptions } from '@metad/copilot'
 
 export const StoryPagesSchema = z.object({
   pages: z.array(

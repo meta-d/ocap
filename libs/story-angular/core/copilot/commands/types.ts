@@ -9,15 +9,6 @@ import {
   getEntityProperty2,
   wrapBrackets
 } from '@metad/ocap-core'
-import { Observable } from 'rxjs'
-import { CopilotChartConversation } from '../types'
-
-export interface CopilotCommand {
-  name: string
-  description: string
-  examples?: string[]
-  processor: (copilot: CopilotChartConversation) => Observable<CopilotChartConversation>
-}
 
 export function fixDimension(item: Dimension, entityType: EntityType) {
   if ((<Measure>item).measure) {

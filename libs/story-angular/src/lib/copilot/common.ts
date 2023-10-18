@@ -1,6 +1,6 @@
-import { CopilotChartConversation } from "@metad/story/core";
+import { StoryCopilotChatConversation } from "@metad/story/core";
 
-export function logResult(copilot: CopilotChartConversation) {
+export function logResult(copilot: StoryCopilotChatConversation) {
     const { logger, prompt } = copilot
     logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
 }

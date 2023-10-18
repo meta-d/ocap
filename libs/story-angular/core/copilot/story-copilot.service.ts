@@ -7,6 +7,8 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotChatResponseChoice,
   CopilotEngine,
+  getCommandPrompt,
+  CopilotCommands$, getCommand, selectCommands, selectCommandExamples, SystemCommands
 } from '@metad/copilot'
 import { getErrorMessage, NgmCopilotService } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
@@ -16,8 +18,7 @@ import { BehaviorSubject, catchError, combineLatest, map, Observable, of, switch
 import { NxStoryService } from '../story.service'
 import { I18N_STORY_NAMESPACE } from '../types'
 import { pick } from '@metad/ocap-core'
-import { CopilotChartConversation } from './types'
-import { CopilotCommands$, getCommand } from './commands/index'
+import { StoryCopilotChatConversation, StoryCopilotCommandArea } from './types'
 
 
 @Injectable()
@@ -29,25 +30,16 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
   currentWidgetCopilot: CopilotEngine
 
-  private readonly _prompts = toSignal(CopilotCommands$.pipe(
+  private readonly _prompts = toSignal(selectCommandExamples(StoryCopilotCommandArea).pipe(
     map((CopilotCommands) => {
-      return Object.keys(CopilotCommands).reduce((acc, key) => {
-        console.log(key, CopilotCommands[key])
-        CopilotCommands[key].examples?.forEach((example) => {
-          acc.push({
-            command: CopilotCommands[key].name,
-            prompt: example
-          })
-        })
-        return acc
-      }, []).map(({command, prompt}) => {
+      return CopilotCommands.map(({command, prompt}) => {
         return this.translateService.stream(`${I18N_STORY_NAMESPACE}.Copilot.Examples.${prompt}`, {Default: prompt}).pipe(
           map((prompt) => `/${command} ${prompt}`)
         )
       })
     }),
     switchMap((i18nCommands) => combineLatest(i18nCommands)),
-    map((commands) => [...commands, '/clear'])
+    map((commands) => [...commands, ...SystemCommands])
   ), {initialValue: []})
   
   // toSignal(
@@ -214,24 +206,23 @@ export class StoryCopilotEngineService implements CopilotEngine {
     this.currentWidgetCopilot?.process({ prompt }, options)
   }
 
-  process({ prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
-    this.logger.debug(`process ask: ${prompt}`)
-    // a regex match `/command `
-    const match = prompt.match(/^\/([a-zA-Z\-]*)\s*/i)
-    const command = match?.[1]
+  process({ prompt: _prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
+    this.logger.debug(`process ask: ${_prompt}`)
+    
+    const { command, prompt } = getCommandPrompt(_prompt)
 
-    if (getCommand(command)) {
-      return getCommand(command).processor({
+    if (getCommand(StoryCopilotCommandArea, command)) {
+      return getCommand(StoryCopilotCommandArea, command).processor({
         dataSource: this.dataSource(),
         storyService: this.storyService,
         copilotService: this.copilotService,
         command,
-        prompt: prompt.replace(`/${command}`, '').trim(),
+        prompt,
         entityType: this.entityType(),
         options: pick(this.aiOptions, 'model', 'temperature'),
         logger: this.logger
-      }).pipe(
-        map((copilot: Partial<CopilotChartConversation>) => {
+      } as StoryCopilotChatConversation).pipe(
+        map((copilot: Partial<StoryCopilotChatConversation>) => {
           return `✅${this.getTranslation(`${I18N_STORY_NAMESPACE}.Copilot.InstructionExecutionComplete`, {Default: 'Instruction execution complete'})}`
         }),
         catchError((err) => {

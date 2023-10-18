@@ -292,6 +292,9 @@ export class CopilotChatComponent {
       this.openaiOptions.model = value
     }
   }
+
+  selectedModel = [this.aiOptions.model]
+
   get temperature() {
     return this.aiOptions.temperature
   }
@@ -351,9 +354,11 @@ export class CopilotChatComponent {
   ])
   searchModel = new FormControl<string>('')
   public readonly models = toSignal(combineLatest([
-    this._models$,
-    this.searchModel.valueChanges.pipe(startWith(''))
-  ]).pipe(map(([_models, text]) => text ? _models.filter((item) => item.label.includes(text)) : _models)))
+      this._models$,
+      this.searchModel.valueChanges.pipe(startWith(''))
+    ]).pipe(map(([_models, text]) => text ? _models.filter((item) => item.label.includes(text)) : _models)),
+    {initialValue: []}
+  )
 
   public readonly copilotNotEnabled = toSignal(this.copilotService.notEnabled$)
 
@@ -409,6 +414,10 @@ export class CopilotChatComponent {
     this.copilotService.getModels().subscribe((res) => {
       this._models$.next(res.data.map((model) => ({id: model.id, label: model.id})))
     })
+  }
+
+  changeSelectedModel(values) {
+    this.model = values[0]
   }
 
   async askPredefinedPrompt(prompt: string) {

@@ -1,11 +1,11 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
-import { CopilotChartConversation, StoryWidget, WidgetComponentType, fixDimension } from '@metad/story/core'
+import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType, fixDimension } from '@metad/story/core'
 import { map, of, switchMap } from 'rxjs'
 import { editWidgetControl } from './schema'
 
-export function chatControlWidget(copilot: CopilotChartConversation, widget?: StoryWidget) {
+export function chatControlWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert, please edit or new the input control widget configuration based on the cube information and the question.
@@ -42,7 +42,7 @@ Original widget is ${JSON.stringify(widget)}`
     )
 }
 
-export function editControlWidgetCommand(copilot: CopilotChartConversation) {
+export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) {
   const { logger, storyService, entityType } = copilot
 
   const widget = storyService.currentWidget()

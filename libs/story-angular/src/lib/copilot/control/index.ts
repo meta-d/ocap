@@ -1,3 +1,4 @@
+import { CopilotCommand } from '@metad/copilot'
 import { editControlWidgetCommand } from './chat'
 export * from './schema'
 
@@ -8,4 +9,4 @@ export const ControlCommand = {
     'add input control for dimension "XXXX"',
   ],
   processor: editControlWidgetCommand
-}
+} as CopilotCommand

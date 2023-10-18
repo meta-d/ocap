@@ -1,11 +1,11 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
-import { CopilotChartConversation, StoryWidget } from '@metad/story/core'
+import { StoryCopilotChatConversation, StoryWidget } from '@metad/story/core'
 import { map, of, switchMap } from 'rxjs'
 import { chartAnnotationCheck, editWidgetChart } from './schema'
 
-export function chatChartWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
+export function chatChartWidget(copilot: StoryCopilotChatConversation, widget: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert, please edit the chart widget configuration based on the cube information and the question.
@@ -42,7 +42,7 @@ Original widget is ${JSON.stringify(widget)}`
     )
 }
 
-export function editChartWidgetCommand(copilot: CopilotChartConversation) {
+export function editChartWidgetCommand(copilot: StoryCopilotChatConversation) {
   const { logger, storyService } = copilot
 
   const widget = storyService.currentWidget()
