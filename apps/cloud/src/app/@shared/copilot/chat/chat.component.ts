@@ -31,7 +31,7 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { CreateChatCompletionRequest } from 'openai'
-import { delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
+import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
 import { CopilotService, getErrorMessage, Store } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
@@ -39,6 +39,7 @@ import { UserAvatarComponent } from '../../user'
 import { CopilotEnableComponent } from '../enable/enable.component'
 import { MatAutocomplete, MatAutocompleteActivatedEvent } from '@angular/material/autocomplete'
 import { CopilotChatTokenComponent } from '../token/token.component'
+import { NgmSearchComponent } from '@metad/ocap-angular/common'
 
 
 // /**
@@ -172,7 +173,8 @@ import { CopilotChatTokenComponent } from '../token/token.component'
     NxTableModule,
 
     CopilotChatTokenComponent,
-    CopilotEnableComponent
+    CopilotEnableComponent,
+    NgmSearchComponent
   ],
   host: {
     class: 'pac-copilot-chat'
@@ -333,7 +335,7 @@ export class CopilotChatComponent {
   askSubscriber: Subscription
 
   // Available models
-  models = [
+  private readonly _models$ = new BehaviorSubject<{ id: string; label: string }[]>([
     {
       id: 'gpt-3.5-turbo',
       label: 'gpt-3.5-turbo'
@@ -346,7 +348,12 @@ export class CopilotChatComponent {
       id: 'gpt-4-32k',
       label: 'gpt-4-32k'
     },
-  ]
+  ])
+  searchModel = new FormControl<string>('')
+  public readonly models = toSignal(combineLatest([
+    this._models$,
+    this.searchModel.valueChanges.pipe(startWith(''))
+  ]).pipe(map(([_models, text]) => text ? _models.filter((item) => item.label.includes(text)) : _models)))
 
   public readonly copilotNotEnabled = toSignal(this.copilotService.notEnabled$)
 
@@ -400,7 +407,7 @@ export class CopilotChatComponent {
 
   refreshModels() {
     this.copilotService.getModels().subscribe((res) => {
-      this.models = res.data.map((model) => ({id: model.id, label: model.id}))
+      this._models$.next(res.data.map((model) => ({id: model.id, label: model.id})))
     })
   }
 
@@ -475,6 +482,7 @@ export class CopilotChatComponent {
             this.scrollBottom()
           },
           error: (err) => {
+            console.error(err)
             let conversations = [...this.conversations]
             conversations[assistantIndex] = { ...conversations[assistantIndex] }
             conversations[assistantIndex].content = null
@@ -663,6 +671,8 @@ export class CopilotChatComponent {
   }
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
+
+    
     if (event.ctrlKey && event.key === 'Enter') {
       this.askCopilotStream(this.prompt)
     }
@@ -676,7 +686,7 @@ export class CopilotChatComponent {
       }
     }
 
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    if (!autocomplete.isOpen && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
       event.preventDefault()
       
       const historyQuestions = this.historyQuestions()

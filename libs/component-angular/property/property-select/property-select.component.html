@@ -42,7 +42,7 @@
               <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
           </button>
     
-          <button mat-icon-button *ngIf="members$ | async" [displayDensity]="displayDensity"
+          <button mat-icon-button *ngIf="membersSignal()" [displayDensity]="displayDensity"
             [matMenuTriggerFor]="membersMenu"
             #mt="matMenuTrigger"
             [class.active]="mt.menuOpen"
@@ -129,7 +129,8 @@
   </button>
 
   <button mat-menu-item>
-    <ngm-input label="{{ 'COMPONENTS.PROPERTY.Caption' | translate: {Default: 'Caption'} }}" class="w-full flex-row" style="flex-direction: row;"
+    <ngm-input class="w-full flex-row" style="flex-direction: row; align-items: center;"
+      label="{{ 'COMPONENTS.PROPERTY.Caption' | translate: {Default: 'Caption'} }}"
       [(ngModel)]="caption"
       (click)="$event.stopPropagation();"
     ></ngm-input>
@@ -275,7 +276,7 @@
 </mat-radio-group>
 
 <mat-menu #membersMenu="matMenu" class="ngm-density__compact">
-  <button mat-menu-item class="w-full" disableRipple *ngFor="let property of members$ | async; trackBy: trackByName"
+  <button mat-menu-item class="w-full" disableRipple *ngFor="let property of membersSignal(); trackBy: trackByName"
     (click)="$event.stopPropagation();">
     <mat-checkbox class="ngm-checkbox__property" [checked]="$any(property).selected" (change)="toggleMember(property.name, $event.checked)">
       <ngm-entity-property class="w-full" hiddenIcon [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto"></ngm-entity-property>

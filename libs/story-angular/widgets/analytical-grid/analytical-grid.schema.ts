@@ -69,6 +69,12 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
   }
 }
 
+/**
+ * {@link WidgetAnalyticalGridOptions}
+ * 
+ * @param Widgets i18n Widgets in Story
+ * @returns 
+ */
 export function getGridOptionsSchema(Widgets: any) {
   const className = FORMLY_W_1_2
   return AccordionWrappers([

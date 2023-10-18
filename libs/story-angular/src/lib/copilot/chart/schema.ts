@@ -1,9 +1,9 @@
 import { DimensionSchema, MeasureSchema } from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, flatten, omit } from '@metad/ocap-core'
 import { fixDimension } from '@metad/story/core'
+import { CHARTS, ChartMainTypeEnum, getChartType } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { CHARTS, ChartMainTypeEnum, getChartType } from '../chart-type/types'
 
 const ChartTypes = flatten(CHARTS.map((g) => g.charts.map((c) => c.label))) as any
 

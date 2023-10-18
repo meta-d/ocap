@@ -39,7 +39,7 @@ const Template: Story<any> = (args: MetadFormlyAccordionComponent) => ({
 function fieldGroup() {
   return [
     {
-      className: 'metad-formly__col col-6',
+      className: 'ngm-formly__col col-6',
       key: 'show',
       type: 'checkbox',
       templateOptions: {
@@ -47,7 +47,7 @@ function fieldGroup() {
       },
     },
     {
-      className: 'metad-formly__col col-6',
+      className: 'ngm-formly__col col-6',
       key: 'type',
       type: 'select',
       templateOptions: {

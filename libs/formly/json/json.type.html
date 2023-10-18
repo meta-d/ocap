@@ -1,4 +1,4 @@
-<label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to?.label}}</label>
+<label class="px-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to?.label}}</label>
   
 <textarea matInput [formControl]="fControl" [placeholder]="to?.placeholder"
     [formlyAttributes]="field"
@@ -14,6 +14,8 @@
     [class.cdk-textarea-autosize]="to.autosize"
 ></textarea>
   
-<mat-error *ngIf="fControl.invalid">
-    <span *ngFor="let item of fControl.errors | keyvalue">{{item.value.message}}</span>
+<mat-error class="text-xs h-4">
+    <ng-container *ngIf="fControl.invalid">
+        <span *ngFor="let item of fControl.errors | keyvalue">{{item.value.message}}</span>
+    </ng-container>
 </mat-error>

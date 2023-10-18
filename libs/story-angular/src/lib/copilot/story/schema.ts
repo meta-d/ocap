@@ -1,9 +1,8 @@
+import { DimensionSchema, MeasureSchema } from '@metad/core'
+import { CopilotDefaultOptions, WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { DimensionSchema, MeasureSchema } from '@metad/core'
-import { WidgetComponentType } from '../types'
-import { ChartSchema } from './chart-schema'
-
+import { ChartSchema } from '../chart/schema'
 
 export const StoryPagesSchema = z.object({
   pages: z.array(
@@ -26,8 +25,9 @@ export const StoryPagesSchema = z.object({
               WidgetComponentType.AnalyticalGrid,
               WidgetComponentType.InputControl
             ])
-            .describe('The component type of widget'),
-          }))
+            .describe('The component type of widget')
+        })
+      )
     })
   )
 })
@@ -53,13 +53,16 @@ export const StoryPageSchema = z.object({
             WidgetComponentType.InputControl
           ])
           .describe('The component type of widget'),
-        
+
         dataSettings: z.object({
           chartAnnotation: ChartSchema.optional().describe('Chart settings for AnalyticalCard widget'),
-          analytics: z.object({
-            rows: z.array(DimensionSchema),
-            columns: z.array(DimensionSchema),
-          }).optional().describe('Grid settings for AnalyticalGrid widget'),
+          analytics: z
+            .object({
+              rows: z.array(DimensionSchema),
+              columns: z.array(DimensionSchema)
+            })
+            .optional()
+            .describe('Grid settings for AnalyticalGrid widget')
         })
       })
     )
@@ -68,7 +71,7 @@ export const StoryPageSchema = z.object({
 
 export const StoryWidgetGridSchema = z.object({
   rows: z.array(DimensionSchema),
-  columns: z.array(MeasureSchema),
+  columns: z.array(MeasureSchema)
 })
 
 export const StoryWidgetSchema = z.object({
@@ -81,23 +84,20 @@ export const StoryWidgetSchema = z.object({
   }),
 
   component: z
-    .enum([
-      WidgetComponentType.AnalyticalCard,
-      WidgetComponentType.AnalyticalGrid,
-      WidgetComponentType.InputControl
-    ])
+    .enum([WidgetComponentType.AnalyticalCard, WidgetComponentType.AnalyticalGrid, WidgetComponentType.InputControl])
     .describe('The component type of widget'),
-  
+
   chartAnnotation: ChartSchema.optional().describe('Chart settings when component type of widget is AnalyticalCard'),
-  analytics: StoryWidgetGridSchema.optional().describe('Grid settings when component type of widget is AnalyticalGrid;'),
+  analytics: StoryWidgetGridSchema.optional().describe(
+    'Grid settings when component type of widget is AnalyticalGrid;'
+  ),
   gridSettings: z.object({
-    showToolbar: z.boolean().default(true).optional().describe('Show toolbar in AnalyticalGrid widget'),
+    showToolbar: z.boolean().default(true).optional().describe('Show toolbar in AnalyticalGrid widget')
   })
 })
 
 export const discoverStory = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
+  ...CopilotDefaultOptions,
   functions: [
     {
       name: 'discover-story',
@@ -109,8 +109,7 @@ export const discoverStory = {
 }
 
 export const discoverStoryPage = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
+  ...CopilotDefaultOptions,
   functions: [
     {
       name: 'discover-story-page',
@@ -122,8 +121,7 @@ export const discoverStoryPage = {
 }
 
 export const discoverStoryWidget = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
+  ...CopilotDefaultOptions,
   functions: [
     {
       name: 'discover-story-widget',
@@ -132,30 +130,4 @@ export const discoverStoryWidget = {
     }
   ],
   function_call: { name: 'discover-story-widget' }
-}
-
-export const discoverWidgetChart = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
-  functions: [
-    {
-      name: 'discover-story-widget-chart',
-      description: 'Should always be used to properly format output',
-      parameters: zodToJsonSchema(ChartSchema)
-    }
-  ],
-  function_call: { name: 'discover-story-widget-chart' }
-}
-
-export const discoverWidgetGrid = {
-  model: 'gpt-3.5-turbo-0613',
-  temperature: 0.2,
-  functions: [
-    {
-      name: 'discover-story-widget-grid',
-      description: 'Should always be used to properly format output',
-      parameters: zodToJsonSchema(StoryWidgetGridSchema)
-    }
-  ],
-  function_call: { name: 'discover-story-widget-grid' }
 }

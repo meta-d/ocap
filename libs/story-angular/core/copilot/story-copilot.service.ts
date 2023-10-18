@@ -8,11 +8,11 @@ import {
   CopilotChatResponseChoice,
   CopilotEngine,
 } from '@metad/copilot'
-import { NgmCopilotService } from '@metad/core'
+import { getErrorMessage, NgmCopilotService } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import JSON5 from 'json5'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, map, Observable, of, switchMap } from 'rxjs'
+import { BehaviorSubject, catchError, combineLatest, map, Observable, of, switchMap } from 'rxjs'
 import { NxStoryService } from '../story.service'
 import { I18N_STORY_NAMESPACE } from '../types'
 import { pick } from '@metad/ocap-core'
@@ -46,7 +46,8 @@ export class StoryCopilotEngineService implements CopilotEngine {
         )
       })
     }),
-    switchMap((i18nCommands) => combineLatest(i18nCommands))
+    switchMap((i18nCommands) => combineLatest(i18nCommands)),
+    map((commands) => [...commands, '/clear'])
   ), {initialValue: []})
   
   // toSignal(
@@ -207,7 +208,6 @@ export class StoryCopilotEngineService implements CopilotEngine {
 
   preprocess(prompt: string) {
     this.logger.debug(`Preprocess - Classify the problem: ${prompt}`)
-    
   }
 
   async dataAnalysis(prompt: string, options?) {
@@ -225,13 +225,18 @@ export class StoryCopilotEngineService implements CopilotEngine {
         dataSource: this.dataSource(),
         storyService: this.storyService,
         copilotService: this.copilotService,
-        prompt,
+        command,
+        prompt: prompt.replace(`/${command}`, '').trim(),
         entityType: this.entityType(),
         options: pick(this.aiOptions, 'model', 'temperature'),
         logger: this.logger
       }).pipe(
         map((copilot: Partial<CopilotChartConversation>) => {
-          return copilot.error ? '❌指令执行出错：' + copilot.error : '✅指令执行完成'
+          return `✅${this.getTranslation(`${I18N_STORY_NAMESPACE}.Copilot.InstructionExecutionComplete`, {Default: 'Instruction execution complete'})}`
+        }),
+        catchError((err) => {
+          console.error(err)
+          return of(`❌${this.getTranslation(`${I18N_STORY_NAMESPACE}.Copilot.InstructionExecutionError`, {Default: 'Instruction execution error'})}: ` + getErrorMessage(err))
         })
       )
     } else if (command === 'clear') {
@@ -286,24 +291,24 @@ export class StoryCopilotEngineService implements CopilotEngine {
           case 'WidgetStyle':
             this.storyService.updateWidgetStyles(operation.value)
             break
-          case 'ChartSeriesStyle':
-            this.storyService.updateStoryWidgetChartOptions('seriesStyle', operation.value)
-            break
-          case 'ChartCategoryAxis':
-            this.storyService.updateStoryWidgetChartOptions('categoryAxis', operation.value)
-            break
-          case 'ChartValueAxis':
-            this.storyService.updateStoryWidgetChartOptions('valueAxis', operation.value)
-            break
-          case 'ChartLegend':
-            this.storyService.updateStoryWidgetChartOptions('legend', operation.value)
-            break
-          case 'ChartTitle':
-            this.storyService.updateStoryWidgetChartOptions('title', operation.value)
-            break
-          case 'ChartGrid':
-            this.storyService.updateStoryWidgetChartOptions('grid', operation.value)
-            break
+          // case 'ChartSeriesStyle':
+          //   this.storyService.updateStoryWidgetChartOptions('seriesStyle', operation.value)
+          //   break
+          // case 'ChartCategoryAxis':
+          //   this.storyService.updateStoryWidgetChartOptions('categoryAxis', operation.value)
+          //   break
+          // case 'ChartValueAxis':
+          //   this.storyService.updateStoryWidgetChartOptions('valueAxis', operation.value)
+          //   break
+          // case 'ChartLegend':
+          //   this.storyService.updateStoryWidgetChartOptions('legend', operation.value)
+          //   break
+          // case 'ChartTitle':
+          //   this.storyService.updateStoryWidgetChartOptions('title', operation.value)
+          //   break
+          // case 'ChartGrid':
+          //   this.storyService.updateStoryWidgetChartOptions('grid', operation.value)
+          //   break
         }
 
         messages.push({
@@ -327,5 +332,9 @@ export class StoryCopilotEngineService implements CopilotEngine {
     })
 
     return of(messages)
+  }
+
+  getTranslation(key: string, params) {
+    return this.translateService.instant(key, params)
   }
 }

@@ -1,6 +1,9 @@
 <ngm-select class="flex-1" searchable valueKey="key"
-    [label]="label" [placeholder]="placeholder"
-    [formControl]="formControl" [selectOptions]="measureOptions()">
+    [label]="label"
+    [placeholder]="placeholder"
+    [formControl]="formControl"
+    [selectOptions]="measureOptions()">
+    
     <ng-template ngmOptionContent let-property="value" let-highlight="highlight">
         <ngm-entity-property class="flex-1" [property]="property" [highlight]="highlight"></ngm-entity-property>
     </ng-template>

@@ -135,6 +135,9 @@ export function componentStyling(styling: ComponentStyling) {
   } else if(styling.backgroundImage) {
     componentStyles.backgroundImage = styling.backgroundImage
   }
+  if (styling.background) {
+    componentStyles.background = styling.background
+  }
   if (componentStyles.backgroundImage) {
     componentStyles.backgroundSize = styling.backgroundSize ?? 'cover'
     componentStyles.backgroundRepeat = styling.backgroundRepeat ?? 'repeat'

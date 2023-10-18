@@ -2,9 +2,9 @@ import { Component, HostBinding } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
 
 @Component({
-  selector: 'metad-formly-panel-wrapper',
+  selector: 'ngm-formly-panel-wrapper',
   template: `
-<div class="metad-formly__title">{{ to?.label }}</div>
+<div *ngIf="props?.label" class="ngm-formly__title">{{ props.label }}</div>
 <div class="card-body">
   <ng-container #fieldComponent></ng-container>
 </div>
@@ -17,18 +17,18 @@ flex: 1;
 max-width: 100%;
 margin-top: 1rem;
 }
-:host.metad-formly__panel-padding {
+:host.ngm-formly__panel-padding {
   padding: 0 1.5rem;
 }`
   ],
   host: {
-    class: 'metad-formly__panel-wrapper'
+    class: 'ngm-formly__panel-wrapper'
   }
 })
 export class MetadFormlyPanelComponent extends FieldWrapper {
-  @HostBinding('class.metad-formly__nested-area') nestedArea = true
-  @HostBinding('class.metad-formly__panel-padding')
+  @HostBinding('class.ngm-formly__nested-area') nestedArea = true
+  @HostBinding('class.ngm-formly__panel-padding')
   get isPadding() {
-    return this.to?.padding
+    return this.props?.padding
   }
 }

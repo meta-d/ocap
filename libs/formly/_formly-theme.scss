@@ -20,40 +20,40 @@
   @include table-theme.color($config-or-theme);
   @include select.color($config-or-theme);
   
-  .metad-formly-array {
-    display: block;
-    margin: 1rem 0;
+  .ngm-formly-array {
+    // display: block;
+    // margin: 1rem 0;
 
-    .metad-formly__array-row {
-      @include removeable($foreground);
-    }
+    // .ngm-formly__array-row {
+    //   @include removeable($foreground);
+    // }
 
-    & > .mat-button {
-      display: flex;
-      align-items: center;
-      border: 1px dashed mat.get-color-from-palette($primary, 300);
-      height: 30px;
-      line-height: 30px;
-    }
+    // & > .mat-button {
+    //   display: flex;
+    //   align-items: center;
+    //   border: 1px dashed mat.get-color-from-palette($primary, 300);
+    //   height: 30px;
+    //   line-height: 30px;
+    // }
 
-    .metad-formly-cdk__drag-placeholder {
-      display: block;
-      height: 60px;
-      width: 100%;
-      border: 2px dashed mat.get-color-from-palette($foreground, divider);
-      background-color: mat.get-color-from-palette($foreground, divider);
-    }
+    // .ngm-formly-cdk__drag-placeholder {
+    //   display: block;
+    //   height: 60px;
+    //   width: 100%;
+    //   border: 2px dashed mat.get-color-from-palette($foreground, divider);
+    //   background-color: mat.get-color-from-palette($foreground, divider);
+    // }
 
-    .metad-formly__remove {
-      color: mat.get-color-from-palette($warn, 500);
-    }
+    // .ngm-formly__remove {
+    //   color: mat.get-color-from-palette($warn, 500);
+    // }
   }
 
-  .metad-formly-expansion__panel-row.removeable {
+  .ngm-formly-expansion__panel-row.removeable {
     @include removeable($foreground);
   }
 
-  .metad-formly__title {
+  .ngm-formly__title {
     font-size: 1em;
     margin: 5px 0;
   }
@@ -193,7 +193,6 @@
   .mat-select-panel-wrap {
     .mat-select-panel {
       max-height: 450px;
-      // max-width: 500px;
     }
   }
   
@@ -278,7 +277,7 @@
     }
   }
   
-  .metad-formly-accordion, .metad-formly-expansion {
+  .ngm-formly-accordion, .ngm-formly-expansion {
     .mat-expansion-panel-header-title {
       @apply text-base;
     }
@@ -286,10 +285,10 @@
       flex-grow: 1;
     }
 
-    .metad-formly-accordion, .metad-formly-expansion {
-      display: block;
-      margin: 0 -18px;
-    }
+    // .ngm-formly-accordion, .ngm-formly-expansion {
+    //   display: block;
+    //   margin: 0 -18px;
+    // }
   }
 }
 

@@ -50,6 +50,7 @@ export interface ComponentStyling {
   padding?: number
   borderRadius?: number
   backgroundColor: string;
+  background?: string
   backgroundImage?: string
   backgroundImageObj: IScreenshot
   backgroundSize?: string
@@ -94,8 +95,6 @@ export enum PageHeaderLabelEnum {
 export interface StoryPreferences {
   storyStyling?: ComponentStyling
   story?: {
-    // width?: number
-    // height?: number
     tabBar?: 'fixed' | 'point' | 'hidden' | null
     pageHeaderPosition?: MatTabHeaderPosition
     pageHeaderStretchTabs?: boolean
@@ -134,7 +133,16 @@ export interface StoryPreferences {
   }
   card?: {
     styling?: ComponentStyling
-  }
+  },
+  table?: {
+    styling?: ComponentStyling
+  },
+  text?: {
+    styling?: ComponentStyling
+  },
+  control?: {
+    styling?: ComponentStyling
+  },
   //
   options?: any
 }

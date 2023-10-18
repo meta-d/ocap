@@ -1,11 +1,21 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
-import { omitBlank } from '@metad/ocap-core'
-import { combineLatest, concat, from, of } from 'rxjs'
+import { omitBlank, pick } from '@metad/ocap-core'
+import {
+  CopilotChartConversation,
+  StoryPoint,
+  StoryPointType,
+  StoryWidget,
+  WidgetComponentType,
+  fixDimension,
+  uuid
+} from '@metad/story/core'
+import { combineLatest, concat, of } from 'rxjs'
 import { map, switchMap, tap } from 'rxjs/operators'
-import { StoryPointType, StoryWidget, WidgetComponentType, uuid } from '../../types'
-import { discoverStory, discoverWidgetChart, discoverWidgetGrid } from '../schema'
-import { CopilotChartConversation } from '../types'
+import { chartAnnotationCheck, editWidgetChart } from '../chart/schema'
+import { editWidgetControl } from '../control'
+import { analyticsAnnotationCheck, editWidgetGrid } from '../grid/schema'
+import { discoverStory } from './schema'
 
 /**
  * Create story dashboard that contains multiple story pages.
@@ -15,9 +25,10 @@ import { CopilotChartConversation } from '../types'
 export function smartDiscover(copilot: CopilotChartConversation) {
   const { copilotService, prompt, entityType } = copilot
 
-  const systemPrompt = `你是一名 BI 分析专家，请根据 Cube 信息和提问问题给出可以创建的几个分析主题页面. 每个页面内至少 4 个 widgets and these widgets must fullfill the layout of page which is 10 rows and 10 columns.
-Widgets 之间要错落有致。
-Cube is ${calcEntityTypePrompt(entityType)}`
+  const systemPrompt = `You are a BI analysis expert. Please provide several analysis theme pages that can be created based on the cube information and the question.
+  Each page should have at least 4 widgets and one or more input control widgets and these widgets must fullfill the layout of page which is 10 rows and 10 columns.
+Widgets should be arranged in a staggered manner.
+The cube is ${calcEntityTypePrompt(entityType)}`
 
   return copilotService
     .chatCompletions(
@@ -48,10 +59,6 @@ Cube is ${calcEntityTypePrompt(entityType)}`
     )
 }
 
-export function logResult(copilot: CopilotChartConversation) {
-  console.log(`The result:`, copilot.response)
-}
-
 export function createStoryPage(copilot: CopilotChartConversation) {
   const { dataSource, storyService, response, entityType } = copilot
   const pages = response.arguments.pages
@@ -69,19 +76,19 @@ export function createStoryPage(copilot: CopilotChartConversation) {
           }
         }
       })
-      return from(
-        storyService.newStoryPage({
-          key: pageKey,
-          type: StoryPointType.Canvas,
-          name: page.title,
-          gridOptions: {
-            gridType: 'fit',
-            minCols: 10,
-            minRows: 10
-          },
-          widgets
-        })
-      ).pipe(
+
+      return of({
+        key: pageKey,
+        type: StoryPointType.Canvas,
+        name: page.title,
+        gridOptions: {
+          gridType: 'fit',
+          minCols: 10,
+          minRows: 10
+        },
+        widgets
+      } as Partial<StoryPoint>).pipe(
+        switchMap((page) => storyService.newStoryPage(page)),
         map((page) => ({ ...copilot, response: page })),
         switchMap(discoverPageWidgets)
       )
@@ -98,7 +105,7 @@ export function createStoryPage(copilot: CopilotChartConversation) {
 export function discoverPageWidgets(copilot: CopilotChartConversation) {
   const { copilotService, storyService, response: page, entityType } = copilot
   return page.widgets?.length
-    ? combineLatest(page.widgets.map((widget) => chatStoryWidget1(copilot, widget))).pipe(map(() => copilot))
+    ? combineLatest(page.widgets.map((widget) => chatStoryWidget(copilot, widget))).pipe(map(() => copilot))
     : of(copilot)
 }
 
@@ -109,14 +116,27 @@ export function discoverPageWidgets(copilot: CopilotChartConversation) {
  * @param widget
  * @returns
  */
-export function chatStoryWidget1(copilot: CopilotChartConversation, widget: StoryWidget) {
+export function chatStoryWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
   const { copilotService, storyService, response: page, entityType } = copilot
 
   const componentType = widget.component
 
-  const systemPrompt = `你是一名 BI 分析专家，请根据 Cube 信息和描述填写 ${componentType} 组件配置。
-Dimension 是由三个属性组成的，分别是：dimension name, hierarchy name, level name. Value of these three attributes name contain '[]' symbol.
+  const systemPrompt = `You are a BI analysis expert. Please fill in the ${componentType} component configuration based on the cube information and description.
+  Dimension is composed of three attributes: dimension name, hierarchy name, and level name. The value of these three attribute names must contain the symbol '[]'.
 The cube is ${calcEntityTypePrompt(entityType)}`
+
+  let discoverWidget = null
+  switch (componentType) {
+    case WidgetComponentType.AnalyticalCard:
+      discoverWidget = editWidgetChart
+      break
+    case WidgetComponentType.AnalyticalGrid:
+      discoverWidget = editWidgetGrid
+      break
+    case WidgetComponentType.InputControl:
+      discoverWidget = editWidgetControl
+      break
+  }
 
   return copilotService
     .chatCompletions(
@@ -131,7 +151,7 @@ The cube is ${calcEntityTypePrompt(entityType)}`
         }
       ],
       {
-        ...(componentType === WidgetComponentType.AnalyticalCard ? discoverWidgetChart : discoverWidgetGrid),
+        ...discoverWidget,
         ...omitBlank(copilot.options)
       }
     )
@@ -145,15 +165,30 @@ The cube is ${calcEntityTypePrompt(entityType)}`
       }),
       tap((response) => {
         console.log(`The widget response is`, response.arguments)
+
+        const answer = response.arguments
         const dataSettings = {} as any
-        if (componentType === WidgetComponentType.AnalyticalCard) {
-          dataSettings.chartAnnotation = {
-            ...response.arguments
-          }
-        } else {
-          dataSettings.analytics = {
-            ...response.arguments
-          }
+
+        switch (componentType) {
+          case WidgetComponentType.AnalyticalCard:
+            dataSettings.chartAnnotation = chartAnnotationCheck(
+              {
+                ...answer.chartAnnotation
+              },
+              entityType
+            )
+            break
+          case WidgetComponentType.AnalyticalGrid:
+            dataSettings.analytics = analyticsAnnotationCheck(
+              {
+                ...answer.analytics
+              },
+              entityType
+            )
+            break
+          case WidgetComponentType.InputControl:
+            dataSettings.dimension = fixDimension(answer.dimension, entityType)
+            break
         }
 
         storyService.updateWidget({
@@ -161,7 +196,7 @@ The cube is ${calcEntityTypePrompt(entityType)}`
           widgetKey: widget.key,
           widget: {
             ...widget,
-            // ...response.arguments,
+            ...pick(answer, 'options'),
             dataSettings: {
               ...widget.dataSettings,
               ...dataSettings

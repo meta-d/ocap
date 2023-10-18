@@ -112,7 +112,7 @@ export class AdvancedSlicerComponent {
     path: new FormControl(),
     operator: new FormControl(),
     value: this._formBuilder.array([null, null]),
-    measure: new FormControl(),
+    measure: new FormControl(null),
     other: new FormControl()
   })
 

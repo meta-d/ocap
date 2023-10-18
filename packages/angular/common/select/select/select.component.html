@@ -1,4 +1,4 @@
-<label *ngIf="label" class="ngm-select-label" [title]="label">
+<label *ngIf="label" class="ngm-select-label shrink-0" [title]="label">
   {{label}}
 </label>
 
@@ -54,8 +54,8 @@
   </ng-container>
 </mat-autocomplete>
 
-<mat-error *ngIf="formControl.invalid" class="text-xs">
-  {{formControl.getError('error')}}
+<mat-error class="text-xs h-4">
+  <span *ngIf="formControl.invalid">{{formControl.getError('error')}}</span>
 </mat-error>
 
 <ng-template #optionTemplate let-option>

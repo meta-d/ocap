@@ -26,7 +26,7 @@ export function calcEntityTypePrompt(entityType: EntityType) {
 }
 
 export const DimensionSchema = z.object({
-  dimension: z.string().describe('The name of the dimension'),
+  dimension: z.string().describe('The name of the dimension like [Product]'),
   hierarchy: z.string().optional().describe('The name of the hierarchy of the dimension'),
   level: z.string().optional().describe('The name of the level in the hierarchy'),
 })

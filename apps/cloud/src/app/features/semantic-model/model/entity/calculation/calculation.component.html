@@ -79,7 +79,7 @@
                     cdkDrag
                   >
                     <mat-icon ngmPrefix cdkDragHandle displayDensity="compact">drag_indicator</mat-icon>
-                    <button mat-icon-button ngmAppearance="danger" displayDensity="compact"
+                    <button ngmSuffix mat-icon-button ngmAppearance="danger" displayDensity="compact"
                       (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
                       <mat-icon>clear</mat-icon>
                     </button>
@@ -104,16 +104,16 @@
                   cdkDropList [cdkDropListData]="columns" (cdkDropListDropped)="drop($event)"
                 >
                   <ngm-property-select *ngFor="let property of columns; index as i; trackBy: trackByIndex" displayDensity="compact"
+                    showAttributes
+                    [capacities]="propertyCapacities"
                     [dataSettings]="dataSettings()"
                     [entityType]="entityType()"
-                    [capacities]="propertyCapacities"
-                    showAttributes
                     [ngModel]="property"
                     (ngModelChange)="onColumnChange($event, i)"
                     cdkDrag
                     >
                     <mat-icon ngmPrefix cdkDragHandle displayDensity="compact">drag_indicator</mat-icon>
-                    <button mat-icon-button ngmAppearance="danger" displayDensity="compact"
+                    <button ngmSuffix mat-icon-button ngmAppearance="danger" displayDensity="compact"
                       (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
                       <mat-icon>clear</mat-icon>
                     </button>

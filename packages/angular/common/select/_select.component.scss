@@ -12,7 +12,7 @@
 }
 
 .ngm-select-label {
-  @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+  @apply px-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
 }
 
 .cdk-overlay-pane:not(.mat-mdc-select-panel-above) {

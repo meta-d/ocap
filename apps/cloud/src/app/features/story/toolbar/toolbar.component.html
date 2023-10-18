@@ -1,4 +1,4 @@
-<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto">
+<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800">
     <div *ngIf="expandLess" class="w-full px-2 flex-1 flex flex-col overflow-x-hidden overflow-y-auto" >
         <ng-content></ng-content>
 
@@ -130,7 +130,7 @@
     
 </div>
 
-<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500"
+<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800"
     [ngClass]="onRight?'border-r':'border-l'"
 >
     <div class="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden">
@@ -426,7 +426,7 @@
     </ng-container>
 </div>
 
-<div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full bg-white flex flex-col text-slate-800 overflow-hidden">
+<div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
     <pac-copilot-chat class="w-full h-full"
         [copilotEngine]="copilotEngine"
         [(conversations)]="conversations"

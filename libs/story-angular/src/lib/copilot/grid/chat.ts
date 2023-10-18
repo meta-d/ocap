@@ -3,14 +3,14 @@ import { calcEntityTypePrompt } from '@metad/core'
 import { assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
 import { CopilotChartConversation, StoryWidget } from '@metad/story/core'
 import { map, of, switchMap } from 'rxjs'
-import { chartAnnotationCheck, editWidgetChart } from './schema'
+import { analyticsAnnotationCheck, editWidgetGrid } from './schema'
 
-export function chatChartWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
+export function chatGridWidget(copilot: CopilotChartConversation, widget: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
-  const systemPrompt = `You are a BI analysis expert, please edit the chart widget configuration based on the cube information and the question.
-  一个 dimension 只能使用一次; one hierarchy can't appears in more than one independent axis.
-  Cube is ${calcEntityTypePrompt(entityType)}.
+  const systemPrompt = `You are a BI analysis expert, please edit the grid widget configuration based on the cube information and the question.
+One dimension can only be used once. one hierarchy can't appears in more than one independent axis.
+The cube is ${calcEntityTypePrompt(entityType)}.
 Original widget is ${JSON.stringify(widget)}`
 
   return copilotService
@@ -26,7 +26,7 @@ Original widget is ${JSON.stringify(widget)}`
         }
       ],
       {
-        ...editWidgetChart,
+        ...editWidgetGrid,
         ...omitBlank(copilot.options)
       }
     )
@@ -42,7 +42,7 @@ Original widget is ${JSON.stringify(widget)}`
     )
 }
 
-export function editChartWidgetCommand(copilot: CopilotChartConversation) {
+export function editGridWidgetCommand(copilot: CopilotChartConversation) {
   const { logger, storyService } = copilot
 
   const widget = storyService.currentWidget()
@@ -53,7 +53,7 @@ export function editChartWidgetCommand(copilot: CopilotChartConversation) {
   const { key: widgetKey } = widget
   const { key: pageKey } = page
 
-  return chatChartWidget(copilot, widget).pipe(
+  return chatGridWidget(copilot, widget).pipe(
     switchMap((copilot) => {
       const { response, entityType } = copilot
       const { arguments: anwser } = response
@@ -64,10 +64,10 @@ export function editChartWidgetCommand(copilot: CopilotChartConversation) {
         pageKey,
         widgetKey,
         widget: {
-          ...omit(anwser, 'chartAnnotation'),
+          ...omit(anwser, 'analytics'),
           dataSettings: assignDeepOmitBlank(cloneDeep(widget.dataSettings), {
             ...(anwser.dataSettings ?? {}),
-            chartAnnotation: chartAnnotationCheck(anwser.chartAnnotation, entityType)
+            analytics: analyticsAnnotationCheck(anwser.analytics, entityType)
           }, 5)
         }
       })

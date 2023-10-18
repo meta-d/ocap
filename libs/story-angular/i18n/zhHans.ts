@@ -851,6 +851,8 @@ export const ZhHans = {
       Colors: '颜色'
     },
     Copilot: {
+      InstructionExecutionComplete: '指令执行完成',
+      InstructionExecutionError: '指令执行错误',
       PredefinedPrompts: [
         '/story 设置为暗色主题',
         '/story-style 设置科技感渐变色背景颜色',

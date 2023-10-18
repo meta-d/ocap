@@ -114,6 +114,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     map((options) => options?.preferences),
     distinctUntilChanged()
   )
+  readonly preferences = toSignal(this.preferences$)
   readonly advancedStyle$ = this.storyOptions$.pipe(
     map((options) => options?.advancedStyle),
     distinctUntilChanged()
@@ -222,7 +223,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
   public readonly currentPageWidgets$ = this.currentPage$.pipe(
     map((pageState) => pageState?.widgets),
   )
-  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state.storyPoint)))
+  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state?.storyPoint)))
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
@@ -1179,6 +1180,14 @@ export class NxStoryService extends ComponentStore<StoryState> {
       ...preferences
     }
   })
+
+  readonly mergeStoryPreferences = this.updater((state, preferences: Partial<StoryPreferences>) => {
+    state.story.options = state.story.options ?? {}
+    state.story.options.preferences = assignDeepOmitBlank((state.story.options?.preferences ?? {}),
+      preferences,
+      Number.MAX_SAFE_INTEGER
+    )
+  })
   
   readonly zoomIn = this.updater((state) => {
     state.story.options = {
@@ -1276,26 +1285,24 @@ export class NxStoryService extends ComponentStore<StoryState> {
   /**
    * @deprecated 迁移到 widget 内
    */
-  updateStoryWidgetChartOptions(key: string, styles: cssStyle) {
-    const state = this.get()
-    if (!state.currentWidget?.key) {
-      throw new Error(`Please select an widget!`)
-    }
+  // updateStoryWidgetChartOptions(key: string, styles: cssStyle) {
+  //   const state = this.get()
+  //   if (!state.currentWidget?.key) {
+  //     throw new Error(`Please select an widget!`)
+  //   }
 
-    (this.updater((state, styles: cssStyle) => {
-      const widget = findStoryWidget(state, state.currentWidget.key) as any
-      widget.chartOptions = {
-        ...(widget.chartOptions ?? {}),
-        [key]: {
-          ...(widget.chartOptions?.[key] ?? {}),
-          ...styles,
-        },
-        [`__show${key}__`]: true
-      } as any
-    }))(styles)
-  }
-
-  
+  //   (this.updater((state, styles: cssStyle) => {
+  //     const widget = findStoryWidget(state, state.currentWidget.key) as any
+  //     widget.chartOptions = {
+  //       ...(widget.chartOptions ?? {}),
+  //       [key]: {
+  //         ...(widget.chartOptions?.[key] ?? {}),
+  //         ...styles,
+  //       },
+  //       [`__show${key}__`]: true
+  //     } as any
+  //   }))(styles)
+  // }
 }
 
 function defaultResponsive() {
