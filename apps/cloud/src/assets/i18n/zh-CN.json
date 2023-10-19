@@ -920,6 +920,15 @@
         "CubeAlreadyExists": "多维数据集已存在！",
         "DimensionAlreadyExists": "维度已存在！",
         "MeasureAlreadyExists": "度量已存在！"
+      },
+      "Copilot": {
+        "Examples": {
+          "create dimension by table": "根据表字段创建维度",
+          "create cube by table": "根据表字段创建多维数据集",
+          "create calcuated measure": "创建计算度量",
+          "The error is xxxx": "错误是 xxxx",
+          "query total sales amount by products": "查询产品的销售总额"
+        }
       }
     },
     "BUSINESS_AREA": {
@@ -1154,6 +1163,8 @@
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
       "AskAICopilot": "向 AI 副驾驶询问问题",
+      "Prompt": "提示",
+      "SendPrompt": "发送提示",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

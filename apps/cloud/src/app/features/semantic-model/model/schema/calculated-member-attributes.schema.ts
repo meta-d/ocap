@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
-import { CalculatedMember, compact, C_MEASURES, flatten, getEntityDimensions } from '@metad/ocap-core'
+import { C_MEASURES, CalculatedMember, compact, flatten, getEntityDimensions } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { combineLatestWith, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
 import { CubeSchemaService } from './cube.schema'
 
@@ -12,11 +13,11 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
       return [
         {
           value: null,
-          label: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'})
+          label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
         },
         {
           value: C_MEASURES,
-          label: this.getTranslation('PAC.KEY_WORDS.Measures', {Default: 'Measures'})
+          label: this.getTranslation('PAC.KEY_WORDS.Measures', { Default: 'Measures' })
         },
         ...getEntityDimensions(entityType).map((item) => ({
           value: item.name,
@@ -33,7 +34,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
         return [
           {
             value: C_MEASURES,
-            label: await firstValueFrom(this.translate.get('PAC.KEY_WORDS.Measures', {Default: 'Measures'}))
+            label: await firstValueFrom(this.translate.get('PAC.KEY_WORDS.Measures', { Default: 'Measures' }))
           }
         ]
       }
@@ -46,6 +47,21 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
     }),
     shareReplay(1)
   )
+
+  getSchema() {
+    return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
+      map((SCHEMA) => {
+        this.SCHEMA = SCHEMA
+        const CUBE = this.SCHEMA?.CUBE
+        return [
+          {
+            type: 'tabs',
+            fieldGroup: [this.builder]
+          }
+        ] as FormlyFieldConfig[]
+      })
+    )
+  }
 
   get builder() {
     const BUILDER = this.SCHEMA?.CALCULATED_MEMBER
@@ -67,7 +83,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
         key: 'modeling',
         wrappers: ['panel'],
         props: {
-          padding: true,
+          padding: true
         },
         fieldGroup: [
           {
@@ -100,9 +116,8 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                   label: COMMON?.Description ?? 'Description',
                   rows: 1,
                   autosize: true,
-                  appearance: 'standard'
                 }
-              },
+              }
             ]
           },
           {
@@ -117,7 +132,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                   options: this.runtimeDimension$,
                   searchable: true,
                   appearance: 'standard'
-                },
+                }
                 // validators: {
                 //   ip: {
                 //     expression: (c) => (c.parent.value.hierarchy && !c.value) || (!c.parent.value.hierarchy && c.value) ,
@@ -136,8 +151,8 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                   appearance: 'standard'
                 },
                 expressionProperties: {
-                  'hide': `!model || model.dimension==='Measures'`,
-                },
+                  hide: `!model || model.dimension==='Measures'`
+                }
                 // validators: {
                 //   ip: {
                 //     expression: (c) => (c.parent.value.dimension && !c.value) || (!c.parent.value.dimension && c.value) ,
@@ -171,10 +186,10 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                 props: {
                   label: COMMON?.DataType ?? 'Data Type',
                   options: [
-                    { value: null, label: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'})},
-                    { value: 'String', label: 'String'},
-                    { value: 'Integer', label: 'Integer'},
-                    { value: 'Numeric', label: 'Numeric'},
+                    { value: null, label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }) },
+                    { value: 'String', label: 'String' },
+                    { value: 'Integer', label: 'Integer' },
+                    { value: 'Numeric', label: 'Numeric' }
                   ],
                   appearance: 'standard'
                 }
@@ -199,7 +214,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                   required: true,
                   appearance: 'fill'
                 }
-              },
+              }
             ]
           },
           {
@@ -223,8 +238,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                   label: COMMON?.Decimal ?? 'Decimal',
                   appearance: 'standard'
                 }
-              },
-          
+              }
             ]
           }
         ]

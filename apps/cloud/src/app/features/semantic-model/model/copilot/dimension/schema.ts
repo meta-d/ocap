@@ -1,4 +1,6 @@
+import { CopilotDefaultOptions } from '@metad/copilot'
 import { z } from 'zod'
+import zodToJsonSchema from 'zod-to-json-schema'
 
 export const DimensionSchema = z.object({
   __id__: z.string().optional().describe('The id of the dimension'),
@@ -31,3 +33,16 @@ export const DimensionSchema = z.object({
     )
     .describe('An array of hierarchies in this dimension')
 })
+
+
+export const editModelDimension = {
+  ...CopilotDefaultOptions,
+  functions: [
+    {
+      name: 'edit-model-dimension',
+      description: 'Should always be used to properly format output',
+      parameters: zodToJsonSchema(DimensionSchema)
+    }
+  ],
+  function_call: { name: 'edit-model-dimension' }
+}

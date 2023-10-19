@@ -1,6 +1,6 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, effect, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { AggregationRole, C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
@@ -16,6 +16,7 @@ import { AppService } from '../../../../../app.service'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { AnalyticalGridComponent } from '@metad/ocap-angular/analytical-grid'
 
 
 @Component({
@@ -45,6 +46,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   private readonly route = inject(ActivatedRoute)
 
   @ViewChild('editor') editor!: BaseEditorDirective
+  @ViewChild(AnalyticalGridComponent) grid!: AnalyticalGridComponent<any>
 
   private rows$ = new BehaviorSubject<Array<Dimension | Measure>>([...(this.entityService.preview?.rows ?? [])])
   get rows() {
@@ -74,11 +76,11 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   private refresh$ = new BehaviorSubject<boolean | null>(null)
 
-  private readonly id$ = this.route.paramMap.pipe(
+  private readonly key$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
     map((paramMap) => paramMap.get('id'))
   )
-  public readonly calculatedMember$ = this.id$.pipe(
+  public readonly calculatedMember$ = this.key$.pipe(
     filter(nonBlank),
     switchMap((id) => this.entityService.selectCalculatedMember(id))
   )
@@ -146,6 +148,12 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   manualRefresh = false
   entities = []
 
+  private keySub = this.key$.pipe(takeUntilDestroyed()).subscribe((key) => {
+    this.entityService.patchState({
+      currentCalculatedMember: key
+    })
+  })
+
   trackByIndex(index: number, el: any): number {
     return index
   }
@@ -164,6 +172,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   refresh() {
     this.refresh$.next(true)
+    this.grid.refresh(true)
   }
 
   onDesignerDrawerChange(opened) {}
@@ -347,6 +356,9 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
       rows: this.rows,
       columns: this.columns,
       slicers: this.slicers
+    })
+    this.entityService.patchState({
+      currentCalculatedMember: null
     })
   }
 }

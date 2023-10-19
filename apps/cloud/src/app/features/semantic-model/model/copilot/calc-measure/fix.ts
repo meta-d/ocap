@@ -6,14 +6,16 @@ import { of, throwError } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ModelCopilotChatConversation } from '../types'
 import { editModelExpression } from './schema'
+import { ModelDesignerType } from '../../types'
 
 
-export function chatCalculatedMeasure(copilot: ModelCopilotChatConversation) {
+export function chatFixCalculatedMeasure(copilot: ModelCopilotChatConversation) {
   const { logger, copilotService, prompt, entityService } = copilot
-
+  const currentCalculatedMember = entityService.currentCalculatedMember()
   const entityType = entityService.entityType()
 
-  const systemPrompt = `Create MDX calculated measure for the cube based on the prompt.
+  const systemPrompt = `Fix MDX calculated measure for the cube based on the prompt.
+Original formula is "${currentCalculatedMember?.formula || 'empty'}" and name is "${currentCalculatedMember?.name || 'empty'}" and caption is "${currentCalculatedMember?.caption || 'empty'}".
 The cube is: ${calcEntityTypePrompt(entityType)}.`
   return copilotService
     .chatCompletions(
@@ -44,17 +46,18 @@ The cube is: ${calcEntityTypePrompt(entityType)}.`
     )
 }
 
-export function createCalculatedMeasure(copilot: CopilotChatConversation) {
+export function fixCalculatedMeasure(copilot: CopilotChatConversation) {
   const { entityService, response } = copilot as ModelCopilotChatConversation
+  const currentCalculatedMember = entityService.currentCalculatedMember()
   const calculatedMeasure = response.arguments as CalculatedMember
 
-  const key = uuid()
-  calculatedMeasure.__id__ = key
-  calculatedMeasure.dimension = C_MEASURES
-  calculatedMeasure.visible = true
-
-  entityService.addCalculatedMeasure(calculatedMeasure)
-  entityService.navigateCalculation(key)
+  entityService.updateCubeProperty({
+    type: ModelDesignerType.calculatedMember,
+    id: currentCalculatedMember.__id__,
+    model: {
+      ...calculatedMeasure
+    }
+  })
 
   return of({
     ...copilot,
@@ -62,9 +65,12 @@ export function createCalculatedMeasure(copilot: CopilotChatConversation) {
   })
 }
 
-export function checkPrerequisite(copilot: ModelCopilotChatConversation) {
-  if (!copilot.entityService) {
-    return throwError(() => new Error(`请转到多维数据集界面执行`))
+export function checkCalculatedMemberPrerequisite(copilot: ModelCopilotChatConversation) {
+  const { entityService } = copilot
+  const current = entityService.currentCalculatedMember()
+
+  if (!current) {
+    return throwError(() => new Error(`请转到计算成员界面执行`))
   }
 
   return of(copilot)

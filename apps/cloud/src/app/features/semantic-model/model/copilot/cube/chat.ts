@@ -68,7 +68,7 @@ export function createCube(copilot: ModelCopilotChatConversation) {
       })),
       dimensionUsages: cube.dimensionUsages?.map((dimensionUsage) => ({ ...dimensionUsage, __id__: uuid() }))
     },
-    sqlLab: {}
+    queryLab: {}
   }
 
   modelService.newEntity(cubeState)

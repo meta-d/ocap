@@ -4,6 +4,7 @@ import {
   CreateChatCompletionResponseChoicesInner
 } from 'openai'
 import JSON5 from 'json5'
+import { CopilotService } from './copilot'
 
 export interface ICopilot {
   enabled?: boolean
@@ -84,12 +85,14 @@ export function getCommandPrompt(prompt: string) {
 }
 
 export interface CopilotChatConversation {
+
   command: string
   prompt: string
   options: any
   response?: { arguments: any } | any
   error?: string | Error
 
+  copilotService: CopilotService
   logger?: {
     trace(message?: any | (() => any), ...additional: any[]): void;
     debug(message?: any | (() => any), ...additional: any[]): void;

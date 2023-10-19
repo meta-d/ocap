@@ -211,8 +211,8 @@ export interface CopilotEngine {
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
   ): Observable<CopilotChatMessage[] | string>
-  preprocess(prompt: string, options?: any)
-  postprocess(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
+  preprocess?(prompt: string, options?: any)
+  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
 
   /**
    * Drop copilot data

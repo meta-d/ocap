@@ -36,13 +36,13 @@ export class EntityQueryComponent extends TranslationBaseComponent {
 
   themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
-  queryKey: string
-  statement = ''
+  readonly statement = this.entityService._statement
+
   entities = []
 
   textSelection
 
-  public readonly entitySets$ = this.modelService.entities$ // .pipe(tap((options) => console.log(options)))
+  public readonly entitySets$ = this.modelService.entities$
   public readonly tables$ = this.modelService.selectDBTables$
   public readonly entityType$ = this.entityService.entityType$
   // 当前使用 MDX 查询
@@ -115,7 +115,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   })
 
   run() {
-    const statement: string = this.editor.getSelectText()?.trim() || this.statement
+    const statement: string = this.editor.getSelectText()?.trim() || this.statement()
     this.query(statement)
   }
 
@@ -133,13 +133,15 @@ export class EntityQueryComponent extends TranslationBaseComponent {
     this.textSelection = event
   }
 
-  onStatementChange(event) {}
+  onStatementChange(event: string) {
+    this.entityService.statement = event
+  }
 
   /**
    * 另存为 SQL Model
    */
   saveAsModel() {
-    this.modelComponent.createByExpression(this.statement)
+    this.modelComponent.createByExpression(this.statement())
   }
 
   async drop(event: CdkDragDrop<{ name: string }[]>) {

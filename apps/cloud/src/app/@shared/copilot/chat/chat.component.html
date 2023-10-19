@@ -20,8 +20,7 @@
                             lineNumbers
                             [start]="5"
                             [data]="conversation.content"
-                            >
-                        </markdown>
+                        ></markdown>
                     </div>
     
                     <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
@@ -89,10 +88,10 @@
                 <span class="text-xl">💡</span>{{ 'PAC.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
             </div>
             <div class="text-sm font-light opacity-50">
-                <span class="font-bold">/Command</span> + prompt
+                <span class="font-bold">/Command</span> + {{ 'PAC.Copilot.Prompt' | translate: {Default: 'prompt'} }}
             </div>
             <div class="text-sm font-light opacity-50">
-                <span class="font-bold">CTRL + Enter</span> send prompt
+                <span class="font-bold">CTRL + Enter</span> {{ 'PAC.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
             </div>
         </ng-container>
     </div>

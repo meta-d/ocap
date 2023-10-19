@@ -15,7 +15,7 @@ export function chatStoryStyle(copilot: StoryCopilotChatConversation) {
 
   const preferences = storyService.preferences()
 
-  const systemPrompt = `You are a BI analysis expert, please modify the theme and style of the story according to the prompts. Orignal story preferences is ${JSON.stringify(preferences)}`
+  const systemPrompt = `You are a BI analysis expert, please modify the theme and style of the story according to the prompts. Original story preferences is ${JSON.stringify(preferences)}`
 
   return copilotService
     .chatCompletions(

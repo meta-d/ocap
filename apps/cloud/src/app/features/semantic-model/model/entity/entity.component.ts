@@ -1,7 +1,7 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, Component, HostBinding, OnInit, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy, OnInit, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import { isNil, negate } from 'lodash-es'
@@ -10,10 +10,9 @@ import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/op
 import { AppService } from '../../../../app.service'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { ModelCopilotEngineService } from '../copilot'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-model-entity',
   templateUrl: 'entity.component.html',
@@ -21,7 +20,7 @@ import { ModelCopilotEngineService } from '../copilot'
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ModelEntityService, NxSettingsPanelService]
 })
-export class ModelEntityComponent implements OnInit {
+export class ModelEntityComponent implements OnInit, OnDestroy {
 
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
@@ -68,12 +67,12 @@ export class ModelEntityComponent implements OnInit {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private entitySub = this.entityId$.pipe(untilDestroyed(this)).subscribe((id) => {
+  private entitySub = this.entityId$.pipe(takeUntilDestroyed()).subscribe((id) => {
     this.entityService.init(id)
     this.modelService.setCrrentEntity(id)
   })
 
-  private errorSub = this.error$.pipe(untilDestroyed(this)).subscribe((err) => {
+  private errorSub = this.error$.pipe(takeUntilDestroyed()).subscribe((err) => {
     this.toastrService.error(err)
   })
   
@@ -122,5 +121,9 @@ export class ModelEntityComponent implements OnInit {
       this.appService.requestFullscreen(this.zIndex)
       this.isFullscreen = true
     }
+  }
+
+  ngOnDestroy(): void {
+    this.copilotEngineService.entityService = null
   }
 }

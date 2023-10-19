@@ -1,6 +1,7 @@
-import { CopilotCommand } from "@metad/copilot";
+import { CopilotCommand, logResult } from "@metad/copilot";
 import { ModelCopilotChatConversation } from "../types";
-import { of } from "rxjs";
+import { switchMap, tap } from "rxjs";
+import { chatDimension, createDimension } from "./chat";
 
 export * from './schema'
 
@@ -11,6 +12,9 @@ export const DimensionCommand = {
         'create dimension by table'
     ],
     processor: (copilot: ModelCopilotChatConversation) => {
-        return of(copilot)
+        return chatDimension(copilot).pipe(
+            tap<ModelCopilotChatConversation>(logResult),
+            switchMap(createDimension)
+        )
     }
 } as CopilotCommand

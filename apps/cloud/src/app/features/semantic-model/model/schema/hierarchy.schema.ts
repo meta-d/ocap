@@ -242,7 +242,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
           }
         },
         {
-          fieldGroupClassName: FORMLY_ROW,
+          fieldGroupClassName: FORMLY_ROW + ' ngm-formly__my-2',
           fieldGroup: [
             {
               key: 'primaryKey',

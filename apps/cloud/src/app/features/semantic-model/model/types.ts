@@ -129,22 +129,22 @@ export interface EntityPreview {
 }
 
 /**
- * Cube 状态管理
+ * Cube states
  */
 export interface ModelCubeState extends SemanticModelEntity {
   /**
-   * Entity Type Schema 中的设置
+   * Entity Type in schema
    */
   entityType?: EntityType
   /**
-   * MDX Schema 中的设置
+   * MDX Cube in schema 
    */
   cube: Cube
 
-  // 以下是运行时状态
-  sqlLab: {
-    statement?: string
-  }
+  // the runtime states
+  /**
+   * Selected property (dimension | measure | calculatedMember) `ModelDesignerType#__id__`
+   */
   selectedProperty?: string
   /**
    * Table fields for dimension role
@@ -154,7 +154,22 @@ export interface ModelCubeState extends SemanticModelEntity {
    * Table fields for measure role
    */
   measures?: Property[]
+  /**
+   * States of data preview table
+   */
   preview?: EntityPreview
+
+  /**
+   * The current selected calculated member
+   */
+  currentCalculatedMember?: string
+
+  /**
+   * Query lab in the entity
+   */
+  queryLab: {
+    statement?: string
+  }
 }
 
 export interface ModelDimensionState extends SemanticModelEntity {
@@ -179,7 +194,7 @@ export function initEntitySubState(model: SemanticModel): Array<ModelCubeState> 
         name: cube.name,
         caption: cube.caption,
         cube,
-        sqlLab: {},
+        queryLab: {},
         preview: {
           rows: [],
           columns: [],

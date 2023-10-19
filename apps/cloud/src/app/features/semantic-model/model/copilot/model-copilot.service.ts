@@ -3,38 +3,29 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import {
   AIOptions,
   CopilotChatMessage,
-  CopilotChatMessageRoleEnum,
   CopilotChatResponseChoice,
   CopilotEngine,
   DefaultModel,
+  freeChat,
+  freePrompt,
   getCommand,
   getCommandPrompt,
-  getFunctionCall,
+  logResult,
+  nonNullable,
   selectCommandExamples,
+  selectCommands,
   SystemCommands
 } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/core'
-import { Cube, pick, PropertyDimension } from '@metad/ocap-core'
+import { pick } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { catchError, combineLatest, map, of, switchMap } from 'rxjs'
-import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
-import { getErrorMessage, uuid } from '../../../../@core'
-import { SemanticModelService } from '../model.service'
-import { ModelDimensionState, SemanticModelEntityType } from '../types'
-import { ModelCopilotChatConversation, ModelCopilotCommandArea } from './types'
-import { CubeSchema } from './cube'
-import { DimensionSchema } from './dimension'
+import { catchError, combineLatest, filter, map, of, switchMap, tap, throwError } from 'rxjs'
+import { getErrorMessage } from '../../../../@core'
 import { ModelEntityService } from '../entity/entity.service'
+import { SemanticModelService } from '../model.service'
+import { ModelCopilotChatConversation, ModelCopilotCommandArea } from './types'
 
-type ModelCopilotAction =
-  | 'create_dimension'
-  | 'modify_dimension'
-  | 'create_cube'
-  | 'modify_cube'
-  | 'query_cube'
-  | 'free_prompt'
 export const I18N_MODEL_NAMESPACE = 'PAC.MODEL'
 
 @Injectable()
@@ -57,8 +48,9 @@ export class ModelCopilotEngineService implements CopilotEngine {
       }))
     )
   )
-  private readonly currentCube = toSignal(this.modelService.currentCube$)
-  private readonly currentDimension = toSignal(this.modelService.currentDimension$)
+
+  // private readonly currentCube = toSignal(this.modelService.currentCube$)
+  // private readonly currentDimension = toSignal(this.modelService.currentDimension$)
 
   get name() {
     return this._name()
@@ -187,345 +179,84 @@ export class ModelCopilotEngineService implements CopilotEngine {
 `
   }
 
+  private readonly commands = toSignal(
+    selectCommands(ModelCopilotCommandArea).pipe(
+      filter(nonNullable),
+      map((commands) => Object.values(commands))
+    ),
+    { initialValue: [] }
+  )
+
   process({ prompt: _prompt, messages }) {
     this.logger.debug(`process ask: ${_prompt}`)
 
     const { command, prompt } = getCommandPrompt(_prompt)
-
-    if (getCommand(ModelCopilotCommandArea, command)) {
-      return getCommand(ModelCopilotCommandArea, command)
-        .processor({
-          modelService: this.modelService,
-          entityService: this.entityService,
-          copilotService: this.copilotService,
-          command,
-          prompt,
-          options: pick(this.aiOptions, 'model', 'temperature'),
-          logger: this.logger,
-          sharedDimensionsPrompt: this.sharedDimensionsPrompt()
-        } as ModelCopilotChatConversation)
-        .pipe(
-          map((copilot: Partial<ModelCopilotChatConversation>) => {
-            return `✅${this.getTranslation(`${I18N_MODEL_NAMESPACE}.Copilot.InstructionExecutionComplete`, {
-              Default: 'Instruction execution complete'
-            })}`
-          }),
-          catchError((err) => {
-            console.error(err)
-            return of(
-              `❌${this.getTranslation(`${I18N_MODEL_NAMESPACE}.Copilot.InstructionExecutionError`, {
-                Default: 'Instruction execution error'
-              })}: ` + getErrorMessage(err)
-            )
-          })
-        )
-    } else if (command === 'clear') {
-      this.conversations = []
-      return of([])
+    if (command) {
+      if (command === 'clear') {
+        this.conversations = []
+        return of([])
+      } else if (!getCommand(ModelCopilotCommandArea, command)) {
+        return throwError(() => new Error(`Command '${command}' not found`))
+      }
     }
 
-    throw new Error(`❌无法识别的指令：${prompt}`)
+    const copilot = {
+      modelService: this.modelService,
+      entityService: this.entityService,
+      copilotService: this.copilotService,
+      command,
+      prompt,
+      options: pick(this.aiOptions, 'model', 'temperature'),
+      logger: this.logger,
+      sharedDimensionsPrompt: this.sharedDimensionsPrompt()
+    } as ModelCopilotChatConversation
 
-    return of(prompt).pipe(
-      switchMap(() => this.preprocess(prompt, this.aiOptions)),
-      map((action) => this.assignAction(action, prompt)),
-      switchMap(({ systemPrompt, options }: any) => {
-        return this.copilotService
-          .chatCompletions(
-            [
-              {
-                role: CopilotChatMessageRoleEnum.System,
-                content: systemPrompt
-              },
-              {
-                role: CopilotChatMessageRoleEnum.User,
-                content: prompt
-              }
-            ],
-            options
+    return (
+      command
+        ? of(copilot)
+        : freePrompt(copilot, this.commands()).pipe(
+            tap(logResult),
+            map((copilot) => {
+              return {
+                ...copilot,
+                response: null,
+                command: copilot.response.arguments.command
+              } as ModelCopilotChatConversation
+            })
           )
-          .pipe(map(({ choices }) => choices))
-      }),
-      switchMap((choices) => this.postprocess(prompt, choices))
+    ).pipe(
+      switchMap((copilot) => {
+        const { command } = copilot
+        if (getCommand(ModelCopilotCommandArea, command)) {
+          return getCommand(ModelCopilotCommandArea, command)
+            .processor(copilot)
+            .pipe(
+              map((copilot: Partial<ModelCopilotChatConversation>) => {
+                return `✅${this.getTranslation(`${I18N_MODEL_NAMESPACE}.Copilot.InstructionExecutionComplete`, {
+                  Default: 'Instruction execution complete'
+                })}`
+              }),
+              catchError((err) => {
+                console.error(err)
+                return of(
+                  `❌${this.getTranslation(`${I18N_MODEL_NAMESPACE}.Copilot.InstructionExecutionError`, {
+                    Default: 'Instruction execution error'
+                  })}: ` + getErrorMessage(err)
+                )
+              })
+            )
+        } else if (command === 'free') {
+          return freeChat(copilot)
+        }
+      })
     )
   }
 
-  preprocess(prompt: string, options?) {
-    return this.copilotService
-      .chatCompletions(
-        [
-          {
-            role: CopilotChatMessageRoleEnum.System,
-            content: `预设条件：${JSON.stringify({
-              BusinessAreas: this.businessAreas
-            })}
-根据预设条件将问题划分到相应的 action，value 值使用 object，不用注释，不用额外属性，例如
-问题：根据表 product (id string, name string, type string) 信息创建产品维度
-答案：
-{
-  "action": "create_dimension"
-}
-问题：如何查询 Mysql 数据库中的表信息
-答案：
-{
-  "action": "free_prompt"
-}
-`
-          },
-          {
-            role: CopilotChatMessageRoleEnum.User,
-            content: `请回答
-问题：${prompt}
-答案：`
-          }
-        ],
-        options
-      )
-      .pipe(
-        map(({ choices }) => {
-          let res
-          try {
-            res = JSON.parse(choices[0].message.content)
-            return res.action
-          } catch (err) {
-            return 'free_prompt'
-          }
-        })
-      )
-  }
-
   postprocess(prompt: string, choices: CopilotChatResponseChoice[]) {
-    let res
-    try {
-      res = getFunctionCall(choices[0].message)
-    } catch (err) {
-      return of([
-        {
-          role: CopilotChatMessageRoleEnum.Assistant,
-          content: choices[0].message.content
-        }
-      ])
-    }
-
-    if (!Array.isArray(res)) {
-      res = [res]
-    }
-
-    const messages = []
-    res.forEach((operation) => {
-      try {
-        switch (operation.name) {
-          case 'create_dimension':
-            this.createDimension(operation.arguments)
-            break
-          case 'modify_dimension':
-            this.modifyDimension(operation.arguments)
-            break
-          case 'create_cube':
-            // this.createCube(operation.arguments)
-            break
-          case 'modify_cube':
-            this.modifyCube(operation.arguments)
-            break
-          case 'query_cube':
-            this.queryCube(operation.arguments)
-            break
-        }
-
-        messages.push({
-          role: CopilotChatMessageRoleEnum.Assistant,
-          content:
-            typeof operation.value === 'string'
-              ? operation.value
-              : `任务 **${this.businessAreas.find((item) => item.action === operation.name)?.prompts.zhHans}** 执行完成`
-        })
-      } catch (err: any) {
-        messages.push({
-          role: CopilotChatMessageRoleEnum.Assistant,
-          content: '',
-          error: err.message
-        })
-      }
-    })
-
-    return of(messages)
-  }
-
-  assignAction(action: ModelCopilotAction, prompt: string) {
-    if (action === 'create_dimension') {
-      return this.createDimensionPrompt(prompt)
-    } else if (action === 'modify_dimension') {
-      return this.modifyDimensionPrompt(prompt)
-    } else if (action === 'create_cube') {
-      // return this.createCubePrompt(prompt)
-    } else if (action === 'modify_cube') {
-      return this.modifyCubePrompt(prompt)
-    } else if (action === 'query_cube') {
-      return this.queryCubePrompt(prompt)
-    } else {
-      return null
-    }
-  }
-
-  createDimensionPrompt(prompt: string) {
-    return {
-      systemPrompt: `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`,
-      options: {
-        model: 'gpt-3.5-turbo-0613',
-        functions: [
-          {
-            name: 'create_dimension',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(DimensionSchema)
-          }
-        ],
-        function_call: { name: 'create_dimension' }
-      }
-    }
-  }
-
-  modifyDimensionPrompt(prompt: string) {
-    return {
-      systemPrompt: `根据提示修改 Dimension 信息, The old dimension is: ${JSON.stringify(this.currentDimension())}`,
-      options: {
-        model: 'gpt-3.5-turbo-0613',
-        functions: [
-          {
-            name: 'modify_dimension',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(DimensionSchema)
-          }
-        ],
-        function_call: { name: 'modify_dimension' }
-      }
-    }
-  }
-
-  // The cube can join the name of shared dimensions using the source field in dimensionUsages
-//   createCubePrompt(prompt: string) {
-//     return {
-//       systemPrompt: `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-// There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-// The cube can fill the source field in dimensionUsages only within the name of shared dimensions: ${this.sharedDimensionsPrompt()}.
-// `,
-//       options: {
-//         model: 'gpt-3.5-turbo-0613',
-//         functions: [
-//           {
-//             name: 'create_cube',
-//             description: 'Should always be used to properly format output',
-//             parameters: zodToJsonSchema(CubeSchema)
-//           }
-//         ],
-//         function_call: { name: 'create_cube' }
-//       }
-//     }
-//   }
-
-  modifyCubePrompt(prompt: string) {
-    return {
-      systemPrompt: `根据提示修改 Cube 信息`,
-      options: {
-        model: 'gpt-3.5-turbo-0613',
-        functions: [
-          {
-            name: 'create_cube',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(CubeSchema)
-          }
-        ],
-        function_call: { name: 'create_cube' }
-      }
-    }
-  }
-
-  queryCubePrompt(prompt: string) {
-    return {
-      systemPrompt: `根据提示生成查询 Cube 的 MDX statement, Cube structure is: ${JSON.stringify(this.currentCube())}`,
-      options: {
-        functions: [
-          {
-            name: 'query_cube',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(QueryCubeSchema)
-          }
-        ],
-        function_call: { name: 'query_cube' }
-      }
-    }
-  }
-
-  createDimension(dimension: PropertyDimension) {
-    console.log(`Created dimension is`, dimension)
-
-    const key = uuid()
-    const dimensionState: ModelDimensionState = {
-      type: SemanticModelEntityType.DIMENSION,
-      id: key,
-      name: dimension.name,
-      caption: dimension.caption,
-      dimension: {
-        ...dimension,
-        __id__: key,
-        hierarchies: dimension.hierarchies?.map((hierarchy) => ({
-          ...hierarchy,
-          __id__: uuid(),
-          levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
-        }))
-      }
-    }
-
-    this.modelService.newDimension(dimensionState)
-    this.modelService.activeEntity(dimensionState)
-  }
-
-  modifyDimension(dimension: PropertyDimension) {
-    console.log(`Modifyed dimension is`, dimension)
-    this.modelService.updateDimension(dimension)
-  }
-
-  // createCube(cube: Cube) {
-  //   const key = uuid()
-  //   const cubeState = {
-  //     type: SemanticModelEntityType.CUBE,
-  //     id: key,
-  //     name: cube.name,
-  //     caption: cube.caption,
-  //     cube: {
-  //       ...cube,
-  //       __id__: key,
-  //       measures: cube.measures?.map((measure) => ({ ...measure, __id__: uuid(), visible: true })),
-  //       dimensions: cube.dimensions?.map((dimension) => ({
-  //         ...dimension,
-  //         __id__: uuid(),
-  //         hierarchies: dimension.hierarchies?.map((hierarchy) => ({
-  //           ...hierarchy,
-  //           __id__: uuid(),
-  //           levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
-  //         }))
-  //       })),
-  //       dimensionUsages: cube.dimensionUsages?.map((dimensionUsage) => ({ ...dimensionUsage, __id__: uuid() }))
-  //     },
-  //     sqlLab: {}
-  //   }
-
-  //   this.modelService.newEntity(cubeState)
-  //   this.modelService.activeEntity(cubeState)
-  // }
-
-  modifyCube(cube: Cube) {
-    console.log(`Modify cube is`, cube)
-  }
-
-  queryCube({ query }: { query: string }) {
-    console.log(`Query cube is`, query)
+    return of(prompt)
   }
 
   getTranslation(key: string, params) {
     return this.translateService.instant(key, params)
   }
 }
-
-const QueryCubeSchema = z.object({
-  query: z.string().describe('The MDX statement of query the cube')
-})

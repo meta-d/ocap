@@ -1,5 +1,8 @@
 import { CdkDropList, DropListRef } from '@angular/cdk/drag-drop'
-import { Injectable, inject } from '@angular/core'
+import { DestroyRef, Injectable, inject } from '@angular/core'
+import { nonNullable } from '@metad/core'
+import { getSemanticModelKey } from '@metad/story/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -18,7 +21,6 @@ import {
   wrapHierarchyValue
 } from '@metad/ocap-core'
 import { ComponentStore, DirtyCheckQuery } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { cloneDeep, sortBy } from 'lodash-es'
 import { BehaviorSubject, combineLatest, from, Observable, Subject } from 'rxjs'
@@ -44,18 +46,17 @@ import {
   SemanticModelEntityType,
   ModelQueryState
 } from './types'
-import { nonNullable } from '@metad/core'
-import { getSemanticModelKey } from '@metad/story/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NGXLogger } from 'ngx-logger'
 
 
-@UntilDestroy({checkProperties: true})
 @Injectable()
 export class SemanticModelService extends ComponentStore<PACModelState> {
 
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
-  
+  private readonly destroyRef = inject(DestroyRef)
+  private readonly logger = inject(NGXLogger)
+
   get model() {
     return this.get((state) => state.model)
   }
@@ -105,15 +106,12 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   public readonly isOlap$ = this.modelType$.pipe(map((modelType) => modelType === MODEL_TYPE.OLAP))
   public readonly isSQLSource$ = this.model$.pipe(map((model) => model.dataSource?.type?.protocol?.toUpperCase() === 'SQL' || model?.agentType === AgentType.Wasm))
   public readonly wordWrap$ = this.select((state) => state.viewEditor?.wordWrap)
-  
-  // public readonly currentEntity$ = this.select((state) => state.currentEntity)
+
   public readonly currentCube$ = combineLatest([
     this.select((state) => state.currentEntity),
     this.cubeStates$
   ]).pipe(
-    map(([current, cubeStates]) => {
-      return cubeStates?.find((item) => item.id === current)?.cube
-    }),
+    map(([current, cubeStates]) => cubeStates?.find((item) => item.id === current)?.cube),
     takeUntilDestroyed(),
     shareReplay(1)
   )
@@ -130,9 +128,8 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     this.select((state) => state.currentEntity),
     this.entities$
   ]).pipe(
-    map(([currentEntity, entities]) => {
-      return entities?.find((item) => item.id === currentEntity)?.type
-    }),
+    map(([currentEntity, entities]) => entities?.find((item) => item.id === currentEntity)?.type),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -140,7 +137,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   public readonly stories$ = this.select((state) => state.stories)
   public readonly cubes$ = this.select((state) => state.model.schema?.cubes)
   public readonly virtualCubes$ = this.select((state) => (state.model.schema as any)?.virtualCubes).pipe(
-    combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))
+      combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))
     ),
     map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
   )
@@ -169,7 +166,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   public readonly entitySets$ = this.dataSource$.pipe(
     filter(nonNullable),
     switchMap((dataSource) => dataSource.selectEntitySets()),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   
@@ -209,7 +206,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     super({} as PACModelState)
 
     // TODO 一个状态改变产生另一个状态, 这种需求应该怎么处理??
-    this.entities$.pipe(untilDestroyed(this)).subscribe((entities) => {
+    this.entities$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((entities) => {
       this.patchState({ ids: entities?.map((state) => state.id) })
     })
 
@@ -222,7 +219,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
         switchMap((key) => this.dsCoreService.getDataSource(key)),
         // 先清 DataSource 缓存再进行后续
         switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.dataSource$)
 
@@ -238,7 +235,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
         }),
         // 先清 DataSource 缓存再进行后续
         switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.originalDataSource$)
 
@@ -246,14 +243,15 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     this.model$
       .pipe(
         filter(nonNullable),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((model) => {
+        this.logger.debug(`Model changed => call registerModel`)
         // Not contain indicators when building model
         registerModel(omit(model, 'indicators'), this.dsCoreService, this.wasmAgent)
       })
 
-    this.dataSource$.pipe(filter(Boolean), untilDestroyed(this)).subscribe((dataSource) => {
+    this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
       dataSource?.clearCache()
     })
   }
@@ -423,7 +421,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
       id,
       name,
       cube,
-      sqlLab: {},
+      queryLab: {},
       dirty: true
     } as ModelCubeState
     this.newEntity(state)
@@ -506,19 +504,24 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     }
   })
 
-  readonly updateDataSourceSchemaCube = this.effect((origin$: Observable<Cube>) => {
-    return origin$.pipe(
-      tap((cube: Cube) => {
-        this.dataSource?.updateCube(cube)
-        this.originalDataSource?.updateCube(cube)
-      })
-    )
-  })
+  /**
+   * Update cube of schema in {@link DataSource}
+   * 
+   * @param cube 
+   */
+  updateDataSourceSchemaCube(cube: Cube) {
+    this.dataSource?.updateCube(cube)
+    this.originalDataSource?.updateCube(cube)
+  }
 
-  readonly updateDataSourceSchemaEntityType = this.effect((origin$: Observable<EntityType>) => {
-    return origin$.pipe(tap((entityType: EntityType) => this.dataSource?.setEntityType(entityType)))
-  })
-
+  /**
+   * Update entityType of schema in {@link DataSource}
+   * 
+   * @param entityType 
+   */
+  updateDataSourceSchemaEntityType(entityType: EntityType) {
+    this.dataSource?.setEntityType(entityType)
+  }
 
   /** ========================== Select Queries ========================== */
   /**
@@ -535,7 +538,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
           filter((error) => error instanceof Error)
         )
       ),
-      untilDestroyed(this)
+      takeUntilDestroyed(this.destroyRef)
     )
   }
 
@@ -567,7 +570,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   selectHierarchyMembers(entity: string, dimension: Dimension) {
     return this.dataSource$.pipe(filter(Boolean),
       switchMap((dataSource) => dataSource.selectMembers(entity, dimension)),
-      untilDestroyed(this),
+      takeUntilDestroyed(this.destroyRef)
     )
   }
 
@@ -592,7 +595,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
         this.originalDataSource$.pipe(
           filter(nonNullable),
           switchMap((dataSource) => dataSource.selectEntityType(entity).pipe(filter(isEntityType))),
-          untilDestroyed(this),
+          takeUntilDestroyed(this.destroyRef),
           shareReplay(1)
         )
       )
@@ -626,7 +629,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
         ...member,
         memberKey: wrapHierarchyValue(dimension.hierarchy, member.memberKey)
       }))),
-      untilDestroyed(this),
+      takeUntilDestroyed(this.destroyRef),
     )
   }
 

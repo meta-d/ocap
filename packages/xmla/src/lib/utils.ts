@@ -1,6 +1,7 @@
 /**
- * 试探性获取错误信息文本
- * @todo ? 有没有更好的方式
+ * Get error message text tentatively
+ * 
+ * @todo Is there a better way ?
  *
  * @param err
  * @returns
@@ -22,6 +23,12 @@ export function getErrorMessage(err: any): string {
   return error
 }
 
+/**
+ * Simplify error messages
+ * 
+ * @param message 
+ * @returns 
+ */
 export function simplifyErrorMessage(message: string): string {
-  return typeof message === 'string' ? message.trim().replace(/^00[A-Z0-9]{6}\s*The Mondrian XML: (Mondrian Error:)?/g, '') : message
+  return typeof message === 'string' ? message.trim().replace(/^00[A-Z0-9]{5,6}\s*The Mondrian XML: (Mondrian Error:)?/g, '') : message
 }

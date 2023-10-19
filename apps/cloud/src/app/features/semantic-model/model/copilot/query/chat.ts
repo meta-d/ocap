@@ -1,20 +1,24 @@
-import { uuid } from '@metad/components/core'
 import { CopilotChatConversation, CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
-import { C_MEASURES, CalculatedMember, omitBlank } from '@metad/ocap-core'
+import { omitBlank } from '@metad/ocap-core'
 import { of, throwError } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ModelCopilotChatConversation } from '../types'
-import { editModelExpression } from './schema'
+import { queryCube } from './schema'
 
 
-export function chatCalculatedMeasure(copilot: ModelCopilotChatConversation) {
+export function chatQuery(copilot: ModelCopilotChatConversation) {
   const { logger, copilotService, prompt, entityService } = copilot
 
   const entityType = entityService.entityType()
 
-  const systemPrompt = `Create MDX calculated measure for the cube based on the prompt.
+  let systemPrompt = `You are a BI analysis programmer using MDX language of cube. Create or edit MDX statement based on the prompt and the cube.
 The cube is: ${calcEntityTypePrompt(entityType)}.`
+
+  if (entityService._statement()) {
+    systemPrompt += `\nOriginal MDX statement is "${entityService._statement()}".`
+  }
+
   return copilotService
     .chatCompletions(
       [
@@ -28,7 +32,7 @@ The cube is: ${calcEntityTypePrompt(entityType)}.`
         }
       ],
       {
-        ...editModelExpression,
+        ...queryCube,
         ...omitBlank(copilot.options)
       }
     )
@@ -44,21 +48,15 @@ The cube is: ${calcEntityTypePrompt(entityType)}.`
     )
 }
 
-export function createCalculatedMeasure(copilot: CopilotChatConversation) {
+export function createQuery(copilot: CopilotChatConversation) {
   const { entityService, response } = copilot as ModelCopilotChatConversation
-  const calculatedMeasure = response.arguments as CalculatedMember
+  const { statement } = response.arguments
 
-  const key = uuid()
-  calculatedMeasure.__id__ = key
-  calculatedMeasure.dimension = C_MEASURES
-  calculatedMeasure.visible = true
-
-  entityService.addCalculatedMeasure(calculatedMeasure)
-  entityService.navigateCalculation(key)
+  entityService.statement = statement
 
   return of({
     ...copilot,
-    response: calculatedMeasure
+    response: statement
   })
 }
 
