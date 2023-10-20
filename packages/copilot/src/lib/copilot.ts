@@ -193,7 +193,7 @@ export interface CopilotEngine {
   /**
    * System prompt
    */
-  systemPrompt: string
+  systemPrompt?: string
   /**
    * Predefined prompts
    */

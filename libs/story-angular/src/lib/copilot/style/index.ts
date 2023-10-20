@@ -1,7 +1,6 @@
-import { CopilotCommand } from '@metad/copilot'
+import { CopilotCommand, logResult } from '@metad/copilot'
 import { StoryCopilotChatConversation } from '@metad/story/core'
 import { switchMap, tap } from 'rxjs'
-import { logResult } from '../common'
 import { chatStoryStyle, modifyStory } from './chat'
 
 export const StyleCommand = {
@@ -9,6 +8,6 @@ export const StyleCommand = {
   description: 'Edit styles of story',
   examples: ['change theme to dark'],
   processor: (copilot: StoryCopilotChatConversation) => {
-    return chatStoryStyle(copilot).pipe(tap(logResult), switchMap(modifyStory))
+    return chatStoryStyle(copilot).pipe(tap<StoryCopilotChatConversation>(logResult), switchMap(modifyStory))
   }
 } as CopilotCommand

@@ -10,8 +10,8 @@ import {
   fixDimension,
   uuid
 } from '@metad/story/core'
-import { combineLatest, concat, of } from 'rxjs'
-import { map, switchMap, tap } from 'rxjs/operators'
+import { combineLatest, concat, from, of, throwError } from 'rxjs'
+import { first, map, switchMap, tap } from 'rxjs/operators'
 import { chartAnnotationCheck, editWidgetChart } from '../chart/schema'
 import { editWidgetControl } from '../control'
 import { analyticsAnnotationCheck, editWidgetGrid } from '../grid/schema'
@@ -103,7 +103,7 @@ export function createStoryPage(copilot: StoryCopilotChatConversation) {
  * @returns
  */
 export function discoverPageWidgets(copilot: StoryCopilotChatConversation) {
-  const { copilotService, storyService, response: page, entityType } = copilot
+  const { response: page } = copilot
   return page.widgets?.length
     ? combineLatest(page.widgets.map((widget) => chatStoryWidget(copilot, widget))).pipe(map(() => copilot))
     : of(copilot)

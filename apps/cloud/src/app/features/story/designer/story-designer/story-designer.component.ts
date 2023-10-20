@@ -56,7 +56,7 @@ export class StoryDesignerComponent {
   })
 
   async ngOnInit() {
-    const preferences = await firstValueFrom(this.storyService.preferences$)
+    const preferences = this.storyService.preferences() ?? {}
     this.formGroup.patchValue(preferences)
     this.model = assign(this.model, cloneDeep(preferences))
   }

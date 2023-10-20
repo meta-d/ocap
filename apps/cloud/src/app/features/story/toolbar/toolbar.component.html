@@ -302,7 +302,7 @@
                     }
                 })"
             >
-                <img [src]="'/assets/icons/charts/' + chart.icon" class="w-full h-full" alt="{{chart.label}}"
+                <img [src]="'/assets/icons/charts/' + chart.icon" class="object-contain max-h-full" alt="{{chart.label}}"
                     [ngStyle]="{
                         transform: chart.rotate ? 'rotate(90deg)' : 'none',
                         width: chart.width ? chart.width : '100%'

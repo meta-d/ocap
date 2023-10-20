@@ -101,7 +101,8 @@ export const ZhHans = {
       NewCanvasPage: '新画布页面',
       SaveSuccess: '保存成功',
       SaveFailed: '保存失败',
-      Upload: '上传'
+      Upload: '上传',
+      CurrentPageNotExist: "当前页面不存在",
     },
     StoryPoint: {
       SaveFailed: '故事页面保存失败',

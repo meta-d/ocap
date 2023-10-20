@@ -53,7 +53,9 @@ export function getCommand(area: string, name: string) {
   return CopilotCommands$.value[area]?.[name]
 }
 
-export const SystemCommands = ['/clear']
+export const SystemCommandClear = 'clear'
+export const SystemCommandFree = 'free'
+export const SystemCommands = [`/${SystemCommandClear}`]
 
 export function logResult<T extends CopilotChatConversation = CopilotChatConversation>(copilot: T): void {
   const { logger, prompt } = copilot
@@ -68,7 +70,7 @@ export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCo
       description: item.description
     })),
     {
-      name: 'free',
+      name: SystemCommandFree,
       description: 'Free prompt'
     }
   ])}`

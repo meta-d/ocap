@@ -48,7 +48,7 @@ export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) 
   const widget = storyService.currentWidget()
   const page = storyService.currentPage()
 
-  logger?.debug(`Original chart widget is`, widget, page)
+  logger?.debug(`Original control widget is`, widget, page)
 
   const widgetKey = widget?.key
   const pageKey = page?.key
@@ -58,7 +58,7 @@ export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) 
       const { response, dataSource } = copilot
       const { arguments: anwser } = response
 
-      logger?.debug(`Edit chart widget anwser is`, anwser)
+      logger?.debug(`Edit control widget anwser is`, anwser)
 
       if (widgetKey) {
         storyService.updateWidget({

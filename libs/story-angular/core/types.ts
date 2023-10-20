@@ -652,6 +652,14 @@ export interface StoryState {
    * Is pan mode
    */
   isPanMode?: boolean
+
+  /**
+   * Default data source and cube configuration used by default.
+   */
+  defaultDataSettings?: {
+    dataSource: string;
+    entities: string[];
+  }
 }
 
 /**

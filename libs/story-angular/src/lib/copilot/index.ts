@@ -1,4 +1,5 @@
 export * from './control/index'
+export * from './common'
 
 import { registerCommand } from '@metad/copilot'
 import { StoryCopilotCommandArea } from '@metad/story/core'

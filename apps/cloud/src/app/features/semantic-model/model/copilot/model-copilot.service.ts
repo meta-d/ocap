@@ -14,6 +14,8 @@ import {
   nonNullable,
   selectCommandExamples,
   selectCommands,
+  SystemCommandClear,
+  SystemCommandFree,
   SystemCommands
 } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/core'
@@ -192,7 +194,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
 
     const { command, prompt } = getCommandPrompt(_prompt)
     if (command) {
-      if (command === 'clear') {
+      if (command === SystemCommandClear) {
         this.conversations = []
         return of([])
       } else if (!getCommand(ModelCopilotCommandArea, command)) {
@@ -245,7 +247,7 @@ export class ModelCopilotEngineService implements CopilotEngine {
                 )
               })
             )
-        } else if (command === 'free') {
+        } else if (command === SystemCommandFree) {
           return freeChat(copilot)
         }
       })

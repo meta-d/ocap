@@ -1,6 +1,22 @@
-import { StoryCopilotChatConversation } from "@metad/story/core";
+import { StoryCopilotChatConversation } from '@metad/story/core'
+import { first, from, map, of, switchMap, throwError } from 'rxjs'
 
-export function logResult(copilot: StoryCopilotChatConversation) {
-    const { logger, prompt } = copilot
-    logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
+export function checkDefaultEntity(copilot: StoryCopilotChatConversation) {
+  const { storyService, entityType } = copilot
+  return entityType ? of(copilot) : from(storyService.openDefultDataSettings()).pipe(
+    switchMap((result) => {
+      if (result && result.dataSource && result.entities?.[0]) {
+        return storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] }).pipe(
+          first(),
+          map((entityType) => ({
+            ...copilot,
+            entityType,
+            dataSource: result.dataSource
+          }))
+        )
+      } else {
+        return throwError(() => new Error(`请先选择数据集`))
+      }
+    })
+  )
 }

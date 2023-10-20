@@ -64,6 +64,7 @@ import {
   MoveDirection
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey, prefersColorScheme } from './utils'
+import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 
 @Injectable()
@@ -142,9 +143,10 @@ export class NxStoryService extends ComponentStore<StoryState> {
     })
   )
 
-  // Convert semantic model and combine model alias in story
+  // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
     map((models) => models.map((model) => convertStoryModel2DataSource(model))),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -690,6 +692,10 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   createStoryWidget(event: Partial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
+
+    if (!currentPageKey || !this.currentPage()) {
+      throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
+    }
 
     this._storyEvent$.next({
       key: currentPageKey,
@@ -1282,27 +1288,23 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  /**
-   * @deprecated 迁移到 widget 内
-   */
-  // updateStoryWidgetChartOptions(key: string, styles: cssStyle) {
-  //   const state = this.get()
-  //   if (!state.currentWidget?.key) {
-  //     throw new Error(`Please select an widget!`)
-  //   }
+  async openDefultDataSettings() {
+    const dataSources = await firstValueFrom(this.dataSources$)
 
-  //   (this.updater((state, styles: cssStyle) => {
-  //     const widget = findStoryWidget(state, state.currentWidget.key) as any
-  //     widget.chartOptions = {
-  //       ...(widget.chartOptions ?? {}),
-  //       [key]: {
-  //         ...(widget.chartOptions?.[key] ?? {}),
-  //         ...styles,
-  //       },
-  //       [`__show${key}__`]: true
-  //     } as any
-  //   }))(styles)
-  // }
+    const result = await firstValueFrom(this._dialog.open(NgmEntityDialogComponent, {
+      data: {
+        dataSources,
+        dsCoreService: this.dsCoreService
+      }
+    }).afterClosed())
+    console.log(result)
+    if (result) {
+      this.patchState({
+        defaultDataSettings: result
+      })
+    }
+    return result
+  }
 }
 
 function defaultResponsive() {

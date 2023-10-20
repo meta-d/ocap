@@ -364,7 +364,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   private readonly _members = toSignal(this.formGroup.get('members').valueChanges.pipe(startWith([])))
   public readonly membersSignal = computed(() => this.isMeasure() ? getEntityMeasures(this.entityType).map((property) => ({
     ...property,
-    selected: this._members().some((member) => member === property.name)
+    selected: this._members()?.some((member) => member === property.name)
   })) : null )
 
   // readonly members$: Observable<Array<Property>> = this.measures$.pipe(
