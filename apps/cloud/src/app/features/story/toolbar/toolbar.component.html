@@ -1,4 +1,4 @@
-<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto">
+<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800">
     <div *ngIf="expandLess" class="w-full px-2 flex-1 flex flex-col overflow-x-hidden overflow-y-auto" >
         <ng-content></ng-content>
 
@@ -109,7 +109,7 @@
             <mat-icon *ngIf="showDetails==='widgets'&&!onRight||showDetails!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
         </button>
 
-        <button mat-icon-button class="mat-menu-trigger text-lg"
+        <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
             matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
             matTooltipPosition="after"
             [class.active]="showDetails==='copilot'"
@@ -130,7 +130,7 @@
     
 </div>
 
-<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500"
+<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800"
     [ngClass]="onRight?'border-r':'border-l'"
 >
     <div class="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden">
@@ -302,7 +302,7 @@
                     }
                 })"
             >
-                <img [src]="'/assets/icons/charts/' + chart.icon" class="w-full h-full" alt="{{chart.label}}"
+                <img [src]="'/assets/icons/charts/' + chart.icon" class="object-contain max-h-full" alt="{{chart.label}}"
                     [ngStyle]="{
                         transform: chart.rotate ? 'rotate(90deg)' : 'none',
                         width: chart.width ? chart.width : '100%'
@@ -426,7 +426,7 @@
     </ng-container>
 </div>
 
-<div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full bg-white flex flex-col text-slate-800 overflow-hidden">
+<div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
     <pac-copilot-chat class="w-full h-full"
         [copilotEngine]="copilotEngine"
         [(conversations)]="conversations"
@@ -471,18 +471,18 @@
 
         <mat-divider></mat-divider>
 
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="copyWidget()">
             {{ 'Story.Toolbar.COPY.COPY' | translate: {Default: "Copy"} }}
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             [cdkMenuTriggerFor]="copyToMenu">
             {{ 'Story.Toolbar.COPY.COPY_TO' | translate: {Default: "Copy to"} }}...
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="duplicateWidget()">
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
@@ -504,18 +504,18 @@
 
 <ng-template #copyMenu>
     <div cdkMenu displayDensity="cosy">
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="copyWidget()">
             {{ 'Story.Toolbar.COPY.COPY' | translate: {Default: "Copy"} }}
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             [cdkMenuTriggerFor]="copyToMenu">
             {{ 'Story.Toolbar.COPY.COPY_TO' | translate: {Default: "Copy to"} }}...
         </button>
-        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected$ | async | isNil"
-            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected$ | async | isNil"
+        <button cdkMenuItem [cdkMenuItemDisabled]="isWidgetSelected()"
+            [class.ngm-cdk-menu-item__disabled]="isWidgetSelected()"
             (click)="duplicateWidget()">
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>

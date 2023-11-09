@@ -1,6 +1,6 @@
 pac-story-toolbar.pac-story-toolbar {
   --mat-expansion-container-background-color: transparent;
-  @apply bg-bluegray-800;
+  // @apply bg-bluegray-800;
 
   .mat-divider.mat-divider-vertical {
     @apply mx-4 h-8;
@@ -13,4 +13,8 @@ pac-story-toolbar.pac-story-toolbar {
     font-size: 0.75rem;
     line-height: 0.75rem;
   }
+}
+
+.pac-story-designer__menu-trigger.active {
+  @apply bg-gray-400/20;
 }

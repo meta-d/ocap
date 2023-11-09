@@ -20,7 +20,7 @@ import { ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { AgentType, isEqual } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { IsDirty, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import {
   EmulatedDevice,
   NxStoryService,
@@ -76,7 +76,7 @@ type ResponsiveBreakpointType = {
   },
   providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService, StoryCopilotEngineService]
 })
-export class StoryComponent implements OnInit {
+export class StoryComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
@@ -153,7 +153,7 @@ export class StoryComponent implements OnInit {
 
   readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark = toSignal(this.appService.isDark$)
-  readonly isDirty = toSignal(this.storyService.dirty$)
+  readonly _isDirty = toSignal(this.storyService.dirty$)
   readonly isMobile = toSignal(this.storyService.isMobile$)
   readonly pageKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey'])))
   readonly widgetKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey'])))
@@ -217,10 +217,14 @@ export class StoryComponent implements OnInit {
     if (prev) {
       this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
       this.renderer.removeClass(this.storyContainer.nativeElement, prev)
+      this.renderer.removeClass(this.storyContainer.nativeElement, 'dark')
     }
     if (current) {
       this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
       this.renderer.addClass(this.storyContainer.nativeElement, current)
+      if (current === 'thin') {
+        this.renderer.addClass(this.storyContainer.nativeElement, 'dark')
+      }
       if (echartsTheme?.[current]) {
         this.coreService.changeTheme(`${current}-${key}`)
       } else {
@@ -281,6 +285,10 @@ export class StoryComponent implements OnInit {
         this.appService.setNavigation({ catalog: MenuCatalog.Stories, id: this.story().id, label: this.story().name })
       }
     }
+  }
+
+  isDirty(): boolean {
+    return this._isDirty()
   }
 
   openDataExploration(id: string) {

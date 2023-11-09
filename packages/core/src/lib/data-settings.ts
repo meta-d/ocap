@@ -10,6 +10,7 @@ import {
 import { ChartAnnotation } from './annotations/chart'
 import { KPIType } from './annotations/kpi'
 import { Dimension } from './types'
+import { isNil } from './utils'
 
 export interface DataSettings {
   dataSource: string
@@ -28,3 +29,7 @@ export interface DataSettings {
 
   lazyInit?: boolean
 }
+
+// type Guards
+export const isDataSettings = (toBe): toBe is DataSettings =>
+  !isNil(toBe?.dataSource) && !isNil(toBe?.entitySet)

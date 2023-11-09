@@ -14,15 +14,14 @@ import {
   effect,
   inject
 } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatTabGroup } from '@angular/material/tabs'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { nonNullable } from '@metad/core'
-import { filter, map } from 'rxjs/operators'
+import { debounceTime, filter, map } from 'rxjs/operators'
 import { NxSettingsPanelService } from './settings-panel.service'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE, STORY_DESIGNER_SCHEMA } from '../types'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'ngm-settings-panel',
   templateUrl: './settings-panel.component.html',
@@ -31,7 +30,7 @@ import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE, STORY_DESIGNER_SCHEMA } 
     class: 'ngm-settings-panel'
   }
 })
-export class NxSettingsPanelComponent implements OnChanges {
+export class NgmSettingsPanelComponent implements OnChanges {
   public settingsService = inject(NxSettingsPanelService)
   private _cdr = inject(ChangeDetectorRef)
   private _viewContainerRef = inject(ViewContainerRef)
@@ -69,6 +68,8 @@ export class NxSettingsPanelComponent implements OnChanges {
   // Subscribers
   private _settingsComponentSub = this.settingsService.settingsComponent$
     .pipe(
+      debounceTime(100),
+      filter(nonNullable),
       map((settingsComponent) => {
         if (!settingsComponent.settingsPortals) {
           if (settingsComponent.components) {
@@ -155,7 +156,9 @@ export class NxSettingsPanelComponent implements OnChanges {
 
         return settingsComponent
       }),
-      filter(nonNullable))
+      filter(nonNullable),
+      takeUntilDestroyed()
+    )
     .subscribe(({ settingsPortals, drawer, title }) => {
       if (drawer) {
         this.drawerOpened = true
@@ -176,7 +179,7 @@ export class NxSettingsPanelComponent implements OnChanges {
       this._cdr.markForCheck()
       this._cdr.detectChanges()
     })
-  private _closeSub = this.settingsService.close$.subscribe(() => {
+  private _closeSub = this.settingsService.close$.pipe(takeUntilDestroyed()).subscribe(() => {
     if (this.drawerOpened) {
       this.closeDrawer()
     } else {

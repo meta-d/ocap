@@ -273,6 +273,9 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   })
 
   // for widget actions
+  /**
+   * Create new widget
+   */
   readonly createWidget = this.updater((state, input: Partial<StoryWidget>) => {
     const untitledTitle = this.getTranslation('Story.Common.Untitled', 'Untitled')
     const widget = {

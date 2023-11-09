@@ -28,6 +28,8 @@ import { IStoryWidget } from '@metad/core'
 import { GridsterConfig, GridsterItem } from 'angular-gridster2'
 import ShortUniqueId from 'short-unique-id'
 
+export const I18N_STORY_NAMESPACE = 'Story'
+
 export const uuid = new ShortUniqueId({ length: 10 })
 
 export type ID = string
@@ -48,6 +50,7 @@ export interface ComponentStyling {
   padding?: number
   borderRadius?: number
   backgroundColor: string;
+  background?: string
   backgroundImage?: string
   backgroundImageObj: IScreenshot
   backgroundSize?: string
@@ -92,8 +95,6 @@ export enum PageHeaderLabelEnum {
 export interface StoryPreferences {
   storyStyling?: ComponentStyling
   story?: {
-    // width?: number
-    // height?: number
     tabBar?: 'fixed' | 'point' | 'hidden' | null
     pageHeaderPosition?: MatTabHeaderPosition
     pageHeaderStretchTabs?: boolean
@@ -132,7 +133,16 @@ export interface StoryPreferences {
   }
   card?: {
     styling?: ComponentStyling
-  }
+  },
+  table?: {
+    styling?: ComponentStyling
+  },
+  text?: {
+    styling?: ComponentStyling
+  },
+  control?: {
+    styling?: ComponentStyling
+  },
   //
   options?: any
 }
@@ -642,6 +652,14 @@ export interface StoryState {
    * Is pan mode
    */
   isPanMode?: boolean
+
+  /**
+   * Default data source and cube configuration used by default.
+   */
+  defaultDataSettings?: {
+    dataSource: string;
+    entities: string[];
+  }
 }
 
 /**

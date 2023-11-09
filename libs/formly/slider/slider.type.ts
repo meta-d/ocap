@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Type } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { NgmSliderInputComponent } from '@metad/ocap-angular/common'
 import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core'
-import { FieldType, FormlyFieldProps, FormlyMatFormFieldModule } from '@ngx-formly/material/form-field'
+import { FieldType, FormlyFieldProps } from '@ngx-formly/material/form-field'
 
 interface SliderProps extends FormlyFieldProps {
   displayWith?: (value: number) => string
@@ -49,7 +49,7 @@ export interface FormlySliderFieldConfig extends FormlyFieldConfig<SliderProps> 
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./slider.type.scss'],
-  imports: [CommonModule, FormsModule, NgmSliderInputComponent, FormlyMatFormFieldModule]
+  imports: [CommonModule, FormsModule, NgmSliderInputComponent]
 })
 export class FormlyFieldSliderComponent extends FieldType<FieldTypeConfig<SliderProps>> {
   override defaultOptions = {

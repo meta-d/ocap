@@ -2,8 +2,7 @@
     <span>
         {{ 'PAC.KEY_WORDS.Copilot' | translate: {Default: 'Copilot'} }}
     </span>
-    <span *ngIf="copilotEngine?.name">
-        :<span>{{copilotEngine.name}}</span>
+    <span *ngIf="copilotEngine?.name">:<span>{{copilotEngine.name}}</span>
     </span>
 </div>
 
@@ -21,8 +20,7 @@
                             lineNumbers
                             [start]="5"
                             [data]="conversation.content"
-                            >
-                        </markdown>
+                        ></markdown>
                     </div>
     
                     <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
@@ -84,9 +82,21 @@
         </div>
     </ng-container>
 
-    <div class="flex-1"></div>
+    <div class="flex-1 flex flex-col justify-center items-center gap-1">
+        <ng-container *ngIf="!conversations?.length">
+            <div class="text-lg">
+                <span class="text-xl">💡</span>{{ 'PAC.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">/Command</span> + {{ 'PAC.Copilot.Prompt' | translate: {Default: 'prompt'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">CTRL + Enter</span> {{ 'PAC.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
+            </div>
+        </ng-container>
+    </div>
     
-    <ng-container *ngIf="prompts?.length">
+    <!-- <ng-container *ngIf="prompts?.length">
         <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
             <span class="-mt-3 px-2 bg-slate-50 inline-flex items-center">{{ 'PAC.Copilot.ExamplesOfPrompts' | translate: {Default: 'Examples of Prompt'} }}
                 <button (click)="examplesOpened=!examplesOpened">
@@ -109,15 +119,15 @@
                     {{ 'PAC.Copilot.Prompts.'+prompt | translate: {Default: prompt} }}</a>
             </div>
         </div>
-    </ng-container>
+    </ng-container> -->
     
 </div>
 
-<div class="relative p-2 m-3 border border-gray-200 rounded-lg shadow-sm"
+<div class="relative m-3 border border-gray-200 rounded-lg shadow-sm bg-white"
     [class.pac-colpilot__active]="isFoucs(userInput)"
 >
-    <mat-progress-bar mode="buffer" [class.opacity-100]="answering" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    <div *ngIf="answering" class="absolute w-full h-full t-0 l-0 flex justify-center items-center">
+    <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
+    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center">
         <button mat-stroked-button displayDensity="cosy" class="rounded-full"
             (click)="$event.stopPropagation();stopGenerating()">
             <div class="copilot-message-stop flex items-center">
@@ -129,16 +139,30 @@
         </button>
     </div>
 
-    <form class="flex flex-col" (ngSubmit)="askCopilotStream(prompt)">
-
+    <div class="flex flex-col p-2" >
         <textarea #userInput matInput class="flex-1" [placeholder]="placeholder"
-            [(ngModel)]="prompt" [disabled]="answering" [ngModelOptions]="{standalone: true}"
+            [formControl]="promptControl"
             cdkTextareaAutosize
             cdkAutosizeMinRows="3"
             cdkAutosizeMaxRows="8"
-            (keydown)="triggerFun($event)"
+            (keydown)="triggerFun($event, autoPrompts)"
+
+            [matAutocomplete]="autoPrompts"
+            matAutocompletePosition="above"
             >
         </textarea>
+
+        <mat-autocomplete #autoPrompts="matAutocomplete" autoActiveFirstOption hideSingleSelectionIndicator class="ngm-autocomplete-panel ngm-density__compact"
+            (optionActivated)="onPromptActivated($event)"
+        >
+            <mat-option *ngFor="let prompt of filteredPrompts()" [value]="prompt" [title]="prompt">
+                <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
+                    [highlight]="promptControl.value"
+                    [content]="prompt"
+                    customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
+                >{{prompt}}</div>
+            </mat-option>
+        </mat-autocomplete>
 
         <div class="shrink-0 flex items-center">
             <button mat-icon-button type="button" displayDensity="cosy"
@@ -155,42 +179,51 @@
             <span class="flex-1"></span>
 
             <button mat-icon-button displayDensity="cosy"
-                [disabled]="!prompt || answering"
+                [disabled]="!prompt || answering()"
+                (click)="askCopilotStream(promptControl.value)"
             >
                 <mat-icon fontSet="material-icons-round">send</mat-icon>
             </button>
         </div>
-    </form>
+    </div>
 </div>
 
-<pac-copilot-enable *ngIf="copilotNotEnabled$ | async" class="z-[101]" (navigated)="closePopper()">
+<pac-copilot-enable *ngIf="copilotNotEnabled()" class="z-[101]" (navigated)="closePopper()">
 </pac-copilot-enable>
 
 <popper-content #copilotOptions class="z-[101]">
     <div class="w-80 flex flex-col max-w-sm p-4 border-0 border-gray-200 rounded-lg shadow-lg
-        dark:bg-gray-800 dark:border-gray-700 bg-white/60 backdrop-blur-lg">
+        dark:bg-gray-800 dark:border-gray-700 bg-white/60 backdrop-blur-lg"
+        displayDensity="compact">
         <div class="text-base mb-2">
             {{ 'PAC.Copilot.Options' | translate: {Default: 'Options'} }}
         </div>
 
-        <section *ngIf="systemPrompt">
+        <section *ngIf="systemPrompt" [matTooltip]="systemPrompt" matTooltipPosition="above">
             <mat-checkbox [(ngModel)]="useSystemPrompt">
                 {{ 'PAC.Copilot.UseSystemPrompt' | translate: {Default: 'Use System Prompt'} }}
             </mat-checkbox>
         </section>
 
-        <label class="py-2 font-notoColorEmoji flex justify-between">
-            <span>
+        <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
+            <label class="flex-1">
                 {{ 'PAC.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
-            </span>
+            </label>
             
             <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
                 <mat-icon>refresh</mat-icon>
             </button>
-        </label>
-        <mat-radio-group class="flex flex-col gap-2 max-h-[120px] overflow-auto" [(ngModel)]="model">
-            <mat-radio-button *ngFor="let model of models" [value]="model.id">{{model.label}}</mat-radio-button>
-        </mat-radio-group>
+        </div>
+
+        <ngm-search class="w-full" [formControl]="searchModel"></ngm-search>
+        <mat-selection-list class="flex flex-col gap-2 max-h-[120px] overflow-auto"
+            [(ngModel)]="selectedModel"
+            [multiple]="false"
+            (ngModelChange)="changeSelectedModel($event)">
+            <mat-list-option *ngFor="let model of models()" [value]="model.id">
+                {{model.label}}
+            </mat-list-option>
+        </mat-selection-list>
 
         <label class="pt-4 font-notoColorEmoji">Temperature:<span matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>
         <mat-slider color="accent" min="0" max="2" step="0.1" value="1" discrete>

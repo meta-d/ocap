@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatFormFieldModule } from '@angular/material/form-field'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   selector: 'pac-formly-select',
@@ -22,6 +23,7 @@ import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatFormFieldModule,
     FormlyModule,
 
     TranslateModule,
@@ -32,6 +34,7 @@ import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
 })
 export class PACFormlySelectComponent extends FieldType implements OnInit {
   private translateService = inject(TranslateService)
+  private destroyRef = inject(DestroyRef)
 
   get valueFormControl() {
     return this.formControl as FormControl
@@ -43,7 +46,6 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
     if (this.props?.options instanceof Observable) {
       this.props.options
         .pipe(
-          untilDestroyed(this),
           catchError((err) => {
             this.valueFormControl.setErrors({
               error: this.translateService.instant('FORMLY.Select.UnableLoadOptionList', {
@@ -51,7 +53,8 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
               })
             })
             return EMPTY
-          })
+          }),
+          takeUntilDestroyed(this.destroyRef)
         )
         .subscribe((event) => {
           // Reset errors

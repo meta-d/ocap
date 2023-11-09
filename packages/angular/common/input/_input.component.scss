@@ -38,7 +38,7 @@
 }
 
 .ngm-input-label {
-  @apply p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
+  @apply px-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50;
 }
 
 .ngm-form-field__subscript-wrapper {
@@ -49,4 +49,8 @@
   .ngm-input-element {
     border-color: var(--mdc-theme-error);
   }
+}
+
+textarea.ngm-input-element {
+  @apply min-h-[50px];
 }

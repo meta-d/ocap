@@ -101,7 +101,8 @@ export const ZhHans = {
       NewCanvasPage: '新画布页面',
       SaveSuccess: '保存成功',
       SaveFailed: '保存失败',
-      Upload: '上传'
+      Upload: '上传',
+      CurrentPageNotExist: "当前页面不存在",
     },
     StoryPoint: {
       SaveFailed: '故事页面保存失败',
@@ -712,7 +713,8 @@ export const ZhHans = {
       ChartOptions: '图形配置',
       Options: '配置',
       Data: '数据',
-      Slicers: '切片器'
+      Slicers: '切片器',
+      DataSettings: '数据配置',
     },
     Template: {
       TemplateDelete: '删除模板',
@@ -848,6 +850,22 @@ export const ZhHans = {
       ChartAttributes: '图形属性',
       BarChart: '条形图',
       Colors: '颜色'
+    },
+    Copilot: {
+      InstructionExecutionComplete: '指令执行完成',
+      InstructionExecutionError: '指令执行错误',
+      PredefinedPrompts: [
+        '/story 设置为暗色主题',
+        '/story-style 设置科技感渐变色背景颜色',
+        '/add-widget 客户所在地区的销售额',
+        '/widget-style Set widget transparent background',
+        '/chart Chart series set line smooth',
+        '/chart Chart series set bar max width 20, rounded, shadow',
+        '/chart Chart series add average mark line',
+        '/chart Chart category axis line width 2, show axis tick',
+        '/widget Data analysis',
+        '/clear'
+      ]
     },
     STYLING: {
       CSS: {

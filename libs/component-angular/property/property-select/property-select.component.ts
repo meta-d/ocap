@@ -33,7 +33,7 @@ import {
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, switchMap, startWith, combineLatestWith, debounceTime, pairwise } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, shareReplay, switchMap, startWith, combineLatestWith, debounceTime, pairwise, tap } from 'rxjs/operators'
 import { FormattingComponent } from '@metad/components/entity'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreService } from '@metad/core'
@@ -344,6 +344,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   readonly calculations$ = this.measures$.pipe(map((measures) => measures.filter((property => isCalculationProperty(property) && negate(isIndicatorMeasureProperty)(property)))))
   readonly measureControls$ = this.calculations$.pipe(map((measures) => measures.filter(isMeasureControlProperty)))
   readonly isMeasure$ = this.property$.pipe(map((property) => property?.role === AggregationRole.measure || property?.name === C_MEASURES))
+  readonly isMeasure = computed(() => this.property()?.role === AggregationRole.measure || this.property()?.name === C_MEASURES)
   /**
    * Calculation property exclude indicator measure property
    */
@@ -360,33 +361,39 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
 
   readonly indicators$ = this.measures$.pipe(map(calculations => calculations?.filter(isIndicatorMeasureProperty) || []))
 
-  readonly members$: Observable<Array<Property>> = this.measures$.pipe(
-    switchMap((properties) => {
-      return combineLatest([
-        this.property$.pipe(
-          map((dimension) => {
-            if (dimension?.name === C_MEASURES) {
-              return properties
-                .filter((property) => property.role === AggregationRole.measure)
-                .map((item) => ({ ...item }))
-            }
-            return null
-          })
-        ),
-        // startWith 解决: 在 ngOnInit 初始化 formGroup, 但 template 订阅不到初始值 or 在 ngAfterViewInit 初始化 formGroup 但会报初始化完成后表达式又变化的检查错误
-        this.formGroup.get('members').valueChanges.pipe(startWith(this.members)),
-      ]).pipe(
-        map(([properties, members]: [any, any]) => {
-          properties?.forEach(
-            (item) => (item.selected = !!members?.find((member) => member === item.name))
-          )
-          return properties
-        })
-      )
-    }),
-    takeUntilDestroyed(),
-    shareReplay(1)
-  )
+  private readonly _members = toSignal(this.formGroup.get('members').valueChanges.pipe(startWith([])))
+  public readonly membersSignal = computed(() => this.isMeasure() ? getEntityMeasures(this.entityType).map((property) => ({
+    ...property,
+    selected: this._members()?.some((member) => member === property.name)
+  })) : null )
+
+  // readonly members$: Observable<Array<Property>> = this.measures$.pipe(
+  //   switchMap((properties) => {
+  //     return combineLatest([
+  //       this.property$.pipe(
+  //         map((dimension) => {
+  //           if (dimension?.name === C_MEASURES) {
+  //             return properties
+  //               .filter((property) => property.role === AggregationRole.measure)
+  //               .map((item) => ({ ...item }))
+  //           }
+  //           return null
+  //         })
+  //       ),
+  //       // startWith 解决: 在 ngOnInit 初始化 formGroup, 但 template 订阅不到初始值 or 在 ngAfterViewInit 初始化 formGroup 但会报初始化完成后表达式又变化的检查错误
+  //       this.formGroup.get('members').valueChanges.pipe(startWith(this.members)),
+  //     ]).pipe(
+  //       map(([properties, members]: [any, any]) => {
+  //         properties?.forEach(
+  //           (item) => (item.selected = !!members?.find((member) => member === item.name))
+  //         )
+  //         return properties
+  //       })
+  //     )
+  //   }),
+  //   takeUntilDestroyed(),
+  //   shareReplay(1)
+  // )
 
   readonly label$ = combineLatest([this.entityType$, this.formGroup.valueChanges])
     .pipe(
@@ -593,6 +600,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       this.entityProperties$,
       this.dimensionControl.valueChanges
     ]).pipe(
+      tap(console.warn),
       map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
       takeUntilDestroyed(),
     ).subscribe(this.property$)

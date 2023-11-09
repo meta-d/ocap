@@ -7,7 +7,7 @@ import { CanColor, CanDisable, mixinColor, mixinDisabled, mixinDisableRipple } f
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { NgmSelectModule } from '@metad/ocap-angular/common'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
   CalculationProperty,
@@ -35,7 +35,8 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     MatIconModule,
     MatTooltipModule,
     NgmSelectModule,
-    NgmEntityPropertyComponent
+    NgmEntityPropertyComponent,
+    DensityDirective
   ],
   selector: 'ngm-measure-select',
   templateUrl: './measure-select.component.html',
@@ -125,6 +126,7 @@ export class NgmMeasureSelectComponent
   private _formValueSub = this.formControl.valueChanges.pipe(distinctUntilChanged()).subscribe((value) => {
     this.onChange?.(value)
   })
+
   writeValue(obj: any): void {
     this.formControl.setValue(obj)
   }

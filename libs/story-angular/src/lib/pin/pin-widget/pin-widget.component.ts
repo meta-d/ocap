@@ -34,20 +34,6 @@ export class PinWidgetComponent implements OnInit {
 
   ngOnInit(): void {
     this.widget$ = this.storyService.selectWidget(this.pointKey, this.widgetId)
-
-    console.group('pin widget')
-    console.warn(this.pointKey)
-    console.warn(this.widgetId)
-    console.warn(this.story.filterBar)
-    console.warn(this.story)
-    console.groupEnd()
-
-    // this.smartFilterBarService.patchState({
-    //   dataSettings: this.story.filterBar?.dataSettings,
-    //   // filters: this.story.filterBar?.filters || this.story.filterBar?.options?.filters,
-    //   // today: this.story.filterBar?.today || this.story.filterBar?.options?.today,
-    // })
-
     this.storyService.setStory(this.story)
     this.storyService.setCurrentPageKey(this.pointKey)
   }

@@ -11,7 +11,7 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { BehaviorSubject, Observable, of } from 'rxjs'
 import { NxComponentSettingsComponent } from './component-form/component-form.component'
 import { NxDesignerModule } from './designer.module'
-import { NxSettingsPanelComponent } from './settings-panel/settings-panel.component'
+import { NgmSettingsPanelComponent } from './settings-panel/settings-panel.component'
 import { NxSettingsPanelService } from './settings-panel/settings-panel.service'
 import { DesignerSchema, STORY_DESIGNER_COMPONENT } from './types'
 
@@ -106,7 +106,7 @@ class NxDesignerWrapperModule {
 
 export default {
   title: 'Story/Designer',
-  component: NxSettingsPanelComponent,
+  component: NgmSettingsPanelComponent,
   argTypes: {},
   decorators: [
     moduleMetadata({
@@ -136,7 +136,7 @@ export default {
   ],
 } as Meta
 
-const Template: Story<NxSettingsPanelComponent> = (args) => ({
+const Template: Story<NgmSettingsPanelComponent> = (args) => ({
   template: `<ngm-designer-wrapper></ngm-designer-wrapper>`,
   props: {
     ...args,

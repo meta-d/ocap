@@ -4,18 +4,16 @@ import {
   Component,
   HostBinding,
   HostListener,
-  Inject,
   ViewChild,
   ViewContainerRef,
   inject
 } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
@@ -45,14 +43,14 @@ import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
-import { ModelCopilotEngineService } from './model-copilot.service'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import { IsDirty } from '@metad/core'
+import { ModelCopilotEngineService } from './copilot'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
@@ -64,11 +62,20 @@ import { stringifyTableType } from './utils'
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModelComponent extends TranslationBaseComponent {
+export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
 
   private readonly _modelCopilotEngine = inject(ModelCopilotEngineService)
+  public appService = inject(AppService)
+  private modelService = inject(SemanticModelService)
+  private modelsService = inject(ModelsService)
+  private storyStore = inject<NxStoryStore>(NX_STORY_STORE)
+  private route = inject(ActivatedRoute)
+  private router = inject(Router);
+  private _dialog = inject(MatDialog);
+  private _viewContainerRef = inject(ViewContainerRef);
+  private toastrService = inject(ToastrService);
 
   get copilotEngine() {
     return this._copilotEngine ?? this._modelCopilotEngine
@@ -124,7 +131,7 @@ export class ModelComponent extends TranslationBaseComponent {
       )
     ),
     map((tables) => sortBy(tables, 'name')),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly entitySets$ = combineLatest([
@@ -155,7 +162,7 @@ export class ModelComponent extends TranslationBaseComponent {
   public readonly writable$ = combineLatest([this.modelService.isWasm$, this.modelService.modelType$]).pipe(
     map(([isWasm, modelType]) => !isWasm && (modelType === MODEL_TYPE.OLAP || modelType === MODEL_TYPE.SQL))
   )
-  public readonly isDirty$ = this.modelService.dirty$
+  public readonly _isDirty = toSignal(this.modelService.dirty$)
   public readonly stories$ = this.modelService.stories$
   public readonly currentEntityType$ = this.modelService.currentEntityType$
 
@@ -167,24 +174,15 @@ export class ModelComponent extends TranslationBaseComponent {
 
   // inner states
   clearingServerCache: boolean
-  constructor(
-    public appService: AppService,
-    private modelService: SemanticModelService,
-    private modelsService: ModelsService,
-    @Inject(NX_STORY_STORE) private storyStore: NxStoryStore,
-    private route: ActivatedRoute,
-    private router: Router,
-    private _dialog: MatDialog,
-    private _viewContainerRef: ViewContainerRef,
-    private toastrService: ToastrService
-  ) {
-    super()
-  }
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
     this.appService.setNavigation({ catalog: MenuCatalog.Models, id: this.model.id, label: this.model.name })
     this.modelService.initModel(this.model)
+  }
+
+  isDirty(): boolean {
+    return this._isDirty()
   }
 
   trackById(i: number, item: SemanticModelEntity) {

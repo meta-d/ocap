@@ -6,7 +6,8 @@
   [chartType]="chartType$ | async"
   [formControl]="formControl"
 >
-  <button ngmSuffix class="opacity-0 group-hover:opacity-100 transition-opacity duration-100" displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
+  <button ngmSuffix class="opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+    displayDensity="compact" ngmAppearance="danger" mat-icon-button color="warn"
     (click)="$event.stopPropagation();$event.preventDefault();killMyself()">
     <mat-icon>clear</mat-icon>
   </button>

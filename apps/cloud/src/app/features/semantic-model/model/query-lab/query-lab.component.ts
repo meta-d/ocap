@@ -1,16 +1,17 @@
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, Component, Optional } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
+import { IsDirty } from '@metad/core'
+import { cloneDeep } from '@metad/ocap-core'
+import { convertModelQueryResult } from 'apps/cloud/src/app/@core'
+import { orderBy } from 'lodash-es'
+import { map } from 'rxjs'
 import { TranslationBaseComponent } from '../../../../@shared'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
-import { QueryLabService } from './query-lab.service'
-import { convertModelQueryResult } from 'apps/cloud/src/app/@core'
-import { cloneDeep } from '@metad/ocap-core'
 import { ModelQuery, ModelQueryState } from '../types'
-import { map } from 'rxjs'
-import { orderBy } from 'lodash-es'
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
+import { QueryLabService } from './query-lab.service'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,26 +23,26 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
   },
   providers: [QueryLabService]
 })
-export class QueryLabComponent extends TranslationBaseComponent {
-  get isDirty$() {
-    return this.queryLabService.isDirty
-  }
-
-  public readonly queries = toSignal(this.queryLabService.queries$.pipe(
-    map((queries) => orderBy(queries, ['index'])),
-  ))
+export class QueryLabComponent extends TranslationBaseComponent implements IsDirty {
+  public readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
   private readonly modelId = toSignal(this.modelService.select((state) => state.model.id))
-  private readonly modelQueries = toSignal(this.modelService.select((state) => state.queries ?? state.model.queries.map((query) => {
-    query = convertModelQueryResult(query)
-    return {
-      key: query.key,
-      origin: cloneDeep(query),
-      query: query,
-      dirty: false,
-      results: []
-    } as ModelQueryState
-  })))
+  private readonly modelQueries = toSignal(
+    this.modelService.select(
+      (state) =>
+        state.queries ??
+        state.model.queries.map((query) => {
+          query = convertModelQueryResult(query)
+          return {
+            key: query.key,
+            origin: cloneDeep(query),
+            query: query,
+            dirty: false,
+            results: []
+          } as ModelQueryState
+        })
+    )
+  )
 
   constructor(
     public modelService: SemanticModelService,
@@ -64,8 +65,12 @@ export class QueryLabComponent extends TranslationBaseComponent {
     return item.key
   }
 
-  isDirty(key: string) {
+  isQueryDirty(key: string) {
     return this.queryLabService.dirty[key]
+  }
+
+  isDirty() {
+    return this.queryLabService.isDirty
   }
 
   addQuery() {

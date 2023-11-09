@@ -52,6 +52,7 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs'
 import { distinctUntilChanged, filter, map, pairwise, shareReplay, skip, startWith, tap, withLatestFrom } from 'rxjs/operators'
 import { Step } from '@metad/ocap-angular/common'
 import { AnalyticalCardService } from './analytical-card.service'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 export interface DrillLevel {
@@ -309,6 +310,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         }
       })
     }),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   /**

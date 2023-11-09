@@ -1,8 +1,8 @@
+import { ISemanticModel } from '@metad/contracts'
 import { AgentType, DataSourceOptions, isEmpty, isNil, nonNullable, Syntax } from '@metad/ocap-core'
 import { combineLatest, firstValueFrom, Observable, tap } from 'rxjs'
 import { NxStoryStore } from './story-store.service'
 import { ComponentStyling, StoryModel } from './types'
-import { ISemanticModel } from '@metad/contracts'
 
 export function getSemanticModelKey(model: StoryModel | ISemanticModel) {
   return model?.key ?? model?.name
@@ -134,6 +134,9 @@ export function componentStyling(styling: ComponentStyling) {
     componentStyles.backgroundImage = `url(${styling.backgroundImageObj?.url ?? ''})`
   } else if(styling.backgroundImage) {
     componentStyles.backgroundImage = styling.backgroundImage
+  }
+  if (styling.background) {
+    componentStyles.background = styling.background
   }
   if (componentStyles.backgroundImage) {
     componentStyles.backgroundSize = styling.backgroundSize ?? 'cover'

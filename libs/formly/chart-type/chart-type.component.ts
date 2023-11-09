@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
-import { MatDialog } from '@angular/material/dialog'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
 import { isEqual, isNil, isString, omit } from '@metad/ocap-core'
@@ -8,7 +7,6 @@ import { FieldType } from '@ngx-formly/core'
 import { NgmCopilotService, NxChartType } from '@metad/core'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
-import { TranslateService } from '@ngx-translate/core'
 import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { toSignal } from '@angular/core/rxjs-interop'
@@ -234,28 +232,6 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
       this.field.parent.formControl.setValue(this.field.parent.model)
     }
   }
-
-  // async openCode() {
-  //   const result = await firstValueFrom(this._dialog.open(ChartTypeCodeEditorComponent, {
-  //     hasBackdrop: false,
-  //     panelClass: 'medium',
-  //     data: {
-  //       model: this.chartTypeForm.value?.scripts,
-  //       language: 'javascript',
-  //       onApply: (model) => {
-  //         this.chartTypeForm.patchValue({
-  //           scripts: model
-  //         })
-  //       }
-  //     }
-  //   }).afterClosed())
-
-  //   if (result !== undefined) {
-  //     this.chartTypeForm.patchValue({
-  //       scripts: result
-  //     })
-  //   }
-  // }
 
   async askComplete() {
     this.answering = true

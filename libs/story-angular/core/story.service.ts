@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
 import { inject, Inject, Injectable, Injector, Optional } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -64,6 +64,7 @@ import {
   MoveDirection
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey, prefersColorScheme } from './utils'
+import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 
 @Injectable()
@@ -114,6 +115,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     map((options) => options?.preferences),
     distinctUntilChanged()
   )
+  readonly preferences = toSignal(this.preferences$)
   readonly advancedStyle$ = this.storyOptions$.pipe(
     map((options) => options?.advancedStyle),
     distinctUntilChanged()
@@ -141,9 +143,10 @@ export class NxStoryService extends ComponentStore<StoryState> {
     })
   )
 
-  // Convert semantic model and combine model alias in story
+  // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
     map((models) => models.map((model) => convertStoryModel2DataSource(model))),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -191,6 +194,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
   )
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
+  public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
   public readonly pageStates$ = this.select((state) => state.points).pipe(filter(nonNullable))
   readonly points$ = this.pageStates$.pipe(
@@ -216,14 +220,13 @@ export class NxStoryService extends ComponentStore<StoryState> {
     displayPoints?.findIndex((item) => item.key === currentPageKey)
   )
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
-    map(([currentPageKey, pageStates]) => {
-      return pageStates.find((pageState) => pageState.key === currentPageKey)
-    })
+    map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
   public readonly currentPageWidgets$ = this.currentPage$.pipe(
     map((pageState) => pageState?.widgets),
   )
-  readonly currentWidget$ = this.select((state) => state.currentWidget)
+  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state?.storyPoint)))
+  readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
@@ -436,8 +439,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
     return result
   }
 
-  async getDefaultDataSource() {
-    const story = await firstValueFrom(this.story$)
+  getDefaultDataSource() {
+    const story = this.story
     const defaultModel = story.models?.[0]
     return {
       dataSource: defaultModel?.key,
@@ -531,22 +534,38 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   }
 
+  /**
+   * New story page
+   * 
+   * @param page 
+   */
   async newStoryPage(page: Partial<StoryPoint>) {
     const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
     if (name) {
-      const key = uuid()
-      this.addStoryPage({
+      const key = page.key ?? uuid()
+      const _page = {
         ...page,
         type: page.type ?? StoryPointType.Canvas,
         key,
         name,
-        storyId: this.story.id
-      })
+        storyId: this.story.id,
+        // Add widgets
+        widgets: page.widgets?.map((widget) => ({
+          ...widget,
+          key: widget.key ?? uuid(),
+        }))
+      }
+      this.addStoryPage(_page)
       this.setCurrentPageKey(key)
+
+      return _page
     }  
   }
 
-  readonly addStoryPage = this.updater((state, input: StoryPoint) => {
+  /**
+   * Add page into story internal
+   */
+  private readonly addStoryPage = this.updater((state, input: StoryPoint) => {
     state.points = state.points || []
     state.points.push({
       key: input.key,
@@ -671,15 +690,19 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  async createStoryWidget(event: Partial<StoryWidget>) {
-    const currentPageKey = await firstValueFrom(this.currentPageKey$)
+  createStoryWidget(event: Partial<StoryWidget>) {
+    const currentPageKey = this.currentPageKey()
+
+    if (!currentPageKey || !this.currentPage()) {
+      throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
+    }
 
     this._storyEvent$.next({
       key: currentPageKey,
       type: StoryEventType.CREATE_WIDGET,
       data: {
+        dataSettings: this.getDefaultDataSource(),
         ...event,
-        dataSettings: await this.getDefaultDataSource()
       }
     })
   }
@@ -1001,9 +1024,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  async removeCurrentWidget() {
-    const currentPageKey = await firstValueFrom(this.currentPageKey$)
-    const currentWidget = await firstValueFrom(this.currentWidget$)
+  removeCurrentWidget() {
+    const currentPageKey = this.currentPageKey()
+    const currentWidget = this.currentWidget()
 
     this._storyEvent$.next({
       key: currentPageKey,
@@ -1163,6 +1186,14 @@ export class NxStoryService extends ComponentStore<StoryState> {
       ...preferences
     }
   })
+
+  readonly mergeStoryPreferences = this.updater((state, preferences: Partial<StoryPreferences>) => {
+    state.story.options = state.story.options ?? {}
+    state.story.options.preferences = assignDeepOmitBlank((state.story.options?.preferences ?? {}),
+      preferences,
+      Number.MAX_SAFE_INTEGER
+    )
+  })
   
   readonly zoomIn = this.updater((state) => {
     state.story.options = {
@@ -1257,29 +1288,23 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   })
 
-  /**
-   * @deprecated 迁移到 widget 内
-   */
-  updateStoryWidgetChartOptions(key: string, styles: cssStyle) {
-    const state = this.get()
-    if (!state.currentWidget?.key) {
-      throw new Error(`Please select an widget!`)
+  async openDefultDataSettings() {
+    const dataSources = await firstValueFrom(this.dataSources$)
+
+    const result = await firstValueFrom(this._dialog.open(NgmEntityDialogComponent, {
+      data: {
+        dataSources,
+        dsCoreService: this.dsCoreService
+      }
+    }).afterClosed())
+    console.log(result)
+    if (result) {
+      this.patchState({
+        defaultDataSettings: result
+      })
     }
-
-    (this.updater((state, styles: cssStyle) => {
-      const widget = findStoryWidget(state, state.currentWidget.key) as any
-      widget.chartOptions = {
-        ...(widget.chartOptions ?? {}),
-        [key]: {
-          ...(widget.chartOptions?.[key] ?? {}),
-          ...styles,
-        },
-        [`__show${key}__`]: true
-      } as any
-    }))(styles)
+    return result
   }
-
-  
 }
 
 function defaultResponsive() {

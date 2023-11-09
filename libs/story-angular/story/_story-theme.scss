@@ -21,7 +21,7 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
 
   .ngm-story {
     color: mat.get-color-from-palette($foreground, text);
-    background: mat.get-color-from-palette($background, background);
+    background: var(--ngm-bg-color);
   }
 
   .ngm-story__story-container {

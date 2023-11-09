@@ -21,7 +21,6 @@ import {
   isEmpty,
   Dimension
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { CalculationEditorComponent } from '@metad/components/property'
 import {
   AbstractStoryWidget,
@@ -44,9 +43,9 @@ import {
   switchMap,
   withLatestFrom
 } from 'rxjs/operators'
-import { determineControlType, InputControlOptions } from './types'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
+import { determineControlType, InputControlOptions } from './types'
 
 
 export interface InputControlStyling extends StoryWidgetStyling {
@@ -57,7 +56,7 @@ export interface InputControlState extends StoryWidgetState<InputControlOptions,
   entityType: EntityType
 }
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-input-control',
   templateUrl: './input-control.component.html',
@@ -115,7 +114,7 @@ export class NxInputControlComponent
     distinctUntilChanged(),
     filter((dataSource) => !!dataSource),
     switchMap((dataSource) => this.dsCoreService.getDataSource(dataSource)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly dimension = computed(() => this.dataSettingsSignal()?.dimension ?? this.optionsSignal()?.dimension)
@@ -130,7 +129,7 @@ export class NxInputControlComponent
         switchMap((dataSource) => dataSource.selectEntityType(entity).pipe(filter(isEntityType))),
       )
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -179,6 +178,7 @@ export class NxInputControlComponent
   })
 
   public readonly cascadingEffect$ = this.options$.pipe(map((options) => options?.cascadingEffect))
+
   public readonly dataSettings$ = combineLatest([
     this._dataSettings$,
     this.selectionVariant$.pipe(
@@ -197,6 +197,7 @@ export class NxInputControlComponent
         } as DataSettings & {dimension?: Dimension}
       }),
     )
+  public readonly _dataSettings = toSignal(this.dataSettings$)
   public members = toSignal(this.slicer$.pipe(map((slicer) => slicer?.members ?? []), startWith([])))
 
   public readonly displayMembers = computed(() => {
@@ -226,7 +227,8 @@ export class NxInputControlComponent
   private readonly entityTypeSub = this.entityType$.pipe(takeUntilDestroyed()).subscribe((entityType) => {
     this.entityType.set(entityType)
   })
-  private _menuClickSub = this.widgetService.onMenuClick().subscribe(async (menu) => {
+
+  private _menuClickSub = this.widgetService.onMenuClick().pipe(takeUntilDestroyed()).subscribe(async (menu) => {
     switch(menu.key) {
       case 'clearDefaultMembers':
         this.updateOptions({
@@ -249,6 +251,7 @@ export class NxInputControlComponent
   private datesSub = this.options$.pipe(
     map((options) => options?.dates),
     distinctUntilChanged(),
+    takeUntilDestroyed()
   ).subscribe((dates) => {
     this.dates = dates?.map((d) => new Date(d)) ?? []
   })
@@ -367,10 +370,8 @@ export class NxInputControlComponent
   }
 
   async onMeasureSelectChange(name: string) {
-    const dataSettings = await firstValueFrom(this.dataSettings$)
+    const dataSettings = this._dataSettings()
     const property = await firstValueFrom(this.property$)
-
-    // this.measureFormControl.setValue(name)
 
     this.storyService.updateCalculationMeasure({
       dataSettings,
@@ -387,7 +388,7 @@ export class NxInputControlComponent
   }
 
   async openCalculationEditor() {
-    const dataSettings = await firstValueFrom(this.dataSettings$)
+    const dataSettings = this._dataSettings()
     const property = await firstValueFrom(this.property$)
     const entityType = await firstValueFrom(this.entityType$)
     const result = await firstValueFrom(this._dialog
@@ -407,7 +408,7 @@ export class NxInputControlComponent
   }
 
   async openParameterEditor() {
-    const dataSettings = await firstValueFrom(this.dataSettings$)
+    const dataSettings = this._dataSettings()
     const property = await firstValueFrom(this.property$)
     const entityType = await firstValueFrom(this.entityType$)
 
@@ -441,12 +442,14 @@ export class NxInputControlComponent
    * @param slicer 
    */
   onSlicerChange(slicer: ISlicer) {
-    if (!slicer.dimension) {
-      slicer.dimension = this.dimension()
+    if (slicer) {
+      if (!slicer.dimension) {
+        slicer.dimension = this.dimension()
+      }
+      this.slicer$.next(slicer)
+      // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
+      this.slicersChange.emit([structuredClone(this.slicer)])
     }
-    this.slicer$.next(slicer)
-    // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
-    this.slicersChange.emit([structuredClone(this.slicer)])
   }
 
   openDesigner() {

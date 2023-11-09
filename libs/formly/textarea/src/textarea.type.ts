@@ -43,6 +43,11 @@ export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaPro
   (cdkDropListDropped)="drop($event)"
 >
 </textarea>
+<mat-error class="text-xs h-4">
+  <ng-container *ngIf="formControl.invalid">
+    <span *ngFor="let item of formControl.errors | keyvalue">{{item.value.message}}</span>
+  </ng-container>
+</mat-error>
   `,
   providers: [
     // fix for https://github.com/ngx-formly/ngx-formly/issues/1688

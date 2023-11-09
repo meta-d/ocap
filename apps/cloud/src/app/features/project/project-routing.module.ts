@@ -60,7 +60,6 @@ const routes: Routes = [
         loadComponent() {
           return StoryViewerComponent
         },
-        canDeactivate: [DirtyCheckGuard],
         data: { title: 'pac.menu.story' },
         resolve: { story: StoryResolver }
       },

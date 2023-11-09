@@ -1,5 +1,5 @@
 <form (ngSubmit)="onSubmit()" class="flex flex-col justify-around items-stretch">
-  <formly-form *ngFor="let item of fields$ | async"
+  <formly-form *ngFor="let item of formlyForms()"
     [form]="item.formGroup"
     [fields]="item.fields"
     [model]="model"

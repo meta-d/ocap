@@ -151,6 +151,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
       this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
     }
   })
+  
   constructor(
     public appService: AppService,
     public storyService: NxStoryService,

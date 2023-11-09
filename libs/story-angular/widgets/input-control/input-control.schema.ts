@@ -66,7 +66,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
     const dimensionField = {
       className: FORMLY_W_FULL,
       key: 'dimension',
-      type: 'input-control',
+      type: 'chart-property',
       props: {
         dataSettings: this.dataSettings$,
         entityType: this.entityType$,
@@ -173,7 +173,7 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
     }
 
     if (controlType === ControlType.dropDownList) {
-      optionsFieldGroup.push(DataTable('ngm-formly__col ngm-formly__col-12', i18nStoryWidgets?.Filter))
+      optionsFieldGroup.push(DataTable(FORMLY_W_FULL, i18nStoryWidgets?.Filter))
     }
 
     return [

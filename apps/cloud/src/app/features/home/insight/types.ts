@@ -18,7 +18,7 @@ export const ChartSchema = z.object({
   dimensions: z
     .array(
       z.object({
-        dimension: z.string().describe('The name of the dimension'),
+        dimension: z.string().describe('The name of dimension'),
         hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
         level: z.string().optional().describe('The name of the level in the hierarchy'),
       })

@@ -31,11 +31,7 @@ export class NgmGridSettingsComponent implements ControlValueAccessor {
   formGroup = new FormGroup({})
 
   fields = toSignal(
-    this.translateService.stream('Story.Widgets').pipe(
-      map((i18n) => {
-        return getGridOptionsSchema(i18n)
-      })
-    )
+    this.translateService.stream('Story.Widgets').pipe(map(getGridOptionsSchema))
   )
 
   model = {}

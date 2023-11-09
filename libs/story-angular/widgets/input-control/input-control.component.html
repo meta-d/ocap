@@ -21,7 +21,7 @@
                 [placeholder]="options?.placeholder"
                 [appearance]="styling?.appearance?.appearance"
                 [displayDensity]="styling?.appearance?.displayDensity"
-                [dataSettings]="dataSettings$ | async"
+                [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [selectionType]="options?.selectionType"
                 [granularity]="options?.granularity"
@@ -36,7 +36,7 @@
         
             <ngm-member-list *ngSwitchCase="INPUT_CONTROL_TYPE.Select" class="w-full flex-1"
                 [appearance]="styling?.appearance"
-                [dataSettings]="dataSettings$ | async"
+                [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
                 [ngModel]="slicer"
@@ -45,7 +45,7 @@
         
             <ngm-member-tree *ngSwitchCase="INPUT_CONTROL_TYPE.TreeSelect" class="w-full flex-1"
                 [appearance]="styling?.appearance"
-                [dataSettings]="dataSettings$ | async"
+                [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
                 [ngModel]="slicer"
@@ -54,7 +54,7 @@
         
             <ngm-smart-select *ngSwitchCase="CONTROL_TYPE.dropDownList" class="w-full justify-self-start"
                 [appearance]="styling?.appearance"
-                [dataSettings]="dataSettings$ | async"
+                [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
                 [ngModel]="slicer"
@@ -80,7 +80,7 @@
             </ng-container>
         
             <ngm-parameter *ngSwitchCase="INPUT_CONTROL_TYPE.Parameter" class="w-full flex-1"
-                [dataSettings]="dataSettings$ | async"
+                [dataSettings]="_dataSettings()"
                 [options]="options"
                 [appearance]="styling?.appearance"
                 [displayBehaviour]="dimension()?.displayBehaviour"

@@ -43,26 +43,3 @@ export async function tryHttp<T>(request: Observable<T>, toastrService?: ToastrS
     toastrService?.error(getErrorMessage(err))
   }
 }
-
-export function calcEntityTypePrompt(entityType: EntityType) {
-  return JSON.stringify({
-    name: entityType.name,
-    caption: entityType.caption,
-    dimensions: getEntityDimensions(entityType).map((dimension) => ({
-      name: dimension.name,
-      caption: dimension.caption,
-      hierarchies: dimension.hierarchies?.map((item) => ({
-        name: item.name,
-        caption: item.caption,
-        levels: item.levels?.map((item) => ({
-          name: item.name,
-          caption: item.caption
-        }))
-      }))
-    })),
-    measures: getEntityMeasures(entityType).map((item) => ({
-      name: item.name,
-      caption: item.caption
-    }))
-  })
-}

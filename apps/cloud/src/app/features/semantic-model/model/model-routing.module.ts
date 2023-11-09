@@ -11,7 +11,7 @@ const routes: Routes = [
     path: '',
     component: ModelComponent,
     resolve: { storyModel: StoryModelResolver },
-    // canDeactivate: [DirtyCheckGuard],
+    canDeactivate: [DirtyCheckGuard],
     data: {
       reuseComponent: false
     },

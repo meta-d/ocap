@@ -48,7 +48,7 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
       modeling: hierarchy,
       dimension,
       hierarchies: dimension?.hierarchies,
-      dimensions: this.sharedDimensions().filter((item) => item.__id__ !== dimension.__id__)
+      dimensions: this.sharedDimensions()?.filter((item) => item.__id__ !== dimension.__id__)
     }))
   )
 

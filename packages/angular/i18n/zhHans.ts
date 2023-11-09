@@ -63,6 +63,9 @@ export const ZhHans = {
       SelectAll: '选择所有',
       Pin: '固定'
     },
+    Entity: {
+      SelectEntities: '选择数据集'
+    },
     EntitySchema: {
       Parameters: '参数',
       Measures: '度量',

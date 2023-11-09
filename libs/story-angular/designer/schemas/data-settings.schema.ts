@@ -210,6 +210,11 @@ export abstract class DataSettingsSchemaService<
     return this.select((state) => state.model)
   }
 
+  /**
+   * Observe the data sources in story
+   * 
+   * @returns 
+   */
   selectDataSourceList() {
     return this.storyService.dataSources$
   }

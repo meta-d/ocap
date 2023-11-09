@@ -37,7 +37,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
-import { DisplayBehaviour } from '@metad/ocap-core'
+import { DisplayBehaviour, nonNullable } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
@@ -174,12 +174,14 @@ export class NgmSelectComponent
 
   constructor(_elementRef: ElementRef) {
     super(_elementRef)
-    effect(
-      () => {
-        this.autoInput.set(this.selectOptions.find((item) => item[this.valueKey] === this.value()))
-      },
-      { allowSignalWrites: true }
-    )
+    effect(() => {
+      const selectedOption = this.selectOptions.find((item) => item[this.valueKey] === this.value())
+      if (nonNullable(selectedOption?.[this.valueKey])) {
+        this.autoInput.set(selectedOption)
+      } else {
+        this.autoInput.set(null)
+      }
+    }, { allowSignalWrites: true })
   }
 
   writeValue(obj: any): void {

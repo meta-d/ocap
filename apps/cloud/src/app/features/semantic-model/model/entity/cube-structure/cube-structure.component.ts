@@ -11,13 +11,12 @@ import {
   isVisible,
   PropertyMeasure
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { NGXLogger } from 'ngx-logger'
 import { map, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { ModelEntityService } from '../entity.service'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -26,7 +25,6 @@ import { toSignal } from '@angular/core/rxjs-interop'
  * @param cube 本系统多维分析模型的配置或者对目标系统多维模型的增强信息
  * @returns cube 双向绑定的输出类型
  */
-@UntilDestroy({checkProperties: true})
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-cube-structure',
@@ -94,7 +92,7 @@ export class ModelCubeStructureComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _selectedNodeSub = this.checklistSelection.changed.subscribe((selected) => {
+  private _selectedNodeSub = this.checklistSelection.changed.pipe(takeUntilDestroyed()).subscribe((selected) => {
     const node: string = selected.added[0]
     if (node) {
       this.selectedChange.emit(node)
@@ -103,7 +101,7 @@ export class ModelCubeStructureComponent {
     }
   })
   // 手动 Stop Receiving dropListRef, 因为官方的程序在跨页面 DropList 间似乎 detectChanges 时间先后有问题
-  private _dragReleasedSub = this.modelService.dragReleased$.subscribe((_dropListRef) => {
+  private _dragReleasedSub = this.modelService.dragReleased$.pipe(takeUntilDestroyed()).subscribe((_dropListRef) => {
     this.cdkDropList.forEach((list) => list._dropListRef._stopReceiving(_dropListRef))
     this._cdr.detectChanges()
   })
@@ -143,7 +141,7 @@ export class ModelCubeStructureComponent {
 
   onAddCalculatedMember(event) {
     event.stopPropagation()
-    this.cubeState.newCalculatedMember(null)
+    this.cubeState.newCalculatedMeasure(null)
   }
 
   onCalculatedMemberEdit(member: Partial<CalculatedMember>) {
@@ -229,7 +227,7 @@ export class ModelCubeStructureComponent {
     if (event.previousContainer === event.container) {
       this.cubeState.moveItemInCalculatedMember(event)
     } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
-      this.cubeState.newCalculatedMember({index: event.currentIndex, column: event.item.data.name})
+      this.cubeState.newCalculatedMeasure({index: event.currentIndex, column: event.item.data.name})
     }
   }
 

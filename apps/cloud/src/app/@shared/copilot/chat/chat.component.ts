@@ -5,20 +5,18 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
-  Directive,
+  effect,
   ElementRef,
   EventEmitter,
   inject,
   Input,
-  OnChanges,
   Output,
-  Renderer2,
   signal,
-  SimpleChanges,
   ViewChild
 } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatTooltipModule } from '@angular/material/tooltip'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { HighlightDirective } from '@metad/components/core'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { DensityDirective } from '@metad/ocap-angular/core'
@@ -33,152 +31,123 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { CreateChatCompletionRequest } from 'openai'
-import { delay, firstValueFrom, map, scan, Subscription } from 'rxjs'
+import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
 import { CopilotService, getErrorMessage, Store } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
 import { UserAvatarComponent } from '../../user'
 import { CopilotEnableComponent } from '../enable/enable.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { MatAutocomplete, MatAutocompleteActivatedEvent } from '@angular/material/autocomplete'
+import { CopilotChatTokenComponent } from '../token/token.component'
+import { NgmSearchComponent } from '@metad/ocap-angular/common'
 
 
-@Component({
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'pac-copilot-token',
-  template: `<span
-    class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300"
-    matTooltip="{{ 'PAC.Copilot.CharacterLength' | translate: { Default: 'Character length' } }}"
-  >
-    <span *ngIf="characterLength >= 4000" class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
-    <span *ngIf="characterLength < 4000" class="inline-block w-2 h-2 bg-gray-300 rounded-full"></span>
-    {{ characterLength }}
-  </span>`,
-  styles: [``],
-  imports: [CommonModule, MatTooltipModule, TranslateModule],
-  host: {
-    class: 'pac-copilot-token'
-  }
-})
-export class CopilotChatTokenComponent implements OnChanges {
-  @Input() content: string
+// /**
+//  * @deprecated 暂时不用了
+//  */
+// @Directive({
+//   standalone: true,
+//   selector: '[copilotMessage]'
+// })
+// export class CopilotMessageDirective implements OnChanges {
+//   private _clipboard = inject(Clipboard)
 
-  characterLength = 0
+//   @Input('copilotMessage') copilotMessage: string
+//   @Output() copy = new EventEmitter()
 
-  ngOnChanges({ content }: SimpleChanges): void {
-    if (content) {
-      this.characterLength = content.currentValue?.length
-    }
-  }
-}
+//   private _contentElement
 
-/**
- * @deprecated 暂时不用了
- */
-@Directive({
-  standalone: true,
-  selector: '[copilotMessage]'
-})
-export class CopilotMessageDirective implements OnChanges {
-  private _clipboard = inject(Clipboard)
+//   constructor(private elementRef: ElementRef, private renderer: Renderer2) {}
 
-  @Input('copilotMessage') copilotMessage: string
-  @Output() copy = new EventEmitter()
+//   ngAfterViewInit() {}
 
-  private _contentElement
+//   ngOnChanges({ copilotMessage }: SimpleChanges): void {
+//     if (copilotMessage) {
+//       this.createContent()
+//     }
+//   }
 
-  constructor(private elementRef: ElementRef, private renderer: Renderer2) {}
+//   createContent() {
+//     // 创建一个新的 <div> 元素，用于包含 OpenAI API 返回的结果
+//     const div = this.renderer.createElement('div')
+//     // 将返回结果作为 HTML 内容插入到 <div> 元素中
+//     div.innerHTML = this.replaceCodeBlocksAndScript(this.copilotMessage ?? '')
 
-  ngAfterViewInit() {}
+//     const scriptElements = div.getElementsByTagName('script')
 
-  ngOnChanges({ copilotMessage }: SimpleChanges): void {
-    if (copilotMessage) {
-      this.createContent()
-    }
-  }
+//     for (let i = 0; i < scriptElements.length; i++) {
+//       const scriptElement = scriptElements[i]
 
-  createContent() {
-    // 创建一个新的 <div> 元素，用于包含 OpenAI API 返回的结果
-    const div = this.renderer.createElement('div')
-    // 将返回结果作为 HTML 内容插入到 <div> 元素中
-    div.innerHTML = this.replaceCodeBlocksAndScript(this.copilotMessage ?? '')
+//       // 创建一个新的文本节点，将 <script> 标签中的内容作为文本插入其中
+//       const scriptText = this.renderer.createText(scriptElement.textContent)
 
-    const scriptElements = div.getElementsByTagName('script')
+//       // 创建一个新的 <code> 元素，将文本节点插入其中
+//       const codeElement = this.renderer.createElement('code')
+//       this.renderer.appendChild(codeElement, scriptText)
 
-    for (let i = 0; i < scriptElements.length; i++) {
-      const scriptElement = scriptElements[i]
+//       const titleBar = this.createCodeTitlebar(scriptElement.textContent, scriptElement.title)
 
-      // 创建一个新的文本节点，将 <script> 标签中的内容作为文本插入其中
-      const scriptText = this.renderer.createText(scriptElement.textContent)
+//       const containerElement = this.renderer.createElement('div')
+//       containerElement.classList.add('copilot-code-container')
+//       this.renderer.appendChild(containerElement, titleBar)
 
-      // 创建一个新的 <code> 元素，将文本节点插入其中
-      const codeElement = this.renderer.createElement('code')
-      this.renderer.appendChild(codeElement, scriptText)
+//       const codeContainerElement = this.renderer.createElement('div')
+//       codeContainerElement.classList.add('copilot-code-content')
+//       this.renderer.appendChild(codeContainerElement, codeElement)
+//       this.renderer.appendChild(containerElement, codeContainerElement)
 
-      const titleBar = this.createCodeTitlebar(scriptElement.textContent, scriptElement.title)
+//       // 将新的 <code> 元素插入到页面中
+//       this.renderer.insertBefore(div, containerElement, scriptElement)
+//       this.renderer.removeChild(div, scriptElement)
+//     }
+//     if (this._contentElement) {
+//       this.renderer.removeChild(this.elementRef.nativeElement, this._contentElement)
+//     }
+//     this._contentElement = div
+//     this.renderer.appendChild(this.elementRef.nativeElement, div)
+//   }
 
-      const containerElement = this.renderer.createElement('div')
-      containerElement.classList.add('copilot-code-container')
-      this.renderer.appendChild(containerElement, titleBar)
+//   createCodeTitlebar(codeText: string, title: string) {
+//     // 创建标题栏元素
+//     const titleBar = this.renderer.createElement('div')
+//     titleBar.classList.add('copilot-code-titlebar')
+//     const titleSpan = this.renderer.createElement('span')
+//     titleSpan.textContent = title
+//     titleBar.appendChild(titleSpan)
 
-      const codeContainerElement = this.renderer.createElement('div')
-      codeContainerElement.classList.add('copilot-code-content')
-      this.renderer.appendChild(codeContainerElement, codeElement)
-      this.renderer.appendChild(containerElement, codeContainerElement)
+//     // 创建复制按钮元素
+//     const copyButton = this.renderer.createElement('button')
+//     copyButton.classList.add('copilot-code-copy-button')
+//     copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`
+//     copyButton.addEventListener('click', () => {
+//       this.copyCode(codeText)
+//       copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`
+//       setTimeout(() => {
+//         copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`
+//       }, 2000)
+//     })
+//     titleBar.appendChild(copyButton)
 
-      // 将新的 <code> 元素插入到页面中
-      this.renderer.insertBefore(div, containerElement, scriptElement)
-      this.renderer.removeChild(div, scriptElement)
-    }
-    if (this._contentElement) {
-      this.renderer.removeChild(this.elementRef.nativeElement, this._contentElement)
-    }
-    this._contentElement = div
-    this.renderer.appendChild(this.elementRef.nativeElement, div)
-  }
+//     return titleBar
+//   }
 
-  createCodeTitlebar(codeText: string, title: string) {
-    // 创建标题栏元素
-    const titleBar = this.renderer.createElement('div')
-    titleBar.classList.add('copilot-code-titlebar')
-    const titleSpan = this.renderer.createElement('span')
-    titleSpan.textContent = title
-    titleBar.appendChild(titleSpan)
+//   private copyCode(text: string) {
+//     // this._clipboard.copy(text)
+//     this.copy.emit(text)
+//   }
 
-    // 创建复制按钮元素
-    const copyButton = this.renderer.createElement('button')
-    copyButton.classList.add('copilot-code-copy-button')
-    copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`
-    copyButton.addEventListener('click', () => {
-      this.copyCode(codeText)
-      copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Copied!</span>`
-      setTimeout(() => {
-        copyButton.innerHTML = `<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>Copy</span>`
-      }, 2000)
-    })
-    titleBar.appendChild(copyButton)
-
-    return titleBar
-  }
-
-  private copyCode(text: string) {
-    // this._clipboard.copy(text)
-    this.copy.emit(text)
-  }
-
-  replaceCodeBlocksAndScript(text: string) {
-    const regex = /```([a-zA-Z]*)([\s\S]*?)```/g
-    const codeBlocks = []
-    let match
-    while ((match = regex.exec(text))) {
-      codeBlocks.push(match[2])
-      // 将代码段替换为占位符
-      text = text.replace(match[0], `<script title="${match[1]}">${match[2]}</script>`)
-    }
-    return text
-  }
-}
-
+//   replaceCodeBlocksAndScript(text: string) {
+//     const regex = /```([a-zA-Z]*)([\s\S]*?)```/g
+//     const codeBlocks = []
+//     let match
+//     while ((match = regex.exec(text))) {
+//       codeBlocks.push(match[2])
+//       // 将代码段替换为占位符
+//       text = text.replace(match[0], `<script title="${match[1]}">${match[2]}</script>`)
+//     }
+//     return text
+//   }
+// }
 
 @Component({
   standalone: true,
@@ -199,11 +168,13 @@ export class CopilotMessageDirective implements OnChanges {
     DensityDirective,
     UserPipe,
     UserAvatarComponent,
+    HighlightDirective,
 
     NxTableModule,
 
     CopilotChatTokenComponent,
-    CopilotEnableComponent
+    CopilotEnableComponent,
+    NgmSearchComponent
   ],
   host: {
     class: 'pac-copilot-chat'
@@ -292,7 +263,7 @@ export class CopilotChatComponent {
       然而，需要注意的是，我只是一个机器人，并不能像人类程序员一样创造独特的解决方案或应对具有挑战性的技术问题。我的工作方式是基于预设的算法和模型，因此在与我合作时，您可能需要提供更多的背景信息和指导，以确保我们的工作结果达到您的期望。`
     }
   ]
-  examplesOpened = true
+  // examplesOpened = true
   // Copilot
   private openaiOptions = {
     model: 'gpt-3.5-turbo',
@@ -321,6 +292,9 @@ export class CopilotChatComponent {
       this.openaiOptions.model = value
     }
   }
+
+  selectedModel = [this.aiOptions.model]
+
   get temperature() {
     return this.aiOptions.temperature
   }
@@ -341,17 +315,30 @@ export class CopilotChatComponent {
       this.openaiOptions.n = value
     }
   }
-  prompt = ''
+
   /**
    * 当前 Asking prompt
    */
-  private _prompt = ''
-  answering = false
+  public promptControl = new FormControl<string>('')
+  get prompt() {
+    return this.promptControl.value
+  }
+  set prompt(value) {
+    this.promptControl.setValue(value)
+  }
+
+  private activatedPrompt = ''
+
+  readonly answering = signal(false)
+
+  readonly historyQuestions = signal<string[]>([])
+  private readonly historyIndex = signal(-1)
+
   askController: AbortController
   askSubscriber: Subscription
 
   // Available models
-  models = [
+  private readonly _models$ = new BehaviorSubject<{ id: string; label: string }[]>([
     {
       id: 'gpt-3.5-turbo',
       label: 'gpt-3.5-turbo'
@@ -364,9 +351,16 @@ export class CopilotChatComponent {
       id: 'gpt-4-32k',
       label: 'gpt-4-32k'
     },
-  ]
+  ])
+  searchModel = new FormControl<string>('')
+  public readonly models = toSignal(combineLatest([
+      this._models$,
+      this.searchModel.valueChanges.pipe(startWith(''))
+    ]).pipe(map(([_models, text]) => text ? _models.filter((item) => item.label.includes(text)) : _models)),
+    {initialValue: []}
+  )
 
-  public readonly copilotNotEnabled$ = this.copilotService.notEnabled$
+  public readonly copilotNotEnabled = toSignal(this.copilotService.notEnabled$)
 
   private readonly lastConversation = computed(() => {
     // Get last conversation messages
@@ -399,15 +393,31 @@ export class CopilotChatComponent {
     return lastMessages.reverse()
   })
 
+  public readonly filteredPrompts = toSignal(this.promptControl.valueChanges.pipe(
+    startWith(''),
+    map((text) => text ? this.prompts?.filter((item) => item.includes(text)) ?? [] : []),
+    tap(() => this.activatedPrompt = null)
+  ))
+
   // Subscribers
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
     this._cdr.detectChanges()
   })
 
+  constructor() {
+    effect(() => {
+      this.answering() ? this.promptControl.disable() : this.promptControl.enable()
+    }, {allowSignalWrites: true})
+  }
+
   refreshModels() {
     this.copilotService.getModels().subscribe((res) => {
-      this.models = res.data.map((model) => ({id: model.id, label: model.id}))
+      this._models$.next(res.data.map((model) => ({id: model.id, label: model.id})))
     })
+  }
+
+  changeSelectedModel(values) {
+    this.model = values[0]
   }
 
   async askPredefinedPrompt(prompt: string) {
@@ -417,7 +427,11 @@ export class CopilotChatComponent {
   }
 
   async askCopilotStream(prompt: string, newConversation?: boolean) {
-    this._prompt = this.prompt
+    // Reset history index
+    this.historyIndex.set(-1)
+    // Add to history
+    this.historyQuestions.set([prompt, ...this.historyQuestions()])
+    // Clear prompt in input
     this.prompt = ''
 
     // Get last conversation messages
@@ -440,7 +454,7 @@ export class CopilotChatComponent {
     }
 
     // Answering
-    this.answering = true
+    this.answering.set(true)
     // 由其他引擎接手处理
     if (this.copilotEngine) {
       if (lastConversation.length > 0) {
@@ -477,27 +491,31 @@ export class CopilotChatComponent {
             this.scrollBottom()
           },
           error: (err) => {
+            console.error(err)
             let conversations = [...this.conversations]
             conversations[assistantIndex] = { ...conversations[assistantIndex] }
             conversations[assistantIndex].content = null
             conversations[assistantIndex].error = getErrorMessage(err)
-            this.answering = false
+            this.answering.set(false)
             this.conversations = conversations
             this.conversationsChange.emit(this.conversations)
             this._cdr.detectChanges()
           },
           complete: () => {
-            this.answering = false
-            let conversations = [...this.conversations]
-            if (!conversations[assistantIndex].content) {
-              conversations.splice(assistantIndex, 1)
+            this.answering.set(false)
+            // Not cleared
+            if (this.conversations.length) {
+              let conversations = [...this.conversations]
+              if (!conversations[assistantIndex].content) {
+                conversations.splice(assistantIndex, 1)
+              }
+              if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
+                conversations.splice(conversations.length - 1, 1)
+              }
+              this.conversations = conversations
+              this.conversationsChange.emit(this.conversations)
+              this._cdr.detectChanges()
             }
-            if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
-              conversations.splice(conversations.length - 1, 1)
-            }
-            this.conversations = conversations
-            this.conversationsChange.emit(this.conversations)
-            this._cdr.detectChanges()
           }
         })
       } catch (err) {
@@ -505,7 +523,7 @@ export class CopilotChatComponent {
         conversations[assistantIndex] = { ...conversations[assistantIndex] }
         conversations[assistantIndex].content = null
         conversations[assistantIndex].error = getErrorMessage(err)
-        this.answering = false
+        this.answering.set(false)
         this.conversations = conversations
         this.conversationsChange.emit(this.conversations)
         this._cdr.detectChanges()
@@ -561,7 +579,7 @@ export class CopilotChatComponent {
           this.scrollBottom()
         },
         error: (err) => {
-          this.answering = false
+          this.answering.set(false)
           assistant.content = null
           assistant.error = getErrorMessage(err)
 
@@ -569,7 +587,7 @@ export class CopilotChatComponent {
           this._cdr.detectChanges()
         },
         complete: () => {
-          this.answering = false
+          this.answering.set(false)
           this.conversationsChange.emit(this.conversations)
           this._cdr.detectChanges()
         }
@@ -579,7 +597,7 @@ export class CopilotChatComponent {
   stopGenerating() {
     this.askController?.abort()
     this.askSubscriber?.unsubscribe()
-    this.answering = false
+    this.answering.set(false)
     this.conversationsChange.emit(this.conversations)
 
     this.scrollBottom()
@@ -661,10 +679,42 @@ export class CopilotChatComponent {
     return document.activeElement === target
   }
 
-  triggerFun(event) {
+  triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
+
+    
     if (event.ctrlKey && event.key === 'Enter') {
       this.askCopilotStream(this.prompt)
     }
+
+    // Tab 键补全提示语
+    if (event.key === 'Tab') {
+      event.preventDefault()
+      const activatedPrompt = this.activatedPrompt || this.filteredPrompts()[0]
+      if (activatedPrompt) {
+        this.prompt = activatedPrompt
+      }
+    }
+
+    if (!autocomplete.isOpen && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+      event.preventDefault()
+      
+      const historyQuestions = this.historyQuestions()
+      if (historyQuestions.length) {
+        if (event.key === 'ArrowUp' && this.historyIndex() < historyQuestions.length - 1) {
+          this.historyIndex.set(this.historyIndex() + 1)
+        } else if (event.key === 'ArrowDown' && this.historyIndex() > -1) {
+          this.historyIndex.set(this.historyIndex() - 1)
+        } else {
+          return
+        }
+
+        this.prompt = historyQuestions[this.historyIndex()] ?? ''
+      }
+    }
+  }
+
+  onPromptActivated(event: MatAutocompleteActivatedEvent) {
+    this.activatedPrompt = event.option?.value
   }
 
   dropCopilot(event) {

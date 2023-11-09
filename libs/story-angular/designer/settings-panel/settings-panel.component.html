@@ -30,8 +30,8 @@
     <mat-drawer-content class="ngm-settings-panel__drawer-content">
         <ng-template [cdkPortalOutlet]="settingsPortal"></ng-template>
 
-        <mat-tab-group #tabGroup class="h-full"
-            *ngIf="settingsPortals" mat-stretch-tabs preserveContent>
+        <mat-tab-group #tabGroup *ngIf="settingsPortals" class="h-full"
+            mat-stretch-tabs preserveContent fitInkBarToContent>
             <mat-tab *ngFor="let settingsPortal of settingsPortals">
                 <ng-template mat-tab-label>
                     <mat-icon *ngIf="settingsPortal.icon" fontSet="material-icons-outlined">{{settingsPortal.icon}}</mat-icon>

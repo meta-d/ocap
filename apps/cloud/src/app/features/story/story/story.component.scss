@@ -38,10 +38,6 @@
   }
 }
 
-.pac-story-designer__menu-trigger.active {
-  @apply bg-gray-400/20;
-}
-
 .pac-cdk__drag-handle {
   @apply cursor-move;
 }
@@ -69,8 +65,8 @@
 .ngm-story-designer__template {
   @apply flex justify-center items-center text-lg border-2 border-gray-300 border-dashed rounded-lg cursor-pointer;
 
-  width: 300px;
-  height: 200px;
+  width: 220px;
+  height: 160px;
 }
 
 .ngm-story__device-size-bar {

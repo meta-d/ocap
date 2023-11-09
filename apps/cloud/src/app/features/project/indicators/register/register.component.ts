@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, Optional, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, ViewChild } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -10,7 +10,7 @@ import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { convertIndicatorResult, Indicator, IndicatorsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { IsNilPipe, nonBlank, nonNullable, saveAsYaml } from '@metad/core'
+import { IsDirty, IsNilPipe, nonBlank, nonNullable, saveAsYaml } from '@metad/core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/translation-base.component'
 import { NGXLogger } from 'ngx-logger'
 import { EMPTY, firstValueFrom } from 'rxjs'
@@ -48,9 +48,16 @@ type AOA = any[][]
   styleUrls: ['./register.component.scss'],
   providers: []
 })
-export class IndicatorRegisterComponent extends TranslationBaseComponent implements OnDestroy {
+export class IndicatorRegisterComponent extends TranslationBaseComponent implements OnDestroy, IsDirty {
   private projectComponent = inject(ProjectComponent)
   private indicatorsComponent? = inject(ProjectIndicatorsComponent, {optional: true})
+  private indicatorsService = inject(IndicatorsService)
+  private toastrService = inject(ToastrService)
+  private _route = inject(ActivatedRoute)
+  private _router = inject(Router)
+  private readonly _cdr = inject(ChangeDetectorRef)
+  private _dialog = inject(MatDialog)
+  private _logger? = inject(NGXLogger, {optional: true})
 
   @ViewChild('register_form') registerForm: IndicatorRegisterFormComponent
 
@@ -98,10 +105,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     map(convertIndicatorResult)
   )
 
-  get isDirty$() {
-    return this.registerForm.isDirty
-  }
-
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -137,17 +140,9 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       this.registerForm.formGroup.markAsPristine()
       this.indicatorsComponent?.setCurrentLink(indicator)
     })
-  constructor(
-    private indicatorsService: IndicatorsService,
-    private toastrService: ToastrService,
-    private _route: ActivatedRoute,
-    private _router: Router,
-    private readonly _cdr: ChangeDetectorRef,
-    private _dialog: MatDialog,
-    @Optional()
-    private _logger?: NGXLogger
-  ) {
-    super()
+
+  isDirty(): boolean {
+    return this.registerForm.isDirty
   }
 
   async onSubmit() {

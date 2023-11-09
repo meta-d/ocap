@@ -1,34 +1,35 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, OnDestroy } from '@angular/core'
+import { DestroyRef, Injectable, OnDestroy, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { ActivatedRoute, Router } from '@angular/router'
 import {
   AggregationRole,
+  C_MEASURES,
   CalculatedMember,
   Cube,
-  C_MEASURES,
   DimensionUsage,
   EntityProperty,
   EntityType,
-  getHierarchyById,
-  getLevelById,
   Property,
   PropertyAttributes,
   PropertyDimension,
   PropertyHierarchy,
   PropertyLevel,
   PropertyMeasure,
-  Table
+  Table,
+  getHierarchyById,
+  getLevelById
 } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, isEqual, omit, omitBy } from 'lodash-es'
 import {
+  Observable,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
-  Observable,
   of,
   pluck,
   shareReplay,
@@ -37,16 +38,24 @@ import {
   withLatestFrom
 } from 'rxjs'
 import { SemanticModelService } from '../model.service'
-import { ModelCubeState, ModelDesignerType, MODEL_TYPE, PACModelState, EntityPreview } from '../types'
+import { EntityPreview, MODEL_TYPE, ModelCubeState, ModelDesignerType, PACModelState } from '../types'
 import { newDimensionFromColumn } from './types'
 
-@UntilDestroy({ checkProperties: true })
 @Injectable()
 export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACModelState> implements OnDestroy {
+  private _router = inject(Router)
+  private _route = inject(ActivatedRoute)
+  private destroyRef = inject(DestroyRef)
 
   get preview() {
     return this.get((state) => state.preview)
   }
+
+  _statement = toSignal(this.select((state) => state.queryLab?.statement))
+  set statement(value) {
+    this.patchState({ queryLab: {statement: value} })
+  }
+
   readonly dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
     watchProperty: ['entityType', 'cube'],
     clean: (head, current) => {
@@ -59,12 +68,14 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   public readonly tables$ = this.cube$.pipe(map((cube) => cube?.tables))
   public readonly entityType$ = this.entityName$.pipe(
     switchMap((name) => this.modelService.selectEntityType(name)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
+  public readonly entityType = toSignal(this.entityType$)
+
   public readonly originalEntityType$ = this.entityName$.pipe(
     switchMap((name) => this.modelService.selectOriginalEntityType(name)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -72,17 +83,24 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   public readonly cubeDimensions$ = this.cube$.pipe(pluck('dimensions'))
   public readonly measures$ = this.cube$.pipe(pluck('measures'))
   public readonly calculatedMembers$ = this.cube$.pipe(map((x) => x?.calculatedMembers))
-  
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  public readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _cubeSub = this.cube$.pipe(filter(Boolean)).subscribe((cube) => {
+  private _cubeSub = this.cube$.pipe(filter(Boolean), takeUntilDestroyed()).subscribe((cube) => {
     this.modelService.updateDataSourceSchemaCube(cube)
   })
   private _entityTypeSub = this.select((state) => state.entityType)
-    .pipe(filter(Boolean))
+    .pipe(filter(Boolean), takeUntilDestroyed())
     .subscribe((cube) => {
       this.modelService.updateDataSourceSchemaEntityType(cube)
     })
@@ -94,11 +112,11 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   public init(entity: string) {
     this.connect(this.modelService, { parent: ['cubes', entity] })
     this.dirtyCheckQuery.setHead()
-    this.modelService.saved$.pipe(untilDestroyed(this)).subscribe(() => {
+    this.modelService.saved$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.dirtyCheckQuery.setHead()
     })
 
-    this.dirtyCheckQuery.isDirty$.pipe(untilDestroyed(this)).subscribe((dirty) => {
+    this.dirtyCheckQuery.isDirty$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((dirty) => {
       if (!this.get((state) => state.dirty)) {
         this.patchState({ dirty })
       }
@@ -128,7 +146,9 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
 
   readonly removeCubeTable = this.updater((state, table: Table) => {
     // 有的情况下 table.__id__ 会为空，这时候就用 name 去删除
-    const index = state.cube.tables?.findIndex((item) => item.__id__ ? item.__id__ === table.__id__ : item.name === table.name)
+    const index = state.cube.tables?.findIndex((item) =>
+      item.__id__ ? item.__id__ === table.__id__ : item.name === table.name
+    )
     if (index > -1) {
       state.cube.tables.splice(index, 1)
     }
@@ -197,7 +217,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
    * * blank
    * * from source table column
    */
-  readonly newDimension = this.updater((state, event?: {index: number, column: PropertyAttributes}) => {
+  readonly newDimension = this.updater((state, event?: { index: number; column: PropertyAttributes }) => {
     state.cube.dimensions = state.cube.dimensions ?? []
     if (event) {
       state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column))
@@ -213,7 +233,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     state.cube.dimensions = state.cube.dimensions ?? []
     state.cube.dimensions.push({
       __id__: uuid(),
-      ...dimension,
+      ...dimension
     } as PropertyDimension)
   })
 
@@ -246,7 +266,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     }
   })
 
-  readonly newMeasure = this.updater((state, event?: {index: number, column?: string}) => {
+  readonly newMeasure = this.updater((state, event?: { index: number; column?: string }) => {
     state.cube.measures = state.cube.measures ?? []
     if (event) {
       state.cube.measures.splice(event.index, 0, {
@@ -271,9 +291,9 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   })
 
   /**
-   * 新建计算度量或维度计算成员
+   * Create a new calculated measure using column of table
    */
-  readonly newCalculatedMember = this.updater((state, event?: {index: number, column?: string}) => {
+  readonly newCalculatedMeasure = this.updater((state, event?: { index: number; column?: string }) => {
     state.cube.calculatedMembers = state.cube.calculatedMembers ?? []
     if (event) {
       // 拖拽来的表字段
@@ -292,6 +312,14 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
         formula: null
       })
     }
+  })
+
+  readonly addCalculatedMeasure = this.updater((state, calculatedMember: Partial<CalculatedMember>) => {
+    state.cube.calculatedMembers = state.cube.calculatedMembers ?? []
+    state.cube.calculatedMembers.push({
+      ...calculatedMember,
+      __id__: calculatedMember.__id__ ?? uuid()
+    } as CalculatedMember)
   })
 
   readonly deleteDimensionUsage = this.updater((state, id: string) => {
@@ -436,7 +464,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
             combineLatest([
               this.cube$,
               this.selectByTypeAndId(ModelDesignerType[type], id).pipe(
-                filter(Boolean), // 过滤已经被删除的等情况
+                filter(Boolean) // 过滤已经被删除的等情况
               )
             ]).pipe(
               map(([cube, modeling]) => ({
@@ -579,6 +607,10 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
       })
     )
   })
+
+  navigateCalculation(key: string) {
+    this._router.navigate(['calculation', key], { relativeTo: this._route })
+  }
 
   readonly setPreview = this.updater((state, preview: EntityPreview) => {
     state.preview = preview
