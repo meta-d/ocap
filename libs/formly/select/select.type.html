@@ -4,4 +4,8 @@
   [virtualScroll]="props?.virtualScroll"
   [formControl]="valueFormControl"
   [selectOptions]="_selectOptions$ | async"
-></ngm-select>
+
+  [class.ngm-input-error]="formControl.invalid"
+>
+  <formly-validation-message ngmError *ngIf="formControl.invalid" [field]="field"></formly-validation-message>
+</ngm-select>

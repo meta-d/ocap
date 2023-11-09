@@ -1,21 +1,23 @@
 import { Injectable } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { AbstractControl } from '@angular/forms'
+import { nonBlank } from '@metad/core'
 import { EntityProperty, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { combineLatest } from 'rxjs'
 import { distinctUntilChanged, filter, map, switchMap, take } from 'rxjs/operators'
-import { nonBlank } from '@metad/core'
 import { DimensionModeling, DimensionSchemaService } from './dimension.schema'
 import { CubeSchemaState } from './types'
-import { AbstractControl } from '@angular/forms'
-import { FormlyFieldConfig } from '@ngx-formly/core'
-
 
 @Injectable()
 export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy> extends DimensionSchemaService<T> {
-
   private readonly _dimension$ = this.select((state) => state.dimension)
-  readonly dimensionName$ = this._dimension$.pipe(map((dimension) => dimension?.name), filter(nonBlank), distinctUntilChanged())
+  readonly dimensionName$ = this._dimension$.pipe(
+    map((dimension) => dimension?.name),
+    filter(nonBlank),
+    distinctUntilChanged()
+  )
   readonly hierarchies$ = this.select((state) => state.hierarchies)
   readonly hierarchy$ = this.select((state) => state.modeling)
 
@@ -27,20 +29,23 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
           value: serializeUniqueName(dimensionName, hierarchy.name),
           caption: hierarchy.caption
         })) ?? []
-    ),
+    )
   )
 
-  readonly otherHierarchies = toSignal(this.select((state) => state.hierarchies?.filter((item) => item.__id__ !== state.modeling?.__id__)))
-  
+  readonly otherHierarchies = toSignal(
+    this.select((state) => state.hierarchies?.filter((item) => item.__id__ !== state.modeling?.__id__))
+  )
+
   /**
    * 多张表关联的维度, 需要为 Hierarchy 指定 `primaryKeyTable`
    */
-  readonly hierarchyTables$ = this.select((state: CubeSchemaState<PropertyHierarchy>) =>
-    state.modeling?.tables?.map((table) => ({
-      key: table.name,
-      value: table.name,
-      caption: table.name
-    })) ?? []
+  readonly hierarchyTables$ = this.select(
+    (state: CubeSchemaState<PropertyHierarchy>) =>
+      state.modeling?.tables?.map((table) => ({
+        key: table.name,
+        value: table.name,
+        caption: table.name
+      })) ?? []
   )
 
   readonly table$ = this.select(
@@ -48,16 +53,28 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
   )
 
   readonly members$ = combineLatest([
-    this._dimension$.pipe(filter(Boolean), map(({name}) => name), distinctUntilChanged(), filter(Boolean)),
-    this.hierarchy$.pipe(filter(Boolean), map(({name}) => name), distinctUntilChanged()),
+    this._dimension$.pipe(
+      filter(Boolean),
+      map(({ name }) => name),
+      distinctUntilChanged(),
+      filter(Boolean)
+    ),
+    this.hierarchy$.pipe(
+      filter(Boolean),
+      map(({ name }) => name),
+      distinctUntilChanged()
+    )
   ]).pipe(
-    switchMap(([dimension, hierarchy]) => this.modelService.selectOriginalMembers(dimension, {
-        dimension: serializeUniqueName(dimension),
-        hierarchy: serializeUniqueName(dimension, hierarchy)
-      }).pipe(
-        // selectMembers 存在频繁刷新, 导致 ngm-select 组件显示异常
-        take(1)
-      )
+    switchMap(([dimension, hierarchy]) =>
+      this.modelService
+        .selectOriginalMembers(dimension, {
+          dimension: serializeUniqueName(dimension),
+          hierarchy: serializeUniqueName(dimension, hierarchy)
+        })
+        .pipe(
+          // selectMembers 存在频繁刷新, 导致 ngm-select 组件显示异常
+          take(1)
+        )
     )
   )
 
@@ -129,10 +146,18 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               },
               validators: {
                 name: {
-                  expression: (c: AbstractControl) => !(this.otherHierarchies()?.find((item) => item.name === c.value)),
-                  message: (error: any, field: FormlyFieldConfig) => field.formControl.value ? 
-                    translate('PAC.Messages.AlreadyExists', {Default: `Name already exists`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})}) : 
-                    translate('PAC.Messages.IsRequired', {Default: `Name is required`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})})
+                  expression: (c: AbstractControl) => !this.otherHierarchies()?.find((item) => item.name === c.value),
+                  message: (error: any, field: FormlyFieldConfig) => {
+                    return field.formControl.value
+                      ? translate('PAC.Messages.AlreadyExists', {
+                          Default: `Name already exists`,
+                          value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                        })
+                      : translate('PAC.Messages.IsRequired', {
+                          Default: `Name is required`,
+                          value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                        })
+                  }
                 }
               }
             },
@@ -151,9 +176,9 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               props: {
                 label: COMMON?.Description ?? 'Description',
                 autosizeMinRows: 2,
-                autosize: true,
+                autosize: true
               }
-            },
+            }
           ]
         },
 
@@ -166,7 +191,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
               type: 'checkbox',
               defaultValue: true,
               props: {
-                label: COMMON?.Visible ?? 'Visible',
+                label: COMMON?.Visible ?? 'Visible'
               }
             },
             {
@@ -255,15 +280,17 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
                 options: this.table$.pipe(
                   switchMap((table) => this.modelService.selectOriginalEntityProperties(table)),
                   map((properties) => {
-                    const columns = [{ value: null, caption: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'}) }]
+                    const columns = [
+                      { value: null, caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }) }
+                    ]
                     properties?.forEach((property) => columns.push({ value: property.name, caption: property.caption }))
                     return columns
                   })
-                ),
+                )
               },
               expressions: {
-                'props.required': '!!model.tables && !!model.tables.length',
-              },
+                'props.required': '!!model.tables && !!model.tables.length'
+              }
             },
             {
               key: 'primaryKeyTable',
@@ -275,8 +302,8 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
                 options: this.hierarchyTables$
               },
               expressionProperties: {
-                'props.required': '!!model.tables && model.tables.length > 1',
-              },
+                'props.required': '!!model.tables && model.tables.length > 1'
+              }
             }
           ]
         },
@@ -295,20 +322,22 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
         label: this.SCHEMA?.HIERARCHY?.DefaultMember ?? 'Default Member',
         searchable: true,
         virtualScroll: true,
-        options: this.members$.pipe(map((members) => ([
-          {
-            value: null,
-            label: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'}),
-            key: null,
-            caption: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'}),
-          },
-          ...members.map((member) => ({
-            value: member.memberKey,
-            label: member.memberCaption,
-            key: member.memberKey,
-            caption: member.memberCaption,
-          }))
-        ])))
+        options: this.members$.pipe(
+          map((members) => [
+            {
+              value: null,
+              label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }),
+              key: null,
+              caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
+            },
+            ...members.map((member) => ({
+              value: member.memberKey,
+              label: member.memberCaption,
+              key: member.memberKey,
+              caption: member.memberCaption
+            }))
+          ])
+        )
       }
     }
   }

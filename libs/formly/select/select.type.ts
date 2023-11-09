@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatFormFieldModule } from '@angular/material/form-field'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
@@ -22,6 +23,7 @@ import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MatFormFieldModule,
     FormlyModule,
 
     TranslateModule,
