@@ -69,3 +69,4 @@ Thumbs.db
 /apps/cloud/src/assets/data
 .env
 /packages/**/.env
+.nx/cache

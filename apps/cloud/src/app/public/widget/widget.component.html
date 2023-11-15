@@ -9,5 +9,5 @@
 </div>
 
 <a *ngIf="widget()" class="absolute right-1 bottom-0 z-10" href="/">
-    @{{ widget().createdBy | createdBy }}
+    {{'@'}}{{ widget().createdBy | createdBy }}
 </a>

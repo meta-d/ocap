@@ -34,7 +34,7 @@
 			]
 		},
 		"lint": {
-			"executor": "@nx/linter:eslint",
+			"executor": "@nx/eslint:lint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["packages/server/**/*.ts"]
@@ -44,8 +44,7 @@
 			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/packages/server"],
 			"options": {
-				"jestConfig": "packages/server/jest.config.ts",
-				"passWithNoTests": true
+				"jestConfig": "packages/server/jest.config.ts"
 			}
 		}
 	},

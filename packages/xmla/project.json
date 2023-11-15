@@ -7,7 +7,6 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "updateBuildableProjectDepsInPackageJson": false,
         "outputPath": "dist/packages/xmla",
         "tsConfig": "packages/xmla/tsconfig.lib.json",
         "main": "packages/xmla/src/index.ts",
@@ -34,7 +33,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/xmla/**/*.ts"]
@@ -44,8 +43,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/packages/xmla"],
       "options": {
-        "jestConfig": "packages/xmla/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/xmla/jest.config.ts"
       }
     }
   },

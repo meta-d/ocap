@@ -180,7 +180,7 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "options": {
         "lintFilePatterns": ["apps/cloud/src/**/*.ts", "apps/cloud/src/**/*.html"]
       }
@@ -190,7 +190,6 @@
       "outputs": ["{workspaceRoot}/coverage/apps/cloud"],
       "options": {
         "jestConfig": "apps/cloud/jest.config.ts",
-        "passWithNoTests": true,
         "webWorkerTsConfig": "apps/cloud/tsconfig.worker.json"
       }
     }

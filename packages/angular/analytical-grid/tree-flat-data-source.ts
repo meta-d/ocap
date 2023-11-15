@@ -1,12 +1,12 @@
 import { CollectionViewer } from '@angular/cdk/collections'
-import { MatTableDataSourcePageEvent, MatTableDataSourcePaginator } from '@angular/material/table'
+import { MatPaginator } from '@angular/material/paginator'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
 import { BehaviorSubject, Observable, Subject, combineLatestWith, distinctUntilChanged, map, merge, of, switchMap } from 'rxjs'
 
 export class NgmTreeFlatDataSource<
   T,
   F,
-  P extends MatTableDataSourcePaginator = MatTableDataSourcePaginator
+  P extends MatPaginator = MatPaginator
 > extends MatTreeFlatDataSource<T, F> {
   get paginator(): P | null {
     return this._paginator.value
@@ -29,10 +29,10 @@ export class NgmTreeFlatDataSource<
             _paginator.page,
             this._internalPageChanges,
             _paginator.initialized,
-          ) as Observable<MatTableDataSourcePageEvent | void>)
+          ) as Observable<void>)
         : of(null)))
       ),
-      map(([data]: [F[], MatTableDataSourcePageEvent | void]) => {
+      map(([data]: [F[], void]) => {
 
         if (this.paginator) {
           this._updatePaginator(data.length);

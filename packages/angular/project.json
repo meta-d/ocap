@@ -44,18 +44,11 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/angular/jest.config.ts",
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
+        "jestConfig": "packages/angular/jest.config.ts"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/angular/**/*.ts", "packages/angular/**/*.html"]
@@ -83,10 +76,7 @@
         "configDir": "packages/angular/.storybook",
         "browserTarget": "angular:build-storybook",
         "compodoc": false,
-        "styles": [
-          "packages/angular/_index.scss",
-          "apps/cloud/src/styles.scss"
-        ]
+        "styles": ["packages/angular/_index.scss", "apps/cloud/src/styles.scss"]
       },
       "configurations": {
         "ci": {
