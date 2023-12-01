@@ -1,14 +1,22 @@
 import { ComponentStore } from '@metad/store'
-import { combineLatest, filter, map, Observable, shareReplay, switchMap } from 'rxjs'
+import { combineLatest, filter, map, Observable, shareReplay, Subject, switchMap } from 'rxjs'
 import { Agent, AgentType, DSCacheService } from './agent'
+import { DataSettings } from './data-settings'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
 import { TimeGranularity } from './filter'
-import { EntitySet, isEntitySet } from './models'
+import { CalculationProperty, EntitySet, isEntitySet, ParameterProperty } from './models'
 
 export interface DSState {
   dataSources: DataSourceOptions[]
   today?: Date
   timeGranularity?: TimeGranularity
+}
+
+export interface StoryUpdateEvent {
+  type: 'Parameter' | 'Calculation'
+  dataSettings: DataSettings
+  parameter?: ParameterProperty
+  property?: CalculationProperty
 }
 
 export class DSCoreService extends ComponentStore<DSState> {
@@ -18,6 +26,13 @@ export class DSCoreService extends ComponentStore<DSState> {
   )
 
   private _dataSources = new Map<string, Observable<DataSource>>()
+
+  /**
+   * 接收各组件创建修改计算字段的事件, 发给如 Story 组件进行实际更新
+   * 暂时使用这种间接的方式
+   */
+  readonly #storyUpdateEvent$ = new Subject<StoryUpdateEvent>()
+
   constructor(
     public agents: Array<Agent>,
     dataSources: Array<DataSourceOptions>,
@@ -28,8 +43,6 @@ export class DSCoreService extends ComponentStore<DSState> {
   }
 
   public readonly registerModel = this.updater((state, model: DataSourceOptions) => {
-    // console.log(`DSCoreService registerModel:`, model)
-
     // Backward compatibility
     if (model.useLocalAgent) {
       model.agentType = model.agentType ?? AgentType.Local
@@ -104,5 +117,13 @@ export class DSCoreService extends ComponentStore<DSState> {
 
   getToday() {
     return this.get((state) => ({ today: state.today, timeGranularity: state.timeGranularity }))
+  }
+
+  updateStory(event: StoryUpdateEvent) {
+    this.#storyUpdateEvent$.next(event)
+  }
+
+  onStoryUpdate() {
+    return this.#storyUpdateEvent$.asObservable()
   }
 }

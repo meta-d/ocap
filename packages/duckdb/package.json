@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-duckdb",
-  "version": "0.2.5",
+  "version": "1.17.0-rc.1",
   "keywords": [
     "metad",
     "ocap",

@@ -1,0 +1,34 @@
+name: Publish Package to npmjs
+
+on:
+  push:
+    tags:
+      - '*'
+    paths:
+      - "packages/**"
+  workflow_run:
+    workflows: ["Build"]
+    types: [requested]
+    branches:
+      - 'angular-17'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: yarn
+      - run: yarn build
+      - run: npm publish --access public --tag next
+        working-directory: ./dist/packages/store
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

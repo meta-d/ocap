@@ -1,7 +1,17 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, Inject, Input } from '@angular/core'
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms'
+import { Component, Inject, Input, inject } from '@angular/core'
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidatorFn,
+  Validators
+} from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
@@ -11,7 +21,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatRadioModule } from '@angular/material/radio'
 import { NgmInputModule } from '@metad/ocap-angular/common'
 import { ControlsModule, TreeControlOptions } from '@metad/ocap-angular/controls'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import {
   DataSettings,
@@ -21,11 +31,10 @@ import {
   ParameterControlEnum,
   getEntityDimensions,
   getEntityHierarchy,
-  isNil
+  isNil,
+  uuid
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { uuid } from '@metad/components/core'
-import { NxCoreService } from '@metad/core'
 import { BehaviorSubject, filter, map } from 'rxjs'
 
 @Component({
@@ -49,11 +58,13 @@ import { BehaviorSubject, filter, map } from 'rxjs'
     OcapCoreModule,
     ControlsModule,
     NgmHierarchySelectComponent,
-    NgmInputModule,
+    NgmInputModule
   ]
 })
 export class NgmParameterCreateComponent {
   ParameterControlEnum = ParameterControlEnum
+
+  readonly #dsCoreService = inject(NgmDSCoreService)
 
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() label = 'Parameter'
@@ -66,8 +77,6 @@ export class NgmParameterCreateComponent {
     this.entityType$.next(value)
   }
   private entityType$ = new BehaviorSubject<EntityType>(null)
-
-  @Input() coreService: NxCoreService
 
   /**
    * 编辑模式, 否则为创建模式
@@ -120,7 +129,9 @@ export class NgmParameterCreateComponent {
   }
   set slicer(value) {
     this._slicer.members = value?.members ?? []
-    this.setAvailableMembers(this._slicer.members.map((member) => ({...member, isDefault: member.isDefault ?? false})))
+    this.setAvailableMembers(
+      this._slicer.members.map((member) => ({ ...member, isDefault: member.isDefault ?? false }))
+    )
   }
   private _slicer = { members: [] }
 
@@ -130,7 +141,7 @@ export class NgmParameterCreateComponent {
     map((value) => ({
       dimension: value.dimension,
       hierarchy: value.hierarchy
-    })),
+    }))
   )
 
   constructor(
@@ -140,14 +151,12 @@ export class NgmParameterCreateComponent {
     public data: {
       name: string
       dataSettings: DataSettings
-      coreService: NxCoreService
       entityType: EntityType
       dimension: Dimension
     }
   ) {
     if (this.data) {
       this.dataSettings = this.data.dataSettings
-      this.coreService = this.data.coreService
       this.entityType = this.data.entityType
       if (this.data.name) {
         this.edit = true
@@ -164,10 +173,7 @@ export class NgmParameterCreateComponent {
   }
 
   onApply() {
-    if (isNil(this.coreService)) {
-      throw new Error(`NxCoreService is not provided!`)
-    }
-    this.coreService.storyUpdateEvent$.next({
+    this.#dsCoreService.updateStory({
       type: 'Parameter',
       dataSettings: this.dataSettings,
       parameter: {
