@@ -1,7 +1,7 @@
 {
   "name": "ocap",
   "author": "Metad",
-  "version": "1.17.0-rc.1",
+  "version": "1.17.0-rc.2",
   "scripts": {
     "start": "concurrently \"yarn start:api\" \"yarn start:olap\" \"yarn start:cloud\"",
     "start:cloud": "nx serve cloud --disableHostCheck --host 0.0.0.0",
@@ -17,7 +17,7 @@
     "storybook": "concurrently \"yarn:watch:*\"",
     "watch:tailwind": "npx tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./packages/angular/.storybook/index.css -m1 --watch",
     "watch:storybook": "npx nx storybook angular",
-    "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb && yarn nx build ocap-angular",
+    "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn nx build xmla && yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb && yarn nx build ocap-angular",
     "build:package:duckdb": "yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb",
     "build:package:contracts": "yarn nx build contracts",
     "build:package:common": "yarn nx build common",

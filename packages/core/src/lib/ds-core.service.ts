@@ -3,7 +3,7 @@ import { combineLatest, filter, map, Observable, shareReplay, Subject, switchMap
 import { Agent, AgentType, DSCacheService } from './agent'
 import { DataSettings } from './data-settings'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
-import { TimeGranularity } from './filter'
+import { TimeGranularity } from './models/index'
 import { CalculationProperty, EntitySet, isEntitySet, ParameterProperty } from './models'
 
 export interface DSState {

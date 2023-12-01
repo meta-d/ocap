@@ -1,8 +1,13 @@
 import { Semantics } from '../annotations'
-import { mapTimeGranularitySemantic, TimeGranularity } from '../filter'
 import { Dimension, getPropertyName, IMember, isDimension, ISlicer, isMeasure, Measure, Member } from '../types'
 import { assignDeepOmitBlank, isEmpty, isNil, isString, omit, omitBy } from '../utils'
-import { CalculationProperty, CalculationType, isCalculationProperty, isIndicatorMeasureProperty, RestrictedMeasureProperty } from './calculated'
+import {
+  CalculationProperty,
+  CalculationType,
+  isCalculationProperty,
+  isIndicatorMeasureProperty,
+  RestrictedMeasureProperty
+} from './calculated'
 import { AggregationRole, EntityProperty, PropertyAttributes } from './property'
 import {
   Cube,
@@ -99,7 +104,9 @@ export function getEntityDimensions(entityType: EntityType): Property[] {
   if (isNil(entityType?.properties)) {
     return []
   }
-  return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.dimension && isVisible(item))
+  return Object.values(entityType?.properties).filter(
+    (item) => item.role === AggregationRole.dimension && isVisible(item)
+  )
 }
 
 export function getEntityHierarchies(entityType: EntityType): Property[] {
@@ -114,7 +121,7 @@ export function getEntityDimensionAndHierarchies(entityType: EntityType): Proper
   if (isNil(entityType?.properties)) {
     return []
   }
-  
+
   Object.values(entityType.properties).forEach((property) => {
     if (property.role === AggregationRole.dimension) {
       results.push(property)
@@ -151,29 +158,30 @@ export function getEntityDefaultMeasure(entityType: EntityType) {
 
 /**
  * Get hierarchy proeprty from EntityType:
- * 
+ *
  * ```javascript
  * getEntityHierarchy(entityType, {dimension: '[Time]', hierarchy: '[Time.byWeek]'})
- * 
+ *
  * getEntityHierarchy(entityType, {hierarchy: '[Time.byWeek]'})
- * 
+ *
  * getEntityHierarchy(entityType, {dimension: '[Time]'})
- * 
+ *
  * getEntityHierarchy(entityType, '[Time.byWeek]')
  * ```
- * 
+ *
  * @param entityType
- * @param hierarchy 
+ * @param hierarchy
  * @returns
  */
 export function getEntityHierarchy(entityType: EntityType, params: Dimension | string): PropertyHierarchy {
   if (isNil(entityType?.properties) || isNil(params)) {
     return null
   }
-  const {dimension, hierarchy} = isString(params) ? {dimension: null, hierarchy: params} : params
+  const { dimension, hierarchy } = isString(params) ? { dimension: null, hierarchy: params } : params
   return Object.values(entityType.properties).reduce(
     (prev, item) =>
-      prev ?? ((dimension ? item.name === dimension : true)
+      prev ??
+      ((dimension ? item.name === dimension : true)
         ? item.hierarchies?.find((hier) => hier.name === (hierarchy || dimension))
         : null),
     null
@@ -181,10 +189,14 @@ export function getEntityHierarchy(entityType: EntityType, params: Dimension | s
 }
 
 export function getEntityLevel(entityType: EntityType, dimension: Dimension): PropertyLevel {
-  return entityType?.properties && dimension && Object.values(entityType.properties)
-        .find((item) => item.name === dimension.dimension)
-        ?.hierarchies?.find((item) => item.name === (dimension.hierarchy || dimension.dimension))
-        ?.levels?.find((item) => item.name === dimension.level)
+  return (
+    entityType?.properties &&
+    dimension &&
+    Object.values(entityType.properties)
+      .find((item) => item.name === dimension.dimension)
+      ?.hierarchies?.find((item) => item.name === (dimension.hierarchy || dimension.dimension))
+      ?.levels?.find((item) => item.name === dimension.level)
+  )
 }
 
 export function getEntityCalculations(entityType: EntityType): CalculationProperty[] {
@@ -220,9 +232,9 @@ export function getHierarchyProperty(hierarchy: PropertyHierarchy, name: string)
 
 /**
  * 获取字段的文本字段, 向后兼容 text 属性
- * 
- * @param property 
- * @returns 
+ *
+ * @param property
+ * @returns
  */
 export function getPropertyCaption(property: Property) {
   return property?.memberCaption
@@ -234,17 +246,17 @@ export function getPropertyUnitName(property: Property) {
 
 /**
  * 获取维度的文本字段
- * 
- * @param entityType 
- * @param dimension 
- * @returns 
+ *
+ * @param entityType
+ * @param dimension
+ * @returns
  */
 export function getDimensionLabel(entityType: EntityType, dimension: Dimension) {
   if (dimension.memberCaption) {
     return dimension.memberCaption
   }
   const property = getEntityProperty(entityType, dimension)
-  
+
   return getPropertyCaption(property)
 }
 
@@ -265,9 +277,9 @@ export const isPropertyLevel = (toBe): toBe is PropertyLevel => toBe.aggregation
 
 /**
  * The property is Calendar Semantic
- * 
- * @param property 
- * @returns 
+ *
+ * @param property
+ * @returns
  */
 export function isSemanticCalendar(property: EntityProperty): boolean {
   return property?.semantics?.semantic && Semantics[property.semantics.semantic]?.startsWith('Calendar')
@@ -287,10 +299,10 @@ export function stringifyProperty(path: Dimension | Measure | string) {
 
 /**
  * Convert string name to dimension structure
- * 
- * @param name 
- * @param entityType 
- * @returns 
+ *
+ * @param name
+ * @param entityType
+ * @returns
  */
 export function parseDimension(name: string, entityType: EntityType) {
   const d = {} as Dimension
@@ -326,10 +338,10 @@ export function parseDimension(name: string, entityType: EntityType) {
 
 /**
  * @deprecated use {@link parseDimension}
- * 
- * @param path 
- * @param entityType 
- * @returns 
+ *
+ * @param path
+ * @param entityType
+ * @returns
  */
 export function propertyPath2Dimension(path: string | Dimension, entityType: EntityType): Dimension {
   if (isString(path)) {
@@ -486,7 +498,10 @@ export function mergeEntityType(a: EntityType, b: EntityType): EntityType {
   return assignDeepOmitBlank(a, b, 5)
 }
 
-export function mergeEntitySets(a: {[key: string]: EntitySet}, b: {[key: string]: EntitySet}): {[key: string]: EntitySet} {
+export function mergeEntitySets(
+  a: { [key: string]: EntitySet },
+  b: { [key: string]: EntitySet }
+): { [key: string]: EntitySet } {
   const result = {}
   Object.keys(a).forEach((aKey) => {
     result[aKey] = b[aKey] ? mergeEntitySet(a[aKey], b[aKey]) : a[aKey]
@@ -502,16 +517,17 @@ export function mergeEntitySets(a: {[key: string]: EntitySet}, b: {[key: string]
 
 /**
  * 暂时只有 merge entityType
- * 
- * @param a 
- * @param b 
- * @returns 
+ *
+ * @param a
+ * @param b
+ * @returns
  */
 export function mergeEntitySet(a: EntitySet, b: EntitySet): EntitySet {
   return {
     ...omitBy(a, isEmpty),
     ...omitBy(b, isEmpty),
-    entityType: (a?.entityType && b?.entityType) ? mergeEntityType(a.entityType, b.entityType) : (a?.entityType ?? b?.entityType)
+    entityType:
+      a?.entityType && b?.entityType ? mergeEntityType(a.entityType, b.entityType) : a?.entityType ?? b?.entityType
   } as EntitySet
 }
 
@@ -531,10 +547,10 @@ export function mergeSDLSchema(a: Schema, b: Schema) {
 
 /**
  * @deprecated 看哪里还有用到?
- * 
- * @param entityType 
- * @param cube 
- * @returns 
+ *
+ * @param entityType
+ * @param cube
+ * @returns
  */
 export function mergeEntityTypeCube(entityType: EntityType, cube: Cube) {
   const properties = { ...entityType.properties }
@@ -572,9 +588,9 @@ export function mergeEntityTypeCube(entityType: EntityType, cube: Cube) {
 
 /**
  * Convert slicer (include or exclude members) to dimension type
- * 
- * @param slicer 
- * @returns 
+ *
+ * @param slicer
+ * @returns
  */
 export function convertSlicerToDimension(slicer: ISlicer): Dimension {
   if (!slicer?.dimension) {
@@ -625,26 +641,6 @@ export function getMemberFromRow(row: unknown, property: Property) {
   }
 }
 
-// for Calendar Functions
-export function getCalendarDimension(entityType: EntityType): Property {
-  const timeDim = getEntityDimensions(entityType).find((property) => property.semantics?.semantic === Semantics.Calendar)
-  if (!timeDim) {
-    throw new Error(`Can't found calendar dimension in entityType: ${entityType.name}`)
-  }
-  return timeDim
-}
-
-export function getCalendarHierarchy(entityType: EntityType): PropertyHierarchy {
-  const timeDim = getCalendarDimension(entityType)
-  const timeHierarchy = getDefaultHierarchy(timeDim)
-
-  if (!timeHierarchy) {
-    throw new Error(`Can't found calendar hierarchy in dimension: ${timeDim?.name}`)
-  }
-
-  return timeHierarchy
-}
-
 export function getDefaultHierarchy(property: Property) {
   const defaultHierarchy =
     property?.hierarchies?.find((hierarchy) => hierarchy.name === property.defaultHierarchy) ||
@@ -653,57 +649,6 @@ export function getDefaultHierarchy(property: Property) {
   //     throw new Error(`Can't found default hierarchy in dimension: ${property?.name}`)
   // }
   return defaultHierarchy
-}
-
-
-export function getEntityCalendar(entityType: EntityType, calendar?: string, timeGranularity?: TimeGranularity) {
-  let calendarHierarchy: PropertyHierarchy
-  let calendarDimension: PropertyDimension
-  if (calendar) {
-    calendarHierarchy = getEntityHierarchy(entityType, calendar)
-    calendarDimension = getEntityProperty(entityType, calendarHierarchy.dimension)
-  } else {
-    // get default calendar dimension in entity type
-    calendarDimension = getCalendarDimension(entityType)
-    calendarHierarchy = getDefaultHierarchy(calendarDimension)
-  }
-
-  if (!calendarDimension) {
-    throw new Error(`Can't found default calendar in entityType: '${entityType.name}' or calendar: '${calendar}'`)
-  }
-
-  if (timeGranularity) {
-    const calendarSemantic = mapTimeGranularitySemantic(timeGranularity)
-    const calendarLevel =
-      calendarHierarchy.levels?.find((level) => level.semantics?.semantic === calendarSemantic) ??
-      calendarHierarchy.levels?.[calendarHierarchy.levels?.length - 1]
-    return {
-      dimension: calendarDimension,
-      hierarchy: calendarHierarchy,
-      level: calendarLevel
-    }
-  }
-
-  return {
-    dimension: calendarDimension,
-    hierarchy: calendarHierarchy,
-  }
-}
-
-
-export function getTimeYearLevel(hierarchy: PropertyHierarchy): PropertyLevel {
-  const yearLevel = hierarchy?.levels?.find((item) => item.semantics?.semantic === Semantics['Calendar.Year'])
-
-  if (!yearLevel) {
-    throw new Error(`Can't found Year level in Calendar dimension: ${hierarchy.name}`)
-  }
-
-  return yearLevel
-}
-
-export function getTimeQuarterLevel(hierarchy: PropertyHierarchy): PropertyLevel {
-  const quarter = hierarchy.levels.find((item) => item.semantics?.semantic === Semantics['Calendar.Quarter'])
-  return quarter
 }
 
 export function getHierarchySemanticLevel(hierarchy: PropertyHierarchy, semantic: Semantics): PropertyLevel {
@@ -741,9 +686,9 @@ export function wrapHierarchyValue(hierarchy: string, value: string) {
 }
 
 // Type Guards
-export const isDimensionUsage = (toBe): toBe is DimensionUsage =>
-  !isNil((toBe as DimensionUsage)?.source)
+export const isDimensionUsage = (toBe): toBe is DimensionUsage => !isNil((toBe as DimensionUsage)?.source)
 
-export const isPropertyMeasure = (toBe): toBe is PropertyMeasure => (toBe as PropertyMeasure)?.role === AggregationRole.measure
+export const isPropertyMeasure = (toBe): toBe is PropertyMeasure =>
+  (toBe as PropertyMeasure)?.role === AggregationRole.measure
 export const isEntityType = (toBe): toBe is EntityType => !(toBe instanceof Error) && !isNil((toBe as EntityType)?.name)
 export const isEntitySet = (toBe): toBe is EntitySet => !(toBe instanceof Error) && !isNil((toBe as EntitySet)?.name)

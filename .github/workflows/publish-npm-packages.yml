@@ -32,3 +32,19 @@ jobs:
         working-directory: ./dist/packages/store
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag next
+        working-directory: ./dist/packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag next
+        working-directory: ./dist/packages/echarts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag next
+        working-directory: ./dist/packages/angular
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag next
+        working-directory: ./dist/packages/xmla
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

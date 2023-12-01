@@ -14,8 +14,8 @@
         "project": "packages/store/package.json",
         "assets": [
           {
-            "glob": "README.md",
-            "input": ".",
+            "glob": "*.md",
+            "input": "packages/store/",
             "output": "."
           }
         ],

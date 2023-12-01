@@ -24,8 +24,8 @@
         ],
         "assets": [
           {
-            "glob": "README.md",
-            "input": ".",
+            "glob": "*.md",
+            "input": "packages/xmla/",
             "output": "."
           }
         ],

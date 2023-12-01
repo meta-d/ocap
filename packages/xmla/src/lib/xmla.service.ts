@@ -4,12 +4,13 @@ import { MDOptions } from './types'
 import { Xmla } from './xmla/Xmla'
 
 export class NxXmlaService {
-  xmla = new Xmla(this.options)
+  xmla = null
 
   constructor(
     private dataSourceInfo = '',
-    private options,
+    private options: null | any,
   ) {
+    this.xmla = new Xmla(this.options)
   }
 
   discoverDataSources() {
