@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { NgmAgentService, NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '@metad/ocap-angular/core'
+import { DensityDirective, NgmAgentService, NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, Syntax, Type } from '@metad/ocap-core'
 import { S4ServerAgent } from './s4-agent.service'
 
@@ -39,7 +39,7 @@ import { S4ServerAgent } from './s4-agent.service'
       multi: true
     }
   ],
-  imports: [CommonModule, FormsModule, MatButtonModule, AnalyticalCardModule]
+  imports: [CommonModule, FormsModule, MatButtonModule, AnalyticalCardModule, DensityDirective]
 })
 export class DashboardComponent {
   #dsCoreService = inject(NgmDSCoreService)

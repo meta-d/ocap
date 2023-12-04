@@ -40,6 +40,48 @@
         }
       ]
     },
+    "build-lib": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "configurations": {
+        "production": {
+          "commands": [
+            "nx run ocap-angular:build:production",
+            "tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./dist/packages/angular/index.css -m"
+          ],
+          "parallel": false
+        },
+        "development": {
+          "commands": [
+            "nx run ocap-angular:build:development",
+            "tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./dist/packages/angular/index.css"
+          ],
+          "parallel": false
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "build-prod": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "configurations": {
+        "production": {
+          "commands": [
+            "rm -rf dist/packages/angular",
+            "nx run ocap-angular:build-lib:production"
+          ],
+          "parallel": false
+        },
+        "development": {
+          "commands": [
+            "rm -rf dist/packages/angular",
+            "nx run ocap-angular:build-lib:development"
+          ],
+          "parallel": false
+        }
+      },
+      "defaultConfiguration": "production"
+    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
@@ -59,7 +101,7 @@
       "options": {
         "port": 6006,
         "configDir": "packages/angular/.storybook",
-        "browserTarget": "angular:build-storybook",
+        "browserTarget": "ocap-angular:build-storybook",
         "compodoc": false
       },
       "configurations": {
@@ -74,7 +116,7 @@
       "options": {
         "outputDir": "dist/storybook/angular",
         "configDir": "packages/angular/.storybook",
-        "browserTarget": "angular:build-storybook",
+        "browserTarget": "ocap-angular:build-storybook",
         "compodoc": false,
         "styles": ["packages/angular/_index.scss", "apps/cloud/src/styles.scss"]
       },
@@ -87,12 +129,12 @@
     "static-storybook": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "angular:build-storybook",
+        "buildTarget": "ocap-angular:build-storybook",
         "staticFilePath": "dist/storybook/angular"
       },
       "configurations": {
         "ci": {
-          "buildTarget": "angular:build-storybook:ci"
+          "buildTarget": "ocap-angular:build-storybook:ci"
         }
       }
     }

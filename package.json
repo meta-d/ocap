@@ -1,7 +1,7 @@
 {
   "name": "ocap",
   "author": "Metad",
-  "version": "1.17.0-rc.3",
+  "version": "1.17.0-rc.4",
   "scripts": {
     "start": "concurrently \"yarn start:api\" \"yarn start:olap\" \"yarn start:cloud\"",
     "start:cloud": "nx serve cloud --disableHostCheck --host 0.0.0.0",
@@ -16,8 +16,8 @@
     "start:api:debug": "nodemon --config nodemon-debug.json",
     "storybook": "concurrently \"yarn:watch:*\"",
     "watch:tailwind": "npx tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./packages/angular/.storybook/index.css -m1 --watch",
-    "watch:storybook": "npx nx storybook angular",
-    "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn nx build xmla && yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb && yarn nx build ocap-angular",
+    "w:sb:ocap-angular": "npx nx storybook ocap-angular",
+    "build": "yarn nx build store && yarn nx build core && yarn nx build echarts && yarn nx build sql && yarn nx build xmla && yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb && yarn build:package:angular",
     "build:package:duckdb": "yarn --cwd ./packages/duckdb build:release && yarn nx build duckdb",
     "build:package:contracts": "yarn nx build contracts",
     "build:package:common": "yarn nx build common",
@@ -26,6 +26,7 @@
     "build:package:server": "yarn nx build server",
     "build:package:adapter": "yarn nx build adapter",
     "build:package:analytics": "yarn nx build analytics",
+    "build:package:angular": "yarn nx run ocap-angular:build-prod",
     "build:package:olap": "yarn --cwd ./packages/olap build",
     "build:package:all": "yarn nx build contracts && yarn nx build common && yarn nx build config && yarn nx build auth && yarn nx build server && yarn nx build adapter && yarn nx build analytics",
     "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name",
