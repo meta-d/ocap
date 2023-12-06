@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-sql",
-  "version": "1.17.0-rc.4",
+  "version": "1.17.0-rc.5",
   "keywords": [
     "metad",
     "ocap",
@@ -15,5 +15,8 @@
   },
   "peerDependencies": {
     "rxjs": "~7.8.0"
+  },
+  "scripts": {
+    "docs": "yarn typedoc"
   }
 }

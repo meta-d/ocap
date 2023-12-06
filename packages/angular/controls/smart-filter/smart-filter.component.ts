@@ -157,6 +157,8 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     this._appearance.set(value)
   }
 
+  @Input() displayDensity: string
+
   @Input()
   get disabled(): boolean {
     return this.disabled$()
@@ -174,9 +176,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   get multiple() {
     return this.options?.multiple
   }
-  get displayDensity() {
-    return this.appearance?.displayDensity
-  }
+
   get hierarchy() {
     return this.dimension?.hierarchy ?? this.dimension?.dimension
   }
