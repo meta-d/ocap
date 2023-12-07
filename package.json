@@ -32,7 +32,7 @@
     "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name",
     "bootstrap": "yarn install",
     "b:sb:ocap-angular": "yarn nx run ocap-angular:build-storybook",
-    "b:docs": "concurrently \"yarn --cwd ./packages/store docs\" \"yarn --cwd ./packages/core docs\" \"yarn --cwd ./packages/xmla docs\" \"yarn --cwd ./packages/sql docs\" \"yarn --cwd ./packages/echarts docs\" \"yarn --cwd ./packages/duckdb docs\""
+    "b:docs": "concurrently \"yarn --cwd ./packages/store docs\" \"yarn --cwd ./packages/core docs\" \"yarn --cwd ./packages/xmla docs\" \"yarn --cwd ./packages/sql docs\" \"yarn --cwd ./packages/echarts docs\" \"yarn --cwd ./packages/duckdb docs\" \"yarn b:sb:ocap-angular\""
   },
   "private": true,
   "dependencies": {
