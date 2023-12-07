@@ -15,10 +15,10 @@ jobs:
           yarn install
           yarn b:sb:ocap-angular
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@3.6.2
+        uses: JamesIves/github-pages-deploy-action@4.5.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: main # The branch the action should deploy to.
+          BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: dist/storybook/angular # The folder that the build-storybook script generates files.
           CLEAN: true # Automatically remove deleted files from the deploy branch
-          TARGET_FOLDER: docs
+          TARGET_FOLDER: .
