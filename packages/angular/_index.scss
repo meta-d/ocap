@@ -1,10 +1,14 @@
-@import './common/input/_input.component';
-@import './common/select/_select.component';
-@import './common/search/_search.component';
-@import './common/tag/_tag.component';
-@import './common/resizer/_resizer.directive';
-@import './controls/smart-filter/_smart-filter.component';
-@import './analytical-grid/_analytical-grid.component';
-@import './core/style/accordion-theme';
-@import './core/style/mat-autocomplete-theme';
-@import './core/directives/_appearance';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import './common/input/_input.component.scss';
+@import './common/select/_select.component.scss';
+@import './common/search/_search.component.scss';
+@import './common/tag/_tag.component.scss';
+@import './common/resizer/_resizer.directive.scss';
+@import './controls/smart-filter/_smart-filter.component.scss';
+@import './analytical-grid/_analytical-grid.component.scss';
+@import './core/style/accordion-theme.scss';
+@import './core/style/_mat-autocomplete-theme.scss';
+@import './core/directives/_appearance.scss';

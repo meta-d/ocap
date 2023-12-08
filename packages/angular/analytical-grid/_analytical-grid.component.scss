@@ -9,15 +9,6 @@
 
     &.selected {
       @apply bg-gray-300 bg-opacity-50 dark:bg-gray-700 dark:bg-opacity-50;
-  
-      // .cdk-cell:first-child {
-      //   @apply relative;
-    
-      //   &::before {
-      //     content: '';
-      //     @apply absolute left-0.5 top-0 h-full w-0.5 block bg-black dark:bg-white;
-      //   }
-      // }
 
       .cdk-cell.ngm-analytical-grid__dimension.selected-member {
         @apply relative;
