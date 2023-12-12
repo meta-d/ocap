@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-xmla",
-  "version": "1.17.0-rc.6",
+  "version": "1.17.0-next",
   "scripts": {
     "docs": "yarn typedoc"
   }

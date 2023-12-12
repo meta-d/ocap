@@ -1,7 +1,7 @@
 {
   "name": "ocap",
   "author": "Metad",
-  "version": "1.17.0-rc.6",
+  "version": "1.17.0-next",
   "scripts": {
     "start": "concurrently \"yarn start:api\" \"yarn start:olap\" \"yarn start:cloud\"",
     "start:cloud": "nx serve cloud --disableHostCheck --host 0.0.0.0",

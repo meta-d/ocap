@@ -55,7 +55,7 @@
   (close)="clearDrill()">
 </ngm-breadcrumb-bar>
 
-<mat-card-content>
+<div class="ngm-card-content">
   <div *ngIf="error$ | async as error" class="ngm-card-error">
     <span class="title-icon text-2xl font-notoColorEmoji">🐞</span>
     <span>
@@ -80,7 +80,7 @@
     </div>
   </ng-container>
     
-</mat-card-content>
+</div>
 
 
 <div style="visibility: hidden; position: absolute;"
