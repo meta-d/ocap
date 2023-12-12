@@ -160,8 +160,13 @@ export class NgmMeasureSelectComponent
         .afterClosed()
     )
     if (property) {
-      // 发送给 CoreService 存储到元信息增强里
-      this.coreService.storyUpdateEvent$.next({
+      // 发送给 DSCoreService 存储到元信息增强里
+      // this.coreService.storyUpdateEvent$.next({
+      //   type: 'Calculation',
+      //   dataSettings: this.dataSettings,
+      //   property
+      // })
+      this.dsCoreService.updateStory({
         type: 'Calculation',
         dataSettings: this.dataSettings,
         property
@@ -190,8 +195,13 @@ export class NgmMeasureSelectComponent
         .afterClosed()
     )
     if (property) {
-      // 发送给 CoreService 存储到元信息增强里
-      this.coreService.storyUpdateEvent$.next({
+      // 发送给 DSCoreService 存储到元信息增强里
+      // this.coreService.storyUpdateEvent$.next({
+      //   type: 'Calculation',
+      //   dataSettings: this.dataSettings,
+      //   property
+      // })
+      this.dsCoreService.updateStory({
         type: 'Calculation',
         dataSettings: this.dataSettings,
         property

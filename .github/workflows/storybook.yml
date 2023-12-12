@@ -1,0 +1,31 @@
+name: Storybook Build and Deploy
+on: 
+  push:
+    paths: ["packages/**"] # Trigger the action only when files change in the folders defined here
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4.1.1
+        with:
+          persist-credentials: false
+      - name: Install and Build 🔧
+        run: | # Install npm packages and build the Storybook files
+          yarn install
+          yarn b:docs
+          mv dist/storybook/angular docs/storybook
+          mv packages/core/docs docs/api/core
+          mv packages/store/docs docs/api/store
+          mv packages/sql/docs docs/api/sql
+          mv packages/xmla/docs docs/api/xmla
+          mv packages/echarts/docs docs/api/echarts
+          mv packages/duckdb/docs docs/api/duckdb
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder that the build-storybook script generates files.
+          clean: true # Automatically remove deleted files from the deploy branch
+          target-folder: .

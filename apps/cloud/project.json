@@ -164,10 +164,10 @@
       },
       "configurations": {
         "production": {
-          "browserTarget": "cloud:build:production"
+          "buildTarget": "cloud:build:production"
         },
         "development": {
-          "browserTarget": "cloud:build:development",
+          "buildTarget": "cloud:build:development",
           "proxyConfig": "apps/cloud/proxy.conf.json"
         }
       },
@@ -176,11 +176,11 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "browserTarget": "cloud:build"
+        "buildTarget": "cloud:build"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "options": {
         "lintFilePatterns": ["apps/cloud/src/**/*.ts", "apps/cloud/src/**/*.html"]
       }
@@ -190,7 +190,6 @@
       "outputs": ["{workspaceRoot}/coverage/apps/cloud"],
       "options": {
         "jestConfig": "apps/cloud/jest.config.ts",
-        "passWithNoTests": true,
         "webWorkerTsConfig": "apps/cloud/tsconfig.worker.json"
       }
     }

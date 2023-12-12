@@ -5,6 +5,9 @@
 /tmp
 /out-tsc
 /documentation
+packages/**/docs/
+packages/angular/.storybook/documentation.json
+packages/angular/.storybook/index.css
 
 # dependencies
 /node_modules
@@ -69,3 +72,4 @@ Thumbs.db
 /apps/cloud/src/assets/data
 .env
 /packages/**/.env
+.nx/cache

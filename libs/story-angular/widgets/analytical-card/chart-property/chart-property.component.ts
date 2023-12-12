@@ -1,4 +1,3 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CommonModule } from '@angular/common'
 import { Component, Input, computed, forwardRef, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
@@ -342,7 +341,12 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
 
   onCalculationChange(property: CalculationProperty) {
-    this.coreService.storyUpdateEvent$.next({
+    // this.coreService.storyUpdateEvent$.next({
+    //   type: 'Calculation',
+    //   dataSettings: this.dataSettings,
+    //   property
+    // })
+    this.dsCoreService.updateStory({
       type: 'Calculation',
       dataSettings: this.dataSettings,
       property

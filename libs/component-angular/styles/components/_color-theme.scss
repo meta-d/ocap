@@ -16,10 +16,6 @@
     }
   }
 
-  .mat-icon.ngm-appearance-danger:hover {
-    color: mat.get-color-from-palette($warn, 500);
-  }
-
   .ngm-color {
     &.ngm-color__colors-of-sky {
       background: #e0eafc;

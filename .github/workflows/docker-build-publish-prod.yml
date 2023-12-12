@@ -2,6 +2,7 @@ name: Build and Publish Docker Images Prod
 
 on:
   push:
+    branches: [ "main" ]
     tags:
       - '*'
 

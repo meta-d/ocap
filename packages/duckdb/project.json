@@ -10,14 +10,11 @@
         "outputPath": "dist/packages/duckdb",
         "main": "packages/duckdb/src/index.ts",
         "tsConfig": "packages/duckdb/tsconfig.lib.json",
-        "assets": [
-          "packages/duckdb/*.md",
-          "packages/duckdb/dist/*"
-        ]
+        "assets": ["packages/duckdb/*.md", "packages/duckdb/dist/*"]
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/duckdb/**/*.ts"]
@@ -27,8 +24,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/packages/duckdb"],
       "options": {
-        "jestConfig": "packages/duckdb/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/duckdb/jest.config.ts"
       }
     }
   },

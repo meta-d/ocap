@@ -4,6 +4,7 @@ import { ChartsComponent } from './charts/charts.component'
 import { ExplorerComponent } from './explorer/explorer.component'
 import { FoodMartComponent } from './foodmart/foodmart.component'
 import { QueryLabComponent } from './query-lab/query-lab.component'
+import { DashboardComponent } from './dashboard/dashboard.component'
 
 const routes: Routes = [
   // {
@@ -42,6 +43,10 @@ const routes: Routes = [
   {
     path: 'langchain',
     loadChildren: () => import('./langchain/langchain.module').then((m) => m.LangChainModule)
+  },
+  {
+    path: 'dashboard',
+    component: DashboardComponent
   }
   // { path: '', redirectTo: 'pages', pathMatch: 'full' },
   // { path: '**', redirectTo: 'pages' }

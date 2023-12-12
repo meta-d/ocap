@@ -6,6 +6,6 @@
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
-    "compilationMode": "full"
+    "compilationMode": "partial"
   }
 }

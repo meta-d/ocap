@@ -368,7 +368,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
       }
     })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.coreService.storyUpdateEvent$.pipe(takeUntilDestroyed())
+  private storyUpdateEventSub = this.dsCoreService.onStoryUpdate().pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
       if (type === 'Parameter') {

@@ -1,7 +1,9 @@
 import { BehaviorSubject, combineLatest, EMPTY, filter, map, Observable, withLatestFrom } from 'rxjs'
 import { PeriodFunctions } from '../annotations'
-import { calcRange, TimeGranularity, TimeRangeType } from '../filter'
 import {
+  calcRange,
+  TimeGranularity,
+  TimeRangeType,
   getEntityCalendar,
   getEntityProperty,
   getIndicatorMeasureName,

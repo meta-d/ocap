@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-echarts",
-  "version": "0.3.0-rc.1",
+  "version": "1.17.0",
   "keywords": [
     "metad",
     "ocap",
@@ -23,5 +23,8 @@
     "lodash-es": "^4.17.21",
     "rxjs": "~7.8.0",
     "topojson-client": "^3.1.0"
+  },
+  "scripts": {
+    "docs": "yarn typedoc"
   }
 }

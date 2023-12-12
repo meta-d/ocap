@@ -151,7 +151,7 @@ Metad 分析云平台链接为 <https://app.mtda.cloud> 。
 
 ## 📄 文档
 
-请参阅我们的 [官方文档](https://mtda.cloud/docs/) 和项目 [Wiki](https://github.com/meta-d/ocap/wiki) (WIP).
+请参阅我们的 [官方文档](https://mtda.cloud/docs/) 和项目 [Wiki](https://github.com/meta-d/ocap/wiki) (WIP) 或者详细的 [API 参考](https://meta-d.github.io/ocap/)。
 
 ## 🚀 快速开始
 

@@ -53,16 +53,16 @@ export class NxCoreService extends ComponentStore<NxCoreState> {
 
   readonly updateQuery = this.store.updater((state, query: QuerySettings) => ({ ...state, query }))
 
-  /**
-   * 接收各组件创建修改计算字段的事件, 发给如 Story 组件进行实际更新
-   * 暂时使用这种间接的方式
-   */
-  public readonly storyUpdateEvent$ = new Subject<{
-    type: 'Parameter' | 'Calculation'
-    dataSettings: DataSettings
-    parameter?: ParameterProperty
-    property?: CalculationProperty
-  }>()
+  // /**
+  //  * 接收各组件创建修改计算字段的事件, 发给如 Story 组件进行实际更新
+  //  * 暂时使用这种间接的方式
+  //  */
+  // public readonly storyUpdateEvent$ = new Subject<{
+  //   type: 'Parameter' | 'Calculation'
+  //   dataSettings: DataSettings
+  //   parameter?: ParameterProperty
+  //   property?: CalculationProperty
+  // }>()
 
   public readonly timeGranularity$ = this.select((state) => state.timeGranularity)
   public readonly currentTime$ = combineLatest([this.select((state) => state.today), this.timeGranularity$]).pipe(

@@ -16,5 +16,5 @@
 </button> -->
 
 <a *ngIf="story()" class="absolute right-1 bottom-0 z-10" href="/">
-    @{{ story().createdBy | createdBy }}
+    {{'@'}}{{ story().createdBy | createdBy }}
 </a>

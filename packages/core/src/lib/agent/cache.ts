@@ -1,9 +1,21 @@
 import { get, set } from 'money-clip'
 import { clear, del, keys, UseStore } from 'idb-keyval'
 
+/**
+ * Cache decorator options (IndexedDB)
+ */
 export interface CacheOptions {
-  version?: number,
-  maxAge: number,
+  /**
+   * The version of the cache, default is 1
+   */
+  version?: number;
+  /**
+   * The maximum age of the cache, in milliseconds
+   */
+  maxAge: number;
+  /**
+   * The priority of the cache, the higher the priority, the lower the level
+   */
   level: number
 }
 
@@ -11,6 +23,20 @@ const CACHE_OPTIONS = {level: 3}
 
 const serializeArgs = (...args: unknown[]) => args.map((arg: unknown) => arg.toString()).join(':')
 
+/**
+ * Cache decorator (store in IndexedDB), use [money-clip](https://www.npmjs.com/package/money-clip) lib:
+ * 
+ * Example:
+  ```typescript
+  @Cache('xmla-mdx:', { maxAge: 1000 * 60 * 60, level: 3 })
+  async execute(modelName: string, mdx: string, language = '', options: { skip: boolean | void }): Promise<any> {
+  }
+  ```
+ * 
+ * @param key 
+ * @param param1 
+ * @returns 
+ */
 export function Cache(key: string, {maxAge, level}: CacheOptions) {
   const cacheOptions: CacheOptions = {
     version: 1,
@@ -57,7 +83,13 @@ export function Cache(key: string, {maxAge, level}: CacheOptions) {
   }
 }
 
-
+/**
+ * Cache service, manage cache using [idb-keyval](https://www.npmjs.com/package/idb-keyval) lib:
+ * 1. clear all cache
+ * 2. change cache level
+ * 3. get cache keys
+ * 4. clear cache by key
+ */
 export class DSCacheService {
   clearAllCache(): void {
     clear()

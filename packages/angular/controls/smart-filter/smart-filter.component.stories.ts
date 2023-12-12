@@ -1,4 +1,5 @@
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { MatIconModule } from '@angular/material/icon'
 import {
   DisplayDensity,
   NgmDSCoreService,
@@ -14,12 +15,12 @@ import { Meta, moduleMetadata } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
 import { ControlsModule } from '../controls.module'
 import { NgmSmartFilterComponent } from './smart-filter.component'
-import { MatIconModule } from '@angular/material/icon'
 
 
 export default {
-  title: 'NgmSmartFilterComponent',
+  title: 'SmartFilter',
   component: NgmSmartFilterComponent,
+  tags: ['autodocs'],
   decorators: [
     moduleMetadata({
       imports: [
@@ -111,9 +112,7 @@ export const DensityCompact = {
       dimension: 'Department'
     },
     options: {},
-    appearance: {
-      displayDensity: DisplayDensity.compact
-    }
+    displayDensity: DisplayDensity.compact
   }
 }
 

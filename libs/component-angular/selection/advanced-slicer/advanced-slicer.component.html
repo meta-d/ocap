@@ -32,7 +32,6 @@
             <ngm-parameter-select [label]=" to() ? ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE_FROM' | translate: {Default: 'From'}) : ('COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE' | translate: {Default: 'Value'}) "
                 [dataSettings]="dataSettings"
                 [entityType]="entityType$ | async"
-                [coreService]="coreService"
                 formControlName="0"
                 >
             </ngm-parameter-select>
@@ -40,7 +39,6 @@
                 [label]=" 'COMPONENTS.SELECTION.ADVANCED_SLICER.VALUE_TO' | translate: {Default: 'To'} "
                 [dataSettings]="dataSettings"
                 [entityType]="entityType$ | async"
-                [coreService]="coreService"
                 formControlName="1"
                 >
             </ngm-parameter-select>

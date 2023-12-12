@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-duckdb",
-  "version": "0.2.5",
+  "version": "1.17.0",
   "keywords": [
     "metad",
     "ocap",
@@ -14,7 +14,8 @@
     "url": "git+https://github.com/meta-d/ocap.git"
   },
   "scripts": {
-    "build:release": "node bundle.mjs release"
+    "build:release": "node bundle.mjs release",
+    "docs": "yarn typedoc"
   },
   "peerDependencies": {
     "@duckdb/duckdb-wasm": "^1.25.0"

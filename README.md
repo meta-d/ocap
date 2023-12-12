@@ -152,7 +152,7 @@ Note: it's currently in Alpha version / in testing mode, please use it with caut
 - [TypeScript](https://www.typescriptlang.org) language
 - [NodeJs](https://nodejs.org) / [NestJs](https://github.com/nestjs/nest)
 - [Nx](https://nx.dev)
-- [Angular](https://angular.io)
+- [Angular](https://angular.dev)
 - [RxJS](http://reactivex.io/rxjs)
 - [TypeORM](https://github.com/typeorm/typeorm)
 - [ECharts](https://echarts.apache.org/)
@@ -170,7 +170,7 @@ Note: thanks to TypeORM, OCAP will support lots of DBs: SQLite (default, for dem
 
 ## 📄 Documentation
 
-Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs/) and to our [Wiki](https://github.com/meta-d/ocap/wiki) (WIP).
+Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs/) and to our [Wiki](https://github.com/meta-d/ocap/wiki) (WIP) or [api references](https://meta-d.github.io/ocap/) for more details.
 
 ## 🚀 Quick Start
 

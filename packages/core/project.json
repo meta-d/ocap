@@ -14,8 +14,8 @@
         "project": "packages/core/package.json",
         "assets": [
           {
-            "glob": "README.md",
-            "input": ".",
+            "glob": "*.md",
+            "input": "packages/core/",
             "output": "."
           }
         ],
@@ -28,7 +28,7 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["packages/core/**/*.ts", "packages/core/package.json"]
@@ -38,14 +38,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/core/jest.config.ts",
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
+        "jestConfig": "packages/core/jest.config.ts"
       }
     }
   },

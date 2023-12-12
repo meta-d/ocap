@@ -1,3 +1,4 @@
+import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { Component, forwardRef, inject, Input, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
@@ -13,11 +14,8 @@ import { MatRadioModule } from '@angular/material/radio'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { DataSettings, EntityType, ParameterControlEnum, parameterFormatter } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxCoreService } from '@metad/core'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, startWith } from 'rxjs'
 import { NgmParameterCreateComponent } from '../parameter-create/parameter-create.component'
-import { DragDropModule } from '@angular/cdk/drag-drop'
-
 
 @Component({
   standalone: true,
@@ -58,7 +56,6 @@ export class NgmParameterSelectComponent implements ControlValueAccessor {
   @Input() placeholder = '@'
 
   @Input() dataSettings: DataSettings
-  @Input() coreService: NxCoreService
   @Input() get entityType(): EntityType {
     return this.entityType$.value
   }
@@ -120,7 +117,6 @@ export class NgmParameterSelectComponent implements ControlValueAccessor {
           viewContainerRef: this.viewContainerRef,
           data: {
             dataSettings: this.dataSettings,
-            coreService: this.coreService,
             entityType: this.entityType
           }
         })
