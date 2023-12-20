@@ -53,7 +53,7 @@
             [color]="copilotDrawer.opened?'accent':''"
             (click)="copilotDrawer.toggle()"
         >
-            <span>🤖</span>
+            <div class="flex justify-center items-center text-xl">🤖</div>
         </button>
     </div>
 
@@ -231,11 +231,12 @@
     <mat-drawer-content class="flex">
         <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
             <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400">
-                <pac-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
+                <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
                     [copilotEngine]="copilotEngine"
+                    [user]="user"
                     cdkDropList
                     (cdkDropListDropped)="dropCopilot($event)"
-                ></pac-copilot-chat>
+                ></ngm-copilot-chat>
                 
                 <div ngmResizerBar resizerBarPosition="left"
                     cdkDrag

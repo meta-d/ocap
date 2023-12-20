@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common'
-import { HttpParams } from '@angular/common/http'
+import { HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Inject, Injectable, PLATFORM_ID, DebugElement, EventEmitter } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { isNil, negate, isEqual, isEmpty, merge, isString, includes } from 'lodash-es'
@@ -359,7 +359,7 @@ export function makeid(length) {
   const charactersLength = characters.length
   // 首字母为英文字符
   let result = chars.charAt(Math.floor(Math.random() * chars.length))
-  for (var i = 0; i < length - 1; i++) {
+  for (let i = 0; i < length - 1; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength))
   }
   return result
@@ -514,4 +514,25 @@ export function effectAction<
       origin$.next(value as any);
     });
   }) as unknown) as ReturnType;
+}
+
+/**
+ * Try get error message from any error object
+ */
+export function getErrorMessage(err: any): string {
+  let error: string
+  if (typeof err === 'string') {
+    error = err
+  } else if (err instanceof HttpErrorResponse) {
+    error = err?.error?.message ?? err.message
+  } else if (err instanceof Error) {
+    error = err?.message
+  } else if (err?.error instanceof Error) {
+    error = err?.error?.message
+  } else if (err) {
+    // 实在没办法则转成 JSON string
+    error = JSON.stringify(err)
+  }
+
+  return error
 }

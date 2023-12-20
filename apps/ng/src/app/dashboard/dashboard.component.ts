@@ -3,13 +3,14 @@ import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { DensityDirective, NgmAgentService, NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '@metad/ocap-angular/core'
+import { DensityDirective, NgmAgentService, NgmDSCacheService, NgmDSCoreService, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, Syntax, Type } from '@metad/ocap-core'
 import { S4ServerAgent } from './s4-agent.service'
+import { ZngOcapCacheService } from './ocap-cache.service'
 
 @Component({
   standalone: true,
-  selector: 'ngm-dashboard',
+  selector: 'ngm-ocap-dashboard',
   templateUrl: 'dashboard.component.html',
   styles: [
     `
@@ -19,6 +20,10 @@ import { S4ServerAgent } from './s4-agent.service'
     `
   ],
   providers: [
+    {
+      provide: NgmDSCacheService,
+      useClass: ZngOcapCacheService
+    },
     NgmDSCoreService,
     NgmAgentService,
     S4ServerAgent,
@@ -55,9 +60,5 @@ export class DashboardComponent {
       dialect: 'SAP',
       catalog: '$INFOCUBE'
     })
-
-    // this.#dsCoreService.getDataSource('S4CDS').subscribe((ds) => {
-    //     console.log(`============================`)
-    // })
   }
 }

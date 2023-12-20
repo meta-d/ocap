@@ -8,7 +8,7 @@ import { CopilotService } from './copilot'
 
 export interface ICopilot {
   enabled?: boolean
-  provider: string
+  provider?: string
   apiKey?: string
   apiHost?: string
 }

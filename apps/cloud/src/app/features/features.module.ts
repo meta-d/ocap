@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
+import { PacAuthModule } from '@metad/cloud/auth'
+import { NxTableModule } from '@metad/components/table'
+import { ICopilot } from '@metad/copilot'
+import { NgmFormlyModule } from '@metad/formly'
+import { PACMaterialThemeModule } from '@metad/material-theme'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -9,13 +15,8 @@ import {
 } from '@metad/ocap-angular/core'
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
-import { LetDirective } from '@ngrx/component'
-import { PacAuthModule } from '@metad/cloud/auth'
-import { NxTableModule } from '@metad/components/table'
-import { NgmFormlyModule } from '@metad/formly'
-import { NgmCopilotService } from '@metad/core'
-import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
+import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { CopilotService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
@@ -54,7 +55,7 @@ import { FeaturesComponent } from './features.component'
     CopilotGlobalComponent,
 
     // Formly
-    NgmFormlyModule.forRoot({}),
+    NgmFormlyModule.forRoot({})
   ],
   providers: [
     DirtyCheckGuard,
@@ -117,9 +118,14 @@ import { FeaturesComponent } from './features.component'
       useClass: StoryFeedService
     },
     {
-      provide: NgmCopilotService,
-      useExisting: CopilotService
-    }
+      // Provide CopilotConfig factory to NgmCopilotService
+      provide: NgmCopilotService.CopilotConfigFactoryToken,
+      useFactory: (copilotService: CopilotService) => (): Promise<ICopilot> => {
+        return copilotService.getOne()
+      },
+      deps: [CopilotService]
+    },
+    NgmCopilotService,
   ]
 })
 export class FeaturesModule {}

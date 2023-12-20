@@ -27,7 +27,7 @@ export class CopilotService {
   }
   get chatCompletionsUrl() {
     return (
-      (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) +
+      (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider]?.apiHost) +
       AI_PROVIDERS[this.copilot.provider].chatCompletionsUrl
     )
   }
@@ -181,6 +181,9 @@ export class CopilotService {
   }
 }
 
+/**
+ * Copilot engine
+ */
 export interface CopilotEngine {
   /**
    * Copilot engine name

@@ -49,7 +49,7 @@ import { StorySharesComponent } from '@metad/story/story'
 import { combineLatest, firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
-import { CopilotChatComponent, MaterialModule, ProjectFilesComponent } from '../../../@shared'
+import { MaterialModule, ProjectFilesComponent } from '../../../@shared'
 import { StoryDesignerComponent } from '../designer'
 import { SaveAsTemplateComponent } from '../save-as-template/save-as-template.component'
 import { StoryDetailsComponent } from '../story-details/story-details.component'
@@ -57,6 +57,7 @@ import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadS
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
 import { CHARTS } from '@metad/story/widgets/analytical-card'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 
 
 @Component({
@@ -72,7 +73,7 @@ import { CHARTS } from '@metad/story/widgets/analytical-card'
     AppearanceDirective,
     DensityDirective,
     StoryDesignerComponent,
-    CopilotChatComponent,
+    NgmCopilotChatComponent,
     NgmInputComponent
   ],
   selector: 'pac-story-toolbar',

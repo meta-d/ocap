@@ -2,14 +2,21 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentStatus, AgentType, DataSettings, DisplayBehaviour, FilterSelectionType, MemberSource } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_COVID19_DAILY_MODEL, DUCKDB_FOODMART_MODEL, DUCKDB_TOP_SUBSCRIBED_MODEL, DUCKDB_UNEMPLOYMENT_MODEL, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { AgentStatus, DataSettings, DisplayBehaviour, FilterSelectionType, MemberSource } from '@metad/ocap-core'
+import {
+  ANALYTICAL_CARDS,
+  DUCKDB_COVID19_DAILY_MODEL,
+  DUCKDB_FOODMART_MODEL,
+  DUCKDB_TOP_SUBSCRIBED_MODEL,
+  DUCKDB_UNEMPLOYMENT_MODEL,
+  DUCKDB_WASM_MODEL
+} from '@metad/ocap-duckdb'
 import { cloneDeep } from 'lodash-es'
 import { Observable } from 'rxjs'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'metad-ocap-root',
+  selector: 'ngm-ocap-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   providers: [NgmSmartFilterBarService]
@@ -41,7 +48,7 @@ export class AppComponent implements OnInit {
   smartFilterOptions: SmartFilterOptions = {
     dimension: {
       dimension: '[product]'
-    },
+    }
   }
   productFilterOptions: SmartFilterOptions = {
     dimension: {
@@ -107,7 +114,7 @@ export class AppComponent implements OnInit {
   ]
 
   error: string
-  
+
   public readonly status$ = this.wasmAgent.selectStatus() as Observable<AgentStatus>
 
   store
@@ -151,13 +158,12 @@ export class AppComponent implements OnInit {
       //     ignoreUnknownProperty: true
       //   },
       // })
-      
+
       await this.wasmAgent.registerModel(DUCKDB_WASM_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_COVID19_DAILY_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_FOODMART_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_UNEMPLOYMENT_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_TOP_SUBSCRIBED_MODEL)
-
 
       // await this.wasmAgent.registerModel({
       //   ...DUCKDB_FOODMART_MODEL,

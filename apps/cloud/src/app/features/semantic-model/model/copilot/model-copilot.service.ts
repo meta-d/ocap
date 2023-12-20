@@ -18,7 +18,6 @@ import {
   SystemCommandFree,
   SystemCommands
 } from '@metad/copilot'
-import { NgmCopilotService } from '@metad/core'
 import { pick } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -27,6 +26,7 @@ import { getErrorMessage } from '../../../../@core'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
 import { ModelCopilotChatConversation, ModelCopilotCommandArea } from './types'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 
 export const I18N_MODEL_NAMESPACE = 'PAC.MODEL'
 

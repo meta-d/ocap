@@ -1,38 +1,33 @@
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { CommonModule } from '@angular/common'
+import { provideHttpClient } from '@angular/common/http'
+import { Component, importProvidersFrom } from '@angular/core'
+import { MatButtonModule } from '@angular/material/button'
+import { provideAnimations } from '@angular/platform-browser/animations'
 import {
-  NgmMissingTranslationHandler,
-  OcapCoreModule,
+  DisplayDensity,
+  NgmDSCoreService,
   OCAP_AGENT_TOKEN,
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN,
-  NgmDSCoreService,
-  DisplayDensity
+  OcapCoreModule
 } from '@metad/ocap-angular/core'
 import { AgentType, C_MEASURES, DataSource, Type } from '@metad/ocap-core'
-import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, StoryObj } from '@storybook/angular'
+import { Meta, StoryObj, applicationConfig, moduleMetadata } from '@storybook/angular'
+import { provideTranslate } from '../mock'
 import { CUBE_SALES_ORDER, MockAgent } from '../mock/agent-mock.service'
 import { AnalyticalGridComponent } from './analytical-grid.component'
 import { AnalyticalGridModule } from './analytical-grid.module'
-import { CustomTranslateLoader } from '../core/i18n/loader.spec'
-import { Component } from '@angular/core'
-import { CommonModule } from '@angular/common'
-import { MatButtonModule } from '@angular/material/button'
 
 @Component({
   standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    AnalyticalGridModule
-  ],
+  imports: [CommonModule, MatButtonModule, AnalyticalGridModule],
   selector: 'ngm-story-component-switch-grid',
   template: `<button mat-button (click)="switch()">Switch</button>
-  <ngm-analytical-grid style="width: 400px; height: 400px;"
-    [dataSettings]="grid.dataSettings"
-    [options]="grid.options"
-  ></ngm-analytical-grid>
-  `,
+    <ngm-analytical-grid
+      style="width: 400px; height: 400px;"
+      [dataSettings]="grid.dataSettings"
+      [options]="grid.options"
+    ></ngm-analytical-grid> `
 })
 class GridsComponent {
   a = {
@@ -87,22 +82,11 @@ export default {
   title: 'AnalyticalGridComponent',
   component: AnalyticalGridComponent,
   decorators: [
+    applicationConfig({
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate(), importProvidersFrom(OcapCoreModule)]
+    }),
     moduleMetadata({
-      imports: [
-        BrowserAnimationsModule,
-        TranslateModule.forRoot({
-          missingTranslationHandler: {
-            provide: MissingTranslationHandler,
-            useClass: NgmMissingTranslationHandler
-          },
-          loader: { provide: TranslateLoader, useClass: CustomTranslateLoader },
-          defaultLanguage: 'zh-Hans'
-        }),
-        AnalyticalGridModule,
-        OcapCoreModule,
-
-        GridsComponent
-      ],
+      imports: [AnalyticalGridModule, GridsComponent],
       providers: [
         NgmDSCoreService,
         {
@@ -501,41 +485,40 @@ export const Sortable = {
 export const MultipleMeasures = {
   render,
   args: {
-  title: 'Multiple Measures Grid',
-  appearance: {},
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder',
-    analytics: {
-      rows: [
-        {
-          dimension: '[Product]'
-        }
-      ],
-      columns: [
-        {
-          dimension: '[Department]'
-        },
-        {
-          dimension: C_MEASURES,
-          measure: 'Sales'
-        },
-        {
-          dimension: C_MEASURES,
-          measure: 'Cost'
-        }
-      ]
-    }
-  },
-  options: {}
-}}
+    title: 'Multiple Measures Grid',
+    appearance: {},
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder',
+      analytics: {
+        rows: [
+          {
+            dimension: '[Product]'
+          }
+        ],
+        columns: [
+          {
+            dimension: '[Department]'
+          },
+          {
+            dimension: C_MEASURES,
+            measure: 'Sales'
+          },
+          {
+            dimension: C_MEASURES,
+            measure: 'Cost'
+          }
+        ]
+      }
+    },
+    options: {}
+  }
+}
 
 export const SwitchTemplate = {
   render: (args) => ({
     props: args,
-    template: `<ngm-story-component-switch-grid></ngm-story-component-switch-grid>`,
+    template: `<ngm-story-component-switch-grid></ngm-story-component-switch-grid>`
   }),
-  args: {
-
-  }
+  args: {}
 }

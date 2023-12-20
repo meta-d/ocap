@@ -149,6 +149,9 @@ import { NgmSearchComponent } from '@metad/ocap-angular/common'
 //   }
 // }
 
+/**
+ * @deprecated use NgmCopilotChatComponent instead
+ */
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -24,23 +24,6 @@ export const ZhHans = {
       None: '无',
       Default: '默认'
     },
-    Controls: {
-      ValueHelp: {
-        Title: '为{{value}}设置过滤器',
-        AvailableMembers: '可选成员',
-        DisplayBehaviour: '展现形式',
-        SelectedMembers: '选中成员',
-        ClearSelection: '清空选择',
-        ShowUnbookedMembers: '显示未分配成员',
-        ShowAllMember: '显示‘所有’成员',
-        ShowOnlyLeaves: '只显示叶子节点',
-        ExcludeSelectedMembers: '排除选中成员',
-        SelectionType: '选择类型',
-        Presentation: '展现形式',
-        HierarchySelectionMode: '层级选择模式',
-        Hierarchy: '层次结构'
-      }
-    },
     AnalyticalCard: {
       Screenshot: '截图',
       DataDownload: '下载数据',
@@ -62,6 +45,48 @@ export const ZhHans = {
       Search: '搜索',
       SelectAll: '选择所有',
       Pin: '固定'
+    },
+    Controls: {
+      ValueHelp: {
+        Title: '为{{value}}设置过滤器',
+        AvailableMembers: '可选成员',
+        DisplayBehaviour: '展现形式',
+        SelectedMembers: '选中成员',
+        ClearSelection: '清空选择',
+        ShowUnbookedMembers: '显示未分配成员',
+        ShowAllMember: '显示‘所有’成员',
+        ShowOnlyLeaves: '只显示叶子节点',
+        ExcludeSelectedMembers: '排除选中成员',
+        SelectionType: '选择类型',
+        Presentation: '展现形式',
+        HierarchySelectionMode: '层级选择模式',
+        Hierarchy: '层次结构'
+      }
+    },
+    Copilot: {
+      Copilot: '副驾驶',
+      AICopilot: 'AI 副驾驶',
+      EnableCopilot: '启用 Copilot',
+      GetYourApiKey: '获取你的 API Key',
+      ProvideOpenaiApiKey: '请提供 Openai API Key?',
+      Provider: '提供商',
+      YourAIPairProgrammer: '你的 AI 配对程序员!',
+      LetYourAIPairProgrammerEdits: '让你的 AI 配对程序员修改一下!',
+      SelectSomeCode: '选择代码，让你的 AI 配对程序员修改一下!',
+      ThinkingHard: '努力思考中...',
+      StopGenerating: '停止生成',
+      ClearMessages: '清空消息',
+      CharacterLength: '字数',
+      Resubmit: '重新提交',
+      Model: '模型',
+      Options: '选项',
+      UseSystemPrompt: '使用系统提示',
+      ExamplesOfPrompts: '提示语示例',
+      APIKey: 'API 密钥',
+      APIHost: 'API 主机',
+      AskAICopilot: '向 AI 副驾驶询问问题',
+      Prompt: '提示',
+      SendPrompt: '发送提问'
     },
     Entity: {
       SelectEntities: '选择数据集'

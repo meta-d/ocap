@@ -920,6 +920,9 @@
         "CubeAlreadyExists": "多维数据集已存在！",
         "DimensionAlreadyExists": "维度已存在！",
         "MeasureAlreadyExists": "度量已存在！"
+      },
+      "Copilot": {
+        "InstructionExecutionComplete": "指令执行完成"
       }
     },
     "BUSINESS_AREA": {

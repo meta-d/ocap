@@ -1,0 +1,263 @@
+<div class="text-base font-semibold text-bluegray-600 p-2">
+    <span>
+        {{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}
+    </span>
+
+    @if (copilotEngine?.name) {
+    <span>:</span><span>{{copilotEngine.name}}</span>
+    }
+</div>
+
+<div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
+    @for (conversation of (enabled && hasKey ? conversations : _mockConversations); track $index) {
+        <div *ngIf="conversation.role === CopilotChatMessageRoleEnum.Assistant" class="pl-2 pr-4 flex">
+            <div class="flex-1 flex items-start overflow-auto">
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
+                </div>
+                <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
+                    <div *ngIf="conversation.content" class="bg-gray-100 rounded-lg max-w-full py-2 px-4 overflow-auto">
+                        <markdown clipboard class="whitespace-pre-line"
+                            [clipboardButtonTemplate]="buttonTemplate"
+                            lineNumbers
+                            [start]="5"
+                            [data]="conversation.content"
+                        ></markdown>
+                    </div>
+    
+                    <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
+                        <span class="font-notoColorEmoji">🙈</span>
+                        {{ conversation.error }}
+                    </div>
+
+                    <ngm-copilot-token *ngIf="conversation.content" [content]="conversation.content"></ngm-copilot-token>
+
+                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0"
+                        (click)="deleteMessage(conversation)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+
+        @if (conversation.role === CopilotChatMessageRoleEnum.User) {
+        <div class="pl-4 flex">
+            <div class="flex-1 flex items-start justify-end overflow-auto">
+                <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
+                    @if (conversation.data) {
+                        <ngm-table class="max-w-full rounded-lg border overflow-hidden bg-white"
+                            [columns]="conversation.data.columns"
+                            [data]="conversation.data.content"
+                            paging
+                            [pageSizeOptions]="[10, 20, 50, 100]"
+                        ></ngm-table>
+                    } @else {
+                        <div class="ngm-copilot__user-message rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
+                            <div #msgContent class="whitespace-pre-wrap w-full focus-visible:outline-none focus-visible:bg-white" [attr.contenteditable]="true"
+                                (focus)="onMessageFocus()"
+                            >{{ conversation.content }}</div>
+                        </div>
+                        <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                            (click)="resubmitMessage(conversation, msgContent.textContent)">
+                            {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                        </button>
+                    }
+
+                    @if (conversation.content) {
+                        <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
+                    }
+
+                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0"
+                        (click)="deleteMessage(conversation)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
+                
+                <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
+            </div>
+        </div>
+        }
+
+        @if (conversation.role === CopilotChatMessageRoleEnum.Info) {
+        <div class="pl-4 flex">
+            <div class="flex-1 flex items-start justify-end overflow-auto">
+                <div class="rounded-lg py-2 px-4 text-bluegray-500 w-full overflow-auto flex flex-col items-end">
+                    {{ conversation.content }}
+                </div>
+            </div>
+        </div>
+        }
+    }
+
+    <div class="flex-1 flex flex-col justify-center items-center gap-1">
+        <ng-container *ngIf="!conversations?.length">
+            <div class="text-lg">
+                <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">CTRL + Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
+            </div>
+        </ng-container>
+    </div>
+    
+    <!-- <ng-container *ngIf="prompts?.length">
+        <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
+            <span class="-mt-3 px-2 bg-slate-50 inline-flex items-center">{{ 'Ngm.Copilot.ExamplesOfPrompts' | translate: {Default: 'Examples of Prompt'} }}
+                <button (click)="examplesOpened=!examplesOpened">
+                    <svg data-accordion-icon class="w-6 h-6 shrink-0 text-neutral-300 hover:text-neutral-400"
+                        [class.rotate-180]="!examplesOpened"
+                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </span>
+        </div>
+        <div class="max-h-[30%] min-h-[100px] overflow-auto pl-4 flex flex-col items-end"
+            [class.min-h-0]="!examplesOpened"
+            [class.h-0]="!examplesOpened"
+            [class.min-h-[200px]]="examplesOpened"
+        >
+            <div *ngFor="let prompt of prompts" class="mb-2 mx-2 bg-slate-200 rounded-lg py-2 px-4">
+                <a class="cursor-pointer hover:underline"
+                    (click)="askPredefinedPrompt(prompt)">
+                    {{ 'Ngm.Copilot.Prompts.'+prompt | translate: {Default: prompt} }}</a>
+            </div>
+        </div>
+    </ng-container> -->
+    
+</div>
+
+<div class="relative m-3 border border-gray-200 rounded-lg shadow-sm bg-white"
+    [class.pac-colpilot__active]="isFoucs(userInput)"
+>
+    <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
+    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center">
+        <button mat-stroked-button displayDensity="cosy" class="rounded-full"
+            (click)="$event.stopPropagation();stopGenerating()">
+            <div class="copilot-message-stop flex items-center">
+                <div class="emoji-loader text-base"></div>
+                <span>
+                    {{ 'Ngm.Copilot.StopGenerating' | translate: {Default: 'Stop generating'} }}
+                </span>
+            </div>
+        </button>
+    </div>
+
+    <div class="flex flex-col p-2" >
+        <textarea #userInput matInput class="flex-1" [placeholder]="placeholder"
+            [formControl]="promptControl"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="3"
+            cdkAutosizeMaxRows="8"
+            (keydown)="triggerFun($event, autoPrompts)"
+
+            [matAutocomplete]="autoPrompts"
+            matAutocompletePosition="above"
+            >
+        </textarea>
+
+        <mat-autocomplete #autoPrompts="matAutocomplete" autoActiveFirstOption hideSingleSelectionIndicator class="ngm-autocomplete-panel ngm-density__compact"
+            (optionActivated)="onPromptActivated($event)"
+        >
+            <mat-option *ngFor="let prompt of filteredPrompts()" [value]="prompt" [title]="prompt">
+                            <!-- [highlight]="promptControl.value"
+                    [content]="prompt" -->
+                <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
+        
+                    customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
+                >{{prompt}}</div>
+            </mat-option>
+        </mat-autocomplete>
+
+        <div class="shrink-0 flex items-center">
+            <button mat-icon-button type="button" displayDensity="cosy"
+                [popper]="copilotOptions"
+                [popperTrigger]="NgxPopperjsTriggers.click"
+                [popperHideOnClickOutside]="true"
+                [popperHideOnScroll]="true"
+                [popperHideOnMouseLeave]="false"
+                [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+            >
+                <mat-icon fontSet="material-icons-round">tune</mat-icon>
+            </button>
+
+            <span class="flex-1"></span>
+
+            <button mat-icon-button displayDensity="cosy"
+                [disabled]="!prompt || answering()"
+                (click)="askCopilotStream(promptControl.value)"
+            >
+                <mat-icon fontSet="material-icons-round">send</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (copilotNotEnabled()) {
+<ngm-copilot-enable class="z-[101]"
+    [title]="welcomeTitle || 'Metad Copilot'"
+    [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
+    (toConfig)="closePopper()"/>
+}
+
+<popper-content #copilotOptions class="z-[101]">
+    <div class="w-80 flex flex-col max-w-sm p-4 border-0 border-gray-200 rounded-lg shadow-lg
+        dark:bg-gray-800 dark:border-gray-700 bg-white/60 backdrop-blur-lg"
+        displayDensity="compact">
+        <div class="text-base mb-2">
+            {{ 'Ngm.Copilot.Options' | translate: {Default: 'Options'} }}
+        </div>
+
+        <section *ngIf="systemPrompt" [matTooltip]="systemPrompt" matTooltipPosition="above">
+            <mat-checkbox [(ngModel)]="useSystemPrompt">
+                {{ 'Ngm.Copilot.UseSystemPrompt' | translate: {Default: 'Use System Prompt'} }}
+            </mat-checkbox>
+        </section>
+
+        <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
+            <label class="flex-1">
+                {{ 'Ngm.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
+            </label>
+            
+            <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
+                <mat-icon>refresh</mat-icon>
+            </button>
+        </div>
+
+        <ngm-search class="w-full" [formControl]="searchModel"></ngm-search>
+        <mat-selection-list class="flex flex-col gap-2 max-h-[120px] overflow-auto"
+            [(ngModel)]="selectedModel"
+            [multiple]="false"
+            (ngModelChange)="changeSelectedModel($event)">
+            <mat-list-option *ngFor="let model of models()" [value]="model.id">
+                {{model.label}}
+            </mat-list-option>
+        </mat-selection-list>
+
+        <label class="pt-4 font-notoColorEmoji">Temperature:<span matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>
+        <mat-slider color="accent" min="0" max="2" step="0.1" value="1" discrete>
+            <input matSliderThumb [(ngModel)]="temperature">
+        </mat-slider>
+        
+        <label class="pt-4 font-notoColorEmoji">Choices:<span matTooltip="How many chat completion choices to generate for each input message.">💡</span></label>
+        <mat-slider color="accent" min="1" max="10" step="1" value="1" discrete>
+            <input matSliderThumb [(ngModel)]="n">
+        </mat-slider>
+
+        <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages" (click)="clear()">
+            {{ 'Ngm.Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
+        </button>
+    </div>
+</popper-content>
+
+<ng-template #buttonTemplate>
+    <!-- <button mat-flat-button displayDensity="compact" class="ngm-rounded-full"
+        (click)="run($event)">run</button> -->
+    <button #copyButton mat-flat-button displayDensity="compact" class="ngm-rounded-full" (click)="onCopy(copyButton)">
+        {{ $any(copyButton).copied ? 'copied' : 'copy' }}
+    </button>
+</ng-template>

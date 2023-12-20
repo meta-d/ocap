@@ -427,10 +427,11 @@
 </div>
 
 <div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
-    <pac-copilot-chat class="w-full h-full"
+    <ngm-copilot-chat class="w-full h-full"
+        [welcomeTitle]=" 'Story.Toolbar.WelcomeCopilot' | translate: {Default: 'Metad Copilot'} "
         [copilotEngine]="copilotEngine"
         [(conversations)]="conversations"
-    ></pac-copilot-chat>
+    ></ngm-copilot-chat>
 </div>
 
 <ng-template #fileMenu>

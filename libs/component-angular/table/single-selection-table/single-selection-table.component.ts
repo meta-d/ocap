@@ -8,6 +8,9 @@ import { MatTableDataSource } from '@angular/material/table'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import get from 'lodash-es/get'
 
+/**
+ * @deprecated move to `@metad/ocap-angular`
+ */
 @Component({
   selector: 'ngm-single-selection-table',
   templateUrl: './single-selection-table.component.html',

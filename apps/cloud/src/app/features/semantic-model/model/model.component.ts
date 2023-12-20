@@ -14,7 +14,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
-import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
+import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -36,8 +36,6 @@ import {
   tap
 } from 'rxjs'
 import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
-import { CopilotChatComponent } from '../../../@shared'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
@@ -49,6 +47,8 @@ import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTIO
 import { stringifyTableType } from './utils'
 import { IsDirty } from '@metad/core'
 import { ModelCopilotEngineService } from './copilot'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { TranslationBaseComponent } from '../../../@shared'
 
 
 @Component({
@@ -67,6 +67,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
 
   private readonly _modelCopilotEngine = inject(ModelCopilotEngineService)
+  #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private modelsService = inject(ModelsService)
@@ -77,6 +78,9 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _viewContainerRef = inject(ViewContainerRef);
   private toastrService = inject(ToastrService);
 
+  get user() {
+    return this.#store.user
+  }
   get copilotEngine() {
     return this._copilotEngine ?? this._modelCopilotEngine
   }
@@ -85,7 +89,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   }
   private _copilotEngine = null
 
-  @ViewChild('copilotChat') copilotChat!: CopilotChatComponent
+  @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
   @HostBinding('class.pac-fullscreen')
   public isFullscreen = false

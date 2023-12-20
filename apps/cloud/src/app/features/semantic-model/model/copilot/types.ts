@@ -1,9 +1,9 @@
-import { NgmCopilotService } from '@metad/core'
-import { EntityType } from '@metad/ocap-core'
 import { CopilotChatConversation } from '@metad/copilot'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { EntityType } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
-import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from '../entity/entity.service'
+import { SemanticModelService } from '../model.service'
 
 export interface ModelCopilotChatConversation extends CopilotChatConversation {
   dataSource: string

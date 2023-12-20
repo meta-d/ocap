@@ -52,9 +52,14 @@ body {
   font-size: 14px;
 }
 
+$text-font: Lato, 'Noto Serif SC', monospace;
+
 body {
-  --mdc-dialog-subhead-font: Lato, 'Noto Serif SC', monospace;
-  --mdc-dialog-supporting-text-font: Lato, 'Noto Serif SC', monospace;
+  --mdc-dialog-subhead-font: $text-font;
+  --mdc-dialog-supporting-text-font: $text-font;
+  --mat-table-row-item-label-text-font: $text-font;
+  --mat-table-header-headline-font: $text-font;
+
   display: flex;
   margin: 0;
 

@@ -61,7 +61,7 @@ export class CopilotService extends NgmCopilotService {
       this.openai = new OpenAIApi(this.configuration)
     })
 
-  private async getOne(orgId: string) {
+  async getOne(orgId?: string) {
     const result = await firstValueFrom(this.httpClient.get<{ items: ICopilot[] }>(API_PREFIX + '/copilot'))
     this._copilot$.next(result.items[0])
     return this._copilot$.value

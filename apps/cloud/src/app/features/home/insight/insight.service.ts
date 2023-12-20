@@ -12,7 +12,8 @@ import {
   DataSettings,
   EntityType,
   getEntityDimensions,
-  isEntityType
+  isEntityType,
+  getEntityHierarchy
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
@@ -282,11 +283,11 @@ ${calcEntityTypePrompt(entityType)}
         }
       )
 
-      let answer
+      let answer: any
       try {
         answer = getFunctionCall(choices[0].message)
         
-        const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer.arguments)
+        const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer.arguments, entityType)
         const answerMessage = {
           message: JSON.stringify(answer.arguments, null, 2),
           dataSettings: {
@@ -545,7 +546,15 @@ ${JSON.stringify([
 
 }
 
-export function transformCopilotChart(answer) {
+
+/**
+ * Transform copilot answer to chart annotation
+ * 
+ * @param answer Answer from copilot
+ * @param entityType Entity type of the cube
+ * @returns 
+ */
+export function transformCopilotChart(answer: any, entityType: EntityType) {
   const chartAnnotation = {} as ChartAnnotation
   if (answer.chartType) {
     chartAnnotation.chartType = {
@@ -562,6 +571,8 @@ export function transformCopilotChart(answer) {
   chartAnnotation.dimensions = dimensions.map((dimension) => (
     {
       ...dimension,
+      // Determine dimension attr by hierarchy
+      dimension: getEntityHierarchy(entityType, dimension.hierarchy).dimension,
       zeroSuppression: true,
       chartOptions: {
         dataZoom: {

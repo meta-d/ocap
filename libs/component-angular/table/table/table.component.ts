@@ -81,6 +81,9 @@ export class MyCustomPaginatorIntl implements MatPaginatorIntl {
   }
 }
 
+/**
+ * @deprecated use NgmTableComponent
+ */
 @UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -16,6 +16,9 @@ import { NxSingleSelectionTableComponent } from './single-selection-table/single
 import { MyCustomPaginatorIntl, NxTableComponent } from './table/table.component'
 import { MatInputModule } from '@angular/material/input'
 
+/**
+ * @deprecated use NgmTableComponent
+ */
 @NgModule({
   declarations: [NxSingleSelectionTableComponent, NxTableComponent],
   imports: [
