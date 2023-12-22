@@ -1,7 +1,14 @@
 name: Storybook Build and Deploy
 on: 
   push:
-    paths: ["packages/**"] # Trigger the action only when files change in the folders defined here
+    tags:
+      - '*'
+  workflow_run:
+    workflows: ["Build"]
+    types: [requested]
+    branches:
+      - 'main'
+    
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
