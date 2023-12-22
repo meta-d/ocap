@@ -1,14 +1,7 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import {
-  CreateChatCompletionRequest,
-  CreateChatCompletionResponse,
-  CreateChatCompletionResponseChoicesInner
-} from 'openai'
 import { Observable, catchError, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
-import { AIOptions, AI_PROVIDERS, CopilotChatMessage, CopilotChatResponseChoice, ICopilot } from './types'
-
-export const DefaultModel = 'gpt-3.5-turbo'
+import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
 
 export class CopilotService {
   // private _copilotDefault = {
@@ -44,7 +37,7 @@ export class CopilotService {
   async createChat(
     messages: CopilotChatMessage[],
     options?: {
-      request?: Partial<CreateChatCompletionRequest>
+      request?: any
       signal?: AbortSignal
     }
   ) {
@@ -64,14 +57,17 @@ export class CopilotService {
     })
 
     if (response.status === 200) {
-      const answer: CreateChatCompletionResponse = await response.json()
+      const answer = await response.json()
       return answer.choices
     }
 
     throw new Error((await response.json()).error?.message)
   }
 
-  chatCompletions(messages: CopilotChatMessage[], request?: Partial<CreateChatCompletionRequest>): Observable<CreateChatCompletionResponse> {
+  chatCompletions(
+    messages: CopilotChatMessage[],
+    request?: any
+  ): Observable<any> {
     return fromFetch(this.chatCompletionsUrl, {
       method: 'POST',
       headers: {
@@ -97,8 +93,8 @@ export class CopilotService {
     )
   }
 
-  chatStream(messages: CopilotChatMessage[], request?: CreateChatCompletionRequest) {
-    return new Observable<CreateChatCompletionResponseChoicesInner[]>((subscriber) => {
+  chatStream(messages: CopilotChatMessage[], request?: any) {
+    return new Observable<any[]>((subscriber) => {
       const ctrl = new AbortController()
       fetchEventSource(this.chatCompletionsUrl, {
         method: 'POST',
@@ -179,48 +175,4 @@ export class CopilotService {
       })
     )
   }
-}
-
-/**
- * Copilot engine
- */
-export interface CopilotEngine {
-  /**
-   * Copilot engine name
-   */
-  name?: string
-  /**
-   * AI Configuration
-   */
-  aiOptions: AIOptions
-  /**
-   * System prompt
-   */
-  systemPrompt?: string
-  /**
-   * Predefined prompts
-   */
-  prompts: string[]
-  /**
-   * Conversations
-   */
-  conversations: CopilotChatMessage[]
-  /**
-   * Placeholder in ask input
-   */
-  placeholder?: string
-
-  process(
-    data: { prompt: string; messages?: CopilotChatMessage[] },
-    options?: { action?: string }
-  ): Observable<CopilotChatMessage[] | string>
-  preprocess?(prompt: string, options?: any)
-  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
-
-  /**
-   * Drop copilot data
-   * 
-   * @param event 
-   */
-  dropCopilot?(event);
 }

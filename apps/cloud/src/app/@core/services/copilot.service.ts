@@ -5,16 +5,11 @@ import { UntilDestroy } from '@ngneat/until-destroy'
 import { API_PREFIX } from '@metad/cloud/state'
 import { NgmCopilotService } from '@metad/core'
 import type { AxiosRequestConfig } from 'axios'
-import {
-  Configuration,
-  CreateCompletionRequest,
-  CreateEditRequest,
-  OpenAIApi
-} from 'openai'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { ICopilot } from '../types'
 import { Store } from './store.service'
+import OpenAI from 'openai'
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({ providedIn: 'root' })
@@ -32,8 +27,7 @@ export class CopilotService extends NgmCopilotService {
   get hasKey() {
     return !!this.copilot?.apiKey
   }
-  configuration: Configuration
-  openai: OpenAIApi
+  openai: OpenAI
   // Subscribers
   // Init copilot config
   private _userSub = this.store.user$
@@ -55,10 +49,9 @@ export class CopilotService extends NgmCopilotService {
     )
     .subscribe((copilot) => {
       this.copilot = copilot
-      this.configuration = new Configuration({
+      this.openai = new OpenAI({
         apiKey: copilot.apiKey
       })
-      this.openai = new OpenAIApi(this.configuration)
     })
 
   async getOne(orgId?: string) {
@@ -72,32 +65,37 @@ export class CopilotService extends NgmCopilotService {
     this._copilot$.next(copilot)
   }
 
-  async createCompletion(
-    prompt: string,
-    options?: { completionRequest?: CreateCompletionRequest; axiosConfig?: AxiosRequestConfig }
-  ) {
-    const { completionRequest, axiosConfig } = options ?? {}
-    const completion = await this.openai.createCompletion(
-      {
-        model: 'text-davinci-003',
-        prompt: prompt,
-        temperature: 0.6,
-        max_tokens: 1000,
-        ...(completionRequest ?? {})
-      },
-      // 由于本项目用到 Axios 与 openAi APi 中用到的 Axios 版本不一样，导致 AxiosRequestConfig 中的 method 类型有所不同
-      axiosConfig as any
-    )
-
-    return completion.data.choices
+  async createCompletion(...params: any[]) {
+    return []
   }
+  async createEdit(...params: any[]) {}
 
-  async createEdit(editRequest: Partial<CreateEditRequest>) {
-    const edit = await this.openai.createEdit({
-      ...editRequest,
-      model: 'code-davinci-edit-001',
-    } as CreateEditRequest)
+  // async createCompletion(
+  //   prompt: string,
+  //   options?: { completionRequest?: CreateCompletionRequest; axiosConfig?: AxiosRequestConfig }
+  // ) {
+  //   const { completionRequest, axiosConfig } = options ?? {}
+  //   const completion = await this.openai.createCompletion(
+  //     {
+  //       model: 'text-davinci-003',
+  //       prompt: prompt,
+  //       temperature: 0.6,
+  //       max_tokens: 1000,
+  //       ...(completionRequest ?? {})
+  //     },
+  //     // 由于本项目用到 Axios 与 openAi APi 中用到的 Axios 版本不一样，导致 AxiosRequestConfig 中的 method 类型有所不同
+  //     axiosConfig as any
+  //   )
 
-    return edit.data.choices
-  }
+  //   return completion.data.choices
+  // }
+
+  // async createEdit(editRequest: Partial<CreateEditRequest>) {
+  //   const edit = await this.openai.createEdit({
+  //     ...editRequest,
+  //     model: 'code-davinci-edit-001',
+  //   } as CreateEditRequest)
+
+  //   return edit.data.choices
+  // }
 }

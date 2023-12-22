@@ -4,7 +4,6 @@ import {
   AIOptions,
   CopilotChatMessage,
   CopilotChatResponseChoice,
-  CopilotEngine,
   DefaultModel,
   freeChat,
   freePrompt,
@@ -18,6 +17,7 @@ import {
   SystemCommandFree,
   SystemCommands
 } from '@metad/copilot'
+import { NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
 import { pick } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -26,12 +26,11 @@ import { getErrorMessage } from '../../../../@core'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
 import { ModelCopilotChatConversation, ModelCopilotCommandArea } from './types'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 
 export const I18N_MODEL_NAMESPACE = 'PAC.MODEL'
 
 @Injectable()
-export class ModelCopilotEngineService implements CopilotEngine {
+export class ModelCopilotEngineService extends NgmCopilotEngineService {
   private copilotService = inject(NgmCopilotService)
   private readonly translateService = inject(TranslateService)
   private readonly modelService = inject(SemanticModelService)
@@ -54,9 +53,9 @@ export class ModelCopilotEngineService implements CopilotEngine {
   // private readonly currentCube = toSignal(this.modelService.currentCube$)
   // private readonly currentDimension = toSignal(this.modelService.currentDimension$)
 
-  get name() {
-    return this._name()
-  }
+  // get name() {
+  //   return this._name()
+  // }
   private readonly _name = toSignal(
     this.translateService.stream('PAC.MODEL.MODEL.CopilotName', { Default: 'Modeling' })
   )
@@ -66,9 +65,9 @@ export class ModelCopilotEngineService implements CopilotEngine {
     useSystemPrompt: true
   } as AIOptions
 
-  get prompts() {
-    return this._prompts()
-  }
+  // get prompts() {
+  //   return this._prompts()
+  // }
 
   private readonly _prompts = toSignal(
     selectCommandExamples(ModelCopilotCommandArea).pipe(
@@ -141,45 +140,45 @@ export class ModelCopilotEngineService implements CopilotEngine {
     }
   ]
 
-  get systemPrompt() {
-    return `预设条件：${JSON.stringify({
-      BusinessAreas: this.businessAreas
-    })}
-根据问题给出涉及到的多个 action 相应 language in format 的答案，value 值使用 object，不用注释，不用额外属性，例如
-问题：根据表 product (id string, name string, type string) 信息创建产品维度
-答案：
-{
-  "action": "create_dimension",
-  "value": {
-    "name": "product",
-    "caption": "产品",
-    "hierarchies": [
-      {
-        "name": "",
-        "caption": "产品",
-        "tables": [
-          {
-            "name": "product"
-          }
-        ],
-        "levels": [
-          {
-            "name": "type",
-            "column": "type",
-            "caption": "类型"
-          },
-          {
-            "name": "name",
-            "column": "name",
-            "caption": "名称"
-          }
-        ]
-      }
-    ]
-  }
-}
-`
-  }
+  //   get systemPrompt() {
+  //     return `预设条件：${JSON.stringify({
+  //       BusinessAreas: this.businessAreas
+  //     })}
+  // 根据问题给出涉及到的多个 action 相应 language in format 的答案，value 值使用 object，不用注释，不用额外属性，例如
+  // 问题：根据表 product (id string, name string, type string) 信息创建产品维度
+  // 答案：
+  // {
+  //   "action": "create_dimension",
+  //   "value": {
+  //     "name": "product",
+  //     "caption": "产品",
+  //     "hierarchies": [
+  //       {
+  //         "name": "",
+  //         "caption": "产品",
+  //         "tables": [
+  //           {
+  //             "name": "product"
+  //           }
+  //         ],
+  //         "levels": [
+  //           {
+  //             "name": "type",
+  //             "column": "type",
+  //             "caption": "类型"
+  //           },
+  //           {
+  //             "name": "name",
+  //             "column": "name",
+  //             "caption": "名称"
+  //           }
+  //         ]
+  //       }
+  //     ]
+  //   }
+  // }
+  // `
+  //   }
 
   private readonly commands = toSignal(
     selectCommands(ModelCopilotCommandArea).pipe(

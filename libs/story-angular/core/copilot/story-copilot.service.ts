@@ -16,6 +16,7 @@ import {
   SystemCommands
 } from '@metad/copilot'
 import { getErrorMessage, NgmCopilotService } from '@metad/core'
+import { NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import { pick } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -25,7 +26,7 @@ import { I18N_STORY_NAMESPACE } from '../types'
 import { StoryCopilotChatConversation, StoryCopilotCommandArea } from './types'
 
 @Injectable()
-export class StoryCopilotEngineService implements CopilotEngine {
+export class StoryCopilotEngineService extends NgmCopilotEngineService {
   private copilotService = inject(NgmCopilotService)
   private storyService = inject(NxStoryService)
   private translateService = inject(TranslateService)

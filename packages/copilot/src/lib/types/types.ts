@@ -1,10 +1,8 @@
-import {
-  ChatCompletionRequestMessage,
-  CreateChatCompletionRequest,
-  CreateChatCompletionResponseChoicesInner
-} from 'openai'
 import JSON5 from 'json5'
-import { CopilotService } from './copilot'
+import { CopilotService } from '../copilot'
+import { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionSystemMessageParam } from 'openai/resources'
+
+export const DefaultModel = 'gpt-3.5-turbo'
 
 export interface ICopilot {
   enabled?: boolean
@@ -29,7 +27,7 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
-export interface CopilotChatMessage extends Omit<ChatCompletionRequestMessage, 'role'> {
+export interface CopilotChatMessage extends Omit<ChatCompletionSystemMessageParam, 'role'> {
   role: CopilotChatMessageRoleEnum
   error?: string
   data?: {
@@ -40,7 +38,7 @@ export interface CopilotChatMessage extends Omit<ChatCompletionRequestMessage, '
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface CopilotChatResponseChoice extends CreateChatCompletionResponseChoicesInner {
+export interface CopilotChatResponseChoice {
   //
 }
 
@@ -55,10 +53,10 @@ export const AI_PROVIDERS = {
   }
 }
 
-export type AIOptions = CreateChatCompletionRequest & { useSystemPrompt?: boolean }
+export type AIOptions = any & { useSystemPrompt?: boolean }
 
 // Helper function
-export function getFunctionCall(message: ChatCompletionRequestMessage, name?: string) {
+export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
   if (message.role !== CopilotChatMessageRoleEnum.Assistant) {
     throw new Error('Only assistant messages can be used to generate function calls')
   }

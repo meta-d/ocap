@@ -7,7 +7,7 @@ import {
   CopilotDefaultOptions,
   getFunctionCall,
   nonNullable
-} from './types'
+} from './types/types'
 
 export interface CopilotCommand {
   name: string

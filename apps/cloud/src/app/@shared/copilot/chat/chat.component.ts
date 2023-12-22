@@ -30,7 +30,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { CreateChatCompletionRequest } from 'openai'
+import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
 import { CopilotService, getErrorMessage, Store } from '../../../@core'
 import { MaterialModule } from '../../material.module'
@@ -271,7 +271,7 @@ export class CopilotChatComponent {
   private openaiOptions = {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
-  } as CreateChatCompletionRequest & { useSystemPrompt?: boolean }
+  } as ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean }
   get aiOptions() {
     return this.copilotEngine?.aiOptions ?? this.openaiOptions
   }

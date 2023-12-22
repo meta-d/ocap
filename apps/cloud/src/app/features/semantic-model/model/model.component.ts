@@ -12,13 +12,15 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
-import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { IsDirty } from '@metad/core'
+import { NgmCopilotChatComponent, NgmCopilotEngineService, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { sortBy, uniqBy } from 'lodash-es'
+import { camelCase, sortBy, uniqBy } from 'lodash-es'
 import {
   BehaviorSubject,
   Subject,
@@ -36,26 +38,26 @@ import {
   tap
 } from 'rxjs'
 import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
+import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
+import { ModelCopilotEngineService } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
-import { IsDirty } from '@metad/core'
-import { ModelCopilotEngineService } from './copilot'
-import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
-import { TranslationBaseComponent } from '../../../@shared'
-
 
 @Component({
   selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
-  providers: [NxSettingsPanelService, SemanticModelService, ModelCopilotEngineService],
+  providers: [NxSettingsPanelService, SemanticModelService, {
+    provide: NgmCopilotEngineService,
+    useClass: ModelCopilotEngineService
+  }],
   host: {
     class: 'ngm-semanctic-model'
   },
@@ -65,24 +67,46 @@ import { TranslationBaseComponent } from '../../../@shared'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
-
-  private readonly _modelCopilotEngine = inject(ModelCopilotEngineService)
+  
   #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private modelsService = inject(ModelsService)
   private storyStore = inject<NxStoryStore>(NX_STORY_STORE)
   private route = inject(ActivatedRoute)
-  private router = inject(Router);
-  private _dialog = inject(MatDialog);
-  private _viewContainerRef = inject(ViewContainerRef);
-  private toastrService = inject(ToastrService);
+  private router = inject(Router)
+  private _dialog = inject(MatDialog)
+  private _viewContainerRef = inject(ViewContainerRef)
+  private toastrService = inject(ToastrService)
+
+  // Copilot
+  readonly #copilotEngine = inject(NgmCopilotEngineService)
+  #createDimension = injectMakeCopilotActionable(
+    {
+      name: `selectDestinations_Dimension`,
+      description: `Set the given destinations as 'selected', on the table`,
+      argumentAnnotations: [
+        {
+          name: "destinationNames",
+          type: "array",
+          items: {
+            type: "string",
+          },
+          description: "The names of the destinations to select",
+          required: true,
+        },
+      ],
+      implementation: async (destinationNames: string[]) => {
+        console.log(`Execute action createDimension`)
+      },
+    }
+  )
 
   get user() {
     return this.#store.user
   }
   get copilotEngine() {
-    return this._copilotEngine ?? this._modelCopilotEngine
+    return this._copilotEngine ?? this.#copilotEngine
   }
   set copilotEngine(value) {
     this._copilotEngine = value
