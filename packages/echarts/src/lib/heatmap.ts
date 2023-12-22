@@ -20,9 +20,7 @@ import {
   isNil,
   ChartMeasure,
 } from '@metad/ocap-core'
-import isDate from 'date-fns/isDate'
-import format from 'date-fns/format'
-import parse from 'date-fns/parse'
+import { parse, format, isDate } from 'date-fns'
 import { HeatmapChart } from 'echarts/charts'
 import { use } from 'echarts/core'
 import { maxBy, minBy } from 'lodash-es'

@@ -1,8 +1,8 @@
 import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { AggregationRole, Semantics } from '@metad/ocap-core'
-import { FormlyFieldConfig } from '@ngx-formly/core'
 import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
-import format from 'date-fns/format'
+import { FormlyFieldConfig } from '@ngx-formly/core'
+import { format } from 'date-fns'
 import { map, startWith, tap } from 'rxjs'
 
 export function SQLExpression(COMMON) {
@@ -46,7 +46,7 @@ export function SQLExpression(COMMON) {
         props: {
           label: COMMON?.SQLExpression?.Content ?? 'Content',
           rows: 1,
-          autosize: true,
+          autosize: true
         }
       }
     ]

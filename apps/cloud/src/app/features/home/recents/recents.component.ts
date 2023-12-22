@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 import { TranslateService } from '@ngx-translate/core'
-import formatRelative from 'date-fns/formatRelative'
+import { formatRelative } from 'date-fns'
 import { map, switchMap } from 'rxjs/operators'
 import { getDateLocale } from '../../../@core'
 import { Store, VisitsService } from '../../../@core/services'
@@ -10,7 +10,7 @@ import { Store, VisitsService } from '../../../@core/services'
   templateUrl: 'recents.component.html',
   styleUrls: ['recents.component.scss']
 })
-export class RecentsComponent implements OnInit {
+export class RecentsComponent {
   private organizationId$ = this.store.selectOrganizationId()
 
   public readonly recents$ = this.organizationId$.pipe(
@@ -27,5 +27,4 @@ export class RecentsComponent implements OnInit {
 
   constructor(private store: Store, private visitsService: VisitsService, private translateService: TranslateService) {}
 
-  ngOnInit() {}
 }

@@ -1,17 +1,23 @@
-import { Location, DatePipe } from '@angular/common'
+import { DatePipe, Location } from '@angular/common'
 import { Component, Inject, LOCALE_ID, inject } from '@angular/core'
-import { MatDialog } from '@angular/material/dialog'
-import { InvitationExpirationEnum, InvitationTypeEnum } from '@metad/contracts'
-import { InviteService, Store, ToastrService } from '@metad/cloud/state'
-import { InlineSearchComponent, MaterialModule, SharedModule, TranslationBaseComponent, UserProfileInlineComponent, userLabel } from 'apps/cloud/src/app/@shared'
-import formatDistanceToNow from 'date-fns/formatDistanceToNow'
-import isAfter from 'date-fns/isAfter'
-import { withLatestFrom, map, switchMap, firstValueFrom, combineLatestWith, BehaviorSubject } from 'rxjs'
-import { InviteMutationComponent } from '../../../../@shared/invite'
-import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
-import { NxTableModule } from '@metad/components/table'
-import { PACUsersComponent } from '../users.component'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { MatDialog } from '@angular/material/dialog'
+import { InviteService, Store, ToastrService } from '@metad/cloud/state'
+import { NxTableModule } from '@metad/components/table'
+import { InvitationExpirationEnum, InvitationTypeEnum } from '@metad/contracts'
+import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
+import {
+  InlineSearchComponent,
+  MaterialModule,
+  SharedModule,
+  TranslationBaseComponent,
+  UserProfileInlineComponent,
+  userLabel
+} from 'apps/cloud/src/app/@shared'
+import { formatDistanceToNow, isAfter } from 'date-fns'
+import { BehaviorSubject, combineLatestWith, firstValueFrom, map, switchMap, withLatestFrom } from 'rxjs'
+import { InviteMutationComponent } from '../../../../@shared/invite'
+import { PACUsersComponent } from '../users.component'
 
 @Component({
   standalone: true,
@@ -54,12 +60,13 @@ export class ManageUserInviteComponent extends TranslationBaseComponent {
       items.map((invite) => ({
         ...invite,
         createdAt: new DatePipe(this._locale).transform(new Date(invite.createdAt)),
-        expireDate: invite.expireDate ? formatDistanceToNow(new Date(invite.expireDate)) : InvitationExpirationEnum.NEVER,
-        statusText: invite.status === 'ACCEPTED' || !invite.expireDate || isAfter(new Date(invite.expireDate), new Date())
-            ? this.getTranslation(
-                `PAC.INVITE_PAGE.STATUS.${invite.status}`, { Default: invite.status }
-              )
-            : this.getTranslation(`PAC.INVITE_PAGE.STATUS.EXPIRED`, { Default: 'EXPIRED' }),
+        expireDate: invite.expireDate
+          ? formatDistanceToNow(new Date(invite.expireDate))
+          : InvitationExpirationEnum.NEVER,
+        statusText:
+          invite.status === 'ACCEPTED' || !invite.expireDate || isAfter(new Date(invite.expireDate), new Date())
+            ? this.getTranslation(`PAC.INVITE_PAGE.STATUS.${invite.status}`, { Default: invite.status })
+            : this.getTranslation(`PAC.INVITE_PAGE.STATUS.EXPIRED`, { Default: 'EXPIRED' })
       }))
     )
   )
@@ -99,14 +106,11 @@ export class ManageUserInviteComponent extends TranslationBaseComponent {
   }
 
   async deleteInvite(id, email) {
-		await this.inviteService.delete(id)
-    this.toastrService.success(
-      'TOASTR.MESSAGE.INVITES_DELETE',
-      {
-        email: email,
-        Default: 'Invite \''+ email +'\' delete'
-      }
-    )
-    this.refresh$.next()			
-	}
+    await this.inviteService.delete(id)
+    this.toastrService.success('TOASTR.MESSAGE.INVITES_DELETE', {
+      email: email,
+      Default: "Invite '" + email + "' delete"
+    })
+    this.refresh$.next()
+  }
 }

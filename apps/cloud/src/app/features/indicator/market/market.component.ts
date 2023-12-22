@@ -1,24 +1,17 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { BusinessAreasService, IndicatorsService, Store, ToastrService, hierarchize } from '@metad/cloud/state'
+import { HighlightDirective } from '@metad/components/core'
 import { IndicatorType, PermissionApprovalStatusTypesEnum } from '@metad/contracts'
 import { NgmCommonModule, NgmTreeSelectComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { findTreeNode } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
-import { BusinessAreasService, hierarchize, IndicatorsService, Store, ToastrService } from '@metad/cloud/state'
-import { HighlightDirective } from '@metad/components/core'
-import formatRelative from 'date-fns/formatRelative'
+import { formatRelative } from 'date-fns'
 import { find, groupBy, includes, isEmpty, isNil } from 'lodash-es'
-import {
-  BehaviorSubject,
-  combineLatest,
-  debounceTime,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-} from 'rxjs'
+import { BehaviorSubject, combineLatest, debounceTime, map, shareReplay, startWith, switchMap } from 'rxjs'
 import {
   ApprovalPolicyTypesStringEnum,
   CertificationService,
@@ -30,8 +23,6 @@ import {
 import { MaterialModule, SharedModule, TagViewerComponent } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { IndicatorTypeComponent } from '../../../@shared/indicator'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-
 
 @Component({
   standalone: true,
@@ -51,7 +42,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
     InlineSearchComponent,
     IndicatorTypeComponent,
     NgmTreeSelectComponent,
-    TagViewerComponent,
+    TagViewerComponent
   ],
   selector: 'pac-market',
   templateUrl: './market.component.html',
@@ -62,7 +53,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 })
 export class MarketComponent {
   IndicatorType = IndicatorType
-  
+
   public readonly translateService = inject(TranslateService)
   private readonly tagService = inject(TagService)
   private readonly store = inject(Store)
@@ -102,14 +93,11 @@ export class MarketComponent {
     shareReplay(1)
   )
   // 所有的公开指标
-  private readonly publicIndicators$ = this.store.selectOrganizationId().pipe(
-    switchMap(() => this.indicatorStore.getAll(['createdBy', 'businessArea', 'certification']))
-  )
+  private readonly publicIndicators$ = this.store
+    .selectOrganizationId()
+    .pipe(switchMap(() => this.indicatorStore.getAll(['createdBy', 'businessArea', 'certification'])))
 
-  private readonly indicatorsWithPermission$ = combineLatest([
-    this.publicIndicators$,
-    this.permissionApprovals$
-  ]).pipe(
+  private readonly indicatorsWithPermission$ = combineLatest([this.publicIndicators$, this.permissionApprovals$]).pipe(
     map(([indicators, permissionApprovals]) => {
       const userId = this.store.userId
       return indicators.map((indicator) => {
@@ -124,7 +112,8 @@ export class MarketComponent {
         )
         const currentLang = this.translateService.currentLang
 
-        const permissionApproved = indicator.createdById === userId || // Created by me
+        const permissionApproved =
+          indicator.createdById === userId || // Created by me
           businessAreas.filter((item) => item.status === PermissionApprovalStatusTypesEnum.APPROVED).length || // Approved by business area
           permissions.filter((item) => item.status === PermissionApprovalStatusTypesEnum.APPROVED).length // Approved by indicator
         return {
@@ -213,14 +202,30 @@ export class MarketComponent {
       }
       return indicators
     }),
-    switchMap((indicators) => this.types$.pipe(map((types) => indicators.filter((indicator) => types.length ? types.includes(indicator.type) : true)))),
-    switchMap((indicators) => this.certificationsControl.valueChanges.pipe(
-      startWith(null),
-      map((certification) => indicators.filter((indicator) => certification?.length ? certification.includes(indicator.certification?.id) : true)))
+    switchMap((indicators) =>
+      this.types$.pipe(
+        map((types) => indicators.filter((indicator) => (types.length ? types.includes(indicator.type) : true)))
+      )
     ),
-    switchMap((indicators) => this.selectedTagNames$.pipe(map((tags) => indicators.filter((indicator) => {
-      return tags.length === 0 || tags.every((tag) => find(indicator.tags, (item) => item.name === tag))
-    })))),
+    switchMap((indicators) =>
+      this.certificationsControl.valueChanges.pipe(
+        startWith(null),
+        map((certification) =>
+          indicators.filter((indicator) =>
+            certification?.length ? certification.includes(indicator.certification?.id) : true
+          )
+        )
+      )
+    ),
+    switchMap((indicators) =>
+      this.selectedTagNames$.pipe(
+        map((tags) =>
+          indicators.filter((indicator) => {
+            return tags.length === 0 || tags.every((tag) => find(indicator.tags, (item) => item.name === tag))
+          })
+        )
+      )
+    ),
     takeUntilDestroyed(),
     shareReplay(1)
   )
@@ -232,26 +237,32 @@ export class MarketComponent {
   public readonly businessAreaAuth$ = combineLatest([
     this.businessArea.valueChanges.pipe(startWith(null)),
     this.permissionApprovals$
-  ])
-  .pipe(
+  ]).pipe(
     map(([businessAreaId, permissionApprovals]) => {
-      return !businessAreaId || permissionApprovals.find(
-        (item) =>
-          item.permissionType === ApprovalPolicyTypesStringEnum.BUSINESS_AREA &&
-          item.permissionId === businessAreaId &&
-          item.status !== PermissionApprovalStatusTypesEnum.REFUSED
+      return (
+        !businessAreaId ||
+        permissionApprovals.find(
+          (item) =>
+            item.permissionType === ApprovalPolicyTypesStringEnum.BUSINESS_AREA &&
+            item.permissionId === businessAreaId &&
+            item.status !== PermissionApprovalStatusTypesEnum.REFUSED
+        )
       )
-    }),
+    })
   )
 
-  public readonly certifications = toSignal(this.certificationService.getAll().pipe(
-    map((items) => items.map((item) => ({
-      key: item.id,
-      value: item.id,
-      caption: item.name,
-      color: 'green'
-    })))
-  ))
+  public readonly certifications = toSignal(
+    this.certificationService.getAll().pipe(
+      map((items) =>
+        items.map((item) => ({
+          key: item.id,
+          value: item.id,
+          caption: item.name,
+          color: 'green'
+        }))
+      )
+    )
+  )
 
   onPageIndexChange(index) {
     this.index$.next(index)
@@ -274,7 +285,7 @@ export class MarketComponent {
         ]
       })
 
-      this.toastrService.success('PAC.INDICATOR.MARKET.RequestIndicator', {Default: 'Request indicator'})
+      this.toastrService.success('PAC.INDICATOR.MARKET.RequestIndicator', { Default: 'Request indicator' })
       this.refreshApproval$.next()
     } catch (err) {
       this.toastrService.error(err)
@@ -293,7 +304,7 @@ export class MarketComponent {
         ]
       })
 
-      this.toastrService.success('PAC.INDICATOR.MARKET.RequestBusinessArea', {Default: 'Request business area'})
+      this.toastrService.success('PAC.INDICATOR.MARKET.RequestBusinessArea', { Default: 'Request business area' })
       this.refreshApproval$.next()
     } catch (err) {
       this.toastrService.error(err)

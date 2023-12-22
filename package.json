@@ -89,7 +89,7 @@
     "d3-geo-projection": "^4.0.0",
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.0.0",
-    "date-fns": "^2.30.0",
+    "date-fns": "^3.0.4",
     "echarts": "^5.4.2",
     "echarts-gl": "^2.0.9",
     "expr-eval": "^2.0.2",

@@ -36,7 +36,6 @@ import {
 } from './types'
 import { mergeChartOptions } from './utils'
 import { formatNumber } from './decimal'
-import { el } from 'date-fns/locale'
 
 use([BarChart])
 

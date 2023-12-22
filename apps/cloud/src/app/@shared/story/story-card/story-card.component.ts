@@ -3,16 +3,14 @@ import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { RouterModule } from '@angular/router'
-import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { HighlightDirective } from '@metad/components/core'
-import formatRelative from 'date-fns/formatRelative'
+import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { formatRelative } from 'date-fns'
 import { getDateLocale, IStory } from '../../../@core'
 import { LazyImgDirective } from '../../directives/lazy-img.directive'
 import { CreatedByPipe } from '../../pipes'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

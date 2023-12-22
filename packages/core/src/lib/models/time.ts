@@ -1,14 +1,16 @@
-import addDays from 'date-fns/addDays'
-import addMonths from 'date-fns/addMonths'
-import addQuarters from 'date-fns/addQuarters'
-import addWeeks from 'date-fns/addWeeks'
-import addYears from 'date-fns/addYears'
-import format from 'date-fns/format'
-import subDays from 'date-fns/subDays'
-import subMonths from 'date-fns/subMonths'
-import subQuarters from 'date-fns/subQuarters'
-import subWeeks from 'date-fns/subWeeks'
-import subYears from 'date-fns/subYears'
+import {
+  addDays,
+  addMonths,
+  addQuarters,
+  addWeeks,
+  addYears,
+  format,
+  subDays,
+  subMonths,
+  subQuarters,
+  subWeeks,
+  subYears
+} from 'date-fns'
 import { Semantics } from '../annotations'
 import { FilterOperator, ISlicer } from '../types'
 import { isNil } from '../utils'
