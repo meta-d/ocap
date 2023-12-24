@@ -1,7 +1,14 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
+import {
+  ChatRequest,
+  ChatRequestOptions,
+  UseChatOptions,
+  nanoid,
+} from 'ai'
 import { Observable, catchError, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import { callChatApi } from './shared/call-chat-api'
 
 export class CopilotService {
   // private _copilotDefault = {
@@ -174,5 +181,67 @@ export class CopilotService {
         return of({ error: true, message: err.message })
       })
     )
+  }
+
+  // ai
+  async chat({
+    sendExtraMessageFields,
+    onResponse,
+    onFinish,
+    onError,
+    credentials,
+    headers,
+    body,
+    generateId = nanoid,
+  }: UseChatOptions = {}, chatRequest: ChatRequest, { options, data }: ChatRequestOptions = {}, {
+    abortController
+  }: {
+    abortController: AbortController | null
+  }) {
+
+    return await callChatApi({
+      api: this.chatCompletionsUrl,
+      messages: sendExtraMessageFields
+        ? chatRequest.messages
+        : chatRequest.messages.map(
+            ({ role, content, name, function_call }) => ({
+              role,
+              content,
+              ...(name !== undefined && { name }),
+              ...(function_call !== undefined && {
+                function_call,
+              }),
+            }),
+          ),
+      body: {
+        data: chatRequest.data,
+        ...body,
+        ...options?.body,
+        stream: true,
+      },
+      headers: {
+        ...headers,
+        ...options?.headers,
+        Authorization: `Bearer ${this.copilot.apiKey}`
+      },
+      abortController: () => abortController,
+      credentials,
+      onResponse,
+      onUpdate(merged, data) {
+        // mutate([...chatRequest.messages, ...merged]);
+        // setStreamData([...existingData, ...(data ?? [])]);
+      },
+      onFinish,
+      appendMessage(message) {
+        // mutate([...chatRequest.messages, message]);
+      },
+      restoreMessagesOnFailure() {
+        // Restore the previous messages if the request fails.
+        // if (previousMessages.status === 'success') {
+        //   mutate(previousMessages.data);
+        // }
+      },
+      generateId,
+    });
   }
 }

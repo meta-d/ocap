@@ -9,11 +9,20 @@ import {
   nonNullable
 } from './types/types'
 
-export interface CopilotCommand {
+export interface CopilotCommand<Inputs extends any[] = any[]> {
   name: string
   description: string
   examples?: string[]
-  processor: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
+  systemPrompt?: () => string
+  /**
+   * @deprecated use implementation
+   * 
+   * @param copilot 
+   * @returns 
+   */
+  processor?: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
+
+  implementation?: (...args: Inputs) => Promise<void>;
 }
 
 export const CopilotCommands$ = new BehaviorSubject<Record<string, Record<string, CopilotCommand>>>({})

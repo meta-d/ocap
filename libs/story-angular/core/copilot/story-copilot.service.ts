@@ -34,7 +34,7 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
 
   currentWidgetCopilot: CopilotEngine
 
-  private readonly commands = toSignal(
+  private readonly _commands = toSignal(
     selectCommands(StoryCopilotCommandArea).pipe(
       filter(nonNullable),
       map((commands) => Object.values(commands))
@@ -112,7 +112,7 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
     } as StoryCopilotChatConversation
 
     return (command
-      ? of(copilot) : freePrompt(copilot, this.commands()).pipe(
+      ? of(copilot) : freePrompt(copilot, this._commands()).pipe(
         map((copilot) => {
           return {
             ...copilot,

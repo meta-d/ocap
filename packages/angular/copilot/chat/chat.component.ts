@@ -135,6 +135,7 @@ export class NgmCopilotChatComponent {
   get prompts() {
     return this.copilotEngine?.prompts
   }
+
   get placeholder() {
     return this.copilotEngine?.placeholder
   }
@@ -224,12 +225,13 @@ export class NgmCopilotChatComponent {
    * 当前 Asking prompt
    */
   public promptControl = new FormControl<string>('')
-  get prompt() {
-    return this.promptControl.value
-  }
-  set prompt(value) {
-    this.promptControl.setValue(value)
-  }
+  readonly prompt = toSignal(this.promptControl.valueChanges, {initialValue: ''})
+  // get prompt() {
+  //   return this.promptControl.value
+  // }
+  // set prompt(value) {
+  //   this.promptControl.setValue(value)
+  // }
 
   private activatedPrompt = ''
 
@@ -264,7 +266,19 @@ export class NgmCopilotChatComponent {
     { initialValue: [] }
   )
 
-  public readonly copilotNotEnabled = toSignal(this.copilotService.notEnabled$)
+  readonly copilotEnabled = this.copilotService.enabled
+
+  readonly commands = computed(() => this.copilotEngine.commands().map((command) => ({
+    ...command,
+    prompt: `/${command.name} ${command.examples[0]}`
+  })))
+
+  readonly filteredCommands = computed(() => {
+    const text = this.prompt()
+    this.activatedPrompt = ''
+
+    return (text ? this.commands()?.filter((item) => item.prompt.includes(text)) ?? [] : [])
+  })
 
   private readonly lastConversation = computed(() => {
     // Get last conversation messages
@@ -297,13 +311,7 @@ export class NgmCopilotChatComponent {
     return lastMessages.reverse()
   })
 
-  public readonly filteredPrompts = toSignal(
-    this.promptControl.valueChanges.pipe(
-      startWith(''),
-      map((text) => (text ? this.prompts?.filter((item) => item.includes(text)) ?? [] : [])),
-      tap(() => (this.activatedPrompt = null))
-    )
-  )
+
 
   // Subscribers
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
@@ -341,7 +349,7 @@ export class NgmCopilotChatComponent {
     // Add to history
     this.historyQuestions.set([prompt, ...this.historyQuestions()])
     // Clear prompt in input
-    this.prompt = ''
+    this.promptControl.setValue('')
 
     // Get last conversation messages
     const lastConversation = this.lastConversation()
@@ -385,6 +393,7 @@ export class NgmCopilotChatComponent {
       try {
         this.askSubscriber = this.copilotEngine.process({ prompt, messages: lastConversation }).subscribe({
           next: (result) => {
+            result = result ?? []
             const conversations = [...this.conversations]
             if (isString(result)) {
               conversations[assistantIndex] = { ...conversations[assistantIndex] }
@@ -530,7 +539,7 @@ export class NgmCopilotChatComponent {
   }
 
   async send(text: string) {
-    this.prompt = text
+    this.promptControl.setValue(text)
     // await this.askCopilot(this.prompt)
   }
 
@@ -591,15 +600,15 @@ export class NgmCopilotChatComponent {
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
     if (event.ctrlKey && event.key === 'Enter') {
-      this.askCopilotStream(this.prompt)
+      this.askCopilotStream(this.prompt())
     }
 
     // Tab 键补全提示语
     if (event.key === 'Tab') {
       event.preventDefault()
-      const activatedPrompt = this.activatedPrompt || this.filteredPrompts()[0]
+      const activatedPrompt = this.activatedPrompt || this.filteredCommands()[0].examples[0]
       if (activatedPrompt) {
-        this.prompt = activatedPrompt
+        this.promptControl.setValue(activatedPrompt)
       }
     }
 
@@ -616,7 +625,7 @@ export class NgmCopilotChatComponent {
           return
         }
 
-        this.prompt = historyQuestions[this.historyIndex()] ?? ''
+        this.promptControl.setValue(historyQuestions[this.historyIndex()] ?? '')
       }
     }
   }

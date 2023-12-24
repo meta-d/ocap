@@ -1,18 +1,37 @@
-import { Injectable, computed, signal } from '@angular/core'
+import { Injectable, computed, inject, signal } from '@angular/core'
 import {
   AIOptions,
   AnnotatedFunction,
   CopilotChatMessage,
   CopilotChatResponseChoice,
-  CopilotEngine
+  CopilotCommand,
+  CopilotEngine,
+  processChatStream
 } from '@metad/copilot'
 import { Observable } from 'rxjs'
 import { injectChat } from '../hooks'
-import { FunctionCallHandler } from 'ai'
-import { ChatCompletionCreateParams } from "openai/resources/chat";
+import { FunctionCallHandler, ChatRequestOptions, Message, JSONValue, ChatRequest } from 'ai'
+import { ChatCompletionCreateParams } from "openai/resources/chat"
+import { createSWRStore } from 'swr-store';
+import { NgmCopilotService } from './copilot.service'
+import { pick } from 'lodash-es'
+
+let uniqueId = 0;
+const store: Record<string, Message[] | undefined> = {};
+const chatApiStore = createSWRStore<Message[], string[]>({
+  get: async (key: string) => {
+    return store[key] ?? [];
+  },
+});
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
+
+  private api = signal('/api/chat')
+  private chatId = `chat-${uniqueId++}`
+  private key = computed(() => `${this.api()}|${this.chatId}`)
+
+  readonly copilot = inject(NgmCopilotService)
   name?: string
   aiOptions: AIOptions
   conversations: CopilotChatMessage[]
@@ -24,6 +43,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly getFunctionCallHandler = computed(() => {
     return entryPointsToFunctionCallHandler(Object.values(this.#entryPoints()))
   })
+  readonly getChatCompletionFunctionDescriptions = computed(() => {
+    return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
+  })
+
+  // Commands
+  readonly #commands = signal<Record<string, CopilotCommand>>({})
+  readonly commands = computed(() => Object.values(this.#commands()))
 
   // Chat
   readonly #chat = computed(() => {
@@ -31,6 +57,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
       experimental_onFunctionCall: this.getFunctionCallHandler()
     })
   })
+
+  // Chat States
+  error = signal<undefined | Error>(undefined)
+  streamData = signal<JSONValue[] | undefined>(undefined)
+  isLoading = signal(false)
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     console.log(`setEntryPoint: ${id}`, entryPoint)
@@ -49,6 +80,30 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
+  registerCommand(name: string, command: CopilotCommand) {
+    this.#commands.update((state) => (
+      {
+        ...state,
+        [name]: command
+      }
+    ))
+
+    console.log(`registerCommand: ${name}`, command)
+  }
+
+  unregisterCommand(name: string) {
+    this.#commands.update((state) => {
+      delete state[name]
+      return {
+        ...state,
+      }
+    })
+  }
+
+  getCommand(name: string) {
+    return this.#commands()[name]
+  }
+
   process(
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
@@ -61,6 +116,79 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   dropCopilot: (event: any) => void
+
+  // useChat
+  mutate(data: Message[]) {
+    store[this.key()] = data
+    return chatApiStore.mutate([this.key()], {
+      status: 'success',
+      data,
+    })
+  }
+
+  async triggerRequest(
+    messagesSnapshot: Message[],
+    { options, data }: ChatRequestOptions = {},
+  ) {
+    let abortController = null
+    try {
+      this.error.set(undefined)
+      this.isLoading.set(true)
+      abortController = new AbortController()
+
+      const getCurrentMessages = () =>
+        chatApiStore.get([this.key()], {
+          shouldRevalidate: false,
+        })
+
+      // Do an optimistic update to the chat state to show the updated messages
+      // immediately.
+      const previousMessages = getCurrentMessages();
+      this.mutate(messagesSnapshot)
+
+      let chatRequest: ChatRequest = {
+        messages: messagesSnapshot,
+        options,
+        data,
+      }
+
+      await processChatStream({
+        getStreamedResponse: async () => {
+          const existingData = this.streamData() ?? [];
+
+          return await this.copilot.chat({
+            body: {
+              functions: this.getChatCompletionFunctionDescriptions(),
+              ...pick(this.aiOptions, 'model', 'temperature'),
+              ...(options?.body ?? {}),
+            }
+          }, chatRequest, { options, data }, abortController);
+        },
+        experimental_onFunctionCall: this.getFunctionCallHandler(),
+        updateChatRequest(newChatRequest) {
+          chatRequest = newChatRequest;
+        },
+        getCurrentMessages: () => getCurrentMessages().data,
+      });
+
+      abortController = null;
+
+    } catch (err) {
+      // Ignore abort errors as they are expected.
+      if ((err as any).name === 'AbortError') {
+        abortController = null;
+        return null;
+      }
+
+      if (err instanceof Error) {
+        this.error.set(err)
+      }
+
+      this.error.set(err as Error)
+    } finally {
+      this.isLoading.set(false)
+    }
+  }
 }
 
 

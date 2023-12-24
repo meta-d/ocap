@@ -14,7 +14,7 @@ import { NxStoryPointService } from '../story-point.service'
 @Injectable()
 export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPointState> implements CopilotEngine {
   private widgetService = inject(WidgetService)
-  private copilotService? = inject(NgmCopilotService, { optional: true })
+  readonly copilot? = inject(NgmCopilotService, { optional: true })
 
   get widget() {
     return this.get((state) => state)
@@ -137,7 +137,7 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
           ])
         }
 
-        return this.copilotService.chatStream([
+        return this.copilot.chatStream([
           {
             role: CopilotChatMessageRoleEnum.System,
             content: `你是一名 BI 数据分析专家，根据以下数据给出用户问题的分析：

@@ -1,10 +1,14 @@
 import { Observable } from 'rxjs'
 import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
+import { CopilotCommand } from './command'
+import { CopilotService } from './copilot'
 
 /**
  * Copilot engine
  */
 export interface CopilotEngine {
+  copilot?: CopilotService
+  
   /**
    * Copilot engine name
    */
@@ -19,8 +23,10 @@ export interface CopilotEngine {
   systemPrompt?: string
   /**
    * Predefined prompts
+   * @deprecated use commands instead
    */
   prompts?: string[]
+  
   /**
    * Conversations
    */
@@ -46,4 +52,8 @@ export interface CopilotEngine {
 
   setEntryPoint?: (id: string, entryPoint: AnnotatedFunction<any[]>) => void
   removeEntryPoint?: (id: string) => void
+  registerCommand?(area: string, command: CopilotCommand): void
+  unregisterCommand?(area: string, name: string): void
+
+  commands?: () => CopilotCommand[]
 }

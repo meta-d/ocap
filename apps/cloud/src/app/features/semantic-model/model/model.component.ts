@@ -14,9 +14,9 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotChatConversation, CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { IsDirty } from '@metad/core'
-import { NgmCopilotChatComponent, NgmCopilotEngineService, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -42,13 +42,14 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { ModelCopilotEngineService } from './copilot'
+import { CubeSchema, ModelCopilotChatConversation, ModelCopilotEngineService } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import zodToJsonSchema from 'zod-to-json-schema'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -79,25 +80,52 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _viewContainerRef = inject(ViewContainerRef)
   private toastrService = inject(ToastrService)
 
+  #cubeCommand = injectCopilotCommand({
+    name: 'c',
+    description: 'Edit cube',
+    examples: ['create cube by table'],
+    systemPrompt: () => {
+      const sharedDimensionsPrompt = JSON.stringify(
+        this.dimensions().map((dimension) => ({
+          name: dimension.name,
+          caption: dimension.caption,
+          table: dimension.hierarchies[0].tables[0]?.name,
+          primaryKey: dimension.hierarchies[0].primaryKey
+        }))
+      )
+      return `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
+There is no need to create as dimension with those table fields that are already used in dimensionUsages.
+The cube can fill the source field in dimensionUsages only within the name of shared dimensions: ${sharedDimensionsPrompt}.
+`
+    },
+    // processor: (copilot: CopilotChatConversation) => {
+    //   return chatCube(copilot as any).pipe(switchMap(createCube))
+    // },
+    implementation: async () => {
+      console.log(`Execute action cubeCommand`)
+    }
+  })
+
   // Copilot
   readonly #copilotEngine = inject(NgmCopilotEngineService)
-  #createDimension = injectMakeCopilotActionable(
+  #properties = zodToJsonSchema(CubeSchema) as any
+  #createCube = injectMakeCopilotActionable(
     {
-      name: `selectDestinations_Dimension`,
-      description: `Set the given destinations as 'selected', on the table`,
+      name: 'edit-model-cube',
+      description: 'Should always be used to properly format output',
       argumentAnnotations: [
         {
-          name: "destinationNames",
-          type: "array",
-          items: {
-            type: "string",
-          },
-          description: "The names of the destinations to select",
+          name: 'cube',
+          type: "object", // Add or change types according to your needs.
+          description: 'The defination of cube',
           required: true,
-        },
+          properties: {
+            ...this.#properties.properties
+          },
+        }
       ],
-      implementation: async (destinationNames: string[]) => {
-        console.log(`Execute action createDimension`)
+      implementation: async (cube: any) => {
+        console.log(`Execute action edit cube`, cube)
       },
     }
   )
@@ -197,6 +225,8 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   public readonly virtualCubes$ = this.modelService.virtualCubes$
 
   public readonly copilotEnabled$ = this.appService.copilotEnabled$
+
+  private readonly dimensions = toSignal(this.modelService.dimensions$)
 
   model: ISemanticModel
 

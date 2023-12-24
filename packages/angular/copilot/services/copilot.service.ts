@@ -1,4 +1,5 @@
 import { Injectable, InjectionToken, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { CopilotService, ICopilot } from '@metad/copilot'
 import type { AxiosRequestConfig } from 'axios'
 import OpenAI from 'openai'
@@ -14,11 +15,9 @@ export class NgmCopilotService extends CopilotService {
 
   private _copilot$ = new BehaviorSubject<ICopilot>(null)
   public copilot$ = this._copilot$.asObservable()
-  public notEnabled$ = this.copilot$.pipe(map((copilot) => !(copilot?.enabled && copilot?.apiKey)))
 
-  get enabled() {
-    return this.copilot?.enabled
-  }
+  readonly enabled = toSignal(this.copilot$.pipe(map((copilot) => (copilot?.enabled && copilot?.apiKey))))
+
   get hasKey() {
     return !!this.copilot?.apiKey
   }
@@ -32,8 +31,11 @@ export class NgmCopilotService extends CopilotService {
     this.#copilotConfigFactory().then((copilot) => {
       this.copilot = copilot
       this.openai = new OpenAI({
-        apiKey: copilot.apiKey
+        apiKey: copilot.apiKey,
+        dangerouslyAllowBrowser: true
       })
+
+      console.log(`Copilot config is`, copilot)
       this._copilot$.next(copilot)
     })
   }

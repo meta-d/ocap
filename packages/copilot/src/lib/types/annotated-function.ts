@@ -3,6 +3,7 @@ export interface AnnotatedFunctionSimpleArgument {
   type: "string" | "number" | "boolean" | "object"; // Add or change types according to your needs.
   description: string;
   required: boolean;
+  properties?: any
 }
 
 export interface AnnotatedFunctionArrayArgument {

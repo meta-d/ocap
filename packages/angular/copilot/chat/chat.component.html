@@ -163,14 +163,16 @@
         <mat-autocomplete #autoPrompts="matAutocomplete" autoActiveFirstOption hideSingleSelectionIndicator class="ngm-autocomplete-panel ngm-density__compact"
             (optionActivated)="onPromptActivated($event)"
         >
-            <mat-option *ngFor="let prompt of filteredPrompts()" [value]="prompt" [title]="prompt">
-                            <!-- [highlight]="promptControl.value"
-                    [content]="prompt" -->
+        @for (command of filteredCommands();  track command.name) {
+            <mat-option [value]="command.prompt" [title]="command.description">
+                <!-- [highlight]="promptControl.value"
+                [content]="prompt" -->
                 <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
-        
+
                     customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
-                >{{prompt}}</div>
+                >{{command.prompt}}</div>
             </mat-option>
+        }
         </mat-autocomplete>
 
         <div class="shrink-0 flex items-center">
@@ -188,7 +190,7 @@
             <span class="flex-1"></span>
 
             <button mat-icon-button displayDensity="cosy"
-                [disabled]="!prompt || answering()"
+                [disabled]="!prompt() || answering()"
                 (click)="askCopilotStream(promptControl.value)"
             >
                 <mat-icon fontSet="material-icons-round">send</mat-icon>
@@ -197,7 +199,7 @@
     </div>
 </div>
 
-@if (copilotNotEnabled()) {
+@if (!copilotEnabled()) {
 <ngm-copilot-enable class="z-[101]"
     [title]="welcomeTitle || 'Metad Copilot'"
     [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
