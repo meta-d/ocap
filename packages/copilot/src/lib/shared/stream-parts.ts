@@ -36,12 +36,12 @@ const functionCallStreamPart: StreamPart<
       value == null ||
       typeof value !== 'object' ||
       !('function_call' in value) ||
-      typeof value.function_call !== 'object' ||
-      value.function_call == null ||
-      !('name' in value.function_call) ||
-      !('arguments' in value.function_call) ||
-      typeof value.function_call.name !== 'string' ||
-      typeof value.function_call.arguments !== 'string'
+      typeof value['function_call'] !== 'object' ||
+      value['function_call'] == null ||
+      !('name' in value['function_call']) ||
+      !('arguments' in value['function_call']) ||
+      typeof value['function_call']['name'] !== 'string' ||
+      typeof value['function_call']['arguments'] !== 'string'
     ) {
       throw new Error(
         '"function_call" parts expect an object with a "function_call" property.',
@@ -92,21 +92,21 @@ const assistantMessageStreamPart: StreamPart<
       !('id' in value) ||
       !('role' in value) ||
       !('content' in value) ||
-      typeof value.id !== 'string' ||
-      typeof value.role !== 'string' ||
-      value.role !== 'assistant' ||
-      !Array.isArray(value.content) ||
-      !value.content.every(
+      typeof value['id'] !== 'string' ||
+      typeof value['role'] !== 'string' ||
+      value['role'] !== 'assistant' ||
+      !Array.isArray(value['content']) ||
+      !value['content'].every(
         item =>
           item != null &&
           typeof item === 'object' &&
           'type' in item &&
-          item.type === 'text' &&
+          item['type'] === 'text' &&
           'text' in item &&
-          item.text != null &&
-          typeof item.text === 'object' &&
-          'value' in item.text &&
-          typeof item.text.value === 'string',
+          item['text'] != null &&
+          typeof item['text'] === 'object' &&
+          'value' in item['text'] &&
+          typeof item['text']['value'] === 'string',
       )
     ) {
       throw new Error(
@@ -137,8 +137,8 @@ const assistantControlDataStreamPart: StreamPart<
       typeof value !== 'object' ||
       !('threadId' in value) ||
       !('messageId' in value) ||
-      typeof value.threadId !== 'string' ||
-      typeof value.messageId !== 'string'
+      typeof value['threadId'] !== 'string' ||
+      typeof value['messageId'] !== 'string'
     ) {
       throw new Error(
         '"assistant_control_data" parts expect an object with a "threadId" and "messageId" property.',
@@ -148,8 +148,8 @@ const assistantControlDataStreamPart: StreamPart<
     return {
       type: 'assistant_control_data',
       value: {
-        threadId: value.threadId,
-        messageId: value.messageId,
+        threadId: value['threadId'],
+        messageId: value['messageId'],
       },
     };
   },
@@ -164,8 +164,8 @@ const dataMessageStreamPart: StreamPart<'6', 'data_message', DataMessage> = {
       typeof value !== 'object' ||
       !('role' in value) ||
       !('data' in value) ||
-      typeof value.role !== 'string' ||
-      value.role !== 'data'
+      typeof value['role'] !== 'string' ||
+      value['role'] !== 'data'
     ) {
       throw new Error(
         '"data_message" parts expect an object with a "role" and "data" property.',
@@ -191,22 +191,22 @@ const toolCallStreamPart: StreamPart<
       value == null ||
       typeof value !== 'object' ||
       !('tool_calls' in value) ||
-      typeof value.tool_calls !== 'object' ||
-      value.tool_calls == null ||
-      !Array.isArray(value.tool_calls) ||
-      value.tool_calls.some(tc => {
+      typeof value['tool_calls'] !== 'object' ||
+      value['tool_calls'] == null ||
+      !Array.isArray(value['tool_calls']) ||
+      value['tool_calls'].some(tc => {
         tc == null ||
           typeof tc !== 'object' ||
           !('id' in tc) ||
-          typeof tc.id !== 'string' ||
+          typeof tc['id'] !== 'string' ||
           !('type' in tc) ||
-          typeof tc.type !== 'string' ||
+          typeof tc['type'] !== 'string' ||
           !('function' in tc) ||
-          tc.function == null ||
-          typeof tc.function !== 'object' ||
-          !('arguments' in tc.function) ||
-          typeof tc.function.name !== 'string' ||
-          typeof tc.function.arguments !== 'string';
+          tc['function'] == null ||
+          typeof tc['function'] !== 'object' ||
+          !('arguments' in tc['function']) ||
+          typeof tc['function']['name'] !== 'string' ||
+          typeof tc['function']['arguments'] !== 'string';
       })
     ) {
       throw new Error(

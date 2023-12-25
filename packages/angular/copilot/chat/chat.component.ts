@@ -124,7 +124,6 @@ export class NgmCopilotChatComponent {
         this._conversations.set(value)
       }
     }
-    
   }
   private readonly _conversations = signal<CopilotChatMessage[]>([])
 
@@ -295,17 +294,17 @@ export class NgmCopilotChatComponent {
     // Get last conversation messages
     const lastMessages = []
     let lastUserMessage = null
-    for (let i = this.conversations.length - 1; i >= 0; i--) {
-      if (this.conversations[i].end) {
+    for (let i = this.#copilotEngine.conversations.length - 1; i >= 0; i--) {
+      if (this.#copilotEngine.conversations[i].end) {
         break
       }
-      if (this.conversations[i].role === CopilotChatMessageRoleEnum.User) {
+      if (this.#copilotEngine.conversations[i].role === CopilotChatMessageRoleEnum.User) {
         if (lastUserMessage) {
-          lastUserMessage.content = this.conversations[i].content + '\n' + lastUserMessage.content
+          lastUserMessage.content = this.#copilotEngine.conversations[i].content + '\n' + lastUserMessage.content
         } else {
           lastUserMessage = {
             role: CopilotChatMessageRoleEnum.User,
-            content: this.conversations[i].content
+            content: this.#copilotEngine.conversations[i].content
           }
         }
       } else {
@@ -313,7 +312,7 @@ export class NgmCopilotChatComponent {
           lastMessages.push(lastUserMessage)
           lastUserMessage = null
         }
-        lastMessages.push(this.conversations[i])
+        lastMessages.push(this.#copilotEngine.conversations[i])
       }
     }
     if (lastUserMessage) {
@@ -321,8 +320,6 @@ export class NgmCopilotChatComponent {
     }
     return lastMessages.reverse()
   })
-
-
 
   // Subscribers
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {

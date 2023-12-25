@@ -8,7 +8,7 @@ import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
 import { MarkdownModule } from 'ngx-markdown'
 import { Observable, of } from 'rxjs'
-import { provideTranslate, zhHansLanguage } from '../../mock/'
+import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services'
 import { injectCopilotCommand } from '../hooks/'
@@ -34,6 +34,9 @@ export class NgmSBCopilotUserComponent {
     name: 'c',
     description: 'Create a user',
     examples: [`Create a user name Tiven, age 18`],
+    systemPrompt: () => {
+      return `Create a user by prompt`
+    },
     implementation: async (args) => {
       console.log(`Created user`)
     }
@@ -51,7 +54,8 @@ export default {
         provideHttpClient(),
         provideTranslate(zhHansLanguage),
         importProvidersFrom(OcapCoreModule),
-        importProvidersFrom(MarkdownModule.forRoot())
+        importProvidersFrom(MarkdownModule.forRoot()),
+        provideLogger()
       ]
     }),
     moduleMetadata({

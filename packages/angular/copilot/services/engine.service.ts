@@ -3,17 +3,20 @@ import {
   AIOptions,
   AnnotatedFunction,
   CopilotChatMessage,
-  CopilotChatResponseChoice,
+  CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotEngine,
+  SystemCommandClear,
+  getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { Observable } from 'rxjs'
+import { Observable, from, map, of, throwError } from 'rxjs'
 import { FunctionCallHandler, ChatRequestOptions, Message, JSONValue, ChatRequest, nanoid } from 'ai'
 import { ChatCompletionCreateParams } from "openai/resources/chat"
 import { createSWRStore } from 'swr-store';
 import { NgmCopilotService } from './copilot.service'
 import { pick } from 'lodash-es'
+import { NGXLogger } from 'ngx-logger'
 
 let uniqueId = 0;
 const store: Record<string, Message[] | undefined> = {};
@@ -25,6 +28,7 @@ const chatApiStore = createSWRStore<Message[], string[]>({
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
+  readonly #logger = inject(NGXLogger)
 
   private api = signal('/api/chat')
   private chatId = `chat-${uniqueId++}`
@@ -90,8 +94,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         [name]: command
       }
     ))
-
-    console.log(`registerCommand: ${name}`, command)
   }
 
   unregisterCommand(name: string) {
@@ -111,14 +113,38 @@ export class NgmCopilotEngineService implements CopilotEngine {
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
   ): Observable<string | CopilotChatMessage[]> {
-    throw new Error('Method not implemented.')
-  }
-  preprocess?: (prompt: string, options?: any) => void
-  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<string | CopilotChatMessage[]> {
-    throw new Error('Method not implemented.')
-  }
+    this.#logger.debug(`process ask: ${data.prompt}`)
 
-  dropCopilot: (event: any) => void
+    const { command, prompt } = getCommandPrompt(data.prompt)
+    if (command) {
+      if (command === SystemCommandClear) {
+        this.conversations = []
+        return of([])
+      } else if (!this.getCommand(command)) {
+        return throwError(() => new Error(`Command '${command}' not found`))
+      }
+    }
+
+    const _command = this.getCommand(command)
+
+    return from(
+      this.triggerRequest(
+        [
+          {
+            id: nanoid(),
+            role: CopilotChatMessageRoleEnum.System,
+            content: _command.systemPrompt()
+          },
+          {
+            id: nanoid(),
+            role: CopilotChatMessageRoleEnum.User,
+            content: prompt
+          }
+        ],
+        {}
+      )
+    ).pipe(map((chatRequest) => chatRequest?.messages as any[]))
+  }
 
   // useChat
   mutate(data: Message[]) {
@@ -182,6 +208,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       });
 
       abortController = null;
+      return null
     } catch (err) {
       // Ignore abort errors as they are expected.
       if ((err as any).name === 'AbortError') {
