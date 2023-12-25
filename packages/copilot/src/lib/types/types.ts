@@ -1,6 +1,6 @@
 import JSON5 from 'json5'
+import { ChatCompletionMessage, ChatCompletionSystemMessageParam } from 'openai/resources'
 import { CopilotService } from '../copilot'
-import { ChatCompletionMessage, ChatCompletionMessageParam, ChatCompletionSystemMessageParam } from 'openai/resources'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 
@@ -9,6 +9,10 @@ export interface ICopilot {
   provider?: string
   apiKey?: string
   apiHost?: string
+  /**
+   * Authorization token for the API
+   */
+  token?: string
 }
 
 export interface BusinessOperation {
@@ -83,7 +87,6 @@ export function getCommandPrompt(prompt: string) {
 }
 
 export interface CopilotChatConversation {
-
   command: string
   prompt: string
   options: any
@@ -92,13 +95,13 @@ export interface CopilotChatConversation {
 
   copilotService: CopilotService
   logger?: {
-    trace(message?: any | (() => any), ...additional: any[]): void;
-    debug(message?: any | (() => any), ...additional: any[]): void;
-    info(message?: any | (() => any), ...additional: any[]): void;
-    log(message?: any | (() => any), ...additional: any[]): void;
-    warn(message?: any | (() => any), ...additional: any[]): void;
-    error(message?: any | (() => any), ...additional: any[]): void;
-    fatal(message?: any | (() => any), ...additional: any[]): void;
+    trace(message?: any | (() => any), ...additional: any[]): void
+    debug(message?: any | (() => any), ...additional: any[]): void
+    info(message?: any | (() => any), ...additional: any[]): void
+    log(message?: any | (() => any), ...additional: any[]): void
+    warn(message?: any | (() => any), ...additional: any[]): void
+    error(message?: any | (() => any), ...additional: any[]): void
+    fatal(message?: any | (() => any), ...additional: any[]): void
   }
 }
 

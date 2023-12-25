@@ -9,8 +9,7 @@ import {
   processChatStream
 } from '@metad/copilot'
 import { Observable } from 'rxjs'
-import { injectChat } from '../hooks'
-import { FunctionCallHandler, ChatRequestOptions, Message, JSONValue, ChatRequest } from 'ai'
+import { FunctionCallHandler, ChatRequestOptions, Message, JSONValue, ChatRequest, nanoid } from 'ai'
 import { ChatCompletionCreateParams } from "openai/resources/chat"
 import { createSWRStore } from 'swr-store';
 import { NgmCopilotService } from './copilot.service'
@@ -34,7 +33,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly copilot = inject(NgmCopilotService)
   name?: string
   aiOptions: AIOptions
-  conversations: CopilotChatMessage[]
+
+  readonly conversations$ = signal<CopilotChatMessage[]>([])
+  get conversations() {
+    return this.conversations$()
+  }
+  set conversations(value: CopilotChatMessage[]) {
+    this.conversations$.set(value ?? [])
+  }
+
   placeholder?: string
 
   // Entry Points
@@ -52,11 +59,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly commands = computed(() => Object.values(this.#commands()))
 
   // Chat
-  readonly #chat = computed(() => {
-    return injectChat({
-      experimental_onFunctionCall: this.getFunctionCallHandler()
-    })
-  })
+  readonly messages = signal<Message[]>([])
 
   // Chat States
   error = signal<undefined | Error>(undefined)
@@ -119,17 +122,19 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   // useChat
   mutate(data: Message[]) {
-    store[this.key()] = data
-    return chatApiStore.mutate([this.key()], {
-      status: 'success',
-      data,
-    })
+    this.messages.set(data)
+
+    // store[this.key()] = data
+    // return chatApiStore.mutate([this.key()], {
+    //   status: 'success',
+    //   data,
+    // })
   }
 
   async triggerRequest(
     messagesSnapshot: Message[],
     { options, data }: ChatRequestOptions = {},
-  ) {
+  ): Promise<ChatRequest | null | undefined> {
     let abortController = null
     try {
       this.error.set(undefined)
@@ -137,9 +142,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
       abortController = new AbortController()
 
       const getCurrentMessages = () =>
-        chatApiStore.get([this.key()], {
-          shouldRevalidate: false,
-        })
+        this.messages() ?? []
+        // chatApiStore.get([this.key()], {
+        //   shouldRevalidate: false,
+        // })
 
       // Do an optimistic update to the chat state to show the updated messages
       // immediately.
@@ -161,18 +167,21 @@ export class NgmCopilotEngineService implements CopilotEngine {
               functions: this.getChatCompletionFunctionDescriptions(),
               ...pick(this.aiOptions, 'model', 'temperature'),
               ...(options?.body ?? {}),
+            },
+            onFinish: (message) => {
+              console.log(`onFinish`, message)
             }
           }, chatRequest, { options, data }, abortController);
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),
         updateChatRequest(newChatRequest) {
           chatRequest = newChatRequest;
+          console.log(`The chat Request after FunctionCall`, newChatRequest)
         },
-        getCurrentMessages: () => getCurrentMessages().data,
+        getCurrentMessages: () => getCurrentMessages(),
       });
 
       abortController = null;
-
     } catch (err) {
       // Ignore abort errors as they are expected.
       if ((err as any).name === 'AbortError') {
@@ -188,6 +197,20 @@ export class NgmCopilotEngineService implements CopilotEngine {
     } finally {
       this.isLoading.set(false)
     }
+  }
+
+  async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
+    if (!message.id) {
+      message.id = this.generateId();
+    }
+    return this.triggerRequest(
+      (this.messages() ?? []).concat(message as Message),
+      options,
+    );
+  };
+
+  generateId() {
+    return nanoid()
   }
 }
 
@@ -217,7 +240,7 @@ function entryPointsToFunctionCallHandler(
         );
       }
 
-      await entryPointFunction.implementation(...paramsInCorrectOrder);
+      return await entryPointFunction.implementation(...paramsInCorrectOrder);
 
       // commented out becasue for now we don't want to return anything
       // const result = await entryPointFunction.implementation(

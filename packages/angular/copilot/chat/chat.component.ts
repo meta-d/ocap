@@ -40,7 +40,7 @@ import {
 } from 'ngx-popperjs'
 import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
 import { CopilotEnableComponent } from '../enable/enable.component'
-import { NgmCopilotService } from '../services/'
+import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
@@ -93,12 +93,21 @@ export class NgmCopilotChatComponent {
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(NgmCopilotService)
+  #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
-  @Input() get systemPrompt(): string {
-    return this.copilotEngine ? this.copilotEngine.systemPrompt : this._systemPrompt()
+
+  @Input() get copilotEngine(): CopilotEngine {
+    return this.#copilotEngine
   }
+  set copilotEngine(value) {
+    this.#copilotEngine = value
+  }
+
+  // @Input() get systemPrompt(): string {
+  //   return this.copilotEngine ? this.copilotEngine.systemPrompt : this._systemPrompt()
+  // }
   set systemPrompt(value: string) {
     this._systemPrompt.set(value)
   }
@@ -108,15 +117,17 @@ export class NgmCopilotChatComponent {
     return this.copilotEngine ? this.copilotEngine.conversations : this._conversations()
   }
   set conversations(value) {
-    if (this.copilotEngine) {
-      this.copilotEngine.conversations = value
-    } else {
-      this._conversations.set(value)
+    if (value) {
+      if (this.copilotEngine) {
+        this.copilotEngine.conversations = value
+      } else {
+        this._conversations.set(value)
+      }
     }
+    
   }
   private readonly _conversations = signal<CopilotChatMessage[]>([])
 
-  @Input() copilotEngine: CopilotEngine
   @Input() user: IUser
 
   @Output() copy = new EventEmitter()
@@ -132,9 +143,9 @@ export class NgmCopilotChatComponent {
     return this.copilotService.hasKey
   }
 
-  get prompts() {
-    return this.copilotEngine?.prompts
-  }
+  // get prompts() {
+  //   return this.copilotEngine?.prompts
+  // }
 
   get placeholder() {
     return this.copilotEngine?.placeholder
@@ -268,7 +279,7 @@ export class NgmCopilotChatComponent {
 
   readonly copilotEnabled = this.copilotService.enabled
 
-  readonly commands = computed(() => this.copilotEngine.commands().map((command) => ({
+  readonly commands = computed(() => this.copilotEngine?.commands().map((command) => ({
     ...command,
     prompt: `/${command.name} ${command.examples[0]}`
   })))

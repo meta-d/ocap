@@ -2,6 +2,7 @@ import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event
 import {
   ChatRequest,
   ChatRequestOptions,
+  RequestOptions,
   UseChatOptions,
   nanoid,
 } from 'ai'
@@ -39,6 +40,10 @@ export class CopilotService {
     if (copilot) {
       this.copilot = copilot
     }
+  }
+
+  requestOptions(): RequestOptions {
+    return {}
   }
 
   async createChat(
@@ -200,7 +205,7 @@ export class CopilotService {
   }) {
 
     return await callChatApi({
-      api: this.chatCompletionsUrl,
+      api: '/api/ai/chat',
       messages: sendExtraMessageFields
         ? chatRequest.messages
         : chatRequest.messages.map(
@@ -220,19 +225,22 @@ export class CopilotService {
         stream: true,
       },
       headers: {
+        ...(this.requestOptions()?.headers ?? {}),
         ...headers,
         ...options?.headers,
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        Authorization: `Bearer ${this.copilot.token}`
       },
       abortController: () => abortController,
       credentials,
       onResponse,
       onUpdate(merged, data) {
+        console.log(`onUpdate`, merged, data)
         // mutate([...chatRequest.messages, ...merged]);
         // setStreamData([...existingData, ...(data ?? [])]);
       },
       onFinish,
       appendMessage(message) {
+        // console.log(`appendMessage`, message)
         // mutate([...chatRequest.messages, message]);
       },
       restoreMessagesOnFailure() {

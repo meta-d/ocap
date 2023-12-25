@@ -1,11 +1,11 @@
 import { uuid } from '@metad/components/core'
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
-import { omitBlank } from '@metad/ocap-core'
+import { Cube, omitBlank } from '@metad/ocap-core'
 import { map } from 'rxjs/operators'
+import { SemanticModelService } from '../../model.service'
 import { SemanticModelEntityType } from '../../types'
 import { ModelCopilotChatConversation } from '../types'
 import { editModelCube } from './schema'
-import { of } from 'rxjs'
 
 export function chatCube(copilot: ModelCopilotChatConversation) {
   const { logger, copilotService, prompt, sharedDimensionsPrompt } = copilot
@@ -43,10 +43,7 @@ export function chatCube(copilot: ModelCopilotChatConversation) {
     )
 }
 
-export function createCube(copilot: ModelCopilotChatConversation) {
-  const { modelService, response } = copilot
-  const cube = response.arguments
-
+export async function createCube(modelService: SemanticModelService, cube: Cube) {
   const key = uuid()
   const cubeState = {
     type: SemanticModelEntityType.CUBE,
@@ -73,9 +70,4 @@ export function createCube(copilot: ModelCopilotChatConversation) {
 
   modelService.newEntity(cubeState)
   modelService.activeEntity(cubeState)
-
-  return of({
-    ...copilot,
-    response: cubeState
-  })
 }

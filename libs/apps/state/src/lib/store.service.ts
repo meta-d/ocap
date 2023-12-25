@@ -154,6 +154,8 @@ export class Store {
 		.pipe(map((componentLayout) => new Map(componentLayout)));
 	systemLanguages$ = this.appQuery.select((state) => state.systemLanguages);
 
+	token$ = this.persistQuery.select((state) => state.token);
+	
 	subject = new Subject<ComponentEnum>();
 
 	/**

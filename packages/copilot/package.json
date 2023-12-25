@@ -3,6 +3,7 @@
   "version": "1.17.0",
   "peerDependencies": {
     "ai": "^2.2.30",
+    "nanoid": "^4.0.2",
     "openai": "^4.6.0"
   }
 }

@@ -61,7 +61,7 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
   } as AIOptions
-  conversations: CopilotChatMessage[]
+  // conversations: CopilotChatMessage[]
 
   get prompts() {
     return this._prompts()

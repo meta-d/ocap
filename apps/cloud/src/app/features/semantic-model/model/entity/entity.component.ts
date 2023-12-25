@@ -10,7 +10,6 @@ import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/op
 import { AppService } from '../../../../app.service'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
-import { ModelCopilotEngineService } from '../copilot'
 
 
 @Component({
@@ -20,13 +19,12 @@ import { ModelCopilotEngineService } from '../copilot'
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ModelEntityService, NxSettingsPanelService]
 })
-export class ModelEntityComponent implements OnInit, OnDestroy {
+export class ModelEntityComponent implements OnInit {
 
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private entityService = inject(ModelEntityService)
   public settingsService = inject(NxSettingsPanelService)
-  public copilotEngineService = inject(ModelCopilotEngineService)
   private toastrService = inject(ToastrService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
@@ -78,7 +76,7 @@ export class ModelEntityComponent implements OnInit, OnDestroy {
   
   ngOnInit() {
     this.entityService.setSelectedProperty(null)
-    this.copilotEngineService.entityService = this.entityService
+    // this.copilotEngineService.entityService = this.entityService
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -123,7 +121,7 @@ export class ModelEntityComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.copilotEngineService.entityService = null
-  }
+  // ngOnDestroy(): void {
+  //   this.copilotEngineService.entityService = null
+  // }
 }

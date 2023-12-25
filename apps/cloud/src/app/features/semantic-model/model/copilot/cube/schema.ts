@@ -3,14 +3,14 @@ import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
 
 export const CubeSchema = z.object({
-  name: z.string().describe('The name of the cube'),
-  caption: z.string().describe('The caption of the cube'),
+  name: z.string().optional().describe('The name of the cube'),
+  caption: z.string().optional().describe('The caption of the cube'),
   tables: z.array(
     z.object({
       name: z.string().describe('The name of the cube fact table')
       // join: z.object({})
     })
-  ),
+  ).optional(),
   measures: z
     .array(
       z.object({
@@ -19,6 +19,7 @@ export const CubeSchema = z.object({
         column: z.string().describe('The column of the measure')
       })
     )
+    .optional()
     .describe('An array of measures in this cube'),
   dimensions: z
     .array(

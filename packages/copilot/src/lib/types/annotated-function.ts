@@ -1,3 +1,5 @@
+import { ChatRequest } from "ai";
+
 export interface AnnotatedFunctionSimpleArgument {
   name: string;
   type: "string" | "number" | "boolean" | "object"; // Add or change types according to your needs.
@@ -24,5 +26,5 @@ export interface AnnotatedFunction<Inputs extends any[]> {
   name: string;
   description: string;
   argumentAnnotations: AnnotatedFunctionArgument[];
-  implementation: (...args: Inputs) => Promise<void>;
+  implementation: (...args: Inputs) => Promise<ChatRequest | void>;
 }

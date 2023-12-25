@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
-import { CopilotEngine } from '@metad/copilot'
+import { NgmCopilotEngineService } from '../services'
 
 @Injectable({ providedIn: 'root' })
 export class CopilotGlobalService {
-  copilotEngine: CopilotEngine
+  copilotEngine: NgmCopilotEngineService
 }

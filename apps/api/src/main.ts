@@ -47,7 +47,7 @@ async function bootstrap() {
   // subscriptionService.setupJobs()
 
   // Setup Swagger Module
-  const options = new DocumentBuilder().setTitle('Meted Cloud API').setVersion('1.0').addBearerAuth().build()
+  const options = new DocumentBuilder().setTitle('Metad Cloud API').setVersion('1.0').addBearerAuth().build()
 
   const document = SwaggerModule.createDocument(app, options)
   SwaggerModule.setup('swg', app, document)

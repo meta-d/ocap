@@ -14,13 +14,19 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatConversation, CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { IsDirty } from '@metad/core'
-import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import {
+  NgmCopilotChatComponent,
+  NgmCopilotEngineService,
+  injectCopilotCommand,
+  injectMakeCopilotActionable
+} from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { camelCase, sortBy, uniqBy } from 'lodash-es'
+import { ChatRequest, nanoid } from 'ai'
+import { sortBy, uniqBy } from 'lodash-es'
 import {
   BehaviorSubject,
   Subject,
@@ -37,28 +43,33 @@ import {
   switchMap,
   tap
 } from 'rxjs'
+import zodToJsonSchema from 'zod-to-json-schema'
 import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { CubeSchema, ModelCopilotChatConversation, ModelCopilotEngineService } from './copilot'
+import { CubeSchema, ModelCopilotEngineService } from './copilot'
+import { createCube } from './copilot/cube/chat'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
-import zodToJsonSchema from 'zod-to-json-schema'
 
 @Component({
   selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
-  providers: [NxSettingsPanelService, SemanticModelService, {
-    provide: NgmCopilotEngineService,
-    useClass: ModelCopilotEngineService
-  }],
+  providers: [
+    NxSettingsPanelService,
+    SemanticModelService,
+    {
+      provide: NgmCopilotEngineService,
+      useClass: ModelCopilotEngineService
+    }
+  ],
   host: {
     class: 'ngm-semanctic-model'
   },
@@ -68,7 +79,7 @@ import zodToJsonSchema from 'zod-to-json-schema'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
-  
+
   #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
@@ -109,26 +120,25 @@ The cube can fill the source field in dimensionUsages only within the name of sh
   // Copilot
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   #properties = zodToJsonSchema(CubeSchema) as any
-  #createCube = injectMakeCopilotActionable(
-    {
-      name: 'edit-model-cube',
-      description: 'Should always be used to properly format output',
-      argumentAnnotations: [
-        {
-          name: 'cube',
-          type: "object", // Add or change types according to your needs.
-          description: 'The defination of cube',
-          required: true,
-          properties: {
-            ...this.#properties.properties
-          },
+  #createCube = injectMakeCopilotActionable({
+    name: 'edit-model-cube',
+    description: 'Should always be used to properly format output',
+    argumentAnnotations: [
+      {
+        name: 'cube',
+        type: 'object', // Add or change types according to your needs.
+        description: 'The defination of cube',
+        required: true,
+        properties: {
+          ...this.#properties.properties
         }
-      ],
-      implementation: async (cube: any) => {
-        console.log(`Execute action edit cube`, cube)
-      },
+      }
+    ],
+    implementation: async (cube: any): Promise<ChatRequest | void> => {
+      console.log(`Execute action edit cube`, cube)
+      createCube(this.modelService, cube)
     }
-  )
+  })
 
   get user() {
     return this.#store.user
