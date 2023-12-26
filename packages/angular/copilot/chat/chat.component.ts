@@ -26,8 +26,8 @@ import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
-import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
+import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
+import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, getErrorMessage } from '@metad/ocap-angular/core'
 import { isString, pick } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -38,13 +38,12 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
+import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription } from 'rxjs'
 import { CopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
-import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 
 
 @Component({
@@ -75,6 +74,7 @@ import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completion
     DensityDirective,
     NgmSearchComponent,
     NgmTableComponent,
+    NgmHighlightDirective,
 
     CopilotChatTokenComponent,
     CopilotEnableComponent,
@@ -97,6 +97,7 @@ export class NgmCopilotChatComponent {
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
+  @Input() placeholder: string
 
   @Input() get copilotEngine(): CopilotEngine {
     return this.#copilotEngine
@@ -105,9 +106,6 @@ export class NgmCopilotChatComponent {
     this.#copilotEngine = value
   }
 
-  // @Input() get systemPrompt(): string {
-  //   return this.copilotEngine ? this.copilotEngine.systemPrompt : this._systemPrompt()
-  // }
   set systemPrompt(value: string) {
     this._systemPrompt.set(value)
   }
@@ -142,12 +140,8 @@ export class NgmCopilotChatComponent {
     return this.copilotService.hasKey
   }
 
-  // get prompts() {
-  //   return this.copilotEngine?.prompts
-  // }
-
-  get placeholder() {
-    return this.copilotEngine?.placeholder
+  get _placeholder() {
+    return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
   _mockConversations: CopilotChatMessage[] = [
@@ -183,7 +177,7 @@ export class NgmCopilotChatComponent {
   private openaiOptions = {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
-  } as ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean }
+  } as AIOptions & { useSystemPrompt?: boolean }
   get aiOptions() {
     return this.copilotEngine?.aiOptions ?? this.openaiOptions
   }
@@ -278,10 +272,15 @@ export class NgmCopilotChatComponent {
 
   readonly copilotEnabled = this.copilotService.enabled
 
-  readonly commands = computed(() => this.copilotEngine?.commands().map((command) => ({
-    ...command,
-    prompt: `/${command.name} ${command.examples[0]}`
-  })))
+  readonly commands = computed(() => {
+    if (this.copilotEngine?.commands) {
+      return this.copilotEngine.commands().map((command) => ({
+        ...command,
+        prompt: `/${command.name} ${command.examples[0]}`
+      }))
+    }
+    return []
+  })
 
   readonly filteredCommands = computed(() => {
     const text = this.prompt()

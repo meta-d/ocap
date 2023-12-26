@@ -1,22 +1,37 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, effect, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute } from '@angular/router'
-import { DisplayDensity } from '@metad/ocap-angular/core'
-import { AggregationRole, C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
-import { serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
+import { ActivatedRoute, Router } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { PropertyCapacity } from '@metad/components/property'
-import { nonBlank } from '@metad/core'
-import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/translation-base.component'
+import { calcEntityTypePrompt, nonBlank } from '@metad/core'
+import { AnalyticalGridComponent } from '@metad/ocap-angular/analytical-grid'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { DisplayDensity } from '@metad/ocap-angular/core'
+import {
+  AggregationRole,
+  C_MEASURES,
+  CalculatedMember,
+  Dimension,
+  EntityType,
+  ISlicer,
+  Measure,
+  Syntax,
+  stringifyProperty
+} from '@metad/ocap-core'
+import { serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
+import { ChatRequest } from 'ai'
+import { NGXLogger } from 'ngx-logger'
+import { TranslationBaseComponent } from '../../../../../@shared/'
 import { differenceBy, isEmpty, isNil, negate, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, from, of } from 'rxjs'
 import { filter, map, startWith, switchMap } from 'rxjs/operators'
+import { uuid } from '../../../../../@core'
 import { AppService } from '../../../../../app.service'
+import { CalculatedMeasureSchema, zodToAnnotations } from '../../copilot'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE } from '../../types'
+import { MODEL_TYPE, ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
-import { AnalyticalGridComponent } from '@metad/ocap-angular/analytical-grid'
 
 
 @Component({
@@ -29,7 +44,6 @@ import { AnalyticalGridComponent } from '@metad/ocap-angular/analytical-grid'
   }
 })
 export class ModelEntityCalculationComponent extends TranslationBaseComponent implements OnDestroy {
-
   DisplayDensity = DisplayDensity
   Syntax = Syntax
   propertyCapacities = [
@@ -43,7 +57,9 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   public readonly appService = inject(AppService)
   public readonly modelService = inject(SemanticModelService)
   public readonly entityService = inject(ModelEntityService)
-  private readonly route = inject(ActivatedRoute)
+  readonly #route = inject(ActivatedRoute)
+  readonly #router = inject(Router)
+  readonly #logger = inject(NGXLogger)
 
   @ViewChild('editor') editor!: BaseEditorDirective
   @ViewChild(AnalyticalGridComponent) grid!: AnalyticalGridComponent<any>
@@ -62,7 +78,9 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   set columns(value) {
     this.columns$.next(value)
   }
-  public readonly columns$ = new BehaviorSubject<Array<Dimension | Measure>>([...(this.entityService.preview?.columns ?? [])])
+  public readonly columns$ = new BehaviorSubject<Array<Dimension | Measure>>([
+    ...(this.entityService.preview?.columns ?? [])
+  ])
 
   get slicers() {
     return this.slicers$.value
@@ -76,25 +94,10 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   private refresh$ = new BehaviorSubject<boolean | null>(null)
 
-  private readonly key$ = this.route.paramMap.pipe(
-    startWith(this.route.snapshot.paramMap),
+  readonly #key$ = this.#route.paramMap.pipe(
+    startWith(this.#route.snapshot.paramMap),
     map((paramMap) => paramMap.get('id'))
   )
-  public readonly calculatedMember$ = this.key$.pipe(
-    filter(nonBlank),
-    switchMap((id) => this.entityService.selectCalculatedMember(id))
-  )
-
-  public readonly formula$ = this.calculatedMember$.pipe(
-    filter(negate(isNil)),
-    map(({ formula }) => formula)
-  )
-  public readonly modelType$ = this.modelService.modelType$
-
-  public readonly entityType = toSignal<EntityType, EntityType>(this.entityService.entityType$, {
-    initialValue: { syntax: Syntax.MDX, properties: {} } as EntityType
-  })
-  public readonly syntax = computed(() => this.entityType().syntax)
 
   public readonly analytics$ = combineLatest([
     this.refresh$.pipe(switchMap((refresh) => (this.manualRefresh ? from([refresh, false]) : of(refresh)))),
@@ -120,6 +123,26 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
           }
     })
   )
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly key = toSignal(this.#key$)
+  readonly calculatedMember = toSignal(
+    this.#key$.pipe(
+      filter(nonBlank),
+      switchMap((id) => this.entityService.selectCalculatedMember(id))
+    ),
+    { initialValue: null }
+  )
+  readonly formula = computed(() => this.calculatedMember()?.formula)
+  public readonly entityType = toSignal<EntityType, EntityType>(this.entityService.entityType$, {
+    initialValue: { syntax: Syntax.MDX, properties: {} } as EntityType
+  })
+  public readonly syntax = computed(() => this.entityType().syntax)
+
   public readonly analytics = toSignal(this.analytics$)
   private readonly modelKey = toSignal(this.modelService.model$.pipe(map((model) => model.key ?? model.name)))
   private readonly cubeName = toSignal(
@@ -142,24 +165,104 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
     }
   }))
 
+  readonly modelType = toSignal(this.modelService.modelType$)
+  readonly dialect = toSignal(this.modelService.dialect$)
+
   public readonly options$ = this.modelService.wordWrap$.pipe(map((wordWrap) => ({ wordWrap })))
   public readonly isMobile$ = this.appService.isMobile$
 
   manualRefresh = false
   entities = []
 
-  private keySub = this.key$.pipe(takeUntilDestroyed()).subscribe((key) => {
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #calculatedMeasureCommand = injectCopilotCommand({
+    name: 'formula',
+    description: 'Create a new calculated member',
+    examples: [`Create a new calculated member`],
+    systemPrompt: () => {
+      let prompt = `Create or edit MDX calculated measure for the cube based on the prompt.
+The cube is: ${calcEntityTypePrompt(this.entityType())}.`
+      if (this.key()) {
+        prompt += `The formula is "${this.formula()}"`
+      }
+      return prompt
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-calculated-measure',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'measure',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of calculated measure',
+            required: true,
+            properties: zodToAnnotations(CalculatedMeasureSchema)
+          }
+        ],
+        implementation: async (cm: CalculatedMember): Promise<ChatRequest | void> => {
+          this.#logger.debug(`Create a new calculated measure '${cm.name}' with formula '${cm.formula}'`)
+          const key = cm.__id__ ?? uuid()
+          this.entityService.addCalculatedMeasure({
+            ...cm,
+            dimension: C_MEASURES,
+            __id__: key
+          })
+
+          this.entityService.navigateCalculation(key)
+        }
+      }),
+      injectMakeCopilotActionable({
+        name: 'edit-calculated-measure',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'formula',
+            type: 'string', // Add or change types according to your needs.
+            description: 'The defination of calculated measure',
+            required: true
+          }
+        ],
+        implementation: async (formula: string): Promise<ChatRequest | void> => {
+          this.#logger.debug(`Edit current calculated measure '${this.formula()}' to '${formula}'`)
+          this.entityService.updateCubeProperty({
+            type: ModelDesignerType.calculatedMember,
+            id: this.key(),
+            model: {
+              formula
+            }
+          })
+        }
+      })
+    ]
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers
+  |--------------------------------------------------------------------------
+  */
+  private keySub = this.#key$.pipe(takeUntilDestroyed()).subscribe((key) => {
     this.entityService.patchState({
       currentCalculatedMember: key
     })
   })
 
+  /**
+  |--------------------------------------------------------------------------
+  | Methods
+  |--------------------------------------------------------------------------
+  */
   trackByIndex(index: number, el: any): number {
     return index
   }
 
   async setFormula(formula: string) {
-    const calculatedMember = await firstValueFrom(this.calculatedMember$)
+    const calculatedMember = this.calculatedMember()
     if (!isNil(calculatedMember) && formula !== calculatedMember?.formula) {
       this.entityService.setCalculatedMember({
         ...calculatedMember,
@@ -225,9 +328,49 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
     }
   }
 
-  async drop(event: CdkDragDrop<unknown[]>) {
-    const modelType = await firstValueFrom(this.modelType$)
-    const dialect = await firstValueFrom(this.modelService.dialect$)
+  getDropProperty(event: CdkDragDrop<unknown[]>) {
+    const modelType = this.modelType()
+    const dialect = this.dialect()
+
+    const property = event.item.data
+    const item = {
+      dimension: null,
+      hierarchy: null,
+      level: null,
+      zeroSuppression: false
+    } as Dimension
+    if (property.role === AggregationRole.dimension) {
+      item.dimension = modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.name) : property.name
+      // 取默认 hierarchy 或者默认与 dimension 同名的
+      item.hierarchy = property.defaultHierarchy || item.dimension
+    } else if (property.role === AggregationRole.hierarchy) {
+      item.dimension =
+        modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
+      item.hierarchy =
+        modelType !== MODEL_TYPE.XMLA
+          ? serializeUniqueName(dialect, property.dimension, property.name)
+          : property.name
+    } else if (property.role === AggregationRole.level) {
+      item.dimension =
+        modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
+      item.hierarchy =
+        modelType !== MODEL_TYPE.XMLA
+          ? serializeUniqueName(dialect, property.dimension, property.hierarchy)
+          : property.hierarchy
+      item.level =
+        modelType !== MODEL_TYPE.XMLA
+          ? serializeUniqueName(dialect, property.dimension, property.hierarchy, property.name)
+          : property.name
+    } else if (property.source && modelType !== MODEL_TYPE.XMLA) {
+      // Dimension Usage
+      item.dimension = serializeUniqueName(dialect, property.source)
+    }
+
+    return item
+  }
+
+  drop(event: CdkDragDrop<unknown[]>) {
+    const dialect = this.dialect()
 
     const data = event.item.data
     if (event.previousContainer === event.container) {
@@ -238,39 +381,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
       }
     } else {
       if (event.previousContainer.id === 'list-dimensions') {
-        const property = event.item.data
-        const item = {
-          dimension: null,
-          hierarchy: null,
-          level: null,
-          zeroSuppression: false
-        } as Dimension
-        if (property.role === AggregationRole.dimension) {
-          item.dimension = modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.name) : property.name
-          // 取默认 hierarchy 或者默认与 dimension 同名的
-          item.hierarchy = property.defaultHierarchy || item.dimension
-        } else if (property.role === AggregationRole.hierarchy) {
-          item.dimension =
-            modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
-          item.hierarchy =
-            modelType !== MODEL_TYPE.XMLA
-              ? serializeUniqueName(dialect, property.dimension, property.name)
-              : property.name
-        } else if (property.role === AggregationRole.level) {
-          item.dimension =
-            modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
-          item.hierarchy =
-            modelType !== MODEL_TYPE.XMLA
-              ? serializeUniqueName(dialect, property.dimension, property.hierarchy)
-              : property.hierarchy
-          item.level =
-            modelType !== MODEL_TYPE.XMLA
-              ? serializeUniqueName(dialect, property.dimension, property.hierarchy, property.name)
-              : property.name
-        } else if (property.source && modelType !== MODEL_TYPE.XMLA) {
-          // Dimension Usage
-          item.dimension = serializeUniqueName(dialect, property.source)
-        }
+        const item = this.getDropProperty(event)
 
         if (event.container.id === 'property-modeling-rows') {
           const rows = differenceBy(this.rows, [item], 'dimension')
@@ -345,6 +456,16 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   dropEntity(event) {
     this.editor.insert(event.item.data?.name)
+  }
+
+  dropFormula(event: CdkDragDrop<any[]>) {
+    const previousItem = event.item.data
+    const index = event.currentIndex
+    console.log(previousItem)
+    if (event.previousContainer.id === 'list-dimensions') {
+      const item = this.getDropProperty(event)
+      this.setFormula(`${this.formula()}${stringifyProperty(item)}`)
+    }
   }
 
   onEditorKeyDown(event) {

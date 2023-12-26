@@ -55,5 +55,10 @@ export interface CopilotEngine {
   registerCommand?(area: string, command: CopilotCommand): void
   unregisterCommand?(area: string, name: string): void
 
+  /**
+   * Get all commands in this copilot engine
+   * 
+   * @returns CopilotCommand[]
+   */
   commands?: () => CopilotCommand[]
 }

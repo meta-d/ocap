@@ -130,6 +130,11 @@ export async function processChatStream({
         (streamedResponseMessage.tool_calls === undefined ||
           typeof streamedResponseMessage.tool_calls === 'string')
       ) {
+        updateChatRequest({
+          messages: [
+            streamedResponseMessage
+          ]
+        })
         break;
       }
 

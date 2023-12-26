@@ -12,10 +12,11 @@ import {
 import { omit } from '@metad/ocap-core'
 import { ComponentSubStore } from '@metad/store'
 import { TranslateService } from '@ngx-translate/core'
-import { NgmCopilotService, nonBlank } from '@metad/core'
+import { nonBlank } from '@metad/core'
 import { Observable, distinctUntilChanged, filter, map, scan, startWith, tap } from 'rxjs'
 import { QueryLabService, QueryLabState } from '../query-lab.service'
 import { ModelQueryState } from '../../types'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 
 
 @Injectable()
@@ -145,6 +146,7 @@ export class QueryCopilotEngineService
         map((content) => content.trim()),
       )
   }
+  
   preprocess(prompt: string, options?: any) {
     throw new Error('Method not implemented.')
   }

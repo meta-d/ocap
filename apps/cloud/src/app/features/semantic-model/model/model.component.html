@@ -234,6 +234,7 @@
                 <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
                     [copilotEngine]="copilotEngine"
                     [user]="user"
+                    [placeholder]="'Ask Copilot or type / for commands'"
                     cdkDropList
                     (cdkDropListDropped)="dropCopilot($event)"
                 ></ngm-copilot-chat>

@@ -1,6 +1,7 @@
 import JSON5 from 'json5'
 import { ChatCompletionMessage, ChatCompletionSystemMessageParam } from 'openai/resources'
 import { CopilotService } from '../copilot'
+import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 
@@ -57,7 +58,7 @@ export const AI_PROVIDERS = {
   }
 }
 
-export type AIOptions = any & { useSystemPrompt?: boolean }
+export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean }
 
 // Helper function
 export function getFunctionCall(message: ChatCompletionMessage, name?: string) {

@@ -1,9 +1,7 @@
 import { Component, forwardRef } from '@angular/core'
 import { NG_VALUE_ACCESSOR } from '@angular/forms'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { MDXEditorComponent } from '../mdx/mdx.component'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-editor-mdx-member',
   templateUrl: './mdx-member.component.html',

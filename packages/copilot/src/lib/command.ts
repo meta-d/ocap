@@ -9,6 +9,9 @@ import {
   nonNullable
 } from './types/types'
 
+/**
+ * Copilot command, which can execute multiple actions.
+ */
 export interface CopilotCommand<Inputs extends any[] = any[]> {
   name: string
   description: string
@@ -23,6 +26,11 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   processor?: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
 
   implementation?: (...args: Inputs) => Promise<void>;
+
+  /**
+   * Action ids to execute.
+   */
+  actions?: string[]
 }
 
 export const CopilotCommands$ = new BehaviorSubject<Record<string, Record<string, CopilotCommand>>>({})

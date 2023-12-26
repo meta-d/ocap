@@ -110,7 +110,7 @@
     "nanoid": "^3.3.4",
     "ngx-cookie-service": "^14.0.1",
     "ngx-logger": "^5.0.12",
-    "ngx-markdown": "^15.1.1",
+    "ngx-markdown": "^17.1.1",
     "ngx-monaco-editor": "^12.0.0",
     "ngx-permissions": "^13.0.1",
     "ngx-popperjs": "^15.0.4",

@@ -17,7 +17,6 @@ import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { CreatedByPipe, MaterialModule, UserPipe } from '../../../@shared'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { registerModelCommands } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelRoutingModule } from './model-routing.module'
 import { ModelComponent } from './model.component'
@@ -42,7 +41,6 @@ import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
 import { NgmCopilotService } from '@metad/core'
 
-registerModelCommands()
 
 @NgModule({
   declarations: [ModelComponent, ModelOverviewComponent, ModelCreateEntityComponent, ModelPreferencesComponent],

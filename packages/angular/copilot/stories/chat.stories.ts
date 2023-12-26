@@ -6,18 +6,18 @@ import { provideAnimations } from '@angular/platform-browser/animations'
 import { AIOptions, CopilotChatMessage, CopilotChatResponseChoice, CopilotEngine } from '@metad/copilot'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
-import { MarkdownModule } from 'ngx-markdown'
+import { provideMarkdown } from 'ngx-markdown'
 import { Observable, of } from 'rxjs'
 import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services'
 import { injectCopilotCommand } from '../hooks/'
+import { NgmSBCopilotService } from './copilot.service'
 
 @Injectable()
 class StorybookCopilotEngine2 extends NgmCopilotEngineService {
 
 }
-
 
 @Component({
   standalone: true,
@@ -41,8 +41,19 @@ export class NgmSBCopilotUserComponent {
       console.log(`Created user`)
     }
   })
-}
 
+  #saveCommand = injectCopilotCommand({
+    name: 's',
+    description: 'Save the user',
+    examples: [`Save a user name Tiven, age 18`],
+    systemPrompt: () => {
+      return `Save a user by prompt`
+    },
+    implementation: async (args) => {
+      console.log(`Saved user`)
+    }
+  })
+}
 
 export default {
   title: 'Copilot/Chat',
@@ -54,14 +65,17 @@ export default {
         provideHttpClient(),
         provideTranslate(zhHansLanguage),
         importProvidersFrom(OcapCoreModule),
-        importProvidersFrom(MarkdownModule.forRoot()),
-        provideLogger()
+        provideLogger(),
+        provideMarkdown()
       ]
     }),
     moduleMetadata({
       imports: [CommonModule, NgmCopilotChatComponent, NgmSBCopilotUserComponent],
       providers: [
-        NgmCopilotService,
+        {
+          provide: NgmCopilotService,
+          useClass: NgmSBCopilotService
+        },
         {
           provide: NgmCopilotEngineService,
           useClass: StorybookCopilotEngine2

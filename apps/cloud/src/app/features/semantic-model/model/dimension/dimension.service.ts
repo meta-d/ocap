@@ -1,21 +1,24 @@
-import { Injectable, OnDestroy } from '@angular/core'
+import { DestroyRef, Injectable, OnDestroy, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
+import { nonNullable } from '@metad/core'
 import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, cloneDeep, isNil } from 'lodash-es'
-import { distinctUntilChanged, filter, map, Observable, of, switchMap, tap, withLatestFrom, shareReplay } from 'rxjs'
+import { Observable, distinctUntilChanged, filter, map, of, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType, ModelDimensionState, PACModelState } from '../types'
-import { nonNullable } from '@metad/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 
-
-@UntilDestroy()
 @Injectable()
 export class ModelDimensionService extends ComponentSubStore<ModelDimensionState, PACModelState> implements OnDestroy {
+  #destroyRef = inject(DestroyRef)
+  private modelService = inject(SemanticModelService)
+  private settingsService = inject(NxSettingsPanelService)
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
+
   private dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
     watchProperty: ['dimension'],
     clean: (head, current) => {
@@ -26,7 +29,10 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
 
   // Query
   public readonly dimension$ = this.select((state) => state.dimension).pipe(filter(nonNullable))
-  public readonly name$ = this.dimension$.pipe(map((dimension) => dimension?.name), distinctUntilChanged())
+  public readonly name$ = this.dimension$.pipe(
+    map((dimension) => dimension?.name),
+    distinctUntilChanged()
+  )
   public readonly hierarchies$ = this.select(this.dimension$, (dimension) => dimension?.hierarchies)
   public readonly currentHierarchy$ = this.select((state) => state.currentHierarchy)
 
@@ -40,42 +46,37 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
     this.patchState({ dirty })
   })
 
-  constructor(
-    private modelService: SemanticModelService,
-    private settingsService: NxSettingsPanelService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    super({} as ModelDimensionState)
-
-    this.dimension$.subscribe((dimension) => {
-      if (this.modelService.originalDataSource) {
-        // console.log(`update dimension shcema in DataSource`)
-        const schema = this.modelService.originalDataSource.options.schema
-        const dimensions = schema?.dimensions ? [...schema.dimensions] : []
-        const index = dimensions.findIndex((item) => item.name === dimension.name)
-        if (index > -1) {
-          dimensions.splice(index, 1, dimension)
-        } else {
-          dimensions.push(dimension)
-        }
-        this.modelService.originalDataSource?.setSchema({
-          ...schema,
-          dimensions
-        })
+  #dimensionSub = this.dimension$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe((dimension) => {
+    if (this.modelService.originalDataSource) {
+      // console.log(`update dimension shcema in DataSource`)
+      const schema = this.modelService.originalDataSource.options.schema
+      const dimensions = schema?.dimensions ? [...schema.dimensions] : []
+      const index = dimensions.findIndex((item) => item.name === dimension.name)
+      if (index > -1) {
+        dimensions.splice(index, 1, dimension)
+      } else {
+        dimensions.push(dimension)
       }
-    })
+      this.modelService.originalDataSource?.setSchema({
+        ...schema,
+        dimensions
+      })
+    }
+  })
+
+  constructor() {
+    super({} as ModelDimensionState)
   }
 
   public init(id: string) {
     this.connect(this.modelService, { parent: ['dimensions', id] })
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe(() => {
         this.dirtyCheckQuery.setHead()
         this.initHierarchyIndex()
       })
 
-    this.modelService.saved$.pipe(untilDestroyed(this)).subscribe(() => {
+    this.modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this.dirtyCheckQuery.setHead()
     })
   }
@@ -102,13 +103,14 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
     state.currentHierarchyIndex = index
   })
 
-  public readonly newHierarchy = this.updater((state) => {
-    const id = uuid()
+  public readonly newHierarchy = this.updater((state, nh?: Partial<PropertyHierarchy> | null) => {
+    const id = nh?.__id__ ?? uuid()
     state.dimension.hierarchies.push({
       __id__: id,
-      caption: `New Hierarchy`
+      caption: `New Hierarchy`,
+      ...(nh ?? {})
     } as PropertyHierarchy)
-    
+
     this.navigateTo(id)
   })
 
@@ -139,7 +141,7 @@ export class ModelDimensionService extends ComponentSubStore<ModelDimensionState
       ...newHierarchy,
       __id__: uuid(),
       name: newHierarchy.name ? `${newHierarchy.name} copy` : 'Copy',
-      caption: `${newHierarchy.caption ?? ''} Copy`,
+      caption: `${newHierarchy.caption ?? ''} Copy`
     })
   })
 

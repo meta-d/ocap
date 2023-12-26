@@ -1,7 +1,7 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Response, Sse } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Response } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { OpenAIStream, streamToResponse } from 'ai'
+import { OpenAIStream } from 'ai'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 
@@ -20,9 +20,9 @@ export const AI_PROVIDERS = {
 }
 
 function chatCompletionsUrl(copilot: ICopilot) {
-	return (
-		(copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost) + AI_PROVIDERS[copilot.provider].chatCompletionsUrl
-	)
+	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+	const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
+	return apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl
 }
 
 @ApiTags('AI/Chat')
@@ -75,3 +75,32 @@ export class AIController {
 		}
 	}
 }
+
+
+/**
+ * A utility function to stream a ReadableStream to a Node.js response-like object.
+ */
+export function streamToResponse(
+	res: ReadableStream,
+	response: ServerResponse,
+	init?: { headers?: Record<string, string>; status?: number },
+  ) {
+	response.writeHead(init?.status || 200, {
+	  'Content-Type': 'text/plain; charset=utf-8',
+	  ...init?.headers,
+	});
+  
+	const reader = res.getReader();
+	function read() {
+	  reader.read().then(({ done, value }: { done: boolean; value?: any }) => {
+		if (done) {
+		  response.end();
+		  return;
+		}
+		response.write(value);
+		read();
+	  });
+	}
+	read();
+  }
+  

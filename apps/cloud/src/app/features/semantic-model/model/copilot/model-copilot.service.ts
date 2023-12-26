@@ -21,6 +21,9 @@ import { nanoid } from 'ai'
 
 export const I18N_MODEL_NAMESPACE = 'PAC.MODEL'
 
+/**
+ * @deprecated use NgmCopilotEngineService
+ */
 @Injectable()
 export class ModelCopilotEngineService extends NgmCopilotEngineService {
   // private readonly translateService = inject(TranslateService)
@@ -108,39 +111,39 @@ export class ModelCopilotEngineService extends NgmCopilotEngineService {
   //   }
   // ]
 
-  process({ prompt: _prompt, messages }) {
-    this.logger.debug(`process ask: ${_prompt}`)
+  // process({ prompt: _prompt, messages }) {
+  //   this.logger.debug(`process ask: ${_prompt}`)
 
-    const { command, prompt } = getCommandPrompt(_prompt)
-    if (command) {
-      if (command === SystemCommandClear) {
-        this.conversations = []
-        return of([])
-      } else if (!this.getCommand(command)) {
-        return throwError(() => new Error(`Command '${command}' not found`))
-      }
-    }
+  //   const { command, prompt } = getCommandPrompt(_prompt)
+  //   if (command) {
+  //     if (command === SystemCommandClear) {
+  //       this.conversations = []
+  //       return of([])
+  //     } else if (!this.getCommand(command)) {
+  //       return throwError(() => new Error(`Command '${command}' not found`))
+  //     }
+  //   }
 
-    const _command = this.getCommand(command)
+  //   const _command = this.getCommand(command)
 
-    return from(
-      super.triggerRequest(
-        [
-          {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.System,
-            content: _command.systemPrompt()
-          },
-          {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.User,
-            content: prompt
-          }
-        ],
-        {}
-      )
-    ).pipe(map((chatRequest) => chatRequest?.messages))
-  }
+  //   return from(
+  //     super.triggerRequest(
+  //       [
+  //         {
+  //           id: nanoid(),
+  //           role: CopilotChatMessageRoleEnum.System,
+  //           content: _command.systemPrompt()
+  //         },
+  //         {
+  //           id: nanoid(),
+  //           role: CopilotChatMessageRoleEnum.User,
+  //           content: prompt
+  //         }
+  //       ],
+  //       {}
+  //     )
+  //   ).pipe(map((chatRequest) => chatRequest?.messages))
+  // }
 
   // process({ prompt: _prompt, messages }) {
   //   this.logger.debug(`process ask: ${_prompt}`)

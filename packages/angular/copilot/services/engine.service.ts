@@ -6,25 +6,19 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotEngine,
+  DefaultModel,
   SystemCommandClear,
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { Observable, from, map, of, throwError } from 'rxjs'
-import { FunctionCallHandler, ChatRequestOptions, Message, JSONValue, ChatRequest, nanoid } from 'ai'
-import { ChatCompletionCreateParams } from "openai/resources/chat"
-import { createSWRStore } from 'swr-store';
-import { NgmCopilotService } from './copilot.service'
+import { ChatRequest, ChatRequestOptions, FunctionCallHandler, JSONValue, Message, nanoid } from 'ai'
 import { pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
+import { ChatCompletionCreateParams } from 'openai/resources/chat'
+import { Observable, from, map, of, throwError } from 'rxjs'
+import { NgmCopilotService } from './copilot.service'
 
-let uniqueId = 0;
-const store: Record<string, Message[] | undefined> = {};
-const chatApiStore = createSWRStore<Message[], string[]>({
-  get: async (key: string) => {
-    return store[key] ?? [];
-  },
-});
+let uniqueId = 0
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
@@ -35,8 +29,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
   private key = computed(() => `${this.api()}|${this.chatId}`)
 
   readonly copilot = inject(NgmCopilotService)
-  name?: string
-  aiOptions: AIOptions
+  aiOptions: AIOptions = {
+    model: DefaultModel
+  } as AIOptions
 
   readonly conversations$ = signal<CopilotChatMessage[]>([])
   get conversations() {
@@ -88,19 +83,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   registerCommand(name: string, command: CopilotCommand) {
-    this.#commands.update((state) => (
-      {
-        ...state,
-        [name]: command
-      }
-    ))
+    this.#commands.update((state) => ({
+      ...state,
+      [name]: command
+    }))
   }
 
   unregisterCommand(name: string) {
     this.#commands.update((state) => {
       delete state[name]
       return {
-        ...state,
+        ...state
       }
     })
   }
@@ -123,25 +116,54 @@ export class NgmCopilotEngineService implements CopilotEngine {
       } else if (!this.getCommand(command)) {
         return throwError(() => new Error(`Command '${command}' not found`))
       }
-    }
 
-    const _command = this.getCommand(command)
+      const _command = this.getCommand(command)
+      return from(
+        this.triggerRequest(
+          [
+            {
+              id: nanoid(),
+              role: CopilotChatMessageRoleEnum.System,
+              content: _command.systemPrompt()
+            },
+            {
+              id: nanoid(),
+              role: CopilotChatMessageRoleEnum.User,
+              content: prompt
+            }
+          ],
+          {
+            options: {
+              body: {
+                ...this.aiOptions,
+                functions: _command.actions
+                  ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
+                  : this.getChatCompletionFunctionDescriptions()
+              }
+            }
+          }
+        )
+      ).pipe(map((chatRequest) => chatRequest?.messages as any[]))
+    }
 
     return from(
       this.triggerRequest(
         [
-          {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.System,
-            content: _command.systemPrompt()
-          },
+          ...((data.messages ?? []) as any[]),
           {
             id: nanoid(),
             role: CopilotChatMessageRoleEnum.User,
             content: prompt
           }
         ],
-        {}
+        {
+          options: {
+            body: {
+              ...this.aiOptions,
+              functions: this.getChatCompletionFunctionDescriptions()
+            }
+          }
+        }
       )
     ).pipe(map((chatRequest) => chatRequest?.messages as any[]))
   }
@@ -149,7 +171,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   // useChat
   mutate(data: Message[]) {
     this.messages.set(data)
-
     // store[this.key()] = data
     // return chatApiStore.mutate([this.key()], {
     //   status: 'success',
@@ -159,7 +180,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async triggerRequest(
     messagesSnapshot: Message[],
-    { options, data }: ChatRequestOptions = {},
+    { options, data }: ChatRequestOptions = {}
   ): Promise<ChatRequest | null | undefined> {
     let abortController = null
     try {
@@ -167,53 +188,59 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.isLoading.set(true)
       abortController = new AbortController()
 
-      const getCurrentMessages = () =>
-        this.messages() ?? []
-        // chatApiStore.get([this.key()], {
-        //   shouldRevalidate: false,
-        // })
+      const getCurrentMessages = () => this.messages() ?? []
+      // chatApiStore.get([this.key()], {
+      //   shouldRevalidate: false,
+      // })
 
       // Do an optimistic update to the chat state to show the updated messages
       // immediately.
-      const previousMessages = getCurrentMessages();
+      const previousMessages = getCurrentMessages()
       this.mutate(messagesSnapshot)
 
       let chatRequest: ChatRequest = {
         messages: messagesSnapshot,
         options,
-        data,
+        data
       }
 
       await processChatStream({
         getStreamedResponse: async () => {
-          const existingData = this.streamData() ?? [];
+          const existingData = this.streamData() ?? []
 
-          return await this.copilot.chat({
-            body: {
-              functions: this.getChatCompletionFunctionDescriptions(),
-              ...pick(this.aiOptions, 'model', 'temperature'),
-              ...(options?.body ?? {}),
+          return await this.copilot.chat(
+            {
+              body: {
+                // functions: this.getChatCompletionFunctionDescriptions(),
+                ...pick(this.aiOptions, 'model', 'temperature'),
+                ...(options?.body ?? {})
+              },
+              onFinish: (message) => {
+                console.log(`onFinish`, message)
+              }
             },
-            onFinish: (message) => {
-              console.log(`onFinish`, message)
-            }
-          }, chatRequest, { options, data }, abortController);
+            chatRequest,
+            { options, data },
+            abortController
+          )
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),
-        updateChatRequest(newChatRequest) {
-          chatRequest = newChatRequest;
+        updateChatRequest: (newChatRequest) => {
+          chatRequest = newChatRequest
+          this.mutate([...this.messages(), ...newChatRequest.messages])
+          this.conversations$.update((state) => [...state, ...newChatRequest.messages] as any[])
           console.log(`The chat Request after FunctionCall`, newChatRequest)
         },
-        getCurrentMessages: () => getCurrentMessages(),
-      });
+        getCurrentMessages: () => getCurrentMessages()
+      })
 
-      abortController = null;
+      abortController = null
       return null
     } catch (err) {
       // Ignore abort errors as they are expected.
       if ((err as any).name === 'AbortError') {
-        abortController = null;
-        return null;
+        abortController = null
+        return null
       }
 
       if (err instanceof Error) {
@@ -221,6 +248,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       this.error.set(err as Error)
+      return null
     } finally {
       this.isLoading.set(false)
     }
@@ -228,46 +256,38 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
     if (!message.id) {
-      message.id = this.generateId();
+      message.id = this.generateId()
     }
-    return this.triggerRequest(
-      (this.messages() ?? []).concat(message as Message),
-      options,
-    );
-  };
+    return this.triggerRequest((this.messages() ?? []).concat(message as Message), options)
+  }
 
   generateId() {
     return nanoid()
   }
 }
 
+export const defaultCopilotContextCategories = ['global']
 
-export const defaultCopilotContextCategories = ["global"];
-
-function entryPointsToFunctionCallHandler(
-  entryPoints: AnnotatedFunction<any[]>[],
-): FunctionCallHandler {
+function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<any[]>[]): FunctionCallHandler {
   return async (chatMessages, functionCall) => {
-    let entrypointsByFunctionName: Record<string, AnnotatedFunction<any[]>> = {};
+    let entrypointsByFunctionName: Record<string, AnnotatedFunction<any[]>> = {}
     for (let entryPoint of entryPoints) {
-      entrypointsByFunctionName[entryPoint.name] = entryPoint;
+      entrypointsByFunctionName[entryPoint.name] = entryPoint
     }
 
-    const entryPointFunction = entrypointsByFunctionName[functionCall.name || ""];
+    const entryPointFunction = entrypointsByFunctionName[functionCall.name || '']
     if (entryPointFunction) {
-      let parsedFunctionCallArguments: Record<string, any>[] = [];
+      let parsedFunctionCallArguments: Record<string, any>[] = []
       if (functionCall.arguments) {
-        parsedFunctionCallArguments = JSON.parse(functionCall.arguments);
+        parsedFunctionCallArguments = JSON.parse(functionCall.arguments)
       }
 
-      const paramsInCorrectOrder: any[] = [];
+      const paramsInCorrectOrder: any[] = []
       for (let arg of entryPointFunction.argumentAnnotations) {
-        paramsInCorrectOrder.push(
-          parsedFunctionCallArguments[arg.name as keyof typeof parsedFunctionCallArguments],
-        );
+        paramsInCorrectOrder.push(parsedFunctionCallArguments[arg.name as keyof typeof parsedFunctionCallArguments])
       }
 
-      return await entryPointFunction.implementation(...paramsInCorrectOrder);
+      return await entryPointFunction.implementation(...paramsInCorrectOrder)
 
       // commented out becasue for now we don't want to return anything
       // const result = await entryPointFunction.implementation(
@@ -287,30 +307,30 @@ function entryPointsToFunctionCallHandler(
 
       // return functionResponse;
     }
-  };
+  }
 }
 
 function entryPointsToChatCompletionFunctions(
-  entryPoints: AnnotatedFunction<any[]>[],
+  entryPoints: AnnotatedFunction<any[]>[]
 ): ChatCompletionCreateParams.Function[] {
-  return entryPoints.map(annotatedFunctionToChatCompletionFunction);
+  return entryPoints.map(annotatedFunctionToChatCompletionFunction)
 }
 
 function annotatedFunctionToChatCompletionFunction(
-  annotatedFunction: AnnotatedFunction<any[]>,
+  annotatedFunction: AnnotatedFunction<any[]>
 ): ChatCompletionCreateParams.Function {
   // Create the parameters object based on the argumentAnnotations
-  let parameters: { [key: string]: any } = {};
+  let parameters: { [key: string]: any } = {}
   for (let arg of annotatedFunction.argumentAnnotations) {
     // isolate the args we should forward inline
-    let { name, required, ...forwardedArgs } = arg;
-    parameters[arg.name] = forwardedArgs;
+    let { name, required, ...forwardedArgs } = arg
+    parameters[arg.name] = forwardedArgs
   }
 
-  let requiredParameterNames: string[] = [];
+  let requiredParameterNames: string[] = []
   for (let arg of annotatedFunction.argumentAnnotations) {
     if (arg.required) {
-      requiredParameterNames.push(arg.name);
+      requiredParameterNames.push(arg.name)
     }
   }
 
@@ -319,11 +339,11 @@ function annotatedFunctionToChatCompletionFunction(
     name: annotatedFunction.name,
     description: annotatedFunction.description,
     parameters: {
-      type: "object",
+      type: 'object',
       properties: parameters,
-      required: requiredParameterNames,
-    },
-  };
+      required: requiredParameterNames
+    }
+  }
 
-  return chatCompletionFunction;
+  return chatCompletionFunction
 }

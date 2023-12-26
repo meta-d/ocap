@@ -25,7 +25,7 @@ import {
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { ChatRequest, nanoid } from 'ai'
+import { ChatRequest } from 'ai'
 import { sortBy, uniqBy } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -49,8 +49,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { CubeSchema, ModelCopilotEngineService } from './copilot'
-import { createCube } from './copilot/cube/chat'
+import { CubeSchema, DimensionSchema, createCube, createDimension } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
@@ -62,14 +61,7 @@ import { stringifyTableType } from './utils'
   selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
-  providers: [
-    NxSettingsPanelService,
-    SemanticModelService,
-    {
-      provide: NgmCopilotEngineService,
-      useClass: ModelCopilotEngineService
-    }
-  ],
+  providers: [NxSettingsPanelService, SemanticModelService, NgmCopilotEngineService],
   host: {
     class: 'ngm-semanctic-model'
   },
@@ -108,12 +100,15 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 There is no need to create as dimension with those table fields that are already used in dimensionUsages.
 The cube can fill the source field in dimensionUsages only within the name of shared dimensions: ${sharedDimensionsPrompt}.
 `
-    },
-    // processor: (copilot: CopilotChatConversation) => {
-    //   return chatCube(copilot as any).pipe(switchMap(createCube))
-    // },
-    implementation: async () => {
-      console.log(`Execute action cubeCommand`)
+    }
+  })
+
+  #dimensionCommand = injectCopilotCommand({
+    name: 'd',
+    description: 'Edit dimension',
+    examples: ['create dimension by table'],
+    systemPrompt: () => {
+      return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
     }
   })
 
@@ -121,7 +116,7 @@ The cube can fill the source field in dimensionUsages only within the name of sh
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   #properties = zodToJsonSchema(CubeSchema) as any
   #createCube = injectMakeCopilotActionable({
-    name: 'edit-model-cube',
+    name: 'create-model-cube',
     description: 'Should always be used to properly format output',
     argumentAnnotations: [
       {
@@ -137,6 +132,22 @@ The cube can fill the source field in dimensionUsages only within the name of sh
     implementation: async (cube: any): Promise<ChatRequest | void> => {
       console.log(`Execute action edit cube`, cube)
       createCube(this.modelService, cube)
+    }
+  })
+  #createDimension = injectMakeCopilotActionable({
+    name: 'create-model-dimension',
+    description: 'Should always be used to properly format output',
+    argumentAnnotations: [
+      {
+        name: 'dimension',
+        type: 'object', // Add or change types according to your needs.
+        description: 'The defination of dimension',
+        required: true,
+        properties: (<{ properties: any }>zodToJsonSchema(DimensionSchema)).properties
+      }
+    ],
+    implementation: async (d: any): Promise<ChatRequest | void> => {
+      createDimension(this.modelService, d)
     }
   })
 

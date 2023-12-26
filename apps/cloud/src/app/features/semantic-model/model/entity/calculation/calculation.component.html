@@ -1,21 +1,24 @@
 <ngm-splitter class="flex-1" [type]="1">
   <ngm-splitter-pane size='10rem' class="pac-model-calculation__formula-pane flex flex-col justify-start items-stretch">
-
-    <ngm-formula-editor *ngIf="entityType().syntax === Syntax.SQL" class="flex-1 w-full h-full"
-      [dataSettings]="dataSettings()"
-      [ngModel]="formula$ | async"
-      (ngModelChange)="setFormula($event)"
-      (keyDown)="onEditorKeyDown($event)"
-    ></ngm-formula-editor>
-    <ngm-calculated-measure *ngIf="entityType().syntax === Syntax.MDX" class="flex-1 w-full h-full"
-      [syntax]="Syntax.MDX"
-      [dataSettings]="dataSettings()"
-      [entityType]="entityType()"
-      [ngModel]="formula$ | async"
-      (ngModelChange)="setFormula($event)"
-      (keyDown)="onEditorKeyDown($event)"
-    >
-    </ngm-calculated-measure>
+    @if (entityType().syntax === Syntax.SQL) {
+      <ngm-formula-editor class="pac-cdk-drop__list flex-1 w-full h-full"
+        [dataSettings]="dataSettings()"
+        [ngModel]="formula()"
+        (ngModelChange)="setFormula($event)"
+        (keyDown)="onEditorKeyDown($event)"
+      ></ngm-formula-editor>
+    } @else if (entityType().syntax === Syntax.MDX) {
+      <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full" cdkDropList
+        (cdkDropListDropped)="dropFormula($event)"
+        [syntax]="Syntax.MDX"
+        [dataSettings]="dataSettings()"
+        [entityType]="entityType()"
+        [ngModel]="formula()"
+        (ngModelChange)="setFormula($event)"
+        (keyDown)="onEditorKeyDown($event)"
+      >
+      </ngm-calculated-measure>
+    }
 
     <ng-template #contentLoader>
       <content-loader class="overflow-hidden">
@@ -171,15 +174,17 @@
         </ngm-splitter-pane>
       </ngm-splitter>
 
-      <div *ngIf="entityType() | isNil" class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-        <content-loader class="overflow-hidden">
-          <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
-          <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
-          <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
-          <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
-          <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
-          <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
-        </content-loader>
-      </div>
+      @if (!entityType()) {
+        <div class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+          <content-loader class="overflow-hidden">
+            <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
+            <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
+            <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
+            <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
+            <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
+            <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
+          </content-loader>
+        </div>
+      }
   </ngm-splitter-pane>
 </ngm-splitter>
