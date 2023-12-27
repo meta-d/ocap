@@ -3,12 +3,15 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, injec
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { convertQueryResultColumns, nonBlank } from '@metad/core'
+import { calcEntityTypePrompt, convertQueryResultColumns, nonBlank } from '@metad/core'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { effectAction } from '@metad/ocap-angular/core'
 import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { QueryReturn, measureFormatter, serializeUniqueName } from '@metad/ocap-core'
+import { ChatRequest } from 'ai'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isPlainObject } from 'lodash-es'
+import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, EMPTY, Observable, firstValueFrom } from 'rxjs'
 import { catchError, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { ModelComponent } from '../../model.component'
@@ -26,25 +29,31 @@ import { ModelEntityService } from '../entity.service'
 export class EntityQueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE
 
-  public readonly modelService = inject(SemanticModelService)
-  private readonly modelComponent = inject(ModelComponent)
-  private readonly entityService = inject(ModelEntityService)
-  private readonly _cdr = inject(ChangeDetectorRef)
-  private readonly store = inject(Store)
+  readonly modelService = inject(SemanticModelService)
+  readonly modelComponent = inject(ModelComponent)
+  readonly entityService = inject(ModelEntityService)
+  readonly _cdr = inject(ChangeDetectorRef)
+  readonly store = inject(Store)
+  readonly #logger = inject(NGXLogger)
 
   @ViewChild('editor') editor!: BaseEditorDirective
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
   themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
-
-  readonly statement = this.entityService._statement
+  readonly entityType = this.entityService.entityType
+  readonly tables = toSignal(this.modelService.selectDBTables$)
+  readonly statement = this.entityService.statement$
 
   entities = []
 
   textSelection
 
-  public readonly entitySets$ = this.modelService.entities$
-  public readonly tables$ = this.modelService.selectDBTables$
-  public readonly entityType$ = this.entityService.entityType$
+  // public readonly entitySets$ = this.modelService.entities$
+  // public readonly entityType$ = this.entityService.entityType$
   // 当前使用 MDX 查询
   public readonly useMDX$ = this.modelService.modelType$.pipe(
     map((modelType) => modelType === MODEL_TYPE.XMLA || modelType === MODEL_TYPE.OLAP)
@@ -58,6 +67,63 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   error: string
 
   showQueryResult = signal(false)
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #queryCommand = injectCopilotCommand({
+    name: 'query',
+    description: 'Create  a query statement',
+    examples: [
+      `Create a statement to query the data`,
+      `Edit current statement refer to the error message:`,
+    ],
+    systemPrompt: () => {
+      let prompt = `Create a new or edit current MDX statement for user's query, the cube info is: ${calcEntityTypePrompt(
+        this.entityType()
+      )}`
+      if (this.statement()) {
+        prompt += `Current statement is: ${this.statement()}`
+      }
+      return prompt
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-query-statement',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'statement',
+            type: 'string',
+            description: 'The defination of query statement',
+            required: true
+          }
+        ],
+        implementation: async (statement: string): Promise<ChatRequest | void> => {
+          this.#logger.debug(`Create a new query statement '${statement}'`)
+          this.entityService.statement = statement
+        }
+      }),
+      injectMakeCopilotActionable({
+        name: 'edit-query-statement',
+        description: 'Edit the query statement',
+        argumentAnnotations: [
+          {
+            name: 'statement',
+            type: 'string',
+            description: 'The defination of query statement',
+            required: true
+          }
+        ],
+        implementation: async (statement: string): Promise<ChatRequest | void> => {
+          this.#logger.debug(`Edit the query statement '' into '${statement}'`)
+          this.entityService.statement = statement
+        }
+      })
+    ]
+  })
 
   readonly query = effectAction((origin$: Observable<string>) => {
     return origin$.pipe(

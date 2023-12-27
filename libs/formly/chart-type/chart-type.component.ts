@@ -11,6 +11,7 @@ import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { CHART_TYPES, GeoProjections } from './types'
+import { nanoid } from 'nanoid'
 
 
 @Component({
@@ -238,10 +239,12 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     try {
       const choices = await this.copilotService.createChat([
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: this.systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: this.scripts
         }
@@ -258,10 +261,12 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     try {
       const choices = await this.copilotService.createChat([
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: this.systemPrompt + `根据以下描述补全代码：${this.prompt}`
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: this.scripts
         }

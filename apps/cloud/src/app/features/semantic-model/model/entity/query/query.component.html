@@ -40,7 +40,7 @@
         <ng-container [ngSwitch]="useMDX$ | async">
             <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
-                [entityType]="entityType$ | async"
+                [entityType]="entityType()"
                 [ngModel]="statement()"
                 (ngModelChange)="onStatementChange($event)"
                 (selectionChange)="onSelectionChange($event)"
@@ -54,8 +54,8 @@
 
             <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
-                [entityType]="entityType$ | async"
-                [entitySets]="tables$ | async"
+                [entityType]="entityType()"
+                [entitySets]="tables()"
                 [ngModel]="statement()"
                 (ngModelChange)="onStatementChange($event)"
                 (selectionChange)="onSelectionChange($event)"

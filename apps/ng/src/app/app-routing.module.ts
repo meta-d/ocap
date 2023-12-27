@@ -47,6 +47,10 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent
+  },
+  {
+    path: 'copilot',
+    loadChildren: () => import('./copilot/copilot.module').then((m) => m.CopilotModule)
   }
   // { path: '', redirectTo: 'pages', pathMatch: 'full' },
   // { path: '**', redirectTo: 'pages' }

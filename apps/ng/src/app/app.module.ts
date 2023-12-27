@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { HttpClientModule } from '@angular/common/http'
-import { NgModule } from '@angular/core'
+import { NgModule, importProvidersFrom } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
@@ -40,6 +40,9 @@ import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { NgmCopilotChatComponent, NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { provideMarkdown } from 'ngx-markdown'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -86,9 +89,29 @@ export class CustomLoader implements TranslateLoader {
     NgmCommonModule,
     NgmTreeSelectComponent,
     FormulaModule,
-    SlicersModule
+    SlicersModule,
+
+    NgmCopilotChatComponent
   ],
   providers: [
+    NgmCopilotService,
+    NgmCopilotEngineService,
+    {
+      provide: NgmCopilotService.CopilotConfigFactoryToken,
+      useValue: () =>
+        Promise.resolve({
+          enabled: true,
+          apiKey: 'sk-xxxxxxxxxxxxxxx'
+        })
+    },
+    importProvidersFrom(
+      LoggerModule.forRoot({
+        // serverLoggingUrl: '/api/logs',
+        level: NgxLoggerLevel.DEBUG,
+        serverLogLevel: NgxLoggerLevel.ERROR
+      })
+    ),
+    provideMarkdown(),
     {
       provide: WasmAgentService,
       useFactory: () => {

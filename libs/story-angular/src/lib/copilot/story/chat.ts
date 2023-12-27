@@ -16,6 +16,7 @@ import { chartAnnotationCheck, editWidgetChart } from '../chart/schema'
 import { editWidgetControl } from '../control'
 import { analyticsAnnotationCheck, editWidgetGrid } from '../grid/schema'
 import { discoverStory } from './schema'
+import { nanoid } from 'ai'
 
 /**
  * Create story dashboard that contains multiple story pages.
@@ -34,10 +35,12 @@ The cube is ${calcEntityTypePrompt(entityType)}`
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }
@@ -142,10 +145,12 @@ The cube is ${calcEntityTypePrompt(entityType)}`
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: `This widget is '${widget.title}'`
         }

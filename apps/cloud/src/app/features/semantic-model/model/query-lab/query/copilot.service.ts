@@ -17,6 +17,7 @@ import { Observable, distinctUntilChanged, filter, map, scan, startWith, tap } f
 import { QueryLabService, QueryLabState } from '../query-lab.service'
 import { ModelQueryState } from '../../types'
 import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { nanoid } from 'nanoid'
 
 
 @Injectable()
@@ -157,10 +158,12 @@ export class QueryCopilotEngineService
   nl2SQL(sql: string): Observable<string> {
     return this.copilotService.chatCompletions([
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.System,
         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
       },
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: `请根据给定的表信息和要求给出相应的SQL语句(仅输出 sql 语句)， 要求：\n${sql}，答案：`
       }
@@ -172,10 +175,12 @@ export class QueryCopilotEngineService
   explainSQL(sql: string): Observable<string> {
     return this.copilotService.chatCompletions([
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.System,
         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
       },
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: `请根据给定的表信息解释一下这个SQL语句：\n${sql}`
       }
@@ -187,10 +192,12 @@ export class QueryCopilotEngineService
   optimizeSQL(sql: string): Observable<string> {
     return this.copilotService.chatCompletions([
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.System,
         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
       },
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: `请根据给定的表信息优化一下这个SQL语句(仅输出 sql 语句)：\n${sql}`
       }
@@ -202,10 +209,12 @@ export class QueryCopilotEngineService
   ask(prompt: string): Observable<string> {
     return this.copilotService.chatCompletions([
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.System,
         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
       },
       {
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: `${prompt}`
       }

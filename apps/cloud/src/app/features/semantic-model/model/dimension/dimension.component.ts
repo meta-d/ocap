@@ -72,33 +72,45 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   public readonly error$ = this.dimensionService.name$.pipe(
     switchMap((entity) => this.modelService.selectEntitySetError(entity))
   )
-
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
   #createHierarchyCommand = injectCopilotCommand({
     name: 'h',
     description: 'Create a new hierarchy',
     examples: [`Create a new hierarchy`],
     systemPrompt: () => {
-      return ``
-    }
-  })
-  #createhierarchyAction = injectMakeCopilotActionable({
-    name: 'create-model-hierarchy',
-    description: 'Should always be used to properly format output',
-    argumentAnnotations: [
-      {
-        name: 'hierarchy',
-        type: 'object', // Add or change types according to your needs.
-        description: 'The defination of hierarchy',
-        required: true,
-        properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
-      }
-    ],
-    implementation: async (h: PropertyHierarchy): Promise<ChatRequest | void> => {
-      console.log(`Create a new hierarchy by`, h)
-      this.dimensionService.newHierarchy(h)
-    }
+      return `Create a new hierarchy`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-model-hierarchy',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'hierarchy',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of hierarchy',
+            required: true,
+            properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
+          }
+        ],
+        implementation: async (h: PropertyHierarchy): Promise<ChatRequest | void> => {
+          console.log(`Create a new hierarchy by`, h)
+          this.dimensionService.newHierarchy(h)
+        }
+      })
+    ]
   })
 
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers
+  |--------------------------------------------------------------------------
+  */
   #paramSub = this.#route.paramMap
     .pipe(
       startWith(this.#route.snapshot.paramMap),

@@ -10,36 +10,38 @@
 
 <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
     @for (conversation of (enabled && hasKey ? conversations : _mockConversations); track $index) {
-        <div *ngIf="conversation.role === CopilotChatMessageRoleEnum.Assistant" class="pl-2 pr-4 flex">
-            <div class="flex-1 flex items-start overflow-auto">
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
-                </div>
-                <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
-                    <div *ngIf="conversation.content" class="bg-gray-100 rounded-lg max-w-full py-2 px-4 overflow-auto">
-                        <markdown clipboard class="whitespace-pre-line"
-                            [clipboardButtonTemplate]="buttonTemplate"
-                            lineNumbers
-                            [start]="5"
-                            [data]="conversation.content"
-                        ></markdown>
+        @if (conversation.role === CopilotChatMessageRoleEnum.Assistant) {
+            <div class="pl-2 pr-4 flex">
+                <div class="flex-1 flex items-start overflow-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
                     </div>
+                    <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
+                        <div *ngIf="conversation.content" class="bg-gray-100 rounded-lg max-w-full py-2 px-4 overflow-auto">
+                            <markdown clipboard class="whitespace-pre-line"
+                                [clipboardButtonTemplate]="buttonTemplate"
+                                lineNumbers
+                                [start]="5"
+                                [data]="conversation.content"
+                            ></markdown>
+                        </div>
+        
+                        <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
+                            <span class="font-notoColorEmoji">🙈</span>
+                            {{ conversation.error }}
+                        </div>
     
-                    <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
-                        <span class="font-notoColorEmoji">🙈</span>
-                        {{ conversation.error }}
+                        <ngm-copilot-token *ngIf="conversation.content" [content]="conversation.content"></ngm-copilot-token>
+    
+                        <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                            (click)="deleteMessage(conversation)">
+                            <mat-icon>close</mat-icon>
+                        </button>
                     </div>
-
-                    <ngm-copilot-token *ngIf="conversation.content" [content]="conversation.content"></ngm-copilot-token>
-
-                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0"
-                        (click)="deleteMessage(conversation)">
-                        <mat-icon>close</mat-icon>
-                    </button>
+                    
                 </div>
-                
             </div>
-        </div>
+        }
 
         @if (conversation.role === CopilotChatMessageRoleEnum.User) {
         <div class="pl-4 flex">
@@ -47,8 +49,8 @@
                 <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
                     @if (conversation.data) {
                         <ngm-table class="max-w-full rounded-lg border overflow-hidden bg-white"
-                            [columns]="conversation.data.columns"
-                            [data]="conversation.data.content"
+                            [columns]="conversation.data['columns']"
+                            [data]="conversation.data['content']"
                             paging
                             [pageSizeOptions]="[10, 20, 50, 100]"
                         ></ngm-table>
@@ -68,7 +70,7 @@
                         <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
                     }
 
-                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0"
+                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                         (click)="deleteMessage(conversation)">
                         <mat-icon>close</mat-icon>
                     </button>
@@ -148,10 +150,12 @@
     </div>
 
     <div class="flex flex-col p-2" >
-        <textarea #userInput matInput class="flex-1" [placeholder]="_placeholder"
+        <textarea #userInput matInput
+            id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
+            [placeholder]="_placeholder"
             [formControl]="promptControl"
             cdkTextareaAutosize
-            cdkAutosizeMinRows="3"
+            cdkAutosizeMinRows="1"
             cdkAutosizeMaxRows="8"
             (keydown)="triggerFun($event, autoPrompts)"
 
@@ -165,8 +169,8 @@
         >
         @for (command of filteredCommands();  track command.name) {
             @for (example of command.examples; track example) {
-            <mat-option [value]="command.prompt" [title]="command.description">
-                <span class="bg-slate-200 text-neutral-800 text-xs font-medium me-2 px-1 py-0.5 rounded dark:bg-neutral-900 dark:text-neutral-300">
+            <mat-option [value]="'/'+command.name+' '+example" [title]="command.description">
+                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300">
                     /{{command.name}}
                 </span>
 

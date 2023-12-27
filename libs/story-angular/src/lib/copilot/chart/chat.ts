@@ -5,6 +5,7 @@ import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType } from '
 import { map, of, switchMap } from 'rxjs'
 import { chartAnnotationCheck, editWidgetChart } from './schema'
 import { checkDefaultEntity } from '../common'
+import { nanoid } from 'nanoid'
 
 
 export function chatChartWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
@@ -19,10 +20,12 @@ Original widget is ${JSON.stringify(widget ?? 'empty')}`
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }

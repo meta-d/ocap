@@ -8,6 +8,7 @@ import {
   getFunctionCall,
   nonNullable
 } from './types/types'
+import { nanoid } from 'ai'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -95,10 +96,12 @@ export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCo
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }
@@ -139,6 +142,7 @@ export function freeChat(copilot: CopilotChatConversation) {
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }

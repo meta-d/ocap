@@ -56,6 +56,7 @@ import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import { nanoid } from 'nanoid'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -112,7 +113,11 @@ The cube can fill the source field in dimensionUsages only within the name of sh
     }
   })
 
-  // Copilot
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
   readonly #copilotEngine = inject(NgmCopilotEngineService)
   #properties = zodToJsonSchema(CubeSchema) as any
   #createCube = injectMakeCopilotActionable({
@@ -557,16 +562,18 @@ The cube can fill the source field in dimensionUsages only within the name of sh
       // 源表结构或源多维数据集结构
       const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
       this.copilotChat.addMessage({
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         data: {
           columns: [{ name: 'name' }, { name: 'caption' }],
-          content: Object.values(entityType.properties)
+          content: Object.values(entityType.properties) as any[]
         },
         content: stringifyTableType(entityType)
       })
     } else if (event.previousContainer.id === 'pac-model__query-results') {
       // 自定义查询结果数据
       this.copilotChat.addMessage({
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         data: {
           columns: data.columns,
@@ -580,6 +587,7 @@ The cube can fill the source field in dimensionUsages only within the name of sh
     } else {
       // 其他数据 name
       this.copilotChat.addMessage({
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: data.name
       })

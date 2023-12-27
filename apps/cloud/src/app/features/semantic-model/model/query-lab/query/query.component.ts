@@ -32,6 +32,7 @@ import { MODEL_TYPE, QueryResult } from '../../types'
 import { quoteLiteral } from '../../utils'
 import { QueryLabService } from '../query-lab.service'
 import { QueryCopilotEngineService } from './copilot.service'
+import { nanoid } from 'nanoid'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -531,11 +532,13 @@ export class QueryComponent extends TranslationBaseComponent implements OnDestro
     if (event.previousContainer.id === 'pac-model__query-entities' && (<EntitySchemaNode>data).type === 'Entity') {
       const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType((<EntitySchemaNode>data).name))
       this.copilotChat.addMessage({
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: calcEntityTypePrompt(entityType)
       })
     } else if (event.previousContainer.id === 'pac-model__query-results') {
       this.copilotChat.addMessage({
+        id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         data: {
           columns: data.columns,

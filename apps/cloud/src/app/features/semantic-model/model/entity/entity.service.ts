@@ -52,8 +52,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   get preview() {
     return this.get((state) => state.preview)
   }
-
-  _statement = toSignal(this.select((state) => state.queryLab?.statement))
+  
   set statement(value) {
     this.patchState({ queryLab: {statement: value} })
   }
@@ -92,6 +91,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   |--------------------------------------------------------------------------
   */
   public readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
+  readonly statement$ = toSignal(this.select((state) => state.queryLab?.statement))
 
   /**
   |--------------------------------------------------------------------------

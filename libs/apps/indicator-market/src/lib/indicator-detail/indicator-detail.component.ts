@@ -73,6 +73,7 @@ import {
 import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
+import { nanoid } from 'nanoid'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -738,10 +739,12 @@ export class IndicatorDetailComponent {
         this.copilotService
           .chatStream([
             {
+              id: nanoid(),
               role: CopilotChatMessageRoleEnum.System,
               content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
             },
             {
+              id: nanoid(),
               role: CopilotChatMessageRoleEnum.User,
               content: userMessage.prompt + ':\n' + dataPrompt
             }

@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
+import { MediaMatcher } from '@angular/cdk/layout'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -21,9 +23,14 @@ import { Observable } from 'rxjs'
   styleUrls: ['./app.component.scss'],
   providers: [NgmSmartFilterBarService]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private wasmAgent = inject(WasmAgentService)
+
   MemberSource = MemberSource
   DisplayBehaviour = DisplayBehaviour
+  mobileQuery: MediaQueryList
+  private _mobileQueryListener: () => void
+
   dark: string
   appearance: NgmAppearance = {
     appearance: 'outline',
@@ -115,16 +122,20 @@ export class AppComponent implements OnInit {
 
   error: string
 
-  public readonly status$ = this.wasmAgent.selectStatus() as Observable<AgentStatus>
+  public readonly status = toSignal(this.wasmAgent.selectStatus() as Observable<AgentStatus>)
 
   store
   store1
   formula = `[Measures].[Sales] - [Measures].[Cost]`
   constructor(
     private smartFilterBar: NgmSmartFilterBarService,
-    private wasmAgent: WasmAgentService,
-    private dsCoreService: NgmDSCoreService
+    private dsCoreService: NgmDSCoreService,
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher
   ) {
+    this.mobileQuery = media.matchMedia('(max-width: 600px)')
+    this._mobileQueryListener = () => changeDetectorRef.detectChanges()
+    this.mobileQuery.addListener(this._mobileQueryListener)
     this.wasmAgent.selectError().subscribe((error) => {
       console.error(error)
       this.error += error + '\n'
@@ -191,5 +202,9 @@ export class AppComponent implements OnInit {
 
   onFormulaChange(event: string) {
     console.log(event)
+  }
+
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this._mobileQueryListener)
   }
 }

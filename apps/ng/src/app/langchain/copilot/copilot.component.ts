@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { Component, OnInit, signal } from '@angular/core'
 import { CopilotChatMessageRoleEnum, CopilotService, getFunctionCall } from '@metad/copilot'
+import { nanoid } from 'ai'
 import { z } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 
@@ -37,10 +38,12 @@ export class CopilotComponent implements OnInit {
       .chatCompletions(
         [
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.System,
             content: 'List all food items mentioned in the following text.'
           },
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.User,
             content: 'I like apples, bananas, oxygen, and french fries.'
           }

@@ -1,7 +1,8 @@
 import JSON5 from 'json5'
-import { ChatCompletionMessage, ChatCompletionSystemMessageParam } from 'openai/resources'
+import { ChatCompletionMessage } from 'openai/resources'
 import { CopilotService } from '../copilot'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
+import { Message } from 'ai'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 
@@ -32,14 +33,25 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
-export interface CopilotChatMessage extends Omit<ChatCompletionSystemMessageParam, 'role'> {
-  role: CopilotChatMessageRoleEnum
-  error?: string
-  data?: {
-    columns: any[]
-    content: any[]
-  }
+// export interface CopilotChatMessage extends Omit<ChatCompletionSystemMessageParam, 'role'> {
+//   role: CopilotChatMessageRoleEnum
+//   error?: string
+//   data?: {
+//     columns: any[]
+//     content: any[]
+//   }
+//   end?: boolean
+// }
+
+export interface CopilotChatMessage extends Omit<Message, 'role'> {
+  /**
+   * Chat Session Ended
+   */
   end?: boolean
+
+  error?: string
+
+  role: Message['role'] | 'info'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import {
   AIOptions,
   AnnotatedFunction,
@@ -65,6 +65,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
   streamData = signal<JSONValue[] | undefined>(undefined)
   isLoading = signal(false)
 
+  constructor() {
+    effect(() => {
+      console.log(this.conversations$())
+    })
+  }
+
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     console.log(`setEntryPoint: ${id}`, entryPoint)
     this.#entryPoints.update((state) => ({
@@ -118,14 +124,20 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       const _command = this.getCommand(command)
+
+      const messages: CopilotChatMessage[] = [...(data.messages ?? [])] //@todo 是否应该添加历史记录，什么情况下带上？
+      if (_command.systemPrompt) {
+        messages.push({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.System,
+          content: _command.systemPrompt()
+        })
+      }
+
       return from(
         this.triggerRequest(
           [
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.System,
-              content: _command.systemPrompt()
-            },
+            ...messages,
             {
               id: nanoid(),
               role: CopilotChatMessageRoleEnum.User,
@@ -169,17 +181,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   // useChat
-  mutate(data: Message[]) {
-    this.messages.set(data)
-    // store[this.key()] = data
-    // return chatApiStore.mutate([this.key()], {
-    //   status: 'success',
-    //   data,
-    // })
-  }
-
   async triggerRequest(
-    messagesSnapshot: Message[],
+    messagesSnapshot: CopilotChatMessage[],
     { options, data }: ChatRequestOptions = {}
   ): Promise<ChatRequest | null | undefined> {
     let abortController = null
@@ -195,18 +198,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       // Do an optimistic update to the chat state to show the updated messages
       // immediately.
-      const previousMessages = getCurrentMessages()
-      this.mutate(messagesSnapshot)
+      // const previousMessages = getCurrentMessages()
+      // this.mutate(messagesSnapshot)
 
       let chatRequest: ChatRequest = {
-        messages: messagesSnapshot,
+        messages: messagesSnapshot as Message[],
         options,
         data
       }
 
       await processChatStream({
         getStreamedResponse: async () => {
-          const existingData = this.streamData() ?? []
+          // const existingData = this.streamData() ?? []
 
           return await this.copilot.chat(
             {
@@ -217,6 +220,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
               },
               onFinish: (message) => {
                 console.log(`onFinish`, message)
+                this.conversations$.update((state) => [...state, message] as any[])
               }
             },
             chatRequest,
@@ -227,9 +231,21 @@ export class NgmCopilotEngineService implements CopilotEngine {
         experimental_onFunctionCall: this.getFunctionCallHandler(),
         updateChatRequest: (newChatRequest) => {
           chatRequest = newChatRequest
-          this.mutate([...this.messages(), ...newChatRequest.messages])
-          this.conversations$.update((state) => [...state, ...newChatRequest.messages] as any[])
-          console.log(`The chat Request after FunctionCall`, newChatRequest)
+          this.#logger.debug(`The new chat request after FunctionCall is`, newChatRequest)
+
+          // Update or append message into conversation
+          this.conversations$.update((state) => {
+            const messages = [...state]
+            newChatRequest.messages.forEach((message) => {
+              const index = messages.findIndex((item) => item.id && item.id === message.id)
+              if (index > -1) {
+                messages[index] = message
+              } else {
+                messages.push(message)
+              }
+            })
+            return messages
+          })
         },
         getCurrentMessages: () => getCurrentMessages()
       })

@@ -130,11 +130,6 @@ export async function processChatStream({
         (streamedResponseMessage.tool_calls === undefined ||
           typeof streamedResponseMessage.tool_calls === 'string')
       ) {
-        updateChatRequest({
-          messages: [
-            streamedResponseMessage
-          ]
-        })
         break;
       }
 
@@ -149,6 +144,15 @@ export async function processChatStream({
         }
         const functionCallResponse: ChatRequest | void =
           await experimental_onFunctionCall(getCurrentMessages(), functionCall);
+        // Success Info!
+        updateChatRequest({
+          messages: [
+            {
+              ...streamedResponseMessage,
+              content: `✅ Function '${functionCall.name}' call successful!`
+            }
+          ]
+        })
 
         // If the user does not return anything as a result of the function call, the loop will break.
         if (functionCallResponse === undefined) break;

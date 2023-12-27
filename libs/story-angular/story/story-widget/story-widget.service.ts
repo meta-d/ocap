@@ -10,6 +10,7 @@ import { NxStoryFeedService, NX_STORY_FEED, StoryPointState, StoryWidget, Linked
 import { firstValueFrom, Observable, of } from 'rxjs'
 import { filter, map, scan, startWith, switchMap, tap } from 'rxjs/operators'
 import { NxStoryPointService } from '../story-point.service'
+import { nanoid } from 'ai'
 
 @Injectable()
 export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPointState> implements CopilotEngine {
@@ -131,6 +132,7 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
         if(!explain?.data) {
           return of([
             {
+              id: nanoid(),
               role: CopilotChatMessageRoleEnum.Assistant,
               content: '未能获取相关数据'
             }
@@ -139,12 +141,14 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
 
         return this.copilot.chatStream([
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.System,
             content: `你是一名 BI 数据分析专家，根据以下数据给出用户问题的分析：
 ${convertTableToCSV(convertQueryResultColumns(explain.schema), explain.data)}
 `
           },
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.User,
             content: prompt
           }
@@ -154,6 +158,7 @@ ${convertTableToCSV(convertQueryResultColumns(explain.schema), explain.data)}
           map((content) => content.trim()),
           startWith([
             {
+              id: nanoid(),
               role: CopilotChatMessageRoleEnum.Info,
               content: '正在分析。。。'
             }

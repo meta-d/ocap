@@ -4,6 +4,7 @@ import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@
 import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType, fixDimension } from '@metad/story/core'
 import { map, of, switchMap } from 'rxjs'
 import { editWidgetControl } from './schema'
+import { nanoid } from 'nanoid'
 
 export function chatControlWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
@@ -17,10 +18,12 @@ Original widget is ${JSON.stringify(widget)}`
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }

@@ -4,6 +4,7 @@ import { StoryCopilotChatConversation } from '@metad/story/core'
 import { of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { editStoryStyle } from './schema'
+import { nanoid } from 'ai'
 
 /**
  * Modify story styles: theme, watermark, colors, tab bar, page header, etc.
@@ -21,10 +22,12 @@ export function chatStoryStyle(copilot: StoryCopilotChatConversation) {
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }

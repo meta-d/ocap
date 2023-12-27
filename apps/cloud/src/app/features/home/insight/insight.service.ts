@@ -25,6 +25,7 @@ import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ChartSchema, SuggestsSchema } from './types'
 import { CopilotService, registerModel } from '../../../@core'
+import { nanoid } from 'nanoid'
 
 
 @Injectable()
@@ -169,6 +170,7 @@ export class InsightService {
     const choices = await this.copilotService.createChat(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: `请根据多维模型列表给出问题涉及到的 only one model name in json format
 例如
@@ -177,6 +179,7 @@ export class InsightService {
 回答： "sales_fact"`
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: `多维模型列表： ${await this.getAllEntities()}
 问题：${prompt}
@@ -216,6 +219,7 @@ export class InsightService {
 
       const messages = [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户问题对应的图形的配置 in json format，不用解释。过滤条件为 slicers，slicers is optional, Order is optional。
 ${this.getChartTypePrompt()}
@@ -256,6 +260,7 @@ ${this.getDataSettingsPrompt()}
 }`
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: `多维数据模型信息为：
 ${calcEntityTypePrompt(entityType)}
@@ -343,6 +348,7 @@ ${calcEntityTypePrompt(entityType)}
       const choices = await this.copilotService.createChat(
         [
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.System,
             content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
   例如：
@@ -353,6 +359,7 @@ ${calcEntityTypePrompt(entityType)}
     "visit trend of some product in 2023 year"
   ]}))}`},
           {
+            id: nanoid(),
             role: CopilotChatMessageRoleEnum.User,
             content: `多维数据模型信息为：${prompt}\n回答：`
           }
