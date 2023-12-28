@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { distinctUntilChanged } from 'rxjs'
-import { CopilotService, getErrorMessage, ToastrService } from '../../../@core'
+import { CopilotAPIService, getErrorMessage, ToastrService } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 
 @Component({
@@ -11,7 +11,7 @@ import { TranslationBaseComponent } from '../../../@shared'
   styleUrls: ['./copilot.component.scss']
 })
 export class CopilotComponent extends TranslationBaseComponent {
-  private readonly copilotService = inject(CopilotService)
+  private readonly copilotService = inject(CopilotAPIService)
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _toastrService = inject(ToastrService)
 

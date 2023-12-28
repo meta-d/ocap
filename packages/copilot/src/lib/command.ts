@@ -8,7 +8,7 @@ import {
   getFunctionCall,
   nonNullable
 } from './types/types'
-import { nanoid } from 'ai'
+import { Message, nanoid } from 'ai'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -26,7 +26,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    */
   processor?: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
 
-  implementation?: (...args: Inputs) => Promise<void>;
+  implementation?: (...args: Inputs) => Promise<void | string | Message>;
 
   /**
    * Action ids to execute.

@@ -1,25 +1,33 @@
-import { HttpClient } from '@angular/common/http'
-import { inject, Injectable } from '@angular/core'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { inject, Injectable, InjectionToken } from '@angular/core'
+import { CopilotService, ICopilot } from '@metad/copilot'
 import { RequestOptions } from 'ai'
 import { Store } from './store.service'
 
 @Injectable({ providedIn: 'root' })
-export class PACCopilotService extends NgmCopilotService {
-  private httpClient = inject(HttpClient)
+export class PACCopilotService extends CopilotService {
   readonly #store = inject(Store)
 
-  #tokenSub = this.#store.token$.subscribe((token) => {
-    this.copilot = {
-      ...this.copilot,
-      token
-    }
-  })
+  static CopilotConfigFactoryToken = new InjectionToken<() => Promise<ICopilot>>('CopilotConfigFactoryToken')
+
+  #copilotConfigFactory: () => Promise<ICopilot> = inject(PACCopilotService.CopilotConfigFactoryToken)
+
+  constructor() {
+    super()
+
+    // Init copilot config
+    this.#copilotConfigFactory().then((copilot) => {
+      this.copilot = {
+        ...copilot,
+        chatUrl: '/api/ai/chat'
+      }
+    })
+  }
 
   requestOptions(): RequestOptions {
     return {
       headers: {
-        'Organization-Id': `${this.#store.selectedOrganization?.id}`
+        'Organization-Id': `${this.#store.selectedOrganization?.id}`,
+        Authorization: `Bearer ${this.#store.token}`
       }
     }
   }

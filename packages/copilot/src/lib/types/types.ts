@@ -15,6 +15,8 @@ export interface ICopilot {
    * Authorization token for the API
    */
   token?: string
+
+  chatUrl: string
 }
 
 export interface BusinessOperation {

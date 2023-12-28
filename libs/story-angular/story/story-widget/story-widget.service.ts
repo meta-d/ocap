@@ -130,13 +130,13 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
       }),
       switchMap((explain) => {
         if(!explain?.data) {
-          return of([
+          return of(
             {
               id: nanoid(),
               role: CopilotChatMessageRoleEnum.Assistant,
               content: '未能获取相关数据'
             }
-          ])
+          )
         }
 
         return this.copilot.chatStream([
@@ -156,13 +156,11 @@ ${convertTableToCSV(convertQueryResultColumns(explain.schema), explain.data)}
         .pipe(
           scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
           map((content) => content.trim()),
-          startWith([
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.Info,
-              content: '正在分析。。。'
-            }
-          ])
+          startWith({
+            id: nanoid(),
+            role: CopilotChatMessageRoleEnum.Assistant,
+            content: '正在分析。。。'
+          })
         )
       })
     )
@@ -171,4 +169,6 @@ ${convertTableToCSV(convertQueryResultColumns(explain.schema), explain.data)}
   postprocess(prompt: string, choices: CopilotChatResponseChoice[]): Observable<string | CopilotChatMessage[]> {
     throw new Error('Method not implemented.')
   }
+  
+  clear() {}
 }

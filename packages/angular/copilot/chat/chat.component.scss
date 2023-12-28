@@ -64,3 +64,11 @@
     @apply p-0 shadow-none border-0;
   }
 }
+
+::ng-deep {
+  .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
+    .mdc-list-item {
+      @apply pl-2;
+    }
+  }
+}

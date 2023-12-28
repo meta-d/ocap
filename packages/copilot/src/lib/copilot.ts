@@ -2,29 +2,36 @@ import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event
 import {
   ChatRequest,
   ChatRequestOptions,
+  JSONValue,
+  Message,
   RequestOptions,
   UseChatOptions,
   nanoid,
 } from 'ai'
-import { Observable, catchError, of, switchMap, throwError } from 'rxjs'
+import { BehaviorSubject, Observable, catchError, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
 import { callChatApi } from './shared/call-chat-api'
 
+function chatCompletionsUrl(copilot: ICopilot) {
+	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+	const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
+	return copilot.chatUrl || 
+    (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl)
+}
+
 export class CopilotService {
-  // private _copilotDefault = {
-  //   chatCompletionsUrl: '/v1/chat/completions'
-  // } as ICopilot
-  private _copilot = {} as ICopilot
+
+  #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
+  // private _copilot = {} as ICopilot
   get copilot(): ICopilot {
-    return this._copilot
+    return this.#copilot$.value
   }
   set copilot(value: Partial<ICopilot>) {
-    this._copilot = {
-      // ...this._copilotDefault,
-      ...this._copilot,
+    this.#copilot$.next({
+      ...this.#copilot$.value,
       ...(value ?? {})
-    }
+    })
   }
   get chatCompletionsUrl() {
     return (
@@ -34,6 +41,14 @@ export class CopilotService {
   }
   get modelsUrl() {
     return (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) + '/v1/models'
+  }
+
+  public readonly copilot$ = this.#copilot$.asObservable()
+  get enabled() {
+    return this.copilot?.enabled && this.copilot?.apiKey
+  }
+  get hasKey() {
+    return !!this.copilot?.apiKey
   }
 
   constructor(copilot?: ICopilot) {
@@ -202,10 +217,10 @@ export class CopilotService {
     abortController
   }: {
     abortController: AbortController | null
-  }) {
+  }): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
 
     return await callChatApi({
-      api: '/api/ai/chat',
+      api: chatCompletionsUrl(this.copilot),
       messages: sendExtraMessageFields
         ? chatRequest.messages
         : chatRequest.messages.map(
@@ -228,7 +243,6 @@ export class CopilotService {
         ...(this.requestOptions()?.headers ?? {}),
         ...headers,
         ...options?.headers,
-        Authorization: `Bearer ${this.copilot.token}`
       },
       abortController: () => abortController,
       credentials,

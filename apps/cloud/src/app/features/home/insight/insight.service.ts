@@ -24,14 +24,14 @@ import { getSemanticModelKey } from '@metad/story/core'
 import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ChartSchema, SuggestsSchema } from './types'
-import { CopilotService, registerModel } from '../../../@core'
+import { CopilotAPIService, registerModel } from '../../../@core'
 import { nanoid } from 'nanoid'
 
 
 @Injectable()
 export class InsightService {
   private modelsService = inject(ModelsService)
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(CopilotAPIService)
   private dsCoreService = inject(NgmDSCoreService)
   private wasmAgent = inject(WasmAgentService)
   private readonly translateService = inject(TranslateService)

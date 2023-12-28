@@ -1,7 +1,6 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Response } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Logger, Post, Res } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { OpenAIStream } from 'ai'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 
@@ -44,7 +43,7 @@ export class AIController {
 	})
 	@HttpCode(HttpStatus.CREATED)
 	@Post('chat')
-	async chat(@Body() body: any, @Response() res: ServerResponse) {
+	async chat(@Body() body: any, @Res() resp: ServerResponse) {
 		const result = await this.copilotService.findAll()
 		if (result.total === 0) {
 			throw new Error('No copilot found')
@@ -53,26 +52,40 @@ export class AIController {
 		const copilot = result.items[0]
 
 		this.#logger.debug(`Try call ai api '${chatCompletionsUrl(copilot)}' with body ...}`)
-		const abortController = new AbortController()
-		try {
-			const response = await fetch(chatCompletionsUrl(copilot), {
-				method: 'POST',
-				body: JSON.stringify(body),
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${copilot.apiKey}`
-				},
-				signal: abortController?.signal
-			})
 
-			// Convert the response into a friendly text-stream
-			const stream = OpenAIStream(response)
+		const response = await fetch(chatCompletionsUrl(copilot), {
+			method: 'POST',
+			body: JSON.stringify(body),
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${copilot.apiKey}`
+			},
+		})
 
-			// Pipe the stream to the response
-			streamToResponse(stream, res)
-		} catch (error) {
-			throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
-		}
+		streamToResponse(response, resp, {
+			status: response.status
+		})
+
+		// const abortController = new AbortController()
+		// try {
+		// 	const response = await fetch(chatCompletionsUrl(copilot), {
+		// 		method: 'POST',
+		// 		body: JSON.stringify(body),
+		// 		headers: {
+		// 			'Content-Type': 'application/json',
+		// 			Authorization: `Bearer ${copilot.apiKey}`
+		// 		},
+		// 		signal: abortController?.signal
+		// 	})
+
+		// 	// Convert the response into a friendly text-stream
+		// 	const stream = OpenAIStream(response)
+
+		// 	// Pipe the stream to the response
+		// 	streamToResponse(stream, res)
+		// } catch (error) {
+		// 	throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
+		// }
 	}
 }
 
@@ -81,7 +94,7 @@ export class AIController {
  * A utility function to stream a ReadableStream to a Node.js response-like object.
  */
 export function streamToResponse(
-	res: ReadableStream,
+	res: Response,
 	response: ServerResponse,
 	init?: { headers?: Record<string, string>; status?: number },
   ) {
@@ -90,7 +103,7 @@ export function streamToResponse(
 	  ...init?.headers,
 	});
   
-	const reader = res.getReader();
+	const reader = res.body.getReader();
 	function read() {
 	  reader.read().then(({ done, value }: { done: boolean; value?: any }) => {
 		if (done) {

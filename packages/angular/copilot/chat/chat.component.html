@@ -141,7 +141,6 @@
         <button mat-stroked-button displayDensity="cosy" class="rounded-full"
             (click)="$event.stopPropagation();stopGenerating()">
             <div class="copilot-message-stop flex items-center">
-                <div class="emoji-loader text-base"></div>
                 <span>
                     {{ 'Ngm.Copilot.StopGenerating' | translate: {Default: 'Stop generating'} }}
                 </span>
@@ -152,7 +151,7 @@
     <div class="flex flex-col p-2" >
         <textarea #userInput matInput
             id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-            [placeholder]="_placeholder"
+            [placeholder]="_placeholder || ('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'})"
             [formControl]="promptControl"
             cdkTextareaAutosize
             cdkAutosizeMinRows="1"
@@ -164,8 +163,11 @@
             >
         </textarea>
 
-        <mat-autocomplete #autoPrompts="matAutocomplete" autoActiveFirstOption hideSingleSelectionIndicator class="ngm-autocomplete-panel ngm-density__compact"
+        <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__compact"
+            autoActiveFirstOption hideSingleSelectionIndicator
             (optionActivated)="onPromptActivated($event)"
+            (opened)="suggestionsOpened$.next(true)"
+            (closed)="suggestionsOpened$.next(false)"
         >
         @for (command of filteredCommands();  track command.name) {
             @for (example of command.examples; track example) {
@@ -208,7 +210,7 @@
     </div>
 </div>
 
-@if (!copilotEnabled()) {
+@if (!copilotEnabled) {
 <ngm-copilot-enable class="z-[101]"
     [title]="welcomeTitle || 'Metad Copilot'"
     [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"

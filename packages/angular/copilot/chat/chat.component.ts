@@ -26,7 +26,7 @@ import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
+import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
 import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, getErrorMessage } from '@metad/ocap-angular/core'
 import { isString, pick } from '@metad/ocap-core'
@@ -40,11 +40,12 @@ import {
 } from 'ngx-popperjs'
 import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription } from 'rxjs'
 import { CopilotEnableComponent } from '../enable/enable.component'
-import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
+import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
 import { nanoid } from 'ai'
+import { injectCopilotCommand } from '../hooks'
 
 
 @Component({
@@ -93,7 +94,7 @@ export class NgmCopilotChatComponent {
   private popperjsContentComponent = inject(NgxPopperjsContentComponent, { optional: true })
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
-  private copilotService = inject(NgmCopilotService)
+  private copilotService = inject(CopilotService)
   #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
   @Input() welcomeTitle: string
@@ -238,7 +239,7 @@ export class NgmCopilotChatComponent {
   public promptControl = new FormControl<string>('')
   readonly prompt = toSignal(this.promptControl.valueChanges, {initialValue: ''})
 
-  private activatedPrompt = ''
+  #activatedPrompt = signal('')
 
   readonly answering = signal(false)
 
@@ -271,7 +272,9 @@ export class NgmCopilotChatComponent {
     { initialValue: [] }
   )
 
-  readonly copilotEnabled = this.copilotService.enabled
+  get copilotEnabled() {
+    return this.copilotService.enabled
+  }
 
   readonly commands = computed(() => {
     if (this.copilotEngine?.commands) {
@@ -285,9 +288,10 @@ export class NgmCopilotChatComponent {
 
   readonly filteredCommands = computed(() => {
     const text = this.prompt()
-    this.activatedPrompt = ''
-
-    return (text ? this.commands()?.filter((item) => item.prompt.includes(text)) ?? [] : [])
+    if (text) {
+      return this.commands()?.filter((item) => item.prompt.includes(text)) ?? []
+    }
+    return []
   })
 
   private readonly lastConversation = computed(() => {
@@ -321,7 +325,33 @@ export class NgmCopilotChatComponent {
     return lastMessages.reverse()
   })
 
-  // Subscribers
+  public readonly suggestionsOpened$ = new BehaviorSubject(false)
+  #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #clearCommand = injectCopilotCommand({
+    name: 'clear',
+    description: '清空对话',
+    examples: ['清空对话'],
+    implementation: async () => {
+      this.copilotEngine.clear()
+      return {
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: '对话已清空'
+      }
+    }
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers
+  |--------------------------------------------------------------------------
+  */
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
     this._cdr.detectChanges()
   })
@@ -402,19 +432,19 @@ export class NgmCopilotChatComponent {
 
       try {
         this.askSubscriber = this.copilotEngine.process({ prompt, messages: lastConversation }).subscribe({
-          next: (result) => {
-            result = result ?? []
-            const conversations = [...this.conversations]
-            if (isString(result)) {
-              conversations[assistantIndex] = { ...conversations[assistantIndex] }
-              conversations[assistantIndex].content = result
-              // 为什么要 end 对话？
-              // conversations[assistantIndex].end = true
-            } else {
-              conversations.splice(this.conversations.length, 0, ...result)
-            }
+          next: () => {
+            // result = result ?? null
+            // const conversations = [...this.conversations]
+            // if (isString(result)) {
+            //   conversations[assistantIndex] = { ...conversations[assistantIndex] }
+            //   conversations[assistantIndex].content = result
+            //   // 为什么要 end 对话？
+            //   // conversations[assistantIndex].end = true
+            // } else {
+            //   conversations.splice(this.conversations.length, 0, ...result)
+            // }
 
-            this.conversations = conversations
+            // this.conversations = conversations
             this._cdr.detectChanges()
             this.scrollBottom()
           },
@@ -613,14 +643,14 @@ export class NgmCopilotChatComponent {
     if (event.shiftKey && event.key === 'Enter') {
       return
     }
-    if (event.key === 'Enter') {
+    if (!this.#suggestionsOpened() && event.key === 'Enter') {
       this.askCopilotStream(this.prompt())
     }
 
     // Tab 键补全提示语
     if (event.key === 'Tab') {
       event.preventDefault()
-      const activatedPrompt = this.activatedPrompt || this.filteredCommands()[0].examples[0]
+      const activatedPrompt = this.#activatedPrompt() || this.filteredCommands()[0].examples[0]
       if (activatedPrompt) {
         this.promptControl.setValue(activatedPrompt)
       }
@@ -645,7 +675,7 @@ export class NgmCopilotChatComponent {
   }
 
   onPromptActivated(event: MatAutocompleteActivatedEvent) {
-    this.activatedPrompt = event.option?.value
+    this.#activatedPrompt.set(event.option?.value)
   }
 
   dropCopilot(event) {

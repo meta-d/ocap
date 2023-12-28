@@ -1,2 +1,2 @@
-export * from './copilot.service'
 export * from './engine.service'
+export * from './client-copilot.service'

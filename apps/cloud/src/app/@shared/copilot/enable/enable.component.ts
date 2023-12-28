@@ -6,7 +6,7 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { delay } from 'rxjs'
-import { CopilotService } from '../../../@core'
+import { CopilotAPIService } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 
 @UntilDestroy({ checkProperties: true })
@@ -22,7 +22,7 @@ import { MaterialModule } from '../../material.module'
   }
 })
 export class CopilotEnableComponent {
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(CopilotAPIService)
   private _cdr = inject(ChangeDetectorRef)
   
   @Output() navigated = new EventEmitter()

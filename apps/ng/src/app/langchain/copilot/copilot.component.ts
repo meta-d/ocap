@@ -16,7 +16,8 @@ export class CopilotComponent implements OnInit {
   copilot = new CopilotService({
     provider: 'openai',
     apiKey: '',
-    apiHost: ''
+    apiHost: '',
+    chatUrl: ''
   })
 
   output = signal<any>(null)

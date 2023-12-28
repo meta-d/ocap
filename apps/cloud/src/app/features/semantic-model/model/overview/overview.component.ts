@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core'
 import { DBTable } from '@metad/ocap-core'
-import { CopilotService } from '../../../../@core'
+import { CopilotAPIService } from '../../../../@core'
 import { firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ModelComponent } from '../model.component'
@@ -13,7 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router'
   styleUrls: ['overview.component.scss']
 })
 export class ModelOverviewComponent {
-  private readonly copilotService = inject(CopilotService)
+  private readonly copilotService = inject(CopilotAPIService)
   private readonly modelComponent = inject(ModelComponent)
   private readonly modelState = inject(SemanticModelService)
   private readonly _cdr = inject(ChangeDetectorRef)

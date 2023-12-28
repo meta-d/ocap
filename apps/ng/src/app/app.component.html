@@ -33,9 +33,14 @@
 
 <mat-sidenav-container class="example-sidenav-container"
     [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
-    <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'"
+    <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" opened
         [fixedInViewport]="mobileQuery.matches" fixedTopGap="56">
-        <ngm-copilot-chat class="h-full w-80"></ngm-copilot-chat>
+        <ngm-copilot-chat class="h-full w-80"
+            [user]="{
+                name: '元数信息',
+                imageUrl: '/assets/images/logo@3x.png'
+            }"
+        ></ngm-copilot-chat>
     </mat-sidenav>
 
     <mat-sidenav-content>

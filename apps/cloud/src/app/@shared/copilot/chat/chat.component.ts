@@ -32,7 +32,7 @@ import {
 } from 'ngx-popperjs'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription, tap } from 'rxjs'
-import { CopilotService, getErrorMessage, Store } from '../../../@core'
+import { CopilotAPIService, getErrorMessage, Store } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
 import { UserAvatarComponent } from '../../user'
@@ -193,7 +193,7 @@ export class CopilotChatComponent {
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
   private store = inject(Store)
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(CopilotAPIService)
 
   @Input() get systemPrompt(): string {
     return this.copilotEngine ? this.copilotEngine.systemPrompt : this._systemPrompt()
@@ -487,18 +487,18 @@ export class CopilotChatComponent {
 
       try {
         this.askSubscriber = this.copilotEngine.process({prompt, messages: lastConversation}).subscribe({
-          next: (result) => {
-            let conversations = [...this.conversations]
-            if (isString(result)) {
-              conversations[assistantIndex] = { ...conversations[assistantIndex] }
-              conversations[assistantIndex].content = result
-              // 为什么要 end 对话？
-              // conversations[assistantIndex].end = true
-            } else {
-              conversations.splice(this.conversations.length, 0, ...result)
-            }
+          next: () => {
+            // let conversations = [...this.conversations]
+            // if (isString(result)) {
+            //   conversations[assistantIndex] = { ...conversations[assistantIndex] }
+            //   conversations[assistantIndex].content = result
+            //   // 为什么要 end 对话？
+            //   // conversations[assistantIndex].end = true
+            // } else {
+            //   conversations.splice(this.conversations.length, 0, ...result)
+            // }
 
-            this.conversations = conversations
+            // this.conversations = conversations
             this._cdr.detectChanges()
             this.scrollBottom()
           },

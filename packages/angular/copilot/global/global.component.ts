@@ -6,7 +6,6 @@ import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
-import { NgmCopilotService } from '../services'
 import { CopilotGlobalService } from './global.service'
 
 @Component({
@@ -33,7 +32,6 @@ import { CopilotGlobalService } from './global.service'
 export class CopilotGlobalComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NgxPopperjsTriggers = NgxPopperjsTriggers
-  private copilotService = inject(NgmCopilotService)
   public copilotGlobalService = inject(CopilotGlobalService)
 
   @Input() displayDensity: DisplayDensity | string

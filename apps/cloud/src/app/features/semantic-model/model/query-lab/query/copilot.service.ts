@@ -7,6 +7,7 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotChatResponseChoice,
   CopilotEngine,
+  CopilotService,
   DefaultModel
 } from '@metad/copilot'
 import { omit } from '@metad/ocap-core'
@@ -16,7 +17,6 @@ import { nonBlank } from '@metad/core'
 import { Observable, distinctUntilChanged, filter, map, scan, startWith, tap } from 'rxjs'
 import { QueryLabService, QueryLabState } from '../query-lab.service'
 import { ModelQueryState } from '../../types'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 import { nanoid } from 'nanoid'
 
 
@@ -26,7 +26,7 @@ export class QueryCopilotEngineService
   implements OnDestroy, CopilotEngine
 {
   private readonly route = inject(ActivatedRoute)
-  private readonly copilotService = inject(NgmCopilotService)
+  private readonly copilotService = inject(CopilotService)
   private readonly translateService = inject(TranslateService)
 
   get name() {
@@ -120,7 +120,7 @@ export class QueryCopilotEngineService
     state.query.aiOptions = options
   })
 
-  process({prompt, messages}, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
+  process({prompt, messages}, options?: { action?: string }) {
     return this.copilotService
       .chatStream(
         [
@@ -222,6 +222,8 @@ export class QueryCopilotEngineService
       map(({choices}) => choices[0]?.message?.content)
     )
   }
+
+  clear() {}
 
   ngOnDestroy(): void {
     super.onDestroy()

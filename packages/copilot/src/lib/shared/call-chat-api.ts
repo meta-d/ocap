@@ -4,6 +4,7 @@ import {
   IdGenerator,
   JSONValue,
   Message,
+  OpenAIStream,
   ToolCall,
 } from 'ai';
 import { COMPLEX_HEADER, createChunkDecoder } from 'ai';
@@ -34,7 +35,7 @@ export async function callChatApi({
   onUpdate: (merged: Message[], data: JSONValue[] | undefined) => void;
   onFinish?: (message: Message) => void;
   generateId: IdGenerator;
-}) {
+}): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
   const response = await fetch(api, {
     method: 'POST',
     body: JSON.stringify({
@@ -71,7 +72,8 @@ export async function callChatApi({
     throw new Error('The response body is empty.');
   }
 
-  const reader = response.body.getReader();
+  // const reader = response.body.getReader();
+  const reader = OpenAIStream(response).getReader();
   const isComplexMode = response.headers.get(COMPLEX_HEADER) === 'true';
 
   if (isComplexMode) {
@@ -94,7 +96,7 @@ export async function callChatApi({
     // TODO-STREAMDATA: Remove this once Stream Data is not experimental
     let streamedResponse = '';
     const replyId = generateId();
-    let responseMessage: Message = {
+    const responseMessage: Message = {
       id: replyId,
       createdAt,
       content: '',

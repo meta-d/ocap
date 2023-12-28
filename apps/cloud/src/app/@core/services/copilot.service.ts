@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { omit } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { API_PREFIX } from '@metad/cloud/state'
 import { NgmCopilotService } from '@metad/core'
 import type { AxiosRequestConfig } from 'axios'
@@ -11,19 +10,19 @@ import { ICopilot } from '../types'
 import { Store } from './store.service'
 import OpenAI from 'openai'
 
-@UntilDestroy({ checkProperties: true })
+
 @Injectable({ providedIn: 'root' })
-export class CopilotService extends NgmCopilotService {
+export class CopilotAPIService extends NgmCopilotService {
   private httpClient = inject(HttpClient)
   private store = inject(Store)
 
-  private _copilot$ = new BehaviorSubject<ICopilot>(null)
-  public copilot$ = this._copilot$.asObservable()
+  // private _copilot$ = new BehaviorSubject<ICopilot>(null)
+  // public copilot$ = this._copilot$.asObservable()
   public notEnabled$ = this.copilot$.pipe(map((copilot) => !(copilot?.enabled && copilot?.apiKey)))
 
-  get enabled() {
-    return this.copilot?.enabled
-  }
+  // get enabled() {
+  //   return this.copilot?.enabled
+  // }
   get hasKey() {
     return !!this.copilot?.apiKey
   }
@@ -43,7 +42,7 @@ export class CopilotService extends NgmCopilotService {
       //
     })
   // React to copilot config change
-  private _copilotSub = this._copilot$
+  private _copilotSub = this.copilot$
     .pipe(
       filter((copilot) => !!copilot?.apiKey)
     )
@@ -56,13 +55,13 @@ export class CopilotService extends NgmCopilotService {
 
   async getOne(orgId?: string) {
     const result = await firstValueFrom(this.httpClient.get<{ items: ICopilot[] }>(API_PREFIX + '/copilot'))
-    this._copilot$.next(result.items[0])
-    return this._copilot$.value
+    this.copilot = result.items[0]
+    return this.copilot
   }
 
   async upsertOne(input: Partial<ICopilot>) {
     const copilot = await firstValueFrom(this.httpClient.post(API_PREFIX + '/copilot', input.id ? input : omit(input, 'id')))
-    this._copilot$.next(copilot)
+    this.copilot = copilot
   }
 
   async createCompletion(...params: any[]) {

@@ -86,7 +86,8 @@ export const ZhHans = {
       APIHost: 'API 主机',
       AskAICopilot: '向 AI 副驾驶询问问题',
       Prompt: '提示',
-      SendPrompt: '发送提问'
+      SendPrompt: '发送提问',
+      Placeholder: '询问副驾驶或输入 / 获取命令'
     },
     Entity: {
       SelectEntities: '选择数据集'

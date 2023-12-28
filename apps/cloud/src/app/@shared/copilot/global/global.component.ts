@@ -7,7 +7,7 @@ import { DataSourceService } from '@metad/cloud/state'
 import { uuid } from '@metad/story/core'
 import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { firstValueFrom } from 'rxjs'
-import { CopilotService } from '../../../@core'
+import { CopilotAPIService } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 import { CopilotChatComponent } from '../chat/chat.component'
 import { CopilotGlobalService } from './global.service'
@@ -37,7 +37,7 @@ import { CopilotGlobalService } from './global.service'
 export class CopilotGlobalComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NgxPopperjsTriggers = NgxPopperjsTriggers
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(CopilotAPIService)
   public copilotGlobalService = inject(CopilotGlobalService)
   private dataSourceService = inject(DataSourceService)
 

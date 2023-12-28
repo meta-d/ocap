@@ -1,14 +1,15 @@
 import { Observable } from 'rxjs'
-import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
 import { CopilotCommand } from './command'
 import { CopilotService } from './copilot'
+import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
+import { Message } from 'ai'
 
 /**
  * Copilot engine
  */
 export interface CopilotEngine {
   copilot?: CopilotService
-  
+
   /**
    * Copilot engine name
    */
@@ -26,7 +27,7 @@ export interface CopilotEngine {
    * @deprecated use commands instead
    */
   prompts?: string[]
-  
+
   /**
    * Conversations
    */
@@ -39,12 +40,12 @@ export interface CopilotEngine {
   process(
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
-  ): Observable<CopilotChatMessage[] | string>
+  ): Observable<CopilotChatMessage | string | void>
   preprocess?: (prompt: string, options?: any) => void
   postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
 
   /**
-   * Drop copilot data
+   * How to process the event when user drag drop a data
    *
    * @param event
    */
@@ -57,8 +58,13 @@ export interface CopilotEngine {
 
   /**
    * Get all commands in this copilot engine
-   * 
+   *
    * @returns CopilotCommand[]
    */
   commands?: () => CopilotCommand[]
+
+  /**
+   * Clear conversations
+   */
+  clear(): void
 }

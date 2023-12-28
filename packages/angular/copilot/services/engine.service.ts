@@ -6,6 +6,7 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotEngine,
+  CopilotService,
   DefaultModel,
   SystemCommandClear,
   getCommandPrompt,
@@ -16,19 +17,18 @@ import { pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { ChatCompletionCreateParams } from 'openai/resources/chat'
 import { Observable, from, map, of, throwError } from 'rxjs'
-import { NgmCopilotService } from './copilot.service'
 
 let uniqueId = 0
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
   readonly #logger = inject(NGXLogger)
+  readonly copilot = inject(CopilotService)
 
   private api = signal('/api/chat')
   private chatId = `chat-${uniqueId++}`
   private key = computed(() => `${this.api()}|${this.chatId}`)
-
-  readonly copilot = inject(NgmCopilotService)
+  
   aiOptions: AIOptions = {
     model: DefaultModel
   } as AIOptions
@@ -72,7 +72,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
-    console.log(`setEntryPoint: ${id}`, entryPoint)
     this.#entryPoints.update((state) => ({
       ...state,
       [id]: entryPoint
@@ -80,7 +79,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   removeEntryPoint(id: string) {
-    console.log(`removeEntryPoint: ${id}`)
     this.#entryPoints.update((prevPoints) => {
       const newPoints = { ...prevPoints }
       delete newPoints[id]
@@ -111,19 +109,23 @@ export class NgmCopilotEngineService implements CopilotEngine {
   process(
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
-  ): Observable<string | CopilotChatMessage[]> {
+  ): Observable<string | Message | void> {
     this.#logger.debug(`process ask: ${data.prompt}`)
 
     const { command, prompt } = getCommandPrompt(data.prompt)
     if (command) {
       if (command === SystemCommandClear) {
         this.conversations = []
-        return of([])
+        return of(null)
       } else if (!this.getCommand(command)) {
         return throwError(() => new Error(`Command '${command}' not found`))
       }
 
       const _command = this.getCommand(command)
+
+      if (_command.implementation) {
+        return from(_command.implementation())
+      }
 
       const messages: CopilotChatMessage[] = [...(data.messages ?? [])] //@todo 是否应该添加历史记录，什么情况下带上？
       if (_command.systemPrompt) {
@@ -155,7 +157,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
             }
           }
         )
-      ).pipe(map((chatRequest) => chatRequest?.messages as any[]))
+      ).pipe(map(() => ''))
     }
 
     return from(
@@ -177,7 +179,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           }
         }
       )
-    ).pipe(map((chatRequest) => chatRequest?.messages as any[]))
+    ).pipe(map(() => ''))
   }
 
   // useChat
@@ -210,23 +212,37 @@ export class NgmCopilotEngineService implements CopilotEngine {
       await processChatStream({
         getStreamedResponse: async () => {
           // const existingData = this.streamData() ?? []
-
-          return await this.copilot.chat(
-            {
-              body: {
-                // functions: this.getChatCompletionFunctionDescriptions(),
-                ...pick(this.aiOptions, 'model', 'temperature'),
-                ...(options?.body ?? {})
+          try {
+            return await this.copilot.chat(
+              {
+                body: {
+                  // functions: this.getChatCompletionFunctionDescriptions(),
+                  ...pick(this.aiOptions, 'model', 'temperature'),
+                  ...(options?.body ?? {})
+                },
+                onFinish: (message) => {
+                  console.log(`onFinish`, message)
+                  this.conversations$.update((state) => [...state, message] as any[])
+                }
               },
-              onFinish: (message) => {
-                console.log(`onFinish`, message)
-                this.conversations$.update((state) => [...state, message] as any[])
-              }
-            },
-            chatRequest,
-            { options, data },
-            abortController
-          )
+              chatRequest,
+              { options, data },
+              abortController
+            )
+          } catch(err: any) {
+            this.conversations$.update((state) => {
+              return [
+                ...state,
+                {
+                  id: nanoid(),
+                  role: CopilotChatMessageRoleEnum.Assistant,
+                  content: '',
+                  error: err.message,
+                }
+              ]
+            })
+            throw err
+          }
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),
         updateChatRequest: (newChatRequest) => {
@@ -279,6 +295,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   generateId() {
     return nanoid()
+  }
+
+  clear() {
+    this.conversations$.set([])
   }
 }
 

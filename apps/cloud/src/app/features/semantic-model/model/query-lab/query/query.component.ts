@@ -20,7 +20,7 @@ import { EntityType, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { calcEntityTypePrompt, convertQueryResultColumns } from '@metad/core'
-import { CopilotService, Store, ToastrService } from 'apps/cloud/src/app/@core'
+import { CopilotAPIService, Store, ToastrService } from 'apps/cloud/src/app/@core'
 import { CopilotChatComponent, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isEqual, isPlainObject } from 'lodash-es'
 import { NgxPopperjsContentComponent, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -47,7 +47,7 @@ export class QueryComponent extends TranslationBaseComponent implements OnDestro
   NgxPopperjsPlacements = NgxPopperjsPlacements
   EntityCapacity = EntityCapacity
 
-  private readonly copilotService = inject(CopilotService)
+  private readonly copilotService = inject(CopilotAPIService)
   private readonly copilotEngine = inject(QueryCopilotEngineService)
   private readonly modelComponent = inject(ModelComponent)
   public readonly modelService = inject(SemanticModelService)

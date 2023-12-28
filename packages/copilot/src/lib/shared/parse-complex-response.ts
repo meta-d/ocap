@@ -1,5 +1,5 @@
 import { readDataStream } from './read-data-stream';
-import type { FunctionCall, JSONValue, Message, ToolCall } from 'ai';
+import type { ChatRequest, FunctionCall, JSONValue, Message, ToolCall } from 'ai';
 import { nanoid } from 'ai';
 
 type PrefixMap = {
@@ -110,6 +110,6 @@ export async function parseComplexResponse({
       prefixMap.function_call,
       prefixMap.tool_calls,
     ].filter(Boolean) as Message[],
-    data: prefixMap.data,
-  };
+    data: prefixMap.data
+  }
 }

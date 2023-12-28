@@ -2,10 +2,9 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { NxTableModule } from '@metad/components/table'
-import { ICopilot } from '@metad/copilot'
+import { CopilotService, ICopilot } from '@metad/copilot'
 import { NgmFormlyModule } from '@metad/formly'
 import { PACMaterialThemeModule } from '@metad/material-theme'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -18,7 +17,7 @@ import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
-import { CopilotService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
+import { CopilotAPIService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import {
   CopilotChatComponent,
@@ -119,15 +118,19 @@ import { PACCopilotService } from '../@core/services/copilot2.service'
       useClass: StoryFeedService
     },
     {
-      // Provide CopilotConfig factory to NgmCopilotService
-      provide: NgmCopilotService.CopilotConfigFactoryToken,
-      useFactory: (copilotService: CopilotService) => (): Promise<ICopilot> => {
-        return copilotService.getOne()
+      // Provide CopilotConfig factory to PACCopilotService
+      provide: PACCopilotService.CopilotConfigFactoryToken,
+      useFactory: (copilotService: CopilotAPIService) => async (): Promise<ICopilot> => {
+        const copilot = await copilotService.getOne()
+        return {
+          ...copilot,
+          chatUrl: '/api/ai/chat'
+        }
       },
-      deps: [CopilotService]
+      deps: [CopilotAPIService]
     },
     {
-      provide: NgmCopilotService,
+      provide: CopilotService,
       useClass: PACCopilotService
     }
   ]

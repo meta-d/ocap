@@ -87,7 +87,7 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
     { initialValue: null }
   )
 
-  process({ prompt: _prompt }, options?: { action?: string }): Observable<string | CopilotChatMessage[]> {
+  process({ prompt: _prompt }, options?: { action?: string }) {
     this.logger.debug(`process ask: ${_prompt}`)
 
     const { command, prompt } = getCommandPrompt(_prompt)
@@ -152,4 +152,6 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
   getTranslation(key: string, params) {
     return this.translateService.instant(key, params)
   }
+  
+  clear() {}
 }
