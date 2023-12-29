@@ -7,7 +7,7 @@ import { Meta, applicationConfig, moduleMetadata } from '@storybook/angular'
 import { MarkdownModule } from 'ngx-markdown'
 import { provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
-import { NgmCopilotService } from '../services'
+import { NgmClientCopilotService } from '../services'
 
 export default {
   title: 'Copilot/NotEnabled',
@@ -25,9 +25,9 @@ export default {
     moduleMetadata({
       imports: [CommonModule, NgmCopilotChatComponent],
       providers: [
-        NgmCopilotService,
+        NgmClientCopilotService,
         {
-          provide: NgmCopilotService.CopilotConfigFactoryToken,
+          provide: NgmClientCopilotService.CopilotConfigFactoryToken,
           useValue: () =>
             Promise.resolve({
               enabled: false,

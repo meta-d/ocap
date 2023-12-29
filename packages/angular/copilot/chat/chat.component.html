@@ -133,11 +133,11 @@
     
 </div>
 
-<div class="relative m-3 border border-gray-200 rounded-lg shadow-sm bg-white"
+<div class="relative m-3 border rounded-lg shadow-sm border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black"
     [class.pac-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center">
+    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center bg-white dark:bg-black">
         <button mat-stroked-button displayDensity="cosy" class="rounded-full"
             (click)="$event.stopPropagation();stopGenerating()">
             <div class="copilot-message-stop flex items-center">

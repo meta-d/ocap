@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, UseChatOptions, nanoid } from 'ai'
-import { NgmCopilotService } from '../services'
+import { NgmClientCopilotService } from '../services'
 
 @Injectable()
-export class NgmSBCopilotService extends NgmCopilotService {
+export class NgmSBCopilotService extends NgmClientCopilotService {
   override async chat(
     {
       sendExtraMessageFields,

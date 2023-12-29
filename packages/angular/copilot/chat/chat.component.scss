@@ -1,6 +1,5 @@
 :host {
-  --ngm-copilot-bg-color: theme('colors.white');
-  background-color: var(--ngm-copilot-bg-color);
+  background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
   @apply flex flex-col relative text-sm text-neutral-500 dark:text-neutral-300;
 }
 
@@ -31,7 +30,7 @@
 }
 
 .ngm-copilot__message-remove.mat-mdc-icon-button {
-  background-color: var(--ngm-copilot-bg-color);
+  background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
   @apply absolute z-[101] text-slate-500 hover:text-red-500 hover:bg-slate-50;
 }
 .pac-colpilot__clear-messages {
