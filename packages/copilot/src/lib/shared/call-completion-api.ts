@@ -122,21 +122,19 @@ export async function callCompletionApi({
     }
 
     setAbortController(null);
-    return result;
   } catch (err) {
     // Ignore abort errors as they are expected.
     if ((err as any).name === 'AbortError') {
       setAbortController(null);
-      return null;
-    }
-
-    if (err instanceof Error) {
-      if (onError) {
-        onError(err);
+    } else {
+      if (err instanceof Error) {
+        if (onError) {
+          onError(err);
+        }
       }
+  
+      setError(err as Error);
     }
-
-    setError(err as Error);
   } finally {
     setLoading(false);
   }

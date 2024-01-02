@@ -22,13 +22,13 @@ let uniqueId = 0
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
-  readonly #logger = inject(NGXLogger)
+  readonly #logger? = inject(NGXLogger, { optional: true })
   readonly copilot = inject(CopilotService)
 
   private api = signal('/api/chat')
   private chatId = `chat-${uniqueId++}`
   private key = computed(() => `${this.api()}|${this.chatId}`)
-  
+
   aiOptions: AIOptions = {
     model: DefaultModel
   } as AIOptions
@@ -110,7 +110,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
   ): Observable<string | Message | void> {
-    this.#logger.debug(`process ask: ${data.prompt}`)
+    this.#logger?.debug(`process ask: ${data.prompt}`)
 
     const { command, prompt } = getCommandPrompt(data.prompt)
     if (command) {
@@ -229,7 +229,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
               { options, data },
               abortController
             )
-          } catch(err: any) {
+          } catch (err: any) {
             this.conversations$.update((state) => {
               return [
                 ...state,
@@ -237,7 +237,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
                   id: nanoid(),
                   role: CopilotChatMessageRoleEnum.Assistant,
                   content: '',
-                  error: err.message,
+                  error: err.message
                 }
               ]
             })
@@ -247,7 +247,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         experimental_onFunctionCall: this.getFunctionCallHandler(),
         updateChatRequest: (newChatRequest) => {
           chatRequest = newChatRequest
-          this.#logger.debug(`The new chat request after FunctionCall is`, newChatRequest)
+          this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
 
           // Update or append message into conversation
           this.conversations$.update((state) => {

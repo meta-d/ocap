@@ -1,6 +1,6 @@
 :host {
   background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
-  @apply flex flex-col relative text-sm text-neutral-500 dark:text-neutral-300;
+  @apply flex flex-col relative text-sm ;
 }
 
 .copilot-code-container {
@@ -46,11 +46,15 @@
 }
 
 .ngm-copilot__user-message {
-  @apply bg-bluegray-100/50 text-black;
+  @apply bg-bluegray-100/50 dark:bg-gray-700;
 }
 
-.pac-colpilot__active {
+.ngm-colpilot__active {
   @apply shadow-lg;
+}
+
+.ngm-copilot-chat__message-content {
+  @apply rounded-lg max-w-full py-2 px-4 overflow-auto bg-gray-100 dark:bg-gray-800;
 }
 
 :host::ng-deep {

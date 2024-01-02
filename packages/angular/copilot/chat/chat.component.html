@@ -1,4 +1,4 @@
-<div class="text-base font-semibold text-bluegray-600 p-2">
+<div class="text-base font-semibold p-2">
     <span>
         {{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}
     </span>
@@ -17,7 +17,7 @@
                         <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
                     </div>
                     <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
-                        <div *ngIf="conversation.content" class="bg-gray-100 rounded-lg max-w-full py-2 px-4 overflow-auto">
+                        <div *ngIf="conversation.content" class="ngm-copilot-chat__message-content">
                             <markdown clipboard class="whitespace-pre-line"
                                 [clipboardButtonTemplate]="buttonTemplate"
                                 lineNumbers
@@ -26,7 +26,7 @@
                             ></markdown>
                         </div>
         
-                        <div *ngIf="conversation.error" class="bg-gray-100 rounded-lg p-2 text-red-400">
+                        <div *ngIf="conversation.error" class="ngm-copilot-chat__message-content text-red-400">
                             <span class="font-notoColorEmoji">🙈</span>
                             {{ conversation.error }}
                         </div>
@@ -55,7 +55,7 @@
                             [pageSizeOptions]="[10, 20, 50, 100]"
                         ></ngm-table>
                     } @else {
-                        <div class="ngm-copilot__user-message rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
+                        <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
                             <div #msgContent class="whitespace-pre-wrap w-full focus-visible:outline-none focus-visible:bg-white" [attr.contenteditable]="true"
                                 (focus)="onMessageFocus()"
                             >{{ conversation.content }}</div>
@@ -134,7 +134,7 @@
 </div>
 
 <div class="relative m-3 border rounded-lg shadow-sm border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black"
-    [class.pac-colpilot__active]="isFoucs(userInput)"
+    [class.ngm-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
     <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center bg-white dark:bg-black">

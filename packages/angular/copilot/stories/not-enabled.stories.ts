@@ -5,9 +5,9 @@ import { provideAnimations } from '@angular/platform-browser/animations'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, applicationConfig, moduleMetadata } from '@storybook/angular'
 import { MarkdownModule } from 'ngx-markdown'
-import { provideTranslate, zhHansLanguage } from '../../mock/'
+import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
-import { NgmClientCopilotService } from '../services'
+import { provideClientCopilot } from '../services'
 
 export default {
   title: 'Copilot/NotEnabled',
@@ -19,22 +19,16 @@ export default {
         provideHttpClient(),
         provideTranslate(zhHansLanguage),
         importProvidersFrom(OcapCoreModule),
-        importProvidersFrom(MarkdownModule.forRoot())
+        importProvidersFrom(MarkdownModule.forRoot()),
+        provideClientCopilot(() => Promise.resolve({
+          chatUrl: ''
+        })),
+        provideLogger()
       ]
     }),
     moduleMetadata({
       imports: [CommonModule, NgmCopilotChatComponent],
-      providers: [
-        NgmClientCopilotService,
-        {
-          provide: NgmClientCopilotService.CopilotConfigFactoryToken,
-          useValue: () =>
-            Promise.resolve({
-              enabled: false,
-              apiKey: ''
-            })
-        }
-      ]
+      providers: []
     })
   ]
 } as Meta<NgmCopilotChatComponent>

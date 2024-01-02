@@ -5,13 +5,22 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/copilot",
         "main": "packages/copilot/src/index.ts",
         "tsConfig": "packages/copilot/tsconfig.lib.json",
-        "assets": ["packages/copilot/*.md"]
+        "project": "packages/copilot/package.json",
+        "assets": [
+          {
+            "glob": "*.md",
+            "input": "packages/copilot/",
+            "output": "."
+          }
+        ],
+        "compiler": "swc",
+        "format": ["cjs", "esm"]
       }
     },
     "lint": {

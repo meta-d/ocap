@@ -10,7 +10,7 @@ import { provideMarkdown } from 'ngx-markdown'
 import { Observable, of } from 'rxjs'
 import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
-import { NgmCopilotEngineService } from '../services'
+import { NgmClientCopilotService, NgmCopilotEngineService } from '../services'
 import { injectCopilotCommand } from '../hooks/'
 import { NgmSBCopilotService } from './copilot.service'
 
@@ -80,6 +80,15 @@ export default {
           provide: NgmCopilotEngineService,
           useClass: StorybookCopilotEngine2
         },
+        {
+          provide: NgmClientCopilotService.CopilotConfigFactoryToken,
+          useFactory: () => () => {
+            return Promise.resolve({
+              enabled: true,
+              apiKey: 'st-xxxxxx'
+            })
+          }
+        }
       ]
     })
   ]
