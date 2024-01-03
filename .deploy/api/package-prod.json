@@ -1,6 +1,6 @@
 {
   "name": "metad-server",
-  "version": "1.6.1",
+  "version": "1.18.0",
   "license": "MIT",
   "scripts": {
     "start": "nx serve",

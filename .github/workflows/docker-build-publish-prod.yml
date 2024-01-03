@@ -16,7 +16,7 @@ jobs:
   ocap-api:
 
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'push' && !contains(github.ref, 'beta')
     steps:
     - uses: actions/checkout@v3
     - name: Build
@@ -79,7 +79,7 @@ jobs:
   ocap-webapp:
 
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'push' && !contains(github.ref, 'beta')
     steps:
     - uses: actions/checkout@v3
     - name: Build
