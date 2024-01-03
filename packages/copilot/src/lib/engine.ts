@@ -67,14 +67,14 @@ export interface CopilotEngine {
    * 
    * @param message 
    */
-  upsertMessage(message: CopilotChatMessage): void;
+  upsertMessage?(message: CopilotChatMessage): void;
 
   /**
    * Delete message from conversation
    * 
    * @param message 
    */
-  deleteMessage(message: CopilotChatMessage): void;
+  deleteMessage?(message: CopilotChatMessage): void;
 
   /**
    * Clear conversations
@@ -86,5 +86,5 @@ export interface CopilotEngine {
    * 
    * @param fn 
    */
-  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
+  updateConversations?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
 }

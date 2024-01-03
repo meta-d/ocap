@@ -93,7 +93,6 @@ export class StoryCopilotEngineService extends NgmCopilotEngineService {
     const { command, prompt } = getCommandPrompt(_prompt)
     if (command) {
       if (command === SystemCommandClear) {
-        this.conversations = []
         return of([])
       } else if (!getCommand(StoryCopilotCommandArea, command)) {
         return throwError(() => new Error(`Command '${command}' not found`))

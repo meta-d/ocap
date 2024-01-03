@@ -1,5 +1,13 @@
+import { nanoid } from 'ai'
 import { BehaviorSubject, Observable, filter, map } from 'rxjs'
-import { CopilotChatConversation, CopilotChatMessage, nonNullable } from './types/types'
+import {
+  CopilotChatConversation,
+  CopilotChatMessage,
+  CopilotChatMessageRoleEnum,
+  CopilotDefaultOptions,
+  getFunctionCall,
+  nonNullable
+} from './types/types'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -66,86 +74,76 @@ export const SystemCommandClear = 'clear'
 export const SystemCommandFree = 'free'
 export const SystemCommands = [`/${SystemCommandClear}`]
 
-// export function logResult<T extends CopilotChatConversation = CopilotChatConversation>(copilot: T): void {
-//   const { logger, prompt } = copilot
-//   logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
-// }
+export function logResult<T extends CopilotChatConversation = CopilotChatConversation>(copilot: T): void {
+  const { logger, prompt } = copilot
+  logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
+}
 
-// export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCommand[]) {
-//   const { copilotService, prompt } = copilot
-//   const systemPrompt = `请将提示语分配相应的 command。Commands are ${JSON.stringify([
-//     ...commands.map((item) => ({
-//       name: item.name,
-//       description: item.description
-//     })),
-//     {
-//       name: SystemCommandFree,
-//       description: 'Free prompt'
-//     }
-//   ])}`
-//   return copilotService
-//     .chatCompletions(
-//       [
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.System,
-//           content: systemPrompt
-//         },
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: prompt
-//         }
-//       ],
-//       {
-//         ...CopilotDefaultOptions,
-//         ...copilot.options,
-//         functions: [
-//           {
-//             name: 'assign-command',
-//             description: 'Should always be used to properly format output',
-//             parameters: zodToJsonSchema(
-//               z.object({
-//                 command: z.string().describe('Name of command')
-//               })
-//             )
-//           }
-//         ],
-//         function_call: { name: 'assign-command' }
-//       }
-//     )
-//     .pipe(
-//       map(({ choices }) => {
-//         try {
-//           copilot.response = getFunctionCall(choices[0].message)
-//         } catch (err) {
-//           copilot.error = err as Error
-//         }
-//         return copilot
-//       })
-//     )
-// }
+export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCommand[]) {
+  const { copilotService, prompt } = copilot
+  const systemPrompt = `请将提示语分配相应的 command。Commands are ${JSON.stringify([
+    ...commands.map((item) => ({
+      name: item.name,
+      description: item.description
+    })),
+    {
+      name: SystemCommandFree,
+      description: 'Free prompt'
+    }
+  ])}`
+  return copilotService
+    .chatCompletions(
+      [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.System,
+          content: systemPrompt
+        },
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt
+        }
+      ],
+      {
+        ...CopilotDefaultOptions,
+        ...copilot.options,
+        functions: [],
+        function_call: { name: 'assign-command' }
+      }
+    )
+    .pipe(
+      map(({ choices }) => {
+        try {
+          copilot.response = getFunctionCall(choices[0].message)
+        } catch (err) {
+          copilot.error = err as Error
+        }
+        return copilot
+      })
+    )
+}
 
-// export function freeChat(copilot: CopilotChatConversation) {
-//   const { copilotService, prompt } = copilot
+export function freeChat(copilot: CopilotChatConversation) {
+  const { copilotService, prompt } = copilot
 
-//   return copilotService
-//     .chatCompletions(
-//       [
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: prompt
-//         }
-//       ],
-//       {
-//         ...CopilotDefaultOptions,
-//         ...copilot.options
-//       }
-//     )
-//     .pipe(
-//       map(({ choices }) => {
-//         return choices[0].message.content
-//       })
-//     )
-// }
+  return copilotService
+    .chatCompletions(
+      [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt
+        }
+      ],
+      {
+        ...CopilotDefaultOptions,
+        ...copilot.options
+      }
+    )
+    .pipe(
+      map(({ choices }) => {
+        return choices[0].message.content
+      })
+    )
+}

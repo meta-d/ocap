@@ -613,12 +613,9 @@ export class NgmCopilotChatComponent {
     this.popperjsContentComponent?.toggleVisibility(false)
   }
 
-  // async addMessage(message: CopilotChatMessage) {
-  //   this.conversations ??= []
-  //   this.conversations = [...this.conversations, message]
-  //   this.scrollBottom()
-  //   this._cdr.detectChanges()
-  // }
+  async addMessage(message: CopilotChatMessage) {
+    this.#copilotEngine.upsertMessage(message)
+  }
 
   deleteMessage(message: CopilotChatMessage) {
     this.#copilotEngine.deleteMessage(message)
