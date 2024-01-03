@@ -13,7 +13,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import * as path from 'path';
 import * as moment from 'moment';
-import * as sharp from 'sharp';
+// import * as sharp from 'sharp'; It's a bug in install sharp in docker image
 import * as fs from 'fs';
 import { FileStorageProviderEnum, IScreenshot, UploadedFile } from '@metad/contracts';
 import { Screenshot } from './screenshot.entity';
@@ -68,20 +68,21 @@ export class ScreenshotController extends CrudController<Screenshot> {
 			const inputFile = await tempFile('screenshot-thumb');
 			const outputFile = await tempFile('screenshot-thumb');
 			await fs.promises.writeFile(inputFile, fileContent);
-			await new Promise((resolve, reject) => {
-				sharp(inputFile)
-					.resize(250, 150)
-					.toFile(outputFile, (error: any, data: any) => {
-						if (error) {
-							reject(error);
-						} else {
-							resolve(data);
-						}
-					});
-			});
+			// await new Promise((resolve, reject) => {
+			// 	sharp(inputFile)
+			// 		.resize(250, 150)
+			// 		.toFile(outputFile, (error: any, data: any) => {
+			// 			if (error) {
+			// 				reject(error);
+			// 			} else {
+			// 				resolve(data);
+			// 			}
+			// 		});
+			// });
 			const thumbName = `thumb-${file.filename}`;
 			const thumbDir = path.dirname(file.key);
-			const data = await fs.promises.readFile(outputFile);
+			// const data = await fs.promises.readFile(outputFile);
+			const data = await fs.promises.readFile(inputFile);
 			await fs.promises.unlink(inputFile);
 			await fs.promises.unlink(outputFile);
 

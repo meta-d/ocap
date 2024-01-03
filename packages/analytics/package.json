@@ -1,6 +1,6 @@
 {
 	"name": "@metad/analytics",
-	"version": "0.0.1",
+	"version": "1.18.0",
 	"type": "commonjs",
 	"license": "MIT",
 	"scripts": {
@@ -28,7 +28,6 @@
 		"nestjs-i18n": "^8.1.6",
 		"redis": "^4.0.4",
 		"reflect-metadata": "^0.1.13",
-		"sharp": "^0.30.5",
 		"socket.io-redis": "6.1.1",
 		"typeorm": "^0.2.37",
 		"xml2js": "^0.4.23"
