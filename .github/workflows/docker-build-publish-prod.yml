@@ -5,6 +5,11 @@ on:
     branches: [ "main" ]
     tags:
       - '*'
+  workflow_run:
+    workflows: ["Build"]
+    types: [requested]
+    branches:
+      - 'main'
 
 jobs:
 
