@@ -21,6 +21,7 @@ export default {
         importProvidersFrom(OcapCoreModule),
         importProvidersFrom(MarkdownModule.forRoot()),
         provideClientCopilot(() => Promise.resolve({
+          enabled: true,
           chatUrl: ''
         })),
         provideLogger()
