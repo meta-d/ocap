@@ -1,4 +1,4 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Injectable, computed, inject, signal } from '@angular/core'
 import {
   AIOptions,
   AnnotatedFunction,
@@ -8,15 +8,15 @@ import {
   CopilotEngine,
   CopilotService,
   DefaultModel,
-  SystemCommandClear,
+  entryPointsToChatCompletionFunctions,
+  entryPointsToFunctionCallHandler,
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { ChatRequest, ChatRequestOptions, FunctionCallHandler, JSONValue, Message, nanoid } from 'ai'
+import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { ChatCompletionCreateParams } from 'openai/resources/chat'
-import { Observable, from, map, of, throwError } from 'rxjs'
+import { Observable, from, map, throwError } from 'rxjs'
 
 let uniqueId = 0
 
@@ -36,9 +36,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly conversations$ = signal<CopilotChatMessage[]>([])
   get conversations() {
     return this.conversations$()
-  }
-  set conversations(value: CopilotChatMessage[]) {
-    this.conversations$.set(value ?? [])
   }
 
   placeholder?: string
@@ -65,11 +62,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
   streamData = signal<JSONValue[] | undefined>(undefined)
   isLoading = signal(false)
 
-  constructor() {
-    effect(() => {
-      console.log(this.conversations$())
-    })
-  }
+  // constructor() {
+  //   effect(() => {
+  //     console.log(this.conversations$())
+  //   })
+  // }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     this.#entryPoints.update((state) => ({
@@ -109,77 +106,73 @@ export class NgmCopilotEngineService implements CopilotEngine {
   process(
     data: { prompt: string; messages?: CopilotChatMessage[] },
     options?: { action?: string }
-  ): Observable<string | Message | void> {
+  ): Observable<string | CopilotChatMessage | void> {
     this.#logger?.debug(`process ask: ${data.prompt}`)
 
+    // New messages
+    const newMessages: CopilotChatMessage[] = []
     const { command, prompt } = getCommandPrompt(data.prompt)
     if (command) {
-      if (command === SystemCommandClear) {
-        this.conversations = []
-        return of(null)
-      } else if (!this.getCommand(command)) {
+      const _command = this.getCommand(command)
+
+      if (!_command) {
         return throwError(() => new Error(`Command '${command}' not found`))
       }
 
-      const _command = this.getCommand(command)
-
-      if (_command.implementation) {
-        return from(_command.implementation())
-      }
-
-      const messages: CopilotChatMessage[] = [...(data.messages ?? [])] //@todo 是否应该添加历史记录，什么情况下带上？
       if (_command.systemPrompt) {
-        messages.push({
+        newMessages.push({
           id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: _command.systemPrompt()
         })
       }
+      newMessages.push({
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        content: prompt,
+        command
+      })
+
+      // Append new messages to conversation
+      this.conversations$.update((state) => [...state, ...newMessages])
+
+      // Exec command implementation
+      if (_command.implementation) {
+        return from(_command.implementation())
+      }
 
       return from(
-        this.triggerRequest(
-          [
-            ...messages,
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.User,
-              content: prompt
-            }
-          ],
-          {
-            options: {
-              body: {
-                ...this.aiOptions,
-                functions: _command.actions
-                  ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
-                  : this.getChatCompletionFunctionDescriptions()
-              }
+        this.triggerRequest([...((data.messages ?? []) as any[]), ...newMessages], {
+          options: {
+            body: {
+              ...this.aiOptions,
+              functions: _command.actions
+                ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
+                : this.getChatCompletionFunctionDescriptions()
             }
           }
-        )
+        })
       ).pipe(map(() => ''))
-    }
+    } else {
+      newMessages.push({
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        content: prompt
+      })
+      // Append new messages to conversation
+      this.conversations$.update((state) => [...state, ...newMessages])
 
-    return from(
-      this.triggerRequest(
-        [
-          ...((data.messages ?? []) as any[]),
-          {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.User,
-            content: prompt
-          }
-        ],
-        {
+      return from(
+        this.triggerRequest([...((data.messages ?? []) as any[]), ...newMessages], {
           options: {
             body: {
               ...this.aiOptions,
               functions: this.getChatCompletionFunctionDescriptions()
             }
           }
-        }
-      )
-    ).pipe(map(() => ''))
+        })
+      ).pipe(map(() => ''))
+    }
   }
 
   // useChat
@@ -297,89 +290,33 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return nanoid()
   }
 
+  upsertMessage(message: CopilotChatMessage) {
+    this.conversations$.update((conversations) => {
+      const index = conversations.findIndex((item) => item.id === message.id)
+      if (index > -1) {
+        conversations[index] = { ...message }
+      } else {
+        conversations.push(message)
+      }
+      return [...conversations]
+    })
+  }
+
+  deleteMessage(message: CopilotChatMessage) {
+    this.conversations$.update((conversations) => {
+      const index = conversations.findIndex((item) => item.id === message.id)
+      if (index) {
+        conversations.splice(index, 1)
+      }
+      return [...conversations]
+    })
+  }
+
   clear() {
     this.conversations$.set([])
   }
-}
 
-export const defaultCopilotContextCategories = ['global']
-
-function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<any[]>[]): FunctionCallHandler {
-  return async (chatMessages, functionCall) => {
-    let entrypointsByFunctionName: Record<string, AnnotatedFunction<any[]>> = {}
-    for (let entryPoint of entryPoints) {
-      entrypointsByFunctionName[entryPoint.name] = entryPoint
-    }
-
-    const entryPointFunction = entrypointsByFunctionName[functionCall.name || '']
-    if (entryPointFunction) {
-      let parsedFunctionCallArguments: Record<string, any>[] = []
-      if (functionCall.arguments) {
-        parsedFunctionCallArguments = JSON.parse(functionCall.arguments)
-      }
-
-      const paramsInCorrectOrder: any[] = []
-      for (let arg of entryPointFunction.argumentAnnotations) {
-        paramsInCorrectOrder.push(parsedFunctionCallArguments[arg.name as keyof typeof parsedFunctionCallArguments])
-      }
-
-      return await entryPointFunction.implementation(...paramsInCorrectOrder)
-
-      // commented out becasue for now we don't want to return anything
-      // const result = await entryPointFunction.implementation(
-      //   ...parsedFunctionCallArguments
-      // );
-      // const functionResponse: ChatRequest = {
-      //   messages: [
-      //     ...chatMessages,
-      //     {
-      //       id: nanoid(),
-      //       name: functionCall.name,
-      //       role: 'function' as const,
-      //       content: JSON.stringify(result),
-      //     },
-      //   ],
-      // };
-
-      // return functionResponse;
-    }
+  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
+    this.conversations$.update(fn)
   }
-}
-
-function entryPointsToChatCompletionFunctions(
-  entryPoints: AnnotatedFunction<any[]>[]
-): ChatCompletionCreateParams.Function[] {
-  return entryPoints.map(annotatedFunctionToChatCompletionFunction)
-}
-
-function annotatedFunctionToChatCompletionFunction(
-  annotatedFunction: AnnotatedFunction<any[]>
-): ChatCompletionCreateParams.Function {
-  // Create the parameters object based on the argumentAnnotations
-  let parameters: { [key: string]: any } = {}
-  for (let arg of annotatedFunction.argumentAnnotations) {
-    // isolate the args we should forward inline
-    let { name, required, ...forwardedArgs } = arg
-    parameters[arg.name] = forwardedArgs
-  }
-
-  let requiredParameterNames: string[] = []
-  for (let arg of annotatedFunction.argumentAnnotations) {
-    if (arg.required) {
-      requiredParameterNames.push(arg.name)
-    }
-  }
-
-  // Create the ChatCompletionFunctions object
-  let chatCompletionFunction: ChatCompletionCreateParams.Function = {
-    name: annotatedFunction.name,
-    description: annotatedFunction.description,
-    parameters: {
-      type: 'object',
-      properties: parameters,
-      required: requiredParameterNames
-    }
-  }
-
-  return chatCompletionFunction
 }

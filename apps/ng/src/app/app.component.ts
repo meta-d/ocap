@@ -1,5 +1,6 @@
 import { MediaMatcher } from '@angular/cdk/layout'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core'
+import { DOCUMENT } from '@angular/common'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
@@ -25,13 +26,21 @@ import { Observable } from 'rxjs'
 })
 export class AppComponent implements OnInit, OnDestroy {
   private wasmAgent = inject(WasmAgentService)
+  #document = inject(DOCUMENT)
 
   MemberSource = MemberSource
   DisplayBehaviour = DisplayBehaviour
   mobileQuery: MediaQueryList
   private _mobileQueryListener: () => void
 
-  dark: string
+  get isDark() {
+    return this.#dark()
+  }
+  set isDark(value) {
+    this.#dark.set(value)
+  }
+  #dark = signal(false)
+
   appearance: NgmAppearance = {
     appearance: 'outline',
     displayDensity: DisplayDensity.compact
@@ -139,6 +148,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.wasmAgent.selectError().subscribe((error) => {
       console.error(error)
       this.error += error + '\n'
+    })
+
+    effect(() => {
+      if (this.#dark()) {
+        // Add class to html node on document
+        this.#document.documentElement.classList.add('dark')
+      } else {
+        this.#document.documentElement.classList.remove('dark')
+      }
     })
   }
 

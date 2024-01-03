@@ -6,17 +6,17 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MatIconModule } from '@angular/material/icon'
 import { MatSidenavModule } from '@angular/material/sidenav'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { CopilotService } from '@metad/copilot'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { ControlsModule } from '@metad/ocap-angular/controls'
-import { NgmClientCopilotService, NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent, provideClientCopilot } from '@metad/ocap-angular/copilot'
 import {
   NgmMissingTranslationHandler,
   OCAP_AGENT_TOKEN,
@@ -44,13 +44,13 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { provideMarkdown } from 'ngx-markdown'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { Observable, of } from 'rxjs'
+import { environment } from '../environments/environment'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { ChartsComponent } from './charts/charts.component'
 import { FoodMartComponent } from './foodmart/foodmart.component'
 import { MockAgent } from './mock'
 import { NxWelcomeComponent } from './nx-welcome.component'
-import { environment } from '../environments/environment'
 
 registerTheme(DEFAULT_THEME.name, DEFAULT_THEME.echartsTheme)
 
@@ -77,6 +77,7 @@ export class CustomLoader implements TranslateLoader {
     MatTabsModule,
     MatTooltipModule,
     MatButtonToggleModule,
+    MatSlideToggleModule,
 
     TranslateModule.forRoot({
       defaultLanguage: 'en',
@@ -102,16 +103,7 @@ export class CustomLoader implements TranslateLoader {
     NgmCopilotChatComponent
   ],
   providers: [
-    {
-      provide: CopilotService,
-      useClass: NgmClientCopilotService
-    },
-    NgmCopilotEngineService,
-    {
-      provide: NgmClientCopilotService.CopilotConfigFactoryToken,
-      useValue: () =>
-        Promise.resolve(environment.copilot)
-    },
+    provideClientCopilot(() => Promise.resolve(environment.copilot)),
     importProvidersFrom(
       LoggerModule.forRoot({
         // serverLoggingUrl: '/api/logs',

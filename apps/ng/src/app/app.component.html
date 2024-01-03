@@ -11,11 +11,11 @@
     <button mat-button routerLink="./query" routerLinkActive="mat-accent">Query</button>
     <button mat-button routerLink="./explorer" routerLinkActive="mat-accent">Explorer</button>
     <button mat-button routerLink="./langchain" routerLinkActive="mat-accent">LangChain</button>
-    <button mat-button routerLink="./copilot" routerLinkActive="mat-accent">Copilot</button>
+    <button mat-button routerLink="./copilot" routerLinkActive="mat-primary">Copilot</button>
 
     <span style="flex: 1;"></span>
 
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
         @if(status()) {
             <div>
                 <span>{{ status().status }}</span>
@@ -26,6 +26,8 @@
         <button mat-icon-button [matTooltip]="error">
             <mat-icon>support_agent</mat-icon>
         </button>
+
+        <mat-slide-toggle [(ngModel)]="isDark">Dark</mat-slide-toggle>
 
         <button mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
     </div>

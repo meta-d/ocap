@@ -9,8 +9,9 @@
 </div>
 
 <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
-    @for (conversation of (enabled && hasKey ? conversations : _mockConversations); track $index) {
-        @if (conversation.role === CopilotChatMessageRoleEnum.Assistant) {
+    @for (conversation of (enabled && hasKey ? conversations : _mockConversations); track conversation.id) {
+        @switch (conversation.role) {
+            @case (CopilotChatMessageRoleEnum.Assistant) {
             <div class="pl-2 pr-4 flex">
                 <div class="flex-1 flex items-start overflow-auto">
                     <div class="flex flex-col items-center">
@@ -41,69 +42,75 @@
                     
                 </div>
             </div>
-        }
-
-        @if (conversation.role === CopilotChatMessageRoleEnum.User) {
-        <div class="pl-4 flex">
-            <div class="flex-1 flex items-start justify-end overflow-auto">
-                <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
-                    @if (conversation.data) {
-                        <ngm-table class="max-w-full rounded-lg border overflow-hidden bg-white"
-                            [columns]="conversation.data['columns']"
-                            [data]="conversation.data['content']"
-                            paging
-                            [pageSizeOptions]="[10, 20, 50, 100]"
-                        ></ngm-table>
-                    } @else {
-                        <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
-                            <div #msgContent class="whitespace-pre-wrap w-full focus-visible:outline-none focus-visible:bg-white" [attr.contenteditable]="true"
-                                (focus)="onMessageFocus()"
-                            >{{ conversation.content }}</div>
+            }
+            @case (CopilotChatMessageRoleEnum.User) {
+            <div class="pl-4 flex">
+                <div class="flex-1 flex items-start justify-end overflow-auto">
+                    <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
+                        @if (conversation.data) {
+                            <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+                                [columns]="conversation.data['columns']"
+                                [data]="conversation.data['content']"
+                                paging
+                                [pageSizeOptions]="[10, 20, 50, 100]"
+                            ></ngm-table>
+                        } @else {
+                            <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
+                                <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
+                                focus-visible:bg-white dark:focus-visible:bg-black"
+                                    [attr.contenteditable]="true"
+                                    (focus)="onMessageFocus()"
+                                >{{ conversation.content }}</div>
+                            </div>
+                            <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                                (click)="resubmitMessage(conversation, msgContent.textContent)">
+                                {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                            </button>
+                        }
+    
+                        <div class="flex items-center gap-1">
+                        @if (conversation.command) {
+                            <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{conversation.command}}</span>
+                        }
+                        @if (conversation.content) {
+                            <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
+                        }
                         </div>
-                        <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
-                            (click)="resubmitMessage(conversation, msgContent.textContent)">
-                            {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+    
+                        <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                            (click)="deleteMessage(conversation)">
+                            <mat-icon>close</mat-icon>
                         </button>
-                    }
-
-                    @if (conversation.content) {
-                        <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
-                    }
-
-                    <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
-                        (click)="deleteMessage(conversation)">
-                        <mat-icon>close</mat-icon>
-                    </button>
-                </div>
-                
-                <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
-            </div>
-        </div>
-        }
-
-        @if (conversation.role === CopilotChatMessageRoleEnum.Info) {
-        <div class="pl-4 flex">
-            <div class="flex-1 flex items-start justify-end overflow-auto">
-                <div class="rounded-lg py-2 px-4 text-bluegray-500 w-full overflow-auto flex flex-col items-end">
-                    {{ conversation.content }}
+                    </div>
+                    
+                    <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                 </div>
             </div>
-        </div>
+            }
+            @case (CopilotChatMessageRoleEnum.Info) {
+            <div class="pl-4 flex">
+                <div class="flex-1 flex items-start justify-end overflow-auto">
+                    <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
+                        {{ conversation.content }}
+                    </div>
+                </div>
+            </div>
+            }
         }
     }
 
     <div class="flex-1 flex flex-col justify-center items-center gap-1">
-        <ng-container *ngIf="!conversations?.length">
-            <div class="text-lg">
-                <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
-            </div>
-            <div class="text-sm font-light opacity-50">
-                <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
-            </div>
-            <div class="text-sm font-light opacity-50">
-                <span class="font-bold">CTRL + Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
-            </div>
-        </ng-container>
+    @if (!conversations?.length) {
+        <div class="text-lg">
+            <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+        </div>
+        <div class="text-sm font-light opacity-50">
+            <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
+        </div>
+        <div class="text-sm font-light opacity-50">
+            <span class="font-bold">Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
+        </div>
+    }
     </div>
     
     <!-- <ng-container *ngIf="prompts?.length">
@@ -133,20 +140,22 @@
     
 </div>
 
-<div class="relative m-3 border rounded-lg shadow-sm border-neutral-200 bg-white dark:border-neutral-800 dark:bg-black"
+<div class="relative m-3 border rounded-lg shadow-sm border-neutral-200 dark:border-neutral-800"
     [class.ngm-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    <div *ngIf="answering()" class="absolute inset-0 flex justify-center items-center bg-white dark:bg-black">
-        <button mat-stroked-button displayDensity="cosy" class="rounded-full"
-            (click)="$event.stopPropagation();stopGenerating()">
-            <div class="copilot-message-stop flex items-center">
-                <span>
-                    {{ 'Ngm.Copilot.StopGenerating' | translate: {Default: 'Stop generating'} }}
-                </span>
-            </div>
-        </button>
-    </div>
+    @if (answering()) {
+        <div class="ngm-copilot-chat__answering absolute inset-0 flex justify-center items-center">
+            <button mat-stroked-button displayDensity="cosy" class="rounded-full"
+                (click)="$event.stopPropagation();stopGenerating()">
+                <div class="copilot-message-stop flex items-center">
+                    <span>
+                        {{ 'Ngm.Copilot.StopGenerating' | translate: {Default: 'Stop generating'} }}
+                    </span>
+                </div>
+            </button>
+        </div>
+    }
 
     <div class="flex flex-col p-2" >
         <textarea #userInput matInput
@@ -169,20 +178,22 @@
             (opened)="suggestionsOpened$.next(true)"
             (closed)="suggestionsOpened$.next(false)"
         >
-        @for (command of filteredCommands();  track command.name) {
-            @for (example of command.examples; track example) {
-            <mat-option [value]="'/'+command.name+' '+example" [title]="command.description">
+        @for (command of filteredCommands();  track command.prompt) {
+            <mat-option [value]="'/'+command.name+' '+(command.example || '')" [title]="command.description">
                 <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300">
                     /{{command.name}}
                 </span>
-
-                <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
-                    [ngmHighlight]="prompt()"
-                    [content]="example"
-                    customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
-                >{{example}}</div>
+                
+                @if (command.example) {
+                    <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
+                        [ngmHighlight]="prompt()"
+                        [content]="command.example"
+                        customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
+                    >{{command.example}}</div>
+                } @else {
+                    <span class="ml-auto opacity-50">{{command.description}}</span>
+                }
             </mat-option>
-            }
         }
         </mat-autocomplete>
 

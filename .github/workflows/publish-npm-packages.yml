@@ -11,6 +11,10 @@ on:
       - 'main'
       - 'develop'
 
+env:
+  IS_RELEASE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  IS_BETA: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,23 +31,71 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: yarn
       - run: yarn build
-      - run: npm publish --access public --tag next
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
+        working-directory: ./dist/packages/copilot
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
         working-directory: ./dist/packages/store
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
         working-directory: ./dist/packages/core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
         working-directory: ./dist/packages/echarts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
         working-directory: ./dist/packages/angular
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public
+        if: ${{ env.IS_RELEASE }}
+        working-directory: ./dist/packages/xmla
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-beta:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
+        working-directory: ./dist/packages/copilot
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
+        working-directory: ./dist/packages/store
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
+        working-directory: ./dist/packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
+        working-directory: ./dist/packages/echarts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
+        working-directory: ./dist/packages/angular
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        if: ${{ env.IS_BETA }}
         working-directory: ./dist/packages/xmla
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

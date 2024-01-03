@@ -29,7 +29,6 @@ import { RouterModule } from '@angular/router'
 import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
 import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { DensityDirective, getErrorMessage } from '@metad/ocap-angular/core'
-import { isString, pick } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import {
@@ -46,6 +45,7 @@ import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
 import { nanoid } from 'ai'
 import { injectCopilotCommand } from '../hooks'
+import { pick } from 'lodash-es'
 
 
 @Component({
@@ -113,19 +113,22 @@ export class NgmCopilotChatComponent {
   }
   private readonly _systemPrompt = signal<string>(null)
 
-  @Input() get conversations(): CopilotChatMessage[] {
-    return this.copilotEngine ? this.copilotEngine.conversations : this._conversations()
+  // @Input() get conversations(): CopilotChatMessage[] {
+  //   return this.copilotEngine ? this.copilotEngine.conversations : this._conversations()
+  // }
+  // set conversations(value) {
+  //   if (value) {
+  //     if (this.copilotEngine) {
+  //       this.copilotEngine.conversations = value
+  //     } else {
+  //       this._conversations.set(value)
+  //     }
+  //   }
+  // }
+  readonly #conversations = signal<CopilotChatMessage[]>([])
+  get conversations(): CopilotChatMessage[] {
+    return this.copilotEngine ? this.copilotEngine.conversations : this.#conversations()
   }
-  set conversations(value) {
-    if (value) {
-      if (this.copilotEngine) {
-        this.copilotEngine.conversations = value
-      } else {
-        this._conversations.set(value)
-      }
-    }
-  }
-  private readonly _conversations = signal<CopilotChatMessage[]>([])
 
   @Input() user: IUser
 
@@ -278,10 +281,24 @@ export class NgmCopilotChatComponent {
 
   readonly commands = computed(() => {
     if (this.copilotEngine?.commands) {
-      return this.copilotEngine.commands().map((command) => ({
-        ...command,
-        prompt: `/${command.name} ${command.examples[0]}`
-      }))
+      const commands = []
+      this.copilotEngine.commands().forEach((command) => {
+        if (command.examples?.length) {
+          command.examples.forEach((example) => {
+            commands.push({
+              ...command,
+              prompt: `/${command.name} ${example}`,
+              example
+            })
+          })
+        } else {
+          commands.push({
+            ...command,
+            prompt: `/${command.name} ${command.description}`
+          })
+        }
+      })
+      return commands
     }
     return []
   })
@@ -393,15 +410,15 @@ export class NgmCopilotChatComponent {
     const lastConversation = this.lastConversation()
 
     // Append user question message
-    this.conversations = this.conversations ?? []
-    this.conversations = [
-      ...this.conversations,
-      {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt
-      }
-    ]
+    // this.conversations = this.conversations ?? []
+    // this.conversations = [
+    //   ...this.conversations,
+    //   {
+    //     id: nanoid(),
+    //     role: CopilotChatMessageRoleEnum.User,
+    //     content: prompt
+    //   }
+    // ]
 
     // Assistant message
     const assistant: CopilotChatMessage = {
@@ -428,23 +445,21 @@ export class NgmCopilotChatComponent {
       }
 
       const assistantIndex = this.conversations.length
-      this.conversations = [...this.conversations, assistant]
+      // this.conversations = [...this.conversations, assistant]
 
       try {
         this.askSubscriber = this.copilotEngine.process({ prompt, messages: lastConversation }).subscribe({
-          next: () => {
-            // result = result ?? null
-            // const conversations = [...this.conversations]
-            // if (isString(result)) {
-            //   conversations[assistantIndex] = { ...conversations[assistantIndex] }
-            //   conversations[assistantIndex].content = result
-            //   // 为什么要 end 对话？
-            //   // conversations[assistantIndex].end = true
-            // } else {
-            //   conversations.splice(this.conversations.length, 0, ...result)
-            // }
+          next: (message: CopilotChatMessage | string | void) => {
+            if (typeof message === 'string') {
+              this.#copilotEngine.upsertMessage({
+                id: nanoid(),
+                role: 'info',
+                content: message
+              })
+            } else if (message) {
+              this.#copilotEngine.upsertMessage(message)
+            }
 
-            // this.conversations = conversations
             this._cdr.detectChanges()
             this.scrollBottom()
           },
@@ -455,7 +470,7 @@ export class NgmCopilotChatComponent {
             conversations[assistantIndex].content = null
             conversations[assistantIndex].error = getErrorMessage(err)
             this.answering.set(false)
-            this.conversations = conversations
+            // this.conversations = conversations
             this.conversationsChange.emit(this.conversations)
             this._cdr.detectChanges()
           },
@@ -463,26 +478,26 @@ export class NgmCopilotChatComponent {
             this.answering.set(false)
             // Not cleared
             if (this.conversations.length) {
-              const conversations = [...this.conversations]
-              if (!conversations[assistantIndex].content) {
-                conversations.splice(assistantIndex, 1)
-              }
-              if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
-                conversations.splice(conversations.length - 1, 1)
-              }
-              this.conversations = conversations
+              // const conversations = [...this.conversations]
+              // if (!conversations[assistantIndex].content) {
+              //   conversations.splice(assistantIndex, 1)
+              // }
+              // if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
+              //   conversations.splice(conversations.length - 1, 1)
+              // }
+              // this.conversations = conversations
               this.conversationsChange.emit(this.conversations)
               this._cdr.detectChanges()
             }
           }
         })
       } catch (err) {
-        const conversations = [...this.conversations]
-        conversations[assistantIndex] = { ...conversations[assistantIndex] }
-        conversations[assistantIndex].content = null
-        conversations[assistantIndex].error = getErrorMessage(err)
+        // const conversations = [...this.conversations]
+        // conversations[assistantIndex] = { ...conversations[assistantIndex] }
+        // conversations[assistantIndex].content = null
+        // conversations[assistantIndex].error = getErrorMessage(err)
         this.answering.set(false)
-        this.conversations = conversations
+        // this.conversations = conversations
         this.conversationsChange.emit(this.conversations)
         this._cdr.detectChanges()
       }
@@ -520,7 +535,7 @@ export class NgmCopilotChatComponent {
         .reverse()
     )
 
-    this.conversations = [...this.conversations, assistant]
+    // this.conversations = [...this.conversations, assistant]
 
     this.scrollBottom()
 
@@ -590,7 +605,7 @@ export class NgmCopilotChatComponent {
   }
 
   async clear() {
-    this.conversations = []
+    this.#copilotEngine.clear()
     this.conversationsChange.emit(this.conversations)
   }
 
@@ -598,37 +613,33 @@ export class NgmCopilotChatComponent {
     this.popperjsContentComponent?.toggleVisibility(false)
   }
 
-  async addMessage(message: CopilotChatMessage) {
-    this.conversations ??= []
-    this.conversations = [...this.conversations, message]
-    this.scrollBottom()
-    this._cdr.detectChanges()
-  }
+  // async addMessage(message: CopilotChatMessage) {
+  //   this.conversations ??= []
+  //   this.conversations = [...this.conversations, message]
+  //   this.scrollBottom()
+  //   this._cdr.detectChanges()
+  // }
 
   deleteMessage(message: CopilotChatMessage) {
-    const index = this.conversations.indexOf(message)
-    if (index > -1) {
-      const conversations = [...this.conversations]
-      conversations.splice(index, 1)
-      this.conversations = conversations
-      this.conversationsChange.emit(this.conversations)
-    }
+    this.#copilotEngine.deleteMessage(message)
+    this.conversationsChange.emit(this.conversations)
   }
 
   async resubmitMessage(message: CopilotChatMessage, content: string) {
-    const index = this.conversations.indexOf(message)
-    if (index > -1) {
-      const conversations = [...this.conversations]
-      // 删除答案
-      if (conversations[index + 1]?.role === CopilotChatMessageRoleEnum.Assistant) {
-        conversations.splice(index + 1, 1)
+    this.#copilotEngine.updateConversations((conversations) => {
+      const index = conversations.indexOf(message)
+      if (index > -1) {
+        // 删除答案
+        if (conversations[index + 1]?.role === CopilotChatMessageRoleEnum.Assistant) {
+          conversations.splice(index + 1, 1)
+        }
+        // 删除提问
+        conversations.splice(index, 1)
+        return [...conversations]
       }
-      // 删除提问
-      conversations.splice(index, 1)
-
-      this.conversations = conversations
-      await this.askCopilotStream(content)
-    }
+      return conversations
+    })
+    await this.askCopilotStream(content)
   }
 
   onMessageFocus() {

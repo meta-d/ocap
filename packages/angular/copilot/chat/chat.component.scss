@@ -45,16 +45,20 @@
   @apply outline-none bg-transparent;
 }
 
-.ngm-copilot__user-message {
-  @apply bg-bluegray-100/50 dark:bg-gray-700;
-}
-
 .ngm-colpilot__active {
-  @apply shadow-lg;
+  @apply shadow-lg dark:shadow-neutral-800;
 }
 
 .ngm-copilot-chat__message-content {
-  @apply rounded-lg max-w-full py-2 px-4 overflow-auto bg-gray-100 dark:bg-gray-800;
+  @apply rounded-lg max-w-full py-2 px-4 overflow-auto bg-neutral-100/50 dark:bg-neutral-100/10;
+}
+
+.ngm-copilot__user-message {
+  @apply bg-gray-100/50 dark:bg-neutral-700;
+}
+
+.ngm-copilot-chat__answering {
+  background-color: var(--ngm-copilot-bg-color);
 }
 
 :host::ng-deep {

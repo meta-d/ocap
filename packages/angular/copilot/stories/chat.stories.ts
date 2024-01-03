@@ -1,23 +1,31 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CommonModule } from '@angular/common'
 import { provideHttpClient } from '@angular/common/http'
-import { ChangeDetectionStrategy, Component, Injectable, importProvidersFrom, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Injectable, importProvidersFrom } from '@angular/core'
 import { provideAnimations } from '@angular/platform-browser/animations'
-import { AIOptions, CopilotChatMessage, CopilotChatResponseChoice, CopilotEngine, CopilotService } from '@metad/copilot'
+import {
+  AIOptions,
+  AnnotatedFunction,
+  CopilotChatMessage,
+  CopilotChatMessageRoleEnum,
+  CopilotChatResponseChoice,
+  CopilotCommand,
+  CopilotEngine,
+  CopilotService
+} from '@metad/copilot'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
+import { nanoid } from 'nanoid'
 import { provideMarkdown } from 'ngx-markdown'
 import { Observable, of } from 'rxjs'
 import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
-import { NgmClientCopilotService, NgmCopilotEngineService } from '../services'
 import { injectCopilotCommand } from '../hooks/'
+import { NgmClientCopilotService, NgmCopilotEngineService } from '../services'
 import { NgmSBCopilotService } from './copilot.service'
 
 @Injectable()
-class StorybookCopilotEngine2 extends NgmCopilotEngineService {
-
-}
+class StorybookCopilotEngine extends NgmCopilotEngineService {}
 
 @Component({
   standalone: true,
@@ -25,9 +33,7 @@ class StorybookCopilotEngine2 extends NgmCopilotEngineService {
   selector: 'ngm-sb-copilot-user',
   template: `<h1>Create a user</h1>`,
   styles: [''],
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule]
 })
 export class NgmSBCopilotUserComponent {
   #myCommand = injectCopilotCommand({
@@ -39,6 +45,11 @@ export class NgmSBCopilotUserComponent {
     },
     implementation: async (args) => {
       console.log(`Created user`)
+      return {
+        id: nanoid(),
+        content: '创建执行成功',
+        role: CopilotChatMessageRoleEnum.Info
+      }
     }
   })
 
@@ -49,9 +60,14 @@ export class NgmSBCopilotUserComponent {
     systemPrompt: () => {
       return `Save a user by prompt`
     },
-    implementation: async (args) => {
-      console.log(`Saved user`)
-    }
+  })
+
+  #noExampleCommand = injectCopilotCommand({
+    name: 'n',
+    description: 'New a user',
+    systemPrompt: () => {
+      return `New a user by prompt`
+    },
   })
 }
 
@@ -78,7 +94,7 @@ export default {
         },
         {
           provide: NgmCopilotEngineService,
-          useClass: StorybookCopilotEngine2
+          useClass: StorybookCopilotEngine
         },
         {
           provide: NgmClientCopilotService.CopilotConfigFactoryToken,
@@ -118,7 +134,40 @@ export const Size: Story = {
   }
 }
 
-class StorybookCopilotEngine implements CopilotEngine {
+export const CustomNgmCopilotEngine: Story = {
+  render: (args) => ({
+    props: args,
+    template: `
+<div>
+  <ngm-sb-copilot-user></ngm-sb-copilot-user>
+  <ngm-copilot-chat ${argsToTemplate(
+    args
+  )} class="h-[500px] w-[300px] shadow-lg rounded-lg m-4" style="height: 500px;"></ngm-copilot-chat>
+</div>`
+  }),
+  args: {
+    welcomeTitle: 'Welcome to My AI Copilot'
+  }
+}
+
+class StorybookCustomCopilotEngine implements CopilotEngine {
+  copilot?: CopilotService
+  dropCopilot?: (event: any) => void
+  setEntryPoint?: (id: string, entryPoint: AnnotatedFunction<any[]>) => void
+  removeEntryPoint?: (id: string) => void
+  registerCommand?(area: string, command: CopilotCommand<any[]>): void {
+    throw new Error('Method not implemented.')
+  }
+  unregisterCommand?(area: string, name: string): void {
+    throw new Error('Method not implemented.')
+  }
+  commands?: () => CopilotCommand<any[]>[]
+  deleteMessage(message: CopilotChatMessage): void {
+    throw new Error('Method not implemented.')
+  }
+  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
+    throw new Error('Method not implemented.')
+  }
   name?: string = 'Storybook custom engine'
   aiOptions: AIOptions = {
     model: '',
@@ -148,27 +197,14 @@ class StorybookCopilotEngine implements CopilotEngine {
     throw new Error('Method not implemented.')
   }
 
-  clear() {}
+  upsertMessage(message: CopilotChatMessage): void {}
+  clear() {
+    this.conversations = []
+  }
 }
 
 export const CustomEngine: Story = {
   args: {
-    copilotEngine: new StorybookCopilotEngine()
-  }
-}
-
-export const CustomNgmCopilotEngine: Story = {
-  render: (args) => ({
-    props: args,
-    template: `
-<div>
-  <ngm-sb-copilot-user></ngm-sb-copilot-user>
-  <ngm-copilot-chat ${argsToTemplate(
-    args
-)} class="h-[500px] w-[300px] shadow-lg rounded-lg m-4" style="height: 500px;"></ngm-copilot-chat>
-</div>`
-  }),
-  args: {
-    welcomeTitle: 'Welcome to My AI Copilot'
+    copilotEngine: new StorybookCustomCopilotEngine()
   }
 }

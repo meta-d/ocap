@@ -9,7 +9,7 @@ import { ChatCompletionContentPart } from 'openai/resources'
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-copilot-token',
   template: `<span
-    class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300"
+    class="bg-neutral-100 text-neutral-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-neutral-700 dark:text-neutral-300"
     matTooltip="{{ 'PAC.Copilot.CharacterLength' | translate: { Default: 'Character length' } }}"
   >
     <span *ngIf="characterLength >= 4000" class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>

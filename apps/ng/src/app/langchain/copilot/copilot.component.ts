@@ -14,6 +14,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 })
 export class CopilotComponent implements OnInit {
   copilot = new CopilotService({
+    enabled: true,
     provider: 'openai',
     apiKey: '',
     apiHost: '',

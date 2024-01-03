@@ -1,27 +1,29 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import {
-  ChatRequest,
-  ChatRequestOptions,
-  JSONValue,
-  Message,
-  RequestOptions,
-  UseChatOptions,
-  nanoid,
-} from 'ai'
+import { ChatRequest, ChatRequestOptions, JSONValue, Message, RequestOptions, UseChatOptions, nanoid } from 'ai'
 import { BehaviorSubject, Observable, catchError, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
-import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
 import { callChatApi } from './shared/call-chat-api'
+import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
 
 function chatCompletionsUrl(copilot: ICopilot) {
-	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
-	const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
-	return copilot.chatUrl || 
+  const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+  const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
+  return (
+    copilot.chatUrl ||
     (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl)
+  )
+}
+
+function modelsUrl(copilot: ICopilot) {
+  const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+  const modelsUrl: string = AI_PROVIDERS[copilot.provider]?.modelsUrl
+  return (
+    copilot.modelsUrl ||
+    (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + modelsUrl : apiHost + modelsUrl)
+  )
 }
 
 export class CopilotService {
-
   #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
   // private _copilot = {} as ICopilot
   get copilot(): ICopilot {
@@ -32,15 +34,6 @@ export class CopilotService {
       ...this.#copilot$.value,
       ...(value ?? {})
     })
-  }
-  get chatCompletionsUrl() {
-    return (
-      (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider]?.apiHost) +
-      AI_PROVIDERS[this.copilot.provider].chatCompletionsUrl
-    )
-  }
-  get modelsUrl() {
-    return (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) + '/v1/models'
   }
 
   public readonly copilot$ = this.#copilot$.asObservable()
@@ -69,7 +62,7 @@ export class CopilotService {
     }
   ) {
     const { request, signal } = options ?? {}
-    const response = await fetch(this.chatCompletionsUrl, {
+    const response = await fetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -91,11 +84,8 @@ export class CopilotService {
     throw new Error((await response.json()).error?.message)
   }
 
-  chatCompletions(
-    messages: CopilotChatMessage[],
-    request?: any
-  ): Observable<any> {
-    return fromFetch(this.chatCompletionsUrl, {
+  chatCompletions(messages: CopilotChatMessage[], request?: any): Observable<any> {
+    return fromFetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -123,7 +113,7 @@ export class CopilotService {
   chatStream(messages: CopilotChatMessage[], request?: any) {
     return new Observable<any[]>((subscriber) => {
       const ctrl = new AbortController()
-      fetchEventSource(this.chatCompletionsUrl, {
+      fetchEventSource(chatCompletionsUrl(this.copilot), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +169,7 @@ export class CopilotService {
   }
 
   getModels() {
-    return fromFetch(this.modelsUrl, {
+    return fromFetch(modelsUrl(this.copilot), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -204,45 +194,47 @@ export class CopilotService {
   }
 
   // ai
-  async chat({
-    sendExtraMessageFields,
-    onResponse,
-    onFinish,
-    onError,
-    credentials,
-    headers,
-    body,
-    generateId = nanoid,
-  }: UseChatOptions = {}, chatRequest: ChatRequest, { options, data }: ChatRequestOptions = {}, {
-    abortController
-  }: {
-    abortController: AbortController | null
-  }): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
-
+  async chat(
+    {
+      sendExtraMessageFields,
+      onResponse,
+      onFinish,
+      onError,
+      credentials,
+      headers,
+      body,
+      generateId = nanoid
+    }: UseChatOptions = {},
+    chatRequest: ChatRequest,
+    { options, data }: ChatRequestOptions = {},
+    {
+      abortController
+    }: {
+      abortController: AbortController | null
+    }
+  ): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
     return await callChatApi({
       api: chatCompletionsUrl(this.copilot),
       messages: sendExtraMessageFields
         ? chatRequest.messages
-        : chatRequest.messages.map(
-            ({ role, content, name, function_call }) => ({
-              role,
-              content,
-              ...(name !== undefined && { name }),
-              ...(function_call !== undefined && {
-                function_call,
-              }),
-            }),
-          ),
+        : chatRequest.messages.map(({ role, content, name, function_call }) => ({
+            role,
+            content,
+            ...(name !== undefined && { name }),
+            ...(function_call !== undefined && {
+              function_call
+            })
+          })),
       body: {
         data: chatRequest.data,
         ...body,
         ...options?.body,
-        stream: true,
+        stream: true
       },
       headers: {
         ...(this.requestOptions()?.headers ?? {}),
         ...headers,
-        ...options?.headers,
+        ...options?.headers
       },
       abortController: () => abortController,
       credentials,
@@ -263,7 +255,7 @@ export class CopilotService {
         //   mutate(previousMessages.data);
         // }
       },
-      generateId,
-    });
+      generateId
+    })
   }
 }

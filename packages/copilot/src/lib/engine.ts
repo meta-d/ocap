@@ -2,7 +2,6 @@ import { Observable } from 'rxjs'
 import { CopilotCommand } from './command'
 import { CopilotService } from './copilot'
 import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
-import { Message } from 'ai'
 
 /**
  * Copilot engine
@@ -64,7 +63,28 @@ export interface CopilotEngine {
   commands?: () => CopilotCommand[]
 
   /**
+   * Update or insert the message into conversations
+   * 
+   * @param message 
+   */
+  upsertMessage(message: CopilotChatMessage): void;
+
+  /**
+   * Delete message from conversation
+   * 
+   * @param message 
+   */
+  deleteMessage(message: CopilotChatMessage): void;
+
+  /**
    * Clear conversations
    */
   clear(): void
+
+  /**
+   * Update conversations value
+   * 
+   * @param fn 
+   */
+  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
 }

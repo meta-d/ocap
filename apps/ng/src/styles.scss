@@ -111,6 +111,7 @@ $custom-typography: mat.define-typography-config(
 // @include mat.core($custom-typography);
 
 .dark {
+  --ngm-copilot-bg-color: theme('colors.neutral.900');
   @include mat.all-component-colors($dark-theme);
   @include theming.core-theme($dark-theme);
   @include theming.analytical-grid-theme($dark-theme);
@@ -125,6 +126,7 @@ $custom-typography: mat.define-typography-config(
 /* You can add global styles to this file, and also import other style files */
 html {
   font-size: 14px;
+  --ngm-copilot-bg-color: theme('colors.white');
 }
 
 .mat-button-base.mat-menu-trigger.active {
