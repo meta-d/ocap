@@ -8,6 +8,10 @@ import { cloneDeep } from '@metad/ocap-core'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { firstValueFrom } from 'rxjs'
 import { AccessControlStateService } from './access-control.service'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
+import { RoleSchema, zodToAnnotations } from '../copilot'
+import { NGXLogger } from 'ngx-logger'
 
 @Component({
   selector: 'pac-model-access-control',
@@ -27,8 +31,9 @@ import { AccessControlStateService } from './access-control.service'
     `
   ]
 })
-export class AccessControlComponent {
+export class AccessControlComponent extends TranslationBaseComponent {
   private accessControlState = inject(AccessControlStateService)
+  #logger = inject(NGXLogger)
   private _dialog = inject(MatDialog)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
@@ -49,6 +54,38 @@ export class AccessControlComponent {
   get roles() {
     return this.accessControlState.roles
   }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #roleCommand = injectCopilotCommand({
+    name: 'role',
+    description: this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateNewRole', {
+      Default: 'Describe the role you want to create'
+    }),
+    systemPrompt: () => `Create or edit a role`,
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'new-role',
+        description: 'Create a new role',
+        argumentAnnotations: [
+          {
+            name: 'role',
+            type: 'object',
+            description: 'Role defination',
+            properties: zodToAnnotations(RoleSchema),
+            required: true,
+          }
+        ],
+        implementation: async (role: any) => {
+          this.#logger.debug(`The new role in function call is:`, role)
+          return `创建成功`
+        }
+      })
+    ]
+  })
 
   trackByKey(index: number, item: IModelRole) {
     return item.key

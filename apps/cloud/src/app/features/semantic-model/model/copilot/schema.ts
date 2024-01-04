@@ -40,3 +40,7 @@ export const DimensionSchema = z.object({
 export const QueryCubeSchema = z.object({
   statement: z.string().describe('The MDX statement of query the cube')
 })
+
+export const RoleSchema = z.object({
+  name: z.string().describe('The name of role')
+})

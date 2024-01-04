@@ -162,7 +162,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
 
   readonly setQuery = this.updater((state, { key, query }: { key: string; query: ModelQuery }) => {
     state.queries[key].origin = cloneDeep(query)
-    state.queries[key].query = query
+    state.queries[key].query = cloneDeep(query)
   })
 
   readonly updateOrders = this.updater((state, orders: { key: string; index: number }[]) => {

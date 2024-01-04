@@ -26,5 +26,5 @@ export interface AnnotatedFunction<Inputs extends any[]> {
   name: string;
   description: string;
   argumentAnnotations: AnnotatedFunctionArgument[];
-  implementation: (...args: Inputs) => Promise<ChatRequest | void>;
+  implementation: (...args: Inputs) => Promise<ChatRequest | string | void>;
 }

@@ -50,6 +50,11 @@ export class CopilotService {
     }
   }
 
+  /**
+   * Custom request options, headers (Auth, others) and body
+   * 
+   * @returns 
+   */
   requestOptions(): RequestOptions {
     return {}
   }
@@ -66,12 +71,16 @@ export class CopilotService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        // Authorization: `Bearer ${this.copilot.apiKey}`
       },
       signal,
       body: JSON.stringify({
         model: DefaultModel,
-        messages: messages,
+        messages: messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
         ...(request ?? {})
       })
     })
@@ -89,11 +98,15 @@ export class CopilotService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        // Authorization: `Bearer ${this.copilot.apiKey}`
       },
       body: JSON.stringify({
         model: DefaultModel,
-        messages: messages,
+        messages: messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
         ...(request ?? {})
       })
     }).pipe(
@@ -117,11 +130,15 @@ export class CopilotService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.copilot.apiKey}`
+          ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+          // Authorization: `Bearer ${this.copilot.apiKey}`
         },
         body: JSON.stringify({
           model: DefaultModel,
-          messages: messages,
+          messages: messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
           ...(request ?? {}),
           stream: true
         }),
@@ -173,7 +190,8 @@ export class CopilotService {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        // Authorization: `Bearer ${this.copilot.apiKey}`
       }
     }).pipe(
       switchMap((response) => {

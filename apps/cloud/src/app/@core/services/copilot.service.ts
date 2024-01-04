@@ -47,10 +47,10 @@ export class CopilotAPIService extends NgmCopilotService {
       filter((copilot) => !!copilot?.apiKey)
     )
     .subscribe((copilot) => {
-      this.copilot = copilot
-      this.openai = new OpenAI({
-        apiKey: copilot.apiKey
-      })
+      // this.copilot = copilot
+      // this.openai = new OpenAI({
+      //   apiKey: copilot.apiKey
+      // })
     })
 
   async getOne(orgId?: string) {

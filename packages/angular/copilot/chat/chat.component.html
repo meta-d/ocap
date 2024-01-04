@@ -18,21 +18,25 @@
                         <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
                     </div>
                     <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
-                        <div *ngIf="conversation.content" class="ngm-copilot-chat__message-content">
-                            <markdown clipboard class="whitespace-pre-line"
-                                [clipboardButtonTemplate]="buttonTemplate"
-                                lineNumbers
-                                [start]="5"
-                                [data]="conversation.content"
-                            ></markdown>
-                        </div>
-        
-                        <div *ngIf="conversation.error" class="ngm-copilot-chat__message-content text-red-400">
-                            <span class="font-notoColorEmoji">🙈</span>
-                            {{ conversation.error }}
-                        </div>
-    
-                        <ngm-copilot-token *ngIf="conversation.content" [content]="conversation.content"></ngm-copilot-token>
+                        @if (conversation.content) {
+                            <div class="ngm-copilot-chat__message-content">
+                                <markdown clipboard class="whitespace-pre-line"
+                                    [clipboardButtonTemplate]="buttonTemplate"
+                                    lineNumbers
+                                    [start]="5"
+                                    [data]="conversation.content"
+                                ></markdown>
+                            </div>
+                        }
+                        @if (conversation.error) {
+                            <div class="ngm-copilot-chat__message-content text-red-400">
+                                <span class="font-notoColorEmoji">🙈</span>
+                                {{ conversation.error }}
+                            </div>
+                        }
+                        @if (conversation.content) {
+                            <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
+                        }
     
                         <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                             (click)="deleteMessage(conversation)">
@@ -140,7 +144,7 @@
     
 </div>
 
-<div class="relative m-3 border rounded-lg shadow-sm border-neutral-200 dark:border-neutral-800"
+<div class="relative m-3 border rounded-lg shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800"
     [class.ngm-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>

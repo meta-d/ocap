@@ -21,11 +21,10 @@
 
             <div id="pac-model__query-entities" class="pac-model-query__schema pac-cdk-drop__list flex-1 flex flex-col overflow-auto"
                 cdkDropList
-                [cdkDropListData]="entities"
                 [cdkDropListEnterPredicate]="editorDropPredicate"
                 (cdkDropListDropped)="dropEntity($event)"
             >
-                <ngm-entity-schema *ngFor="let entity of entities"
+                <ngm-entity-schema *ngFor="let entity of entities()"
                     [dataSettings]="{dataSource: dataSourceName, entitySet: entity}"
                     [capacities]="[
                         EntityCapacity.Dimension,
@@ -92,7 +91,7 @@
                     </button> -->
 
                     <span class="flex-1 flex"></span>
-                    <button mat-icon-button displayDensity="compact" class="font-notoColorEmoji"
+                    <!-- <button mat-icon-button displayDensity="compact" class="font-notoColorEmoji"
                         [popper]="ask"
                         [popperTrigger]="NgxPopperjsTriggers.click"
                         [popperHideOnClickOutside]="true"
@@ -108,7 +107,7 @@
                             ('PAC.Copilot.SelectSomeCode' | translate: {Default: 'Select some code and let your AI pair programmer to edits!'}) :
                             ('PAC.Copilot.LetYourAIPairProgrammerEdits' | translate: {Default: 'Let your AI pair programmer edits!'})"
                         >🧑‍💻</span>
-                    </button>
+                    </button> -->
 
                     <button mat-icon-button displayDensity="compact" 
                         (click)="triggerUndo()">
@@ -126,11 +125,13 @@
                         (click)="triggerClear()">
                         <mat-icon fontSet="material-icons-round">playlist_remove</mat-icon>
                     </button>
-                    
-                    <button *ngIf="!useMDX()" mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
-                        (click)="triggerCompress()">
-                        <mat-icon fontSet="material-icons-outlined">folder_zip</mat-icon>
-                    </button>
+
+                    @if (isMDX()) {
+                        <button mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
+                            (click)="triggerCompress()">
+                            <mat-icon fontSet="material-icons-outlined">folder_zip</mat-icon>
+                        </button>
+                    }
 
                     <button mat-icon-button displayDensity="compact" matTooltip="💡{{ 'PAC.KEY_WORDS.Format' | translate: {Default: 'Format'} }}"
                         (click)="triggerFormat()">
@@ -138,21 +139,20 @@
                     </button>
                 </mat-toolbar>
 
-                <ng-container [ngSwitch]="useMDX()">
-                    <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                @if (isMDX()) {
+                    <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [(ngModel)]="statement"
                         (selectionChange)="onSelectionChange($event)"
                         (keyDown)="onEditorKeyDown($event)"
 
                         cdkDropList
-                        [cdkDropListData]="entities"
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
                     </ngm-editor-mdx>
-        
-                    <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                } @else {
+                    <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
                         [actions]="sqlEditorActions"
@@ -162,13 +162,11 @@
                         (keyDown)="onEditorKeyDown($event)"
         
                         cdkDropList
-                        [cdkDropListData]="entities"
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
                     </ngm-editor-sql>
-                </ng-container>
-
+                }
             </ngm-splitter-pane>
             <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
                 <mat-toolbar class="pac-nav-toolbar" displayDensity="compact">
@@ -212,7 +210,6 @@
 
                 <mat-tab-nav-panel #tabPanel class="pac-cdk-drop__list pac-cdk-drop__area flex flex-col overflow-hidden"
                     cdkDropList
-                    [cdkDropListData]="entities"
                     [cdkDropListEnterPredicate]="editorDropPredicate"
                     (cdkDropListDropped)="dropTable($event)">
                     <div *ngIf="activeResult" class="pac-model-ql-lab__stats">

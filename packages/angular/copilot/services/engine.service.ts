@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import {
   AIOptions,
   AnnotatedFunction,
@@ -38,6 +38,58 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return this.conversations$()
   }
 
+  /**
+   * Calculate messages in the last conversation
+   */
+  readonly lastConversation = computed(() => {
+    const conversations = this.conversations$()
+    // Get last conversation messages
+    const lastMessages = []
+    let lastUserMessage = null
+    for (let i = conversations.length - 1; i >= 0; i--) {
+      if (conversations[i].end) {
+        break
+      }
+      if (conversations[i].role === CopilotChatMessageRoleEnum.User) {
+        if (lastUserMessage) {
+          lastUserMessage.content = conversations[i].content + '\n' + lastUserMessage.content
+        } else {
+          lastUserMessage = {
+            role: CopilotChatMessageRoleEnum.User,
+            content: conversations[i].content
+          }
+        }
+      } else if (conversations[i].role !== CopilotChatMessageRoleEnum.Info) {
+        if (lastUserMessage) {
+          lastMessages.push(lastUserMessage)
+          lastUserMessage = null
+        }
+        lastMessages.push(conversations[i])
+      }
+    }
+    if (lastUserMessage) {
+      lastMessages.push(lastUserMessage)
+    }
+    return lastMessages.reverse()
+  })
+
+  readonly lastUserMessages = computed(() => {
+    const conversations = this.conversations$()
+    const messages = []
+    for (let i = conversations.length - 1; i >= 0; i--) {
+      if (conversations[i].role === CopilotChatMessageRoleEnum.User && !conversations[i].command) {
+        messages.push({
+          id: conversations[i].id,
+          role: conversations[i].role,
+          content: conversations[i].content
+        })
+      } else {
+        break
+      }
+    }
+    return messages
+  })
+
   placeholder?: string
 
   // Entry Points
@@ -62,11 +114,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
   streamData = signal<JSONValue[] | undefined>(undefined)
   isLoading = signal(false)
 
-  // constructor() {
-  //   effect(() => {
-  //     console.log(this.conversations$())
-  //   })
-  // }
+  constructor() {
+    effect(() => {
+      console.log('conversations:', this.conversations$())
+      console.log('last conversation:', this.lastConversation())
+      console.log('last user messages:', this.lastUserMessages())
+    })
+  }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     this.#entryPoints.update((state) => ({
@@ -104,7 +158,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   process(
-    data: { prompt: string; messages?: CopilotChatMessage[] },
+    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
     options?: { action?: string }
   ): Observable<string | CopilotChatMessage | void> {
     this.#logger?.debug(`process ask: ${data.prompt}`)
@@ -133,6 +187,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         command
       })
 
+      // Last user messages before add new messages
+      const lastUserMessages = this.lastUserMessages()
       // Append new messages to conversation
       this.conversations$.update((state) => [...state, ...newMessages])
 
@@ -141,19 +197,27 @@ export class NgmCopilotEngineService implements CopilotEngine {
         return from(_command.implementation())
       }
 
+      const functions = _command.actions
+        ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
+        : this.getChatCompletionFunctionDescriptions()
+
+      const body = {
+        ...this.aiOptions
+      }
+      if (functions.length) {
+        body.functions = functions
+      }
+
       return from(
-        this.triggerRequest([...((data.messages ?? []) as any[]), ...newMessages], {
+        this.triggerRequest([...lastUserMessages, ...newMessages], {
           options: {
-            body: {
-              ...this.aiOptions,
-              functions: _command.actions
-                ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
-                : this.getChatCompletionFunctionDescriptions()
-            }
+            body
           }
         })
       ).pipe(map(() => ''))
     } else {
+      // Last conversation messages before append new messages
+      const lastConversation = this.lastConversation()
       newMessages.push({
         id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
@@ -162,13 +226,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
       // Append new messages to conversation
       this.conversations$.update((state) => [...state, ...newMessages])
 
+      const functions = this.getChatCompletionFunctionDescriptions()
+      const body = {
+        ...this.aiOptions
+      }
+      if (functions.length) {
+        body.functions = functions
+      }
+
       return from(
-        this.triggerRequest([...((data.messages ?? []) as any[]), ...newMessages], {
+        this.triggerRequest([...lastConversation, ...newMessages], {
           options: {
-            body: {
-              ...this.aiOptions,
-              functions: this.getChatCompletionFunctionDescriptions()
-            }
+            body
           }
         })
       ).pipe(map(() => ''))

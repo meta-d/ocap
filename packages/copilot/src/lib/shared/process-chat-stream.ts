@@ -2,11 +2,11 @@
 /* eslint-disable no-inner-declarations */
 import {
   ChatRequest,
-  FunctionCall,
   JSONValue,
   Message,
   ToolCall,
 } from 'ai';
+import { FunctionCallHandler } from './functions';
 
 export async function processChatStream({
   getStreamedResponse,
@@ -18,14 +18,11 @@ export async function processChatStream({
   getStreamedResponse: () => Promise<
     Message | { messages: Message[]; data: JSONValue[] }
   >;
-  experimental_onFunctionCall?: (
-    chatMessages: Message[],
-    functionCall: FunctionCall,
-  ) => Promise<void | ChatRequest>;
+  experimental_onFunctionCall?: FunctionCallHandler;
   experimental_onToolCall?: (
     chatMessages: Message[],
     toolCalls: ToolCall[],
-  ) => Promise<void | ChatRequest>;
+  ) => Promise<void | string | ChatRequest>;
   updateChatRequest: (chatRequest: ChatRequest) => void;
   getCurrentMessages: () => Message[];
 }) {
@@ -67,7 +64,7 @@ export async function processChatStream({
           // The "arguments" key of the function call object will still be a string which will have to be parsed in the function handler.
           // If the "arguments" JSON is malformed due to model error the user will have to handle that themselves.
 
-          const functionCallResponse: ChatRequest | void =
+          const functionCallResponse: ChatRequest | string | void =
             await experimental_onFunctionCall(
               getCurrentMessages(),
               functionCall,
@@ -77,6 +74,17 @@ export async function processChatStream({
           if (functionCallResponse === undefined) {
             hasFollowingResponse = false;
             break;
+          }
+          if (typeof functionCallResponse === 'string') {
+            updateChatRequest({
+              messages: [
+                {
+                  ...message,
+                  content: functionCallResponse
+                }
+              ]
+            })
+            break
           }
 
           if (functionCallResponse)
@@ -102,13 +110,17 @@ export async function processChatStream({
           // User handles the function call in their own functionCallHandler.
           // The "arguments" key of the function call object will still be a string which will have to be parsed in the function handler.
           // If the "arguments" JSON is malformed due to model error the user will have to handle that themselves.
-          const toolCallResponse: ChatRequest | void =
+          const toolCallResponse: ChatRequest | string | void =
             await experimental_onToolCall(getCurrentMessages(), toolCalls);
 
           // If the user does not return anything as a result of the function call, the loop will break.
           if (toolCallResponse === undefined) {
             hasFollowingResponse = false;
             break;
+          }
+          if (typeof toolCallResponse === 'string') {
+            hasFollowingResponse = false;
+            break
           }
 
           if (toolCallResponse)
@@ -142,20 +154,23 @@ export async function processChatStream({
           );
           continue;
         }
-        const functionCallResponse: ChatRequest | void =
+        const functionCallResponse: ChatRequest | string | void =
           await experimental_onFunctionCall(getCurrentMessages(), functionCall);
-        // Success Info!
-        updateChatRequest({
-          messages: [
-            {
-              ...streamedResponseMessage,
-              content: `✅ Function '${functionCall.name}' call successful!`
-            }
-          ]
-        })
 
         // If the user does not return anything as a result of the function call, the loop will break.
         if (functionCallResponse === undefined) break;
+        if (typeof functionCallResponse === 'string') {
+          // Success Info!
+          updateChatRequest({
+            messages: [
+              {
+                ...streamedResponseMessage,
+                content: functionCallResponse // `✅ Function '${functionCall.name}' call successful!`
+              }
+            ]
+          })
+          break
+        }
         // Type check
         if (functionCallResponse) {
           // A function call response was returned.
@@ -173,11 +188,22 @@ export async function processChatStream({
           );
           continue;
         }
-        const toolCallResponse: ChatRequest | void =
+        const toolCallResponse: ChatRequest | string | void =
           await experimental_onToolCall(getCurrentMessages(), toolCalls);
 
         // If the user does not return anything as a result of the function call, the loop will break.
         if (toolCallResponse === undefined) break;
+        if (typeof toolCallResponse === 'string') {
+          updateChatRequest({
+            messages: [
+              {
+                ...streamedResponseMessage,
+                content: toolCallResponse
+              }
+            ]
+          })
+          break
+        }
         // Type check
         if (toolCallResponse) {
           // A function call response was returned.

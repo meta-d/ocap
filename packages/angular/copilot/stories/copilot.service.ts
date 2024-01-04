@@ -29,7 +29,7 @@ export class NgmSBCopilotService extends NgmClientCopilotService {
         data: JSONValue[]
       }
   > {
-    console.log(`Calling chat in NgmSBCopilotService class`, body)
+    console.log(`Calling chat in NgmSBCopilotService class`, body, chatRequest)
 
     return {
       id: generateId(),

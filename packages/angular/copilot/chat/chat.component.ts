@@ -96,16 +96,17 @@ export class NgmCopilotChatComponent {
   private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(CopilotService)
   #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
+  #customEngine?: CopilotEngine = null
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
   @Input() placeholder: string
 
   @Input() get copilotEngine(): CopilotEngine {
-    return this.#copilotEngine
+    return this.#customEngine ?? this.#copilotEngine
   }
   set copilotEngine(value) {
-    this.#copilotEngine = value
+    this.#customEngine = value
   }
 
   set systemPrompt(value: string) {
@@ -311,37 +312,6 @@ export class NgmCopilotChatComponent {
     return []
   })
 
-  private readonly lastConversation = computed(() => {
-    // Get last conversation messages
-    const lastMessages = []
-    let lastUserMessage = null
-    for (let i = this.#copilotEngine.conversations.length - 1; i >= 0; i--) {
-      if (this.#copilotEngine.conversations[i].end) {
-        break
-      }
-      if (this.#copilotEngine.conversations[i].role === CopilotChatMessageRoleEnum.User) {
-        if (lastUserMessage) {
-          lastUserMessage.content = this.#copilotEngine.conversations[i].content + '\n' + lastUserMessage.content
-        } else {
-          lastUserMessage = {
-            role: CopilotChatMessageRoleEnum.User,
-            content: this.#copilotEngine.conversations[i].content
-          }
-        }
-      } else {
-        if (lastUserMessage) {
-          lastMessages.push(lastUserMessage)
-          lastUserMessage = null
-        }
-        lastMessages.push(this.#copilotEngine.conversations[i])
-      }
-    }
-    if (lastUserMessage) {
-      lastMessages.push(lastUserMessage)
-    }
-    return lastMessages.reverse()
-  })
-
   public readonly suggestionsOpened$ = new BehaviorSubject(false)
   #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
 
@@ -352,15 +322,9 @@ export class NgmCopilotChatComponent {
   */
   #clearCommand = injectCopilotCommand({
     name: 'clear',
-    description: '清空对话',
-    examples: ['清空对话'],
+    description: this.translateService.instant('Ngm.Copilot.ClearConversation', {Default: 'Clear conversation'}),
     implementation: async () => {
       this.copilotEngine.clear()
-      return {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.Assistant,
-        content: '对话已清空'
-      }
     }
   })
 
@@ -407,7 +371,7 @@ export class NgmCopilotChatComponent {
     this.promptControl.setValue('')
 
     // Get last conversation messages
-    const lastConversation = this.lastConversation()
+    // const lastConversation = this.lastConversation()
 
     // Append user question message
     // this.conversations = this.conversations ?? []
@@ -431,33 +395,34 @@ export class NgmCopilotChatComponent {
     this.answering.set(true)
     // 由其他引擎接手处理
     if (this.copilotEngine) {
-      if (lastConversation.length > 0) {
-        // 无论是否为新对话，都将最新的连续的提问消息内容汇总
-        if (lastConversation[lastConversation.length - 1]?.role === CopilotChatMessageRoleEnum.User) {
-          prompt = lastConversation[lastConversation.length - 1].content + '\n' + prompt
-          lastConversation.splice(lastConversation.length - 1, 1)
-        }
+      // let userContent = prompt
+      // if (lastConversation.length > 0) {
+      //   // 无论是否为新对话，都将最新的连续的提问消息内容汇总
+      //   if (lastConversation[lastConversation.length - 1]?.role === CopilotChatMessageRoleEnum.User) {
+      //     userContent = lastConversation[lastConversation.length - 1].content + '\n' + userContent
+      //     lastConversation.splice(lastConversation.length - 1, 1)
+      //   }
 
-        // 如果是新会话，清空上一次的会话
-        if (newConversation) {
-          lastConversation.splice(0, lastConversation.length)
-        }
-      }
+      //   // 如果是新会话，清空上一次的会话
+      //   if (newConversation) {
+      //     lastConversation.splice(0, lastConversation.length)
+      //   }
+      // }
 
       const assistantIndex = this.conversations.length
       // this.conversations = [...this.conversations, assistant]
 
       try {
-        this.askSubscriber = this.copilotEngine.process({ prompt, messages: lastConversation }).subscribe({
+        this.askSubscriber = this.copilotEngine.process({ prompt, newConversation, messages: [] }).subscribe({
           next: (message: CopilotChatMessage | string | void) => {
             if (typeof message === 'string') {
-              this.#copilotEngine.upsertMessage({
+              this.copilotEngine.upsertMessage({
                 id: nanoid(),
                 role: 'info',
                 content: message
               })
             } else if (message) {
-              this.#copilotEngine.upsertMessage(message)
+              this.copilotEngine.upsertMessage(message)
             }
 
             this._cdr.detectChanges()
@@ -604,9 +569,10 @@ export class NgmCopilotChatComponent {
     await navigator.clipboard.readText()
   }
 
-  async clear() {
-    this.#copilotEngine.clear()
+  clear() {
+    this.copilotEngine.clear()
     this.conversationsChange.emit(this.conversations)
+    this.copilotOptions.hide()
   }
 
   closePopper() {
@@ -614,16 +580,16 @@ export class NgmCopilotChatComponent {
   }
 
   async addMessage(message: CopilotChatMessage) {
-    this.#copilotEngine.upsertMessage(message)
+    this.copilotEngine.upsertMessage(message)
   }
 
   deleteMessage(message: CopilotChatMessage) {
-    this.#copilotEngine.deleteMessage(message)
+    this.copilotEngine.deleteMessage(message)
     this.conversationsChange.emit(this.conversations)
   }
 
   async resubmitMessage(message: CopilotChatMessage, content: string) {
-    this.#copilotEngine.updateConversations((conversations) => {
+    this.copilotEngine.updateConversations((conversations) => {
       const index = conversations.indexOf(message)
       if (index > -1) {
         // 删除答案
@@ -691,4 +657,27 @@ export class NgmCopilotChatComponent {
       this.copilotEngine.dropCopilot(event)
     }
   }
+}
+
+
+export function defaultSystemMessage(contextString: string): string {
+  return `
+Please act as an efficient, competent, conscientious, and industrious professional assistant.
+
+Help the user achieve their goals, and you do so in a way that is as efficient as possible, without unnecessary fluff, but also without sacrificing professionalism.
+Always be polite and respectful, and prefer brevity over verbosity.
+
+The user has provided you with the following context:
+\`\`\`
+${contextString}
+\`\`\`
+
+They have also provided you with functions you can call to initiate actions on their behalf, or functions you can call to receive more information.
+
+Please assist them as best you can.
+
+You can ask them for clarifying questions if needed, but don't be annoying about it. If you can reasonably 'fill in the blanks' yourself, do so.
+
+If you would like to call a function, call it without saying anything else.
+`;
 }

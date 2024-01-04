@@ -923,6 +923,9 @@
       },
       "Copilot": {
         "Examples": {
+          "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
+          "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
+          "QueryDBDesc": "请描述想要查询的数据",
           "create dimension by table": "根据表字段创建维度",
           "create cube by table": "根据表字段创建多维数据集",
           "create calcuated measure": "创建计算度量",

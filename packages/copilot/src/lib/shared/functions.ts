@@ -1,8 +1,10 @@
-import { FunctionCallHandler } from 'ai'
 import { ChatCompletionCreateParams } from 'openai/resources'
 import { AnnotatedFunction } from '../types'
+import { ChatRequest, FunctionCall, Message } from 'ai';
 
 export const defaultCopilotContextCategories = ['global']
+
+export type FunctionCallHandler = (chatMessages: Message[], functionCall: FunctionCall) => Promise<ChatRequest | string | void>;
 
 export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<any[]>[]): FunctionCallHandler {
   return async (chatMessages, functionCall) => {

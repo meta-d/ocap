@@ -37,10 +37,16 @@ export interface CopilotEngine {
   placeholder?: string
 
   process(
-    data: { prompt: string; messages?: CopilotChatMessage[] },
+    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
     options?: { action?: string }
   ): Observable<CopilotChatMessage | string | void>
+  /**
+   * @deprecated
+   */
   preprocess?: (prompt: string, options?: any) => void
+  /**
+   * @deprecated
+   */
   postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
 
   /**

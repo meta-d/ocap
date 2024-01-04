@@ -87,7 +87,8 @@ export const ZhHans = {
       AskAICopilot: '向 AI 副驾驶询问问题',
       Prompt: '提示',
       SendPrompt: '发送提问',
-      Placeholder: '询问副驾驶或输入 / 获取命令'
+      Placeholder: '询问副驾驶或输入 / 获取命令',
+      ClearConversation: '清空会话'
     },
     Entity: {
       SelectEntities: '选择数据集'

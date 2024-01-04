@@ -14,7 +14,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty } from '@metad/core'
 import {
   NgmCopilotChatComponent,
@@ -49,7 +49,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { CubeSchema, DimensionSchema, createCube, createDimension } from './copilot'
+import { CubeSchema, DimensionSchema, createCube, createDimension, zodToAnnotations } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
@@ -86,8 +86,10 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   #cubeCommand = injectCopilotCommand({
     name: 'c',
-    description: 'Edit cube',
-    examples: ['create cube by table'],
+    description: 'New or edit cube',
+    examples: [
+      this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', {Default: 'Create cube by table info'})
+    ],
     systemPrompt: () => {
       const sharedDimensionsPrompt = JSON.stringify(
         this.dimensions().map((dimension) => ({
@@ -99,15 +101,20 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       )
       return `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
 There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-The cube can fill the source field in dimensionUsages only within the name of shared dimensions: ${sharedDimensionsPrompt}.
+The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
+\`\`\`
+${sharedDimensionsPrompt}
+\`\`\`
 `
     }
   })
 
   #dimensionCommand = injectCopilotCommand({
     name: 'd',
-    description: 'Edit dimension',
-    examples: ['create dimension by table'],
+    description: 'New or edit dimension',
+    examples: [
+      this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateDimensionByTableInfo', {Default: 'Create dimension by table info'})
+    ],
     systemPrompt: () => {
       return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
     }
@@ -118,8 +125,6 @@ The cube can fill the source field in dimensionUsages only within the name of sh
   | Copilot
   |--------------------------------------------------------------------------
   */
-  readonly #copilotEngine = inject(NgmCopilotEngineService)
-  #properties = zodToJsonSchema(CubeSchema) as any
   #createCube = injectMakeCopilotActionable({
     name: 'create-model-cube',
     description: 'Should always be used to properly format output',
@@ -129,9 +134,7 @@ The cube can fill the source field in dimensionUsages only within the name of sh
         type: 'object', // Add or change types according to your needs.
         description: 'The defination of cube',
         required: true,
-        properties: {
-          ...this.#properties.properties
-        }
+        properties: zodToAnnotations(DimensionSchema)
       }
     ],
     implementation: async (cube: any): Promise<ChatRequest | void> => {
@@ -148,7 +151,7 @@ The cube can fill the source field in dimensionUsages only within the name of sh
         type: 'object', // Add or change types according to your needs.
         description: 'The defination of dimension',
         required: true,
-        properties: (<{ properties: any }>zodToJsonSchema(DimensionSchema)).properties
+        properties: zodToAnnotations(DimensionSchema)
       }
     ],
     implementation: async (d: any): Promise<ChatRequest | void> => {
@@ -159,13 +162,8 @@ The cube can fill the source field in dimensionUsages only within the name of sh
   get user() {
     return this.#store.user
   }
-  get copilotEngine() {
-    return this._copilotEngine ?? this.#copilotEngine
-  }
-  set copilotEngine(value) {
-    this._copilotEngine = value
-  }
-  private _copilotEngine = null
+
+  copilotEngine: CopilotEngine = null
 
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
@@ -555,6 +553,14 @@ The cube can fill the source field in dimensionUsages only within the name of sh
     }
   }
 
+  /**
+   * Drop data on copilot chat:
+   * 1. table schema
+   * 2. table data
+   * 3. name of data
+   * 
+   * @param event 
+   */
   async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     const data = event.item.data
 
