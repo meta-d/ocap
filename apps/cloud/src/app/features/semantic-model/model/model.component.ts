@@ -25,8 +25,8 @@ import {
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { ChatRequest } from 'ai'
 import { sortBy, uniqBy } from 'lodash-es'
+import { nanoid } from 'nanoid'
 import {
   BehaviorSubject,
   Subject,
@@ -43,20 +43,18 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import zodToJsonSchema from 'zod-to-json-schema'
 import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { CubeSchema, DimensionSchema, createCube, createDimension, zodToAnnotations } from './copilot'
+import { DimensionSchema, createCube, createDimension, zodToAnnotations } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
-import { nanoid } from 'nanoid'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -84,11 +82,16 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _viewContainerRef = inject(ViewContainerRef)
   private toastrService = inject(ToastrService)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
   #cubeCommand = injectCopilotCommand({
     name: 'c',
     description: 'New or edit cube',
     examples: [
-      this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', {Default: 'Create cube by table info'})
+      this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', { Default: 'Create cube by table info' })
     ],
     systemPrompt: () => {
       const sharedDimensionsPrompt = JSON.stringify(
@@ -113,18 +116,15 @@ ${sharedDimensionsPrompt}
     name: 'd',
     description: 'New or edit dimension',
     examples: [
-      this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateDimensionByTableInfo', {Default: 'Create dimension by table info'})
+      this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateDimensionByTableInfo', {
+        Default: 'Create dimension by table info'
+      })
     ],
     systemPrompt: () => {
       return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
     }
   })
 
-  /**
-  |--------------------------------------------------------------------------
-  | Copilot
-  |--------------------------------------------------------------------------
-  */
   #createCube = injectMakeCopilotActionable({
     name: 'create-model-cube',
     description: 'Should always be used to properly format output',
@@ -137,7 +137,7 @@ ${sharedDimensionsPrompt}
         properties: zodToAnnotations(DimensionSchema)
       }
     ],
-    implementation: async (cube: any): Promise<ChatRequest | void> => {
+    implementation: async (cube: any) => {
       console.log(`Execute action edit cube`, cube)
       createCube(this.modelService, cube)
     }
@@ -154,7 +154,7 @@ ${sharedDimensionsPrompt}
         properties: zodToAnnotations(DimensionSchema)
       }
     ],
-    implementation: async (d: any): Promise<ChatRequest | void> => {
+    implementation: async (d: any) => {
       createDimension(this.modelService, d)
     }
   })
@@ -558,8 +558,8 @@ ${sharedDimensionsPrompt}
    * 1. table schema
    * 2. table data
    * 3. name of data
-   * 
-   * @param event 
+   *
+   * @param event
    */
   async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     const data = event.item.data

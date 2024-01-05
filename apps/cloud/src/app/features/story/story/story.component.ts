@@ -25,24 +25,24 @@ import {
   EmulatedDevice,
   NxStoryService,
   Story,
-  StoryCopilotEngineService,
   StoryOptions,
   StoryPointType,
   WidgetComponentType
 } from '@metad/story/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
-import { NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import { injectStoryPageCommand, injectStoryStyleCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
 import { StoryExplorerModule } from '@metad/story'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { delay, distinctUntilChanged, filter, map, tap } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
-import { MaterialModule } from '../../../@shared'
+import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
+import { injectCopilotCommand, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 
 
 type ResponsiveBreakpointType = {
@@ -74,9 +74,16 @@ type ResponsiveBreakpointType = {
   host: {
     class: 'ngm-story-designer'
   },
-  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService, StoryCopilotEngineService]
+  providers: [
+    StoryToolbarService,
+    NgmDSCoreService,
+    NxCoreService,
+    NxStoryService,
+    NxSettingsPanelService,
+    NgmCopilotEngineService
+  ]
 })
-export class StoryComponent implements OnInit, IsDirty {
+export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
@@ -161,6 +168,14 @@ export class StoryComponent implements OnInit, IsDirty {
   // Story explorer
   showExplorer = signal(false)
   explore = signal(null)
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #styleCommand = injectStoryStyleCommand(this.storyService)
+  #pageCommand = injectStoryPageCommand(this.storyService)
 
   /**
   |--------------------------------------------------------------------------
@@ -265,6 +280,8 @@ export class StoryComponent implements OnInit, IsDirty {
     })
 
   constructor() {
+    super()
+
     effect(() => {
       const models = this.models()
       models?.forEach((model) => {

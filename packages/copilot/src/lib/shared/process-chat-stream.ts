@@ -7,6 +7,7 @@ import {
   ToolCall,
 } from 'ai';
 import { FunctionCallHandler } from './functions';
+import { CopilotChatMessage } from '../types';
 
 export async function processChatStream({
   getStreamedResponse,
@@ -25,7 +26,7 @@ export async function processChatStream({
   ) => Promise<void | string | ChatRequest>;
   updateChatRequest: (chatRequest: ChatRequest) => void;
   getCurrentMessages: () => Message[];
-}) {
+}): Promise<CopilotChatMessage | void> {
   
   while (true) {
     // TODO-STREAMDATA: This should be {  const { messages: streamedResponseMessages, data } =
@@ -161,15 +162,10 @@ export async function processChatStream({
         if (functionCallResponse === undefined) break;
         if (typeof functionCallResponse === 'string') {
           // Success Info!
-          updateChatRequest({
-            messages: [
-              {
-                ...streamedResponseMessage,
-                content: functionCallResponse // `✅ Function '${functionCall.name}' call successful!`
-              }
-            ]
-          })
-          break
+          return {
+            ...streamedResponseMessage,
+            content: functionCallResponse // `✅ Function '${functionCall.name}' call successful!`
+          }
         }
         // Type check
         if (functionCallResponse) {

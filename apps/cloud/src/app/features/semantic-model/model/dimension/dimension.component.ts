@@ -10,7 +10,6 @@ import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { PropertyHierarchy } from '@metad/ocap-core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { ChatRequest } from 'ai'
 import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { Observable } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
@@ -98,8 +97,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
             properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
           }
         ],
-        implementation: async (h: PropertyHierarchy): Promise<ChatRequest | void> => {
-          console.log(`Create a new hierarchy by`, h)
+        implementation: async (h: PropertyHierarchy) => {
           this.dimensionService.newHierarchy(h)
         }
       })

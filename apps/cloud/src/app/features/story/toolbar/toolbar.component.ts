@@ -38,7 +38,6 @@ import {
   EmulatedDevice,
   NxStoryService,
   STORY_WIDGET_COMPONENT,
-  StoryCopilotEngineService,
   StoryPoint,
   StoryPointType,
   StoryWidget,
@@ -125,7 +124,6 @@ export class StoryToolbarComponent implements OnInit {
 
   public readonly storyService = inject(NxStoryService)
   public readonly toastrService = inject(ToastrService)
-  public readonly copilotEngine = inject(StoryCopilotEngineService)
   private readonly storiesService = inject(StoriesService)
   private readonly _elRef = inject(ElementRef)
   public toolbarService = inject(StoryToolbarService)

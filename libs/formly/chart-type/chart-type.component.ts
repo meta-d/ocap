@@ -1,18 +1,27 @@
-import { ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, TemplateRef, ViewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  HostBinding,
+  inject,
+  OnInit,
+  signal,
+  TemplateRef,
+  ViewChild
+} from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
+import { NxChartType } from '@metad/core'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
 import { isEqual, isNil, isString, omit } from '@metad/ocap-core'
-import { FieldType } from '@ngx-formly/core'
-import { NgmCopilotService, NxChartType } from '@metad/core'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { CHART_TYPES, GeoProjections } from './types'
+import { FieldType } from '@ngx-formly/core'
 import { nanoid } from 'nanoid'
-
+import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
+import { CHART_TYPES, GeoProjections } from './types'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,7 +32,7 @@ import { nanoid } from 'nanoid'
     {
       provide: STORY_DESIGNER_SCHEMA,
       useClass: ChartOptionsSchemaService
-    },
+    }
   ]
 })
 export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
@@ -42,9 +51,9 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     }))
   ]
 
-  private readonly formlyArray? = inject(MetadFormlyArrayComponent,{ optional: true })
+  private readonly formlyArray? = inject(MetadFormlyArrayComponent, { optional: true })
   private readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
-  private copilotService = inject(NgmCopilotService)
+  private copilotService = inject(CopilotService)
 
   @ViewChild('mapTemp') mapTemplate: TemplateRef<unknown>
 
@@ -65,14 +74,16 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     Bar: [
       { value: null, label: 'None' },
       { value: 'polar', label: 'Polar' },
-      { value: 'stacked', label: 'Stacked' },
+      { value: 'stacked', label: 'Stacked' }
     ],
     Waterfall: [
       {
-        value: null, label: 'None'
+        value: null,
+        label: 'None'
       },
       {
-        value: 'polar', label: 'Polar'
+        value: 'polar',
+        label: 'Polar'
       }
     ],
     Pie: [
@@ -162,7 +173,12 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   showMore = signal(false)
   showCustomCode = signal(false)
 
-  chartType = toSignal(this.chartTypeForm.valueChanges.pipe(map((value) => omit(value, 'chartOptions')), distinctUntilChanged(isEqual)))
+  chartType = toSignal(
+    this.chartTypeForm.valueChanges.pipe(
+      map((value) => omit(value, 'chartOptions')),
+      distinctUntilChanged(isEqual)
+    )
+  )
 
   prompt = ''
   answering = false
@@ -177,9 +193,12 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
 
   constructor() {
     super()
-    effect(() => {
-      this.schema.chartType = this.chartType()
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        this.schema.chartType = this.chartType()
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   ngOnInit(): void {
@@ -249,9 +268,9 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
           content: this.scripts
         }
       ])
-  
+
       this.scripts = choices[0].message.content
-    } catch(err) {
+    } catch (err) {
       this.answering = false
     }
   }
@@ -271,9 +290,9 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
           content: this.scripts
         }
       ])
-  
+
       this.scripts = choices[0].message.content
-    } catch(err) {
+    } catch (err) {
       this.answering = false
     }
   }

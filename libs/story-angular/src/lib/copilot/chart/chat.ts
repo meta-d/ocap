@@ -1,14 +1,13 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
-import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType } from '@metad/story/core'
-import { map, of, switchMap } from 'rxjs'
-import { chartAnnotationCheck, editWidgetChart } from './schema'
-import { checkDefaultEntity } from '../common'
+import { StoryWidget, WidgetComponentType } from '@metad/story/core'
 import { nanoid } from 'nanoid'
+import { map, of, switchMap } from 'rxjs'
+import { checkDefaultEntity } from '../common'
+import { chartAnnotationCheck, editWidgetChart } from './schema'
 
-
-export function chatChartWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
+export function chatChartWidget(copilot, widget?: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert, please edit or create the chart widget configuration based on the cube information and the question.
@@ -47,7 +46,7 @@ Original widget is ${JSON.stringify(widget ?? 'empty')}`
     )
 }
 
-export function editChartWidgetCommand(copilot: StoryCopilotChatConversation) {
+export function editChartWidgetCommand(copilot) {
   const { logger, storyService } = copilot
 
   const widget = storyService.currentWidget()
@@ -60,7 +59,7 @@ export function editChartWidgetCommand(copilot: StoryCopilotChatConversation) {
 
   return (widget ? of(copilot) : checkDefaultEntity(copilot)).pipe(
     switchMap((copilot) => chatChartWidget(copilot, widget)),
-    switchMap((copilot) => {
+    switchMap((copilot:any) => {
       const { response, entityType, dataSource } = copilot
       const { arguments: anwser } = response
 
@@ -72,13 +71,17 @@ export function editChartWidgetCommand(copilot: StoryCopilotChatConversation) {
           widgetKey,
           widget: {
             ...omit(anwser, 'chartAnnotation'),
-            dataSettings: assignDeepOmitBlank(cloneDeep(widget.dataSettings), {
-              ...(anwser.dataSettings ?? {}),
-              chartAnnotation: chartAnnotationCheck(anwser.chartAnnotation, entityType),
-              presentationVariant: {
-                maxItems: anwser.dataSettings?.limit
-              }
-            }, 5) as DataSettings
+            dataSettings: assignDeepOmitBlank(
+              cloneDeep(widget.dataSettings),
+              {
+                ...(anwser.dataSettings ?? {}),
+                chartAnnotation: chartAnnotationCheck(anwser.chartAnnotation, entityType),
+                presentationVariant: {
+                  maxItems: anwser.dataSettings?.limit
+                }
+              },
+              5
+            ) as DataSettings
           }
         })
       } else {

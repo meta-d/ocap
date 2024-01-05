@@ -1,13 +1,16 @@
+import { ChatRequest, FunctionCall, Message, nanoid } from 'ai'
 import { ChatCompletionCreateParams } from 'openai/resources'
 import { AnnotatedFunction } from '../types'
-import { ChatRequest, FunctionCall, Message } from 'ai';
 
 export const defaultCopilotContextCategories = ['global']
 
-export type FunctionCallHandler = (chatMessages: Message[], functionCall: FunctionCall) => Promise<ChatRequest | string | void>;
+export type FunctionCallHandler = (
+  chatMessages: Message[],
+  functionCall: FunctionCall
+) => Promise<ChatRequest | string | void>
 
 export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<any[]>[]): FunctionCallHandler {
-  return async (chatMessages, functionCall) => {
+  return async (chatMessages, functionCall): Promise<ChatRequest | string | void> => {
     const entrypointsByFunctionName: Record<string, AnnotatedFunction<any[]>> = {}
     for (const entryPoint of entryPoints) {
       entrypointsByFunctionName[entryPoint.name] = entryPoint
@@ -21,29 +24,30 @@ export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<
       }
 
       const paramsInCorrectOrder: any[] = []
-      for (let arg of entryPointFunction.argumentAnnotations) {
+      for (const arg of entryPointFunction.argumentAnnotations) {
         paramsInCorrectOrder.push(parsedFunctionCallArguments[arg.name as keyof typeof parsedFunctionCallArguments])
       }
 
-      return await entryPointFunction.implementation(...paramsInCorrectOrder)
-
-      // commented out becasue for now we don't want to return anything
-      // const result = await entryPointFunction.implementation(
-      //   ...parsedFunctionCallArguments
-      // );
-      // const functionResponse: ChatRequest = {
-      //   messages: [
-      //     ...chatMessages,
-      //     {
-      //       id: nanoid(),
-      //       name: functionCall.name,
-      //       role: 'function' as const,
-      //       content: JSON.stringify(result),
-      //     },
-      //   ],
-      // };
-
-      // return functionResponse;
+      // return await entryPointFunction.implementation(...paramsInCorrectOrder)
+      const result = await entryPointFunction.implementation(...paramsInCorrectOrder)
+      if (!result) {
+        return
+      }
+      if (typeof result === 'string') {
+        return result
+      }
+      const functionResponse: ChatRequest = {
+        messages: [
+          ...chatMessages,
+          {
+            ...result,
+            id: nanoid(),
+            name: functionCall.name,
+            role: 'function' as const
+          }
+        ]
+      }
+      return functionResponse
     }
   }
 }

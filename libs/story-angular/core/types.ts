@@ -612,6 +612,11 @@ export interface StoryPointState {
   linkedAnalysis?: Record<string, LinkedAnalysisEvent>
 }
 
+export type DefaultDataSettings = {
+  dataSource: string;
+  entities: string[];
+}
+
 /**
  * State type for story
  */
@@ -656,10 +661,7 @@ export interface StoryState {
   /**
    * Default data source and cube configuration used by default.
    */
-  defaultDataSettings?: {
-    dataSource: string;
-    entities: string[];
-  }
+  defaultDataSettings?: DefaultDataSettings
 }
 
 /**

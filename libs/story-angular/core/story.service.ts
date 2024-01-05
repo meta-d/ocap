@@ -61,7 +61,8 @@ import {
   WidgetComponentType,
   WIDGET_INIT_POSITION,
   StoryPointState,
-  MoveDirection
+  MoveDirection,
+  DefaultDataSettings
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey, prefersColorScheme } from './utils'
 import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
@@ -69,7 +70,7 @@ import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 @Injectable()
 export class NxStoryService extends ComponentStore<StoryState> {
-  private readonly translateService = inject(TranslateService)
+  readonly #translate = inject(TranslateService)
 
   get story() {
     return this.get((state) => state.story)
@@ -432,7 +433,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   getTranslation(prefix: string, text: string, params?: Record<string, unknown>) {
     let result: any
-    this.translateService.get(prefix, {Default: text, ...params}).subscribe((res) => {
+    this.#translate.get(prefix, {Default: text, ...params}).subscribe((res) => {
       result = res
     })
 
@@ -1291,19 +1292,22 @@ export class NxStoryService extends ComponentStore<StoryState> {
   async openDefultDataSettings() {
     const dataSources = await firstValueFrom(this.dataSources$)
 
-    const result = await firstValueFrom(this._dialog.open(NgmEntityDialogComponent, {
+    const result = await firstValueFrom<DefaultDataSettings>(this._dialog.open<DefaultDataSettings>(NgmEntityDialogComponent, {
       data: {
         dataSources,
         dsCoreService: this.dsCoreService
       }
     }).afterClosed())
-    console.log(result)
     if (result) {
       this.patchState({
         defaultDataSettings: result
       })
     }
     return result
+  }
+
+  translate(key: string | string[], params?: Record<string, string>) {
+    return this.#translate.instant(key, params)
   }
 }
 

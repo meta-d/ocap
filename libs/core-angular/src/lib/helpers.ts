@@ -5,6 +5,8 @@ import { compact, PivotColumn, uniqBy } from '@metad/ocap-core'
 import { includes, isNil, negate, isEqual, isEmpty } from 'lodash-es'
 import { Observable } from 'rxjs'
 import { filter, takeUntil, tap } from 'rxjs/operators'
+import { ZodType, ZodTypeDef } from 'zod'
+import zodToJsonSchema from 'zod-to-json-schema'
 
 
 export const filterNil = filter(negate(isNil))
@@ -530,4 +532,11 @@ export function getErrorMessage(err: any): string {
   }
 
   return error
+}
+
+/**
+ * Copilot
+ */
+export function zodToProperties(obj: ZodType<any, ZodTypeDef, any>,) {
+  return (<{ properties: any }>zodToJsonSchema(obj)).properties
 }

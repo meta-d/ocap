@@ -1,12 +1,12 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
-import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType, fixDimension } from '@metad/story/core'
+import { StoryWidget, WidgetComponentType, fixDimension } from '@metad/story/core'
+import { nanoid } from 'nanoid'
 import { map, of, switchMap } from 'rxjs'
 import { editWidgetControl } from './schema'
-import { nanoid } from 'nanoid'
 
-export function chatControlWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
+export function chatControlWidget(copilot, widget?: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert, please edit or new the input control widget configuration based on the cube information and the question.
@@ -45,7 +45,7 @@ Original widget is ${JSON.stringify(widget)}`
     )
 }
 
-export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) {
+export function editControlWidgetCommand(copilot) {
   const { logger, storyService, entityType } = copilot
 
   const widget = storyService.currentWidget()
@@ -57,7 +57,7 @@ export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) 
   const pageKey = page?.key
 
   return chatControlWidget(copilot, widget).pipe(
-    switchMap((copilot) => {
+    switchMap((copilot: any) => {
       const { response, dataSource } = copilot
       const { arguments: anwser } = response
 
@@ -69,10 +69,14 @@ export function editControlWidgetCommand(copilot: StoryCopilotChatConversation) 
           widgetKey,
           widget: {
             ...omit(anwser, 'dimension'),
-            dataSettings: assignDeepOmitBlank(cloneDeep(widget.dataSettings), {
-              ...(anwser.dataSettings ?? {}),
-              dimension: fixDimension(anwser.dimension, entityType)
-            }, 5)
+            dataSettings: assignDeepOmitBlank(
+              cloneDeep(widget.dataSettings),
+              {
+                ...(anwser.dataSettings ?? {}),
+                dimension: fixDimension(anwser.dimension, entityType)
+              },
+              5
+            )
           }
         })
       } else {

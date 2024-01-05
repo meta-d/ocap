@@ -106,9 +106,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly #commands = signal<Record<string, CopilotCommand>>({})
   readonly commands = computed(() => Object.values(this.#commands()))
 
-  // Chat
-  readonly messages = signal<Message[]>([])
-
   // Chat States
   error = signal<undefined | Error>(undefined)
   streamData = signal<JSONValue[] | undefined>(undefined)
@@ -255,7 +252,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.isLoading.set(true)
       abortController = new AbortController()
 
-      const getCurrentMessages = () => this.messages() ?? []
+      const getCurrentMessages = () => this.lastConversation() ?? []
       // chatApiStore.get([this.key()], {
       //   shouldRevalidate: false,
       // })
@@ -271,7 +268,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         data
       }
 
-      await processChatStream({
+      const message = await processChatStream({
         getStreamedResponse: async () => {
           // const existingData = this.streamData() ?? []
           try {
@@ -312,23 +309,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
           this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
 
           // Update or append message into conversation
-          this.conversations$.update((state) => {
-            const messages = [...state]
-            newChatRequest.messages.forEach((message) => {
-              const index = messages.findIndex((item) => item.id && item.id === message.id)
-              if (index > -1) {
-                messages[index] = message
-              } else {
-                messages.push(message)
-              }
-            })
-            return messages
-          })
+          // this.conversations$.update((state) => {
+          //   const messages = [...state]
+          //   newChatRequest.messages.forEach((message) => {
+          //     const index = messages.findIndex((item) => item.id && item.id === message.id)
+          //     if (index > -1) {
+          //       messages[index] = message
+          //     } else {
+          //       messages.push(message)
+          //     }
+          //   })
+          //   return messages
+          // })
         },
         getCurrentMessages: () => getCurrentMessages()
       })
-
       abortController = null
+
+      if (message) {
+        this.conversations$.update((state) => [...state, message])
+      }
       return null
     } catch (err) {
       // Ignore abort errors as they are expected.
@@ -352,7 +352,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     if (!message.id) {
       message.id = this.generateId()
     }
-    return this.triggerRequest((this.messages() ?? []).concat(message as Message), options)
+    return this.triggerRequest((this.lastConversation() ?? []).concat(message as Message), options)
   }
 
   generateId() {

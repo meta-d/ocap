@@ -24,13 +24,12 @@ import {
   inject,
   signal
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
 import { NgmSmartFilterBarService, OcapCoreModule, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NgmTransformScaleDirective, NxCoreModule, nonNullable } from '@metad/core'
@@ -75,7 +74,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 /**
  * 暂时将 providers 放在此 Story 组件上, 后续考虑更好的位置
  */
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -258,7 +256,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   */
   private _storySavedSubscriber = this.storyService
     .onSaved()
-    .pipe(debounce(() => interval(1000)))
+    .pipe(debounce(() => interval(1000)), takeUntilDestroyed())
     .subscribe(() => this.saved.emit())
   // 这里的 resize 还有用吗 ?
   private _resizeSubscriber = merge(
@@ -266,7 +264,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     // this.storyFilterDrawerChange
     // this.storyDesignerDrawerChange
   )
-    .pipe(withLatestFrom(this.storyService.currentPageKey$))
+    .pipe(withLatestFrom(this.storyService.currentPageKey$), takeUntilDestroyed())
     .subscribe(([event, currentId]) => {
       // console.warn(`resize selected story page layout`)
       // TODO 需要重构成更好的方式
@@ -277,7 +275,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     })
   private _intentSubscriber = this.storyService
     .onIntent()
-    .pipe(filter((intent) => intent?.semanticObject === 'StoryPoint'))
+    .pipe(filter((intent) => intent?.semanticObject === 'StoryPoint'), takeUntilDestroyed())
     .subscribe((intent) => {
       // this.selectedStoryPointKey = intent.action
       // let filters = this.currentPoint.filters || []
@@ -289,12 +287,12 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       // this.currentPoint.filters = filters
       this.storyService.setCurrentPageKey(intent.action)
     })
-  private _storyFiltersSubscriber = this.storyService.filters$.pipe(filter(isNotEmpty)).subscribe((filters) => {
+  private _storyFiltersSubscriber = this.storyService.filters$.pipe(filter(isNotEmpty), takeUntilDestroyed()).subscribe((filters) => {
     this.logger?.debug(`Story全局固定过滤器:`, filters)
     // filters.forEach(item => this.filterBarService.put(item))
   })
   private _currentPageKeySubscriber = this.storyService.currentPageKey$
-    .pipe(filter(nonNullable))
+    .pipe(filter(nonNullable), takeUntilDestroyed())
     .subscribe(async (pageKey) => {
       const currentIndex = await firstValueFrom(this.storyService.currentIndex$)
       if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
@@ -321,7 +319,8 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
           }
         })
       }),
-      combineLatestWith(this.options$)
+      combineLatestWith(this.options$),
+      takeUntilDestroyed()
     )
     .subscribe(([story, options]) => {
       this.storyService.updateStoryOptions({
@@ -329,7 +328,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       })
     })
 
-  private advancedStyleSub = this.storyService.advancedStyle$.subscribe({
+  private advancedStyleSub = this.storyService.advancedStyle$.pipe(takeUntilDestroyed()).subscribe({
     next: (result) => {
       result = result?.replace(new RegExp(':host', 'g'), `[${this._nghost}]`)
       if (!isNil(this.style)) {
@@ -346,7 +345,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   })
 
   private backgroundSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor))
+    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this._renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)

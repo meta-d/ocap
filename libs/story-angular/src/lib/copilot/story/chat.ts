@@ -1,29 +1,21 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { omitBlank, pick } from '@metad/ocap-core'
-import {
-  StoryCopilotChatConversation,
-  StoryPoint,
-  StoryPointType,
-  StoryWidget,
-  WidgetComponentType,
-  fixDimension,
-  uuid
-} from '@metad/story/core'
-import { combineLatest, concat, from, of, throwError } from 'rxjs'
-import { first, map, switchMap, tap } from 'rxjs/operators'
+import { StoryPoint, StoryPointType, StoryWidget, WidgetComponentType, fixDimension, uuid } from '@metad/story/core'
+import { nanoid } from 'ai'
+import { combineLatest, concat, of } from 'rxjs'
+import { map, switchMap, tap } from 'rxjs/operators'
 import { chartAnnotationCheck, editWidgetChart } from '../chart/schema'
 import { editWidgetControl } from '../control'
 import { analyticsAnnotationCheck, editWidgetGrid } from '../grid/schema'
 import { discoverStory } from './schema'
-import { nanoid } from 'ai'
 
 /**
  * Create story dashboard that contains multiple story pages.
  *
  * @param prompt
  */
-export function smartDiscover(copilot: StoryCopilotChatConversation) {
+export function smartDiscover(copilot) {
   const { copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert. Please provide several analysis theme pages that can be created based on the cube information and the question.
@@ -62,11 +54,11 @@ The cube is ${calcEntityTypePrompt(entityType)}`
     )
 }
 
-export function createStoryPage(copilot: StoryCopilotChatConversation) {
+export function createStoryPage(copilot) {
   const { dataSource, storyService, response, entityType } = copilot
   const pages = response.arguments.pages
 
-  return concat<StoryCopilotChatConversation[]>(
+  return concat<any[]>(
     ...pages.map((page) => {
       const pageKey = uuid()
       const widgets = page.widgets?.map((widget) => {
@@ -105,7 +97,7 @@ export function createStoryPage(copilot: StoryCopilotChatConversation) {
  * @param copilot
  * @returns
  */
-export function discoverPageWidgets(copilot: StoryCopilotChatConversation) {
+export function discoverPageWidgets(copilot) {
   const { response: page } = copilot
   return page.widgets?.length
     ? combineLatest(page.widgets.map((widget) => chatStoryWidget(copilot, widget))).pipe(map(() => copilot))
@@ -119,7 +111,7 @@ export function discoverPageWidgets(copilot: StoryCopilotChatConversation) {
  * @param widget
  * @returns
  */
-export function chatStoryWidget(copilot: StoryCopilotChatConversation, widget: StoryWidget) {
+export function chatStoryWidget(copilot, widget: StoryWidget) {
   const { copilotService, storyService, response: page, entityType } = copilot
 
   const componentType = widget.component
@@ -168,7 +160,7 @@ The cube is ${calcEntityTypePrompt(entityType)}`
           throw new Error('Error when parse the response of discover widget')
         }
       }),
-      tap((response) => {
+      tap((response: any) => {
         console.log(`The widget response is`, response.arguments)
 
         const answer = response.arguments

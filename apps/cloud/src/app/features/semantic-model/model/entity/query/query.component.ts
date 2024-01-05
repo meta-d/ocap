@@ -8,7 +8,6 @@ import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-a
 import { effectAction } from '@metad/ocap-angular/core'
 import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { QueryReturn, measureFormatter, serializeUniqueName } from '@metad/ocap-core'
-import { ChatRequest } from 'ai'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
@@ -101,7 +100,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
             required: true
           }
         ],
-        implementation: async (statement: string): Promise<ChatRequest | void> => {
+        implementation: async (statement: string) => {
           this.#logger.debug(`Create a new query statement '${statement}'`)
           this.entityService.statement = statement
         }
@@ -117,7 +116,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
             required: true
           }
         ],
-        implementation: async (statement: string): Promise<ChatRequest | void> => {
+        implementation: async (statement: string) => {
           this.#logger.debug(`Edit the query statement '' into '${statement}'`)
           this.entityService.statement = statement
         }

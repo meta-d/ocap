@@ -1,18 +1,13 @@
-import { CopilotCommand, logResult } from '@metad/copilot'
-import { StoryCopilotChatConversation } from '@metad/story/core'
-import { switchMap, tap } from 'rxjs'
-import { createStoryPage, smartDiscover } from './chat'
+import { CopilotCommand } from '@metad/copilot'
+import { switchMap } from 'rxjs'
 import { checkDefaultEntity } from '../common'
+import { createStoryPage, smartDiscover } from './chat'
 
 export const StoryCommand = {
   name: 'story',
   description: 'New story',
   examples: ['create new story with 3 pages for sales'],
-  processor: (copilot: StoryCopilotChatConversation) => {
-    return checkDefaultEntity(copilot).pipe(
-      switchMap(smartDiscover),
-      tap<StoryCopilotChatConversation>(logResult),
-      switchMap(createStoryPage)
-    )
+  processor: (copilot) => {
+    return checkDefaultEntity(copilot).pipe(switchMap(smartDiscover), switchMap(createStoryPage))
   }
 } as CopilotCommand

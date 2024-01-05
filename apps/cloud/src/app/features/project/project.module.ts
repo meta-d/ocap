@@ -2,10 +2,15 @@ import { A11yModule } from '@angular/cdk/a11y'
 import { NgModule } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxTableModule } from '@metad/components/table'
-import { NgmCommonModule, NgmTreeSelectComponent, ResizerModule, TreeTableModule } from '@metad/ocap-angular/common'
+import {
+  NgmCommonModule,
+  NgmTableComponent,
+  NgmTreeSelectComponent,
+  ResizerModule,
+  TreeTableModule
+} from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { NxStorySettingsModule } from '@metad/story'
+import { NxStorySettingsModule, provideStorySettings } from '@metad/story'
 import { TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
@@ -25,33 +30,17 @@ import { ProjectRoutingModule } from './project-routing.module'
       echarts: () => import('echarts')
     }),
     MonacoEditorModule.forRoot(),
-    NxStorySettingsModule.forRoot(),
+    NxStorySettingsModule,
     LoggerModule.forRoot({
       level: NgxLoggerLevel.WARN,
       serverLogLevel: NgxLoggerLevel.ERROR
     }),
 
-    // // Formly
-    // FormlyModule.forRoot(),
-    // FormlyMaterialModule,
-    // FormlyMatToggleModule,
-    // FormlyMatSliderModule,
-    // MetadFormlyMatModule,
-    // PACFormlyChartTypeModule,
-    // PACFormlyMatSlicersModule,
-    // PACFormlyPropertySelectModule,
-    // PACFormlyCodeEditorModule,
-    // PACFormlyDesignerModule,
-    // PACFormlyEmptyModule,
-    // PACFormlyButtonToggleModule,
-    // PACFormlyTableModule,
-    // MetadFormlyAccordionModule,
-
     OcapCoreModule.forRoot(),
     NgmCommonModule,
     NgmDialogComponent,
-    NxTableModule,
     ResizerModule,
+    NgmTableComponent,
 
     TreeTableModule,
     NgmTreeSelectComponent
@@ -64,7 +53,8 @@ import { ProjectRoutingModule } from './project-routing.module'
       useValue: '../assets/tinymce/tinymce.min.js'
     },
     ...STORY_WIDGET_COMPONENTS,
-    ...STORY_DESIGNER_COMPONENTS
+    ...STORY_DESIGNER_COMPONENTS,
+    provideStorySettings()
   ]
 })
 export class ProjectModule {}

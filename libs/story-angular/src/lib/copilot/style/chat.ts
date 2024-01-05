@@ -1,6 +1,5 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { omitBlank } from '@metad/ocap-core'
-import { StoryCopilotChatConversation } from '@metad/story/core'
 import { of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { editStoryStyle } from './schema'
@@ -11,7 +10,7 @@ import { nanoid } from 'ai'
  *
  * @param prompt
  */
-export function chatStoryStyle(copilot: StoryCopilotChatConversation) {
+export function chatStoryStyle(copilot) {
   const { copilotService, storyService, prompt } = copilot
 
   const preferences = storyService.preferences()
@@ -49,7 +48,7 @@ export function chatStoryStyle(copilot: StoryCopilotChatConversation) {
     )
 }
 
-export function modifyStory(copilot: StoryCopilotChatConversation) {
+export function modifyStory(copilot) {
   const { response, storyService } = copilot
   const answer = response.arguments
 

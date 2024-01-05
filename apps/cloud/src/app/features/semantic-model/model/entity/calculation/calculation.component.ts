@@ -20,7 +20,6 @@ import {
   stringifyProperty
 } from '@metad/ocap-core'
 import { serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
-import { ChatRequest } from 'ai'
 import { NGXLogger } from 'ngx-logger'
 import { TranslationBaseComponent } from '../../../../../@shared/'
 import { differenceBy, isEmpty, isNil, negate, uniq } from 'lodash-es'
@@ -204,7 +203,7 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
             properties: zodToAnnotations(CalculatedMeasureSchema)
           }
         ],
-        implementation: async (cm: CalculatedMember): Promise<ChatRequest | void> => {
+        implementation: async (cm: CalculatedMember) => {
           this.#logger.debug(`Create a new calculated measure '${cm.name}' with formula '${cm.formula}'`)
           const key = cm.__id__ ?? uuid()
           this.entityService.addCalculatedMeasure({
@@ -227,7 +226,7 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
             required: true
           }
         ],
-        implementation: async (formula: string): Promise<ChatRequest | void> => {
+        implementation: async (formula: string) => {
           this.#logger.debug(`Edit current calculated measure '${this.formula()}' to '${formula}'`)
           this.entityService.updateCubeProperty({
             type: ModelDesignerType.calculatedMember,

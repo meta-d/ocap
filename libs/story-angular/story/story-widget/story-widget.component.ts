@@ -37,7 +37,6 @@ import {
   NxStoryStore,
   NX_STORY_STORE,
   StoryComment,
-  StoryCopilotEngineService,
   StoryPointType,
   StoryWidgetComponentProvider,
   STORY_WIDGET_COMPONENT,
@@ -116,7 +115,6 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
   private readonly _renderer = inject(Renderer2)
   private readonly _elementRef = inject(ElementRef)
-  private readonly storyCopilotEngine? = inject(StoryCopilotEngineService, {optional: true})
   private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)
@@ -484,9 +482,9 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     // selected 时不一定就是在编辑当前组件
     if (!this.laneKey) {
       this.openDesigner()
-      if (this.storyCopilotEngine) {
-        this.storyCopilotEngine.currentWidgetCopilot = this.stateService
-      }
+      // if (this.storyCopilotEngine) {
+      //   this.storyCopilotEngine.currentWidgetCopilot = this.stateService
+      // }
     }
   }
 

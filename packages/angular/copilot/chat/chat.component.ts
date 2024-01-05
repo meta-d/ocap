@@ -28,7 +28,7 @@ import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
 import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
 import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
-import { DensityDirective, getErrorMessage } from '@metad/ocap-angular/core'
+import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
 import {
@@ -37,7 +37,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, scan, startWith, Subscription } from 'rxjs'
+import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, startWith, Subscription } from 'rxjs'
 import { CopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
@@ -45,7 +45,6 @@ import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
 import { nanoid } from 'ai'
 import { injectCopilotCommand } from '../hooks'
-import { pick } from 'lodash-es'
 
 
 @Component({
@@ -109,27 +108,12 @@ export class NgmCopilotChatComponent {
     this.#customEngine = value
   }
 
-  set systemPrompt(value: string) {
-    this._systemPrompt.set(value)
-  }
-  private readonly _systemPrompt = signal<string>(null)
-
-  // @Input() get conversations(): CopilotChatMessage[] {
-  //   return this.copilotEngine ? this.copilotEngine.conversations : this._conversations()
+  // set systemPrompt(value: string) {
+  //   this._systemPrompt.set(value)
   // }
-  // set conversations(value) {
-  //   if (value) {
-  //     if (this.copilotEngine) {
-  //       this.copilotEngine.conversations = value
-  //     } else {
-  //       this._conversations.set(value)
-  //     }
-  //   }
-  // }
-  readonly #conversations = signal<CopilotChatMessage[]>([])
-  get conversations(): CopilotChatMessage[] {
-    return this.copilotEngine ? this.copilotEngine.conversations : this.#conversations()
-  }
+  // private readonly _systemPrompt = signal<string>(null)
+  
+  readonly conversations = computed(() => this.copilotEngine.conversations.filter((message) => message.content || message.error))
 
   @Input() user: IUser
 
@@ -189,20 +173,20 @@ export class NgmCopilotChatComponent {
   private openaiOptions = {
     model: 'gpt-3.5-turbo',
     useSystemPrompt: true
-  } as AIOptions & { useSystemPrompt?: boolean }
+  } as AIOptions
   get aiOptions() {
     return this.copilotEngine?.aiOptions ?? this.openaiOptions
   }
-  get useSystemPrompt() {
-    return this.aiOptions.useSystemPrompt
-  }
-  set useSystemPrompt(value) {
-    if (this.copilotEngine) {
-      this.copilotEngine.aiOptions = { ...this.aiOptions, useSystemPrompt: value }
-    } else {
-      this.openaiOptions.useSystemPrompt = value
-    }
-  }
+  // get useSystemPrompt() {
+  //   return this.aiOptions.useSystemPrompt
+  // }
+  // set useSystemPrompt(value) {
+  //   if (this.copilotEngine) {
+  //     this.copilotEngine.aiOptions = { ...this.aiOptions, useSystemPrompt: value }
+  //   } else {
+  //     this.openaiOptions.useSystemPrompt = value
+  //   }
+  // }
   get model() {
     return this.aiOptions.model
   }
@@ -385,11 +369,11 @@ export class NgmCopilotChatComponent {
     // ]
 
     // Assistant message
-    const assistant: CopilotChatMessage = {
-      id: nanoid(),
-      role: CopilotChatMessageRoleEnum.Assistant,
-      content: ''
-    }
+    // const assistant: CopilotChatMessage = {
+    //   id: nanoid(),
+    //   role: CopilotChatMessageRoleEnum.Assistant,
+    //   content: ''
+    // }
 
     // Answering
     this.answering.set(true)
@@ -409,7 +393,7 @@ export class NgmCopilotChatComponent {
       //   }
       // }
 
-      const assistantIndex = this.conversations.length
+      // const assistantIndex = this.conversations().length
       // this.conversations = [...this.conversations, assistant]
 
       try {
@@ -430,13 +414,13 @@ export class NgmCopilotChatComponent {
           },
           error: (err) => {
             console.error(err)
-            const conversations = [...this.conversations]
-            conversations[assistantIndex] = { ...conversations[assistantIndex] }
-            conversations[assistantIndex].content = null
-            conversations[assistantIndex].error = getErrorMessage(err)
+            // const conversations = [...this.conversations]
+            // conversations[assistantIndex] = { ...conversations[assistantIndex] }
+            // conversations[assistantIndex].content = null
+            // conversations[assistantIndex].error = getErrorMessage(err)
             this.answering.set(false)
             // this.conversations = conversations
-            this.conversationsChange.emit(this.conversations)
+            this.conversationsChange.emit(this.conversations())
             this._cdr.detectChanges()
           },
           complete: () => {
@@ -470,67 +454,67 @@ export class NgmCopilotChatComponent {
       return
     }
 
-    // 系统提示
-    const messages: CopilotChatMessage[] =
-      this.openaiOptions.useSystemPrompt && this.systemPrompt
-        ? [
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.System,
-              content: this.systemPrompt
-            }
-          ]
-        : []
-    // 合并连续的提问消息：如数据表和提问合并
-    messages.push(
-      ...this.conversations
-        .filter((item) => !item.error && !!item.content)
-        .reduceRight((prev, curr) => {
-          if (!prev.length) {
-            return [pick(curr, 'role', 'content')]
-          }
+    // // 系统提示
+    // const messages: CopilotChatMessage[] =
+    //   this.openaiOptions.useSystemPrompt && this.systemPrompt
+    //     ? [
+    //         {
+    //           id: nanoid(),
+    //           role: CopilotChatMessageRoleEnum.System,
+    //           content: this.systemPrompt
+    //         }
+    //       ]
+    //     : []
+    // // 合并连续的提问消息：如数据表和提问合并
+    // messages.push(
+    //   ...this.conversations
+    //     .filter((item) => !item.error && !!item.content)
+    //     .reduceRight((prev, curr) => {
+    //       if (!prev.length) {
+    //         return [pick(curr, 'role', 'content')]
+    //       }
 
-          if (curr.role === prev[prev.length - 1].role) {
-            prev[prev.length - 1].content = [curr.content, prev[prev.length - 1].content].join('\n')
-          } else {
-            prev.push(pick(curr, 'role', 'content'))
-          }
-          return prev
-        }, [])
-        .reverse()
-    )
+    //       if (curr.role === prev[prev.length - 1].role) {
+    //         prev[prev.length - 1].content = [curr.content, prev[prev.length - 1].content].join('\n')
+    //       } else {
+    //         prev.push(pick(curr, 'role', 'content'))
+    //       }
+    //       return prev
+    //     }, [])
+    //     .reverse()
+    // )
 
-    // this.conversations = [...this.conversations, assistant]
+    // // this.conversations = [...this.conversations, assistant]
 
-    this.scrollBottom()
+    // this.scrollBottom()
 
-    this.askSubscriber = this.copilotService
-      .chatStream(messages)
-      .pipe(
-        scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-        map((content) => content.trim())
-      )
-      .subscribe({
-        next: (content) => {
-          assistant.content = content
-          this._cdr.detectChanges()
+    // this.askSubscriber = this.copilotService
+    //   .chatStream(messages)
+    //   .pipe(
+    //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
+    //     map((content) => content.trim())
+    //   )
+    //   .subscribe({
+    //     next: (content) => {
+    //       assistant.content = content
+    //       this._cdr.detectChanges()
 
-          this.scrollBottom()
-        },
-        error: (err) => {
-          this.answering.set(false)
-          assistant.content = null
-          assistant.error = getErrorMessage(err)
+    //       this.scrollBottom()
+    //     },
+    //     error: (err) => {
+    //       this.answering.set(false)
+    //       assistant.content = null
+    //       assistant.error = getErrorMessage(err)
 
-          this.conversationsChange.emit(this.conversations)
-          this._cdr.detectChanges()
-        },
-        complete: () => {
-          this.answering.set(false)
-          this.conversationsChange.emit(this.conversations)
-          this._cdr.detectChanges()
-        }
-      })
+    //       this.conversationsChange.emit(this.conversations)
+    //       this._cdr.detectChanges()
+    //     },
+    //     complete: () => {
+    //       this.answering.set(false)
+    //       this.conversationsChange.emit(this.conversations)
+    //       this._cdr.detectChanges()
+    //     }
+    //   })
   }
 
   stopGenerating() {
