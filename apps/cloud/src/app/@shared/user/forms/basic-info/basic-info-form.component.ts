@@ -1,4 +1,4 @@
-import { Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core'
+import { Component, ElementRef, forwardRef, inject, Input, ViewChild } from '@angular/core'
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { ITag, IUser } from '@metad/contracts'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -6,6 +6,7 @@ import { AuthService } from '@metad/cloud/state'
 import { firstValueFrom, map } from 'rxjs'
 import { LANGUAGES, MatchValidator, RoleService, Store } from '../../../../@core'
 import { TranslationBaseComponent } from '../../../language/translation-base.component'
+
 
 @Component({
   selector: 'pac-user-basic-info-form',
@@ -20,6 +21,10 @@ import { TranslationBaseComponent } from '../../../language/translation-base.com
   ]
 })
 export class BasicInfoFormComponent extends TranslationBaseComponent implements ControlValueAccessor {
+  readonly #store = inject(Store)
+  readonly #roleService = inject(RoleService)
+  readonly #authService = inject(AuthService)
+
   UPLOADER_PLACEHOLDER = 'FORM.PLACEHOLDERS.UPLOADER_PLACEHOLDER'
 
   @ViewChild('imagePreview')
@@ -33,7 +38,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
   @Input() public createdById: string
   @Input() public selectedTags: ITag[]
 
-  private readonly roles$ = this.roleService.getAll().pipe(map(({ items }) => items))
+  readonly roles$ = this.#roleService.getAll().pipe(map(({ items }) => items))
 
   //Fields for the form
   public form = new FormGroup({})
@@ -41,13 +46,6 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
   fields: FormlyFieldConfig[] = []
 
   onChange: (value: any) => any
-  constructor(
-    private readonly store: Store,
-    private readonly roleService: RoleService,
-    private readonly authService: AuthService,
-  ) {
-    super()
-  }
 
   writeValue(obj: any): void {
     if (obj) {
@@ -165,7 +163,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           }
         ],
         validators: {
-          validation: this.password ? [ MatchValidator.mustMatch('password', 'repeatPassword') ] : []
+          validation: this.password ? [ MatchValidator.mustMatch('password', 'confirmPassword') ] : []
         }
       },
       {
@@ -187,14 +185,14 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
 
   async registerUser(organizationId?: string, createdById?: string) {
     if (this.form.valid) {
-      const { tenant } = this.store.user
+      const { tenant } = this.#store.user
       const user: IUser = {
         ...this.model,
         tenantId: tenant.id
       }
 
       return await firstValueFrom(
-        this.authService.register({
+        this.#authService.register({
           user,
           password: this.model.password,
           confirmPassword: this.model.confirmPassword,

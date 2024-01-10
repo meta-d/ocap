@@ -1,9 +1,9 @@
-import { Component, Input, OnInit, effect } from '@angular/core'
+import { Component, Input, OnInit, ViewChild, effect } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { UsersService } from '@metad/cloud/state'
 import { IUserUpdateInput, LanguagesEnum } from '@metad/contracts'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { UserFormsModule } from 'apps/cloud/src/app/@shared/user/forms'
+import { BasicInfoFormComponent, UserFormsModule } from 'apps/cloud/src/app/@shared/user/forms'
 import { ToastrService, User } from '../../../../@core'
 import { CreatedByPipe, MaterialModule, SharedModule, TranslationBaseComponent } from '../../../../@shared'
 import { PACEditUserComponent } from '../edit-user/edit-user.component'
@@ -27,6 +27,8 @@ import { PACEditUserComponent } from '../edit-user/edit-user.component'
 export class UserBasicComponent extends TranslationBaseComponent implements OnInit {
   @Input() allowRoleChange: boolean
 
+  @ViewChild('userBasicInfo') userBasicInfo: BasicInfoFormComponent
+  
   user: User
   constructor(
     private readonly userComponent: PACEditUserComponent,
@@ -72,9 +74,11 @@ export class UserBasicComponent extends TranslationBaseComponent implements OnIn
     }
 
     try {
-      await this.userService.update(this.user.id, request).then(() => {
-        this._toastrService.success(`PAC.NOTES.USERS.USER_UPDATED`, { name: new CreatedByPipe().transform(this.user) })
-      })
-    } catch (error) {}
+      await this.userService.update(this.user.id, request)
+      this._toastrService.success(`PAC.NOTES.USERS.USER_UPDATED`, { name: new CreatedByPipe().transform(this.user) })
+      this.userBasicInfo.form.markAsPristine()
+    } catch (error) {
+      this._toastrService.danger(error)
+    }
   }
 }

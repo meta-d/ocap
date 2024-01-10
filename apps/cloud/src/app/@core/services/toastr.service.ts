@@ -5,6 +5,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { ConfirmSnackBar } from '@metad/components/confirm'
 import { catchError, EMPTY, map, merge, Observable, take, takeUntil, tap } from 'rxjs'
 import { SnackProcessingComponent } from '../../@theme/snack/processing'
+import { getErrorMessage } from '../types'
 
 @Injectable({
   providedIn: 'root'
@@ -46,19 +47,18 @@ export class ToastrService {
   }
 
   danger(error: any, title: string = 'PAC.TOASTR.TITLE.ERROR', translationParams: Object = {}) {
-    let displayMessage = ''
-
-    if (error instanceof HttpErrorResponse && typeof error.error.message === 'string') {
-      displayMessage = error.error.message
-    }
-    // 等同于 HttpErrorResponse ?
-    else if (error.error && error.error.message && typeof error.error.message === 'string') {
-      displayMessage = error.error.message
-    } else if (error.message && typeof error.message === 'string') {
-      displayMessage = error.message
-    } else {
-      displayMessage = error
-    }
+    const displayMessage = getErrorMessage(error)
+    // if (error instanceof HttpErrorResponse && typeof error.error.message === 'string') {
+    //   displayMessage = error.error.message
+    // }
+    // // 等同于 HttpErrorResponse ?
+    // else if (error.error && error.error.message && typeof error.error.message === 'string') {
+    //   displayMessage = error.error.message
+    // } else if (error.message && typeof error.message === 'string') {
+    //   displayMessage = error.message
+    // } else {
+    //   displayMessage = error
+    // }
 
     this._snackBar.open(
       this.getTranslation(displayMessage, translationParams),

@@ -28,6 +28,7 @@ export function prepare() {
 	DEFAULT_FEATURES.forEach((feature) => {
 		const index = features.findIndex((item) => item.code === feature.code)
 		if (index > -1) {
+			features[index].children ??= []
 			features[index].children.push(...feature.children)
 		} else {
 			features.push(feature as IFeatureCreateInput)
