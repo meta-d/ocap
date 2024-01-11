@@ -1,4 +1,3 @@
-import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
@@ -14,7 +13,6 @@ import { NgmFormlyArrayComponent } from './array.type'
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DragDropModule,
     MatIconModule,
     MatButtonModule,
     TranslateModule,

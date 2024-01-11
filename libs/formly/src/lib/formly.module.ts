@@ -71,6 +71,12 @@ export function validateMax(err, field: FormlyFieldConfig) {
   ]
 })
 export class NgmFormlyModule {
+  /**
+   * @deprecated use provideFormly()
+   * 
+   * @param options 
+   * @returns 
+   */
   static forRoot(options?: ConfigOption): ModuleWithProviders<NgmFormlyModule> {
     return {
       ngModule: NgmFormlyModule,
@@ -95,4 +101,24 @@ export class NgmFormlyModule {
       ]
     }
   }
+}
+
+export function provideFormly(options?: ConfigOption) {
+  return FormlyModule.forRoot({
+    validationMessages: [
+      { name: 'required', message: validateRequired },
+      { name: 'minLength', message: validateMinLength },
+      { name: 'maxLength', message: validateMaxLength },
+      { name: 'min', message: validateMin },
+      { name: 'max', message: validateMax },
+      ...(options?.validationMessages ?? [])
+    ],
+    types: [
+      {
+        name: 'colors',
+        component: PacFormlyColorsComponent
+      },
+      ...(options?.types ?? [])
+    ]
+  }).providers
 }

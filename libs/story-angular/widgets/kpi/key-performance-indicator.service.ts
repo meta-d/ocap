@@ -1,34 +1,34 @@
 import { Inject, Injectable, InjectionToken, OnDestroy, Optional, inject } from '@angular/core'
+import { nonBlank, nonNullable, replaceParameters } from '@metad/core'
 import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import {
   CriticalityCalculationType,
   CriticalityType,
   DataPointType,
   Dimension,
-  getEntityProperty,
-  getPropertyMeasure,
-  getPropertyName,
-  getPropertyUnitName,
   ImprovementDirectionType,
-  isDimension,
-  isMeasure,
-  isNil,
-  isString,
   KPIType,
   Measure,
-  mergeOptions,
   PrimitiveType,
   PropertyMeasure,
   QueryOptions,
   SmartBusinessService,
   TrendCalculationType,
-  TrendType
+  TrendType,
+  getEntityProperty,
+  getPropertyMeasure,
+  getPropertyName,
+  getPropertyUnitName,
+  isDimension,
+  isMeasure,
+  isNil,
+  isString,
+  mergeOptions
 } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
 import { Observable } from 'rxjs'
-import { filter, map, pluck, shareReplay, switchMap } from 'rxjs/operators'
+import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { NxWidgetKPIOptions } from './types'
-import { nonBlank, nonNullable, replaceParameters } from '@metad/core'
 
 /**
  * Describes the object used to configure the SmartKPI in Angular DI.
@@ -76,18 +76,17 @@ export interface SmartKPIValue {
  */
 @Injectable()
 export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> implements OnDestroy {
-
-  protected logger? = inject(NGXLogger, {optional: true})
+  protected logger? = inject(NGXLogger, { optional: true })
 
   public options: NxWidgetKPIOptions
-  
+
   // 设置是否显示为 short number 格式
   public shortNumber: boolean
   public numberTracker: boolean
 
   private readonly KPIAnnotation$ = this.dataSettings$.pipe(
     filter(nonNullable),
-    map((dataSettings) => dataSettings?.KPIAnnotation),
+    map((dataSettings) => dataSettings?.KPIAnnotation)
   )
 
   public dataPoint$: Observable<Partial<DataPointType>> = this.KPIAnnotation$.pipe(
@@ -96,16 +95,19 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
   )
 
   // 暂时支持一条记录计算 KPI, 未来可能支持多条记录计算 Trend 例如 本期，环比，同比 为三条记录
-  private _data$: Observable<any> = this.selectResult().pipe(filter(Boolean),
-  map(({data}) => (data && data[0]) || {})
-)
+  private _data$: Observable<any> = this.selectResult().pipe(
+    filter(Boolean),
+    map(({ data }) => (data && data[0]) || {})
+  )
 
   // 计算后的 KPI Value
   public kpiValue$: Observable<SmartKPIValue> = this._data$.pipe(
     filter(nonNullable),
     switchMap(async (data) => {
       try {
-        return this.getKPIAnnotation() ? await this.calculateDataPoint(data, this.getKPIAnnotation()?.DataPoint) : ({} as SmartKPIValue)
+        return this.getKPIAnnotation()
+          ? await this.calculateDataPoint(data, this.getKPIAnnotation()?.DataPoint)
+          : ({} as SmartKPIValue)
       } catch (error) {
         return null
       }
@@ -148,7 +150,10 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
     // 将 value unit 值分开， 未来是否不需要
     this.value$ = this.kpiValue$.pipe(map((value) => value.value.toString()))
     this.unit$ = this.kpiValue$.pipe(map((value) => value.unit))
-    this.targetValue$ = this.kpiValue$.pipe(pluck('targetValue'), shareReplay(1))
+    this.targetValue$ = this.kpiValue$.pipe(
+      map((kpiValue) => kpiValue?.targetValue),
+      shareReplay(1)
+    )
 
     this.progress$ = this.kpiValue$.pipe(
       map((values) => {
@@ -168,10 +173,12 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
           const annotation = this.getKPIAnnotation()
           const additionalDataPoints = []
           for (const dataPoint of annotation.AdditionalDataPoints) {
-            additionalDataPoints.push(await this.calculateDataPoint(data, mergeOptions({ Value: annotation.DataPoint.Value }, dataPoint)))
+            additionalDataPoints.push(
+              await this.calculateDataPoint(data, mergeOptions({ Value: annotation.DataPoint.Value }, dataPoint))
+            )
           }
           return additionalDataPoints
-        } catch(err) {
+        } catch (err) {
           return []
         }
       }),
@@ -181,11 +188,15 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
 
   onInit(): Observable<any> {
     return super.onInit().pipe(
-      switchMap(() => this.dataSettings$.pipe(
-        map((dataSettings) => dataSettings?.KPIAnnotation),
-        // The Value field of main kpi is required
-        filter((KPIAnnotation) => isString(KPIAnnotation?.DataPoint?.Value) || !!KPIAnnotation?.DataPoint?.Value?.measure)
-      ))
+      switchMap(() =>
+        this.dataSettings$.pipe(
+          map((dataSettings) => dataSettings?.KPIAnnotation),
+          // The Value field of main kpi is required
+          filter(
+            (KPIAnnotation) => isString(KPIAnnotation?.DataPoint?.Value) || !!KPIAnnotation?.DataPoint?.Value?.measure
+          )
+        )
+      )
     )
   }
 
@@ -372,7 +383,7 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
   getDataPointFields(dataPoint: Partial<DataPointType>) {
     const selects: Array<Dimension | Measure> = []
     // 主 Value 字段
-    if (dataPoint.Value) {
+    if (isMeasure(dataPoint.Value)) {
       selects.push(dataPoint.Value as Measure)
     }
 
@@ -382,8 +393,8 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
         .filter(nonBlank)
     )
 
-    if (dataPoint.TargetValue) {
-      selects.push(dataPoint.TargetValue as unknown as Measure)
+    if (isMeasure(dataPoint.TargetValue)) {
+      selects.push(dataPoint.TargetValue)
     }
 
     // Reference value for the calculation, e.g. number of sales for the last year

@@ -1,46 +1,58 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component } from '@angular/core'
+import { Component } from '@angular/core';
 import { FormArray } from '@angular/forms';
-import { FieldArrayType } from '@ngx-formly/core'
+import { FieldArrayType } from '@ngx-formly/core';
 
+/**
+ * @todo 使用 cdkDragList 后数组中使用 property-select 组件弹出窗口的移动会有问题，暂时禁用 array drag 排序
+ */
 @Component({
   selector: 'ngm-formly-array',
   template: `
-<div *ngIf="to.label" class="ngm-formly__title">{{ to.label }}</div>
+@if (to.label) {
+  <div class="ngm-formly__title">{{ to.label }}</div>
+}
 <div class="ngm-formly-cdk__drag-list flex flex-col justify-start items-stretch"
-  [class.empty]="!field.fieldGroup?.length" 
-  cdkDropList
-  (cdkDropListDropped)="drop($event)">
+  [class.empty]="!field.fieldGroup?.length">
 
-  <button *ngIf="!field.fieldGroup?.length" mat-button color="primary" type="button" (click)="add()">
-    <div class="flex items-center">
-      <mat-icon>add</mat-icon>{{ 'FORMLY.COMMON.ADD' | translate: {Default: 'Add'} }} {{to.label}}
+  @if (!field.fieldGroup?.length) {
+    <button mat-button color="primary" type="button" (click)="add()">
+      <div class="flex items-center">
+        <mat-icon>add</mat-icon>{{ 'FORMLY.COMMON.ADD' | translate: {Default: 'Add'} }} {{to.label}}
+      </div>
+    </button>
+  }
+
+  @for (field of field.fieldGroup; track field.name; let i = $index;) {
+    <div class="ngm-formly__array-row" cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
+      <div class="text-sm flex justify-between items-center">
+        <div>
+        @if (props.labelField) {
+          <span>{{model[i]?.[props.labelField]}}</span>
+        }
+        </div>
+        @if (!to.hideDelete) {
+          <button class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
+            (click)="remove(i)">
+            <mat-icon>clear</mat-icon>
+          </button>
+        }
+      </div>
+      <formly-field class="flex-1" cdkDropList [field]="field"></formly-field>
+      <div class="ngm-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
     </div>
-  </button>
-
-  <div *ngFor="let field of field.fieldGroup; let i = index;" class="ngm-formly__array-row"
-    cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
-
-    <div class="text-sm flex justify-between items-center">
-      <div><span *ngIf="props.labelField">{{model[i]?.[props.labelField]}}</span></div>
-      <button *ngIf="!to.hideDelete" class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
-        (click)="remove(i)">
-        <mat-icon>clear</mat-icon>
-      </button>
-    </div>
-    <formly-field class="flex-1" [field]="field"></formly-field>
-    <div class="ngm-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
-  </div>
+  }
 </div>
 
-<button *ngIf="field.fieldGroup?.length" mat-button color="primary" type="button" ngmAppearance="dashed"
-  class="w-full"
-  (click)="add()">
-  <div class="flex items-center">
-    <mat-icon>add</mat-icon>
-    <span>{{ 'FORMLY.COMMON.ADD' | translate: {Default: 'Add'} }} {{to.label}}</span>
-  </div>
-</button>
+@if (field.fieldGroup?.length) {
+  <button mat-button color="primary" type="button" class="w-full"
+    (click)="add()">
+    <div class="flex items-center">
+      <mat-icon>add</mat-icon>
+      <span>{{ 'FORMLY.COMMON.ADD' | translate: {Default: 'Add'} }} {{to.label}}</span>
+    </div>
+  </button>
+}
 `,
   host: {
     class: 'ngm-formly-array'

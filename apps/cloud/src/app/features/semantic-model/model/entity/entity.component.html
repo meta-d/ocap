@@ -64,7 +64,7 @@
     </mat-drawer>
     <mat-drawer-content class="flex">
         <mat-drawer-container class="flex-1 h-full" autosize>
-            <mat-drawer #drawer mode="side" opened ngmResizer [resizerWidth]="230">
+            <mat-drawer #drawer mode="side" [(opened)]="drawerOpened" ngmResizer [resizerWidth]="230">
                 <pac-model-cube-structure class="pac-model-entity__cube flex-1 h-full"
                     [modelType]="modelType$ | async"
                     [editable]="true"
@@ -80,6 +80,8 @@
                         <router-outlet #o="outlet"></router-outlet>
                     </div>
                 </div>
+
+                <ngm-drawer-trigger class="absolute left-0 top-1/2 z-40" [(opened)]="drawerOpened" ></ngm-drawer-trigger>
             </mat-drawer-content>
         </mat-drawer-container>
     </mat-drawer-content>

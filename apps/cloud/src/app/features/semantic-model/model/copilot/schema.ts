@@ -1,3 +1,4 @@
+import { MDX, RoleTypeEnum } from '@metad/contracts'
 import { z } from 'zod'
 
 export const CalculatedMeasureSchema = z.object({
@@ -42,5 +43,25 @@ export const QueryCubeSchema = z.object({
 })
 
 export const RoleSchema = z.object({
-  name: z.string().describe('The name of role')
+  name: z.string().describe('The name of role'),
+  type: z.enum([RoleTypeEnum.union, RoleTypeEnum.single]).default(RoleTypeEnum.single).describe('The type of role'),
+
+  options: z.object({
+    name: z.string().describe('The name of role'),
+    schemaGrant: z.object({
+      access: z.enum([MDX.Access.all, MDX.Access.custom]).default(MDX.Access.all).describe('The access of role'),
+      cubeGrants: z.array(z.object({
+        cube: z.string().describe('The name of cube'),
+        access: z.enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none]).default(MDX.Access.all).describe('The access of cube'),
+        hierarchyGrants: z.array(z.object({
+          hierarchy: z.string().describe('The name of hierarchy'),
+          access: z.enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none]).default(MDX.Access.all).describe('The access of hierarchy'),
+          memberGrants: z.array(z.object({
+            member: z.string().describe('The name of member'),
+            access: z.enum([MDX.Access.all, MDX.Access.none]).default(MDX.Access.all).describe('The access of member'),
+          })).optional()
+        })).optional()
+      }))
+    })
+  })
 })

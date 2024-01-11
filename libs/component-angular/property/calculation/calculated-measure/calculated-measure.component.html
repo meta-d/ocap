@@ -1,6 +1,7 @@
 <mat-drawer-container class="flex flex-1" [hasBackdrop]="false" autosize >
-    <mat-drawer #drawer mode="side" position="end" ngmResizer [resizerWidth]="330" class="ngm-calculated-measure__drawer"
-        [opened]="opened"
+    <mat-drawer #drawer class="ngm-calculated-measure__drawer"
+        mode="side" position="end" ngmResizer [resizerWidth]="330"
+        [(opened)]="opened"
         (openedChange)="$event?helper.realignInkBar():''">
         <mat-tab-group #helper class="ngm-calculated-measure__helpers" mat-stretch-tabs="false" >
             <mat-tab [label]="'COMPONENTS.CALCULATION.DIMENSION_MEMBERS' | translate: {Default: 'Dimension Members'}"
@@ -117,12 +118,6 @@
            </span>
 
            <div class="flex justify-around items-center gap-2">
-                <button mat-icon-button displayDensity="cosy" class="ngm-calculated-measure__drawer-anchor"
-                    (click)="drawer.toggle()"
-                >
-                    <mat-icon *ngIf="drawer.opened">chevron_right</mat-icon>
-                    <mat-icon *ngIf="!drawer.opened">menu_open</mat-icon>
-                </button>
            </div>
         </div>
 
@@ -149,5 +144,7 @@
             >
             </ngm-editor-sql>
         }
+
+        <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="opened" side="right"></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>

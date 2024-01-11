@@ -1,8 +1,8 @@
 <mat-toolbar class="pac__toolbar pac-model__shell-bar flex justify-between items-center">
     <div class="flex justify-start items-center" cdkMenuBar>
-        <button mat-button [color]="drawer.opened?'accent':''" (click)="drawer.toggle()">
+        <!-- <button mat-button [color]="drawer.opened?'accent':''" (click)="drawer.toggle()">
             <mat-icon fontSet="material-icons-outlined">toc</mat-icon>
-        </button>
+        </button> -->
     
         <button *ngIf="isMobile$ | async" cdkMenuItem class="pac-model__page-trigger flex-1"
             [cdkMenuTriggerFor]="mobileMenu">
@@ -61,7 +61,7 @@
 
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize cdkDropListGroup>
     <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
-        opened
+        [(opened)]="sideMenuOpened"
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
         ngmResizer [resizerWidth]="230"
     >
@@ -230,7 +230,9 @@
     </mat-drawer>
     <mat-drawer-content class="flex">
         <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
-            <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400">
+            <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400"
+                [(opened)]="copilotDrawerOpened"
+            >
                 <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
                     [copilotEngine]="copilotEngine"
                     [user]="user"
@@ -244,10 +246,15 @@
                 ></div>
             </mat-drawer>
 
-            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path" class="relative">
                 <router-outlet #o="outlet"></router-outlet>
+
+                <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
+                
             </mat-drawer-content>
         </mat-drawer-container>
+
+        <ngm-drawer-trigger class="absolute left-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
     

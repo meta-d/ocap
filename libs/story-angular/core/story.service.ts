@@ -151,6 +151,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
     shareReplay(1)
   )
 
+  /**
+   * @deprecated use 
+   */
   readonly dataSources$ = this.dataSourceOptions$.pipe(
     map((dataSources) => dataSources.map((dataSource) => ({
       key: dataSource.id,
@@ -158,6 +161,13 @@ export class NxStoryService extends ComponentStore<StoryState> {
       caption: dataSource.caption
     })))
   )
+  readonly dataSources = toSignal(this.dataSourceOptions$.pipe(
+    map((dataSources) => dataSources.map((dataSource) => ({
+      key: dataSource.key,
+      value: dataSource.key ?? dataSource.name,
+      caption: dataSource.caption
+    })))
+  ))
 
   readonly schemas$ = combineLatest([
     this.select((state) => state.story.schema),
@@ -1290,14 +1300,16 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   async openDefultDataSettings() {
-    const dataSources = await firstValueFrom(this.dataSources$)
+    const dataSources = this.dataSources()
 
-    const result = await firstValueFrom<DefaultDataSettings>(this._dialog.open<DefaultDataSettings>(NgmEntityDialogComponent, {
-      data: {
-        dataSources,
-        dsCoreService: this.dsCoreService
-      }
-    }).afterClosed())
+    const result = await firstValueFrom<DefaultDataSettings>(
+      this._dialog.open<DefaultDataSettings>(NgmEntityDialogComponent, {
+        data: {
+          dataSources,
+          dsCoreService: this.dsCoreService
+        }
+      }).afterClosed()
+    )
     if (result) {
       this.patchState({
         defaultDataSettings: result

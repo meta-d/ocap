@@ -111,13 +111,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
   streamData = signal<JSONValue[] | undefined>(undefined)
   isLoading = signal(false)
 
-  constructor() {
-    effect(() => {
-      console.log('conversations:', this.conversations$())
-      console.log('last conversation:', this.lastConversation())
-      console.log('last user messages:', this.lastUserMessages())
-    })
-  }
+  // constructor() {
+  //   effect(() => {
+  //     console.log('conversations:', this.conversations$())
+  //     console.log('last conversation:', this.lastConversation())
+  //     console.log('last user messages:', this.lastUserMessages())
+  //   })
+  // }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     this.#entryPoints.update((state) => ({

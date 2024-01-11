@@ -124,7 +124,8 @@
     
   </div>
 
-  <div *ngIf="showCustomCode()" class="flex flex-col justify-start items-stretch relative mt-2 bg-white rounded-lg overflow-hidden"
+  @if (showCustomCode()) {
+  <div class="flex flex-col justify-start items-stretch relative mt-2 bg-white rounded-lg overflow-hidden"
     ngmResizer [resizerHeight]="500">
     <header class="flex justify-between items-center px-2">
       <input matInput class="rounded-md p-1 outline-none text-sm bg-white focus-within:bg-slate-100 hover:bg-slate-200" [formControl]="name"
@@ -154,14 +155,14 @@
         [(ngModel)]="scripts"
         (onInit)="editor$.next($event)"
     ></ngx-monaco-editor>
+    
     <div ngmResizerBar resizerBarPosition="bottom" style="z-index: 1;"
       cdkDrag
       cdkDragLockAxis="y"
     ></div>
   </div>
-
+  }
 </div>
-
 
 <popper-content #copilot class="z-[101]">
   <form (ngSubmit)="copilot.hide();askCopilot()" class="bg-white p-1">

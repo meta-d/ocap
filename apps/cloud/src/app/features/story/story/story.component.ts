@@ -16,7 +16,7 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CdkDragEnd } from '@angular/cdk/drag-drop'
-import { ResizerModule } from '@metad/ocap-angular/common'
+import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { AgentType, isEqual } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -31,7 +31,7 @@ import {
 } from '@metad/story/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
-import { injectStoryPageCommand, injectStoryStyleCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import { injectCalclatedMeasureCommand, injectStoryPageCommand, injectStoryStyleCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
 import { StoryExplorerModule } from '@metad/story'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
@@ -62,7 +62,9 @@ type ResponsiveBreakpointType = {
     ReversePipe,
 
     OcapCoreModule,
+    NgmDrawerTriggerComponent,
     ResizerModule,
+    
     NxStoryModule,
     NxDesignerModule,
     StoryToolbarComponent,

@@ -5,9 +5,16 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { NxActionStripModule } from '@metad/components/action-strip'
 import { NxEditorModule } from '@metad/components/editor'
-import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
+import { NgmCopilotService } from '@metad/core'
+import {
+  NgmCommonModule,
+  NgmDrawerTriggerComponent,
+  NgmTableComponent,
+  ResizerModule,
+  SplitterModule
+} from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { LetDirective } from '@ngrx/component'
@@ -39,8 +46,6 @@ import {
 } from './schema/index'
 import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
-import { NgmCopilotService } from '@metad/core'
-
 
 @NgModule({
   declarations: [ModelComponent, ModelOverviewComponent, ModelCreateEntityComponent, ModelPreferencesComponent],
@@ -69,14 +74,16 @@ import { NgmCopilotService } from '@metad/core'
     ResizerModule,
     SplitterModule,
     MonacoEditorModule.forRoot(),
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
     NgmCommonModule,
     NgmCopilotChatComponent,
-    NgmTableComponent
+    NgmTableComponent,
+    NgmDrawerTriggerComponent
 
     // Thirdparty
   ],
   providers: [
+    provideOcapCore(),
     NgmCopilotService,
     StoryModelResolver,
     {

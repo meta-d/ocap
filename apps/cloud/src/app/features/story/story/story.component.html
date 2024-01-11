@@ -1,5 +1,5 @@
 <pac-story-toolbar #toolbar class="ngm-story__toolbar shadow-xl
-    overflow-hidden absolute left-4 top-8 z-10
+    overflow-hidden absolute left-4 top-8 z-30
     rounded-2xl  text-slate-200  dark:text-slate-500 dark:hover:text-slate-100
     backdrop-blur-sm hover:backdrop-blur-lg"
     cdkDrag
@@ -31,7 +31,7 @@
         [(opened)]="designerOpened"
         ngmResizer [resizerWidth]="400"
     >
-        <ngm-settings-panel class="ngm-story__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+        <ngm-settings-panel class="ngm-story__settings-container overflow-hidden"
             liveMode
             [(opened)]="designerOpened" 
         >
@@ -136,6 +136,7 @@
 
         </div>
 
+        <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="designerOpened" side="right"></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
 

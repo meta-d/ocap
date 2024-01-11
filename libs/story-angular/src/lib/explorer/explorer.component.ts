@@ -27,7 +27,6 @@ import { MatRadioModule } from '@angular/material/radio'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { NgmPrismHighlightComponent } from '@metad/components/prism'
 import { PropertyCapacity, PropertyModule } from '@metad/components/property'
-import { NxTableModule } from '@metad/components/table'
 import { NxChartType, nonBlank } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
@@ -58,13 +57,13 @@ import {
   pick,
   uniqBy
 } from '@metad/ocap-core'
-import { WidgetComponentType } from '@metad/story/core'
+import { NxStoryService, WidgetComponentType } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { combineLatestWith, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { MatIconModule } from '@angular/material/icon'
-import { NgmSearchComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmSearchComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { firstValueFrom } from 'rxjs'
-import { ExplainComponent } from '@metad/story/story'
+import { ExplainComponent, injectCalclatedMeasureCommand } from '@metad/story/story'
 
 
 @Component({
@@ -85,7 +84,7 @@ import { ExplainComponent } from '@metad/story/story'
     MatTabsModule,
     MatRadioModule,
     DragDropModule,
-    NxTableModule,
+    NgmTableComponent,
     NgmPrismHighlightComponent,
     OcapCoreModule,
     NgmEntitySchemaComponent,
@@ -117,6 +116,7 @@ export class StoryExplorerComponent {
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly _dialog = inject(MatDialog)
   private readonly translateService = inject(TranslateService)
+  readonly #storyService = inject(NxStoryService)
 
   @Input()
   get data() {
@@ -300,7 +300,7 @@ export class StoryExplorerComponent {
       columns: [...this.columns()]
     }
 
-    console.log(`Explorer analytics:`, analytics)
+    // console.log(`Explorer analytics:`, analytics)
 
     return {
       ...(this.data?.dataSettings ?? {}),
@@ -420,6 +420,15 @@ export class StoryExplorerComponent {
   })
 
   explains = signal<any[]>([])
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #calcMeasureCommand = injectCalclatedMeasureCommand(this.dataSettings(), this.#storyService, async (calculation) => {
+    console.log(calculation)
+  })
 
   constructor() {
     effect(

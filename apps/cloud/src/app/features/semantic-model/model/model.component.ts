@@ -179,6 +179,10 @@ ${sharedDimensionsPrompt}
   get dbInitialization() {
     return this.modelService.model?.dbInitialization
   }
+  // Left side menu drawer open state
+  sideMenuOpened = true
+  // Copilot chat drawer open state
+  copilotDrawerOpened = false
 
   public id$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),

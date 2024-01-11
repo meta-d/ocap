@@ -1,24 +1,28 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { FormControl, FormArray } from '@angular/forms'
+import { FormArray, FormControl } from '@angular/forms'
 import { PropertyCapacity } from '@metad/components/property'
-import { ChartType, DataSettings, EntitySet, EntityType } from '@metad/ocap-core'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
+import { ChartType, DataSettings, EntitySet, EntityType } from '@metad/ocap-core'
 import { FieldType, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core'
 import { BehaviorSubject, Observable, map } from 'rxjs'
-
 
 @Component({
   selector: 'ngm-formly-chart-property',
   templateUrl: './chart-property.component.html',
   styleUrls: ['./chart-property.component.scss']
 })
-export class NgmFormlyChartPropertyComponent extends FieldType<{
-  capacities: PropertyCapacity[];
-  chartType$: Observable<ChartType>;
-} & FormlyFieldConfig<FormlyFieldProps & { [additionalProperties: string]: any; }>> implements OnInit {
+export class NgmFormlyChartPropertyComponent
+  extends FieldType<
+    {
+      capacities: PropertyCapacity[]
+      chartType$: Observable<ChartType>
+    } & FormlyFieldConfig<FormlyFieldProps & { [additionalProperties: string]: any }>
+  >
+  implements OnInit
+{
   private readonly destroyRef = inject(DestroyRef)
-  private readonly parentArray? = inject(NgmFormlyArrayComponent, {optional: true})
+  private readonly parentArray? = inject(NgmFormlyArrayComponent, { optional: true })
 
   get formControl() {
     return super.formControl as FormControl
@@ -28,6 +32,9 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
   }
   get chartType$() {
     return this.props.chartType$
+  }
+  get removeable() {
+    return this.props?.removeable ?? true
   }
   public readonly dataSettings$ = new BehaviorSubject<DataSettings>(null)
   public readonly entitySet$ = new BehaviorSubject<EntitySet>(null)
@@ -64,6 +71,9 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
     }
   }
 
+  /**
+   * Remove myself from parent array or clear my value
+   */
   killMyself() {
     if (this.field.form instanceof FormArray) {
       const index = this.field.parent.fieldGroup.indexOf(this.field)
@@ -74,7 +84,19 @@ export class NgmFormlyChartPropertyComponent extends FieldType<{
         this.field.parent.fieldGroup.splice(index, 1)
         this.field.parent.model[this.field.key as string] = null
       }
+
+      /**
+       * @todo 存在问题，有属性没有值的情况下会报错
+       */
       this.field.parent.formControl.setValue(this.field.parent.model)
     }
+  }
+
+  /**
+   * @todo 未完成效果
+   */
+  clear() {
+    this.formControl.setValue(null)
+    this.field.parent.model[this.field.key as string] = null
   }
 }

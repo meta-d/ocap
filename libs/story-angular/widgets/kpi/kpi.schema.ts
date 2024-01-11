@@ -35,6 +35,7 @@ export class KpiSchemaService extends DataSettingsSchemaService {
         key: 'options',
         label: i18nStoryWidgets?.KPI?.Options ?? 'Options',
         expanded: true,
+        toggleable: false,
         fieldGroup: this.kpiOptions
       }
     ], {expandedMulti: true})
@@ -61,31 +62,33 @@ export class KpiSchemaService extends DataSettingsSchemaService {
             },
             {
               key: 'Value',
-              type: 'property-select',
+              type: 'chart-property',
               props: {
                 label: BUILDER?.KPI?.Value ?? 'Value',
                 required: true,
                 dataSettings: this.dataSettings$,
                 entityType: this.entityType$,
-                capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes]
+                capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes],
+                removeable: false
               }
             },
             {
               key: 'TargetValue',
-              type: 'property-select',
+              type: 'chart-property',
               props: {
                 label: BUILDER?.KPI?.TargetValue ?? 'Target Value',
                 required: true,
                 dataSettings: this.dataSettings$,
                 entityType: this.entityType$,
-                capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes]
+                capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes],
+                removeable: false
               }
             }
           ]
         },
         {
           key: 'AdditionalDataPoints',
-          type: 'table',
+          type: 'table-inline',
           props: {
             title: BUILDER?.KPI?.AdditionalDataPoints ?? 'Additional Data Points'
           },
@@ -101,24 +104,28 @@ export class KpiSchemaService extends DataSettingsSchemaService {
               },
               {
                 key: 'Value',
-                type: 'property-select',
+                type: 'chart-property',
                 props: {
                   label: BUILDER?.KPI?.Value ?? 'Value',
                   required: true,
                   dataSettings: this.dataSettings$,
                   entityType: this.entityType$,
-                  capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes]
+                  capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes],
+                  width: '200px',
+                  removeable: false
                 }
               },
               {
                 key: 'TargetValue',
-                type: 'property-select',
+                type: 'chart-property',
                 props: {
                   label: BUILDER?.KPI?.TargetValue ?? 'Target Value',
                   required: true,
                   dataSettings: this.dataSettings$,
                   entityType: this.entityType$,
-                  capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes]
+                  capacities: [PropertyCapacity.Measure, PropertyCapacity.MeasureAttributes],
+                  width: '200px',
+                  removeable: false
                 }
               }
             ]

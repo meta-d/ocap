@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { IModelRole, MDX } from '@metad/contracts'
 import { C_MEASURES, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
 import { ComponentSubStore } from '@metad/store'
@@ -9,7 +9,11 @@ import { RoleStateService } from '../role.service'
 
 @Injectable()
 export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRole> {
-  constructor(public roleState: RoleStateService, private translateService: TranslateService, private _toastrService: ToastrService) {
+  readonly #translate = inject(TranslateService)
+  readonly #toastr = inject(ToastrService)
+  readonly roleState = inject(RoleStateService)
+
+  constructor() {
     super({} as any)
   }
 
@@ -20,7 +24,9 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
   readonly addHierarchy = this.updater((state, hierarchy: PropertyHierarchy) => {
     // check exists
     if (state.hierarchyGrants.find((item) => item.hierarchy === hierarchy.name)) {
-      this._toastrService.warning('PAC.MODEL.AccessControl.DimensionHierarchyAlreadyExists', {Default: 'Dimension/hierarchy already exists!'})
+      this.#toastr.warning('PAC.MODEL.AccessControl.DimensionHierarchyAlreadyExists', {
+        Default: 'Dimension/hierarchy already exists!'
+      })
     } else {
       state.hierarchyGrants.push({
         hierarchy: hierarchy.name,
@@ -50,31 +56,41 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
     }
   })
 
-  readonly addMember = this.updater((state, { hierarchy, hierarchyCaption, name, caption }: { hierarchy: string; hierarchyCaption?: string; name: string, caption: string }) => {
-    const hierarchyGrant = state.hierarchyGrants.find((item) => item.hierarchy === hierarchy)
-    if (hierarchyGrant) {
-      if (hierarchyGrant.memberGrants.find((item) => item.member === name)) {
-        this._toastrService.warning('PAC.MODEL.AccessControl.MemberAlreadyExists', {Default: 'Member already exists!'})
-      } else {
-        hierarchyGrant.memberGrants.push({
-          member: name,
-          caption: caption,
-          access: MDX.Access.all
-        })
-      }
-    } else {
-      this.addHierarchy({
-        name: hierarchy,
-        caption: hierarchyCaption
-      })
-
-      this.addMember({
+  readonly addMember = this.updater(
+    (
+      state,
+      {
         hierarchy,
+        hierarchyCaption,
         name,
         caption
-      })
+      }: { hierarchy: string; hierarchyCaption?: string; name: string; caption: string }
+    ) => {
+      const hierarchyGrant = state.hierarchyGrants.find((item) => item.hierarchy === hierarchy)
+      if (hierarchyGrant) {
+        if (hierarchyGrant.memberGrants.find((item) => item.member === name)) {
+          this.#toastr.warning('PAC.MODEL.AccessControl.MemberAlreadyExists', { Default: 'Member already exists!' })
+        } else {
+          hierarchyGrant.memberGrants.push({
+            member: name,
+            caption: caption,
+            access: MDX.Access.all
+          })
+        }
+      } else {
+        this.addHierarchy({
+          name: hierarchy,
+          caption: hierarchyCaption
+        })
+
+        this.addMember({
+          hierarchy,
+          name,
+          caption
+        })
+      }
     }
-  })
+  )
 
   readonly removeMember = this.updater((state, { hierarchy, member }: { hierarchy: string; member?: string }) => {
     const hierarchyGrant = state.hierarchyGrants.find((item) => item.hierarchy === hierarchy)
@@ -108,9 +124,9 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
     }
   )
 
-  readonly addMeasure = this.updater((state, {measure, caption}: any) => {
+  readonly addMeasure = this.updater((state, { measure, caption }: any) => {
     const hierarchyName = `[${C_MEASURES}]`
-    const measuresCaption = this.getTranslation('Ngm.EntitySchema.Measures', {Default: 'Measures'})
+    const measuresCaption = this.getTranslation('Ngm.EntitySchema.Measures', { Default: 'Measures' })
     // check exists
     let hierarchy = state.hierarchyGrants.find((item) => item.hierarchy === hierarchyName)
     if (!hierarchy) {
@@ -125,7 +141,11 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
 
     const memberUniqueName = serializeUniqueName(C_MEASURES, null, measure)
     if (hierarchy.memberGrants.find((item) => item.member === memberUniqueName)) {
-      this._toastrService.warning('PAC.MODEL.AccessControl.MeasureAlreadyExists', {Default: 'Measure already exists!'}, measure)
+      this.#toastr.warning(
+        'PAC.MODEL.AccessControl.MeasureAlreadyExists',
+        { Default: 'Measure already exists!' },
+        measure
+      )
     } else {
       hierarchy.memberGrants.push({
         member: memberUniqueName,
@@ -137,7 +157,7 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
 
   getTranslation(key: string, params?: any) {
     let t = ''
-    this.translateService.get(key, params).subscribe((value) => {
+    this.#translate.get(key, params).subscribe((value) => {
       t = value
     })
     return t

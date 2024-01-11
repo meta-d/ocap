@@ -12,6 +12,7 @@ import { SplitterModule } from './splitter/splitter.module'
 import { TableVirtualScrollModule } from './table'
 import { NgmTagsComponent } from './tag'
 import { NgmTreeSelectComponent } from './tree-select'
+import { NgmDrawerTriggerComponent } from './drawer-trigger'
 
 @NgModule({
   imports: [
@@ -32,7 +33,8 @@ import { NgmTreeSelectComponent } from './tree-select'
     NgmTagsComponent,
     DensityDirective,
     ButtonGroupDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmDrawerTriggerComponent
   ],
   exports: [
     ResizerModule,
@@ -50,7 +52,8 @@ import { NgmTreeSelectComponent } from './tree-select'
     NgmTagsComponent,
     DensityDirective,
     ButtonGroupDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmDrawerTriggerComponent
   ],
   declarations: [],
   providers: []

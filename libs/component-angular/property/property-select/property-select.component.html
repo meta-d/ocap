@@ -53,7 +53,9 @@
         </div>
       </mat-select-trigger>
 
-      <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl" (click)="$event.stopPropagation()"></ngm-search>
+      <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl"
+        (keydown)="onSearchKeydown($event)"
+        (click)="$event.stopPropagation()"></ngm-search>
 
       <mat-optgroup *ngIf="showDimension" [label]=" 'COMPONENTS.PROPERTY.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
         <mat-option [value]="property.name" *ngFor="let property of dimensions$ | async; trackBy: trackByName">

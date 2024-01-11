@@ -85,7 +85,6 @@ export class MeasureControlComponent implements ControlValueAccessor {
                 return (a as CalculationProperty).calculationType > (b as CalculationProperty).calculationType ? 1 : -1
               })
         ),
-        tap((value) => console.log(value))
       )
       .subscribe(this.measures$)
 

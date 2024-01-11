@@ -84,14 +84,6 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
-  @Input() get opened() {
-    return this._opened
-  }
-  set opened(value: boolean | string) {
-    this._opened = coerceBooleanProperty(value)
-  }
-  private _opened = false
-
   @Input() dsCoreService: NgmDSCoreService
   @Input() dataSettings: DataSettings
 
@@ -123,6 +115,8 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   private _disabled = false
 
   @ViewChild('editor') editor!: BaseEditorDirective
+
+  opened = false
 
   calculatedMemberSearch = new FormControl<string>('')
   get calculatedMemberHighlight() {
@@ -196,7 +190,7 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     
     if (result) {
       // 参数创建成功
-      console.log(result)
+      console.debug(result)
     }
   }
 
