@@ -1,214 +1,228 @@
-<mat-drawer-container class="w-full h-full" [hasBackdrop]="isMobile$ | async" [autosize]="true">
-  <mat-drawer #drawer [mode]="(isMobile$ | async) ? 'over' : 'side'" [opened]="!(isMobile$ | async)" class="w-64" ngmResizer [resizerWidth]="230">
-    <div class="p-4">
-      <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
-        [routerLink]="['/project']"
-        routerLinkActive #rla1="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"  
-        [class.active]="rla1.isActive"
-      >
-        <mat-icon fontSet="material-icons-round" class="shrink-0">home</mat-icon>
-        <span class="">
-          {{ 'PAC.Project.Home' | translate: {Default: 'Home'} }}
-        </span>
-      </div>
-
-      <div class="p-2 pr-0 flex justify-between items-center">
-        <span class="">
-          {{ 'PAC.Project.Bookmarks' | translate: {Default: 'Bookmarks'} }}
-        </span>
-        <button mat-icon-button displayDensity="cosy" (click)="unfoldBookmarks=!unfoldBookmarks">
-          <mat-icon *ngIf="!unfoldBookmarks" fontSet="material-icons-outlined">chevron_right</mat-icon>
-          <mat-icon *ngIf="unfoldBookmarks" fontSet="material-icons-outlined">expand_more</mat-icon>
-        </button>
-      </div>
-      <mat-list *ngIf="unfoldBookmarks" displayDensity="compact" class="pb-4" cdkDropList>
-        <mat-list-item *ngFor="let bookmark of bookmarks" class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
-          [routerLink]="['/project', bookmark.story.id]"
-          routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"  
-          [class.active]="rla.isActive"
-          cdkDrag
-          [cdkDragData]="bookmark"
-        >
-          <div class="w-full flex items-center">
-            <mat-icon class="shrink-0 cursor-pointer opacity-0 group-hover:opacity-50">drag_indicator</mat-icon>
-            <span class="font-notoColorEmoji">📖</span>
-            <span [title]="bookmark.story.name" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-              <a >{{bookmark.story.name}}</a>
-            </span>
-
-            <span class="flex flex-1"></span>
-            <button mat-icon-button displayDensity="cosy" class="opacity-0 group-hover:opacity-50"
-              matTooltip="{{ 'PAC.Project.RemoveBookmark' | translate: {Default: 'Remove Bookmark'} }}" matTooltipPosition="right"
-              (click)="$event.stopPropagation();removeBookmark(bookmark)"
-            >
-              <mat-icon fontSet="material-icons-outlined">bookmark</mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-      </mat-list>
-
-      <div class="p-2 pr-0 flex justify-between items-center">
-        <span class="">
-          {{ 'PAC.Project.Collections' | translate: {Default: 'Collections'} }}
-        </span>
-        <button  mat-icon-button displayDensity="cosy" [matMenuTriggerFor]="collectionsMenu"
-          #mt="matMenuTrigger"
-          [class.active]="mt.menuOpen"
-        >
-          <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-        </button>
-      </div>
-
-      <cdk-tree [dataSource]="dataSource" [treeControl]="treeControl" class="flex flex-col">
-        <!-- This is the tree node template for leaf nodes -->
-        <cdk-tree-node *cdkTreeNodeDef="let node" cdkTreeNodePadding cdkTreeNodePaddingIndent="10px"
-          class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
-          [routerLink]="node.raw.__type__ === 'story' ? ['/story', node.key, 'edit'] : null" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
-          [class.active]="rla.isActive"
-        >
-          <!-- use a disabled button to provide padding for tree leaf -->
-          <button mat-icon-button disabled displayDensity="cosy" class="ml-2"></button>
-          <ng-container *ngIf="node.raw.__type__ === 'collection'">
-            <mat-icon displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
-            <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-              {{node.caption}}
-            </span>
-          </ng-container>
-          <ng-container *ngIf="node.raw.__type__ === 'story'">
-            <span class="font-notoColorEmoji">📖</span>
-            <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-              <a [routerLink]="['/story', node.key, 'edit']" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}">{{node.caption}}</a>
-            </span>
-          </ng-container>
-
-          <span class="flex flex-1"></span>
-          <button *ngIf="node.raw.__type__ === 'collection'" class="opacity-0 group-hover:opacity-50"
-            mat-icon-button displayDensity="cosy"
-            [matMenuTriggerFor]="collectionMenu"
-            [matMenuTriggerData]="node"
-            #mt="matMenuTrigger"
-            [class.active]="mt.menuOpen"
-            (click)="$event.stopPropagation()"
-          >
-            <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-          </button>
-
-          <button *ngIf="node.raw.__type__ === 'story'" class="opacity-0 group-hover:opacity-50"
-            mat-icon-button displayDensity="cosy"
-            [matMenuTriggerFor]="storyMenu"
-            [matMenuTriggerData]="node"
-            #mt="matMenuTrigger"
-            [class.active]="mt.menuOpen"
-            (click)="$event.stopPropagation()"
-            >
-            <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-          </button>
-        </cdk-tree-node>
-        <!-- This is the tree node template for expandable nodes -->
-        <cdk-tree-node *cdkTreeNodeDef="let node; when: hasChild" cdkTreeNodePadding cdkTreeNodePaddingIndent="20px"
-          class="flex items-center group cursor-pointer rounded-md">
-          <button mat-icon-button cdkTreeNodeToggle displayDensity="cosy" class="ml-2"
-                  [attr.aria-label]="'Toggle ' + node.caption"
-                  (click)="node.isExpanded = !node.isExpanded"
-                  [style.visibility]="node.expandable ? 'visible' : 'hidden'">
-            <mat-icon class="mat-icon-rtl-mirror">
-              {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-            </mat-icon>
-          </button>
-          <mat-icon *ngIf="node.raw.__type__ === 'collection'" displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
-          <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-            {{node.caption}}
-          </span>
-          <span class="flex flex-1"></span>
-          <button *ngIf="node.raw.__type__ === 'collection'" class="opacity-0 group-hover:opacity-50"
-            mat-icon-button displayDensity="cosy"
-            [matMenuTriggerFor]="collectionMenu"
-            [matMenuTriggerData]="node"
-            #mt="matMenuTrigger"
-            [class.active]="mt.menuOpen"
-          >
-            <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-          </button>
-        </cdk-tree-node>
-      </cdk-tree>
-
-      <div class="p-2 pr-0 flex justify-between items-center">
-        <span class="">
-          {{ 'PAC.Project.SemanticModels' | translate: {Default: 'Semantic Models'} }}
-        </span>
-
-        <span class="flex flex-1"></span>
-        <button *ngIf="isOwner" mat-icon-button displayDensity="cosy"
-          matTooltip="{{ 'PAC.Project.AddModel' | translate: {Default: 'Add Model'} }}"
-          matTooltipPosition="above"
-          (click)="addModel()">
-          <mat-icon>add_link</mat-icon>
-        </button>
-
-        <button mat-icon-button displayDensity="cosy" (click)="modelsExpand=!modelsExpand">
-          <mat-icon *ngIf="!modelsExpand" fontSet="material-icons-outlined">chevron_right</mat-icon>
-          <mat-icon *ngIf="modelsExpand" fontSet="material-icons-outlined">expand_more</mat-icon>
-        </button>
-      </div>
-
-      <mat-list *ngIf="modelsExpand" displayDensity="compact" class="pb-4"
-        cdkDropList (cdkDropListDropped)="onDropModels($event)">
-        <mat-list-item *ngFor="let model of project?.models"
-          class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
-          [routerLink]="['/models', model.id]"
-          cdkDrag
-          [cdkDragData]="model"
-          >
-          <div class="w-full flex items-center">
-            <mat-icon class="shrink-0 cursor-pointer opacity-0 group-hover:opacity-50">drag_indicator</mat-icon>
-            <span class="whitespace-nowrap text-ellipsis overflow-hidden">
-              {{ model.name }}
-            </span>
-  
-            <span class="flex flex-1"></span>
-            <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="opacity-0 group-hover:opacity-80 "
-              matTooltip="{{ 'PAC.Project.RemoveModel' | translate: {Default: 'Remove Model'} }}" matTooltipPosition="right"
-              (click)="$event.stopPropagation();removeModel(model)"
-            >
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-      </mat-list>
-
-      <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
-        [routerLink]="['indicators']"
-        routerLinkActive #rla4="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
-        [class.active]="rla4.isActive"
-      >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">trending_up</mat-icon>
-        <span >
-          {{ 'PAC.Project.Indicators' | translate: {Default: 'Indicators'} }}
-        </span>
-      </div>
-
-      <div *ngIf="!isDefaultProject" class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
-        [routerLink]="['members']"
-        routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
-        [class.active]="rla5.isActive"
-      >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">people</mat-icon>
-        <span class="">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
-      </div>
-    </div>
-
-    <div ngmResizerBar resizerBarPosition="right"
-        cdkDrag
-        cdkDragLockAxis="x"
-    ></div>
+<mat-drawer-container class="w-full h-full">
+  <mat-drawer position="end" mode="side" [(opened)]="copilotDrawerOpened">
+    <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
+    ></ngm-copilot-chat>
   </mat-drawer>
-  <mat-drawer-content [ngStyle]="{'z-index': (isMobile$ | async) ? 0 : 10}">
-    <button mat-icon-button displayDensity="cosy" class="pac-project__anchor absolute -left-4 top-4 bg-white dark:bg-slate-500"
-      (click)="drawer.toggle()"
-    >
-      <mat-icon [class.rotate-180]="drawer.opened" class="duration-300">chevron_right</mat-icon>
-    </button>
-    <router-outlet #o="outlet"></router-outlet>
+  <mat-drawer-content>
+    <mat-drawer-container class="w-full h-full" [hasBackdrop]="isMobile()" [autosize]="true">
+      <mat-drawer #drawer class="w-64" [mode]="isMobile() ? 'over' : 'side'"
+        [(opened)]="sideMenuOpened"
+        ngmResizer [resizerWidth]="230">
+        <div class="p-4">
+          <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+            [routerLink]="['/project']"
+            routerLinkActive #rla1="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"  
+            [class.active]="rla1.isActive"
+          >
+            <mat-icon fontSet="material-icons-round" class="shrink-0">home</mat-icon>
+            <span class="">
+              {{ 'PAC.Project.Home' | translate: {Default: 'Home'} }}
+            </span>
+          </div>
+
+          <div class="p-2 pr-0 flex justify-between items-center">
+            <span class="">
+              {{ 'PAC.Project.Bookmarks' | translate: {Default: 'Bookmarks'} }}
+            </span>
+            <button mat-icon-button displayDensity="cosy" (click)="unfoldBookmarks=!unfoldBookmarks">
+              <mat-icon *ngIf="!unfoldBookmarks" fontSet="material-icons-outlined">chevron_right</mat-icon>
+              <mat-icon *ngIf="unfoldBookmarks" fontSet="material-icons-outlined">expand_more</mat-icon>
+            </button>
+          </div>
+          <mat-list *ngIf="unfoldBookmarks" displayDensity="compact" class="pb-4" cdkDropList>
+            <mat-list-item *ngFor="let bookmark of bookmarks" class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
+              [routerLink]="['/project', bookmark.story.id]"
+              routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"  
+              [class.active]="rla.isActive"
+              cdkDrag
+              [cdkDragData]="bookmark"
+            >
+              <div class="w-full flex items-center">
+                <mat-icon class="shrink-0 cursor-pointer opacity-0 group-hover:opacity-50">drag_indicator</mat-icon>
+                <span class="font-notoColorEmoji">📖</span>
+                <span [title]="bookmark.story.name" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                  <a >{{bookmark.story.name}}</a>
+                </span>
+
+                <span class="flex flex-1"></span>
+                <button mat-icon-button displayDensity="cosy" class="opacity-0 group-hover:opacity-50"
+                  matTooltip="{{ 'PAC.Project.RemoveBookmark' | translate: {Default: 'Remove Bookmark'} }}" matTooltipPosition="right"
+                  (click)="$event.stopPropagation();removeBookmark(bookmark)"
+                >
+                  <mat-icon fontSet="material-icons-outlined">bookmark</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+          </mat-list>
+
+          <div class="p-2 pr-0 flex justify-between items-center">
+            <span class="">
+              {{ 'PAC.Project.Collections' | translate: {Default: 'Collections'} }}
+            </span>
+            <button  mat-icon-button displayDensity="cosy" [matMenuTriggerFor]="collectionsMenu"
+              #mt="matMenuTrigger"
+              [class.active]="mt.menuOpen"
+            >
+              <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+            </button>
+          </div>
+
+          <cdk-tree [dataSource]="dataSource" [treeControl]="treeControl" class="flex flex-col">
+            <!-- This is the tree node template for leaf nodes -->
+            <cdk-tree-node *cdkTreeNodeDef="let node" cdkTreeNodePadding cdkTreeNodePaddingIndent="10px"
+              class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
+              [routerLink]="node.raw.__type__ === 'story' ? ['/story', node.key, 'edit'] : null" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+              [class.active]="rla.isActive"
+            >
+              <!-- use a disabled button to provide padding for tree leaf -->
+              <button mat-icon-button disabled displayDensity="cosy" class="ml-2"></button>
+              <ng-container *ngIf="node.raw.__type__ === 'collection'">
+                <mat-icon displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
+                <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                  {{node.caption}}
+                </span>
+              </ng-container>
+              <ng-container *ngIf="node.raw.__type__ === 'story'">
+                <span class="font-notoColorEmoji">📖</span>
+                <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                  <a [routerLink]="['/story', node.key, 'edit']" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}">{{node.caption}}</a>
+                </span>
+              </ng-container>
+
+              <span class="flex flex-1"></span>
+              <button *ngIf="node.raw.__type__ === 'collection'" class="opacity-0 group-hover:opacity-50"
+                mat-icon-button displayDensity="cosy"
+                [matMenuTriggerFor]="collectionMenu"
+                [matMenuTriggerData]="node"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+              </button>
+
+              <button *ngIf="node.raw.__type__ === 'story'" class="opacity-0 group-hover:opacity-50"
+                mat-icon-button displayDensity="cosy"
+                [matMenuTriggerFor]="storyMenu"
+                [matMenuTriggerData]="node"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+                (click)="$event.stopPropagation()"
+                >
+                <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+              </button>
+            </cdk-tree-node>
+            <!-- This is the tree node template for expandable nodes -->
+            <cdk-tree-node *cdkTreeNodeDef="let node; when: hasChild" cdkTreeNodePadding cdkTreeNodePaddingIndent="20px"
+              class="flex items-center group cursor-pointer rounded-md">
+              <button mat-icon-button cdkTreeNodeToggle displayDensity="cosy" class="ml-2"
+                      [attr.aria-label]="'Toggle ' + node.caption"
+                      (click)="node.isExpanded = !node.isExpanded"
+                      [style.visibility]="node.expandable ? 'visible' : 'hidden'">
+                <mat-icon class="mat-icon-rtl-mirror">
+                  {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                </mat-icon>
+              </button>
+              <mat-icon *ngIf="node.raw.__type__ === 'collection'" displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
+              <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                {{node.caption}}
+              </span>
+              <span class="flex flex-1"></span>
+              <button *ngIf="node.raw.__type__ === 'collection'" class="opacity-0 group-hover:opacity-50"
+                mat-icon-button displayDensity="cosy"
+                [matMenuTriggerFor]="collectionMenu"
+                [matMenuTriggerData]="node"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+              >
+                <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+              </button>
+            </cdk-tree-node>
+          </cdk-tree>
+
+          <div class="p-2 pr-0 flex justify-between items-center">
+            <span class="">
+              {{ 'PAC.Project.SemanticModels' | translate: {Default: 'Semantic Models'} }}
+            </span>
+
+            <span class="flex flex-1"></span>
+            <button *ngIf="isOwner" mat-icon-button displayDensity="cosy"
+              matTooltip="{{ 'PAC.Project.AddModel' | translate: {Default: 'Add Model'} }}"
+              matTooltipPosition="above"
+              (click)="addModel()">
+              <mat-icon>add_link</mat-icon>
+            </button>
+
+            <button mat-icon-button displayDensity="cosy" (click)="modelsExpand=!modelsExpand">
+              <mat-icon *ngIf="!modelsExpand" fontSet="material-icons-outlined">chevron_right</mat-icon>
+              <mat-icon *ngIf="modelsExpand" fontSet="material-icons-outlined">expand_more</mat-icon>
+            </button>
+          </div>
+
+          <mat-list *ngIf="modelsExpand" displayDensity="compact" class="pb-4"
+            cdkDropList (cdkDropListDropped)="onDropModels($event)">
+            <mat-list-item *ngFor="let model of project?.models"
+              class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
+              [routerLink]="['/models', model.id]"
+              cdkDrag
+              [cdkDragData]="model"
+              >
+              <div class="w-full flex items-center">
+                <mat-icon class="shrink-0 cursor-pointer opacity-0 group-hover:opacity-50">drag_indicator</mat-icon>
+                <span class="whitespace-nowrap text-ellipsis overflow-hidden">
+                  {{ model.name }}
+                </span>
+      
+                <span class="flex flex-1"></span>
+                <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="opacity-0 group-hover:opacity-80 "
+                  matTooltip="{{ 'PAC.Project.RemoveModel' | translate: {Default: 'Remove Model'} }}" matTooltipPosition="right"
+                  (click)="$event.stopPropagation();removeModel(model)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+          </mat-list>
+
+          <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+            [routerLink]="['indicators']"
+            routerLinkActive #rla4="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+            [class.active]="rla4.isActive"
+          >
+            <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">trending_up</mat-icon>
+            <span >
+              {{ 'PAC.Project.Indicators' | translate: {Default: 'Indicators'} }}
+            </span>
+          </div>
+
+          <div *ngIf="!isDefaultProject" class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+            [routerLink]="['members']"
+            routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+            [class.active]="rla5.isActive"
+          >
+            <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">people</mat-icon>
+            <span class="">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
+          </div>
+        </div>
+
+        <div ngmResizerBar resizerBarPosition="right"
+            cdkDrag
+            cdkDragLockAxis="x"
+        ></div>
+      </mat-drawer>
+      <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}">
+        <!-- <button mat-icon-button displayDensity="cosy" class="pac-project__anchor absolute -left-4 top-4 bg-white dark:bg-slate-500"
+          (click)="drawer.toggle()"
+        >
+          <mat-icon [class.rotate-180]="drawer.opened" class="duration-300">chevron_right</mat-icon>
+        </button> -->
+        <router-outlet #o="outlet"></router-outlet>
+
+        <ngm-drawer-trigger class="absolute left-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
+      </mat-drawer-content>
+    </mat-drawer-container>
+
+    <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
   </mat-drawer-content>
 </mat-drawer-container>
 

@@ -17,6 +17,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/base';
+
 @include features.theme(ngm-theme.$mat-theme);
 @include shared.theme(ngm-theme.$mat-theme);
 @include public.theme(ngm-theme.$mat-theme);

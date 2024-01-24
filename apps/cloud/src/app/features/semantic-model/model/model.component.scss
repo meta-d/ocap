@@ -73,3 +73,7 @@ list-content-loader {
 .pac-model__copilot-trigger.mdc-icon-button.active {
   @apply bg-slate-400/50;
 }
+
+.ngm-copilot-chat {
+  @apply w-full h-full rounded-lg shadow-lg overflow-hidden;
+}

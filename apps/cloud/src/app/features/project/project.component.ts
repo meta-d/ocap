@@ -48,6 +48,8 @@ import { AppService } from '../../app.service'
 import { ReleaseStoryDialog } from './release-story.component'
 import { SelectModelDialog } from './select-model.component'
 import { collectionId, treeDataSourceFactory } from './types'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -65,11 +67,15 @@ import { collectionId, treeDataSourceFactory } from './types'
     ButtonGroupDirective,
     NgmCommonModule,
     AppearanceDirective,
-    NgmTreeSelectComponent
+    NgmTreeSelectComponent,
+    NgmCopilotChatComponent
   ],
   selector: 'pac-project',
   templateUrl: 'project.component.html',
-  styleUrls: ['project.component.scss']
+  styleUrls: ['project.component.scss'],
+  providers: [
+    NgmCopilotEngineService
+  ]
 })
 export class ProjectComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
@@ -103,6 +109,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   get isOwner() {
     return this.store.user?.id === this.project?.ownerId
   }
+  
   moveToCollectionId: string
   public bookmarks = []
   public unfoldBookmarks = false
@@ -111,7 +118,9 @@ export class ProjectComponent extends TranslationBaseComponent {
   public modelsExpand = false
 
   // Is mobile
-  public readonly isMobile$ = this.appService.isMobile$
+  readonly isMobile = toSignal(this.appService.isMobile$)
+  sideMenuOpened = !this.isMobile()
+  copilotDrawerOpened = false
 
   public readonly projectId$ = this.store.selectedProject$.pipe(
     map((project) => (project?.id === DefaultProject.id ? null : project?.id)),

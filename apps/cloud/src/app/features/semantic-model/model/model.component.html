@@ -233,7 +233,7 @@
             <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400"
                 [(opened)]="copilotDrawerOpened"
             >
-                <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
+                <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area"
                     [copilotEngine]="copilotEngine"
                     [user]="user"
                     cdkDropList
@@ -249,12 +249,12 @@
             <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path" class="relative">
                 <router-outlet #o="outlet"></router-outlet>
 
-                <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
+                <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
                 
             </mat-drawer-content>
         </mat-drawer-container>
 
-        <ngm-drawer-trigger class="absolute left-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
+        <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
     
