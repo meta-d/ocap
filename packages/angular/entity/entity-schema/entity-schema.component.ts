@@ -12,7 +12,7 @@ import {
   SimpleChanges,
   inject
 } from '@angular/core'
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -24,13 +24,11 @@ import { MatTreeModule } from '@angular/material/tree'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmAppearance, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DataSettings } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { EntitySchemaDataSource, EntitySchemaFlatNode } from './data-source'
 import { EntityCapacity, EntitySchemaType } from './types'
 
 
-@UntilDestroy()
 @Component({
   standalone: true,
   imports: [

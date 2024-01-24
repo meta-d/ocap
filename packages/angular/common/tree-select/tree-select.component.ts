@@ -6,8 +6,10 @@ import { FlatTreeControl } from '@angular/cdk/tree'
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   forwardRef,
+  inject,
   Input,
   OnChanges,
   SimpleChanges,
@@ -40,7 +42,6 @@ import { FloatLabelType, MatFormFieldAppearance } from '@angular/material/form-f
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, filterTreeNodes, findTreeNode, FlatTreeNode, TreeNodeInterface } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { isEqual } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -56,6 +57,7 @@ import {
 import { NgmSearchComponent } from '../search/search.component'
 import { CommonModule } from '@angular/common'
 import { NgmDisplayBehaviourComponent } from '../display-behaviour'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 
@@ -76,7 +78,6 @@ const _TreeSelectBase = mixinColor(
  * 2. Autocomplete 形式, 输入框可输入搜索条件进行过滤, 树型选项列表以下拉列表的形式展示.
  * 3. TreeViewer 形式, 树型选项列表以视图的方式平铺展示出来.
  */
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   imports: [
@@ -128,6 +129,8 @@ export class NgmTreeSelectComponent<T>
   extends _TreeSelectBase
   implements OnChanges, ControlValueAccessor, CanDisable, CanColor, CanDisableRipple
 {
+  readonly #destroyRef = inject(DestroyRef)
+  
   @Input() appearance: MatFormFieldAppearance
   @Input() floatLabel: FloatLabelType
   @Input() displayBehaviour: DisplayBehaviour | string
@@ -307,7 +310,7 @@ export class NgmTreeSelectComponent<T>
 
   // Subscribers
   // Update the formContrl value as the ref of tree nodes when select options data changed
-  private _nodesSub = this.treeNodes$.pipe(delay(100)).subscribe(() => {
+  private _nodesSub = this.treeNodes$.pipe(delay(100), takeUntilDestroyed()).subscribe(() => {
     const value = this.formControl.value
     if (Array.isArray(value)) {
       this.formControl.setValue(
@@ -333,7 +336,8 @@ export class NgmTreeSelectComponent<T>
         return filterTreeNodes(treeNodes ?? [], text, {
           considerKey: this.displayBehaviour !== DisplayBehaviour.descriptionOnly
         })
-      })
+      }),
+      takeUntilDestroyed()
     )
     .subscribe((nodes) => {
       this.dataSource.data = nodes
@@ -352,6 +356,7 @@ export class NgmTreeSelectComponent<T>
     .pipe(
       filter(() => !this.autocomplete && !this.treeViewer),
       distinctUntilChanged(isEqual),
+      takeUntilDestroyed()
     )
     .subscribe((value) => {
       if (Array.isArray(value)) {
@@ -365,6 +370,7 @@ export class NgmTreeSelectComponent<T>
   private _singleSelectionSub = this.singleSelection.changed
     .pipe(
       filter(() => !this.multiple && (!!this.useAutocomplete || this.treeViewer)),
+      takeUntilDestroyed()
     )
     .subscribe((event) => {
       this.onChange?.(this.singleSelection.selected?.[0])
@@ -373,11 +379,13 @@ export class NgmTreeSelectComponent<T>
   private multipleSelectionSub = this.multipleSelection.changed
     .pipe(
       filter(() => this.multiple && (!!this.useAutocomplete || this.treeViewer)),
+      takeUntilDestroyed()
     )
     .subscribe((event) => {
       this.allSelect = this.treeControl.dataNodes.length === this.multipleSelection.selected.length
       this.onChange?.(this.multipleSelection.selected)
     })
+    
   constructor(elementRef: ElementRef) {
     super(elementRef)
   }

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   EventEmitter,
   HostBinding,
   Input,
@@ -45,7 +46,6 @@ import {
 } from '@metad/ocap-core'
 import { EChartEngineEvent, SmartEChartEngine } from '@metad/ocap-echarts'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { ECharts } from 'echarts/core'
 import { assign, cloneDeep, findIndex, isEmpty, isNil } from 'lodash-es'
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs'
@@ -96,7 +96,6 @@ export interface AnalyticalCardState {
   selectedSlicers: ISlicer[]
 }
 
-@UntilDestroy({checkProperties: true})
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-analytical-card',
@@ -114,6 +113,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
   private readonly businessService = inject(AnalyticalCardService)
   private readonly _ngZone = inject(NgZone)
   private readonly _cdr = inject(ChangeDetectorRef)
+  readonly #destroyRef = inject(DestroyRef)
 
   private echartsEngine = new SmartEChartEngine()
   private _slicersChanging$ = new BehaviorSubject<ISlicer[]>(null)
@@ -359,7 +359,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         })
         .filter(({ slicer }) => nonNullable(slicer))
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly canDrillLevels$ = this.drillLevels$.pipe(map((levels) => !isEmpty(levels)))
@@ -384,6 +384,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
       filter(Boolean),
       startWith(null),
       pairwise(),
+      takeUntilDestroyed(),
     )
     .subscribe(([a, b]) => {
       if (
@@ -407,20 +408,20 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
       this.dataSettings$,
       this.businessService.selectResult(),
       this.echartsEngine.selectChartOptions().pipe(startWith(null))
-    ]).subscribe(([dataSettings, queryReturn, chartOptions]) => {
+    ]).pipe(takeUntilDestroyed()).subscribe(([dataSettings, queryReturn, chartOptions]) => {
       this.explain.emit([
         dataSettings, queryReturn, chartOptions
       ])
     })
 
   // Clear slicers changed output when ECharts refresh
-  private _echartsOptionSub = this.echartsEngine.selectChartOptions().subscribe(() => {
+  private _echartsOptionSub = this.echartsEngine.selectChartOptions().pipe(takeUntilDestroyed()).subscribe(() => {
     this.openContextMenu(null)
   })
 
   // Listeners for ECharts events
   // ECharts ContextMenu event
-  private _contextMenuSub = this.echartsEngine.chartContextMenu$.subscribe((event: EChartEngineEvent) => {
+  private _contextMenuSub = this.echartsEngine.chartContextMenu$.pipe(takeUntilDestroyed()).subscribe((event: EChartEngineEvent) => {
     event.event.stopPropagation()
     event.event.preventDefault()
 
@@ -429,14 +430,10 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
       ...pick(event, 'seriesIndex', 'seriesId', 'seriesName', 'dataIndex', 'name'),
       type: 'unselect',
     })
-
-    // this._ngZone.run(() => {
-    //   this.openContextMenu(event.slicers, event.event)
-    // })
   })
 
   // ECharts selecchanged event
-  private _selectChangedSub = this.echartsEngine.selectChanged$.subscribe((event: IChartSelectedEvent) => {
+  private _selectChangedSub = this.echartsEngine.selectChanged$.pipe(takeUntilDestroyed()).subscribe((event: IChartSelectedEvent) => {
     this._ngZone.run(() => {
       this.openContextMenu(event.slicers, event.event)
     })
@@ -459,7 +456,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
           return !error
         }),
         withLatestFrom(this.businessService.chartAnnotation$),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe(([result, chartAnnotation]) => {
         this.empty = !result.data?.length
@@ -469,7 +466,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
 
     this.businessService
       .onAfterServiceInit()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.#destroyRef))
       .subscribe(async () => {
         this.echartsEngine.entityType = await this.businessService.getEntityType()
         this.refresh()

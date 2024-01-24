@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   effect,
   ElementRef,
   EventEmitter,
@@ -62,7 +63,6 @@ import {
   uniqBy,
   wrapBrackets
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { maxBy, minBy, orderBy } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
@@ -83,7 +83,6 @@ import {
 } from './types'
 import { NgmTreeFlatDataSource } from './tree-flat-data-source'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-analytical-grid',
@@ -111,6 +110,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   isNil = isNil
 
   public readonly analyticsService = inject(NgmAnalyticsBusinessService)
+  readonly #destroyRef = inject(DestroyRef)
 
   private _disabled = false
 
@@ -291,7 +291,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
           return this.mergeColumnOptions(column, column.name, _columnsOptions)
         })
       }),
-      untilDestroyed(this),
+      takeUntilDestroyed(),
       shareReplay(1)
     )
 
@@ -390,7 +390,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
     })
 
   // Calc Visual Maps from measures
-  private visualMapSub = this.analyticsService.analytics$.subscribe({
+  private visualMapSub = this.analyticsService.analytics$.pipe(takeUntilDestroyed()).subscribe({
     next: (analytics) => {
       this.visualMaps = [...(analytics.columns ?? []), ...(analytics.rows ?? [])].reduce((visualMaps, dimension) => {
         if (isMeasure(dimension) && (dimension.palette?.name || dimension.palette?.colors?.length)) {
@@ -616,7 +616,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
       filter(({ error }) => !error),
       debounceTime(200),
       withLatestFrom(this.cellColumns$),
-      untilDestroyed(this)
+      takeUntilDestroyed()
     )
     .subscribe(([{ data, schema }, columns]) => {
       if (schema?.recursiveHierarchy) {
@@ -648,6 +648,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
     ).subscribe((data) => {
       this.flatDataSource.data = data
     })
+    
   constructor(
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,

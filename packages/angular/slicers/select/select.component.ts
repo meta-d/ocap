@@ -1,12 +1,11 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core'
+import { Component, forwardRef, Input } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormArray, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { AggregationRole, Dimension, EntitySet, getEntityDimensionAndHierarchies, ISlicer } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { isEqual } from 'lodash-es'
 import { BehaviorSubject, distinctUntilChanged, map, shareReplay, withLatestFrom } from 'rxjs'
 
-@UntilDestroy()
 @Component({
   selector: 'ngm-slicer-select',
   templateUrl: 'select.component.html',
@@ -22,7 +21,7 @@ import { BehaviorSubject, distinctUntilChanged, map, shareReplay, withLatestFrom
     }
   ]
 })
-export class SlicerSelectComponent implements ControlValueAccessor, OnInit {
+export class SlicerSelectComponent implements ControlValueAccessor {
   AggregationRole = AggregationRole
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() slicer: ISlicer
@@ -49,6 +48,7 @@ export class SlicerSelectComponent implements ControlValueAccessor, OnInit {
   })
   formControl = new FormControl()
   private onChange: (value: any) => any
+
   constructor() {
     this.formControl.valueChanges
       .pipe(
@@ -65,20 +65,15 @@ export class SlicerSelectComponent implements ControlValueAccessor, OnInit {
           }
           return null
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed()
       )
       .subscribe((dimension: Dimension) => {
         this.formGroup.patchValue({ dimension })
       })
-    this.formGroup.valueChanges.pipe(
-      distinctUntilChanged(isEqual),
-      untilDestroyed(this)
-    ).subscribe((value) => {
+    this.formGroup.valueChanges.pipe(distinctUntilChanged(isEqual), takeUntilDestroyed()).subscribe((value) => {
       this.onChange?.(value)
     })
   }
-
-  ngOnInit() {}
 
   writeValue(obj: any): void {
     const value = obj || {}
