@@ -218,11 +218,14 @@ export class CopilotService {
       onResponse,
       onFinish,
       onError,
+      appendMessage,
       credentials,
       headers,
       body,
       generateId = nanoid
-    }: UseChatOptions = {},
+    }: UseChatOptions & {
+      appendMessage?: (message: Message) => void;
+    } = {},
     chatRequest: ChatRequest,
     { options, data }: ChatRequestOptions = {},
     {
@@ -263,10 +266,7 @@ export class CopilotService {
         // setStreamData([...existingData, ...(data ?? [])]);
       },
       onFinish,
-      appendMessage(message) {
-        // console.log(`appendMessage`, message)
-        // mutate([...chatRequest.messages, message]);
-      },
+      appendMessage,
       restoreMessagesOnFailure() {
         // Restore the previous messages if the request fails.
         // if (previousMessages.status === 'success') {

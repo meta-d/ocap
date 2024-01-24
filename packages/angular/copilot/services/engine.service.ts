@@ -280,8 +280,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
                   ...(options?.body ?? {})
                 },
                 onFinish: (message) => {
-                  console.log(`onFinish`, message)
-                  this.conversations$.update((state) => [...state, message] as any[])
+                  this.upsertMessage(message)
+                },
+                appendMessage: (message) => {
+                  this.upsertMessage(message)
                 }
               },
               chatRequest,
