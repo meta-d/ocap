@@ -1,12 +1,12 @@
 import { Component, ElementRef, forwardRef, inject, Input, ViewChild } from '@angular/core'
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { matchValidator } from '@metad/cloud/auth'
+import { AuthService } from '@metad/cloud/state'
 import { ITag, IUser } from '@metad/contracts'
 import { FormlyFieldConfig } from '@ngx-formly/core'
-import { AuthService } from '@metad/cloud/state'
 import { firstValueFrom, map } from 'rxjs'
-import { LANGUAGES, MatchValidator, RoleService, Store } from '../../../../@core'
+import { LANGUAGES, RoleService, Store } from '../../../../@core'
 import { TranslationBaseComponent } from '../../../language/translation-base.component'
-
 
 @Component({
   selector: 'pac-user-basic-info-form',
@@ -163,7 +163,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           }
         ],
         validators: {
-          validation: this.password ? [ MatchValidator.mustMatch('password', 'confirmPassword') ] : []
+          validation: this.password ? [matchValidator('password', 'confirmPassword')] : []
         }
       },
       {

@@ -1,12 +1,12 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core'
-import { FormControl, FormGroup } from '@angular/forms'
+import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { Router } from '@angular/router'
 import { TranslateService } from '@ngx-translate/core'
 import { delay, tap } from 'rxjs'
 import { PAC_AUTH_OPTIONS } from '../auth.options'
 import { getDeepFromObject } from '../helpers'
-import { PacAuthResult, PacAuthService } from '../services'
+import { PacAuthResult, PacAuthService, PasswordStrengthEnum, matchValidator, passwordStrength } from '../services'
 
 @Component({
   selector: 'pac-reset-password',
@@ -14,27 +14,68 @@ import { PacAuthResult, PacAuthService } from '../services'
   styleUrls: ['reset-password.component.scss']
 })
 export class ResetPasswordComponent {
-  strategy = ''
-  form = new FormGroup({
-    password: new FormControl<string>(null),
-    confirmPassword: new FormControl<string>(null)
-  })
+  readonly #authService = inject(PacAuthService)
+  protected options = inject(PAC_AUTH_OPTIONS)
+  readonly translateService = inject(TranslateService)
+  readonly _snackBar = inject(MatSnackBar)
+  readonly router = inject(Router)
+  readonly _cdr = inject(ChangeDetectorRef)
+
+  strategy = this.getConfigValue('forms.login.strategy')
+  form = new FormGroup(
+    {
+      password: new FormControl<string | null>(null, [
+        Validators.required,
+        Validators.minLength(8),
+        (control: AbstractControl): ValidationErrors | null => {
+          const value: string = control.value || ''
+          const status = passwordStrength(value).value
+          return status === PasswordStrengthEnum.Strong ? null : { strength: status }
+        }
+      ]),
+      confirmPassword: new FormControl<string>(null)
+    },
+    {
+      validators: [matchValidator('password', 'confirmPassword')]
+    }
+  )
 
   submitted = false
-  constructor(
-    private authService: PacAuthService,
-    @Inject(PAC_AUTH_OPTIONS) protected options = {},
-    private translateService: TranslateService,
-    private _snackBar: MatSnackBar,
-    private readonly router: Router,
-    private _cdr: ChangeDetectorRef
-  ) {
-    this.strategy = this.getConfigValue('forms.login.strategy')
+
+  passwordProgressMap: { [key: string]: { color: 'success' | 'normal' | 'accent' | 'warn'; progress: number } } = {
+    [PasswordStrengthEnum.Strong]: {
+      color: 'success',
+      progress: 100
+    },
+    [PasswordStrengthEnum.Medium]: {
+      color: 'normal',
+      progress: 60
+    },
+    [PasswordStrengthEnum.Weak]: {
+      color: 'accent',
+      progress: 30
+    },
+    [PasswordStrengthEnum.Tooweak]: {
+      color: 'warn',
+      progress: 10
+    }
+  }
+
+  get passwordControl() {
+    return this.form.get('password')
+  }
+
+  get strength() {
+    return this.passwordControl.getError('strength') ?? PasswordStrengthEnum.Strong
+  }
+
+  get mismatch() {
+    return this.form.hasError('mismatch') && this.form.get('confirmPassword').dirty
   }
 
   resetPass() {
     this.submitted = true
-    this.authService
+    this.#authService
       .resetPassword(this.strategy, this.form.value)
       .pipe(
         tap((result: PacAuthResult) => {
