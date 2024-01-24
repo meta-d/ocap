@@ -50,18 +50,18 @@
                             </div>
                         </button>
     
-                        <mat-list role="list" displayDensity="cosy"
+                        <mat-list role="list" displayDensity="compact"
                             id="ngm-calculated-parameters"
                             cdkDropList
                             [cdkDropListData]="calculations"
                         >
-                            <mat-list-item role="listitem" *ngFor="let property of parameters$ | async" class="hover:bg-gray-100"
+                            <mat-list-item role="listitem" *ngFor="let property of parameters$ | async" class="rounded-lg overflow-hidden hover:bg-gray-100"
                                 cdkDrag
                                 [cdkDragData]="property"
                             >
                                 <div class="flex justify-between items-center">
                                     <ngm-entity-property class="flex-1" [property]="property"></ngm-entity-property>
-                                    <button mat-icon-button displayDensity="cosy" class="ngm-calculated-measure__parameter-edit" (click)="openCreateParameter(property)">
+                                    <button mat-icon-button class="ngm-calculated-measure__parameter-edit" (click)="openCreateParameter(property)">
                                         <mat-icon fontSet="material-icons-round">edit</mat-icon>
                                     </button>
                                 </div>
@@ -145,6 +145,6 @@
             </ngm-editor-sql>
         }
 
-        <ngm-drawer-trigger class="absolute right-0 top-1/2 -translate-y-1/2 z-40" [(opened)]="opened" side="right"></ngm-drawer-trigger>
+        <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="opened" side="right"></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
