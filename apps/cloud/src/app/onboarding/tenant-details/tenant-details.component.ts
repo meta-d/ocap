@@ -26,7 +26,6 @@ import {
   IDataSourceType,
   IOrganization,
   LanguagesEnum,
-  MatchValidator,
   OrganizationDemoNetworkEnum,
   OrganizationsService,
   ServerAgent,
@@ -35,6 +34,7 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../@core'
+import { matchValidator } from '@metad/cloud/auth'
 
 @Component({
   standalone: true,
@@ -87,7 +87,7 @@ export class TenantDetailsComponent {
       confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
     },
     {
-      validators: [MatchValidator.mustMatch('password', 'confirmPassword')]
+      validators: [matchValidator('password', 'confirmPassword')]
     }
   )
   demoFormGroup: FormGroup = this._formBuilder.group({
@@ -140,7 +140,7 @@ export class TenantDetailsComponent {
   }
 
   mustMatchError() {
-    return this.userFormGroup.get('confirmPassword').getError('mustMatch')
+    return this.userFormGroup.get('confirmPassword').getError('mismatch')
   }
 
   dataSourceNameError() {
