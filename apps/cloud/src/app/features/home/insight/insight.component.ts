@@ -36,6 +36,7 @@ import { InsightService } from './insight.service'
 import { StoryExplorerModule } from '@metad/story'
 import { QuestionAnswer } from './types'
 import { Title } from '@angular/platform-browser'
+import { NgmCopilotInputComponent } from '@metad/ocap-angular/copilot'
 
 
 @Component({
@@ -59,7 +60,8 @@ import { Title } from '@angular/platform-browser'
     NgmEntityPropertyComponent,
 
     CopilotEnableComponent,
-    StoryExplorerModule
+    StoryExplorerModule,
+    NgmCopilotInputComponent,
   ],
   selector: 'pac-home-insight',
   templateUrl: 'insight.component.html',
