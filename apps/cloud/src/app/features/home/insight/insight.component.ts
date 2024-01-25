@@ -106,7 +106,10 @@ export class InsightComponent {
     return this.insightService.error
   }
 
-  public readonly copilotNotEnabled$ = this.insightService.copilotNotEnabled$
+  // public readonly copilotNotEnabled$ = this.insightService.copilotNotEnabled$
+  get copilotEnabled() {
+    return this.insightService.copilotEnabled
+  }
   readonly models$ = this.insightService.models$
   readonly hasCube$ = this.insightService.hasCube$
   readonly cubes$ = this.insightService.cubes$
@@ -193,6 +196,10 @@ export class InsightComponent {
     if (value) {
       await this.askCopilot(value)
     }
+  }
+
+  onAsk(event) {
+    this.askCopilot(event.prompt)
   }
 
   selected(event: MatAutocompleteSelectedEvent) {

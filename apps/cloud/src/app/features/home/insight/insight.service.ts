@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotService, getFunctionCall } from '@metad/copilot'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
@@ -24,14 +24,14 @@ import { getSemanticModelKey } from '@metad/story/core'
 import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ChartSchema, SuggestsSchema } from './types'
-import { CopilotAPIService, registerModel } from '../../../@core'
 import { nanoid } from 'nanoid'
+import { registerModel } from '../../../@core'
 
 
 @Injectable()
 export class InsightService {
   private modelsService = inject(ModelsService)
-  private copilotService = inject(CopilotAPIService)
+  private copilotService = inject(CopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private wasmAgent = inject(WasmAgentService)
   private readonly translateService = inject(TranslateService)
@@ -133,7 +133,10 @@ export class InsightService {
   ]
 
   entityPromptLimit = 10
-  public readonly copilotNotEnabled$ = this.copilotService.notEnabled$
+  get copilotEnabled() {
+    return this.copilotService.enabled
+  }
+  // public readonly copilotNotEnabled$ = this.copilotService.notEnabled$
   readonly models$ = this.modelsService.getMy()
   readonly hasCube$ = this.model$.pipe(map((model) => !!model?.schema?.cubes?.length))
   readonly cubes$ = this.model$.pipe(
