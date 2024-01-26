@@ -8,140 +8,144 @@
     }
 </div>
 
-<div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
-    @for (conversation of (enabled && hasKey ? conversations() : _mockConversations); track conversation.id) {
-        @switch (conversation.role) {
-            @case (CopilotChatMessageRoleEnum.Assistant) {
-            <div class="pl-2 pr-4 flex">
-                <div class="flex-1 flex items-start overflow-auto">
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
-                    </div>
-                    <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
-                        @if (conversation.content) {
-                            <div class="ngm-copilot-chat__message-content">
-                                <markdown clipboard class="whitespace-pre-line"
-                                    [clipboardButtonTemplate]="buttonTemplate"
-                                    lineNumbers
-                                    [start]="5"
-                                    [data]="conversation.content"
-                                ></markdown>
-                            </div>
-                        }
-                        @if (conversation.error) {
-                            <div class="ngm-copilot-chat__message-content text-red-400">
-                                <span class="font-notoColorEmoji">🙈</span>
-                                {{ conversation.error }}
-                            </div>
-                        }
-                        @if (conversation.content) {
-                            <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
-                        }
-    
-                        <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
-                            (click)="deleteMessage(conversation)">
-                            <mat-icon>close</mat-icon>
-                        </button>
-                    </div>
-                    
-                </div>
-            </div>
-            }
-            @case (CopilotChatMessageRoleEnum.User) {
-            <div class="pl-4 flex">
-                <div class="flex-1 flex items-start justify-end overflow-auto">
-                    <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
-                        @if (conversation.data) {
-                            <ngm-table class="max-w-full rounded-lg border overflow-hidden"
-                                [columns]="conversation.data['columns']"
-                                [data]="conversation.data['content']"
-                                paging
-                                [pageSizeOptions]="[10, 20, 50, 100]"
-                            ></ngm-table>
-                        } @else {
-                            <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
-                                <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
-                                focus-visible:bg-white dark:focus-visible:bg-black"
-                                    [attr.contenteditable]="true"
-                                    (focus)="onMessageFocus()"
-                                >{{ conversation.content }}</div>
-                            </div>
-                            <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
-                                (click)="resubmitMessage(conversation, msgContent.textContent)">
-                                {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
-                            </button>
-                        }
-    
-                        <div class="flex items-center gap-1">
-                        @if (conversation.command) {
-                            <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{conversation.command}}</span>
-                        }
-                        @if (conversation.content) {
-                            <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
-                        }
+<div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
+    <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
+        @for (conversation of (enabled && hasKey ? conversations() : _mockConversations); track conversation.id) {
+            @switch (conversation.role) {
+                @case (CopilotChatMessageRoleEnum.Assistant) {
+                <div class="pl-2 pr-4 flex">
+                    <div class="flex-1 flex items-start overflow-auto">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
                         </div>
-    
-                        <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
-                            (click)="deleteMessage(conversation)">
-                            <mat-icon>close</mat-icon>
-                        </button>
+                        <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
+                            @if (conversation.content) {
+                                <div class="ngm-copilot-chat__message-content">
+                                    <markdown clipboard class="whitespace-pre-line"
+                                        [clipboardButtonTemplate]="buttonTemplate"
+                                        lineNumbers
+                                        [start]="5"
+                                        [data]="conversation.content"
+                                    ></markdown>
+                                </div>
+                            }
+                            @if (conversation.error) {
+                                <div class="ngm-copilot-chat__message-content text-red-400">
+                                    <span class="font-notoColorEmoji">🙈</span>
+                                    {{ conversation.error }}
+                                </div>
+                            }
+                            @if (conversation.content) {
+                                <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
+                            }
+        
+                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                                (click)="deleteMessage(conversation)">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        
                     </div>
-                    
-                    <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                 </div>
-            </div>
-            }
-            @case (CopilotChatMessageRoleEnum.Info) {
-            <div class="pl-4 flex">
-                <div class="flex-1 flex items-start justify-end overflow-auto">
-                    <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
-                        {{ conversation.content }}
+                }
+                @case (CopilotChatMessageRoleEnum.User) {
+                <div class="pl-4 flex">
+                    <div class="flex-1 flex items-start justify-end overflow-auto">
+                        <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
+                            @if (conversation.data) {
+                                <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+                                    [columns]="conversation.data['columns']"
+                                    [data]="conversation.data['content']"
+                                    paging
+                                    [pageSizeOptions]="[10, 20, 50, 100]"
+                                ></ngm-table>
+                            } @else {
+                                <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
+                                    <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
+                                    focus-visible:bg-white dark:focus-visible:bg-black"
+                                        [attr.contenteditable]="true"
+                                        (focus)="onMessageFocus()"
+                                    >{{ conversation.content }}</div>
+                                </div>
+                                <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                                    (click)="resubmitMessage(conversation, msgContent.textContent)">
+                                    {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                                </button>
+                            }
+        
+                            <div class="flex items-center gap-1">
+                            @if (conversation.command) {
+                                <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{conversation.command}}</span>
+                            }
+                            @if (conversation.content) {
+                                <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
+                            }
+                            </div>
+        
+                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                                (click)="deleteMessage(conversation)">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        
+                        <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                     </div>
                 </div>
-            </div>
+                }
+                @case (CopilotChatMessageRoleEnum.Info) {
+                <div class="pl-4 flex">
+                    <div class="flex-1 flex items-start justify-end overflow-auto">
+                        <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
+                            {{ conversation.content }}
+                        </div>
+                    </div>
+                </div>
+                }
             }
         }
-    }
 
-    <div class="flex-1 flex flex-col justify-center items-center gap-1">
-    @if (!conversations()?.length) {
-        <div class="text-lg">
-            <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
-        </div>
-        <div class="text-sm font-light opacity-50">
-            <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
-        </div>
-        <div class="text-sm font-light opacity-50">
-            <span class="font-bold">Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
-        </div>
-    }
-    </div>
-    
-    <!-- <ng-container *ngIf="prompts?.length">
-        <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
-            <span class="-mt-3 px-2 bg-slate-50 inline-flex items-center">{{ 'Ngm.Copilot.ExamplesOfPrompts' | translate: {Default: 'Examples of Prompt'} }}
-                <button (click)="examplesOpened=!examplesOpened">
-                    <svg data-accordion-icon class="w-6 h-6 shrink-0 text-neutral-300 hover:text-neutral-400"
-                        [class.rotate-180]="!examplesOpened"
-                        fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            </span>
-        </div>
-        <div class="max-h-[30%] min-h-[100px] overflow-auto pl-4 flex flex-col items-end"
-            [class.min-h-0]="!examplesOpened"
-            [class.h-0]="!examplesOpened"
-            [class.min-h-[200px]]="examplesOpened"
-        >
-            <div *ngFor="let prompt of prompts" class="mb-2 mx-2 bg-slate-200 rounded-lg py-2 px-4">
-                <a class="cursor-pointer hover:underline"
-                    (click)="askPredefinedPrompt(prompt)">
-                    {{ 'Ngm.Copilot.Prompts.'+prompt | translate: {Default: prompt} }}</a>
+        <div class="flex-1 flex flex-col justify-center items-center gap-1">
+        @if (!conversations()?.length) {
+            <div class="text-lg">
+                <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
             </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
+            </div>
+        }
         </div>
-    </ng-container> -->
-    
+        
+        <!-- <ng-container *ngIf="prompts?.length">
+            <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
+                <span class="-mt-3 px-2 bg-slate-50 inline-flex items-center">{{ 'Ngm.Copilot.ExamplesOfPrompts' | translate: {Default: 'Examples of Prompt'} }}
+                    <button (click)="examplesOpened=!examplesOpened">
+                        <svg data-accordion-icon class="w-6 h-6 shrink-0 text-neutral-300 hover:text-neutral-400"
+                            [class.rotate-180]="!examplesOpened"
+                            fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </span>
+            </div>
+            <div class="max-h-[30%] min-h-[100px] overflow-auto pl-4 flex flex-col items-end"
+                [class.min-h-0]="!examplesOpened"
+                [class.h-0]="!examplesOpened"
+                [class.min-h-[200px]]="examplesOpened"
+            >
+                <div *ngFor="let prompt of prompts" class="mb-2 mx-2 bg-slate-200 rounded-lg py-2 px-4">
+                    <a class="cursor-pointer hover:underline"
+                        (click)="askPredefinedPrompt(prompt)">
+                        {{ 'Ngm.Copilot.Prompts.'+prompt | translate: {Default: prompt} }}</a>
+                </div>
+            </div>
+        </ng-container> -->
+        
+    </div>
+
+    <ngm-scroll-back #scrollBack class="absolute bottom-0 left-1/2" [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
 </div>
 
 <div class="relative m-3 border rounded-lg shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800"

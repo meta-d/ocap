@@ -1,4 +1,4 @@
-import { inject, Inject, Injectable, Optional } from '@angular/core'
+import { computed, inject, Inject, Injectable, Optional } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID } from '@metad/contracts'
 import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotChatResponseChoice, CopilotEngine } from '@metad/copilot'
@@ -28,6 +28,7 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
   systemPrompt: string
   prompts: string[]
   conversations: CopilotChatMessage[]
+  readonly messages = computed(() => this.conversations)
 
   readonly dataSettings$ = this.select((state) => state.dataSettings).pipe(
     filter<DataSettings>(Boolean),

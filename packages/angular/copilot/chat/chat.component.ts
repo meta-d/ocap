@@ -27,7 +27,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
 import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
-import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
+import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent, NgmScrollBackComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { MarkdownModule } from 'ngx-markdown'
@@ -45,7 +45,6 @@ import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
 import { nanoid } from 'ai'
 import { injectCopilotCommand } from '../hooks'
-
 
 @Component({
   standalone: true,
@@ -80,6 +79,7 @@ import { injectCopilotCommand } from '../hooks'
     CopilotChatTokenComponent,
     CopilotEnableComponent,
     UserAvatarComponent,
+    NgmScrollBackComponent
   ],
   host: {
     class: 'ngm-copilot-chat'
@@ -108,20 +108,14 @@ export class NgmCopilotChatComponent {
     this.#customEngine = value
   }
 
-  // set systemPrompt(value: string) {
-  //   this._systemPrompt.set(value)
-  // }
-  // private readonly _systemPrompt = signal<string>(null)
-  
-  readonly conversations = computed(() => this.copilotEngine.conversations.filter((message) => message.content || message.error))
-
   @Input() user: IUser
 
   @Output() copy = new EventEmitter()
   @Output() conversationsChange = new EventEmitter()
 
-  @ViewChild('chatsContent') chatsContent: ElementRef<any>
+  @ViewChild('chatsContent') chatsContent: ElementRef<HTMLDivElement>
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
+  @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
   get enabled() {
     return this.copilotService.enabled
@@ -168,7 +162,7 @@ export class NgmCopilotChatComponent {
       然而，需要注意的是，我只是一个机器人，并不能像人类程序员一样创造独特的解决方案或应对具有挑战性的技术问题。我的工作方式是基于预设的算法和模型，因此在与我合作时，您可能需要提供更多的背景信息和指导，以确保我们的工作结果达到您的期望。`
     }
   ]
-  // examplesOpened = true
+
   // Copilot
   private openaiOptions = {
     model: 'gpt-3.5-turbo',
@@ -177,16 +171,7 @@ export class NgmCopilotChatComponent {
   get aiOptions() {
     return this.copilotEngine?.aiOptions ?? this.openaiOptions
   }
-  // get useSystemPrompt() {
-  //   return this.aiOptions.useSystemPrompt
-  // }
-  // set useSystemPrompt(value) {
-  //   if (this.copilotEngine) {
-  //     this.copilotEngine.aiOptions = { ...this.aiOptions, useSystemPrompt: value }
-  //   } else {
-  //     this.openaiOptions.useSystemPrompt = value
-  //   }
-  // }
+
   get model() {
     return this.aiOptions.model
   }
@@ -220,6 +205,13 @@ export class NgmCopilotChatComponent {
       this.openaiOptions.n = value
     }
   }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly conversations = computed(() => this.copilotEngine.messages().filter((message) => message.content || message.error))
 
   /**
    * 当前 Asking prompt
@@ -322,12 +314,18 @@ export class NgmCopilotChatComponent {
   })
 
   constructor() {
-    effect(
-      () => {
+    effect(() => {
         this.answering() ? this.promptControl.disable() : this.promptControl.enable()
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      const conversations = this.conversations()
+      if (conversations.length && !this.scrollBack.visible()) {
+        this.scrollBottom()
+      }
+    })
   }
 
   refreshModels() {
@@ -534,13 +532,11 @@ export class NgmCopilotChatComponent {
   }
 
   scrollBottom() {
-    setTimeout(() => {
-      this.chatsContent.nativeElement.scrollTo({
-        top: this.chatsContent.nativeElement.scrollHeight,
-        left: 0,
-        behavior: 'smooth'
-      })
-    }, 300)
+    this.chatsContent.nativeElement.scrollTo({
+      top: this.chatsContent.nativeElement.scrollHeight,
+      left: 0,
+      behavior: 'smooth'
+    })
   }
 
   async send(text: string) {

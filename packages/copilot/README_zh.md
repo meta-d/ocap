@@ -1,32 +1,33 @@
 # Metad AI Copilot
 
-English | [中文](./README_zh.md)
+[English](./README.md) | 中文
 
-`@metad/copilot` is a general-purpose abstract core logic package designed specifically for developing AI Copilot applications. It provides a flexible set of tools and features that enable you to quickly build and integrate Copilot functionality without having to focus on specific user interface frameworks.
+`@metad/copilot` 是一个通用的抽象核心逻辑包，专为开发 AI Copilot 应用而设计。
+它提供了一组灵活的工具和功能，使您能够快速构建并集成 Copilot 功能，而无需关注具体的用户界面框架。
 
-## Installation
+## 安装
 
-Install `@metad/copilot` via npm:
+通过 npm 安装 `@metad/copilot`：
 
 ```bash
 npm install @metad/copilot
 ```
 
-## Usage in Angular
+## 在 Angular 中使用
 
-`@metad/ocap-angular` is a UI component library designed for the Angular framework. Among them, `@metad/ocap-angular/copilot` is the Copilot chat UI component, built on the foundation of `@metad/copilot`, aiming to assist users in seamlessly integrating and building Copilot chat functionality in Angular applications.
+`@metad/ocap-angular` 是一个为 Angular 框架设计的 UI 组件库。其中 `@metad/ocap-angular/copilot` 是 Copilot chat UI 组件，它建立在 `@metad/copilot` 的基础之上，旨在帮助用户在 Angular 应用中轻松地集成和构建 Copilot 聊天功能。
 
-### UI Installation
+### 安装
 
-Install `@metad/ocap-angular` via npm:
+通过 npm 安装 `@metad/ocap-angular`：
 
 ```bash
 npm install @metad/ocap-angular
 ```
 
-### Configuration
+### 配置
 
-Before using the Copilot component, you need to provide configuration parameters. You can do this by using the `provideClientCopilot` function and passing in the AI API parameters.
+在使用 Copilot 组件前需要提供配置参数。您可以通过 `provideClientCopilot` 函数并传入 AI API 参数来提供。
 
 ```typescript
 import { provideClientCopilot } from '@metad/ocap-angular/copilot'
@@ -48,9 +49,9 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-### Usage in Components
+### 使用
 
-Introduce the `@metad/ocap-angular/copilot` module into your Angular application:
+在您的 Angular 应用中引入 `@metad/ocap-angular/copilot` 模块：
 
 ```typescript
 import {
@@ -67,22 +68,23 @@ import {
 export class AppComponent { }
 ```
 
-Use the Copilot Chat component in your component template:
+在您的组件模板中使用 Copilot Chat 组件：
 
 ```html
 <ngm-copilot-chat></ngm-copilot-chat>
 ```
 
-This way, the basic chat functionality of Copilot Chat can be used.
+这样 Copilot Chat 基础聊天功能便可以使用了。
 
-### Custom Commands
+### 功能
 
-Two functions are also provided for customizing commands to perform specific operations:
+还提供了两个函数用于自定义命令来执行特定的操作：
 
 - `injectCopilotCommand` Inject custom commands
 - `injectMakeCopilotActionable` Inject the callable function of the custom command
 
-#### injectCopilotCommand
+
+### injectCopilotCommand
 
 | Property | Example | Description |
 |------|------|------|
@@ -91,7 +93,7 @@ Two functions are also provided for customizing commands to perform specific ope
 | `examples` | `['A', 'B']` | Examples of how to write the prompt for this command, which helps the user to quickly enter the prompt |
 | `actions` | `[]` | The operation function implementation available for this command, if not specified, all operation functions in the current context will be used |
 
-#### injectMakeCopilotActionable
+### injectMakeCopilotActionable
 
 | Property | Example | Description |
 |------|------|------|
@@ -125,9 +127,9 @@ import zodToJsonSchema from 'zod-to-json-schema'
 }
 ```
 
-#### Examples
+### 演示用例
 
-Customize a command that can provide suggestion links:
+自定义一个可以提供建议链接的命令：
 
 ```typescript
 #askCommand = injectCopilotCommand({
@@ -172,20 +174,20 @@ Customize a command that can provide suggestion links:
   });
 ```
 
-The Copilot framework provides a demo project that you can refer to for its implementation:
+Copilot框架提供了一个演示项目，您可以参考其实现方式：
 
 https://stackblitz.com/~/github.com/tiven-w/metad-copilot-demo
 
-## Contributing
+## 贡献
 
-If you find any issues or have suggestions for improvement, please feel free to raise issues or submit pull requests. We welcome and encourage contributions from the community.
+如果您发现任何问题或有改进建议，请随时提出问题或提交拉取请求。我们欢迎并鼓励社区的贡献。
 
-## License
+## 许可
 
-`@metad/copilot` is released under the MIT license. For more information, please refer to the [LICENSE](./LICENSE) file.
+`@metad/copilot` 是基于 MIT 许可发布的。有关更多信息，请参阅 [LICENSE](./LICENSE) 文件。
 
-## Contact Us
+## 联系我们
 
-If you have any questions or need further assistance, please feel free to contact us via email at: <mailto:service@mtda.cloud>
+如果您有任何疑问或需要进一步的帮助，请随时通过电子邮件联系我们：<mailto:service@mtda.cloud>
 
-Thank you for using `@metad/copilot`! We look forward to seeing your Copilot application succeed.
+谢谢您使用 `@metad/copilot`！我们期待看到您的 Copilot 应用取得成功。

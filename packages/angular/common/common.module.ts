@@ -13,6 +13,7 @@ import { TableVirtualScrollModule } from './table'
 import { NgmTagsComponent } from './tag'
 import { NgmTreeSelectComponent } from './tree-select'
 import { NgmDrawerTriggerComponent } from './drawer-trigger'
+import { NgmScrollBackComponent } from './scroll'
 
 @NgModule({
   imports: [
@@ -34,7 +35,8 @@ import { NgmDrawerTriggerComponent } from './drawer-trigger'
     DensityDirective,
     ButtonGroupDirective,
     AppearanceDirective,
-    NgmDrawerTriggerComponent
+    NgmDrawerTriggerComponent,
+    NgmScrollBackComponent
   ],
   exports: [
     ResizerModule,
@@ -53,7 +55,8 @@ import { NgmDrawerTriggerComponent } from './drawer-trigger'
     DensityDirective,
     ButtonGroupDirective,
     AppearanceDirective,
-    NgmDrawerTriggerComponent
+    NgmDrawerTriggerComponent,
+    NgmScrollBackComponent
   ],
   declarations: [],
   providers: []

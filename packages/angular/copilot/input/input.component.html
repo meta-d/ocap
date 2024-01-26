@@ -6,11 +6,10 @@
     (ngSubmit)="onSubmit()"
   >
     <div class="px-2 left-0 flex items-center">
-      <div *ngIf="suggesting()" class="pac-insight__suggesting emoji-loader text-base" [matTooltip]=" 'PAC.KEY_WORDS.SuggestingPrompts' | translate: { Default: 'Suggesting prompts' } "></div>
-      <span *ngIf="!suggesting()" class="font-notoColorEmoji">🤖</span>
+      <span class="font-notoColorEmoji">🤖</span>
     </div>
     <input #promptInput type="text" id="simple-search" class="border-none outline-none text-gray-900 text-sm block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-      placeholder=" {{'PAC.KEY_WORDS.Ask' | translate: { Default: 'Ask' } }}..." required
+      placeholder=" {{'Ngm.Copilot.Ask' | translate: { Default: 'Ask' } }}..." required
       matInput
       [matAutocomplete]="auto"
       formControlName="prompt"

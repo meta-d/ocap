@@ -1,4 +1,4 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Injectable, computed, inject, signal } from '@angular/core'
 import {
   AIOptions,
   AnnotatedFunction,
@@ -37,6 +37,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
   get conversations() {
     return this.conversations$()
   }
+
+  readonly messages = computed(() => this.conversations$())
 
   /**
    * Calculate messages in the last conversation

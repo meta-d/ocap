@@ -36,6 +36,8 @@ export interface CopilotEngine {
    */
   placeholder?: string
 
+  messages(): CopilotChatMessage[]
+  
   process(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
     options?: { action?: string }

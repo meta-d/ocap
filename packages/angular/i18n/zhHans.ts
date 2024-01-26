@@ -88,7 +88,8 @@ export const ZhHans = {
       Prompt: '提示',
       SendPrompt: '发送提问',
       Placeholder: '询问副驾驶或输入 / 获取命令',
-      ClearConversation: '清空会话'
+      ClearConversation: '清空会话',
+      Ask: '提问'
     },
     Entity: {
       SelectEntities: '选择数据集'
