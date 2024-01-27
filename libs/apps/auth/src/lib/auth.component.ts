@@ -1,7 +1,9 @@
 import { Location } from '@angular/common'
-import { Component } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { Component, effect, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
+import { UntilDestroy } from '@ngneat/until-destroy'
+import { TranslateService } from '@ngx-translate/core'
 import { map } from 'rxjs/operators'
 import { PacAuthService } from './services/auth.service'
 
@@ -15,7 +17,13 @@ import { PacAuthService } from './services/auth.service'
   }
 })
 export class PacAuthComponent {
-  authenticated = false
+  readonly #translate = inject(TranslateService)
+  protected auth = inject(PacAuthService)
+  protected store = inject(Store)
+  protected location = inject(Location)
+
+  readonly language = toSignal(this.#translate.onLangChange.pipe(map(() => this.#translate.currentLang)))
+
   token = ''
 
   // showcase of how to use the onAuthenticationChange method
@@ -34,22 +42,11 @@ export class PacAuthComponent {
     }
   ]
 
-  set language(value: string) {
-    this.store.preferredLanguage = value
+  constructor() {
+    effect(() => {
+      console.log(this.language())
+    })
   }
-
-  public readonly preferredLanguage$ = this.store.preferredLanguage$.pipe(
-    map((preferredLanguage) => preferredLanguage ?? navigator.language ?? 'en')
-  )
-
-  private _AuthSub = this.auth.onAuthenticationChange().subscribe((authenticated: boolean) => {
-    this.authenticated = authenticated
-  })
-  constructor(
-    protected auth: PacAuthService,
-    protected store: Store,
-    protected location: Location,
-  ) {}
 
   back() {
     this.location.back()
@@ -57,6 +54,6 @@ export class PacAuthComponent {
   }
 
   onLanguage(value) {
-    this.language = value
+    this.store.preferredLanguage = value
   }
 }

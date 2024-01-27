@@ -11,7 +11,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest } from 'rxjs'
 import { filter, map } from 'rxjs/operators'
-import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale } from './@core'
+import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale, navigatorLanguage } from './@core'
 import { AppService } from './app.service'
 
 
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
   ) {
     translate.setDefaultLang('en')
     // the lang to use, if the lang isn't available, it will use the current loader to get them
-    translate.use(this.store.preferredLanguage || navigator.language || 'en')
+    translate.use(this.store.preferredLanguage || navigatorLanguage())
     this.document.documentElement.lang = translate.currentLang
 
     this.store.preferredLanguage$.pipe(filter(nonNullable)).subscribe((language) => {

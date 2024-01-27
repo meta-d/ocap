@@ -14,11 +14,11 @@
       <select
         id="countries"
         class="text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        [ngModel]="preferredLanguage$ | async"
+        [ngModel]="language()"
         (ngModelChange)="onLanguage($event)"
       >
         <option value="en">English</option>
-        <option value="zh-CN">中文简体</option>
+        <option value="zh-Hans">中文简体</option>
         <option value="zh-Hant">中文繁体</option>
       </select>
 
