@@ -182,7 +182,7 @@ export class AuthStrategy extends PacAuthStrategy {
         )
       }),
       catchError((err) => {
-        console.log(err)
+        console.error(err)
         return of(
           new PacAuthResult(false, err, false, AuthStrategy.config.login.defaultErrors, [
             AuthStrategy.config.login.defaultErrors

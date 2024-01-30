@@ -11,7 +11,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatStepper, MatStepperModule } from '@angular/material/stepper'
 import { Router } from '@angular/router'
-import { DataSourceService, DataSourceTypesService } from '@metad/cloud/state'
+import { DataSourceService, DataSourceTypesService, Store } from '@metad/cloud/state'
+import { matchValidator } from '@metad/cloud/auth'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { omit } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
@@ -34,7 +35,7 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../@core'
-import { matchValidator } from '@metad/cloud/auth'
+
 
 @Component({
   standalone: true,
@@ -61,6 +62,7 @@ import { matchValidator } from '@metad/cloud/auth'
 export class TenantDetailsComponent {
   OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
   
+  readonly #store = inject(Store)
   private readonly tenantService = inject(TenantService)
   private readonly typesService = inject(DataSourceTypesService)
   private readonly dataSourceService = inject(DataSourceService)
@@ -178,15 +180,22 @@ export class TenantDetailsComponent {
       this.loading.set(false)
       this.defaultOrganization.set(tenant.organizations[0])
     } catch (error) {
+      console.error(error)
       this.loading.set(false)
       this.toastrService.error(getErrorMessage(error))
       return
     }
 
-    this.stepper.next()
-    await this.afterOnboard()
-  }
+    try {
+      await this.afterOnboard()
+    } catch (error) {
+      console.error(error)
+      this.toastrService.error(getErrorMessage(error))
+    }
 
+    this.stepper.next()
+  }
+  
   async afterOnboard() {
     await firstValueFrom(
       this.authStrategy.login({
@@ -195,6 +204,7 @@ export class TenantDetailsComponent {
       })
     )
 
+    this.#store.selectedOrganization = this.defaultOrganization()
     this.dataSourceTypes$.next(await firstValueFrom(this.typesService.getAll()))
   }
 
@@ -262,7 +272,6 @@ export class TenantDetailsComponent {
       this.toastrService.success('PAC.ACTIONS.PING', { Default: 'Ping' })
 
       // Create datadource
-      this.dataSourceService
       const result = await firstValueFrom(this.dataSourceService.create(dataSource))
       this.toastrService.success('PAC.MESSAGE.CreateDataSource', { Default: 'Create data source' })
       this.loading.set(false)
