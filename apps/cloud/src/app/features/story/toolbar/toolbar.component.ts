@@ -56,7 +56,6 @@ import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadS
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
 import { CHARTS } from '@metad/story/widgets/analytical-card'
-import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 
 
 @Component({
@@ -72,7 +71,6 @@ import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
     AppearanceDirective,
     DensityDirective,
     StoryDesignerComponent,
-    NgmCopilotChatComponent,
     NgmInputComponent
   ],
   selector: 'pac-story-toolbar',
@@ -141,7 +139,7 @@ export class StoryToolbarComponent implements OnInit {
   @Output() deviceZoomChange = new EventEmitter()
   @Output() resetScalePan = new EventEmitter()
 
-  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences' | 'copilot'
+  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'
   _fullscreen: boolean
   @HostBinding('class.pac-toolbar__on-right')
   onRight = false

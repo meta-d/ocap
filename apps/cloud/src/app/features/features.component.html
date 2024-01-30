@@ -25,7 +25,7 @@
     </pac-menu>
   </mat-sidenav>
 
-  <mat-sidenav-content class="pac_sidenav-content max-h-full overflow-hidden" [ngClass]="{'pac-fullscreen': zIndex > 1}">
+  <mat-sidenav-content class="pac_sidenav-content max-h-full overflow-hidden" >
     <mat-toolbar class="pac__shell-bar mat-elevation-z2 flex justify-between items-center md:gap-2">
       <div class="flex justify-start items-center overflow-hidden">
         <button *ngIf="!(sidenav.opened && sidenavMode==='side')" class="w-12 outline-none hover:text-yellow-600 transition-colors"
@@ -79,7 +79,18 @@
         <mat-option class="h-0" style="height: 0; min-height: 0;"></mat-option>
       </mat-autocomplete>
 
-      <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global>
+      <!-- <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global> -->
+
+      @if(copilotEnabled$ | async) {
+        <button mat-icon-button class="pac-copilot-trigger font-notoColorEmoji"
+          displayDensity="cosy"
+          [class.active]="copilotDrawer.opened"
+          [color]="copilotDrawer.opened?'accent':''"
+          (click)="copilotDrawer.toggle()"
+        >
+          <div class="flex justify-center items-center text-xl">🤖</div>
+        </button>
+      }
       
       <button mat-icon-button *ngIf="isAuthenticated$ | async as user" class="d-none d-sm-inline"
         displayDensity="cosy"
@@ -93,9 +104,27 @@
       </button>
     </mat-toolbar>
 
-    <div class="pac-app__page-outlet z-0" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title">
-      <router-outlet #o="outlet"></router-outlet>
-    </div>
+    <mat-drawer-container class="flex-1 h-full" [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}" [hasBackdrop]="false" autosize>
+      <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
+        [(opened)]="copilotDrawerOpened"
+      >
+        <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area h-full"
+          cdkDropList
+        ></ngm-copilot-chat>
+        
+        <div ngmResizerBar resizerBarPosition="left"
+          cdkDrag
+          cdkDragLockAxis="x"
+        ></div>
+      </mat-drawer>
+      <mat-drawer-content class="pac-app__page-outlet relative z-0" 
+        [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title">
+        <router-outlet #o="outlet"></router-outlet>
+
+        <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
+        
+      </mat-drawer-content>
+    </mat-drawer-container>
 
     <pac-status-bar class="pac__status-bar"></pac-status-bar>
   </mat-sidenav-content>

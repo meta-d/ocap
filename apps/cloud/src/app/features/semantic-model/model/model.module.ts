@@ -5,7 +5,6 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { NxActionStripModule } from '@metad/components/action-strip'
 import { NxEditorModule } from '@metad/components/editor'
-import { NgmCopilotService } from '@metad/core'
 import {
   NgmCommonModule,
   NgmDrawerTriggerComponent,
@@ -84,7 +83,7 @@ import { ModelDesignerType } from './types'
   ],
   providers: [
     provideOcapCore(),
-    NgmCopilotService,
+    // NgmCopilotService,
     StoryModelResolver,
     {
       provide: STORY_DESIGNER_COMPONENT,

@@ -3,8 +3,7 @@ import { EntityType } from '@metad/ocap-core'
 import { NGXLogger } from 'ngx-logger'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
-import { ZodType, ZodTypeDef } from 'zod'
-import zodToJsonSchema from 'zod-to-json-schema'
+
 
 export interface ModelCopilotChatConversation extends CopilotChatConversation {
   dataSource: string
@@ -19,7 +18,3 @@ export interface ModelCopilotChatConversation extends CopilotChatConversation {
 }
 
 export const ModelCopilotCommandArea = 'Model'
-
-export function zodToAnnotations(obj: ZodType<any, ZodTypeDef, any>,) {
-  return (<{ properties: any }>zodToJsonSchema(obj)).properties
-}

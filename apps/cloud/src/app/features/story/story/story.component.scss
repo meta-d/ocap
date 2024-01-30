@@ -1,5 +1,9 @@
 :host {
   @apply relative flex-1 flex flex-col max-w-full;
+
+  &.ngm-story--fullscreen {
+    @apply z-50;
+  }
 }
 
 .ngm-story__container-content {
@@ -100,3 +104,4 @@
 .ngm-story__designer-drawer.mat-drawer-side.mat-drawer-end {
   @apply border-l-0;
 }
+

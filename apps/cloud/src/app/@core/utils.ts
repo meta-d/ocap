@@ -1,5 +1,6 @@
-import { EntityType, getEntityDimensions, getEntityMeasures } from '@metad/ocap-core'
 import { firstValueFrom, Observable } from 'rxjs'
+import { ZodType, ZodTypeDef } from 'zod'
+import zodToJsonSchema from 'zod-to-json-schema'
 import { ToastrService } from './services'
 import { getErrorMessage } from './types'
 
@@ -42,4 +43,8 @@ export async function tryHttp<T>(request: Observable<T>, toastrService?: ToastrS
   } catch (err) {
     toastrService?.error(getErrorMessage(err))
   }
+}
+
+export function zodToAnnotations(obj: ZodType<any, ZodTypeDef, any>) {
+  return (<{ properties: any }>zodToJsonSchema(obj)).properties
 }

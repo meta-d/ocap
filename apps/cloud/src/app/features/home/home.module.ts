@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
-import { NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { EmbedWidgetComponent, NxStoryModule } from '@metad/story/story'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
@@ -36,6 +35,6 @@ import { UserVisitComponent } from './user-visit/user-visit.component'
   ],
   exports: [],
   declarations: [DashboardComponent, StoryWidgetFeedComponent, RecentsComponent, UserVisitComponent],
-  providers: [provideOcapCore(), InsightService, NgmCopilotEngineService, ...STORY_WIDGET_COMPONENTS]
+  providers: [provideOcapCore(), InsightService, ...STORY_WIDGET_COMPONENTS]
 })
 export class HomeModule {}

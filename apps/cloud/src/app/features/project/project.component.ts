@@ -49,7 +49,6 @@ import { ReleaseStoryDialog } from './release-story.component'
 import { SelectModelDialog } from './select-model.component'
 import { collectionId, treeDataSourceFactory } from './types'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -68,14 +67,10 @@ import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-an
     NgmCommonModule,
     AppearanceDirective,
     NgmTreeSelectComponent,
-    NgmCopilotChatComponent
   ],
   selector: 'pac-project',
   templateUrl: 'project.component.html',
   styleUrls: ['project.component.scss'],
-  providers: [
-    NgmCopilotEngineService
-  ]
 })
 export class ProjectComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour

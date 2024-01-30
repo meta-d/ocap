@@ -15,7 +15,7 @@ import { NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NgmCopilotInputComponent } from '@metad/ocap-angular/copilot'
+import { NgmCopilotInputComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
@@ -34,10 +34,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import { ToastrService } from '../../../@core'
+import { ToastrService, zodToAnnotations } from '../../../@core'
 import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { QuestionAnswer } from './types'
+import { ChartSchema, QuestionAnswer } from './types'
 
 @Component({
   standalone: true,
@@ -142,7 +142,44 @@ export class InsightComponent {
   // Story explorer
   readonly showExplorer = signal(false)
   readonly explore = signal(null)
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  readonly #chartCommand = injectCopilotCommand({
+    name: 'chart',
+    description: '洞察数据图形',
+    systemPrompt: () => {
+      return `Please design and create a specific graphic accurately based on the following detailed instructions.`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'new_chart',
+        description: 'New a chart',
+        argumentAnnotations: [
+          {
+            name: 'chart',
+            description: 'Chart configuration',
+            type: 'object',
+            properties: zodToAnnotations(ChartSchema),
+            required: true
+          }
+        ],
+        implementation: async (chart: any) => {
+          this.#logger.debug('New chart by copilot command with:', chart)
+          return `创建成功！`
+        }
+      })
+    ]
+  })
 
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions
+  |--------------------------------------------------------------------------
+  */
   private promptControlSub = this.promptControl.valueChanges
     .pipe(takeUntilDestroyed())
     .subscribe(() => (this.insightService.error = ''))

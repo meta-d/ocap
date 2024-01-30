@@ -47,14 +47,14 @@
             <mat-icon *ngIf="!isFullscreen" fontSet="material-icons-round">fullscreen</mat-icon>
             <mat-icon *ngIf="isFullscreen" fontSet="material-icons-round">fullscreen_exit</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="copilotEnabled$ | async" class="pac-model__copilot-trigger font-notoColorEmoji"
+        <!-- <button mat-icon-button *ngIf="copilotEnabled$ | async" class="pac-model__copilot-trigger font-notoColorEmoji"
             displayDensity="cosy"
             [class.active]="copilotDrawer.opened"
             [color]="copilotDrawer.opened?'accent':''"
             (click)="copilotDrawer.toggle()"
         >
             <div class="flex justify-center items-center text-xl">🤖</div>
-        </button>
+        </button> -->
     </div>
 
 </mat-toolbar>
@@ -229,7 +229,7 @@
         ></div>
     </mat-drawer>
     <mat-drawer-content class="flex">
-        <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
+        <!-- <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
             <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400"
                 [(opened)]="copilotDrawerOpened"
             >
@@ -247,12 +247,14 @@
             </mat-drawer>
 
             <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path" class="relative">
-                <router-outlet #o="outlet"></router-outlet>
+                
 
                 <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
                 
             </mat-drawer-content>
-        </mat-drawer-container>
+        </mat-drawer-container> -->
+
+        <router-outlet #o="outlet"></router-outlet>
 
         <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
     </mat-drawer-content>

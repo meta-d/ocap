@@ -82,7 +82,6 @@ type ResponsiveBreakpointType = {
     NxCoreService,
     NxStoryService,
     NxSettingsPanelService,
-    NgmCopilotEngineService
   ]
 })
 export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {

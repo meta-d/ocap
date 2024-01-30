@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
-import { NxTableModule } from '@metad/components/table'
 import { CopilotService, ICopilot } from '@metad/copilot'
 import { NgmFormlyModule } from '@metad/formly'
 import { PACMaterialThemeModule } from '@metad/material-theme'
+import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -18,6 +19,7 @@ import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core
 import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { CopilotAPIService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
+import { PACCopilotService } from '../@core/services/copilot2.service'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import {
   CopilotChatComponent,
@@ -31,7 +33,6 @@ import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
-import { PACCopilotService } from '../@core/services/copilot2.service'
 
 @NgModule({
   declarations: [FeaturesComponent],
@@ -50,12 +51,16 @@ import { PACCopilotService } from '../@core/services/copilot2.service'
     AssetsComponent,
     ProjectSelectorComponent,
     CopilotChatComponent,
-    NxTableModule.forRoot(),
     DensityDirective,
     CopilotGlobalComponent,
 
     // Formly
-    NgmFormlyModule.forRoot({})
+    NgmFormlyModule.forRoot({}),
+
+    NgmCopilotChatComponent,
+    NgmDrawerTriggerComponent,
+    ResizerModule,
+    NgmTableComponent
   ],
   providers: [
     DirtyCheckGuard,
@@ -132,7 +137,8 @@ import { PACCopilotService } from '../@core/services/copilot2.service'
     {
       provide: CopilotService,
       useClass: PACCopilotService
-    }
+    },
+    NgmCopilotEngineService
   ]
 })
 export class FeaturesModule {}

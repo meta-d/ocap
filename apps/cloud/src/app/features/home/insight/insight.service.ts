@@ -3,7 +3,6 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotChatMessageRoleEnum, CopilotService, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt, nonNullable } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
@@ -27,8 +26,8 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, lastValueFrom, map, switchMap } from 'rxjs'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { registerModel } from '../../../@core'
-import { ChartSchema, SuggestsSchema } from './types'
-import { zodToAnnotations } from '../../semantic-model/model/copilot'
+import { SuggestsSchema } from './types'
+import { NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 
 @Injectable()
 export class InsightService {
@@ -39,33 +38,6 @@ export class InsightService {
   readonly #wasmAgent = inject(WasmAgentService)
   readonly #translate = inject(TranslateService)
   readonly #logger = inject(NGXLogger)
-
-  readonly #chartCommand = injectCopilotCommand({
-    name: 'chart',
-    description: '',
-    systemPrompt: () => {
-      return `Please design and create a specific graphic accurately based on the following detailed instructions.`
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'new_chart',
-        description: 'New a chart',
-        argumentAnnotations: [
-          {
-            name: 'chart',
-            description: 'Chart configuration',
-            type: 'object',
-            properties: zodToAnnotations(ChartSchema),
-            required: true
-          }
-        ],
-        implementation: async (chart: any) => {
-          this.#logger.debug('New chart by copilot command with:', chart)
-          return `创建成功！`
-        }
-      })
-    ]
-  })
 
   readonly language = toSignal(this.#translate.onLangChange.pipe(map(({ lang }) => lang)))
 
@@ -301,7 +273,7 @@ ${calcEntityTypePrompt(entityType)}
           {
             name: 'create_chart',
             description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(ChartSchema)
+            // parameters: zodToJsonSchema(ChartSchema)
           }
         ],
         function_call: { name: 'create_chart' }
@@ -591,7 +563,7 @@ ${JSON.stringify([
     one or more Measure object array
   ],
   "limit": // Limit number of results
-}    
+}
 `
   }
 }

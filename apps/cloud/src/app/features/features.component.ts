@@ -42,6 +42,7 @@ import { QueryCreationDialogComponent } from './semantic-model/query-creation.co
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { StoryCreationComponent } from '../@shared'
 import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 
 @UntilDestroy({ checkProperties: true })
@@ -82,12 +83,12 @@ export class FeaturesComponent implements OnInit {
   ]
   activeLink = 'home'
   isMobile = false
-  zIndex = 0
+  // zIndex = 0
   get isAuthenticated() {
     return !!this.store.user
   }
   assetsSearch = ''
-
+  readonly fullscreenIndex$ = toSignal(this.appService.fullscreenIndex$)
   public readonly isAuthenticated$ = this.store.user$
   public readonly navigation$ = this.appService.navigation$.pipe(
     filter(nonNullable),
@@ -138,6 +139,8 @@ export class FeaturesComponent implements OnInit {
 
   public readonly copilotEnabled$ = this.appService.copilotEnabled$
 
+  copilotDrawerOpened = false
+
   // Is mobile event listener
   private _isMobileSub = this.appService.isMobile$.subscribe((isMobile) => {
     this.isMobile = isMobile
@@ -153,7 +156,9 @@ export class FeaturesComponent implements OnInit {
       this.checkForEmployee()
       this.logger?.debug(value)
     })
-  private _sidebarContentIndexSub = this.appService.fullscreenIndex$.subscribe((fullscreenIndex) => this.zIndex = fullscreenIndex)
+  
+  
+  // private _sidebarContentIndexSub = this.appService.fullscreenIndex$.subscribe((fullscreenIndex) => this.zIndex = fullscreenIndex)
   constructor(
     public readonly appService: AppService,
     private readonly employeeService: EmployeesService,

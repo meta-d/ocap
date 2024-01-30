@@ -1,5 +1,5 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpStatus, Logger, Post, Res } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Res } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
@@ -53,39 +53,22 @@ export class AIController {
 
 		this.#logger.debug(`Try call ai api '${chatCompletionsUrl(copilot)}' with body ...}`)
 
-		const response = await fetch(chatCompletionsUrl(copilot), {
-			method: 'POST',
-			body: JSON.stringify(body),
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${copilot.apiKey}`
-			},
-		})
-
-		streamToResponse(response, resp, {
-			status: response.status
-		})
-
-		// const abortController = new AbortController()
-		// try {
-		// 	const response = await fetch(chatCompletionsUrl(copilot), {
-		// 		method: 'POST',
-		// 		body: JSON.stringify(body),
-		// 		headers: {
-		// 			'Content-Type': 'application/json',
-		// 			Authorization: `Bearer ${copilot.apiKey}`
-		// 		},
-		// 		signal: abortController?.signal
-		// 	})
-
-		// 	// Convert the response into a friendly text-stream
-		// 	const stream = OpenAIStream(response)
-
-		// 	// Pipe the stream to the response
-		// 	streamToResponse(stream, res)
-		// } catch (error) {
-		// 	throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
-		// }
+		try {
+			const response = await fetch(chatCompletionsUrl(copilot), {
+				method: 'POST',
+				body: JSON.stringify(body),
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${copilot.apiKey}`
+				},
+			})
+	
+			streamToResponse(response, resp, {
+				status: response.status
+			})
+		} catch (error) {
+			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+		}
 	}
 }
 
@@ -115,5 +98,4 @@ export function streamToResponse(
 	  });
 	}
 	read();
-  }
-  
+}

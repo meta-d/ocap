@@ -23,10 +23,6 @@
   border-radius: 50%;
 }
 
-.pac-app__page-outlet {
-  width: 100%;
-}
-
 .pac_sidenav-content {
   z-index: 1;
   overflow: hidden;
@@ -34,7 +30,7 @@
   flex-direction: column;
 }
 
-.pac_sidenav-content.pac-fullscreen {
+.mat-drawer-container.pac-fullscreen {
   z-index: 2;
   .pac-app__page-outlet {
     z-index: 2;

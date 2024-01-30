@@ -9,7 +9,7 @@ import {
   ResizerModule,
   TreeTableModule
 } from '@metad/ocap-angular/common'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NxStorySettingsModule, provideStorySettings } from '@metad/story'
 import { TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular'
 import { NgxEchartsModule } from 'ngx-echarts'
@@ -36,7 +36,7 @@ import { ProjectRoutingModule } from './project-routing.module'
       serverLogLevel: NgxLoggerLevel.ERROR
     }),
 
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
     NgmCommonModule,
     NgmDialogComponent,
     ResizerModule,
@@ -54,7 +54,8 @@ import { ProjectRoutingModule } from './project-routing.module'
     },
     ...STORY_WIDGET_COMPONENTS,
     ...STORY_DESIGNER_COMPONENTS,
-    provideStorySettings()
+    provideStorySettings(),
+    provideOcapCore()
   ]
 })
 export class ProjectModule {}

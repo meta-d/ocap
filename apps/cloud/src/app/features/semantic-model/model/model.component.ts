@@ -18,7 +18,6 @@ import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty } from '@metad/core'
 import {
   NgmCopilotChatComponent,
-  NgmCopilotEngineService,
   injectCopilotCommand,
   injectMakeCopilotActionable
 } from '@metad/ocap-angular/copilot'
@@ -43,12 +42,12 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
+import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid, zodToAnnotations } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { DimensionSchema, createCube, createDimension, zodToAnnotations } from './copilot'
+import { DimensionSchema, createCube, createDimension } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
@@ -60,7 +59,7 @@ import { stringifyTableType } from './utils'
   selector: 'ngm-semanctic-model',
   templateUrl: './model.component.html',
   styleUrls: ['./model.component.scss'],
-  providers: [NxSettingsPanelService, SemanticModelService, NgmCopilotEngineService],
+  providers: [NxSettingsPanelService, SemanticModelService],
   host: {
     class: 'ngm-semanctic-model'
   },
