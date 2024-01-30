@@ -3,3 +3,13 @@
     display: none;
   }
 }
+
+.ngm-resizer-bar {
+  opacity: 0;
+  background-color: var(--ngm-accent-color, theme('colors.amber.400'));
+  transition: opacity 0.1s ease-in-out .5s;
+}
+.ngm-resizer-bar:hover,
+.ngm-resizer-bar.cdk-drag-dragging {
+  opacity: 1;
+}

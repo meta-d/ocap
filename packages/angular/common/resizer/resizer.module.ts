@@ -3,11 +3,9 @@ import { NgModule } from '@angular/core'
 import { ResizerBarDirective, ResizerDirective } from './resizer.directive'
 
 @NgModule({
-  imports: [
-    DragDropModule
-  ],
+  imports: [DragDropModule, ResizerDirective, ResizerBarDirective],
   exports: [DragDropModule, ResizerDirective, ResizerBarDirective],
-  declarations: [ResizerDirective, ResizerBarDirective],
+  declarations: [],
   providers: []
 })
 export class ResizerModule {}

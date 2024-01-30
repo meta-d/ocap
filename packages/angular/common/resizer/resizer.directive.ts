@@ -15,16 +15,18 @@ import {
 } from '@angular/core'
 
 @Directive({
+  standalone: true,
   selector: '[ngmResizerBar]',
 })
 export class ResizerBarDirective {
   private readonly el = inject(ElementRef)
   public readonly cdkDrag = inject(CdkDrag)
-  private readonly resizer = inject(ResizerDirective)
+  // private readonly resizer = inject(ResizerDirective)
 
   @Input('resizerBarPosition') position: 'top' | 'right' | 'bottom' | 'left'
-  width = 3
   @HostBinding('class.ngm-resizer-bar') _isResizerBarDirective = true
+  
+  #width = 3
 
   ngOnInit(): void {
     if (this.position) {
@@ -34,28 +36,28 @@ export class ResizerBarDirective {
           this.el.nativeElement.style.left = 0
           this.el.nativeElement.style.top = 0
           this.el.nativeElement.style.width = '100%'
-          this.el.nativeElement.style.height = this.width + 'px'
+          this.el.nativeElement.style.height = this.#width + 'px'
           this.el.nativeElement.style.cursor = 'row-resize'
           break
         case 'right':
           this.el.nativeElement.style.top = 0
           this.el.nativeElement.style.right = 0
           this.el.nativeElement.style.height = '100%'
-          this.el.nativeElement.style.width = this.width + 'px'
+          this.el.nativeElement.style.width = this.#width + 'px'
           this.el.nativeElement.style.cursor = 'col-resize'
           break
         case 'bottom':
           this.el.nativeElement.style.left = 0
           this.el.nativeElement.style.bottom = 0
           this.el.nativeElement.style.width = '100%'
-          this.el.nativeElement.style.height = this.width + 'px'
+          this.el.nativeElement.style.height = this.#width + 'px'
           this.el.nativeElement.style.cursor = 'row-resize'
           break
         case 'left':
           this.el.nativeElement.style.top = 0
           this.el.nativeElement.style.left = 0
           this.el.nativeElement.style.height = '100%'
-          this.el.nativeElement.style.width = this.width + 'px'
+          this.el.nativeElement.style.width = this.#width + 'px'
           this.el.nativeElement.style.cursor = 'col-resize'
           break
       }
@@ -64,6 +66,7 @@ export class ResizerBarDirective {
 }
 
 @Directive({
+  standalone: true,
   selector: '[ngmResizer]'
 })
 export class ResizerDirective implements OnInit, AfterViewInit {
@@ -98,7 +101,7 @@ export class ResizerDirective implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.resizerBars.forEach((resizerBar) => {
-      resizerBar.cdkDrag.started.subscribe((event) => {
+      resizerBar.cdkDrag.started.subscribe(() => {
         this._width = this.width
         this._height = this.height
       })

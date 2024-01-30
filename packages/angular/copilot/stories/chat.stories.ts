@@ -151,6 +151,9 @@ export const CustomNgmCopilotEngine: Story = {
 }
 
 class StorybookCustomCopilotEngine implements CopilotEngine {
+  messages(): CopilotChatMessage[] {
+    throw new Error('Method not implemented.')
+  }
   copilot?: CopilotService
   dropCopilot?: (event: any) => void
   setEntryPoint?: (id: string, entryPoint: AnnotatedFunction<any[]>) => void
