@@ -23,6 +23,9 @@ function modelsUrl(copilot: ICopilot) {
   )
 }
 
+/**
+ * Copilot Service
+ */
 export class CopilotService {
   #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
   // private _copilot = {} as ICopilot
@@ -59,9 +62,7 @@ export class CopilotService {
     return {}
   }
 
-  async createChat(
-    messages: CopilotChatMessage[],
-    options?: {
+  async createChat(messages: CopilotChatMessage[], options?: {
       request?: any
       signal?: AbortSignal
     }

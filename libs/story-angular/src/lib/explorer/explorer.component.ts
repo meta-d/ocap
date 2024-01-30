@@ -116,7 +116,7 @@ export class StoryExplorerComponent {
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly _dialog = inject(MatDialog)
   private readonly translateService = inject(TranslateService)
-  readonly #storyService = inject(NxStoryService)
+  readonly #storyService? = inject(NxStoryService, { optional: true })
 
   @Input()
   get data() {
@@ -426,9 +426,9 @@ export class StoryExplorerComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #calcMeasureCommand = injectCalclatedMeasureCommand(this.dataSettings(), this.#storyService, async (calculation) => {
+  #calcMeasureCommand = this.#storyService ? injectCalclatedMeasureCommand(this.dataSettings(), this.#storyService, async (calculation) => {
     console.log(calculation)
-  })
+  }) : null
 
   constructor() {
     effect(

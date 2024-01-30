@@ -2,18 +2,20 @@ import { CdkDrag, CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
 import { ENTER } from '@angular/cdk/keycodes'
 import { CdkTreeModule } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatChipInputEvent } from '@angular/material/chips'
 import { MatDialog } from '@angular/material/dialog'
 import { MatExpansionModule } from '@angular/material/expansion'
+import { Title } from '@angular/platform-browser'
 import { Router, RouterModule } from '@angular/router'
 import { NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCopilotInputComponent } from '@metad/ocap-angular/copilot'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
@@ -26,18 +28,16 @@ import {
   isIndicatorMeasureProperty,
   negate
 } from '@metad/ocap-core'
-import { uuid, WidgetComponentType } from '@metad/story/core'
+import { StoryExplorerModule } from '@metad/story'
+import { WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isPlainObject } from 'lodash-es'
+import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { ToastrService } from '../../../@core'
 import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { StoryExplorerModule } from '@metad/story'
 import { QuestionAnswer } from './types'
-import { Title } from '@angular/platform-browser'
-import { NgmCopilotInputComponent } from '@metad/ocap-angular/copilot'
-
 
 @Component({
   standalone: true,
@@ -61,7 +61,7 @@ import { NgmCopilotInputComponent } from '@metad/ocap-angular/copilot'
 
     CopilotEnableComponent,
     StoryExplorerModule,
-    NgmCopilotInputComponent,
+    NgmCopilotInputComponent
   ],
   selector: 'pac-home-insight',
   templateUrl: 'insight.component.html',
@@ -78,6 +78,7 @@ export class InsightComponent {
   private translateService = inject(TranslateService)
   private _toastrService = inject(ToastrService)
   private insightService = inject(InsightService)
+  readonly #logger = inject(NGXLogger)
 
   @ViewChild('promptInput') promptInput: ElementRef<HTMLInputElement>
 
@@ -85,7 +86,7 @@ export class InsightComponent {
     return this.insightService.model
   }
   get cube() {
-    return this.insightService.cube
+    return this.insightService.cube$()
   }
 
   promptControl = new FormControl()
@@ -137,24 +138,29 @@ export class InsightComponent {
     return null
   })
 
-  showModel = signal(null)
+  readonly showModel = signal(null)
   // Story explorer
-  showExplorer = signal(false)
-  explore = signal(null)
+  readonly showExplorer = signal(false)
+  readonly explore = signal(null)
 
-  private promptControlSub = this.promptControl.valueChanges.pipe(takeUntilDestroyed())
+  private promptControlSub = this.promptControl.valueChanges
+    .pipe(takeUntilDestroyed())
     .subscribe(() => (this.insightService.error = ''))
 
-  private pageTitleSub = this.translateService.stream('PAC.Home.Insight.Title', {Default: '💡Smart Insights'}).pipe(
-      takeUntilDestroyed(),
-    ).subscribe((title) => this._title.setTitle(title))
+  private pageTitleSub = this.translateService
+    .stream('PAC.Home.Insight.Title', { Default: '💡Smart Insights' })
+    .pipe(takeUntilDestroyed())
+    .subscribe((title) => this._title.setTitle(title))
 
   constructor() {
-    effect(() => {
-      if (this.entityType() && this.showModel() === null) {
-        this.showModel.set(true)
-      }
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        if (this.entityType() && this.showModel() === null) {
+          this.showModel.set(true)
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   compareWithId(a, b) {
@@ -199,6 +205,7 @@ export class InsightComponent {
   }
 
   onAsk(event) {
+    this.#logger.debug(`Ask copilot question:`, event)
     this.askCopilot(event.prompt)
   }
 
@@ -217,7 +224,9 @@ export class InsightComponent {
   }
 
   dropModelProperty(event: CdkDragDrop<{ name: string }[]>) {
-    this.promptControl.setValue((this.promptControl.value ?? '') + ' ' + (event.item.data.caption || event.item.data.name))
+    this.promptControl.setValue(
+      (this.promptControl.value ?? '') + ' ' + (event.item.data.caption || event.item.data.name)
+    )
   }
 
   /**
@@ -231,7 +240,7 @@ export class InsightComponent {
     this.askController = new AbortController()
     this.answering = true
 
-    const _answer  = {
+    const _answer = {
       key: uuid(),
       title: prompt,
       expanded: true,
@@ -243,7 +252,7 @@ export class InsightComponent {
 
     // Ask copilot
     const answer = await this.insightService.askCopilot(prompt, {
-      signal: this.askController.signal
+      abortController: this.askController
     })
 
     // Update answer
@@ -252,7 +261,7 @@ export class InsightComponent {
       ...this.answers().slice(0, index),
       {
         ..._answer,
-        ...answer,
+        // ...answer,
         expanded: true,
         answering: false
       } as QuestionAnswer,

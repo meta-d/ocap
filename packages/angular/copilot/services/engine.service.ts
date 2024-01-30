@@ -109,9 +109,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly commands = computed(() => Object.values(this.#commands()))
 
   // Chat States
-  error = signal<undefined | Error>(undefined)
-  streamData = signal<JSONValue[] | undefined>(undefined)
-  isLoading = signal(false)
+  readonly error = signal<undefined | Error>(undefined)
+  readonly streamData = signal<JSONValue[] | undefined>(undefined)
+  readonly isLoading = signal(false)
 
   // constructor() {
   //   effect(() => {
@@ -158,10 +158,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   process(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string }
+    options?: { action?: string; abortController?: AbortController }
   ): Observable<string | CopilotChatMessage | void> {
     this.#logger?.debug(`process ask: ${data.prompt}`)
 
+    const { abortController } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
     const { command, prompt } = getCommandPrompt(data.prompt)
@@ -212,6 +213,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
           options: {
             body
           }
+        }, {
+          abortController
         })
       ).pipe(map(() => ''))
     } else {
@@ -238,6 +241,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
           options: {
             body
           }
+        }, {
+          abortController
         })
       ).pipe(map(() => ''))
     }
@@ -246,13 +251,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
   // useChat
   async triggerRequest(
     messagesSnapshot: CopilotChatMessage[],
-    { options, data }: ChatRequestOptions = {}
+    { options, data }: ChatRequestOptions = {},
+    {
+      abortController
+    }: {
+      abortController?: AbortController | null
+    } = {}
   ): Promise<ChatRequest | null | undefined> {
-    let abortController = null
+    // let abortController = null
     try {
       this.error.set(undefined)
       this.isLoading.set(true)
-      abortController = new AbortController()
+      abortController ??= new AbortController()
 
       const getCurrentMessages = () => this.lastConversation() ?? []
       // chatApiStore.get([this.key()], {
@@ -290,7 +300,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
               },
               chatRequest,
               { options, data },
-              abortController
+              {
+                abortController
+              }
             )
           } catch (err: any) {
             this.conversations$.update((state) => {
@@ -311,20 +323,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         updateChatRequest: (newChatRequest) => {
           chatRequest = newChatRequest
           this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
-
-          // Update or append message into conversation
-          // this.conversations$.update((state) => {
-          //   const messages = [...state]
-          //   newChatRequest.messages.forEach((message) => {
-          //     const index = messages.findIndex((item) => item.id && item.id === message.id)
-          //     if (index > -1) {
-          //       messages[index] = message
-          //     } else {
-          //       messages.push(message)
-          //     }
-          //   })
-          //   return messages
-          // })
         },
         getCurrentMessages: () => getCurrentMessages()
       })

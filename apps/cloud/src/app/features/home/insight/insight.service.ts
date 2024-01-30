@@ -1,42 +1,73 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotChatMessageRoleEnum, CopilotService, getFunctionCall } from '@metad/copilot'
+import { calcEntityTypePrompt, nonNullable } from '@metad/core'
+import { injectCopilotCommand, injectMakeCopilotActionable, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
+  C_MEASURES,
   ChartAnnotation,
   ChartDimension,
   ChartMeasure,
   Cube,
-  C_MEASURES,
   DataSettings,
   EntityType,
   getEntityDimensions,
-  isEntityType,
-  getEntityHierarchy
+  getEntityHierarchy,
+  isEntityType
 } from '@metad/ocap-core'
+import { getSemanticModelKey } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
-import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import JSON5 from 'json5'
 import { uniq, upperFirst } from 'lodash-es'
-import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, map, switchMap } from 'rxjs'
-import { getSemanticModelKey } from '@metad/story/core'
-import { calcEntityTypePrompt, nonNullable } from '@metad/core'
-import zodToJsonSchema from 'zod-to-json-schema'
-import { ChartSchema, SuggestsSchema } from './types'
 import { nanoid } from 'nanoid'
+import { NGXLogger } from 'ngx-logger'
+import { BehaviorSubject, combineLatest, debounceTime, filter, firstValueFrom, lastValueFrom, map, switchMap } from 'rxjs'
+import zodToJsonSchema from 'zod-to-json-schema'
 import { registerModel } from '../../../@core'
-
+import { ChartSchema, SuggestsSchema } from './types'
+import { zodToAnnotations } from '../../semantic-model/model/copilot'
 
 @Injectable()
 export class InsightService {
-  private modelsService = inject(ModelsService)
-  private copilotService = inject(CopilotService)
-  private dsCoreService = inject(NgmDSCoreService)
-  private wasmAgent = inject(WasmAgentService)
-  private readonly translateService = inject(TranslateService)
+  readonly #modelsService = inject(ModelsService)
+  readonly #copilotService = inject(CopilotService)
+  readonly #copilotEngine = inject(NgmCopilotEngineService)
+  readonly #dsCoreService = inject(NgmDSCoreService)
+  readonly #wasmAgent = inject(WasmAgentService)
+  readonly #translate = inject(TranslateService)
+  readonly #logger = inject(NGXLogger)
 
-  language = toSignal(this.translateService.onLangChange.pipe(map(({lang}) => lang)))
+  readonly #chartCommand = injectCopilotCommand({
+    name: 'chart',
+    description: '',
+    systemPrompt: () => {
+      return `Please design and create a specific graphic accurately based on the following detailed instructions.`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'new_chart',
+        description: 'New a chart',
+        argumentAnnotations: [
+          {
+            name: 'chart',
+            description: 'Chart configuration',
+            type: 'object',
+            properties: zodToAnnotations(ChartSchema),
+            required: true
+          }
+        ],
+        implementation: async (chart: any) => {
+          this.#logger.debug('New chart by copilot command with:', chart)
+          return `创建成功！`
+        }
+      })
+    ]
+  })
+
+  readonly language = toSignal(this.#translate.onLangChange.pipe(map(({ lang }) => lang)))
 
   get model(): NgmSemanticModel {
     return this.model$.value
@@ -46,32 +77,31 @@ export class InsightService {
   }
   private model$ = new BehaviorSubject(null)
 
-  modelSignal = toSignal(this.model$)
+  readonly modelSignal = toSignal(this.model$)
   // cube: Cube
-  cube = signal<Cube>(null)
+  readonly cube$ = signal<Cube>(null)
 
   private _suggestedPrompts = signal<Record<string, string[]>>({})
 
-  suggestedPrompts = computed(() => {
-    return this._suggestedPrompts()[(getSemanticModelKey(this.modelSignal()) + (this.cube()?.name ?? ''))]
+  readonly suggestedPrompts = computed(() => {
+    return this._suggestedPrompts()[getSemanticModelKey(this.modelSignal()) + (this.cube$()?.name ?? '')]
   })
   suggesting = false
 
-  entityType = toSignal(
+  readonly entityType = toSignal(
     combineLatest([
       this.model$.pipe(map(getSemanticModelKey)),
-      toObservable(this.cube).pipe(map((cube) => cube?.name))
+      toObservable(this.cube$).pipe(map((cube) => cube?.name))
     ]).pipe(
       debounceTime(100),
       filter(([key, cube]) => !!key && !!cube),
-      switchMap(([key, cube]) => this.dsCoreService.selectEntitySet(key, cube).pipe(
-        map((entitySet) => entitySet?.entityType)
-      ))
+      switchMap(([key, cube]) =>
+        this.#dsCoreService.selectEntitySet(key, cube).pipe(map((entitySet) => entitySet?.entityType))
+      )
     )
   )
   error = ''
-  answers = [
-  ]
+  answers = []
 
   demoModelCubes = [
     {
@@ -134,43 +164,50 @@ export class InsightService {
 
   entityPromptLimit = 10
   get copilotEnabled() {
-    return this.copilotService.enabled
+    return this.#copilotService.enabled
   }
-  // public readonly copilotNotEnabled$ = this.copilotService.notEnabled$
-  readonly models$ = this.modelsService.getMy()
-  readonly hasCube$ = this.model$.pipe(map((model) => !!model?.schema?.cubes?.length))
+  readonly models$ = this.#modelsService.getMy()
+  readonly hasCube$ = toSignal(this.model$.pipe(map((model) => !!model?.schema?.cubes?.length)))
+
   readonly cubes$ = this.model$.pipe(
     filter(nonNullable),
-    switchMap((model) => this.dsCoreService.getDataSource(getSemanticModelKey(model))),
+    switchMap((model) => this.#dsCoreService.getDataSource(getSemanticModelKey(model))),
     switchMap((dataSource) => dataSource.discoverMDCubes())
   )
 
   async setModel(model: NgmSemanticModel) {
     this.error = null
-    model = convertNewSemanticModelResult(await firstValueFrom(this.modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type',])))
+    model = convertNewSemanticModelResult(
+      await firstValueFrom(
+        this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
+      )
+    )
     this.model = model
     if (!this._suggestedPrompts()[getSemanticModelKey(model)]) {
       this.registerModel(model)
       const answer = await this.suggestPrompts()
-      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(model)]: answer.suggests})
+      this._suggestedPrompts.set({ ...this._suggestedPrompts(), [getSemanticModelKey(model)]: answer.suggests })
     }
   }
 
   async setCube(cube: Cube) {
     this.error = null
-    this.cube.set(cube)
+    this.cube$.set(cube)
     if (cube) {
       const answer = await this.suggestPrompts()
-      this._suggestedPrompts.set({...this._suggestedPrompts(), [getSemanticModelKey(this.model) + this.cube().name]: answer.suggests})
+      this._suggestedPrompts.set({
+        ...this._suggestedPrompts(),
+        [getSemanticModelKey(this.model) + this.cube$().name]: answer.suggests
+      })
     }
   }
 
-  registerModel(model) {
-    registerModel(model, this.dsCoreService, this.wasmAgent)
+  private registerModel(model: NgmSemanticModel) {
+    registerModel(model, this.#dsCoreService, this.#wasmAgent)
   }
 
-  async preclassify(prompt: string, options?: { signal: AbortSignal }) {
-    const choices = await this.copilotService.createChat(
+  async preclassify(prompt: string, options?: { abortController: AbortController }) {
+    const choices = await this.#copilotService.createChat(
       [
         {
           id: nanoid(),
@@ -205,18 +242,40 @@ export class InsightService {
     }
   }
 
+  async askCopilot(prompt: string, options?: { abortController: AbortController }) {
+    // const dataSourceName = getSemanticModelKey(this.model)
+    try {
+      const classification =
+        this.hasCube$() && this.cube$() ? this.cube$().name : await this.preclassify(prompt, options)
+      const entityType = await this.getEntityType(classification)
+      const cubes = await this.getAllCubes()
+
+      await lastValueFrom(this.#copilotEngine.process({
+        prompt: `/chart 多维数据模型信息为：
+${calcEntityTypePrompt(entityType)}
+问题：${prompt}
+`,
+        newConversation: true
+      }, {
+        abortController: options?.abortController,
+      }))
+    } catch (err) {
+      this.#logger.error(err)
+    }
+  }
+
   /**
-   * Request copilot answer using prompt
-   * 
-   * @param prompt 
-   * @param options 
-   * @returns 
+   * Ask copilot answer for user's prompt
+   *
+   * @param prompt
+   * @param options
+   * @returns
    */
-  async askCopilot(prompt: string, options?: { signal: AbortSignal }) {
+  async askCopilot1(prompt: string, options?: { abortController: AbortController }) {
     const dataSourceName = this.model.key
     try {
-      const hasCube = await firstValueFrom(this.hasCube$)
-      const classification = hasCube && this.cube() ? this.cube().name : await this.preclassify(prompt, options)
+      const classification =
+        this.hasCube$() && this.cube$() ? this.cube$().name : await this.preclassify(prompt, options)
       const entityType = await this.getEntityType(classification)
       const cubes = await this.getAllCubes()
 
@@ -224,43 +283,7 @@ export class InsightService {
         {
           id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
-          content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户问题对应的图形的配置 in json format，不用解释。过滤条件为 slicers，slicers is optional, Order is optional。
-${this.getChartTypePrompt()}
-${this.getSlicersPrompt()}
-${this.getDimensionPrompt()}
-${this.getMeasurePrompt()}
-${this.getDataSettingsPrompt()}
-例如：
-多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
-问题：产品类别为 Bike 的访问量走势
-回答：{
-"cube": "Visit",
-"chartType": {
-  "type": "Line"
-},
-"dimension": {
-  "dimension": "[Time]",
-  "hierarchy": "[Time]",
-  "level": "[Time].[Day]",
-},
-"measure": {
-  "measure": "visits"
-},
-"slicers": [
-  {
-    "dimension": {
-      "dimension": "[Product]",
-      "hierarchy": "[Product]",
-      "level": "[Product].[Category]"
-    },
-    "members": [
-      {
-        "value": "Bike"
-      }
-    ]
-  }
-]
-}`
+          content: ``
         },
         {
           id: nanoid(),
@@ -284,17 +307,15 @@ ${calcEntityTypePrompt(entityType)}
         function_call: { name: 'create_chart' }
       }
 
-      const choices = await this.copilotService.createChat(messages,
-        {
-          ...(options ?? {}),
-          request: requestOptions
-        }
-      )
+      const choices = await this.#copilotService.createChat(messages, {
+        ...(options ?? {}),
+        request: requestOptions
+      })
 
       let answer: any
       try {
         answer = getFunctionCall(choices[0].message)
-        
+
         const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer.arguments, entityType)
         const answerMessage = {
           message: JSON.stringify(answer.arguments, null, 2),
@@ -309,7 +330,7 @@ ${calcEntityTypePrompt(entityType)}
                 hierarchy: property.defaultHierarchy,
                 level: null
               }))
-            },
+            }
           } as DataSettings,
           slicers,
           chartOptions,
@@ -322,9 +343,9 @@ ${calcEntityTypePrompt(entityType)}
           message: choices[0].message.content
         }
       } finally {
-        console.log(`Request is `, messages, requestOptions, `Answer is `, answer)
+        this.#logger.log(`Request is `, messages, requestOptions, `Answer is `, answer)
       }
-    } catch(err: any) {
+    } catch (err: any) {
       this.error = err.message
       return {
         message: ''
@@ -334,9 +355,9 @@ ${calcEntityTypePrompt(entityType)}
 
   /**
    * Suggest AI prompts for the cube or random 10 cubes related to the entity type info of the cube
-   * 
-   * @param cube 
-   * @returns 
+   *
+   * @param cube
+   * @returns
    */
   async suggestPrompts(cube?: Cube) {
     this.suggesting = true
@@ -348,7 +369,7 @@ ${calcEntityTypePrompt(entityType)}
       } else {
         prompt = await this.getRandomEntityTypes(10)
       }
-      const choices = await this.copilotService.createChat(
+      const choices = await this.#copilotService.createChat(
         [
           {
             id: nanoid(),
@@ -356,11 +377,16 @@ ${calcEntityTypePrompt(entityType)}
             content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
   例如：
   多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
-  回答：${JSON.stringify(this.translateService.instant('PAC.Home.Insight.PromptExamplesForVisit', {Default: [
-    "the trend of visit, line is smooth and width 5",
-    "visits by product category, show legend",
-    "visit trend of some product in 2023 year"
-  ]}))}`},
+  回答：${JSON.stringify(
+    this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
+      Default: [
+        'the trend of visit, line is smooth and width 5',
+        'visits by product category, show legend',
+        'visit trend of some product in 2023 year'
+      ]
+    })
+  )}`
+          },
           {
             id: nanoid(),
             role: CopilotChatMessageRoleEnum.User,
@@ -401,7 +427,7 @@ ${calcEntityTypePrompt(entityType)}
    */
   async getRandomEntityTypes(total: number) {
     const dataSourceName = getSemanticModelKey(this.model)
-    const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSourceName))
+    const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
     if (this.model.schema?.cubes?.length) {
       const cubes = await firstValueFrom(dataSource.discoverMDCubes())
       const randomCubes = []
@@ -449,7 +475,7 @@ ${calcEntityTypePrompt(entityType)}
 
   async getAllCubes() {
     const dataSourceName = getSemanticModelKey(this.model)
-    const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSourceName))
+    const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
     if (this.model.schema?.cubes?.length) {
       return await firstValueFrom(dataSource.discoverMDCubes())
     }
@@ -458,7 +484,7 @@ ${calcEntityTypePrompt(entityType)}
 
   async getAllEntities() {
     const dataSourceName = getSemanticModelKey(this.model)
-    const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSourceName))
+    const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
 
     const entities = []
     if (this.model.schema?.cubes?.length) {
@@ -472,9 +498,15 @@ ${calcEntityTypePrompt(entityType)}
     return uniq(entities).join(', ')
   }
 
+  /**
+   * Get entity type by name
+   *
+   * @param name Entity name
+   * @returns EntityType
+   */
   async getEntityType(name: string) {
     const dataSourceName = getSemanticModelKey(this.model)
-    const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSourceName))
+    const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
     const entityType = await firstValueFrom(dataSource.selectEntityType(name))
     if (isEntityType(entityType)) {
       return entityType
@@ -486,12 +518,21 @@ ${calcEntityTypePrompt(entityType)}
   getChartTypePrompt() {
     return `chartType 属性类型定义("type" is required, others is optional)为：
 ${JSON.stringify([
-  {"type": "Pie"}, {"type": "Pie", "variant": "Doughnut"}, {"type": "Pie", "variant": "Nightingale"},
-  {"type": "Bar", "orient": "horizontal", "variant": "polar"}, {"type": "Bar", "orient": "vertical", "variant": "polar"},
-  {"type": "Bar", "orient": "horizontal"},
-  {"type": "Bar", "orient": "vertical"},
-  {"type": "Bar"},
-  {"type": "Line"}, {"type": "Line", "orient": "horizontal"}, {"type": "Line", "orient": "vertical"}, {"type": "Sankey"}, {"type": "Sankey", "orient": "horizontal"}, {"type": "Sankey", "orient": "vertical"}, {"type": "Treemap"}
+  { type: 'Pie' },
+  { type: 'Pie', variant: 'Doughnut' },
+  { type: 'Pie', variant: 'Nightingale' },
+  { type: 'Bar', orient: 'horizontal', variant: 'polar' },
+  { type: 'Bar', orient: 'vertical', variant: 'polar' },
+  { type: 'Bar', orient: 'horizontal' },
+  { type: 'Bar', orient: 'vertical' },
+  { type: 'Bar' },
+  { type: 'Line' },
+  { type: 'Line', orient: 'horizontal' },
+  { type: 'Line', orient: 'vertical' },
+  { type: 'Sankey' },
+  { type: 'Sankey', orient: 'horizontal' },
+  { type: 'Sankey', orient: 'vertical' },
+  { type: 'Treemap' }
 ])}`
   }
 
@@ -553,16 +594,14 @@ ${JSON.stringify([
 }    
 `
   }
-
 }
-
 
 /**
  * Transform copilot answer to chart annotation
- * 
+ *
  * @param answer Answer from copilot
  * @param entityType Entity type of the cube
- * @returns 
+ * @returns
  */
 export function transformCopilotChart(answer: any, entityType: EntityType) {
   const chartAnnotation = {} as ChartAnnotation
@@ -573,43 +612,46 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
     }
   } else {
     chartAnnotation.chartType = {
-      type: 'Bar',
+      type: 'Bar'
     }
   }
 
   const dimensions = (answer.dimension ? [answer.dimension] : answer.dimensions) ?? []
-  chartAnnotation.dimensions = dimensions.map((dimension) => (
-    {
-      ...dimension,
-      // Determine dimension attr by hierarchy
-      dimension: getEntityHierarchy(entityType, dimension.hierarchy).dimension,
-      zeroSuppression: true,
-      chartOptions: {
-        dataZoom: {
-          type: 'inside'
+  chartAnnotation.dimensions = dimensions.map(
+    (dimension) =>
+      ({
+        ...dimension,
+        // Determine dimension attr by hierarchy
+        dimension: getEntityHierarchy(entityType, dimension.hierarchy).dimension,
+        zeroSuppression: true,
+        chartOptions: {
+          dataZoom: {
+            type: 'inside'
+          }
         }
-      }
-    } as ChartDimension
-  ))
-  
-  const measures = answer.measure ?  [answer.measure] : (answer.measures ?? [])
-  chartAnnotation.measures = measures.map((measure) => (
-    {
-      ...measure,
-      dimension: C_MEASURES,
-      chartOptions: {
-        ...(measure.chartOptions ?? {}),
-        // dataZoom: {
-        //   type: 'slider'
-        // }
-      },
-      formatting: {
-        shortNumber: true
-      },
-      palette: {
-        name: 'Viridis'
-      }
-    } as ChartMeasure))
+      } as ChartDimension)
+  )
+
+  const measures = answer.measure ? [answer.measure] : answer.measures ?? []
+  chartAnnotation.measures = measures.map(
+    (measure) =>
+      ({
+        ...measure,
+        dimension: C_MEASURES,
+        chartOptions: {
+          ...(measure.chartOptions ?? {})
+          // dataZoom: {
+          //   type: 'slider'
+          // }
+        },
+        formatting: {
+          shortNumber: true
+        },
+        palette: {
+          name: 'Viridis'
+        }
+      } as ChartMeasure)
+  )
 
   return {
     chartAnnotation,
