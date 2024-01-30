@@ -2,12 +2,11 @@ import { Location } from '@angular/common'
 import { Component, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { map } from 'rxjs/operators'
+import { map, startWith } from 'rxjs/operators'
 import { PacAuthService } from './services/auth.service'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-auth',
   styleUrls: ['./auth.component.scss'],
@@ -22,7 +21,10 @@ export class PacAuthComponent {
   protected store = inject(Store)
   protected location = inject(Location)
 
-  readonly language = toSignal(this.#translate.onLangChange.pipe(map(() => this.#translate.currentLang)))
+  readonly language = toSignal(this.#translate.onLangChange.pipe(
+    startWith(this.#translate.defaultLang),
+    map(() => this.#translate.currentLang))
+  )
 
   token = ''
 
