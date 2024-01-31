@@ -157,7 +157,8 @@
       "SemanticModels": "语义模型",
       "Stories": "故事",
       "Indicators": "指标",
-      "IndicatorMarket": "指标市场"
+      "IndicatorMarket": "指标市场",
+      "RemeberMe": "记住我"
     },
     "MENU": {
       "Certification": "认证",
@@ -328,7 +329,9 @@
         "DONE": "完成",
         "AuthType": "授权方式",
         "AuthType_None": "无",
-        "AuthType_Basic": "基本身份验证"
+        "AuthType_Basic": "基本身份验证",
+        "AuthType_None_Description": "系统统一授权，不需要用户提供账号",
+        "AuthType_Basic_Description": "用户需提供账号进行授权"
       },
       "Roles": {
         "General": "通用",
@@ -406,7 +409,8 @@
       "CreateStoryWidgetSuccess": "创建故事部件成功",
       "CreateDataSource": "创建数据源",
       "ConfirmExitDirtyData": "有未保存数据, 确认退出吗?",
-      "Sure": "确定"
+      "Sure": "确定",
+      "UserAuthenticationFailure": "用户认证失败"
     },
     "Messages": {
       "AlreadyExists": "{{value}}已存在",
@@ -979,6 +983,9 @@
       "StoryCard": {
         "LastUpdated": "最后更新",
         "Open": "查看"
+      },
+      "AuthBottomSheet": {
+        "Title": "为数据源 {{name}} 提供账号"
       }
     },
     "INVITE_PAGE": {
@@ -1014,6 +1021,7 @@
         "Port": "端口号",
         "Path": "路径",
         "Username": "用户名",
+        "User": "用户名",
         "Password": "密码",
         "Database Name": "数据库名",
         "Use SSL": "使用加密连接",
@@ -1025,7 +1033,11 @@
         "ApiPort": "接口端口号",
         "Catalog": "目录",
         "Database": "数据库",
-        "Version": "版本"
+        "Version": "版本",
+        "Url": "主机链接",
+        "Request Timeout": "请求超时时间",
+        "Verify SSL certificate": "验证 SSL 证书",
+        "HTTP Path": "Http 路径"
       }
     },
     "Story": {

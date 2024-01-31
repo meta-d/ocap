@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core'
+import { provideFormlyMaterial } from '@metad/formly'
+import { PACFormlyEmptyModule } from '@metad/formly/empty'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { FormlyModule } from '@ngx-formly/core'
-import { FormlyMaterialModule } from '@ngx-formly/material'
-import { PACFormlyEmptyModule } from '@metad/formly/empty'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { FeatureToggleModule } from '../../@shared/feature-toggle'
 import { InviteMutationComponent } from '../../@shared/invite'
@@ -11,21 +11,19 @@ import { PACGeneralComponent } from './general/general.component'
 import { SettingRoutingModule } from './setting-routing.module'
 import { PACSettingComponent } from './settings.component'
 import { UserModule } from './users/user.module'
+import { FormlyMaterialModule } from '@ngx-formly/material'
 
 @NgModule({
-  declarations: [
-    PACSettingComponent,
-    PACGeneralComponent,
-  ],
+  declarations: [PACSettingComponent, PACGeneralComponent],
   imports: [
     SharedModule,
     MaterialModule,
     SettingRoutingModule,
 
     // Formly
-    FormlyModule,
-    FormlyMaterialModule,
+    FormlyModule.forRoot(),
     PACFormlyEmptyModule,
+    FormlyMaterialModule,
 
     FeatureToggleModule,
     UserModule,
@@ -33,6 +31,7 @@ import { UserModule } from './users/user.module'
     ButtonGroupDirective,
 
     InviteMutationComponent
-  ]
+  ],
+  providers: [provideFormlyMaterial()]
 })
 export class SettingModule {}

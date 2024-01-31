@@ -107,17 +107,17 @@
       <mat-tab [label]=" 'PAC.MENU.Authentication' | translate: {Default: 'Authentication'} ">
         <mat-list role="list">
           <mat-list-item role="listitem" *ngFor="let item of localAgent.auth | keyvalue | filter: valueIsNotNil">
-            <button mat-icon-button displayDensity="compact" ngmAppearance="danger"
+            <span>{{item.value[0]}}</span>
+            <button mat-icon-button matListItemMeta displayDensity="compact" ngmAppearance="danger"
               [matTooltip]=" 'PAC.MENU.STATUS_BAR.ClearAuthentication' | translate: {Default: 'Clear Authentication'} "
               (click)="deleteAuth(localAgent, item.key)"><mat-icon>close</mat-icon></button>
-            {{item.value[0]}}
           </mat-list-item>
 
           <mat-list-item role="listitem" *ngFor="let item of serverAgent.auth | keyvalue | filter: valueIsNotNil">
-            <button mat-icon-button displayDensity="compact" ngmAppearance="danger"
+            <span>{{item.value[0]}}</span>
+            <button mat-icon-button matListItemMeta displayDensity="compact" ngmAppearance="danger"
               [matTooltip]=" 'PAC.MENU.STATUS_BAR.ClearAuthentication' | translate: {Default: 'Clear Authentication'} "
               (click)="deleteAuth(serverAgent, item.key)"><mat-icon>close</mat-icon></button>
-            {{item.value[0]}}
           </mat-list-item>
         </mat-list>
       </mat-tab>

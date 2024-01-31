@@ -1,5 +1,5 @@
 import { AdapterBaseOptions, createQueryRunnerByType, DBQueryRunner } from '@metad/adapter'
-import { AuthenticationEnum, IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
+import { IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
 import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -30,10 +30,23 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		return this.findOne(result.id, { relations: ['type'] })
 	}
 
-	async prepareDataSource(id: string) {
-		const dataSource = await this.dsRepository.findOne(id, {
+	async prepareDataSource(id: string, newDataSource?: Partial<IDataSource>) {
+		const {authentications, options, ...ds} = newDataSource ?? {}
+
+		let dataSource = await this.dsRepository.findOne(id, {
 			relations: ['type', 'authentications']
 		})
+
+		dataSource.authentications = authentications ?? dataSource.authentications
+		dataSource.options = options ? {
+			...dataSource.options, ...options
+		} : dataSource.options
+
+		dataSource = {
+			...dataSource,
+			...(ds ?? {})
+		} as DataSource
+
 		return prepareDataSource(dataSource)
 	}
 
@@ -130,26 +143,26 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 	async ping(dataSource: IDataSource): Promise<any>
 	async ping(id: string, dataSource: IDataSource): Promise<any>
 	async ping(id: string | IDataSource, dataSource?: IDataSource) {
-		let runner: DBQueryRunner
+		let _dataSource: IDataSource
 		if (typeof id === 'string') {
-			const _dataSource = await this.prepareDataSource(id)
-			// 用户自定义信息覆盖系统信息
-			runner = createQueryRunnerByType(_dataSource.type.type, { ..._dataSource.options, ...dataSource.options })
+			_dataSource = await this.prepareDataSource(id, {
+				...dataSource,
+				authentications: dataSource.authentications?.map((item) => ({
+					...item,
+					userId: RequestContext.currentUserId()
+				}))
+			})
 		} else {
-			dataSource = id
-			if (dataSource.authType === AuthenticationEnum.BASIC) {
-				const auth = dataSource.authentications?.[0]
-				if (auth) {
-					dataSource.options.username = auth.username
-					dataSource.options.password = auth.password
-				}
-			}
-			runner = createQueryRunnerByType(
-				dataSource.type.type,
-				<AdapterBaseOptions>(<unknown>(dataSource.options ?? {}))
-			)
+			_dataSource = prepareDataSource({
+				...id,
+				authentications: id.authentications?.map((item) => ({
+					...item,
+					userId: RequestContext.currentUserId()
+				}))
+			} as DataSource)
 		}
 
+		const runner: DBQueryRunner = createQueryRunnerByType(_dataSource.type.type, (_dataSource.options ?? {}) as unknown as AdapterBaseOptions)
 		try {
 			return await runner.ping()
 		} finally {

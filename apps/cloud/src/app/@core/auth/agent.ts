@@ -1,9 +1,9 @@
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { DataSourceService } from '@metad/cloud/state'
-import { firstValueFrom, from, of, ReplaySubject, Subject } from 'rxjs'
+import { firstValueFrom, from, Observable, of, ReplaySubject, Subject } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
-import { BottomSheetBasicAuthComponent } from '../auth'
-import { AgentEvent, IDataSourceAuthentication } from '../types'
+import { BottomSheetBasicAuthComponent, AuthInfoType } from '../auth'
+import { AgentEvent, IDataSource, IDataSourceAuthentication } from '../types'
 
 export abstract class AbstractAgent {
   private _auth: Record<string, [string, Subject<any>]> = {}
@@ -11,6 +11,7 @@ export abstract class AbstractAgent {
     return this._auth
   }
   private _retryAuth: Record<string, boolean> = {}
+
   constructor(protected dataSourceService: DataSourceService, protected _bottomSheet: MatBottomSheet) {}
 
   /**
@@ -30,7 +31,7 @@ export abstract class AbstractAgent {
             }),
           )
           .subscribe({
-            next: async (auth) => {
+            next: async (auth: AuthInfoType) => {
               try {
                 if (!auth) {
                   auth = await this.signIn(dataSource, event)
@@ -58,9 +59,9 @@ export abstract class AbstractAgent {
     }
   }
 
-  private async signIn(dataSource, event: AgentEvent): Promise<IDataSourceAuthentication> {
+  private async signIn(dataSource: Partial<Omit<IDataSource, 'type'>>, event: AgentEvent): Promise<IDataSourceAuthentication> {
     return firstValueFrom(this._bottomSheet
-      .open(BottomSheetBasicAuthComponent, {data: {name: dataSource.name, ping: this.getPingCallback(event)}})
+      .open(BottomSheetBasicAuthComponent, {data: {name: dataSource.name, ping: this.getPingCallback(event, dataSource)}})
       .afterDismissed())
   }
 
@@ -72,11 +73,11 @@ export abstract class AbstractAgent {
       this._retryAuth[dataSource.id] = true
 
       this._bottomSheet
-        .open(BottomSheetBasicAuthComponent, {data: {name: dataSource.name, ping: this.getPingCallback(request)}})
+        .open(BottomSheetBasicAuthComponent, {data: {name: dataSource.name, ping: this.getPingCallback(request, dataSource)}})
         .afterDismissed()
         .pipe(
           switchMap((auth) =>
-            auth
+            auth?.remeberMe
               ? this.dataSourceService.createAuthentication(dataSource.id, auth)
               : of(auth)
           )
@@ -107,5 +108,5 @@ export abstract class AbstractAgent {
     this._auth[id] = null
   }
 
-  abstract getPingCallback(request: AgentEvent): (auth: any) => Promise<any>
+  abstract getPingCallback(request: any, dataSource: Partial<Omit<IDataSource, 'type'>>): (auth: AuthInfoType) => Promise<any>
 }

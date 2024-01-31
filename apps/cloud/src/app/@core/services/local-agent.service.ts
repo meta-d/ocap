@@ -17,9 +17,9 @@ import { BehaviorSubject, firstValueFrom, Observable, of, Subject, Subscription,
 import { filter, finalize, mergeMap, retryWhen, switchMap, tap, timeout } from 'rxjs/operators'
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket'
 import { uuid } from '../types'
-import { AbstractAgent } from './agent'
 import { AgentService } from './agent.service'
 import { Store } from './store.service'
+import { AbstractAgent } from '../auth'
 
 @Injectable()
 export class LocalAgent extends AbstractAgent implements Agent {

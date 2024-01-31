@@ -1,22 +1,20 @@
-import { Component, HostBinding, InjectFlags, OnInit, ViewChild, inject } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
+import { DataSourceService, DataSourceTypesService } from '@metad/cloud/state'
 import { AuthenticationEnum, IDataSource, IDataSourceType } from '@metad/contracts'
 import { isEmpty, omit } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { DataSourceService, DataSourceTypesService } from '@metad/cloud/state'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import {
-  convertConfigurationSchema,
-  getErrorMessage,
   LocalAgent,
   ServerAgent,
-  ToastrService
+  ToastrService,
+  convertConfigurationSchema,
+  getErrorMessage
 } from '../../../../@core/index'
 
-
-@UntilDestroy({checkProperties: true})
 @Component({
   selector: 'pac-data-source-creation',
   templateUrl: './creation.component.html',
@@ -29,14 +27,14 @@ export class PACDataSourceCreationComponent implements OnInit {
   private dataSourceService = inject(DataSourceService)
   private toastrService = inject(ToastrService)
   private translateService = inject(TranslateService)
-  private data: IDataSource = inject(MAT_DIALOG_DATA, InjectFlags.Optional)
+  private data: IDataSource = inject(MAT_DIALOG_DATA, { optional: true })
   public dialogRef = inject(MatDialogRef<PACDataSourceCreationComponent>)
-  private localAgent? = inject(LocalAgent, InjectFlags.Optional)
-  private serverAgent? = inject(ServerAgent, InjectFlags.Optional)
-  
+  private localAgent? = inject(LocalAgent, { optional: true })
+  private serverAgent? = inject(ServerAgent, { optional: true })
+
   loading = false
-  
-  public readonly connectionTypes$ = this.typesService.types$.pipe(untilDestroyed(this))
+
+  public readonly connectionTypes$ = this.typesService.types$.pipe(takeUntilDestroyed())
   public typeFormGroup = new FormGroup({
     type: new FormControl(null, [Validators.required])
   })
@@ -61,9 +59,9 @@ export class PACDataSourceCreationComponent implements OnInit {
   model = {}
   public readonly fields$ = new BehaviorSubject([])
 
-  private _typeFormGroupSub = this.typeFormGroup.valueChanges.subscribe(async ({ type }) => {
+  private _typeFormGroupSub = this.typeFormGroup.valueChanges.subscribe(({ type }) => {
     if (!isEmpty(type)) {
-      const i18n = await firstValueFrom(this.translateService.get('PAC.DataSources.Schema'))
+      const i18n = this.translateService.instant('PAC.DataSources.Schema')
       this.fields$.next(convertConfigurationSchema(type[0].configuration, i18n))
     }
   })
@@ -85,12 +83,14 @@ export class PACDataSourceCreationComponent implements OnInit {
 
   async onSave() {
     if (this.formGroup.valid) {
-      const result = await firstValueFrom(this.dataSourceService.create({
+      const result = await firstValueFrom(
+        this.dataSourceService.create({
           ...this.formGroup.value,
           typeId: this.type.id
-        }))
-      
-      this.toastrService.success('PAC.MESSAGE.CreateDataSource', {Default: 'Create data source'})
+        })
+      )
+
+      this.toastrService.success('PAC.MESSAGE.CreateDataSource', { Default: 'Create data source' })
       this.dialogRef.close(result)
     }
   }
@@ -105,24 +105,27 @@ export class PACDataSourceCreationComponent implements OnInit {
     const agent = this.formGroup.value.useLocalAgent ? this.localAgent : this.serverAgent
     this.loading = true
     try {
-      await agent.request({
-        type: this.type.protocol.toUpperCase(),
-        dataSource: {
-          ...this.formGroup.value,
-          type: this.type
+      await agent.request(
+        {
+          type: this.type.protocol.toUpperCase(),
+          dataSource: {
+            ...this.formGroup.value,
+            type: this.type
+          }
+        },
+        {
+          method: 'get',
+          url: 'ping',
+          body: {
+            ...this.formGroup.value,
+            type: this.type
+          }
         }
-      }, {
-        method: 'get',
-        url: 'ping',
-        body: {
-          ...this.formGroup.value,
-          type: this.type
-        }
-      })
+      )
 
       this.loading = false
-      this.toastrService.success('PAC.ACTIONS.PING', {Default: 'Ping'})
-    } catch(err) {
+      this.toastrService.success('PAC.ACTIONS.PING', { Default: 'Ping' })
+    } catch (err) {
       const message = getErrorMessage(err)
       this.loading = false
       this.toastrService.error(message)
