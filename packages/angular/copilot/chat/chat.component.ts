@@ -38,12 +38,12 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, startWith, Subscription } from 'rxjs'
-import { CopilotEnableComponent } from '../enable/enable.component'
+import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser } from '../types'
-import { nanoid } from 'ai'
+import { nanoid } from 'nanoid'
 import { injectCopilotCommand } from '../hooks'
 
 @Component({
@@ -77,7 +77,7 @@ import { injectCopilotCommand } from '../hooks'
     NgmHighlightDirective,
 
     CopilotChatTokenComponent,
-    CopilotEnableComponent,
+    NgmCopilotEnableComponent,
     UserAvatarComponent,
     NgmScrollBackComponent
   ],
@@ -90,7 +90,7 @@ export class NgmCopilotChatComponent {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
 
-  private popperjsContentComponent = inject(NgxPopperjsContentComponent, { optional: true })
+  // private popperjsContentComponent = inject(NgxPopperjsContentComponent, { optional: true })
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(CopilotService)
@@ -112,6 +112,7 @@ export class NgmCopilotChatComponent {
 
   @Output() copy = new EventEmitter()
   @Output() conversationsChange = new EventEmitter()
+  @Output() enableCopilot = new EventEmitter()
 
   @ViewChild('chatsContent') chatsContent: ElementRef<HTMLDivElement>
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
@@ -448,71 +449,7 @@ export class NgmCopilotChatComponent {
         this.conversationsChange.emit(this.conversations)
         this._cdr.detectChanges()
       }
-
-      return
     }
-
-    // // 系统提示
-    // const messages: CopilotChatMessage[] =
-    //   this.openaiOptions.useSystemPrompt && this.systemPrompt
-    //     ? [
-    //         {
-    //           id: nanoid(),
-    //           role: CopilotChatMessageRoleEnum.System,
-    //           content: this.systemPrompt
-    //         }
-    //       ]
-    //     : []
-    // // 合并连续的提问消息：如数据表和提问合并
-    // messages.push(
-    //   ...this.conversations
-    //     .filter((item) => !item.error && !!item.content)
-    //     .reduceRight((prev, curr) => {
-    //       if (!prev.length) {
-    //         return [pick(curr, 'role', 'content')]
-    //       }
-
-    //       if (curr.role === prev[prev.length - 1].role) {
-    //         prev[prev.length - 1].content = [curr.content, prev[prev.length - 1].content].join('\n')
-    //       } else {
-    //         prev.push(pick(curr, 'role', 'content'))
-    //       }
-    //       return prev
-    //     }, [])
-    //     .reverse()
-    // )
-
-    // // this.conversations = [...this.conversations, assistant]
-
-    // this.scrollBottom()
-
-    // this.askSubscriber = this.copilotService
-    //   .chatStream(messages)
-    //   .pipe(
-    //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-    //     map((content) => content.trim())
-    //   )
-    //   .subscribe({
-    //     next: (content) => {
-    //       assistant.content = content
-    //       this._cdr.detectChanges()
-
-    //       this.scrollBottom()
-    //     },
-    //     error: (err) => {
-    //       this.answering.set(false)
-    //       assistant.content = null
-    //       assistant.error = getErrorMessage(err)
-
-    //       this.conversationsChange.emit(this.conversations)
-    //       this._cdr.detectChanges()
-    //     },
-    //     complete: () => {
-    //       this.answering.set(false)
-    //       this.conversationsChange.emit(this.conversations)
-    //       this._cdr.detectChanges()
-    //     }
-    //   })
   }
 
   stopGenerating() {
@@ -555,8 +492,8 @@ export class NgmCopilotChatComponent {
     this.copilotOptions.hide()
   }
 
-  closePopper() {
-    this.popperjsContentComponent?.toggleVisibility(false)
+  onEnableCopilot() {
+    this.enableCopilot.emit()
   }
 
   async addMessage(message: CopilotChatMessage) {

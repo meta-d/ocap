@@ -18,7 +18,7 @@ import { TranslateModule } from '@ngx-translate/core'
     class: 'ngm-copilot-enable'
   }
 })
-export class CopilotEnableComponent {
+export class NgmCopilotEnableComponent {
   private copilotService = inject(CopilotService)
 
   @Input() title: string

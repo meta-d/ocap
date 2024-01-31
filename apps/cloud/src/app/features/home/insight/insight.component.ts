@@ -15,7 +15,7 @@ import { NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NgmCopilotInputComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { NgmCopilotEnableComponent, NgmCopilotInputComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
@@ -35,7 +35,7 @@ import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { ToastrService, zodToAnnotations } from '../../../@core'
-import { CopilotEnableComponent, MaterialModule, StorySelectorComponent } from '../../../@shared'
+import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
 import { ChartSchema, QuestionAnswer } from './types'
 
@@ -59,9 +59,9 @@ import { ChartSchema, QuestionAnswer } from './types'
     NxSelectionModule,
     NgmEntityPropertyComponent,
 
-    CopilotEnableComponent,
     StoryExplorerModule,
-    NgmCopilotInputComponent
+    NgmCopilotInputComponent,
+    NgmCopilotEnableComponent
   ],
   selector: 'pac-home-insight',
   templateUrl: 'insight.component.html',

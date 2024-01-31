@@ -18,12 +18,9 @@ import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
-import { CopilotAPIService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
-import { PACCopilotService } from '../@core/services/copilot2.service'
+import { DirtyCheckGuard, LocalAgent, ServerAgent, PACCopilotService } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import {
-  CopilotChatComponent,
-  CopilotGlobalComponent,
   MaterialModule,
   PACStatusBarComponent,
   SharedModule
@@ -50,9 +47,7 @@ import { FeaturesComponent } from './features.component'
     HeaderSettingsComponent,
     AssetsComponent,
     ProjectSelectorComponent,
-    CopilotChatComponent,
     DensityDirective,
-    CopilotGlobalComponent,
 
     // Formly
     NgmFormlyModule.forRoot({}),
@@ -122,21 +117,21 @@ import { FeaturesComponent } from './features.component'
       provide: NX_STORY_FEED,
       useClass: StoryFeedService
     },
-    {
-      // Provide CopilotConfig factory to PACCopilotService
-      provide: PACCopilotService.CopilotConfigFactoryToken,
-      useFactory: (copilotService: CopilotAPIService) => async (): Promise<ICopilot> => {
-        const copilot = await copilotService.getOne()
-        return {
-          ...copilot,
-          chatUrl: '/api/ai/chat'
-        }
-      },
-      deps: [CopilotAPIService]
-    },
+    // {
+    //   // Provide CopilotConfig factory to PACCopilotService
+    //   provide: PACCopilotService.CopilotConfigFactoryToken,
+    //   useFactory: (copilotService: CopilotAPIService) => async (): Promise<ICopilot> => {
+    //     const copilot = await copilotService.getOne()
+    //     return {
+    //       ...copilot,
+    //       chatUrl: '/api/ai/chat'
+    //     }
+    //   },
+    //   deps: [CopilotAPIService]
+    // },
     {
       provide: CopilotService,
-      useClass: PACCopilotService
+      useExisting: PACCopilotService
     },
     NgmCopilotEngineService
   ]

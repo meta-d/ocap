@@ -110,6 +110,7 @@
       >
         <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area h-full"
           cdkDropList
+          (enableCopilot)="toEnableCopilot()"
         ></ngm-copilot-chat>
         
         <div ngmResizerBar resizerBarPosition="left"

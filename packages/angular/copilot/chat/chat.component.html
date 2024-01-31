@@ -233,7 +233,7 @@
 <ngm-copilot-enable class="z-[101]"
     [title]="welcomeTitle || 'Metad Copilot'"
     [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
-    (toConfig)="closePopper()"/>
+    (toConfig)="onEnableCopilot()"/>
 }
 
 <popper-content #copilotOptions class="z-[101]">

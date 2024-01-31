@@ -727,4 +727,8 @@ export class FeaturesComponent implements OnInit {
   async createIndicator() {
     this.router.navigate(['project', 'indicators', 'new'])
   }
+
+  toEnableCopilot() {
+    this.router.navigate(['settings', 'copilot'])
+  }
 }
