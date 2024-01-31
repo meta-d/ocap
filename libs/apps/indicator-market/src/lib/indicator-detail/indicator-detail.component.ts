@@ -6,14 +6,13 @@ import {
   ElementRef,
   HostBinding,
   inject,
-  InjectFlags,
   Input,
   LOCALE_ID,
   ViewChild
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
 import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
@@ -48,10 +47,9 @@ import {
   TimeGranularity,
   TimeRangeType
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, NgmCopilotService } from '@metad/core'
+import { convertTableToCSV } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -64,7 +62,6 @@ import {
   firstValueFrom,
   map,
   Observable,
-  pluck,
   scan,
   shareReplay,
   switchMap,
@@ -74,9 +71,8 @@ import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { nanoid } from 'nanoid'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-indicator-detail',
@@ -132,12 +128,12 @@ export class IndicatorDetailComponent {
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
   private logger = inject(NGXLogger)
   private locale: string = inject(LOCALE_ID)
-  private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, InjectFlags.Optional)
-  private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, InjectFlags.Optional)
+  private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, { optional: true })
+  private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
   private toastrService = inject(ToastrService)
   private translateService = inject(TranslateService)
-  private copilotService = inject(NgmCopilotService)
+  private copilotService = inject(CopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private commentsService = inject(CommentsService)
 
@@ -155,7 +151,7 @@ export class IndicatorDetailComponent {
   @ViewChild('commentsContent') commentsContent: ElementRef<any>
 
   get copilotEnabled() {
-    return this.copilotService.copilot?.enabled && this.copilotService.copilot?.apiKey
+    return this.copilotService.enabled
   }
 
   businessAreaUser: IBusinessAreaUser
@@ -187,16 +183,16 @@ export class IndicatorDetailComponent {
     filter(Boolean),
     switchMap((id) => this.store.selectIndicator(id)),
     distinctUntilChanged(isEqual),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
   public readonly isMobile$ = this.indicatoryMarketComponent.isMobile$
   public readonly notMobile$ = this.indicatoryMarketComponent.notMobile$
 
-  public readonly _dataSettings$ = this.indicator$.pipe(pluck('dataSettings'), filter(Boolean), distinctUntilChanged())
+  public readonly _dataSettings$ = this.indicator$.pipe(map((indicator) => indicator?.dataSettings), filter(Boolean), distinctUntilChanged())
 
-  public readonly title$ = this.indicator$.pipe(pluck('name'))
+  public readonly title$ = this.indicator$.pipe(map((indicator) => indicator?.name))
 
   public readonly entityType$ = this._dataSettings$.pipe(
     switchMap(({ dataSource, entitySet }) => this.dsCoreService.selectEntitySet(dataSource, entitySet)),
@@ -216,7 +212,7 @@ export class IndicatorDetailComponent {
     map(([indicator, entityType, timeGranularity]) =>
       getEntityCalendar(entityType, indicator.calendar, timeGranularity)
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -244,7 +240,7 @@ export class IndicatorDetailComponent {
         operator: FilterOperator.BT
       } as IFilter
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -599,7 +595,7 @@ export class IndicatorDetailComponent {
    * Subscriptions
    */
   // New indicator
-  private _indicatorSub = this.indicator$.subscribe(async (indicator) => {
+  private _indicatorSub = this.indicator$.pipe(takeUntilDestroyed()).subscribe(async (indicator) => {
     // Clear free slicers when new indicator
     this.freeSlicers$.next([])
     this.messages = []
@@ -739,37 +735,38 @@ export class IndicatorDetailComponent {
 
         this.prompt = ''
         this.answering = true
-        this.copilotService
-          .chatStream([
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.System,
-              content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
-            },
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.User,
-              content: userMessage.prompt + ':\n' + dataPrompt
-            }
-          ])
-          .pipe(
-            scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-            map((content) => content.trim())
-          )
-          .subscribe({
-            next: (content) => {
-              userMessage.content = content
-              this._cdr.detectChanges()
-            },
-            error: () => {
-              this.answering = false
-              this._cdr.detectChanges()
-            },
-            complete: () => {
-              this.answering = false
-              this._cdr.detectChanges()
-            }
-          })
+
+        // this.copilotService
+        //   .chatStream([
+        //     {
+        //       id: nanoid(),
+        //       role: CopilotChatMessageRoleEnum.System,
+        //       content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
+        //     },
+        //     {
+        //       id: nanoid(),
+        //       role: CopilotChatMessageRoleEnum.User,
+        //       content: userMessage.prompt + ':\n' + dataPrompt
+        //     }
+        //   ])
+        //   .pipe(
+        //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
+        //     map((content) => content.trim())
+        //   )
+        //   .subscribe({
+        //     next: (content) => {
+        //       userMessage.content = content
+        //       this._cdr.detectChanges()
+        //     },
+        //     error: () => {
+        //       this.answering = false
+        //       this._cdr.detectChanges()
+        //     },
+        //     complete: () => {
+        //       this.answering = false
+        //       this._cdr.detectChanges()
+        //     }
+        //   })
       }
     }
   }
