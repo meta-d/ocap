@@ -10,6 +10,7 @@ import {
 	IStoryWidget,
 	ITenant,
 	IUser,
+	OrganizationDemoNetworkEnum,
 	ProjectStatusEnum,
 	StoryStatusEnum,
 	Visibility
@@ -44,6 +45,9 @@ import {
 import { readYamlFile } from '../../helper'
 import { REDIS_CLIENT } from '../../redis.module'
 
+type OrganizationDemoOptionsType = {
+	source: OrganizationDemoNetworkEnum
+}
 
 const axios = _axios.default
 
@@ -86,7 +90,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	) {}
 
 	public async execute(command: OrganizationDemoCommand): Promise<void> {
-		const { id, options } = command.input
+		const { id, options } = command.input as { id: string; options: OrganizationDemoOptionsType}
 		const userId = RequestContext.currentUserId()
 		const organization = await this.orgRepository.findOne(id, { relations: ['tenant'] })
 		this.organization = organization
@@ -103,7 +107,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		//extracted import data files directory path
 		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
-		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
+		const file = options?.source === OrganizationDemoNetworkEnum.aliyun ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
 	    const files = await this.unzipAndRead(file, samplesPath)
 
 		this.logger.debug(files)
@@ -195,6 +199,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					}
 
 					for await (const item of dataset) {
+						// Load data file into database table
 						await dataLoad(dataSourceEntity, [item], {
 							stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
 							fieldname: '',

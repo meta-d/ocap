@@ -9,6 +9,7 @@ import { firstValueFrom } from 'rxjs'
 import { OrganizationsService, ToastrService } from '../../../../../../@core'
 import { EditOrganizationComponent } from '../../edit-organization.component'
 import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { FORMLY_W_FULL } from '@metad/formly'
 
 
 @Component({
@@ -48,7 +49,7 @@ export class EditOrganizationMainComponent {
           fieldGroupClassName: FORMLY_ROW,
           fieldGroup: [
             {
-              className,
+              className: FORMLY_W_FULL,
               key: 'name',
               type: 'input',
               props: {

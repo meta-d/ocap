@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { CopilotService, ICopilot } from '@metad/copilot'
-import { NgmFormlyModule } from '@metad/formly'
+import { NgmFormlyModule, provideFormly } from '@metad/formly'
 import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
@@ -50,7 +50,7 @@ import { FeaturesComponent } from './features.component'
     DensityDirective,
 
     // Formly
-    NgmFormlyModule.forRoot({}),
+    NgmFormlyModule,
 
     NgmCopilotChatComponent,
     NgmDrawerTriggerComponent,
@@ -61,6 +61,7 @@ import { FeaturesComponent } from './features.component'
     DirtyCheckGuard,
     NgmAgentService,
     NgmDSCacheService,
+    provideFormly(),
     {
       provide: NGM_WASM_AGENT_WORKER,
       useValue: '/assets/ocap-agent-data-init.worker.js'

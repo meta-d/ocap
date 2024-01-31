@@ -29,8 +29,8 @@ export interface QueryOptions {
 
 /**
  * Duties:
- * * 转换错误消息成为统一格式
- * * 连接不同类型的数据源
+ * - Convert error messages into a unified format
+ * - Connect different types of data sources
  */
 export interface DBQueryRunner {
   type: string
@@ -41,6 +41,7 @@ export interface DBQueryRunner {
   port: number | string
   jdbcDriver: string
   configurationSchema: Record<string, unknown>
+
   jdbcUrl(schema?: string): string
   /**
    * Execute a sql query
@@ -78,6 +79,12 @@ export interface DBQueryRunner {
    */
   ping(): Promise<void>
   /**
+   * Create a new catalog (schema) in database
+   * 
+   * @param catalog 
+   */
+  createCatalog?(catalog: string): Promise<void>
+  /**
    * Create or append table data
    * 
    * @param params 
@@ -91,7 +98,13 @@ export interface DBQueryRunner {
    * @param options 
    */
   dropTable(name: string, options?: QueryOptions): Promise<void>
-  teardown(): void
+
+  /**
+   * Teardown all resources:
+   * - close connection
+   * 
+   */
+  teardown(): Promise<void>
 }
 
 export abstract class BaseQueryRunner<T extends AdapterBaseOptions = AdapterBaseOptions> implements DBQueryRunner {
@@ -130,7 +143,7 @@ export abstract class BaseQueryRunner<T extends AdapterBaseOptions = AdapterBase
   async dropTable(name: string, options?: any): Promise<void> {
     this.runQuery(`DROP TABLE ${name}`, options)
   }
-  abstract teardown(): void
+  abstract teardown(): Promise<void>
 }
 
 export interface HttpAdapterOptions extends AdapterBaseOptions {

@@ -23,7 +23,7 @@ import { UserModule } from './users/user.module'
     SettingRoutingModule,
 
     // Formly
-    FormlyModule.forRoot(),
+    FormlyModule,
     FormlyMaterialModule,
     PACFormlyEmptyModule,
 

@@ -3,7 +3,7 @@ import { Component } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
-import { IOrganization, OrganizationsService, ToastrService } from '../../../@core'
+import { IOrganization, OrganizationsService, ToastrService, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent } from '../../../@shared'
 import { OrganizationMutationComponent } from './organization-mutation/organization-mutation.component'
 
@@ -11,7 +11,10 @@ import { OrganizationMutationComponent } from './organization-mutation/organizat
 @Component({
   selector: 'pac-organizations',
   templateUrl: './organizations.component.html',
-  styleUrls: ['./organizations.component.scss']
+  styleUrls: ['./organizations.component.scss'],
+  animations: [
+    routeAnimations
+  ]
 })
 export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganization> {
   private refresh$ = new BehaviorSubject<void>(null)

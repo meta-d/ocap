@@ -22,12 +22,21 @@ export async function prepareDataSource(dataSource: DataSource) {
 
 export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
 	const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
+
+	const config = sheets[0]
+	
+	// Check catalog of table is existed or create.
+	if (config.catalog) {
+		await runner.createCatalog(config.catalog)
+	}
 	
 	if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
 		try {
 			return await loadFromExcel(runner, sheets, file)
 		} catch (error) {
 			throw new BadRequestException(error.message)
+		} finally {
+			await runner.teardown()
 		}
 	}
 
@@ -36,8 +45,7 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		const _sheets: UploadSheetType[] = await readExcelWorkSheets(file.originalname, file)
 		data = _sheets[0].data
 	}
-
-	const config = sheets[0]
+	
 	try {
 		return await runner.import(
 			{
@@ -51,6 +59,8 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		)
 	} catch (error) {
 		throw new BadRequestException(getErrorMessage(error))
+	} finally {
+		await runner.teardown()
 	}
 }
 

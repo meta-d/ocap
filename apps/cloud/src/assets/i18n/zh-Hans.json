@@ -925,6 +925,7 @@
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
+          "QueryDBDesc": "请描述想要查询的数据",
           "create dimension by table": "根据表字段创建维度",
           "create cube by table": "根据表字段创建多维数据集",
           "create calcuated measure": "创建计算度量",
@@ -1484,7 +1485,8 @@
         "OfficialName": "组织全称",
         "ShortDescription": "组织简介",
         "Website": "网站链接",
-        "SelectDataNetwork": "选择数据网络"
+        "SelectDataNetwork": "选择数据网络",
+        "DataNetworkDescription": "服务端将从此网络存储地址下载相应的数据文件进行演示数据的导入"
       }
     }
   },

@@ -208,6 +208,9 @@ export class TenantDetailsComponent {
     this.dataSourceTypes$.next(await firstValueFrom(this.typesService.getAll()))
   }
 
+  /**
+   * Generate demo data for default organization
+   */
   async generateDemo() {
     try {
       this.demoError.set(null)

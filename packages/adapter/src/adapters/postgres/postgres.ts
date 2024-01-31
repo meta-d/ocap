@@ -74,6 +74,8 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
   }
 
   client: Client
+  #clientConnected = false
+
   constructor(options: any) {
     super(options)
 
@@ -105,10 +107,21 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
     this.client = new Client(config)
   }
 
+  async connect() {
+    if (!this.#clientConnected) {
+      try {
+        await this.client.connect()
+      } finally {
+        this.#clientConnected = true
+      }
+    }
+  }
+
   async runQuery(query: string, options?: QueryOptions) {
-    await this.client.connect()
+    await this.connect()
+    
     let res = await this.client.query(query)
-    await this.client.end()
+
     if (Array.isArray(res)) {
       res = res[(res as any).length - 1]
     }
@@ -118,17 +131,18 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
       type: pgTypeMap(`${TypesBuiltins[field.dataTypeID]}`.toLowerCase())
     }))
     const data = res.rows
-    // res.rows 存在 number 类型的结果是 string 的值 (sum(int8) 成了 string)
-    // columns.filter((column) => column.type === 'number' && typeof res.rows[0]?.[column.name] === 'string')
-    //   .forEach((column) => {
-    //     data.forEach((row) => row[column.name] = Number(row[column.name]))
-    //   })
 
     return {
       status: "OK",
       data,
       columns
     } as QueryResult
+    
+    // res.rows 存在 number 类型的结果是 string 的值 (sum(int8) 成了 string)
+    // columns.filter((column) => column.type === 'number' && typeof res.rows[0]?.[column.name] === 'string')
+    //   .forEach((column) => {
+    //     data.forEach((row) => row[column.name] = Number(row[column.name]))
+    //   })
   }
 
   async getCatalogs(): Promise<IDSSchema[]> {
@@ -156,6 +170,10 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
       statement = `SET search_path TO ${catalog};${statement} LIMIT 1`
     }
     return this.runQuery(statement)
+  }
+
+  async createCatalog(catalog: string) {
+    await this.runQuery(`CREATE SCHEMA IF NOT EXISTS ${catalog}`)
   }
 
   async import(params: CreationTable, options?: { catalog?: string }): Promise<void> {
@@ -187,7 +205,7 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
           .join(',')}) VALUES %L`,
         values
       )
-    await this.client.connect()
+    await this.connect()
     try {
       // if (options?.catalog) {
       //   await this.client.query(`SET search_path TO ${options.catalog};`)
@@ -197,7 +215,7 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
       }
       await this.client.query(createTableStatement)
       await this.client.query(insertStatement)
-    }catch(err: any) {
+    } catch (err: any) {
       throw {
         message: err.message,
         stats: {
@@ -208,8 +226,6 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
           ],
         },
       }
-    }finally {
-      await this.client.end()
     }
   }
 
