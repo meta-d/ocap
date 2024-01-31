@@ -21,7 +21,6 @@ import { ReversePipe } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { ControlsModule } from '@metad/ocap-angular/controls'
 import { AppearanceDirective, OcapCoreModule } from '@metad/ocap-angular/core'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { MarkdownModule } from 'ngx-markdown'
@@ -40,7 +39,6 @@ import { SharedModule } from './shared/shared.module'
     FormsModule,
     ReactiveFormsModule,
     IndicatorMarketRoutingModule,
-    LetDirective,
     ScrollingModule,
     DragDropModule,
     MatListModule,

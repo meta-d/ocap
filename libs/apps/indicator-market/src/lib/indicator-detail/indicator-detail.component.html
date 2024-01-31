@@ -21,9 +21,9 @@
         <div>
           {{ 'IndicatorApp.MOM' | translate: {Default: 'MOM'} }}
         </div>
-        <div *ngrxLet="mom$ as mom" [ngClass]="{'Trend-Up': mom === TREND.Up, 'Trend-Down': mom === TREND.Down}">
-          <mat-icon *ngIf="mom === TREND.Up" displayDensity="compact">arrow_drop_up</mat-icon>
-          <mat-icon *ngIf="mom === TREND.Down" displayDensity="compact">arrow_drop_down</mat-icon>
+        <div [ngClass]="{'Trend-Up': mom$() === TREND.Up, 'Trend-Down': mom$() === TREND.Down}">
+          <mat-icon *ngIf="mom$() === TREND.Up" displayDensity="compact">arrow_drop_up</mat-icon>
+          <mat-icon *ngIf="mom$() === TREND.Down" displayDensity="compact">arrow_drop_down</mat-icon>
           {{(indicator.data?.MOM | percent:'0.2-2' | replaceNullWithText:'-' )!}}
         </div>
       </div>
@@ -41,9 +41,9 @@
         <div>
           {{ 'IndicatorApp.YOY' | translate: {Default: 'YOY'} }}
         </div>
-        <div *ngrxLet="yoy$ as yoy" [ngClass]="{'Trend-Up': yoy === TREND.Up, 'Trend-Down': yoy === TREND.Down}">
-          <mat-icon *ngIf="yoy === TREND.Up" displayDensity="compact">arrow_drop_up</mat-icon>
-          <mat-icon *ngIf="yoy === TREND.Down" displayDensity="compact">arrow_drop_down</mat-icon>
+        <div [ngClass]="{'Trend-Up': yoy$() === TREND.Up, 'Trend-Down': yoy$() === TREND.Down}">
+          <mat-icon *ngIf="yoy$() === TREND.Up" displayDensity="compact">arrow_drop_up</mat-icon>
+          <mat-icon *ngIf="yoy$() === TREND.Down" displayDensity="compact">arrow_drop_down</mat-icon>
           {{(indicator.data?.YOY | percent:'0.2-2' | replaceNullWithText:'-' )!}}
         </div>
       </div>

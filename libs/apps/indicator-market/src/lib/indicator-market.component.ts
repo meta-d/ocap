@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
   HostBinding,
   Inject,
@@ -10,7 +11,7 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { MatDatepicker } from '@angular/material/datepicker'
@@ -21,7 +22,7 @@ import { ComponentStore } from '@metad/store'
 import { TranslateService } from '@ngx-translate/core'
 import { includes, some } from 'lodash-es'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { combineLatest, firstValueFrom, Observable } from 'rxjs'
+import { combineLatest, Observable } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { MyDataSource } from './services/data-source'
@@ -47,22 +48,21 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   @ViewChild('searchInput') searchInputRef: ElementRef
 
-  public readonly selected$ = this.indicatorsStore.currentIndicatorId$
-  public readonly tag$ = this.indicatorsStore.tag$
-  public readonly tagText$ = this.tag$.pipe(
-    switchMap(async (tag) => {
-      const tagEnum = await firstValueFrom(
-        this.translateService.get('IndicatorApp.TagEnum', {
-          Default: {
-            [TagEnum.UNIT]: 'Unit',
-            [TagEnum.MOM]: 'MOM',
-            [TagEnum.YOY]: 'YOY'
-          }
-        })
-      )
-      return tagEnum[tag]
+  // public readonly selected$ = this.indicatorsStore.currentIndicatorId$
+  // public readonly tag$ = this.indicatorsStore.tag$
+  readonly selected$ = toSignal(this.indicatorsStore.currentIndicatorId$)
+  readonly tag$ = toSignal(this.indicatorsStore.tag$)
+  readonly tagText$ = computed(() => {
+    const tag = this.tag$()
+    const tagEnum = this.translateService.instant('IndicatorApp.TagEnum', {
+      Default: {
+        [TagEnum.UNIT]: 'Unit',
+        [TagEnum.MOM]: 'MOM',
+        [TagEnum.YOY]: 'YOY'
+      }
     })
-  )
+    return tagEnum[tag]
+  })
 
   indicatorDataSource: MyDataSource // = new MyDataSource(this.indicatorsStore)
   readonly mediaMatcher$ = combineLatest(

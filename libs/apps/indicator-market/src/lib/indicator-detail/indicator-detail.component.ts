@@ -74,6 +74,7 @@ import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { nanoid } from 'nanoid'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -405,8 +406,10 @@ export class IndicatorDetailComponent {
     })
   )
 
-  public readonly mom$ = this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down)))
-  public readonly yoy$ = this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down)))
+  // public readonly mom$ = this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down)))
+  // public readonly yoy$ = this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down)))
+  readonly mom$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down))))
+  readonly yoy$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down))))
 
   // Free dimensions as slicers bar
   public readonly freeDimensions$ = this.indicator$.pipe(

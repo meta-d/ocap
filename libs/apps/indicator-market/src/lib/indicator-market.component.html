@@ -14,7 +14,7 @@
   
     <div class="flex justify-end items-center">
       <div class="pac-indicator__tag uppercase bg-gray-500 bg-opacity-25" (click)="toggleTag($event)">
-        {{tagText$ | async}}
+        {{tagText$()}}
       </div>
       <button mat-icon-button
         [popper]="options"
@@ -50,11 +50,11 @@
       </button>
     </div>
 
-    <mat-list *ngrxLet="selected$ as selected">
+    <mat-list>
       <mat-list-item *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0" matRipple
-        [class.selected]="selected === item.id"
+        [class.selected]="selected$() === item.id"
         (click)="click(item)">
-        <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$ | async"></pac-indicator-item>
+        <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$()"></pac-indicator-item>
       </mat-list-item>
     </mat-list>
   </cdk-virtual-scroll-viewport>
