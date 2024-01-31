@@ -5,15 +5,17 @@
     </h3>:
 
     <span class="flex-1 overflow-hidden text-ellipsis">
-      {{ isAuthenticated$ | async | user }}
+      {{ user$() | user }}
     </span>
   </div>
-  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4" *ngIf="isAuthenticated$ | async as user">
+
+  @if (isAuthenticated$()) {
+  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4">
     <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
       [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
       [displayBehaviour]="DisplayBehaviour.descriptionOnly"
       [selectOptions]="languages"
-      [ngModel]="preferredLanguage$ | async"
+      [ngModel]="language$()"
       (ngModelChange)="onLanguageSelect($event)"
     >
       <mat-icon ngmSuffix>translate</mat-icon>
@@ -57,4 +59,5 @@
       <span>{{ 'PAC.MENU.Logout' | translate: {Default: 'Logout'} }}</span>
     </button>
   </div>
+  }
 </div>
