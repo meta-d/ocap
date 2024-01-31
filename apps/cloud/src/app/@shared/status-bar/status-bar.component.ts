@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, OnInit, computed, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
+import { NgFilterPipeModule } from '@metad/core'
 import { ButtonGroupDirective, NgmAgentService, NgmDSCacheService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentStatus, AgentStatusEnum } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgFilterPipeModule } from '@metad/core'
-import { Observable, merge } from 'rxjs'
+import { environment } from 'apps/cloud/src/environments/environment'
+import { Observable, merge, of } from 'rxjs'
 import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '../../@core'
 import { TranslationBaseComponent } from '../language/translation-base.component'
 import { MaterialModule } from '../material.module'
@@ -33,18 +34,19 @@ import { MaterialModule } from '../material.module'
 })
 export class PACStatusBarComponent extends TranslationBaseComponent implements OnInit {
   AgentStatusEnum = AgentStatusEnum
+  enableLocalAgent = environment.enableLocalAgent
 
   private store = inject(Store)
   private cacheService = inject(NgmDSCacheService)
   private agentService = inject(NgmAgentService)
-  public localAgent = inject(LocalAgent)
+  public localAgent? = inject(LocalAgent, { optional: true })
   public serverAgent = inject(ServerAgent)
   private wasmAgentService = inject(WasmAgentService)
   private toastrService = inject(ToastrService)
   private _cdr = inject(ChangeDetectorRef)
 
   public readonly localAgentStatus = toSignal<AgentStatus>(
-    this.agentService.selectLocalAgentStatus() as Observable<AgentStatus>
+    (this.localAgent?.selectStatus() as Observable<AgentStatus>) ?? of({ status: AgentStatusEnum.OFFLINE })
   )
   public readonly localStatus = computed(() => {
     if (this.localAgentStatus() && typeof this.localAgentStatus() !== 'string') {
@@ -103,7 +105,7 @@ export class PACStatusBarComponent extends TranslationBaseComponent implements O
   }
 
   tryConnectLocalAgent() {
-    this.localAgent.connect()
+    this.localAgent?.connect()
   }
 
   cacheLevelFormatter(value: number): string {

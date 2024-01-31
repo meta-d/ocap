@@ -69,9 +69,11 @@
         </mat-form-field>
 
         <div class="flex justify-between items-center mx-2 mb-6">
-            <mat-slide-toggle formControlName="useLocalAgent" disableRipple labelPosition="before">
-                {{ 'PAC.MENU.DATA_SOURCES.USE_LOCAL_AGENT' | translate: {Default: 'Use Local Agent'} }}
-            </mat-slide-toggle>
+            @if (enableLocalAgent) {
+                <mat-slide-toggle formControlName="useLocalAgent" disableRipple labelPosition="before">
+                    {{ 'PAC.MENU.DATA_SOURCES.USE_LOCAL_AGENT' | translate: {Default: 'Use Local Agent'} }}
+                </mat-slide-toggle>
+            }
 
             <div class="flex justify-end items-center gap-2">
                 <mat-label>{{ 'PAC.MENU.DATA_SOURCES.AuthType' | translate: {Default: 'Auth Type'} }}</mat-label>

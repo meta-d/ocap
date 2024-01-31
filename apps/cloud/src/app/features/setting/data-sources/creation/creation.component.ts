@@ -14,6 +14,7 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../../../@core/index'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   selector: 'pac-data-source-creation',
@@ -22,6 +23,7 @@ import {
 })
 export class PACDataSourceCreationComponent implements OnInit {
   AuthenticationEnum = AuthenticationEnum
+  enableLocalAgent = environment.enableLocalAgent
 
   private typesService = inject(DataSourceTypesService)
   private dataSourceService = inject(DataSourceService)

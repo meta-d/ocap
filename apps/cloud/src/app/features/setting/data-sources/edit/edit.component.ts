@@ -19,6 +19,7 @@ import {
   ToastrService
 } from '../../../../@core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   standalone: true,
@@ -35,6 +36,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 })
 export class PACDataSourceEditComponent implements OnInit {
   AuthenticationEnum = AuthenticationEnum
+  enableLocalAgent = environment.enableLocalAgent
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   loading = false

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
-import { CopilotService, ICopilot } from '@metad/copilot'
+import { CopilotService } from '@metad/copilot'
 import { NgmFormlyModule, provideFormly } from '@metad/formly'
 import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
@@ -18,13 +18,10 @@ import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
-import { DirtyCheckGuard, LocalAgent, ServerAgent, PACCopilotService } from '../@core/index'
+import { environment } from '../../environments/environment'
+import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
-import {
-  MaterialModule,
-  PACStatusBarComponent,
-  SharedModule
-} from '../@shared/index'
+import { MaterialModule, PACStatusBarComponent, SharedModule } from '../@shared/index'
 import { HeaderSettingsComponent, ProjectSelectorComponent } from '../@theme/header'
 import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
@@ -72,13 +69,17 @@ import { FeaturesComponent } from './features.component'
       useExisting: WasmAgentService,
       multi: true
     },
-    LocalAgent,
+    ...(environment.enableLocalAgent
+      ? [
+          LocalAgent,
+          {
+            provide: OCAP_AGENT_TOKEN,
+            useExisting: LocalAgent,
+            multi: true
+          }
+        ]
+      : []),
     ServerAgent,
-    {
-      provide: OCAP_AGENT_TOKEN,
-      useExisting: LocalAgent,
-      multi: true
-    },
     {
       provide: OCAP_AGENT_TOKEN,
       useExisting: ServerAgent,
@@ -118,18 +119,6 @@ import { FeaturesComponent } from './features.component'
       provide: NX_STORY_FEED,
       useClass: StoryFeedService
     },
-    // {
-    //   // Provide CopilotConfig factory to PACCopilotService
-    //   provide: PACCopilotService.CopilotConfigFactoryToken,
-    //   useFactory: (copilotService: CopilotAPIService) => async (): Promise<ICopilot> => {
-    //     const copilot = await copilotService.getOne()
-    //     return {
-    //       ...copilot,
-    //       chatUrl: '/api/ai/chat'
-    //     }
-    //   },
-    //   deps: [CopilotAPIService]
-    // },
     {
       provide: CopilotService,
       useExisting: PACCopilotService
