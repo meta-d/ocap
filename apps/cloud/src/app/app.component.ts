@@ -10,7 +10,7 @@ import { nonBlank, nonNullable } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest } from 'rxjs'
-import { filter, map } from 'rxjs/operators'
+import { filter, map, startWith } from 'rxjs/operators'
 import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale, navigatorLanguage } from './@core'
 import { AppService } from './app.service'
 
@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
     translate.use(this.store.preferredLanguage || navigatorLanguage())
     this.document.documentElement.lang = translate.currentLang
 
-    this.store.preferredLanguage$.pipe(filter(nonNullable)).subscribe((language) => {
+    this.store.preferredLanguage$.pipe(filter(nonNullable), startWith(translate.currentLang)).subscribe((language) => {
       this.translate.use(language)
       this.document.documentElement.lang = language
       this._adapter.setLocale(mapDateLocale(language))

@@ -12,7 +12,7 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
-import { LANGUAGES, Store } from '../../../@core'
+import { LANGUAGES, LanguagesMap, Store } from '../../../@core'
 import { UserPipe } from '../../../@shared'
 
 @Component({
@@ -40,16 +40,14 @@ export class HeaderSettingsComponent {
   readonly router = inject(Router)
   readonly #translate = inject(TranslateService)
 
-  // public readonly isAuthenticated$ = this.store.user$
-  // preferredLanguage$ = this.store.preferredLanguage$
-  preferredTheme$ = this.store.preferredTheme$
+  // preferredTheme$ = this.store.preferredTheme$
 
   readonly user$ = toSignal(this.store.user$)
   readonly isAuthenticated$ = computed(() => Boolean(this.store.user))
   readonly language$ = toSignal(this.store.preferredLanguage$.pipe(startWith(this.#translate.currentLang)))
 
-  onLanguageSelect(language): void {
-    this.store.preferredLanguage = language
+  onLanguageSelect(language: string): void {
+    this.store.preferredLanguage = LanguagesMap[language] ?? language
   }
   onThemeSelect(mode: string): void {
     this.store.preferredTheme = mode

@@ -66,7 +66,7 @@ export class ScreenshotController extends CrudController<Screenshot> {
 		try {
 			const fileContent = await provider.getFile(file.key);
 			const inputFile = await tempFile('screenshot-thumb');
-			const outputFile = await tempFile('screenshot-thumb');
+			// const outputFile = await tempFile('screenshot-thumb');
 			await fs.promises.writeFile(inputFile, fileContent);
 			// await new Promise((resolve, reject) => {
 			// 	sharp(inputFile)
@@ -84,7 +84,7 @@ export class ScreenshotController extends CrudController<Screenshot> {
 			// const data = await fs.promises.readFile(outputFile);
 			const data = await fs.promises.readFile(inputFile);
 			await fs.promises.unlink(inputFile);
-			await fs.promises.unlink(outputFile);
+			// await fs.promises.unlink(outputFile);
 
 			thumb = await provider.putFile(data, path.join(thumbDir, thumbName));
 			// console.log(`Screenshot thumb created for employee (${user.name})`, thumb);
