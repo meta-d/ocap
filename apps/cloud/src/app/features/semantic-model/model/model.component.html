@@ -59,7 +59,7 @@
 
 </mat-toolbar>
 
-<mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize cdkDropListGroup>
+<mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize>
     <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
         [(opened)]="sideMenuOpened"
         [mode]="(isMobile$ | async) ? 'over' : 'side'"

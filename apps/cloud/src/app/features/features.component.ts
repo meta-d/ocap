@@ -1,5 +1,5 @@
 import { Location } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Renderer2, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, Renderer2, ViewChild, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import {
   Event,
@@ -10,7 +10,6 @@ import {
   Router,
   RouterEvent
 } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
@@ -42,10 +41,11 @@ import { QueryCreationDialogComponent } from './semantic-model/query-creation.co
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { StoryCreationComponent } from '../@shared'
 import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-features',
@@ -58,8 +58,11 @@ export class FeaturesComponent implements OnInit {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
   AbilityActions = AbilityActions
+
+  readonly #destroyRef = inject(DestroyRef)
   
   @ViewChild('sidenav') sidenav: MatSidenav
+  @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
   sidenavMode = 'over' as MatDrawerMode
   isEmployee: boolean
@@ -137,13 +140,12 @@ export class FeaturesComponent implements OnInit {
   loading = false
   isDark$ = this.appService.isDark$
 
-  // public readonly copilotEnabled$ = this.appService.copilotEnabled$
   readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
 
   copilotDrawerOpened = false
 
   // Is mobile event listener
-  private _isMobileSub = this.appService.isMobile$.subscribe((isMobile) => {
+  private _isMobileSub = this.appService.isMobile$.pipe(takeUntilDestroyed()).subscribe((isMobile) => {
     this.isMobile = isMobile
     if (isMobile) {
       this.isCollapsedHidden = isMobile
@@ -152,6 +154,7 @@ export class FeaturesComponent implements OnInit {
   private _userSub = this.store.user$
     .pipe(
       filter((user: IUser) => !!user),
+      takeUntilDestroyed()
     )
     .subscribe((value) => {
       this.checkForEmployee()
@@ -196,7 +199,7 @@ export class FeaturesComponent implements OnInit {
         map((permissions) => permissions.map(({ permission }) => permission)),
         tap((permissions) => this.ngxPermissionsService.loadPermissions(permissions)),
         combineLatestWith(this.translateService.onLangChange.pipe(startWith(null))),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe(([permissions]) => {
         this.menu = this.getMenuItems()
@@ -732,5 +735,18 @@ export class FeaturesComponent implements OnInit {
 
   toEnableCopilot() {
     this.router.navigate(['settings', 'copilot'])
+  }
+
+  /**
+   * Drop data on copilot chat:
+   * 1. table schema
+   * 2. table data
+   * 3. name of data
+   *
+   * @param event
+   */
+  async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
+    const data = event.item.data
+    console.log(event)
   }
 }
