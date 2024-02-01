@@ -1,7 +1,22 @@
 {
-  "name": "@metad/server-api",
+  "name": "@metad/ocap-api",
   "version": "0.0.1",
-  "description": "API services of Metad Server",
+  "description": "Metad OCAP API",
+  "license": "AGPL-3.0",
+  "homepage": "https://mtda.cloud",
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/meta-d/ocap.git"
+	},
+	"bugs": {
+		"url": "https://github.com/meta-d/ocap/issues"
+	},
+  "private": true,
+  "author": {
+		"name": "Metad Co. LTD",
+		"email": "service@mtda.cloud",
+		"url": "https://mtda.cloud"
+	},
   "scripts": {
     "ng": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=4096 yarn nx",
     "typeorm": "yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json node_modules/.bin/typeorm",
@@ -10,6 +25,7 @@
     "typeorm:flush": "yarn typeorm migration:revert",
     "typeorm:create": "yarn typeorm migration:create",
     "typeorm:preserve": "yarn typeorm:sync -- -f=ormconfig && yarn typeorm:seeds -- -f=ormconfig",
+    "start:debug": "nodemon --config nodemon-debug.json",
     "build": "yarn ng build api",
     "build:prod": "yarn ng build api --prod",
     "seed": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=8192 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json src/seed.ts",

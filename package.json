@@ -1,7 +1,23 @@
 {
   "name": "ocap",
-  "author": "Metad",
   "version": "1.18.0",
+  "description": "",
+  "license": "AGPL-3.0",
+  "homepage": "https://mtda.cloud",
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/meta-d/ocap.git"
+	},
+	"bugs": {
+		"url": "https://github.com/meta-d/ocap/issues"
+	},
+  "private": true,
+  "author": {
+		"name": "Metad Co. LTD",
+		"email": "service@mtda.cloud",
+		"url": "https://mtda.cloud"
+	},
+  "keywords": ["ocap", "BI", "MDX"],
   "scripts": {
     "start": "concurrently \"yarn start:api\" \"yarn start:olap\" \"yarn start:cloud\"",
     "start:cloud": "nx serve cloud --disableHostCheck --host 0.0.0.0",
@@ -13,7 +29,7 @@
     "start:olap": "yarn --cwd ./packages/olap start",
     "start:api": "yarn build:package:all && yarn nx serve api",
     "start:api:dev": "nodemon",
-    "start:api:debug": "nodemon --config nodemon-debug.json",
+    "start:api:debug": "yarn --cwd ./apps/api start:debug",
     "storybook": "concurrently \"yarn:w:sb:*\"",
     "w:sb:tw": "npx tailwindcss -c packages/angular/tailwind.config.js -i ./packages/angular/_index.scss -o ./packages/angular/.storybook/index.css -m1 --watch",
     "w:sb:ocap-angular": "npx nx storybook ocap-angular",
@@ -36,7 +52,6 @@
     "b:sb:ocap-angular": "yarn nx run ocap-angular:build-storybook",
     "b:docs": "concurrently \"yarn --cwd ./packages/store docs\" \"yarn --cwd ./packages/core docs\" \"yarn --cwd ./packages/xmla docs\" \"yarn --cwd ./packages/sql docs\" \"yarn --cwd ./packages/echarts docs\" \"yarn --cwd ./packages/duckdb docs\" \"yarn b:sb:ocap-angular\""
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "~17.0.0",
     "@angular/cdk": "^17.0.0",
