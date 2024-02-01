@@ -123,7 +123,8 @@
         </div>
     </div>
 
-    <ngm-scroll-back #scrollBack class="absolute bottom-0 left-1/2" [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
+    <ngm-scroll-back #scrollBack class="block absolute bottom-0 left-1/2" [class.animate-bounce]="answering()"
+        [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
 </div>
 
 <div class="relative m-3 border rounded-lg shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800"
