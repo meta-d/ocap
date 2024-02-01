@@ -49,6 +49,12 @@ type OrganizationDemoOptionsType = {
 	source: OrganizationDemoNetworkEnum
 }
 
+export enum InstallationModeEnum {
+	Standalone = 'standalone',
+	WithDoris = 'with-doris',
+	WithStarrocks = 'with-starrocks'
+}
+
 const axios = _axios.default
 
 @CommandHandler(OrganizationDemoCommand)
@@ -98,9 +104,9 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.owner = RequestContext.currentUser()
 
 		const isDemo = this.configService.get('demo') as boolean
-		const withDoris = this.nestConfigService.get('INSTALLATION_MODE') === 'with-doris'
-		const withStarrocks = this.nestConfigService.get('INSTALLATION_MODE') === 'with-starrocks'
-		const standalone = !this.nestConfigService.get('INSTALLATION_MODE') || this.nestConfigService.get('INSTALLATION_MODE') === 'standalone'
+		const withDoris = this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.WithDoris
+		const withStarrocks = this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.WithStarrocks
+		const standalone = !this.nestConfigService.get('INSTALLATION_MODE') || this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.Standalone
 
 		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
 		
