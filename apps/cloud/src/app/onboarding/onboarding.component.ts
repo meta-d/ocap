@@ -8,7 +8,9 @@ import { TranslateService } from '@ngx-translate/core'
 	display: flex;
 	width: 100%;
 	height: 100%;
-  }`],
+  background-color: var(--ngm-app-background-color);
+  color: var(--ngm-color-on-surface);
+}`],
 })
 export class OnboardingComponent {
   private translate = inject(TranslateService)

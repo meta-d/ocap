@@ -1,4 +1,5 @@
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
+import { NgmFormlyToggleComponent } from '@metad/formly/mat-toggle'
 import { ConfigOption, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
 import { FormlyFieldTextArea } from '@ngx-formly/material/textarea'
 
@@ -43,10 +44,14 @@ export function provideFormlyMaterial() {
     ...FormlyModule.forChild({
       types: [
         {
-          name: 'textarea',
-          component: FormlyFieldTextArea,
-          wrappers: ['form-field']
-        }
+          name: 'toggle',
+          component: NgmFormlyToggleComponent,
+        },
+        // {
+        //   name: 'textarea',
+        //   component: FormlyFieldTextArea,
+        //   wrappers: ['form-field']
+        // }
       ]
     }).providers
   ]

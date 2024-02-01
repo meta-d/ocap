@@ -17,7 +17,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { omit } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatest, firstValueFrom, map, startWith } from 'rxjs'
+import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, startWith } from 'rxjs'
 import {
   AuthStrategy,
   BonusTypeEnum,
@@ -35,6 +35,8 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../@core'
+import { nonNullable } from '@metad/core'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 
 @Component({
@@ -54,6 +56,7 @@ import {
     MatDividerModule,
     MatProgressSpinnerModule,
     MatRadioModule,
+    MatProgressBarModule,
     FormlyModule,
 
     NgmCommonModule
@@ -78,7 +81,9 @@ export class TenantDetailsComponent {
 
   Languages = Object.values(LanguagesEnum)
 
-  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({ preferredLanguage: ['', [Validators.required]] })
+  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({ preferredLanguage: [
+    [this.translateService.currentLang], [Validators.required]
+  ] })
   userFormGroup: FormGroup = this._formBuilder.group(
     {
       firstName: [''],
@@ -132,7 +137,7 @@ export class TenantDetailsComponent {
   model = {}
 
   private preferredLanguageSub = this.preferredLanguageFormGroup.get('preferredLanguage').valueChanges
-    .pipe(takeUntilDestroyed())
+    .pipe(map((languages) => languages?.[0]), filter(nonNullable), takeUntilDestroyed())
     .subscribe((language) => {
       this.translateService.use(language)
     })

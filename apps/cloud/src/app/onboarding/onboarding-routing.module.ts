@@ -15,13 +15,13 @@ const routes: Routes = [
       },
       {
         path: 'tenant',
-        loadChildren: () => import('./tenant-details/tenant-details.module').then((m) => m.TenantDetailsModule)
-      },
-      {
-        path: 'complete',
-        loadChildren: () =>
-          import('./onboarding-complete/onboarding-complete.module').then((m) => m.OnboardingCompleteModule)
+        loadComponent: () => import('./tenant-details/tenant-details.component').then((m) => m.TenantDetailsComponent)
       }
+      // {
+      //   path: 'complete',
+      //   loadChildren: () =>
+      //     import('./onboarding-complete/onboarding-complete.module').then((m) => m.OnboardingCompleteModule)
+      // }
     ]
   }
 ]

@@ -10,7 +10,7 @@
         {{ 'PAC.Onboarding.WhatsPreferredLanguage' | translate: {Default: 'What\'s your preferred Language'} }}
       </ng-template>
 
-      <p>{{ 'PAC.Onboarding.PreferredLanguageDescription' | translate: {Default: 'This language will be used throughout Metad analytics platform and will be the default for new users.'} }}</p>
+      <p class="description">{{ 'PAC.Onboarding.PreferredLanguageDescription' | translate: {Default: 'This language will be used throughout Metad analytics platform and will be the default for new users.'} }}</p>
 
       <mat-selection-list [multiple]="false" formControlName="preferredLanguage">
         <mat-list-option *ngFor="let language of Languages" [value]="language">
@@ -29,7 +29,7 @@
     <form [formGroup]="userFormGroup" class="flex flex-col gap-4">
       <ng-template matStepLabel> {{ 'PAC.Onboarding.WhatCallYou' | translate: {Default: 'What should we call you'} }}?</ng-template>
 
-      <div class="grid grid-cols-2 gap-2">
+      <div class="relative grid grid-cols-2 gap-2">
         <mat-form-field>
           <mat-label>{{ 'PAC.Onboarding.FirstName' | translate: {Default: 'First name'} }}</mat-label>
           <input matInput formControlName="firstName" />
@@ -62,6 +62,12 @@
           <input matInput type="password" placeholder="*******" formControlName="confirmPassword" />
           <mat-error *ngIf="mustMatchError()">{{ 'PAC.Onboarding.PasswordMustMatch' | translate: {Default: 'Password must match'} }}</mat-error>
         </mat-form-field>
+
+        @if (loading()) {
+          <div class="absolute w-full h-full inset-0 flex justify-center items-center">
+            <mat-spinner diameter="50" strokeWidth="3"></mat-spinner>
+          </div>
+        }
       </div>
 
       <div class="flex items-center gap-4">
@@ -75,18 +81,18 @@
   <mat-step [stepControl]="demoFormGroup" [editable]="!demoCompleted() && !loading()">
     <ng-template matStepLabel>{{ 'PAC.Onboarding.WantGenerateDemo' | translate: {Default: 'Do you want to generate samples'} }}?</ng-template>
 
-    <div class="my-8">{{ 'PAC.Onboarding.GenerateDemoDescription' | translate: {Default: 'The system will download the demo data file from the server link, import the data into the system database, and create the corresponding samples'} }}.</div>
+    <div class="description my-8">{{ 'PAC.Onboarding.GenerateDemoDescription' | translate: {Default: 'The system will download the demo data file from the server link, import the data into the system database, and create the corresponding samples'} }}.</div>
 
     <form [formGroup]="demoFormGroup" class="flex flex-col">
       <label>{{ 'PAC.Onboarding.SelectNetwork' | translate: {Default: 'Select Network'} }}</label>
-      <mat-radio-group formControlName="source">
+      <mat-radio-group formControlName="source" [disabled]="loading()">
         <mat-radio-button [value]="OrganizationDemoNetworkEnum.github">GitHub</mat-radio-button>
         <mat-radio-button [value]="OrganizationDemoNetworkEnum.aliyun">Aliyun oss</mat-radio-button>
       </mat-radio-group>
     </form>
 
     <div class="flex justify-center items-center w-full h-24">
-      <mat-spinner *ngIf="loading()" diameter="30"></mat-spinner>
+      <mat-progress-bar *ngIf="loading()" class="w-full" mode="query"></mat-progress-bar>
       <mat-error *ngIf="demoError()" class="max-h-full max-w-full overflow-auto">{{demoError()}}</mat-error>
     </div>
 
@@ -105,7 +111,7 @@
     <ng-template matStepLabel>{{ 'PAC.Onboarding.AddYourData' | translate: {Default: 'Add your data'} }}</ng-template>
 
     <div class="w-full flex flex-col gap-4">
-      <div>
+      <div class="description">
         <p>{{ 'PAC.Onboarding.ReadyExploringYourData' | translate: {Default: 'Are you ready to start exploring your data? Add it below.'} }}</p>
         <p>{{ 'PAC.Onboarding.NotReadySample' | translate: {Default: 'Not ready? Skip and play around with our Samples.'} }}</p>
       </div>
