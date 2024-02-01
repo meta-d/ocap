@@ -119,6 +119,9 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
     return result
   }
 
+  async chat({prompt}, options?: {action: string}) {
+  }
+
   async preprocess(prompt: string, options?: { signal?: AbortSignal }): Promise<CopilotChatMessage[]> {
     return []
   }

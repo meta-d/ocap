@@ -37,11 +37,20 @@ export interface CopilotEngine {
   placeholder?: string
 
   messages(): CopilotChatMessage[]
-  
+
+  chat(
+    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
+    options?: { action?: string; abortController?: AbortController }
+  ): Promise<CopilotChatMessage | string | void>
+
+  /**
+   * @deprecated use `chat` instead
+   */
   process(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
     options?: { action?: string; abortController?: AbortController }
   ): Observable<CopilotChatMessage | string | void>
+
   /**
    * @deprecated
    */
@@ -72,17 +81,17 @@ export interface CopilotEngine {
 
   /**
    * Update or insert the message into conversations
-   * 
-   * @param message 
+   *
+   * @param message
    */
-  upsertMessage?(message: CopilotChatMessage): void;
+  upsertMessage?(message: CopilotChatMessage): void
 
   /**
    * Delete message from conversation
-   * 
-   * @param message 
+   *
+   * @param message
    */
-  deleteMessage?(message: CopilotChatMessage): void;
+  deleteMessage?(message: CopilotChatMessage): void
 
   /**
    * Clear conversations
@@ -91,8 +100,8 @@ export interface CopilotEngine {
 
   /**
    * Update conversations value
-   * 
-   * @param fn 
+   *
+   * @param fn
    */
   updateConversations?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
 }

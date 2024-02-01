@@ -130,18 +130,6 @@
     [class.ngm-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    <!-- @if (answering()) {
-        <div class="ngm-copilot-chat__answering absolute inset-0 flex justify-center items-center">
-            <button mat-stroked-button displayDensity="cosy" class="rounded-full"
-                (click)="$event.stopPropagation();stopGenerating()">
-                <div class="copilot-message-stop flex items-center">
-                    <span>
-                        {{ 'Ngm.Copilot.StopGenerating' | translate: {Default: 'Stop generating'} }}
-                    </span>
-                </div>
-            </button>
-        </div>
-    } -->
 
     <div class="flex flex-col p-2" >
         <textarea #userInput matInput

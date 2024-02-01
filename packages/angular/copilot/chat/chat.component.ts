@@ -15,7 +15,7 @@ import {
   signal,
   ViewChild
 } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
@@ -37,7 +37,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, startWith, Subscription } from 'rxjs'
+import { BehaviorSubject, combineLatest, debounceTime, delay, firstValueFrom, map, startWith, throttleTime } from 'rxjs'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
@@ -230,7 +230,6 @@ export class NgmCopilotChatComponent {
   private readonly historyIndex = signal(-1)
 
   #abortController: AbortController
-  #askSubscriber: Subscription
 
   // Available models
   private readonly _models$ = new BehaviorSubject<{ id: string; label: string }[]>([
@@ -312,8 +311,16 @@ export class NgmCopilotChatComponent {
   | Subscribers
   |--------------------------------------------------------------------------
   */
+ /**
+  * @deprecated use Signal
+  */
   private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
     this._cdr.detectChanges()
+  })
+  private scrollSub = toObservable(this.conversations).pipe(throttleTime(500)).subscribe((conversations) => {
+    if (conversations.length && !this.scrollBack.visible()) {
+      this.scrollBottom()
+    }
   })
 
   constructor() {
@@ -322,13 +329,6 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
-
-    effect(() => {
-      const conversations = this.conversations()
-      if (conversations.length && !this.scrollBack.visible()) {
-        this.scrollBottom()
-      }
-    })
   }
 
   refreshModels() {
@@ -361,38 +361,24 @@ export class NgmCopilotChatComponent {
     if (this.copilotEngine) {
       try {
         this.#abortController = new AbortController()
-        this.#askSubscriber = this.copilotEngine.process({ prompt, newConversation, messages: [] }, {
+        const message = await this.#copilotEngine.chat({ prompt, newConversation, messages: [] }, {
           abortController: this.#abortController
-        }).subscribe({
-          next: (message: CopilotChatMessage | string | void) => {
-            if (typeof message === 'string') {
-              this.copilotEngine.upsertMessage({
-                id: nanoid(),
-                role: 'info',
-                content: message
-              })
-            } else if (message) {
-              this.copilotEngine.upsertMessage(message)
-            }
-
-            this._cdr.detectChanges()
-            this.scrollBottom()
-          },
-          error: (err) => {
-            console.error(err)
-            this.answering.set(false)
-            this.conversationsChange.emit(this.conversations())
-            this._cdr.detectChanges()
-          },
-          complete: () => {
-            this.answering.set(false)
-            // Not cleared
-            if (this.conversations.length) {
-              this.conversationsChange.emit(this.conversations)
-              this._cdr.detectChanges()
-            }
-          }
         })
+
+        this.answering.set(false)
+            
+        if (typeof message === 'string') {
+          this.copilotEngine.upsertMessage({
+            id: nanoid(),
+            role: 'info',
+            content: message
+          })
+        } else if (message) {
+          this.copilotEngine.upsertMessage(message)
+        }
+
+        this._cdr.detectChanges()
+        this.scrollBottom()
       } catch (err) {
         this.answering.set(false)
         this.conversationsChange.emit(this.conversations)
@@ -403,7 +389,6 @@ export class NgmCopilotChatComponent {
 
   stopGenerating() {
     this.#abortController?.abort()
-    this.#askSubscriber?.unsubscribe()
     this.answering.set(false)
     this.conversationsChange.emit(this.conversations)
 
