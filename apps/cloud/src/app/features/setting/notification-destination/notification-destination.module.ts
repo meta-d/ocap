@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core'
 import { FormlyModule } from '@ngx-formly/core'
-import { FormlyMaterialModule } from '@ngx-formly/material'
 import { MaterialModule, SharedModule } from '../../../@shared'
 import { EditDestinationComponent } from './edit-destination/edit-destination.component'
 import { NewNotificationDestinationComponent } from './new-notification-destination/new-notification-destination.component'
@@ -12,7 +11,6 @@ import { NotificationDestinationsComponent } from './notification-destinations/n
     SharedModule,
     MaterialModule,
     FormlyModule,
-    FormlyMaterialModule,
     NotificationDestinationRoutingModule
   ],
   exports: [],

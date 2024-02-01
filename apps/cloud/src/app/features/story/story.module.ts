@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NgmFormlyModule } from '@metad/formly'
+import { NgmFormlyModule, provideFormly } from '@metad/formly'
 import { NgmCommonModule, NgmTableComponent, TreeTableModule } from '@metad/ocap-angular/common'
 import { NgmStoryModule, provideStorySettings } from '@metad/story'
 import { NgmFormlyChartPropertModule } from '@metad/story/widgets/analytical-card'
@@ -14,7 +14,6 @@ import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
-
 
 @NgModule({
   declarations: [],
@@ -31,18 +30,7 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
     }),
 
     // Formly
-    NgmFormlyModule.forRoot({
-      types: [
-        {
-          name: 'styling',
-          component: PACFormlyWidgetDesignerComponent
-        },
-        {
-          name: 'image-upload',
-          component: PACFormlyImageUploadComponent
-        }
-      ]
-    }),
+    NgmFormlyModule,
     NgmFormlyChartPropertModule,
 
     NgmCommonModule,
@@ -61,6 +49,18 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
     ...STORY_WIDGET_COMPONENTS,
     ...STORY_DESIGNER_COMPONENTS,
     provideStorySettings(),
+    provideFormly({
+      types: [
+        {
+          name: 'styling',
+          component: PACFormlyWidgetDesignerComponent
+        },
+        {
+          name: 'image-upload',
+          component: PACFormlyImageUploadComponent
+        }
+      ]
+    })
   ]
 })
 export class PACStoryModule {}
