@@ -137,7 +137,8 @@ export class FeaturesComponent implements OnInit {
   loading = false
   isDark$ = this.appService.isDark$
 
-  public readonly copilotEnabled$ = this.appService.copilotEnabled$
+  // public readonly copilotEnabled$ = this.appService.copilotEnabled$
+  readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
 
   copilotDrawerOpened = false
 
@@ -157,6 +158,7 @@ export class FeaturesComponent implements OnInit {
       this.logger?.debug(value)
     })
   
+  readonly user$ = toSignal(this.store.user$)
   
   // private _sidebarContentIndexSub = this.appService.fullscreenIndex$.subscribe((fullscreenIndex) => this.zIndex = fullscreenIndex)
   constructor(

@@ -158,12 +158,6 @@ ${sharedDimensionsPrompt}
     }
   })
 
-  get user() {
-    return this.#store.user
-  }
-
-  copilotEngine: CopilotEngine = null
-
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
   @HostBinding('class.pac-fullscreen')

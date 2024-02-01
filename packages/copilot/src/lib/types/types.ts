@@ -8,8 +8,14 @@ export const DefaultModel = 'gpt-3.5-turbo'
 
 export interface ICopilot {
   enabled: boolean
-  provider?: string
+  provider?: 'openai' | 'azure'
+  /**
+   * Authorization key for the API
+   */
   apiKey?: string
+  /**
+   * API Host or proxy host
+   */
   apiHost?: string
   /**
    * Authorization token for the API
@@ -18,6 +24,11 @@ export interface ICopilot {
 
   chatUrl?: string
   modelsUrl?: string
+
+  /**
+   * Show tokens for message
+   */
+  showTokenizer?: boolean
 }
 
 export interface BusinessOperation {

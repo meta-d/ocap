@@ -81,7 +81,7 @@
 
       <!-- <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global> -->
 
-      @if(copilotEnabled$ | async) {
+      @if(copilotEnabled$()) {
         <button mat-icon-button class="pac-copilot-trigger font-notoColorEmoji"
           displayDensity="cosy"
           [class.active]="copilotDrawer.opened"
@@ -108,10 +108,14 @@
       <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
         [(opened)]="copilotDrawerOpened"
       >
+        @if(copilotEnabled$()) {
         <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area h-full"
+          assistantAvatar="assets/images/copilot_sparkle_resting.gif"
+          [user]="user$()"
           cdkDropList
           (enableCopilot)="toEnableCopilot()"
         ></ngm-copilot-chat>
+        }
         
         <div ngmResizerBar resizerBarPosition="left"
           cdkDrag
@@ -122,8 +126,9 @@
         [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title">
         <router-outlet #o="outlet"></router-outlet>
 
+        @if(copilotEnabled$()) {
         <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
-        
+        }
       </mat-drawer-content>
     </mat-drawer-container>
 

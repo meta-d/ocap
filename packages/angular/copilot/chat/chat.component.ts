@@ -100,6 +100,7 @@ export class NgmCopilotChatComponent {
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
   @Input() placeholder: string
+  @Input() assistantAvatar: string
 
   @Input() get copilotEngine(): CopilotEngine {
     return this.#customEngine ?? this.#copilotEngine
@@ -212,6 +213,7 @@ export class NgmCopilotChatComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
+  readonly showTokenizer$ = toSignal(this.copilotService.copilot$.pipe(map((copilot) => copilot?.showTokenizer)))
   readonly conversations = computed(() => this.copilotEngine.messages().filter((message) => message.content || message.error))
 
   /**
@@ -227,8 +229,8 @@ export class NgmCopilotChatComponent {
   readonly historyQuestions = signal<string[]>([])
   private readonly historyIndex = signal(-1)
 
-  askController: AbortController
-  askSubscriber: Subscription
+  #abortController: AbortController
+  #askSubscriber: Subscription
 
   // Available models
   private readonly _models$ = new BehaviorSubject<{ id: string; label: string }[]>([
@@ -353,50 +355,15 @@ export class NgmCopilotChatComponent {
     // Clear prompt in input
     this.promptControl.setValue('')
 
-    // Get last conversation messages
-    // const lastConversation = this.lastConversation()
-
-    // Append user question message
-    // this.conversations = this.conversations ?? []
-    // this.conversations = [
-    //   ...this.conversations,
-    //   {
-    //     id: nanoid(),
-    //     role: CopilotChatMessageRoleEnum.User,
-    //     content: prompt
-    //   }
-    // ]
-
-    // Assistant message
-    // const assistant: CopilotChatMessage = {
-    //   id: nanoid(),
-    //   role: CopilotChatMessageRoleEnum.Assistant,
-    //   content: ''
-    // }
-
     // Answering
     this.answering.set(true)
     // 由其他引擎接手处理
     if (this.copilotEngine) {
-      // let userContent = prompt
-      // if (lastConversation.length > 0) {
-      //   // 无论是否为新对话，都将最新的连续的提问消息内容汇总
-      //   if (lastConversation[lastConversation.length - 1]?.role === CopilotChatMessageRoleEnum.User) {
-      //     userContent = lastConversation[lastConversation.length - 1].content + '\n' + userContent
-      //     lastConversation.splice(lastConversation.length - 1, 1)
-      //   }
-
-      //   // 如果是新会话，清空上一次的会话
-      //   if (newConversation) {
-      //     lastConversation.splice(0, lastConversation.length)
-      //   }
-      // }
-
-      // const assistantIndex = this.conversations().length
-      // this.conversations = [...this.conversations, assistant]
-
       try {
-        this.askSubscriber = this.copilotEngine.process({ prompt, newConversation, messages: [] }).subscribe({
+        this.#abortController = new AbortController()
+        this.#askSubscriber = this.copilotEngine.process({ prompt, newConversation, messages: [] }, {
+          abortController: this.#abortController
+        }).subscribe({
           next: (message: CopilotChatMessage | string | void) => {
             if (typeof message === 'string') {
               this.copilotEngine.upsertMessage({
@@ -413,12 +380,7 @@ export class NgmCopilotChatComponent {
           },
           error: (err) => {
             console.error(err)
-            // const conversations = [...this.conversations]
-            // conversations[assistantIndex] = { ...conversations[assistantIndex] }
-            // conversations[assistantIndex].content = null
-            // conversations[assistantIndex].error = getErrorMessage(err)
             this.answering.set(false)
-            // this.conversations = conversations
             this.conversationsChange.emit(this.conversations())
             this._cdr.detectChanges()
           },
@@ -426,26 +388,13 @@ export class NgmCopilotChatComponent {
             this.answering.set(false)
             // Not cleared
             if (this.conversations.length) {
-              // const conversations = [...this.conversations]
-              // if (!conversations[assistantIndex].content) {
-              //   conversations.splice(assistantIndex, 1)
-              // }
-              // if (this.conversations[this.conversations.length - 1].role === CopilotChatMessageRoleEnum.Info) {
-              //   conversations.splice(conversations.length - 1, 1)
-              // }
-              // this.conversations = conversations
               this.conversationsChange.emit(this.conversations)
               this._cdr.detectChanges()
             }
           }
         })
       } catch (err) {
-        // const conversations = [...this.conversations]
-        // conversations[assistantIndex] = { ...conversations[assistantIndex] }
-        // conversations[assistantIndex].content = null
-        // conversations[assistantIndex].error = getErrorMessage(err)
         this.answering.set(false)
-        // this.conversations = conversations
         this.conversationsChange.emit(this.conversations)
         this._cdr.detectChanges()
       }
@@ -453,8 +402,8 @@ export class NgmCopilotChatComponent {
   }
 
   stopGenerating() {
-    this.askController?.abort()
-    this.askSubscriber?.unsubscribe()
+    this.#abortController?.abort()
+    this.#askSubscriber?.unsubscribe()
     this.answering.set(false)
     this.conversationsChange.emit(this.conversations)
 

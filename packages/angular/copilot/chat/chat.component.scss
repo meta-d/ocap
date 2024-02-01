@@ -50,15 +50,15 @@
 }
 
 .ngm-copilot-chat__message-content {
-  @apply rounded-lg max-w-full py-2 px-4 overflow-auto bg-neutral-100/50 dark:bg-neutral-100/10;
+  @apply rounded-lg max-w-full py-2 px-4 overflow-auto;
 }
 
 .ngm-copilot__user-message {
-  @apply bg-gray-100/50 dark:bg-neutral-700;
+  @apply rounded-xl rounded-tr-sm bg-gray-200/50 dark:bg-neutral-700;
 }
 
 .ngm-copilot-chat__answering {
-  background-color: var(--ngm-copilot-bg-color);
+  background-color: var(--ngm-copilot-bg-color, white);
 }
 
 :host::ng-deep {

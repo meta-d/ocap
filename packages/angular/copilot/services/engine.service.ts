@@ -262,7 +262,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     try {
       this.error.set(undefined)
       this.isLoading.set(true)
-      abortController ??= new AbortController()
+      abortController = abortController ?? new AbortController()
 
       const getCurrentMessages = () => this.lastConversation() ?? []
       // chatApiStore.get([this.key()], {
@@ -282,42 +282,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       const message = await processChatStream({
         getStreamedResponse: async () => {
-          // const existingData = this.streamData() ?? []
-          try {
-            return await this.copilot.chat(
-              {
-                body: {
-                  // functions: this.getChatCompletionFunctionDescriptions(),
-                  ...pick(this.aiOptions, 'model', 'temperature'),
-                  ...(options?.body ?? {})
-                },
-                onFinish: (message) => {
-                  this.upsertMessage(message)
-                },
-                appendMessage: (message) => {
-                  this.upsertMessage(message)
-                }
+          return await this.copilot.chat(
+            {
+              body: {
+                // functions: this.getChatCompletionFunctionDescriptions(),
+                ...pick(this.aiOptions, 'model', 'temperature'),
+                ...(options?.body ?? {})
               },
-              chatRequest,
-              { options, data },
-              {
-                abortController
+              onFinish: (message) => {
+                this.upsertMessage(message)
+              },
+              appendMessage: (message) => {
+                this.upsertMessage(message)
               }
-            )
-          } catch (err: any) {
-            this.conversations$.update((state) => {
-              return [
-                ...state,
-                {
-                  id: nanoid(),
-                  role: CopilotChatMessageRoleEnum.Assistant,
-                  content: '',
-                  error: err.message
-                }
-              ]
-            })
-            throw err
-          }
+            },
+            chatRequest,
+            { options, data },
+            {
+              abortController
+            }
+          )
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),
         updateChatRequest: (newChatRequest) => {
@@ -341,9 +325,21 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       if (err instanceof Error) {
         this.error.set(err)
+
+        this.conversations$.update((state) => {
+          return [
+            ...state,
+            {
+              id: nanoid(),
+              role: CopilotChatMessageRoleEnum.Assistant,
+              content: '',
+              error: (<Error>err).message
+            }
+          ]
+        })
       }
 
-      this.error.set(err as Error)
+      // this.error.set(err as Error)
       return null
     } finally {
       this.isLoading.set(false)
@@ -376,7 +372,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   deleteMessage(message: CopilotChatMessage) {
     this.conversations$.update((conversations) => {
       const index = conversations.findIndex((item) => item.id === message.id)
-      if (index) {
+      if (index > -1) {
         conversations.splice(index, 1)
       }
       return [...conversations]

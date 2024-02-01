@@ -346,7 +346,7 @@ The query should be returned in plain text, not in JSON.
   constructor() {
     super()
     // 设置当前 Chat Copilot Engine
-    this.modelComponent.copilotEngine = this.copilotEngine
+    // this.modelComponent.copilotEngine = this.copilotEngine
   }
 
   onSelectionChange(event) {
@@ -729,7 +729,7 @@ The query should be returned in plain text, not in JSON.
   }
 
   ngOnDestroy(): void {
-    this.modelComponent.copilotEngine = null
+    // this.modelComponent.copilotEngine = null
   }
 }
 

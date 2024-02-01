@@ -15,8 +15,12 @@
                 @case (CopilotChatMessageRoleEnum.Assistant) {
                 <div class="pl-2 pr-4 flex">
                     <div class="flex-1 flex items-start overflow-auto">
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
+                        <div class="flex flex-col items-center shrink-0">
+                            @if (assistantAvatar) {
+                                <img class="w-8 h-8 pointer-events-none" [src]="assistantAvatar"/>
+                            } @else {
+                                <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
+                            }
                         </div>
                         <div class="flex flex-col justify-start items-start overflow-auto relative p-[10px] min-h-[50px] min-w-[50px] group">
                             @if (conversation.content) {
@@ -35,7 +39,7 @@
                                     {{ conversation.error }}
                                 </div>
                             }
-                            @if (conversation.content) {
+                            @if (showTokenizer$() && conversation.content) {
                                 <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
                             }
         
@@ -77,7 +81,7 @@
                             @if (conversation.command) {
                                 <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{conversation.command}}</span>
                             }
-                            @if (conversation.content) {
+                            @if (showTokenizer$() && conversation.content) {
                                 <ngm-copilot-token [content]="conversation.content"></ngm-copilot-token>
                             }
                             </div>
@@ -117,32 +121,6 @@
             </div>
         }
         </div>
-        
-        <!-- <ng-container *ngIf="prompts?.length">
-            <div class="border-dashed border-t border-t-slate-200 w-full flex justify-center my-4">
-                <span class="-mt-3 px-2 bg-slate-50 inline-flex items-center">{{ 'Ngm.Copilot.ExamplesOfPrompts' | translate: {Default: 'Examples of Prompt'} }}
-                    <button (click)="examplesOpened=!examplesOpened">
-                        <svg data-accordion-icon class="w-6 h-6 shrink-0 text-neutral-300 hover:text-neutral-400"
-                            [class.rotate-180]="!examplesOpened"
-                            fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
-                </span>
-            </div>
-            <div class="max-h-[30%] min-h-[100px] overflow-auto pl-4 flex flex-col items-end"
-                [class.min-h-0]="!examplesOpened"
-                [class.h-0]="!examplesOpened"
-                [class.min-h-[200px]]="examplesOpened"
-            >
-                <div *ngFor="let prompt of prompts" class="mb-2 mx-2 bg-slate-200 rounded-lg py-2 px-4">
-                    <a class="cursor-pointer hover:underline"
-                        (click)="askPredefinedPrompt(prompt)">
-                        {{ 'Ngm.Copilot.Prompts.'+prompt | translate: {Default: prompt} }}</a>
-                </div>
-            </div>
-        </ng-container> -->
-        
     </div>
 
     <ngm-scroll-back #scrollBack class="absolute bottom-0 left-1/2" [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
@@ -152,7 +130,7 @@
     [class.ngm-colpilot__active]="isFoucs(userInput)"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
-    @if (answering()) {
+    <!-- @if (answering()) {
         <div class="ngm-copilot-chat__answering absolute inset-0 flex justify-center items-center">
             <button mat-stroked-button displayDensity="cosy" class="rounded-full"
                 (click)="$event.stopPropagation();stopGenerating()">
@@ -163,7 +141,7 @@
                 </div>
             </button>
         </div>
-    }
+    } -->
 
     <div class="flex flex-col p-2" >
         <textarea #userInput matInput
@@ -218,13 +196,27 @@
             </button>
 
             <span class="flex-1"></span>
-
-            <button mat-icon-button displayDensity="cosy"
-                [disabled]="!prompt() || answering()"
-                (click)="askCopilotStream(promptControl.value)"
-            >
-                <mat-icon fontSet="material-icons-round">send</mat-icon>
-            </button>
+            
+            @if (answering()) {
+                <button type="button" class="rounded-full m-1 border-2 border-gray-950 p-1 dark:border-gray-200" aria-label="停止生成"
+                    (click)="stopGenerating()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-2 w-2 text-token-text-primary" height="16" width="16">
+                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2z" stroke-width="0"></path>
+                    </svg>
+                </button>
+            } @else {
+                <button class="rounded-full bg-black md:bottom-3 md:right-3 dark:hover:bg-white right-2 disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white p-0.5 border border-black dark:border-white dark:bg-white bottom-1.5 transition-colors" data-testid="send-button"
+                    [disabled]="!prompt()"
+                    (click)="askCopilotStream(promptControl.value)"
+                >
+                    <span class="" data-state="closed">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-white dark:text-black">
+                            <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                </button>
+            }
+            
         </div>
     </div>
 </div>
