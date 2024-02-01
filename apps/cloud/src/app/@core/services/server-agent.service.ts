@@ -159,13 +159,13 @@ export class ServerAgent extends AbstractAgent implements Agent {
 
     // Require auth info if authType is Basic
     if (semanticModel?.dataSource?.authType === AuthenticationEnum.BASIC) {
-      const auth = await firstValueFrom(this.authenticate({data: {
+      const auth = await this.authenticate({data: {
         dataSource: semanticModel?.dataSource,
         request: {
           url,
           body
         }
-      }} as any))
+      }} as any)
 
       if (!semanticModel?.dataSource?.id && auth) {
         body.authentications = [auth]

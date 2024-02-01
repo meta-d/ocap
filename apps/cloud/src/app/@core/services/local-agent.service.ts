@@ -160,7 +160,7 @@ export class LocalAgent extends AbstractAgent implements Agent {
         )
 
         if (semanticModel?.dataSource?.authType === AuthenticationEnum.BASIC) {
-          const auth = await firstValueFrom(this.authenticate(request))
+          const auth = await this.authenticate(request)
           /**
            * 不是未创建的数据源授权信息 client 端传给 Agent， 而是 ping 的情况下将 auth 传过去（因为创建后在修改的 ping 也要）
            */
