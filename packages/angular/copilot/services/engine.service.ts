@@ -350,23 +350,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
     try {
       this.error.set(undefined)
       this.isLoading.set(true)
+
       abortController = abortController ?? new AbortController()
 
       const getCurrentMessages = () => this.lastConversation() ?? []
-      // chatApiStore.get([this.key()], {
-      //   shouldRevalidate: false,
-      // })
-
-      // Do an optimistic update to the chat state to show the updated messages
-      // immediately.
-      // const previousMessages = getCurrentMessages()
-      // this.mutate(messagesSnapshot)
 
       let chatRequest: ChatRequest = {
         messages: messagesSnapshot as Message[],
         options,
         data
       }
+
+      const answerMessageId = nanoid()
+      const thinkingMessage: CopilotChatMessage = {
+        id: answerMessageId,
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: '',
+        status: 'thinking'
+      }
+
+      this.upsertMessage(thinkingMessage)
 
       const message = await processChatStream({
         getStreamedResponse: async () => {
@@ -377,11 +380,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
                 ...pick(this.aiOptions, 'model', 'temperature'),
                 ...(options?.body ?? {})
               },
+              generateId: () => answerMessageId,
+              // onResponse: async (): Promise<void> => {
+              //   this.deleteMessage(thinkingMessage)
+              // },
               onFinish: (message) => {
-                this.upsertMessage(message)
+                this.upsertMessage({...message, status: 'done'})
               },
               appendMessage: (message) => {
-                this.upsertMessage(message)
+                this.upsertMessage({...message, status: 'answering'})
               }
             },
             chatRequest,
@@ -421,7 +428,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
               id: nanoid(),
               role: CopilotChatMessageRoleEnum.Assistant,
               content: '',
-              error: (<Error>err).message
+              error: (<Error>err).message,
+              status: 'error'
             }
           ]
         })

@@ -70,6 +70,8 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
    * Command name
    */
   command?: string
+
+  status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
