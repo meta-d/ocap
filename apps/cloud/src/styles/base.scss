@@ -1,3 +1,17 @@
+:root .default {
+  --ngm-app-background-color: white;
+  --ngm-color-main-container-background: white;
+  --ngm-color-on-surface: #1f1f1f;
+  --ngm-color-on-surface-variant: #444746;
+}
+
+:root .dark {
+  --ngm-app-background-color: #1e1f20;
+  --ngm-color-main-container-background: #1e1f20;
+  --ngm-color-on-surface: #e3e3e3;
+  --ngm-color-on-surface-variant: #444746;
+}
+
 .mat-drawer-container {
   .ngm-copilot-chat {
     // @apply w-[360px] max-w-full;
