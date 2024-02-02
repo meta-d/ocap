@@ -359,7 +359,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       abortController = null
 
       if (message) {
-        this.upsertMessage({ ...message, id: assistantMessageId })
+        this.upsertMessage({ ...message, id: assistantMessageId, status: 'done' })
       } else {
         this.deleteMessage(assistantMessageId)
       }

@@ -38,9 +38,15 @@
         </mat-form-field>
     </div>
 
-    <button mat-raised-button color="primary" class="ngm-rounded-full"
-        [disabled]="formGroup.invalid || formGroup.pristine"
-    >
-        {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
-    </button>
+    <div class="self-stretch flex justify-start items-center">
+        <mat-checkbox formControlName="showTokenizer">显示词数</mat-checkbox>
+    </div>
+
+    <div class="self-stretch flex justify-start items-center mt-8">
+        <button mat-raised-button color="primary" class="ngm-rounded-full"
+            [disabled]="formGroup.invalid || formGroup.pristine"
+        >
+            {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
+        </button>
+    </div>
 </form>

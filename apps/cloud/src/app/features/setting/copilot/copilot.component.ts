@@ -21,7 +21,9 @@ export class CopilotComponent extends TranslationBaseComponent {
     enabled: new FormControl(null),
     provider: new FormControl('openai', [Validators.required]),
     apiKey: new FormControl(null, [Validators.required]),
-    apiHost: new FormControl(null)
+    apiHost: new FormControl(null),
+
+    showTokenizer: new FormControl(null),
   })
   get provider() {
     return this.formGroup.get('provider').value
@@ -40,10 +42,12 @@ export class CopilotComponent extends TranslationBaseComponent {
         this.formGroup.get('provider').enable()
         this.formGroup.get('apiKey').enable()
         this.formGroup.get('apiHost').enable()
+        this.formGroup.get('showTokenizer').enable()
       } else {
         this.formGroup.get('provider').disable()
         this.formGroup.get('apiKey').disable()
         this.formGroup.get('apiHost').disable()
+        this.formGroup.get('showTokenizer').disable()
       }
     })
 

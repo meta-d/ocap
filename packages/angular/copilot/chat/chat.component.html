@@ -1,11 +1,9 @@
 <div class="text-base font-semibold p-2">
-    <span>
-        {{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}
-    </span>
+  <span>{{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
 
-    @if (copilotEngine?.name) {
+  @if (copilotEngine?.name) {
     <span>:</span><span>{{copilotEngine.name}}</span>
-    }
+  }
 </div>
 
 <div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
@@ -39,6 +37,10 @@
                                         [start]="5"
                                         [data]="message.content"
                                     ></markdown>
+
+                                    @if (showTokenizer$() && message.content) {
+                                      <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                                    }
 
                                     @if (message.status === 'done') {
                                     <div class="flex self-end lg:self-center justify-center lg:justify-start mt-0 -ml-1 visible">
@@ -82,13 +84,10 @@
                                 </div>
                             }
                             @if (message.error) {
-                                <div class="ngm-copilot-chat__message-content text-red-400">
-                                    <span class="font-notoColorEmoji">🙈</span>
-                                    {{ message.error }}
-                                </div>
-                            }
-                            @if (showTokenizer$() && message.content) {
-                                <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                              <div class="ngm-copilot-chat__message-content text-red-400">
+                                <span class="font-notoColorEmoji">🙈</span>
+                                <span>{{ message.error }}</span>
+                              </div>
                             }
                         }
         
@@ -97,7 +96,6 @@
                                 <mat-icon>close</mat-icon>
                             </button>
                         </div>
-                        
                     </div>
                 </div>
                 }
@@ -116,10 +114,14 @@
                                             [pageSizeOptions]="[10, 20, 50, 100]"
                                         ></ngm-table>
                                     } @else {
-                                        @if (message.command) {
-                                          <span class="text-xs font-medium italic px-2.5 py-0.5 mb-[2px] rounded bg-neutral-100 dark:bg-neutral-700">/{{message.command}}</span>
-                                        }
-
+                                        <div class="flex items-center gap-1 mb-[2px]">
+                                          @if (showTokenizer$() && message.content) {
+                                            <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                                          }
+                                          @if (message.command) {
+                                            <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{message.command}}</span>
+                                          }
+                                        </div>
                                         <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
                                             <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
                                             focus-visible:bg-white dark:focus-visible:bg-black"
@@ -133,12 +135,6 @@
                                         </button>
                                     }
                                 }
-            
-                                <div class="flex items-center gap-1">
-                                  @if (showTokenizer$() && message.content) {
-                                    <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
-                                  }
-                                </div>
             
                                 <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                     (click)="deleteMessage(message)">
@@ -269,7 +265,7 @@
 </div>
 
 @if (!copilotEnabled) {
-<ngm-copilot-enable class="z-[101]"
+  <ngm-copilot-enable class="z-[101]"
     [title]="welcomeTitle || 'Metad Copilot'"
     [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
     (toConfig)="onEnableCopilot()"/>

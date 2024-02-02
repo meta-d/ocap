@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { TranslateModule } from '@ngx-translate/core'
-import { ChatCompletionContentPart } from 'openai/resources'
 
 @Component({
   standalone: true,
@@ -19,6 +18,7 @@ import { ChatCompletionContentPart } from 'openai/resources'
   styles: [
     `
       :host {
+        display: inline-block;
       }
     `
   ],
@@ -28,7 +28,7 @@ import { ChatCompletionContentPart } from 'openai/resources'
   }
 })
 export class CopilotChatTokenComponent implements OnChanges {
-  @Input() content: string | null | ChatCompletionContentPart[]
+  @Input() content: string | null
 
   characterLength = 0
 

@@ -306,9 +306,6 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
-    effect(() => {
-      console.log(this.copilotEngine.conversations())
-    })
   }
 
   refreshModels() {
@@ -320,7 +317,6 @@ export class NgmCopilotChatComponent {
   changeSelectedModel(values) {
     this.model = values[0]
   }
-
 
   async askCopilotStream(prompt: string, options: {command?: string; newConversation?: boolean; assistantMessageId?: string;} = {}) {
     const { command, newConversation, assistantMessageId } = options ?? {}
