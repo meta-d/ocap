@@ -46,10 +46,10 @@ export interface CopilotEngine {
   /**
    * @deprecated use `chat` instead
    */
-  process(
-    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController }
-  ): Observable<CopilotChatMessage | string | void>
+  // process(
+  //   data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
+  //   options?: { action?: string; abortController?: AbortController }
+  // ): Observable<CopilotChatMessage | string | void>
 
   /**
    * @deprecated

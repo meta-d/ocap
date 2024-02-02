@@ -222,7 +222,7 @@ export class InsightService {
       const entityType = await this.getEntityType(classification)
       const cubes = await this.getAllCubes()
 
-      await lastValueFrom(this.#copilotEngine.process({
+      await this.#copilotEngine.chat({
         prompt: `/chart 多维数据模型信息为：
 ${calcEntityTypePrompt(entityType)}
 问题：${prompt}
@@ -230,7 +230,7 @@ ${calcEntityTypePrompt(entityType)}
         newConversation: true
       }, {
         abortController: options?.abortController,
-      }))
+      })
     } catch (err) {
       this.#logger.error(err)
     }

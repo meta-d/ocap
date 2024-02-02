@@ -56,7 +56,6 @@ import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
-import { NgmCopilotChatMessage } from '@metad/ocap-angular/copilot/types'
 import { NGXLogger } from 'ngx-logger'
 
 @Component({
@@ -113,7 +112,27 @@ The cube can fill the source field in dimensionUsages only within the name of sh
 ${sharedDimensionsPrompt}
 \`\`\`
 `
-    }
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-model-cube',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'cube',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of cube',
+            required: true,
+            properties: zodToAnnotations(CubeSchema)
+          }
+        ],
+        implementation: async (cube: any) => {
+          this.#logger.debug(`Execute copilot action 'create-model-cube':`, cube)
+          createCube(this.modelService, cube)
+          return this.translateService.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
+        }
+      })
+    ]
   })
 
   #dimensionCommand = injectCopilotCommand({
@@ -126,43 +145,27 @@ ${sharedDimensionsPrompt}
     ],
     systemPrompt: () => {
       return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
-    }
-  })
-
-  #createCube = injectMakeCopilotActionable({
-    name: 'create-model-cube',
-    description: 'Should always be used to properly format output',
-    argumentAnnotations: [
-      {
-        name: 'cube',
-        type: 'object', // Add or change types according to your needs.
-        description: 'The defination of cube',
-        required: true,
-        properties: zodToAnnotations(CubeSchema)
-      }
-    ],
-    implementation: async (cube: any) => {
-      this.#logger.debug(`Execute copilot action 'create-model-cube':`, cube)
-      createCube(this.modelService, cube)
-      return this.translateService.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
-    }
-  })
-  #createDimension = injectMakeCopilotActionable({
-    name: 'create-model-dimension',
-    description: 'Should always be used to properly format output',
-    argumentAnnotations: [
-      {
-        name: 'dimension',
-        type: 'object', // Add or change types according to your needs.
-        description: 'The defination of dimension',
-        required: true,
-        properties: zodToAnnotations(DimensionSchema)
-      }
-    ],
-    implementation: async (d: any) => {
-      this.#logger.debug(`Execute copilot action 'create-model-dimension':`, d)
-      createDimension(this.modelService, d)
-    }
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-model-dimension',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'dimension',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of dimension',
+            required: true,
+            properties: zodToAnnotations(DimensionSchema)
+          }
+        ],
+        implementation: async (d: any) => {
+          this.#logger.debug(`Execute copilot action 'create-model-dimension':`, d)
+          createDimension(this.modelService, d)
+          return this.translateService.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
+        }
+      })
+    ]
   })
 
   @ViewChild('tableTemplate') tableTemplate!: TemplateRef<any>
@@ -183,7 +186,7 @@ ${sharedDimensionsPrompt}
         },
         content: stringifyTableType(entityType),
         templateRef: this.tableTemplate
-      } as NgmCopilotChatMessage
+      }
     },
   })
   #queryResultDropAction = provideCopilotDropAction({

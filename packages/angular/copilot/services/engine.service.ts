@@ -17,7 +17,6 @@ import {
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { Observable, from, map, throwError } from 'rxjs'
 import { DropAction } from '../types'
 
 let uniqueId = 0
@@ -104,6 +103,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
   readonly getChatCompletionFunctionDescriptions = computed(() => {
     return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
+  })
+  readonly getGlobalFunctionDescriptions = computed(() => {
+    const ids = Object.keys(this.#entryPoints()).filter((id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id)))
+    return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
   })
 
   // Commands
@@ -256,7 +259,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.conversations$.update((state) => [...state, ...newMessages])
       }
 
-      const functions = this.getChatCompletionFunctionDescriptions()
+      const functions = this.getGlobalFunctionDescriptions()
       const body = {
         ...this.aiOptions
       }
@@ -276,106 +279,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
           assistantMessageId
         }
       )
-    }
-  }
-
-  process(
-    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController }
-  ): Observable<string | CopilotChatMessage | void> {
-    this.#logger?.debug(`process ask: ${data.prompt}`)
-
-    const { abortController } = options ?? {}
-    // New messages
-    const newMessages: CopilotChatMessage[] = []
-    const { command, prompt } = getCommandPrompt(data.prompt)
-    if (command) {
-      const _command = this.getCommand(command)
-
-      if (!_command) {
-        return throwError(() => new Error(`Command '${command}' not found`))
-      }
-
-      if (_command.systemPrompt) {
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: _command.systemPrompt()
-        })
-      }
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt,
-        command
-      })
-
-      // Last user messages before add new messages
-      const lastUserMessages = this.lastUserMessages()
-      // Append new messages to conversation
-      this.conversations$.update((state) => [...state, ...newMessages])
-
-      // Exec command implementation
-      if (_command.implementation) {
-        return from(_command.implementation())
-      }
-
-      const functions = _command.actions
-        ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.#entryPoints()[id]))
-        : this.getChatCompletionFunctionDescriptions()
-
-      const body = {
-        ...this.aiOptions
-      }
-      if (functions.length) {
-        body.functions = functions
-      }
-
-      return from(
-        this.triggerRequest(
-          [...lastUserMessages, ...newMessages],
-          {
-            options: {
-              body
-            }
-          },
-          {
-            abortController
-          }
-        )
-      ).pipe(map(() => ''))
-    } else {
-      // Last conversation messages before append new messages
-      const lastConversation = this.lastConversation()
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt
-      })
-      // Append new messages to conversation
-      this.conversations$.update((state) => [...state, ...newMessages])
-
-      const functions = this.getChatCompletionFunctionDescriptions()
-      const body = {
-        ...this.aiOptions
-      }
-      if (functions.length) {
-        body.functions = functions
-      }
-
-      return from(
-        this.triggerRequest(
-          [...lastConversation, ...newMessages],
-          {
-            options: {
-              body
-            }
-          },
-          {
-            abortController
-          }
-        )
-      ).pipe(map(() => ''))
     }
   }
 

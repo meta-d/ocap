@@ -143,7 +143,7 @@ export async function processChatStream({
         (streamedResponseMessage.tool_calls === undefined ||
           typeof streamedResponseMessage.tool_calls === 'string')
       ) {
-        break;
+        return messagesAndDataOrJustMessage
       }
 
       // If we get here and are expecting a function call, the message should have one, if not warn and continue

@@ -927,6 +927,7 @@
       },
       "Copilot": {
         "CreatedCube": "数据集创建成功！",
+        "CreatedDimension": "维度创建成功！",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
