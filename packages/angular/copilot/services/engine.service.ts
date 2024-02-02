@@ -158,14 +158,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async chat(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController }
+    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string; }
   ) {
     this.#logger?.debug(`process ask: ${data.prompt}`)
 
-    const { abortController } = options ?? {}
+    const { abortController, assistantMessageId } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
-    const { command, prompt } = getCommandPrompt(data.prompt)
+    
+    const { command, prompt } = data.prompt ? getCommandPrompt(data.prompt) : {command: null, prompt: null}
     if (command) {
       const _command = this.getCommand(command)
 
@@ -218,13 +219,19 @@ export class NgmCopilotEngineService implements CopilotEngine {
     } else {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt
-      })
+      // Allow empty prompt
+      if (prompt) {
+        newMessages.push({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt
+        })
+      }
+      
       // Append new messages to conversation
-      this.conversations$.update((state) => [...state, ...newMessages])
+      if (newMessages.length > 0) {
+        this.conversations$.update((state) => [...state, ...newMessages])
+      }
 
       const functions = this.getChatCompletionFunctionDescriptions()
       const body = {
@@ -239,7 +246,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
           body
         }
       }, {
-        abortController
+        abortController,
+        assistantMessageId
       })
     }
   }
@@ -341,9 +349,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
     messagesSnapshot: CopilotChatMessage[],
     { options, data }: ChatRequestOptions = {},
     {
-      abortController
+      abortController,
+      assistantMessageId
     }: {
-      abortController?: AbortController | null
+      abortController?: AbortController | null;
+      assistantMessageId?: string;
     } = {}
   ): Promise<ChatRequest | null | undefined> {
     // let abortController = null
@@ -361,9 +371,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
         data
       }
 
-      const answerMessageId = nanoid()
+      assistantMessageId = assistantMessageId ?? nanoid()
       const thinkingMessage: CopilotChatMessage = {
-        id: answerMessageId,
+        id: assistantMessageId,
         role: CopilotChatMessageRoleEnum.Assistant,
         content: '',
         status: 'thinking'
@@ -380,7 +390,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
                 ...pick(this.aiOptions, 'model', 'temperature'),
                 ...(options?.body ?? {})
               },
-              generateId: () => answerMessageId,
+              generateId: () => assistantMessageId,
               // onResponse: async (): Promise<void> => {
               //   this.deleteMessage(thinkingMessage)
               // },
@@ -423,7 +433,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
         this.conversations$.update((state) => {
           return [
-            ...state,
+            ...state.filter((item) => item.id !== assistantMessageId),
             {
               id: nanoid(),
               role: CopilotChatMessageRoleEnum.Assistant,

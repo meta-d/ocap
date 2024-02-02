@@ -40,7 +40,7 @@ export interface CopilotEngine {
 
   chat(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController }
+    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string; }
   ): Promise<CopilotChatMessage | string | void>
 
   /**

@@ -1,4 +1,4 @@
-import { ClipboardModule } from '@angular/cdk/clipboard'
+import { ClipboardModule, Clipboard } from '@angular/cdk/clipboard'
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
 import {
@@ -37,7 +37,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, combineLatest, delay, firstValueFrom, map, startWith, throttleTime } from 'rxjs'
+import { BehaviorSubject, combineLatest, delay, map, startWith, throttleTime } from 'rxjs'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
@@ -97,6 +97,8 @@ export class NgmCopilotChatComponent {
   private copilotService = inject(CopilotService)
   #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
   #customEngine?: CopilotEngine = null
+
+  readonly #clipboard: Clipboard = inject(Clipboard)
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
@@ -263,6 +265,8 @@ export class NgmCopilotChatComponent {
   public readonly suggestionsOpened$ = new BehaviorSubject(false)
   #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
 
+  readonly messageCopied = signal<string[]>([])
+
   /**
   |--------------------------------------------------------------------------
   | Copilot
@@ -311,17 +315,15 @@ export class NgmCopilotChatComponent {
     this.model = values[0]
   }
 
-  async askPredefinedPrompt(prompt: string) {
-    this.stopGenerating()
-    prompt = await firstValueFrom(this.translateService.get('PAC.Copilot.Prompts.' + prompt, { Default: prompt }))
-    await this.askCopilotStream(prompt, true)
-  }
 
-  async askCopilotStream(prompt: string, newConversation?: boolean) {
+  async askCopilotStream(prompt: string, options: {newConversation?: boolean; assistantMessageId?: string;} = {}) {
+    const { newConversation, assistantMessageId } = options ?? {}
     // Reset history index
     this.historyIndex.set(-1)
     // Add to history
-    this.historyQuestions.set([prompt, ...this.historyQuestions()])
+    if (prompt) {
+      this.historyQuestions.set([prompt, ...this.historyQuestions()])
+    }
     // Clear prompt in input
     this.promptControl.setValue('')
 
@@ -332,7 +334,8 @@ export class NgmCopilotChatComponent {
       try {
         this.#abortController = new AbortController()
         const message = await this.#copilotEngine.chat({ prompt, newConversation, messages: [] }, {
-          abortController: this.#abortController
+          abortController: this.#abortController,
+          assistantMessageId
         })
 
         this.answering.set(false)
@@ -363,13 +366,6 @@ export class NgmCopilotChatComponent {
     this.conversationsChange.emit(this.conversations)
 
     this.scrollBottom()
-  }
-
-  onCopy(copyButton) {
-    copyButton.copied = true
-    setTimeout(() => {
-      copyButton.copied = false
-    }, 3000)
   }
 
   scrollBottom() {
@@ -430,12 +426,24 @@ export class NgmCopilotChatComponent {
     this._cdr.detectChanges()
   }
 
+  /**
+   * @deprecated regenerate method should in copilot engine service
+   */
+  async regenerate(message: CopilotChatMessage) {
+    this.copilotEngine.updateConversations((conversations) => {
+      const index = conversations.findIndex((item) => item.id === message.id)
+      conversations.splice(index)
+      return [...conversations]
+    })
+    await this.askCopilotStream(null, { assistantMessageId: message.id })
+  }
+
   isFoucs(target: HTMLDivElement | HTMLTextAreaElement) {
     return document.activeElement === target
   }
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
-    if (event.shiftKey && event.key === 'Enter') {
+    if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
       return
     }
     if (!this.#suggestionsOpened() && event.key === 'Enter') {
@@ -471,6 +479,22 @@ export class NgmCopilotChatComponent {
 
   onPromptActivated(event: MatAutocompleteActivatedEvent) {
     this.#activatedPrompt.set(event.option?.value)
+  }
+
+  copyMessage(message: CopilotChatMessage) {
+    this.copy.emit(message.content)
+    this.#clipboard.copy(message.content)
+    this.messageCopied.update((ids) => [...ids, message.id])
+    setTimeout(() => {
+      this.messageCopied.update((ids) => ids.filter((id) => id !== message.id))
+    }, 3000)
+  }
+
+  onCopy(copyButton) {
+    copyButton.copied = true
+    setTimeout(() => {
+      copyButton.copied = false
+    }, 3000)
   }
 
   dropCopilot(event) {
