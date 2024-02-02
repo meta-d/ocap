@@ -42,10 +42,11 @@ import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { UserAvatarComponent } from '../avatar/avatar.component'
-import { IUser } from '../types'
+import { IUser, NgmCopilotChatMessage } from '../types'
 import { nanoid } from 'nanoid'
 import { injectCopilotCommand } from '../hooks'
 import { PlaceholderMessages } from './types'
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
 
 @Component({
   standalone: true,
@@ -134,7 +135,7 @@ export class NgmCopilotChatComponent {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
-  _mockConversations: CopilotChatMessage[] = PlaceholderMessages
+  _mockConversations: NgmCopilotChatMessage[] = PlaceholderMessages
 
   // Copilot
   private openaiOptions = {
@@ -185,8 +186,9 @@ export class NgmCopilotChatComponent {
   |--------------------------------------------------------------------------
   */
   readonly showTokenizer$ = toSignal(this.copilotService.copilot$.pipe(map((copilot) => copilot?.showTokenizer)))
-  readonly conversations = computed(() => this.copilotEngine.messages().filter((message) => 
-    message.status === 'thinking' || message.content || message.error))
+  readonly conversations = computed<NgmCopilotChatMessage[]>(() => this.copilotEngine.messages()
+  // .filter((message) => message.status === 'thinking' || message.content || message.error)
+    )
 
   /**
    * 当前 Asking prompt
@@ -497,7 +499,7 @@ export class NgmCopilotChatComponent {
     }, 3000)
   }
 
-  dropCopilot(event) {
+  dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     if (this.copilotEngine) {
       this.copilotEngine.dropCopilot(event)
     }

@@ -4,6 +4,7 @@ import {
   Component,
   HostBinding,
   HostListener,
+  TemplateRef,
   ViewChild,
   ViewContainerRef,
   inject
@@ -19,7 +20,8 @@ import { IsDirty } from '@metad/core'
 import {
   NgmCopilotChatComponent,
   injectCopilotCommand,
-  injectMakeCopilotActionable
+  injectMakeCopilotActionable,
+  provideCopilotDropAction
 } from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
@@ -47,13 +49,15 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { DimensionSchema, createCube, createDimension } from './copilot'
+import { CubeSchema, DimensionSchema, createCube, createDimension } from './copilot'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import { NgmCopilotChatMessage } from '@metad/ocap-angular/copilot/types'
+import { NGXLogger } from 'ngx-logger'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -70,7 +74,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
 
-  #store = inject(Store)
+  readonly #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private modelsService = inject(ModelsService)
@@ -80,6 +84,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _dialog = inject(MatDialog)
   private _viewContainerRef = inject(ViewContainerRef)
   private toastrService = inject(ToastrService)
+  readonly #logger = inject(NGXLogger)
 
   /**
   |--------------------------------------------------------------------------
@@ -133,12 +138,13 @@ ${sharedDimensionsPrompt}
         type: 'object', // Add or change types according to your needs.
         description: 'The defination of cube',
         required: true,
-        properties: zodToAnnotations(DimensionSchema)
+        properties: zodToAnnotations(CubeSchema)
       }
     ],
     implementation: async (cube: any) => {
-      console.log(`Execute action edit cube`, cube)
+      this.#logger.debug(`Execute copilot action 'create-model-cube':`, cube)
       createCube(this.modelService, cube)
+      return this.translateService.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
     }
   })
   #createDimension = injectMakeCopilotActionable({
@@ -154,7 +160,51 @@ ${sharedDimensionsPrompt}
       }
     ],
     implementation: async (d: any) => {
+      this.#logger.debug(`Execute copilot action 'create-model-dimension':`, d)
       createDimension(this.modelService, d)
+    }
+  })
+
+  @ViewChild('tableTemplate') tableTemplate!: TemplateRef<any>
+  #entityDropAction = provideCopilotDropAction({
+    id: 'pac-model-entitysets',
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop table to copilot chat:`, event)
+      const data = event.item.data
+      // 获取源表或源多维数据集结构
+      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
+
+      return {
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        data: {
+          columns: [{ name: 'name', caption: '名称' }, { name: 'caption', caption: '描述' }],
+          content: Object.values(entityType.properties) as any[]
+        },
+        content: stringifyTableType(entityType),
+        templateRef: this.tableTemplate
+      } as NgmCopilotChatMessage
+    },
+  })
+  #queryResultDropAction = provideCopilotDropAction({
+    id: 'pac-model__query-results',
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop query result to copilot chat:`, event)
+      const data = event.item.data
+      // 自定义查询结果数据
+      return {
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        data: {
+          columns: data.columns,
+          content: data.preview
+        },
+        content:
+          data.columns.map((column) => column.name).join(',') +
+          `\n` +
+          data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n'),
+        templateRef: this.tableTemplate
+      }
     }
   })
 
@@ -550,50 +600,50 @@ ${sharedDimensionsPrompt}
     }
   }
 
-  /**
-   * Drop data on copilot chat:
-   * 1. table schema
-   * 2. table data
-   * 3. name of data
-   *
-   * @param event
-   */
-  async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
-    const data = event.item.data
+  // /**
+  //  * Drop data on copilot chat:
+  //  * 1. table schema
+  //  * 2. table data
+  //  * 3. name of data
+  //  *
+  //  * @param event
+  //  */
+  // async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
+  //   const data = event.item.data
 
-    if (event.previousContainer.id === 'pac-model-entitysets') {
-      // 源表结构或源多维数据集结构
-      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
-      this.copilotChat.addMessage({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: [{ name: 'name' }, { name: 'caption' }],
-          content: Object.values(entityType.properties) as any[]
-        },
-        content: stringifyTableType(entityType)
-      })
-    } else if (event.previousContainer.id === 'pac-model__query-results') {
-      // 自定义查询结果数据
-      this.copilotChat.addMessage({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: data.columns,
-          content: data.preview
-        },
-        content:
-          data.columns.map((column) => column.name).join(',') +
-          `\n` +
-          data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n')
-      })
-    } else {
-      // 其他数据 name
-      this.copilotChat.addMessage({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: data.name
-      })
-    }
-  }
+  //   if (event.previousContainer.id === 'pac-model-entitysets') {
+  //     // 源表结构或源多维数据集结构
+  //     const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
+  //     this.copilotChat.addMessage({
+  //       id: nanoid(),
+  //       role: CopilotChatMessageRoleEnum.User,
+  //       data: {
+  //         columns: [{ name: 'name' }, { name: 'caption' }],
+  //         content: Object.values(entityType.properties) as any[]
+  //       },
+  //       content: stringifyTableType(entityType)
+  //     })
+  //   } else if (event.previousContainer.id === 'pac-model__query-results') {
+  //     // 自定义查询结果数据
+  //     this.copilotChat.addMessage({
+  //       id: nanoid(),
+  //       role: CopilotChatMessageRoleEnum.User,
+  //       data: {
+  //         columns: data.columns,
+  //         content: data.preview
+  //       },
+  //       content:
+  //         data.columns.map((column) => column.name).join(',') +
+  //         `\n` +
+  //         data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n')
+  //     })
+  //   } else {
+  //     // 其他数据 name
+  //     this.copilotChat.addMessage({
+  //       id: nanoid(),
+  //       role: CopilotChatMessageRoleEnum.User,
+  //       content: data.name
+  //     })
+  //   }
+  // }
 }

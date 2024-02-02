@@ -1,3 +1,4 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable, computed, inject, signal } from '@angular/core'
 import {
   AIOptions,
@@ -17,6 +18,7 @@ import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { Observable, from, map, throwError } from 'rxjs'
+import { DropAction } from '../types'
 
 let uniqueId = 0
 
@@ -108,6 +110,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly #commands = signal<Record<string, CopilotCommand>>({})
   readonly commands = computed(() => Object.values(this.#commands()))
 
+  readonly #dropActions = signal<Record<string, DropAction>>({})
+
   // Chat States
   readonly error = signal<undefined | Error>(undefined)
   readonly streamData = signal<JSONValue[] | undefined>(undefined)
@@ -156,17 +160,32 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return this.#commands()[name]
   }
 
+  registerDropAction(dropAction: DropAction) {
+    this.#dropActions.update((state) => ({
+      ...state,
+      [dropAction.id]: dropAction
+    }))
+  }
+  unregisterDropAction(id: string) {
+    this.#dropActions.update((state) => {
+      delete state[id]
+      return {
+        ...state
+      }
+    })
+  }
+
   async chat(
     data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string; }
+    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string }
   ) {
     this.#logger?.debug(`process ask: ${data.prompt}`)
 
     const { abortController, assistantMessageId } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
-    
-    const { command, prompt } = data.prompt ? getCommandPrompt(data.prompt) : {command: null, prompt: null}
+
+    const { command, prompt } = data.prompt ? getCommandPrompt(data.prompt) : { command: null, prompt: null }
     if (command) {
       const _command = this.getCommand(command)
 
@@ -209,13 +228,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
         body.functions = functions
       }
 
-      await this.triggerRequest([...lastUserMessages, ...newMessages], {
-        options: {
-          body
+      await this.triggerRequest(
+        [...lastUserMessages, ...newMessages],
+        {
+          options: {
+            body
+          }
+        },
+        {
+          abortController
         }
-      }, {
-        abortController
-      }) 
+      )
     } else {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
@@ -227,7 +250,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           content: prompt
         })
       }
-      
+
       // Append new messages to conversation
       if (newMessages.length > 0) {
         this.conversations$.update((state) => [...state, ...newMessages])
@@ -241,14 +264,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
         body.functions = functions
       }
 
-      await this.triggerRequest([...lastConversation, ...newMessages], {
-        options: {
-          body
+      await this.triggerRequest(
+        [...lastConversation, ...newMessages],
+        {
+          options: {
+            body
+          }
+        },
+        {
+          abortController,
+          assistantMessageId
         }
-      }, {
-        abortController,
-        assistantMessageId
-      })
+      )
     }
   }
 
@@ -305,13 +332,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       return from(
-        this.triggerRequest([...lastUserMessages, ...newMessages], {
-          options: {
-            body
+        this.triggerRequest(
+          [...lastUserMessages, ...newMessages],
+          {
+            options: {
+              body
+            }
+          },
+          {
+            abortController
           }
-        }, {
-          abortController
-        })
+        )
       ).pipe(map(() => ''))
     } else {
       // Last conversation messages before append new messages
@@ -333,13 +364,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       return from(
-        this.triggerRequest([...lastConversation, ...newMessages], {
-          options: {
-            body
+        this.triggerRequest(
+          [...lastConversation, ...newMessages],
+          {
+            options: {
+              body
+            }
+          },
+          {
+            abortController
           }
-        }, {
-          abortController
-        })
+        )
       ).pipe(map(() => ''))
     }
   }
@@ -352,8 +387,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       abortController,
       assistantMessageId
     }: {
-      abortController?: AbortController | null;
-      assistantMessageId?: string;
+      abortController?: AbortController | null
+      assistantMessageId?: string
     } = {}
   ): Promise<ChatRequest | null | undefined> {
     // let abortController = null
@@ -395,10 +430,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
               //   this.deleteMessage(thinkingMessage)
               // },
               onFinish: (message) => {
-                this.upsertMessage({...message, status: 'done'})
+                this.upsertMessage({ ...message, status: 'done' })
               },
               appendMessage: (message) => {
-                this.upsertMessage({...message, status: 'answering'})
+                this.upsertMessage({ ...message, status: 'answering' })
               }
             },
             chatRequest,
@@ -418,7 +453,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
       abortController = null
 
       if (message) {
-        this.conversations$.update((state) => [...state, message])
+        this.upsertMessage({ ...message, id: assistantMessageId })
+      } else {
+        this.deleteMessage(assistantMessageId)
       }
       return null
     } catch (err) {
@@ -475,14 +512,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
-  deleteMessage(message: CopilotChatMessage) {
-    this.conversations$.update((conversations) => {
-      const index = conversations.findIndex((item) => item.id === message.id)
-      if (index > -1) {
-        conversations.splice(index, 1)
-      }
-      return [...conversations]
-    })
+  deleteMessage(message: CopilotChatMessage | string) {
+    const messageId = typeof message === 'string' ? message : message.id
+    this.conversations$.update((conversations) => conversations.filter((item) => item.id !== messageId))
   }
 
   clear() {
@@ -491,5 +523,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
     this.conversations$.update(fn)
+  }
+
+  async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
+    const dropActions = this.#dropActions()
+    if (dropActions[event.previousContainer.id]) {
+      const message = await dropActions[event.previousContainer.id].implementation(event, this)
+      this.upsertMessage(message)
+    }
   }
 }

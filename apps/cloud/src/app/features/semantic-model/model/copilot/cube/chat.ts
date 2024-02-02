@@ -1,47 +1,7 @@
 import { uuid } from '@metad/components/core'
-import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
-import { Cube, omitBlank } from '@metad/ocap-core'
-import { map } from 'rxjs/operators'
+import { Cube } from '@metad/ocap-core'
 import { SemanticModelService } from '../../model.service'
 import { SemanticModelEntityType } from '../../types'
-import { ModelCopilotChatConversation } from '../types'
-import { editModelCube } from './schema'
-
-// export function chatCube(copilot: ModelCopilotChatConversation) {
-//   const { logger, copilotService, prompt, sharedDimensionsPrompt } = copilot
-
-//   const systemPrompt = `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-//     There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-//     The cube can fill the source field in dimensionUsages only within the name of shared dimensions: ${sharedDimensionsPrompt}.
-//     `
-//   return copilotService
-//     .chatCompletions(
-//       [
-//         {
-//           role: CopilotChatMessageRoleEnum.System,
-//           content: systemPrompt
-//         },
-//         {
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: prompt
-//         }
-//       ],
-//       {
-//         ...editModelCube,
-//         ...omitBlank(copilot.options)
-//       }
-//     )
-//     .pipe(
-//       map(({ choices }) => {
-//         try {
-//           copilot.response = getFunctionCall(choices[0].message)
-//         } catch (err) {
-//           copilot.error = err as Error
-//         }
-//         return copilot
-//       })
-//     )
-// }
 
 export async function createCube(modelService: SemanticModelService, cube: Cube) {
   const key = uuid()

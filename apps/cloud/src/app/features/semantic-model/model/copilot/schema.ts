@@ -38,6 +38,47 @@ export const DimensionSchema = z.object({
   hierarchies: z.array(HierarchySchema).describe('An array of hierarchies in this dimension')
 })
 
+export const CubeSchema = z.object({
+  name: z.string().optional().describe('The name of the cube'),
+  caption: z.string().optional().describe('The caption of the cube'),
+  tables: z.array(
+    z.object({
+      name: z.string().describe('The name of the cube fact table')
+      // join: z.object({})
+    })
+  ).optional(),
+  measures: z
+    .array(
+      z.object({
+        name: z.string().describe('The name of the measure'),
+        caption: z.string().describe('The caption of the measure'),
+        column: z.string().describe('The column of the measure')
+      })
+    )
+    .optional()
+    .describe('An array of measures in this cube'),
+  dimensions: z
+    .array(
+      DimensionSchema
+    )
+    .optional()
+    .describe('An array of dimensions in this cube'),
+
+  dimensionUsages: z
+    .array(
+      z.object({
+        name: z.string().describe('The name of the dimension usage'),
+        caption: z.string().optional().describe('The caption of the dimension usage'),
+        source: z.string().describe('The name of the shared dimension'),
+        foreignKey: z.string().describe('The foreign key of the fact table that join into the shared dimension'),
+        description: z.string().optional().describe('The description of the dimension usage')
+      })
+    )
+    .optional()
+    .describe('An array of shared dimensions used in this cube')
+})
+
+
 export const QueryCubeSchema = z.object({
   statement: z.string().describe('The MDX statement of query the cube')
 })

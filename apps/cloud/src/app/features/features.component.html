@@ -117,7 +117,7 @@
           assistantAvatar="assets/images/copilot_sparkle_resting.gif"
           [user]="user$()"
           cdkDropList
-          (cdkDropListDropped)="dropCopilot($event)"
+          (cdkDropListDropped)="copilotChat.dropCopilot($event)"
           (enableCopilot)="toEnableCopilot()"
         ></ngm-copilot-chat>
         }

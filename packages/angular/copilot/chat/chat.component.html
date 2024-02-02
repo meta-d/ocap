@@ -27,6 +27,9 @@
                             }
                         </div>
                         <div class="flex flex-col justify-start items-start overflow-auto relative py-2 min-h-[50px] min-w-[50px] group">
+                        @if (message.templateRef) {
+                          <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
+                        } @else {
                             @if (message.content) {
                                 <div class="ngm-copilot-chat__message-content">
                                     <markdown clipboard class="whitespace-pre-line"
@@ -86,6 +89,7 @@
                             @if (showTokenizer$() && message.content) {
                                 <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
                             }
+                        }
         
                             <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                 (click)="deleteMessage(message)">
@@ -97,48 +101,52 @@
                 </div>
                 }
                 @case (CopilotChatMessageRoleEnum.User) {
-                <div class="pl-4 flex">
-                    <div class="flex-1 flex items-start justify-end overflow-auto">
-                        <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
-                            @if (message.data) {
-                                <ngm-table class="max-w-full rounded-lg border overflow-hidden"
-                                    [columns]="message.data['columns']"
-                                    [data]="message.data['content']"
-                                    paging
-                                    [pageSizeOptions]="[10, 20, 50, 100]"
-                                ></ngm-table>
-                            } @else {
-                                <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
-                                    <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
-                                    focus-visible:bg-white dark:focus-visible:bg-black"
-                                        [attr.contenteditable]="true"
-                                        (focus)="onMessageFocus()"
-                                    >{{ message.content }}</div>
+                    <div class="pl-4 flex">
+                        <div class="flex-1 flex items-start justify-end overflow-auto">
+                            <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
+                                @if (message.templateRef) {
+                                    <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
+                                } @else {
+                                    @if (message.data) {
+                                        <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+                                            [columns]="message.data['columns']"
+                                            [data]="message.data['content']"
+                                            paging
+                                            [pageSizeOptions]="[10, 20, 50, 100]"
+                                        ></ngm-table>
+                                    } @else {
+                                        <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
+                                            <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
+                                            focus-visible:bg-white dark:focus-visible:bg-black"
+                                                [attr.contenteditable]="true"
+                                                (focus)="onMessageFocus()"
+                                            >{{ message.content }}</div>
+                                        </div>
+                                        <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                                            (click)="resubmitMessage(message, msgContent.textContent)">
+                                            {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                                        </button>
+                                    }
+                                }
+            
+                                <div class="flex items-center gap-1">
+                                @if (message.command) {
+                                    <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{message.command}}</span>
+                                }
+                                @if (showTokenizer$() && message.content) {
+                                    <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                                }
                                 </div>
-                                <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
-                                    (click)="resubmitMessage(message, msgContent.textContent)">
-                                    {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+            
+                                <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                                    (click)="deleteMessage(message)">
+                                    <mat-icon>close</mat-icon>
                                 </button>
-                            }
-        
-                            <div class="flex items-center gap-1">
-                            @if (message.command) {
-                                <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{message.command}}</span>
-                            }
-                            @if (showTokenizer$() && message.content) {
-                                <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
-                            }
                             </div>
-        
-                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
-                                (click)="deleteMessage(message)">
-                                <mat-icon>close</mat-icon>
-                            </button>
+                            
+                            <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                         </div>
-                        
-                        <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                     </div>
-                </div>
                 }
                 @case (CopilotChatMessageRoleEnum.Info) {
                 <div class="pl-4 flex">
