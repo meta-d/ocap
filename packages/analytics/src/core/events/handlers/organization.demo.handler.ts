@@ -116,9 +116,10 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		const file = options?.source === OrganizationDemoNetworkEnum.aliyun ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
 	    const files = await this.unzipAndRead(file, samplesPath)
 
-		this.logger.debug(files)
+		this.logger.debug(`Start to import files in demo file: ${files}`)
 
 		for await (const file of files) {
+			this.logger.debug(`	Start to import file: ${file}`)
 			let sheets
 			try {
 				sheets = await readYamlFile<
@@ -149,6 +150,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 				indicator,
 				story
 			} of sheets) {
+				this.logger.debug(`		Start to import record: ${name}`)
 
 				if (withStarrocks && installationMode && installationMode !== 'with-starrocks') {
 					continue;
@@ -205,15 +207,20 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					}
 
 					for await (const item of dataset) {
-						// Load data file into database table
-						await dataLoad(dataSourceEntity, [item], {
-							stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
-							fieldname: '',
-							originalname: '',
-							path: path.join(demosFolder, item.fileUrl),
-							encoding: '',
-							mimetype: 'text/csv'
-						} as any)
+						this.logger.debug(`			Start to import dataset file: ${item.fileUrl}`)
+						try {
+							// Load data file into database table
+							await dataLoad(dataSourceEntity, [item], {
+								stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
+								fieldname: '',
+								originalname: '',
+								path: path.join(demosFolder, item.fileUrl),
+								encoding: '',
+								mimetype: 'text/csv'
+							} as any)
+						} catch(err) {
+							throw new Error(`Can't import dataset file: ${item.fileUrl} with error: ${err.message}`)
+						}
 					}
 				}
 
@@ -269,6 +276,8 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 
 		// Delete the samples folder
 		// fs.rmSync(samplesPath, { recursive: true, force: true })
+		
+		this.logger.debug(`Generate demo data all done!`)
 
 		return Promise.resolve()
 	}
@@ -304,7 +313,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	}
 
 	async downloadDemoFile(url: string, destination: string) {
-		this.logger.debug(`download demo file from ${url} to ${destination}`)
+		this.logger.debug(`Download demo file from ${url} to ${destination}`)
 
 		const writer = fs.createWriteStream(destination)
 		const response = await axios({
