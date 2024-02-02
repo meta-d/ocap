@@ -1,6 +1,7 @@
 :host {
   background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
   font-family: var(--ngm-copilot-font-family);
+  --mat-divider-color: var(--ngm-divider-color-secondary);
   @apply flex flex-col relative text-sm ;
 }
 

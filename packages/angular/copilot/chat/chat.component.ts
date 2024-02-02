@@ -97,8 +97,10 @@ export class NgmCopilotChatComponent {
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(CopilotService)
-  #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
-  #customEngine?: CopilotEngine = null
+  readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
+  // #customEngine?: CopilotEngine = null
+
+  readonly copilotEngine$ = signal<CopilotEngine>(this.#copilotEngine)
 
   readonly #clipboard: Clipboard = inject(Clipboard)
 
@@ -109,10 +111,10 @@ export class NgmCopilotChatComponent {
   @Input() assistantAvatar: string
 
   @Input() get copilotEngine(): CopilotEngine {
-    return this.#customEngine ?? this.#copilotEngine
+    return this.copilotEngine$()
   }
   set copilotEngine(value) {
-    this.#customEngine = value
+    this.copilotEngine$.set(value ?? this.#copilotEngine)
   }
 
   @Input() user: IUser
@@ -187,7 +189,7 @@ export class NgmCopilotChatComponent {
   |--------------------------------------------------------------------------
   */
   readonly showTokenizer$ = toSignal(this.copilotService.copilot$.pipe(map((copilot) => copilot?.showTokenizer)))
-  readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine.conversations())
+  readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine?.conversations())
 
   /**
    * 当前 Asking prompt
@@ -304,6 +306,9 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
+    effect(() => {
+      console.log(this.copilotEngine.conversations())
+    })
   }
 
   refreshModels() {
@@ -334,7 +339,7 @@ export class NgmCopilotChatComponent {
     if (this.copilotEngine) {
       try {
         this.#abortController = new AbortController()
-        const message = await this.#copilotEngine.chat(prompt, {
+        const message = await this.copilotEngine$().chat(prompt, {
           command,
           newConversation,
           abortController: this.#abortController,

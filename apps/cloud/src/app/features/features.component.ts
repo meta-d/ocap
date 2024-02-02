@@ -1,6 +1,17 @@
 import { Location } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnInit, Renderer2, ViewChild, inject } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnInit,
+  Renderer2,
+  ViewChild,
+  inject
+} from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
+import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
 import {
   Event,
   NavigationCancel,
@@ -10,17 +21,20 @@ import {
   Router,
   RouterEvent
 } from '@angular/router'
-import { TranslateService } from '@ngx-translate/core'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
 import { isNotEmpty, nonNullable } from '@metad/core'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
+import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatestWith, firstValueFrom } from 'rxjs'
 import { filter, map, startWith, tap } from 'rxjs/operators'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import {
   AbilityActions,
+  AnalyticsFeatures,
+  AnalyticsFeatures as AnalyticsFeaturesEnum,
   AnalyticsPermissionsEnum,
   EmployeesService,
   FeatureEnum,
@@ -29,22 +43,16 @@ import {
   IUser,
   MenuCatalog,
   PermissionsEnum,
-  routeAnimations,
+  RolesEnum,
   SelectorService,
   Store,
-  AnalyticsFeatures as AnalyticsFeaturesEnum,
-  AnalyticsFeatures,
-  RolesEnum
+  routeAnimations
 } from '../@core'
-import { AppService } from '../app.service'
-import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
-import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { StoryCreationComponent } from '../@shared'
-import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { CdkDragDrop } from '@angular/cdk/drag-drop'
-import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
-
+import { AppService } from '../app.service'
+import { ModelCreationComponent } from './semantic-model/creation/creation.component'
+import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
+import { CopilotEngine } from '@metad/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,10 +68,11 @@ export class FeaturesComponent implements OnInit {
   AbilityActions = AbilityActions
 
   readonly #destroyRef = inject(DestroyRef)
-  
+
   @ViewChild('sidenav') sidenav: MatSidenav
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
+  copilotEngine: CopilotEngine
   sidenavMode = 'over' as MatDrawerMode
   isEmployee: boolean
   organization: IOrganization
@@ -97,10 +106,9 @@ export class FeaturesComponent implements OnInit {
     filter(nonNullable),
     combineLatestWith(this.translateService.stream('PAC.KEY_WORDS')),
     map(([navigation, i18n]) => {
-
       let catalogName: string
       let icon: string
-      switch(navigation.catalog) {
+      switch (navigation.catalog) {
         case MenuCatalog.Project:
           catalogName = i18n?.['Project'] ?? 'Project'
           icon = 'auto_stories'
@@ -160,10 +168,9 @@ export class FeaturesComponent implements OnInit {
       this.checkForEmployee()
       this.logger?.debug(value)
     })
-  
+
   readonly user$ = toSignal(this.store.user$)
-  
-  // private _sidebarContentIndexSub = this.appService.fullscreenIndex$.subscribe((fullscreenIndex) => this.zIndex = fullscreenIndex)
+
   constructor(
     public readonly appService: AppService,
     private readonly employeeService: EmployeesService,
@@ -249,7 +256,7 @@ export class FeaturesComponent implements OnInit {
   }
 
   refreshMenuItem(item, withOrganizationShortcuts) {
-    item.title = this.getTranslation('PAC.MENU.'+item.data.translationKey, {Default: item.data.translationKey})
+    item.title = this.getTranslation('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
     if (item.data.permissionKeys || item.data.hide) {
       const anyPermission = item.data.permissionKeys
         ? item.data.permissionKeys.reduce((permission, key) => {
@@ -330,19 +337,15 @@ export class FeaturesComponent implements OnInit {
       // this.isCollapsedHidden = false
       if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.Project,
+          catalog: MenuCatalog.Project
         })
-      }
-      else
-      if (event.url.match(/^\/project/g)) {
+      } else if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.Stories,
+          catalog: MenuCatalog.Stories
         })
-      }
-      else if (event.url.match(/^\/story/g)) {
+      } else if (event.url.match(/^\/story/g)) {
         // this.isCollapsedHidden = true
-      }
-      else if (event.url.match(/^\/models/g)) {
+      } else if (event.url.match(/^\/models/g)) {
         // this.appService.setCatalog({
         //   catalog: MenuCatalog.Models,
         //   id: !event.url.match(/^\/models$/g)
@@ -354,11 +357,11 @@ export class FeaturesComponent implements OnInit {
         })
       } else if (event.url.match(/^\/indicator-app/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.IndicatorApp,
+          catalog: MenuCatalog.IndicatorApp
         })
         // this.isCollapsedHidden = true
       } else {
-        this.appService.setCatalog({catalog: null})
+        this.appService.setCatalog({ catalog: null })
       }
     }
 
@@ -380,7 +383,7 @@ export class FeaturesComponent implements OnInit {
   onMenuClicked(event, isMobile) {
     this.isCollapsed = true
     if (isMobile) {
-      this.isCollapsedHidden=true
+      this.isCollapsedHidden = true
     }
   }
 
@@ -407,7 +410,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home',
             data: {
               translationKey: 'Today',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -416,7 +419,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/catalog',
             data: {
               translationKey: 'Catalog',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -425,7 +428,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/trending',
             data: {
               translationKey: 'Trending',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -434,7 +437,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/insight',
             data: {
               translationKey: 'Insights',
-              featureKey: AnalyticsFeatures.FEATURE_INSIGHT,
+              featureKey: AnalyticsFeatures.FEATURE_INSIGHT
             }
           }
         ]
@@ -470,7 +473,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Story',
               featureKey: AnalyticsFeatures.FEATURE_STORY,
               permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
-            },
+            }
           },
           {
             title: 'Indicators',
@@ -480,7 +483,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Indicators',
               featureKey: AnalyticsFeatures.FEATURE_STORY,
               permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
-            },
+            }
           }
         ]
       },
@@ -501,7 +504,7 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator-app',
         data: {
           translationKey: 'Indicator App',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR,
+          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR
         }
       },
       // {
@@ -698,7 +701,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Tenant',
               permissionKeys: [RolesEnum.SUPER_ADMIN]
             }
-          },
+          }
         ]
       }
     ]
@@ -712,10 +715,13 @@ export class FeaturesComponent implements OnInit {
   }
 
   async createStory() {
-    const story = await firstValueFrom(this.dialog.open(StoryCreationComponent, {
-      data: {
-      }
-    }).afterClosed())
+    const story = await firstValueFrom(
+      this.dialog
+        .open(StoryCreationComponent, {
+          data: {}
+        })
+        .afterClosed()
+    )
 
     if (story) {
       this.router.navigate(['story', story.id, 'edit'])
@@ -723,7 +729,7 @@ export class FeaturesComponent implements OnInit {
   }
 
   async createModel() {
-    const model =await firstValueFrom(this.dialog.open(ModelCreationComponent, {data: {}}).afterClosed())
+    const model = await firstValueFrom(this.dialog.open(ModelCreationComponent, { data: {} }).afterClosed())
     if (model) {
       this.router.navigate(['models', model.id])
     }
@@ -735,18 +741,5 @@ export class FeaturesComponent implements OnInit {
 
   toEnableCopilot() {
     this.router.navigate(['settings', 'copilot'])
-  }
-
-  /**
-   * Drop data on copilot chat:
-   * 1. table schema
-   * 2. table data
-   * 3. name of data
-   *
-   * @param event
-   */
-  async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
-    const data = event.item.data
-    console.log(event)
   }
 }

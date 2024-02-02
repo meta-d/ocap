@@ -116,6 +116,7 @@
           thinkingAvatar="assets/images/copilot_sparkle_thinking.gif"
           assistantAvatar="assets/images/copilot_sparkle_resting.gif"
           [user]="user$()"
+          [copilotEngine]="copilotEngine"
           cdkDropList
           (cdkDropListDropped)="copilotChat.dropCopilot($event)"
           (enableCopilot)="toEnableCopilot()"

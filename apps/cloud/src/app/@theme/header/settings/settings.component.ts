@@ -14,6 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
 import { LANGUAGES, LanguagesMap, Store } from '../../../@core'
 import { UserPipe } from '../../../@shared'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   standalone: true,
@@ -35,12 +36,13 @@ import { UserPipe } from '../../../@shared'
 export class HeaderSettingsComponent {
   languages = LANGUAGES
   DisplayBehaviour = DisplayBehaviour
+  development = !environment.production
 
   readonly store = inject(Store)
   readonly router = inject(Router)
   readonly #translate = inject(TranslateService)
 
-  // preferredTheme$ = this.store.preferredTheme$
+  readonly preferredTheme$ = this.store.preferredTheme$
 
   readonly user$ = toSignal(this.store.user$)
   readonly isAuthenticated$ = computed(() => Boolean(this.store.user))
