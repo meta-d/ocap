@@ -143,7 +143,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   })
 
   readonly setConversations = this.updater(
-    (state, { key, conversations }: { key: string; conversations: CopilotChatMessage[] }) => {
+    (state, { key, conversations }: { key: string; conversations: Array<CopilotChatMessage[]> }) => {
       const query = state.queries[key].query
       query.conversations = conversations
     }

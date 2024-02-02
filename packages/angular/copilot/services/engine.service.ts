@@ -5,6 +5,7 @@ import {
   AnnotatedFunction,
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
+  CopilotChatOptions,
   CopilotCommand,
   CopilotEngine,
   CopilotService,
@@ -15,7 +16,7 @@ import {
   processChatStream
 } from '@metad/copilot'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
-import { pick } from 'lodash-es'
+import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
 
@@ -30,29 +31,28 @@ export class NgmCopilotEngineService implements CopilotEngine {
   private chatId = `chat-${uniqueId++}`
   private key = computed(() => `${this.api()}|${this.chatId}`)
 
+  placeholder?: string
+
   aiOptions: AIOptions = {
     model: DefaultModel
   } as AIOptions
 
-  readonly conversations$ = signal<CopilotChatMessage[]>([])
-  get conversations() {
-    return this.conversations$()
-  }
-
-  readonly messages = computed(() => this.conversations$())
-
   /**
-   * Calculate messages in the last conversation
+   * One conversation including user and assistant messages
+   * This is a array of conversations
    */
+  readonly conversations$ = signal<Array<CopilotChatMessage[]>>([])
+
+  readonly conversations = computed(() => this.conversations$())
+  readonly messages = computed(() => flatten(this.conversations$()))
+
   readonly lastConversation = computed(() => {
-    const conversations = this.conversations$()
+    const conversations = this.conversations$()[this.conversations$().length - 1] ?? []
+    
     // Get last conversation messages
     const lastMessages = []
     let lastUserMessage = null
     for (let i = conversations.length - 1; i >= 0; i--) {
-      if (conversations[i].end) {
-        break
-      }
       if (conversations[i].role === CopilotChatMessageRoleEnum.User) {
         if (lastUserMessage) {
           lastUserMessage.content = conversations[i].content + '\n' + lastUserMessage.content
@@ -77,7 +77,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   readonly lastUserMessages = computed(() => {
-    const conversations = this.conversations$()
+    const conversations = this.conversations$()[this.conversations$().length - 1] ?? []
     const messages = []
     for (let i = conversations.length - 1; i >= 0; i--) {
       if (conversations[i].role === CopilotChatMessageRoleEnum.User && !conversations[i].command) {
@@ -92,8 +92,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
     return messages
   })
-
-  placeholder?: string
 
   // Entry Points
   readonly #entryPoints = signal<Record<string, AnnotatedFunction<any[]>>>({})
@@ -178,17 +176,21 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
-  async chat(
-    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string }
-  ) {
-    this.#logger?.debug(`process ask: ${data.prompt}`)
+  async chat(prompt: string, options?: CopilotChatOptions) {
+    this.#logger?.debug(`process copilot ask: ${prompt}`)
 
+    let { command } = options ?? {}
     const { abortController, assistantMessageId } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
 
-    const { command, prompt } = data.prompt ? getCommandPrompt(data.prompt) : { command: null, prompt: null }
+    // deconstruct prompt to get command and prompt
+    if (!command && prompt) {
+      const data = getCommandPrompt(prompt)
+      command = data.command
+      prompt = data.prompt
+    }
+    
     if (command) {
       const _command = this.getCommand(command)
 
@@ -213,7 +215,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       // Last user messages before add new messages
       const lastUserMessages = this.lastUserMessages()
       // Append new messages to conversation
-      this.conversations$.update((state) => [...state, ...newMessages])
+      this.upsertMessage(...newMessages)
 
       // Exec command implementation
       if (_command.implementation) {
@@ -242,6 +244,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           abortController
         }
       )
+      this.conversations$.update((conversations) => [...conversations, []])
     } else {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
@@ -256,7 +259,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       // Append new messages to conversation
       if (newMessages.length > 0) {
-        this.conversations$.update((state) => [...state, ...newMessages])
+        this.upsertMessage(...newMessages)
       }
 
       const functions = this.getGlobalFunctionDescriptions()
@@ -370,22 +373,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       if (err instanceof Error) {
         this.error.set(err)
-
-        this.conversations$.update((state) => {
-          return [
-            ...state.filter((item) => item.id !== assistantMessageId),
-            {
-              id: nanoid(),
-              role: CopilotChatMessageRoleEnum.Assistant,
-              content: '',
-              error: (<Error>err).message,
-              status: 'error'
-            }
-          ]
+        this.deleteMessage(assistantMessageId)
+        this.upsertMessage({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.Assistant,
+          content: '',
+          error: (<Error>err).message,
+          status: 'error'
         })
       }
 
-      // this.error.set(err as Error)
       return null
     } finally {
       this.isLoading.set(false)
@@ -403,29 +400,40 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return nanoid()
   }
 
-  upsertMessage(message: CopilotChatMessage) {
+  upsertMessage(...messages: CopilotChatMessage[]) {
     this.conversations$.update((conversations) => {
-      const index = conversations.findIndex((item) => item.id === message.id)
-      if (index > -1) {
-        conversations[index] = { ...message }
-      } else {
-        conversations.push(message)
-      }
-      return [...conversations]
+      const lastConversation = conversations[conversations.length - 1] ?? []
+      messages.forEach((message) => {
+        const index = lastConversation.findIndex((item) => item.id === message.id)
+        if (index > -1) {
+          lastConversation[index] = { ...message }
+        } else {
+          lastConversation.push(message)
+        }
+      })
+      return [...conversations.slice(0, conversations.length - 1), lastConversation]
     })
   }
 
   deleteMessage(message: CopilotChatMessage | string) {
     const messageId = typeof message === 'string' ? message : message.id
-    this.conversations$.update((conversations) => conversations.filter((item) => item.id !== messageId))
+    this.conversations$.update((conversations) => conversations.map((messages) => messages.filter((item) => item.id !== messageId)))
   }
 
   clear() {
     this.conversations$.set([])
   }
 
-  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
+  updateConversations(fn: (conversations: Array<CopilotChatMessage[]>) => Array<CopilotChatMessage[]>): void {
     this.conversations$.update(fn)
+  }
+
+  updateLastConversation(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
+    this.conversations$.update((conversations) => {
+      const lastConversation = conversations[conversations.length - 1] ?? []
+      conversations[conversations.length - 1] = fn(lastConversation)
+      return [...conversations]
+    })
   }
 
   async dropCopilot(event: CdkDragDrop<any[], any[], any>) {

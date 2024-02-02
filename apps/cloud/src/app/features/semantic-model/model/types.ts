@@ -63,7 +63,7 @@ export interface ModelQuery extends IModelQuery {
   entities: string[]
   statement?: string
   aiOptions?: AIOptions
-  conversations?: CopilotChatMessage[]
+  conversations?: Array<CopilotChatMessage[]>
 }
 
 export interface QueryResult {

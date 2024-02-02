@@ -37,7 +37,7 @@ export class QueryService extends ComponentSubStore<ModelQueryState, QueryLabSta
     })
   }
 
-  setConversations = this.updater((state, conversations: CopilotChatMessage[]) => {
+  setConversations = this.updater((state, conversations: Array<CopilotChatMessage[]>) => {
     state.query.conversations = conversations
   })
   setAIOptions = this.updater((state, options: AIOptions) => {

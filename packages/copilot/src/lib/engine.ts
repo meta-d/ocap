@@ -3,6 +3,14 @@ import { CopilotCommand } from './command'
 import { CopilotService } from './copilot'
 import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
 
+export type CopilotChatOptions = {
+  command?: string
+  newConversation?: boolean
+  action?: string
+  abortController?: AbortController
+  assistantMessageId?: string
+}
+
 /**
  * Copilot engine
  */
@@ -13,6 +21,10 @@ export interface CopilotEngine {
    * Copilot engine name
    */
   name?: string
+  /**
+   * Placeholder in ask input
+   */
+  placeholder?: string
   /**
    * AI Configuration
    */
@@ -30,18 +42,11 @@ export interface CopilotEngine {
   /**
    * Conversations
    */
-  conversations: CopilotChatMessage[]
-  /**
-   * Placeholder in ask input
-   */
-  placeholder?: string
+  conversations(): Array<CopilotChatMessage[]>
 
   messages(): CopilotChatMessage[]
 
-  chat(
-    data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-    options?: { action?: string; abortController?: AbortController; assistantMessageId?: string; }
-  ): Promise<CopilotChatMessage | string | void>
+  chat(prompt: string, options?: CopilotChatOptions): Promise<CopilotChatMessage | string | void>
 
   /**
    * @deprecated use `chat` instead
@@ -91,7 +96,7 @@ export interface CopilotEngine {
    *
    * @param message
    */
-  deleteMessage?(message: CopilotChatMessage): void
+  deleteMessage?(message: CopilotChatMessage | string): void
 
   /**
    * Clear conversations
@@ -103,5 +108,10 @@ export interface CopilotEngine {
    *
    * @param fn
    */
-  updateConversations?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
+  updateConversations?(fn: (conversations: Array<CopilotChatMessage[]>) => Array<CopilotChatMessage[]>): void
+  /**
+   * Update the last conversation messages
+   * @param fn
+   */
+  updateLastConversation?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
 }

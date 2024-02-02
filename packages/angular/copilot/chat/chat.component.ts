@@ -1,3 +1,4 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { ClipboardModule, Clipboard } from '@angular/cdk/clipboard'
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
@@ -46,7 +47,7 @@ import { IUser, NgmCopilotChatMessage } from '../types'
 import { nanoid } from 'nanoid'
 import { injectCopilotCommand } from '../hooks'
 import { PlaceholderMessages } from './types'
-import { CdkDragDrop } from '@angular/cdk/drag-drop'
+
 
 @Component({
   standalone: true,
@@ -135,7 +136,7 @@ export class NgmCopilotChatComponent {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
-  _mockConversations: NgmCopilotChatMessage[] = PlaceholderMessages
+  _mockConversations: Array<NgmCopilotChatMessage[]> = [PlaceholderMessages]
 
   // Copilot
   private openaiOptions = {
@@ -186,9 +187,7 @@ export class NgmCopilotChatComponent {
   |--------------------------------------------------------------------------
   */
   readonly showTokenizer$ = toSignal(this.copilotService.copilot$.pipe(map((copilot) => copilot?.showTokenizer)))
-  readonly conversations = computed<NgmCopilotChatMessage[]>(() => this.copilotEngine.messages()
-  // .filter((message) => message.status === 'thinking' || message.content || message.error)
-    )
+  readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine.conversations())
 
   /**
    * 当前 Asking prompt
@@ -318,8 +317,8 @@ export class NgmCopilotChatComponent {
   }
 
 
-  async askCopilotStream(prompt: string, options: {newConversation?: boolean; assistantMessageId?: string;} = {}) {
-    const { newConversation, assistantMessageId } = options ?? {}
+  async askCopilotStream(prompt: string, options: {command?: string; newConversation?: boolean; assistantMessageId?: string;} = {}) {
+    const { command, newConversation, assistantMessageId } = options ?? {}
     // Reset history index
     this.historyIndex.set(-1)
     // Add to history
@@ -335,7 +334,9 @@ export class NgmCopilotChatComponent {
     if (this.copilotEngine) {
       try {
         this.#abortController = new AbortController()
-        const message = await this.#copilotEngine.chat({ prompt, newConversation, messages: [] }, {
+        const message = await this.#copilotEngine.chat(prompt, {
+          command,
+          newConversation,
           abortController: this.#abortController,
           assistantMessageId
         })
@@ -408,20 +409,20 @@ export class NgmCopilotChatComponent {
   }
 
   async resubmitMessage(message: CopilotChatMessage, content: string) {
-    this.copilotEngine.updateConversations((conversations) => {
-      const index = conversations.indexOf(message)
+    this.copilotEngine.updateLastConversation((messages) => {
+      const index = messages.findIndex((item) => item.id === message.id)
       if (index > -1) {
         // 删除答案
-        if (conversations[index + 1]?.role === CopilotChatMessageRoleEnum.Assistant) {
-          conversations.splice(index + 1, 1)
+        if (messages[index + 1]?.role === CopilotChatMessageRoleEnum.Assistant) {
+          messages.splice(index + 1, 1)
         }
         // 删除提问
-        conversations.splice(index, 1)
-        return [...conversations]
+        messages.splice(index, 1)
+        return [...messages]
       }
-      return conversations
+      return messages
     })
-    await this.askCopilotStream(content)
+    await this.askCopilotStream(content, {command: message.command})
   }
 
   onMessageFocus() {
@@ -432,7 +433,7 @@ export class NgmCopilotChatComponent {
    * @deprecated regenerate method should in copilot engine service
    */
   async regenerate(message: CopilotChatMessage) {
-    this.copilotEngine.updateConversations((conversations) => {
+    this.copilotEngine.updateLastConversation((conversations) => {
       const index = conversations.findIndex((item) => item.id === message.id)
       conversations.splice(index)
       return [...conversations]

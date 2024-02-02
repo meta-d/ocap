@@ -47,22 +47,7 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
-// export interface CopilotChatMessage extends Omit<ChatCompletionSystemMessageParam, 'role'> {
-//   role: CopilotChatMessageRoleEnum
-//   error?: string
-//   data?: {
-//     columns: any[]
-//     content: any[]
-//   }
-//   end?: boolean
-// }
-
 export interface CopilotChatMessage extends Omit<Message, 'role'> {
-  /**
-   * Chat Session Ended
-   */
-  end?: boolean
-
   error?: string
 
   role: Message['role'] | 'info'

@@ -10,7 +10,8 @@
 
 <div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
-        @for (message of (enabled && hasKey ? conversations() : _mockConversations); track message.id) {
+      @for (conversation of (enabled && hasKey ? conversations() : _mockConversations); track $index; let last = $last) {
+        @for (message of conversation; track message.id) {
             @switch (message.role) {
                 @case (CopilotChatMessageRoleEnum.Assistant) {
                 <div class="pl-2 pr-4 flex">
@@ -26,7 +27,7 @@
                                 <div class="w-8 h-8 rounded-full bg-bluegray-50 text-xl text-center font-notoColorEmoji">🤖</div>
                             }
                         </div>
-                        <div class="flex flex-col justify-start items-start overflow-auto relative py-2 min-h-[50px] min-w-[50px] group">
+                        <div class="flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group">
                         @if (message.templateRef) {
                           <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
                         } @else {
@@ -115,6 +116,10 @@
                                             [pageSizeOptions]="[10, 20, 50, 100]"
                                         ></ngm-table>
                                     } @else {
+                                        @if (message.command) {
+                                          <span class="text-xs font-medium italic px-2.5 py-0.5 mb-[2px] rounded bg-neutral-100 dark:bg-neutral-700">/{{message.command}}</span>
+                                        }
+
                                         <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
                                             <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
                                             focus-visible:bg-white dark:focus-visible:bg-black"
@@ -130,12 +135,9 @@
                                 }
             
                                 <div class="flex items-center gap-1">
-                                @if (message.command) {
-                                    <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700">/{{message.command}}</span>
-                                }
-                                @if (showTokenizer$() && message.content) {
+                                  @if (showTokenizer$() && message.content) {
                                     <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
-                                }
+                                  }
                                 </div>
             
                                 <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
@@ -159,6 +161,11 @@
                 }
             }
         }
+
+        @if (!last) {
+          <mat-divider class="pb-4"></mat-divider>
+        }
+      }
 
         <div class="flex-1 flex flex-col justify-center items-center gap-1">
         @if (!conversations()?.length) {
@@ -257,7 +264,6 @@
                     </span>
                 </button>
             }
-            
         </div>
     </div>
 </div>
