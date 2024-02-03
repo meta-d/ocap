@@ -62,7 +62,8 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
     }
   }
 
-  protected _connection(database?: string) {
+  #connection = null
+  protected createConnection(database?: string) {
     const config: any = pick(this.options, ['host', 'port', 'password', 'database'])
     if (this.options.username) {
       config.user = this.options.username
@@ -94,6 +95,14 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
     })
   }
 
+  getConnection(catalog: string): Connection {
+    if (!this.#connection) {
+      this.#connection = this.createConnection(catalog)
+    }
+
+    return this.#connection
+  }
+
   async query(connection: Connection | Pool, statment: string, values?: any) {
     return new Promise((resolve, reject) => {
       const callback = (error, results, fields) => {
@@ -121,12 +130,8 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
   }
 
   async runQuery(query: string, options?: QueryOptions): Promise<any> {
-    const connection = this._connection(options?.catalog ?? this.options.catalog)
-    try {
-      return await this.query(connection, query)
-    } finally {
-      connection.end()
-    }
+    const connection = this.getConnection(options?.catalog ?? this.options.catalog)
+    return await this.query(connection, query)
   }
 
   async getCatalogs(): Promise<IDSSchema[]> {
@@ -158,7 +163,9 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
         '`table_comment` AS `table_comment` FROM `information_schema`.`tables` AS A WHERE ' +
         tableSchema
     }
-    return this.runQuery(query).then(({ data }) => convertMySQLSchema(data))
+
+    const { data } = await this.runQuery(query)
+    return convertMySQLSchema(data)
   }
 
   async describe(catalog: string, statement: string) {
@@ -167,7 +174,7 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
     }
 
     statement = `${statement} LIMIT 1`
-    return this.runQuery(statement, { catalog })
+    return await this.runQuery(statement, { catalog })
   }
 
   async createCatalog(catalog: string) {
@@ -186,7 +193,7 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
   async import(params, options?: { catalog?: string }): Promise<void> {
     const { name, columns, data, append } = params
 
-    const connection = this._connection(options?.catalog ?? this.options?.catalog)
+    const connection = this.getConnection(options?.catalog ?? this.options?.catalog)
 
     const dropTableStatement = `DROP TABLE IF EXISTS \`${name}\``
     const createTableStatement = `CREATE TABLE IF NOT EXISTS \`${name}\` (${columns
@@ -220,7 +227,7 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
   }
 
   async teardown() {
-    //
+    this.#connection?.destroy()
   }
 }
 

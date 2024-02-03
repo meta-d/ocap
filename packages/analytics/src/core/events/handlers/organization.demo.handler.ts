@@ -1,4 +1,4 @@
-import { CreationTable, DORIS_TYPE, STARROCKS_TYPE } from '@metad/adapter'
+import { CreationTable, DORIS_TYPE, STARROCKS_TYPE, createQueryRunnerByType } from '@metad/adapter'
 import {
 	IBusinessArea,
 	IDataSource,
@@ -29,7 +29,7 @@ import * as _axios from 'axios'
 import { assign, isString } from 'lodash'
 import { RedisClientType } from 'redis'
 import { Repository } from 'typeorm'
-import { dataLoad, prepareDataSource } from '../../../data-source/utils'
+import { importSheetTables, prepareDataSource } from '../../../data-source/utils'
 import { updateXmlaCatalogContent } from '../../../model/helper'
 import {
 	BusinessArea,
@@ -206,11 +206,15 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 						throw new Error(`'dataSource' must be defined for 'dataset'`)
 					}
 
+					// Create dataSource runner
+					const isDev = process.env.NODE_ENV === 'development'
+					const runner = createQueryRunnerByType(dataSourceEntity.type.type, {...dataSourceEntity.options, debug: isDev, trace: isDev})
+
 					for await (const item of dataset) {
 						this.logger.debug(`			Start to import dataset file: ${item.fileUrl}`)
 						try {
 							// Load data file into database table
-							await dataLoad(dataSourceEntity, [item], {
+							await importSheetTables(runner, [item], {
 								stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
 								fieldname: '',
 								originalname: '',
@@ -219,9 +223,12 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 								mimetype: 'text/csv'
 							} as any)
 						} catch(err) {
+							runner.teardown()
 							throw new Error(`Can't import dataset file: ${item.fileUrl} with error: ${err.message}`)
 						}
 					}
+
+					runner.teardown()
 				}
 
 				if (businessArea) {

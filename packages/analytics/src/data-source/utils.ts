@@ -1,4 +1,4 @@
-import { CreationTable, DBQueryRunner, createQueryRunnerByType, File } from '@metad/adapter'
+import { CreationTable, DBQueryRunner, File, createQueryRunnerByType } from '@metad/adapter'
 import { AuthenticationEnum } from '@metad/contracts'
 import { UploadSheetType, getErrorMessage, readExcelWorkSheets } from '@metad/server-common'
 import { RequestContext } from '@metad/server-core'
@@ -20,18 +20,14 @@ export function prepareDataSource(dataSource: DataSource) {
 	return dataSource
 }
 
-export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
-	const isDev = process.env.NODE_ENV === 'development'
-
-	const runner = createQueryRunnerByType(dataSource.type.type, {...dataSource.options, debug: isDev, trace: isDev})
-
+export async function importSheetTables(runner: DBQueryRunner, sheets: CreationTable[], file: File) {
 	const config = sheets[0]
-	
+
 	// Check catalog of table is existed or create.
 	if (config.catalog) {
 		await runner.createCatalog(config.catalog)
 	}
-	
+
 	if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
 		try {
 			return await loadFromExcel(runner, sheets, file)
@@ -47,7 +43,7 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		const _sheets: UploadSheetType[] = await readExcelWorkSheets(file.originalname, file)
 		data = _sheets[0].data
 	}
-	
+
 	try {
 		return await runner.import(
 			{
@@ -61,6 +57,16 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		)
 	} catch (error) {
 		throw new BadRequestException(getErrorMessage(error))
+	}
+}
+
+export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
+	const isDev = process.env.NODE_ENV === 'development'
+
+	const runner = createQueryRunnerByType(dataSource.type.type, { ...dataSource.options, debug: isDev, trace: isDev })
+
+	try {
+		return await importSheetTables(runner, sheets, file)
 	} finally {
 		await runner.teardown()
 	}

@@ -72,7 +72,7 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
     const { name, columns, data, file, format, mergeType } = params
 
     const database = options?.catalog ?? this.options?.catalog
-    const connection = this._connection(database)
+    const connection = this.getConnection(database)
 
     const statements = []
     try {
@@ -112,7 +112,7 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
         }
       }
     } finally {
-      connection.end()
+      // connection.end()
     }
 
     return null
@@ -167,6 +167,7 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
 
     throw new Error(result.data.Message)
   }
+  
 }
 
 export class StarRocksRunner extends DorisRunner {
@@ -185,7 +186,7 @@ export class StarRocksRunner extends DorisRunner {
 
     // Connection
     const database = options?.catalog ?? this.options?.catalog
-    const connection = this._connection(database)
+    const connection = this.getConnection(database)
 
     const statements = []
     try {
@@ -230,7 +231,7 @@ export class StarRocksRunner extends DorisRunner {
         }
       }
     } finally {
-      connection.end()
+      // connection.end()
     }
 
     return null
