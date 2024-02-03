@@ -6,7 +6,11 @@ import { IDSSchema } from '../../types'
 export const MYSQL_TYPE = 'mysql'
 export const RDS_TYPE = 'rds_mysql'
 
-export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extends BaseSQLQueryRunner<T> {
+export interface MysqlAdapterOptions extends SQLAdapterOptions {
+  queryTimeout?: number
+}
+
+export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> extends BaseSQLQueryRunner<T> {
   readonly name: string = 'MySQL'
   readonly type: string = MYSQL_TYPE
   readonly syntax = 'sql'
@@ -45,9 +49,14 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
           type: 'textarea',
           title: 'Client key',
           depend: 'use_ssl'
+        },
+
+        queryTimeout: {
+          type: 'number',
+          title: 'Query timeout',
         }
       },
-      order: ['host', 'port', 'apiHost', 'apiPort', 'username', 'password'],
+      order: ['host', 'port', 'username', 'password'],
       required: ['username', 'password'],
       secret: ['password']
     }
@@ -78,8 +87,8 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
       // maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
       // idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
       // queueLimit: 0,
-      // debug: true,
-      // trace: true
+      debug: this.options.debug,
+      trace: this.options.trace,
       charset: 'utf8',
       connectTimeout: 60000
     })
@@ -100,7 +109,14 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
         })
       }
 
-      values ? connection.query(statment, values, callback) : connection.query(statment, callback)
+      connection.query(
+        {
+          sql: statment,
+          timeout: this.options.queryTimeout || 60000 * 60, // 1h
+          values
+        },
+        callback
+      )
     })
   }
 

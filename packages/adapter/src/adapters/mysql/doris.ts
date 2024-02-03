@@ -1,17 +1,16 @@
 import * as _axios from 'axios'
 import { Readable } from 'stream'
-import { SQLAdapterOptions, register } from "../../base"
-import { SkipHeaderTransformStream, typeToStarrocksDB } from "../../helpers"
+import { register } from '../../base'
+import { SkipHeaderTransformStream, typeToStarrocksDB } from '../../helpers'
 import { CreationTable, File } from '../../types'
-import { MySQLRunner } from "./mysql"
+import { MySQLRunner, MysqlAdapterOptions } from './mysql'
 
 const axios = _axios.default
 
 export const DORIS_TYPE = 'doris'
 export const STARROCKS_TYPE = 'starrocks'
 
-
-export interface DorisAdapterOptions extends SQLAdapterOptions {
+export interface DorisAdapterOptions extends MysqlAdapterOptions {
   apiHost?: string
   apiPort?: number
 }
@@ -49,6 +48,11 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
           type: 'textarea',
           title: 'Client key',
           depend: 'use_ssl'
+        },
+
+        queryTimeout: {
+          type: 'number',
+          title: 'Query timeout',
         }
       },
       order: ['host', 'port', 'apiHost', 'apiPort', 'username', 'password'],
@@ -115,14 +119,16 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
   }
 
   async streamLoad(database: string, table: string, file: File, params: CreationTable) {
-    const {host, apiHost, apiPort, use_ssl} = this.options
-    const url = `${use_ssl ? 'https' : 'http'}://${apiHost || host}:${apiPort || '8030'}/api/${database}/${table}/_stream_load`
+    const { host, apiHost, apiPort, use_ssl } = this.options
+    const url = `${use_ssl ? 'https' : 'http'}://${apiHost || host}:${
+      apiPort || '8030'
+    }/api/${database}/${table}/_stream_load`
     let fileStream = file.buffer ? Readable.from(file.buffer) : file.stream
     const authorization = Buffer.from(`${this.options.username}:${this.options.password}`).toString('base64')
     const headers: any = {
       Authorization: `Basic ${authorization}`,
       columns: params.columns.map(({ fieldName }) => fieldName).join(','),
-      format: params.format,
+      format: params.format
     }
     if (params.format === 'csv') {
       headers.column_separator = params.columnSeparator || ','
@@ -148,7 +154,7 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
     const result = await axios.put(url, fileStream, {
       headers,
       maxContentLength: Infinity,
-      maxBodyLength: Infinity,
+      maxBodyLength: Infinity
     })
 
     if (result.status === 200) {
@@ -207,7 +213,7 @@ export class StarRocksRunner extends DorisRunner {
       if (format && format !== 'data') {
         return await this.streamLoad(database, name, file, params)
       }
-      
+
       // Insert data using batch sql
       const values = data.map((row) => columns.map(({ name }) => row[name]))
       const insertStatement = `INSERT INTO \`${name}\` (${columns

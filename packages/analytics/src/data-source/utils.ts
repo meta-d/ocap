@@ -21,7 +21,9 @@ export function prepareDataSource(dataSource: DataSource) {
 }
 
 export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
-	const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
+	const isDev = process.env.NODE_ENV === 'development'
+
+	const runner = createQueryRunnerByType(dataSource.type.type, {...dataSource.options, debug: isDev, trace: isDev})
 
 	const config = sheets[0]
 	

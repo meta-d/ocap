@@ -16,13 +16,27 @@ export interface QueryResult {
   error?: string
 }
 
+/**
+ * The base options for DB adapters
+ */
 export interface AdapterBaseOptions {
+  /**
+   * Ref to debug in `createConnection` of `mysql`
+   */
+  debug?: boolean
+  /**
+   * Ref to trace in `createConnection` of `mysql`
+   */
+  trace?: boolean
   host: string
   port: number
   username: string
   password: string
 }
 
+/**
+ * Options of single query
+ */
 export interface QueryOptions {
   catalog: string
 }
@@ -183,6 +197,9 @@ export abstract class BaseHTTPQueryRunner<T extends HttpAdapterOptions = HttpAda
   abstract runQuery(query: string, options: any): Promise<any>
 }
 
+/**
+ * Adapter options for sql db
+ */
 export interface SQLAdapterOptions extends AdapterBaseOptions {
   url?: string
   catalog?: string
@@ -221,6 +238,12 @@ export abstract class BaseSQLQueryRunner<T extends SQLAdapterOptions = SQLAdapte
   }
 }
 
+/**
+ * Register adapter class by `type`
+ * 
+ * @param type 
+ * @param query_runner_class 
+ */
 export function register(
   type: string,
   query_runner_class: new (options?: AdapterBaseOptions, ...args: unknown[]) => DBQueryRunner
@@ -231,6 +254,13 @@ export function register(
   QUERY_RUNNERS[type] = query_runner_class
 }
 
+/**
+ * Find adapter class by `type`, then create it using `options`.
+ * 
+ * @param type 
+ * @param options 
+ * @returns 
+ */
 export function createQueryRunnerByType(type: string, options: AdapterBaseOptions) {
   if (QUERY_RUNNERS[type]) {
     return new QUERY_RUNNERS[type](options)
