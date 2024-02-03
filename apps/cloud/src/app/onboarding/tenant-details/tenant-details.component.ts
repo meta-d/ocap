@@ -182,7 +182,7 @@ export class TenantDetailsComponent {
       })
 
       this.tenantCompleted.set(true)
-      this.loading.set(false)
+      
       this.defaultOrganization.set(tenant.organizations[0])
     } catch (error) {
       console.error(error)
@@ -198,6 +198,7 @@ export class TenantDetailsComponent {
       this.toastrService.error(getErrorMessage(error))
     }
 
+    this.loading.set(false)
     this.stepper.next()
   }
   
