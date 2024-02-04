@@ -19,6 +19,7 @@ import { StoryResolver } from '../../@core/services'
 import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { STORY_DESIGNER_COMPONENTS } from '../story/widgets'
 import { ProjectRoutingModule } from './project-routing.module'
+import { provideLogger } from '../../@core'
 
 @NgModule({
   declarations: [],
@@ -31,10 +32,7 @@ import { ProjectRoutingModule } from './project-routing.module'
     }),
     MonacoEditorModule.forRoot(),
     NxStorySettingsModule,
-    LoggerModule.forRoot({
-      level: NgxLoggerLevel.WARN,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    }),
+    LoggerModule,
 
     OcapCoreModule,
     NgmCommonModule,
@@ -55,7 +53,8 @@ import { ProjectRoutingModule } from './project-routing.module'
     ...STORY_WIDGET_COMPONENTS,
     ...STORY_DESIGNER_COMPONENTS,
     provideStorySettings(),
-    provideOcapCore()
+    provideOcapCore(),
+    provideLogger()
   ]
 })
 export class ProjectModule {}

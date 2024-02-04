@@ -14,6 +14,7 @@ import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
+import { provideLogger } from '../../@core'
 
 @NgModule({
   declarations: [],
@@ -24,10 +25,7 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
       echarts: () => import('echarts')
     }),
     MonacoEditorModule.forRoot(),
-    LoggerModule.forRoot({
-      level: NgxLoggerLevel.DEBUG,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    }),
+    LoggerModule,
 
     // Formly
     NgmFormlyModule,
@@ -60,7 +58,8 @@ import { STORY_DESIGNER_COMPONENTS } from './widgets'
           component: PACFormlyImageUploadComponent
         }
       ]
-    })
+    }),
+    provideLogger()
   ]
 })
 export class PACStoryModule {}
