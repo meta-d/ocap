@@ -20,6 +20,7 @@ import {
   getPropertyName,
   getPropertyUnitName,
   isDimension,
+  isEmpty,
   isMeasure,
   isNil,
   isString,
@@ -362,6 +363,10 @@ export class KeyPerformanceIndicatorService<T> extends SmartBusinessService<T> i
     queryOptions = queryOptions ?? {}
     queryOptions.columns = queryOptions.columns ?? []
     queryOptions.columns.push(...this.getSelects(kpiAnnotation))
+
+    if (isEmpty(queryOptions.columns)) {
+      throw new Error(`No columns for kpi: '${kpiAnnotation.DataPoint?.Title}'`)
+    }
     return super.selectQuery(queryOptions)
   }
 
