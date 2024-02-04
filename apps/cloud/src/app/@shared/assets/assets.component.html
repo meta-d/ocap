@@ -23,7 +23,7 @@
     <mat-list-item *ngIf="asset.type === 'story'" class="cursor-pointer group" [routerLink]="['/story', asset.id]">
       <span matListItemIcon class="text-lg font-notoColorEmoji">📖</span>
       <div matListItemTitle class="flex flex-col">
-        <a class="text-base" [routerLink]="['/story', asset.id]">{{ asset.name }}</a>
+        <a class="text-base text-ellipsis overflow-hidden" [routerLink]="['/story', asset.id]">{{ asset.name }}</a>
         <div class="flex-1 flex justify-between items-baseline text-xs text-slate-500 text-opacity-60 group-hover:text-opacity-80">
           <span class="flex-1 basis-1/2">
             {{ 'PAC.KEY_WORDS.Story' | translate: { Default: 'Story' } }}
