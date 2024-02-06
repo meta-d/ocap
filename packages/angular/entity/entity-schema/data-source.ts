@@ -378,11 +378,8 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
   hasCapability(capability: EntityCapacity) {
     return this.capacities?.includes(capability)
   }
+
   getTranslation(key: string, params?: any) {
-    let t = ''
-    this.translateService.get(key, params).subscribe((value) => {
-      t = value
-    })
-    return t
+    return this.translateService.instant(key, params)
   }
 }

@@ -17,3 +17,16 @@
   flex: 1;
   overflow: hidden;
 }
+
+.ngm-search {
+  @apply w-0;
+
+  &.ngm-search__has-value, &.cdk-focused {
+    @apply w-auto;
+  }
+}
+.group:hover {
+  .ngm-search {
+    @apply w-auto;
+  }
+}

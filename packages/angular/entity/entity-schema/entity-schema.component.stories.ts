@@ -1,84 +1,73 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
-import { Component, Input, importProvidersFrom } from '@angular/core'
 import { CommonModule } from '@angular/common'
+import { Component, Input } from '@angular/core'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations'
 import {
-  NgmMissingTranslationHandler,
-  OcapCoreModule,
+  NgmDSCoreService,
   OCAP_AGENT_TOKEN,
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN,
-  NgmDSCoreService
+  provideOcapCore
 } from '@metad/ocap-angular/core'
-import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
+import { provideTranslate } from '@metad/ocap-angular/mock'
 import { AgentType, DataSettings, DataSource, Type } from '@metad/ocap-core'
-import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
-import { applicationConfig, Meta, moduleMetadata, Story } from '@storybook/angular'
-import { Observable, of } from 'rxjs'
-import { ZhHans } from '@metad/ocap-angular/i18n'
+import { Meta, StoryObj, applicationConfig, moduleMetadata } from '@storybook/angular'
+import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmEntitySchemaComponent } from './entity-schema.component'
-
-class CustomLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-    return of(ZhHans)
-  }
-}
+import { provideHttpClient } from '@angular/common/http'
+import { EntityCapacity } from './types'
 
 @Component({
   standalone: true,
-  imports: [
-    CommonModule,
-    MatSidenavModule,
-    DragDropModule,
-    NgmEntitySchemaComponent,
-  ],
+  imports: [CommonModule, MatSidenavModule, DragDropModule, NgmEntitySchemaComponent],
   selector: 'ngm-story-component-drag',
   template: `<mat-drawer-container class="example-container" autosize cdkDropListGroup>
-  <mat-drawer mode="side" opened cdkDropList >
-    <ngm-entity-schema [dataSettings]="dataSettings"></ngm-entity-schema>
-    <ngm-entity-schema [dataSettings]="{
-      dataSource: dataSettings.dataSource,
-      entitySet: 'sales_fact'
-    }"></ngm-entity-schema>
-  </mat-drawer>
-  <mat-drawer-content cdkDropList [cdkDropListData]="drops" (cdkDropListDropped)="drop($event)">
-    <ul>
-      <li *ngFor="let item of drops">
-        {{item.entity}}/{{item.name || item.raw.memberKey}}/{{item.type}}/{{item.dataType}}/{{item.dbType}}
-      </li>
-    </ul>
-  </mat-drawer-content>
-</mat-drawer-container>`,
-  styles: [`.mat-drawer-container {height: 500px;}`]
+    <mat-drawer mode="side" opened cdkDropList>
+      <ngm-entity-schema [dataSettings]="dataSettings"></ngm-entity-schema>
+      <ngm-entity-schema
+        [dataSettings]="{
+          dataSource: dataSettings.dataSource,
+          entitySet: 'sales_fact'
+        }"
+      ></ngm-entity-schema>
+    </mat-drawer>
+    <mat-drawer-content cdkDropList [cdkDropListData]="drops" (cdkDropListDropped)="drop($event)">
+      <ul>
+        <li *ngFor="let item of drops">
+          {{ item.entity }}/{{ item.name || item.raw.memberKey }}/{{ item.type }}/{{ item.dataType }}/{{ item.dbType }}
+        </li>
+      </ul>
+    </mat-drawer-content>
+  </mat-drawer-container>`,
+  styles: [
+    `
+      .mat-drawer-container {
+        height: 500px;
+      }
+    `
+  ]
 })
 class DragComponent {
   @Input() dataSettings: DataSettings
 
   drops = []
-  
-  drop (event) {
+
+  drop(event) {
     this.drops.push(event.item.data)
   }
 }
 
-export default {
-  title: 'NgmEntitySchemaComponent',
+const meta: Meta<NgmEntitySchemaComponent> = {
+  title: 'EntitySchema',
+  component: NgmEntitySchemaComponent,
   decorators: [
     applicationConfig({
       providers: [
         provideAnimations(),
-        importProvidersFrom(
-          TranslateModule.forRoot({
-            missingTranslationHandler: {
-              provide: MissingTranslationHandler,
-              useClass: NgmMissingTranslationHandler
-            },
-            loader: { provide: TranslateLoader, useClass: CustomLoader },
-            defaultLanguage: 'zh-Hans'
-          })
-        ),
-        importProvidersFrom(OcapCoreModule),
+        provideTranslate(),
+        provideHttpClient(),
+        provideOcapCore(),
         {
           provide: OCAP_AGENT_TOKEN,
           useClass: MockAgent,
@@ -105,9 +94,7 @@ export default {
               ignoreUnknownProperty: true
             },
             schema: {
-              cubes: [
-                CUBE_SALES_ORDER
-              ]
+              cubes: [CUBE_SALES_ORDER]
             }
           },
           multi: true
@@ -115,40 +102,48 @@ export default {
       ]
     }),
     moduleMetadata({
-      imports: [
-        BrowserAnimationsModule,
-        MatSidenavModule,
-        DragDropModule,
-        NgmEntitySchemaComponent,
-        DragComponent
-      ],
-      providers: [
-        NgmDSCoreService
-      ]
+      imports: [BrowserAnimationsModule, MatSidenavModule, DragDropModule, NgmEntitySchemaComponent, DragComponent],
+      providers: [NgmDSCoreService]
     })
   ]
-} as Meta<NgmEntitySchemaComponent>
+}
 
-const Template: Story<NgmEntitySchemaComponent> = (args: NgmEntitySchemaComponent) => ({
-  props: args
-})
+export default meta
 
-export const Primary = {
+type Story = StoryObj<NgmEntitySchemaComponent>
+
+export const Primary: Story = {
   args: {
     dataSettings: {
       dataSource: 'Sales',
       entitySet: 'SalesOrder'
-    }
+    },
   }
 }
 
-export const SelectedHierarchy = Template.bind({})
-SelectedHierarchy.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder'
-  },
-  selectedHierarchy: '[Product]'
+export const SelectedHierarchy = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder'
+    },
+    selectedHierarchy: '[Product]'
+  }
+}
+
+export const Capacity = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder'
+    },
+    capacities: [
+      EntityCapacity.Dimension,
+      EntityCapacity.Measure,
+      EntityCapacity.Calculation,
+      EntityCapacity.Indicator,
+    ]
+  }
 }
 
 // const DragTemplate = (args: DragComponent) => ({

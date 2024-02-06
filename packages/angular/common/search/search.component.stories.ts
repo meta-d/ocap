@@ -8,7 +8,7 @@ import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } fro
 import { NgmSearchComponent } from './search.component'
 
 export default {
-  title: 'NgmSearchComponent',
+  title: 'Search',
   component: NgmSearchComponent,
   decorators: [
     applicationConfig({
@@ -36,5 +36,13 @@ export const DensityCompact: Story = {
     template: `<div class="ngm-density__compact">
     <ngm-search ${argsToTemplate(args)}></ngm-search>
 </div>`
+  })
+}
+
+export const Focus: Story = {
+  args: {},
+  render: (args: NgmSearchComponent) => ({
+    args,
+    template: `<ngm-search ${argsToTemplate(args)} cdkMonitorSubtreeFocus></ngm-search>`
   })
 }

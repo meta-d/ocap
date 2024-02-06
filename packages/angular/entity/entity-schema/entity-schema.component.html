@@ -40,7 +40,8 @@
       [highlight]="searchControl.value">
     </ngm-display-behaviour>
 
-    <ngm-search *ngIf="node.item.type === EntitySchemaType.Entity" class="w-0 overflow-hidden group-hover:w-auto"
+    <ngm-search *ngIf="node.item.type === EntitySchemaType.Entity" cdkMonitorSubtreeFocus
+      class="overflow-hidden"
       displayDensity="cosy"
       [formControl]="searchControl">
     </ngm-search>
