@@ -1,11 +1,10 @@
 import { FocusMonitor, FocusOrigin } from '@angular/cdk/a11y'
 import { Component, ElementRef, Renderer2, ViewEncapsulation, inject } from '@angular/core'
 import { cloneDeep } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling } from '@metad/core'
 import { ComponentStyling, WidgetComponentType, componentStyling } from '@metad/story/core'
 import { WidgetComponentType as IndicatorCardWidgetType } from '@metad/story/widgets/indicator-card'
-import { BehaviorSubject, map, pluck } from 'rxjs'
+import { BehaviorSubject, map } from 'rxjs'
 // import Swiper core and required components
 import SwiperCore, {
   A11y,
@@ -80,7 +79,6 @@ export interface WidgetSwiperStyling extends StoryWidgetStyling {
   slide: ComponentStyling
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   encapsulation: ViewEncapsulation.None,
   selector: 'pac-story-widget-swiper',
@@ -107,10 +105,10 @@ export class NxWidgetSwiperComponent extends AbstractStoryWidget<
   public readonly focus$ = new BehaviorSubject<boolean>(false)
 
   public readonly swiperOptions$ = this.options$.pipe(map(cloneDeep))
-  public slides$ = this.select((state) => state.options?.slides) // .pipe(tap((slides) => console.log(slides)))
+  public slides$ = this.select((state) => state.options?.slides)
 
   public breakpoints$ = this.options$.pipe(
-    pluck('breakpoints'),
+    map((options) => options?.breakpoints),
     map(cloneDeep),
     map((breakpoints: any[]) => {
       const result = {}

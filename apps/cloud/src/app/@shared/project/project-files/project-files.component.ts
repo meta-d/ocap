@@ -4,14 +4,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { Subscription, firstValueFrom, of, switchMap, tap } from 'rxjs'
 import { IStorageFile, ProjectService, StorageFileService, ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-project-files',
@@ -48,7 +46,6 @@ export class ProjectFilesComponent {
   isLoading = false
   constructor() {
     this.projectService.getOne(this._data.projectId, ['files']).subscribe((project) => {
-      console.log(project)
       this.files = project.files
     })
   }

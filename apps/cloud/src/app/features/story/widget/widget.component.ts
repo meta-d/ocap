@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ElementRef, Renderer2, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService, prefersColorScheme } from '@metad/story/core'
@@ -14,7 +14,7 @@ import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, 
 import { registerWasmAgentModel } from '../../../@core'
 import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,7 +70,7 @@ export class StoryWidgetComponent {
           })
         )
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -104,10 +104,10 @@ export class StoryWidgetComponent {
 
   private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
-  private _storySub = this.story$.subscribe((story) => {
+  private _storySub = this.story$.pipe(takeUntilDestroyed()).subscribe((story) => {
     this.storyService.setStory(story)
   })
-  private _widgetSub = this._widget$.subscribe((widget) => {
+  private _widgetSub = this._widget$.pipe(takeUntilDestroyed()).subscribe((widget) => {
     this.pointService.init(widget.point.key)
     this.pointService.active(true)
   })

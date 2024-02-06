@@ -8,9 +8,7 @@ import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { FormulaModule } from '@metad/ocap-angular/formula'
 import { NgmSlicerPipe } from '@metad/ocap-angular/slicers'
 import { cloneDeep, C_MEASURES } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'ngm-ocap-explorer',

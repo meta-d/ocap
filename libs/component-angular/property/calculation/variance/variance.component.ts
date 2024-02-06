@@ -2,10 +2,8 @@ import { Component, forwardRef, inject, Input } from '@angular/core'
 import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { CompareToEnum, DataSettings, EntityType } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { PropertyCapacity } from '../../property-select/property-select.component'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-calculation-variance',
   templateUrl: 'variance.component.html',

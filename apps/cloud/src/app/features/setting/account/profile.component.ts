@@ -7,16 +7,15 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { UsersService } from '@metad/cloud/state'
 import { firstValueFrom } from 'rxjs'
 import { IUserUpdateInput, LanguagesEnum, Store, ToastrService, User } from '../../../@core'
 import { CreatedByPipe } from '../../../@shared'
 import { UserFormsModule } from '../../../@shared/user/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -55,7 +54,7 @@ import { UserFormsModule } from '../../../@shared/user/forms'
 export class PACAccountProfileComponent {
   user: User
 
-  private _userSub = this.store.user$.subscribe((user) => {
+  private _userSub = this.store.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
     this.user = cloneDeep(user) as User
   })
   constructor(

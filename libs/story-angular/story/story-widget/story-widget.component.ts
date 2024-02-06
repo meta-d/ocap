@@ -6,6 +6,7 @@ import {
   ChangeDetectorRef,
   Component,
   ComponentRef,
+  DestroyRef,
   ElementRef,
   EventEmitter,
   HostBinding,
@@ -27,7 +28,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { assignDeepOmitBlank, DataFieldWithIntentBasedNavigation, DataSettings, mergeOptions, omit, OrderDirection } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmModule } from '@metad/components/confirm'
 import { Intent, IStoryWidget, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
@@ -82,7 +82,6 @@ interface StoryWidgetState {
   comments: Array<StoryComment>
 }
 
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,6 +117,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)
+  readonly destroyRef = inject(DestroyRef)
 
   @Input() key: string
 
@@ -356,7 +356,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
         switchMap((componentProvider) => {
           return from(this.createComponent(componentProvider))
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((componentRef: ComponentRef<IStoryWidget<any>>) => {
         this.initComponent(componentRef)
@@ -384,12 +384,12 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
             })
           )
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
 
     combineLatest([this.componentInstance$, this.editable$])
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([componentInstance, editable]) => {
         if (componentInstance) {
           componentInstance.editable = editable
@@ -403,7 +403,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     if (this.widget().options?.hasComments) {
       this.storyStore
         .getWidgetComments(this.widget())
-        .pipe(map((comments) => (isEmpty(comments) ? null : comments)))
+        .pipe(map((comments) => (isEmpty(comments) ? null : comments)), takeUntilDestroyed(this.destroyRef))
         .subscribe((comments) => {
           this.patchState({
             comments
@@ -431,7 +431,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
      * 反向更新数据源配置, 从组件本身到故事组件
      */
     componentRef.instance.dataSettingsChange
-      ?.pipe(distinctUntilChanged(), withLatestFrom(this.widgetKey$), untilDestroyed(this))
+      ?.pipe(distinctUntilChanged(), withLatestFrom(this.widgetKey$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([dataSettings, widgetKey]) => {
         this.storyPointService.updateWidget({
           key: widgetKey,
@@ -441,7 +441,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     /**
      * 反向更新组件配置项, 从组件本身到故事组件
      */
-    componentRef.instance.optionsChange?.pipe(withLatestFrom(this.widget$), untilDestroyed(this))
+    componentRef.instance.optionsChange?.pipe(withLatestFrom(this.widget$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([options, widget]) => {
         // 根据 id 更新 options, 忽略其他属性
         this.storyPointService.updateWidget({
@@ -454,7 +454,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
      * 切片器与关联分析事件
      */
     componentRef.instance.slicersChange
-      ?.pipe(withLatestFrom(this.linkedAnalysis$), untilDestroyed(this))
+      ?.pipe(withLatestFrom(this.linkedAnalysis$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([slicers, linkedAnalysis]) => {
         switch (linkedAnalysis?.interactionApplyTo) {
           case LinkedInteractionApplyTo.OnlySelectedWidgets:

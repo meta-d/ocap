@@ -11,7 +11,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCacheService } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { CalculationProperty, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { CalculationEditorComponent } from '@metad/components/property'
@@ -19,7 +18,6 @@ import { NxCoreService } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [

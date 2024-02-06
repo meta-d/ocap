@@ -5,7 +5,6 @@
 @use '../../property/property-theme' as property;
 @use '../../advanced-filter/advanced-filter-theme' as advanced-filter;
 @use '../../property/calculation/calculation-theme' as calculation;
-@use '../../smart-micro/smart-micro-theme' as smart-micro;
 @use '../../form-field/form-field-theme' as form-field;
 @use '../../datepicker/datepicker-theme' as datepicker;
 @use '../../time-filter/time-filter-theme' as time-filter;
@@ -25,8 +24,6 @@
   // @include ngm-scrollbar-theme($theme-or-color-config);
   // @include mat-expansion-panel-ext-theme($theme-or-color-config);
   @include tab-theme.theme($theme-or-color-config);
-  // @include ngm-markdown-theme($theme-or-color-config);
-  @include smart-micro.theme($theme-or-color-config);
   
   @include action-strip.theme($theme-or-color-config);
   @include property.theme($theme-or-color-config);
@@ -51,13 +48,11 @@
   // @include mat-expansion-panel-ext-color($theme-or-color-config);
   @include tab-theme.color($theme-or-color-config);
   // @include ngm-cdk-overlay-color($theme-or-color-config);
-  // @include ngm-markdown-color($theme-or-color-config);
   // @include ngm-color-color($theme-or-color-config);
   // @include breadcrumb.color($theme-or-color-config);
   @include entity.color($theme-or-color-config);
   // @include smart-filter.color($theme-or-color-config);
   @include selection.color($theme-or-color-config);
-  @include smart-micro.color($theme-or-color-config);
   @include action-strip.color($theme-or-color-config);
   @include property.color($theme-or-color-config);
   @include calculation.color($theme-or-color-config);

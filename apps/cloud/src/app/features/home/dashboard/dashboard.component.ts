@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core'
 import { FormControl } from '@angular/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { IndicatorsService, ModelsService, Store, StoriesService } from '@metad/cloud/state'
 import { getErrorMessage } from '@metad/core'
 import { GridType, GridsterComponent, GridsterConfig, GridsterItem } from 'angular-gridster2'
@@ -30,8 +30,6 @@ import {
 } from '../../../@core'
 import { createTimer, TranslationBaseComponent } from '../../../@shared'
 
-
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-dashboard',
   templateUrl: './dashboard.component.html',
@@ -190,7 +188,8 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
             }
           }
         }))
-      })
+      }),
+      takeUntilDestroyed()
     )
     .subscribe(async (feeds) => {
       this.pristineFeeds$.next(cloneDeep(feeds))
@@ -200,7 +199,8 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     .pipe(
       switchMap(() =>
         combineLatest([this.modelsService.count(), this.storiesService.count(), this.indicatorsService.count()])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe(([modelCount, storyCount, indicatorCount]) => {
       this.quickGuides.model.quantity = modelCount
@@ -214,11 +214,11 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
 
       this._cdr.detectChanges()
     })
-  private dateSub = this.dateControl.valueChanges.subscribe((value) => {
+  private dateSub = this.dateControl.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
     this.dsCoreService.setToday(value)
   })
 
-  private demoSub = this.createdDemo$.subscribe((createdDemo) => {
+  private demoSub = this.createdDemo$.pipe(takeUntilDestroyed()).subscribe((createdDemo) => {
     this.quickGuides.sample.complete = createdDemo
   })
 

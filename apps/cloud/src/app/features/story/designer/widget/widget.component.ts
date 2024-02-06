@@ -10,7 +10,6 @@ import {
 } from '@angular/forms'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { MtxColorpickerModule } from '@ng-matero/extensions/colorpicker'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ComponentStyling } from '@metad/story/core'
@@ -24,7 +23,6 @@ import { sortBy } from 'lodash-es'
 import { NgmInputComponent, NgmSliderInputComponent } from '@metad/ocap-angular/common'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [

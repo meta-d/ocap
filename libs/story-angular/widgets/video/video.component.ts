@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { DomSanitizer } from '@angular/platform-browser'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { AbstractStoryWidget } from '@metad/core'
 import { distinctUntilChanged, map } from 'rxjs/operators'
@@ -15,7 +14,6 @@ export interface VideoWidgetOptions {
   imageSizeMode?: 'strecth' | 'fitWidth' | 'fitHeight' | 'originalSize'
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule],

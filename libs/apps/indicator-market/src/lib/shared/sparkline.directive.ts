@@ -1,19 +1,19 @@
-import { AfterViewInit, Directive, ElementRef, Input, LOCALE_ID, inject } from '@angular/core'
+import { AfterViewInit, DestroyRef, Directive, ElementRef, Input, LOCALE_ID, inject } from '@angular/core'
 import { TinyArea } from '@antv/g2plot/esm/plots/tiny-area'
 import { isNil } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { BehaviorSubject, combineLatest } from 'rxjs'
 import { distinctUntilChanged, filter, map, pluck } from 'rxjs/operators'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { StatisticalType } from '../types'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy()
 @Directive({
   selector: '[pacSparkLine]'
 })
 export class AppSparkLineDirective implements AfterViewInit {
   private locale = inject(LOCALE_ID)
   private elRef = inject(ElementRef)
+  readonly destroyRef = inject(DestroyRef)
 
   @Input() get indicator(): IndicatorState {
     return this._indicator$.value
@@ -73,7 +73,7 @@ export class AppSparkLineDirective implements AfterViewInit {
       tooltip: false
     })
 
-    this.config$.pipe(untilDestroyed(this)).subscribe(({ data, color }) => {
+    this.config$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ data, color }) => {
       tinyArea.changeData(data)
       tinyArea.update({
         line: {

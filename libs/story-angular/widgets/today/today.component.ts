@@ -3,10 +3,10 @@ import { Component, inject } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { DensityDirective, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxTimeFilterModule } from '@metad/components/time-filter'
 import { AbstractStoryWidget } from '@metad/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export interface TodayWidgetOptions {
   granularity: TimeGranularity
@@ -14,7 +14,6 @@ export interface TodayWidgetOptions {
   defaultValue: string
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [CommonModule, TranslateModule, ReactiveFormsModule, DensityDirective, NxTimeFilterModule],
@@ -27,7 +26,7 @@ export class WidgetTodayComponent extends AbstractStoryWidget<TodayWidgetOptions
 
   today = new FormControl(new Date())
 
-  private todaySub = this.today.valueChanges.subscribe(() => {
+  private todaySub = this.today.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
     this.filterBar.go()
   })
 }

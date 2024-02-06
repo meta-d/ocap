@@ -6,15 +6,14 @@ import { ISemanticModel } from '@metad/contracts'
 import { AppearanceDirective, ButtonGroupDirective, ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Indicator, assign, isNil, isString, omitBy } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { IndicatorsService, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { ToastrService, getErrorMessage, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { combineLatest, firstValueFrom } from 'rxjs'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -53,7 +52,7 @@ export class IndicatorImportComponent {
 
   private modelsSub = combineLatest<ISemanticModel[]>(
     this.models.map((model) => this.modelsService.getById(model.id, ['dataSource', 'dataSource.type', 'indicators']))
-  ).subscribe((models) => {
+  ).pipe(takeUntilDestroyed()).subscribe((models) => {
     models.forEach((storyModel) => registerModel(storyModel as NgmSemanticModel, this.dsCoreService, this.wasmAgent))
   })
   constructor() {

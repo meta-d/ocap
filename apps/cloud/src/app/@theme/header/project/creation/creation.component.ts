@@ -2,14 +2,12 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ModelsService } from '@metad/cloud/state'
 import { ISemanticModel } from 'apps/cloud/src/app/@core'
 import { InlineSearchComponent, MaterialModule } from 'apps/cloud/src/app/@shared'
 import { combineLatest, debounceTime, map, startWith } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [

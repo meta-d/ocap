@@ -1,17 +1,16 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { Component } from '@angular/core'
+import { Component, DestroyRef, inject } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { IModelRole, MDX, RoleTypeEnum } from '@metad/contracts'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { combineLatestWith, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { SemanticModelService } from '../../model.service'
 import { SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { AccessControlStateService } from '../access-control.service'
 import { RoleStateService } from './role.service'
 import { EntityCapacity } from '@metad/ocap-angular/entity'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-model-role',
   templateUrl: 'role.component.html',
@@ -31,6 +30,8 @@ import { EntityCapacity } from '@metad/ocap-angular/entity'
   ]
 })
 export class RoleComponent {
+  readonly destroyRef = inject(DestroyRef)
+  
   Access = MDX.Access
   RoleTypeEnum = RoleTypeEnum
   EntityCapacity = EntityCapacity
@@ -67,7 +68,7 @@ export class RoleComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private roleSub = this.roleState.state$.subscribe((role) => {
+  private roleSub = this.roleState.state$.pipe(takeUntilDestroyed()).subscribe((role) => {
     this.role = role
   })
   constructor(
@@ -77,7 +78,7 @@ export class RoleComponent {
     private route: ActivatedRoute,
     private router: Router,
   ) {
-    this.roleKey$.pipe(untilDestroyed(this)).subscribe((key) => {
+    this.roleKey$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((key) => {
       this.roleState.init(key)
     })
   }

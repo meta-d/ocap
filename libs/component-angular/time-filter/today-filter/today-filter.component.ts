@@ -4,13 +4,11 @@ import { MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatDatepicker } from '@angular/material/datepicker'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { NxCoreService, TIME_GRANULARITY_SEQUENCES } from '@metad/core'
 import { getMonth, getYear, isDate, setMonth, setYear } from 'date-fns'
 import { filter } from 'rxjs/operators'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-today-filter',
   templateUrl: './today-filter.component.html',
@@ -37,7 +35,6 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   }
   set granularity(value) {
     this._timeGranularity = value
-    // this.coreService.setTimeGranularity(value)
     this.dsCoreService.setTimeGranularity(value)
   }
   private _timeGranularity = TimeGranularity.Month

@@ -4,7 +4,6 @@ import { ActivatedRoute } from '@angular/router'
 import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService, getSemanticModelKey, prefersColorScheme } from '@metad/story/core'
@@ -13,7 +12,6 @@ import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { registerStoryThemes, subscribeStoryTheme } from '../../@theme'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-public-widget',

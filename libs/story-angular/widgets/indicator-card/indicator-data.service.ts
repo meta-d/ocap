@@ -8,7 +8,6 @@ import {
   PeriodFunctions,
   SmartIndicatorDataService,
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { BehaviorSubject, combineLatest, of } from 'rxjs'
 import { combineLatestWith, filter, map, switchMap, tap } from 'rxjs/operators'
 import { IndicatorOption } from './types'
@@ -30,7 +29,6 @@ export interface IndicatorDataResult {
  * * 明细指标, 本服务中的 `indicators` 属性, 初始化到 `subIndicators$` 属性中
  * * 趋势以主指标为准
  */
-@UntilDestroy()
 @Injectable()
 export class IndicatorDataService extends SmartIndicatorDataService<
   {

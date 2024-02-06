@@ -7,7 +7,6 @@ import { ActivatedRoute } from '@angular/router'
 import { MDX } from '@metad/contracts'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { AggregationRole, C_MEASURES, Syntax } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { nonBlank } from '@metad/core'
 import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
 import { firstValueFrom } from 'rxjs'
@@ -16,8 +15,8 @@ import { SemanticModelService } from '../model.service'
 import { SemanticModelEntityType } from '../types'
 import { VirtualCubeStateService } from './virtual-cube.service'
 import { EntityCapacity } from '@metad/ocap-angular/entity'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-model-virtual-cube',
   templateUrl: 'virtual-cube.component.html',
@@ -82,7 +81,7 @@ export class VirtualCubeComponent {
     map((entitySet) => entitySet?.entityType),
   )
 
-  private cubeKeySub = this.cubeKey$.subscribe((key) => {
+  private cubeKeySub = this.cubeKey$.pipe(takeUntilDestroyed()).subscribe((key) => {
     this.virtualCubeState.init(key)
   })
 

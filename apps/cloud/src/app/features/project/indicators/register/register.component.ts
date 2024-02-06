@@ -6,7 +6,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { isNil } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { convertIndicatorResult, Indicator, IndicatorsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
@@ -20,11 +19,11 @@ import { ProjectComponent } from '../../project.component'
 import { exportIndicator } from '../../types'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 // AOA : array of array
 type AOA = any[][]
 
-@UntilDestroy()
 @Component({
   standalone: true,
   imports: [
@@ -113,7 +112,8 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     .pipe(
       startWith(this._route.snapshot.queryParams),
       map((queryParams) => queryParams['modelId']),
-      filter(nonBlank)
+      filter(nonBlank),
+      takeUntilDestroyed()
     )
     .subscribe((id) => {
       this.indicator = {
@@ -134,7 +134,8 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
           createdByName: userLabel(indicator.createdBy)
         }
       }),
-      delay(300)
+      delay(300),
+      takeUntilDestroyed()
     ).subscribe((indicator) => {
       this.registerForm.formGroup.markAsPristine()
       this.indicatorsComponent?.setCurrentLink(indicator)

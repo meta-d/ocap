@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatTabsModule } from '@angular/material/tabs'
 import { pick } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { UsersService } from '@metad/cloud/state'
 import { cloneDeep } from 'lodash-es'
@@ -15,8 +14,8 @@ import { firstValueFrom } from 'rxjs'
 import { getErrorMessage, HttpStatus, Store, ToastrService, User } from '../../../@core'
 import { UserFormsModule } from '../../../@shared/user/forms'
 import { HttpErrorResponse } from '@angular/common/http'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   imports: [
@@ -72,7 +71,7 @@ export class PACAccountPasswordComponent {
     return this.passwordForm.get('hash')
   }
 
-  private _userSub = this.store.user$.subscribe((user) => {
+  private _userSub = this.store.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
     this.user = cloneDeep(user) as User
   })
   constructor(

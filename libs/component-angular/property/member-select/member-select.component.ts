@@ -22,10 +22,8 @@ import {
   getEntityProperty,
   isSemanticCalendar
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-property-member-select',

@@ -5,10 +5,11 @@ import { NxStoryService } from '@metad/story/core'
 import { registerTheme } from 'echarts/core'
 import { firstValueFrom } from 'rxjs'
 import { delay, distinctUntilChanged, filter } from 'rxjs/operators'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export function registerStoryThemes(storyService: NxStoryService) {
   return storyService.echartsTheme$
-    .pipe(filter(Boolean), distinctUntilChanged(isEqual))
+    .pipe(filter(Boolean), distinctUntilChanged(isEqual), takeUntilDestroyed())
     .subscribe(async (echartsTheme) => {
       const story = await firstValueFrom(storyService.story$)
       const key = story.key || story.id
@@ -21,7 +22,7 @@ export function registerStoryThemes(storyService: NxStoryService) {
 }
 
 export function subscribeStoryTheme(storyService: NxStoryService, coreService: NxCoreService, renderer: Renderer2, elementRef: ElementRef) {
-  return storyService.themeChanging$.pipe(delay(300)).subscribe(async ([prev, current]) => {
+  return storyService.themeChanging$.pipe(delay(300), takeUntilDestroyed()).subscribe(async ([prev, current]) => {
     const story = await firstValueFrom(storyService.story$)
     const key = story.key || story.id
     const echartsTheme = story.options?.echartsTheme

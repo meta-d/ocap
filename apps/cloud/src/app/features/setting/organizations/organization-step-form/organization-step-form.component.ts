@@ -1,10 +1,9 @@
-import { Component, forwardRef, OnInit, ViewChild } from '@angular/core'
+import { Component, DestroyRef, forwardRef, inject, OnInit, ViewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormBuilder, NG_VALUE_ACCESSOR, Validators, FormGroup } from '@angular/forms'
 import { MatStepper } from '@angular/material/stepper'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { combineLatest } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-organization-step-form',
   templateUrl: './organization-step-form.component.html',
@@ -18,6 +17,7 @@ import { combineLatest } from 'rxjs'
   ]
 })
 export class OrganizationStepFormComponent implements OnInit, ControlValueAccessor {
+  readonly destroyRef = inject(DestroyRef)
 
   @ViewChild('stepper') stepper: MatStepper
 
@@ -60,7 +60,7 @@ export class OrganizationStepFormComponent implements OnInit, ControlValueAccess
     combineLatest([
       this.basic.valueChanges,
       this.orgSettingsForm.valueChanges
-    ]).pipe(untilDestroyed(this)).subscribe(([basic, orgSettings]) => {
+    ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([basic, orgSettings]) => {
       this.onChange?.({
         ...basic,
         ...orgSettings

@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon'
 import { ActivatedRoute } from '@angular/router'
 import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ModelsService } from '@metad/cloud/state'
 import { ISemanticModel, IUser, Store, ToastrService } from 'apps/cloud/src/app/@core'
@@ -21,8 +20,8 @@ import {
 import { uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
 import { ModelComponent } from '../model.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -72,7 +71,7 @@ export class ModelMembersComponent extends TranslationBaseComponent {
 
   // Subscribers
   private _modelDetailSub = combineLatest([this.refresh$, this.modelComponent.id$])
-    .pipe(switchMap(([, id]) => this.modelsService.getById(id ?? null, ['owner', 'members'])))
+    .pipe(switchMap(([, id]) => this.modelsService.getById(id ?? null, ['owner', 'members'])), takeUntilDestroyed())
     .subscribe((semanticModel) => {
       this.semanticModel = semanticModel
       this.members = semanticModel.members.map((user) => ({
@@ -83,7 +82,7 @@ export class ModelMembersComponent extends TranslationBaseComponent {
       this._cdr.detectChanges()
     })
   private _searchSub = this.searchControl.valueChanges
-    .pipe(map((text) => text?.trim().toLowerCase()))
+    .pipe(map((text) => text?.trim().toLowerCase()), takeUntilDestroyed())
     .subscribe((text) => {
       this.members = (
         text
@@ -101,6 +100,7 @@ export class ModelMembersComponent extends TranslationBaseComponent {
         loading: false
       }))
     })
+    
   constructor(
     private _dialog: MatDialog,
     private _cdr: ChangeDetectorRef,

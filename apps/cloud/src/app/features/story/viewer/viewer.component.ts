@@ -20,7 +20,6 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { AbilityModule } from '@casl/angular'
 import { NgmDSCoreService, OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
 import { AgentType } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
@@ -49,7 +48,6 @@ import { StoryScales, downloadStory } from '../types'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { StoryExplorerModule } from '@metad/story'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -138,7 +136,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _authSub = this.appService.isAuthenticated$.subscribe((isAuthenticated) => {
+  private _authSub = this.appService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe((isAuthenticated) => {
     this.storyService.setAuthenticated(isAuthenticated)
   })
 

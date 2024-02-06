@@ -5,20 +5,21 @@ import {
 	Input,
 	forwardRef,
 	EventEmitter,
-	Output
+	Output,
+	inject,
+	DestroyRef
 } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { filter, map, Observable, of as observableOf } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { IRole, IUser, RolesEnum } from '@metad/contracts';
 import { RoleService, Store } from './../../../../../@core/services';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-@UntilDestroy({ checkProperties: true })
 @Component({
 	standalone: true,
 	imports: [
@@ -42,7 +43,8 @@ import { MatSelectModule } from '@angular/material/select';
 	]
 })
 export class RoleFormFieldComponent implements OnInit, OnDestroy, ControlValueAccessor {
-
+	readonly destroyRef = inject(DestroyRef)
+	
 	roles: IRole[] = [];
 	roles$: Observable<IRole[]> = observableOf([]);
 	onChange: any = () => {};
@@ -139,7 +141,7 @@ export class RoleFormFieldComponent implements OnInit, OnDestroy, ControlValueAc
 			.pipe(
 				filter((user: IUser) => !!user),
 				tap(() => this.renderRoles()),
-				untilDestroyed(this)
+				takeUntilDestroyed(this.destroyRef)
 			)
 			.subscribe();
 	}
@@ -154,7 +156,8 @@ export class RoleFormFieldComponent implements OnInit, OnDestroy, ControlValueAc
 			map((roles: IRole[]) => roles.filter(
 				(role: IRole) => !this.excludes.includes(role.name as RolesEnum)
 			)),
-			tap((roles: IRole[]) => this.roles = roles)
+			tap((roles: IRole[]) => this.roles = roles),
+			takeUntilDestroyed(this.destroyRef)
 		);
 	}
 

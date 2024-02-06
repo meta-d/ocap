@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common'
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core'
 import { ChartAnnotation, ChartDimensionRoleType, ChartOrient } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { NxChartType } from '@metad/core'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [CommonModule],

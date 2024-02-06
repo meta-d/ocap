@@ -3,15 +3,14 @@ import { Component, inject } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { MatButtonToggleChange } from '@angular/material/button-toggle'
 import { MatDialog } from '@angular/material/dialog'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { IModelRole, MDX, RoleTypeEnum } from 'apps/cloud/src/app/@core'
 import { UserRoleSelectComponent, userLabel } from 'apps/cloud/src/app/@shared'
 import { combineLatestWith, debounceTime, map, startWith, withLatestFrom } from 'rxjs/operators'
 import { AccessControlStateService } from '../../access-control.service'
 import { RoleStateService } from '../role.service'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-model-access-role-overview',
   templateUrl: 'overview.component.html',
@@ -54,7 +53,7 @@ export class RoleOverviewComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private roleSub = this.roleState.state$.subscribe((role) => {
+  private roleSub = this.roleState.state$.pipe(takeUntilDestroyed()).subscribe((role) => {
     this.role = role
   })
 

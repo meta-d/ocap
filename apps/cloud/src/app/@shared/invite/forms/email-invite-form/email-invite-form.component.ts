@@ -1,5 +1,6 @@
-import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core'
+import { Component, DestroyRef, ElementRef, Input, OnDestroy, OnInit, inject } from '@angular/core'
 import { FormBuilder, FormGroup, Validators } from '@angular/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import {
   ICreateEmailInvitesOutput,
   IOrganization,
@@ -12,7 +13,6 @@ import {
   InvitationTypeEnum,
   RolesEnum
 } from '@metad/contracts'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { AuthService, InviteService } from '@metad/cloud/state'
 import { firstValueFrom } from 'rxjs'
@@ -22,13 +22,15 @@ import { FormHelpers } from '../../../forms/helpers'
 import { TranslationBaseComponent } from '../../../language/translation-base.component'
 import { Store } from './../../../../@core/services'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-email-invite-form',
   templateUrl: 'email-invite-form.component.html',
   styleUrls: ['email-invite-form.component.scss']
 })
 export class EmailInviteFormComponent extends TranslationBaseComponent implements OnInit, OnDestroy {
+
+  readonly destroyRef = inject(DestroyRef)
+  
   FormHelpers: typeof FormHelpers = FormHelpers
 
   invitationTypeEnum = InvitationTypeEnum
@@ -99,7 +101,7 @@ export class EmailInviteFormComponent extends TranslationBaseComponent implement
         filter((user: IUser) => !!user),
         tap((user: IUser) => (this.user = user)),
         tap(() => this.excludeRoles()),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
     this.store.selectedOrganization$
@@ -109,7 +111,7 @@ export class EmailInviteFormComponent extends TranslationBaseComponent implement
         tap(() => this.renderInvitationExpiryOptions()),
         filter((organization) => !!organization.invitesAllowed),
         tap((organization) => this.setInvitationPeriodFormValue(organization)),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
   }

@@ -1,5 +1,5 @@
 import { FocusOrigin, FocusableOption } from '@angular/cdk/a11y'
-import { AfterViewInit, Directive, EventEmitter, HostBinding, Input, Output, computed, inject, signal } from '@angular/core'
+import { AfterViewInit, DestroyRef, Directive, EventEmitter, HostBinding, Input, Output, computed, inject, signal } from '@angular/core'
 import { DisplayDensity, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -14,7 +14,6 @@ import {
   getPropertyName,
 } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEmpty, isEqual, isNil } from 'lodash-es'
 import {
@@ -34,7 +33,7 @@ import { createEventEmitter, isNotEmpty, nonNullable } from '../helpers'
 import { IFilterChange } from '../models/index'
 import { WidgetMenu, WidgetMenuType, WidgetService } from './widget.service'
 import { NxCoreService } from '../services'
-import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { replaceParameters } from './types'
 
@@ -114,7 +113,6 @@ export interface StoryWidgetStyling {
  * `dataSettings` 和 `options` 属性需要将变化发出 (为了返回给 Widget 进行存储, 即实现在 Widget 组件本身也能修改属性值并进行保存)
  *
  */
-@UntilDestroy({ checkProperties: true })
 @Directive()
 export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetState<T>>
   extends ComponentStore<S>
@@ -123,6 +121,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   protected readonly translateService? = inject(TranslateService, {optional: true})
   protected readonly widgetService? = inject(WidgetService, {optional: true, skipSelf: true})
   protected readonly coreService = inject(NxCoreService)
+  protected readonly destroyRef = inject(DestroyRef)
 
   @Input() key: string
   /**
@@ -355,7 +354,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   constructor() {
     super({} as S)
 
-    this._options$.pipe(untilDestroyed(this)).subscribe((options) => this.patchState({ options } as S))
+    this._options$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((options) => this.patchState({ options } as S))
 
     this.widgetService?.onMenuClick().subscribe((menu) => {
       if (menu.key === 'refresh') {
@@ -399,7 +398,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
           }
           return [...menus]
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((widgetMenus) => {
         this.widgetService?.setMenus(widgetMenus)
@@ -433,7 +432,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   }
 
   translate(key: string) {
-    return this.translateService?.stream(key).pipe(untilDestroyed(this)) ?? of(null)
+    return this.translateService?.stream(key).pipe(takeUntilDestroyed(this.destroyRef)) ?? of(null)
   }
 
   getTranslation(code: string, text?: any, params?: any) {

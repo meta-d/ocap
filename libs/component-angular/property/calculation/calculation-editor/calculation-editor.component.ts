@@ -1,4 +1,4 @@
-import { Component, Inject, Input, OnInit, Optional, inject } from '@angular/core'
+import { Component, DestroyRef, Inject, Input, OnInit, Optional, inject } from '@angular/core'
 import { AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators } from '@angular/forms'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
@@ -12,10 +12,10 @@ import {
   isEntityType,
   Syntax,
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { uuid } from '@metad/components/core'
 import { NxCoreService } from '@metad/core'
 import { filter, switchMap } from 'rxjs'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export interface CalculationEditorData {
   dataSettings: DataSettings
@@ -26,7 +26,6 @@ export interface CalculationEditorData {
   value: CalculationProperty
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-calculation-editor',
   templateUrl: './calculation-editor.component.html',
@@ -35,6 +34,8 @@ export interface CalculationEditorData {
 export class CalculationEditorComponent implements OnInit {
   CALCULATION_TYPE = CalculationType
   SYNTAX = Syntax
+
+  readonly destroyRef = inject(DestroyRef)
 
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() dataSettings: DataSettings
@@ -93,7 +94,7 @@ export class CalculationEditorComponent implements OnInit {
           switchMap((dataSource) =>
             dataSource.selectEntityType(this.dataSettings.entitySet).pipe(filter(isEntityType))
           ),
-          untilDestroyed(this)
+          takeUntilDestroyed(this.destroyRef)
         )
         .subscribe((entityType) => (this.entityType = entityType))
     }

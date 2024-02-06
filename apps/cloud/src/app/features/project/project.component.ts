@@ -9,7 +9,6 @@ import { Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, FlatTreeNode, TreeNodeInterface, hierarchize } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService, convertStory } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
@@ -48,9 +47,8 @@ import { AppService } from '../../app.service'
 import { ReleaseStoryDialog } from './release-story.component'
 import { SelectModelDialog } from './select-model.component'
 import { collectionId, treeDataSourceFactory } from './types'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -143,7 +141,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         this.storiesService.getAllByProject(projectId)
       ])
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -156,7 +154,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         labelProperty: 'name'
       })
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -192,14 +190,15 @@ export class ProjectComponent extends TranslationBaseComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private treeNodesSub = this.collectionTree$.subscribe((tree) => {
+  private treeNodesSub = this.collectionTree$.pipe(takeUntilDestroyed()).subscribe((tree) => {
     this.dataSource.data = tree
   })
   private _bookmarksSub = this.projectId$
     .pipe(
       switchMap((projectId) =>
         this.favoritesService.getProjectBookmarks(projectId, BusinessType.STORY, ['story', 'story.createdBy'])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((bookmarks) => {
       this.bookmarks = bookmarks
@@ -215,7 +214,8 @@ export class ProjectComponent extends TranslationBaseComponent {
           'indicators.businessArea',
           'certifications'
         ])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((project) => {
       this._project$.next(project)

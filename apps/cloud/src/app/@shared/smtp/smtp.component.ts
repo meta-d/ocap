@@ -1,18 +1,17 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core'
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core'
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { ActivatedRoute } from '@angular/router'
 import { ICustomSmtp, IOrganization, IUser, SMTPSecureEnum } from '@metad/contracts'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { filter, pairwise, tap } from 'rxjs/operators'
 import { CustomSmtpService, Store, ToastrService } from '../../@core/services'
 import { patterns } from '../regex/regex-patterns.const'
 import { TranslationBaseComponent } from '../language/translation-base.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -38,6 +37,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
   private readonly toastrService = inject(ToastrService)
   private readonly store = inject(Store)
   private readonly _cdr = inject(ChangeDetectorRef)
+  readonly destroyRef = inject(DestroyRef)
 
   @Input() organization?: IOrganization
   @Input() isOrganization?: boolean
@@ -76,18 +76,19 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _activatedRouteSub = this._activatedRoute.data.subscribe(({ isOrganization }) => {
+  private _activatedRouteSub = this._activatedRoute.data.pipe(takeUntilDestroyed()).subscribe(({ isOrganization }) => {
     this.isOrganization = isOrganization
   })
 
-  private _userSub = this.store.user$.pipe(filter(Boolean)).subscribe((user) => {
+  private _userSub = this.store.user$.pipe(filter(Boolean), takeUntilDestroyed()).subscribe((user) => {
     this.user = user
   })
   private _selectedOrganizationSub = this.store.selectedOrganization$
     .pipe(
       filter((organization) => !!organization),
       tap((organization) => (this.organization = organization)),
-      tap(() => this.getTenantSmtpSetting())
+      tap(() => this.getTenantSmtpSetting()),
+      takeUntilDestroyed()
     )
     .subscribe()
 
@@ -104,6 +105,9 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
           False: 'False'
         }
       })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((SMTP) => {
         this.schema = [
           {
@@ -190,7 +194,7 @@ export class SMTPComponent extends TranslationBaseComponent implements OnInit, O
       control2.updateValueAndValidity()
     })
 
-    this.form.valueChanges.pipe(pairwise()).subscribe((values) => {
+    this.form.valueChanges.pipe(pairwise(), takeUntilDestroyed(this.destroyRef)).subscribe((values) => {
       const oldVal = values[0]
       const newVal = values[1]
       if ((newVal.username && oldVal.username) || (newVal.host && oldVal.host)) {

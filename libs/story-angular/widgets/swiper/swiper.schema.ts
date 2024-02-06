@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { WidgetComponentType } from '@metad/story/core'
 import { AccordionWrappers, DataSettingsSchemaService, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { WidgetComponentType as IndicatorCardWidgetType } from '@metad/story/widgets/indicator-card'
 import { map, startWith } from 'rxjs/operators'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy()
 @Injectable()
 export class SwiperSchemaService extends DataSettingsSchemaService {
   getSchema() {
@@ -282,7 +281,7 @@ export class SwiperSchemaService extends DataSettingsSchemaService {
                           field.props.designer = field.parent.formControl.valueChanges.pipe(
                             startWith(field.parent.model),
                             map((value) => value.type),
-                            untilDestroyed(this)
+                            takeUntilDestroyed(this.destroyRef)
                           )
                         }
                       }

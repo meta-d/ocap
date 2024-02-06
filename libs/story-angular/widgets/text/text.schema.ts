@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core'
 import { EntityCapacity } from '@metad/ocap-angular/entity'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { DataSettingsSchemaService, FORMLY_W_1_2, IntentNavigation } from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 
-@UntilDestroy()
 @Injectable()
 export class TextSchemaService extends DataSettingsSchemaService {
   getSchema() {

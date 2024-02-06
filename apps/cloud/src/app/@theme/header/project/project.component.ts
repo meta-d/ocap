@@ -10,15 +10,14 @@ import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { Router } from '@angular/router'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 import { map, startWith, switchMap, withLatestFrom } from 'rxjs/operators'
 import { DefaultProject, IProject, ProjectService, Store, ToastrService } from '../../../@core'
 import { InlineSearchComponent } from '../../../@shared'
 import { ProjectCreationComponent } from './creation/creation.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -73,7 +72,7 @@ export class ProjectSelectorComponent {
       startWith(''),
       map((value) => value?.trim().toLowerCase()),
       map((value) => value ? items.filter((item) => item.name.toLowerCase().includes(value)) : items),
-    ))
+    )),
   )
 
   public readonly project$ = this.store.selectedProject$.pipe(
@@ -81,7 +80,7 @@ export class ProjectSelectorComponent {
     map(([project, defaultName]) => project ?? {...DefaultProject, name: defaultName}),
   )
 
-  private deletedSub = this.projectService.deleted$.subscribe(async (id) => {
+  private deletedSub = this.projectService.deleted$.pipe(takeUntilDestroyed()).subscribe(async (id) => {
     if (this.store.selectedProject?.id === id) {
       const defaultName = await firstValueFrom(this.translateService.get('PAC.Project.DefaultProject', {Default: 'Default'}))
       // Select default project
@@ -91,6 +90,7 @@ export class ProjectSelectorComponent {
       })
     }
   })
+  
   constructor(private store: Store, private _dialog: MatDialog, private _toastrService: ToastrService, private _router: Router,) {}
 
   selectProject(project: IProject) {

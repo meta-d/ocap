@@ -1,9 +1,8 @@
 import { Component } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-organization',
   templateUrl: './organization.component.html',
@@ -16,7 +15,7 @@ export class OrganizationComponent {
     filter(Boolean),
     map(decodeURIComponent),
     distinctUntilChanged(),
-    untilDestroyed(this)
+    takeUntilDestroyed()
   )
   constructor(private route: ActivatedRoute) {}
 }

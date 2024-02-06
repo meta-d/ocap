@@ -1,10 +1,9 @@
 import { ComponentPortal } from '@angular/cdk/portal'
 import { ChangeDetectorRef, Component, inject } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { filter } from 'rxjs/operators'
 import { NxSettingsPanelService } from '../settings-panel/settings-panel.service'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-designer-panel',
   templateUrl: './panel.component.html',
@@ -18,10 +17,10 @@ export class DesignerPanelComponent {
   private _cdr = inject(ChangeDetectorRef)
 
   settingsPortal: ComponentPortal<unknown>
-  
+
   // Subscribers
   private _settingsComponentSub = this.designerService.settingsComponent$
-    .pipe(filter(Boolean))
+    .pipe(filter(Boolean), takeUntilDestroyed())
     .subscribe(({ settingsPortals, drawer, title }) => {
       this._cdr.markForCheck()
       this._cdr.detectChanges()

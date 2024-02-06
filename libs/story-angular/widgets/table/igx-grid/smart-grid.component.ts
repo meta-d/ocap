@@ -12,7 +12,6 @@ import {
   ViewChild
 } from '@angular/core'
 import { Semantics } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import {
   AbstractStoryWidget,
   Intent,
@@ -41,7 +40,6 @@ import { map, switchMap, tap } from 'rxjs/operators'
 import { NxGridSelectionSummary, NX_GRID_SELECTION_SUMMARY } from './selection-summary.service'
 import { NxSmartGridOptions, NX_SMART_GRID_DEFAULT_OPTIONS, WidgetDesignerType } from './types'
 
-@UntilDestroy()
 @Component({
   selector: 'pac-widget-smart-grid',
   templateUrl: './smart-grid.component.html',

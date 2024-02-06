@@ -11,7 +11,6 @@ import {
 } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NgmTreeSelectComponent, NgmMatSelectComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
@@ -48,9 +47,9 @@ import {
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   selector: 'pac-indicator-register-form',
@@ -190,7 +189,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
       dataSource,
       entitySet
     })),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly entityTypeLoading$ = new BehaviorSubject<boolean>(false)
@@ -201,7 +200,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     ))),
     tap(() => this.entityTypeLoading$.next(false)),
     filter(isEntityType),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly measures$ = this.entityType$.pipe(
@@ -230,7 +229,8 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     startWith(this.formGroup.get('modelId').value),
     distinctUntilChanged(),
     filter(nonBlank),
-    switchMap((id) => this.modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators']))
+    switchMap((id) => this.modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators'])),
+    takeUntilDestroyed(),
   ).subscribe((semanticModel) => {
     // 指标公式编辑时需要用到现有 Indicators
     // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)

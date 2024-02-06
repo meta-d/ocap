@@ -5,9 +5,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { FormulaModule } from '@metad/ocap-angular/formula'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DUCKDB_TOP_SUBSCRIBED_MODEL } from '@metad/ocap-duckdb'
-import { UntilDestroy } from '@ngneat/until-destroy'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, MatButtonModule, FormulaModule],

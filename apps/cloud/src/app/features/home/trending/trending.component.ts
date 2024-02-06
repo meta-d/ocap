@@ -7,14 +7,12 @@ import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { effectAction } from '@metad/ocap-angular/core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoriesService } from '@metad/cloud/state'
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs'
 import { IStory, listAnimation } from '../../../@core'
 import { StoryCardComponent } from '../../../@shared'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [

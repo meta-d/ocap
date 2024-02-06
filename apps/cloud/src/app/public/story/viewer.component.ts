@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostBinding, OnInit, Renderer2, computed, effect, inject, signal } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService, Story } from '@metad/story/core'
 import { map } from 'rxjs/operators'
@@ -9,7 +9,6 @@ import { AgentType, registerWasmAgentModel } from '../../@core'
 import { registerStoryThemes, subscribeStoryTheme } from '../../@theme'
 import { AppService } from '../../app.service'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-story-viewer',
   templateUrl: 'viewer.component.html',
@@ -38,7 +37,7 @@ export class StoryViewerComponent implements OnInit {
   private echartsThemeSub = registerStoryThemes(this.storyService)
 
   private backgroundSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor))
+    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this.renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)
@@ -61,7 +60,7 @@ export class StoryViewerComponent implements OnInit {
     this.pageKey = this.route.snapshot.queryParamMap.get('pageKey')
     this.widgetKey = this.route.snapshot.queryParamMap.get('widgetKey')
 
-    this.appService.isAuthenticated$.pipe(untilDestroyed(this)).subscribe((isAuthenticated) => {
+    this.appService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe((isAuthenticated) => {
       this.storyService.setAuthenticated(isAuthenticated)
     })
   }

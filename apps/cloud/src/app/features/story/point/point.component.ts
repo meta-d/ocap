@@ -8,13 +8,12 @@ import {
   ViewChild,
   inject
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
 import { NgmDSCoreService, NgmSmartFilterBarService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoryPointsService, convertStoryResult } from '@metad/cloud/state'
 import { NgmTransformScaleDirective, NxCoreService } from '@metad/core'
@@ -27,7 +26,6 @@ import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
 import { AppService } from '../../../app.service'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,7 +99,7 @@ export class StoryPointComponent extends TranslationBaseComponent {
           })
         )
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -135,14 +133,14 @@ export class StoryPointComponent extends TranslationBaseComponent {
   private prefersColorScheme$ = prefersColorScheme()
   private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this._renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
-  private _storyChanged = this.story$.subscribe((story) => {
+  private _storyChanged = this.story$.pipe(takeUntilDestroyed()).subscribe((story) => {
     if (story) {
       this.storyService.setStory(story)
     }
   })
 
   private backgroundSub = this.storyService.preferences$
-    .pipe(map((preferences) => preferences?.storyStyling?.backgroundColor))
+    .pipe(map((preferences) => preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this._renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)

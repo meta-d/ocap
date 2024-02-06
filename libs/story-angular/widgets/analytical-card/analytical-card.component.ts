@@ -15,7 +15,6 @@ import {
   isAdvancedFilter,
   isEqual
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { SlicersCapacity } from '@metad/components/selection'
 import { AbstractStoryWidget, StoryWidgetState, WidgetMenu, WidgetMenuType } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
@@ -49,7 +48,6 @@ export interface AnalyticalCardState extends StoryWidgetState<WidgetAnalyticalCa
   // entityType: EntityType
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-widget-analytical-card',
@@ -143,7 +141,7 @@ export class WidgetAnalyticalCardComponent extends AbstractStoryWidget<
         measures: compact(dataSettings.chartAnnotation?.measures.filter((item) => !!item?.measure))
       } as ChartAnnotation
     })),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -214,7 +212,7 @@ export class WidgetAnalyticalCardComponent extends AbstractStoryWidget<
           }
         ]
       }),
-      untilDestroyed(this)
+      takeUntilDestroyed(this.destroyRef)
     )
   }
 
