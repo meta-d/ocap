@@ -11,7 +11,6 @@ import { NxActionStripModule } from '@metad/components/action-strip'
 import { NxEditorModule } from '@metad/components/editor'
 import { NxEntityModule } from '@metad/components/entity'
 import { CalculatedMeasureComponent, PropertyModule } from '@metad/components/property'
-import { NxTableModule } from '@metad/components/table'
 import { IsNilPipe } from '@metad/core'
 import { NxDesignerModule } from '@metad/story/designer'
 import { MaterialModule, SharedModule } from '../../../../@shared'
@@ -46,7 +45,6 @@ import { ModelEntityStructureComponent } from './structure/structure.component'
     NxEditorModule,
     PropertyModule,
     SlicersModule,
-    NxTableModule,
     CalculatedMeasureComponent,
     AnalyticalGridModule,
     OcapCoreModule,

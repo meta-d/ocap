@@ -15,11 +15,10 @@ import { AgentType, Catalog, DataSource, isNil } from '@metad/ocap-core'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { BusinessAreasService, DataSourceService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import { BehaviorSubject, Observable, Subject, catchError, filter, firstValueFrom, map, of, startWith, switchMap, tap } from 'rxjs'
 import { IDataSource, ToastrService, getErrorMessage } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
-import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
+import { NgmSelectionTableComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -34,10 +33,10 @@ import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
     ReactiveFormsModule,
     MaterialModule,
     TranslateModule,
-    NxTableModule,
     DensityDirective,
     ButtonGroupDirective,
-    NgmTreeSelectComponent
+    NgmTreeSelectComponent,
+    NgmSelectionTableComponent
   ],
   host: {
     class: 'pac-model-creation'

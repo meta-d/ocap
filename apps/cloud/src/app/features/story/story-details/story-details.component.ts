@@ -17,10 +17,10 @@ import { Router } from '@angular/router'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { HighlightDirective } from '@metad/components/core'
 import { Story, StoryModel, StoryOptions } from '@metad/story/core'
 import { Subject, combineLatestWith, filter, firstValueFrom, map, startWith, switchMap, tap } from 'rxjs'
 import { ISemanticModel, ProjectService, ScreenshotService, ToastrService } from '../../../@core'
+import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -40,8 +40,8 @@ import { ISemanticModel, ProjectService, ScreenshotService, ToastrService } from
     MatAutocompleteModule,
     MatChipsModule,
     DragDropModule,
-    HighlightDirective,
-    OcapCoreModule
+    OcapCoreModule,
+    NgmHighlightDirective
   ],
   selector: 'ngm-story-details',
   templateUrl: './story-details.component.html',

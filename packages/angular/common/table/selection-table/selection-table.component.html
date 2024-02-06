@@ -25,7 +25,7 @@
                         <ng-container *ngTemplateOutlet="column.cellTemplate; context: _context(element, column)"></ng-container>
                     </ng-container>
                     <ng-container *ngIf="!column.cellTemplate">
-                        {{element | property: column.value}}
+                        {{element[column.value]}}
                     </ng-container>
                 </div>
             </td>
@@ -41,4 +41,5 @@
         </tr>
     </table>
 </div>
+
 <mat-paginator [pageSizeOptions]="[10, 20, 50, 100]"></mat-paginator>

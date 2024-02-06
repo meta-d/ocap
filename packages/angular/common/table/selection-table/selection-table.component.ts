@@ -1,29 +1,49 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { SelectionModel } from '@angular/cdk/collections'
+import { CommonModule } from '@angular/common'
 import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges, TemplateRef, ViewChild } from '@angular/core'
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { MatPaginator } from '@angular/material/paginator'
-import { MatSort } from '@angular/material/sort'
-import { MatTableDataSource } from '@angular/material/table'
-import { DisplayDensity } from '@metad/ocap-angular/core'
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
+import { MatSort, MatSortModule } from '@angular/material/sort'
+import { MatTableDataSource, MatTableModule } from '@angular/material/table'
+import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
+import { TranslateModule } from '@ngx-translate/core'
 import get from 'lodash-es/get'
 
 /**
- * @deprecated move to `@metad/ocap-angular`
  */
 @Component({
-  selector: 'ngm-single-selection-table',
-  templateUrl: './single-selection-table.component.html',
-  styleUrls: ['./single-selection-table.component.scss'],
+  standalone: true,
+  selector: 'ngm-selection-table',
+  templateUrl: './selection-table.component.html',
+  styleUrls: ['./selection-table.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    MatCheckboxModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSortModule,
+    MatInputModule,
+    DensityDirective
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NxSingleSelectionTableComponent), // replace name as appropriate
+      useExisting: forwardRef(() => NgmSelectionTableComponent),
       multi: true
     }
   ]
 })
-export class NxSingleSelectionTableComponent implements OnInit, OnChanges, ControlValueAccessor {
+export class NgmSelectionTableComponent implements OnInit, OnChanges, ControlValueAccessor {
 
   @Input() displayDensity: DisplayDensity | string = DisplayDensity.comfortable
   @Input() data: Array<any>
@@ -44,7 +64,9 @@ export class NxSingleSelectionTableComponent implements OnInit, OnChanges, Contr
   }
   private _grid = false
 
-  @ViewChild(MatPaginator) paginator: MatPaginator
+  @Input() disabled = false
+
+  @ViewChild(MatPaginator) paginator?: MatPaginator
   @ViewChild(MatSort) sort: MatSort
 
   displayedColumns: string[]
@@ -89,7 +111,9 @@ export class NxSingleSelectionTableComponent implements OnInit, OnChanges, Contr
     this.dataSource.sort = this.sort
     // If the user changes the sort order, reset back to the first page.
     this.sort?.sortChange.subscribe((sort) => {
-      this.paginator.pageIndex = 0
+      if (this.paginator) {
+        this.paginator.pageIndex = 0
+      }
     })
   }
 
@@ -103,6 +127,7 @@ export class NxSingleSelectionTableComponent implements OnInit, OnChanges, Contr
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
+    this.disabled = isDisabled
   }
 
   applyFilter(filterValue: string) {

@@ -7,7 +7,6 @@ import { Router } from '@angular/router'
 import { DataSourceService, ModelsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxTableModule } from '@metad/components/table'
 import { uploadYamlFile } from '@metad/core'
 import { NgmTreeSelectComponent, TreeTableModule } from '@metad/ocap-angular/common'
 import { ControlsModule } from '@metad/ocap-angular/controls'
@@ -42,7 +41,6 @@ import { exportSemanticModel } from '../types'
     NgxPermissionsModule,
     MtxPopoverModule,
     NgmDialogComponent,
-    NxTableModule,
 
     // OCAP Modles
     NgmTreeSelectComponent,

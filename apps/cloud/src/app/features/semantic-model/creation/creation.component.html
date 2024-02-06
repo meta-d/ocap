@@ -60,7 +60,7 @@
     <label class="text-lg">
         {{ 'PAC.MODEL.DataSource' | translate: { Default: 'Data source' } }}
     </label>
-    <ngm-single-selection-table
+    <ngm-selection-table
         appearance="outline"
         displayDensity="compact"
         grid
@@ -68,14 +68,14 @@
         [columns]="columns$ | async"
         formControlName="dataSource"
     >
-    </ngm-single-selection-table>
+    </ngm-selection-table>
 
     <label class="text-lg mt-4">
         {{ 'PAC.MENU.MODEL.SELECT_CATALOG' | translate: { Default: 'Select Catalog' } }}
     </label>
     <mat-progress-bar *ngIf="catalogsLoading" mode="query"></mat-progress-bar>
     <div class="relative flex flex-col">
-        <ngm-single-selection-table class="z-0"
+        <ngm-selection-table class="z-0"
             appearance="outline"
             displayDensity="compact"
             grid
@@ -83,7 +83,7 @@
             [columns]="catalogColumns$ | async"
             formControlName="catalog"
         >
-        </ngm-single-selection-table>
+        </ngm-selection-table>
 
         <div *ngIf="discoverDBCatalogsError" class="absolute top-0 left-0 w-full h-full flex justify-center items-center overflow-hidden text-ellipsis bg-slate-500/20 backdrop-blur-lg">
             {{discoverDBCatalogsError}}

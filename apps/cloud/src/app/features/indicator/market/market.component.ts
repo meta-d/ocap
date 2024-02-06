@@ -5,7 +5,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { BusinessAreasService, IndicatorsService, Store, ToastrService, hierarchize } from '@metad/cloud/state'
 import { HighlightDirective } from '@metad/components/core'
 import { IndicatorType, PermissionApprovalStatusTypesEnum } from '@metad/contracts'
-import { NgmCommonModule, NgmTreeSelectComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmHighlightDirective, NgmTreeSelectComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { findTreeNode } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
@@ -42,7 +42,8 @@ import { IndicatorTypeComponent } from '../../../@shared/indicator'
     InlineSearchComponent,
     IndicatorTypeComponent,
     NgmTreeSelectComponent,
-    TagViewerComponent
+    TagViewerComponent,
+    NgmHighlightDirective
   ],
   selector: 'pac-market',
   templateUrl: './market.component.html',

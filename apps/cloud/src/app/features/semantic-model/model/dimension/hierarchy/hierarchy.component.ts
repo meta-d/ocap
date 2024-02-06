@@ -9,7 +9,6 @@ import { C_MEASURES_ROW_COUNT, serializeMeasureName, serializeUniqueName } from 
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { NxTableModule } from '@metad/components/table'
 import { nonNullable } from '@metad/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { NgmError, ToastrService, uuid } from 'apps/cloud/src/app/@core'
@@ -53,15 +52,11 @@ import { ModelHierarchyService } from './hierarchy.service'
     SharedModule,
     MaterialModule,
     ContentLoaderModule,
-
-    NxTableModule,
-
     OcapCoreModule,
     ResizerModule,
     SplitterModule,
     NgmEntitySchemaComponent,
     NgmCommonModule,
-
     TablesJoinModule
   ]
 })

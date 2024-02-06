@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxTableModule } from '@metad/components/table'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../../services/index'
@@ -26,7 +25,6 @@ import { PACInsightWidgetComponent } from './widget/widget.component'
     ReactiveFormsModule,
     PACInsightRoutingModule,
     NgmDialogComponent,
-    NxTableModule,
 
     OcapCoreModule.forRoot(),
 

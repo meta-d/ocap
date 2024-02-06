@@ -84,14 +84,14 @@
       <div class="m-2 grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-2">
         <div class="col-span-2 md:col-span-6 lg:col-span-8 text-lg my-2">
           <a [routerLink]="['/indicator/viewer', item.id]">
-            <span [highlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
+            <span [ngmHighlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
               [content]="item.name">
             </span>
           </a>
         </div>
 
         <div class="col-span-2 md:col-span-6 lg:col-span-8 text-gray-500">
-          <span [highlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
+          <span [ngmHighlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
                 [content]="item.business"
               >
           </span>
@@ -101,7 +101,7 @@
           {{ 'PAC.INDICATOR.REGISTER.CODE' | translate }}:
         </div>
         <div class="overflow-hidden text-ellipsis whitespace-nowrap">
-          <span [highlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
+          <span [ngmHighlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
             [content]="item.code"></span>
         </div>
 

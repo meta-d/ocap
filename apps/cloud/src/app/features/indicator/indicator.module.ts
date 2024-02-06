@@ -9,10 +9,8 @@ import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { FormulaModule } from '@metad/ocap-angular/formula'
 import { ToastrService } from '@metad/cloud/state'
 import { CalculatedMeasureComponent } from '@metad/components/property'
-import { HighlightDirective } from '@metad/components/core'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { NxSelectionModule } from '@metad/components/selection'
-import { NxTableModule } from '@metad/components/table'
 import { IsNilPipe, NxCoreModule } from '@metad/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { MaterialModule, SharedModule } from '../../@shared'
@@ -37,11 +35,9 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     InlineSearchComponent,
     PACIndicatorRoutingModule,
 
-    NxTableModule,
     NgmDialogComponent,
     CalculatedMeasureComponent,
     IsNilPipe,
-    HighlightDirective,
 
     // OCAP Modules
     OcapCoreModule.forRoot(),
@@ -50,7 +46,7 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     TreeTableModule,
     FormulaModule,
     ResizerModule,
-    NgmHierarchySelectComponent
+    NgmHierarchySelectComponent,
   ],
   providers: [ToastrService]
 })
