@@ -29,25 +29,19 @@
 ></ngm-table>
 
 <ng-template #nameTempl let-id="id" let-name="name">
-    <ng-container *ngIf="!editCache[id]?.edit; else editTemplate">
-        <span>{{ name }}</span>
-    </ng-container>
-
-    <ng-template #editTemplate>
-        <!-- <input matInput [(ngModel)]="editCache[id].data.name"> -->
-        <ngm-input [(ngModel)]="editCache[id].data.name" class="mb-1"></ngm-input>
-    </ng-template>
+  @if (!editCache[id]?.edit) {
+    <span>{{ name }}</span>
+  } @else {
+    <ngm-input [(ngModel)]="editCache[id].data.name" class="mt-2"></ngm-input>
+  }
 </ng-template>
 
 <ng-template #valueTempl let-id="id" let-value="value">
-    <ng-container *ngIf="!editCache[id]?.edit; else editTemplate">
-        <span>{{ value }}</span>
-    </ng-container>
-
-    <ng-template #editTemplate>
-        <!-- <input matInput [(ngModel)]="editCache[id].data.value"> -->
-        <ngm-input [(ngModel)]="editCache[id].data.value" class="mb-1"></ngm-input>
-    </ng-template>
+  @if (!editCache[id]?.edit) {
+    <span>{{ value }}</span>
+  } @else {
+    <ngm-input [(ngModel)]="editCache[id].data.value" class="mt-2"></ngm-input>
+  }
 </ng-template>
 
 <ng-template #actionTempl let-id="id">

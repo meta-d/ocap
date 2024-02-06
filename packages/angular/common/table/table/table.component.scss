@@ -14,3 +14,7 @@
     text-align: right;
   }
 }
+
+.mat-mdc-paginator {
+  border-top: 1px solid var(--mat-table-row-item-outline-color);
+}

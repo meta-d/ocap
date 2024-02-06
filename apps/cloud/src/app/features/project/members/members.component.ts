@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxTableModule } from '@metad/components/table'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
 import { ICertification, IProject, IUser, ProjectService, Store, ToastrService } from '../../../@core'
 import {
@@ -21,6 +20,7 @@ import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { ProjectComponent } from '../project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -35,10 +35,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     InlineSearchComponent,
     UserProfileComponent,
     UserProfileInlineComponent,
-    NxTableModule,
     ButtonGroupDirective,
     DensityDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmTableComponent
   ],
   selector: 'pac-project-members',
   templateUrl: 'members.component.html',

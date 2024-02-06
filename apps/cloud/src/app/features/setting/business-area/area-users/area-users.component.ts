@@ -19,9 +19,8 @@ import {
   switchMap
 } from 'rxjs'
 import { EditBusinessAreaComponent } from '../business-area/business-area.component'
-import { NxTableModule } from '@metad/components/table'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { CommonModule } from '@angular/common'
 
 
@@ -34,9 +33,9 @@ import { CommonModule } from '@angular/common'
     CommonModule,
     MaterialModule,
     TranslateModule,
-    NxTableModule,
     UserProfileInlineComponent,
-    NgmSearchComponent
+    NgmSearchComponent,
+    NgmTableComponent
   ]
 })
 export class BusinessAreaUsersComponent extends TranslationBaseComponent {

@@ -3,7 +3,6 @@ import { Component, Inject, LOCALE_ID, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { InviteService, Store, ToastrService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import { InvitationExpirationEnum, InvitationTypeEnum } from '@metad/contracts'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
@@ -18,6 +17,7 @@ import { formatDistanceToNow, isAfter } from 'date-fns'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, switchMap, withLatestFrom } from 'rxjs'
 import { InviteMutationComponent } from '../../../../@shared/invite'
 import { PACUsersComponent } from '../users.component'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -29,11 +29,11 @@ import { PACUsersComponent } from '../users.component'
     MaterialModule,
     // Standard components
     ButtonGroupDirective,
-    NxTableModule,
     InlineSearchComponent,
     // OCAP Modules
     OcapCoreModule,
-    UserProfileInlineComponent
+    UserProfileInlineComponent,
+    NgmTableComponent
   ]
 })
 export class ManageUserInviteComponent extends TranslationBaseComponent {

@@ -11,44 +11,6 @@
     th.mat-mdc-header-cell, td.mat-mdc-cell, td.mat-mdc-footer-cell {
       border-right: 1px solid mat.get-color-from-palette($foreground, divider);
     }
-
-    .mat-sort-header-content {
-      flex: 1;
-    }
-
-    .cdk-header-cell {
-      .ngm-header-cell {
-        .searchable-icon {
-          opacity: 0;
-          transition: all 200ms;
-        }
-
-        &:hover {
-          .searchable-icon {
-            opacity: 1;
-          }
-        }
-      }
-      .searchable {
-        @apply ml-2 ;
-        .mat-mdc-input-element {
-          width: 0;
-          max-width: 0;
-          overflow: hidden;
-          text-align: left;
-        }
-
-        &.searching {
-          @apply bg-gray-200/50 rounded-md ;
-          .mat-mdc-input-element {
-            width: 100px;
-            max-width: unset;
-            outline: none;
-          }
-        }
-      }
-      
-    }
   }
 }
 

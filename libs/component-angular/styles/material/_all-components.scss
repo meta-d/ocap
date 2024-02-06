@@ -6,7 +6,6 @@
 @use '../../advanced-filter/advanced-filter-theme' as advanced-filter;
 @use '../../property/calculation/calculation-theme' as calculation;
 @use '../../smart-micro/smart-micro-theme' as smart-micro;
-@use '../../table/table-theme' as table;
 @use '../../form-field/form-field-theme' as form-field;
 @use '../../datepicker/datepicker-theme' as datepicker;
 @use '../../time-filter/time-filter-theme' as time-filter;
@@ -41,7 +40,7 @@
   @include overlay.theme($theme-or-color-config);
   @include option.theme($theme-or-color-config);
   @include color.theme($theme-or-color-config);
-  @include table.theme($theme-or-color-config);
+  // @include table.theme($theme-or-color-config);
   @include form-field.theme($theme-or-color-config);
   @include datepicker.theme($theme-or-color-config);
   @include time-filter.theme($theme-or-color-config);
@@ -72,7 +71,7 @@
   @include button.color($theme-or-color-config);
   // @include density.color($theme-or-color-config);
   @include advanced-filter.color($theme-or-color-config);
-  @include table.color($theme-or-color-config);
+  // @include table.color($theme-or-color-config);
   @include form-field.color($theme-or-color-config);
   @include datepicker.color($theme-or-color-config);
   @include time-filter.color($theme-or-color-config);

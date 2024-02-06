@@ -8,7 +8,7 @@ import { map, shareReplay, switchMap } from 'rxjs/operators'
 import { IOrganization, OrganizationsService, ToastrService, UsersOrganizationsService } from '../../../../@core'
 import { PACEditUserComponent } from '../edit-user/edit-user.component'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { NxTableModule } from '@metad/components/table'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -27,8 +27,8 @@ import { NxTableModule } from '@metad/components/table'
   imports: [
     SharedModule,
     MaterialModule,
-    NxTableModule,
-    UserProfileInlineComponent
+    UserProfileInlineComponent,
+    NgmTableComponent
   ]
 })
 export class PACUserOrganizationsComponent extends TranslationBaseComponent {

@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { ToastrService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import { ButtonGroupDirective, DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import {
@@ -19,6 +18,7 @@ import { combineLatestWith, map, switchMap, tap } from 'rxjs/operators'
 import { UserPipe } from '../../../../@shared/pipes/created-by.pipe'
 import { UserAvatarComponent } from '../../../../@shared/user'
 import { ProjectComponent } from '../../project.component'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -33,8 +33,8 @@ import { ProjectComponent } from '../../project.component'
     ButtonGroupDirective,
     DensityDirective,
     UserPipe,
-    NxTableModule,
-    UserAvatarComponent
+    UserAvatarComponent,
+    NgmTableComponent
   ]
 })
 export class ApprovalsComponent extends TranslationBaseComponent {

@@ -130,7 +130,7 @@ export class NgmTableComponent implements OnChanges, AfterViewInit {
     this._data = value
     this.dataSource.data = value ?? []
   }
-  private _data
+  private _data: Array<unknown>
 
   @Input() get paging(): boolean {
     return this._paging
@@ -166,7 +166,7 @@ export class NgmTableComponent implements OnChanges, AfterViewInit {
   // @Output() select: EventEmitter<any> = new EventEmitter()
   @Output() rowSelectionChanging = new EventEmitter<any[]>()
 
-  @ViewChild(MatPaginator) paginator: MatPaginator
+  @ViewChild(MatPaginator) paginator?: MatPaginator
   @ViewChild(MatSort) sort: MatSort
 
   displayedColumns = []
@@ -180,6 +180,7 @@ export class NgmTableComponent implements OnChanges, AfterViewInit {
   private _searchValueSub = this.searchControl.valueChanges.subscribe((value) => {
     this.dataSource.filter = value
   })
+
   constructor() {
     this.selection.changed.subscribe(() => this.rowSelectionChanging.emit(this.selection.selected))
   }
@@ -198,7 +199,9 @@ export class NgmTableComponent implements OnChanges, AfterViewInit {
     this.dataSource.sort = this.sort
     // If the user changes the sort order, reset back to the first page.
     this.sort?.sortChange.subscribe((sort) => {
-      this.paginator.pageIndex = 0
+      if (this.paginator) {
+        this.paginator.pageIndex = 0
+      }
     })
 
     this.dataSource.filterPredicate = (data: any, filter: string): boolean => {

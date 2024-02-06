@@ -5,12 +5,11 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { ActivatedRoute } from '@angular/router'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ModelsService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import { ISemanticModel, IUser, Store, ToastrService } from 'apps/cloud/src/app/@core'
 import {
   TranslationBaseComponent,
@@ -35,11 +34,11 @@ import { ModelComponent } from '../model.component'
     UserRoleSelectComponent,
     UserProfileComponent,
     UserProfileInlineComponent,
-    NxTableModule,
     ButtonGroupDirective,
     DensityDirective,
     AppearanceDirective,
-    NgmSearchComponent
+    NgmSearchComponent,
+    NgmTableComponent
   ],
   selector: 'pac-model-members',
   templateUrl: 'members.component.html',
