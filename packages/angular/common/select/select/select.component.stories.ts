@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { provideAnimations } from '@angular/platform-browser/animations'
@@ -11,7 +12,7 @@ const meta: Meta<NgmSelectComponent> = {
   component: NgmSelectComponent,
   decorators: [
     applicationConfig({
-      providers: [provideAnimations(), provideTranslate()]
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
     }),
     moduleMetadata({
       declarations: [],

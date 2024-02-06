@@ -8,6 +8,7 @@ import {
   AnnotatedFunction,
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
+  CopilotChatOptions,
   CopilotChatResponseChoice,
   CopilotCommand,
   CopilotEngine,
@@ -151,6 +152,15 @@ export const CustomNgmCopilotEngine: Story = {
 }
 
 class StorybookCustomCopilotEngine implements CopilotEngine {
+  chat(prompt: string, options?: CopilotChatOptions): Promise<string | void | CopilotChatMessage> {
+    throw new Error('Method not implemented.')
+  }
+  updateConversations?(fn: (conversations: CopilotChatMessage[][]) => CopilotChatMessage[][]): void {
+    throw new Error('Method not implemented.')
+  }
+  updateLastConversation?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
+    throw new Error('Method not implemented.')
+  }
   messages(): CopilotChatMessage[] {
     throw new Error('Method not implemented.')
   }
@@ -168,9 +178,6 @@ class StorybookCustomCopilotEngine implements CopilotEngine {
   deleteMessage(message: CopilotChatMessage): void {
     throw new Error('Method not implemented.')
   }
-  updateConversations(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
-    throw new Error('Method not implemented.')
-  }
   name?: string = 'Storybook custom engine'
   aiOptions: AIOptions = {
     model: '',
@@ -178,31 +185,15 @@ class StorybookCustomCopilotEngine implements CopilotEngine {
   }
   systemPrompt?: string
   prompts: string[] = ['/d {name} {age}']
-  conversations: CopilotChatMessage[] = []
+  // conversations: Array<CopilotChatMessage[]> = []
   placeholder?: string
 
-  process(
-    data: { prompt: string; messages?: CopilotChatMessage[] },
-    options?: { action?: string }
-  ): Observable<string | CopilotChatMessage> {
-    if (data.prompt === '/d {name} {age}') {
-      const name = options?.action || 'John'
-      const age = options?.action || '18'
-      return of(`My name is ${name}, I am ${age} years old.`)
-    }
-
-    return of('Non')
-  }
-  preprocess?(prompt: string, options?: any) {
-    //
-  }
-  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<string | CopilotChatMessage[]> {
-    throw new Error('Method not implemented.')
+  conversations(): Array<CopilotChatMessage[]> {
+    return []
   }
 
   upsertMessage(message: CopilotChatMessage): void {}
   clear() {
-    this.conversations = []
   }
 }
 

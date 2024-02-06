@@ -60,3 +60,25 @@
     }
   }
 }
+
+.ngm-tags .tag {
+  @apply px-3 py-1.5 rounded-lg text-base;
+}
+
+.ngm-density__cosy {
+  .ngm-tags .tag {
+    @apply px-2 py-1 rounded-lg text-sm;
+  }
+}
+
+.ngm-density__compact {
+  .ngm-tags .tag {
+    @apply px-1 py-0.5 rounded-md text-sm font-semibold;
+  }
+}
+
+.ngm-tags.disabled {
+  .tag {
+    @apply opacity-50;
+  }
+}

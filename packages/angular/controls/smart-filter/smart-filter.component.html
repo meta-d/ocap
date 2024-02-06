@@ -16,7 +16,9 @@
       <span *ngIf="restChips().length" class="cursor-pointer shrink-0" [matTooltip]="restChips().join('; ')">
         +{{restChips().length}}
       </span>
-      <mat-icon class="cursor-pointer shrink-0" displayDensity="compact" ngmAppearance="danger" (click)="clearMembers()">close</mat-icon>
+      <mat-icon class="cursor-pointer shrink-0 text-neutral-400" displayDensity="compact" ngmAppearance="danger"
+        [class.cursor-not-allowed]="disabled"
+        (click)="disabled ? null : clearMembers()">close</mat-icon>
     </ng-container>
   </div>
 
@@ -48,7 +50,7 @@
 </div>
 
 <mat-autocomplete #auto="matAutocomplete" class="ngm-tree-select__panel"
-  [class]="'ngm-autocomplete-panel ' + (multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
+  [class]="'ngm-autocomplete-panel ' + (multiple ? 'multiple' : '') + ' ' + (_displayDensity() === 'compact' ? 'ngm-density__compact' : '') + ' ' + (_displayDensity()==='cosy' ? 'ngm-density__cosy' : '')"
   [autoActiveFirstOption]="options?.autoActiveFirst"
   [displayWith]="displayWithCaption"
   (opened)="onAutocompleteOpened()"
@@ -61,7 +63,7 @@
     >
 
       <div class="flex-1 flex justify-start items-center" >
-        <button mat-icon-button [displayDensity]="appearance?.displayDensity"
+        <button mat-icon-button [displayDensity]="_displayDensity()"
           [style.visibility]="!option.expandable ? 'hidden' : ''"
           [style.marginLeft.px]="option.level * treeNodePaddingIndent"
           (click)="$event.stopPropagation(); treeControl.toggle(option)">

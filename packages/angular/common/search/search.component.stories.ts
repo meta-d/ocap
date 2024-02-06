@@ -1,22 +1,40 @@
 import { CommonModule } from '@angular/common'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { provideHttpClient } from '@angular/common/http'
+import { provideAnimations } from '@angular/platform-browser/animations'
+import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
+import { provideTranslate } from '@metad/ocap-angular/mock'
 import { TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata } from '@storybook/angular'
+import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
 import { NgmSearchComponent } from './search.component'
 
 export default {
   title: 'NgmSearchComponent',
   component: NgmSearchComponent,
   decorators: [
+    applicationConfig({
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
+    }),
     moduleMetadata({
-      imports: [CommonModule, BrowserAnimationsModule, TranslateModule.forRoot(), NgmSearchComponent],
+      imports: [CommonModule, TranslateModule, NgmSearchComponent, DensityDirective],
       declarations: []
     })
   ]
 } as Meta<NgmSearchComponent>
 
-const Template = (args: any) => ({
-  props: args
-})
+type Story = StoryObj<NgmSearchComponent>
 
-export const Search = Template.bind({})
+export const Primary: Story = {
+  args: {}
+}
+
+export const DensityCompact: Story = {
+  args: {
+    displayDensity: DisplayDensity.compact
+  },
+  render: (args: NgmSearchComponent) => ({
+    args,
+    template: `<div class="ngm-density__compact">
+    <ngm-search ${argsToTemplate(args)}></ngm-search>
+</div>`
+  })
+}
