@@ -167,7 +167,6 @@ export class StoryToolbarComponent implements OnInit {
     map(([isDirty, saving]) => !isDirty || saving)
   )
   public readonly pointList$ = this.storyService.points$
-  public readonly isCopyWidgetSelected$ = this.storyService.copySelectedWidget$
 
   public readonly isMobile$ = this.storyService.isMobile$
 
@@ -178,7 +177,13 @@ export class StoryToolbarComponent implements OnInit {
   public readonly isPanMode$ = this.storyService.isPanMode$
 
   public readonly isWidgetSelected = computed(() => !this.storyService.currentWidget())
-
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly isCopyWidgetSelected$ = toSignal(this.storyService.copySelectedWidget$)
+  
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)

@@ -128,7 +128,7 @@
                 </mat-nav-list>
             </ngm-splitter-pane>
 
-            <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch" *ngrxLet="isWasm$ as isWasm">
+            <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
                 <mat-toolbar displayDensity="compact" class="shrink-0 text-gray-600 dark:text-gray-300">
                     <mat-toolbar-row class="flex justify-between items-center">
                         <span>{{ 'PAC.MODEL.MODEL.TABLES' | translate: {Default: "Tables"} }}</span>
@@ -146,12 +146,12 @@
                                 (click)="refreshSchema()">
                                 <mat-icon fontSet="material-icons-round">refresh</mat-icon>
                             </button>
-                            <button *ngIf="isWasm" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+                            <button *ngIf="isWasm$()" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                                 [matTooltip]=" 'PAC.MODEL.MODEL.NewTable' | translate: {Default: 'New Table'} "
                                 (click)="addTable()">
                                 <mat-icon fontSet="material-icons-round">add</mat-icon>
                             </button>
-                            <button *ngIf="writable$ | async" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+                            <button *ngIf="writable$()" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                                 [matTooltip]=" 'PAC.MODEL.MODEL.UploadTable' | translate: {Default: 'Upload Table'} "
                                 (click)="uploadTable()">
                                 <mat-icon fontSet="material-icons-round">upload</mat-icon>
@@ -194,11 +194,11 @@
                                 </ngm-display-behaviour>
 
                                 <ngm-action-strip #actionStrip [hidden]="true">
-                                    <button mat-icon-button *ngIf="isWasm && entity.sourceUrl" displayDensity="compact"
+                                    <button mat-icon-button *ngIf="isWasm$() && entity.sourceUrl" displayDensity="compact"
                                         (click)="$event.stopPropagation();$event.preventDefault();editTable(entity)">
                                         <mat-icon>edit</mat-icon>
                                     </button>
-                                    <button mat-icon-button *ngIf="isWasm && entity.sourceUrl" color="warn" displayDensity="compact"
+                                    <button mat-icon-button *ngIf="isWasm$() && entity.sourceUrl" color="warn" displayDensity="compact"
                                         (click)="$event.stopPropagation();$event.preventDefault();deleteTable(entity)">
                                         <mat-icon>delete</mat-icon>
                                     </button>
@@ -427,7 +427,7 @@
             {{ 'PAC.MODEL.Members' | translate: {Default: "Members"} }}
         </button>
     
-        <button cdkMenuItem *ngIf="isOlap$ | async" [routerLink]="['./access']">
+        <button cdkMenuItem *ngIf="isOlap$()" [routerLink]="['./access']">
             <mat-icon fontSet="material-icons-outlined">manage_accounts</mat-icon>
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
         </button>

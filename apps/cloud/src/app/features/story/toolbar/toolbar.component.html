@@ -486,10 +486,10 @@
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
         <mat-divider></mat-divider>
-        <button cdkMenuItem *ngrxLet="isCopyWidgetSelected$ as isCopyWidgetSelected"
-            [cdkMenuItemDisabled]="!isCopyWidgetSelected"
-            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected"
-            (click)="isCopyWidgetSelected?pasteWidget():''">
+        <button cdkMenuItem
+            [cdkMenuItemDisabled]="!isCopyWidgetSelected$()"
+            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected$()"
+            (click)="isCopyWidgetSelected$() ? pasteWidget() : ''">
             {{ 'Story.Toolbar.COPY.PASTE' | translate: {Default: "Paste"} }}
         </button>
         
@@ -519,10 +519,10 @@
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
         <mat-divider></mat-divider>
-        <button cdkMenuItem *ngrxLet="isCopyWidgetSelected$ as isCopyWidgetSelected"
-            [cdkMenuItemDisabled]="!isCopyWidgetSelected"
-            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected"
-            (click)="isCopyWidgetSelected?pasteWidget():''">
+        <button cdkMenuItem
+            [cdkMenuItemDisabled]="!isCopyWidgetSelected$()"
+            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected$()"
+            (click)="isCopyWidgetSelected$() ? pasteWidget() : ''">
             {{ 'Story.Toolbar.COPY.PASTE' | translate: {Default: "Paste"} }}
         </button>
     </div>

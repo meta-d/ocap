@@ -36,7 +36,7 @@ import { HierarchyColumnType, TOOLBAR_ACTION_CATEGORY } from '../../types'
 import { ModelDimensionComponent } from '../dimension.component'
 import { ModelDimensionService } from '../dimension.service'
 import { ModelHierarchyService } from './hierarchy.service'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -192,6 +192,13 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   public readonly data$ = this.query$.pipe(map(({ data }) => data))
   public readonly error$ = this.query$.pipe(map(({ error }) => error))
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly levelSignal = toSignal(this.hierarchyService.levels$)
 
   /**
   |--------------------------------------------------------------------------

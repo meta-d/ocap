@@ -19,15 +19,15 @@
                         <mat-icon color="warn" fontSet="material-icons-round">delete</mat-icon>
                     </button>
                 </mat-toolbar>
-                <div id="pac-model-dimension__hierarchy-levels" *ngrxLet="levels$ as levels"
+                <div id="pac-model-dimension__hierarchy-levels"
                     class="pac-cdk-drop__list flex-1"
                     cdkDropList
-                    [cdkDropListData]="levels"
+                    [cdkDropListData]="levelSignal()"
                     (cdkDropListDropped)="dropLevel($event)"
                     [cdkDropListEnterPredicate]="levelPredicate"
                 >
                     <mat-nav-list class="overflow-y-auto max-h-full" displayDensity="compact">
-                        <mat-list-item *ngFor="let level of levels" [activated]="level.__id__ === designerComponentId"
+                        <mat-list-item *ngFor="let level of levelSignal()" [activated]="level.__id__ === designerComponentId"
                             cdkDrag
                             [cdkDragData]="level"
                             (click)="onLevelSelect(level.__id__)"

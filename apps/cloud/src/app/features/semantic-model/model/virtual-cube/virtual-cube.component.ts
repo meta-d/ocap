@@ -15,7 +15,7 @@ import { SemanticModelService } from '../model.service'
 import { SemanticModelEntityType } from '../types'
 import { VirtualCubeStateService } from './virtual-cube.service'
 import { EntityCapacity } from '@metad/ocap-angular/entity'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   selector: 'pac-model-virtual-cube',
@@ -40,10 +40,8 @@ export class VirtualCubeComponent {
     distinctUntilChanged()
   )
 
-  public readonly virtualCube$ = this.virtualCubeState.state$
-
   public readonly cubes$ = this.virtualCubeState.cubes$
-  public readonly dimensions$ = this.virtualCubeState.dimensions$
+  // public readonly dimensions$ = this.virtualCubeState.dimensions$
   public readonly measures$ = this.virtualCubeState.measures$
   public readonly calculatedMembers$ = this.virtualCubeState.calculatedMembers$
 
@@ -67,7 +65,7 @@ export class VirtualCubeComponent {
   }
   public _formula = ''
 
-  public readonly dataSettings$ = this.virtualCube$.pipe(
+  public readonly dataSettings$ = this.virtualCubeState.state$.pipe(
     map((virtualCube) => ({
       dataSource: this.dataSourceName,
       entitySet: virtualCube?.name
@@ -81,6 +79,19 @@ export class VirtualCubeComponent {
     map((entitySet) => entitySet?.entityType),
   )
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly virtualCube$ = toSignal(this.virtualCubeState.state$)
+  readonly dimensions$ = toSignal(this.virtualCubeState.dimensions$)
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effect)
+  |--------------------------------------------------------------------------
+  */
   private cubeKeySub = this.cubeKey$.pipe(takeUntilDestroyed()).subscribe((key) => {
     this.virtualCubeState.init(key)
   })

@@ -1,10 +1,10 @@
-<mat-toolbar displayDensity="compact" *ngrxLet="virtualCube$ as virtualCube" class="text-gray-500">
+<mat-toolbar displayDensity="compact" class="text-gray-500">
     <button mat-icon-button displayDensity="compact" (click)="drawer.toggle()">
         <mat-icon fontSet="material-icons-round">segment</mat-icon>
     </button>
     {{ 'PAC.MODEL.VirtualCube.VirtualCube' | translate: {Default: 'Virtual Cube'} }}:
-    <span style="overflow: hidden;">{{ virtualCube.caption }} ({{ virtualCube.name }})</span>
-    <button mat-icon-button displayDensity="compact" (click)="editVirtualCube(virtualCube)">
+    <span style="overflow: hidden;">{{ virtualCube$().caption }} ({{ virtualCube$().name }})</span>
+    <button mat-icon-button displayDensity="compact" (click)="editVirtualCube(virtualCube$())">
         <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
     </button>
 </mat-toolbar>
@@ -102,14 +102,13 @@
                     <mat-panel-description></mat-panel-description>
                 </mat-expansion-panel-header>
                 <mat-list role="list" class="pac-cdk-drop__list min-h-[60px]" displayDensity="compact"
-                    *ngrxLet="dimensions$ as dimensions"
                     cdkDropList
-                    [cdkDropListData]="dimensions"
+                    [cdkDropListData]="dimensions$()"
                     [cdkDropListEnterPredicate]="dropDimensionPredicate"
                     (cdkDropListDropped)="dropDimension($event)"
                     >
                     <mat-list-item role="listitem" class="pac-cdk-drop-item"
-                        *ngFor="let dimension of dimensions" cdkDrag>
+                        *ngFor="let dimension of dimensions$()" cdkDrag>
                         <div class="flex items-center">
                             <div class="flex-1 flex mr-4">
                                 <ngm-display-behaviour class="flex-1"
@@ -257,18 +256,3 @@
     </mat-drawer-content>
 
 </mat-drawer-container>
-
-
-<!-- <ng-template #formulaDialog>
-  <ngm-dialog class="w-full" [title]=" 'PAC.INDICATOR.EditFormula' | translate: {Default: 'Edit formula for ' + name, name: (name ?? '')} "
-    (apply)="onApplyFormula()"
-  >
-    <ngm-calculated-measure class="flex w-full h-full"
-      [syntax]="Syntax.MDX"
-      [dataSettings]="dataSettings$ | async"
-      [entityType]="entityType$ | async"
-      [(ngModel)]="_formula"
-    >
-    </ngm-calculated-measure>
-  </ngm-dialog>
-</ng-template> -->

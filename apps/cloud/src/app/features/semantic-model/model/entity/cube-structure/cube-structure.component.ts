@@ -69,11 +69,6 @@ export class ModelCubeStructureComponent {
     })
   )
 
-  public readonly measures$ = this.cubeState.measures$.pipe(map((measures) => measures?.map((measure) => ({
-    ...measure,
-    role: AggregationRole.measure
-  } as PropertyMeasure))))
-
   public readonly calculatedMembers = toSignal(this.cubeState.calculatedMembers$.pipe(
     map((members) => {
       return members?.map((member) => ({
@@ -86,6 +81,15 @@ export class ModelCubeStructureComponent {
 
   /** The selection for checklist */
   checklistSelection = new SelectionModel<string>()
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly measures$ = toSignal(this.cubeState.measures$.pipe(map((measures) => measures?.map((measure) => ({
+    ...measure,
+    role: AggregationRole.measure
+  } as PropertyMeasure)))))
 
   /**
   |--------------------------------------------------------------------------
@@ -230,5 +234,4 @@ export class ModelCubeStructureComponent {
       this.cubeState.newCalculatedMeasure({index: event.currentIndex, column: event.item.data.name})
     }
   }
-
 }

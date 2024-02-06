@@ -7,6 +7,7 @@ import {
   TemplateRef,
   ViewChild,
   ViewContainerRef,
+  computed,
   inject
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -286,13 +287,7 @@ ${sharedDimensionsPrompt}
       return entities
     })
   )
-
-  public readonly isWasm$ = this.modelService.isWasm$
-  public readonly isOlap$ = this.modelService.isOlap$
-  public readonly writable$ = combineLatest([this.modelService.isWasm$, this.modelService.modelType$]).pipe(
-    map(([isWasm, modelType]) => !isWasm && (modelType === MODEL_TYPE.OLAP || modelType === MODEL_TYPE.SQL))
-  )
-  public readonly _isDirty = toSignal(this.modelService.dirty$)
+  
   public readonly stories$ = this.modelService.stories$
   public readonly currentEntityType$ = this.modelService.currentEntityType$
 
@@ -306,6 +301,17 @@ ${sharedDimensionsPrompt}
 
   // inner states
   clearingServerCache: boolean
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly isWasm$ = toSignal(this.modelService.isWasm$)
+  readonly isOlap$ = toSignal(this.modelService.isOlap$)
+  readonly modelType$ = toSignal(this.modelService.modelType$)
+  readonly writable$ = computed(() => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL))
+  readonly _isDirty = toSignal(this.modelService.dirty$)
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']

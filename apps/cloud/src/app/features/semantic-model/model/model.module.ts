@@ -16,7 +16,6 @@ import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { LetDirective } from '@ngrx/component'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
@@ -57,14 +56,10 @@ import { ModelDesignerType } from './types'
     TranslateModule,
     ReactiveFormsModule,
     ScrollingModule,
-    ContentLoaderModule,
-    FormlyModule,
-    NgxPopperjsModule,
-    LetDirective,
+    
     NxEditorModule,
     CreatedByPipe,
     UserPipe,
-
     NxActionStripModule,
     NxDesignerModule,
     ModelUploadComponent,
@@ -72,14 +67,17 @@ import { ModelDesignerType } from './types'
     // OCAP Modules
     ResizerModule,
     SplitterModule,
-    MonacoEditorModule.forRoot(),
     OcapCoreModule,
     NgmCommonModule,
     NgmCopilotChatComponent,
     NgmTableComponent,
-    NgmDrawerTriggerComponent
+    NgmDrawerTriggerComponent,
 
     // Thirdparty
+    MonacoEditorModule.forRoot(),
+    ContentLoaderModule,
+    FormlyModule,
+    NgxPopperjsModule,
   ],
   providers: [
     provideOcapCore(),
