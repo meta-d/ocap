@@ -9,7 +9,6 @@ $prefix: (ngm, model);
 @function get-unthemable-tokens() {
   @return (
     border-color: theme('colors.gray.200'),
-    // container-elevation-shadow: mdc-elevation.elevation-box-shadow(8),
   );
 }
 

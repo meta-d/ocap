@@ -4,7 +4,10 @@
   &.pac-toolbar__on-right {
     @apply flex-row-reverse;
   }
+}
 
+.pac-story-bar__detail-card {
+  background-color: var(--mdc-elevated-card-container-color);
 }
 
 .mat-divider {
@@ -28,3 +31,4 @@
 .pac-copilot-chat {
   --pac-copilot-bg-color: transparent;
 }
+

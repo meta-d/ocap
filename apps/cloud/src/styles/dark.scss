@@ -7,8 +7,8 @@ body.dark {
 
   @include token-utils.create-token-values(ngm, (
     bg-color: rgb(10 10 10),
-    card-bg-color: theme('colors.bluegray.800'),
-    card-border-color: theme('colors.bluegray.700'),
+    card-bg-color: rgb(22, 24, 28),
+    card-border-color: theme('colors.neutral.800'),
     primary-color: theme('colors.bluegray.500'),
     text-primary-color: theme('colors.bluegray.200'),
     scrollbar-color: theme('colors.neutral.900'),

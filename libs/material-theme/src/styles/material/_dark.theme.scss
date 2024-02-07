@@ -26,8 +26,8 @@ $background: (
   app-bar:    theme('colors.neutral.900'),
   background: black,
   hover:      rgba(white, 0.1), // TODO(kara): check style with Material Design UX
-  card:       rgb(22, 24, 28), // rgb(23, 23, 23), // theme('colors.neutral.900'), //#192038, //#222b45,
-  dialog:     theme('colors.neutral.900'),
+  card:       rgb(22, 24, 28),
+  dialog:     rgb(22, 24, 28),
   disabled-button: rgba(white, 0.12),
   raised-button: map.get($grey-palette, 800),
   // focused-button: $light-focused,

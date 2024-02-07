@@ -1,8 +1,5 @@
 :host {
   @apply relative h-full flex-1 flex flex-col;
-
-  // --mat-sidenav-content-background-color: theme(colors.white);
-
   &.pac-fullscreen {
     position: fixed;
     top: 0px;
