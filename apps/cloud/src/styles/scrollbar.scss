@@ -43,5 +43,5 @@ body {
  */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--sb-col, rgba(0, 0, 0, 0.12)) transparent;
+  scrollbar-color: var(--ngm-scrollbar-color, rgba(0, 0, 0, 0.12)) transparent;
 }

@@ -44,13 +44,16 @@ import { NgmTableComponent } from '@metad/ocap-angular/common'
   templateUrl: 'members.component.html',
   styles: [
     `
-      :host {
-        width: 100%;
-        overflow: auto;
-      }
-      .rounded-full.mat-stroked-button {
-        border-radius: 50%;
-      }
+:host {
+  width: 100%;
+  overflow: auto;
+}
+.rounded-full.mat-stroked-button {
+  border-radius: 50%;
+}
+.ngm-table {
+  border-color: var(--mat-divider-color);
+}
     `
   ]
 })

@@ -66,6 +66,8 @@ export class MarketComponent {
 
   PAGE_SIZE = 10
   displayCompact = false
+  // Left side menu drawer open state
+  sideMenuOpened = true
 
   businessArea = new FormControl<string>(null)
   search = new FormControl<string>(null)

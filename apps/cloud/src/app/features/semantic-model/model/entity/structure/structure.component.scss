@@ -102,3 +102,8 @@
     min-width: unset;
   }
 }
+
+.pac-data-type-tag {
+  @apply text-xs inline-flex items-center uppercase px-3 py-1 rounded-full overflow-hidden text-ellipsis
+    bg-white text-gray-700 dark:bg-slate-800 dark:text-slate-400;
+}

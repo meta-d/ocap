@@ -228,35 +228,11 @@
             cdkDragLockAxis="x"
         ></div>
     </mat-drawer>
-    <mat-drawer-content class="flex">
-        <!-- <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
-            <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400"
-                [(opened)]="copilotDrawerOpened"
-            >
-                <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area"
-                    [copilotEngine]="copilotEngine"
-                    [user]="user"
-                    cdkDropList
-                    (cdkDropListDropped)="dropCopilot($event)"
-                ></ngm-copilot-chat>
-                
-                <div ngmResizerBar resizerBarPosition="left"
-                    cdkDrag
-                    cdkDragLockAxis="x"
-                ></div>
-            </mat-drawer>
-
-            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path" class="relative">
-                
-
-                <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
-                
-            </mat-drawer-content>
-        </mat-drawer-container> -->
-
+    <mat-drawer-content>
+      <div class="w-full flex-1 overflow-auto">
         <router-outlet #o="outlet"></router-outlet>
-
-        <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
+      </div>
+      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
     

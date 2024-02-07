@@ -61,7 +61,7 @@
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
                     <mat-list class="overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let property of dimensions" class="flex justify-between hover:bg-slate-100 focus:bg-slate-200"
+                        <mat-list-item *ngFor="let property of dimensions" class="flex justify-between hover:bg-slate-100 focus:bg-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-900"
                             cdkDrag
                             [cdkDragData]="property"
                             (cdkDragReleased)="onDragReleased($event)">
@@ -89,7 +89,7 @@
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
                     <mat-list class="overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let property of measures" class="flex justify-between hover:bg-slate-100 focus:bg-slate-200"
+                        <mat-list-item *ngFor="let property of measures" class="flex justify-between hover:bg-slate-100 focus:bg-slate-200 dark:hover:bg-slate-800 dark:focus:bg-slate-900"
                             cdkDrag
                             [cdkDragData]="property"
                             (cdkDragReleased)="onDragReleased($event)"

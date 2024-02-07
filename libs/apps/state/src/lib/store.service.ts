@@ -146,6 +146,7 @@ export class Store {
 	preferredTheme$ = this.persistQuery.select(
 		(state) => state.preferredTheme
 	);
+	readonly primaryTheme$ = this.preferredTheme$.pipe(map((theme) => theme?.split('-')[0]))
 	preferredComponentLayout$ = this.persistQuery.select(
 		(state) => state.preferredComponentLayout
 	);

@@ -57,7 +57,7 @@
         position: absolute;
         right: 0;
         border-radius: 2px;
-        @apply bg-gray-100;
+        @apply bg-gray-100 dark:bg-neutral-700;
       }
 
       &:not(.mdc-tab--active) {

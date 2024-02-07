@@ -1,3 +1,7 @@
 :host {
   @apply w-full overflow-hidden flex-1 max-w-full flex flex-col p-4;
 }
+
+.ngm-table {
+  border-color: var(--mat-divider-color);
+}

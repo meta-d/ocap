@@ -4,3 +4,10 @@
   display: flex;
   flex-direction: column;
 }
+
+.mat-drawer.mat-drawer-side {
+  border-color: var(--mat-divider-color);
+}
+.mat-drawer-content {
+  @apply overflow-hidden;
+}

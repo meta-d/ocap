@@ -19,6 +19,9 @@
 
 @import './styles/base';
 @import './styles/scrollbar';
+@import './styles/default';
+@import './styles/dark';
+@import './styles/dark-green';
 
 @include features.theme(ngm-theme.$mat-theme);
 @include shared.theme(ngm-theme.$mat-theme);
@@ -63,6 +66,7 @@ body {
   --mat-table-row-item-label-text-font: $text-font;
   --mat-table-header-headline-font: $text-font;
 
+  color: var(--ngm-text-primary-color);
   display: flex;
   margin: 0;
 

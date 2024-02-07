@@ -1,5 +1,5 @@
 :host {
-  background-color: var(--ngm-card-bg-color);
-  border-color: var(--ngm-card-border-color);
+  background-color: var(--mdc-outlined-card-container-color);
+  border-color: var(--mdc-outlined-card-outline-color);
   @apply border rounded-lg;
 }

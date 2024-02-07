@@ -1,0 +1,8 @@
+@use '@angular/material/core/tokens/token-utils';
+
+body.dark.dark-green {
+  @include token-utils.create-token-values((ngm), (
+    primary-color: theme('colors.green.500'),
+    text-primary-color: theme('colors.green.100')
+  ));
+}

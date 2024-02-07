@@ -25,7 +25,7 @@ import { TranslationBaseComponent } from '../../../../../@shared/'
 import { differenceBy, isEmpty, isNil, negate, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, from, of } from 'rxjs'
 import { filter, map, startWith, switchMap } from 'rxjs/operators'
-import { uuid } from '../../../../../@core'
+import { Store, uuid } from '../../../../../@core'
 import { AppService } from '../../../../../app.service'
 import { CalculatedMeasureSchema, zodToAnnotations } from '../../copilot'
 import { SemanticModelService } from '../../model.service'
@@ -59,6 +59,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly #route = inject(ActivatedRoute)
   readonly #router = inject(Router)
   readonly #logger = inject(NGXLogger)
+  readonly #store = inject(Store)
 
   @ViewChild('editor') editor!: BaseEditorDirective
   @ViewChild(AnalyticalGridComponent) grid!: AnalyticalGridComponent<any>
@@ -123,6 +124,12 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
     })
   )
 
+  manualRefresh = false
+  entities = []
+
+  public readonly options$ = this.modelService.wordWrap$.pipe(map((wordWrap) => ({ wordWrap })))
+  public readonly isMobile$ = this.appService.isMobile$
+
   /**
   |--------------------------------------------------------------------------
   | Signals
@@ -167,11 +174,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly modelType = toSignal(this.modelService.modelType$)
   readonly dialect = toSignal(this.modelService.dialect$)
 
-  public readonly options$ = this.modelService.wordWrap$.pipe(map((wordWrap) => ({ wordWrap })))
-  public readonly isMobile$ = this.appService.isMobile$
-
-  manualRefresh = false
-  entities = []
+  readonly themeName = toSignal(this.#store.primaryTheme$)
 
   /**
   |--------------------------------------------------------------------------

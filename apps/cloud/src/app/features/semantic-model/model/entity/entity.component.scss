@@ -1,7 +1,7 @@
 :host {
-  @apply relative h-full flex-1 flex flex-col bg-white;
+  @apply relative h-full flex-1 flex flex-col;
 
-  --mat-sidenav-content-background-color: theme(colors.white);
+  // --mat-sidenav-content-background-color: theme(colors.white);
 
   &.pac-fullscreen {
     position: fixed;
@@ -16,7 +16,7 @@
 }
 
 .pac-model-entity__workspace-router {
-  @apply flex flex-col rounded-lg overflow-hidden shadow-lg mb-1 mr-1 border border-solid border-slate-200 bg-white;
+  @apply flex flex-col rounded-lg overflow-hidden shadow-lg mb-1 mr-1 border border-solid dark:border-slate-700;
 }
 
 .ngm-property-modeling {

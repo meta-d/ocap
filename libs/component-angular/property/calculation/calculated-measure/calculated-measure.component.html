@@ -28,7 +28,7 @@
                         [cdkDropListData]="calculations"
                         (cdkDropListDropped)="drop($event)"
                         >
-                        <mat-list-item role="listitem" *ngFor="let property of calculations$ | async" class="hover:bg-gray-100"
+                        <mat-list-item role="listitem" *ngFor="let property of calculations$ | async" class="hover:bg-neutral-100 dark:hover:bg-neutral-800"
                             cdkDrag
                             [cdkDragData]="property"
                         >
@@ -129,6 +129,7 @@
                 (cdkDropListDropped)="drop($event)"
                 [entityType]="entityType"
                 [disabled]="disabled"
+                [theme]="theme"
                 [(ngModel)]="statement"
                 >
             </ngm-editor-mdx-member>
@@ -140,6 +141,7 @@
                 (cdkDropListDropped)="drop($event)"
                 [entityType]="entityType"
                 [disabled]="disabled"
+                [theme]="theme"
                 [(ngModel)]="statement"
             >
             </ngm-editor-sql>

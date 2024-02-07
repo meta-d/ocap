@@ -13,7 +13,7 @@
 $material-typeface: Lato, 'Noto Serif SC', monospace;
 
 // Define a theme.
-$dark-primary: mat.define-palette(mat.$blue-grey-palette, 600);
+$dark-primary: mat.define-palette(mat.$blue-palette, 500);
 $dark-accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $light-secondary-text: rgba(white, 0.7);
@@ -23,11 +23,11 @@ $grey-palette: mat.$blue-grey-palette;
 
 $background: (
   status-bar: #151a30,
-  app-bar:    #263238,
-  background: #263238,
+  app-bar:    theme('colors.neutral.900'),
+  background: black,
   hover:      rgba(white, 0.1), // TODO(kara): check style with Material Design UX
-  card:       mat.get-color-from-palette($dark-primary, 900), //#192038, //#222b45,
-  dialog:     mat.get-color-from-palette($dark-primary, 800),
+  card:       rgb(22, 24, 28), // rgb(23, 23, 23), // theme('colors.neutral.900'), //#192038, //#222b45,
+  dialog:     theme('colors.neutral.900'),
   disabled-button: rgba(white, 0.12),
   raised-button: map.get($grey-palette, 800),
   // focused-button: $light-focused,
@@ -36,7 +36,7 @@ $background: (
   disabled-button-toggle: black,
   unselected-chip: map.get($grey-palette, 700),
   disabled-list-option: black,
-  tooltip: map.get($grey-palette, 700),
+  tooltip: theme('colors.neutral.700'),
 );
 $foreground: (
   base:              white,

@@ -1,12 +1,14 @@
 .pac-project__router-link {
-  @apply hover:bg-slate-100;
+  @apply hover:bg-slate-100 dark:hover:bg-slate-100/10;
+
+  &.active {
+    @apply bg-slate-100 hover:bg-slate-200 dark:bg-slate-100/10 dark:hover:bg-slate-200/10;
+  }
 }
-.pac-project__router-link.active {
-  @apply bg-slate-100 hover:bg-slate-200 dark:bg-slate-100/10 dark:hover:bg-slate-200/10;
-}
-.mdc-list-item.pac-project__router-link {
+
+.mat-mdc-list-item.mdc-list-item.pac-project__router-link {
   --mdc-list-list-item-one-line-container-height: 30px;
-  @apply rounded-md p-0;
+  @apply rounded-md p-0 cursor-pointer;
 }
 .pac-project__anchor {
   @apply border-bluegray-100 text-bluegray-100 hover:border-bluegray-200 hover:text-bluegray-200;
