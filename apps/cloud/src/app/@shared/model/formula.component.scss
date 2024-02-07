@@ -5,3 +5,7 @@
   max-width: 100%;
   overflow: hidden;
 }
+
+.ngm-copilot-chat {
+  --ngm-copilot-bg-color: theme('colors.bluegray.700');
+}

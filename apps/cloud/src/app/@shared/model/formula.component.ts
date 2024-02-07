@@ -1,19 +1,17 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Inject, Input } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Input, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { CalculatedMeasureComponent } from '@metad/components/property'
+import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { FormulaModule } from '@metad/ocap-angular/formula'
 import { DataSettings, EntityType, PropertyMeasure, Syntax } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { HighlightDirective } from '@metad/components/core'
-import { MDXReference } from '@metad/components/mdx'
-import { CalculatedMeasureComponent } from '@metad/components/property'
-import { sortBy } from 'lodash-es'
-import { MarkdownModule } from 'ngx-markdown'
-import { map, of, startWith, switchMap } from 'rxjs'
+import { Store } from '../../@core'
 import { MaterialModule } from '../material.module'
+import { NGXLogger } from 'ngx-logger'
 
 @Component({
   standalone: true,
@@ -24,20 +22,21 @@ import { MaterialModule } from '../material.module'
     TranslateModule,
     MaterialModule,
     FormulaModule,
-    MarkdownModule,
-    HighlightDirective,
     CalculatedMeasureComponent,
     ButtonGroupDirective,
-    NgmSearchComponent
+    NgmCopilotChatComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-formula',
   templateUrl: 'formula.component.html',
-  styleUrls: ['formula.component.scss']
+  styleUrls: ['formula.component.scss'],
+  providers: [ NgmCopilotEngineService ]
 })
 export class ModelFormulaComponent {
+  readonly #store = inject(Store)
+  readonly #logger = inject(NGXLogger)
+
   Syntax = Syntax
-  FUNCTIONS = sortBy(MDXReference.FUNCTIONS, 'label')
 
   @Input() dataSettings: DataSettings
   @Input() entityType: EntityType
@@ -54,17 +53,56 @@ export class ModelFormulaComponent {
 
   formula = ''
 
-  public readonly functions$ = of(sortBy(MDXReference.FUNCTIONS, 'label')).pipe(
-    switchMap((functions) =>
-      this.searchControl.valueChanges.pipe(
-        startWith(''),
-        map((text) => {
-          text = text?.trim().toLowerCase()
-          return text ? functions.filter((item) => item.label.toLowerCase().includes(text)) : functions
-        })
-      )
-    )
-  )
+  readonly themeName = toSignal(this.#store.primaryTheme$)
+
+  #newFormula = injectMakeCopilotActionable({
+    name: 'new_formula',
+    description: 'New formula for measure',
+    argumentAnnotations: [
+      {
+        name: 'formula',
+        type: 'string',
+        description: 'The formula to be used for the measure',
+        required: true
+      }
+    ],
+    implementation: async (formula: string) => {
+      this.#logger.debug(`Copilot make formula is: ${formula}`)
+      this.formula = formula
+      return `The formula for the measure has been set to: ${formula}`
+    }
+  })
+
+  #formatFormula = injectCopilotCommand({
+    name: 'format',
+    description: '',
+    systemPrompt: () => {
+      return `Format the MDX formula:
+\`\`\`
+${this.formula}
+\`\`\`
+`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'format_formula',
+        description: 'Format the formula',
+        argumentAnnotations: [
+          {
+            name: 'formula',
+            type: 'string',
+            description: 'The formula to be formatted',
+            required: true
+          }
+        ],
+        implementation: async (formula: string) => {
+          this.#logger.debug('Copilot format formula')
+          this.formula = formula
+          return `The formula has been formatted`
+        }
+      })
+    ]
+  })
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
