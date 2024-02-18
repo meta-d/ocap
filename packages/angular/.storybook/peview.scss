@@ -1,7 +1,59 @@
-html {
-    font-size: 14px;
-}
+@use '@angular/material' as mat;
+@use '../theming' as ocap;
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+// Define a theme.
+$primary: mat.define-palette(mat.$blue-grey-palette, 600);
+$accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
+
+$mat-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent
+    ),
+    density: -1
+  )
+);
+
+$dark-theme: mat.define-dark-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent
+    )
+  )
+);
+
+@include mat.core();
+
+@include mat.all-component-themes($mat-theme);
+@include ocap.core-theme($mat-theme);
+@include ocap.analytical-grid-theme($mat-theme);
+@include ocap.breadcrumb-theme($mat-theme);
+@include ocap.controls-theme($mat-theme);
+@include ocap.entity-theme($mat-theme);
+@include ocap.common-color($mat-theme);
+@include ocap.common-density($mat-theme);
+
+.dark {
+  @include mat.all-component-themes($dark-theme);
+  @include ocap.core-theme($dark-theme);
+  @include ocap.analytical-grid-theme($dark-theme);
+  @include ocap.breadcrumb-theme($dark-theme);
+  @include ocap.controls-theme($dark-theme);
+  @include ocap.entity-theme($dark-theme);
+  @include ocap.common-color($dark-theme);
+  @include ocap.common-density($dark-theme);
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  @apply text-neutral-800 dark:bg-black dark:text-neutral-100;
+}

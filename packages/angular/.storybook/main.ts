@@ -7,6 +7,7 @@ const config: StorybookConfig = {
     '@storybook/addon-docs',
     '@storybook/addon-essentials',
     '@storybook/addon-storysource',
+    '@storybook/addon-themes'
   ],
   framework: {
     name: '@storybook/angular',
