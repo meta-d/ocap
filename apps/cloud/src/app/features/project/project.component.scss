@@ -1,14 +1,50 @@
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$global-prefix: ngm;
+$prefix: (ngm, project);
+$prefix-color: (#{$prefix}, color);
+
+@function get-unthemable-tokens() {
+  @return (
+    primary-container-rounded: var(--#{$global-prefix}-primary-container-rounded)
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    color-surface: var(--#{$global-prefix}-color-surface),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
+
 :host {
   --mat-sidenav-container-background-color: transparent;
-  --mat-sidenav-container-text-color: var(--ngm-text-primary-color);
+  --mat-sidenav-container-text-color: var(--#{$global-prefix}-text-primary-color);
+  --mat-sidenav-container-divider-color: transparent;
+
+  @include token-utils.create-token-values($prefix, get-token-slots());
+
   flex: 1;
   max-width: 100%;
 }
 
-.mat-drawer-content {
-  @apply flex overflow-visible;
-}
-
 .pac-project__anchor {
   @apply absolute z-10 border border-solid;
+}
+
+@include token-utils.use-tokens($prefix, get-token-slots()) {
+  .mat-drawer-content {
+    background-color: var(#{token-utils.get-token-variable(color-surface)});
+    border-top-left-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
+    border-top-right-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
+    @apply flex overflow-hidden; // for rounded corner overflow-visible;
+  }
 }

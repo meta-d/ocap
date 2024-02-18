@@ -6,10 +6,9 @@ $prefix: (ngm, color);
 @include token-utils.use-tokens($prefix, (surface-container-high: null)) {
   :host {
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
-    border-color: var(--mdc-outlined-card-outline-color);
   }
 }
 
 :host {
-  @apply border rounded-lg;
+  @apply max-w-full rounded-lg shadow-lg overflow-hidden;
 }

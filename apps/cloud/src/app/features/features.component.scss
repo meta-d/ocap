@@ -2,6 +2,8 @@
   flex: 1;
   height: 100%;
   max-width: 100%;
+  --mat-sidenav-container-divider-color: transparent;
+  --mat-sidenav-container-background-color: transparent;
 }
 
 .mat-drawer.mat-sidenav {
