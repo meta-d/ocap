@@ -23,7 +23,7 @@
   <div>{{ role.name }}</div>
 
   <h3> {{ 'PAC.MODEL.AccessControl.RolesManage' | translate: {Default: 'Roles Manage'} }} </h3>
-  <div class="pac-cdk-drop__list flex-1 h-1/2 overflow-auto rounded-lg border border-gray-200 pb-4"
+  <div class="pac-cdk-drop__list pac-table-container flex-1 h-1/2 overflow-auto rounded-lg border pb-4"
       cdkDropList
       (cdkDropListDropped)="dropRole($event)">
       <table mat-table [dataSource]="roleUsages$" style="min-width: 100%;" class="ngm-density__compact" >
@@ -90,7 +90,7 @@
       </button>
     </div>
   </div>
-  <div class="mt-4 flex-1 overflow-auto rounded-lg border border-gray-200 pb-4">
+  <div class="pac-table-container mt-4 flex-1 overflow-auto rounded-lg border pb-4">
     <table mat-table [dataSource]="users$" class="ngm-density__compact w-full">
       <!-- Name Column -->
       <ng-container matColumnDef="user">

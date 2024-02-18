@@ -43,7 +43,7 @@ import { NgmTableComponent } from '@metad/ocap-angular/common'
   selector: 'pac-project-members',
   templateUrl: 'members.component.html',
   styles: [
-    `
+`
 :host {
   width: 100%;
   overflow: auto;
@@ -51,10 +51,7 @@ import { NgmTableComponent } from '@metad/ocap-angular/common'
 .rounded-full.mat-stroked-button {
   border-radius: 50%;
 }
-.ngm-table {
-  border-color: var(--mat-divider-color);
-}
-    `
+`
   ]
 })
 export class ProjectMembersComponent extends TranslationBaseComponent {

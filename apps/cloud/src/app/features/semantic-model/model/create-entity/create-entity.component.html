@@ -138,7 +138,7 @@
       <div class="overflow-auto">
         <mat-list role="list" cdkDropList (cdkDropListDropped)="drop($event)">
           <mat-list-item *ngFor="let column of columns" cdkDrag
-            role="listitem" class="group rounded-lg hover:bg-slate-100">
+            role="listitem" class="group rounded-lg">
             <div class="w-full h-full flex items-center">
               <mat-checkbox class="group-hover:opacity-100" style="line-height: 1;"
                 [class.opacity-0]="column.name !== primaryKey"
@@ -146,7 +146,7 @@
                 (change)="primaryKey = $event.checked ? column.name : null"
               ></mat-checkbox>
         
-              <mat-icon class="ml-6 cursor-pointer text-gray-500 hover:text-gray-600 group-hover:opacity-100" [class.opacity-0]="!column.visible"
+              <mat-icon class="ml-6 cursor-pointer group-hover:opacity-100" [class.opacity-0]="!column.visible"
                 fontSet="material-icons-outlined"
                 (click)="column.visible=!column.visible"
               >

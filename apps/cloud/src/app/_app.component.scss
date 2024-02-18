@@ -64,3 +64,10 @@
 .cdk-overlay-container .mat-mdc-dialog-container.mdc-dialog .mdc-dialog__content.pac-dialog-content {
   @apply p-0;
 }
+
+.ngm-table {
+  border-color: var(--mat-divider-color);
+}
+.pac-table-container {
+  border-color: var(--mat-divider-color);
+}

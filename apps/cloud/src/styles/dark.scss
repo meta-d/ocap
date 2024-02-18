@@ -1,4 +1,9 @@
 @use '@angular/material/core/tokens/token-utils';
+@use 'libs/material-theme/src/styles/material/dark.theme' as dark-theme;
+@use 'libs/apps/indicator-market/src/lib/indicator-market-theme' as indicator-market;
+@use '../app/features/features-theme' as features;
+@use '../app/@shared/components-theme' as shared;
+@use '../app/public/public-theme' as public;
 @use '../app/features/semantic-model/model/_model.component' as model;
 
 body.dark {
@@ -18,4 +23,11 @@ body.dark {
     border-color: theme('colors.neutral.800'),
   ));
   
+}
+
+.ngm-theme-dark {
+  @include indicator-market.color(dark-theme.$dark-theme);
+  @include features.color(dark-theme.$dark-theme);
+  @include shared.color(dark-theme.$dark-theme);
+  @include public.color(dark-theme.$dark-theme);
 }

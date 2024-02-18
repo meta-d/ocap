@@ -1,4 +1,9 @@
 @use '@angular/material/core/tokens/token-utils';
+@use 'libs/material-theme/src/styles/material/default.theme' as light-theme;
+@use 'libs/apps/indicator-market/src/lib/indicator-market-theme' as indicator-market;
+@use '../app/features/features-theme' as features;
+@use '../app/@shared/components-theme' as shared;
+@use '../app/public/public-theme' as public;
 @use '../app/features/semantic-model/model/_model.component' as model;
 
 body.default, body.light {
@@ -14,4 +19,11 @@ body.default, body.light {
   @include token-utils.create-token-values(model.$prefix, (
     border-color: theme('colors.gray.200'),
   ));
+}
+
+.ngm-theme-light, .ngm-theme-default {
+  @include indicator-market.color(light-theme.$mat-theme);
+  @include features.color(light-theme.$mat-theme);
+  @include shared.color(light-theme.$mat-theme);
+  @include public.color(light-theme.$mat-theme);
 }

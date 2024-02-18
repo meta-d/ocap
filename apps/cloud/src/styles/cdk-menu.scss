@@ -1,0 +1,25 @@
+.cdk-menu-bar {
+  .cdk-menu-item {
+    @apply p-2 whitespace-nowrap text-neutral-500 dark:text-neutral-500;
+  }
+  .cdk-menu-item:hover {
+    @apply bg-black/10 dark:bg-gray-100/10 text-neutral-600 dark:text-neutral-400;
+  }
+  .cdk-menu-item[aria-expanded='true'] {
+    @apply bg-black/20 dark:bg-gray-100/20 text-neutral-600 dark:text-neutral-400;
+  }
+}
+.cdk-menu.cdk-menu-group .cdk-menu-item {
+  @apply whitespace-nowrap;
+
+  &.ngm-cdk-menu-item__disabled {
+    cursor: default;
+    opacity: 0.5;
+    &:hover {
+      background-color: unset;
+    }
+  }
+  .mdc-button__label {
+    @apply flex-1;
+  }
+}

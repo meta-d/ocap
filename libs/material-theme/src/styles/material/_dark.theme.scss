@@ -80,7 +80,7 @@ $custom-typography: mat.define-typography-config(
 // Be sure that you only ever include this mixin once!
 // @include mat.core($custom-typography);
 
-.ngm-theme-dark {
+.ngm-theme-dark, .ngm-story__device.ngm-theme-dark.dark {
   // Include all theme styles for the mat components.
   @include mat.all-component-colors($dark-theme);
   @include components.all-component-colors($dark-theme);

@@ -1,11 +1,11 @@
 <div class="flex flex-col px-4 py-2">
     <div class="text-lg">
-        <label class="text-xl text-bluegray-800">{{ 'PAC.KEY_WORDS.Cube' | translate: {Default: 'Cube'} }}</label>
+        <label class="text-xl">{{ 'PAC.KEY_WORDS.Cube' | translate: {Default: 'Cube'} }}</label>
     </div>
     <div class="flex justify-between">
-        <div><span>{{entityType?.caption}}</span>(<span>{{ cubeGrant.cube }}</span>)</div>
+        <div class="opacity-80"><span>{{entityType?.caption}}</span>(<span>{{ cubeGrant.cube }}</span>)</div>
         <div class="flex justify-end items-center text-sm">
-            <label class="text-sm text-bluegray-800">
+            <label class="text-sm">
                 {{ 'PAC.MODEL.AccessControl.DefaultAccess' | translate: {Default: 'Default Access'} }}:
             </label>
             <mat-radio-group class="ngm-radio-group__horizontal text-sm text-bluegray-800" displayDensity="compact"
@@ -141,7 +141,7 @@
         </mat-expansion-panel>
     </mat-accordion>
 
-    <div class="pac-cdk-drop__list pac-cdk-drop__area h-52 min-h-[120px] w-full mt-4 border-2 border-gray-300 border-dashed rounded-lg bg-gray-50"
+    <div class="pac-cdk-drop__list pac-cdk-drop__area h-52 min-h-[120px] w-full mt-4 border-2 border-dashed rounded-lg"
         cdkDropList
         [cdkDropListEnterPredicate]="dropHierarchyPredicate"
         (cdkDropListDropped)="dropHierarchy($event)">
@@ -152,7 +152,7 @@
                 <rect x="48" y="25" width="4" height="50" fill="white"/>
             </svg>
 
-            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">{{ 'PAC.MODEL.AccessControl.DragandDropAddDimension' | translate: {Default: 'Drag and drop to add dimension'} }}</p>
+            <p class="mb-2 text-sm">{{ 'PAC.MODEL.AccessControl.DragandDropAddDimension' | translate: {Default: 'Drag and drop to add dimension'} }}</p>
         </div>
     </div>
 </div>

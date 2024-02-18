@@ -38,3 +38,9 @@ label {
   flex-direction: column;
   overflow-y: auto;
 }
+
+.pac-cdk-drop__list.pac-cdk-drop__area {
+  background-color: var(--mdc-outlined-card-container-color);
+  border-color: var(--mat-divider-color);
+  color: var(--ngm-text-primary-color);
+}

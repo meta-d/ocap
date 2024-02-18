@@ -26,10 +26,6 @@ $prefix: (ngm, model);
   }
 }
 
-.ngm-table {
-  @apply border-gray-200 dark:border-gray-700;
-}
-
 // Toolbar styles
 .mat-toolbar.pac-sub-toolbar {
   min-height: 33px;
