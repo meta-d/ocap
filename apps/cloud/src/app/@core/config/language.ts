@@ -1,9 +1,4 @@
-export enum LanguagesEnum {
-  Chinese = 'zh-CN',
-  SimplifiedChinese = 'zh-Hans',
-  TraditionalChinese = 'zh-Hant',
-  English = 'en'
-}
+import { LanguagesEnum } from "@metad/core";
 
 export const LanguagesMap = {
   'zh-CN': LanguagesEnum.SimplifiedChinese,

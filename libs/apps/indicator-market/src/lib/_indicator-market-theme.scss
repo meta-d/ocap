@@ -2,18 +2,18 @@
 @use '@angular/material' as mat;
 
 // @todo 需要重构
-$background-color: #090909;
-$text-color: white;
-$description-color: #ffffffb3;
-$surface-color: #263238;
-$trend-up: rgb(49, 199, 90);
-$trend-down: rgb(254, 60, 46);
+// $text-color: white;
+// $description-color: #ffffffb3;
+// $surface-color: #263238;
 
 @mixin color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $foreground: map.get($config, foreground);
   $primary: map.get($config, primary);
 
+  /**
+   * @deprecated 迁移至全局样式
+   */
   body.mobile {
     .cdk-overlay-container {
       z-index: 3000;
@@ -30,114 +30,23 @@ $trend-down: rgb(254, 60, 46);
 
       .mat-card {
         box-shadow: unset;
-        background-color: $surface-color;
-        color: $text-color;
+        // background-color: $surface-color;
+        // color: $text-color;
       }
 
       pac-indicator-detail {
         .mat-card {
           .ant-statistic-title {
-            color: $description-color;
+            // color: $description-color;
           }
         }
 
         pac-analytical-card {
           .mat-card-header-text {
-            color: $text-color;
+            // color: $text-color;
           }
         }
       }
-
-      .Trend-Up {
-        color: $trend-up;
-      }
-
-      .Trend-Down {
-        color: $trend-down;
-      }
-
-      .reverse-semantic-color {
-        .mat-card {
-          .Trend-Up {
-            color: $trend-down;
-          }
-
-          .Trend-Down {
-            color: $trend-up;
-          }
-        }
-      }
-    }
-  }
-
-  .indicator-market-app {
-    background-color: $background-color;
-    color: $text-color;
-
-    .pac-indicator__tag {
-      width: 60px;
-      text-align: right;
-      border-radius: 5px;
-      padding: 0 5px;
-      cursor: pointer;
-
-      &.Trend-Up {
-        background-color: $trend-up;
-        color: white;
-      }
-      &.Trend-Down {
-        background-color: $trend-down;
-        color: white;
-      }
-    }
-
-    .Trend-Up {
-      color: $trend-up;
-    }
-
-    .Trend-Down {
-      color: $trend-down;
-    }
-
-    &.reverse-semantic-color {
-      .Trend-Up {
-        color: $trend-down;
-      }
-      .Trend-Down {
-        color: $trend-up;
-      }
-      .pac-indicator__tag {
-        &.Trend-Up {
-          background-color: $trend-down;
-          color: white;
-        }
-        &.Trend-Down {
-          background-color: $trend-up;
-          color: white;
-        }
-      }
-    }
-
-    pac-indicator-item {
-      color: $text-color;
-    }
-
-    .mat-mdc-list .mat-mdc-list-item {
-      border-bottom: 1px solid #f0f0f010;
-      user-select: none;
-
-      &.selected {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-    }
-
-    .am-picker-popup-content {
-      background-color: $background-color;
-    }
-
-    .am-picker-col-mask {
-      background-image: linear-gradient(to bottom, rgb(109 109 109 / 95%), rgb(131 131 131 / 60%)),
-        linear-gradient(to top, rgb(121 121 121 / 95%), rgb(122 121 121 / 60%));
     }
   }
 
@@ -165,10 +74,6 @@ $trend-down: rgb(254, 60, 46);
           @apply text-base overflow-hidden text-ellipsis max-w-full mb-2;
         }
       }
-    }
-
-    .pac-indicator-app__business {
-      background-color: rgb(255 255 255 / 10%);
     }
 
     .ngm-analytical-card {

@@ -1,4 +1,3 @@
-$background-color: #090909;
 $border-bottom-color: #23282a;
 $searching-transition: all 300ms;
 
@@ -84,10 +83,24 @@ $searching-transition: all 300ms;
 }
 
 .mat-datepicker-input.pac-indicator-market__date-picker {
-  background-color: $background-color;
   border: unset;
 }
 
 .pac-indicator-app__options {
   background-color: var(--ngm-card-bg-color);
+}
+
+.pac-indicator-list {
+  .mat-divider.mat-divider-horizontal {
+    @apply mx-2 border-black/5 dark:border-white/5;
+  }
+
+  .mat-mdc-list-item {
+    @apply select-none hover:bg-black/5
+    dark:hover:bg-white/10;
+
+    &.selected {
+      @apply bg-black/5 dark:bg-white/10
+    }
+  }
 }

@@ -53,6 +53,7 @@ $sidebar-collapsed-width: 40px;
     // justify-content: space-between;
     height: $shell-bar-height;
     padding: 0 .5rem;
+    background-color: transparent;
 
     .mat-mdc-tab-link {
       height: $shell-bar-height;

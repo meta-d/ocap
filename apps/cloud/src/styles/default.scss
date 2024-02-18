@@ -21,6 +21,11 @@ body.default, body.light {
   ));
 }
 
+@include indicator-market.theme(light-theme.$mat-theme);
+@include features.theme(light-theme.$mat-theme);
+@include shared.theme(light-theme.$mat-theme);
+@include public.theme(light-theme.$mat-theme);
+
 .ngm-theme-light, .ngm-theme-default {
   @include indicator-market.color(light-theme.$mat-theme);
   @include features.color(light-theme.$mat-theme);

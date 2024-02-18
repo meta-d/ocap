@@ -7,7 +7,6 @@ import {
   HostBinding,
   inject,
   Input,
-  LOCALE_ID,
   ViewChild
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
@@ -48,8 +47,8 @@ import {
   TimeRangeType
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
-import { CommentsService, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV } from '@metad/core'
+import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
+import { convertTableToCSV, LanguagesEnum } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -62,7 +61,6 @@ import {
   firstValueFrom,
   map,
   Observable,
-  scan,
   shareReplay,
   switchMap,
   withLatestFrom
@@ -127,15 +125,16 @@ export class IndicatorDetailComponent {
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
   private logger = inject(NGXLogger)
-  private locale: string = inject(LOCALE_ID)
+  // private locale: string = inject(LOCALE_ID)
   private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, { optional: true })
   private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
   private toastrService = inject(ToastrService)
-  private translateService = inject(TranslateService)
   private copilotService = inject(CopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private commentsService = inject(CommentsService)
+  readonly #translate = inject(TranslateService)
+  readonly #store = inject(Store)
 
   private _id$ = new BehaviorSubject<string>(null)
   @Input()
@@ -154,6 +153,11 @@ export class IndicatorDetailComponent {
     return this.copilotService.enabled
   }
 
+  /**
+  |--------------------------------------------------------------------------
+  | Properties
+  |--------------------------------------------------------------------------
+  */
   businessAreaUser: IBusinessAreaUser
   get modeler() {
     return (
@@ -169,6 +173,14 @@ export class IndicatorDetailComponent {
   messages = []
   relative = true
 
+  readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang)))
+  readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
+
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   public readonly period$ = new BehaviorSubject(null)
   get selectedPeriod() {
     return this.period$.value
@@ -320,8 +332,7 @@ export class IndicatorDetailComponent {
     map((indicator) => indicator.trend),
     distinctUntilChanged(),
     map((indicatorTrend) => {
-      const color =
-        this.locale === 'zh-Hans'
+      const color = this.currentLang$() === LanguagesEnum.SimplifiedChinese
           ? TrendReverseColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
           : TrendColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
       return {
@@ -448,12 +459,13 @@ export class IndicatorDetailComponent {
     this.indicator$,
     this.periodSlicer$,
     this.freeSlicers$,
-    this.entityType$
+    this.entityType$,
+    this.#store.primaryTheme$
   ]).pipe(
-    map(([indicator, timeSlicer, freeSlicers, entityType]) => {
+    map(([indicator, timeSlicer, freeSlicers, entityType, primaryTheme]) => {
       const locale = this.store.locale
-      const pieName = this.translateService.instant('IndicatorApp.Pie', {Default: 'Pie'})
-      const barName = this.translateService.instant('IndicatorApp.Bar', {Default: 'Bar'})
+      const pieName = this.#translate.instant('IndicatorApp.Pie', {Default: 'Pie'})
+      const barName = this.#translate.instant('IndicatorApp.Bar', {Default: 'Bar'})
 
       return indicator.filters?.map((filter, index) => {
         const slicers = [...indicator.filters]
@@ -512,7 +524,7 @@ export class IndicatorDetailComponent {
             }
           },
           chartSettings: <ChartSettings>{
-            theme: 'dark',
+            theme: primaryTheme,
             universalTransition: true,
             chartTypes: [
               {
@@ -592,8 +604,16 @@ export class IndicatorDetailComponent {
   )
 
   /**
-   * Subscriptions
-   */
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions
+  |--------------------------------------------------------------------------
+  */
   // New indicator
   private _indicatorSub = this.indicator$.pipe(takeUntilDestroyed()).subscribe(async (indicator) => {
     // Clear free slicers when new indicator
@@ -707,7 +727,7 @@ export class IndicatorDetailComponent {
   async askCopilot() {
     const queryResult = this.explainData?.[1]
     if (queryResult) {
-      const lang = this.translateService.currentLang
+      const lang = this.#translate.currentLang
       const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
       const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
 
@@ -821,6 +841,6 @@ export class IndicatorDetailComponent {
 
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.locale === 'zh-Hans'
+    return this.currentLang$() === LanguagesEnum.SimplifiedChinese
   }
 }

@@ -50,12 +50,14 @@
       </button>
     </div>
 
-    <mat-list>
-      <mat-list-item *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0" matRipple
-        [class.selected]="selected$() === item.id"
-        (click)="click(item)">
-        <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$()"></pac-indicator-item>
-      </mat-list-item>
+    <mat-list class="pac-indicator-list">
+      <ng-container *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0">
+        <mat-list-item matRipple [class.selected]="selected$() === item.id"
+          (click)="click(item)">
+          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$()"></pac-indicator-item>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
     </mat-list>
   </cdk-virtual-scroll-viewport>
 

@@ -1,11 +1,25 @@
-import { AfterViewInit, DestroyRef, Directive, ElementRef, Input, LOCALE_ID, inject } from '@angular/core'
+import {
+  AfterViewInit,
+  DestroyRef,
+  Directive,
+  ElementRef,
+  Injector,
+  Input,
+  LOCALE_ID,
+  computed,
+  effect,
+  inject,
+  runInInjectionContext,
+  signal
+} from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { TinyArea } from '@antv/g2plot/esm/plots/tiny-area'
-import { isNil } from '@metad/ocap-core'
-import { BehaviorSubject, combineLatest } from 'rxjs'
-import { distinctUntilChanged, filter, map, pluck } from 'rxjs/operators'
-import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
-import { StatisticalType } from '../types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Store } from '@metad/cloud/state'
+import { LanguagesEnum } from '@metad/core'
+import { TranslateService } from '@ngx-translate/core'
+import { BehaviorSubject } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { IndicatorState, StatisticalType, Trend, TrendColor, TrendReverseColor } from '../types'
 
 @Directive({
   selector: '[pacSparkLine]'
@@ -14,6 +28,9 @@ export class AppSparkLineDirective implements AfterViewInit {
   private locale = inject(LOCALE_ID)
   private elRef = inject(ElementRef)
   readonly destroyRef = inject(DestroyRef)
+  readonly #injector = inject(Injector)
+  readonly #store = inject(Store)
+  readonly #translate = inject(TranslateService)
 
   @Input() get indicator(): IndicatorState {
     return this._indicator$.value
@@ -24,42 +41,37 @@ export class AppSparkLineDirective implements AfterViewInit {
   private _indicator$ = new BehaviorSubject(null)
 
   @Input() get statisticalType() {
-    return this.statisticalType$.value
+    return this.statisticalType$()
   }
   set statisticalType(value) {
-    this.statisticalType$.next(value)
+    this.statisticalType$.set(value)
   }
-  protected statisticalType$ = new BehaviorSubject<string>(StatisticalType.CurrentPeriod)
+  readonly statisticalType$ = signal(StatisticalType.CurrentPeriod)
+  readonly indicatorTrends$ = toSignal(this._indicator$.pipe(map((indicator) => indicator?.trends)))
+  readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
 
-  public readonly config$ = combineLatest([
-    this._indicator$.pipe(
-      filter((item) => !isNil(item)),
-      pluck('trends'),
-      distinctUntilChanged(),
-    ),
-    this.statisticalType$.pipe(
-      filter((item) => !isNil(item)),
-      distinctUntilChanged(),
-    )
-  ]).pipe(
-    map(([trends, measureFilter]) => {
-      let data = []
-      switch (measureFilter) {
-        case StatisticalType.CurrentPeriod:
-          data = trends?.map((y) => y['CURRENT']) || []
-          break
-        case StatisticalType.Accumulative:
-          data = trends?.map((y) => y['YTD']) || []
-          break
-      }
+  readonly config$ = computed(() => {
+    const trends = this.indicatorTrends$()
+    const measureFilter = this.statisticalType$()
+    let data = []
+    switch (measureFilter) {
+      case StatisticalType.CurrentPeriod:
+        data = trends?.map((y) => y['CURRENT']) || []
+        break
+      case StatisticalType.Accumulative:
+        data = trends?.map((y) => y['YTD']) || []
+        break
+    }
 
-      const color = this.locale === 'zh-Hans' ? TrendReverseColor[Trend[this.indicator.trend]] : TrendColor[Trend[this.indicator.trend]]
-      return {
-        data,
-        color
-      }
-    })
-  )
+    const color =
+      this.#translate.currentLang === LanguagesEnum.SimplifiedChinese
+        ? TrendReverseColor[Trend[this.indicator.trend]]
+        : TrendColor[Trend[this.indicator.trend]]
+    return {
+      data,
+      color
+    }
+  })
 
   ngAfterViewInit(): void {
     const tinyArea = new TinyArea(this.elRef.nativeElement, {
@@ -73,41 +85,43 @@ export class AppSparkLineDirective implements AfterViewInit {
       tooltip: false
     })
 
-    this.config$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(({ data, color }) => {
-      tinyArea.changeData(data)
-      tinyArea.update({
-        line: {
-          color: color
-        },
-        areaStyle: {
-          fill: `l(270) 0:#00000000 1:${color}`
-        },
-        annotations: [
-          {
-            type: 'line',
-            start: ['min', 'mean'],
-            end: ['max', 'mean'],
-            // text: {
-            //   content: '平均值',
-            //   offsetY: -2,
-            //   style: {
-            //     textAlign: 'left',
-            //     fontSize: 10,
-            //     fill: 'rgba(44, 53, 66, 0.45)',
-            //     textBaseline: 'bottom',
-            //   },
-            // },
-            style: {
-              lineWidth: 2,
-              lineDash: [2, 2],
-              stroke: color,
-            },
+    runInInjectionContext(this.#injector, () => {
+      effect(() => {
+        const { data, color } = this.config$()
+        tinyArea.changeData(data)
+        tinyArea.update({
+          line: {
+            color: color
           },
-      ]
+          areaStyle: {
+            fill: `l(270) 0:${color}00 1:${color}${this.primaryTheme$() === 'dark' ? '' : '70'}`
+          },
+          annotations: [
+            {
+              type: 'line',
+              start: ['min', 'mean'],
+              end: ['max', 'mean'],
+              // text: {
+              //   content: '平均值',
+              //   offsetY: -2,
+              //   style: {
+              //     textAlign: 'left',
+              //     fontSize: 10,
+              //     fill: 'rgba(44, 53, 66, 0.45)',
+              //     textBaseline: 'bottom',
+              //   },
+              // },
+              style: {
+                lineWidth: 2,
+                lineDash: [2, 2],
+                stroke: color
+              }
+            }
+          ]
+        })
       })
     })
 
     tinyArea.render()
   }
-
 }
