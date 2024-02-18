@@ -10,7 +10,7 @@ import { provideTranslate } from '@metad/ocap-angular/mock'
 import { applicationConfig, moduleMetadata } from '@storybook/angular'
 
 export default {
-  title: 'DisplayDensity',
+  title: 'Display Density',
   decorators: [
     applicationConfig({
       providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
@@ -76,7 +76,37 @@ const Template = (args: any) => ({
     </mat-chip-row>
   </mat-chip-grid>
 </div>
-  `
+
+<div class="flex items-center gap-2">
+  <mat-chip-grid displayDensity="comfort">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+  <mat-chip-grid displayDensity="cosy">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+  <mat-chip-grid displayDensity="compact">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+</div>
+
+<div class="flex items-center gap-2">
+  <mat-chip-set><mat-chip>fruit</mat-chip></mat-chip-set>
+  <mat-chip-set displayDensity="cosy"><mat-chip>fruit</mat-chip></mat-chip-set>
+  <mat-chip-set displayDensity="compact"><mat-chip>fruit</mat-chip></mat-chip-set>
+</div>
+`
 })
 
 export const Primary = Template.bind({
