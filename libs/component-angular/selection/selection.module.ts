@@ -16,7 +16,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
 import { NgmMeasureSelectComponent, PropertyModule } from '@metad/components/property'
@@ -43,7 +42,6 @@ import { NgmParameterModule } from '@metad/ocap-angular/parameter'
     MatMenuModule,
     MatSelectModule,
     TranslateModule,
-    LetDirective,
 
     NxEntityModule,
     PropertyModule,

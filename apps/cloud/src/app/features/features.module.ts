@@ -16,7 +16,6 @@ import {
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
-import { LetDirective } from '@ngrx/component'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
 import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
@@ -39,7 +38,6 @@ import { FeaturesComponent } from './features.component'
     PacAuthModule,
     PACThemeModule,
     PACStatusBarComponent,
-    LetDirective,
     NgxPopperjsModule,
     HeaderSettingsComponent,
     AssetsComponent,

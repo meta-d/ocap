@@ -28,7 +28,6 @@ import {
   NgmEntityPropertyComponent,
   NgmHierarchySelectComponent,
 } from '@metad/ocap-angular/entity'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEditorModule } from '@metad/components/editor'
 import { NxEntityModule } from '@metad/components/entity'
@@ -79,7 +78,6 @@ import { PropertySelectComponent } from './property-select/property-select.compo
     NxEditorModule,
 
     DragDropModule,
-    LetDirective,
     TranslateModule,
     NxEntityModule,
 

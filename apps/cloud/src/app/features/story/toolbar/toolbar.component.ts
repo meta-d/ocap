@@ -22,7 +22,6 @@ import { CopilotChatMessage } from '@metad/copilot'
 import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep, omit } from '@metad/ocap-core'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
@@ -67,7 +66,6 @@ import { CHARTS } from '@metad/story/widgets/analytical-card'
     TranslateModule,
     FormsModule,
     IsNilPipe,
-    LetDirective,
     AppearanceDirective,
     DensityDirective,
     StoryDesignerComponent,

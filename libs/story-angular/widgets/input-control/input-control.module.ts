@@ -14,7 +14,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { NgmParameterComponent } from '@metad/ocap-angular/parameter'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
 import { NgmMemberDatepickerModule } from '@metad/components/datepicker'
@@ -28,7 +27,6 @@ import { InputControlPlaceholderComponent } from './placeholder/placeholder.comp
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    LetDirective,
     MatChipsModule,
     MatMenuModule,
     MatIconModule,

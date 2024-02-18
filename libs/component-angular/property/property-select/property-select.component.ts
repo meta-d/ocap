@@ -57,7 +57,6 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatListModule } from '@angular/material/list'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatBadgeModule } from '@angular/material/badge'
-import { LetDirective } from '@ngrx/component'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 
@@ -113,7 +112,6 @@ export enum PropertyCapacity {
     MatCheckboxModule,
     MatBadgeModule,
     TranslateModule,
-    LetDirective,
     NgmCommonModule,
     NgmEntityPropertyComponent
   ]
