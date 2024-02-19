@@ -6,7 +6,6 @@ import { redirectTo } from '../features-routing.module'
 import { PACAccountComponent } from './account/account.component'
 import { PACAccountPasswordComponent } from './account/password.component'
 import { PACAccountProfileComponent } from './account/profile.component'
-import { PACGeneralComponent } from './general/general.component'
 import { PACSettingComponent } from './settings.component'
 
 const routes: Routes = [
@@ -42,14 +41,6 @@ const routes: Routes = [
           }
         ]
       },
-      {
-        path: 'general',
-        component: PACGeneralComponent,
-        data: {
-          title: 'Settings / General',
-        }
-      },
-
       {
         path: 'data-sources',
         loadChildren: () => import('./data-sources/data-sources.module').then((m) => m.PACDataSourcesModule),
