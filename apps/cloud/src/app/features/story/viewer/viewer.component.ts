@@ -364,6 +364,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
   
   @HostBinding('class.pac-story-viewer')
+  @HostBinding('class.ngm-story-container')
   get _storyViewerComponent() {
     return true
   }

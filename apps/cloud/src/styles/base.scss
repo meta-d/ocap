@@ -19,7 +19,6 @@
 :root .dark {
   --ngm-app-background-color: #1e1f20;
   --ngm-color-main-container-background: #1e1f20;
-  // --ngm-copilot-bg-color: #1e1f20;
   --ngm-color-on-surface: #e3e3e3;
   --ngm-color-on-surface-variant: #444746;
   --ngm-divider-color-secondary: theme('colors.neutral.900');
@@ -28,10 +27,4 @@
   --ngm-color-surface-container-low: theme('colors.neutral.900');
   --ngm-color-surface-container-high: #24292f;
   --ngm-copilot-bg-color: var(--ngm-color-surface-container);
-}
-
-.mat-drawer-container {
-  .ngm-copilot-chat {
-    // @apply w-[360px] max-w-full;
-  }
 }

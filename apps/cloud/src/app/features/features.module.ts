@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { CopilotService } from '@metad/copilot'
 import { NgmFormlyModule, provideFormly } from '@metad/formly'
-import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import {
@@ -16,6 +15,7 @@ import {
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
+import { registerEChartsThemes } from '@metad/material-theme'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
 import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
@@ -27,6 +27,8 @@ import { StoryFeedService, StoryModelService, StoryStoreService } from '../servi
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
 
+registerEChartsThemes()
+
 @NgModule({
   declarations: [FeaturesComponent],
   imports: [
@@ -34,7 +36,6 @@ import { FeaturesComponent } from './features.component'
     FeaturesRoutingModule,
     MaterialModule,
     SharedModule,
-    PACMaterialThemeModule,
     PacAuthModule,
     PACThemeModule,
     PACStatusBarComponent,

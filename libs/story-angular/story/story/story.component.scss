@@ -1,4 +1,5 @@
 :host {
+  background: var(--ngm-color-surface);
   @apply block relative w-full h-full overflow-hidden;
 
   .ngm-story--point-hidden {
