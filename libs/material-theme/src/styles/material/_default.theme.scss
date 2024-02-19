@@ -6,7 +6,7 @@
 @use 'libs/story-angular/src/lib/story-theme' as story-designer;
 @use 'libs/story-angular/widgets/widgets-theme' as widgets;
 @use 'libs/apps/auth/src/lib/auth-theme' as auth;
-// @use '@metad/ocap-angular/theming' as theming;
+
 @use 'packages/angular/theming' as ocap;
 
 
@@ -37,20 +37,36 @@ $custom-typography: mat.define-typography-config(
 @include mat.core();
 
 // Include all theme styles for the mat components.
-.ngm-theme-light, .ngm-theme-default, .ngm-story__device.ngm-theme-light.light {
-  @include mat.all-component-themes($mat-theme);
-  @include components.ngm-mat-theme($mat-theme);
-  @include formly.theme($mat-theme);
-  @include responsive.theme($mat-theme);
-  @include story.theme($mat-theme);
-  @include story-designer.theme($mat-theme);
-  @include widgets.theme($mat-theme);
-  @include ocap.core-theme($mat-theme);
-  @include ocap.analytical-grid-theme($mat-theme);
-  @include ocap.breadcrumb-theme($mat-theme);
-  @include ocap.controls-theme($mat-theme);
-  @include ocap.entity-theme($mat-theme);
+@include mat.all-component-themes($mat-theme);
+@include components.ngm-mat-theme($mat-theme);
+@include formly.theme($mat-theme);
+@include responsive.theme($mat-theme);
+@include story.theme($mat-theme);
+@include story-designer.theme($mat-theme);
+@include widgets.theme($mat-theme);
+@include ocap.core-theme($mat-theme);
+@include ocap.analytical-grid-theme($mat-theme);
+@include ocap.breadcrumb-theme($mat-theme);
+@include ocap.controls-theme($mat-theme);
+@include ocap.entity-theme($mat-theme);
+@include ocap.common-color($mat-theme);
+@include ocap.common-density($mat-theme);
+@include auth.theme($mat-theme);
+
+// Set color for the Story component separately to override global styles
+.ngm-story-container.ngm-theme-light.light {
+  @include mat.all-component-colors($mat-theme);
+  @include components.all-component-colors($mat-theme);
+  @include formly.color($mat-theme);
+  @include responsive.color($mat-theme);
+  @include story.color($mat-theme);
+  @include story-designer.color($mat-theme);
+  @include widgets.color($mat-theme);
+  @include ocap.core-color($mat-theme);
+  @include ocap.analytical-grid-color($mat-theme);
+  @include ocap.breadcrumb-color($mat-theme);
+  @include ocap.controls-color($mat-theme);
+  @include ocap.entity-color($mat-theme);
   @include ocap.common-color($mat-theme);
-  @include ocap.common-density($mat-theme);
-  @include auth.theme($mat-theme);
+  @include auth.color($mat-theme);
 }
