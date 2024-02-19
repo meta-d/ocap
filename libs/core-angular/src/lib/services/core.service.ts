@@ -32,6 +32,9 @@ export interface NxCoreState {
 export class NxCoreService extends ComponentStore<NxCoreState> {
   private _intent$ = new Subject<Intent>()
 
+  /**
+   * Theme name for charts 
+   */
   public readonly themeName$ = this.select((state) => state.themeName)
   private themeChanges$: Observable<any> = this.themeName$.pipe(
     pairwise(),

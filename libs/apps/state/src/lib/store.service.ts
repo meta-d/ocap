@@ -21,8 +21,8 @@ import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
-import { ThemesEnum } from './types';
 import { ComponentEnum } from './constants';
+import { ThemesEnum } from '@metad/core';
 
 
 export interface AppState {

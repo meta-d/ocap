@@ -1326,6 +1326,12 @@
         }
       }
     },
+    "Themes": {
+      "System": "跟随系统",
+      "Light": "明亮",
+      "Dark": "暗色",
+      "Dark Green": "暗绿"
+    },
     "title": {
       "short": "分析云"
     },

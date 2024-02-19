@@ -42,7 +42,7 @@ import {
 } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { StoryScales, downloadStory } from '../types'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -140,7 +140,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     this.storyService.setAuthenticated(isAuthenticated)
   })
 
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
+  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   
   private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
@@ -159,12 +159,12 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     private toastr: ToastrService,
     private route: ActivatedRoute,
     private _router: Router,
-    private renderer: Renderer2,
-    private coreService: NxCoreService,
     @Inject(DOCUMENT) private document: any,
     private _elementRef: ElementRef
   ) {
     super()
+
+    effectStoryTheme(this._elementRef)
   }
 
   ngOnInit() {

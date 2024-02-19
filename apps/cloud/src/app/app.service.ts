@@ -1,10 +1,12 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { Injectable } from '@angular/core'
+import { computed, Injectable } from '@angular/core'
 import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
 import { combineLatest } from 'rxjs'
 import { map, shareReplay } from 'rxjs/operators'
 import { MenuCatalog, Store } from './@core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { prefersColorScheme, ThemesEnum } from '@metad/core'
 
 export interface PACAppState {
   insight: boolean
@@ -46,6 +48,27 @@ export class AppService extends ComponentStore<PACAppState> {
   public readonly copilotEnabled$ = this.store.featureOrganizations$.pipe(
     map(() => this.store.hasFeatureEnabled('FEATURE_COPILOT' as any)),
   )
+
+  
+  readonly preferredTheme$ = toSignal(this.store.preferredTheme$)
+  readonly systemColorScheme$ = toSignal(prefersColorScheme())
+
+  readonly theme$ = computed(() => {
+    let preferredTheme = this.preferredTheme$()
+    const systemColorScheme = this.systemColorScheme$()
+    preferredTheme = preferredTheme ?? ThemesEnum.light
+    if (preferredTheme === ThemesEnum.system) {
+      preferredTheme = systemColorScheme
+    }
+
+    const [primary, color] = preferredTheme.split('-')
+
+    return {
+      preferredTheme,
+      primary,
+      color,
+    }
+  })
   
   constructor(
     private store: Store,

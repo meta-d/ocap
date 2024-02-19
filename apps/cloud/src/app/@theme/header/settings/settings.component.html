@@ -21,34 +21,16 @@
       <mat-icon ngmSuffix>translate</mat-icon>
     </ngm-select>
 
-    @if (development) {
     <ngm-select [label]="'PAC.MENU.GENERAL.THEME' | translate: { Default: 'Theme' }"
       [placeholder]="'PAC.MENU.GENERAL.ThemePlaceholder' | translate: { Default: 'Select Theme' }"
       [displayBehaviour]="DisplayBehaviour.descriptionOnly"
       [valueKey]="'key'"
-      [selectOptions]="[
-        {
-          key: 'light',
-          caption: 'Light',
-          icon: 'light_mode'
-        },
-        {
-          key: 'dark',
-          caption: 'Dark',
-          icon: 'dark_mode'
-        },
-        {
-          key: 'dark-green',
-          caption: 'Dark Green',
-          icon: 'dark_mode'
-        }
-      ]"
-      [ngModel]="preferredTheme$ | async"
+      [selectOptions]="themeOptions$()"
+      [ngModel]="preferredTheme$()"
       (ngModelChange)="onThemeSelect($event)"
     >
-      <mat-icon ngmSuffix>dark_mode</mat-icon>
+      <mat-icon ngmSuffix>{{preferredThemeIcon$()}}</mat-icon>
     </ngm-select>
-    }
 
     <button mat-button (click)="onProfile()">
       <mat-icon>account_circle</mat-icon>

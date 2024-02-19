@@ -31,6 +31,7 @@ export const ZhHans = {
       Description: '描述',
       Theme: {
         Title: '主题',
+        Default: '默认',
         System: '跟随系统',
         Light: '浅色模式',
         Dark: '深色模式',

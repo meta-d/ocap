@@ -260,10 +260,10 @@ function StoryPreferences(className: string, Story) {
       props: {
         label: Story?.Common?.Theme?.Title ?? 'Theme',
         options: [
-          { value: 'system', label: Story?.Common?.Theme?.System ?? 'System' },
+          { value: 'default', label: Story?.Common?.Theme?.Default ?? 'Default' },
           { value: 'light', label: Story?.Common?.Theme?.Light ?? 'Light' },
           { value: 'dark', label: Story?.Common?.Theme?.Dark ?? 'Dark' },
-          { value: 'thin', label: Story?.Common?.Theme?.Thin ?? 'Thin' }
+          // { value: 'thin', label: Story?.Common?.Theme?.Thin ?? 'Thin' } 需要改造 thin theme 暂时先禁用
         ]
       }
     },

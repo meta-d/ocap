@@ -6,11 +6,11 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
 import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
-import { NxStoryService, getSemanticModelKey, prefersColorScheme } from '@metad/story/core'
+import { NxStoryService, getSemanticModelKey } from '@metad/story/core'
 import { NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
-import { registerStoryThemes, subscribeStoryTheme } from '../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../@theme'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -96,14 +96,15 @@ export class PublicWidgetComponent {
   private readonly models = computed(() => this.story()?.models)
 
   public error$ = new BehaviorSubject(null)
-  // System theme
-  private prefersColorScheme$ = prefersColorScheme()
 
   // Subscribers
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
+  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
 
   constructor() {
+
+    effectStoryTheme(this._elementRef)
+    
     effect(() => {
       if (this.story()) {
         this.storyService.setStory(this.story())

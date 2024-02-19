@@ -1,19 +1,25 @@
 import { Platform } from '@angular/cdk/platform'
 import { DOCUMENT } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Inject, OnInit, Renderer2 } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Renderer2, effect } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { DateFnsAdapter, MAT_DATE_FNS_FORMATS } from '@angular/material-date-fns-adapter'
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatIconRegistry } from '@angular/material/icon'
 import { DomSanitizer, Title } from '@angular/platform-browser'
-import { ThemesEnum } from '@metad/cloud/state'
 import { nonBlank, nonNullable } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { combineLatest } from 'rxjs'
-import { filter, map, startWith } from 'rxjs/operators'
-import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale, navigatorLanguage } from './@core'
+import { filter, startWith } from 'rxjs/operators'
+import {
+  ICONS,
+  LanguagesService,
+  PACThemeService,
+  Store,
+  UpdateService,
+  mapDateLocale,
+  navigatorLanguage
+} from './@core'
 import { AppService } from './app.service'
-
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,7 +34,9 @@ import { AppService } from './app.service'
     { provide: MAT_DATE_FORMATS, useValue: MAT_DATE_FNS_FORMATS }
   ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+  readonly isMobile$ = toSignal(this.appService.isMobile$)
+
   constructor(
     private store: Store,
     public readonly appService: AppService,
@@ -62,14 +70,13 @@ export class AppComponent implements OnInit {
     ICONS.forEach((icon) => {
       this.matIconRegistry.addSvgIcon(icon.name, this.domSanitizer.bypassSecurityTrustResourceUrl(icon.resourceUrl))
     })
-  }
 
-  ngOnInit() {
-    combineLatest([this.appService.isMobile$, this.store.preferredTheme$])
-    .subscribe(([isMobile, preferredTheme]) => {
-      const [primaryTheme, primaryColor] = (preferredTheme ?? '').split('-')
-      preferredTheme = preferredTheme ?? ThemesEnum.default
-      const theme = `ngm-theme-${preferredTheme} ${primaryTheme} ${preferredTheme}`
+    effect(() => {
+      const isMobile = this.isMobile$()
+      const { preferredTheme, primary } = this.appService.theme$()
+
+      const theme = `ngm-theme-${preferredTheme} ${primary} ${preferredTheme}`
+
       // for body
       const body = this.document.getElementsByTagName('body')[0]
       const bodyThemeRemove = Array.from(body.classList).filter(
@@ -78,9 +85,12 @@ export class AppComponent implements OnInit {
       if (bodyThemeRemove.length) {
         body.classList.remove(...bodyThemeRemove)
       }
-      theme.split(' ').filter(nonBlank).forEach((value) => {
-        this.renderer.addClass(body, value)
-      })
+      theme
+        .split(' ')
+        .filter(nonBlank)
+        .forEach((value) => {
+          this.renderer.addClass(body, value)
+        })
 
       if (isMobile && (this.platform.IOS || this.platform.ANDROID)) {
         this.renderer.addClass(body, 'mobile')

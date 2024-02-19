@@ -7,7 +7,7 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ComponentStore, DirtyCheckQuery } from '@metad/store'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService } from '@metad/core'
+import { getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, prefersColorScheme } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -64,7 +64,7 @@ import {
   MoveDirection,
   DefaultDataSettings
 } from './types'
-import { convertStoryModel2DataSource, getSemanticModelKey, prefersColorScheme } from './utils'
+import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 
@@ -191,18 +191,18 @@ export class NxStoryService extends ComponentStore<StoryState> {
     distinctUntilChanged()
   )
 
-  // System theme
-  private prefersColorScheme$ = prefersColorScheme()
-  public readonly themeChanging$ = combineLatest([this.themeName$, this.prefersColorScheme$]).pipe(
-    map(([themeName, prefersColorScheme]) => {
-      if (!themeName || themeName === 'system') {
-        return prefersColorScheme
-      }
-      return themeName || 'light'
-    }),
-    startWith(null),
-    pairwise()
-  )
+  // // System theme
+  // private prefersColorScheme$ = prefersColorScheme()
+  // public readonly themeChanging$ = combineLatest([this.themeName$, this.prefersColorScheme$]).pipe(
+  //   map(([themeName, prefersColorScheme]) => {
+  //     if (!themeName || themeName === 'system') {
+  //       return prefersColorScheme
+  //     }
+  //     return themeName || 'light'
+  //   }),
+  //   startWith(null),
+  //   pairwise()
+  // )
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))

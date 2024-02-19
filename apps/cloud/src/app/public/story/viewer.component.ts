@@ -6,7 +6,7 @@ import { NxCoreService } from '@metad/core'
 import { NxStoryService, Story } from '@metad/story/core'
 import { map } from 'rxjs/operators'
 import { AgentType, registerWasmAgentModel } from '../../@core'
-import { registerStoryThemes, subscribeStoryTheme } from '../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../@theme'
 import { AppService } from '../../app.service'
 
 @Component({
@@ -32,7 +32,7 @@ export class StoryViewerComponent implements OnInit {
   readonly isDark$ = this.appService.isDark$
   readonly isAuthenticated$ = this.appService.isAuthenticated$
 
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
+  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   private echartsThemeSub = registerStoryThemes(this.storyService)
 
@@ -45,6 +45,9 @@ export class StoryViewerComponent implements OnInit {
     })
 
   constructor() {
+
+    effectStoryTheme(this._elementRef)
+
     effect(() => {
       const models = this.models()
       models?.forEach((model) => {

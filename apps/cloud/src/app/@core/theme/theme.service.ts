@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core'
-import { ThemesEnum } from '@metad/cloud/state'
+import { ThemesEnum } from '@metad/core'
 import { BehaviorSubject } from 'rxjs'
 
 

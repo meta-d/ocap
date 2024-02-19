@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   computed,
@@ -7,9 +8,11 @@ import {
   ElementRef,
   HostBinding,
   inject,
+  Injector,
   Input,
   OnInit,
   Renderer2,
+  runInInjectionContext,
   signal,
   ViewChild
 } from '@angular/core'
@@ -43,6 +46,7 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { injectCopilotCommand, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
+import { effectStoryTheme } from '../../../@theme'
 
 
 type ResponsiveBreakpointType = {
@@ -84,7 +88,7 @@ type ResponsiveBreakpointType = {
     NxSettingsPanelService,
   ]
 })
-export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {
+export class StoryComponent extends TranslationBaseComponent implements OnInit, AfterViewInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
@@ -100,6 +104,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   private logger = inject(NGXLogger)
   private renderer = inject(Renderer2)
   private _cdr = inject(ChangeDetectorRef)
+  readonly #injector = inject(Injector)
 
   @Input() storyId: string
   @Input() editable = true
@@ -222,33 +227,6 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     }
   })
 
-  private themeSub = this.storyService.themeChanging$.pipe(delay(300), takeUntilDestroyed(),).subscribe(async ([prev, current]) => {
-    const story = await firstValueFrom(this.storyService.story$)
-    const key = story.key || story.id
-    const echartsTheme = story.options?.echartsTheme
-
-    if (prev === 'light' || !prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-default')
-    }
-    if (prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
-      this.renderer.removeClass(this.storyContainer.nativeElement, prev)
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'dark')
-    }
-    if (current) {
-      this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
-      this.renderer.addClass(this.storyContainer.nativeElement, current)
-      if (current === 'thin') {
-        this.renderer.addClass(this.storyContainer.nativeElement, 'dark')
-      }
-      if (echartsTheme?.[current]) {
-        this.coreService.changeTheme(`${current}-${key}`)
-      } else {
-        this.coreService.changeTheme(current)
-      }
-    }
-  })
-
   private _emulatedDeviceSub = this.storyService.storyOptions$
     .pipe(
       map((options) => options?.emulatedDevice),
@@ -303,6 +281,12 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
         this.appService.setNavigation({ catalog: MenuCatalog.Stories, id: this.story().id, label: this.story().name })
       }
     }
+  }
+
+  ngAfterViewInit() {
+    runInInjectionContext(this.#injector, () => {
+      effectStoryTheme(this.storyContainer)
+    })
   }
 
   isDirty(): boolean {

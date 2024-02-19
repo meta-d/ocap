@@ -5,11 +5,7 @@ import { Story, StoryConnection, StoryModel, StoryPoint, StoryWidget, uuid } fro
 import { convertNewSemanticModelResult } from './models.service'
 
 
-export enum ThemesEnum {
-  default = 'default',
-  dark = 'dark',
-  thin = 'thin'
-}
+
 
 export const SystemPrivacyFields = [
   'createdById',
