@@ -1,4 +1,4 @@
-<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800">
+<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800 text-neutral-100">
     <div *ngIf="expandLess" class="w-full px-2 flex-1 flex flex-col overflow-x-hidden overflow-y-auto" >
         <ng-content></ng-content>
 
@@ -130,7 +130,7 @@
     
 </div>
 
-<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800"
+<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800 text-neutral-100"
     [ngClass]="onRight?'border-r':'border-l'"
 >
     <div class="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden">
@@ -264,7 +264,8 @@
 
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let page of pages" class="h-20 m-2 flex justify-center items-center rounded-lg overflow-hidden
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             (click)="createStoryPage(page.value)"
             [matTooltip]="'Story.Toolbar.' + page.label | translate: {Default: page.label}"
             matTooltipPosition="above"
@@ -285,7 +286,9 @@
         </div>
         <div class="grid grid-cols-3 gap-2">
             <button *ngFor="let chart of group.charts" class="h-16 m-2 flex justify-center items-center rounded-lg overflow-hidden
-                ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+                ring-offset-2 ring-2 ring-transparent ring-offset-transparent hover:ring-violet-300 focus:ring-violet-500
+                hover:ring-offset-white dark:hover:ring-offset-black
+                bg-white"
                 [matTooltip]="'FORMLY.CHART.' + chart.label | translate: {Default: chart.label}"
                 matTooltipPosition="above"
                 draggable="true"
@@ -319,7 +322,8 @@
 
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let widget of widgets" class="h-16 m-2 flex justify-center items-center rounded-lg overflow-hidden
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent hover:ring-violet-300 focus:ring-violet-500
+            hover:ring-offset-white dark:hover:ring-offset-black"
             [matTooltip]="'Story.Toolbar.INSERT.' + widget.code | translate: {Default: widget.label}"
             matTooltipPosition="above"
             draggable="true"
@@ -358,8 +362,9 @@
         {{ 'Story.Toolbar.Devices' | translate: {Default: 'Devices'} }}
     </div>
     <div class="grid grid-cols-2 gap-2">
-        <button *ngFor="let device of EmulatedDevices" class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden bg-gray-50
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+        <button *ngFor="let device of EmulatedDevices" class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             [class.ring-violet-500]="device.name === emulatedDevice?.name"
             (click)="toggleMobile(device.value)"
         >
@@ -384,7 +389,8 @@
     <div class="text-base text-center my-2">{{ 'Story.Toolbar.Fit' | translate: {Default: 'Fit'} }}</div>
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let zoom of DeviceZooms" class="h-16 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
-                ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             [class.ring-violet-500]="zoom.name === deviceZoom?.name"
             (click)="setDeviceZoom(zoom)">
             {{zoom.name}}

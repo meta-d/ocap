@@ -1,7 +1,9 @@
-import { Component, HostBinding, Inject, OnInit } from '@angular/core'
+import { Component, HostBinding, Inject, effect, inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { ThemeService } from '@metad/core'
 import { isBlank } from '@metad/ocap-core'
 import { BehaviorSubject } from 'rxjs'
+import { EditorThemeMap } from '../types'
 
 export interface ConfirmCodeEditorData {
   language?: string
@@ -14,7 +16,9 @@ export interface ConfirmCodeEditorData {
   templateUrl: './confirm-code-editor.component.html',
   styleUrls: ['./confirm-code-editor.component.scss']
 })
-export class ConfirmCodeEditorComponent implements OnInit {
+export class ConfirmCodeEditorComponent {
+  readonly themeService = inject(ThemeService)
+
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public editor$ = new BehaviorSubject(null)
@@ -28,14 +32,17 @@ export class ConfirmCodeEditorComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ConfirmCodeEditorData,
     public dialogRef?: MatDialogRef<ConfirmCodeEditorComponent>
-  ) {}
-
-  ngOnInit(): void {
-    if (this.data.language) {
+  ) {
+    effect(() => {
       this.editorOptions = {
         ...this.editorOptions,
-        language: this.data.language
+        theme: EditorThemeMap[this.themeService.themeClass()]
       }
+    })
+
+    this.editorOptions = {
+      ...this.editorOptions,
+      language: this.data?.language ?? this.editorOptions.language,
     }
 
     this.onReset()

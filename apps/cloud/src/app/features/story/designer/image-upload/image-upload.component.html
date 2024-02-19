@@ -1,5 +1,8 @@
-<div class="w-full h-60 bg-slate-50 flex justify-center items-center bg-cover bg-center"
+<div class="w-full h-60 flex justify-center items-center bg-center
+bg-slate-50 dark:bg-slate-800"
     [style.background-image]="'url(' + imageUrl + ')'"
+    [style.background-size]="backgroundSize"
+    [style.background-repeat]="backgroundRepeat"
     >
     <input #fileUpload type="file" class="file-input h-0 w-0 invisible" accept="image/*"
         (change)="onFileSelected($event)"

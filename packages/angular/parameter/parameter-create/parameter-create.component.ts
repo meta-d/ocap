@@ -14,6 +14,7 @@ import {
 } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
@@ -54,6 +55,7 @@ import { BehaviorSubject, filter, map } from 'rxjs'
     MatIconModule,
     MatRadioModule,
     MatDialogModule,
+    MatCheckboxModule,
     TranslateModule,
     OcapCoreModule,
     ControlsModule,

@@ -32,16 +32,13 @@ export const Density: Story = {
     props: args,
     template: `<div class="flex flex-col gap-2">
 <div class="ngm-density__comfort">
-  <label>Comfort:</label>
-  <ngm-input ${argsToTemplate(args)}></ngm-input>
+  <ngm-input ${argsToTemplate(args)} label="Comfort:"></ngm-input>
 </div>
 <div class="ngm-density__cosy">
-  <label>Cosy:</label>
-  <ngm-input ${argsToTemplate(args)}></ngm-input>
+  <ngm-input ${argsToTemplate(args)} label="Cosy:"></ngm-input>
 </div>
 <div class="ngm-density__compact">
-  <label>Compact:</label>
-  <ngm-input ${argsToTemplate(args)}></ngm-input>
+  <ngm-input ${argsToTemplate(args)} label="Compact:"></ngm-input>
 </div>
 </div>`
   })

@@ -174,8 +174,6 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly modelType = toSignal(this.modelService.modelType$)
   readonly dialect = toSignal(this.modelService.dialect$)
 
-  readonly themeName = toSignal(this.#store.primaryTheme$)
-
   /**
   |--------------------------------------------------------------------------
   | Copilot

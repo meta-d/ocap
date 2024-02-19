@@ -8,18 +8,20 @@
   
     <ngm-search class="my-2" ></ngm-search>
   
-    <mat-nav-list class="flex-1 overflow-auto">
+    <mat-nav-list class="ngm-nav-list flex-1 overflow-auto">
         <mat-list-item class="group/item"
             *ngFor="let file of files"
             [class.active]="activedFile?.id === file.id" 
             (click)="activeLink(file)"
         >
-            <span class="flex-1 text-ellipsis overflow-hidden whitespace-nowrap"> {{ file.originalName }} </span>
+            <div class="flex items-center">
+                <span class="flex-1 text-ellipsis overflow-hidden whitespace-nowrap"> {{ file.originalName }} </span>
 
-            <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="opacity-0 group-hover/item:opacity-100"
-                (click)="deleteFile($event, file)">
-                <mat-icon fontSet="material-icons-round">delete</mat-icon>
-            </button>
+                <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" class="opacity-0 group-hover/item:opacity-100"
+                    (click)="deleteFile($event, file)">
+                    <mat-icon fontSet="material-icons-round">delete</mat-icon>
+                </button>
+            </div>
         </mat-list-item>
     </mat-nav-list>
 
@@ -37,9 +39,11 @@
     </div>
 </div>
 
-<div class="flex-1 flex flex-col justify-center items-center overflow-auto">
-    <div *ngIf="activedFile" class="w-full flex-1 flex flex-col justify-start items-stretch">
-        <span class="w-full p-2">{{activedFile.originalName}}: {{activedFile.url}}</span>
+<div class="flex-1 flex flex-col justify-center items-center overflow-hidden">
+    <div *ngIf="activedFile" class="w-full flex-1 flex flex-col justify-start items-stretch relative">
+        <div class="absolute top-0 left-0 w-full p-2 text-ellipsis bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
+            <span >{{activedFile.originalName}}: {{activedFile.url}}</span>
+        </div>
 
         <img *ngIf="isImage(activedFile)" class="flex-1"
             [src]="activedFile.url">

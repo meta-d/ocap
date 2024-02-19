@@ -10,7 +10,6 @@
     } @else if (entityType().syntax === Syntax.MDX) {
       <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full" cdkDropList
         (cdkDropListDropped)="dropFormula($event)"
-        [theme]="themeName()"
         [syntax]="Syntax.MDX"
         [dataSettings]="dataSettings()"
         [entityType]="entityType()"

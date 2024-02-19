@@ -49,7 +49,6 @@ export class ParametersComponent {
   public entities$ = computed(() => {
     const schemas = this.schemas$()
     if (schemas) {
-      console.log(schemas)
       const entities = []
 
       Object.keys(schemas).forEach((dataSource) => {

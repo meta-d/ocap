@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, inject } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, forwardRef, inject } from '@angular/core'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
@@ -26,7 +26,10 @@ import { MaterialModule } from '../../../../@shared'
 export class ImageUploadComponent implements ControlValueAccessor {
   private readonly screenshotService = inject(ScreenshotService)
   private readonly _cdr = inject(ChangeDetectorRef)
-
+  
+  @Input() backgroundSize = 'cover'
+  @Input() backgroundRepeat = 'no-repeat'
+  
   value: IScreenshot = null
   disabled = false
 

@@ -1,7 +1,10 @@
-import { Directive, EventEmitter, Input, OnDestroy, Output, computed, signal } from '@angular/core'
+import { Directive, EventEmitter, Input, OnDestroy, Output, computed, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor } from '@angular/forms'
+import { ThemeService } from '@metad/core'
 import { BehaviorSubject, Observable, Observer, Subject, Subscription } from 'rxjs'
 import { debounceTime, filter, switchMap } from 'rxjs/operators'
+import { EditorThemeMap } from './types'
 
 declare var monaco: any
 
@@ -11,19 +14,21 @@ declare var monaco: any
 })
 export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
 
+  readonly themeService = inject(ThemeService)
+
   // CodeEditor
   get editor() {
     return this.editor$.value
   }
   protected editor$ = new BehaviorSubject<any>(null)
-
-  @Input() get theme() {
-    return this._theme()
-  }
-  set theme(value) {
-    this._theme.set(value)
-  }
-  private _theme = signal<string>('')
+  @Input() theme = ''
+  // @Input() get theme() {
+  //   return this._theme()
+  // }
+  // set theme(value) {
+  //   this._theme.set(value)
+  // }
+  // private _theme = signal<string>('')
 
   // CodeEditor options
   @Input() get options() {
@@ -49,12 +54,11 @@ export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
     automaticLayout: true,
   }
   public editorOptions = computed(() => {
-    const theme = this.theme ? `vs-${this.theme}` : this.defaultOptions.theme
     return {
       language: this.languageId,
       ...this.defaultOptions,
       ...(this.options ?? {}),
-      theme
+      theme: EditorThemeMap[this.themeService.themeClass()]
     }
   })
 
@@ -70,16 +74,12 @@ export class BaseEditorDirective implements ControlValueAccessor, OnDestroy {
   protected _providers = []
   protected _onChange: any
   
-  constructor() {
-    this.modelChange.subscribe(model => {
-      this.onChange(this.code)
-    })
-
-    this.cursorSelection$.pipe(debounceTime(300)).subscribe((e) => {
-      // this.textSelectionChange.emit(this.getSelectText())
-      this.selectionChange.emit({range: this.editor.getSelection(), text: this.getSelectText()})
-    })
-  }
+  private valueSub = this.modelChange.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.onChange(this.code)
+  })
+  private cursorSelectionSub = this.cursorSelection$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe((e) => {
+    this.selectionChange.emit({range: this.editor.getSelection(), text: this.getSelectText()})
+  })
 
   onModelChange(event) {
     this._modelChange$.next(event)

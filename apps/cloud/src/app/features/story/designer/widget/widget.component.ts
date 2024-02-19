@@ -21,6 +21,7 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component'
 import { ClipboardModule } from '@angular/cdk/clipboard'
 import { sortBy } from 'lodash-es'
 import { NgmInputComponent, NgmSliderInputComponent } from '@metad/ocap-angular/common'
+import { BackdropFilterEnum, FilterEnum } from '@metad/core'
 
 
 @Component({
@@ -330,6 +331,16 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
       }
     }
   ]
+
+  backdropOptions = Object.entries(BackdropFilterEnum).map(([key, value]) => ({
+    value: value,
+    label: key
+  }))
+
+  filterOptions = Object.entries(FilterEnum).map(([key, value]) => ({
+    value: value,
+    label: key
+  }))
 
   fontFamilies = [
     "Lato, 'Noto Serif SC', monospace",

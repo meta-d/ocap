@@ -114,8 +114,6 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   }
   private _disabled = false
 
-  @Input() theme: string
-
   @ViewChild('editor') editor!: BaseEditorDirective
 
   opened = false

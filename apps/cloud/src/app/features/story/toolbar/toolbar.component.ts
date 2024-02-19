@@ -395,15 +395,11 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openCalculations() {
-    // const dataSource = await firstValueFrom(this.storyService.dataSource$)
     const result = await firstValueFrom(
       this._dialog
         .open(ParametersComponent, {
           viewContainerRef: this._viewContainerRef,
           panelClass: 'medium',
-          data: {
-            // dataSource
-          }
         })
         .afterClosed()
     )

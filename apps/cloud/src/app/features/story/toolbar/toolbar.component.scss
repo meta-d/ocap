@@ -11,7 +11,7 @@
 }
 
 .mat-divider {
-  @apply border border-dashed my-4;
+  @apply border-dashed my-4;
 }
 
 .mat-mdc-icon-button.mat-mdc-button-base {
@@ -27,8 +27,3 @@
     @apply bg-yellow-500;
   }
 }
-
-.pac-copilot-chat {
-  --pac-copilot-bg-color: transparent;
-}
-
