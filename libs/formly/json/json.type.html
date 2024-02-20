@@ -1,6 +1,6 @@
-<label class="px-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to?.label}}</label>
+<label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{to?.label}}</label>
   
-<textarea matInput [formControl]="fControl" [placeholder]="to?.placeholder"
+<textarea matInput class="ngm-input-element" [formControl]="fControl" [placeholder]="to?.placeholder"
     [formlyAttributes]="field"
     [id]="id"
     [readonly]="to.readonly"

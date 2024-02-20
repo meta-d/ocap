@@ -256,7 +256,7 @@ export class AnalyticalCardComponent extends ComponentStore<AnalyticalCardState>
         disabled: !!selectedDrilledDimensions?.find(
           (selected) => getPropertyName(selected.dimension) === getPropertyName(item)
         )
-      }))
+      })).filter(({property}) => !!property)
     }
   )
 

@@ -11,7 +11,8 @@ $prefix: (ngm, color);
 
 @function get-color-tokens() {
   @return (
-    surface-container-highest: null,
+    surface-container-low: null,
+    surface-container: null,
     surface-container-high: null,
     surface: null,
   );
@@ -29,10 +30,14 @@ $prefix: (ngm, color);
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
     &:hover {
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
+      --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
     }
     &:focus {
-      // --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)}); // Two different effects with and without using
-      background-color: var(#{token-utils.get-token-variable(surface-container-highest)});
+      --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
+      background-color: var(#{token-utils.get-token-variable(surface)});
+    }
+    &:disabled {
+      background-color: var(#{token-utils.get-token-variable(surface-container-low)});
     }
   }
 }
@@ -43,7 +48,7 @@ $prefix: (ngm, color);
   focus:z-10 focus:outline-none hover:ring-yellow-500/50 focus:ring-yellow-500
   dark:bg-opacity-50 dark:border-transparent dark:placeholder-gray-400 dark:text-white
   dark:hover:ring-yellow-500/50 dark:focus:ring-yellow-500
-  disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed;
+  disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed;
 
   .mat-mdc-select-arrow-wrapper {
     height: 14px;

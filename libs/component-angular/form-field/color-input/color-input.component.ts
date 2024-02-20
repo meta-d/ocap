@@ -18,7 +18,8 @@ import { TranslateModule } from '@ngx-translate/core'
   inputs: ['disabled', 'color'],
   host: {
     'class': 'ngm-color-input',
-    '[attr.disabled]': 'disabled || null'
+    '[attr.disabled]': 'disabled || null',
+    '[class.disabled]': 'disabled || null',
   },
   providers: [
     {

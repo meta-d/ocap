@@ -3,5 +3,6 @@
 }
 
 .ngm-colors__clear {
-  @apply absolute bg-white;
+  background-color: var(--ngm-color-surface);
+  @apply absolute;
 }

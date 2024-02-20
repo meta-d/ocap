@@ -288,36 +288,6 @@ export function PresentationVariantExpansion(
           props: {
             options: properties$
           }
-          // fieldGroup: [
-          //   {
-          //     className: FORMLY_W_1_2,
-          //     type: 'ngm-select',
-          //     key: 'by',
-          //     props: {
-          //       label: BUILDER?.BY_FIELD ?? 'By Field',
-          //       required: true
-          //     },
-          //     hooks: {
-          //       onInit: (field: FormlyFieldConfig) => {
-          //         field.props.options = combineLatest([dimensions$, measures$]).pipe(
-          //           map(([dimensions, measures]) => [...dimensions, ...measures])
-          //         )
-          //       }
-          //     }
-          //   },
-          //   {
-          //     className: FORMLY_W_1_2,
-          //     type: 'button-toggle',
-          //     key: 'order',
-          //     props: {
-          //       title: BUILDER?.ORDER ?? 'Order',
-          //       options: [
-          //         { value: 'ASC', label: 'ASC' },
-          //         { value: 'DESC', label: 'DESC' }
-          //       ]
-          //     }
-          //   }
-          // ]
         }
       },
       {
@@ -329,7 +299,7 @@ export function PresentationVariantExpansion(
           sortable: true
         },
         fieldArray: {
-          type: 'property-select',
+          type: 'chart-property',
           props: {
             required: true,
             removable: true,

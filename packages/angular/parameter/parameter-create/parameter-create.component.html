@@ -73,7 +73,7 @@
     
   </div>
 
-  <div *ngIf="paramType.value === ParameterControlEnum.Select"  class="overflow-y-auto">
+  <div *ngIf="paramType.value === ParameterControlEnum.Select"  class="flex-1 overflow-y-auto">
     <div class="text-lg">{{ 'COMPONENTS.PROPERTY.AvailableMembers' | translate: {Default: "Available Members"} }}</div>
     <div *ngFor="let item of availableMembers.controls; let i = index;" class="flex justify-start items-center gap-2 group"
       [formGroup]="$any(item)"

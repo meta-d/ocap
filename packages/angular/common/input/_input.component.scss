@@ -11,7 +11,8 @@ $prefix: (ngm, color);
 
 @function get-color-tokens() {
   @return (
-    surface-container-highest: null,
+    surface-container-low: null,
+    surface-container: null,
     surface-container-high: null,
     surface: null,
   );
@@ -27,12 +28,17 @@ $prefix: (ngm, color);
 @include token-utils.use-tokens($prefix, get-token-slots()) {
   .ngm-input-element.mat-mdc-input-element {
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
-    &:hover {
+    &:hover:not(:disabled) {
+      --tw-ring-color: rgb(234 179 8 / 0.5); // ring-yellow-500/50
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
+      // background-color: var(#{token-utils.get-token-variable(surface-container-high)});
     }
     &:focus {
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
-      background-color: var(#{token-utils.get-token-variable(surface-container-highest)});
+      background-color: var(#{token-utils.get-token-variable(surface)});
+    }
+    &:disabled {
+      background-color: var(#{token-utils.get-token-variable(surface-container-low)});
     }
   }
 }
@@ -40,10 +46,10 @@ $prefix: (ngm, color);
 .ngm-input-element.mat-mdc-input-element {
   @apply min-w-[6rem] block box-border w-full max-w-full p-2 rounded-lg
     text-gray-700 ring-offset-1 ring-offset-transparent ring-2 ring-transparent
-    hover:ring-yellow-500/50 focus:ring-yellow-500 focus:z-10 focus:outline-none
+    focus:ring-yellow-500 focus:z-10 focus:outline-none
     dark:placeholder-gray-400 dark:text-white
-    dark:hover:ring-yellow-500/50 dark:focus:ring-yellow-500
-    disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed;
+    dark:focus:ring-yellow-500
+    disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed;
 
   &.ngm-input__searching {
     @apply focus:bg-white dark:focus:bg-gray-800;
