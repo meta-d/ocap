@@ -32,6 +32,14 @@ export class StoryViewerComponent implements OnInit {
   readonly isDark$ = this.appService.isDark$
   readonly isAuthenticated$ = this.appService.isAuthenticated$
 
+  readonly watermark$ = computed(() => {
+    const user = this.story()?.createdBy
+    if (user) {
+      return `${user.mobile ?? ''} ${user.email ?? ''}`
+    }
+    return ''
+  })
+
   // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   private echartsThemeSub = registerStoryThemes(this.storyService)
