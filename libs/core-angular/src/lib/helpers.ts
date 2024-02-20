@@ -2,7 +2,7 @@ import { isPlatformBrowser } from '@angular/common'
 import { HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Inject, Injectable, PLATFORM_ID, DebugElement, EventEmitter } from '@angular/core'
 import { compact, PivotColumn, uniqBy } from '@metad/ocap-core'
-import { includes, isNil, negate, isEqual, isEmpty } from 'lodash-es'
+import { includes, isNil, negate, isEqual, isEmpty, camelCase } from 'lodash-es'
 import { Observable } from 'rxjs'
 import { filter, takeUntil, tap } from 'rxjs/operators'
 import { ZodType, ZodTypeDef } from 'zod'
@@ -539,4 +539,20 @@ export function getErrorMessage(err: any): string {
  */
 export function zodToProperties(obj: ZodType<any, ZodTypeDef, any>,) {
   return (<{ properties: any }>zodToJsonSchema(obj)).properties
+}
+
+/**
+ * Convert snake case object to camel case
+ * 
+ * @param obj 
+ * @returns 
+ */
+export function camelCaseObject(obj: Record<string, any>) {
+  const newObj: Record<string, any> = {}
+
+  for (const key in obj) {
+    newObj[camelCase(key)] = obj[key]
+  }
+
+  return newObj
 }

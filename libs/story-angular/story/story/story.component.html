@@ -83,7 +83,7 @@
 </popper-content>
   
 
-<ngm-trial-watermark *ngIf="enableWatermark$ | async" [options]="watermarkOptions$ | async"></ngm-trial-watermark>
+<ngm-trial-watermark *ngIf="enableWatermark$()" [options]="watermarkOptions$()"></ngm-trial-watermark>
  
 <mat-menu #pointMenu="matMenu" xPosition="before" class="ngm-density__compact">
 <ng-template matMenuContent let-point="point" let-component="component">

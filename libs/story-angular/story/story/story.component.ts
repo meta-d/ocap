@@ -32,7 +32,7 @@ import { isNil, omitBlank } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { NgmTransformScaleDirective, NxCoreModule, nonNullable } from '@metad/core'
+import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject, nonNullable } from '@metad/core'
 import {
   ComponentSettingsType,
   MoveDirection,
@@ -68,7 +68,7 @@ import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { NxStorySharedModule } from '../shared.module'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { HammerModule } from '@angular/platform-browser'
-import { TrialWatermarkModule } from '@metad/components/trial-watermark'
+import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 /**
@@ -89,7 +89,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
     CdkMenuModule,
     HammerModule,
     TranslateModule,
-    TrialWatermarkModule,
+    TrialWatermarkComponent,
     NgxPopperjsModule,
     NxCoreModule,
 
@@ -183,18 +183,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   readonly preferences$ = this.storyService.preferences$
   
-  readonly enableWatermark$ = this.storyService.preferences$.pipe(
-    map((preferences) => preferences?.story?.enableWatermark)
-  )
-  readonly watermarkOptions$ = this.storyService.preferences$.pipe(
-    map((preferences) => {
-      const watermarkOptions = omitBlank(preferences?.story?.watermarkOptions)
-      return {
-        ...(watermarkOptions ?? {}),
-        text: watermarkOptions?.text || this.watermark
-      }
-    })
-  )
   readonly tabBar$ = this.storyService.preferences$.pipe(map((preferences) => preferences?.story?.tabBar))
   readonly tabHidden = toSignal(this.tabBar$.pipe(map((tabBar) => tabBar === 'hidden' || tabBar === 'point')))
 
@@ -248,6 +236,25 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   public readonly isPanMode$ = this.storyService.isPanMode$
   public readonly disablePanMode$ = this.isPanMode$.pipe(map((value) => !value))
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly enableWatermark$ = toSignal(this.storyService.preferences$.pipe(
+    map((preferences) => preferences?.story?.enableWatermark)
+  ))
+  readonly watermarkOptions$ = toSignal(this.storyService.preferences$.pipe(
+    map((preferences) => {
+      const watermarkOptions = camelCaseObject(omitBlank(preferences?.story?.watermarkOptions))
+      console.log(watermarkOptions)
+      return {
+        ...(watermarkOptions ?? {}),
+        text: watermarkOptions?.text || this.watermark
+      }
+    })
+  ))
 
   /**
   |--------------------------------------------------------------------------

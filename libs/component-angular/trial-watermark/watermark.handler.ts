@@ -60,10 +60,11 @@ export class WatermarkHandler {
   }
 
   generateWatermark(_ops: NxWatermarkOptions) {
-    let options: NxWatermarkOptions = merge({}, this.DEFAULT_OPTIONS, _ops)
+    const options: NxWatermarkOptions = merge({}, this.DEFAULT_OPTIONS, _ops)
     if (this.isWebSafeFont(options.fontFamily)) {
       this.processStyleFromOptions(options)
     } else {
+      this.processStyleFromOptions(options)
       // let font = new FontFaceObserver(options.fontFamily);
       // font.load().then(() => {
       //     this.processStyleFromOptions(options);
