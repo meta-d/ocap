@@ -1,4 +1,6 @@
 :host {
+  @apply w-full;
+  
   display: flex;
   flex-direction: column;
   padding: 1rem;

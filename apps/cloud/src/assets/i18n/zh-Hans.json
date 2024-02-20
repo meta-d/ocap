@@ -923,7 +923,9 @@
         "SharedDimension": "共享维度",
         "CubeAlreadyExists": "多维数据集已存在！",
         "DimensionAlreadyExists": "维度已存在！",
-        "MeasureAlreadyExists": "度量已存在！"
+        "MeasureAlreadyExists": "度量已存在！",
+        "PleaseSave": "请保存",
+        "PleaseSaveTheCorrectVirtualCube": "请先将正确的虚拟数据集保存后再进行公式操作"
       },
       "Copilot": {
         "CreatedCube": "数据集创建成功！",

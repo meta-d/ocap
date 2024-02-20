@@ -4,7 +4,6 @@
 @use '../app/features/features-theme' as features;
 @use '../app/@shared/components-theme' as shared;
 @use '../app/public/public-theme' as public;
-@use '../app/features/semantic-model/model/_model.component' as model;
 
 body.dark {
   /* 暗色主题下的样式 */
@@ -19,9 +18,9 @@ body.dark {
     scrollbar-color: theme('colors.neutral.800'),
   ));
 
-  @include token-utils.create-token-values(model.$prefix, (
-    border-color: theme('colors.neutral.800'),
-  ));
+  // @include token-utils.create-token-values(model.$prefix, (
+  //   border-color: theme('colors.neutral.800'),
+  // ));
   
 }
 

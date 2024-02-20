@@ -75,6 +75,9 @@ export class AccessControlComponent extends TranslationBaseComponent {
   get roles() {
     return this.#accessControlState.roles
   }
+
+  #newDialogRef: MatDialogRef<any, any>
+
   /**
   |--------------------------------------------------------------------------
   | Signals
@@ -151,8 +154,8 @@ export class AccessControlComponent extends TranslationBaseComponent {
     return item.key
   }
 
-  async openCreate() {
-    await firstValueFrom(this.#dialog.open(this.creatTmpl).afterClosed())
+  openCreate() {
+    this.#newDialogRef = this.#dialog.open(this.creatTmpl)
   }
 
   async onCreate() {
@@ -165,6 +168,8 @@ export class AccessControlComponent extends TranslationBaseComponent {
     // Navigate to the new role
     this.#router.navigate([key], { relativeTo: this.#route })
     this.creatFormGroup.reset()
+    this.#newDialogRef?.close()
+    this.#newDialogRef = null
   }
 
   remove(role: IModelRole) {

@@ -14,6 +14,7 @@
   --ngm-color-surface-container: theme('colors.neutral.100');
   --ngm-color-surface-container-high: #f2f2f2;
   --ngm-color-surface-container-highest: #e5e5e5;
+  --ngm-color-outline-variant: theme('colors.neutral.100');
   --ngm-copilot-bg-color: var(--ngm-color-surface-container);
 }
 
@@ -28,5 +29,6 @@
   --ngm-color-surface-container: black;
   --ngm-color-surface-container-high: #24292f;
   --ngm-color-surface-container-highest: #2f353c;
+  --ngm-color-outline-variant: theme('colors.neutral.800');
   --ngm-copilot-bg-color: var(--ngm-color-surface-container);
 }

@@ -1,6 +1,29 @@
 @use 'sass:map';
 @use 'sass:color';
 @use '@angular/material' as mat;
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$prefix: (ngm, splitter);
+
+@function get-unthemable-tokens() {
+  @return (
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    background-color: var(--ngm-color-outline-variant),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
 
 @mixin color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -11,6 +34,16 @@
 
   $splitter-color: mat.get-color-from-palette($foreground, divider);
   $splitter-focus-color: mat.get-color-from-palette($accent, 500);
+
+  @include token-utils.use-tokens($prefix, get-token-slots()) {
+    .ngm-splitter-bar {
+      background-color: var(#{token-utils.get-token-variable(background-color)});
+    }
+  }
+
+  ngm-splitter {
+    @include token-utils.create-token-values($prefix, get-token-slots());
+  }
 
   %ngm-splitter-expander {
     position: relative;
@@ -41,7 +74,6 @@
     z-index: 99;
     opacity: .68;
     transition: opacity .15s ease-out !important;
-    background-color: lighten($splitter-color, 50%);
 
     &:hover {
       transition: all .25s ease-out;
@@ -95,7 +127,6 @@
         border-right: unset;
       }
     }
-
   }
   
 }

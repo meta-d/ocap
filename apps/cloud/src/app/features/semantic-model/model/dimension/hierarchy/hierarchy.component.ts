@@ -1,7 +1,7 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
 import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ViewChildren, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { NgmCommonModule, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, ResizerModule, SplitterModule, SplitterType } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntitySchemaComponent, EntitySchemaNode, EntitySchemaType, EntityCapacity } from '@metad/ocap-angular/entity'
 import { C_MEASURES, DisplayBehaviour, PropertyLevel, Table } from '@metad/ocap-core'
@@ -64,6 +64,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
   DisplayBehaviour = DisplayBehaviour
   COLUMN_TYPE = HierarchyColumnType
   EntityCapacity = EntityCapacity
+  SplitterType = SplitterType
 
   private readonly dimensionComponent = inject(ModelDimensionComponent)
   private readonly settingsService = inject(NxSettingsPanelService)

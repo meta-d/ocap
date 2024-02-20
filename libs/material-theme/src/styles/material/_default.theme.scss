@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use 'libs/component-angular/styles/material/all-components' as components;
 @use 'libs/formly/formly-theme' as formly;
@@ -15,7 +17,6 @@ $primary: mat.define-palette(mat.$blue-grey-palette, 600);
 $accent:  mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $material-typeface: Lato, 'Noto Serif SC', monospace;
-// mat.$light-theme-background-palette: map-merge(mat.$light-theme-background-palette, (surface: rgba(255, 255, 255, 0.875)));
 
 $mat-theme: mat.define-light-theme(
   (
@@ -54,7 +55,11 @@ $custom-typography: mat.define-typography-config(
 @include auth.theme($mat-theme);
 
 // Set color for the Story component separately to override global styles
-.ngm-story-container.ngm-theme-light.light {
+.ngm-theme-light.light, .ngm-story-container.ngm-theme-light.light {
+  --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+
   @include mat.all-component-colors($mat-theme);
   @include components.all-component-colors($mat-theme);
   @include formly.color($mat-theme);

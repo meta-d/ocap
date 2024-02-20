@@ -71,3 +71,7 @@
 .pac-table-container {
   border-color: var(--mat-divider-color);
 }
+
+.ngm-modal-sidenav {
+  @apply bg-bluegray-700 text-white dark:bg-bluegray-900;
+}

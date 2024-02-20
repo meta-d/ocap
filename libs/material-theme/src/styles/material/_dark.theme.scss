@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use 'libs/component-angular/styles/material/all-components' as components;
 @use 'libs/formly/formly-theme' as formly;
@@ -6,14 +7,13 @@
 @use 'libs/story-angular/story/story-theme' as story;
 @use 'libs/story-angular/src/lib/story-theme' as story-designer;
 @use 'libs/story-angular/widgets/widgets-theme' as widgets;
-// @use '@metad/ocap-angular/theming' as ocap;
 @use 'packages/angular/theming' as ocap;
 
 
 $material-typeface: Lato, 'Noto Serif SC', monospace;
 
 // Define a theme.
-$dark-primary: mat.define-palette(mat.$blue-palette, 500);
+$primary: mat.define-palette(mat.$blue-palette, 500);
 $dark-accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $light-secondary-text: rgba(white, 0.7);
@@ -59,7 +59,7 @@ $foreground: (
 $dark-theme: map.deep-merge(
   mat.define-dark-theme((
     color: (
-      primary: $dark-primary,
+      primary: $primary,
       accent: $dark-accent,
     )
   )),
@@ -76,7 +76,11 @@ $custom-typography: mat.define-typography-config(
 );
 
 .ngm-theme-dark, .ngm-story__device.ngm-theme-dark.dark {
-  --ngm-color-surface: #16181c;
+  // --ngm-color-surface: #16181c;
+  --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+
   // Include all theme styles for the mat components.
   @include mat.all-component-colors($dark-theme);
   @include components.all-component-colors($dark-theme);

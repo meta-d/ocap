@@ -55,7 +55,7 @@
 <ng-template #creatTmpl let-data>
     <ngm-dialog [title]=" 'PAC.MODEL.AccessControl.NewRole' | translate: {Default: 'New Role'} " [form]="creatFormGroup"
         (apply)="onCreate()">
-        <form [formGroup]="creatFormGroup" class="flex flex-col justify-start items-stretch gap-4">
+        <form [formGroup]="creatFormGroup" (ngSubmit)="onCreate()" class="flex flex-col justify-start items-stretch gap-4">
             <div class="flex justify-start items-center gap-4 my-4">
                 <label>{{ 'PAC.MODEL.AccessControl.Type' | translate: {Default: 'Type'} }}:</label>
                 <mat-radio-group formControlName="type" class="ngm-radio-group__horizontal">

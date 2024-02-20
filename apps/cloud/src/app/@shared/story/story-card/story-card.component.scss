@@ -3,9 +3,13 @@
 $global-prefix: ngm;
 $prefix: (ngm, color);
 
-@include token-utils.use-tokens($prefix, (surface-container-high: null)) {
+@include token-utils.use-tokens($prefix, (surface-container-high: null, primary-container: null, on-primary-container: null,)) {
   :host {
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
+  }
+  .pac-story-card__button {
+    background-color: var(#{token-utils.get-token-variable(primary-container)});
+    color: var(#{token-utils.get-token-variable(on-primary-container)});
   }
 }
 

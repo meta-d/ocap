@@ -1,4 +1,4 @@
-<mat-toolbar displayDensity="compact" class="text-gray-500">
+<mat-toolbar displayDensity="compact" >
     <button mat-icon-button displayDensity="compact" (click)="drawer.toggle()">
         <mat-icon fontSet="material-icons-round">segment</mat-icon>
     </button>
@@ -29,9 +29,9 @@
                 [cdkDropListEnterPredicate]="cubePredicate"
                 (cdkDropListDropped)="dropCube($event)"
             >
-              <div class="overflow-y-auto">
+              <div class="flex-1 overflow-y-auto">
                 <ngm-entity-schema *ngFor="let cube of cubes$ | async; trackBy: trackByName" [class.selected]="cube.cubeName === selectedCube"
-                    [dataSettings]="{dataSource: dataSourceName, entitySet: cube.cubeName}"
+                    [dataSettings]="dataSettings$()"
                     [capacities]="[
                         EntityCapacity.Dimension,
                         EntityCapacity.Measure,

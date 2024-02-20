@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use 'libs/component-angular/styles/material/all-components' as components;
 @use 'libs/formly/formly-theme' as formly;
@@ -10,13 +11,13 @@
 @use './dark.theme' as dark-theme;
 
 // Define a theme.
-$dark-primary: mat.define-palette(mat.$green-palette, 600);
+$primary: mat.define-palette(mat.$green-palette, 600);
 $dark-accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $dark-theme: map.deep-merge(
   mat.define-dark-theme((
     color: (
-      primary: $dark-primary,
+      primary: $primary,
       accent: $dark-accent,
     )
   )),
@@ -28,6 +29,10 @@ $dark-theme: map.deep-merge(
 );
 
 .ngm-theme-dark-green {
+  --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+
   // Include all theme styles for the mat components.
   @include mat.all-component-colors($dark-theme);
   @include components.all-component-colors($dark-theme);
