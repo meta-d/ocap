@@ -107,6 +107,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   readonly #injector = inject(Injector)
 
   @Input() storyId: string
+
+  @HostBinding('class.editable')
   @Input() editable = true
 
   @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent;
