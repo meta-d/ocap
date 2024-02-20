@@ -7,6 +7,7 @@ import { map, shareReplay } from 'rxjs/operators'
 import { MenuCatalog, Store } from './@core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { prefersColorScheme, ThemesEnum } from '@metad/core'
+import { screenfull } from './@core/theme/'
 
 export interface PACAppState {
   insight: boolean
@@ -109,12 +110,20 @@ export class AppService extends ComponentStore<PACAppState> {
       state.zIndexs.pop()
     }
     state.zIndexs.push(zIndex)
+
+    if (screenfull.isEnabled) {
+      screenfull.request();
+    }
   })
 
   public exitFullscreen = this.updater((state, zIndex: number) => {
     const index = state.zIndexs.findIndex((item) => item >= zIndex)
     if (index > -1) {
       state.zIndexs.splice(index)
+    }
+
+    if (screenfull.isEnabled) {
+      screenfull.exit()
     }
   })
 }
