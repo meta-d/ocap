@@ -108,17 +108,7 @@ import { AppService } from '../../app.service'
       <router-outlet #o="outlet"></router-outlet>
     </mat-tab-nav-panel>
   `,
-  styles: [
-    `
-      :host {
-        flex: 1;
-        max-width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-    `
-  ],
+  styleUrl: 'home.component.scss',
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

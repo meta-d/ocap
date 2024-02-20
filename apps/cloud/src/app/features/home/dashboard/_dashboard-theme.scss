@@ -14,7 +14,6 @@
     border-top: 3px solid mat.get-color-from-palette($accent);
     border-radius: 3px;
     min-height: 100px;
-    background-color: mat.get-color-from-palette($background, card);
   }
 
   .pac-home__assets-types.mat-button-toggle-group {
@@ -34,7 +33,6 @@
   .pac-home__widget {
     height: 100%;
     border-radius: 3px;
-    background-color: mat.get-color-from-palette($background, card);
     .mat-card-title {
       font-size: 1rem;
     }

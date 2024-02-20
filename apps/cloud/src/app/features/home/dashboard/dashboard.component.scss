@@ -14,6 +14,8 @@
 }
 
 .pac-home__quick-guide {
+  background-color: var(--ngm-home-card-background-color);
+
   .step {
     width: 220px;
     @apply flex justify-center items-center px-4;
@@ -75,4 +77,8 @@ gridster {
 
 .complete.emoji-loader {
   line-height: 3rem;
+}
+
+.pac-home__widget {
+  background-color: var(--ngm-home-card-background-color);
 }

@@ -16,7 +16,7 @@ body.dark {
     card-border-color: theme('colors.neutral.800'),
     primary-color: theme('colors.bluegray.500'),
     text-primary-color: theme('colors.bluegray.200'),
-    scrollbar-color: theme('colors.neutral.900'),
+    scrollbar-color: theme('colors.neutral.800'),
   ));
 
   @include token-utils.create-token-values(model.$prefix, (

@@ -1,31 +1,7 @@
-<div class="px-4 py-2 flex flex-wrap justify-between items-center">
-  <div class="flex items-center">
-    <span class="text-xl">
-      {{ 'PAC.INDICATOR.IndicatorMarket' | translate: {Default: "Indicator Market"} }}
-    </span>
-    <span class="text-sm ml-4 opacity-50">
-      {{ 'PAC.MENU.INDICATOR.INDICATOR_MARKET_DESC' | translate: {Default: "Browse indicators and apply for permissions"} }}
-    </span>
-    
-  </div>
-
-  <div class="flex-1 flex justify-end items-center">
-    <pac-inline-search class="" [formControl]="search"></pac-inline-search>
-
-    <div ngmButtonGroup class="flex flex-wrap">
-      <!-- <mat-slide-toggle [(ngModel)]="displayCompact" class="text-sm">{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'}  }}</mat-slide-toggle> -->
-      <button mat-raised-button displayDensity="cosy" color="primary"
-        [disabled]="businessAreaAuth$ | async"
-        (click)="requestBusinessArea(businessArea.value)"
-      >{{ 'PAC.INDICATOR.MARKET.RequestBusinessArea' | translate: {Default: 'Request Business Area'} }}</button>
-    </div>
-  </div>
-  
-</div>
-
-<mat-drawer-container autosize class="flex-1 m-2 mt-0">
+<mat-drawer-container autosize class="flex-1">
   <mat-drawer #drawer mode="side" [(opened)]="sideMenuOpened" ngmResizer [resizerWidth]="272">
-    <div class="flex justify-start items-start gap-2 p-4">
+    
+    <div class="flex justify-start items-center gap-2 p-4">
       <label class="w-10 shrink-0">{{ 'PAC.INDICATOR.Types' | translate: {Default: 'Types'} }}</label>
       <ngm-tags class="flex-1" selectable [tags]="[
         {
@@ -75,7 +51,30 @@
     ></div>
   </mat-drawer>
 
-  <mat-drawer-content >
+  <mat-drawer-content class="flex flex-col">
+    <div class="flex justify-between items-center px-4 py-2">
+      <div class="flex items-center">
+        <span class="text-xl">
+          {{ 'PAC.INDICATOR.IndicatorMarket' | translate: {Default: "Indicator Market"} }}
+        </span>
+        <span class="text-sm ml-4 opacity-50">
+          {{ 'PAC.MENU.INDICATOR.INDICATOR_MARKET_DESC' | translate: {Default: "Browse indicators and apply for permissions"} }}
+        </span>
+      </div>
+
+      <div class="shrink-0 flex justify-end items-center">
+        <pac-inline-search class="" [formControl]="search"></pac-inline-search>
+    
+        <div ngmButtonGroup class="flex flex-wrap">
+          <!-- <mat-slide-toggle [(ngModel)]="displayCompact" class="text-sm">{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'}  }}</mat-slide-toggle> -->
+          <button mat-raised-button displayDensity="cosy" color="primary"
+            [disabled]="businessAreaAuth$ | async"
+            (click)="requestBusinessArea(businessArea.value)"
+          >{{ 'PAC.INDICATOR.MARKET.RequestBusinessArea' | translate: {Default: 'Request Business Area'} }}</button>
+        </div>
+      </div>
+    </div>
+
     <div class="pac-indicator-market__sidenav-content p-2 flex-1 h-full flex flex-col overflow-auto">
       <ng-container *ngFor="let item of indicators$ | async">
         <div class="m-2 grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-2">

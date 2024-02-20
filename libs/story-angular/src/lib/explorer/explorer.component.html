@@ -5,7 +5,7 @@
 
     <div class="flex-1 h-full flex justify-start items-stretch gap-2 p-1 overflow-auto">
 
-        <div class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch bg-white rounded-xl overflow-hidden">
+        <div class="surface shrink-0 w-64 h-full flex flex-col justify-start items-stretch rounded-xl overflow-hidden">
             <div class="shrink-0 px-1 flex flex-wrap items-center">
                 {{ 'Story.Common.Measures' | translate: {Default: 'Measures'} }}
             </div>
@@ -15,7 +15,7 @@
                 <mat-list id="ngm-story-explorer__drop-list-measures" role="list" class="w-full"
                     cdkDropList
                     [cdkDropListData]="[]">
-                    <mat-list-item role="listitem" *ngFor="let item of measureList()" class="hover:bg-slate-50"
+                    <mat-list-item role="listitem" *ngFor="let item of measureList()" class="hover:bg-black/5 dark:hover:bg-neutral-100/10"
                         cdkDrag
                         [cdkDragData]="item">
                         <ngm-entity-property [property]="item" [highlight]="measureSearch.value"></ngm-entity-property>
@@ -28,8 +28,7 @@
             cdkDropList cdkDropListOrientation="horizontal"
             [cdkDropListData]="dimensions()"
             (cdkDropListDropped)="moveDimension($event)">
-            <div *ngFor="let dim of dimensions(); trackBy: trackByDim" class="shrink-0 w-64 h-full flex flex-col justify-start items-stretch rounded-xl overflow-hidden
-                bg-white"
+            <div *ngFor="let dim of dimensions(); trackBy: trackByDim" class="surface shrink-0 w-64 h-full flex flex-col justify-start items-stretch rounded-xl overflow-hidden"
                 cdkDrag
                 [cdkDragData]="dim"
             >
@@ -57,10 +56,11 @@
             </div>
         </div>
 
-        <div class="w-96 h-full shrink-0 flex justify-start items-center rounded-xl cursor-pointer hover:bg-white" (click)="openDimensions()">
+        <div class="add-dimension w-96 h-full shrink-0 flex justify-start items-center rounded-xl cursor-pointer" (click)="openDimensions()">
             <div>
                 <svg width="100" height="100">
-                    <circle cx="50" cy="50" r="40" class="fill-bluegray-100 group-hover:fill-bluegray-200 group-focus:fill-bluegray-200"/>
+                    <circle cx="50" cy="50" r="40" class="fill-bluegray-100 group-hover:fill-bluegray-200 group-focus:fill-bluegray-200
+                        dark:fill-gray-800"/>
                     <rect x="25" y="48" width="50" height="4" fill="white"/>
                     <rect x="48" y="25" width="4" height="50" fill="white"/>
                 </svg>
@@ -85,7 +85,7 @@
             cdkDragLockAxis="x"
         ></div>
     
-        <div *ngIf="visualPanel === 'options'" class="h-full bg-white rounded-xl flex flex-col justify-start items-stretch overflow-hidden" >
+        <div *ngIf="visualPanel === 'options'" class="surface h-full rounded-xl flex flex-col justify-start items-stretch overflow-hidden" >
             <mat-tab-group class="overflow-hidden" fitInkBarToContent preserveContent>
                 <mat-tab [label]="'Story.Explorer.Data' | translate: {Default: 'Data'} ">
                     <div class="font-bold px-2 py-1 mt-2">{{ 'Story.Explorer.Dimensions' | translate: {Default: 'Dimensions'} }}</div>
@@ -158,14 +158,14 @@
             </mat-tab-group>
         </div>
 
-        <div *ngIf="visualPanel === 'visual'" class="h-full bg-white rounded-xl flex flex-col justify-start items-stretch overflow-auto">
+        <div *ngIf="visualPanel === 'visual'" class="surface h-full rounded-xl flex flex-col justify-start items-stretch overflow-auto">
             <div *ngFor="let group of charts" >
                 <div class="text-sm p-2">
                     {{'Story.Chart.' + group.label | translate: {Default: group.label} }}
                 </div>
                 <div class="grid grid-cols-4 gap-2">
                     <button *ngFor="let chart of group.charts" class="ngm-story-explorer__chart m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
-                        ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+                        ring-offset-2 ring-offset-transparent ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
                         [matTooltip]="'Story.Chart.' + chart.label | translate: {Default: chart.label}"
                         matTooltipPosition="above"
                         draggable="true"
@@ -189,7 +189,7 @@
             </div>
         </div>
     </div>
-    <div class="flex-1 bg-white rounded-xl flex flex-col justify-center items-center overflow-hidden">
+    <div class="surface flex-1 rounded-xl flex flex-col justify-center items-center overflow-hidden">
         <div class="flex-1 w-full overflow-hidden">
             <ngm-analytical-card *ngIf="view === 'chart'" class="w-full h-full group"
                 [title]="chartTitle()"

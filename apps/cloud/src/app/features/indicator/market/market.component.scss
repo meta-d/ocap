@@ -29,7 +29,7 @@ $prefix-color: (#{$prefix}, color);
   .mat-drawer-content {
     background-color: var(#{token-utils.get-token-variable(color-surface)});
     border-top-left-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
-    border-top-right-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
+    // border-top-right-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
     @apply flex overflow-hidden; // for rounded corner overflow-visible;
   }
 }

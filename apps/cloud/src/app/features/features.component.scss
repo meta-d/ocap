@@ -1,9 +1,47 @@
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$prefix: (ngm, shell);
+
+@function get-unthemable-tokens() {
+  @return (
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    header-bg-color: var(--ngm-color-surface-container),
+    drawer-container-bg-color: var(--ngm-color-surface-container),
+    copilot-bg-color: var(--ngm-color-surface),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
+
+@include token-utils.use-tokens($prefix, get-token-slots()) {
+  .mat-toolbar.pac__shell-bar {
+    --mat-toolbar-container-background-color: var(#{token-utils.get-token-variable(header-bg-color)});
+  }
+  :host {
+    --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(drawer-container-bg-color)});
+    --ngm-copilot-bg-color: var(#{token-utils.get-token-variable(copilot-bg-color)});
+  }
+}
+
 :host {
   flex: 1;
   height: 100%;
   max-width: 100%;
   --mat-sidenav-container-divider-color: transparent;
   --mat-sidenav-container-background-color: transparent;
+
+  @include token-utils.create-token-values($prefix, get-token-slots());
 }
 
 .mat-drawer.mat-sidenav {
