@@ -1,11 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
-// @todo 需要重构
-// $text-color: white;
-// $description-color: #ffffffb3;
-// $surface-color: #263238;
-
 @mixin color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
   $foreground: map.get($config, foreground);
@@ -30,22 +25,6 @@
 
       .mat-card {
         box-shadow: unset;
-        // background-color: $surface-color;
-        // color: $text-color;
-      }
-
-      pac-indicator-detail {
-        .mat-card {
-          .ant-statistic-title {
-            // color: $description-color;
-          }
-        }
-
-        pac-analytical-card {
-          .mat-card-header-text {
-            // color: $text-color;
-          }
-        }
       }
     }
   }
@@ -101,8 +80,6 @@ $density-cosy: 12px;
 
     pac-indicator-detail {
       .mat-mdc-card {
-        // padding: $density-cosy;
-
         .mat-mdc-card-header-text {
           .mat-mdc-card-title {
             margin: 0;

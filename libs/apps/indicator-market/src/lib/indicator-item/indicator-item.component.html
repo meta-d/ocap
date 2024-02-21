@@ -1,10 +1,10 @@
 <ng-container *ngIf="indicator$ | async as indicator">
-<div class="pac-item-meta flex-1 flex flex-col overflow-hidden "
+<div class="pac-item-meta flex-1 flex flex-col overflow-hidden"
   [class.text-gray-500]="loading$ | async"
 >
   <div class="pac-item-meta-title text-lg flex justify-start items-center overflow-hidden">
-    <span class="font-semibold whitespace-nowrap text-ellipsis overflow-hidden">{{ indicator.code }}</span>
-    <mat-icon *ngIf="indicator.favour" color="accent" displayDensity="compact">star</mat-icon>
+    <span class="flex-1 font-semibold whitespace-nowrap text-ellipsis overflow-hidden">{{ indicator.code }}</span>
+    <mat-icon *ngIf="indicator.favour" class="shrink-0" color="accent" displayDensity="compact">star</mat-icon>
   </div>
   <div class="pac-item-meta-description text-base">
     <span>{{ indicator.name }}</span>

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Employee, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { FindOneOptions, Repository } from 'typeorm'
 import { StoryWidget } from './story-widget.entity'
 import { BusinessArea, BusinessAreaService } from '../business-area'
@@ -11,12 +11,9 @@ export class StoryWidgetService extends TenantOrganizationAwareCrudService<Story
 	constructor(
 		@InjectRepository(StoryWidget)
 		widgetRepository: Repository<StoryWidget>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
-
 		private businessAreaService: BusinessAreaService
 	) {
-		super(widgetRepository, employeeRepository)
+		super(widgetRepository)
 	}
 
 	async findPublicOne(id: string, options: FindOneOptions) {

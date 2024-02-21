@@ -34,6 +34,7 @@ import { StoryTemplateModule } from './story-template/index'
 import { ScreenshotModule } from './screenshot/screenshot.module'
 import { CertificationModule } from './certification'
 import { RedisModule } from './core/redis.module'
+import { IndicatorAppModule } from './indicator-app/'
 
 @Module({
 	imports: [
@@ -58,6 +59,7 @@ import { RedisModule } from './core/redis.module'
 		StoryPointModule,
 		StoryWidgetModule,
 		IndicatorModule,
+		IndicatorAppModule,
 		IndicatorMarketModule,
 		NotificationDestinationModule,
 		SubscriptionModule,

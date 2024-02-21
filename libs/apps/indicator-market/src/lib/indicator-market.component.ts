@@ -1,11 +1,13 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   computed,
+  effect,
   ElementRef,
   HostBinding,
+  inject,
   Inject,
   LOCALE_ID,
   ViewChild,
@@ -15,8 +17,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { MatDatepicker } from '@angular/material/datepicker'
+import { Router } from '@angular/router'
 import { Store } from '@metad/cloud/state'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { LanguagesEnum } from '@metad/core'
+import { injectQueryParams, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { TranslateService } from '@ngx-translate/core'
@@ -27,8 +31,7 @@ import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/ope
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { MyDataSource } from './services/data-source'
 import { IndicatorsStore } from './services/store'
-import { TagEnum } from './types'
-
+import { IndicatorState, TagEnum } from './types'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,14 +45,13 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
 
+  readonly router = inject(Router)
+
   @HostBinding('class.indicator-market-app') isIndicatoryMarketComponent = true
   @HostBinding('class.searching') searching = false
 
   @ViewChild('searchInput') searchInputRef: ElementRef
 
-  // public readonly selected$ = this.indicatorsStore.currentIndicatorId$
-  // public readonly tag$ = this.indicatorsStore.tag$
-  readonly selected$ = toSignal(this.indicatorsStore.currentIndicatorId$)
   readonly tag$ = toSignal(this.indicatorsStore.tag$)
   readonly tagText$ = computed(() => {
     const tag = this.tag$()
@@ -78,7 +80,8 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   )
 
   public readonly notMobile$ = this.isMobile$.pipe(map((result) => !result))
-  public readonly currentIndicatorIds$ = this.indicatorsStore.currentIndicatorId$.pipe(map((id) => [id]))
+  readonly selected$ = this.indicatorsStore.currentIndicator
+  readonly currentIndicatorIds$ = computed(() => [this.indicatorsStore.currentIndicator()])
 
   isShowModal = false
   private _bottomSheetRef: MatBottomSheetRef
@@ -86,6 +89,8 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   lookback = 12
   _currentDate = new Date()
   dateControl = new FormControl<Date>(this._currentDate)
+
+  readonly queryParams = injectQueryParams()
 
   /**
    * Subscriptions
@@ -108,8 +113,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     @Inject(LOCALE_ID)
     private locale: string,
     private _bottomSheet: MatBottomSheet,
-    private _viewContainerRef: ViewContainerRef,
-    private _cdr: ChangeDetectorRef
+    private _viewContainerRef: ViewContainerRef
   ) {
     super({})
     // TODO 演示时间
@@ -123,6 +127,16 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     })
 
     this.indicatorsStore.locale = this.locale
+
+    effect(() => {
+      if (!this.indicatorsStore.currentIndicator()) {
+        if (this.queryParams()?.id) {
+          this.indicatorsStore.currentIndicator.set(this.queryParams().id)
+        } else if (this.indicatorsStore.firstIndicator()) {
+          this.indicatorsStore.currentIndicator.set(this.indicatorsStore.firstIndicator().id)
+        }
+      }
+    }, { allowSignalWrites: true })
   }
 
   readonly openModal = this.effect((origin$: Observable<string>) => {
@@ -175,9 +189,13 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     }
   }
 
-  click(item) {
-    this.indicatorsStore.patchState({ currentIndicator: item.id })
+  click(item: IndicatorState) {
+    this.indicatorsStore.currentIndicator.set(item.id)
     this.openModal(item.id)
+    this.router.navigate([], {
+      queryParams: { id: item.id },
+      queryParamsHandling: 'merge'
+    })
   }
 
   onTimeGranularity(event: TimeGranularity) {
@@ -222,8 +240,12 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     this.searchInputRef.nativeElement.value = ''
   }
 
+  dropOrder(event: CdkDragDrop<IndicatorState[]>) {
+    this.indicatorsStore.order(event)
+  }
+
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.locale === 'zh-Hans'
+    return this.locale === LanguagesEnum.SimplifiedChinese
   }
 }

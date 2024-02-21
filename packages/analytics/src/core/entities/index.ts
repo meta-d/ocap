@@ -28,6 +28,7 @@ import { Comment } from '../../comment/comment.entity'
 import { StoryTemplate } from '../../story-template/story-template.entity'
 import { Screenshot } from '../../screenshot/screenshot.entity'
 import { Certification } from '../../certification/certification.entity'
+import { IndicatorApp } from '../../indicator-app/indicator-app.entity'
 
 
 export const ALL_ENTITIES = [
@@ -45,6 +46,7 @@ export const ALL_ENTITIES = [
 	BusinessArea,
 	BusinessAreaUser,
 	Indicator,
+	IndicatorApp,
 	IndicatorMarket,
 	NotificationDestination,
 	Subscription,

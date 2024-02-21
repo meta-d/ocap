@@ -34,7 +34,6 @@ export interface IndicatorState extends Partial<Indicator>, Omit<IIndicator, 'ty
   trends: Array<unknown>
   trend: Trend
   favour: boolean
-  favoriteId: string
   error?: string
 }
 

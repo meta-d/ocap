@@ -1,11 +1,11 @@
 import { DeepPartial, FindConditions, IsNull, ObjectLiteral, Repository, UpdateResult } from 'typeorm'
-import { User } from '../../user/user.entity'
-import { RequestContext } from '../context'
-import { Employee, TenantOrganizationBaseEntity } from '../entities/internal'
-import { ICrudService } from './icrud.service'
-import { TenantAwareCrudService } from './tenant-aware-crud.service'
 import { IBasePerTenantAndOrganizationEntityModel } from '@metad/contracts'
 import { BadRequestException } from '@nestjs/common'
+import { User } from '../../user/user.entity'
+import { RequestContext } from '../context'
+import { TenantOrganizationBaseEntity } from '../entities/internal'
+import { ICrudService } from './icrud.service'
+import { TenantAwareCrudService } from './tenant-aware-crud.service'
 
 /**
  * This abstract class adds tenantId and organizationId to all query filters if a user is available in the current RequestContext
@@ -17,10 +17,7 @@ export abstract class TenantOrganizationAwareCrudService<
 	extends TenantAwareCrudService<T>
 	implements ICrudService<T>
 {
-	protected constructor(
-		protected readonly repository: Repository<T>,
-		protected readonly employeeRepository?: Repository<Employee>
-	) {
+	protected constructor(protected readonly repository: Repository<T>) {
 		super(repository)
 	}
 

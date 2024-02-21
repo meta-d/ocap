@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { BusinessAreaRole, IUser } from '@metad/contracts'
 import {
-	Employee,
 	RequestContext,
 	TenantOrganizationAwareCrudService,
 	User,
@@ -18,10 +17,8 @@ export class BusinessAreaUserService extends TenantOrganizationAwareCrudService<
 		bauRepository: Repository<BusinessAreaUser>,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>
 	) {
-		super(bauRepository, employeeRepository)
+		super(bauRepository)
 	}
 
 	async findMy(filter?: FindManyOptions<BusinessAreaUser>) {

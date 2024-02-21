@@ -34,7 +34,7 @@
   <cdk-virtual-scroll-viewport itemSize="76" minBufferPx="1000" maxBufferPx="2000" class="pac-indicator-market__infinite-container flex-1">
 
     <div class="w-full flex mb-2">
-      <div class="pac-indicator-market__search-input flex items-center flex-1 p-1 space-x-4 rounded-lg bg-gray-500 bg-opacity-25">
+      <div class="pac-indicator-market__search-input flex items-center flex-1 p-1 space-x-4 rounded-lg bg-gray-300 bg-opacity-25 dark:bg-opacity-10">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
@@ -50,11 +50,14 @@
       </button>
     </div>
 
-    <mat-list class="pac-indicator-list">
+    <mat-list class="pac-indicator-list" cdkDropList (cdkDropListDropped)="dropOrder($event)">
       <ng-container *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0">
         <mat-list-item matRipple [class.selected]="selected$() === item.id"
-          (click)="click(item)">
+          (click)="click(item)"
+          cdkDrag [cdkDragStartDelay]="200"
+          >
           <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$()"></pac-indicator-item>
+          <div class="pac-indicator__placeholder" *cdkDragPlaceholder></div>
         </mat-list-item>
         <mat-divider></mat-divider>
       </ng-container>
@@ -71,12 +74,11 @@
   </div>
 </div>
 
-<ng-container *ngIf="notMobile$ | async">
-  <pac-indicator-detail *ngFor="let id of currentIndicatorIds$ | async; trackBy: trackBy"
-    [id]="id"
-    [desktop]="true">
-  </pac-indicator-detail>
-</ng-container>
+@if (notMobile$ | async) {
+  @for (id of currentIndicatorIds$(); track id) {
+    <pac-indicator-detail [id]="id" [desktop]="true"/>
+  }
+}
 
 <popper-content #options class="z-[101]">
   <div class="pac-indicator-app__options flex flex-col gap-2 p-2">

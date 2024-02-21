@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
   HostBinding,
   inject,
@@ -48,7 +49,7 @@ import {
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, LanguagesEnum } from '@metad/core'
+import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -62,6 +63,7 @@ import {
   map,
   Observable,
   shareReplay,
+  startWith,
   switchMap,
   withLatestFrom
 } from 'rxjs'
@@ -125,7 +127,6 @@ export class IndicatorDetailComponent {
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
   private logger = inject(NGXLogger)
-  // private locale: string = inject(LOCALE_ID)
   private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, { optional: true })
   private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
@@ -173,7 +174,7 @@ export class IndicatorDetailComponent {
   messages = []
   relative = true
 
-  readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang)))
+  readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
   readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
 
   /**
@@ -195,6 +196,7 @@ export class IndicatorDetailComponent {
     filter(Boolean),
     switchMap((id) => this.store.selectIndicator(id)),
     distinctUntilChanged(isEqual),
+    filter(nonNullable),
     takeUntilDestroyed(),
     shareReplay(1)
   )
@@ -413,8 +415,6 @@ export class IndicatorDetailComponent {
     })
   )
 
-  // public readonly mom$ = this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down)))
-  // public readonly yoy$ = this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down)))
   readonly mom$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down))))
   readonly yoy$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down))))
 
@@ -608,6 +608,8 @@ export class IndicatorDetailComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
+  readonly indicator = toSignal(this.indicator$)
+  readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
 
   /**
   |--------------------------------------------------------------------------
@@ -648,7 +650,7 @@ export class IndicatorDetailComponent {
   }
 
   toggleFavorite(indicator: IndicatorState) {
-    if (indicator.favour) {
+    if (this.favour()) {
       this.store.deleteFavorite(indicator)
     } else {
       this.store.createFavorite(indicator)

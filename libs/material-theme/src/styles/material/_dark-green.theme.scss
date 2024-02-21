@@ -28,10 +28,14 @@ $dark-theme: map.deep-merge(
   )
 );
 
+$config: mat.get-color-config($dark-theme);
+$foreground: map.get($config, foreground);
+
 .ngm-theme-dark-green {
   --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+  --ngm-color-outline: #{map.get($foreground, divider)};
 
   // Include all theme styles for the mat components.
   @include mat.all-component-colors($dark-theme);
