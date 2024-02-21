@@ -21,6 +21,7 @@ import { ProjectComponent } from '../project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { ConfirmDeleteComponent } from '@metad/components/confirm'
 
 
 @Component({
@@ -196,6 +197,21 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
       } catch (err) {
         this._toastrService.error(err)
       }
+    }
+  }
+
+  async deleteProject() {
+    const confirm = await firstValueFrom(
+      this._dialog.open(ConfirmDeleteComponent, { data: { value: this.project.name } }).afterClosed()
+    )
+    if (!confirm) {
+      return
+    }
+    try {
+      await firstValueFrom(this.projectService.delete(this.project.id))
+      this._toastrService.success('PAC.ACTIONS.Delete', { Default: 'Delete' })
+    } catch (err) {
+      this._toastrService.error(err)
     }
   }
 }
