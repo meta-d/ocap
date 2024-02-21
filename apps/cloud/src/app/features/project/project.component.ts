@@ -113,7 +113,6 @@ export class ProjectComponent extends TranslationBaseComponent {
   // Is mobile
   readonly isMobile = toSignal(this.appService.isMobile$)
   sideMenuOpened = !this.isMobile()
-  copilotDrawerOpened = false
 
   public readonly projectId$ = this.store.selectedProject$.pipe(
     map((project) => (project?.id === DefaultProject.id ? null : project?.id)),

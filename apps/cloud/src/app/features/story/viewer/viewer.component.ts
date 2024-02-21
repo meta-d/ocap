@@ -47,6 +47,7 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { StoryScales, downloadStory } from '../types'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { StoryExplorerModule } from '@metad/story'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -59,7 +60,9 @@ import { StoryExplorerModule } from '@metad/story'
     TranslateModule,
     OcapCoreModule,
     NxStoryModule,
-    StoryExplorerModule
+    StoryExplorerModule,
+
+    NgmCommonModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-story-viewer',
@@ -95,9 +98,10 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   dataTimer: number
   pageTimer: number
 
+  // Is mobile
+  readonly isMobile = toSignal(this.appService.isMobile$)
+  sideMenuOpened = false
   globalFilterBarOpened = false
-
-  expandLess = true
 
   get storyOptions() {
     return this.story?.options
