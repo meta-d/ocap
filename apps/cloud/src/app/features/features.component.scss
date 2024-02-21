@@ -38,15 +38,22 @@ $prefix: (ngm, shell);
   flex: 1;
   height: 100%;
   max-width: 100%;
-  --mat-sidenav-container-divider-color: transparent;
-  --mat-sidenav-container-background-color: transparent;
 
   @include token-utils.create-token-values($prefix, get-token-slots());
+
+  .pac_sidenav-content {
+    --mat-sidenav-container-divider-color: transparent;
+    --mat-sidenav-container-background-color: transparent;
+  }
 }
 
 .mat-drawer.mat-sidenav {
   display: flex;
   flex-direction: column;
+}
+
+.pac-features__sidenav {
+  @apply bg-bluegray-900 text-white;
 }
 
 .pac_brand {

@@ -8,8 +8,14 @@ $prefix: (ngm, color);
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
   }
   .pac-story-card__button {
-    background-color: var(#{token-utils.get-token-variable(primary-container)});
-    color: var(#{token-utils.get-token-variable(on-primary-container)});
+    &:hover {
+      color: var(#{token-utils.get-token-variable(on-primary-container)});
+      background-color: var(#{token-utils.get-token-variable(primary-container)});
+    }
+    &:focus {
+      --tw-ring-color: var(#{token-utils.get-token-variable(primary-container)});
+      --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface-container-high)});
+    }
   }
 }
 

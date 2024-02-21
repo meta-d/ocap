@@ -20,8 +20,6 @@ $sidebar-collapsed-width: 40px;
   $background: map.get($config, background);
   $foreground: map.get($config, foreground);
 
-  $drawer-container-background-color: mat.get-color-from-palette($background, gradient-background);
-
   @include home.color($theme);
   @include settings.color($theme);
   @include insight.color($theme);
@@ -37,14 +35,6 @@ $sidebar-collapsed-width: 40px;
   }
   .mat-drawer-backdrop.mat-drawer-shown {
     background-color: transparent;
-  }
-  
-  
-  .pac_sidenav-content {
-    flex: 1;
-    max-height: 100%;
-    display: flex;
-    flex-direction: column;
   }
 
   .mat-toolbar.pac__shell-bar {
