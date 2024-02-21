@@ -40,7 +40,7 @@
 			<h3 class="p-2">{{ 'PAC.KEY_WORDS.Subject' | translate: {Default: "Subject"} }}</h3>
 			<ngx-monaco-editor fxFlex
 				[options]="{
-					theme: 'vs',
+					theme: theme(),
 					automaticLayout: true,
 					language: 'sql'
 				}"
@@ -52,7 +52,7 @@
 			<h3 class="p-2">{{ 'PAC.KEY_WORDS.EmailBody' | translate: {Default: "Email Body"} }}</h3>
 			<ngx-monaco-editor class="flex-1"
 				[options]="{
-					theme: 'vs',
+					theme: theme(),
 					automaticLayout: true,
 					language: 'html'
 				}"

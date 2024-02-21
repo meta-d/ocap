@@ -50,6 +50,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
   loading: boolean
   enabledPermissions: any = {}
   permissions$: Subject<void> = new Subject()
+
   constructor(
     private readonly rolePermissionsService: RolePermissionsService,
     private readonly rolesService: RoleService,
@@ -67,7 +68,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
       .pipe(
         filter((user: IUser) => !!user),
         tap((user: IUser) => (this.user = user)),
-        takeUntilDestroyed()
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
   }
@@ -227,7 +228,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
 		/**
 		 * Disabled all administration permissions except "SUPER_ADMIN"
 		 */
-		if (this.user.role.name === RolesEnum.SUPER_ADMIN) {
+		if (this.user?.role.name === RolesEnum.SUPER_ADMIN) {
 			if (this.role.name === RolesEnum.ADMIN || this.role.name === RolesEnum.TRIAL) {
 				return false;
 			}

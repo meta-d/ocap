@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common'
 import { Component, ElementRef, TemplateRef, ViewChild, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { BusinessAreasService } from '@metad/cloud/state'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { Subject, firstValueFrom } from 'rxjs'
-import { IBusinessArea, routeAnimations } from '../../../@core'
+import { IBusinessArea, ToastrService, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule, SharedModule } from '../../../@shared'
+import { AppService } from '../../../app.service'
 import { BusinessAreasComponent } from './business-areas/areas.component'
 
 @Component({
@@ -23,40 +25,43 @@ import { BusinessAreasComponent } from './business-areas/areas.component'
     ReactiveFormsModule,
     TranslateModule,
     MaterialModule,
-    NgmCommonModule
+    NgmCommonModule,
+
+    BusinessAreasComponent
   ]
 })
 export class BusinessAreaComponent extends ManageEntityBaseComponent<IBusinessArea> {
-  private _dialog = inject(MatDialog)
-  private businessAreasStore = inject(BusinessAreasService)
+  readonly _dialog = inject(MatDialog)
+  readonly appService = inject(AppService)
+  readonly businessAreasStore = inject(BusinessAreasService)
+  readonly toastrService = inject(ToastrService)
 
   @ViewChild('createTempl') private createTempl: TemplateRef<ElementRef>
-  
+
   update$ = new Subject<void>()
 
-  parentId = ''
-  name = ''
+  // Is mobile
+  readonly isMobile = toSignal(this.appService.isMobile$)
+  sideMenuOpened = !this.isMobile()
 
   async createBusinessArea(parent?: IBusinessArea) {
-    this.parentId = parent?.id
-    this.name = null
-    const name = await firstValueFrom(
-      this._dialog.open(this.createTempl, { panelClass: 'ngm-dialog-container' }).afterClosed()
-    )
-
-    if (name) {
-      const businessArea = await firstValueFrom(
+    try {
+      const ba = await firstValueFrom(
         this.businessAreasStore.create({
-          name,
-          parentId: this.parentId
+          parentId: parent?.id
         })
       )
 
       this.update$.next()
+      this.router.navigate(['./', ba.id], { relativeTo: this.route })
 
-      return businessArea
+      return ba
+    } catch (err) {
+      this.toastrService.error(err)
     }
+  }
 
-    return null
+  refresh() {
+    this.update$.next()
   }
 }

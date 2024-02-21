@@ -65,7 +65,7 @@ const routes: Routes = [
       },
       {
         path: 'business-area',
-        loadChildren: () => import('./business-area/business-area.module').then((m) => m.BusinessAreaModule),
+        loadChildren: () => import('./business-area/').then((m) => m.routes),
         canActivate: [NgxPermissionsGuard],
         data: {
           title: 'business-area',

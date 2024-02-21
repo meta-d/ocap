@@ -5,17 +5,18 @@ import { EmailTemplateNameEnum, IOrganization, LanguagesEnum, LanguagesMap } fro
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { isEqual } from 'lodash-es'
 import { Subject, combineLatest } from 'rxjs'
-import { debounceTime, distinctUntilChanged, filter, tap } from 'rxjs/operators'
+import { debounceTime, distinctUntilChanged, filter, map, tap } from 'rxjs/operators'
 import { EmailTemplateService, Store, ToastrService } from '../../../@core/services'
 import { TranslationBaseComponent } from '../../../@shared'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { EditorThemeMap } from '@metad/components/editor'
 
 
 @Component({
   templateUrl: './email-templates.component.html',
   styleUrls: ['./email-templates.component.scss']
 })
-export class EmailTemplatesComponent extends TranslationBaseComponent implements AfterViewInit, OnDestroy {
+export class EmailTemplatesComponent extends TranslationBaseComponent implements AfterViewInit {
   previewEmail: SafeHtml
   previewSubject: SafeHtml
   organization: IOrganization
@@ -32,6 +33,8 @@ export class EmailTemplatesComponent extends TranslationBaseComponent implements
       mjml: ['', Validators.required]
     })
   }
+
+  readonly theme = toSignal(this.store.primaryTheme$.pipe(map((theme) => EditorThemeMap[theme])))
 
   private _templateSub = this.subject$
     .pipe(
@@ -187,6 +190,4 @@ export class EmailTemplatesComponent extends TranslationBaseComponent implements
       this.toastrService.danger(error)
     }
   }
-
-  ngOnDestroy() {}
 }

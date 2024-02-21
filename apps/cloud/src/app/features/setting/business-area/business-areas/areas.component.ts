@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
+import { ActivatedRoute, Router } from '@angular/router'
 import { BusinessAreasService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { TreeTableModule } from '@metad/ocap-angular/common'
@@ -13,7 +14,6 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IBusinessArea, ToastrService, routeAnimations } from '../../../../@core/index'
 import { BusinessAreaComponent } from '../business-area.component'
-
 
 @Component({
   standalone: true,
@@ -43,6 +43,8 @@ export class BusinessAreasComponent {
   private readonly businessAreasStore = inject(BusinessAreasService)
   private readonly _toastrService = inject(ToastrService)
   private readonly _dialog = inject(MatDialog)
+  readonly router = inject(Router)
+  readonly route = inject(ActivatedRoute)
 
   loading = false
   private refresh$ = new BehaviorSubject<void>(null)
@@ -54,8 +56,11 @@ export class BusinessAreasComponent {
     shareReplay(1)
   )
 
-  private updateSub = this.businessAreaComponent.update$.pipe(takeUntilDestroyed())
-    .subscribe(() => this.refresh())
+  private updateSub = this.businessAreaComponent.update$.pipe(takeUntilDestroyed()).subscribe(() => this.refresh())
+
+  editBusinessArea(area?: IBusinessArea) {
+    this.router.navigate(['./', area.id], { relativeTo: this.route })
+  }
 
   async addBusinessArea(parent?: IBusinessArea) {
     const area = await this.businessAreaComponent.createBusinessArea(parent)
