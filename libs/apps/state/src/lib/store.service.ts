@@ -19,10 +19,10 @@ import { Injectable } from '@angular/core';
 import { StoreConfig, Store as AkitaStore, Query } from '@datorama/akita';
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { merge, Subject } from 'rxjs';
+import { combineLatest, merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
 import { ComponentEnum } from './constants';
-import { ThemesEnum } from '@metad/core';
+import { ThemesEnum, prefersColorScheme } from '@metad/core';
 
 
 export interface AppState {
@@ -146,7 +146,10 @@ export class Store {
 	preferredTheme$ = this.persistQuery.select(
 		(state) => state.preferredTheme
 	);
-	readonly primaryTheme$ = this.preferredTheme$.pipe(map((theme) => theme?.split('-')[0]))
+	readonly primaryTheme$ = combineLatest([this.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])), prefersColorScheme()])
+		.pipe(
+			map(([primary, systemColorScheme]) => primary === ThemesEnum.system ? systemColorScheme : primary)
+		)
 	preferredComponentLayout$ = this.persistQuery.select(
 		(state) => state.preferredComponentLayout
 	);
