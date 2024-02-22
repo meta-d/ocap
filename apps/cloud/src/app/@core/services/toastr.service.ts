@@ -48,24 +48,15 @@ export class ToastrService {
 
   danger(error: any, title: string = 'PAC.TOASTR.TITLE.ERROR', translationParams: Object = {}) {
     const displayMessage = getErrorMessage(error)
-    // if (error instanceof HttpErrorResponse && typeof error.error.message === 'string') {
-    //   displayMessage = error.error.message
-    // }
-    // // 等同于 HttpErrorResponse ?
-    // else if (error.error && error.error.message && typeof error.error.message === 'string') {
-    //   displayMessage = error.error.message
-    // } else if (error.message && typeof error.message === 'string') {
-    //   displayMessage = error.message
-    // } else {
-    //   displayMessage = error
-    // }
-
     this._snackBar.open(
       this.getTranslation(displayMessage, translationParams),
       this.getTranslation(title || 'PAC.TOASTR.TITLE.ERROR'),
-      { duration: 5000 }
+      {
+        duration: 5 * 1000, // 5s
+        horizontalPosition: 'end',
+        verticalPosition: 'bottom'
+      }
     )
-
   }
 
   error(message: any, title: string = 'PAC.TOASTR.TITLE.ERROR', translationParams: Object = {}) {

@@ -322,6 +322,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       this.upsertMessage(thinkingMessage)
 
+      // Remove thinking message when abort
+      abortController.signal.addEventListener('abort', () => {
+        this.deleteMessage(thinkingMessage)
+      })
+
       const message = await processChatStream({
         getStreamedResponse: async () => {
           return await this.copilot.chat(

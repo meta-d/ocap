@@ -2,9 +2,13 @@ import { MDX, RoleTypeEnum } from '@metad/contracts'
 import { z } from 'zod'
 
 export const CalculatedMeasureSchema = z.object({
-  name: z.string().describe('Name of the calculated measure'),
+  name: z.string().describe('Name of the calculated measure; Name cannot be repeated.'),
   caption: z.string().optional().describe('Caption of the calculated measure'),
-  formula: z.string().describe('MDX expression for the calculated measure in cube')
+  formula: z.string().describe('MDX expression for the calculated measure in cube'),
+  formatting: z.object({
+    unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
+    decimal: z.string().optional().describe('The decimal of value when formatting the measure')
+  }).optional().describe('The formatting config of this measure')
 })
 
 export const HierarchySchema = z.object({

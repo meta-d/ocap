@@ -162,7 +162,7 @@ export interface ModelCubeState extends SemanticModelEntity {
   /**
    * The current selected calculated member
    */
-  currentCalculatedMember?: string
+  // currentCalculatedMember?: string
 
   /**
    * Query lab in the entity

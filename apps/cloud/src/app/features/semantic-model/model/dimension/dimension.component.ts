@@ -69,7 +69,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   public readonly dimension$ = this.dimensionService.dimension$
 
   public readonly error$ = this.dimensionService.name$.pipe(
-    switchMap((entity) => this.modelService.selectEntitySetError(entity))
+    switchMap((entity) => this.modelService.selectOriginalEntityError(entity))
   )
   
   /**

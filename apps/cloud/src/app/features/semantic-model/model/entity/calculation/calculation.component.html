@@ -1,13 +1,13 @@
-@if (entityType().syntax === Syntax.SQL) {
+@if (modelType() === ModelType.SQL) {
   <ngm-formula-editor class="pac-cdk-drop__list flex-1 w-full h-full"
     [dataSettings]="dataSettings()"
     [ngModel]="formula()"
     (ngModelChange)="setFormula($event)"
     (keyDown)="onEditorKeyDown($event)"
   ></ngm-formula-editor>
-} @else if (entityType().syntax === Syntax.MDX) {
+} @else {
   <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full"
-    [opened]="true"
+    [opened]="false"
     [syntax]="Syntax.MDX"
     [dataSettings]="dataSettings()"
     [entityType]="entityType()"
@@ -17,14 +17,12 @@
   >
   </ngm-calculated-measure>
 }
-
-<ng-template #contentLoader>
-  <content-loader class="overflow-hidden">
-    <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
-    <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
-    <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
-    <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
-    <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
-    <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
-  </content-loader>
-</ng-template>
+<!-- 
+<content-loader class="w-full m-4 overflow-hidden dark:opacity-20">
+  <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
+  <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
+  <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
+  <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
+  <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
+  <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
+</content-loader> -->

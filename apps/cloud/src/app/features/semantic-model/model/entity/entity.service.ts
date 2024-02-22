@@ -18,20 +18,21 @@ import {
   PropertyMeasure,
   Table,
   getHierarchyById,
-  getLevelById
+  getLevelById,
+  isEntitySet
 } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, isEqual, omit, omitBy } from 'lodash-es'
 import {
+  EMPTY,
   Observable,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
   of,
-  pluck,
   shareReplay,
   switchMap,
   tap,
@@ -72,26 +73,35 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     takeUntilDestroyed(),
     shareReplay(1)
   )
-  public readonly entityType = toSignal(this.entityType$)
+
+  readonly entityError$ = this.entityName$.pipe(
+    switchMap((entity) => this.#modelService.selectEntitySet(entity)),
+    map((error) => isEntitySet(error) ? null : error),
+    takeUntilDestroyed(),
+    shareReplay(1)
+  )
 
   public readonly originalEntityType$ = this.entityName$.pipe(
     switchMap((name) => this.#modelService.selectOriginalEntityType(name)),
     takeUntilDestroyed(),
     shareReplay(1)
   )
-
-  public readonly dimensionUsages$ = this.cube$.pipe(pluck('dimensionUsages'))
-  public readonly cubeDimensions$ = this.cube$.pipe(pluck('dimensions'))
-  public readonly measures$ = this.cube$.pipe(pluck('measures'))
-  public readonly calculatedMembers$ = this.cube$.pipe(map((x) => x?.calculatedMembers))
+  
+  public readonly dimensionUsages$ = this.cube$.pipe(map((cube) => cube?.dimensionUsages));
+  public readonly cubeDimensions$ = this.cube$.pipe(map((cube) => cube?.dimensions));
+  public readonly measures$ = this.cube$.pipe(map((cube) => cube?.measures));
+  public readonly calculatedMembers$ = this.cube$.pipe(map((cube) => cube?.calculatedMembers));
 
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
-  public readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
+  // readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
   readonly statement$ = toSignal(this.select((state) => state.queryLab?.statement))
+  readonly modelType = toSignal(this.#modelService.modelType$)
+  readonly entityType = toSignal(this.entityType$)
+  readonly cube = toSignal(this.cube$)
 
   /**
   |--------------------------------------------------------------------------
@@ -106,6 +116,46 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     .subscribe((cube) => {
       this.#modelService.updateDataSourceSchemaEntityType(cube)
     })
+  private selectedSub = this.select((state) => state.selectedProperty).pipe(
+    switchMap((typeAndId) => {
+      if (!this.cube()) {
+        return EMPTY
+      }
+      
+      // Decode property type and key
+      const [type, key] = typeAndId?.split('#') ?? [ModelDesignerType.cube, this.cube().__id__]
+
+      return this.#settingsService
+        .openDesigner(
+          ModelDesignerType[type] + (this.modelType() === MODEL_TYPE.XMLA ? 'Attributes' : ''),
+          combineLatest([
+            this.cube$,
+            this.selectByTypeAndId(ModelDesignerType[type], key).pipe(
+              filter(Boolean) // 过滤已经被删除的等情况
+            )
+          ]).pipe(
+            map(([cube, modeling]) => ({
+              cube,
+              id: modeling.__id__,
+              modeling
+            })),
+            distinctUntilChanged(isEqual)
+          ),
+          key
+        )
+        .pipe(
+          distinctUntilChanged(isEqual),
+          tap((result) =>
+            this.updateCubeProperty({
+              id: key,
+              type: ModelDesignerType[type],
+              model: result.modeling
+            })
+          )
+        )
+    }),
+    takeUntilDestroyed()
+  ).subscribe()
 
   constructor() {
     super({} as ModelCubeState)
@@ -454,42 +504,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   /**
    * Set selected property name to open designer panel
    */
-  readonly setSelectedProperty = this.effect((origin$: Observable<string>) => {
-    return origin$.pipe(
-      withLatestFrom(this.state$, this.#modelService.modelType$),
-      switchMap(([typeAndId, state, modelType]) => {
-        const [type, id] = typeAndId?.split('#') ?? [ModelDesignerType.cube, state.cube.__id__]
-
-        return this.#settingsService
-          .openDesigner(
-            ModelDesignerType[type] + (modelType === MODEL_TYPE.XMLA ? 'Attributes' : ''),
-            combineLatest([
-              this.cube$,
-              this.selectByTypeAndId(ModelDesignerType[type], id).pipe(
-                filter(Boolean) // 过滤已经被删除的等情况
-              )
-            ]).pipe(
-              map(([cube, modeling]) => ({
-                cube,
-                id: modeling.__id__,
-                modeling
-              })),
-              distinctUntilChanged(isEqual)
-            ),
-            id
-          )
-          .pipe(
-            distinctUntilChanged(isEqual),
-            tap((result) =>
-              this.updateCubeProperty({
-                id,
-                type: ModelDesignerType[type],
-                model: result.modeling
-              })
-            )
-          )
-      })
-    )
+  setSelectedProperty = this.updater((state, key: string) => {
+    state.selectedProperty = key
   })
 
   selectCalculatedMember<T>(id: string): Observable<CalculatedMember> {

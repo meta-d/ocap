@@ -3,9 +3,9 @@
         <mat-icon fontSet="material-icons-round">segment</mat-icon>
     </button>
     
-    <span *ngIf="cube$ | async as cube">
-        {{ cube.caption || cube.name}}
-    </span>
+    @if (cube()) {
+        <span>{{ cube().caption || cube().name}}</span>
+    }
 
     <button mat-icon-button displayDensity="compact" (click)="openCubeDesigner()">
         <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
@@ -44,7 +44,9 @@
     <button mat-button [color]="detailsOpen?'accent':''" (click)="designerDrawer.toggle()">
         <div class="flex justify-center items-center">
             <mat-icon fontSet="material-icons-outlined">edit_attributes</mat-icon>
-            <span *ngIf="(isMobile$ | async)==false">{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
+            @if (!isMobile()) {
+                <span>{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
+            }
         </div>
     </button>
 </div>
@@ -53,7 +55,7 @@
     <mat-drawer #designerDrawer class="ngm-story__designer-drawer mat-elevation-z"
         position="end"
         ngmResizer [resizerWidth]="380"
-        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        [mode]="isMobile() ? 'over' : 'side'"
         [opened]="detailsOpen"
         (openedChange)="onDesignerDrawerChange($event)"
     >

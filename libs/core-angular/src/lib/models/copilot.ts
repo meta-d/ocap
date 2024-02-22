@@ -1,4 +1,4 @@
-import { C_MEASURES, EntityType, getEntityDimensions, getEntityMeasures } from '@metad/ocap-core'
+import { C_MEASURES, Cube, EntityType, getEntityDimensions, getEntityMeasures } from '@metad/ocap-core'
 import { z } from 'zod'
 
 
@@ -19,6 +19,41 @@ export function calcEntityTypePrompt(entityType: EntityType) {
       }))
     })),
     measures: getEntityMeasures(entityType).map((item) => ({
+      name: item.name,
+      caption: item.caption
+    }))
+  })
+}
+
+export function makeCubePrompt(cube: Cube) {
+  return JSON.stringify({
+    name: cube.name,
+    caption: cube.caption,
+    dimensions: cube.dimensions.map((dimension) => ({
+      name: dimension.name,
+      caption: dimension.caption,
+      hierarchies: dimension.hierarchies?.map((item) => ({
+        name: item.name,
+        caption: item.caption,
+        levels: item.levels?.map((item) => ({
+          name: item.name,
+          caption: item.caption
+        }))
+      }))
+    })),
+    measures: cube.measures.map((item) => ({
+      name: item.name,
+      caption: item.caption
+    })),
+    calculatedMembers: cube.calculatedMembers.map((item) => ({
+      name: item.name,
+      caption: item.caption,
+      formula: item.formula
+    })),
+    /**
+     * @todo Add dimensions
+     */
+    dimensionUsages: cube.dimensionUsages.map((item) => ({
       name: item.name,
       caption: item.caption
     }))

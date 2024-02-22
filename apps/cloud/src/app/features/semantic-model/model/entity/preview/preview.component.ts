@@ -87,6 +87,8 @@ export class ModelEntityPreviewComponent {
 
   reverse = false
 
+  readonly entityError = toSignal(this.entityService.entityError$)
+
   private refresh$ = new BehaviorSubject<boolean | null>(null)
 
   public readonly analytics$ = combineLatest([
@@ -245,19 +247,30 @@ export class ModelEntityPreviewComponent {
         } else if (event.container.id === 'property-modeling-columns') {
           rows = [...this.columns]
         }
+
         if (rows) {
-          const index = rows.findIndex((row) => row.dimension === C_MEASURES)
-          const item =
-            index > -1
-              ? { ...rows.splice(index, 1)[0] }
-              : {
-                  dimension: C_MEASURES,
-                  members: []
-                }
-          item.members = [...item.members, serializeMeasureName(dialect, data.name)]
-          item.members = uniq(item.members)
-          rows.splice(event.currentIndex, 0, item)
+          const index = rows.findIndex((row) => row.dimension === C_MEASURES && row.measure === data.name)
+          if (index > -1) {
+            // rows.splice(index, 1)
+          } else {
+            rows.splice(event.currentIndex, 0, {
+              dimension: C_MEASURES,
+              measure: data.name,
+            })
+          }
+
+          // const item =
+          //   index > -1
+          //     ? { ...rows.splice(index, 1)[0] }
+          //     : {
+          //         dimension: C_MEASURES,
+          //         members: []
+          //       }
+          // item.members = [...item.members, serializeMeasureName(dialect, data.name)]
+          // item.members = uniq(item.members)
+          // rows.splice(event.currentIndex, 0, item)
         }
+
         if (event.container.id === 'property-modeling-rows') {
           this.rows = rows
         } else if (event.container.id === 'property-modeling-columns') {

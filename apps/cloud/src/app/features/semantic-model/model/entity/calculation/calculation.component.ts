@@ -1,21 +1,25 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, inject } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, effect, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { CalculatedMeasureComponent } from '@metad/components/property'
-import { calcEntityTypePrompt, nonBlank } from '@metad/core'
+import { calcEntityTypePrompt, makeCubePrompt } from '@metad/core'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
-import { C_MEASURES, CalculatedMember, EntityType, Syntax, stringifyProperty } from '@metad/ocap-core'
+import { C_MEASURES, CalculatedMember, Syntax, stringifyProperty } from '@metad/ocap-core'
+import { getSemanticModelKey } from '@metad/story/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
 import { isNil, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { filter, map, startWith, switchMap } from 'rxjs/operators'
+import { computedAsync } from 'ngxtension/computed-async'
+import { injectParams } from 'ngxtension/inject-params'
+import { EMPTY } from 'rxjs'
+import { filter, map } from 'rxjs/operators'
 import { Store, ToastrService, uuid } from '../../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared/'
 import { AppService } from '../../../../../app.service'
@@ -48,6 +52,7 @@ import { getDropProperty } from '../types'
 export class ModelEntityCalculationComponent extends TranslationBaseComponent implements OnDestroy {
   DisplayDensity = DisplayDensity
   Syntax = Syntax
+  ModelType = MODEL_TYPE
 
   public readonly appService = inject(AppService)
   public readonly modelService = inject(SemanticModelService)
@@ -60,34 +65,32 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   @ViewChild('editor') editor!: BaseEditorDirective
 
-  readonly #key$ = this.#route.paramMap.pipe(
-    startWith(this.#route.snapshot.paramMap),
-    map((paramMap) => paramMap.get('id'))
-  )
+  readonly params = injectParams()
+  readonly key = computed(() => this.params()?.id)
 
   public readonly options$ = this.modelService.wordWrap$.pipe(map((wordWrap) => ({ wordWrap })))
-  public readonly isMobile$ = this.appService.isMobile$
 
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly key = toSignal(this.#key$)
-  readonly calculatedMember = toSignal(
-    this.#key$.pipe(
-      filter(nonBlank),
-      switchMap((id) => this.entityService.selectCalculatedMember(id))
-    ),
-    { initialValue: null }
-  )
-  readonly formula = computed(() => this.calculatedMember()?.formula)
-  public readonly entityType = toSignal<EntityType, EntityType>(this.entityService.entityType$, {
-    initialValue: { syntax: Syntax.MDX, properties: {} } as EntityType
-  })
-  public readonly syntax = computed(() => this.entityType().syntax)
+  readonly cube = this.entityService.cube
+  readonly isMobile = toSignal(this.appService.isMobile$)
 
-  private readonly modelKey = toSignal(this.modelService.model$.pipe(map((model) => model.key ?? model.name)))
+  readonly calculatedMember = computedAsync(() => {
+    if (this.key()) {
+      return this.entityService.selectCalculatedMember(this.key())
+    }
+
+    return EMPTY
+  })
+
+  readonly formula = computed(() => this.calculatedMember()?.formula)
+  readonly entityType = this.entityService.entityType
+  readonly syntax = computed(() => this.entityType().syntax)
+
+  private readonly modelKey = toSignal(this.modelService.model$.pipe(map(getSemanticModelKey)))
   private readonly cubeName = toSignal(
     this.entityService.cube$.pipe(
       map((cube) => cube?.name),
@@ -102,6 +105,8 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   readonly modelType = toSignal(this.modelService.modelType$)
   readonly dialect = toSignal(this.modelService.dialect$)
+  readonly selectedProperty = toSignal(this.entityService.select((state) => state.selectedProperty))
+  readonly typeKey = computed(() => `${ModelDesignerType.calculatedMember}#${this.key()}`)
 
   /**
   |--------------------------------------------------------------------------
@@ -110,11 +115,22 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   */
   #calculatedMeasureCommand = injectCopilotCommand({
     name: 'formula',
-    description: 'Create a new calculated member',
-    examples: [`Create a new calculated member`],
+    description: 'Create or edit a calculated member',
     systemPrompt: () => {
-      let prompt = `Create or edit MDX calculated measure for the cube based on the prompt.
-The cube is: ${calcEntityTypePrompt(this.entityType())}.`
+      let prompt = `Create a new or edit (if there is a formula) MDX calculated measure for the cube based on the prompt.`
+      if (this.entityType()) {
+        prompt += `The cube is: 
+\`\`\`
+${calcEntityTypePrompt(this.entityType())}
+\`\`\`
+`
+      } else {
+        prompt += `The cube is:
+\`\`\`
+${makeCubePrompt(this.cube())}
+\`\`\`
+`
+      }
       if (this.key()) {
         prompt += `The formula is "${this.formula()}"`
       }
@@ -143,6 +159,8 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
           })
 
           this.entityService.navigateCalculation(key)
+
+          return `✅`
         }
       }),
       injectMakeCopilotActionable({
@@ -165,6 +183,8 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
               formula
             }
           })
+
+          return `✅`
         }
       })
     ]
@@ -175,11 +195,19 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
   | Subscribers
   |--------------------------------------------------------------------------
   */
-  private keySub = this.#key$.pipe(takeUntilDestroyed()).subscribe((key) => {
-    this.entityService.patchState({
-      currentCalculatedMember: key
-    })
-  })
+
+  constructor() {
+    super()
+
+    effect(
+      () => {
+        this.entityService.patchState({
+          selectedProperty: this.typeKey()
+        })
+      },
+      { allowSignalWrites: true }
+    )
+  }
 
   /**
   |--------------------------------------------------------------------------
@@ -208,8 +236,6 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
     }
   }
 
-  onDesignerDrawerChange(opened) {}
-
   dropEntity(event) {
     this.editor.insert(event.item.data?.name)
   }
@@ -228,8 +254,10 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
   }
 
   ngOnDestroy(): void {
-    this.entityService.patchState({
-      currentCalculatedMember: null
-    })
+    if (this.selectedProperty() === this.typeKey()) {
+      this.entityService.patchState({
+        selectedProperty: null
+      })
+    }
   }
 }

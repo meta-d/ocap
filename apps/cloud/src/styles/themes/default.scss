@@ -1,9 +1,9 @@
 @use '@angular/material/core/tokens/token-utils';
 @use 'libs/material-theme/src/styles/material/default.theme' as light-theme;
 @use 'libs/apps/indicator-market/src/lib/indicator-market-theme' as indicator-market;
-@use '../app/features/features-theme' as features;
-@use '../app/@shared/components-theme' as shared;
-@use '../app/public/public-theme' as public;
+@use '../../app/features/features-theme' as features;
+@use '../../app/@shared/components-theme' as shared;
+@use '../../app/public/public-theme' as public;
 
 body.default, body.light {
   --ngm-bg-color: theme(colors.gray.50);

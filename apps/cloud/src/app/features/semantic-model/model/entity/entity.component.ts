@@ -23,6 +23,7 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
+import { isEntitySet } from '@metad/ocap-core'
 
 @Component({
   standalone: true,
@@ -48,7 +49,7 @@ export class ModelEntityComponent implements OnInit {
   private modelService = inject(SemanticModelService)
   private entityService = inject(ModelEntityService)
   public settingsService = inject(NxSettingsPanelService)
-  private toastrService = inject(ToastrService)
+  readonly #toastr = inject(ToastrService)
   private route = inject(ActivatedRoute)
   private router = inject(Router)
   readonly #storyStore = inject<NxStoryStore>(NX_STORY_STORE)
@@ -80,12 +81,8 @@ export class ModelEntityComponent implements OnInit {
     map((url: UrlSegment[]) => url?.[0]?.path)
   )
 
-  public readonly isMobile$ = this.appService.isMobile$
-  public readonly cube$ = this.entityService.cube$
+  readonly isMobile = toSignal(this.appService.isMobile$)
   public readonly modelType$ = this.modelService.modelType$
-  public readonly error$ = this.entityService.entityName$.pipe(
-    switchMap((entity) => this.modelService.selectEntitySetError(entity))
-  )
 
   /**
   |--------------------------------------------------------------------------
@@ -138,8 +135,14 @@ The cube is`
     this.modelService.setCrrentEntity(id)
   })
 
-  private errorSub = this.error$.pipe(takeUntilDestroyed()).subscribe((err) => {
-    this.toastrService.error(err)
+  /**
+   * 监听当前实体类型变化, 将错误信息打印出来;
+   * SQL Model / Olap Model: 用于验证 Schema 是否正确
+   */
+  private entityErrorSub = this.entityService.entityError$.pipe(
+    takeUntilDestroyed()
+  ).subscribe((error) => {
+    this.#toastr.error(error)
   })
 
   ngOnInit() {
@@ -202,7 +205,7 @@ The cube is`
       
       this.openStory(newStory.id)
     } catch (err) {
-      this.toastrService.error(err, 'PAC.MODEL.MODEL.CreateStory')
+      this.#toastr.error(err, 'PAC.MODEL.MODEL.CreateStory')
     }
   }
 

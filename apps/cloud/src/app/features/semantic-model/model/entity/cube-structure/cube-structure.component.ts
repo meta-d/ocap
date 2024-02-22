@@ -61,7 +61,7 @@ export class ModelCubeStructureComponent {
   private readonly modelService = inject(SemanticModelService)
   public readonly cubeState = inject(ModelEntityService)
   private readonly _cdr = inject(ChangeDetectorRef)
-  private readonly _logger? = inject(NGXLogger, InjectFlags.Optional)
+  private readonly _logger = inject(NGXLogger)
 
   @Input() modelType: MODEL_TYPE
   @Input() editable: boolean
@@ -110,6 +110,8 @@ export class ModelCubeStructureComponent {
     role: AggregationRole.measure
   } as PropertyMeasure)))))
 
+  readonly selectedProperty = toSignal(this.cubeState.select((state) => state.selectedProperty))
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -131,6 +133,10 @@ export class ModelCubeStructureComponent {
 
   trackById(index: number, el: any) {
     return el.name
+  }
+
+  isSelected(key: string) {
+    return this.selectedProperty() === key
   }
 
   /** Select the category so we can insert the new item. */
