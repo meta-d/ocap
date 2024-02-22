@@ -47,7 +47,7 @@
                                         <span class="" data-state="closed">
                                             @if (messageCopied().includes(message.id)) {
                                                 <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                                 text-neutral-400 hover:text-neutral-900 transition-colors duration-100"
+                                                    transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
                                                 >
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg" class="icon-md">
@@ -58,7 +58,7 @@
                                                 </button>
                                             } @else {
                                                 <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                                text-neutral-400 hover:text-neutral-900 transition-colors duration-100"
+                                                    transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
                                                     [matTooltip]="'Ngm.Copilot.Copy' | translate: {Default: 'Copy'}"
                                                     (click)="copyMessage(message)">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">

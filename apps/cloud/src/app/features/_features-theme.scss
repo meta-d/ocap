@@ -12,6 +12,7 @@
 $shell-bar-height: 40px;
 $sidebar-width: 200px;
 $sidebar-collapsed-width: 40px;
+
 @mixin color($theme) {
   $config: mat.get-color-config($theme);
 
@@ -170,7 +171,6 @@ $sidebar-collapsed-width: 40px;
   
   // 带 nav-bar 的 toolbar 组件样式
   .pac-nav-toolbar.mat-toolbar {
-    @apply text-gray-600 dark:text-gray-300;
     &.ngm-density__compact.mat-toolbar-single-row {
       padding: 0;
     }

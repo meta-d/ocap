@@ -32,7 +32,7 @@ const routes: Routes = [
       },
       {
         path: 'entity',
-        loadChildren: () => import('./entity/entity.module').then((m) => m.ModelEntityModule),
+        loadChildren: () => import('./entity/routing').then((m) => m.routes),
         data: {
           title: 'Model / Cube'
         }

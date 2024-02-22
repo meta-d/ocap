@@ -81,8 +81,6 @@
         <mat-option class="h-0" style="height: 0; min-height: 0;"></mat-option>
       </mat-autocomplete>
 
-      <!-- <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global> -->
-
       @if(copilotEnabled$()) {
         <button mat-icon-button class="pac-copilot-trigger font-notoColorEmoji"
           displayDensity="cosy"
@@ -152,7 +150,8 @@
   <pac-header-settings></pac-header-settings>
 </popper-content>
 
-<mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent">
+<mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent"
+  xPosition="before">
   <button mat-menu-item (click)="createQuery()">
     <mat-icon fontSet="material-icons-outlined">reviews</mat-icon>
     {{ 'PAC.KEY_WORDS.Query' | translate: {Default: 'Query'} }}

@@ -18,7 +18,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
 import { NgmMemberDatepickerModule } from '@metad/components/datepicker'
 import { NxInputControlComponent } from './input-control.component'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { InputControlPlaceholderComponent } from './placeholder/placeholder.component'
 
 @NgModule({
@@ -45,7 +45,7 @@ import { InputControlPlaceholderComponent } from './placeholder/placeholder.comp
     NgmCommonModule,
     NgmParameterComponent,
     NgmEntityPropertyComponent,
-    ControlsModule,
+    NgmControlsModule,
     InputControlPlaceholderComponent
   ],
   exports: [NxInputControlComponent]

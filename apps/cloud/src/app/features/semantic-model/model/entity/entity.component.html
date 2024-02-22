@@ -25,6 +25,11 @@
         >
             {{ 'PAC.MENU.CALCULATION' | translate: {Default: "Calculation"} }}
         </button>
+        <button mat-button [routerLink]="['./preview']" routerLinkActive #rlaCalculation="routerLinkActive"
+            [color]="rlaCalculation.isActive?'accent':''"
+        >
+            {{ 'PAC.MENU.Preview' | translate: {Default: "Preview"} }}
+        </button>
         <button mat-button [routerLink]="['./query']" routerLinkActive #rlaQuery="routerLinkActive"
             [routerLinkActiveOptions]="{exact: true}"
             [color]="rlaQuery.isActive?'accent':''"
@@ -81,7 +86,7 @@
                     </div>
                 </div>
 
-                <ngm-drawer-trigger class="absolute left-0 top-1/2 z-40" [(opened)]="drawerOpened" ></ngm-drawer-trigger>
+                <ngm-drawer-trigger class="absolute -left-2 top-1/2 z-40" [(opened)]="drawerOpened" ></ngm-drawer-trigger>
             </mat-drawer-content>
         </mat-drawer-container>
     </mat-drawer-content>

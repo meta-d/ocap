@@ -86,21 +86,24 @@
                         <mat-icon fontSet="material-icons-round">refresh</mat-icon>
                     </button>
                 </mat-toolbar>
-                <div style="position: relative; flex: 1; max-height: calc(100% - 34px)" class="flex">
+                <div style="flex: 1; max-height: calc(100% - 34px)" class="flex">
                     <ngm-table class="striped flex-1 max-w-full"
                         [columns]="columns$ | async"
                         [data]="data$ | async"
                         [paging]="true"
                     ></ngm-table>
-                    <mat-spinner *ngIf="loading" strokeWidth="2" diameter="30"></mat-spinner>
-                    <div *ngIf="error$ | async as error" class="pac-model-hierarchy__error">
-                        <div style="font-size: 4rem;" class="font-notoColorEmoji">🐞</div>
-                        <div>
-                            {{error}}
-                        </div>
-                    </div>
-                </div>
 
+                    @if (loading) {
+                        <mat-spinner strokeWidth="2" diameter="30"/>
+                    }
+                    @if (error$ | async; as error) {
+                        <div class="pac-model-hierarchy__error">
+                            <div style="font-size: 4rem;" class="font-notoColorEmoji">🐞</div>
+                            <div>{{error}}</div>
+                        </div>
+                    }
+                    
+                </div>
             </ngm-splitter-pane>
             <ngm-splitter-pane size='10rem' [collapsed]="tablesJoinCollapsed">
                 <ngm-tables-join [dataSource]="dataSourceName" style="margin: 1rem;"

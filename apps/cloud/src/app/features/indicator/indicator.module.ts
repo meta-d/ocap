@@ -3,10 +3,10 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatNativeDateModule } from '@angular/material/core'
 import { NgmCommonModule, ResizerModule, TreeTableModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
-import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { ButtonGroupDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { ToastrService } from '@metad/cloud/state'
 import { CalculatedMeasureComponent } from '@metad/components/property'
 import { NgmDialogComponent } from '@metad/components/dialog'
@@ -40,14 +40,17 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     IsNilPipe,
 
     // OCAP Modules
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
     NgmCommonModule,
-    ControlsModule,
+    NgmControlsModule,
     TreeTableModule,
-    FormulaModule,
+    NgmFormulaModule,
     ResizerModule,
     NgmHierarchySelectComponent,
   ],
-  providers: [ToastrService]
+  providers: [
+    provideOcapCore(),
+    ToastrService
+  ]
 })
 export class PACIndicatorModule {}

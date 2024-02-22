@@ -2,13 +2,13 @@ import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
-import { BaseEditorDirective } from '@metad/components/editor'
+import { BaseEditorDirective, NxEditorModule } from '@metad/components/editor'
 import { calcEntityTypePrompt, convertQueryResultColumns, nonBlank } from '@metad/core'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { effectAction } from '@metad/ocap-angular/core'
 import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { QueryReturn, measureFormatter, serializeUniqueName } from '@metad/ocap-core'
-import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
+import { MaterialModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, EMPTY, Observable, firstValueFrom } from 'rxjs'
@@ -18,12 +18,25 @@ import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { serializePropertyUniqueName } from '../../utils'
 import { ModelEntityService } from '../entity.service'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-entity-query',
   templateUrl: 'query.component.html',
-  styleUrls: ['query.component.scss']
+  styleUrls: ['query.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    MaterialModule,
+    NgmCommonModule,
+    NxEditorModule
+  ]
 })
 export class EntityQueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE

@@ -9,7 +9,7 @@ import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/component
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { uploadYamlFile } from '@metad/core'
 import { NgmTreeSelectComponent, TreeTableModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { AgentType, Property, Syntax } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel, uuid } from '@metad/story/core'
@@ -45,7 +45,7 @@ import { exportSemanticModel } from '../types'
     // OCAP Modles
     NgmTreeSelectComponent,
     TreeTableModule,
-    ControlsModule,
+    NgmControlsModule,
     ButtonGroupDirective
   ],
   selector: 'pac-models',

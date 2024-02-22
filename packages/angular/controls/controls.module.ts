@@ -29,4 +29,4 @@ import { NgmValueHelpComponent } from './value-help/value-help.component'
   declarations: [],
   providers: []
 })
-export class ControlsModule {}
+export class NgmControlsModule {}

@@ -15,7 +15,7 @@ import { AgentType, DataSource, DisplayBehaviour, FilterSelectionType, Type } fr
 import { TranslateModule } from '@ngx-translate/core'
 import { Meta, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
-import { ControlsModule } from '../controls.module'
+import { NgmControlsModule } from '../controls.module'
 import { NgmSmartFilterComponent } from './smart-filter.component'
 import { FormsModule } from '@angular/forms'
 
@@ -28,7 +28,7 @@ export default {
       providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
     }),
     moduleMetadata({
-      imports: [BrowserAnimationsModule, FormsModule, MatIconModule, ControlsModule, OcapCoreModule, TranslateModule],
+      imports: [BrowserAnimationsModule, FormsModule, MatIconModule, NgmControlsModule, OcapCoreModule, TranslateModule],
       providers: [
         provideOcapCore(),
         NgmDSCoreService,

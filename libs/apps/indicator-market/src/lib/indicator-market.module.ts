@@ -19,8 +19,8 @@ import { MatSliderModule } from '@angular/material/slider'
 import { FavoritesService, IndicatorsService } from '@metad/cloud/state'
 import { ReversePipe } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { ControlsModule } from '@metad/ocap-angular/controls'
-import { AppearanceDirective, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { AppearanceDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { MarkdownModule } from 'ngx-markdown'
@@ -62,8 +62,8 @@ import { SharedModule } from './shared/shared.module'
     TranslateModule,
 
     // for DataSources
-    OcapCoreModule.forRoot(),
-    ControlsModule,
+    OcapCoreModule,
+    NgmControlsModule,
 
     // NxAnalyticsStoryModule,
     NgxEchartsModule.forRoot({
@@ -73,6 +73,10 @@ import { SharedModule } from './shared/shared.module'
     AnalyticalCardModule
   ],
   exports: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent],
-  providers: [IndicatorsService, FavoritesService]
+  providers: [
+    provideOcapCore(),
+    IndicatorsService,
+    FavoritesService
+  ]
 })
 export class IndicatorMarketModule {}

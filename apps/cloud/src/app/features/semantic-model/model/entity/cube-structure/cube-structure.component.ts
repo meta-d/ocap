@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, InjectFlags, Input, Output, ViewChildren, inject } from '@angular/core'
-import { SplitterType } from '@metad/ocap-angular/common'
+import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
 import {
   AggregationRole,
   CalculatedMember,
@@ -17,6 +17,13 @@ import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { TranslateModule } from '@ngx-translate/core'
+import { PropertyDimensionComponent } from '../dimension/dimension.component'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NxActionStripModule } from '@metad/components/action-strip'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -26,10 +33,22 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
  * @returns cube 双向绑定的输出类型
  */
 @Component({
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-cube-structure',
   templateUrl: 'cube-structure.component.html',
-  styleUrls: ['cube-structure.component.scss']
+  styleUrls: ['cube-structure.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    TranslateModule,
+    NgmCommonModule,
+
+    PropertyDimensionComponent,
+    NgmEntityPropertyComponent,
+    NxActionStripModule
+  ]
 })
 export class ModelCubeStructureComponent {
   ModelDesignerType = ModelDesignerType

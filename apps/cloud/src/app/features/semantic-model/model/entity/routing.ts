@@ -1,11 +1,11 @@
-import { NgModule } from '@angular/core'
-import { RouterModule, Routes } from '@angular/router'
+import { Routes } from '@angular/router'
 import { ModelEntityCalculationComponent } from './calculation/calculation.component'
 import { ModelEntityComponent } from './entity.component'
+import { ModelEntityPreviewComponent } from './preview/preview.component'
 import { EntityQueryComponent } from './query/query.component'
 import { ModelEntityStructureComponent } from './structure/structure.component'
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: ':id',
     component: ModelEntityComponent,
@@ -24,11 +24,15 @@ const routes: Routes = [
       },
       {
         path: 'calculation',
-        redirectTo: 'calculation/',
+        redirectTo: 'calculation/'
       },
       {
         path: 'calculation/:id',
-        component: ModelEntityCalculationComponent,
+        component: ModelEntityCalculationComponent
+      },
+      {
+        path: 'preview',
+        component: ModelEntityPreviewComponent
       },
       {
         path: 'query',
@@ -40,9 +44,3 @@ const routes: Routes = [
     ]
   }
 ]
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
-})
-export class ModelEntityRoutingModule {}

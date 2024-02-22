@@ -1,9 +1,9 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, Component, HostBinding, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router'
+import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from '@angular/router'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
-import { NxSettingsPanelService } from '@metad/story/designer'
+import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import { isNil, negate } from 'lodash-es'
 import { nanoid } from 'nanoid'
@@ -17,13 +17,30 @@ import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { ModelComponent } from '../model.component'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { TranslateModule } from '@ngx-translate/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
 
 @Component({
+  standalone: true,
   selector: 'pac-model-entity',
   templateUrl: 'entity.component.html',
   styleUrls: ['entity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ModelEntityService, NxSettingsPanelService]
+  providers: [ModelEntityService, NxSettingsPanelService],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    RouterModule,
+    TranslateModule,
+    NgmCommonModule,
+    NxDesignerModule,
+    ModelCubeStructureComponent
+  ]
 })
 export class ModelEntityComponent implements OnInit {
   readonly #logger = inject(NGXLogger)

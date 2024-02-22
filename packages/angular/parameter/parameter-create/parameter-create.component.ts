@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatRadioModule } from '@angular/material/radio'
 import { NgmInputModule } from '@metad/ocap-angular/common'
-import { ControlsModule, TreeControlOptions } from '@metad/ocap-angular/controls'
+import { NgmControlsModule, TreeControlOptions } from '@metad/ocap-angular/controls'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import {
@@ -58,7 +58,7 @@ import { BehaviorSubject, filter, map } from 'rxjs'
     MatCheckboxModule,
     TranslateModule,
     OcapCoreModule,
-    ControlsModule,
+    NgmControlsModule,
     NgmHierarchySelectComponent,
     NgmInputModule
   ]

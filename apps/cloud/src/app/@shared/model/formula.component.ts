@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { CalculatedMeasureComponent } from '@metad/components/property'
 import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { DataSettings, EntityType, PropertyMeasure, Syntax } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { Store } from '../../@core'
@@ -21,7 +21,7 @@ import { NGXLogger } from 'ngx-logger'
     ReactiveFormsModule,
     TranslateModule,
     MaterialModule,
-    FormulaModule,
+    NgmFormulaModule,
     CalculatedMeasureComponent,
     ButtonGroupDirective,
     NgmCopilotChatComponent

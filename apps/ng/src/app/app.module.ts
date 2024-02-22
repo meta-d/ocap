@@ -15,7 +15,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { NgmCopilotChatComponent, provideClientCopilot } from '@metad/ocap-angular/copilot'
 import {
   NgmMissingTranslationHandler,
@@ -24,7 +24,7 @@ import {
   OCAP_MODEL_TOKEN,
   OcapCoreModule
 } from '@metad/ocap-angular/core'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { ZhHans } from '@metad/ocap-angular/i18n'
 import { SlicersModule } from '@metad/ocap-angular/slicers'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -92,12 +92,12 @@ export class CustomLoader implements TranslateLoader {
     }),
     MonacoEditorModule.forRoot(),
     OcapCoreModule.forRoot(),
-    ControlsModule,
+    NgmControlsModule,
     AnalyticalCardModule,
     AnalyticalGridModule,
     NgmCommonModule,
     NgmTreeSelectComponent,
-    FormulaModule,
+    NgmFormulaModule,
     SlicersModule,
 
     NgmCopilotChatComponent

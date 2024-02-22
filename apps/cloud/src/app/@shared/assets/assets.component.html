@@ -24,13 +24,15 @@
       <span matListItemIcon class="text-lg font-notoColorEmoji">📖</span>
       <div matListItemTitle class="flex flex-col">
         <a class="text-base text-ellipsis overflow-hidden" [routerLink]="['/story', asset.id]">{{ asset.name }}</a>
-        <div class="flex-1 flex justify-between items-baseline text-xs text-slate-500 text-opacity-60 group-hover:text-opacity-80">
+        <div class="flex-1 flex justify-between items-baseline text-xs  text-opacity-60 group-hover:text-opacity-80
+          text-slate-500 dark:text-slate-300">
           <span class="flex-1 basis-1/2">
             {{ 'PAC.KEY_WORDS.Story' | translate: { Default: 'Story' } }}
           </span>
           <div class="flex-1 basis-0"></div>
         </div>
-        <div *ngIf="asset.description" class="description text-sm border-l-2 border-l-bluegray-100 text-slate-500 text-opacity-60 group-hover:text-opacity-80">
+        <div *ngIf="asset.description" class="description text-sm border-l-2 text-opacity-60 group-hover:text-opacity-80
+          border-l-bluegray-100 text-slate-500 dark:text-slate-300 dark:border-l-bluegray-300">
           {{ asset.description }}
         </div>
       </div>
@@ -40,13 +42,15 @@
       <span matListItemIcon class="text-lg">💹</span>
       <div matListItemTitle class="flex flex-col">
         <a class="text-base" [routerLink]="['/indicator/viewer', asset.id]">{{ asset.name }}</a>
-        <div class="flex-1 flex justify-between items-baseline text-xs text-slate-500 text-opacity-60 group-hover:text-opacity-80" >
+        <div class="flex-1 flex justify-between items-baseline text-xs text-opacity-60 group-hover:text-opacity-80
+          text-slate-500 dark:text-slate-300" >
           <div class="mr-2">
             {{ 'PAC.KEY_WORDS.Indicator' | translate: { Default: 'Indicator' } }}
           </div>
           <div class="flex-1 text-ellipsis overflow-hidden text-right">{{ asset.code }}</div>
         </div>
-        <div *ngIf="asset.business" class="description text-xs border-l-2 border-l-bluegray-100">
+        <div *ngIf="asset.business" class="description text-xs border-l-2
+          border-l-bluegray-100 dark:text-slate-300 dark:border-l-bluegray-300">
           {{ asset.business }}
         </div>
       </div>
@@ -57,14 +61,16 @@
       <div matListItemTitle class="flex flex-col">
         <a class="text-base" [routerLink]="['/models', asset.id]">{{ asset.name }}</a>
 
-        <div class="flex-1 flex justify-between items-baseline text-xs text-slate-500 text-opacity-60 group-hover:text-opacity-80">
+        <div class="flex-1 flex justify-between items-baseline text-xs text-opacity-60 group-hover:text-opacity-80
+          text-slate-500 dark:text-slate-300">
           <span class="flex-1 basis-1/2">
             {{ 'PAC.KEY_WORDS.SemanticModel' | translate: { Default: 'Semantic Model' } }}
           </span>
           <div class="flex-1 basis-0"></div>
         </div>
 
-        <div *ngIf="asset.description" class="description text-xs border-l-2 border-l-bluegray-100">
+        <div *ngIf="asset.description" class="description text-xs border-l-2
+          border-l-bluegray-100 dark:text-slate-300 dark:border-l-bluegray-300">
           {{ asset.description }}
         </div>
       </div>

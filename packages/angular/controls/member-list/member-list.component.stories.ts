@@ -12,7 +12,7 @@ import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
-import { ControlsModule } from '../controls.module'
+import { NgmControlsModule } from '../controls.module'
 import { NgmMemberListComponent } from './member-list.component'
 
 export default {
@@ -22,7 +22,7 @@ export default {
     moduleMetadata({
       imports: [
         BrowserAnimationsModule,
-        ControlsModule,
+        NgmControlsModule,
         OcapCoreModule,
         TranslateModule.forRoot({
           missingTranslationHandler: {

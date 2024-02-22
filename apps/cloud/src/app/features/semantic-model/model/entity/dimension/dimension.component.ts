@@ -6,6 +6,11 @@ import { AggregationRole, DimensionUsage, DisplayBehaviour, EntityProperty, isVi
 import { assign, isNil, omit } from 'lodash-es'
 import { ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NxActionStripModule } from '@metad/components/action-strip'
 
 /**
  * Node for Property item
@@ -31,11 +36,19 @@ export class PropertyItemFlatNode {
 }
 
 @Component({
+  standalone: true,
   selector: 'pac-property-dimension',
   templateUrl: 'dimension.component.html',
   host: {
     class: 'pac-property-dimension'
-  }
+  },
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    NgmEntityPropertyComponent,
+    NxActionStripModule
+  ]
 })
 export class PropertyDimensionComponent implements OnInit, OnChanges {
   AGGREGATION_ROLE = AggregationRole

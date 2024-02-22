@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { ModuleWithProviders, NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmMemberDatepickerModule } from '@metad/components/datepicker'
@@ -22,7 +22,7 @@ import { NxSmartFilterBarComponent } from './filter-bar.component'
     NgmMemberDatepickerModule,
     // OCAP Modules
     OcapCoreModule,
-    ControlsModule,
+    NgmControlsModule,
   ]
 })
 export class PACWidgetFilterBarModule {
