@@ -10,19 +10,20 @@ import { calcEntityTypePrompt, nonBlank } from '@metad/core'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
-import { C_MEASURES, CalculatedMember, EntityType, Syntax } from '@metad/ocap-core'
+import { C_MEASURES, CalculatedMember, EntityType, Syntax, stringifyProperty } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
 import { isNil, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { filter, map, startWith, switchMap } from 'rxjs/operators'
-import { Store, uuid } from '../../../../../@core'
+import { Store, ToastrService, uuid } from '../../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared/'
 import { AppService } from '../../../../../app.service'
 import { CalculatedMeasureSchema, zodToAnnotations } from '../../copilot'
 import { SemanticModelService } from '../../model.service'
-import { ModelDesignerType } from '../../types'
+import { MODEL_TYPE, ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { getDropProperty } from '../types'
 
 @Component({
   standalone: true,
@@ -55,6 +56,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly #router = inject(Router)
   readonly #logger = inject(NGXLogger)
   readonly #store = inject(Store)
+  readonly #toastr = inject(ToastrService)
 
   @ViewChild('editor') editor!: BaseEditorDirective
 
@@ -188,8 +190,14 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
     return index
   }
 
-  async setFormula(formula: string) {
+  setFormula(formula: string) {
     const calculatedMember = this.calculatedMember()
+    if (this.modelType() === MODEL_TYPE.OLAP) {
+      if (isNil(calculatedMember)) {
+        // this.#toastr.error(`请先选择一个计算成员`)
+        return
+      }
+    }
     if (!isNil(calculatedMember) && formula !== calculatedMember?.formula) {
       this.entityService.setCalculatedMember({
         ...calculatedMember,
@@ -209,10 +217,9 @@ The cube is: ${calcEntityTypePrompt(this.entityType())}.`
   dropFormula(event: CdkDragDrop<any[]>) {
     const previousItem = event.item.data
     const index = event.currentIndex
-    console.log(previousItem)
     if (event.previousContainer.id === 'list-dimensions') {
-      // const item = this.getDropProperty(event)
-      // this.setFormula(`${this.formula()}${stringifyProperty(item)}`)
+      const item = getDropProperty(event, this.modelType(), this.dialect())
+      this.setFormula(`${this.formula()}${stringifyProperty(item)}`)
     }
   }
 

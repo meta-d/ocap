@@ -6,8 +6,7 @@
     (keyDown)="onEditorKeyDown($event)"
   ></ngm-formula-editor>
 } @else if (entityType().syntax === Syntax.MDX) {
-  <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full" cdkDropList
-    (cdkDropListDropped)="dropFormula($event)"
+  <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full"
     [opened]="true"
     [syntax]="Syntax.MDX"
     [dataSettings]="dataSettings()"

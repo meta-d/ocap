@@ -181,6 +181,7 @@
       "Feature": "功能",
       "Email Template": "邮件模板",
       "Custom SMTP": "自定义 SMTP",
+      "Preview": "预览",
       "AGENT": "代理",
       "LOCAL_AGENT": "本地代理",
       "WASM_DB": "WASM 数据库",

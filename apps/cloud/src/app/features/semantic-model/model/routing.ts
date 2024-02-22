@@ -1,12 +1,12 @@
-import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { DirtyCheckGuard } from '../../../@core'
 import { ModelMembersComponent } from './members/members.component'
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
 import { StoryModelResolver } from './story-model.resolver'
+import { NgModule } from '@angular/core'
 
-const routes: Routes = [
+export const routes: Routes = [
   {
     path: '',
     component: ModelComponent,

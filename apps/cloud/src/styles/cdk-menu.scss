@@ -23,3 +23,7 @@
     @apply flex-1;
   }
 }
+
+.cdk-menu-item.cdk-menu-trigger {
+  justify-content: space-between;
+}

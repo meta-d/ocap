@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core'
 import { PropertyCapacity, PropertySelectComponent } from '@metad/components/property'
 import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
-import { AggregationRole, C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax, serializeUniqueName } from '@metad/ocap-core'
+import { AggregationRole, C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { BehaviorSubject, combineLatest, filter, from, map, of, switchMap } from 'rxjs'
@@ -12,13 +12,14 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { SemanticModelService } from '../../model.service'
 import { nonNullable } from '@metad/core'
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { serializeMeasureName } from '@metad/ocap-sql'
+import { serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
 import { MODEL_TYPE } from '../../types'
 import { FormsModule } from '@angular/forms'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { getDropProperty } from '../types'
 
 @Component({
   standalone: true,
@@ -203,47 +204,6 @@ export class ModelEntityPreviewComponent {
     }
   }
 
-  getDropProperty(event: CdkDragDrop<unknown[]>) {
-    const modelType = this.modelType()
-    const dialect = this.dialect()
-
-    const property = event.item.data
-    const item = {
-      dimension: null,
-      hierarchy: null,
-      level: null,
-      zeroSuppression: false
-    } as Dimension
-    if (property.role === AggregationRole.dimension) {
-      item.dimension = modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.name) : property.name
-      // 取默认 hierarchy 或者默认与 dimension 同名的
-      item.hierarchy = property.defaultHierarchy || item.dimension
-    } else if (property.role === AggregationRole.hierarchy) {
-      item.dimension =
-        modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
-      item.hierarchy =
-        modelType !== MODEL_TYPE.XMLA
-          ? serializeUniqueName(dialect, property.dimension, property.name)
-          : property.name
-    } else if (property.role === AggregationRole.level) {
-      item.dimension =
-        modelType !== MODEL_TYPE.XMLA ? serializeUniqueName(dialect, property.dimension) : property.dimension
-      item.hierarchy =
-        modelType !== MODEL_TYPE.XMLA
-          ? serializeUniqueName(dialect, property.dimension, property.hierarchy)
-          : property.hierarchy
-      item.level =
-        modelType !== MODEL_TYPE.XMLA
-          ? serializeUniqueName(dialect, property.dimension, property.hierarchy, property.name)
-          : property.name
-    } else if (property.source && modelType !== MODEL_TYPE.XMLA) {
-      // Dimension Usage
-      item.dimension = serializeUniqueName(dialect, property.source)
-    }
-
-    return item
-  }
-
   drop(event: CdkDragDrop<unknown[]>) {
     const dialect = this.dialect()
 
@@ -256,7 +216,7 @@ export class ModelEntityPreviewComponent {
       }
     } else {
       if (event.previousContainer.id === 'list-dimensions') {
-        const item = this.getDropProperty(event)
+        const item = getDropProperty(event, this.modelType(), this.dialect())
 
         if (event.container.id === 'property-modeling-rows') {
           const rows = differenceBy(this.rows, [item], 'dimension')

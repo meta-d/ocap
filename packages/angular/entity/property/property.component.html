@@ -1,6 +1,6 @@
-<ng-container *ngIf="!hiddenIcon">
-  <mat-icon mat-list-icon class="shrink-0" [displayDensity]="displayDensity">{{ icon }}</mat-icon>
-</ng-container>
+@if (!hiddenIcon) {
+  <mat-icon mat-list-icon class="shrink-0 mr-1">{{ icon }}</mat-icon>
+}
 
 <ngm-display-behaviour class="flex-1 overflow-hidden"
   [displayBehaviour]="displayBehaviour"

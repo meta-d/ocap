@@ -23,7 +23,6 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { CreatedByPipe, MaterialModule, UserPipe } from '../../../@shared'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
-import { ModelRoutingModule } from './model-routing.module'
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
@@ -44,12 +43,13 @@ import {
 } from './schema/index'
 import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
+import { ModelRoutingModule } from './routing'
 
 @NgModule({
   declarations: [ModelComponent, ModelOverviewComponent, ModelCreateEntityComponent, ModelPreferencesComponent],
   imports: [
-    CommonModule,
     ModelRoutingModule,
+    CommonModule,
     FormsModule,
     MaterialModule,
     CdkMenuModule,

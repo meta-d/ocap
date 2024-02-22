@@ -20,13 +20,13 @@
         >
             {{ 'PAC.MENU.STRUCTURE' | translate: {Default: "Structure"} }}
         </button>
-        <button mat-button [routerLink]="['./calculation']" routerLinkActive #rlaCalculation="routerLinkActive"
+        <!-- <button mat-button [routerLink]="['./calculation']" routerLinkActive #rlaCalculation="routerLinkActive"
             [color]="rlaCalculation.isActive?'accent':''"
         >
             {{ 'PAC.MENU.CALCULATION' | translate: {Default: "Calculation"} }}
-        </button>
-        <button mat-button [routerLink]="['./preview']" routerLinkActive #rlaCalculation="routerLinkActive"
-            [color]="rlaCalculation.isActive?'accent':''"
+        </button> -->
+        <button mat-button [routerLink]="['./preview']" routerLinkActive #rlaPreview="routerLinkActive"
+            [color]="rlaPreview.isActive?'accent':''"
         >
             {{ 'PAC.MENU.Preview' | translate: {Default: "Preview"} }}
         </button>

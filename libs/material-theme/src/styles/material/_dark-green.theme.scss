@@ -23,7 +23,8 @@ $dark-theme: map.deep-merge(
   )),
   (
     color: (
-      background: dark-theme.$background
+      background: dark-theme.$background,
+      foreground: dark-theme.$foreground
     )
   )
 );

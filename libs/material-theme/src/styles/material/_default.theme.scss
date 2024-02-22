@@ -58,7 +58,7 @@ $config: mat.get-color-config($mat-theme);
 $foreground: map.get($config, foreground);
 
 // Set color for the Story component separately to override global styles
-.ngm-theme-light.light, .ngm-story-container.ngm-theme-light.light {
+.ngm-theme-light, .ngm-story-container.ngm-theme-light.light {
   --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};

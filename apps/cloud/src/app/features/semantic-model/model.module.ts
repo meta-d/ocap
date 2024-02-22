@@ -4,7 +4,7 @@ import { LoggerModule } from 'ngx-logger'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import { provideLogger } from '../../@core'
 import { MaterialModule, SharedModule } from '../../@shared'
-import { SemanticModelRoutingModule } from './model-routing.module'
+import { SemanticModelRoutingModule } from './routing'
 
 @NgModule({
   declarations: [],

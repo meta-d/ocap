@@ -50,7 +50,7 @@ $foreground: (
   secondary-text:    $light-secondary-text,
   icon:              white,
   icons:             white,
-  text:              white,
+  text:              theme('colors.neutral.200'),
   slider-min:        white,
   slider-off:        rgba(white, 0.3),
   slider-off-active: rgba(white, 0.3),
@@ -75,7 +75,7 @@ $custom-typography: mat.define-typography-config(
   $font-family: $material-typeface
 );
 
-.ngm-theme-dark.dark, .ngm-story__device.ngm-theme-dark.dark {
+.ngm-theme-dark, .ngm-story__device.ngm-theme-dark.dark {
   // --ngm-color-surface: #16181c;
   --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
