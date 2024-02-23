@@ -1,6 +1,8 @@
-<label *ngIf="label" class="ngm-select-label shrink-0" [title]="label">
-  {{label}}
-</label>
+@if (label) {
+  <label class="ngm-select-label shrink-0" [title]="label">
+    {{label}}
+  </label>
+}
 
 <div *ngIf="!searchable" class="relative">
   <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"

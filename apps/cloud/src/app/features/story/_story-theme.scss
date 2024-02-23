@@ -68,31 +68,12 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
       }
     }
 
-    /**
-     * 
-     */
-    .mat-button,
-    .mat-mdc-icon-button,
-    .mat-stroked-button,
-    .mat-flat-button {
-      min-width: unset;
-    }
-
-    .ngm-story-primary--add {
-      position: absolute;
-      bottom: 2rem;
-      right: 2rem;
-      z-index: 1;
-    }
-
-    .ngm-story__container {
-      .ngm-story__device-size-bar {
-        .layout-size {
-          background-color: mat.get-color-from-palette($foreground, divider);
-          border-color: lightgrey;
-        }
-      }
-    }
+    // .mat-button,
+    // .mat-mdc-icon-button,
+    // .mat-stroked-button,
+    // .mat-flat-button {
+    //   min-width: unset;
+    // }
   }
 
   // Story designer pannel

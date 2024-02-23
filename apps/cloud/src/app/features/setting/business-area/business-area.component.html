@@ -11,7 +11,7 @@
 </div>
 
 <mat-drawer-container class="w-full h-full" [hasBackdrop]="isMobile()" [autosize]="true">
-  <mat-drawer #drawer [mode]="isMobile() ? 'over' : 'side'"
+  <mat-drawer #drawer class="ngm-sidenav-container-bg-transparent" [mode]="isMobile() ? 'over' : 'side'"
     [(opened)]="sideMenuOpened"
   >
     <pac-business-areas class="w-96"></pac-business-areas>

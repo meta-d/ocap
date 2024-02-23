@@ -335,6 +335,16 @@ ${sharedDimensionsPrompt}
     if (event.previousContainer.id === 'pac-model-entitysets' && event.container.id === 'pac-model-entities') {
       this.createEntity(event.item.data)
     }
+    // Move items in array
+    if (event.previousContainer === event.container) {
+      if (event.item.data.type === SemanticModelEntityType.DIMENSION) {
+        this.modelService.moveItemInDimensions(event)
+      } else if (event.item.data.type === SemanticModelEntityType.CUBE) {
+        this.modelService.moveItemInCubes(event)
+      } else if (event.item.data.type === SemanticModelEntityType.VirtualCube) {
+        this.modelService.moveItemInVirtualCubes(event)
+      }
+    }
   }
 
   onDragReleased(event: CdkDragRelease) {

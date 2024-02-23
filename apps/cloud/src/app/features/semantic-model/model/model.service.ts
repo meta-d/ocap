@@ -1,4 +1,4 @@
-import { CdkDropList, DropListRef } from '@angular/cdk/drag-drop'
+import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DestroyRef, Injectable, inject } from '@angular/core'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
@@ -82,6 +82,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     this.dimensionStates$
   ]).pipe(
     map(([cubes, dimensions]) => {
+      console.log(`dimensions states:`, dimensions)
       return [
         ...(cubes?.map((cube) => ({ ...cube, caption: (cube.cube as any)?.caption })) ?? []),
         ...(dimensions?.map((dimension) => ({ ...dimension, caption: dimension.dimension?.caption })) ?? [])
@@ -673,4 +674,16 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     }
   }
   
+  moveItemInDimensions = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    moveItemInArray(state.dimensions, event.previousIndex, event.currentIndex)
+  })
+
+  moveItemInCubes = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    moveItemInArray(state.cubes, event.previousIndex, event.currentIndex)
+  })
+
+  moveItemInVirtualCubes = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    const virtualCubes = state.model.schema.virtualCubes
+    moveItemInArray(virtualCubes, event.previousIndex, event.currentIndex)
+  })
 }

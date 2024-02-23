@@ -85,9 +85,13 @@
     display: flex;
     height: 1rem;
     opacity: 0.5;
-    border-left: 1px solid white;
-    border-right: 1px solid white;
-    border-top: 2px solid white;
+    border-left: 1px solid ;
+    border-right: 1px solid ;
+    border-top: 2px solid ;
+    
+    background-color: var(--ngm-color-surface);
+    border-color: var(--ngm-color-outline);
+
     &:hover,
     &.hover {
       opacity: 1;

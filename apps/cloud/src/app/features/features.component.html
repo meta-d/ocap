@@ -117,7 +117,7 @@
       [hasBackdrop]="false"
       autosize
     >
-      <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
+      <mat-drawer #copilotDrawer class="ngm-sidenav-container-bg-transparent mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
         [(opened)]="copilotDrawerOpened"
       >
         @if(copilotEnabled$()) {

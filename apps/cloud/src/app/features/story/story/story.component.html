@@ -41,14 +41,15 @@
         ></div>
     </mat-drawer>
     <mat-drawer-content class="ngm-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice}">
-
-        <div *ngIf="emulatedDevice" class="ngm-story__device-size-bar">
-
-            <div *ngIf="hoverSize" class="layout-size__label text-xs">
+      @if (emulatedDevice) {
+        <div class="ngm-story__device-size-bar">
+          @if (hoverSize) {
+            <div class="layout-size__label text-xs">
                 {{hoverSize.name}} - {{hoverSize.width}}px
             </div>
-
-            <div *ngFor="let size of ResponsiveBreakpoints | reverse" class="layout-size"
+          }
+          @for (size of ResponsiveBreakpoints | reverse; track size) {
+            <div class="layout-size"
                 [ngClass]="{hover: size.width <= hoverSize?.width}"
                 [ngStyle]="{'min-width': size.margin + 'px'}"
                 (mouseenter)="mouseEnter(size)"
@@ -56,8 +57,9 @@
                 (click)="selectSize(size)"
             >
             </div>
-            
-            <div *ngFor="let size of ResponsiveBreakpoints.slice(1)" class="layout-size"
+          }
+          @for (size of ResponsiveBreakpoints.slice(1); track size) {
+            <div class="layout-size"
                 [ngClass]="{hover: size.width <= hoverSize?.width}"
                 [ngStyle]="{'min-width': size.margin + 'px'}"
                 (mouseenter)="mouseEnter(size)"
@@ -65,7 +67,9 @@
                 (click)="selectSize(size)"
             >
             </div>
+          }
         </div>
+      }
 
         <div #storyContainer class="ngm-story__device ngm-story-container flex-1 max-w-full overflow-auto">
             <div class="relative w-full h-full origin-top shadow-md mx-auto"

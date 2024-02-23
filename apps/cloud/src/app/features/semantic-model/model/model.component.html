@@ -60,14 +60,14 @@
 </mat-toolbar>
 
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize>
-    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
+    <mat-drawer #drawer class="ngm-story__designer-drawer ngm-sidenav-container-bg-transparent mat-elevation-z"
         [(opened)]="sideMenuOpened"
         [mode]="(isMobile$ | async) ? 'over' : 'side'"
         ngmResizer [resizerWidth]="230"
     >
         <ngm-splitter class="flex-1" [type]="1">
             <ngm-splitter-pane size='15rem' class="flex flex-col justify-items-stretch items-stretch">
-                <mat-toolbar displayDensity="compact" class="shrink-0 text-gray-600 dark:text-gray-300 flex justify-between items-center">
+                <mat-toolbar displayDensity="compact" class="shrink-0 flex justify-between items-center">
                     <span>{{ 'PAC.MODEL.MODEL.Entities' | translate: {Default: "Entities"} }}</span>
                     
                     <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action" [matTooltip]=" 'PAC.MODEL.MODEL.New' | translate: {Default: 'New'} "
@@ -129,7 +129,7 @@
             </ngm-splitter-pane>
 
             <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
-                <mat-toolbar displayDensity="compact" class="shrink-0 text-gray-600 dark:text-gray-300">
+                <mat-toolbar displayDensity="compact" class="shrink-0">
                     <mat-toolbar-row class="flex justify-between items-center">
                         <span>{{ 'PAC.MODEL.MODEL.TABLES' | translate: {Default: "Tables"} }}</span>
 
