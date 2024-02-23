@@ -1,7 +1,7 @@
 <mat-toolbar class="flex justify-between items-center">
   <div>{{'PAC.MENU.STATUS_BAR.TITLE' | translate: {Default: 'Status bar'} }}:</div>
 
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center gap-1">
     <button mat-icon-button *ngIf="hasError" color="warn" [matMenuTriggerFor]="logMenu">
       <mat-icon>error</mat-icon>
     </button>

@@ -52,10 +52,6 @@ $prefix: (ngm, shell);
   flex-direction: column;
 }
 
-.pac-features__sidenav {
-  @apply bg-bluegray-900 text-white;
-}
-
 .pac_brand {
   display: flex;
   align-items: center;
@@ -121,4 +117,14 @@ $prefix: (ngm, shell);
 
 .pac__toolbar-new {
   @apply rounded-md m-2;
+}
+
+::ng-deep {
+  .pac-features__auth-popper {
+    .ngxp__container.ngxp__animation {
+      .ngxp__inner {
+        background-color: var(--ngm-card-bg-color);
+      }
+    }
+  }
 }

@@ -7,6 +7,7 @@ import {
   OnInit,
   Renderer2,
   ViewChild,
+  effect,
   inject
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -94,7 +95,7 @@ export class FeaturesComponent implements OnInit {
     }
   ]
   activeLink = 'home'
-  isMobile = false
+  readonly isMobile = toSignal(this.appService.isMobile$)
   // zIndex = 0
   get isAuthenticated() {
     return !!this.store.user
@@ -147,18 +148,11 @@ export class FeaturesComponent implements OnInit {
   showIntelligent = false
   loading = false
   isDark$ = this.appService.isDark$
-
-  readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
-
   copilotDrawerOpened = false
 
-  // Is mobile event listener
-  private _isMobileSub = this.appService.isMobile$.pipe(takeUntilDestroyed()).subscribe((isMobile) => {
-    this.isMobile = isMobile
-    if (isMobile) {
-      this.isCollapsedHidden = isMobile
-    }
-  })
+  readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
+  readonly user$ = toSignal(this.store.user$)
+
   private _userSub = this.store.user$
     .pipe(
       filter((user: IUser) => !!user),
@@ -168,8 +162,6 @@ export class FeaturesComponent implements OnInit {
       this.checkForEmployee()
       this.logger?.debug(value)
     })
-
-  readonly user$ = toSignal(this.store.user$)
 
   constructor(
     public readonly appService: AppService,
@@ -195,6 +187,11 @@ export class FeaturesComponent implements OnInit {
           this.sidenav.close()
         }
       })
+    effect(() => {
+      if (this.isMobile()) {
+        this.isCollapsedHidden = true
+      }
+    })
   }
 
   async ngOnInit() {

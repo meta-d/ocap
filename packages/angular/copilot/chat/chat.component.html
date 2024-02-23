@@ -42,7 +42,7 @@
                                       <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
                                     }
 
-                                    @if (message.status === 'done') {
+                                  @if (message.status === 'done') {
                                     <div class="flex self-end lg:self-center justify-center lg:justify-start mt-0 -ml-1 visible">
                                         <span class="" data-state="closed">
                                             @if (messageCopied().includes(message.id)) {
@@ -70,7 +70,7 @@
                                         
                                         <span class="" data-state="closed">
                                             <button class="p-1 rounded-md text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                            text-neutral-400 hover:text-neutral-900 transition-colors duration-100"
+                                            text-neutral-400 hover:text-neutral-900 transition-colors duration-100 dark:hover:text-neutral-300"
                                             [matTooltip]="'Ngm.Copilot.Regenerate' | translate: {Default: 'Regenerate'}"
                                             (click)="regenerate(message)"
                                             >
@@ -80,7 +80,7 @@
                                             </button>
                                         </span>
                                     </div>
-                                    }
+                                  }
                                 </div>
                             }
                             @if (message.error) {

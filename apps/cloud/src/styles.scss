@@ -13,10 +13,7 @@
 @import './styles/themes/dark';
 @import './styles/themes/dark-green';
 @import './styles/themes/thin';
-@import './styles/components/scrollbar';
-@import './styles/components/panel';
-@import './styles/components/popper';
-@import './styles/components/cdk-menu';
+@import './styles/components/index';
 @import './app/_app.component';
 
 @import 'libs/formly/_formly';

@@ -22,17 +22,6 @@
       @apply bg-black/10;
     }
   }
-
-  // 
-  .pac-model-hierarchy {
-    .pac-model-hierarchy__preview {
-      .ngm-table {
-        .mat-mdc-cell {
-          opacity: .8;
-        }
-      }
-    }
-  }
 }
 
 @mixin density($config-or-theme) {

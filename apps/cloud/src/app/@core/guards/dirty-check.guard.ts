@@ -38,7 +38,7 @@ export class DirtyCheckGuard  {
     const confirm = this._snackBar.openFromComponent(ConfirmSnackBar, {
       verticalPosition: 'top',
       horizontalPosition: 'center',
-      duration: 3000,
+      duration: 3* 1000,
       data: {
         message: this.getTranslation('PAC.MESSAGE.ConfirmExitDirtyData', {Default: 'Has dirty data, confirm exit?'}),
         action: this.getTranslation('PAC.MESSAGE.Sure', {Default: 'Sure'})
@@ -51,9 +51,7 @@ export class DirtyCheckGuard  {
   }
 
   getTranslation(key: string, params?: any): string {
-    let result = ''
-    this.translateService.get(key, params).subscribe((res) => (result = res))
-    return result
+    return this.translateService.instant(key, params)
   }
 }
 

@@ -65,8 +65,8 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   public readonly hierarchies = toSignal(this.dimensionService.hierarchies$)
   public readonly dimension = toSignal(this.dimensionService.dimension$)
 
-  public readonly isMobile$ = this.appService.isMobile$
   public readonly dimension$ = this.dimensionService.dimension$
+  readonly isMobile = toSignal(this.appService.isMobile$)
 
   public readonly error$ = this.dimensionService.name$.pipe(
     switchMap((entity) => this.modelService.selectOriginalEntityError(entity))

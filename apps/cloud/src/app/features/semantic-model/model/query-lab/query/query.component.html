@@ -41,7 +41,7 @@
     </mat-drawer>
 
     <mat-drawer-content>
-        <ngm-splitter class="flex-1 w-full h-full" [type]="1">
+        <ngm-splitter class="ngm-layout-container-secondary flex-1 w-full h-full" [type]="1">
             <ngm-splitter-pane size='15rem' class="flex flex-col justify-end items-stretch z-[101]">
                 <mat-toolbar class="pac-sub-toolbar pac-toolbar__editor flex justify-start items-center gap-2"
                     displayDensity="compact">
@@ -212,7 +212,15 @@
                     cdkDropList
                     [cdkDropListEnterPredicate]="editorDropPredicate"
                     (cdkDropListDropped)="dropTable($event)">
-                    <div *ngIf="activeResult" class="pac-model-ql-lab__stats">
+                  @if (activeResult) {
+                    <div class="pac-model-ql-lab__stats">
+                        <button mat-icon-button displayDensity="compact"
+                            [matTooltip]="'PAC.KEY_WORDS.EXPORT' | translate: {Default: 'Export'}"
+                            matTooltipPosition="above"
+                            (click)="export()">
+                            <mat-icon>file_download</mat-icon>
+                        </button>
+
                         <mat-icon fontSet="material-icons-outlined" displayDensity="compact"
                             [matTooltip]="activeResult.statement">info</mat-icon>
                         <span>
@@ -223,6 +231,7 @@
                         </span>
 
                     </div>
+                  }
 
                     <div *ngIf="activeResult?.error" class="pac-result flex-1">
                         <div class="bug font-notoColorEmoji" >🐞</div>
@@ -238,7 +247,7 @@
                             </div>
                         </div>
 
-                        <ngm-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result striped"
+                        <ngm-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result ngm-data-preview striped"
                             [columns]="activeResult?.columns"
                             [data]="activeResult?.preview"
                             [paging]="true"
@@ -268,26 +277,4 @@
     </button>
 
     <mat-divider></mat-divider>
-
-    <button mat-menu-item (click)="export()">
-        <mat-icon>file_download</mat-icon>
-        <span>{{ 'PAC.KEY_WORDS.EXPORT' | translate: {Default: "Export"} }}</span>
-    </button>
-
 </mat-menu>
-
-<!-- <popper-content #ask class="z-[101]">
-    <div class="flex flex-col bg-white p-2" displayDensity="compact">
-        <ngm-input class="w-64" [placeholder]="'PAC.MODEL.QUERY.CopilotPlaceholder' | translate: {
-                Default: 'Ask a question or request, type CTRL + Enter to send'
-            }"
-            [formControl]="prompt"
-            (keydown)="triggerAsk($event, ask);"
-        >
-            <button ngmSuffix mat-icon-button displayDensity="compact" [disabled]="answering()"
-                (click)="askCopilot(prompt.value, ask)">
-                <mat-icon fontSet="material-icons-round">send</mat-icon>
-            </button>
-        </ngm-input>
-    </div>
-</popper-content> -->

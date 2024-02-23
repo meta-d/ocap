@@ -1,6 +1,8 @@
-<facebook-content-loader *ngIf="unfetched$ | async" class="absolute w-full h-full"
+@if (unfetched$ | async) {
+  <facebook-content-loader class="absolute w-full h-full dark:opacity-20"
     [animate]="true">
-</facebook-content-loader>
+  </facebook-content-loader>
+}
 
 <ng-container [ngSwitch]="point.type">
     <ng-container *ngSwitchCase="STORY_POINT_TYPE.Responsive">

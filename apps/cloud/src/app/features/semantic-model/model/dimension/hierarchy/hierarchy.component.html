@@ -71,7 +71,7 @@
         </ngm-splitter>
     </ngm-splitter-pane>
     <ngm-splitter-pane class="flex-1">
-        <ngm-splitter class="pac-model-hierarchy-content flex-1 h-full w-full" [type]="SplitterType.Vertical">
+        <ngm-splitter class="pac-model-hierarchy-content ngm-layout-container-secondary flex-1 h-full w-full" [type]="SplitterType.Vertical">
             <ngm-splitter-pane class="pac-model-hierarchy__preview flex flex-col justify-items-stretch items-stretch">
                 <mat-toolbar class="pac-sub-toolbar flex justify-between items-center" displayDensity="compact" >
                     <div class="flex">
@@ -87,7 +87,7 @@
                     </button>
                 </mat-toolbar>
                 <div style="flex: 1; max-height: calc(100% - 34px)" class="flex">
-                    <ngm-table class="striped flex-1 max-w-full"
+                    <ngm-table class="ngm-data-preview striped flex-1 max-w-full"
                         [columns]="columns$ | async"
                         [data]="data$ | async"
                         [paging]="true"

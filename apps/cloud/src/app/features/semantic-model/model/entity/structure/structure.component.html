@@ -1,5 +1,5 @@
 <ngm-splitter [type]="SplitterType.Vertical" class="flex-1">
-    <ngm-splitter-pane size="20%">
+    <ngm-splitter-pane size="50%">
         <div *ngIf="expression(); else tables" class="w-full h-full">
             <ngm-editor-sql #editor class="w-full h-full"
                 [ngModel]="expression()"
@@ -9,7 +9,7 @@
         </div>
     </ngm-splitter-pane>
 
-    <ngm-splitter-pane class="flex flex-col">
+    <ngm-splitter-pane size="50%" class="flex flex-col">
         <mat-toolbar class="pac-sub-toolbar gap-4" displayDensity="compact">
             <span class="">
                 {{ 'PAC.MODEL.ENTITY.SourceFields' | translate: {Default: "Source Fields"} }}

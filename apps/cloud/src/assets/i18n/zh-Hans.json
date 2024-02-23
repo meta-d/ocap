@@ -394,7 +394,8 @@
       "Search": "搜索",
       "Copy": "复制",
       "NewTag": "新建标签",
-      "Duplicate": "复制"
+      "Duplicate": "复制",
+      "OpenAttributesPanel": "打开属性面板"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "组织更新成功",

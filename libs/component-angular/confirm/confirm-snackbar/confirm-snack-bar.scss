@@ -7,14 +7,14 @@ $line-height: 20px !default;
 // space falls below 36px.
 $button-vertical-margin: -(math.div($button-height - $line-height, 2));
 
-.pac-confirm-snackbar {
+.ngm-confirm-snackbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   line-height: $line-height;
   opacity: 1;
 
-  .pac-confirm-snackbar-action {
+  .ngm-confirm-snackbar-action {
     flex-shrink: 0;
     margin: $button-vertical-margin $button-horizontal-margin * -1
             $button-vertical-margin $button-horizontal-margin;
@@ -31,6 +31,6 @@ $button-vertical-margin: -(math.div($button-height - $line-height, 2));
   }
   
   .mat-mdc-button.mat-unthemed:not(:disabled) {
-    --mdc-text-button-label-text-color: theme(colors.gray.200)
+    // --mdc-text-button-label-text-color: theme(colors.gray.200)
   }
 }

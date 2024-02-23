@@ -8,6 +8,9 @@ import { nanoid } from 'nanoid'
 import { Observable, map } from 'rxjs'
 import { QueryService } from './query.service'
 
+/**
+ * @deprecated
+ */
 @Injectable()
 export class QueryCopilotEngineService extends NgmCopilotEngineService {
   private readonly copilotService = inject(CopilotService)

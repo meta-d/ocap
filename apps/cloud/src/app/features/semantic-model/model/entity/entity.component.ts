@@ -12,7 +12,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { z } from 'zod'
 import { AppService } from '../../../../app.service'
-import { zodToAnnotations } from '../copilot'
+import { CalculatedMeasureSchema, zodToAnnotations } from '../copilot'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
@@ -23,7 +23,8 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
-import { isEntitySet } from '@metad/ocap-core'
+import { C_MEASURES, CalculatedMember, isEntitySet } from '@metad/ocap-core'
+import { calcEntityTypePrompt, makeCubePrompt, nonBlank } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -64,8 +65,6 @@ export class ModelEntityComponent implements OnInit {
   // Cube structure opened state
   drawerOpened = true
 
-  public readonly cube = toSignal(this.entityService.cube$)
-
   public readonly entityId$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
     map((paramMap) => paramMap.get('id')),
@@ -81,8 +80,15 @@ export class ModelEntityComponent implements OnInit {
     map((url: UrlSegment[]) => url?.[0]?.path)
   )
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
   readonly isMobile = toSignal(this.appService.isMobile$)
   public readonly modelType$ = this.modelService.modelType$
+  readonly entityType = this.entityService.entityType
+  readonly cube = toSignal(this.entityService.cube$)
 
   /**
   |--------------------------------------------------------------------------
@@ -125,6 +131,58 @@ The cube is`
     ]
   })
 
+  #calculatedMeasureCommand = injectCopilotCommand({
+    name: 'calc',
+    description: 'Create a new calculated measure',
+    systemPrompt: () => {
+      let prompt = `Create a new MDX calculated measure for the cube based on the prompt.`
+      if (this.entityType()) {
+        prompt += `The cube is: 
+\`\`\`
+${calcEntityTypePrompt(this.entityType())}
+\`\`\`
+`
+      } else {
+        prompt += `The cube is:
+\`\`\`
+${makeCubePrompt(this.cube())}
+\`\`\`
+`
+      }
+   
+      return prompt
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-calculated-measure',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'measure',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of calculated measure',
+            required: true,
+            properties: zodToAnnotations(CalculatedMeasureSchema)
+          }
+        ],
+        implementation: async (cm: CalculatedMember) => {
+          this.#logger.debug(`Create a new calculated measure '${cm.name}' with formula '${cm.formula}'`)
+          const key = cm.__id__ ?? nanoid()
+          this.entityService.addCalculatedMeasure({
+            ...cm,
+            dimension: C_MEASURES,
+            visible: true,
+            __id__: key
+          })
+
+          this.entityService.navigateCalculation(key)
+
+          return `✅`
+        }
+      }),
+    ]
+  })
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -140,6 +198,7 @@ The cube is`
    * SQL Model / Olap Model: 用于验证 Schema 是否正确
    */
   private entityErrorSub = this.entityService.entityError$.pipe(
+    filter(nonBlank),
     takeUntilDestroyed()
   ).subscribe((error) => {
     this.#toastr.error(error)

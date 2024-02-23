@@ -26,11 +26,17 @@
     </nav>
 
     <div class="flex justify-around items-center">
-        <button mat-button displayDensity="cosy" [color]="detailsOpen?'accent':''" (click)="drawer.toggle()">
-            <div class="flex justify-start items-center">
-                <mat-icon fontSet="material-icons-outlined">edit_attributes</mat-icon>
-                <span *ngIf="(isMobile$ | async)==false">{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
-            </div>
+        <button mat-button displayDensity="cosy" [color]="detailsOpen?'accent':''"
+          [matTooltip]="'PAC.ACTIONS.OpenAttributesPanel' | translate: {Default: 'Open attributes panel'}"
+          matTooltipPosition="above"
+          (click)="drawer.toggle()"
+        >
+          <div class="flex justify-start items-center">
+            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen?'accent':''">edit_attributes</mat-icon>
+            @if (!isMobile()) {
+              <span >{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
+            }    
+          </div>
         </button>
     </div>
 </mat-toolbar>
@@ -38,7 +44,7 @@
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" [autosize]="true">
     <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
         autosize position="end"
-        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        [mode]="isMobile() ? 'over' : 'side'"
         [(opened)]="detailsOpen"
         ngmResizer [resizerWidth]="380"
     >

@@ -77,7 +77,7 @@ export class AppComponent {
 
       const theme = `ngm-theme-${preferredTheme} ${primary} ${preferredTheme}`
 
-      // for body
+      // for body's class
       const body = this.document.getElementsByTagName('body')[0]
       const bodyThemeRemove = Array.from(body.classList).filter(
         (item: string) => item.includes('-theme') || item.startsWith('light') || item.startsWith('dark')
@@ -92,10 +92,17 @@ export class AppComponent {
           this.renderer.addClass(body, value)
         })
 
+      // for mobile
       if (isMobile && (this.platform.IOS || this.platform.ANDROID)) {
         this.renderer.addClass(body, 'mobile')
       } else {
         body.classList.remove('mobile')
+      }
+
+      // for <meta name="theme-color" content="white" />
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', primary === 'dark' ? 'black' : '#f5f5f5')
       }
     })
   }

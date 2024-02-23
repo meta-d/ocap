@@ -68,40 +68,6 @@
     }
   }
 
-  .pac-status-bar {
-    z-index: 1;
-    .mat-toolbar-row,
-    .mat-toolbar-single-row {
-      height: $status-bar-height;
-      background-color: mat.get-color-from-palette($primary, 100);
-      color: mat.get-color-from-palette($primary, '100-contrast');
-      font-size: 12px;
-    }
-
-    .mdc-icon-button {
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-      @apply p-0 flex justify-center items-center rounded-none;
-
-      .mat-mdc-button-touch-target {
-        width: 16px;
-        height: 16px;
-      }
-
-      .mat-icon {
-        font-size: 12px;
-        height: 12px;
-        width: 12px;
-        line-height: 12px;
-      }
-
-      &:hover:not(.mdc-button-disabled) .mdc-button-focus-overlay {
-        opacity: 0.04;
-      }
-    }
-  }
-
   // 公共样式, 需要抽取统一
   /* button */
   .mat-button,
@@ -187,9 +153,6 @@
   }
 
   .mat-toolbar.ngm-density__compact {
-    &.mat-toolbar-multiple-rows {
-      // min-height: 58px;
-    }
     &.mat-toolbar-row, &.mat-toolbar-single-row {
       height: 33px;
       padding: 0 6px;
