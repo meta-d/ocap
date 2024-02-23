@@ -61,12 +61,7 @@
       }
     }
 
-    // .mat-toolbar {
-    //   border-bottom: 1px solid mat.get-color-from-palette($foreground, divider);
-    // }
-
     .pac-model__tables-viewport {
-      overflow-x: hidden;
       .cdk-virtual-scroll-content-wrapper {
         max-width: 100%;
       }

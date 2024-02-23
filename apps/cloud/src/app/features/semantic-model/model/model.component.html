@@ -83,7 +83,7 @@
                     (cdkDropListDropped)="drop($event)"
                     [cdkDropListEnterPredicate]="entityPredicate"
                 >
-                  <div class="max-h-full overflow-y-auto">
+                  <div class="max-h-full overflow-hidden hover:overflow-y-auto">
                     <a mat-list-item *ngFor="let entity of entities$ | async; trackBy: trackById" class="pac-model__nav-item"
                         [class.selected]="rla.isActive"
                         [routerLink]="[entity.type === SemanticModelEntityType.CUBE ? 'entity' : 'dimension', entity.id]"
@@ -172,7 +172,7 @@
                 <div class="relative flex-1">
                     
                     @if (entitySets$ | async; as entities) {
-                        <cdk-virtual-scroll-viewport class="pac-model__tables-viewport flex-1 h-full"
+                        <cdk-virtual-scroll-viewport class="pac-model__tables-viewport flex-1 h-full overflow-hidden hover:overflow-y-auto"
                             itemSize="30" minBufferPx="360" maxBufferPx="1000"
                         >
                             <mat-nav-list displayDensity="compact" disableRipple class="pac-model__nav-list"

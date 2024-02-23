@@ -1,141 +1,139 @@
-<ngm-splitter [type]="SplitterType.Vertical" size='10rem'>
-  <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
-    <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
-      <span>
-        {{ 'PAC.MENU.DIMENSIONS' | translate: {Default: "Dimensions"} }}
-      </span>
-  
-      <button *ngIf="modelType !== MODEL_TYPE.XMLA" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+<div class="flex flex-col group">
+  <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
+    <span>
+      {{ 'PAC.MENU.DIMENSIONS' | translate: {Default: "Dimensions"} }}
+    </span>
+    @if (modelType !== MODEL_TYPE.XMLA) {
+      <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
         [matTooltip]=" 'PAC.MODEL.ENTITY.NewDimension' | translate: {Default: 'New Dimension'} "
         (click)="$event.stopPropagation();$event.preventDefault();addNewItem({}, null);">
         <mat-icon>add</mat-icon>
       </button>
-    </mat-toolbar>
-  
-    <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col overflow-hidden"
-      [cdkDropListEnterPredicate]="dropDimensionPredicate"
-      (cdkDropListDropped)="dropDimension($event)"
+    }
+  </mat-toolbar>
+
+  <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col"
+    [cdkDropListEnterPredicate]="dropDimensionPredicate"
+    (cdkDropListDropped)="dropDimension($event)"
+    >
+    <div class="flex-1 flex flex-col overflow-auto">
+      <pac-property-dimension *ngFor="let item of dimensionUsages$ | async; trackBy:trackById"
+        displayDensity="compact"
+        [dimension]="item.dimension"
+        [usage]="item.usage"
+        [readonly]="true"
+        [checklistSelection]="checklistSelection"
+        (delete)="onDelete($event)"
+        (toDimension)="toDimensionUsage(item.usage)"
       >
-      <div class="flex-1 flex flex-col overflow-auto">
-        <pac-property-dimension *ngFor="let item of dimensionUsages$ | async; trackBy:trackById"
-          displayDensity="compact"
-          [dimension]="item.dimension"
-          [usage]="item.usage"
-          [readonly]="true"
-          [checklistSelection]="checklistSelection"
-          (delete)="onDelete($event)"
-          (toDimension)="toDimensionUsage(item.usage)"
-        >
-        </pac-property-dimension>
+      </pac-property-dimension>
 
-        <pac-property-dimension *ngFor="let dim of cubeState.cubeDimensions$ | async; trackBy:trackById"
-          displayDensity="compact"
-          [dimension]="dim"
-          [readonly]="modelType === MODEL_TYPE.XMLA"
-          [checklistSelection]="checklistSelection"
-          (newItem)="addNewItem($event)"
-          (delete)="onDelete($event)"
-        >
-        </pac-property-dimension>
-      </div>
+      <pac-property-dimension *ngFor="let dim of cubeState.cubeDimensions$ | async; trackBy:trackById"
+        displayDensity="compact"
+        [dimension]="dim"
+        [readonly]="modelType === MODEL_TYPE.XMLA"
+        [checklistSelection]="checklistSelection"
+        (newItem)="addNewItem($event)"
+        (delete)="onDelete($event)"
+      >
+      </pac-property-dimension>
     </div>
-  </ngm-splitter-pane>
-  <ngm-splitter-pane minSize="70px">
-    <ngm-splitter [type]="SplitterType.Vertical" size='10rem' class="flex-1">
-      <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
-        <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
-          <span>
-            {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
-          </span>
-      
-          <button *ngIf="modelType !== MODEL_TYPE.XMLA && editable" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
-            [matTooltip]=" 'PAC.MODEL.ENTITY.NewMeasure' | translate: {Default: 'New Measure'} "
-            (click)="$event.stopPropagation();$event.preventDefault();onAddMeasure($event)">
-            <mat-icon>add</mat-icon>
-          </button>
-        </mat-toolbar>
-      
-        <div class="pac-cdk-drop__list flex-1 flex flex-col overflow-hidden"
-            id="list-measures"
-            cdkDropList
-            [cdkDropListData]="measures$()"
-            [cdkDropListEnterPredicate]="measureEnterPredicate"
-            (cdkDropListDropped)="dropMeasure($event)"
-          >
-            <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
-              <mat-list-item *ngFor="let member of measures$()" cdkDragBoundary=".pac-model-entity" cdkDrag [cdkDragData]="member"
-                class="ngm-list-item"
-                [ngClass]="checklistSelection.isSelected(ModelDesignerType.measure + '#' + member.__id__)?'selected':''"
-                (click)="onSelect(ModelDesignerType.measure, member)"
-                (mouseenter)="actionStrip.show()"
-                (mouseleave)="actionStrip.hide()"
-              >
-                <div class="w-full flex items-center">
-                  <ngm-entity-property class="flex-1" [property]="member">
-                  </ngm-entity-property>
-                  
-                  <ngm-action-strip #actionStrip [hidden]="true">
-                    <button *ngIf="!member.rt" mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteMeasure($event, member)">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </ngm-action-strip>
-                </div>
+  </div>
+</div>
 
-                <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>
+<div class="flex flex-col group">
+  <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
+    <span>
+      {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
+    </span>
 
-              </mat-list-item>
-            </mat-list>
-          </div>
-      </ngm-splitter-pane>
-
-      <ngm-splitter-pane class="pac-model__sub-area" minSize="35px">
-        <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
-          <span>
-            {{ 'PAC.MENU.CALCULATED_MEMBERS' | translate: {Default: "Calculated Members"} }}
-          </span>
-      
-          <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
-            [matTooltip]=" 'PAC.MODEL.ENTITY.NewCalculatedMember' | translate: {Default: 'New Calculated Member'} "
-            (click)="$event.stopPropagation();$event.preventDefault();onAddCalculatedMember($event)">
-            <mat-icon>add</mat-icon>
-          </button>
-        </mat-toolbar>
-      
-        <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col overflow-hidden"
-          cdkDropList
-          [cdkDropListData]="calculatedMembers()"
-          [cdkDropListEnterPredicate]="calculatedEnterPredicate"
-          (cdkDropListDropped)="dropCalcMembers($event)">
-          <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
-            <mat-list-item *ngFor="let member of calculatedMembers()" class="ngm-list-item"
-              [class.bg-orange-100]="!member.name"
-              [ngClass]="isSelected(ModelDesignerType.calculatedMember + '#' + member.__id__)?'selected':''"
-              (click)="onSelect(ModelDesignerType.calculatedMember, member)"
-              (mouseenter)="actionStrip.show()"
-              (mouseleave)="actionStrip.hide()"
-              cdkDrag
-              [cdkDragData]="member"
-            >
-              <div class="w-full flex items-center">
-                <ngm-entity-property class="flex-1" [property]="$any(member)">
-                </ngm-entity-property>
+    @if (modelType !== MODEL_TYPE.XMLA && editable) {
+      <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
+        [matTooltip]=" 'PAC.MODEL.ENTITY.NewMeasure' | translate: {Default: 'New Measure'} "
+        (click)="$event.stopPropagation();$event.preventDefault();onAddMeasure($event)">
+        <mat-icon>add</mat-icon>
+      </button>
+    }
+  </mat-toolbar>
         
-                <ngm-action-strip #actionStrip [hidden]="true">
-                  <button mat-icon-button displayDensity="cosy"
-                    (click)="$event.stopPropagation();$event.preventDefault();onCalculatedMemberEdit(member)" >
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteCalculatedMember($event, member)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </ngm-action-strip>
-              </div>
-
-              <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>
-            </mat-list-item>
-          </mat-list>
+  <div class="pac-cdk-drop__list flex-1 flex flex-col"
+    id="list-measures"
+    cdkDropList
+    [cdkDropListData]="measures$()"
+    [cdkDropListEnterPredicate]="measureEnterPredicate"
+    (cdkDropListDropped)="dropMeasure($event)"
+  >
+    <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
+      <mat-list-item *ngFor="let member of measures$()" cdkDragBoundary=".pac-model-entity" cdkDrag [cdkDragData]="member"
+        class="ngm-list-item"
+        [ngClass]="checklistSelection.isSelected(ModelDesignerType.measure + '#' + member.__id__)?'selected':''"
+        (click)="onSelect(ModelDesignerType.measure, member)"
+        (mouseenter)="actionStrip.show()"
+        (mouseleave)="actionStrip.hide()"
+      >
+        <div class="w-full flex items-center">
+          <ngm-entity-property class="flex-1" [property]="member">
+          </ngm-entity-property>
+          
+          <ngm-action-strip #actionStrip [hidden]="true">
+            <button *ngIf="!member.rt" mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteMeasure($event, member)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </ngm-action-strip>
         </div>
-      </ngm-splitter-pane>
-    </ngm-splitter>
-  </ngm-splitter-pane>
-</ngm-splitter>
+
+        <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>
+
+      </mat-list-item>
+    </mat-list>
+  </div>
+</div>
+
+<div class="flex flex-col group">
+  <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
+    <span>
+      {{ 'PAC.MENU.CALCULATED_MEMBERS' | translate: {Default: "Calculated Members"} }}
+    </span>
+
+    <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
+      [matTooltip]=" 'PAC.MODEL.ENTITY.NewCalculatedMember' | translate: {Default: 'New Calculated Member'} "
+      (click)="$event.stopPropagation();$event.preventDefault();onAddCalculatedMember($event)">
+      <mat-icon>add</mat-icon>
+    </button>
+  </mat-toolbar>
+        
+  <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col"
+    cdkDropList
+    [cdkDropListData]="calculatedMembers()"
+    [cdkDropListEnterPredicate]="calculatedEnterPredicate"
+    (cdkDropListDropped)="dropCalcMembers($event)">
+    <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
+      <mat-list-item *ngFor="let member of calculatedMembers()" class="ngm-list-item"
+        [class.bg-orange-100]="!member.name"
+        [ngClass]="isSelected(ModelDesignerType.calculatedMember + '#' + member.__id__)?'selected':''"
+        (click)="onSelect(ModelDesignerType.calculatedMember, member)"
+        (mouseenter)="actionStrip.show()"
+        (mouseleave)="actionStrip.hide()"
+        cdkDrag
+        [cdkDragData]="member"
+      >
+        <div class="w-full flex items-center">
+          <ngm-entity-property class="flex-1" [property]="$any(member)">
+          </ngm-entity-property>
+
+          <ngm-action-strip #actionStrip [hidden]="true">
+            <button mat-icon-button displayDensity="cosy"
+              (click)="$event.stopPropagation();$event.preventDefault();onCalculatedMemberEdit(member)" >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" displayDensity="cosy" (click)="onDeleteCalculatedMember($event, member)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </ngm-action-strip>
+        </div>
+
+        <div class="pac-cdk-drop__placeholder" *cdkDragPlaceholder></div>
+      </mat-list-item>
+    </mat-list>
+  </div>
+</div>

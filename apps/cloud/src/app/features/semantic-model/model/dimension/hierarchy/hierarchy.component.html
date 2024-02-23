@@ -23,7 +23,7 @@
                     (cdkDropListDropped)="dropLevel($event)"
                     [cdkDropListEnterPredicate]="levelPredicate"
                 >
-                    <mat-nav-list class="overflow-y-auto max-h-full" displayDensity="compact">
+                    <mat-nav-list class="max-h-full overflow-hidden hover:overflow-y-auto" displayDensity="compact">
                         <mat-list-item *ngFor="let level of levelSignal()" [activated]="level.__id__ === designerComponentId"
                             cdkDrag
                             [cdkDragData]="level"
