@@ -112,25 +112,35 @@
         </div>
 
         <gridster class="" [options]="options" [ngClass]="{editable: editable}">
-            <gridster-item [item]="feed.options.position" *ngFor="let feed of feeds$ | async; index as i; trackBy: trackById" class="pac-home__gridster-item"
+          @for (feed of feeds$ | async; track feed.id; let i = $index) {
+            <gridster-item [item]="feed.options.position" class="pac-home__gridster-item"
                 (itemChange)="onGridsterItemChange($event, feed)">
-                <pac-story-widget-feed fxFlex="100" *ngIf="feed.type ==='StoryWidget'" [id]="feed.entityId">
-                </pac-story-widget-feed>
-
-                <pac-feed-recents fxFlex="100" *ngIf="feed.type ==='Recents'" class="pac-home__my-recent pac-home__widget"></pac-feed-recents>
-                <pac-feed-user-visit fxFlex="100" *ngIf="feed.type ==='UserVisits'" class="pac-home__widget"></pac-feed-user-visit>
+              @if (feed.type ==='StoryWidget') {
+                <pac-story-widget-feed [id]="feed.entityId"/>
+              }
+              @if (feed.type === 'Recents') {
+                <pac-feed-recents class="pac-home__my-recent pac-home__widget"/>
+              }
+              @if (feed.type ==='UserVisits') {
+                <pac-feed-user-visit class="pac-home__widget"/>
+              }
 
                 <div class="pac-home__widget-actions">
-                    <button *ngIf="editable" mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
+                  @if (editable) {
+                    <button mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
                         (click)="$event.preventDefault();$event.stopPropagation();removeWidget(feed)">
                         <mat-icon>close</mat-icon>
                     </button>
-                    <button *ngIf="feed.type ==='StoryWidget'" mat-icon-button displayDensity="cosy"
+                  }
+                  @if (feed.type ==='StoryWidget') {
+                    <button mat-icon-button displayDensity="cosy"
                         [routerLink]="['/story', feed.options.storyId]" [queryParams]="{pageKey: feed.options.pageKey, widgetKey: feed.options.widgetKey}">
                         <mat-icon fontSet="material-icons-round">launch</mat-icon>
                     </button>
+                  }
                 </div>
             </gridster-item>
+          }
         </gridster>
     </div>
 

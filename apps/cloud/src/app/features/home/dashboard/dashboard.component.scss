@@ -34,14 +34,6 @@
   }
 }
 
-gridster {
-  background: transparent;
-
-  gridster-item {
-    overflow: visible;
-  }
-}
-
 .pac-story-widget-feed {
   height: 100%;
 }
@@ -81,4 +73,24 @@ gridster {
 
 .pac-home__widget {
   background-color: var(--ngm-home-card-background-color);
+}
+
+gridster {
+  background: transparent;
+
+  gridster-item {
+    overflow: visible;
+  }
+}
+
+:host::ng-deep {
+  gridster {
+    .gridster-row {
+      border-color: var(--ngm-color-outline);
+    }
+  
+    .gridster-column {
+      border-color: var(--ngm-color-outline);
+    }
+  }
 }

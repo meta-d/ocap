@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { API_VISITS } from '../constants/app.constants'
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisitsService {
-  constructor(private httpClient: HttpClient) {}
+  readonly httpClient = inject(HttpClient)
 
   public myRecent() {
     return this.httpClient.get<any[]>(API_VISITS + '/recent')

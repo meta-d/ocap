@@ -71,7 +71,8 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     },
     resizable: {
       enabled: false
-    }
+    },
+    // displayGrid: 'always'
   }
 
   quickGuides = {
