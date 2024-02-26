@@ -63,9 +63,7 @@ export class AIController {
 				},
 			})
 	
-			streamToResponse(response, resp, {
-				status: response.status
-			})
+			await streamToResponse(response, resp, { status: response.status })
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
@@ -76,7 +74,7 @@ export class AIController {
 /**
  * A utility function to stream a ReadableStream to a Node.js response-like object.
  */
-export function streamToResponse(
+export async function streamToResponse(
 	res: Response,
 	response: ServerResponse,
 	init?: { headers?: Record<string, string>; status?: number },
@@ -87,15 +85,14 @@ export function streamToResponse(
 	});
   
 	const reader = res.body.getReader();
-	function read() {
-	  reader.read().then(({ done, value }: { done: boolean; value?: any }) => {
-		if (done) {
-		  response.end();
-		  return;
-		}
-		response.write(value);
-		read();
-	  });
+	async function read() {
+	  const { done, value } = await reader.read()
+	  if (done) {
+		response.end();
+		return;
+	  }
+	  response.write(value);
+	  await read();
 	}
-	read();
+	await read();
 }
