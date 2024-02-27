@@ -12,7 +12,10 @@ import { Component, Input, OnInit } from '@angular/core'
         display: block;
       }
     `
-  ]
+  ],
+  host: {
+    class: 'ngm-prism-highlight',
+  }
 })
 export class NgmPrismHighlightComponent implements OnInit {
   @Input() code: string

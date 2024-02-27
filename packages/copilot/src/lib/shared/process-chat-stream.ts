@@ -15,6 +15,7 @@ export async function processChatStream({
   experimental_onToolCall,
   updateChatRequest,
   getCurrentMessages,
+  conversationId
 }: {
   getStreamedResponse: () => Promise<
     Message | { messages: Message[]; data: JSONValue[] }
@@ -26,6 +27,7 @@ export async function processChatStream({
   ) => Promise<void | string | ChatRequest>;
   updateChatRequest: (chatRequest: ChatRequest) => void;
   getCurrentMessages: () => Message[];
+  conversationId: string;
 }): Promise<CopilotChatMessage | void> {
   
   while (true) {
@@ -69,6 +71,7 @@ export async function processChatStream({
             await experimental_onFunctionCall(
               getCurrentMessages(),
               functionCall,
+              conversationId
             );
 
           // If the user does not return anything as a result of the function call, the loop will break.
@@ -156,7 +159,7 @@ export async function processChatStream({
           continue;
         }
         const functionCallResponse: ChatRequest | string | void =
-          await experimental_onFunctionCall(getCurrentMessages(), functionCall);
+          await experimental_onFunctionCall(getCurrentMessages(), functionCall, conversationId);
 
         // If the user does not return anything as a result of the function call, the loop will break.
         if (functionCallResponse === undefined) break;

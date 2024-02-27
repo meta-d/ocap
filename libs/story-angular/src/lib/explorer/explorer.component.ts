@@ -25,9 +25,8 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
-import { NgmPrismHighlightComponent } from '@metad/components/prism'
 import { PropertyCapacity, PropertyModule } from '@metad/components/property'
-import { NxChartType, nonBlank } from '@metad/core'
+import { NxChartType, ThemeService, nonBlank } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
@@ -85,7 +84,6 @@ import { ExplainComponent, injectCalclatedMeasureCommand } from '@metad/story/st
     MatRadioModule,
     DragDropModule,
     NgmTableComponent,
-    NgmPrismHighlightComponent,
     OcapCoreModule,
     NgmEntitySchemaComponent,
     NgmMemberTreeComponent,
@@ -117,6 +115,7 @@ export class StoryExplorerComponent {
   private readonly _dialog = inject(MatDialog)
   private readonly translateService = inject(TranslateService)
   readonly #storyService? = inject(NxStoryService, { optional: true })
+  readonly themeService = inject(ThemeService)
 
   @Input()
   get data() {
@@ -299,8 +298,6 @@ export class StoryExplorerComponent {
       rows: this.rows(),
       columns: [...this.columns()]
     }
-
-    // console.log(`Explorer analytics:`, analytics)
 
     return {
       ...(this.data?.dataSettings ?? {}),

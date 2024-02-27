@@ -3,6 +3,10 @@
   --ngm-primary-container-rounded: theme('borderRadius.3xl');
 }
 
+:root .default, :root .light, :root .dark {
+  --mat-expansion-container-background-color: var(--ngm-color-surface-container-low);
+}
+
 :root .default, :root .light {
   --ngm-app-background-color: white;
   --ngm-color-main-container-background: white;

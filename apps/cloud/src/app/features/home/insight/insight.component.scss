@@ -21,10 +21,6 @@
   @apply pr-2;
 }
 
-.ngm-select-element:focus {
-  @apply bg-white;
-}
-
 .mat-mdc-input-element.mat-mdc-autocomplete-trigger {
   @apply ml-0 h-6;
 }
@@ -41,5 +37,15 @@
 .pac-insight__ask-input {
   .cdk-drag-placeholder {
     @apply absolute left-0 top-0;
+  }
+}
+
+.pac-insight__ask-input-form {
+  background-color: var(--ngm-color-surface-container-high);
+  &:focus {
+    background-color: var(--ngm-color-surface);
+  }
+  &:disabled {
+    background-color: var(--ngm-color-surface-container-low);
   }
 }

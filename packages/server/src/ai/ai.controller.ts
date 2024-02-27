@@ -62,8 +62,10 @@ export class AIController {
 					Authorization: `Bearer ${copilot.apiKey}`
 				},
 			})
-	
-			await streamToResponse(response, resp, { status: response.status })
+			
+			if (!resp.headersSent) {
+				await streamToResponse(response, resp, { status: response.status })
+			}
 		} catch (error) {
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}

@@ -6,11 +6,17 @@ export const defaultCopilotContextCategories = ['global']
 
 export type FunctionCallHandler = (
   chatMessages: Message[],
-  functionCall: FunctionCall
+  functionCall: FunctionCall,
+  conversationId: string
 ) => Promise<ChatRequest | string | void>
 
+export type FunctionCallHandlerOptions = {
+  conversationId: string
+  messages: Message[]
+}
+
 export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<any[]>[]): FunctionCallHandler {
-  return async (chatMessages, functionCall): Promise<ChatRequest | string | void> => {
+  return async (chatMessages, functionCall, conversationId): Promise<ChatRequest | string | void> => {
     const entrypointsByFunctionName: Record<string, AnnotatedFunction<any[]>> = {}
     for (const entryPoint of entryPoints) {
       entrypointsByFunctionName[entryPoint.name] = entryPoint
@@ -29,7 +35,7 @@ export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<
       }
 
       // return await entryPointFunction.implementation(...paramsInCorrectOrder)
-      const result = await entryPointFunction.implementation(...paramsInCorrectOrder)
+      const result = await entryPointFunction.implementation(...paramsInCorrectOrder, {conversationId, messages: chatMessages})
       if (!result) {
         return
       }

@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { NgmPrismHighlightComponent } from '@metad/components/prism'
+import { NgmPrismHighlightComponent } from '@metad/ocap-angular/prism'
 import { convertQueryResultColumns, nonNullable } from '@metad/core'
 import { NgmTableComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'

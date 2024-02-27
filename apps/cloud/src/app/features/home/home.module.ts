@@ -14,6 +14,7 @@ import { InsightService } from './insight/insight.service'
 import { RecentsComponent } from './recents/recents.component'
 import { StoryWidgetFeedComponent } from './story-widget/story-widget.component'
 import { UserVisitComponent } from './user-visit/user-visit.component'
+import { provideLogger } from '../../@core'
 
 @NgModule({
   imports: [
@@ -35,6 +36,6 @@ import { UserVisitComponent } from './user-visit/user-visit.component'
   ],
   exports: [],
   declarations: [DashboardComponent, StoryWidgetFeedComponent, RecentsComponent, UserVisitComponent],
-  providers: [provideOcapCore(), InsightService, ...STORY_WIDGET_COMPONENTS]
+  providers: [provideOcapCore(), InsightService, provideLogger(), ...STORY_WIDGET_COMPONENTS]
 })
 export class HomeModule {}

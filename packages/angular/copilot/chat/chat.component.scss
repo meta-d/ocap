@@ -33,7 +33,7 @@
 
 .ngm-copilot__message-remove.mat-mdc-icon-button {
   background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
-  @apply absolute z-[101] text-slate-500 hover:text-red-500 hover:bg-slate-50;
+  @apply absolute z-[101] text-slate-500 hover:text-red-500 hover:bg-slate-50 dark:bg-neutral-100/10;
 }
 .pac-colpilot__clear-messages {
   @apply border-dashed;

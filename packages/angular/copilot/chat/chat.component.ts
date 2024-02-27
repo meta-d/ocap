@@ -93,12 +93,10 @@ export class NgmCopilotChatComponent {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
 
-  // private popperjsContentComponent = inject(NgxPopperjsContentComponent, { optional: true })
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(CopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
-  // #customEngine?: CopilotEngine = null
 
   readonly copilotEngine$ = signal<CopilotEngine>(this.#copilotEngine)
 
@@ -341,8 +339,6 @@ export class NgmCopilotChatComponent {
           abortController: this.#abortController,
           assistantMessageId
         })
-
-        this.answering.set(false)
             
         if (typeof message === 'string') {
           this.copilotEngine.upsertMessage({
@@ -357,9 +353,10 @@ export class NgmCopilotChatComponent {
         this._cdr.detectChanges()
         this.scrollBottom()
       } catch (err) {
-        this.answering.set(false)
         this.conversationsChange.emit(this.conversations)
-        this._cdr.detectChanges()
+        // this._cdr.detectChanges()
+      } finally {
+        this.answering.set(false)
       }
     }
   }
@@ -385,8 +382,7 @@ export class NgmCopilotChatComponent {
     // await this.askCopilot(this.prompt)
   }
 
-  async run(event?: KeyboardEvent) {
-    console.log(event)
+  async run() {
     await navigator.clipboard.readText()
   }
 

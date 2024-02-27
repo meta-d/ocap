@@ -672,37 +672,39 @@ export const CHARTS: ChartGroup[] = [
 
 /**
  * Find Chart Type by type/variant/orient
- * @param chartType 
- * @returns 
+ * @param chartType
+ * @returns
  */
 export function getChartType(chartType: ChartType | string) {
-    if (typeof chartType === 'string') {
-      for(const group of CHARTS) {
-        for(const chart of group.charts) {
-          if (chart.label === chartType) {
-            return chart
-          }
-        }
-      }
-  
-      throw new Error(`Chart Type ${chartType} not found`)
-    }
-  
-    for(const group of CHARTS) {
-      for(const chart of group.charts) {
-        if(chart.value.chartType.type === chartType?.type &&
-          (chartType?.variant ? chart.value.chartType.variant === chartType?.variant : true) &&
-          (chartType?.orient ? chart.value.chartType.orient === chartType?.orient : true)
-          ) {
+  if (typeof chartType === 'string') {
+    for (const group of CHARTS) {
+      for (const chart of group.charts) {
+        if (chart.label === chartType) {
           return chart
         }
       }
     }
-  
-    if (chartType?.variant || chartType?.orient) {
-      return getChartType(pick(chartType, 'type') as ChartType)
-    }
-  
-    throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)
+
+    throw new Error(`Chart Type ${chartType} not found`)
   }
-  
+
+  for (const group of CHARTS) {
+    for (const chart of group.charts) {
+      if (
+        chart.value.chartType.type === chartType?.type &&
+        (chartType?.variant ? chart.value.chartType.variant === chartType?.variant : true) &&
+        (chartType?.orient ? chart.value.chartType.orient === chartType?.orient : 
+          chart.value.chartType.orient ? chart.value.chartType.orient === ChartOrient.vertical :
+            true)
+      ) {
+        return chart
+      }
+    }
+  }
+
+  if (chartType?.variant || chartType?.orient) {
+    return getChartType(pick(chartType, 'type') as ChartType)
+  }
+
+  throw new Error(`Chart Type ${chartType?.type}/${chartType?.orient}/${chartType?.variant} not found`)
+}

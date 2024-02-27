@@ -1,7 +1,6 @@
-import { Observable } from 'rxjs'
 import { CopilotCommand } from './command'
 import { CopilotService } from './copilot'
-import { AIOptions, AnnotatedFunction, CopilotChatMessage, CopilotChatResponseChoice } from './types'
+import { AIOptions, AnnotatedFunction, CopilotChatMessage } from './types'
 
 export type CopilotChatOptions = {
   command?: string
@@ -9,6 +8,7 @@ export type CopilotChatOptions = {
   action?: string
   abortController?: AbortController
   assistantMessageId?: string
+  conversationId?: string
 }
 
 /**
@@ -47,23 +47,6 @@ export interface CopilotEngine {
   messages(): CopilotChatMessage[]
 
   chat(prompt: string, options?: CopilotChatOptions): Promise<CopilotChatMessage | string | void>
-
-  /**
-   * @deprecated use `chat` instead
-   */
-  // process(
-  //   data: { prompt: string; newConversation?: boolean; messages?: CopilotChatMessage[] },
-  //   options?: { action?: string; abortController?: AbortController }
-  // ): Observable<CopilotChatMessage | string | void>
-
-  /**
-   * @deprecated
-   */
-  preprocess?: (prompt: string, options?: any) => void
-  /**
-   * @deprecated
-   */
-  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
 
   /**
    * How to process the event when user drag drop a data

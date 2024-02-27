@@ -8,14 +8,19 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatChipInputEvent } from '@angular/material/chips'
 import { MatDialog } from '@angular/material/dialog'
-import { MatExpansionModule } from '@angular/material/expansion'
 import { Title } from '@angular/platform-browser'
 import { Router, RouterModule } from '@angular/router'
-import { NgmSemanticModel } from '@metad/cloud/state'
+import { NgmSemanticModel, Store } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
+import { FunctionCallHandlerOptions } from '@metad/copilot'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NgmCopilotEnableComponent, NgmCopilotInputComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import {
+  NgmCopilotEnableComponent,
+  NgmCopilotInputComponent,
+  injectCopilotCommand,
+  injectMakeCopilotActionable
+} from '@metad/ocap-angular/copilot'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
@@ -31,13 +36,17 @@ import {
 import { StoryExplorerModule } from '@metad/story'
 import { WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { ContentLoaderModule } from '@ngneat/content-loader'
 import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import { ToastrService, zodToAnnotations } from '../../../@core'
+import { ToastrService, listAnimation, zodToAnnotations } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { ChartSchema, QuestionAnswer } from './types'
+import { ChartSchema, QuestionAnswer, transformCopilotChart } from './types'
+import { nanoid } from 'nanoid'
+import { calcEntityTypePrompt } from '@metad/core'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -49,7 +58,6 @@ import { ChartSchema, QuestionAnswer } from './types'
     CdkTreeModule,
     RouterModule,
     MaterialModule,
-    MatExpansionModule,
     TranslateModule,
     DensityDirective,
     ButtonGroupDirective,
@@ -61,11 +69,14 @@ import { ChartSchema, QuestionAnswer } from './types'
 
     StoryExplorerModule,
     NgmCopilotInputComponent,
-    NgmCopilotEnableComponent
+    NgmCopilotEnableComponent,
+
+    ContentLoaderModule
   ],
   selector: 'pac-home-insight',
   templateUrl: 'insight.component.html',
-  styleUrls: ['insight.component.scss']
+  styleUrls: ['insight.component.scss'],
+  animations: [listAnimation]
 })
 export class InsightComponent {
   separatorKeysCodes: number[] = [ENTER]
@@ -79,6 +90,7 @@ export class InsightComponent {
   private _toastrService = inject(ToastrService)
   private insightService = inject(InsightService)
   readonly #logger = inject(NGXLogger)
+  readonly appService = inject(AppService)
 
   @ViewChild('promptInput') promptInput: ElementRef<HTMLInputElement>
 
@@ -91,23 +103,18 @@ export class InsightComponent {
 
   promptControl = new FormControl()
 
-  get suggestedPrompts() {
-    return this.insightService.suggestedPrompts
-  }
+  readonly suggestedPrompts = this.insightService.suggestedPrompts
 
-  readonly answers = signal<QuestionAnswer[]>([])
+  readonly #answers = signal<QuestionAnswer[]>([])
 
-  answering = false
+  readonly answering = signal(false)
   askController: AbortController
 
-  get suggesting() {
-    return this.insightService.suggesting
-  }
+  readonly suggesting = this.insightService.suggesting
   get error() {
     return this.insightService.error
   }
 
-  // public readonly copilotNotEnabled$ = this.insightService.copilotNotEnabled$
   get copilotEnabled() {
     return this.insightService.copilotEnabled
   }
@@ -117,32 +124,47 @@ export class InsightComponent {
 
   readonly entityType = this.insightService.entityType
 
-  dimensions = computed(() => {
+  readonly dimensions = computed(() => {
     if (this.entityType()) {
       return getEntityDimensions(this.entityType())
     }
     return null
   })
 
-  measures = computed(() => {
+  readonly measures = computed(() => {
     if (this.entityType()) {
       return getEntityMeasures(this.entityType()).filter(negate(isIndicatorMeasureProperty))
     }
     return null
   })
 
-  indicators = computed(() => {
+  readonly indicators = computed(() => {
     if (this.entityType()) {
       return getEntityIndicators(this.entityType())
     }
     return null
   })
 
+  readonly primaryTheme = computed(() => {
+    const { primary, color } = this.appService.theme$()
+    return primary
+  })
+
   readonly showModel = signal(null)
   // Story explorer
   readonly showExplorer = signal(false)
-  readonly explore = signal(null)
-  
+  readonly explore = signal<QuestionAnswer>(null)
+
+  /**
+   * Themed answers
+   */
+  readonly answers = computed(() => this.#answers().map((item) => ({ ...item,
+    chartSettings: {
+      ...(item.chartSettings ?? {}),
+      theme: this.primaryTheme()
+    }
+  })))
+
   /**
   |--------------------------------------------------------------------------
   | Copilot
@@ -152,7 +174,13 @@ export class InsightComponent {
     name: 'chart',
     description: '洞察数据图形',
     systemPrompt: () => {
-      return `Please design and create a specific graphic accurately based on the following detailed instructions.`
+      const entityType = this.insightService.entityType()
+      return `Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function.
+The cube is:
+\`\`\`
+${calcEntityTypePrompt(entityType)}
+\`\`\`
+`
     },
     actions: [
       injectMakeCopilotActionable({
@@ -167,9 +195,48 @@ export class InsightComponent {
             required: true
           }
         ],
-        implementation: async (chart: any) => {
-          this.#logger.debug('New chart by copilot command with:', chart)
-          return `创建成功！`
+        implementation: async (answer: any, options: FunctionCallHandlerOptions) => {
+          this.#logger.debug('New chart by copilot command with:', answer, options)
+          const userMessage = options.messages.find((item) => item.role === 'user')
+          const dataSourceName = this.insightService.dataSourceName()
+          const cubes = this.insightService.allCubes()
+
+          try {
+            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer, this.entityType())
+            const answerMessage: Partial<QuestionAnswer> = {
+              key: options.conversationId,
+              title: userMessage?.content,
+              message: JSON.stringify(answer, null, 2),
+              dataSettings: {
+                dataSource: dataSourceName,
+                entitySet: answer.cube,
+                chartAnnotation,
+                presentationVariant: {
+                  maxItems: limit,
+                  groupBy: getEntityDimensions(this.entityType()).map((property) => ({
+                    dimension: property.name,
+                    hierarchy: property.defaultHierarchy,
+                    level: null
+                  }))
+                }
+              } as DataSettings,
+              slicers,
+              chartOptions,
+              isCube: cubes.find((item) => item.name === answer.cube),
+              answering: false,
+              expanded: true
+            }
+  
+            this.#logger.debug('New chart by copilot command is:', answerMessage)
+            this.updateAnswer(answerMessage)
+            return `创建成功！`
+          } catch(err: any) {
+            return {
+              id: nanoid(),
+              role: 'function',
+              content: `Error: ${err.message}`
+            }
+          }
         }
       })
     ]
@@ -205,9 +272,6 @@ export class InsightComponent {
   }
   compareWithName(a, b) {
     return a?.name === b?.name
-  }
-  trackByKey(index, item) {
-    return item?.key
   }
 
   setPrompt(prompt: string) {
@@ -252,8 +316,8 @@ export class InsightComponent {
   }
 
   removeAnswer(index: number) {
-    this.answers().splice(index, 1)
-    this.answers.set([...this.answers()])
+    this.#answers().splice(index, 1)
+    this.#answers.set([...this.#answers()])
   }
 
   dropPredicate(item: CdkDrag<PropertyAttributes>) {
@@ -275,7 +339,7 @@ export class InsightComponent {
     // Cancel prev ask request if any
     this.askController?.abort()
     this.askController = new AbortController()
-    this.answering = true
+    this.answering.set(true)
 
     const _answer = {
       key: uuid(),
@@ -285,28 +349,19 @@ export class InsightComponent {
     } as QuestionAnswer
 
     // Append answer
-    this.answers.set([...this.answers(), _answer])
+    this.#answers.set([...this.#answers(), _answer])
 
     // Ask copilot
-    const answer = await this.insightService.askCopilot(prompt, {
-      abortController: this.askController
+    await this.insightService.askCopilot(prompt, {
+      abortController: this.askController,
+      conversationId: _answer.key
     })
 
-    // Update answer
-    const index = this.answers().indexOf(_answer)
-    this.answers.set([
-      ...this.answers().slice(0, index),
-      {
-        ..._answer,
-        // ...answer,
-        expanded: true,
-        answering: false
-      } as QuestionAnswer,
-      ...this.answers().slice(index + 1)
-    ])
-
-    this.answering = false
-    this._cdr.detectChanges()
+    this.answering.set(false)
+    this.updateAnswer({
+      key: _answer.key,
+      answering: false
+    })
   }
 
   async addToStory(answer) {
@@ -370,33 +425,43 @@ export class InsightComponent {
     }
   }
 
-  async openExplore(answer) {
+  async openExplore(answer: QuestionAnswer) {
     this.showExplorer.set(true)
     this.explore.set(answer)
   }
 
-  closeExplorer(event) {
+  closeExplorer(event?) {
     this.showExplorer.set(false)
-    this.updateAnswer(this.explore().key, {
-      ...event,
-      dataSettings: {
-        ...event.dataSettings,
-        selectionVariant: null
-      },
-      slicers: event.dataSettings.selectionVariant?.selectOptions ?? []
+    if (event) {
+      this.updateAnswer({
+        ...event,
+        key: this.explore().key,
+        dataSettings: {
+          ...event.dataSettings,
+          selectionVariant: null
+        },
+        slicers: event.dataSettings.selectionVariant?.selectOptions ?? []
+      })
+    }
+  }
+
+  updateAnswer(event: Partial<QuestionAnswer>) {
+    this.#answers.update((answers) => {
+      const index = event.key ? answers.findIndex((n) => n.key === event.key) : -1
+      if (index > -1) {
+        answers[index] = {
+          ...answers[index],
+          ...event
+        }
+      } else {
+        answers.push(event as QuestionAnswer)
+      }
+      return [...answers]
     })
   }
 
-  updateAnswer(key: string, event: Partial<QuestionAnswer>) {
-    const index = this.answers().findIndex((n) => n.key === key)
-    this.answers.set([
-      ...this.answers().slice(0, index),
-      {
-        ...this.answers()[index],
-        ...event
-      },
-      ...this.answers().slice(index + 1)
-    ])
+  toEnableCopilot() {
+    this.router.navigate(['settings', 'copilot'])
   }
 }
 

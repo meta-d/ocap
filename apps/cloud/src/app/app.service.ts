@@ -57,8 +57,7 @@ export class AppService extends ComponentStore<PACAppState> {
   readonly theme$ = computed(() => {
     let preferredTheme = this.preferredTheme$()
     const systemColorScheme = this.systemColorScheme$()
-    preferredTheme = preferredTheme ?? ThemesEnum.light
-    if (preferredTheme === ThemesEnum.system) {
+    if (preferredTheme === ThemesEnum.system || !preferredTheme) {
       preferredTheme = systemColorScheme
     }
 

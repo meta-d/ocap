@@ -42,6 +42,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
    * This is a array of conversations
    */
   readonly conversations$ = signal<Array<CopilotChatMessage[]>>([])
+  readonly #conversationId = signal<string>(nanoid())
 
   readonly conversations = computed(() => this.conversations$())
   readonly messages = computed(() => flatten(this.conversations$()))
@@ -180,7 +181,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     this.#logger?.debug(`process copilot ask: ${prompt}`)
 
     let { command } = options ?? {}
-    const { abortController, assistantMessageId } = options ?? {}
+    const { abortController, assistantMessageId, conversationId } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
 
@@ -241,10 +242,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
           }
         },
         {
-          abortController
+          abortController,
+          assistantMessageId,
+          conversationId: conversationId ?? this.#conversationId()
         }
       )
-      this.conversations$.update((conversations) => [...conversations, []])
+
+      // New conversation after command completion
+      this.newConversation()
     } else {
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
@@ -279,7 +284,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         },
         {
           abortController,
-          assistantMessageId
+          assistantMessageId,
+          conversationId
         }
       )
     }
@@ -291,13 +297,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
     { options, data }: ChatRequestOptions = {},
     {
       abortController,
-      assistantMessageId
+      assistantMessageId,
+      conversationId
     }: {
       abortController?: AbortController | null
       assistantMessageId?: string
+      conversationId?: string
     } = {}
   ): Promise<ChatRequest | null | undefined> {
-    // let abortController = null
     try {
       this.error.set(undefined)
       this.isLoading.set(true)
@@ -309,7 +316,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       let chatRequest: ChatRequest = {
         messages: messagesSnapshot as Message[],
         options,
-        data
+        data,
       }
 
       assistantMessageId = assistantMessageId ?? nanoid()
@@ -359,7 +366,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
           chatRequest = newChatRequest
           this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
         },
-        getCurrentMessages: () => getCurrentMessages()
+        getCurrentMessages: () => getCurrentMessages(),
+        conversationId
       })
       abortController = null
 
@@ -403,6 +411,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   generateId() {
     return nanoid()
+  }
+
+  newConversation() {
+    this.#conversationId.set(nanoid())
+    this.conversations$.update((conversations) => [...conversations, []])
   }
 
   upsertMessage(...messages: CopilotChatMessage[]) {
