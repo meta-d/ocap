@@ -30,6 +30,12 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@Column({ nullable: true })
 	apiHost?: string
 
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
+	@Column({ nullable: true })
+	defaultModel?: string
+
 	@ApiPropertyOptional({ type: () => Boolean })
 	@IsBoolean()
 	@IsOptional()

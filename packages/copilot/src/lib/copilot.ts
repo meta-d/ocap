@@ -27,7 +27,7 @@ function modelsUrl(copilot: ICopilot) {
  * Copilot Service
  */
 export class CopilotService {
-  #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
+  readonly #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
   // private _copilot = {} as ICopilot
   get copilot(): ICopilot {
     return this.#copilot$.value
@@ -251,7 +251,7 @@ export class CopilotService {
         data: chatRequest.data,
         ...body,
         ...options?.body,
-        stream: true
+        // stream: true
       },
       headers: {
         ...(this.requestOptions()?.headers ?? {}),

@@ -144,7 +144,7 @@ const routes: Routes = [
       },
       {
         path: 'copilot',
-        loadChildren: () => import('./copilot/copilot.module').then((m) => m.CopilotModule),
+        loadChildren: () => import('./copilot/routing').then((m) => m.default),
         data: {
           title: 'Settings / Copilot',
         }

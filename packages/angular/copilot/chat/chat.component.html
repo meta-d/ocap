@@ -283,20 +283,23 @@
             <label class="flex-1">
                 {{ 'Ngm.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
             </label>
-            
+          @if (canListModels()) {
             <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
                 <mat-icon>refresh</mat-icon>
             </button>
+          }
         </div>
 
-        <ngm-search class="w-full" [formControl]="searchModel"></ngm-search>
+        <ngm-search class="w-full" [formControl]="searchModel"/>
         <mat-selection-list class="flex flex-col gap-2 max-h-[120px] overflow-auto"
             [(ngModel)]="selectedModel"
             [multiple]="false"
             (ngModelChange)="changeSelectedModel($event)">
-            <mat-list-option *ngFor="let model of models()" [value]="model.id">
-                {{model.label}}
+          @for (model of models(); track model.id) {
+            <mat-list-option [value]="model.id">
+                {{model.name}}
             </mat-list-option>
+          }
         </mat-selection-list>
 
         <label class="pt-4 font-notoColorEmoji">Temperature:<span matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>

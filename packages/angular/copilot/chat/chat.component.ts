@@ -16,7 +16,7 @@ import {
   signal,
   ViewChild
 } from '@angular/core'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
@@ -27,7 +27,7 @@ import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { AIOptions, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
+import { AIOptions, AI_PROVIDERS, AiModelType, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
 import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent, NgmScrollBackComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -38,7 +38,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, combineLatest, delay, map, startWith, throttleTime } from 'rxjs'
+import { BehaviorSubject, delay, startWith, throttleTime } from 'rxjs'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
@@ -186,7 +186,12 @@ export class NgmCopilotChatComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly showTokenizer$ = toSignal(this.copilotService.copilot$.pipe(map((copilot) => copilot?.showTokenizer)))
+  readonly copilot = toSignal(this.copilotService.copilot$)
+  readonly showTokenizer$ = computed(() => this.copilot()?.showTokenizer)
+  readonly #defaultModel = computed(() => this.copilot()?.defaultModel)
+  readonly #predefinedModels = computed(() => AI_PROVIDERS[this.copilot()?.provider]?.models)
+  readonly canListModels = computed(() => !!AI_PROVIDERS[this.copilot()?.provider]?.modelsUrl)
+  readonly latestModels = signal<AiModelType[]>([])
   readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine?.conversations())
 
   /**
@@ -203,30 +208,17 @@ export class NgmCopilotChatComponent {
   private readonly historyIndex = signal(-1)
 
   #abortController: AbortController
-
+  
   // Available models
-  private readonly _models$ = new BehaviorSubject<{ id: string; label: string }[]>([
-    {
-      id: 'gpt-3.5-turbo',
-      label: 'gpt-3.5-turbo'
-    },
-    {
-      id: 'gpt-4',
-      label: 'gpt-4'
-    },
-    {
-      id: 'gpt-4-32k',
-      label: 'gpt-4-32k'
-    }
-  ])
   searchModel = new FormControl<string>('')
-  public readonly models = toSignal(
-    combineLatest([this._models$, this.searchModel.valueChanges.pipe(startWith(''))]).pipe(
-      map(([_models, text]) => (text ? _models.filter((item) => item.label.includes(text)) : _models))
-    ),
-    { initialValue: [] }
-  )
+  readonly searchText = toSignal(this.searchModel.valueChanges.pipe(startWith('')), { initialValue: '' })
+  readonly models = computed(() => {
+    const text = this.searchText()?.toLowerCase()
+    const models = this.latestModels()?.length ? this.latestModels() : this.#predefinedModels()
+    return text ? models?.filter((item) => item.name.toLowerCase().includes(text)) : models
+  })
 
+  // Enable status of copilot
   get copilotEnabled() {
     return this.copilotService.enabled
   }
@@ -286,12 +278,6 @@ export class NgmCopilotChatComponent {
   | Subscribers
   |--------------------------------------------------------------------------
   */
- /**
-  * @deprecated use Signal
-  */
-  private _copilotSub = this.copilotService.copilot$.pipe(delay(1000), takeUntilDestroyed()).subscribe(() => {
-    this._cdr.detectChanges()
-  })
   private scrollSub = toObservable(this.conversations).pipe(throttleTime(300)).subscribe((conversations) => {
     if (conversations.length && !this.scrollBack.visible()) {
       this.scrollBottom()
@@ -304,11 +290,16 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      this.selectedModel = [this.#defaultModel()]
+      this.model = this.#defaultModel()
+    })
   }
 
   refreshModels() {
     this.copilotService.getModels().subscribe((res) => {
-      this._models$.next(res.data.map((model) => ({ id: model.id, label: model.id })))
+      this.latestModels.set(res.data.map((model) => ({ id: model.id, name: model.id })))
     })
   }
 

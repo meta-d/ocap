@@ -1,15 +1,18 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { FormControl, FormGroup, Validators } from '@angular/forms'
+import { ChangeDetectorRef, Component, computed, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
+import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged, startWith } from 'rxjs'
-import { getErrorMessage, ToastrService } from '../../../@core'
-import { TranslationBaseComponent } from '../../../@shared'
-import { PACCopilotService } from '../../../@core'
+import { PACCopilotService, ToastrService, getErrorMessage } from '../../../@core'
+import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 
 @Component({
+  standalone: true,
   selector: 'pac-settings-copilot',
   templateUrl: './copilot.component.html',
-  styleUrls: ['./copilot.component.scss']
+  styleUrls: ['./copilot.component.scss'],
+  imports: [TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
 })
 export class CopilotComponent extends TranslationBaseComponent {
   readonly copilotService = inject(PACCopilotService)
@@ -19,20 +22,22 @@ export class CopilotComponent extends TranslationBaseComponent {
   formGroup = new FormGroup({
     id: new FormControl(null),
     enabled: new FormControl(null),
-    provider: new FormControl('openai', [Validators.required]),
+    provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
     apiKey: new FormControl(null, [Validators.required]),
     apiHost: new FormControl(null),
+    defaultModel: new FormControl<string>(null),
 
-    showTokenizer: new FormControl(null),
+    showTokenizer: new FormControl(null)
   })
-  get provider() {
-    return this.formGroup.get('provider').value
-  }
 
   providerHref = {
     openai: 'https://platform.openai.com/account/api-keys',
-    azure: 'https://azure.microsoft.com/en-us/free/cognitive-services/'
+    azure: 'https://azure.microsoft.com/en-us/free/cognitive-services/',
+    dashscope: 'https://help.aliyun.com/zh/dashscope/developer-reference/activate-dashscope-and-create-an-api-key'
   }
+
+  readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
+  readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
 
   private enabledSub = this.formGroup
     .get('enabled')
@@ -42,11 +47,13 @@ export class CopilotComponent extends TranslationBaseComponent {
         this.formGroup.get('provider').enable()
         this.formGroup.get('apiKey').enable()
         this.formGroup.get('apiHost').enable()
+        this.formGroup.get('defaultModel').enable()
         this.formGroup.get('showTokenizer').enable()
       } else {
         this.formGroup.get('provider').disable()
         this.formGroup.get('apiKey').disable()
         this.formGroup.get('apiHost').disable()
+        this.formGroup.get('defaultModel').disable()
         this.formGroup.get('showTokenizer').disable()
       }
     })

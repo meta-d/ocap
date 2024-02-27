@@ -13,6 +13,9 @@
         <mat-select formControlName="provider">
           <mat-option value="openai">OpenAI</mat-option>
           <mat-option value="azure">Azure</mat-option>
+          <mat-option value="dashscope">
+            {{ 'PAC.Copilot.Provider_DashScope' | translate: {Default: 'DashScope'} }}
+          </mat-option>
         </mat-select>
     </mat-form-field>
 
@@ -24,7 +27,7 @@
             <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
         </mat-form-field>
 
-        <a mat-stroked-button [href]="providerHref[provider]">
+        <a mat-stroked-button [href]="providerHref[provider()]">
             {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
         </a>
     </div>
@@ -38,8 +41,22 @@
         </mat-form-field>
     </div>
 
+    <mat-form-field appearance="fill" class="flex-1">
+        <mat-label>
+            {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
+        </mat-label>
+
+        <mat-select formControlName="defaultModel">
+            @for (model of models(); track model.id) {
+            <mat-option [value]="model.id">{{model.name}}</mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
     <div class="self-stretch flex justify-start items-center">
-        <mat-checkbox formControlName="showTokenizer">显示词数</mat-checkbox>
+        <mat-checkbox formControlName="showTokenizer">
+            {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
+        </mat-checkbox>
     </div>
 
     <div class="self-stretch flex justify-start items-center mt-8">

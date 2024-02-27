@@ -3,12 +3,13 @@ import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { CopilotService } from '../copilot'
+import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 
 export interface ICopilot {
   enabled: boolean
-  provider?: 'openai' | 'azure'
+  provider?: AiProvider
   /**
    * Authorization key for the API
    */
@@ -21,6 +22,10 @@ export interface ICopilot {
    * Authorization token for the API
    */
   token?: string
+  /**
+   * Default model to use
+   */
+  defaultModel: string
 
   chatUrl?: string
   modelsUrl?: string
@@ -62,19 +67,6 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CopilotChatResponseChoice {
   //
-}
-
-export const AI_PROVIDERS = {
-  openai: {
-    apiHost: 'https://api.openai.com',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models'
-  },
-  azure: {
-    apiHost: '',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models'
-  }
 }
 
 export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean }

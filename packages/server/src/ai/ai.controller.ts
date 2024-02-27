@@ -1,22 +1,23 @@
 import { ICopilot } from '@metad/contracts'
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Res } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { AI_PROVIDERS } from '@metad/copilot'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge'
 
-export const AI_PROVIDERS = {
-	openai: {
-		apiHost: 'https://api.openai.com',
-		chatCompletionsUrl: '/v1/chat/completions'
-	},
-	azure: {
-		apiHost: '',
-		chatCompletionsUrl: '/v1/chat/completions'
-	}
-}
+// export const AI_PROVIDERS = {
+// 	openai: {
+// 		apiHost: 'https://api.openai.com',
+// 		chatCompletionsUrl: '/v1/chat/completions'
+// 	},
+// 	azure: {
+// 		apiHost: '',
+// 		chatCompletionsUrl: '/v1/chat/completions'
+// 	}
+// }
 
 function chatCompletionsUrl(copilot: ICopilot) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost

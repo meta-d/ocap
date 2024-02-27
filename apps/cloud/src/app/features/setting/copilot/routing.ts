@@ -1,9 +1,8 @@
-import { NgModule } from '@angular/core'
-import { RouterModule, Routes } from '@angular/router'
+import { Routes } from '@angular/router'
 import { PermissionsEnum } from '../../../@core'
 import { CopilotComponent } from './copilot.component'
 
-const routes: Routes = [
+export default [
   {
     path: '',
     component: CopilotComponent,
@@ -16,10 +15,4 @@ const routes: Routes = [
     },
     children: []
   }
-]
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
-})
-export class CopilotRoutingModule {}
+] as Routes
