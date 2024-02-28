@@ -184,6 +184,8 @@ interface Completion {
    * A unique identifier for the completion.
    */
   request_id: string;
+  code: string;
+  message: string;
   output: CompletionChoice;
   usage: CompletionUsage;
 }
@@ -252,6 +254,9 @@ function chunkToText(): (chunk: OpenAIStreamReturnTypes) => string | void {
   const trimStartOfStream = trimStartOfStreamHelper();
   let isFunctionStreamingIn: boolean;
   return json => {
+    if (isError(json)) {
+      throw new Error(json.message)
+    }
     if (isChatCompletionChunk(json)) {
       const delta = json.output.delta
       // if (delta.function_call?.name) {
@@ -339,6 +344,13 @@ function isCompletion(data: OpenAIStreamReturnTypes): data is Completion {
     data.output &&
     'text' in data.output
   );
+}
+
+function isError(data: OpenAIStreamReturnTypes): data is Completion {
+  return (
+    'code' in data &&
+    !!data.code
+  )
 }
 
 export function DashScopeStream(
