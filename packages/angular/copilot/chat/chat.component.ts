@@ -125,12 +125,12 @@ export class NgmCopilotChatComponent {
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
-  get enabled() {
-    return this.copilotService.enabled
-  }
-  get hasKey() {
-    return this.copilotService.hasKey
-  }
+  // get enabled() {
+  //   return this.copilotService.enabled
+  // }
+  // get hasKey() {
+  //   return this.copilotService.hasKey
+  // }
 
   get _placeholder() {
     return this.copilotEngine?.placeholder ?? this.placeholder
@@ -187,6 +187,7 @@ export class NgmCopilotChatComponent {
   |--------------------------------------------------------------------------
   */
   readonly copilot = toSignal(this.copilotService.copilot$)
+  readonly copilotEnabled = computed(() => this.copilot()?.enabled && this.copilot()?.apiKey)
   readonly showTokenizer$ = computed(() => this.copilot()?.showTokenizer)
   readonly #defaultModel = computed(() => this.copilot()?.defaultModel)
   readonly #predefinedModels = computed(() => AI_PROVIDERS[this.copilot()?.provider]?.models)
@@ -217,11 +218,6 @@ export class NgmCopilotChatComponent {
     const models = this.latestModels()?.length ? this.latestModels() : this.#predefinedModels()
     return text ? models?.filter((item) => item.name.toLowerCase().includes(text)) : models
   })
-
-  // Enable status of copilot
-  get copilotEnabled() {
-    return this.copilotService.enabled
-  }
 
   readonly commands = computed(() => {
     if (this.copilotEngine?.commands) {

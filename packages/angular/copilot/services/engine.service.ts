@@ -340,7 +340,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
             {
               body: {
                 // functions: this.getChatCompletionFunctionDescriptions(),
-                ...pick(this.aiOptions, 'model', 'temperature'),
+                ...pick(this.aiOptions, 'temperature'),
                 ...(options?.body ?? {})
               },
               generateId: () => assistantMessageId,
@@ -352,13 +352,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
               },
               appendMessage: (message) => {
                 this.upsertMessage({ ...message, status: 'answering' })
-              }
+              },
+              abortController,
+              model: this.aiOptions.model
             },
             chatRequest,
             { options, data },
-            {
-              abortController
-            }
           )
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),

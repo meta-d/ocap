@@ -30,10 +30,14 @@ import { IndicatorItemComponent } from './indicator-item/indicator-item.componen
 import { IndicatorMarketRoutingModule } from './indicator-market-routing.module'
 import { IndicatoryMarketComponent } from './indicator-market.component'
 import { ReplaceNullWithTextPipe } from './shared/replace-null-with-text.pipe'
-import { SharedModule } from './shared/shared.module'
+import { AppSparkLineDirective } from './shared/sparkline.directive'
+import { PACIndicatorDirective } from './shared/indicator.directive'
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 
 @NgModule({
-  declarations: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent, ReplaceNullWithTextPipe],
+  declarations: [
+    AppSparkLineDirective, PACIndicatorDirective,
+    IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent, ReplaceNullWithTextPipe],
   imports: [
     CommonModule,
     FormsModule,
@@ -69,8 +73,8 @@ import { SharedModule } from './shared/shared.module'
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
-    SharedModule,
-    AnalyticalCardModule
+    AnalyticalCardModule,
+    LoggerModule.forRoot({ level: NgxLoggerLevel.DEBUG })
   ],
   exports: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent],
   providers: [

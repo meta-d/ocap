@@ -283,7 +283,7 @@
   ></ngm-story-explorer>
 }
 
-@if (!copilotEnabled) {
+@if (!copilotEnabled()) {
   <ngm-copilot-enable class="z-[101]"
     [title]="'Metad Copilot'"
     [subTitle]="'Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'}"

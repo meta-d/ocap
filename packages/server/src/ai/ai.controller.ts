@@ -1,23 +1,9 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Res } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AI_PROVIDERS } from '@metad/copilot'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
-
-// IMPORTANT! Set the runtime to edge
-export const runtime = 'edge'
-
-// export const AI_PROVIDERS = {
-// 	openai: {
-// 		apiHost: 'https://api.openai.com',
-// 		chatCompletionsUrl: '/v1/chat/completions'
-// 	},
-// 	azure: {
-// 		apiHost: '',
-// 		chatCompletionsUrl: '/v1/chat/completions'
-// 	}
-// }
 
 function chatCompletionsUrl(copilot: ICopilot) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -44,7 +30,8 @@ export class AIController {
 	})
 	@HttpCode(HttpStatus.CREATED)
 	@Post('chat')
-	async chat(@Body() body: any, @Res() resp: ServerResponse) {
+	async chat(@Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+
 		const result = await this.copilotService.findAll()
 		if (result.total === 0) {
 			throw new Error('No copilot found')
@@ -52,15 +39,16 @@ export class AIController {
 
 		const copilot = result.items[0]
 
-		this.#logger.debug(`Try call ai api '${chatCompletionsUrl(copilot)}' with body ...}`)
+		this.#logger.debug(`Try call ai api '${chatCompletionsUrl(copilot)}' with body ...`)
 
 		try {
 			const response = await fetch(chatCompletionsUrl(copilot), {
 				method: 'POST',
 				body: JSON.stringify(body),
 				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${copilot.apiKey}`
+					'content-type': 'application/json',
+					authorization: `Bearer ${copilot.apiKey}`,
+					accept: headers.accept
 				},
 			})
 			

@@ -115,9 +115,7 @@ export class InsightComponent {
     return this.insightService.error
   }
 
-  get copilotEnabled() {
-    return this.insightService.copilotEnabled
-  }
+  readonly copilotEnabled = this.insightService.copilotEnabled
   readonly models$ = this.insightService.models$
   readonly hasCube$ = this.insightService.hasCube$
   readonly cubes$ = this.insightService.cubes$

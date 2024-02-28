@@ -14,7 +14,7 @@ $material-typeface: Lato, 'Noto Serif SC', monospace;
 
 // Define a theme.
 $primary: mat.define-palette(mat.$blue-palette, 500);
-$dark-accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
+$accent: mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $light-secondary-text: rgba(white, 0.7);
 $light-disabled-text: rgba(white, 0.5);
@@ -60,7 +60,7 @@ $dark-theme: map.deep-merge(
   mat.define-dark-theme((
     color: (
       primary: $primary,
-      accent: $dark-accent,
+      accent: $accent,
     )
   )),
   (
@@ -76,10 +76,12 @@ $custom-typography: mat.define-typography-config(
 );
 
 .ngm-theme-dark, .ngm-story__device.ngm-theme-dark.dark {
-  // --ngm-color-surface: #16181c;
+  --ngm-color-primary: #{mat.get-color-from-palette($primary)};
   --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+  --ngm-color-secondary: #{mat.get-color-from-palette($accent)};
+  --ngm-color-secondary-container: #{lighten(mat.get-color-from-palette($accent), 30%)};
   --ngm-color-outline: #{map.get($foreground, divider)};
 
   // Include all theme styles for the mat components.

@@ -60,6 +60,50 @@ export const AI_PROVIDERS = {
       {
         id: 'qwen-plus',
         name: '通义千问 Plus'
+      },
+      {
+        id: 'qwen-max',
+        name: '通义千问 Max'
+      },
+      {
+        id: 'qwen-1.8b-chat',
+        name: '通义千问 1.8b'
+      },
+      {
+        id: 'qwen-7b-chat',
+        name: '通义千问 7b'
+      },
+      {
+        id: 'qwen-14b-chat',
+        name: '通义千问 14b'
+      },
+      {
+        id: 'qwen-72b-chat',
+        name: '通义千问 72b'
+      },
+      {
+        id: 'llama2-7b-chat-v2',
+        name: 'LLaMa2 7b v2'
+      },
+      {
+        id: 'llama2-13b-chat-v2',
+        name: 'LLaMa2 13b v2'
+      },
+      {
+        id: 'chatglm-6b-v2',
+        name: 'ChatGLM 6b v2'
+      },
+      {
+        id: 'chatglm3-6b',
+        name: 'ChatGLM3 6b'
+      },
+      {
+        id: 'baichuan-7b-v1',
+        name: '百川 7b v1'
+      },
+      {
+        id: 'baichuan2-7b-chat-v1',
+        name: '百川2 7b v1'
       }
     ] as AiModelType[]
   }

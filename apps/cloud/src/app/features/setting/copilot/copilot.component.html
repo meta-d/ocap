@@ -27,7 +27,7 @@
             <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
         </mat-form-field>
 
-        <a mat-stroked-button [href]="providerHref[provider()]">
+        <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
             {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
         </a>
     </div>

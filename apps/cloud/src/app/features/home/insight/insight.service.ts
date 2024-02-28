@@ -18,6 +18,7 @@ import { combineLatest, debounceTime, filter, firstValueFrom, map, of, switchMap
 import zodToJsonSchema from 'zod-to-json-schema'
 import { registerModel } from '../../../@core'
 import { DemoModelCubes, SuggestsSchema } from './types'
+import { ChatRequest, CreateMessage } from 'ai'
 
 @Injectable()
 export class InsightService {
@@ -80,9 +81,8 @@ export class InsightService {
   demoModelCubes = DemoModelCubes
 
   entityPromptLimit = 10
-  get copilotEnabled() {
-    return this.#copilotService.enabled
-  }
+
+  readonly copilotEnabled = toSignal(this.#copilotService.enabled$)
   readonly models$ = this.#modelsService.getMy()
   readonly hasCube$ = toSignal(this.model$.pipe(map((model) => !!model?.schema?.cubes?.length)))
 
@@ -123,41 +123,41 @@ export class InsightService {
     registerModel(model, this.#dsCoreService, this.#wasmAgent)
   }
 
-  async preclassify(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
-    const choices = await this.#copilotService.createChat(
-      [
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: `请根据多维模型列表给出问题涉及到的 only one model name in json format
-例如
-多维模型列表： "sales_fact" 销售, "product" 产品, "warehouse" 仓库
-问题：按产品类别统计销售额
-回答： "sales_fact"`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: `多维模型列表： ${await this.getAllEntities()}
-问题：${prompt}
-回答： `
-        }
-      ],
-      {
-        ...(options ?? {}),
-        request: {
-          temperature: 0.2
-        }
-      }
-    )
+//   async preclassify(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
+//     const choices = await this.#copilotService.createChat(
+//       [
+//         {
+//           id: nanoid(),
+//           role: CopilotChatMessageRoleEnum.System,
+//           content: `请根据多维模型列表给出问题涉及到的 only one model name in json format
+// 例如
+// 多维模型列表： "sales_fact" 销售, "product" 产品, "warehouse" 仓库
+// 问题：按产品类别统计销售额
+// 回答： "sales_fact"`
+//         },
+//         {
+//           id: nanoid(),
+//           role: CopilotChatMessageRoleEnum.User,
+//           content: `多维模型列表： ${await this.getAllEntities()}
+// 问题：${prompt}
+// 回答： `
+//         }
+//       ],
+//       {
+//         ...(options ?? {}),
+//         request: {
+//           temperature: 0.2
+//         }
+//       }
+//     )
 
-    try {
-      const answer = JSON5.parse(choices[0].message.content)
-      return answer
-    } catch (err) {
-      throw new Error(`Error parse: ${choices[0].message.content}`)
-    }
-  }
+//     try {
+//       const answer = JSON5.parse(choices[0].message.content)
+//       return answer
+//     } catch (err) {
+//       throw new Error(`Error parse: ${choices[0].message.content}`)
+//     }
+//   }
 
   async askCopilot(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
     try {
@@ -194,44 +194,76 @@ export class InsightService {
       } else {
         prompt = await this.getRandomEntityTypes(10)
       }
-      const choices = await this.#copilotService.createChat(
-        [
-          {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.System,
-            content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
-  例如：
-  多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
-  回答：${JSON.stringify(
-    this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
-      Default: [
-        'the trend of visit, line is smooth and width 5',
-        'visits by product category, show legend',
-        'visit trend of some product in 2023 year'
+
+      const messages = [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.System,
+          content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
+例如：
+多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
+回答：${JSON.stringify(
+  this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
+    Default: [
+      'the trend of visit, line is smooth and width 5',
+      'visits by product category, show legend',
+      'visit trend of some product in 2023 year'
+    ]
+  })
+)}`
+        },
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: `多维数据模型信息为：${prompt}\n回答：`
+        }
       ]
-    })
-  )}`
-          },
+
+      const chatRequest = {
+        messages,
+        functions: [
           {
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.User,
-            content: `多维数据模型信息为：${prompt}\n回答：`
+            name: 'create_suggests',
+            description: 'Should always be used to properly format output',
+            parameters: zodToJsonSchema(SuggestsSchema)
           }
         ],
+        function_call: { name: 'create_suggests' }
+      } as ChatRequest
+      const abortController = new AbortController()
+      const choices = await this.#copilotService.chat(
         {
-          request: {
-            model: 'gpt-3.5-turbo-0613',
-            functions: [
-              {
-                name: 'create_suggests',
-                description: 'Should always be used to properly format output',
-                parameters: zodToJsonSchema(SuggestsSchema)
-              }
-            ],
-            function_call: { name: 'create_suggests' }
-          }
-        }
+          body: {
+          },
+          generateId: () => nanoid(),
+          onFinish: (message) => {
+            // this.upsertMessage({ ...message, status: 'done' })
+          },
+          appendMessage: (message) => {
+            // this.upsertMessage({ ...message, status: 'answering' })
+          },
+          abortController,
+          model: this.#copilotEngine.aiOptions.model
+        },
+        chatRequest,
+        {},
       )
+
+      // const choices = await this.#copilotService.createChat(messages,
+      //   {
+      //     request: {
+      //       model: 'gpt-3.5-turbo-0613',
+      //       functions: [
+      //         {
+      //           name: 'create_suggests',
+      //           description: 'Should always be used to properly format output',
+      //           parameters: zodToJsonSchema(SuggestsSchema)
+      //         }
+      //       ],
+      //       function_call: { name: 'create_suggests' }
+      //     }
+      //   }
+      // )
 
       const answer = getFunctionCall(choices[0].message)
       return answer.arguments

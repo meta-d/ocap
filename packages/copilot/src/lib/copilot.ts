@@ -1,9 +1,10 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import { ChatRequest, ChatRequestOptions, JSONValue, Message, RequestOptions, UseChatOptions, nanoid } from 'ai'
-import { BehaviorSubject, Observable, catchError, of, switchMap, throwError } from 'rxjs'
+import { ChatRequest, ChatRequestOptions, JSONValue, Message, RequestOptions, UseChatOptions as AiUseChatOptions, nanoid } from 'ai'
+import { BehaviorSubject, Observable, catchError, map, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { callChatApi } from './shared/call-chat-api'
-import { AI_PROVIDERS, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import { AI_PROVIDERS, AiProvider, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import { callChatApi as callDashScopeChatApi } from './dashscope/'
 
 function chatCompletionsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -23,26 +24,30 @@ function modelsUrl(copilot: ICopilot) {
   )
 }
 
+export type UseChatOptions = AiUseChatOptions & {
+  appendMessage?: (message: Message) => void;
+  abortController?: AbortController | null;
+  model: string;
+}
+
 /**
  * Copilot Service
  */
 export class CopilotService {
-  readonly #copilot$ = new BehaviorSubject<ICopilot>({} as ICopilot)
-  // private _copilot = {} as ICopilot
+  readonly #copilot$ = new BehaviorSubject<ICopilot | null>({} as ICopilot)
   get copilot(): ICopilot {
     return this.#copilot$.value
   }
-  set copilot(value: Partial<ICopilot>) {
-    this.#copilot$.next({
+  set copilot(value: Partial<ICopilot> | null) {
+    this.#copilot$.next(value ? {
       ...this.#copilot$.value,
-      ...(value ?? {})
-    })
+      ...value
+    } : null)
   }
 
-  public readonly copilot$ = this.#copilot$.asObservable()
-  get enabled() {
-    return this.copilot?.enabled && this.copilot?.apiKey
-  }
+  readonly copilot$ = this.#copilot$.asObservable()
+  readonly enabled$ = this.copilot$.pipe(map((copilot) => copilot?.enabled && copilot?.apiKey))
+
   get hasKey() {
     return !!this.copilot?.apiKey
   }
@@ -62,6 +67,12 @@ export class CopilotService {
     return {}
   }
 
+  /**
+   * 
+   * @param messages 
+   * @param options 
+   * @returns 
+   */
   async createChat(messages: CopilotChatMessage[], options?: {
       request?: any
       signal?: AbortSignal
@@ -71,9 +82,8 @@ export class CopilotService {
     const response = await fetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
         ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
-        // Authorization: `Bearer ${this.copilot.apiKey}`
       },
       signal,
       body: JSON.stringify({
@@ -223,20 +233,20 @@ export class CopilotService {
       credentials,
       headers,
       body,
-      generateId = nanoid
-    }: UseChatOptions & {
-      appendMessage?: (message: Message) => void;
-    } = {},
+      generateId = nanoid,
+      abortController,
+      model
+    }: UseChatOptions = {
+      model: DefaultModel
+    },
     chatRequest: ChatRequest,
     { options, data }: ChatRequestOptions = {},
-    {
-      abortController
-    }: {
-      abortController: AbortController | null
-    }
   ): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
-    return await callChatApi({
+    const callChatApiFuc = this.copilot.provider === AiProvider.DashScope ?  callDashScopeChatApi : callChatApi
+    return await callChatApiFuc({
       api: chatCompletionsUrl(this.copilot),
+      model,
+      chatRequest,
       messages: sendExtraMessageFields
         ? chatRequest.messages
         : chatRequest.messages.map(({ role, content, name, function_call }) => ({
@@ -250,13 +260,12 @@ export class CopilotService {
       body: {
         data: chatRequest.data,
         ...body,
-        ...options?.body,
-        // stream: true
+        ...(options?.body ?? {}),
       },
       headers: {
         ...(this.requestOptions()?.headers ?? {}),
         ...headers,
-        ...options?.headers
+        ...(options?.headers ?? {})
       },
       abortController: () => abortController,
       credentials,

@@ -1,17 +1,19 @@
-import { parseComplexResponse } from './parse-complex-response';
+import { parseComplexResponse } from '../shared/parse-complex-response';
 import {
+  ChatRequest,
   FunctionCall,
   IdGenerator,
   JSONValue,
   Message,
-  OpenAIStream,
   ToolCall,
 } from 'ai';
 import { COMPLEX_HEADER, createChunkDecoder } from 'ai';
+import { DashScopeStream } from '../streams';
 
 export async function callChatApi({
   api,
   model,
+  chatRequest,
   messages,
   body,
   credentials,
@@ -25,6 +27,7 @@ export async function callChatApi({
   generateId,
 }: {
   api: string;
+  chatRequest: ChatRequest;
   model: string;
   messages: Omit<Message, 'id'>[];
   body: Record<string, any>;
@@ -38,17 +41,25 @@ export async function callChatApi({
   onFinish?: (message: Message) => void;
   generateId: IdGenerator;
 }): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
+  const { functions, function_call } = chatRequest
+
   const response = await fetch(api, {
     method: 'POST',
     body: JSON.stringify({
-      messages,
-      ...body,
-      model,
-      stream: true
+      input: {
+        result_format: 'message',
+        messages,
+        functions,
+        function_call,
+      },
+      parameters: {
+      },
+      model
     }),
     headers: {
-      'Content-Type': 'application/json',
       ...headers,
+      'content-type': 'application/json',
+      accept: 'text/event-stream'
     },
     signal: abortController?.()?.signal,
     credentials,
@@ -76,8 +87,7 @@ export async function callChatApi({
     throw new Error('The response body is empty.');
   }
 
-  // const reader = response.body.getReader();
-  const reader = OpenAIStream(response).getReader();
+  const reader = DashScopeStream(response).getReader();
   const isComplexMode = response.headers.get(COMPLEX_HEADER) === 'true';
 
   if (isComplexMode) {
@@ -114,7 +124,9 @@ export async function callChatApi({
         break;
       }
       // Update the chat state with the new message tokens.
-      streamedResponse += decode(value);
+      streamedResponse = decode(value);
+
+      console.log(streamedResponse)
 
       if (streamedResponse.startsWith('{"function_call":')) {
         // While the function call is streaming, it will be a string.

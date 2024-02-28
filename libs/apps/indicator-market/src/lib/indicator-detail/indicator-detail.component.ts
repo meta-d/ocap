@@ -39,6 +39,7 @@ import {
   isEqual,
   ISlicer,
   isNil,
+  isSlicer,
   OrderDirection,
   ReferenceLineAggregation,
   ReferenceLineType,
@@ -70,7 +71,6 @@ import {
 import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
-import { nanoid } from 'nanoid'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
@@ -126,7 +126,7 @@ export class IndicatorDetailComponent {
 
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
-  private logger = inject(NGXLogger)
+  readonly #logger = inject(NGXLogger)
   private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, { optional: true })
   private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
@@ -149,10 +149,6 @@ export class IndicatorDetailComponent {
   @Input() desktop = false
 
   @ViewChild('commentsContent') commentsContent: ElementRef<any>
-
-  get copilotEnabled() {
-    return this.copilotService.enabled
-  }
 
   /**
   |--------------------------------------------------------------------------
@@ -610,7 +606,7 @@ export class IndicatorDetailComponent {
   */
   readonly indicator = toSignal(this.indicator$)
   readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
-
+  readonly copilotEnabled = toSignal(this.copilotService.enabled$)
   /**
   |--------------------------------------------------------------------------
   | Subscriptions
@@ -696,8 +692,11 @@ export class IndicatorDetailComponent {
   }
 
   onPeriodSlicerChange(slicers: ISlicer[]) {
+    this.#logger.debug(`indicator app detail slicer change:`, slicers)
     if (isAdvancedFilter(slicers[0])) {
       this.currentPeriodSlicer$.next(slicers[0].children[0])
+    } else if (isSlicer(slicers[0])) {
+      this.currentPeriodSlicer$.next(slicers[0])
     }
   }
 
@@ -713,12 +712,12 @@ export class IndicatorDetailComponent {
   }
 
   onExplain(event) {
-    this.logger.trace(`indicator app, detail explain:`, event)
+    this.#logger.trace(`indicator app, detail explain:`, event)
     this.explainData = event
   }
 
   onDrillExplain(index, drill, event) {
-    this.logger.trace(`indicator app, detail drilldown explain:`, event)
+    this.#logger.trace(`indicator app, detail drilldown explain:`, event)
     this.drillExplainData[index] = {
       drill,
       event

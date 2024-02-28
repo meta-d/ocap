@@ -195,7 +195,7 @@
             {{ 'IndicatorApp.IsPeriodRelated' | translate: {Default: 'Is Period Related'} }}
           </mat-checkbox>
 
-          <button mat-button color="accent" class="ngm-accent" [disabled]="!copilotEnabled || !prompt || answering" (click)="askCopilot()">
+          <button mat-button color="accent" class="ngm-accent" [disabled]="!copilotEnabled() || !prompt || answering" (click)="askCopilot()">
             {{ 'IndicatorApp.AskCopilot' | translate: {Default: 'Ask Copilot'} }}
           </button>
   

@@ -9,6 +9,8 @@ import { distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap
 import { ICopilot as IServerCopilot } from '../types'
 import { Store } from './store.service'
 
+const API_CHAT = '/api/ai/chat'
+
 @Injectable({ providedIn: 'root' })
 export class PACCopilotService extends CopilotService {
   readonly #store = inject(Store)
@@ -22,14 +24,21 @@ export class PACCopilotService extends CopilotService {
       distinctUntilChanged(),
       filter(Boolean),
       switchMap(() => this.#store.selectOrganizationId()),
-      switchMap(() => this.httpClient.get<{ items: ICopilot[] }>(API_PREFIX + '/copilot')),
+      switchMap(() => this.httpClient.get<{ total: number; items: ICopilot[] }>(API_PREFIX + '/copilot')),
       takeUntilDestroyed()
     )
     .subscribe((result) => {
-      this.copilot = {
-        ...result.items[0],
-        chatUrl: '/api/ai/chat'
+      if (result.total > 0) {
+        this.copilot = {
+          ...result.items[0],
+          chatUrl: API_CHAT
+        }
+      } else {
+        this.copilot = {
+          enabled: false
+        }
       }
+      
     })
 
   constructor() {
@@ -51,7 +60,7 @@ export class PACCopilotService extends CopilotService {
     )
     this.copilot = {
       ...copilot,
-      chatUrl: '/api/ai/chat'
+      chatUrl: API_CHAT
     }
   }
 }

@@ -1,23 +1,35 @@
 import { CommonModule } from '@angular/common'
 import { Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
+import { MatSelectModule } from '@angular/material/select'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { Ability } from '@casl/ability'
 import { nonNullable } from '@metad/core'
 import { uniqBy } from 'lodash-es'
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs'
 import { AbilityActions, IOrganization, Store, UsersOrganizationsService } from '../../../@core'
-import { OrgAvatarComponent } from '../../../@shared'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
-
+import { TranslationBaseComponent, OrgAvatarComponent } from '../../../@shared'
 
 @Component({
   standalone: true,
   selector: 'pac-organization-selector',
   templateUrl: 'organization-selector.component.html',
-  imports: [CommonModule, MatMenuModule, MatIconModule, MatTooltipModule, OrgAvatarComponent]
+  styleUrl: 'organization-selector.component.scss',
+  host: {
+    class: 'pac-organization-selector'
+  },
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatSelectModule,
+    MatMenuModule,
+    MatIconModule,
+    MatTooltipModule,
+    OrgAvatarComponent
+  ]
 })
 export class OrganizationSelectorComponent extends TranslationBaseComponent implements OnInit {
   private readonly store = inject(Store)
@@ -85,6 +97,10 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
 
   ngOnInit() {
     this.loadSelectedOrganization()
+  }
+
+  compareWith(a: IOrganization, b: IOrganization) {
+    return a?.id === b?.id
   }
 
   private loadSelectedOrganization() {
