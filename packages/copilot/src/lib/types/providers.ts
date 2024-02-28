@@ -20,12 +20,16 @@ export const AI_PROVIDERS = {
         name: 'GPT-3.5 Turbo'
       },
       {
+        id: 'gpt-3.5-turbo-16k',
+        name: 'GPT-3.5 Turbo 16k'
+      },
+      {
         id: 'gpt-4',
         name: 'GPT-4'
       },
       {
         id: 'gpt-4-32k',
-        name: 'GPT-4 32K'
+        name: 'GPT-4 32k'
       }
     ] as AiModelType[]
   },
@@ -39,12 +43,16 @@ export const AI_PROVIDERS = {
         name: 'GPT-3.5 Turbo'
       },
       {
+        id: 'gpt-3.5-turbo-16k',
+        name: 'GPT-3.5 Turbo 16k'
+      },
+      {
         id: 'gpt-4',
         name: 'GPT-4'
       },
       {
         id: 'gpt-4-32k',
-        name: 'GPT-4 32K'
+        name: 'GPT-4 32k'
       }
     ] as AiModelType[]
   },

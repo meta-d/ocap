@@ -8,7 +8,7 @@ import { CopilotService } from '../copilot'
 function chatCompletionsUrl(copilot: ICopilot) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
 	const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
-	return apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl
+	return (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) : apiHost) + chatCompletionsUrl
 }
 
 @ApiTags('AI/Chat')
