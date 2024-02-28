@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, DestroyRef, OnInit, inject } from '@angular/core'
+import { Component, DestroyRef, Input, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatIconModule } from '@angular/material/icon'
@@ -37,6 +37,8 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
   private readonly ability = inject(Ability)
   private readonly destroyRef = inject(DestroyRef)
 
+  @Input() isCollapsed = false
+  
   selectedOrganization: IOrganization
 
   public readonly organizations$ = this.store.user$

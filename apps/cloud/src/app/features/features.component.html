@@ -1,10 +1,18 @@
 <mat-sidenav-container class="pac-features__sidenav-container flex-1 h-full" >
-  <mat-sidenav #sidenav [mode]="sidenavMode" class="pac-features__sidenav ngm-theme-dark w-[260px] flex flex-col">
-    <div class="flex items-center border-b border-b-neutral-800">
-      <button class="outline-none border-r border-r-neutral-800 hover:text-yellow-600" (click)="sidenavMode==='over' ? sidenavMode='side' : sidenav.toggle()">
-        <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"></pac-sidenav-navigator>
+  <mat-sidenav #sidenav class="pac-features__sidenav ngm-theme-dark flex flex-col"
+    [mode]="sidenavMode"
+    [(opened)]="sidenavOpened"
+    autosize
+    [ngClass]="sidenavMode === 'over' ? 'w-[260px]' : ''"
+    >
+    <div class="flex items-center border-b border-b-neutral-800"
+      [ngClass]="sidenavOpened && sidenavMode === 'side' ? 'flex-col' : 'flex-row'">
+      <button class="outline-none border-r border-r-neutral-800 hover:text-yellow-600"
+        (click)="toggleSidenav()">
+        <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"/>
       </button>
-      <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"></pac-organization-selector>
+      <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"
+        [isCollapsed]="sidenavOpened && sidenavMode === 'side'"/>
     </div>
 
     <button *ngIf="AbilityActions.Manage | able:'Story'" mat-stroked-button color="accent" class="pac__toolbar-new m-2"
@@ -14,13 +22,17 @@
       >
       <div class="flex justify-center items-center">
         <mat-icon class="shrink-0">add</mat-icon>
-        <span class="hidden md:inline">
-          {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
-        </span>
+        @if (!(sidenavOpened && sidenavMode === 'side')) {
+          <span class="hidden md:inline">
+            {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
+          </span>
+        }
       </div>
     </button>
 
-    <pac-menu class="flex-1 p-2 flex overflow-auto" [isCollapsed]="isCollapsed" [menu]="menu"
+    <pac-menu class="flex-1 p-2 flex overflow-auto"
+      [isCollapsed]="sidenavOpened && sidenavMode === 'side'"
+      [menu]="menu"
       (clicked)="onMenuClicked($event, isMobile())">
     </pac-menu>
   </mat-sidenav>

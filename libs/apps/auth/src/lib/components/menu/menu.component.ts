@@ -1,14 +1,19 @@
+import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, Input, Output } from '@angular/core'
 import { BehaviorSubject, map } from 'rxjs'
+import { PacMenuGroupComponent } from '../menu-group/menu-group.component'
 import { PacMenuItem } from '../types'
 
 @Component({
+  standalone: true,
   selector: 'pac-menu',
   templateUrl: 'menu.component.html',
-  styleUrls: ['menu.component.scss']
+  styleUrls: ['menu.component.scss'],
+  imports: [CommonModule, PacMenuGroupComponent]
 })
 export class PacMenuComponent {
   @Input() isCollapsed = false
+
   @Input() get menu(): PacMenuItem[] {
     return this._menu$.value
   }

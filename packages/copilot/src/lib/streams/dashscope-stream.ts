@@ -184,6 +184,9 @@ interface Completion {
    * A unique identifier for the completion.
    */
   request_id: string;
+  /**
+   * https://help.aliyun.com/zh/dashscope/response-status-codes
+   */
   code: string;
   message: string;
   output: CompletionChoice;

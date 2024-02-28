@@ -75,6 +75,7 @@ export class FeaturesComponent implements OnInit {
 
   copilotEngine: CopilotEngine
   sidenavMode = 'over' as MatDrawerMode
+  sidenavOpened = false
   isEmployee: boolean
   organization: IOrganization
   user: IUser
@@ -141,8 +142,8 @@ export class FeaturesComponent implements OnInit {
     })
   )
 
-  isCollapsed = true
-  isCollapsedHidden = false
+  // isCollapsed = true
+  // isCollapsedHidden = false
 
   assetsInit = false
   showIntelligent = false
@@ -187,11 +188,6 @@ export class FeaturesComponent implements OnInit {
           this.sidenav.close()
         }
       })
-    effect(() => {
-      if (this.isMobile()) {
-        this.isCollapsedHidden = true
-      }
-    })
   }
 
   async ngOnInit() {
@@ -301,8 +297,12 @@ export class FeaturesComponent implements OnInit {
     })
   }
 
-  toggleInsight() {
-    this.appService.toggleInsight()
+  toggleSidenav() {
+    if (this.sidenavMode === 'over') {
+      this.sidenavMode = 'side'
+    } else {
+      this.sidenav.toggle()
+    }
   }
 
   onLink(item) {
@@ -331,7 +331,6 @@ export class FeaturesComponent implements OnInit {
     }
     if (event instanceof NavigationEnd) {
       this.loading = false
-      // this.isCollapsedHidden = false
       if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
           catalog: MenuCatalog.Project
@@ -341,7 +340,6 @@ export class FeaturesComponent implements OnInit {
           catalog: MenuCatalog.Stories
         })
       } else if (event.url.match(/^\/story/g)) {
-        // this.isCollapsedHidden = true
       } else if (event.url.match(/^\/models/g)) {
         // this.appService.setCatalog({
         //   catalog: MenuCatalog.Models,
@@ -356,7 +354,6 @@ export class FeaturesComponent implements OnInit {
         this.appService.setCatalog({
           catalog: MenuCatalog.IndicatorApp
         })
-        // this.isCollapsedHidden = true
       } else {
         this.appService.setCatalog({ catalog: null })
       }
@@ -378,10 +375,10 @@ export class FeaturesComponent implements OnInit {
   }
 
   onMenuClicked(event, isMobile) {
-    this.isCollapsed = true
-    if (isMobile) {
-      this.isCollapsedHidden = true
-    }
+    // this.isCollapsed = true
+    // if (isMobile) {
+    //   this.isCollapsedHidden = true
+    // }
   }
 
   toggleDark() {
