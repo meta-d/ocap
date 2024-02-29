@@ -22,7 +22,8 @@ export default {
         importProvidersFrom(MarkdownModule.forRoot()),
         provideClientCopilot(() => Promise.resolve({
           enabled: true,
-          chatUrl: ''
+          chatUrl: '',
+          defaultModel: ''
         })),
         provideLogger()
       ]

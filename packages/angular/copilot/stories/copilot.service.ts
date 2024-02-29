@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core'
-import { ChatRequest, ChatRequestOptions, JSONValue, Message, UseChatOptions, nanoid } from 'ai'
+import { UseChatOptions } from '@metad/copilot'
+import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { NgmClientCopilotService } from '../services'
 
 @Injectable()
@@ -14,14 +15,11 @@ export class NgmSBCopilotService extends NgmClientCopilotService {
       headers,
       body,
       generateId = nanoid
-    }: UseChatOptions = {},
+    }: UseChatOptions = {
+      model: null
+    },
     chatRequest: ChatRequest,
     { options, data }: ChatRequestOptions = {},
-    {
-      abortController
-    }: {
-      abortController: AbortController | null
-    }
   ): Promise<
     | Message
     | {

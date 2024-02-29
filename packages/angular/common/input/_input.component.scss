@@ -31,7 +31,6 @@ $prefix: (ngm, color);
     &:hover:not(:disabled) {
       --tw-ring-color: rgb(234 179 8 / 0.5); // ring-yellow-500/50
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
-      // background-color: var(#{token-utils.get-token-variable(surface-container-high)});
     }
     &:focus {
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});

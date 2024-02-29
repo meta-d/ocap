@@ -81,7 +81,10 @@
         "styles": [
           "packages/angular/.storybook/peview.scss",
           "packages/angular/_index.scss"
-        ]
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": ["node_modules/"]
+        }
       },
       "configurations": {
         "ci": {

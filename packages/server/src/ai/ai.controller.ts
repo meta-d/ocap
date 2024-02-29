@@ -1,9 +1,9 @@
 import { ICopilot } from '@metad/contracts'
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { AI_PROVIDERS } from '@metad/copilot'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
+import { AI_PROVIDERS } from './providers'
 
 function chatCompletionsUrl(copilot: ICopilot) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
