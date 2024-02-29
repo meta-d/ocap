@@ -12,7 +12,7 @@ import {
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
-import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
+import { MatDrawerMode, MatSidenav, MatSidenavContainer } from '@angular/material/sidenav'
 import {
   Event,
   NavigationCancel,
@@ -142,8 +142,9 @@ export class FeaturesComponent implements OnInit {
     })
   )
 
-  // isCollapsed = true
-  // isCollapsedHidden = false
+  get isCollapsed() {
+    return this.sidenavOpened && this.sidenavMode === 'side'
+  }
 
   assetsInit = false
   showIntelligent = false
@@ -188,6 +189,15 @@ export class FeaturesComponent implements OnInit {
           this.sidenav.close()
         }
       })
+    effect(() => {
+      if (this.store.fixedLayoutSider()) {
+        this.sidenavMode = 'side'
+        this.sidenavOpened = true
+      } else {
+        this.sidenavMode = 'over'
+        this.sidenavOpened = false
+      }
+    })
   }
 
   async ngOnInit() {
@@ -297,11 +307,18 @@ export class FeaturesComponent implements OnInit {
     })
   }
 
-  toggleSidenav() {
+  toggleSidenav(sidenav: MatSidenavContainer) {
     if (this.sidenavMode === 'over') {
       this.sidenavMode = 'side'
+      setTimeout(() => {
+        sidenav.ngDoCheck()
+      }, 100)
+      this.store.setFixedLayoutSider(true)
     } else {
       this.sidenav.toggle()
+      setTimeout(() => {
+        this.store.setFixedLayoutSider(false)
+      }, 100)
     }
   }
 
@@ -502,36 +519,6 @@ export class FeaturesComponent implements OnInit {
         }
       },
       // {
-      //   title: 'Insight',
-      //   icon: 'message',
-      //   pathMatch: 'prefix',
-      //   data: {
-      //     translationKey: 'MENU.INSIGHT',
-      //     featureKey: AnalyticsFeatures.FEATURE_INSIGHT
-      //   },
-      //   children: [
-      //     {
-      //       title: 'Viwer',
-      //       icon: 'message',
-      //       link: '/insight',
-      //       data: {
-      //         translationKey: 'MENU.INSIGHT_VIEWER',
-      //         featureKey: AnalyticsFeatures.FEATURE_INSIGHT_VIEWER
-      //       }
-      //     },
-      //     {
-      //       title: 'Admin',
-      //       icon: 'import',
-      //       link: '/insight/admin',
-      //       data: {
-      //         translationKey: 'MENU.INSIGHT_ADMIN',
-      //         featureKey: AnalyticsFeatures.FEATURE_INSIGHT_ADMIN
-      //       }
-      //     }
-      //   ]
-      // },
-
-      // {
       //   title: 'Subscription',
       //   icon: 'alert',
       //   pathMatch: 'prefix',
@@ -575,14 +562,6 @@ export class FeaturesComponent implements OnInit {
           featureKey: FeatureEnum.FEATURE_SETTING
         },
         children: [
-          // {
-          //   title: 'General',
-          //   matIcon: 'settings',
-          //   link: '/settings/general',
-          //   data: {
-          //     translationKey: 'General'
-          //   }
-          // },
           {
             title: 'Account',
             matIcon: 'account_circle',

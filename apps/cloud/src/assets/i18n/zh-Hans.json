@@ -158,7 +158,10 @@
       "Stories": "故事",
       "Indicators": "指标",
       "IndicatorMarket": "指标市场",
-      "RemeberMe": "记住我"
+      "RemeberMe": "记住我",
+      "Tune": "设置",
+      "Notification": "通知",
+      "ClearAll": "清空"
     },
     "MENU": {
       "Certification": "认证",

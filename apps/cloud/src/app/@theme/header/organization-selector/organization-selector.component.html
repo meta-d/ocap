@@ -1,4 +1,7 @@
-<mat-select [(ngModel)]="selectedOrganization" [compareWith]="compareWith" (ngModelChange)="selectOrganization($event)">
+<mat-select [(ngModel)]="selectedOrganization" [compareWith]="compareWith" panelWidth="200px"
+  [matTooltip]="selectedOrganization?.name"
+  [matTooltipDisabled]="!isCollapsed"
+  (ngModelChange)="selectOrganization($event)">
   <mat-select-trigger>
     @if (selectedOrganization) {
       <div class="flex justify-start items-center">

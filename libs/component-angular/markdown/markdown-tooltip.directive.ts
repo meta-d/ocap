@@ -2,6 +2,9 @@ import { ConnectedPosition, Overlay, OverlayConfig, OverlayRef } from '@angular/
 import { ComponentPortal } from '@angular/cdk/portal'
 import { Component, ComponentRef, Directive, ElementRef, HostListener, Input } from '@angular/core'
 
+/**
+ * @deprecated
+ */
 @Directive({
   selector: '[nxMarkdownTooltip]',
 })
@@ -43,6 +46,9 @@ export class MarkdownTooltipDirective {
   }
 }
 
+/**
+ * @deprecated
+ */
 @Component({
   selector: 'ngm-markdown-tooltip',
   template: `<mat-card>

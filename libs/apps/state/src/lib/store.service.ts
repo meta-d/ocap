@@ -15,7 +15,7 @@ import {
 	OrganizationPermissionsEnum,
 	AnalyticsFeatures
 } from '@metad/contracts';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { StoreConfig, Store as AkitaStore, Query } from '@datorama/akita';
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
@@ -23,6 +23,7 @@ import { combineLatest, merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
 import { ComponentEnum } from './constants';
 import { ThemesEnum, prefersColorScheme } from '@metad/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 
 export interface AppState {
@@ -40,16 +41,32 @@ export interface AppState {
 
 export interface PersistState {
 	organizationId?: string;
+	/**
+	 * @deprecated unused
+	 */
 	clientId?: string;
 	token: string;
 	refreshToken: string;
 	userId: string;
+	/**
+	 * @deprecated unused
+	 */
 	serverConnection: number;
 	preferredLanguage: LanguagesEnum;
 	preferredTheme: ThemesEnum;
+	/**
+	 * @deprecated unused
+	 */
 	preferredComponentLayout: ComponentLayoutStyleEnum;
+	/**
+	 * @deprecated unused
+	 */
 	componentLayout: any[]; //This would be a Map but since Maps can't be serialized/deserialized it is stored as an array
+	/**
+	 * The cache level for the ocap framework
+	 */
 	cacheLevel: number
+	fixedLayoutSider?: boolean
 }
 
 export function createInitialAppState(): AppState {
@@ -115,14 +132,12 @@ export class PersistQuery extends Query<PersistState> {
 
 @Injectable({ providedIn: 'root' })
 export class Store {
-	constructor(
-		protected appStore: AppStore,
-		protected appQuery: AppQuery,
-		protected persistStore: PersistStore,
-		protected persistQuery: PersistQuery,
-		protected permissionsService: NgxPermissionsService,
-		protected ngxRolesService: NgxRolesService
-	) {}
+	protected appStore = inject(AppStore)
+	protected appQuery = inject(AppQuery)
+	protected persistStore = inject(PersistStore)
+	protected permissionsService = inject(NgxPermissionsService)
+	protected ngxRolesService = inject(NgxRolesService)
+	protected persistQuery = inject(PersistQuery)
 
 	user$ = this.appQuery.select((state) => state.user);
 	selectedOrganization$ = this.appQuery.select(
@@ -161,6 +176,9 @@ export class Store {
 	token$ = this.persistQuery.select((state) => state.token);
 	
 	subject = new Subject<ComponentEnum>();
+
+	// Signals
+	fixedLayoutSider = toSignal(this.persistQuery.select((state) => state.fixedLayoutSider))
 
 	/**
 	 * Observe any change to the component layout.
@@ -323,17 +341,6 @@ export class Store {
 		});
 	}
 
-	// get selectedProposal(): IProposalViewModel {
-	// 	const { selectedProposal } = this.appQuery.getValue();
-	// 	return selectedProposal;
-	// }
-
-	// set selectedProposal(proposal: IProposalViewModel) {
-	// 	this.appStore.update({
-	// 		selectedProposal: proposal
-	// 	});
-	// }
-
 	get featureToggles(): IFeatureToggle[] {
 		const { featureToggles } = this.appQuery.getValue();
 		return featureToggles;
@@ -486,6 +493,12 @@ export class Store {
 		this.persistStore.update({
 			cacheLevel: cacheLevel
 		});
+	}
+
+	setFixedLayoutSider(value) {
+		this.persistStore.update({
+			fixedLayoutSider: value
+		})
 	}
 
 	clear() {

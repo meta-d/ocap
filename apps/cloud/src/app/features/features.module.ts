@@ -20,12 +20,13 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
 import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
-import { MaterialModule, PACStatusBarComponent, SharedModule } from '../@shared/index'
+import { MaterialModule, SharedModule } from '../@shared/index'
 import { HeaderSettingsComponent, ProjectSelectorComponent } from '../@theme/header'
 import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
+import { NotificationComponent, TuneComponent } from '../@theme'
 
 registerEChartsThemes()
 
@@ -38,7 +39,6 @@ registerEChartsThemes()
     SharedModule,
     PacAuthModule,
     PACThemeModule,
-    PACStatusBarComponent,
     NgxPopperjsModule,
     HeaderSettingsComponent,
     AssetsComponent,
@@ -51,7 +51,9 @@ registerEChartsThemes()
     NgmCopilotChatComponent,
     NgmDrawerTriggerComponent,
     ResizerModule,
-    NgmTableComponent
+    NgmTableComponent,
+    NotificationComponent,
+    TuneComponent
   ],
   providers: [
     DirtyCheckGuard,

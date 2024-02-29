@@ -11,8 +11,8 @@ $prefix: (ngm, shell);
 
 @function get-color-tokens() {
   @return (
-    header-bg-color: var(--ngm-color-surface-container),
-    drawer-container-bg-color: var(--ngm-color-surface-container),
+    bg-color: var(--ngm-color-surface-container),
+    primary-container-bg-color: var(--ngm-color-surface-container),
     copilot-bg-color: var(--ngm-color-surface),
   );
 }
@@ -26,23 +26,28 @@ $prefix: (ngm, shell);
 
 @include token-utils.use-tokens($prefix, get-token-slots()) {
   .mat-toolbar.pac__shell-bar {
-    --mat-toolbar-container-background-color: var(#{token-utils.get-token-variable(header-bg-color)});
+    --mat-toolbar-container-background-color: var(#{token-utils.get-token-variable(bg-color)});
   }
   :host {
-    --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(drawer-container-bg-color)});
+    --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(primary-container-bg-color)});
     --ngm-copilot-bg-color: var(#{token-utils.get-token-variable(copilot-bg-color)});
+  }
+
+  .pac-features__sidenav {
+    --mat-sidenav-container-background-color: var(#{token-utils.get-token-variable(bg-color)});
   }
 }
 
 :host {
+  --mat-sidenav-container-divider-color: transparent;
+  @include token-utils.create-token-values($prefix, get-token-slots());
+
   flex: 1;
   height: 100%;
   max-width: 100%;
 
-  @include token-utils.create-token-values($prefix, get-token-slots());
-
   .pac_sidenav-content {
-    --mat-sidenav-container-divider-color: transparent;
+    // --mat-sidenav-container-divider-color: transparent;
     // --mat-sidenav-container-background-color: transparent;
   }
 }

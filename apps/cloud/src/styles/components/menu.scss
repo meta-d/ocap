@@ -27,3 +27,20 @@
 .cdk-menu-item.cdk-menu-trigger {
   justify-content: space-between;
 }
+
+.mat-mdc-menu-panel {
+  .mat-mdc-menu-item {
+    .mat-icon {
+      @apply shrink-0;
+    }
+  }
+
+  // 未完成
+  &.ngm-density__compact {
+    .mat-mdc-menu-item {
+      .mat-icon {
+
+      }
+    }
+  }
+}

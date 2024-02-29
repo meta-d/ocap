@@ -4,6 +4,8 @@
 
 <div class="pac-menu__space"></div>
 
+<ng-content></ng-content>
+
 <pac-menu-group [isCollapsed]="isCollapsed" [menu]="admin$ | async"
     (clicked)="clicked.emit()">
 </pac-menu-group>

@@ -183,7 +183,7 @@
         routerLinkActive #rla4="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
         [class.active]="rla4.isActive"
       >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">trending_up</mat-icon>
+        <mat-icon fontSet="material-icons-outlined" class="shrink-0">trending_up</mat-icon>
         <span >
           {{ 'PAC.Project.Indicators' | translate: {Default: 'Indicators'} }}
         </span>
@@ -194,7 +194,7 @@
         routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
         [class.active]="rla5.isActive"
       >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">people</mat-icon>
+        <mat-icon fontSet="material-icons-outlined" class="shrink-0">people</mat-icon>
         <span class="">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
       </div>
     </div>
@@ -205,11 +205,6 @@
     ></div>
   </mat-drawer>
   <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}">
-    <!-- <button mat-icon-button displayDensity="cosy" class="pac-project__anchor absolute -left-4 top-4 bg-white dark:bg-slate-500"
-      (click)="drawer.toggle()"
-    >
-      <mat-icon [class.rotate-180]="drawer.opened" class="duration-300">chevron_right</mat-icon>
-    </button> -->
     <router-outlet #o="outlet"></router-outlet>
 
     <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>

@@ -111,25 +111,15 @@ export class NgmValueHelpComponent implements OnInit {
     this.slicer.members = value.members
   }
 
-  get displayBehaviour() {
-    return this.dimension?.displayBehaviour
-  }
-  set displayBehaviour(value) {
-    this.dimension = {
-      ...this.dimension,
-      displayBehaviour: value
-    }
-  }
-
-  get hierarchy() {
-    return this.dimension?.hierarchy
-  }
-  set hierarchy(value) {
-    this.dimension = {
-      ...this.dimension,
-      hierarchy: value
-    }
-  }
+  // get hierarchy() {
+  //   return this.dimension?.hierarchy
+  // }
+  // set hierarchy(value) {
+  //   this.dimension = {
+  //     ...this.dimension,
+  //     hierarchy: value
+  //   }
+  // }
 
   get showAllMember() {
     return this.options?.showAllMember
@@ -183,6 +173,9 @@ export class NgmValueHelpComponent implements OnInit {
 
   presentation: PresentationEnum
   expandAvailables = false
+
+  readonly displayBehaviour = computed(() => this._dimension()?.displayBehaviour ?? DisplayBehaviour.auto) // Default (null / undefined) to auto
+  readonly hierarchy = computed(() => this._dimension()?.hierarchy || this._dimension()?.dimension) // Hierarchy default same as dimension
 
   readonly entityType = toSignal(
     toObservable(this.dataSettings$).pipe(
@@ -239,6 +232,20 @@ export class NgmValueHelpComponent implements OnInit {
     }
   }
 
+  setDisplayBehaviour(value: DisplayBehaviour) {
+    this._dimension.update((state) => ({
+      ...state,
+      displayBehaviour: value
+    }))
+  }
+
+  setHierarchy(hierarchy: string) {
+    this._dimension.update((state) => ({
+      ...state,
+      hierarchy
+    }))
+  }
+
   deleteMember(i) {
     const members = [...this.slicer.members]
     members.splice(i, 1)
@@ -261,7 +268,7 @@ export class NgmValueHelpComponent implements OnInit {
       dimension: {
         ...this.dimension,
         // Default to descriptionOnly
-        displayBehaviour: this.dimension.displayBehaviour ?? DisplayBehaviour.descriptionOnly
+        // displayBehaviour: this.dimension.displayBehaviour ?? DisplayBehaviour.descriptionOnly
       }
     })
   }

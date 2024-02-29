@@ -1,0 +1,18 @@
+/**
+ * React opacity to hover event for buttons or others actionable.
+ */
+.ngm-actionable-opacity {
+  @apply opacity-80 hover:opacity-100 transition-opacity duration-200;
+}
+
+/**
+ * For radio buttons in menu.
+ */
+.ngm-radio-menu.mat-mdc-menu-panel {
+  .mdc-form-field {
+    width: 100%;
+  }
+  .mdc-label {
+    flex: 1;
+  }
+}

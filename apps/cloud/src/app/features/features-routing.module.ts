@@ -78,10 +78,7 @@ const routes: Routes = [
       //   loadChildren: () => import('./subscription/subscription.module').then((m) => m.PACSubscriptionModule),
       //   canActivate: [AuthGuard]
       // },
-      {
-        path: 'insight',
-        loadChildren: () => import('./insight/insight.module').then((m) => m.PACInsightModule)
-      },
+
       {
         path: 'settings',
         loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),

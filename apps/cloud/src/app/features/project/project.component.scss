@@ -36,15 +36,23 @@ $prefix-color: (#{$prefix}, color);
   max-width: 100%;
 }
 
-.pac-project__anchor {
-  @apply absolute z-10 border border-solid;
-}
-
 @include token-utils.use-tokens($prefix, get-token-slots()) {
   .mat-drawer-content {
     background-color: var(#{token-utils.get-token-variable(color-surface)});
     border-top-left-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
-    // border-top-right-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
     @apply flex overflow-hidden; // for rounded corner overflow-visible;
   }
+}
+
+.pac-project__router-link {
+  @apply hover:bg-black/5 dark:hover:bg-white/5;
+
+  &.active {
+    @apply bg-black/10 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/10;
+  }
+}
+
+.mat-mdc-list-item.mdc-list-item.pac-project__router-link {
+  --mdc-list-list-item-one-line-container-height: 30px;
+  @apply rounded-md p-0 cursor-pointer;
 }

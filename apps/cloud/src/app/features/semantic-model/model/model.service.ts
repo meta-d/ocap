@@ -82,7 +82,6 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     this.dimensionStates$
   ]).pipe(
     map(([cubes, dimensions]) => {
-      console.log(`dimensions states:`, dimensions)
       return [
         ...(cubes?.map((cube) => ({ ...cube, caption: (cube.cube as any)?.caption })) ?? []),
         ...(dimensions?.map((dimension) => ({ ...dimension, caption: dimension.dimension?.caption })) ?? [])

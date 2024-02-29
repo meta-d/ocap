@@ -19,6 +19,7 @@ import {
   calcRange,
   ChartAnnotation,
   ChartDimensionRoleType,
+  ChartOptions,
   ChartOrient,
   ChartSettings,
   DataSettings,
@@ -479,7 +480,15 @@ export class IndicatorDetailComponent {
               chartType: {
                 name: barName,
                 type: 'Bar',
-                orient: ChartOrient.horizontal
+                orient: ChartOrient.horizontal,
+                chartOptions: {
+                  seriesStyle: {
+                    barMinHeight: 10,
+                    label: {
+                      align: 'left',
+                    }
+                  }
+                }
               },
               dimensions: [
                 {
@@ -544,7 +553,13 @@ export class IndicatorDetailComponent {
               }
             ]
           },
-          chartOptions: {
+          chartOptions: <ChartOptions>{
+            aria: {
+              enabled: true,
+              decal: {
+                show: true
+              }
+            },
             grid: {
               right: 20
             },

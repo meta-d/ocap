@@ -1,52 +1,65 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, OnInit, computed, inject } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { Component, computed, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
+import { MatListModule } from '@angular/material/list'
+import { MatMenuModule } from '@angular/material/menu'
+import { MatSliderModule } from '@angular/material/slider'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgFilterPipeModule } from '@metad/core'
-import { ButtonGroupDirective, NgmAgentService, NgmDSCacheService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective, DensityDirective, NgmDSCacheService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentStatus, AgentStatusEnum } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { environment } from 'apps/cloud/src/environments/environment'
-import { Observable, merge, of } from 'rxjs'
+import { Observable, of } from 'rxjs'
 import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '../../@core'
-import { TranslationBaseComponent } from '../language/translation-base.component'
-import { MaterialModule } from '../material.module'
 
-/**
- * @deprecated use {@link TuneComponent} instead
- */
 @Component({
   standalone: true,
+  selector: 'pac-tune',
+  templateUrl: 'tune.component.html',
+  styleUrl: 'tune.component.scss',
+  host: {
+    class: 'pac-tune'
+  },
   imports: [
     CommonModule,
     FormsModule,
-    MaterialModule,
     TranslateModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatTabsModule,
+    MatListModule,
+    MatSliderModule,
     ButtonGroupDirective,
-
-    NgFilterPipeModule,
-    OcapCoreModule
-  ],
-  selector: 'pac-status-bar',
-  templateUrl: './status-bar.component.html',
-  styleUrls: ['./status-bar.component.scss'],
-  host: {
-    class: 'pac-status-bar'
-  }
+    DensityDirective,
+    NgFilterPipeModule
+  ]
 })
-export class PACStatusBarComponent extends TranslationBaseComponent implements OnInit {
-  AgentStatusEnum = AgentStatusEnum
+export class TuneComponent {
   enableLocalAgent = environment.enableLocalAgent
+  AgentStatusEnum = AgentStatusEnum
+  
+  readonly toastrService = inject(ToastrService)
+  readonly localAgent? = inject(LocalAgent, { optional: true })
+  readonly wasmAgentService = inject(WasmAgentService)
+  readonly serverAgent = inject(ServerAgent)
+  readonly cacheService = inject(NgmDSCacheService)
+  readonly store = inject(Store)
 
-  private store = inject(Store)
-  private cacheService = inject(NgmDSCacheService)
-  private agentService = inject(NgmAgentService)
-  public localAgent? = inject(LocalAgent, { optional: true })
-  public serverAgent = inject(ServerAgent)
-  private wasmAgentService = inject(WasmAgentService)
-  private toastrService = inject(ToastrService)
-  private _cdr = inject(ChangeDetectorRef)
+  get cacheLevel() {
+    return this.cacheService.getCacheLevel()
+  }
+  set cacheLevel(value) {
+    this.cacheService.changeCacheLevel(value)
+    this.store.cacheLevel = value
+  }
 
   public readonly localAgentStatus = toSignal<AgentStatus>(
     (this.localAgent?.selectStatus() as Observable<AgentStatus>) ?? of({ status: AgentStatusEnum.OFFLINE })
@@ -76,32 +89,7 @@ export class PACStatusBarComponent extends TranslationBaseComponent implements O
     return null
   })
 
-  errors = []
-
-  hasError = false
-  get cacheLevel() {
-    return this.cacheService.getCacheLevel()
-  }
-  set cacheLevel(value) {
-    this.cacheService.changeCacheLevel(value)
-    this.store.cacheLevel = value
-  }
-
-  private errorSub = merge(this.wasmAgentService.selectError(), this.agentService.selectError())
-    .pipe(takeUntilDestroyed())
-    .subscribe((error) => {
-      const message = typeof error === 'string' ? error : error?.message
-
-      if (this.errors.length > 10) {
-        this.errors.shift()
-      }
-      if (error) {
-        this.errors.push(message)
-        this.hasError = true
-      }
-    })
-
-  ngOnInit(): void {
+  constructor() {
     if (this.store.cacheLevel !== null && this.cacheService.getCacheLevel() !== this.store.cacheLevel) {
       this.cacheService.changeCacheLevel(this.store.cacheLevel)
     }
@@ -109,6 +97,10 @@ export class PACStatusBarComponent extends TranslationBaseComponent implements O
 
   tryConnectLocalAgent() {
     this.localAgent?.connect()
+  }
+
+  async deleteAuth(service: AbstractAgent, id: string) {
+    await service.deleteAuthentication(id)
   }
 
   cacheLevelFormatter(value: number): string {
@@ -133,20 +125,8 @@ export class PACStatusBarComponent extends TranslationBaseComponent implements O
     this.toastrService.success('PAC.ACTIONS.CLEAR_CACHE')
   }
 
-  clearErrors() {
-    this.errors = []
-    this.hasError = false
-  }
-
-  afterClose() {}
-
   valueIsNotNil(item) {
     return !!item.value
-  }
-
-  async deleteAuth(service: AbstractAgent, id: string) {
-    await service.deleteAuthentication(id)
-    this._cdr.detectChanges()
   }
 }
 

@@ -1,39 +1,50 @@
-<mat-sidenav-container class="pac-features__sidenav-container flex-1 h-full" >
-  <mat-sidenav #sidenav class="pac-features__sidenav ngm-theme-dark flex flex-col"
+<mat-sidenav-container #sidenavContainer class="pac-features__sidenav-container flex-1 h-full" autosize>
+  <mat-sidenav #sidenav class="pac-features__sidenav flex flex-col"
     [mode]="sidenavMode"
     [(opened)]="sidenavOpened"
-    autosize
     [ngClass]="sidenavMode === 'over' ? 'w-[260px]' : ''"
     >
-    <div class="flex items-center border-b border-b-neutral-800"
-      [ngClass]="sidenavOpened && sidenavMode === 'side' ? 'flex-col' : 'flex-row'">
-      <button class="outline-none border-r border-r-neutral-800 hover:text-yellow-600"
-        (click)="toggleSidenav()">
+    <div class="flex items-center"
+      [ngClass]="isCollapsed ? 'flex-col' : 'flex-row'">
+      <button class="outline-none hover:text-yellow-600"
+        (click)="toggleSidenav(sidenavContainer)">
         <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"/>
       </button>
       <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"
-        [isCollapsed]="sidenavOpened && sidenavMode === 'side'"/>
+        [class.pl-[12px]]="isCollapsed"
+        [isCollapsed]="isCollapsed"/>
     </div>
 
-    <button *ngIf="AbilityActions.Manage | able:'Story'" mat-stroked-button color="accent" class="pac__toolbar-new m-2"
-      [matMenuTriggerFor]="creatMenu"
-      #mt="matMenuTrigger"
-      [class.active]="mt.menuOpen"
-      >
-      <div class="flex justify-center items-center">
-        <mat-icon class="shrink-0">add</mat-icon>
-        @if (!(sidenavOpened && sidenavMode === 'side')) {
-          <span class="hidden md:inline">
-            {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
-          </span>
-        }
-      </div>
-    </button>
+    @if (AbilityActions.Manage | able:'Story') {
+      @if (isCollapsed) {
+        <button mat-icon-button color="accent" class="pac__toolbar-new m-2"
+          [matMenuTriggerFor]="creatMenu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen">
+          <mat-icon class="shrink-0">add</mat-icon>
+        </button>
+      } @else {
+        <button mat-stroked-button color="accent" class="pac__toolbar-new m-2"
+          [matMenuTriggerFor]="creatMenu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen"
+          >
+          <div class="flex justify-center items-center">
+            <mat-icon class="shrink-0">add</mat-icon>
+            <span class="hidden md:inline">
+              {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
+            </span>
+          </div>
+        </button>
+      }
+    }
 
     <pac-menu class="flex-1 p-2 flex overflow-auto"
-      [isCollapsed]="sidenavOpened && sidenavMode === 'side'"
+      [isCollapsed]="isCollapsed"
       [menu]="menu"
       (clicked)="onMenuClicked($event, isMobile())">
+      <pac-notification class="flex justify-end"/>
+      <pac-tune class="flex justify-end"/>
     </pac-menu>
   </mat-sidenav>
 
@@ -157,15 +168,14 @@
         <router-outlet #o="outlet"></router-outlet>
       </mat-drawer-content>
     </mat-drawer-container>
-
-    <pac-status-bar class="pac__status-bar"></pac-status-bar>
   </mat-sidenav-content>
 </mat-sidenav-container>
 
-
-<mat-progress-bar *ngIf="loading" class="pac-router__progress-bar absolute top-0 left-0 w-full z-10"
-   color="accent" mode="indeterminate" >
-</mat-progress-bar>
+@if (loading) {
+  <mat-progress-bar class="pac-router__progress-bar absolute top-0 left-0 w-full z-10"
+    color="accent" mode="indeterminate" >
+  </mat-progress-bar>
+}
 
 <popper-content #popperContent class="pac-features__auth-popper">
   <pac-header-settings></pac-header-settings>

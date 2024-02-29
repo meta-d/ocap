@@ -182,25 +182,6 @@ html.cdk-global-scrollblock {
   }
 }
 
-.mat-mdc-menu-panel {
-  .mat-mdc-menu-item {
-    --mat-menu-item-icon-color: theme(colors.gray.600);
-
-    .mat-icon {
-      @apply shrink-0;
-    }
-  }
-
-  // 未完成
-  &.ngm-density__compact {
-    .mat-mdc-menu-item {
-      .mat-icon {
-
-      }
-    }
-  }
-}
-
 .mat-mdc-tab-nav-panel {
   @apply flex-1 flex flex-col;
 }

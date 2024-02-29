@@ -1,0 +1,5 @@
+.ngm-list.mdc-list {
+  .mdc-list-item {
+    @apply hover:bg-black/5 dark:hover:bg-white/5;
+  }
+}

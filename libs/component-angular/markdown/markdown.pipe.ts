@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core'
 // import marked from 'marked'
 
+/**
+ * @deprecated
+ */
 @Pipe({
   name: 'markdown',
 })
