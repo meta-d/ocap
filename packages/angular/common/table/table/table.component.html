@@ -27,8 +27,10 @@
         <!-- Columns -->
         <ng-container [matColumnDef]="column.name" *ngFor="let column of columns">
           <th mat-header-cell *matHeaderCellDef mat-sort-header [width]="column.width">
-            <div class="ngm-header-cell flex-1 flex justify-start items-center whitespace-nowrap">
+            <div class="ngm-header-cell flex-1 flex justify-between items-center whitespace-nowrap">
+              <span>
               {{column.caption || column.name}}
+              </span>
 
               <div class="searchable flex-1 flex justify-between items-center" [class.searching]="searchingColumn===column.name">
                 <input matInput placeholder="{{ 'PAC.KEY_WORDS.SEARCH' | translate: {Default: 'Search'} }}" type="text" class="flex-1 text-left text-sm"
@@ -53,7 +55,7 @@
           </td>
         </ng-container>
       
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true" class="bg-gray-50"></tr>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 </div>

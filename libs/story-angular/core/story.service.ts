@@ -240,7 +240,11 @@ export class NxStoryService extends ComponentStore<StoryState> {
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
+  /**
+   * @deprecated use Signal {@link isAuthenticated} instead
+   */
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
+  readonly isAuthenticated = toSignal(this.select((state) => state.isAuthenticated))
   public readonly isPanMode$ = this.select((state) => state.isPanMode)
 
   // FilterBar merge with global appearance

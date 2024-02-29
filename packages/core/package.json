@@ -1,6 +1,6 @@
 {
   "name": "@metad/ocap-core",
-  "version": "1.18.0-beta.4",
+  "version": "2.0.0-beta.1",
   "dependencies": {
     "tslib": "^2.3.0"
   },

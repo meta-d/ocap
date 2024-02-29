@@ -125,13 +125,6 @@ export class NgmCopilotChatComponent {
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
-  // get enabled() {
-  //   return this.copilotService.enabled
-  // }
-  // get hasKey() {
-  //   return this.copilotService.hasKey
-  // }
-
   get _placeholder() {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
@@ -140,7 +133,7 @@ export class NgmCopilotChatComponent {
 
   // Copilot
   private openaiOptions = {
-    model: 'gpt-3.5-turbo',
+    model: null,
     useSystemPrompt: true
   } as AIOptions
   get aiOptions() {
@@ -194,6 +187,7 @@ export class NgmCopilotChatComponent {
   readonly canListModels = computed(() => !!AI_PROVIDERS[this.copilot()?.provider]?.modelsUrl)
   readonly latestModels = signal<AiModelType[]>([])
   readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine?.conversations())
+  readonly isTools = toSignal(this.copilotService.isTools$)
 
   /**
    * 当前 Asking prompt
@@ -220,7 +214,7 @@ export class NgmCopilotChatComponent {
   })
 
   readonly commands = computed(() => {
-    if (this.copilotEngine?.commands) {
+    if (this.copilotEngine?.commands && this.isTools()) {
       const commands = []
       this.copilotEngine.commands().forEach((command) => {
         if (command.examples?.length) {

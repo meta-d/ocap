@@ -9,11 +9,23 @@ export type AiModelType = {
   name: string
 }
 
-export const AI_PROVIDERS = {
+export type AiProviderType = {
+  apiHost: string
+  chatCompletionsUrl: string
+  modelsUrl: string | null
+  models: AiModelType[]
+  /**
+   * If the provider has tools function
+   */
+  isTools: boolean
+}
+
+export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
   [AiProvider.OpenAI]: {
     apiHost: 'https://api.openai.com',
     chatCompletionsUrl: '/v1/chat/completions',
     modelsUrl: '/v1/models',
+    isTools: true,
     models: [
       {
         id: 'gpt-3.5-turbo',
@@ -31,12 +43,13 @@ export const AI_PROVIDERS = {
         id: 'gpt-4-32k',
         name: 'GPT-4 32k'
       }
-    ] as AiModelType[]
+    ]
   },
   [AiProvider.Azure]: {
     apiHost: '',
     chatCompletionsUrl: '/v1/chat/completions',
     modelsUrl: '/v1/models',
+    isTools: true,
     models: [
       {
         id: 'gpt-3.5-turbo',
@@ -54,12 +67,13 @@ export const AI_PROVIDERS = {
         id: 'gpt-4-32k',
         name: 'GPT-4 32k'
       }
-    ] as AiModelType[]
+    ]
   },
   [AiProvider.DashScope]: {
     apiHost: 'https://dashscope.aliyuncs.com',
     chatCompletionsUrl: '/api/v1/services/aigc/text-generation/generation',
     modelsUrl: null,
+    isTools: false,
     models: [
       {
         id: 'qwen-turbo',
@@ -113,6 +127,6 @@ export const AI_PROVIDERS = {
         id: 'baichuan2-7b-chat-v1',
         name: '百川2 7b v1'
       }
-    ] as AiModelType[]
+    ]
   }
 }

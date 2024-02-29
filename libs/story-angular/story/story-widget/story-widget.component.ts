@@ -268,7 +268,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   
   public readonly comments$ = this.select((state) => state.comments)
 
-  public readonly isAuthenticated$ = this.storyService.isAuthenticated$
+  readonly isAuthenticated = this.storyService.isAuthenticated
 
   // Story point components
   public readonly allowMultiLayer$ = combineLatest([
@@ -743,7 +743,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   async openShares() {
     const widget = this.widget()
     const story = await firstValueFrom(this.storyService.story$)
-    const isAuthenticated = await firstValueFrom(this.isAuthenticated$)
+    const isAuthenticated = this.isAuthenticated()
 
     await firstValueFrom(this._dialog
       .open(StorySharesComponent, {

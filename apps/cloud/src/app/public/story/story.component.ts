@@ -1,8 +1,8 @@
 import { Component, ElementRef, HostBinding, OnInit, Renderer2, computed, effect, inject, signal } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { ActivatedRoute } from '@angular/router'
 import { NxCoreService } from '@metad/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxStoryService, Story } from '@metad/story/core'
 import { map } from 'rxjs/operators'
 import { AgentType, registerWasmAgentModel } from '../../@core'
@@ -11,8 +11,8 @@ import { AppService } from '../../app.service'
 
 @Component({
   selector: 'pac-story-viewer',
-  templateUrl: 'viewer.component.html',
-  styleUrls: ['viewer.component.scss'],
+  templateUrl: 'story.component.html',
+  styleUrls: ['story.component.scss'],
   providers: [NxCoreService, NxStoryService]
 })
 export class StoryViewerComponent implements OnInit {
@@ -40,12 +40,14 @@ export class StoryViewerComponent implements OnInit {
     return ''
   })
 
-  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   private echartsThemeSub = registerStoryThemes(this.storyService)
 
   private backgroundSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
+    .pipe(
+      map((options) => options?.preferences?.storyStyling?.backgroundColor),
+      takeUntilDestroyed()
+    )
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this.renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)
@@ -53,7 +55,6 @@ export class StoryViewerComponent implements OnInit {
     })
 
   constructor() {
-
     effectStoryTheme(this._elementRef)
 
     effect(() => {
@@ -64,16 +65,16 @@ export class StoryViewerComponent implements OnInit {
         }
       })
     })
+
+    effect(() => {
+      this.storyService.setAuthenticated(this.appService.isAuthenticated())
+    }, { allowSignalWrites: true })
   }
 
   ngOnInit() {
     this.story.set(this.route.snapshot.data['story'])
     this.pageKey = this.route.snapshot.queryParamMap.get('pageKey')
     this.widgetKey = this.route.snapshot.queryParamMap.get('widgetKey')
-
-    this.appService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe((isAuthenticated) => {
-      this.storyService.setAuthenticated(isAuthenticated)
-    })
   }
 
   @HostBinding('class.pac-story-viewer')

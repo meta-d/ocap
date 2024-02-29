@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -29,6 +29,24 @@ import {
   ToastrService
 } from '../../../@core'
 import { createTimer, TranslationBaseComponent } from '../../../@shared'
+
+const QuickGuidesInit = {
+  sample: {
+    complete: false
+  },
+  model: {
+    complete: false,
+    quantity: 0
+  },
+  story: {
+    complete: false,
+    quantity: 0
+  },
+  indicator: {
+    complete: false,
+    quantity: 0
+  }
+}
 
 @Component({
   selector: 'pac-dashboard',
@@ -75,23 +93,7 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     // displayGrid: 'always'
   }
 
-  quickGuides = {
-    sample: {
-      complete: false
-    },
-    model: {
-      complete: false,
-      quantity: 0
-    },
-    story: {
-      complete: false,
-      quantity: 0
-    },
-    indicator: {
-      complete: false,
-      quantity: 0
-    }
-  }
+  readonly quickGuides = signal(cloneDeep(QuickGuidesInit))
   showTrending = false
   creatingDemo = false
 
@@ -99,22 +101,10 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   public readonly organization$ = this.store.selectedOrganization$
   public readonly createdDemo$ = this.organization$.pipe(map((organization) => organization?.createdDemo))
 
-  get feeds() {
-    return this._feeds$.value
-  }
-  set feeds(value) {
-    this._feeds$.next(value)
-  }
-  private readonly _feeds$ = new BehaviorSubject<any[]>([])
-  public readonly feeds$ = this._feeds$.pipe(map((feeds) => compact(feeds).filter((item) => !item?.hidden)))
-
-  get pristineFeeds() {
-    return this.pristineFeeds$.value
-  }
-  public readonly pristineFeeds$ = new BehaviorSubject<any[]>([])
-  public readonly dirty$ = combineLatest([this._feeds$, this.pristineFeeds$]).pipe(
-    map(([feeds, pristineFeeds]) => !isEqual(feeds, pristineFeeds))
-  )
+  readonly pristineFeeds = signal([])
+  readonly #feeds = signal([])
+  readonly feeds = computed(() => compact(this.#feeds()).filter((item) => !item?.hidden))
+  readonly dirty = computed(() => !isEqual(this.#feeds(), this.pristineFeeds()))
 
   public readonly searchAssets$ = this.searchControl.valueChanges.pipe(
     debounceTime(500),
@@ -173,11 +163,13 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
           })
         }
 
-        const guidesIndex = items.findIndex((item) => item.type === 'QuickGuides')
-        if (guidesIndex > -1) {
-          this.quickGuides = items[guidesIndex]
-          items.splice(guidesIndex, 1)
-        }
+        // const guidesIndex = items.findIndex((item) => item.type === 'QuickGuides')
+        // if (guidesIndex > -1) {
+        //   this.quickGuides = items[guidesIndex]
+        //   items.splice(guidesIndex, 1)
+        // } else {
+        //   this.quickGuides = cloneDeep(QuickGuidesInit)
+        // }
 
         return items.map((item) => ({
           ...item,
@@ -193,10 +185,10 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       takeUntilDestroyed()
     )
     .subscribe(async (feeds) => {
-      this.pristineFeeds$.next(cloneDeep(feeds))
-      this.feeds = feeds
+      this.pristineFeeds.set(cloneDeep(feeds))
+      this.#feeds.set(feeds)
     })
-  private assetsSub = this.refreshAssets$
+  private assetsSub = combineLatest([this.refreshAssets$, this.store.selectOrganizationId()])
     .pipe(
       switchMap(() =>
         combineLatest([this.modelsService.count(), this.storiesService.count(), this.indicatorsService.count()])
@@ -204,23 +196,27 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       takeUntilDestroyed()
     )
     .subscribe(([modelCount, storyCount, indicatorCount]) => {
-      this.quickGuides.model.quantity = modelCount
-      this.quickGuides.model.complete = modelCount > 0
-
-      this.quickGuides.story.quantity = storyCount
-      this.quickGuides.story.complete = storyCount > 0
-
-      this.quickGuides.indicator.quantity = indicatorCount
-      this.quickGuides.indicator.complete = indicatorCount > 0
-
-      this._cdr.detectChanges()
+      this.quickGuides.update((quickGuides) => {
+        quickGuides.model.quantity = modelCount
+        quickGuides.model.complete = modelCount > 0
+  
+        quickGuides.story.quantity = storyCount
+        quickGuides.story.complete = storyCount > 0
+  
+        quickGuides.indicator.quantity = indicatorCount
+        quickGuides.indicator.complete = indicatorCount > 0
+        return quickGuides
+      })
     })
   private dateSub = this.dateControl.valueChanges.pipe(takeUntilDestroyed()).subscribe((value) => {
     this.dsCoreService.setToday(value)
   })
 
   private demoSub = this.createdDemo$.pipe(takeUntilDestroyed()).subscribe((createdDemo) => {
-    this.quickGuides.sample.complete = createdDemo
+    this.quickGuides.update((quickGuides) => {
+      quickGuides.sample.complete = createdDemo
+      return quickGuides
+    })
   })
 
   ngOnInit(): void {
@@ -241,7 +237,10 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
         source: OrganizationDemoNetworkEnum.aliyun
       }))
       this.toastrService.success('PAC.MENU.HOME.GenerateSamples', { Default: 'Generate samples' })
-      this.quickGuides.sample.complete = true
+      this.quickGuides.update((quickGuides) => {
+        quickGuides.sample.complete = true
+        return quickGuides
+      })
       this.store.selectedOrganization = {
         ...this.store.selectedOrganization,
         createdDemo: true
@@ -270,22 +269,28 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       }
     }
 
-    this.pristineFeeds$.next(cloneDeep(this.feeds))
+    this.pristineFeeds.set(cloneDeep(this.#feeds()))
   }
 
   removeWidget(feed) {
     timer(100).subscribe(() => {
-      const index = this.feeds.indexOf(feed)
-      if (index > -1) {
-        this.feeds.splice(index, 1, null)
-      }
-      this.feeds = this.feeds
+      this.#feeds.update((feeds) => {
+        const index = feeds.indexOf(feed)
+        if (index > -1) {
+          feeds.splice(index, 1, null)
+        }
+        return [...feeds]
+      })
     })
+  }
+
+  undoEdit() {
+    this.#feeds.set(cloneDeep(this.pristineFeeds()))
   }
 
   restore() {
     this.undoEdit()
-    this.feeds = this.feeds.map((item) => ({
+    this.#feeds.update((feeds) => feeds.map((item) => ({
       ...item,
       hidden: false,
       options: {
@@ -295,25 +300,25 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
           cols: 3
         }
       }
-    }))
+    })))
   }
 
   async commitEdit() {
     let updated = false
-    for (const [key, pristineFeed] of this.pristineFeeds.entries()) {
-      if (this.feeds[key]) {
-        if (!isEqual(pristineFeed, this.feeds[key])) {
-          if (this.feeds[key].id) {
+    for (const [key, pristineFeed] of this.pristineFeeds().entries()) {
+      if (this.#feeds()[key]) {
+        if (!isEqual(pristineFeed, this.#feeds()[key])) {
+          if (this.#feeds()[key].id) {
             await firstValueFrom(
-              this.feedsService.update(this.feeds[key].id, pick(this.feeds[key], ['hidden', 'options']))
+              this.feedsService.update(this.#feeds()[key].id, pick(this.#feeds()[key], ['hidden', 'options']))
             )
           } else {
             const result = await firstValueFrom(
               this.feedsService.create({
-                ...this.feeds[key]
+                ...this.#feeds()[key]
               })
             )
-            this.feeds.splice(key, 1, result)
+            this.#feeds().splice(key, 1, result)
           }
           updated = true
         }
@@ -336,18 +341,14 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
 
     if (updated) {
       this.toastrService.success('PAC.MENU.HOME.UpdateLayout', { Default: 'Update layout' })
-      this.feeds = compact(this.feeds)
+      this.#feeds.update((feeds) => compact(feeds))
     }
 
     this.toggleEdit()
   }
 
-  undoEdit() {
-    this.feeds = cloneDeep(this.pristineFeeds$.value)
-  }
-
   onGridsterItemChange({ item }: { item: GridsterItem }, feed: any) {
-    this.feeds = this.feeds
+    // this.feeds = this.feeds
   }
 
   onIntersection(event) {

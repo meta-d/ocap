@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { Router, RouterModule } from '@angular/router'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
 import { IOrganization, OrganizationsService, ToastrService } from '../../../../@core'
@@ -16,7 +17,15 @@ import { OrganizationMutationComponent } from '../organization-mutation/organiza
   selector: 'pac-all-organizations',
   templateUrl: './organizations.component.html',
   styleUrls: ['./organizations.component.scss'],
-  imports: [CommonModule, MaterialModule, TranslateModule, RouterModule, OrgAvatarComponent, NgmTableComponent]
+  imports: [
+    CommonModule,
+    MaterialModule,
+    TranslateModule,
+    RouterModule,
+    AppearanceDirective,
+    OrgAvatarComponent,
+    NgmTableComponent
+  ]
 })
 export class AllOrganizationsComponent extends TranslationBaseComponent {
   private refresh$ = new BehaviorSubject<void>(null)

@@ -185,8 +185,9 @@
         </div>
       }
     </div>
-    <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full md:w-1/2 lg:w-1/3 rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500"
-      [class.bg-gradient-to-r]="model && (hasCube$() ? cube : true)"
+    <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full md:w-1/2 lg:w-1/3 rounded-lg p-[2px]
+     from-rose-400 via-fuchsia-500 to-indigo-500"
+      [class.bg-gradient-to-br]="model && (hasCube$() ? cube : true)"
       [class.ngm-background-animate]="answering()"
 
       cdkDropList

@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router'
 import { StoryPublicResolver } from '../@core'
 import { PublicPointComponent } from './point/point.component'
 import { PublicComponent } from './public.component'
-import { StoryViewerComponent } from './story/viewer.component'
+import { StoryViewerComponent } from './story/story.component'
 import { TrendingComponent } from './trending/trending.componnet'
 import { PublicWidgetComponent } from './widget/widget.component'
 

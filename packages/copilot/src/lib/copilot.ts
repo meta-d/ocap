@@ -47,10 +47,10 @@ export class CopilotService {
 
   readonly copilot$ = this.#copilot$.asObservable()
   readonly enabled$ = this.copilot$.pipe(map((copilot) => copilot?.enabled && copilot?.apiKey))
-
-  get hasKey() {
-    return !!this.copilot?.apiKey
-  }
+  /**
+   * If the provider has tools function
+   */
+  readonly isTools$ = this.copilot$.pipe(map((copilot) => copilot?.provider && AI_PROVIDERS[copilot.provider]?.isTools))
 
   constructor(copilot?: ICopilot) {
     if (copilot) {

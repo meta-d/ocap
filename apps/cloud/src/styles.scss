@@ -118,26 +118,6 @@ html.cdk-global-scrollblock {
   overflow-y: auto;
 }
 
-@layer components {
-  .ngm-background-animate {
-    background-size: 400%;
-
-    -webkit-animation: ngm-background-animation 3s ease infinite;
-    -moz-animation: ngm-background-animation 3s ease infinite;
-    animation: ngm-background-animation 3s ease infinite;
-  }
-
-  @keyframes ngm-background-animation {
-    0%,
-    100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-  }
-}
-
 .mat-mdc-button-base.mat-mdc-icon-button {
   @apply flex justify-center items-center;
 }
@@ -163,22 +143,6 @@ html.cdk-global-scrollblock {
   @apply flex-1 flex flex-col;
   .mat-horizontal-content-container {
     padding: 0 24px;
-  }
-}
-
-.ngm-nav-list.mat-mdc-nav-list .mat-mdc-list-item {
-  @apply text-white rounded-lg duration-300;
-
-  &.active {
-    --mdc-list-list-item-label-text-color: theme(colors.slate.500);
-    --mdc-list-list-item-hover-label-text-color: theme(colors.slate.600);
-    @apply bg-slate-50;
-  }
-
-  &:hover {
-    .mat-icon {
-      visibility: visible;
-    }
   }
 }
 

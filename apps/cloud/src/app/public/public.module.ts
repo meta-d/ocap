@@ -2,14 +2,17 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet'
 import { MatButtonModule } from '@angular/material/button'
+import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatIconModule } from '@angular/material/icon'
+import { C_URI_API_MODELS } from '@metad/cloud/state'
+import { NgmTransformScaleDirective } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { OcapCoreModule, OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN } from '@metad/ocap-angular/core'
+import { OCAP_AGENT_TOKEN, OCAP_DATASOURCE_TOKEN, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
-import { C_URI_API_MODELS } from '@metad/cloud/state'
 import { NX_STORY_FEED, NX_STORY_STORE } from '@metad/story/core'
 import { NxStoryModule } from '@metad/story/story'
+import { ContentLoaderModule } from '@ngneat/content-loader'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { PAC_SERVER_AGENT_DEFAULT_OPTIONS, ServerAgent, StoryPublicResolver } from '../@core'
 import { StoryFeedService, StoryPublicService } from '../services'
@@ -18,10 +21,8 @@ import { CreatedByPipe } from './created-by.pipe'
 import { PublicPointComponent } from './point/point.component'
 import { PublicRoutingModule } from './public-routing.module'
 import { PublicComponent } from './public.component'
-import { StoryViewerComponent } from './story/viewer.component'
+import { StoryViewerComponent } from './story/story.component'
 import { PublicWidgetComponent } from './widget/widget.component'
-import { NgmTransformScaleDirective } from '@metad/core'
-import { ContentLoaderModule } from '@ngneat/content-loader'
 
 @NgModule({
   imports: [
@@ -30,13 +31,14 @@ import { ContentLoaderModule } from '@ngneat/content-loader'
     MatIconModule,
     MatButtonModule,
     MatBottomSheetModule,
+    MatDatepickerModule,
     ContentLoaderModule,
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
     NxStoryModule,
     AnalyticalCardModule,
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
 
     NgmTransformScaleDirective
 
@@ -45,6 +47,7 @@ import { ContentLoaderModule } from '@ngneat/content-loader'
   exports: [],
   declarations: [PublicComponent, StoryViewerComponent, PublicPointComponent, PublicWidgetComponent, CreatedByPipe],
   providers: [
+    provideOcapCore(),
     StoryPublicResolver,
     {
       provide: NX_STORY_STORE,

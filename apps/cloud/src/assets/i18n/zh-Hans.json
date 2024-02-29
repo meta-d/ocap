@@ -161,7 +161,11 @@
       "RemeberMe": "记住我",
       "Tune": "设置",
       "Notification": "通知",
-      "ClearAll": "清空"
+      "ClearAll": "清空",
+      "RestoreLayout": "重置布局",
+      "Undo": "撤销",
+      "Commit": "提交",
+      "Edit": "编辑"
     },
     "MENU": {
       "Certification": "认证",

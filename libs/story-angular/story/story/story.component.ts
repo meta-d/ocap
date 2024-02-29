@@ -248,7 +248,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   readonly watermarkOptions$ = toSignal(this.storyService.preferences$.pipe(
     map((preferences) => {
       const watermarkOptions = camelCaseObject(omitBlank(preferences?.story?.watermarkOptions))
-      console.log(watermarkOptions)
       return {
         ...(watermarkOptions ?? {}),
         text: watermarkOptions?.text || this.watermark

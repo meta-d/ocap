@@ -25,7 +25,11 @@ export interface PACAppState {
   providedIn: 'root'
 })
 export class AppService extends ComponentStore<PACAppState> {
+  /**
+   * @deprecated use signal {@link isAuthenticated} instead
+   */
   public isAuthenticated$ = this.store.user$.pipe(map((user) => !!user))
+  public isAuthenticated = toSignal(this.store.user$.pipe(map((user) => !!user)))
   public readonly fullscreenIndex$ = this.select((state) => state.zIndexs[state.zIndexs.length - 1])
   public insight$ = this.select((state) => state.insight)
   public catalog$ = this.select((state) => state.navigation?.catalog)

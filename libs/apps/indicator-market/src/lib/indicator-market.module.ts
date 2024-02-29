@@ -32,7 +32,7 @@ import { IndicatoryMarketComponent } from './indicator-market.component'
 import { ReplaceNullWithTextPipe } from './shared/replace-null-with-text.pipe'
 import { AppSparkLineDirective } from './shared/sparkline.directive'
 import { PACIndicatorDirective } from './shared/indicator.directive'
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { LoggerModule } from 'ngx-logger'
 
 @NgModule({
   declarations: [
@@ -74,7 +74,7 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
       echarts: () => import('echarts')
     }),
     AnalyticalCardModule,
-    LoggerModule.forRoot({ level: NgxLoggerLevel.DEBUG })
+    LoggerModule
   ],
   exports: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent],
   providers: [
