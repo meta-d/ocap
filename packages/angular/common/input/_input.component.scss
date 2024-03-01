@@ -1,7 +1,7 @@
 @use '@angular/material/core/tokens/token-utils';
 @use '@angular/material/core/style/sass-utils';
 
-// The prefix used to generate the fully qualified name for tokens in this file.
+/* The prefix used to generate the fully qualified name for tokens in this file. */
 $prefix: (ngm, color);
 
 @function get-unthemable-tokens() {
@@ -29,7 +29,7 @@ $prefix: (ngm, color);
   .ngm-input-element.mat-mdc-input-element {
     background-color: var(#{token-utils.get-token-variable(surface-container-high)});
     &:hover:not(:disabled) {
-      --tw-ring-color: rgb(234 179 8 / 0.5); // ring-yellow-500/50
+      --tw-ring-color: rgb(234 179 8 / 0.5); /* ring-yellow-500/50 */
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
     }
     &:focus {
