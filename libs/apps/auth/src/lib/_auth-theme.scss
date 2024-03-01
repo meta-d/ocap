@@ -19,12 +19,6 @@
       }
     }
 
-    .mat-mdc-input-element {
-      @apply min-w-[6rem] block box-border w-full max-w-full py-1 px-2 text-base text-gray-700 border-2 border-solid border-gray-100 rounded-lg
-        ring-offset-1 ring-2 ring-transparent bg-gray-100
-        focus:outline-none focus:bg-white focus:border-slate-200 hover:ring-yellow-500/50 focus:ring-yellow-500;
-    }
-
     .ngm-button {
       &.ngm-button-disabled {
         @apply opacity-50 cursor-not-allowed;

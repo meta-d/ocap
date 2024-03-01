@@ -88,6 +88,7 @@ export function createInitialPersistState(): PersistState {
 	const preferredLanguage = localStorage.getItem('preferredLanguage') || null;
 	const componentLayout = localStorage.getItem('componentLayout') || [];
 	const cacheLevel = localStorage.getItem('cacheLevel') || null;
+	const fixedLayoutSider = true
 
 	return {
 		token,
@@ -96,7 +97,8 @@ export function createInitialPersistState(): PersistState {
 		serverConnection,
 		preferredLanguage,
 		componentLayout,
-		cacheLevel
+		cacheLevel,
+		fixedLayoutSider
 	} as unknown as PersistState;
 }
 

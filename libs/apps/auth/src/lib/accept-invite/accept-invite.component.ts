@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { tap } from 'rxjs/operators'
 
 @Component({
+  selector: 'pac-auth-accept-invite',
   styleUrls: ['./accept-invite.component.scss'],
   templateUrl: 'accept-invite.component.html'
 })

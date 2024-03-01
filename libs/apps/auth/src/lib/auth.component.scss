@@ -1,5 +1,10 @@
 :host {
-  @apply w-full max-w-full h-full flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-900;
+  background-color: var(--ngm-color-surface-container);
+  @apply w-full max-w-full h-full flex flex-col justify-center items-center;
+}
+
+.pac-auth-card {
+  background-color: var(--ngm-color-surface);
 }
 
 .pac-auth__header {

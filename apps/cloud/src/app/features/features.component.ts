@@ -73,7 +73,7 @@ export class FeaturesComponent implements OnInit {
   @ViewChild('sidenav') sidenav: MatSidenav
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
-  copilotEngine: CopilotEngine
+  copilotEngine: CopilotEngine | null = null
   sidenavMode = 'over' as MatDrawerMode
   sidenavOpened = false
   isEmployee: boolean
