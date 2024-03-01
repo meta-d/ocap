@@ -1,7 +1,7 @@
 import esbuild from 'esbuild'
 import mkdir from 'make-dir'
 import path from 'path'
-import rimraf from 'rimraf'
+import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'url'
 
 const TARGET_BROWSER = ['chrome64', 'edge79', 'firefox62', 'safari11.1']
