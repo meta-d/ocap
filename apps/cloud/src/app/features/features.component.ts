@@ -8,7 +8,8 @@ import {
   Renderer2,
   ViewChild,
   effect,
-  inject
+  inject,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
@@ -96,8 +97,7 @@ export class FeaturesComponent implements OnInit {
     }
   ]
   activeLink = 'home'
-  readonly isMobile = toSignal(this.appService.isMobile$)
-  // zIndex = 0
+  readonly isMobile = this.appService.isMobile
   get isAuthenticated() {
     return !!this.store.user
   }
@@ -147,10 +147,8 @@ export class FeaturesComponent implements OnInit {
   }
 
   assetsInit = false
-  showIntelligent = false
-  loading = false
-  isDark$ = this.appService.isDark$
   copilotDrawerOpened = false
+  readonly loading = signal(false)
 
   readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
   readonly user$ = toSignal(this.store.user$)
@@ -259,7 +257,7 @@ export class FeaturesComponent implements OnInit {
   }
 
   refreshMenuItem(item, withOrganizationShortcuts) {
-    item.title = this.getTranslation('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
+    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
     if (item.data.permissionKeys || item.data.hide) {
       const anyPermission = item.data.permissionKeys
         ? item.data.permissionKeys.reduce((permission, key) => {
@@ -291,15 +289,6 @@ export class FeaturesComponent implements OnInit {
     }
   }
 
-  getTranslation(prefix: string, params?: Object) {
-    let result = ''
-    this.translateService.get(prefix, params).subscribe((res) => {
-      result = res
-    })
-
-    return result
-  }
-
   checkForEmployee() {
     const { tenantId, id: userId } = this.store.user
     this.employeeService.getEmployeeByUserId(userId, [], { tenantId }).then(({ success }) => {
@@ -309,6 +298,10 @@ export class FeaturesComponent implements OnInit {
 
   toggleSidenav(sidenav: MatSidenavContainer) {
     if (this.sidenavMode === 'over') {
+      this.sidenavMode = 'side'
+      setTimeout(() => {
+        sidenav.ngDoCheck()
+      }, 200)
       this.store.setFixedLayoutSider(true)
     } else {
       this.sidenav.toggle()
@@ -340,10 +333,10 @@ export class FeaturesComponent implements OnInit {
   // Shows and hides the loading spinner during RouterEvent changes
   navigationInterceptor(event: RouterEvent): void {
     if (event instanceof NavigationStart) {
-      this.loading = true
+      this.loading.set(true)
     }
     if (event instanceof NavigationEnd) {
-      this.loading = false
+      this.loading.set(false)
       if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
           catalog: MenuCatalog.Project
@@ -374,10 +367,10 @@ export class FeaturesComponent implements OnInit {
 
     // Set loading state to false in both of the below events to hide the spinner in case a request fails
     if (event instanceof NavigationCancel) {
-      this.loading = false
+      this.loading.set(false)
     }
     if (event instanceof NavigationError) {
-      this.loading = false
+      this.loading.set(false)
     }
 
     this._cdr.detectChanges()

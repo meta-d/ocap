@@ -1,25 +1,28 @@
-.pac-router-link.active {
-  @apply bg-white/20;
-
-  &.has-submenu {
-    @apply bg-white/10;
+:host:not(.collapsed) {
+  .pac-router-link.active {
+    @apply dark:bg-white/20 bg-black/10;
+  
+    &.has-submenu {
+      @apply dark:bg-white/10 bg-black/5;
+    }
   }
+  .pac-router-link {
+    @apply py-3 px-4;
+  }
+}
+
+.pac-router-link {
+  @apply transition-all duration-200 ease-in-out;
 }
 
 .pac-sub-menu {
   li {
-    @apply px-4 py-0;
+    @apply h-0 px-4 py-0 opacity-0 hidden transition-all duration-200 ease-in-out;
     height: 0;
-    visibility: hidden;
-    opacity: 0;
-    transition: all 200ms ease-in-out;
   }
   &.expanded {
     li {
-      @apply px-4 py-2;
-      height: 40px;
-      visibility: visible;
-      opacity: 1;
+      @apply h-10 px-4 py-2 opacity-100 visible;
     }
   }
 }

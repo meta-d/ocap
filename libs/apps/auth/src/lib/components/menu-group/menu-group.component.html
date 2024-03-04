@@ -1,17 +1,28 @@
 <ul class="flex flex-col gap-1">
   @for (item of menu; track $index) {
     <li>
-      @if (isCollapsed) {
-        <button mat-icon-button class="opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-200"
-          [matTooltip]="item.title"
-          matTooltipPosition="right"
-          [matMenuTriggerFor]="item.children ? subMenus : null"
-          [routerLink]="item.link"
-          routerLinkActive
-          #rla="routerLinkActive"
-          [class.active]="rla.isActive">
-          <mat-icon fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
-        </button>
+      <div class="pac-router-link flex justify-start items-center rounded-lg cursor-pointer"
+        [class.has-submenu]="item.children"
+        [routerLink]="item.children ? null : item.link"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [class.active]="rla.isActive"
+        (click)="item.expanded=!isActive(item)"
+      >
+        @if (isCollapsed) {
+          <button mat-icon-button class="opacity-80 hover:opacity-100 hover:scale-110 transition-transform duration-200"
+            [matTooltip]="item.title"
+            matTooltipPosition="right"
+            [matMenuTriggerFor]="isCollapsed && item.children ? subMenus : null"
+            [routerLink]="isCollapsed ? item.link : null"
+            routerLinkActive
+            #rla="routerLinkActive"
+            [class.active]="rla.isActive">
+            <mat-icon fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
+          </button>
+        } @else if (item.matIcon) {
+          <mat-icon displayDensity="cosy" fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
+        }
 
         <mat-menu #subMenus="matMenu" xPosition="before">
           @for (child of item.children; track $index) {
@@ -31,19 +42,8 @@
             </button>
           }
         </mat-menu>
-      } @else {
-        <div class="pac-router-link flex items-center py-3 px-4 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
-          [class.has-submenu]="item.children"
-          [routerLink]="item.children ? null : item.link"
-          routerLinkActive
-          #rla="routerLinkActive"
-          [class.active]="rla.isActive"
-          (click)="item.expanded=!isActive(item)"
-        >
-          @if (item.matIcon) {
-            <mat-icon displayDensity="cosy" fontSet="material-icons-round">{{ item.matIcon }}</mat-icon>
-          }
 
+        @if (!isCollapsed) {
           <span class="flex-1 ml-3">{{ item.title }}</span>
 
           @if (item.children) {
@@ -53,30 +53,30 @@
               </path>
             </svg>
           }
-        </div>
-
-        @if (item.children) {
-          <ul class="pac-sub-menu flex flex-col ml-3 mt-1" [class.expanded]="isActive(item)"
-            [class.gap-1]="isActive(item)"
-          >
-            @for (child of item.children; track $index) {
-              @if (!child.hidden) {
-                <li class="pac-router-link flex items-center py-2 px-4 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
-                  [routerLink]="child.link"
-                  routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
-                  #rla="routerLinkActive"
-                  (isActiveChange)="child.isActive = $event"
-                  [class.active]="rla.isActive"
-                  (click)="clicked.emit()">
-                  @if (child.matIcon) {
-                    <mat-icon displayDensity="compact" fontSet="material-icons-round">{{ child.matIcon }}</mat-icon>
-                  }
-                  <span class="ml-3">{{ child.title }}</span>
-                </li>
-              }
-            }
-          </ul>
         }
+      </div>
+
+      @if (!isCollapsed && item.children) {
+        <ul class="pac-sub-menu flex flex-col ml-3 mt-1" [class.expanded]="isActive(item)"
+          [class.gap-1]="isActive(item)"
+        >
+          @for (child of item.children; track $index) {
+            @if (!child.hidden) {
+              <li class="pac-router-link flex items-center py-2 px-4 rounded-lg cursor-pointer"
+                [routerLink]="child.link"
+                routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
+                #rla="routerLinkActive"
+                (isActiveChange)="child.isActive = $event"
+                [class.active]="rla.isActive"
+                (click)="clicked.emit()">
+                @if (child.matIcon) {
+                  <mat-icon displayDensity="compact" fontSet="material-icons-round">{{ child.matIcon }}</mat-icon>
+                }
+                <span class="ml-3">{{ child.title }}</span>
+              </li>
+            }
+          }
+        </ul>
       }
     </li>
   }

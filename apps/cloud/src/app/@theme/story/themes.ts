@@ -41,14 +41,17 @@ export function effectStoryTheme(elementRef: ElementRef) {
       renderer.removeClass(elementRef.nativeElement, theme)
     })
 
-    let current = themeName$() || ThemesEnum.light
-    if (!themeName$() || themeName$() === ThemesEnum.default) {
+    let current = themeName$()
+
+    if (current && current !== ThemesEnum.default && current !== ThemesEnum.system) {
+      renderer.addClass(elementRef.nativeElement, 'ngm-theme-' + current)
+      renderer.addClass(elementRef.nativeElement, current)
+    }
+
+    if (current === ThemesEnum.system || current === ThemesEnum.default || !current) {
       const { primary } = appService.theme$()
       current = primary
     }
-    renderer.addClass(elementRef.nativeElement, 'ngm-theme-' + current)
-    renderer.addClass(elementRef.nativeElement, current)
-
     if (echartsTheme?.[current]) {
       coreService.changeTheme(`${current}-${key}`)
     } else {

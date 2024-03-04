@@ -81,7 +81,9 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   registerOnTouched(fn: any): void {
     this.onTouched = fn
   }
-  setDisabledState?(isDisabled: boolean): void {}
+  setDisabledState?(isDisabled: boolean): void {
+    isDisabled ? this.date.disable() : this.date.enable()
+  }
 }
 
 @Component({
@@ -97,7 +99,7 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
     ></mat-datepicker>
 
     <div matSuffix class="flex items-center">
-      <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"></mat-datepicker-toggle>
       <ng-content></ng-content>
     </div>
   </mat-form-field> `,
@@ -160,7 +162,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }
 
@@ -175,7 +177,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
 ></mat-datepicker>
 
 <div matSuffix class="abs flex items-center">
-  <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+  <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"/>
   <ng-content></ng-content>
 </div>
 `,
@@ -238,7 +240,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }
 
@@ -254,7 +256,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
     ></mat-datepicker>
 
     <div matSuffix class="flex items-center">
-      <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"></mat-datepicker-toggle>
       <ng-content></ng-content>
     </div>
   </mat-form-field>`,
@@ -312,6 +314,6 @@ export class NxYearFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }

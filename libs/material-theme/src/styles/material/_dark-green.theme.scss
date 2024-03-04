@@ -32,7 +32,7 @@ $dark-theme: map.deep-merge(
 $config: mat.get-color-config($dark-theme);
 $foreground: map.get($config, foreground);
 
-.ngm-theme-dark-green {
+.dark.dark-green {
   --ngm-color-primary: #{mat.get-color-from-palette($primary)};
   --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
   --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};

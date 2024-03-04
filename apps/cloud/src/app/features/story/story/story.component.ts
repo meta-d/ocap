@@ -360,8 +360,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     })
 
     if (event) {
-      console.log(`Update story widget: ${this.pageKey()}`, event)
-
+      // console.log(`Update story widget: ${this.pageKey()}`, event)
       this.storyService.updateWidget({
         pageKey: this.pageKey(),
         widgetKey: this.widgetKey(),

@@ -9,9 +9,9 @@ import {
   Inject,
   OnDestroy,
   OnInit,
-  Renderer2,
   ViewChild,
   ViewContainerRef,
+  effect,
   inject,
   signal
 } from '@angular/core'
@@ -140,11 +140,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _authSub = this.appService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe((isAuthenticated) => {
-    this.storyService.setAuthenticated(isAuthenticated)
-  })
-
-  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   
   private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
@@ -153,6 +148,8 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
       this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
     }
   })
+
+  readonly #effectRef = effectStoryTheme(this._elementRef)
   
   constructor(
     public appService: AppService,
@@ -168,7 +165,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   ) {
     super()
 
-    effectStoryTheme(this._elementRef)
+    effect(() => this.storyService.setAuthenticated(this.appService.isAuthenticated()))
   }
 
   ngOnInit() {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
@@ -27,6 +27,7 @@ import { PacMenuItem } from '../types'
 export class PacMenuGroupComponent {
   isNil = isNil
 
+  @HostBinding('class.collapsed')
   @Input() isCollapsed = false
   @Input() menu: PacMenuItem[]
 

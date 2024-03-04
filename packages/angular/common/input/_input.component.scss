@@ -35,6 +35,7 @@ $prefix: (ngm, color);
     &:focus {
       --tw-ring-offset-color: var(#{token-utils.get-token-variable(surface)});
       background-color: var(#{token-utils.get-token-variable(surface)});
+      opacity: .8;
     }
     &:disabled {
       background-color: var(#{token-utils.get-token-variable(surface-container-low)});
