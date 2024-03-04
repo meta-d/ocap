@@ -309,16 +309,12 @@ export class FeaturesComponent implements OnInit {
 
   toggleSidenav(sidenav: MatSidenavContainer) {
     if (this.sidenavMode === 'over') {
-      this.sidenavMode = 'side'
-      setTimeout(() => {
-        sidenav.ngDoCheck()
-      }, 100)
       this.store.setFixedLayoutSider(true)
     } else {
       this.sidenav.toggle()
       setTimeout(() => {
         this.store.setFixedLayoutSider(false)
-      }, 100)
+      }, 1000)
     }
   }
 

@@ -4,31 +4,31 @@
             <mat-icon fontSet="material-icons-outlined">toc</mat-icon>
         </button> -->
     
-        <button *ngIf="isMobile$ | async" cdkMenuItem class="pac-model__page-trigger flex-1"
+      @if (isMobile()) {
+        <button cdkMenuItem class="pac-model__page-trigger flex-1"
             [cdkMenuTriggerFor]="mobileMenu">
             <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
         </button>
-
-        <ng-container *ngIf="isNotMobile$ | async">
-            <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
-                <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
-                <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="dataMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.DATA' | translate: {Default: "Data"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="manageMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.Management' | translate: {Default: "Management"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-        </ng-container>
-
+      }
+      @if (!isMobile()) {
+        <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
+            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+            <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="dataMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.DATA' | translate: {Default: "Data"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="manageMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.Management' | translate: {Default: "Management"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+      }
         <div [routerLink]="['./access']" routerLinkActive #rla="routerLinkActive">
             <button *ngIf="rla.isActive" mat-button [color]="'accent'">
                 <span class="font-notoColorEmoji">🔏</span>{{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
@@ -62,7 +62,7 @@
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize>
     <mat-drawer #drawer class="ngm-story__designer-drawer ngm-sidenav-container-bg-transparent mat-elevation-z"
         [(opened)]="sideMenuOpened"
-        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        [mode]="isMobile() ? 'over' : 'side'"
         ngmResizer [resizerWidth]="230"
     >
         <ngm-splitter class="flex-1" [type]="1">
@@ -175,7 +175,7 @@
                         <cdk-virtual-scroll-viewport class="pac-model__tables-viewport flex-1 h-full overflow-hidden hover:overflow-y-auto"
                             itemSize="30" minBufferPx="360" maxBufferPx="1000"
                         >
-                            <mat-nav-list displayDensity="compact" disableRipple class="pac-model__nav-list"
+                            <mat-nav-list displayDensity="compact" disableRipple class="pac-model__nav-list ngm-list"
                                 id="pac-model-entitysets"
                                 #tableList="cdkDropList"
                                 cdkDropList

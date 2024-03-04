@@ -165,7 +165,7 @@ export class Store {
 	);
 	readonly primaryTheme$ = combineLatest([this.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])), prefersColorScheme()])
 		.pipe(
-			map(([primary, systemColorScheme]) => primary === ThemesEnum.system ? systemColorScheme : primary)
+			map(([primary, systemColorScheme]) => (primary === ThemesEnum.system || !primary) ? systemColorScheme : primary)
 		)
 	preferredComponentLayout$ = this.persistQuery.select(
 		(state) => state.preferredComponentLayout

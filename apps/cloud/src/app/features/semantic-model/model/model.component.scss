@@ -27,6 +27,8 @@ $prefix: (ngm, model);
 
 :host {
   @include token-utils.create-token-values($prefix, get-token-slots());
+  --mdc-list-list-item-container-shape: #{theme('borderRadius.lg')};
+
   display: flex;
   flex-direction: column;
   flex: 1;

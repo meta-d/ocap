@@ -43,10 +43,16 @@ export class AppService extends ComponentStore<PACAppState> {
     })
   ).pipe(map((breakpoints) => breakpoints.filter((item) => item[1]).map((item) => item[0])))
 
+  /**
+   * @deprecated use signal {@link isMobile} instead
+   */
   public readonly isMobile$ = this.mediaMatcher$.pipe(
     map((values) => some(['XSmall', 'Small', 'HandsetPortrait'], (el) => includes(values, el))),
     shareReplay(1)
   )
+  readonly isMobile = toSignal(this.mediaMatcher$.pipe(
+    map((values) => some(['XSmall', 'Small', 'HandsetPortrait'], (el) => includes(values, el))),
+  ))
 
   public readonly isDark$ = this.select((state) => state.dark)
 

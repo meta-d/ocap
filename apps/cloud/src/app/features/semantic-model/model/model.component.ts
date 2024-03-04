@@ -241,8 +241,6 @@ ${sharedDimensionsPrompt}
     shareReplay(1)
   )
 
-  public readonly isMobile$ = this.appService.isMobile$
-  public readonly isNotMobile$ = this.appService.isMobile$.pipe(map((isMobile) => !isMobile))
   public readonly entities$ = this.modelService.entities$
 
   public dbTablesError = ''
@@ -307,6 +305,7 @@ ${sharedDimensionsPrompt}
   | Signals
   |--------------------------------------------------------------------------
   */
+  readonly isMobile = this.appService.isMobile
   readonly isWasm$ = toSignal(this.modelService.isWasm$)
   readonly isOlap$ = toSignal(this.modelService.isOlap$)
   readonly modelType$ = toSignal(this.modelService.modelType$)
