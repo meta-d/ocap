@@ -70,13 +70,13 @@
 }
 
 .tag {
-  @apply px-3 py-1.5 rounded-lg text-base;
+  @apply px-3 py-1 rounded-lg text-base;
 }
 
 ::ng-deep {
   .ngm-density__cosy {
     .ngm-tags .tag {
-      @apply px-2 py-1 rounded-lg text-sm;
+      @apply px-2 py-0.5 rounded-lg text-sm;
     }
   }
 

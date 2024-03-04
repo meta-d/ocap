@@ -20,7 +20,7 @@
   (touchend)="swipe($event, 'end')">
 
   <ng-template swiperSlide *ngFor="let slide of slides$ | async; trackBy: trackByKey">
-    <div class="pac-swiper__slide w-full h-full" [ngStyle]="slideStyling$ | async"
+    <div class="pac-swiper__slide w-full h-full" [ngStyle]="slideStyling$()"
       [ngSwitch]="slide.type">
 
       <pac-indicator-card *ngSwitchCase="IndicatorCardWidgetType.IndicatorCard" class="w-full h-full"

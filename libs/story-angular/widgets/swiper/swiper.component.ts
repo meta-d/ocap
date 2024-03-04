@@ -1,5 +1,5 @@
 import { FocusMonitor, FocusOrigin } from '@angular/cdk/a11y'
-import { Component, ElementRef, Renderer2, ViewEncapsulation, inject } from '@angular/core'
+import { Component, ElementRef, Renderer2, ViewEncapsulation, computed, inject } from '@angular/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling } from '@metad/core'
 import { ComponentStyling, WidgetComponentType, componentStyling } from '@metad/story/core'
@@ -93,7 +93,8 @@ export interface WidgetSwiperStyling extends StoryWidgetStyling {
 })
 export class NxWidgetSwiperComponent extends AbstractStoryWidget<
   NxWidgetSwiperOptions,
-  StoryWidgetState<NxWidgetSwiperOptions, WidgetSwiperStyling>
+  StoryWidgetState<NxWidgetSwiperOptions>,
+  WidgetSwiperStyling
 > {
   IndicatorCardWidgetType = IndicatorCardWidgetType
   WidgetComponentType = WidgetComponentType
@@ -119,7 +120,7 @@ export class NxWidgetSwiperComponent extends AbstractStoryWidget<
     })
   )
 
-  public readonly slideStyling$ = this.styling$.pipe(map((styling) => componentStyling(styling.slide)))
+  public readonly slideStyling$ = computed(() => componentStyling(this.styling$()?.slide))
 
   constructor() {
     super()

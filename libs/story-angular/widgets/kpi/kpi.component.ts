@@ -21,7 +21,8 @@ export interface PacWidgetKPIStyling extends StoryWidgetStyling {
 })
 export class NxWidgetKpiComponent extends AbstractStoryWidget<
   NxWidgetKPIOptions,
-  StoryWidgetState<NxWidgetKPIOptions, PacWidgetKPIStyling>
+  StoryWidgetState<NxWidgetKPIOptions>,
+  PacWidgetKPIStyling
 > {
   TrendType = TrendType
 
@@ -65,11 +66,9 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     map((additionals) => (additionals.length > 0 ? additionals : null))
   )
 
-  public readonly titleStyles$ = this.styling$.pipe(
-    filter(Boolean),
-    map((styling) => componentStyling(styling.title))
-  )
-  readonly valueStyles = computed(() => componentStyling(this.stylingSignal()?.value))
+  public readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
+  
+  readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
 
   public readonly isLoading$ = this.dataService.loading$
   public readonly error$ = this.dataService.selectResult().pipe(map(({ error }) => error))

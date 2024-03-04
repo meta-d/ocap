@@ -5,6 +5,9 @@ import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, throwError } from 'rxjs'
 import { catchError, map, switchMap, tap } from 'rxjs/operators'
 
+/**
+ * @deprecated use `FORMLY_W_1_2` instead
+ */
 export const CLASS_NAME_COL6 = 'ngm-formly__col ngm-formly__col-6'
 export const CLASS_NAME_COL12 = 'ngm-formly__col ngm-formly__col-12'
 export const FORMLY_W_FULL = 'ngm-formly__col ngm-formly__col-12'
@@ -65,13 +68,7 @@ export function AccordionWrappers(
 }
 
 /**
- * Provide formly schema for data settings
- *
- * @param BUILDER i18n
- * @param dataSources$
- * @param dataSource$
- * @param fieldGroups
- * @returns
+ * @deprecated use `makeDataSettingsContent` instead
  */
 export function DataSettingsSchema(
   BUILDER,

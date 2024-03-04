@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
-import { Dimension, nonNullable } from '@metad/ocap-core'
 import { PropertyCapacity } from '@metad/components/property'
+import { Dimension, nonNullable } from '@metad/ocap-core'
 import {
   AccordionWrappers,
   DataSettingsSchemaService,
@@ -33,60 +33,55 @@ export class StoryFilterBarSchemaService<T extends SchemaState = SchemaState> ex
       map(([STORY_DESIGNER, DateVariable]) => {
         this.STORY_DESIGNER = STORY_DESIGNER
         const i18nStoryWidgets = STORY_DESIGNER?.Widgets
-        return AccordionWrappers([
-          {
-            key: 'dataSettings',
-            label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
-            toggleable: false,
-            expanded: true,
-            fieldGroup: this.filterBarDataSettings.fieldGroup[0].fieldGroup
-          },
-          {
-            key: 'options',
-            label: i18nStoryWidgets?.FilterBar?.OPTIONS ?? 'Options',
-            toggleable: false,
-            expanded: true,
-            fieldGroup: this.getOptions(DateVariable).fieldGroup
-          }
-        ], {expandedMulti: true})
+
+        return AccordionWrappers(
+          [
+            {
+              key: 'dataSettings',
+              label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
+              toggleable: false,
+              expanded: true,
+              fieldGroup: this.makeDataSettingsContent(this.STORY_DESIGNER?.Common, {
+                key: 'selectionFieldsAnnotation',
+                props: {
+                  required: true
+                },
+                fieldGroup: [
+                  {
+                    key: 'propertyPaths',
+                    type: 'array',
+                    props: {
+                      label: STORY_DESIGNER?.Widgets?.Common?.SELECTION_FIELDS_ANNOTATION?.DIMENSIONS ?? 'Dimensions',
+                      required: true,
+                      hideDelete: true
+                    },
+                    fieldArray: {
+                      key: 'propertyPaths',
+                      type: 'chart-property', // Should be `property-select` formly type
+                      props: {
+                        removable: true,
+                        sortable: true,
+                        dataSettings: this.dataSettings$,
+                        entityType: this.entityType$,
+                        capacities: [PropertyCapacity.Dimension]
+                      }
+                    }
+                  }
+                ]
+              })
+            },
+            {
+              key: 'options',
+              label: i18nStoryWidgets?.FilterBar?.OPTIONS ?? 'Options',
+              toggleable: false,
+              expanded: true,
+              fieldGroup: this.getOptions(DateVariable).fieldGroup
+            }
+          ],
+          { expandedMulti: true }
+        )
       })
     )
-  }
-
-  get filterBarDataSettings() {
-    const dataSettings = this.generateDataSettingsSchema(this.STORY_DESIGNER?.Widgets?.Common)
-
-    const SELECTION_FIELDS_ANNOTATION = this.STORY_DESIGNER?.Widgets?.Common?.SELECTION_FIELDS_ANNOTATION
-    dataSettings.fieldGroup.push({
-      key: 'selectionFieldsAnnotation',
-      props: {
-        required: true
-      },
-      fieldGroup: [
-        {
-          key: 'propertyPaths',
-          type: 'array',
-          props: {
-            label: SELECTION_FIELDS_ANNOTATION?.DIMENSIONS ?? 'Dimensions',
-            required: true,
-            hideDelete: true
-          },
-          fieldArray: {
-            key: 'propertyPaths',
-            type: 'property-select',
-            props: {
-              removable: true,
-              sortable: true,
-              dataSettings: this.dataSettings$,
-              entityType: this.entityType$,
-              capacities: [PropertyCapacity.Dimension]
-            }
-          }
-        }
-      ]
-    } as any)
-
-    return dataSettings
   }
 
   getOptions(DateVariable) {

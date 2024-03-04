@@ -26,7 +26,6 @@ import {
   map,
   merge,
   of,
-  take,
   withLatestFrom
 } from 'rxjs'
 import { createEventEmitter, isNotEmpty, nonNullable } from '../helpers'
@@ -88,14 +87,14 @@ export interface IStoryWidget<T> extends IFilterChange, FocusableOption {
   dataChange?: EventEmitter<WidgetData>
 }
 
-export interface StoryWidgetState<T, S = StoryWidgetStyling> {
+export interface StoryWidgetState<T> {
   title: string
   dataSettings: DataSettings
   options: T
   selectionVariant: SelectionVariant
   presentationVariant: PresentationVariant
   slicers: ISlicer[]
-  styling: S
+  // styling: S
   rank?: number
 }
 
@@ -114,7 +113,7 @@ export interface StoryWidgetStyling {
  *
  */
 @Directive()
-export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetState<T>>
+export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetState<T>, SY extends StoryWidgetStyling = StoryWidgetStyling>
   extends ComponentStore<S>
   implements IStoryWidget<T>, FocusableOption, AfterViewInit
 {
@@ -165,16 +164,13 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   public options$ = this.select((state) => state.options).pipe(filter(nonNullable))
   public readonly optionsSignal = toSignal<T>(this.options$, {initialValue: null})
 
-  @Input() get styling(): StoryWidgetStyling {
-    return this.get((state) => state.styling)
+  @Input() get styling(): SY {
+    return this.styling$()
   }
-  set styling(styling) {
-    this.patchState({
-      styling
-    } as Partial<S>)
+  set styling(value) {
+    this.styling$.set(value)
   }
-  readonly styling$ = this.select<S['styling']>((state) => state.styling)
-  readonly stylingSignal = toSignal<S['styling']>(this.styling$)
+  readonly styling$ = signal<SY>(null)
 
   /**
    * Language Locale
@@ -436,14 +432,7 @@ export class AbstractStoryWidget<T, S extends StoryWidgetState<T> = StoryWidgetS
   }
 
   getTranslation(code: string, text?: any, params?: any) {
-    let result: any
-    this.translateService
-      ?.get(code, { Default: text, ...(params ?? {}) })
-      .pipe(take(1))
-      .subscribe((value) => {
-        result = value
-      })
-    return result
+    return this.translateService?.instant(code, { Default: text, ...(params ?? {}) })
   }
 
   setExplains(items) {

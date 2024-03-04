@@ -52,7 +52,7 @@ export interface InputControlStyling extends StoryWidgetStyling {
   widget: unknown
 }
 
-export interface InputControlState extends StoryWidgetState<InputControlOptions, InputControlStyling> {
+export interface InputControlState extends StoryWidgetState<InputControlOptions> {
   entityType: EntityType
 }
 
@@ -66,7 +66,7 @@ export interface InputControlState extends StoryWidgetState<InputControlOptions,
   }
 })
 export class NxInputControlComponent
-  extends AbstractStoryWidget<InputControlOptions, InputControlState>
+  extends AbstractStoryWidget<InputControlOptions, InputControlState, InputControlStyling>
 {
   CONTROL_TYPE = ControlType
   INPUT_CONTROL_TYPE = FilterControlType
@@ -97,10 +97,10 @@ export class NxInputControlComponent
   // For datepicker component
   dates: Date[] = []
 
-  public readonly styling$ = this.select((state) => state.styling)
+  // public readonly styling$ = this.select((state) => state.styling)
 
   public readonly __options$ = this.select((state) => state.options).pipe(
-    combineLatestWith(this.styling$),
+    combineLatestWith(toObservable(this.styling$)),
     map(([options, styling]) => {
       return {
         ...(options ?? {}),
