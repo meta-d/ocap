@@ -55,30 +55,28 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
-  themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
+  readonly themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
   readonly entityType = this.entityService.entityType
   readonly tables = toSignal(this.modelService.selectDBTables$)
   readonly statement = this.entityService.statement$
 
   entities = []
 
-  textSelection
+  readonly textSelection = signal<{range: any; text: string;}>(null)
 
-  // public readonly entitySets$ = this.modelService.entities$
-  // public readonly entityType$ = this.entityService.entityType$
   // 当前使用 MDX 查询
-  public readonly useMDX$ = this.modelService.modelType$.pipe(
+  public readonly useMDX = toSignal(this.modelService.modelType$.pipe(
     map((modelType) => modelType === MODEL_TYPE.XMLA || modelType === MODEL_TYPE.OLAP)
-  )
+  ))
   public readonly modelType$ = this.modelService.modelType$
 
   // for results table
   public readonly loading$ = new BehaviorSubject<boolean>(null)
-  columns
-  data
+  columns: any[]
+  data: any[]
   error: string
 
-  showQueryResult = signal(false)
+  readonly showQueryResult = signal(false)
 
   /**
   |--------------------------------------------------------------------------
@@ -87,17 +85,24 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   */
   #queryCommand = injectCopilotCommand({
     name: 'query',
-    description: 'Create  a query statement',
+    description: 'Create a query statement',
     examples: [
       `Create a statement to query the data`,
       `Edit current statement refer to the error message:`,
     ],
     systemPrompt: () => {
-      let prompt = `Create a new or edit current MDX statement for user's query, the cube info is: ${calcEntityTypePrompt(
-        this.entityType()
-      )}`
+      let prompt = `Create a new or edit current MDX statement for user's query, the cube info is:
+\`\`\`
+${calcEntityTypePrompt(this.entityType())}
+\`\`\``
       if (this.statement()) {
-        prompt += `Current statement is: ${this.statement()}`
+        prompt +=
+`
+Current statement is:
+\`\`\`
+${this.statement()}
+\`\`\`
+`
       }
       return prompt
     },
@@ -116,6 +121,8 @@ export class EntityQueryComponent extends TranslationBaseComponent {
         implementation: async (statement: string) => {
           this.#logger.debug(`Create a new query statement '${statement}'`)
           this.entityService.statement = statement
+          this.run()
+          return `✅`
         }
       }),
       injectMakeCopilotActionable({
@@ -132,6 +139,8 @@ export class EntityQueryComponent extends TranslationBaseComponent {
         implementation: async (statement: string) => {
           this.#logger.debug(`Edit the query statement '' into '${statement}'`)
           this.entityService.statement = statement
+          this.run()
+          return `✅`
         }
       })
     ]
@@ -207,8 +216,8 @@ export class EntityQueryComponent extends TranslationBaseComponent {
     }
   }
 
-  onSelectionChange(event) {
-    this.textSelection = event
+  onSelectionChange(event: {range: any; text: string;}) {
+    this.textSelection.set(event)
   }
 
   onStatementChange(event: string) {

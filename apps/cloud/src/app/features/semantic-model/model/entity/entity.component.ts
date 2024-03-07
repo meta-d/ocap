@@ -126,6 +126,7 @@ The cube is`
           this.#logger.debug(`Create a new story:`, story)
           story.key = nanoid()
           this.createStory(story)
+          return `✅`
         }
       })
     ]

@@ -3,7 +3,8 @@ import { z } from 'zod'
 
 export const CalculatedMeasureSchema = z.object({
   name: z.string().describe('Name of the calculated measure; Name cannot be repeated.'),
-  caption: z.string().optional().describe('Caption of the calculated measure'),
+  caption: z.string().optional().describe('Caption (short description)'),
+  description: z.string().optional().describe('Long description'),
   formula: z.string().describe('MDX expression for the calculated measure in cube'),
   formatting: z.object({
     unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
