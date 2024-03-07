@@ -67,26 +67,6 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
         transition: all 500ms $ease-in-out-curve-function;
       }
     }
-
-    // .mat-button,
-    // .mat-mdc-icon-button,
-    // .mat-stroked-button,
-    // .mat-flat-button {
-    //   min-width: unset;
-    // }
-  }
-
-  // Story designer pannel
-  .mat-drawer.ngm-story__designer-drawer {
-    &.mat-elevation-z8 {
-      border: unset;
-      max-width: 100%;
-    }
-
-    .mat-drawer-inner-container {
-      display: flex;
-      flex-direction: column;
-    }
   }
 
   .cdk-menu.cdk-menu-group {

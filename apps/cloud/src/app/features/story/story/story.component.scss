@@ -85,10 +85,10 @@
     display: flex;
     height: 1rem;
     opacity: 0.5;
-    border-left: 1px solid ;
-    border-right: 1px solid ;
-    border-top: 2px solid ;
-    
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-top: 2px solid;
+
     background-color: var(--ngm-color-surface);
     border-color: var(--ngm-color-outline);
 
@@ -109,3 +109,12 @@
   @apply border-l-0;
 }
 
+::ng-deep {
+  // Story designer pannel
+  .mat-drawer.ngm-story__designer-drawer {
+    .mat-drawer-inner-container {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
