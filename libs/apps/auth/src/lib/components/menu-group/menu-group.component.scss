@@ -1,4 +1,7 @@
 :host:not(.collapsed) {
+  .pac-router-link {
+    @apply hover:bg-black/5 dark:hover:bg-white/5;
+  }
   .pac-router-link.active {
     @apply dark:bg-white/20 bg-black/10;
   
@@ -17,12 +20,11 @@
 
 .pac-sub-menu {
   li {
-    @apply h-0 px-4 py-0 opacity-0 hidden transition-all duration-200 ease-in-out;
-    height: 0;
+    @apply h-0 px-4 py-0 opacity-0 hidden invisible transition-all duration-200 ease-in-out;
   }
   &.expanded {
     li {
-      @apply h-10 px-4 py-2 opacity-100 visible;
+      @apply h-10 px-4 py-2 opacity-100 block visible;
     }
   }
 }
