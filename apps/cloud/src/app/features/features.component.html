@@ -1,4 +1,6 @@
-<mat-sidenav-container #sidenavContainer class="pac-features__sidenav-container flex-1 h-full" autosize>
+<mat-sidenav-container #sidenavContainer class="pac-features__sidenav-container flex-1 h-full"
+  [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}"
+  autosize>
   <mat-sidenav #sidenav class="pac-features__sidenav flex flex-col"
     [mode]="sidenavMode"
     [(opened)]="sidenavOpened"

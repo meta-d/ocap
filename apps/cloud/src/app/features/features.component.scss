@@ -76,7 +76,7 @@ $prefix: (ngm, shell);
 
 .mat-drawer-container.pac-fullscreen {
   z-index: 2;
-  .pac-app__page-outlet {
+  & > .mat-drawer-content {
     z-index: 2;
   }
 }
