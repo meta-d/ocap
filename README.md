@@ -16,9 +16,9 @@ English | [中文](./README_zh.md)
   <a href="https://github.com/meta-d/ocap/" target="_blank">
     <img src="https://visitor-badge.laobi.icu/badge?page_id=meta-d.ocap" alt="Visitors">
   </a>
-  <a href="https://github.com/meta-d/ocap/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/meta-d/ocap?color=white" alt="Release">
-  </a>
+  <a href="https://www.npmjs.com/@metad/ocap-core">
+    <img src="https://img.shields.io/npm/v/@metad/ocap-core.svg?logo=npm&logoColor=fff&label=NPM+package&color=limegreen" alt="ocap on npm" />
+  </a>&nbsp;
   <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">
     <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3">
   </a>

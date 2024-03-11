@@ -1,6 +1,6 @@
 :host:not(.collapsed) {
   .pac-router-link {
-    @apply hover:bg-black/5 dark:hover:bg-white/5;
+    @apply hover:bg-black/5 dark:hover:bg-white/10;
   }
   .pac-router-link.active {
     @apply dark:bg-white/20 bg-black/10;
