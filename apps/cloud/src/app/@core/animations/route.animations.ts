@@ -27,7 +27,6 @@ const STEPS_ALL: any[] = [
           '.2s ease-in-out',
           style({ opacity: 0 })
         ),
-        style({ position: 'fixed', width: '100%' })
       ],
       { optional: true }
     ),
@@ -35,9 +34,7 @@ const STEPS_ALL: any[] = [
       ':enter > *',
       [
         style({
-          // transform: 'translateY(-3%)',
           opacity: 0,
-          // position: 'static',
           width: '100%'
         }),
         animate(

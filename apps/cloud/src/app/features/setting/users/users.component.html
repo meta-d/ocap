@@ -53,6 +53,7 @@
 
 <mat-divider></mat-divider>
 
-<mat-tab-nav-panel #tabPanel class="pac-page-body" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+<mat-tab-nav-panel #tabPanel class="pac-page-body"
+    [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
     <router-outlet #o="outlet"></router-outlet>
 </mat-tab-nav-panel>

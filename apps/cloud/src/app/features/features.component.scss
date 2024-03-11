@@ -121,6 +121,12 @@ $prefix: (ngm, shell);
 }
 
 ::ng-deep {
+  .pac-features__sidenav {
+    .mat-drawer-inner-container {
+      @apply flex flex-col overflow-hidden;
+    }
+  }
+
   .pac-features__auth-popper {
     .ngxp__container.ngxp__animation {
       .ngxp__inner {

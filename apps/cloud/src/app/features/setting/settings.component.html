@@ -17,7 +17,7 @@
   </ul>
 </div>
 
-<div [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
+<div [@routeAnimations]="o.isActivated && o.activatedRouteData?.title"
   class="pac-nav__router relative flex-1"
 >
   <router-outlet #o="outlet"></router-outlet>

@@ -26,16 +26,6 @@ $sidebar-collapsed-width: 40px;
   @include semantic-models.color($theme);
   @include indicator.color($theme);
 
-  .pac-features__sidenav-container {
-    .mat-drawer-inner-container {
-      display: flex;
-      flex-direction: column;
-    }
-  }
-  .mat-drawer-backdrop.mat-drawer-shown {
-    background-color: transparent;
-  }
-
   .mat-toolbar.pac__shell-bar {
     // position: relative; // 使 z-index 生效的属性
     z-index: 2;

@@ -161,7 +161,7 @@
         ></div>
       </mat-drawer>
       <mat-drawer-content class="pac-app__page-outlet relative z-0" 
-        [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig?.data?.title">
+        [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
         @if(copilotEnabled$()) {
           <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
         }
