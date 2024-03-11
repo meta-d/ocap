@@ -59,6 +59,33 @@ $prefix: (ngm, model);
   }
 }
 
+:host ::ng-deep {
+  .pac-model__shell-bar {
+    --mat-icon-color: theme('colors.gray.500');
+  }
+
+  .mat-drawer-container {
+    --mat-toolbar-container-background-color: transparent;
+  }
+
+  .mat-drawer-container ngm-splitter {
+    --ngm-splitter-background-color: transparent;
+  }
+
+  // Toolbar styles
+  .mat-toolbar.pac-sub-toolbar {
+    min-height: 33px;
+    @apply text-gray-500 dark:text-gray-200;
+
+    &.ngm-density__compact.mat-toolbar-row,
+    &.ngm-density__compact.mat-toolbar-single-row {
+      height: 33px;
+      padding: 0 6px;
+      font-size: 1rem;
+    }
+  }
+}
+
 .pac-fullscreen {
   z-index: 3;
 }
@@ -108,7 +135,7 @@ list-content-loader {
 
 .cdk-menu-bar {
   .cdk-menu-item {
-    @apply pl-4 outline-none;
+    @apply pl-4 outline-none rounded-md;
   }
 }
 
