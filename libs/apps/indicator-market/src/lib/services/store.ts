@@ -9,6 +9,7 @@ import {
   convertIndicatorResult,
   convertNewSemanticModelResult
 } from '@metad/cloud/state'
+import { nonNullable } from '@metad/core'
 import { IBusinessAreaUser, IComment, IIndicatorApp, ISemanticModel } from '@metad/contracts'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ComponentStore } from '@metad/store'
@@ -18,7 +19,6 @@ import { assign, includes, indexOf, isEmpty, isEqual, sortBy, uniq } from 'lodas
 import { Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
 import { concatMap, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorState, TagEnum } from '../types'
-import { nonNullable } from '@metad/core'
 
 type DataSources = {
   [id: string]: {
@@ -101,7 +101,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
           favour: true,
         } : null
       }).filter(nonNullable)
-      const subIndicators = indicators.filter((item) => !favorites.includes(item.id))
+      const subIndicators = indicators.filter((item) => !favorites?.includes(item.id))
 
       if (order) {
         return [
