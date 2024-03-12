@@ -1,6 +1,8 @@
-import { WidgetComponentType } from '@metad/story/core'
+import { EntityType } from '@metad/ocap-core'
+import { StoryPoint, WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
-import { ChartSchema } from './chart.schema'
+import { tryFixAnalyticsAnnotation } from '../types'
+import { ChartSchema, chartAnnotationCheck, completeChartAnnotation } from './chart.schema'
 import { AnalyticsAnnotationSchema } from './grid.schema'
 
 export const StoryWidgetSchema = z.object({
@@ -24,3 +26,20 @@ export const StoryWidgetSchema = z.object({
     showToolbar: z.boolean().default(true).optional().describe('Show toolbar in AnalyticalGrid widget')
   })
 })
+
+export function schemaToWidget(schema: any, dataSource: string, entityType: EntityType): StoryPoint {
+  return {
+    name: schema.title,
+    ...schema,
+    position: schema.position,
+    dataSettings: {
+      dataSource,
+      entitySet: entityType.name,
+      chartAnnotation: completeChartAnnotation(chartAnnotationCheck(schema.chartAnnotation, entityType, schema)),
+      analytics: tryFixAnalyticsAnnotation(entityType, schema.analytics)
+    },
+    options: {
+      gridSettings: schema.gridSettings
+    }
+  }
+}

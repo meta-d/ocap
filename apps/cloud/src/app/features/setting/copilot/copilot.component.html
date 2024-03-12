@@ -47,9 +47,9 @@
         </mat-label>
 
         <mat-select formControlName="defaultModel">
-            @for (model of models(); track model.id) {
+          @for (model of models(); track model.id) {
             <mat-option [value]="model.id">{{model.name}}</mat-option>
-            }
+          }
         </mat-select>
     </mat-form-field>
 
@@ -63,7 +63,15 @@
         <button mat-raised-button color="primary" class="ngm-rounded-full"
             [disabled]="formGroup.invalid || formGroup.pristine"
         >
-            {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
+            <div class="flex items-center">
+              @if (saving()) {
+                <mat-spinner diameter="20" class="mr-2"></mat-spinner>
+              }
+                <span>
+                    {{ 'PAC.ACTIONS.Save' | translate: {Default: 'Save'} }}
+                </span>
+            </div>
+            
         </button>
     </div>
 </form>

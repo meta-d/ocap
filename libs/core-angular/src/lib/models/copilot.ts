@@ -61,9 +61,9 @@ export function makeCubePrompt(cube: Cube) {
 }
 
 export const DimensionSchema = z.object({
-  dimension: z.string().describe('The name of the dimension like [Product]'),
-  hierarchy: z.string().optional().describe('The name of the hierarchy of the dimension'),
-  level: z.string().optional().describe('The name of the level in the hierarchy'),
+  dimension: z.string().describe('The name of the dimension using pattern `[Dimension Name]`'),
+  hierarchy: z.string().optional().describe('The name of the hierarchy of the dimension using pattern `[Hierarchy Name]`'),
+  level: z.string().optional().describe('The name of the level in the hierarchy using pattern `[Hierarchy Name].[Level Name]`'),
 })
 
 export const MeasureSchema = z.object({

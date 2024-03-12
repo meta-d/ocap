@@ -191,18 +191,6 @@ export class NxStoryService extends ComponentStore<StoryState> {
     distinctUntilChanged()
   )
 
-  // // System theme
-  // private prefersColorScheme$ = prefersColorScheme()
-  // public readonly themeChanging$ = combineLatest([this.themeName$, this.prefersColorScheme$]).pipe(
-  //   map(([themeName, prefersColorScheme]) => {
-  //     if (!themeName || themeName === 'system') {
-  //       return prefersColorScheme
-  //     }
-  //     return themeName || 'light'
-  //   }),
-  //   startWith(null),
-  //   pairwise()
-  // )
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))

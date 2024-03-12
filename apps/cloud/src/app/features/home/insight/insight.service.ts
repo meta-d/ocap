@@ -9,7 +9,6 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Cube, EntityType, isEntityType } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
-import JSON5 from 'json5'
 import { uniq } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
@@ -18,7 +17,7 @@ import { combineLatest, debounceTime, filter, firstValueFrom, map, of, switchMap
 import zodToJsonSchema from 'zod-to-json-schema'
 import { registerModel } from '../../../@core'
 import { DemoModelCubes, SuggestsSchema } from './types'
-import { ChatRequest, CreateMessage } from 'ai'
+import { ChatRequest } from 'ai'
 
 @Injectable()
 export class InsightService {

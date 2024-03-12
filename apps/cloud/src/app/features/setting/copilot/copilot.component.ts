@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, computed, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
@@ -39,6 +39,8 @@ export class CopilotComponent extends TranslationBaseComponent {
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
 
+  readonly saving = signal(false)
+
   private enabledSub = this.formGroup
     .get('enabled')
     .valueChanges.pipe(startWith(false), distinctUntilChanged())
@@ -64,17 +66,24 @@ export class CopilotComponent extends TranslationBaseComponent {
     } else {
       this.formGroup.reset()
     }
+    this.formGroup.markAsPristine()
   })
 
   async onSubmit() {
     try {
-      await this.copilotService.upsertOne(this.formGroup.value)
+      this.saving.set(true)
+      const { apiKey, ...rest } = this.formGroup.value
+      await this.copilotService.upsertOne(this.formGroup.get('apiKey').dirty ? {
+          ...rest,
+          apiKey: apiKey.trim()
+        } : rest
+      )
       this.formGroup.markAsPristine()
       this._toastrService.success('PAC.ACTIONS.Save', { Default: 'Save' })
-
-      this._cdr.detectChanges()
     } catch (err) {
       this._toastrService.error(getErrorMessage(err))
+    } finally {
+      this.saving.set(false)
     }
   }
 }

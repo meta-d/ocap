@@ -229,16 +229,6 @@ $sidebar-collapsed-width: 40px;
       }
     }
   }
-
-  
-  .pac-toolbar-search {
-    .mat-mdc-input-element {
-      @apply -ml-4 pl-8;
-    }
-  }
-  .pac-toolbar-search__autocomplete.mat-mdc-autocomplete-panel {
-    @apply relative mt-2 max-h-[456px] min-w-[240px];
-  }
 }
 
 @mixin typography($theme) {

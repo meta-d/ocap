@@ -28,27 +28,27 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: yarn
       - run: yarn build
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/copilot
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/store
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/echarts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/angular
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/xmla
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

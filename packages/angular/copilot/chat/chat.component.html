@@ -16,7 +16,7 @@
                     <div class="flex-1 flex items-start overflow-auto">
                         <div class="relative flex flex-col items-center shrink-0">
                             @if (assistantAvatar) {
-                                @if (message.status === 'thinking' && thinkingAvatar) {
+                                @if ((message.status === 'thinking' || message.status === 'answering') && thinkingAvatar) {
                                     <img class="w-8 h-8 pointer-events-none" [src]="thinkingAvatar"/>
                                 } @else {
                                     <img class="w-8 h-8 pointer-events-none" [src]="assistantAvatar"/>
@@ -242,14 +242,14 @@
             <span class="flex-1"></span>
             
             @if (answering()) {
-                <button type="button" class="rounded-full m-1 border-2 border-gray-950 p-1 dark:border-gray-200" aria-label="停止生成"
+                <button type="button" class="rounded-full m-1 border-solid border-2 border-gray-950 p-1 dark:border-gray-200" aria-label="停止生成"
                     (click)="stopGenerating()">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-2 w-2 text-token-text-primary" height="16" width="16">
                         <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2z" stroke-width="0"></path>
                     </svg>
                 </button>
             } @else {
-                <button class="rounded-full bg-black md:bottom-3 md:right-3 dark:hover:bg-white right-2 disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white p-0.5 border border-black dark:border-white dark:bg-white bottom-1.5 transition-colors" data-testid="send-button"
+                <button class="rounded-full bg-black md:bottom-3 md:right-3 dark:hover:bg-white right-2 disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white p-0.5 border border-solid border-black dark:border-white dark:bg-white bottom-1.5 transition-colors" data-testid="send-button"
                     [disabled]="!prompt()"
                     (click)="askCopilotStream(promptControl.value)"
                 >

@@ -1,15 +1,13 @@
 import {
-  AggregationRole,
   C_MEASURES,
   ChartAnnotation,
   ChartDimension,
   ChartMeasure,
   DataSettings,
-  Dimension,
   EntityType,
   ISlicer,
-  getEntityProperty2
 } from '@metad/ocap-core'
+import { tryFixDimension } from '@metad/story/story'
 import { upperFirst } from 'lodash-es'
 import { z } from 'zod'
 
@@ -207,43 +205,5 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
     slicers: answer.slicers ?? answer.filters, // 因为过滤器会被翻译成 filters
     limit: answer.limit,
     chartOptions: answer.chartOptions ?? answer.chartType?.chartOptions
-  }
-}
-
-/**
- * 由于 AI 返回结果的不稳定，需要尝试修复不同情况的维度
- * 
- * @param entityType 
- * @param dimension 
- * @returns 
- */
-export function tryFixDimension(entityType: EntityType, dimension: Dimension) {
-  let property = null
-  if (dimension.level) {
-    property = getEntityProperty2(entityType, dimension.level)
-  } else if (dimension.hierarchy) {
-    property = getEntityProperty2(entityType, dimension.hierarchy)
-  } else if (dimension.dimension) {
-    property = getEntityProperty2(entityType, dimension.dimension)
-  }
-
-  switch (property?.role) {
-    case AggregationRole.dimension:
-      return {
-        dimension: property.name
-      }
-    case AggregationRole.hierarchy:
-      return {
-        dimension: property.dimension,
-        hierarchy: property.name
-      }
-    case AggregationRole.level:
-      return {
-        dimension: property.dimension,
-        hierarchy: property.hierarchy,
-        level: property.name
-      }
-    default:
-      throw new Error(`Can't find dimension for '${dimension.hierarchy || dimension.dimension}'`)
   }
 }

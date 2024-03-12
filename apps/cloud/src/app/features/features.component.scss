@@ -121,6 +121,10 @@ $prefix: (ngm, shell);
 }
 
 ::ng-deep {
+  .pac-toolbar-search__autocomplete.mat-mdc-autocomplete-panel {
+    @apply relative mt-2 max-h-[456px] min-w-[240px];
+  }
+
   .pac-features__sidenav {
     .mat-drawer-inner-container {
       @apply flex flex-col overflow-hidden;

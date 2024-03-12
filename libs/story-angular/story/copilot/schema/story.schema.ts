@@ -35,7 +35,7 @@ export const StoryStyleSchema = z.object({
           text: z.string().optional().describe('The text of watermark')
         })
         .optional(),
-      colors: z.array(z.string()).optional().describe('The colors of story'),
+      colors: z.array(z.string()).optional().describe('The series colors of story'),
       tabBar: z.enum(['fixed', 'point', 'hidden']).optional().describe('The page header bar style of story'),
       pageHeaderPosition: z.enum(['above', 'below']).optional().describe('The page header position of story'),
       pageHeaderStretchTabs: z.boolean().optional().describe('The page header is stretch tabs'),

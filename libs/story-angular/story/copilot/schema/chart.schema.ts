@@ -85,7 +85,7 @@ export const ChartWidgetSchema = z.object({
  * @param entityType
  * @returns
  */
-export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityType: EntityType): ChartAnnotation {
+export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityType: EntityType, schema?: any): ChartAnnotation {
   if (!chartAnnotation) {
     return chartAnnotation
   }
@@ -110,6 +110,19 @@ export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityTyp
   return {
     ...chartAnnotation,
     chartType,
-    dimensions: chartAnnotation.dimensions.map((item) => fixDimension(item, entityType))
+    dimensions: (chartAnnotation.dimensions ?? schema.dimensions)?.map((item) => fixDimension(item, entityType)),
+    measures: chartAnnotation.measures ?? schema.measures
+  }
+}
+
+export function completeChartAnnotation(chart: ChartAnnotation) {
+  return chart && {
+    ...chart,
+    measures: chart.measures?.map((item) => ({
+      ...item,
+      formatting: {
+        shortNumber: true
+      }
+    }))
   }
 }
