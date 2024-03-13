@@ -109,8 +109,9 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   NgxPopperjsPlacements = NgxPopperjsPlacements
   PageHeaderLabelEnum = PageHeaderLabelEnum
 
+  readonly #logger = inject(NGXLogger)
   private _renderer = inject(Renderer2)
-  private _cdr = inject(ChangeDetectorRef)
+  // private _cdr = inject(ChangeDetectorRef)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
@@ -171,8 +172,10 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
 
-  readonly preferences = toSignal(this.storyService.preferences$)
+  private style: any
+  private _nghost: string
 
+  readonly preferences = toSignal(this.storyService.preferences$)
 
   // State Query
   readonly currentStory$ = this.storyService.story$
@@ -294,7 +297,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       this.storyService.setCurrentPageKey(intent.action)
     })
   private _storyFiltersSubscriber = this.storyService.filters$.pipe(filter(isNotEmpty), takeUntilDestroyed()).subscribe((filters) => {
-    this.logger?.debug(`Story全局固定过滤器:`, filters)
+    this.#logger?.debug(`Story全局固定过滤器:`, filters)
     // filters.forEach(item => this.filterBarService.put(item))
   })
   private _currentPageKeySubscriber = this.storyService.currentPageKey$
@@ -358,9 +361,16 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       }
     })
 
-  style: any
-  private _nghost: string
-
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  /**
+   * @todo 工作量大
+   */
+  // #widgetCommand = injectStoryWidgetCommand(this.storyService)
+  
   constructor(
     public storyService: NxStoryService,
     private readonly translateService: TranslateService,
@@ -370,8 +380,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     private _elementRef: ElementRef,
     @Optional()
     public settingsService?: NxSettingsPanelService,
-    @Optional()
-    private logger?: NGXLogger
   ) {
     super({} as Story)
   }

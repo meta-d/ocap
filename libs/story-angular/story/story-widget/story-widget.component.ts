@@ -112,6 +112,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   STORY_POINT_TYPE = StoryPointType
   ORDER_DIRECTION = OrderDirection
 
+  readonly #logger? = inject(NGXLogger, { optional: true })
   private readonly _renderer = inject(Renderer2)
   private readonly _elementRef = inject(ElementRef)
   private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
@@ -314,6 +315,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
       this.openEditAttributes()
     }
   })
+
   constructor(
     private readonly storyService: NxStoryService,
     private readonly storyPointService: NxStoryPointService,
@@ -326,8 +328,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     private readonly _dialog: MatDialog,
     private readonly _injector: Injector,
     private _viewContainerRef: ViewContainerRef,
-    @Optional()
-    private readonly _logger?: NGXLogger,
+    
     @Optional()
     public settingsService?: NxSettingsPanelService,
     @Optional()
