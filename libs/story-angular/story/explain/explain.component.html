@@ -52,7 +52,8 @@
         <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.DataSettings' | translate: {Default: 'Data Settings'} }}:</h5>
         <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
           [code]="explain.data | json"
-          language="json">
+          language="json"
+          >
         </ngm-prism-highlight>
       </div>
     }
@@ -63,7 +64,8 @@
           <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Statement' | translate: {Default: 'Statement'} }}:</h5>
           <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 overflow-auto"
             [code]="statement"
-            language="sql">
+            language="sql"
+            >
           </ngm-prism-highlight>
         </div>
         }
@@ -89,7 +91,8 @@
         <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Options' | translate: {Default: 'Options'} }}:</h5>
         <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
           [code]="explain.options | json"
-          language="json">
+          language="json"
+          maximum="10000">
         </ngm-prism-highlight>
       </div>
     }
@@ -98,7 +101,8 @@
         <h5 class="px-4 py-2 text-lg">{{ 'Story.Explain.Slicers' | translate: {Default: 'Slicers'} }}:</h5>
         <ngm-prism-highlight class="text-sm select-all rounded border-dotted border-2 p-2 m-4 max-h-80 overflow-auto"
           [code]="explain.options | json"
-          language="json">
+          language="json"
+          maximum="10000">
         </ngm-prism-highlight>
       </div>
     }

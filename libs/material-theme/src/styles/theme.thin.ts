@@ -550,6 +550,29 @@ const chartTheme = {
       },
     },
   },
+  calendar: {
+    itemStyle: {
+      normal: {
+        color: 'transparent',
+        borderColor: theme.border,
+        borderWidth: 1,
+      },
+    },
+    yearLabel: {
+      color: theme.fgText,
+    },
+    monthLabel: {
+      color: theme.fgText,
+    },
+    dayLabel: {
+      color: theme.fgText,
+    }
+  },
+  tree: {
+    label: {
+      color: theme.fgText,
+    }
+  }
 }
 
 const g2Theme = {

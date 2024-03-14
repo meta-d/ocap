@@ -3,5 +3,5 @@
 }
 
 .ngm-prism-highlight {
-  @apply border-neutral-500 dark:border-neutral-600;
+  border: var(--ngm-color-outline);
 }
