@@ -1,8 +1,59 @@
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$global-prefix: ngm;
+$prefix: (ngm, story-designer);
+
+@function get-unthemable-tokens() {
+  @return (
+    container-rounded: var(--#{$global-prefix}-primary-container-rounded)
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    color-surface: var(--#{$global-prefix}-color-surface),
+    color-surface-container: var(--#{$global-prefix}-color-surface-container),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
+
 :host {
+  @include token-utils.create-token-values($prefix, get-token-slots());
+  --story-fullscreen-top: 0;
   @apply relative flex-1 flex flex-col max-w-full;
+
+  &.ngm-story--fullscreen:not(.editable) {
+    .ngm-story__toolbar {
+      @apply opacity-0 transition-all duration-200 ease-in-out;
+
+      &:hover {
+        opacity: 1;
+        top: 0;
+      }
+    }
+  }
 
   &.ngm-story--fullscreen {
     @apply z-50;
+    .ngm-story__container {
+      top: var(--story-fullscreen-top);
+      @apply fixed w-full h-full left-0 transition-all duration-200 ease-in-out;
+    }
+  }
+}
+
+@include token-utils.use-tokens($prefix, get-token-slots()) {
+  :host {
+    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+    overflow: hidden;
   }
 }
 

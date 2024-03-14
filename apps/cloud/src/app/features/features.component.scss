@@ -47,10 +47,15 @@ $prefix: (ngm, shell);
   max-width: 100%;
 }
 
-.mat-drawer.mat-drawer-side {
-  @apply duration-200 ease-in-out;
-  width: 58px;
-  transition: width;
+.mat-sidenav.pac-features__sidenav {
+  &.mat-drawer-over {
+    --mat-sidenav-container-width: 260px;
+  }
+  &.mat-drawer-side {
+    --mat-sidenav-container-width: 58px;
+    @apply duration-200 ease-in-out;
+    transition: width;
+  }
 }
 
 .pac_brand {
@@ -110,7 +115,6 @@ $prefix: (ngm, shell);
   }
 }
 
-
 .pac-router__progress-bar {
   position: absolute;
   height: 2px;
@@ -118,10 +122,6 @@ $prefix: (ngm, shell);
 
 .pac__toolbar-new {
   @apply rounded-md m-2;
-}
-
-.mat-sidenav.pac-features__sidenav.mat-drawer-over {
-  --mat-sidenav-container-width: 260px;
 }
 
 ::ng-deep {
