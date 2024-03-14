@@ -1,4 +1,4 @@
-import { ColorPalettes } from '@metad/core'
+import { ColorPalettes, ThemesEnum } from '@metad/core'
 import {
   AccordionWrappers,
   Appearances,
@@ -257,12 +257,13 @@ function StoryPreferences(className: string, Story) {
     {
       key: 'themeName',
       type: 'button-toggle',
+      defaultValue: null,
       props: {
         label: Story?.Common?.Theme?.Title ?? 'Theme',
         options: [
-          { value: 'default', label: Story?.Common?.Theme?.Default ?? 'Default' },
-          { value: 'light', label: Story?.Common?.Theme?.Light ?? 'Light' },
-          { value: 'dark', label: Story?.Common?.Theme?.Dark ?? 'Dark' },
+          { value: null, label: Story?.Common?.Theme?.Default ?? 'Default' },
+          { value: ThemesEnum.light, label: Story?.Common?.Theme?.Light ?? 'Light' },
+          { value: ThemesEnum.dark, label: Story?.Common?.Theme?.Dark ?? 'Dark' },
           // { value: 'thin', label: Story?.Common?.Theme?.Thin ?? 'Thin' } 需要改造 thin theme 暂时先禁用
         ]
       }

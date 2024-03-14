@@ -30,7 +30,6 @@ export function effectStoryTheme(elementRef: ElementRef) {
 
   const storyKey$ = toSignal(storyService.story$.pipe(map((story) => story.key || story.id)))
   const echartsTheme$ = toSignal(storyService.story$.pipe(map((story) => story.options?.echartsTheme)))
-  const themeName$ = toSignal(storyService.themeName$)
 
   return effect(() => {
     const key = storyKey$()
@@ -41,7 +40,7 @@ export function effectStoryTheme(elementRef: ElementRef) {
       renderer.removeClass(elementRef.nativeElement, theme)
     })
 
-    let current = themeName$()
+    let current = storyService.themeName()
 
     if (current && current !== ThemesEnum.default && current !== ThemesEnum.system) {
       renderer.addClass(elementRef.nativeElement, 'ngm-theme-' + current)

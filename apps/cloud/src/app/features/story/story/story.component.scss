@@ -117,13 +117,6 @@ $prefix: (ngm, story-designer);
   max-width: 100%;
 }
 
-.ngm-story-designer__template {
-  @apply flex justify-center items-center text-lg border-2 border-gray-300 border-dashed rounded-lg cursor-pointer;
-
-  width: 220px;
-  height: 160px;
-}
-
 .ngm-story__device-size-bar {
   display: flex;
   flex-direction: row;
@@ -158,6 +151,21 @@ $prefix: (ngm, story-designer);
 
 .ngm-story__designer-drawer.mat-drawer-side.mat-drawer-end {
   @apply border-l-0;
+}
+
+.ngm-story__quick-start-widget {
+  @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+    active:shadow-lg;
+  @apply sm:p-16;
+  background-color: var(--ngm-color-surface-container-low);
+  border-color: var(--ngm-color-outline);
+  opacity: .5;
+
+  &:hover {
+    background-color: var(--ngm-color-surface-container-high);
+    font-weight: 600;
+    opacity: 1;
+  }
 }
 
 ::ng-deep {

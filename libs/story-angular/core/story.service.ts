@@ -186,10 +186,16 @@ export class NxStoryService extends ComponentStore<StoryState> {
     shareReplay(1)
   )
 
+  /**
+   * @deprecated use signal `themeName`
+   */
   public readonly themeName$ = this.storyOptions$.pipe(
-    map((options) => options?.preferences?.story?.themeName || options?.themeName),
+    map((options) => options?.preferences?.story?.themeName),
     distinctUntilChanged()
   )
+  readonly themeName = toSignal(this.storyOptions$.pipe(
+    map((options) => options?.preferences?.story?.themeName)
+  ))
 
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)

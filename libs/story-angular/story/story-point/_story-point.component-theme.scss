@@ -64,14 +64,6 @@
       }
       
     }
-
-    .ngm-story-point__quick-start {
-      .ngm-story-point__quick-start-widget:hover {
-        color: mat.get-color-from-palette($foreground, text);
-        background-color: mat.get-color-from-palette($primary);
-        font-weight: 600;
-      }
-    }
   }
 
   /* gridster 网格样式 */

@@ -1,7 +1,8 @@
 import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import {
-  AfterViewInit,
+  afterNextRender,
+  afterRender,
   ChangeDetectorRef,
   Component,
   computed,
@@ -80,7 +81,7 @@ type ResponsiveBreakpointType = {
   },
   providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService]
 })
-export class StoryComponent extends TranslationBaseComponent implements OnInit, AfterViewInit, IsDirty {
+export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
@@ -243,14 +244,12 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
       })
     })
 
-  private isAuthenticatedSub = this.appService.isAuthenticated$
-    .pipe(takeUntilDestroyed())
-    .subscribe((isAuthenticated) => {
-      this.storyService.setAuthenticated(isAuthenticated)
-    })
-
   constructor() {
     super()
+
+    effect(() => {
+      this.storyService.setAuthenticated(this.appService.isAuthenticated())
+    }, { allowSignalWrites: true })
 
     effect(() => {
       const models = this.models()
@@ -258,6 +257,12 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
         if (model?.agentType === AgentType.Wasm) {
           registerWasmAgentModel(this.wasmAgent, model)
         }
+      })
+    })
+
+    afterNextRender(() => {
+      runInInjectionContext(this.#injector, () => {
+        effectStoryTheme(this.storyContainer)
       })
     })
   }
@@ -272,12 +277,6 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
         this.appService.setNavigation({ catalog: MenuCatalog.Stories, id: this.story().id, label: this.story().name })
       }
     }
-  }
-
-  ngAfterViewInit() {
-    runInInjectionContext(this.#injector, () => {
-      effectStoryTheme(this.storyContainer)
-    })
   }
 
   isDirty(): boolean {
