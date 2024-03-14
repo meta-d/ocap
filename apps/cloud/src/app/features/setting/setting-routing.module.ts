@@ -23,7 +23,7 @@ const routes: Routes = [
         path: 'account',
         component: PACAccountComponent,
         data: {
-          title: 'Settings / Account',
+          title: 'settings/account',
         },
         children: [
           {
@@ -33,11 +33,17 @@ const routes: Routes = [
           },
           {
             path: 'profile',
-            component: PACAccountProfileComponent
+            component: PACAccountProfileComponent,
+            data: {
+              title: 'settings/account/profile',
+            },
           },
           {
             path: 'password',
-            component: PACAccountPasswordComponent
+            component: PACAccountPasswordComponent,
+            data: {
+              title: 'settings/account/password',
+            },
           }
         ]
       },
@@ -46,6 +52,7 @@ const routes: Routes = [
         loadChildren: () => import('./data-sources/data-sources.module').then((m) => m.PACDataSourcesModule),
         canActivate: [NgxPermissionsGuard],
         data: {
+          title: 'settings/data-sources',
           permissions: {
             only: [AnalyticsPermissionsEnum.DATA_SOURCE_EDIT],
             redirectTo
@@ -57,6 +64,7 @@ const routes: Routes = [
         loadChildren: () => import('./users/user.module').then((m) => m.UserModule),
         canActivate: [NgxPermissionsGuard],
         data: {
+          title: 'settings/users',
           permissions: {
             only: [PermissionsEnum.ORG_USERS_VIEW],
             redirectTo
@@ -68,7 +76,7 @@ const routes: Routes = [
         loadChildren: () => import('./business-area/').then((m) => m.routes),
         canActivate: [NgxPermissionsGuard],
         data: {
-          title: 'business-area',
+          title: 'settings/business-area',
           permissions: {
             only: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT],
             redirectTo
@@ -80,7 +88,7 @@ const routes: Routes = [
         loadChildren: () => import('./certification/certification.module').then((m) => m.CertificationModule),
         canActivate: [NgxPermissionsGuard],
         data: {
-          title: 'certification',
+          title: 'settings/certification',
           permissions: {
             only: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT],
             redirectTo
@@ -96,7 +104,7 @@ const routes: Routes = [
           ),
         canActivate: [NgxPermissionsGuard],
         data: {
-          title: 'notification-destinations',
+          title: 'settings/notification-destinations',
           permissions: {
             only: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT],
             redirectTo
@@ -109,6 +117,7 @@ const routes: Routes = [
         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
         canActivate: [NgxPermissionsGuard],
         data: {
+          title: 'settings/roles',
           permissions: {
             only: [PermissionsEnum.CHANGE_ROLES_PERMISSIONS],
             redirectTo
@@ -119,6 +128,7 @@ const routes: Routes = [
         path: 'features',
         canActivate: [NgxPermissionsGuard],
         data: {
+          title: 'settings/features',
           permissions: {
             only: [RolesEnum.SUPER_ADMIN],
             redirectTo
@@ -128,25 +138,37 @@ const routes: Routes = [
       },
       {
         path: 'tenant',
-        loadChildren: () => import('./tenant/tenant.module').then((m) => m.TenantModule)
+        loadChildren: () => import('./tenant/tenant.module').then((m) => m.TenantModule),
+        data: {
+          title: 'settings/tenant',
+        }
       },
       {
         path: 'organizations',
-        loadChildren: () => import('./organizations/organizations.module').then((m) => m.OrganizationsModule)
+        loadChildren: () => import('./organizations/organizations.module').then((m) => m.OrganizationsModule),
+        data: {
+          title: 'settings/organizations',
+        }
       },
       {
         path: 'email-templates',
-        loadChildren: () => import('./email-templates/email-templates.module').then((m) => m.EmailTemplatesModule)
+        loadChildren: () => import('./email-templates/email-templates.module').then((m) => m.EmailTemplatesModule),
+        data: {
+          title: 'settings/email-templates',
+        }
       },
       {
         path: 'custom-smtp',
-        loadChildren: () => import('./custom-smtp/custom-smtp.module').then((m) => m.CustomSmtpModule)
+        loadChildren: () => import('./custom-smtp/custom-smtp.module').then((m) => m.CustomSmtpModule),
+        data: {
+          title: 'settings/custom-smtp',
+        }
       },
       {
         path: 'copilot',
         loadChildren: () => import('./copilot/routing').then((m) => m.default),
         data: {
-          title: 'Settings / Copilot',
+          title: 'settings/copilot',
         }
       }
     ]

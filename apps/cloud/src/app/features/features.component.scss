@@ -120,6 +120,10 @@ $prefix: (ngm, shell);
   @apply rounded-md m-2;
 }
 
+.mat-sidenav.pac-features__sidenav.mat-drawer-over {
+  --mat-sidenav-container-width: 260px;
+}
+
 ::ng-deep {
   .pac-toolbar-search__autocomplete.mat-mdc-autocomplete-panel {
     @apply relative mt-2 max-h-[456px] min-w-[240px];

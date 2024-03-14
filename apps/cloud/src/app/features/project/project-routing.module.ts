@@ -24,11 +24,17 @@ const routes: Routes = [
       },
       {
         path: 'members',
-        component: ProjectMembersComponent
+        component: ProjectMembersComponent,
+        data: {
+          title: 'project/members',
+        },
       },
       {
         path: 'indicators',
         component: ProjectIndicatorsComponent,
+        data: {
+          title: 'project/indicators',
+        },
         children: [
           {
             path: '',
