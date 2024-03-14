@@ -47,7 +47,7 @@ import { StorySharesComponent } from '@metad/story/story'
 import { combineLatest, firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
-import { MaterialModule, ProjectFilesComponent } from '../../../@shared'
+import { MaterialModule, ProjectFilesDialogComponent } from '../../../@shared'
 import { StoryDesignerComponent } from '../designer'
 import { SaveAsTemplateComponent } from '../save-as-template/save-as-template.component'
 import { StoryDetailsComponent } from '../story-details/story-details.component'
@@ -181,6 +181,7 @@ export class StoryToolbarComponent implements OnInit {
   |--------------------------------------------------------------------------
   */
   readonly isCopyWidgetSelected$ = toSignal(this.storyService.copySelectedWidget$)
+  readonly story = toSignal(this.storyService.story$)
   
   /**
   |--------------------------------------------------------------------------
@@ -308,7 +309,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openStoryDetails() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const result = await firstValueFrom(
       this._dialog
         .open(StoryDetailsComponent, {
@@ -375,7 +376,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openAdvancedStyle() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
 
     const advancedStyle = await firstValueFrom(
       this._dialog
@@ -406,7 +407,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async saveAsTemplate() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const points = await firstValueFrom(this.storyService.pageStates$)
     const asTemplate = await firstValueFrom(
       this._dialog
@@ -462,20 +463,16 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
-  async openMaterials() {
-    const story = await firstValueFrom(this.storyService.story$)
-    const result = await firstValueFrom(
-      this._dialog
-        .open(ProjectFilesComponent, {
-          panelClass: 'medium',
-          data: {
-            projectId: story.projectId
-          }
-        })
-        .afterClosed()
-    )
-    if (result) {
-    }
+  openMaterials() {
+    const story = this.story()
+    this._dialog
+      .open(ProjectFilesDialogComponent, {
+        panelClass: 'medium',
+        data: {
+          projectId: story.projectId
+        }
+      })
+      .afterClosed().subscribe((result) => {})
   }
 
   /**
@@ -501,7 +498,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openShare() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const isAuthenticated = await firstValueFrom(this.storyService.isAuthenticated$)
     const result = await firstValueFrom(
       this._dialog

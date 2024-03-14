@@ -1162,7 +1162,18 @@
       "Templates": "模板",
       "AddSemanticModels": "添加语义模型",
       "New": "新建",
-      "Files": "文件"
+      "UploadFiles": "上传文件",
+      "Files": "文件",
+      "FileColumn": {
+        "originalName": "原始文件名",
+        "size": "大小",
+        "type": "类型",
+        "createdAt": "创建时间",
+        "mimetype": "MIME 类型",
+        "encoding": "编码",
+        "storageProvider": "存储提供商",
+        "createdByUser": "创建人"
+      }
     },
     "Certification": {
       "Certification": "认证",
@@ -1521,7 +1532,8 @@
         "ShortDescription": "组织简介",
         "Website": "网站链接",
         "SelectDataNetwork": "选择数据网络",
-        "DataNetworkDescription": "服务端将从此网络存储地址下载相应的数据文件进行演示数据的导入"
+        "DataNetworkDescription": "服务端将从此网络存储地址下载相应的数据文件进行演示数据的导入",
+        "FileUrl": "文件链接"
       }
     }
   },

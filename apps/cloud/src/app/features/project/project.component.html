@@ -184,19 +184,30 @@
         [class.active]="rla4.isActive"
       >
         <mat-icon fontSet="material-icons-outlined" class="shrink-0">trending_up</mat-icon>
-        <span >
+        <span class="ml-2">
           {{ 'PAC.Project.Indicators' | translate: {Default: 'Indicators'} }}
         </span>
       </div>
 
-      <div *ngIf="!isDefaultProject" class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
-        [routerLink]="['members']"
-        routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
-        [class.active]="rla5.isActive"
-      >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0">people</mat-icon>
-        <span class="">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
-      </div>
+      @if (!isDefaultProject()) {
+        <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+          [routerLink]="['members']"
+          routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+          [class.active]="rla5.isActive"
+        >
+          <mat-icon fontSet="material-icons-outlined" class="shrink-0">people</mat-icon>
+          <span class="ml-2">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
+        </div>
+
+        <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+          [routerLink]="['files']"
+          routerLinkActive #rla6="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+          [class.active]="rla6.isActive"
+        >
+          <mat-icon fontSet="material-icons-outlined" class="shrink-0">attach_file</mat-icon>
+          <span class="ml-2">{{ 'PAC.Project.Files' | translate: {Default: 'Files'} }}</span>
+        </div>
+      }
     </div>
 
     <div ngmResizerBar resizerBarPosition="right"
@@ -204,7 +215,7 @@
         cdkDragLockAxis="x"
     ></div>
   </mat-drawer>
-  <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}">
+  <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
     <router-outlet #o="outlet"></router-outlet>
 
     <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>

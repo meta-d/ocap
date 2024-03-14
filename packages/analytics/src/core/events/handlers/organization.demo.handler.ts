@@ -55,6 +55,9 @@ export enum InstallationModeEnum {
 	WithStarrocks = 'with-starrocks'
 }
 
+const OrganizationDemoNetworkAliyun = 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip'
+const OrganizationDemoNetworkGitHub = 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
+
 const axios = _axios.default
 
 @CommandHandler(OrganizationDemoCommand)
@@ -113,7 +116,9 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		//extracted import data files directory path
 		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
-		const file = options?.source === OrganizationDemoNetworkEnum.aliyun ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
+		const file = options?.source === OrganizationDemoNetworkEnum.aliyun ? OrganizationDemoNetworkAliyun
+			: options?.source === OrganizationDemoNetworkEnum.github ? OrganizationDemoNetworkGitHub
+			: options?.source
 	    const files = await this.unzipAndRead(file, samplesPath)
 
 		this.logger.debug(`Start to import files in demo file: ${files}`)

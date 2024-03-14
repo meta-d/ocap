@@ -1,17 +1,3 @@
 :host {
   @apply overflow-hidden flex-1 flex;
 }
-
-.mat-mdc-nav-list .mat-mdc-list-item {
-  @apply text-white rounded-lg duration-300;
-
-  &.active {
-    @apply bg-slate-50 text-slate-500;
-  }
-
-  &:hover {
-    .mat-mdc-icon-button {
-      @apply opacity-100;
-    }
-  }
-}

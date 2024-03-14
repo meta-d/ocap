@@ -9,6 +9,7 @@ import { AllIndicatorComponent } from './indicators/all/all.component'
 import { IndicatorRegisterComponent } from './indicators/register/register.component'
 import { ProjectMembersComponent } from './members/members.component'
 import { ProjectComponent } from './project.component'
+import { ProjectFilesComponent } from './files/files.component'
 
 const routes: Routes = [
   {
@@ -28,6 +29,10 @@ const routes: Routes = [
         data: {
           title: 'project/members',
         },
+      },
+      {
+        path: 'files',
+        component: ProjectFilesComponent,
       },
       {
         path: 'indicators',

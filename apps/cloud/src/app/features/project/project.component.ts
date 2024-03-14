@@ -1,7 +1,7 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CdkTreeModule, FlatTreeControl } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, TemplateRef, ViewChild, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, TemplateRef, ViewChild, computed, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
@@ -39,6 +39,7 @@ import {
   Store,
   StoryStatusEnum,
   ToastrService,
+  routeAnimations,
   tryHttp
 } from '../../@core'
 import { MaterialModule, StoryCreationComponent } from '../../@shared'
@@ -69,6 +70,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
   selector: 'pac-project',
   templateUrl: 'project.component.html',
   styleUrls: ['project.component.scss'],
+  animations: [ routeAnimations ]
 })
 export class ProjectComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
@@ -96,9 +98,6 @@ export class ProjectComponent extends TranslationBaseComponent {
   get project(): IProject {
     return this._project$.value
   }
-  get isDefaultProject() {
-    return !this.project?.id || this.project?.id === DefaultProject.id
-  }
   get isOwner() {
     return this.store.user?.id === this.project?.ownerId
   }
@@ -111,7 +110,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   public modelsExpand = false
 
   // Is mobile
-  readonly isMobile = toSignal(this.appService.isMobile$)
+  readonly isMobile = this.appService.isMobile
   sideMenuOpened = !this.isMobile()
 
   public readonly projectId$ = this.store.selectedProject$.pipe(
@@ -186,6 +185,16 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly projectSignal = toSignal(this._project$)
+  readonly isDefaultProject = computed(() => {
+    return !this.projectSignal()?.id || this.projectSignal()?.id === DefaultProject.id
+  })
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
@@ -211,7 +220,7 @@ export class ProjectComponent extends TranslationBaseComponent {
           'models',
           'indicators',
           'indicators.businessArea',
-          'certifications'
+          'certifications',
         ])
       ),
       takeUntilDestroyed()
