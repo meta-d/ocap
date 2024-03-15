@@ -150,6 +150,7 @@ export class FeaturesComponent implements OnInit {
   copilotDrawerOpened = false
   readonly loading = signal(false)
 
+  readonly title = this.appService.title
   readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
   readonly user$ = toSignal(this.store.user$)
 

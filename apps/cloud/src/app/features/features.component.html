@@ -60,7 +60,7 @@
         </button>
 
         @if (!isMobile()) {
-          <span class="pac-home-title text-2xl" routerLink="/home">{{'PAC.title.short' | translate}}</span>
+          <span class="pac-home-title text-2xl" routerLink="/home">{{title() || ('PAC.title.short' | translate)}}</span>
 
           <button mat-icon-button (click)="back()">
             <mat-icon>navigate_before</mat-icon>

@@ -34,6 +34,8 @@ export interface ITenantCreateInput {
 
 export interface ITenantSetting extends S3FileStorageProviderConfig {
 	fileStorageProvider?: FileStorageProviderEnum;
+	tenant_title?: string
+	tenant_title_en?: string
 }
 
 export const DEFAULT_TENANT = 'Default Tenant';

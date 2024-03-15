@@ -13,7 +13,8 @@ import {
 	IProject,
 	FeatureEnum,
 	OrganizationPermissionsEnum,
-	AnalyticsFeatures
+	AnalyticsFeatures,
+	ITenantSetting
 } from '@metad/contracts';
 import { Injectable, inject } from '@angular/core';
 import { StoreConfig, Store as AkitaStore, Query } from '@datorama/akita';
@@ -37,6 +38,7 @@ export interface AppState {
 	featureToggles: IFeatureToggle[];
 	featureOrganizations: IFeatureOrganization[];
 	featureTenant: IFeatureOrganization[];
+	tenantSettings?: ITenantSetting
 }
 
 export interface PersistState {
@@ -174,6 +176,7 @@ export class Store {
 		.select((state) => state.componentLayout)
 		.pipe(map((componentLayout) => new Map(componentLayout)));
 	systemLanguages$ = this.appQuery.select((state) => state.systemLanguages);
+	tenantSettings$ = this.appQuery.select((state) => state.tenantSettings);
 
 	token$ = this.persistQuery.select((state) => state.token);
 	
@@ -494,6 +497,16 @@ export class Store {
 	set cacheLevel(cacheLevel) {
 		this.persistStore.update({
 			cacheLevel: cacheLevel
+		});
+	}
+
+	get tenantSettings(): ITenantSetting | null {
+		const { tenantSettings } = this.appQuery.getValue();
+		return tenantSettings;
+	}
+	set tenantSettings(tenantSettings: ITenantSetting) {
+		this.appStore.update({
+			tenantSettings: tenantSettings
 		});
 	}
 

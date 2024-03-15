@@ -45,10 +45,10 @@ $prefix-color: (#{$prefix}, color);
 }
 
 .pac-project__router-link {
-  @apply hover:bg-black/5 dark:hover:bg-white/5;
+  @apply hover:bg-black/5 dark:hover:bg-white/10;
 
   &.active {
-    @apply bg-black/10 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/10;
+    @apply bg-black/10 hover:bg-black/10 dark:bg-white/20 dark:hover:bg-white/20;
   }
 }
 

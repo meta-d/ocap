@@ -47,29 +47,34 @@
 
 <ng-template #actionTempl let-id="id">
     <div class="flex items-center gap-2">
-        <button *ngIf="!editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="startEdit(id)">
-            <div class="flex justify-center items-center">
-                <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-            </div>
-        </button>
-
-        <button *ngIf="editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="saveEdit(id)">
+      @if (editCache[id]?.edit) {
+        <button mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="saveEdit(id)">
             <div class="flex justify-center items-center">
                 <mat-icon fontSet="material-icons-outlined">save</mat-icon>
             </div>
         </button>
-        <mat-divider [vertical]="true" style="height: 20px;"></mat-divider>
-        <button *ngIf="!editCache[id]?.edit" mat-icon-button displayDensity="cosy" ngmAppearance="danger" class="text-gray-500"
-            (click)="deleteRow(id)">
+      } @else {
+        <button mat-icon-button displayDensity="cosy" class="text-gray-500" (click)="startEdit(id)">
             <div class="flex justify-center items-center">
-                <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+                <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
             </div>
         </button>
-        <button *ngIf="editCache[id]?.edit" mat-icon-button displayDensity="cosy" class="text-gray-500"
+      }
+        <mat-divider [vertical]="true" style="height: 20px;"></mat-divider>
+      @if (editCache[id]?.edit) {
+        <button mat-icon-button displayDensity="cosy" class="text-gray-500"
             (click)="cancelEdit(id)">
             <div class="flex justify-center items-center">
                 <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
             </div>
         </button>
+      } @else {
+        <button mat-icon-button displayDensity="cosy" ngmAppearance="danger" class="text-gray-500"
+            (click)="deleteRow(id)">
+            <div class="flex justify-center items-center">
+                <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+            </div>
+        </button>
+      }
     </div>
 </ng-template>

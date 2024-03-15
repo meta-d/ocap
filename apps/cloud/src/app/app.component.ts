@@ -1,7 +1,6 @@
 import { Platform } from '@angular/cdk/platform'
 import { DOCUMENT } from '@angular/common'
 import { ChangeDetectionStrategy, Component, Inject, Renderer2, effect } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { DateFnsAdapter, MAT_DATE_FNS_FORMATS } from '@angular/material-date-fns-adapter'
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatIconRegistry } from '@angular/material/icon'
@@ -35,7 +34,7 @@ import { AppService } from './app.service'
   ]
 })
 export class AppComponent {
-  readonly isMobile$ = toSignal(this.appService.isMobile$)
+  readonly isMobile$ = this.appService.isMobile
 
   constructor(
     private store: Store,
@@ -65,7 +64,7 @@ export class AppComponent {
       this._adapter.setLocale(mapDateLocale(language))
     })
 
-    this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))
+    // this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))
 
     ICONS.forEach((icon) => {
       this.matIconRegistry.addSvgIcon(icon.name, this.domSanitizer.bypassSecurityTrustResourceUrl(icon.resourceUrl))
@@ -103,6 +102,13 @@ export class AppComponent {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]')
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', primary === 'dark' ? 'black' : '#f5f5f5')
+      }
+    })
+
+    effect(() => {
+      const title = this.appService.title()
+      if (title) {
+        this.title.setTitle(title)
       }
     })
   }
