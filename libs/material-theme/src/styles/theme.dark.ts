@@ -368,7 +368,10 @@ const chartTheme = {
     splitArea: {
       show: false,
       areaStyle: {
-        color: ['#292929'],
+        color: [
+          '#29292950',
+          '#29292920',
+        ],
       },
     },
   },

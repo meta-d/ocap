@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -17,6 +17,7 @@ import { map, startWith, switchMap } from 'rxjs/operators'
 import { DefaultProject, IProject, ProjectService, Store, ToastrService } from '../../../@core'
 import { InlineSearchComponent } from '../../../@shared'
 import { ProjectCreationComponent } from './creation/creation.component'
+import { computedAsync } from 'ngxtension/computed-async'
 
 @Component({
   standalone: true,
@@ -55,26 +56,30 @@ export class ProjectSelectorComponent {
 
   searchControl = new FormControl('')
 
-  readonly projects$ = combineLatest([this.store.selectedOrganization$, this.projectService.onRefresh()]).pipe(
-    switchMap(() => this.projectService.getMy()),
-    map((items) => {
-      const defaultName = this.getDefaultProjectName()
-      return [
-        {
-          ...DefaultProject,
-          name: defaultName
-        },
-        ...items
-      ]
-    }),
-    switchMap((items) =>
-      this.searchControl.valueChanges.pipe(
-        startWith(''),
-        map((value) => value?.trim().toLowerCase()),
-        map((value) => (value ? items.filter((item) => item.name.toLowerCase().includes(value)) : items))
+  readonly selectedOrganization = toSignal(this.store.selectedOrganization$)
+  readonly projects = computedAsync(() => {
+    const org = this.selectedOrganization()
+    return this.projectService.onRefresh().pipe(
+      switchMap(() => this.projectService.getMy()),
+      map((items) => {
+        const defaultName = this.getDefaultProjectName()
+        return [
+          {
+            ...DefaultProject,
+            name: defaultName
+          },
+          ...items
+        ]
+      }),
+      switchMap((items) =>
+        this.searchControl.valueChanges.pipe(
+          startWith(''),
+          map((value) => value?.trim().toLowerCase()),
+          map((value) => (value ? items.filter((item) => item.name.toLowerCase().includes(value)) : items))
+        )
       )
     )
-  )
+  })
 
   readonly project = toSignal(
     this.store.selectedProject$.pipe(
@@ -98,6 +103,11 @@ export class ProjectSelectorComponent {
       })
     }
   })
+
+  #orgSelectedRef = effect(() => {
+    const org = this.selectedOrganization()
+    this.store.selectedProject = null
+  }, { allowSignalWrites: true })
 
   selectProject(project: IProject) {
     this.store.selectedProject = project

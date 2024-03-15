@@ -22,63 +22,10 @@ $ease-in-out-curve-function: cubic-bezier(0.35, 0, 0.25, 1);
     background-color: mat.get-color-from-palette($background, background);
     color: mat.get-color-from-palette($foreground, text);
   }
-
-  .pac-story-viewer {
-    background-color: mat.get-color-from-palette($background, background);
-    .pac-story-viewer__anchor {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      box-shadow: rgb(99 99 99 / 20%) 0px 2px 8px 0px;
-      opacity: 0.5;
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
+  
   .pac-story-designer__copilot-popper {
     .ngxp__arrow {
       right: 100px;
-    }
-  }
-
-  .cdk-menu.cdk-menu-group {
-    @apply inline-flex flex-col rounded-lg py-2 shadow-lg outline-none overflow-auto;
-    min-width: 112px;
-    max-width: 280px;
-    -webkit-overflow-scrolling: touch;
-    max-height: calc(100vh - 48px);
-    min-height: 64px;
-    background: mat.get-color-from-palette($background, 'card');
-
-    .cdk-menu-item {
-      @apply flex-1 flex items-center bg-transparent cursor-pointer border-none rounded-none select-none px-4;
-      min-width: 64px;
-      line-height: 36px;
-
-      &:hover {
-        background: mat.get-color-from-palette($background, 'hover');
-      }
-
-      &.ngm-cdk-menu__danger:hover {
-        @apply bg-red-400 text-white;
-      }
-
-      & > .mat-icon {
-        margin-right: 10px;
-      }
-
-      &.disabled, &.mat-button-disabled {
-        @apply opacity-50 cursor-default;
-      }
-
-      .mat-button-wrapper {
-        @apply w-full flex items-center;
-
-        > .mat-icon:is(:first-child) {
-          margin-right: 10px;
-        }
-      }
     }
   }
 }

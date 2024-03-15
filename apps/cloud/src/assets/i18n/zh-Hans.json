@@ -430,7 +430,8 @@
         "DELETE_CONFIRM": "确定从服务器上删除此组织?",
         "DELETE_ORGANIZATION": "组织'{{name}}'删除成功",
         "DEMO_GENERATE_ERROR": "演示数据生成错误",
-        "DEMO_GENERATED": "演示数据生成"
+        "DEMO_GENERATED": "演示数据生成",
+        "AddNewOrganization": "添加新组织"
       },
       "ROLES": {
         "PERMISSION_UPDATED": "角色'{{name}}'更新成功",
