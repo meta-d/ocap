@@ -132,5 +132,8 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
         id: null
       } as IOrganization
     }
+
+    // Reset selected project when organization is changed
+    this.store.selectedProject = null
   }
 }

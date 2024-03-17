@@ -104,11 +104,6 @@ export class ProjectSelectorComponent {
     }
   })
 
-  #orgSelectedRef = effect(() => {
-    const org = this.selectedOrganization()
-    this.store.selectedProject = null
-  }, { allowSignalWrites: true })
-
   selectProject(project: IProject) {
     this.store.selectedProject = project
   }
