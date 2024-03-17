@@ -25,21 +25,27 @@
     </div>
   </div>
   
-  <div class="flex-1 flex overflow-hidden">
-    <ngm-formula-editor *ngIf="syntax === Syntax.SQL" class="flex w-full h-full"
-      [editorOptions]="{
-        theme: themeName()
-      }"
-      [dataSettings]="dataSettings"
-      [(ngModel)]="formula"
-    >
-    </ngm-formula-editor>
-    <ngm-calculated-measure *ngIf="syntax === Syntax.MDX" class="flex w-full h-full"
-      [syntax]="Syntax.MDX"
-      [dataSettings]="dataSettings"
-      [entityType]="entityType"
-      [(ngModel)]="formula"
-    >
-    </ngm-calculated-measure>
+  <div class="min-w-[500px] flex-1 flex overflow-hidden">
+    @switch (syntax) {
+      @case (Syntax.MDX) {
+        <ngm-calculated-measure class="flex w-full h-full"
+          [syntax]="Syntax.MDX"
+          [dataSettings]="dataSettings"
+          [entityType]="entityType"
+          [(ngModel)]="formula"
+        >
+        </ngm-calculated-measure>
+      }
+      @case(Syntax.SQL) {
+        <ngm-formula-editor class="flex w-full h-full"
+          [editorOptions]="{
+            theme: themeName()
+          }"
+          [dataSettings]="dataSettings"
+          [(ngModel)]="formula"
+        >
+        </ngm-formula-editor>
+      }
+    }
   </div>
 </div>

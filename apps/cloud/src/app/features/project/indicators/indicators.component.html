@@ -8,7 +8,7 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
       <div ngmButtonGroup>
-        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators?.length" (click)="export()">
+        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators()?.length" (click)="export()">
           <div class="flex items-center">
             <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
             {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}

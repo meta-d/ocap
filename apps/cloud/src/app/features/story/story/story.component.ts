@@ -85,7 +85,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
-  private coreService = inject(NxCoreService)
+  // private coreService = inject(NxCoreService)
   public readonly toolbarService = inject(StoryToolbarService)
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
@@ -95,7 +95,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
-  private renderer = inject(Renderer2)
+  // private renderer = inject(Renderer2)
   private _cdr = inject(ChangeDetectorRef)
   readonly #injector = inject(Injector)
 

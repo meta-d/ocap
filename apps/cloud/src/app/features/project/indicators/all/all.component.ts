@@ -72,10 +72,10 @@ export class AllIndicatorComponent implements OnDestroy {
   }
 
   onRowSelectionChanging(rows: any) {
-    this.indicatorsComponent.selectedIndicators = rows
+    this.indicatorsComponent.selectedIndicators.set(rows)
   }
 
   ngOnDestroy(): void {
-    this.indicatorsComponent.selectedIndicators = []
+    this.indicatorsComponent.selectedIndicators.set([])
   }
 }

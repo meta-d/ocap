@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, inject, signal } from '@angular/core'
+import { Component, inject, model, signal } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
@@ -12,11 +13,17 @@ import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-an
 import { ButtonGroupDirective, ISelectOption } from '@metad/ocap-angular/core'
 import { DSCoreService, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
+import { NGXLogger } from 'ngx-logger'
+import { combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
 
-export type EntitySelectResult = {
+export type EntitySelectResultType = {
   dataSource: string
   entities: string[]
+}
+export type EntitySelectDataType = {
+  dataSources: ISelectOption<string>[]
+  dsCoreService: DSCoreService
+  registerModel?: (key: string) => Promise<void>
 }
 
 @Component({
@@ -43,27 +50,24 @@ export type EntitySelectResult = {
   ]
 })
 export class NgmEntityDialogComponent {
-  public readonly data = inject<{
-    dataSources: ISelectOption<string>[]
-    dsCoreService: DSCoreService
-  }>(MAT_DIALOG_DATA)
-  public readonly dialogRef = inject<MatDialogRef<NgmEntityDialogComponent, EntitySelectResult>>(MatDialogRef)
+  public readonly data = inject<EntitySelectDataType>(MAT_DIALOG_DATA)
 
-  private dataSource$ = new BehaviorSubject<string>(null)
-  get dataSource() {
-    return this.dataSource$.value
-  }
-  set dataSource(value) {
-    this.dataSource$.next(value)
-  }
+  readonly dialogRef = inject<MatDialogRef<NgmEntityDialogComponent, EntitySelectResultType>>(MatDialogRef)
+  readonly #logger = inject(NGXLogger)
+
+  readonly modelKey = model<string>(null)
 
   search = new FormControl('')
   readonly loading = signal(false)
 
-  public readonly entities$ = this.dataSource$.pipe(
+  public readonly entities$ = toObservable(this.modelKey).pipe(
     distinctUntilChanged(),
     filter(nonNullable),
-    tap(() => this.loading.set(true)),
+    tap((modelKey) => {
+      this.loading.set(true)
+      this.data.registerModel?.(modelKey)
+      this.entities.set([])
+    }),
     switchMap((dataSource) => this.data.dsCoreService.getDataSource(dataSource)),
     switchMap((dataSource) => dataSource.selectEntitySets()),
     map((entitySets) =>
@@ -74,8 +78,8 @@ export class NgmEntityDialogComponent {
     ),
     tap((entities) => {
       this.loading.set(false)
-      if (!this.entities.length && entities.length) {
-        this.entities = [entities[0].key]
+      if (!this.entities().length && entities.length) {
+        this.entities.set([entities[0].key])
       }
     }),
     combineLatestWith(this.search.valueChanges.pipe(startWith(''))),
@@ -85,18 +89,18 @@ export class NgmEntityDialogComponent {
   )
 
   // Selected entity keys
-  entities = []
+  readonly entities = model<string[]>([])
 
   constructor() {
     if (this.data.dataSources.length === 1) {
-      this.dataSource = this.data.dataSources[0].key
+      this.modelKey.set(this.data.dataSources[0].key)
     }
   }
 
   onApply() {
     this.dialogRef.close({
-      dataSource: this.dataSource,
-      entities: this.entities
+      dataSource: this.modelKey(),
+      entities: this.entities()
     })
   }
 }

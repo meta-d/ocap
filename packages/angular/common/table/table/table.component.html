@@ -25,7 +25,7 @@
       </ng-container>
 
         <!-- Columns -->
-        <ng-container [matColumnDef]="column.name" *ngFor="let column of columns">
+        <ng-container *ngFor="let column of columns" [matColumnDef]="column.name" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
           <th mat-header-cell *matHeaderCellDef mat-sort-header [width]="column.width">
             <div class="ngm-header-cell flex-1 flex justify-between items-center whitespace-nowrap">
               <span>

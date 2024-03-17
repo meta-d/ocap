@@ -5,10 +5,10 @@
     </div>
 
     <div class="flex-1 flex flex-col">
-        <mat-radio-group [(ngModel)]="dataSource">
-            @for (item of data.dataSources; track item.key) {
-            <mat-radio-button [value]="item.value">{{item.caption}}</mat-radio-button>
-            }
+        <mat-radio-group [(ngModel)]="modelKey">
+          @for (item of data.dataSources; track item.key) {
+            <mat-radio-button [value]="item.key">{{item.caption}}</mat-radio-button>
+          }
         </mat-radio-group>
     </div>
 
@@ -24,18 +24,18 @@
     </div>
 </div>
   
-<div class="w-[500px] flex flex-col justify-start items-stretch">
+<div class="w-[500px] relative flex flex-col justify-start items-stretch">
     <ngm-search class="m-2" [formControl]="search"></ngm-search>
-    @if (loading()) {
-    <div class="flex justify-center items-center">
-        <mat-spinner mode="indeterminate" class="m-2"></mat-spinner>
+  @if (loading()) {
+    <div class="absolute w-full h-full top-0 left-0 flex justify-center items-center z-10">
+      <mat-spinner mode="indeterminate" diameter="30" class="m-2"></mat-spinner>
     </div>
-    }
+  }
     <mat-selection-list [(ngModel)]="entities" [multiple]="false" class="overflow-auto">
-        @for (item of entities$ | async; track item.key) {
+      @for (item of entities$ | async; track item.key) {
         <mat-list-option [value]="item.key">
             <ngm-display-behaviour [option]="item" [highlight]="search.value"></ngm-display-behaviour>
         </mat-list-option>
-        }
+      }
     </mat-selection-list>
 </div>

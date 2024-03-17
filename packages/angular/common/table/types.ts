@@ -6,4 +6,6 @@ export interface TableColumn extends Property {
     cellTemplate?: TemplateRef<any>,
     pipe?: (value: any) => any
     searching?: boolean
+    sticky?: boolean
+    stickyEnd?: boolean
 }

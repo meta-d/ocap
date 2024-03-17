@@ -24,7 +24,7 @@ import {
   UUID
 } from '@metad/ocap-core'
 import { NxWatermarkOptions } from '@metad/components/trial-watermark'
-import { IStoryWidget, ThemesEnum } from '@metad/core'
+import { DefaultDataSettings, IStoryWidget, ThemesEnum } from '@metad/core'
 import { GridsterConfig, GridsterItem } from 'angular-gridster2'
 import ShortUniqueId from 'short-unique-id'
 
@@ -611,11 +611,6 @@ export interface StoryPointState {
    * Linked analysis states
    */
   linkedAnalysis?: Record<string, LinkedAnalysisEvent>
-}
-
-export type DefaultDataSettings = {
-  dataSource: string;
-  entities: string[];
 }
 
 /**

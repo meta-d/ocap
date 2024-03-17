@@ -1,3 +1,3 @@
-import { ModelQueryHandler } from './project-get.handler'
+import { ModelQueryHandler } from './my-model-query.handler'
 
 export const QueryHandlers = [ModelQueryHandler]

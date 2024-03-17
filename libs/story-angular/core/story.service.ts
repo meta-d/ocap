@@ -7,7 +7,7 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ComponentStore, DirtyCheckQuery } from '@metad/store'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, prefersColorScheme } from '@metad/core'
+import { getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -34,7 +34,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  pairwise,
   shareReplay,
   startWith,
   switchMap,
@@ -62,10 +61,9 @@ import {
   WIDGET_INIT_POSITION,
   StoryPointState,
   MoveDirection,
-  DefaultDataSettings
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
-import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
+import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 
 @Injectable()
@@ -1300,8 +1298,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
   async openDefultDataSettings() {
     const dataSources = this.dataSources()
 
-    const result = await firstValueFrom<DefaultDataSettings>(
-      this._dialog.open<DefaultDataSettings>(NgmEntityDialogComponent, {
+    const result = await firstValueFrom<EntitySelectResultType>(
+      this._dialog.open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
         data: {
           dataSources,
           dsCoreService: this.dsCoreService

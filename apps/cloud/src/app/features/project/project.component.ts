@@ -94,7 +94,13 @@ export class ProjectComponent extends TranslationBaseComponent {
   dataSource: MatTreeFlatDataSource<TreeNodeInterface<any>, FlatTreeNode<any>>
   treeControl: FlatTreeControl<FlatTreeNode<any>>
 
+  /**
+   * @deprecated use projectSignal
+   */
   private _project$ = new BehaviorSubject<IProject>(null)
+  /**
+   * @deprecated use projectSignal
+   */
   get project(): IProject {
     return this._project$.value
   }

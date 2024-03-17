@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnChanges, SimpleChanges, forwardRef, inject } from '@angular/core'
+import { Component, Input, OnChanges, SimpleChanges, forwardRef, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
   FormControl,
@@ -11,8 +12,14 @@ import {
 } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
-import { NgmTreeSelectComponent, NgmMatSelectComponent } from '@metad/ocap-angular/common'
+import { BusinessAreasService, NgmSemanticModel } from '@metad/cloud/state'
+import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
+import { IsNilPipe, calcEntityTypePrompt, nonBlank, nonNullable } from '@metad/core'
+import { NgmMatSelectComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   ISlicer,
   IndicatorType,
@@ -22,13 +29,11 @@ import {
   isEntityType,
   isSemanticCalendar
 } from '@metad/ocap-core'
-import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
-import { BusinessAreasService, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
-import { IsNilPipe, nonBlank, nonNullable } from '@metad/core'
 import { ISemanticModel, ITag, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TagEditorComponent } from 'apps/cloud/src/app/@shared'
+import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
+import { NGXLogger } from 'ngx-logger'
 import {
   BehaviorSubject,
   EMPTY,
@@ -37,18 +42,15 @@ import {
   debounceTime,
   distinctUntilChanged,
   filter,
-  firstValueFrom,
   map,
   shareReplay,
   startWith,
   switchMap,
-  tap,
+  tap
 } from 'rxjs'
+import { CalculatedMeasureComponent } from '@metad/components/property'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
-import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-
+import { ProjectIndicatorsComponent } from '../indicators.component'
 
 @Component({
   standalone: true,
@@ -66,13 +68,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     TagEditorComponent,
     NgmHierarchySelectComponent,
     NxSelectionModule,
-    IsNilPipe
+    IsNilPipe,
+    CalculatedMeasureComponent
   ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => IndicatorRegisterFormComponent),
+      useExisting: forwardRef(() => IndicatorRegisterFormComponent)
     }
   ]
 })
@@ -83,12 +86,13 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 
+  readonly indicatorsComponent = inject(ProjectIndicatorsComponent)
   private readonly _dialog = inject(MatDialog)
   private readonly dsCoreSercie = inject(NgmDSCoreService)
   private readonly businessAreasStore = inject(BusinessAreasService)
-  private readonly modelsService = inject(ModelsService)
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly wasmAgent = inject(WasmAgentService)
+  readonly #logger = inject(NGXLogger)
 
   @Input() certifications: ISelectOption[]
   @Input() models: ISemanticModel[]
@@ -149,7 +153,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     })
   }
 
-  loading = false
+  // readonly loading = signal(false)
 
   get isDirty() {
     return this.formGroup.dirty
@@ -182,9 +186,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   public readonly groupTree$ = this.businessAreasStore.getMyAreasTree().pipe(startWith([]))
 
   private readonly entitySet$ = this.entity.valueChanges.pipe(distinctUntilChanged(), filter(nonBlank))
-  public readonly dataSettings$ = combineLatest([
-    this.dataSourceName$, this.entitySet$
-  ]).pipe(
+  public readonly dataSettings$ = combineLatest([this.dataSourceName$, this.entitySet$]).pipe(
     map(([dataSource, entitySet]) => ({
       dataSource,
       entitySet
@@ -195,9 +197,11 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   public readonly entityTypeLoading$ = new BehaviorSubject<boolean>(false)
   public readonly entityType$ = this.dataSettings$.pipe(
     tap(() => this.entityTypeLoading$.next(true)),
-    switchMap((({dataSource, entitySet}) => this.dsCoreSercie.getDataSource(dataSource).pipe(
-      switchMap((dataSource) => dataSource.selectEntityType(entitySet)),
-    ))),
+    switchMap(({ dataSource, entitySet }) =>
+      this.dsCoreSercie
+        .getDataSource(dataSource)
+        .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet)))
+    ),
     tap(() => this.entityTypeLoading$.next(false)),
     filter(isEntityType),
     takeUntilDestroyed(),
@@ -222,24 +226,92 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly dataSettings = toSignal(this.dataSettings$)
+  readonly entityType = toSignal(this.entityType$)
+  readonly showFormula = signal(false)
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot Commands
+  |--------------------------------------------------------------------------
+  */
+  #formula = injectCopilotCommand({
+    name: 'formula',
+    description: 'Create a new MDX formula for the indicator',
+    systemPrompt: () => {
+      let prompt = `你是一名 BI 指标体系管理的业务专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建指标公式。`
+      if (this.entityType()) {
+        prompt += `当前选择的 Cube 信息为:
+\`\`\`
+${calcEntityTypePrompt(this.entityType())}
+\`\`\`
+`
+      }
+      return prompt
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'new_formula',
+        description: 'Create a new formula for the indicator',
+        argumentAnnotations: [
+          {
+            name: 'formula',
+            type: 'string',
+            description: 'Provide the new formula',
+            required: true
+          },
+          {
+            name: 'unit',
+            type: 'string',
+            description: 'unit of the formula',
+            required: true
+          }
+        ],
+        implementation: async (formula: string, unit: string) => {
+          this.#logger.debug(`Copilot command 'formula' params: formula is`, formula, `unit is`, unit)
+
+          this.formGroup.patchValue({
+            formula,
+            unit,
+            type: IndicatorType.DERIVE
+          })
+
+          return `✅`
+        }
+      })
+    ]
+  })
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private modelSub = this.formGroup.get('modelId').valueChanges.pipe(
-    startWith(this.formGroup.get('modelId').value),
-    distinctUntilChanged(),
-    filter(nonBlank),
-    switchMap((id) => this.modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators'])),
-    takeUntilDestroyed(),
-  ).subscribe((semanticModel) => {
-    // 指标公式编辑时需要用到现有 Indicators
-    // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
-    const dataSource = registerModel({
-      ...semanticModel,
-      // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
-    } as NgmSemanticModel, this.dsCoreService, this.wasmAgent)
-    this.dataSourceName$.next(dataSource.name)
-  })
+  private modelSub = this.formGroup
+    .get('modelId')
+    .valueChanges.pipe(
+      startWith(this.formGroup.get('modelId').value),
+      distinctUntilChanged(),
+      filter(nonBlank),
+      switchMap((id) => this.indicatorsComponent.fetchModelDetails(id)),
+      takeUntilDestroyed()
+    )
+    .subscribe((semanticModel) => {
+      // 指标公式编辑时需要用到现有 Indicators
+      // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
+      const dataSource = registerModel(
+        {
+          ...semanticModel
+          // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
+        } as NgmSemanticModel,
+        this.dsCoreService,
+        this.wasmAgent
+      )
+      this.dataSourceName$.next(dataSource.name)
+    })
 
   constructor() {
     this.formGroup.valueChanges.pipe(debounceTime(500)).subscribe((value) => this._onChange?.(value))
@@ -268,29 +340,32 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     this.formGroup.get('createdByName').disable()
   }
 
-  async openFormula() {
-    const entityType = await firstValueFrom(this.entityType$)
-    const dataSettings = await firstValueFrom(this.dataSettings$)
-    const _formula = await firstValueFrom(
-      this._dialog
-        .open(ModelFormulaComponent, {
-          panelClass: 'large',
-          data: {
-            dataSettings,
-            entityType,
-            measure: {
-              name: this.code,
-              caption: this.name,
-            },
-            formula: this.formula
-          }
-        })
-        .afterClosed()
-    )
-
-    if (_formula && this.formula !== _formula) {
-      this.formula = _formula
-      this.formGroup.markAsDirty()
-    }
+  toggleFormula() {
+    this.showFormula.update((state) => !state)
+  }
+  
+  openFormula() {
+    const entityType = this.entityType()
+    const dataSettings = this.dataSettings()
+    this._dialog
+      .open(ModelFormulaComponent, {
+        panelClass: 'large',
+        data: {
+          dataSettings,
+          entityType,
+          measure: {
+            name: this.code,
+            caption: this.name
+          },
+          formula: this.formula
+        }
+      })
+      .afterClosed()
+      .subscribe((_formula) => {
+        if (_formula && this.formula !== _formula) {
+          this.formula = _formula
+          this.formGroup.markAsDirty()
+        }
+      })
   }
 }

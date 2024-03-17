@@ -1,7 +1,7 @@
 <div class="flex flex-wrap justify-between items-center py-4 px-4 md:px-8">
   <div class="text-xl">
     {{ 'PAC.MENU.INDICATOR.REGISTER_INDICATOR' | translate: {Default: "Register Indicator"} }}
-    {{ indicator?.id ? indicator.name : ('PAC.INDICATOR.REGISTER.New' | translate: {Default: "New"}) }}
+    {{ indicatorModel()?.id ? indicatorModel().name : ('PAC.INDICATOR.REGISTER.New' | translate: {Default: "New"}) }}
   </div>
   
   <div class="flex flex-wrap">
@@ -28,9 +28,11 @@
         {{ 'PAC.ACTIONS.SAVE' | translate: {Default: "Save"} }}
       </button>
 
-      <button *ngIf="indicator?.id" mat-icon-button displayDensity="cosy" ngmAppearance="danger" (click)="deleteIndicator()">
-        <mat-icon>delete_forever</mat-icon>
-      </button>
+      @if (indicatorModel()?.id) {
+        <button mat-icon-button displayDensity="cosy" ngmAppearance="danger" (click)="deleteIndicator()">
+          <mat-icon>delete_forever</mat-icon>
+        </button>
+      }
     </div>
   </div>
 </div>
@@ -40,11 +42,13 @@
   <pac-indicator-register-form #register_form
     [certifications]="certifications$ | async"
     [models]="models$ | async"
-    [(ngModel)]="indicator"
+    [(ngModel)]="indicatorModel"
   ></pac-indicator-register-form>
     
-  <div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
-    <mat-spinner diameter="30" strokeWidth="2">
-    </mat-spinner>
-  </div>
+  @if (loading()) {
+    <div class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
+      <mat-spinner diameter="30" strokeWidth="2">
+      </mat-spinner>
+    </div>
+  }
 </div>
