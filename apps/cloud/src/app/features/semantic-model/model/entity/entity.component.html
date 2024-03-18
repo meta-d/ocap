@@ -66,7 +66,8 @@
             </mat-drawer>
             <mat-drawer-content>
                 <div class="pac-model-entity__workspace flex-1 h-full">
-                    <mat-tab-nav-panel #tabPanel class="pac-model-entity__workspace-router ngm-layout-container-secondary flex-1">
+                    <mat-tab-nav-panel #tabPanel class="pac-model-entity__workspace-router ngm-layout-container-secondary flex-1"
+                        [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
                         <router-outlet #o="outlet"></router-outlet>
                     </mat-tab-nav-panel>
                 </div>

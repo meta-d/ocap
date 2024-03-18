@@ -81,7 +81,7 @@ export class OrganizationSelectorComponent extends TranslationBaseComponent impl
         }
       }),
       map((organizations) =>
-        this.ability.can(AbilityActions.Manage, 'Organization')
+        this.ability.can(AbilityActions.Manage, 'Organization') && organizations.length > 1
           ? [
               {
                 name: this.getTranslation('PAC.Header.Organization.AllOrg', { Default: 'All Org' }),

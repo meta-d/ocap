@@ -24,7 +24,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
 import { C_MEASURES, CalculatedMember, isEntitySet } from '@metad/ocap-core'
-import { calcEntityTypePrompt, makeCubePrompt, nonBlank } from '@metad/core'
+import { calcEntityTypePrompt, makeCubePrompt, nonBlank, routeAnimations } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -42,7 +42,8 @@ import { calcEntityTypePrompt, makeCubePrompt, nonBlank } from '@metad/core'
     NgmCommonModule,
     NxDesignerModule,
     ModelCubeStructureComponent
-  ]
+  ],
+  animations: [routeAnimations]
 })
 export class ModelEntityComponent implements OnInit {
   readonly #logger = inject(NGXLogger)
