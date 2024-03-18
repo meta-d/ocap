@@ -10,7 +10,7 @@ import {
 	IRolePermission,
 	IFeatureOrganization,
 	IImportRecord,
-	ITenantSetting
+	ISetting
 } from '@metad/contracts';
 import { TenantCreatedEvent } from './events';
 
@@ -51,7 +51,7 @@ export class Tenant extends BaseEntity implements ITenant {
 	@OneToMany(() => TenantSetting, (settings) => settings.tenant, {
 		cascade: true
 	})
-	settings?: ITenantSetting[];
+	settings?: ISetting[];
 
 	@ApiProperty({ type: () => ImportRecord })
 	@OneToMany(() => ImportRecord, (importRecord) => importRecord.tenant, {

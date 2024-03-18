@@ -68,6 +68,10 @@ export class TenantController extends CrudController<Tenant> {
 		});
 	}
 
+	/**
+	 * @changed add onboarding info api
+	 * @returns 
+	 */
 	@Public()
 	@HttpCode(HttpStatus.OK)
 	@Get('onboard')
