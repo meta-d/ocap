@@ -8,14 +8,13 @@
 }
 
 .pac-auth__header {
-  font-size: 1.6rem;
+  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 .pac-auth__logo {
-  width: 30px;
-  margin-right: 10px;
+  @apply absolute top-8 left-1/2 -ml-4 w-8;
 }
 .pac-auth__copyright {
   margin: 1rem;

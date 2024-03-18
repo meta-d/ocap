@@ -73,10 +73,15 @@ export class TenantController extends CrudController<Tenant> {
 	@Get('onboard')
 	async getOnboardDefault(): Promise<boolean> {
 		const defaultTenant = await this.tenantService.findOneOrFail({
-			name: DEFAULT_TENANT
-			
+			where: {
+				name: DEFAULT_TENANT
+			},
+			relations: [ 'settings' ]
 		})
-		return defaultTenant.success
+		return defaultTenant.success ? {
+			...defaultTenant.record,
+			settings: defaultTenant.record.settings.filter((item) => item.name?.startsWith('tenant_title'))
+		} : null
 	}
 
 	@ApiOperation({ summary: 'Find by id' })

@@ -1,9 +1,10 @@
 <div class="w-full h-full flex justify-center items-center">
-  <div class="pac-auth-card flex flex-col justify-start items-center rounded-lg shadow dark:border dark:border-neutral-700">
+  <img class="pac-auth__logo" src="assets/logo.svg" />
+
+  <div class="pac-auth-card flex flex-col justify-start items-center pb-2 rounded-xl shadow dark:border dark:border-neutral-800">
     <div class="pac-auth__header my-8">
-      <img class="pac-auth__logo" src="assets/logo.svg" />
       <span>
-        {{ 'Auth.AppName' | translate: { Default: 'Metad Analytics Cloud' } }}
+        {{ title() || ('Auth.AppName' | translate: { Default: 'Metad Analytics Cloud' }) }}
       </span>
     </div>
       

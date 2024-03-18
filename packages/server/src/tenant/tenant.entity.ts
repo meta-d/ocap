@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-	BaseEntity, FeatureOrganization, ImportRecord, Organization, RolePermission,
+	BaseEntity, FeatureOrganization, ImportRecord, Organization, RolePermission, TenantSetting,
 } from '../core/entities/internal';
 import { Entity, Column, Index, OneToMany, JoinColumn } from 'typeorm';
 import { IsNotEmpty, IsString } from 'class-validator';
@@ -9,7 +9,8 @@ import {
 	IOrganization,
 	IRolePermission,
 	IFeatureOrganization,
-	IImportRecord
+	IImportRecord,
+	ITenantSetting
 } from '@metad/contracts';
 import { TenantCreatedEvent } from './events';
 
@@ -45,6 +46,12 @@ export class Tenant extends BaseEntity implements ITenant {
 		cascade: true
 	})
 	featureOrganizations?: IFeatureOrganization[];
+
+	@ApiProperty({ type: () => TenantSetting })
+	@OneToMany(() => TenantSetting, (settings) => settings.tenant, {
+		cascade: true
+	})
+	settings?: ITenantSetting[];
 
 	@ApiProperty({ type: () => ImportRecord })
 	@OneToMany(() => ImportRecord, (importRecord) => importRecord.tenant, {

@@ -19,6 +19,7 @@ export interface ITenant {
 	rolePermissions?: IRolePermission[];
 	featureOrganizations?: IFeatureOrganization[];
 	importRecords?: IImportRecord[];
+	settings?: ISetting[];
 }
 
 export interface ITenantCreateInput {
@@ -30,6 +31,11 @@ export interface ITenantCreateInput {
 
 	superAdmin?: IUserCreateInput
 	defaultOrganization?: IOrganizationCreateInput
+}
+
+export interface ISetting {
+	name: string;
+	value: string;
 }
 
 export interface ITenantSetting extends S3FileStorageProviderConfig {

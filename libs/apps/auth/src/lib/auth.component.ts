@@ -1,5 +1,5 @@
 import { Location } from '@angular/common'
-import { Component, effect, inject } from '@angular/core'
+import { Component, computed, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
 import { TranslateService } from '@ngx-translate/core'
@@ -21,10 +21,15 @@ export class PacAuthComponent {
   protected store = inject(Store)
   protected location = inject(Location)
 
+  readonly tenantSettings = toSignal(this.store.tenantSettings$)
   readonly language = toSignal(this.#translate.onLangChange.pipe(
     startWith(this.#translate.defaultLang),
     map(() => this.#translate.currentLang))
   )
+  readonly title = computed(() => {
+    const langTitle = `tenant_title_${this.language()}`
+    return this.tenantSettings()?.[langTitle] || this.tenantSettings().tenant_title
+  })
 
   token = ''
 
