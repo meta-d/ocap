@@ -29,7 +29,7 @@ import {
   isEntityType,
   isSemanticCalendar
 } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ISemanticModel, ITag, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TagEditorComponent } from 'apps/cloud/src/app/@shared'
 import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
@@ -93,6 +93,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly wasmAgent = inject(WasmAgentService)
   readonly #logger = inject(NGXLogger)
+  readonly #translate = inject(TranslateService)
 
   @Input() certifications: ISelectOption[]
   @Input() models: ISemanticModel[]
@@ -152,8 +153,6 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
       formula: value
     })
   }
-
-  // readonly loading = signal(false)
 
   get isDirty() {
     return this.formGroup.dirty
@@ -240,7 +239,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   */
   #formula = injectCopilotCommand({
     name: 'formula',
-    description: 'Create a new MDX formula for the indicator',
+    description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateFormula', {Default: 'Create a formula for the indicator'}),
     systemPrompt: () => {
       let prompt = `你是一名 BI 指标体系管理的业务专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建指标公式。`
       if (this.entityType()) {

@@ -1,9 +1,10 @@
 <div class="pac-page-header">
-  <div class="w-full flex justify-between items-center">
+  <div class="w-full flex flex-wrap justify-between items-center">
     <h2 class="pac-page-title">
       {{ 'PAC.Project.ManageIndicators' | translate: {Default: "Manage Indicators"} }}
     </h2>
-    <div class="flex gap-2">
+
+    <div class="flex gap-2 ml-auto">
       <input #fileUpload type="file" class="file-input invisible"
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
@@ -17,7 +18,7 @@
 
         <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
           <mat-icon fontSet="material-icons-round">upload</mat-icon>
-            {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
+          <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
         </button>
         
         <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicators/new']">

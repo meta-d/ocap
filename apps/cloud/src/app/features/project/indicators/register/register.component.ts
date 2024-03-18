@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, HostListener, inject, model, OnDestroy, signal, ViewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -19,7 +20,7 @@ import { ProjectComponent } from '../../project.component'
 import { exportIndicator } from '../../types'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+
 
 // AOA : array of array
 type AOA = any[][]

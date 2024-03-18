@@ -16,7 +16,7 @@ import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { EntityType, isEntitySet } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { IIndicator, ISemanticModel, registerModel, routeAnimations } from '../../../@core'
@@ -37,6 +37,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   private projectComponent = inject(ProjectComponent)
   private _dialog = inject(MatDialog)
   readonly #logger = inject(NGXLogger)
+  readonly #translate = inject(TranslateService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly modelsService = inject(ModelsService)
@@ -59,7 +60,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
 
   #createIndicator = injectCopilotCommand({
     name: 'i',
-    description: 'Create new indicator',
+    description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateIndicator', {Default: 'Create a new indicator'}),
     systemPrompt: () => {
       let prompt = `你是一名 BI 指标体系管理的业务专家，请根据指定的 Cube 信息和需求描述转成相应的参数调用 create_indicator 函数进行创建新指标。
 将未限定成员的可以自由选择的维度都加入到 dimensions 中，选择一个 calendar 维度加入到 calendar 中，将必要的限定成员加入到 filters 属性中。

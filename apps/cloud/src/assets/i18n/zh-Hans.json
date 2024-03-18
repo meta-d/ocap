@@ -572,7 +572,9 @@
       "Indicators": "指标",
       "Types": "类型",
       "IndicatorMarket": "指标市场",
-      "Certifications": "认证"
+      "Certifications": "认证",
+      "Copilot_CreateIndicator": "创建指标",
+      "Copilot_CreateFormula": "创建指标公式"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",

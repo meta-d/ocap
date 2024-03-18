@@ -134,7 +134,7 @@
     </div>
       
     @if (typeControl.value === IndicatorType.DERIVE && showFormula()) {
-      <ngm-calculated-measure class="col-span-1 sm:col-span-2 h-96"
+      <ngm-calculated-measure class="col-span-1 sm:col-span-2 h-96 rounded-lg overflow-hidden border border-solid border-neutral-100 dark:border-neutral-800"
           [syntax]="Syntax.MDX"
           [dataSettings]="dataSettings()"
           [entityType]="entityType()"
