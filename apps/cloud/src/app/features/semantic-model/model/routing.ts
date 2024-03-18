@@ -39,7 +39,7 @@ export const routes: Routes = [
       },
       {
         path: 'virtual-cube',
-        loadChildren: () => import('./virtual-cube/virtual-cube.module').then((m) => m.VirtualCubeModule),
+        loadChildren: () => import('./virtual-cube/routing').then((m) => m.routes),
         data: {
           title: 'Model / Virtual Cube'
         }

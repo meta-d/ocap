@@ -343,28 +343,28 @@ ${calcEntityTypePrompt(this.entityType())}
     this.showFormula.update((state) => !state)
   }
   
-  openFormula() {
-    const entityType = this.entityType()
-    const dataSettings = this.dataSettings()
-    this._dialog
-      .open(ModelFormulaComponent, {
-        panelClass: 'large',
-        data: {
-          dataSettings,
-          entityType,
-          measure: {
-            name: this.code,
-            caption: this.name
-          },
-          formula: this.formula
-        }
-      })
-      .afterClosed()
-      .subscribe((_formula) => {
-        if (_formula && this.formula !== _formula) {
-          this.formula = _formula
-          this.formGroup.markAsDirty()
-        }
-      })
-  }
+  // openFormula() {
+  //   const entityType = this.entityType()
+  //   const dataSettings = this.dataSettings()
+  //   this._dialog
+  //     .open(ModelFormulaComponent, {
+  //       panelClass: 'large',
+  //       data: {
+  //         dataSettings,
+  //         entityType,
+  //         measure: {
+  //           name: this.code,
+  //           caption: this.name
+  //         },
+  //         formula: this.formula
+  //       }
+  //     })
+  //     .afterClosed()
+  //     .subscribe((_formula) => {
+  //       if (_formula && this.formula !== _formula) {
+  //         this.formula = _formula
+  //         this.formGroup.markAsDirty()
+  //       }
+  //     })
+  // }
 }

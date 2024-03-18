@@ -165,7 +165,8 @@
       "RestoreLayout": "重置布局",
       "Undo": "撤销",
       "Commit": "提交",
-      "Edit": "编辑"
+      "Edit": "编辑",
+      "Unit": "单位"
     },
     "MENU": {
       "Certification": "认证",
@@ -942,6 +943,7 @@
       "Copilot": {
         "CreatedCube": "数据集创建成功！",
         "CreatedDimension": "维度创建成功！",
+        "CreateCalculatedFormula": "创建计算度量公式",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",

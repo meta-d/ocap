@@ -11,7 +11,7 @@
 
 <mat-drawer-container class="flex-1" [hasBackdrop]="false" [autosize]="true">
     <mat-drawer #drawer opened mode="side" ngmResizer [resizerWidth]="230" class="flex flex-col">
-        <div class="flex-1 flex flex-col justify-start items-stretch overflow-y-auto">
+        <div class="h-full flex-1 flex flex-col justify-start items-stretch overflow-y-auto">
             <mat-toolbar class="pac-sub-toolbar flex justify-between items-center gap-2" displayDensity="compact">
                 <span>{{ 'PAC.MODEL.VirtualCube.CubeUsages' | translate: {Default: "Cube Usages"} }}</span>
                 <span class="flex-1 flex"></span>
@@ -29,15 +29,20 @@
                 [cdkDropListEnterPredicate]="cubePredicate"
                 (cdkDropListDropped)="dropCube($event)"
             >
-              <div class="flex-1 overflow-y-auto">
-                <ngm-entity-schema *ngFor="let cube of cubes$ | async; trackBy: trackByName" [class.selected]="cube.cubeName === selectedCube"
-                    [dataSettings]="dataSettings$()"
-                    [capacities]="[
-                        EntityCapacity.Dimension,
-                        EntityCapacity.Measure,
-                    ]"
-                    (click)="selectCube(cube)"
-                ></ngm-entity-schema>
+              <div class="h-full overflow-y-auto">
+                @for (cube of cubes$ | async; track cube.cubeName) {
+                    <ngm-entity-schema [class.selected]="cube.cubeName === selectedCube"
+                        [dataSettings]="{
+                            dataSource: dataSource$(),
+                            entitySet: cube.cubeName
+                        }"
+                        [capacities]="[
+                            EntityCapacity.Dimension,
+                            EntityCapacity.Measure,
+                        ]"
+                        (click)="selectCube(cube)"
+                    ></ngm-entity-schema>
+                }
               </div>
             </div>
         </div>
@@ -209,17 +214,18 @@
 
                 <mat-divider></mat-divider>
 
-                <form *ngIf="calculatedMember" [formGroup]="calcMemberFormGroup" class="grid grid-cols-3 gap-2 mt-4">
-                    <mat-form-field appearance="fill" displayDensity="cosy">
+              @if (showCalculatedMember()) {
+                <form [formGroup]="calcMemberFormGroup" class="grid grid-cols-4 gap-2 mt-4">
+                    <mat-form-field class="col-span-1" appearance="fill" displayDensity="cosy">
                         <mat-label>{{ 'PAC.KEY_WORDS.Name' | translate: {Default: 'Name'} }}</mat-label>
                         <input matInput formControlName="name">
                     </mat-form-field>
-                    <mat-form-field appearance="fill" displayDensity="cosy">
+                    <mat-form-field class="col-span-2" appearance="fill" displayDensity="cosy">
                         <mat-label>{{ 'PAC.KEY_WORDS.Caption' | translate: {Default: 'Caption'} }}</mat-label>
                         <input matInput formControlName="caption" >
                     </mat-form-field>
 
-                    <mat-form-field appearance="fill" displayDensity="cosy">
+                    <mat-form-field class="col-span-1" appearance="fill" displayDensity="cosy">
                         <mat-label>{{ 'PAC.KEY_WORDS.Dimension' | translate: {Default: 'Dimension'} }}</mat-label>
                         <mat-select formControlName="dimension" >
                           <mat-option [value]="'Measures'">
@@ -227,17 +233,31 @@
                           </mat-option>
                         </mat-select>
                     </mat-form-field>
+                    <mat-form-field class="col-span-1" appearance="fill" displayDensity="cosy">
+                        <mat-label>{{ 'PAC.KEY_WORDS.Unit' | translate: {Default: 'Unit'} }}</mat-label>
+                        <input matInput formControlName="unit" >
+                    </mat-form-field>
 
                     <mat-form-field class="col-span-3" appearance="fill" displayDensity="cosy">
                         <mat-label>{{ 'PAC.KEY_WORDS.Formula' | translate: {Default: 'Formula'} }}</mat-label>
                         <textarea matInput formControlName="formula" cdkTextareaAutosize></textarea>
 
-                        <button mat-icon-button matSuffix (click)="openFormula()">
+                        <button mat-icon-button matSuffix (click)="toggleFormula()">
                             <mat-icon>code</mat-icon>
                         </button>
                     </mat-form-field>
 
-                    <div class="col-span-3 flex justify-end items-center">
+                  @if (showFormula()) {
+                    <ngm-calculated-measure class="col-span-4 h-96 rounded-lg overflow-hidden border border-solid border-neutral-100 dark:border-neutral-800"
+                        [syntax]="Syntax.MDX"
+                        [dataSettings]="dataSettings$()"
+                        [entityType]="entityType()"
+                        formControlName="formula"
+                        >
+                    </ngm-calculated-measure>
+                  }
+
+                    <div class="col-span-4 flex justify-end items-center">
                         <div ngmButtonGroup displayDensity="cosy">
                             <button mat-flat-button displayDensity="cosy" (click)="cancelCalculatedMember()">
                                 {{ 'PAC.KEY_WORDS.Cancel' | translate: {Default: 'Cancel'} }}
@@ -249,7 +269,7 @@
                         </div>
                     </div>
                 </form>
-
+              }
             </mat-expansion-panel>
         </mat-accordion>
 
