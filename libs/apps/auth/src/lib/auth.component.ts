@@ -1,5 +1,5 @@
 import { Location } from '@angular/common'
-import { Component, computed, effect, inject } from '@angular/core'
+import { Component, computed, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
 import { TranslateService } from '@ngx-translate/core'
@@ -28,7 +28,7 @@ export class PacAuthComponent {
   )
   readonly title = computed(() => {
     const langTitle = `tenant_title_${this.language()}`
-    return this.tenantSettings()?.[langTitle] || this.tenantSettings().tenant_title
+    return this.tenantSettings()?.[langTitle] || this.tenantSettings()?.tenant_title
   })
 
   token = ''
@@ -48,12 +48,6 @@ export class PacAuthComponent {
       href: ''
     }
   ]
-
-  constructor() {
-    effect(() => {
-      console.log(this.language())
-    })
-  }
 
   back() {
     this.location.back()

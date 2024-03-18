@@ -84,7 +84,7 @@ export class TenantController extends CrudController<Tenant> {
 		})
 		return defaultTenant.success ? {
 			...defaultTenant.record,
-			settings: defaultTenant.record.settings.filter((item) => item.name?.startsWith('tenant_title'))
+			settings: defaultTenant.record.settings.filter((item) => item.name?.startsWith('tenant'))
 		} : null
 	}
 

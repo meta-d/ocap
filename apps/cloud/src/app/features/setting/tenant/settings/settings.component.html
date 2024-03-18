@@ -1,6 +1,6 @@
 <div class="flex justify-start items-center">
     <div ngmButtonGroup displayDensity="cosy">
-        <button mat-raised-button color="primary" displayDensity="cosy" (click)="add()">
+        <button mat-raised-button color="primary" displayDensity="cosy" (click)="addNew()">
             <mat-icon fontSet="material-icons-outlined" nxDensity="cosy">add</mat-icon>{{ 'PAC.ACTIONS.ADD' | translate: {Default: "Add"} }}
         </button>
     </div>
@@ -24,7 +24,8 @@
         {
             name: 'action',
             caption: 'PAC.KEY_WORDS.ACTION' | translate: { Default: 'Action' },
-            cellTemplate: actionTempl
+            cellTemplate: actionTempl,
+            stickyEnd: true
         }
     ]"
 ></ngm-table>

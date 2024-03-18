@@ -55,8 +55,8 @@ export enum InstallationModeEnum {
 	WithStarrocks = 'with-starrocks'
 }
 
-const OrganizationDemoNetworkAliyun = 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip'
-const OrganizationDemoNetworkGitHub = 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
+const OrganizationDemoNetworkAliyun = 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v1.0.0.zip'
+const OrganizationDemoNetworkGitHub = 'https://github.com/meta-d/samples/raw/main/ocap/demos-v1.0.0.zip'
 
 const axios = _axios.default
 

@@ -54,25 +54,29 @@
   </div>
 
 </form>
-  <!-- 
+
 <div class="pac-login__signins flex flex-wrap justify-center items-center gap-2">
-<button mat-icon-button (click)="open('dingtalk', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.DINGTALK' | translate: {Default: 'Dingtalk'}">
-    <img class="m-auto" src="/assets/images/destinations/dingtalk.svg">
-  </button>
+  @if (enableDingtalk()) {
+    <button mat-icon-button (click)="open('dingtalk', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.DINGTALK' | translate: {Default: 'Dingtalk'}">
+      <img class="m-auto" src="/assets/images/destinations/dingtalk.svg">
+    </button>
+  }
+  @if (enableFeishu()) {
+    <button mat-icon-button (click)="open('feishu', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.FEISHU' | translate: {Default: 'Feishu'}">
+      <img class="m-auto" src="/assets/images/destinations/feishu.png">
+    </button>
+  }
 
-  <button mat-icon-button (click)="open('feishu', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.FEISHU' | translate: {Default: 'Feishu'}">
-    <img class="m-auto" src="/assets/images/destinations/feishu.png">
-  </button> 
-
-  <button mat-icon-button (click)="open('github', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.GITHUB' | translate: {Default: 'Github'}">
-    <img class="m-auto" src="/assets/images/destinations/GitHub-Mark-120px-plus.png">
-  </button>
-
+  @if (enableGithub()) {
+    <button mat-icon-button (click)="open('github', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.GITHUB' | translate: {Default: 'Github'}">
+      <img class="m-auto" src="/assets/images/destinations/GitHub-Mark-120px-plus.png">
+    </button>
+  }
 </div>
--->
+
 <div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
   <mat-spinner diameter="30" strokeWidth="2">
   </mat-spinner>
