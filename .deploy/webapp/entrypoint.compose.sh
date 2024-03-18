@@ -20,7 +20,7 @@ sed -i "s#DOCKER_DEFAULT_CURRENCY#$DEFAULT_CURRENCY#g" *.js
 sed -i "s#DOCKER_CHATWOOT_SDK_TOKEN#$CHATWOOT_SDK_TOKEN#g" *.js
 sed -i "s#DOCKER_DEMO#$DEMO#g" *.js
 
-envsubst '${API_HOST} ${API_PORT}' < /etc/nginx/conf.d/compose.conf.template > /etc/nginx/nginx.conf
+envsubst '${API_HOST} ${API_PORT} ${SERVER_SSL} ${SERVER_SSL_KEY} ${SERVER_NAME}' < /etc/nginx/conf.d/compose.conf.template > /etc/nginx/nginx.conf
 
 # In Docker Compose we should wait other services start
 ./wait

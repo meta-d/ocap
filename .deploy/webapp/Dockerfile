@@ -52,7 +52,7 @@ FROM nginx:alpine AS production
 
 ENV API_BASE_URL=${API_BASE_URL:-http://localhost:3000} \
     HOST=${HOST:-0.0.0.0} \
-    PORT=${PORT:-4200} \
+    PORT=${PORT:-80} \
     DEMO=${DEMO:-false}
 
 WORKDIR /srv/pangolin
@@ -67,7 +67,8 @@ COPY --chown=nginx:nginx --from=build /srv/pangolin/dist/apps/cloud .
 RUN chmod +x wait entrypoint.compose.sh entrypoint.prod.sh && \
     chmod a+rw /etc/nginx/conf.d/compose.conf.template /etc/nginx/conf.d/prod.conf.template
 
-EXPOSE 4200
+EXPOSE 80
+EXPOSE 443
 
 ENTRYPOINT [ "sh", "./entrypoint.prod.sh" ]
 
