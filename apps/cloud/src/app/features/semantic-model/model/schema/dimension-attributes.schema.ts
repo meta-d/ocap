@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { EntityProperty, PropertyDimension } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { combineLatestWith, map } from 'rxjs/operators'
-import { SemanticsExpansion } from './common'
+import { SemanticsAccordionWrapper } from './common'
 import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
@@ -92,7 +92,7 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
           ]
         },
 
-        SemanticsExpansion(COMMON)
+        ...SemanticsAccordionWrapper(COMMON)
       ]
     }
   }

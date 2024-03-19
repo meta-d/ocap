@@ -201,6 +201,8 @@ export class ModelCubeStructureComponent {
     return item.data?.type === SemanticModelEntityType.DIMENSION ||
       // Dimension from source table columns
       item.dropContainer.id === 'list-table-measures' || item.dropContainer.id === 'list-table-dimensions'
+      // db tables
+      || item.dropContainer.id === 'pac-model-entitysets'
   }
 
   measureEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
@@ -240,6 +242,14 @@ export class ModelCubeStructureComponent {
           source: previousItem.dimension.name,
           foreignKey: previousItem.dimension.foreignKey
         }
+      })
+    }
+
+    // Add db table as dimension
+    if (event.previousContainer.id === 'pac-model-entitysets') {
+      this.cubeState.newDimension({
+        index,
+        table: previousItem
       })
     }
   }

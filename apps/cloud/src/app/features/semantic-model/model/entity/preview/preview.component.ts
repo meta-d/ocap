@@ -1,24 +1,22 @@
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
 import { PropertyCapacity, PropertySelectComponent } from '@metad/components/property'
+import { nonNullable } from '@metad/core'
 import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
-import { AggregationRole, C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { DisplayDensity } from '@metad/ocap-angular/core'
+import { C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
+import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { differenceBy, isEmpty } from 'lodash-es'
 import { BehaviorSubject, combineLatest, filter, from, map, of, switchMap } from 'rxjs'
-import { ModelEntityService } from '../entity.service'
-import { differenceBy, isEmpty, uniq } from 'lodash-es'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { SemanticModelService } from '../../model.service'
-import { nonNullable } from '@metad/core'
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
-import { MODEL_TYPE } from '../../types'
-import { FormsModule } from '@angular/forms'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { DisplayDensity } from '@metad/ocap-angular/core'
-import { ContentLoaderModule } from '@ngneat/content-loader'
-import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
 
 @Component({
@@ -44,22 +42,22 @@ import { getDropProperty } from '../types'
   ]
 })
 export class ModelEntityPreviewComponent {
-    DisplayDensity = DisplayDensity
+  DisplayDensity = DisplayDensity
   Syntax = Syntax
-    propertyCapacities = [
-        PropertyCapacity.Dimension,
-        PropertyCapacity.MeasureGroup,
-        PropertyCapacity.Measure,
-        PropertyCapacity.Order,
-        PropertyCapacity.MeasureAttributes
-      ]
+  propertyCapacities = [
+    PropertyCapacity.Dimension,
+    PropertyCapacity.MeasureGroup,
+    PropertyCapacity.Measure,
+    PropertyCapacity.Order,
+    PropertyCapacity.MeasureAttributes
+  ]
 
-    readonly modelService = inject(SemanticModelService)
-    readonly entityService = inject(ModelEntityService)
+  readonly modelService = inject(SemanticModelService)
+  readonly entityService = inject(ModelEntityService)
 
-    @ViewChild(AnalyticalGridComponent) grid!: AnalyticalGridComponent<any>
-    
-    private rows$ = new BehaviorSubject<Array<Dimension | Measure>>([...(this.entityService.preview?.rows ?? [])])
+  @ViewChild(AnalyticalGridComponent) grid!: AnalyticalGridComponent<any>
+
+  private rows$ = new BehaviorSubject<Array<Dimension | Measure>>([...(this.entityService.preview?.rows ?? [])])
   get rows() {
     return this.rows$.value
   }
@@ -255,7 +253,7 @@ export class ModelEntityPreviewComponent {
           } else {
             rows.splice(event.currentIndex, 0, {
               dimension: C_MEASURES,
-              measure: data.name,
+              measure: data.name
             })
           }
 
@@ -304,9 +302,9 @@ export class ModelEntityPreviewComponent {
 
   ngOnDestroy() {
     this.entityService.setPreview({
-        rows: this.rows,
-        columns: this.columns,
-        slicers: this.slicers
-      })
+      rows: this.rows,
+      columns: this.columns,
+      slicers: this.slicers
+    })
   }
 }

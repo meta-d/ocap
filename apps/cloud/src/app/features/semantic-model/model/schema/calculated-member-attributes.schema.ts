@@ -173,7 +173,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                 className,
                 key: 'visible',
                 type: 'checkbox',
-                defaultValue: true,
+                // defaultValue: true,
                 props: {
                   label: COMMON?.Visible ?? 'Visible',
                   appearance: 'standard'

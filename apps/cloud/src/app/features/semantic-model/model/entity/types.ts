@@ -6,7 +6,43 @@ import { mapToTableColumnType } from '../../types'
 import { MODEL_TYPE } from '../types'
 
 /**
- *
+ * Add a db table as inline dimension
+ * 
+ * @param dimensions Exists dimensions
+ * @param table 
+ * @param caption 
+ * @returns 
+ */
+export function newDimensionFromTable(dimensions: PropertyDimension[], table: string, caption: string) {
+  const exists = dimensions.filter((d) => d.name === table)
+
+  return {
+    __id__: uuid(),
+    name: exists.length > 0 ? `${table}_${exists.length}` : table,
+    caption: caption,
+    hierarchies: [
+      {
+        __id__: uuid(),
+        name: '',
+        hasAll: false,
+        visible: true,
+        tables: [
+          {
+            __id__: uuid(),
+            name: table,
+          }
+        ],
+        levels: [
+          
+        ]
+      }
+    ]
+  } as PropertyDimension
+}
+
+/**
+ * Add a db column as inline dimension without independent table
+ * 
  * @param column
  * @param isXmla 转成 olap 的维度，否则转成 sql 维度
  * @returns

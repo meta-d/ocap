@@ -12,7 +12,7 @@ import {
   NameExpression,
   OrdinalExpression,
   ParentExpression,
-  SemanticsExpansion,
+  SemanticsAccordionWrapper,
 } from './common'
 import { HierarchySchemaService } from './hierarchy.schema'
 
@@ -284,7 +284,7 @@ export class LevelSchemaService extends HierarchySchemaService<PropertyLevel> {
           ]
         },
 
-        SemanticsExpansion(COMMON),
+        ...SemanticsAccordionWrapper(COMMON),
         KeyExpression(COMMON),
         NameExpression(COMMON),
         CaptionExpression(COMMON),

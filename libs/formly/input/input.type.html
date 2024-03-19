@@ -4,10 +4,9 @@
   [placeholder]="props?.placeholder"
   [type]="props?.type"
   [formControl]="valueFormControl"
-  [options]="options$ | async"
+  [options]="selectOptions()"
   >
+  @if (formControl.invalid) {
+    <formly-validation-message ngmError [field]="field"></formly-validation-message>
+  }
 </ngm-input>
-
-<mat-error *ngIf="formControl.invalid" class="text-xs flex">
-  <formly-validation-message [field]="field"></formly-validation-message>
-</mat-error>

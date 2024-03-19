@@ -40,7 +40,7 @@ import {
 } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { EntityPreview, MODEL_TYPE, ModelCubeState, ModelDesignerType, PACModelState } from '../types'
-import { newDimensionFromColumn } from './types'
+import { newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
 export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACModelState> implements OnDestroy {
@@ -269,10 +269,14 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
    * * blank
    * * from source table column
    */
-  readonly newDimension = this.updater((state, event?: { index: number; column: PropertyAttributes }) => {
+  readonly newDimension = this.updater((state, event?: { index: number; table?: {name: string; caption: string;}; column?: PropertyAttributes }) => {
     state.cube.dimensions = state.cube.dimensions ?? []
     if (event) {
-      state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column))
+      if (event.table) {
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromTable(state.cube.dimensions, event.table.name, event.table.caption))
+      } else if (event.column) {
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column))
+      }
     } else if (!state.cube.dimensions.find((item) => item.name === '')) {
       state.cube.dimensions.push({
         __id__: uuid(),
@@ -353,7 +357,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
         __id__: uuid(),
         name: event.column,
         formula: event.column,
-        aggregator: 'sum'
+        aggregator: 'sum',
+        visible: true // default visible
       })
     } else if (!state.cube.calculatedMembers.find((item) => item.name === '')) {
       // 插入到第一个
@@ -361,7 +366,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
         __id__: uuid(),
         name: '',
         dimension: C_MEASURES,
-        formula: null
+        formula: null,
+        visible: true // default visible
       })
     }
   })

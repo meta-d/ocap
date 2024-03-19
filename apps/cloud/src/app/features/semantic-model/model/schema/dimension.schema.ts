@@ -8,7 +8,7 @@ import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
-import { SemanticsExpansion } from './common'
+import { SemanticsAccordionWrapper } from './common'
 import { CubeSchemaService } from './cube.schema'
 
 
@@ -231,7 +231,7 @@ export function DimensionModeling(
       },
       // Dimension 应该没有 KeyExpression
       // KeyExpression(COMMON),
-      SemanticsExpansion(COMMON)
+     ...SemanticsAccordionWrapper(COMMON) 
     ]
   }
 }

@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
-import { Observable, isObservable, of } from 'rxjs'
+import { isObservable } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -19,10 +20,18 @@ import { Observable, isObservable, of } from 'rxjs'
   imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, FormlyModule, OcapCoreModule, NgmInputComponent]
 })
 export class PACFormlyInputComponent extends FieldType implements OnInit {
-  public options$: Observable<ISelectOption[]>
+  readonly #destroyRef = inject(DestroyRef)
+  
+  readonly selectOptions = signal<ISelectOption[]>([])
 
   ngOnInit(): void {
-    this.options$ = isObservable(this.props?.options) ? this.props.options : of(this.props?.options ?? [])
+    if (isObservable(this.props?.options)) {
+      this.props.options.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe((options) => {
+        this.selectOptions.set(options)
+      })
+    } else {
+      this.selectOptions.set(this.props?.options ?? [])
+    }
   }
 
   get valueFormControl() {
