@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
 import { AnalyticsPermissionsEnum, AuthGuard } from '../@core'
 import { FeaturesComponent } from './features.component'
+import { NotFoundComponent } from './miscellaneous'
 
 export function redirectTo() {
   return '/home'
@@ -110,6 +111,10 @@ const routes: Routes = [
           title: 'Organization',
         }
       },
+      {
+        path: '404',
+        component: NotFoundComponent
+      }
     ]
   }
 ]

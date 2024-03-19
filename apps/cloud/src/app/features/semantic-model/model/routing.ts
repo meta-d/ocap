@@ -3,14 +3,14 @@ import { DirtyCheckGuard } from '../../../@core'
 import { ModelMembersComponent } from './members/members.component'
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
-import { StoryModelResolver } from './story-model.resolver'
+import { semanticModelResolver } from './story-model.resolver'
 import { NgModule } from '@angular/core'
 
 export const routes: Routes = [
   {
     path: '',
     component: ModelComponent,
-    resolve: { storyModel: StoryModelResolver },
+    resolve: { storyModel: semanticModelResolver },
     canDeactivate: [DirtyCheckGuard],
     data: {
       reuseComponent: false

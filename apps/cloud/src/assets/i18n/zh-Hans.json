@@ -817,7 +817,8 @@
           },
           "CaptionColumn": "文本字段",
           "Column": "维度表主键",
-          "ForeignKey": "事实表外键"
+          "ForeignKey": "事实表外键",
+          "ForeignKey_Info": "具有独立维度表的内联维度需要在此指定事实表的关联外键"
         },
         "HIERARCHY": {
           "TITLE": "层次结构",
@@ -1361,6 +1362,11 @@
       "Light": "明亮",
       "Dark": "暗色",
       "Dark Green": "暗绿"
+    },
+    "PageNotFound": {
+      "FoundDoorwayGreat": "看起来您已经找到了通往伟大虚无的大门",
+      "SorryAboutThat": "很抱歉！请访问我们的主页以找到您需要的信息。",
+      "TakeMeThere": "带我去！"
     },
     "title": {
       "short": "分析云"

@@ -10,7 +10,6 @@
 @use '../../time-filter/time-filter-theme' as time-filter;
 @use '../components/button-theme' as button;
 @use '../components/mat-option.theme' as option;
-@use '../components/overlay-theme' as overlay;
 @use '../components/tab-theme' as tab-theme;
 @use '../components/color-theme' as color;
 
@@ -34,7 +33,6 @@
   @include button.theme($theme-or-color-config);
   // @include density.theme($theme-or-color-config);
   @include advanced-filter.theme($theme-or-color-config);
-  @include overlay.theme($theme-or-color-config);
   @include option.theme($theme-or-color-config);
   @include color.theme($theme-or-color-config);
   // @include table.theme($theme-or-color-config);
@@ -59,7 +57,6 @@
   // @include menu.color($theme-or-color-config);
   // @include display-behaviour.color($theme-or-color-config);
   // @include value-help.color($theme-or-color-config);
-  @include overlay.color($theme-or-color-config);
   @include option.color($theme-or-color-config);
   @include color.color($theme-or-color-config);
   

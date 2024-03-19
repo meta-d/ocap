@@ -173,15 +173,16 @@ export function DimensionModeling(
           ...(isCube
             ? [
                 {
-                  // 只有内联维度才需要(才可能)设置此属性
+                  // 只有内联维度且有独立维度表的才需要设置此属性
                   key: 'foreignKey',
                   type: 'ngm-select',
                   className,
                   props: {
                     label: DIMENSION?.ForeignKey ?? 'Foreign Key',
                     options: factColumns$,
-                    required: isCube,
-                    searchable: true
+                    // required: isCube,
+                    searchable: true,
+                    info: DIMENSION?.ForeignKey_Info ?? 'Inline dimension with independent tables need to specify the foreign key of this fact table here.',
                   }
                 }
               ]

@@ -3,9 +3,18 @@
   [searchable]="props?.searchable"
   [virtualScroll]="props?.virtualScroll"
   [formControl]="valueFormControl"
-  [selectOptions]="_selectOptions$ | async"
+  [selectOptions]="selectOptions()"
 
   [class.ngm-input-error]="formControl.invalid"
 >
-  <formly-validation-message ngmError *ngIf="formControl.invalid" [field]="field"></formly-validation-message>
+  @if (formControl.invalid) {
+    <formly-validation-message ngmError [field]="field"></formly-validation-message>
+  }
+  <div ngmSuffix class="flex items-center">
+    @if (props?.info) {
+      <mat-icon fontSet="material-icons-outlined" class="opacity-50" displayDensity="compact"
+        [matTooltip]="props.info"
+      >info</mat-icon>
+    }
+  </div>
 </ngm-select>

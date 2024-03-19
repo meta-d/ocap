@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
-import { DirtyCheckGuard, StoryResolver } from '../../@core/index'
+import { DirtyCheckGuard, storyResolver } from '../../@core/index'
 import { StoryViewerComponent } from '../story/viewer/viewer.component'
 import { ProjectHomeComponent } from './home/home.component'
 import { ApprovalsComponent } from './indicators/approvals/approvals.component'
@@ -72,7 +72,7 @@ const routes: Routes = [
           return StoryViewerComponent
         },
         data: { title: 'pac.menu.story' },
-        resolve: { story: StoryResolver }
+        resolve: { story: storyResolver }
       },
     ]
   },

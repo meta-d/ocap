@@ -37,3 +37,17 @@
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
 }
+
+/* for dialog container */
+.cdk-overlay-pane.mat-mdc-dialog-panel.large {
+  --mat-dialog-container-min-width: 80vw;
+  min-height: 80vh;
+}
+.cdk-overlay-pane.mat-mdc-dialog-panel.medium {
+  --mat-dialog-container-min-width: 60vw;
+  min-height: 60vh;
+}
+.cdk-overlay-pane.mat-mdc-dialog-panel.small {
+  --mat-dialog-container-min-width: 40vw;
+  min-height: 40vh;
+}

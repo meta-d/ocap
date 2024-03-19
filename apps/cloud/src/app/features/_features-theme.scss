@@ -159,9 +159,9 @@ $sidebar-collapsed-width: 40px;
   
   // 带 nav-bar 的 toolbar 组件样式
   .pac-nav-toolbar.mat-toolbar {
-    &.ngm-density__compact.mat-toolbar-single-row {
-      padding: 0;
-    }
+    // &.ngm-density__compact.mat-toolbar-single-row {
+    //   padding: 0;
+    // }
 
     .mat-mdc-tab-nav-bar,
     .mat-mdc-tab-header {

@@ -44,7 +44,7 @@ $prefix: (ngm, color);
 }
 
 .ngm-input-element.mat-mdc-input-element {
-  @apply min-w-[6rem] block box-border w-full max-w-full p-2 rounded-lg
+  @apply min-w-[6rem] block box-border w-full max-w-full p-2 rounded-lg border border-solid border-transparent
     text-gray-700 ring-offset-1 ring-offset-transparent ring-2 ring-transparent
     focus:ring-yellow-500 focus:z-10 focus:outline-none
     dark:placeholder-gray-400 dark:text-white

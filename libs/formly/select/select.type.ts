@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatIconModule } from '@angular/material/icon'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
-
+import { EMPTY, Observable, catchError } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -24,6 +25,8 @@ import { BehaviorSubject, EMPTY, Observable, catchError } from 'rxjs'
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
+    MatIconModule,
+    MatTooltipModule,
     FormlyModule,
 
     TranslateModule,
@@ -40,7 +43,9 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
     return this.formControl as FormControl
   }
 
-  public _selectOptions$ = new BehaviorSubject<Array<any>>([])
+  readonly selectOptions = signal<Array<any>>([])
+
+  // public _selectOptions$ = new BehaviorSubject<Array<any>>([])
 
   ngOnInit(): void {
     if (this.props?.options instanceof Observable) {
@@ -59,10 +64,12 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
         .subscribe((event) => {
           // Reset errors
           this.valueFormControl.setErrors(null)
-          this._selectOptions$.next(event)
+          this.selectOptions.set(event)
+          // this._selectOptions$.next(event)
         })
     } else if (this.props?.options) {
-      this._selectOptions$.next(this.props.options)
+      this.selectOptions.set(this.props.options)
+      // this._selectOptions$.next(this.props.options)
     }
   }
 }
