@@ -13,7 +13,7 @@ import { MODEL_TYPE } from '../types'
  * @param caption 
  * @returns 
  */
-export function newDimensionFromTable(dimensions: PropertyDimension[], table: string, caption: string) {
+export function newDimensionFromTable(dimensions: PropertyDimension[], table: string, caption: string, isOlap: boolean) {
   const exists = dimensions.filter((d) => d.name === table)
 
   return {
@@ -24,7 +24,7 @@ export function newDimensionFromTable(dimensions: PropertyDimension[], table: st
       {
         __id__: uuid(),
         name: '',
-        hasAll: false,
+        hasAll: isOlap,
         visible: true,
         tables: [
           {
@@ -47,7 +47,7 @@ export function newDimensionFromTable(dimensions: PropertyDimension[], table: st
  * @param isXmla 转成 olap 的维度，否则转成 sql 维度
  * @returns
  */
-export function newDimensionFromColumn(column: Property, isXmla: boolean = false) {
+export function newDimensionFromColumn(column: Property, isOlap: boolean) {
   return {
     __id__: uuid(),
     name: column.name,
@@ -58,7 +58,7 @@ export function newDimensionFromColumn(column: Property, isXmla: boolean = false
       {
         __id__: uuid(),
         name: '',
-        hasAll: isXmla, // olap 的维度默认有 All 成员， sql 维度默认没有 All 成员
+        hasAll: isOlap, // olap 的维度默认有 All 成员， sql 维度默认没有 All 成员
         visible: true,
         levels: [
           {

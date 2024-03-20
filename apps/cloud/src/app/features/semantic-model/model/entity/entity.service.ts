@@ -272,10 +272,11 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   readonly newDimension = this.updater((state, event?: { index: number; table?: {name: string; caption: string;}; column?: PropertyAttributes }) => {
     state.cube.dimensions = state.cube.dimensions ?? []
     if (event) {
+      const isOlap = this.modelType() === MODEL_TYPE.OLAP
       if (event.table) {
-        state.cube.dimensions.splice(event.index, 0, newDimensionFromTable(state.cube.dimensions, event.table.name, event.table.caption))
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromTable(state.cube.dimensions, event.table.name, event.table.caption, isOlap))
       } else if (event.column) {
-        state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column))
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column, isOlap))
       }
     } else if (!state.cube.dimensions.find((item) => item.name === '')) {
       state.cube.dimensions.push({
@@ -310,14 +311,16 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     } as PropertyHierarchy)
   })
 
-  readonly newLevel = this.updater((state, { id, name }: { id: string; name: string }) => {
+  readonly newLevel = this.updater((state, { id, index, name, column, caption }: { id: string; index?: number; name: string; column?: string; caption?: string; }) => {
     const hierarchy = getHierarchyById(state.cube, id)
     // 检查是否已经存在新建条目
     if (!hierarchy.levels?.find((item) => item.name === name)) {
       hierarchy.levels = hierarchy.levels ?? []
-      hierarchy.levels.push({
+      hierarchy.levels.splice(index ?? hierarchy.levels.length, 0, {
         __id__: uuid(),
-        name
+        name,
+        column,
+        caption
       } as PropertyLevel)
     }
   })

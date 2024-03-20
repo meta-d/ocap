@@ -17,31 +17,35 @@
     (cdkDropListDropped)="dropDimension($event)"
     >
     <div class="flex-1 flex flex-col overflow-auto">
-      <pac-property-dimension *ngFor="let item of dimensionUsages$ | async; trackBy:trackById"
-        displayDensity="compact"
-        [dimension]="item.dimension"
-        [usage]="item.usage"
-        [readonly]="true"
-        [checklistSelection]="checklistSelection"
-        (delete)="onDelete($event)"
-        (toDimension)="toDimensionUsage(item.usage)"
-      >
-      </pac-property-dimension>
+      @for (item of dimensionUsages$ | async; track item.usage.name) {
+        <pac-property-dimension
+          displayDensity="compact"
+          [dimension]="item.dimension"
+          [usage]="item.usage"
+          [readonly]="true"
+          [checklistSelection]="checklistSelection"
+          (delete)="onDelete($event)"
+          (toDimension)="toDimensionUsage(item.usage)"
+        >
+        </pac-property-dimension>
+      }
 
-      <pac-property-dimension *ngFor="let dim of cubeState.cubeDimensions$ | async; trackBy:trackById"
-        displayDensity="compact"
-        [dimension]="dim"
-        [readonly]="modelType === MODEL_TYPE.XMLA"
-        [checklistSelection]="checklistSelection"
-        (newItem)="addNewItem($event)"
-        (delete)="onDelete($event)"
-      >
-      </pac-property-dimension>
+      @for (dim of cubeState.cubeDimensions$ | async; track dim.name) {
+        <pac-property-dimension
+          displayDensity="compact"
+          [dimension]="dim"
+          [readonly]="modelType === MODEL_TYPE.XMLA"
+          [checklistSelection]="checklistSelection"
+          (newItem)="addNewItem($event)"
+          (delete)="onDelete($event)"
+        >
+        </pac-property-dimension>
+      }
     </div>
   </div>
 </div>
 
-<div class="flex flex-col group">
+<div class="flex flex-col mt-4 group">
   <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
     <span>
       {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
@@ -89,7 +93,7 @@
   </div>
 </div>
 
-<div class="flex flex-col group">
+<div class="flex flex-col mt-4 group">
   <mat-toolbar class="pac-sub-toolbar flex justify-between item-center" displayDensity="compact">
     <span>
       {{ 'PAC.MENU.CALCULATED_MEMBERS' | translate: {Default: "Calculated Members"} }}

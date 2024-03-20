@@ -222,10 +222,27 @@ export class ModelCubeStructureComponent {
       // 将 Measure 变成 Dimension
       // this.cubeState.moveFromMeasureToDim(previousItem)
     } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
-      this.cubeState.newDimension({
-        index,
-        column: previousItem
-      })
+      // Insert as a level in hierarchy if it above a level node
+      if (event.container.getSortedItems()[event.currentIndex]?.data.role === AggregationRole.level) {
+        for (let i = event.currentIndex - 1; i >= 0; i--) {
+          if (event.container.getSortedItems()[i]?.data.role === AggregationRole.hierarchy) {
+            this.cubeState.newLevel({
+              id: event.container.getSortedItems()[i].data.__id__,
+              index: index - i - 1,
+              name: previousItem.name,
+              column: previousItem.name,
+              caption: previousItem.caption,
+            })
+            return
+          }
+        }
+      } else {
+        // Add as a dimension
+        this.cubeState.newDimension({
+          index,
+          column: previousItem
+        })
+      }
     }
 
     // Add shared dimension into this cube
