@@ -142,6 +142,12 @@ export class NxStoryService extends ComponentStore<StoryState> {
     })
   )
 
+  readonly storyModelsOptions$ = this.storyModels$.pipe(map((models) => models.map((model) => ({
+    value: model.id,
+    key: model.key,
+    caption: model.name
+  }))))
+
   // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
     map((models) => models.map((model) => convertStoryModel2DataSource(model))),
@@ -149,23 +155,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     shareReplay(1)
   )
 
-  /**
-   * @deprecated use 
-   */
-  readonly dataSources$ = this.dataSourceOptions$.pipe(
-    map((dataSources) => dataSources.map((dataSource) => ({
-      key: dataSource.id,
-      value: dataSource.key ?? dataSource.name,
-      caption: dataSource.caption
-    })))
-  )
-  readonly dataSources = toSignal(this.dataSourceOptions$.pipe(
-    map((dataSources) => dataSources.map((dataSource) => ({
-      key: dataSource.key,
-      value: dataSource.key ?? dataSource.name,
-      caption: dataSource.caption
-    })))
-  ))
+  readonly dataSources = toSignal(this.storyModelsOptions$)
 
   readonly schemas$ = combineLatest([
     this.select((state) => state.story.schema),

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { AbstractControl, FormControl, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
@@ -27,6 +28,7 @@ import { EMPTY, Observable, catchError } from 'rxjs'
     MatFormFieldModule,
     MatIconModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
     FormlyModule,
 
     TranslateModule,
@@ -45,7 +47,11 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
 
   readonly selectOptions = signal<Array<any>>([])
 
-  // public _selectOptions$ = new BehaviorSubject<Array<any>>([])
+  validators: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    return {
+      'error': 'error'
+    }
+  }
 
   ngOnInit(): void {
     if (this.props?.options instanceof Observable) {

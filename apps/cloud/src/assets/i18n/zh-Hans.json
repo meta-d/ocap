@@ -1237,7 +1237,8 @@
           "访问量走势, 线条平滑，线粗5",
           "按产品类别统计访问量, 显示图例",
           "2023年某产品的访问量走势"
-        ]
+        ],
+        "SuggestCommandDescription": "为数据集提供提示建议"
       }
     },
     "ApprovalPolicy": {
@@ -2963,7 +2964,8 @@
       "UnableLoadOptionList": "无法加载可选项"
     },
     "SemanticModel": {
-      "Label": "语义模型"
+      "Label": "语义模型",
+      "NotFound": "未找到值："
     },
     "Sort": {
       "Label": "排序字段"

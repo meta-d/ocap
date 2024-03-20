@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { CopilotChatMessageRoleEnum, CopilotService, getFunctionCall } from '@metad/copilot'
+import { CopilotService } from '@metad/copilot'
 import { calcEntityTypePrompt, nonNullable } from '@metad/core'
 import { NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -10,14 +10,10 @@ import { Cube, EntityType, isEntityType } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { uniq } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { computedAsync } from 'ngxtension/computed-async'
-import { combineLatest, debounceTime, filter, firstValueFrom, map, of, switchMap } from 'rxjs'
-import zodToJsonSchema from 'zod-to-json-schema'
+import { combineLatest, debounceTime, filter, firstValueFrom, map, of, switchMap, tap } from 'rxjs'
 import { registerModel } from '../../../@core'
-import { DemoModelCubes, SuggestsSchema } from './types'
-import { ChatRequest } from 'ai'
 
 @Injectable()
 export class InsightService {
@@ -51,18 +47,21 @@ export class InsightService {
     return this._suggestedPrompts()[this.dataSourceName() + (this.cube$()?.name ?? '')]
   })
   readonly suggesting = signal(false)
-  // readonly classification = signal<string | null>(null)
-  // readonly _entityType = computedAsync(() => this.getEntityType(classification))
 
   readonly entityType = toSignal(
-    combineLatest([toObservable(this.dataSourceName),
-      toObservable(this.cube$).pipe(map((cube) => cube?.name))
-    ]).pipe(
+    combineLatest([toObservable(this.dataSourceName), toObservable(this.cube$).pipe(map((cube) => cube?.name))]).pipe(
       debounceTime(100),
       filter(([key, cube]) => !!key && !!cube),
       switchMap(([key, cube]) =>
         this.#dsCoreService.selectEntitySet(key, cube).pipe(map((entitySet) => entitySet?.entityType))
-      )
+      ),
+      tap((entityType) => {
+        if (entityType && !this._suggestedPrompts()[this.#cubeSuggestsKey()]) {
+          setTimeout(async () => {
+            await this.askSuggests()
+          }, 100)
+        }
+      })
     )
   )
 
@@ -74,10 +73,10 @@ export class InsightService {
       .pipe(switchMap((dataSource) => (this.#model()?.schema?.cubes?.length ? dataSource.discoverMDCubes() : of([]))))
   })
 
-  error = ''
-  answers = []
+  readonly #cubeSuggestsKey = computed(() => this.dataSourceName() + (this.cube$()?.name ?? ''))
 
-  demoModelCubes = DemoModelCubes
+  readonly error$ = signal('')
+  readonly answers$ = signal([])
 
   entityPromptLimit = 10
 
@@ -91,81 +90,51 @@ export class InsightService {
     switchMap((dataSource) => dataSource.discoverMDCubes())
   )
 
+  // #suggestEffectRef = effect(async () => {
+  //   if (this.entityType() && !this._suggestedPrompts()[this.#cubeSuggestsKey()]) {
+  //     await this.askSuggests()
+  //   }
+  // }, { allowSignalWrites: true })
+
   async setModel(model: NgmSemanticModel) {
-    this.error = null
+    this.error$.set(null)
     model = convertNewSemanticModelResult(
       await firstValueFrom(
         this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
       )
     )
-    this.model = model
+    this.#model.set(model)
+
     if (!this._suggestedPrompts()[this.dataSourceName()]) {
       this.registerModel(model)
-      const answer = await this.suggestPrompts()
-      this._suggestedPrompts.set({ ...this._suggestedPrompts(), [this.dataSourceName()]: answer.suggests })
+      // const answer = await this.suggestPrompts()
+      // this._suggestedPrompts.set({ ...this._suggestedPrompts(), [this.dataSourceName()]: answer.suggests })
     }
   }
 
   async setCube(cube: Cube) {
-    this.error = null
+    this.error$.set(null)
     this.cube$.set(cube)
-    if (cube) {
-      const answer = await this.suggestPrompts()
-      this._suggestedPrompts.set({
-        ...this._suggestedPrompts(),
-        [this.dataSourceName() + this.cube$().name]: answer.suggests
-      })
-    }
+
+    // if (cube && !this._suggestedPrompts()[this.#cubeSuggestsKey()]) {
+    //   await this.askSuggests()
+    // }
   }
 
   private registerModel(model: NgmSemanticModel) {
     registerModel(model, this.#dsCoreService, this.#wasmAgent)
   }
 
-//   async preclassify(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
-//     const choices = await this.#copilotService.createChat(
-//       [
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.System,
-//           content: `请根据多维模型列表给出问题涉及到的 only one model name in json format
-// 例如
-// 多维模型列表： "sales_fact" 销售, "product" 产品, "warehouse" 仓库
-// 问题：按产品类别统计销售额
-// 回答： "sales_fact"`
-//         },
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: `多维模型列表： ${await this.getAllEntities()}
-// 问题：${prompt}
-// 回答： `
-//         }
-//       ],
-//       {
-//         ...(options ?? {}),
-//         request: {
-//           temperature: 0.2
-//         }
-//       }
-//     )
-
-//     try {
-//       const answer = JSON5.parse(choices[0].message.content)
-//       return answer
-//     } catch (err) {
-//       throw new Error(`Error parse: ${choices[0].message.content}`)
-//     }
-//   }
+  updateSuggests(suggests: string[]) {
+    this._suggestedPrompts.update((state) => ({
+      ...state,
+      [this.#cubeSuggestsKey()]: suggests
+    }))
+  }
 
   async askCopilot(prompt: string, options?: { abortController: AbortController; conversationId: string }) {
     try {
-      // const classification =
-      //   this.hasCube$() && this.cube$() ? this.cube$().name : await this.preclassify(prompt, options)
-      // this.classification.set(classification)
-
-      // const entityType = await this.getEntityType(classification)
-
+      this.suggesting.set(true)
       await this.#copilotEngine.chat(`/chart ${prompt}`, {
         newConversation: true,
         abortController: options?.abortController,
@@ -174,101 +143,19 @@ export class InsightService {
       })
     } catch (err) {
       this.#logger.error(err)
+    } finally {
+      this.suggesting.set(false)
     }
   }
 
-  /**
-   * Suggest AI prompts for the cube or random 10 cubes related to the entity type info of the cube
-   *
-   * @param cube
-   * @returns
-   */
-  async suggestPrompts(cube?: Cube) {
-    this.suggesting.set(true)
+  async askSuggests() {
     try {
-      let prompt = ''
-      // Specify the Cube or 10 random Cubes or Tables information
-      if (cube) {
-        prompt = calcEntityTypePrompt(await this.getEntityType(cube.name))
-      } else {
-        prompt = await this.getRandomEntityTypes(10)
-      }
-
-      const messages = [
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: `假设你是一名 BI 专家，请根据多维数据模型信息给出用户应该提问的 10 个问题(use language: ${this.language()}) in json format，不用解释。
-例如：
-多维数据模型信息为：${JSON.stringify(this.demoModelCubes)}
-回答：${JSON.stringify(
-  this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
-    Default: [
-      'the trend of visit, line is smooth and width 5',
-      'visits by product category, show legend',
-      'visit trend of some product in 2023 year'
-    ]
-  })
-)}`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: `多维数据模型信息为：${prompt}\n回答：`
-        }
-      ]
-
-      const chatRequest = {
-        messages,
-        functions: [
-          {
-            name: 'create_suggests',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(SuggestsSchema)
-          }
-        ],
-        function_call: { name: 'create_suggests' }
-      } as ChatRequest
-      const abortController = new AbortController()
-      const choices = await this.#copilotService.chat(
-        {
-          body: {
-          },
-          generateId: () => nanoid(),
-          onFinish: (message) => {
-            // this.upsertMessage({ ...message, status: 'done' })
-          },
-          appendMessage: (message) => {
-            // this.upsertMessage({ ...message, status: 'answering' })
-          },
-          abortController,
-          model: this.#copilotEngine.aiOptions.model
-        },
-        chatRequest,
-        {},
-      )
-
-      // const choices = await this.#copilotService.createChat(messages,
-      //   {
-      //     request: {
-      //       model: 'gpt-3.5-turbo-0613',
-      //       functions: [
-      //         {
-      //           name: 'create_suggests',
-      //           description: 'Should always be used to properly format output',
-      //           parameters: zodToJsonSchema(SuggestsSchema)
-      //         }
-      //       ],
-      //       function_call: { name: 'create_suggests' }
-      //     }
-      //   }
-      // )
-
-      const answer = getFunctionCall(choices[0].message)
-      return answer.arguments
-    } catch (err: any) {
-      this.error = err.message
-      return []
+      this.suggesting.set(true)
+      await this.#copilotEngine.chat(`/suggest suggest ${this.entityPromptLimit} prompts for cube`, {
+        newConversation: true
+      })
+    } catch (err) {
+      this.#logger.error(err)
     } finally {
       this.suggesting.set(false)
     }
@@ -281,53 +168,53 @@ export class InsightService {
   /**
    * 获取数据源的实体信息，多维数据集或者源表结构
    */
-  async getRandomEntityTypes(total: number) {
-    const dataSourceName = this.dataSourceName()
-    const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
-    if (this.model.schema?.cubes?.length) {
-      const cubes = await firstValueFrom(dataSource.discoverMDCubes())
-      const randomCubes = []
-      //loop 10 times to select 10 items
-      for (let i = 0; i < Math.min(cubes.length, total); i++) {
-        let randomIndex = Math.floor(Math.random() * cubes.length) //generate random index
-        let selectedItem = cubes[randomIndex] //get the randomly selected item
-        randomCubes.push(selectedItem) //add the item to the array of random items
-        cubes.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
-      }
+  // async getRandomEntityTypes(total: number) {
+  //   const dataSourceName = this.dataSourceName()
+  //   const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
+  //   if (this.model.schema?.cubes?.length) {
+  //     const cubes = await firstValueFrom(dataSource.discoverMDCubes())
+  //     const randomCubes = []
+  //     //loop 10 times to select 10 items
+  //     for (let i = 0; i < Math.min(cubes.length, total); i++) {
+  //       let randomIndex = Math.floor(Math.random() * cubes.length) //generate random index
+  //       let selectedItem = cubes[randomIndex] //get the randomly selected item
+  //       randomCubes.push(selectedItem) //add the item to the array of random items
+  //       cubes.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
+  //     }
 
-      const entityTypes = await firstValueFrom(
-        combineLatest<Array<EntityType | Error>>(randomCubes.map((cube) => dataSource.selectEntityType(cube.name)))
-      )
-      return JSON.stringify(this.getCubesPromptInfo(entityTypes.filter(isEntityType)))
-    } else {
-      const tables = await firstValueFrom(dataSource.discoverDBTables())
-      const randomTables = []
-      //loop 10 times to select 10 items
-      for (let i = 0; i < Math.min(tables.length, total); i++) {
-        let randomIndex = Math.floor(Math.random() * tables.length) //generate random index
-        let selectedItem = tables[randomIndex] //get the randomly selected item
-        randomTables.push(selectedItem) //add the item to the array of random items
-        tables.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
-      }
+  //     const entityTypes = await firstValueFrom(
+  //       combineLatest<Array<EntityType | Error>>(randomCubes.map((cube) => dataSource.selectEntityType(cube.name)))
+  //     )
+  //     return JSON.stringify(this.getCubesPromptInfo(entityTypes.filter(isEntityType)))
+  //   } else {
+  //     const tables = await firstValueFrom(dataSource.discoverDBTables())
+  //     const randomTables = []
+  //     //loop 10 times to select 10 items
+  //     for (let i = 0; i < Math.min(tables.length, total); i++) {
+  //       let randomIndex = Math.floor(Math.random() * tables.length) //generate random index
+  //       let selectedItem = tables[randomIndex] //get the randomly selected item
+  //       randomTables.push(selectedItem) //add the item to the array of random items
+  //       tables.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
+  //     }
 
-      const entityTypes = await firstValueFrom(
-        combineLatest<Array<EntityType | Error>>(randomTables.map((table) => dataSource.selectEntityType(table.name)))
-      )
+  //     const entityTypes = await firstValueFrom(
+  //       combineLatest<Array<EntityType | Error>>(randomTables.map((table) => dataSource.selectEntityType(table.name)))
+  //     )
 
-      return entityTypes
-        .filter(isEntityType)
-        .map(
-          (entityType) =>
-            `Table: ${entityType.name} caption: ${entityType.caption} columns: (${Object.keys(entityType.properties)
-              .map(
-                (name) =>
-                  `${name} ${entityType.properties[name].dataType ?? ''} ${entityType.properties[name].caption ?? ''}`
-              )
-              .join(', ')})`
-        )
-        .join(', ')
-    }
-  }
+  //     return entityTypes
+  //       .filter(isEntityType)
+  //       .map(
+  //         (entityType) =>
+  //           `Table: ${entityType.name} caption: ${entityType.caption} columns: (${Object.keys(entityType.properties)
+  //             .map(
+  //               (name) =>
+  //                 `${name} ${entityType.properties[name].dataType ?? ''} ${entityType.properties[name].caption ?? ''}`
+  //             )
+  //             .join(', ')})`
+  //       )
+  //       .join(', ')
+  //   }
+  // }
 
   async getAllEntities() {
     const dataSourceName = this.dataSourceName()
@@ -360,6 +247,10 @@ export class InsightService {
     }
 
     throw entityType
+  }
+
+  clearError() {
+    this.error$.set('')
   }
 
   //   getChartTypePrompt() {

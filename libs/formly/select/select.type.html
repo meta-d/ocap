@@ -6,11 +6,14 @@
   [selectOptions]="selectOptions()"
 
   [class.ngm-input-error]="formControl.invalid"
+
+  [validators]="validators"
 >
   @if (formControl.invalid) {
     <formly-validation-message ngmError [field]="field"></formly-validation-message>
   }
   <div ngmSuffix class="flex items-center">
+    <mat-progress-spinner class="hidden" color="primary" mode="indeterminate" diameter="16"></mat-progress-spinner>
     @if (props?.info) {
       <mat-icon fontSet="material-icons-outlined" class="opacity-50" displayDensity="compact"
         [matTooltip]="props.info"

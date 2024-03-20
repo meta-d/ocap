@@ -7,3 +7,20 @@
 .mat-mdc-select {
   @apply text-xs;
 }
+::ng-deep {
+  formly-field {
+    .pac-formly-select [ngmsuffix] {
+      .mat-mdc-progress-spinner {
+        @apply hidden;
+      }
+    }
+
+    &.formly-loader {
+      .pac-formly-select [ngmsuffix] {
+        .mat-mdc-progress-spinner {
+          @apply block;
+        }
+      }
+    }
+  }
+}

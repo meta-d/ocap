@@ -34,7 +34,7 @@
     100% { transform: rotate(360deg); }
   }
   
-  // for angular formly components
+  /* for angular formly components */
   formly-form {
     formly-wrapper-mat-form-field {
       flex: 1;
@@ -48,21 +48,6 @@
       position: relative;
       max-width: 100%;
       flex: 1;
-    }
-
-    .formly-loader {
-      .pac-formly-select::after, formly-field-mat-select::after {
-        content: '';
-        border: 2px solid transparent;
-        border-top: 2px solid mat.get-color-from-palette($primary, 500);
-        border-radius: 50%;
-        width: 15px;
-        height: 15px;
-        animation: spin 2s linear infinite;
-        position: absolute;
-        right: 5px;
-        top: 22px;
-      }
     }
   }
   

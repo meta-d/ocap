@@ -221,7 +221,7 @@ export abstract class DataSettingsSchemaService<
    * @returns
    */
   selectDataSourceList() {
-    return this.storyService.dataSources$
+    return this.storyService.storyModelsOptions$
   }
 
   generateEntitySetRelated(field: FormlyFieldConfig, generator: (entityType: EntityType) => Array<any>) {

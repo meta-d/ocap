@@ -1,5 +1,11 @@
 :host {
   @apply relative flex flex-col items-stretch min-w-[100px] w-full;
+
+  &.ngm-select-error {
+    .mat-mdc-select.ngm-select-element {
+      border-color: var(--mat-form-field-error-text-color);
+    }
+  }
 }
 
 .mat-mdc-form-field-error {

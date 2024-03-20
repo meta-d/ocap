@@ -10,7 +10,7 @@ import { MatChipInputEvent } from '@angular/material/chips'
 import { MatDialog } from '@angular/material/dialog'
 import { Title } from '@angular/platform-browser'
 import { Router, RouterModule } from '@angular/router'
-import { NgmSemanticModel, Store } from '@metad/cloud/state'
+import { NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { FunctionCallHandlerOptions } from '@metad/copilot'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
@@ -43,9 +43,9 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService, listAnimation, zodToAnnotations } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { ChartSchema, QuestionAnswer, transformCopilotChart } from './types'
+import { ChartSchema, QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
 import { nanoid } from 'nanoid'
-import { calcEntityTypePrompt } from '@metad/core'
+import { calcEntityTypePrompt, zodToProperties } from '@metad/core'
 import { AppService } from '../../../app.service'
 
 @Component({
@@ -86,9 +86,9 @@ export class InsightComponent {
   private _dialog = inject(MatDialog)
   private router = inject(Router)
   private readonly _title = inject(Title)
-  private translateService = inject(TranslateService)
-  private _toastrService = inject(ToastrService)
-  private insightService = inject(InsightService)
+  readonly #translate = inject(TranslateService)
+  readonly #toastr = inject(ToastrService)
+  readonly insightService = inject(InsightService)
   readonly #logger = inject(NGXLogger)
   readonly appService = inject(AppService)
 
@@ -111,9 +111,7 @@ export class InsightComponent {
   askController: AbortController
 
   readonly suggesting = this.insightService.suggesting
-  get error() {
-    return this.insightService.error
-  }
+  readonly error = this.insightService.error$
 
   readonly copilotEnabled = this.insightService.copilotEnabled
   readonly models$ = this.insightService.models$
@@ -173,7 +171,7 @@ export class InsightComponent {
     description: '洞察数据图形',
     systemPrompt: () => {
       const entityType = this.insightService.entityType()
-      return `Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function.
+      return `你是一名 BI 多维模型数据分析专家, Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function tool.
 The cube is:
 \`\`\`
 ${calcEntityTypePrompt(entityType)}
@@ -227,7 +225,7 @@ ${calcEntityTypePrompt(entityType)}
   
             this.#logger.debug('New chart by copilot command is:', answerMessage)
             this.updateAnswer(answerMessage)
-            return `创建成功！`
+            return `✅`
           } catch(err: any) {
             return {
               id: nanoid(),
@@ -240,6 +238,52 @@ ${calcEntityTypePrompt(entityType)}
     ]
   })
 
+  readonly #suggestCommand = injectCopilotCommand({
+    name: 'suggest',
+    description: this.#translate.instant('PAC.Home.Insight.SuggestCommandDescription', { Default: 'Suggest prompts for cube' }),
+    systemPrompt: () => {
+      const entityType = this.insightService.entityType()
+      return `你是一名 BI 多维模型数据分析专家，请根据 Cube 维度和度量等信息提供用户可提问的提示语建议，这些提示语用于创建图形来分析展示数据集的数据。
+例如提示语：
+\`\`\`
+${this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
+  Default: [
+    'the trend of visit, line is smooth and width 5',
+    'visits by product category, show legend',
+    'visit trend of some product in 2023 year'
+  ]
+}).join('\n;')}
+\`\`\`
+The Cube is:
+\`\`\`
+${calcEntityTypePrompt(entityType)}
+\`\`\`
+`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'suggest',
+        description: 'Suggests prompts for cube',
+        argumentAnnotations: [
+          {
+            name: 'param',
+            description: 'Prompt',
+            type: 'object',
+            required: true,
+            properties: zodToProperties(SuggestsSchema)
+          }
+        ],
+        implementation: async (param: {suggests: string[]}, options: FunctionCallHandlerOptions) => {
+          this.#logger.debug('Suggest prompts by copilot command with:', param, options)
+          if (param?.suggests) {
+            this.insightService.updateSuggests(param.suggests)
+          }
+          return `✅`
+        }
+      })
+    ]
+  })
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions
@@ -247,9 +291,9 @@ ${calcEntityTypePrompt(entityType)}
   */
   private promptControlSub = this.promptControl.valueChanges
     .pipe(takeUntilDestroyed())
-    .subscribe(() => (this.insightService.error = ''))
+    .subscribe(() => (this.insightService.clearError()))
 
-  private pageTitleSub = this.translateService
+  private pageTitleSub = this.#translate
     .stream('PAC.Home.Insight.Title', { Default: '💡Smart Insights' })
     .pipe(takeUntilDestroyed())
     .subscribe((title) => this._title.setTitle(title))
@@ -364,7 +408,7 @@ ${calcEntityTypePrompt(entityType)}
 
   async addToStory(answer) {
     const addToStoryTitle = await firstValueFrom(
-      this.translateService.get('PAC.Home.Insight.AddWidgetToStoryTitle', { Default: 'Add widget to story' })
+      this.#translate.get('PAC.Home.Insight.AddWidgetToStoryTitle', { Default: 'Add widget to story' })
     )
     const result = await firstValueFrom(
       this._dialog
@@ -397,7 +441,7 @@ ${calcEntityTypePrompt(entityType)}
     )
 
     if (result) {
-      this._toastrService
+      this.#toastr
         .info(
           {
             code: 'PAC.MESSAGE.CreateStoryWidgetSuccess',

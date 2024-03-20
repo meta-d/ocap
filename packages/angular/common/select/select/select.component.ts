@@ -12,7 +12,7 @@ import {
   computed,
   effect,
   forwardRef,
-  inject,
+  input,
   signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -38,7 +38,6 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, nonNullable } from '@metad/ocap-core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
 import { NgmOptionContent } from '../../input/option-content'
@@ -69,8 +68,6 @@ import { NgmOptionContent } from '../../input/option-content'
     MatIconModule,
     ScrollingModule,
 
-    TranslateModule,
-
     OcapCoreModule,
     NgmDisplayBehaviourComponent,
     NgmOptionContent
@@ -88,11 +85,12 @@ export class NgmSelectComponent
   )
   implements CanDisable, CanColor, CanDisableRipple, ControlValueAccessor
 {
-  private translateService = inject(TranslateService)
-
   @Input() displayBehaviour: DisplayBehaviour | string
   @Input() displayDensity: DisplayDensity | string
-  @Input() valueKey = 'value'
+  /**
+   * The name of key field of option 
+   */
+  readonly valueKey = input<'value' | 'key' | string>('value')
   @Input() label: string
   @Input() placeholder: string
   @Input() get searchable(): boolean {
@@ -104,7 +102,7 @@ export class NgmSelectComponent
   private _searchable = false
   @Input() virtualScroll: boolean
 
-  @Input() validators: ValidatorFn | ValidatorFn[] | null
+  readonly validators = input<ValidatorFn | ValidatorFn[] | null>()
 
   @Input() get multiple(): boolean {
     return this._multiple
@@ -137,7 +135,7 @@ export class NgmSelectComponent
     if (text) {
       const terms = text.split(' ').filter((t) => !!t)
       return this.selectOptions.filter((option) => {
-        const str = `${option.caption || option.label || ''}${option[this.valueKey]}`
+        const str = `${option.caption || option.label || ''}${option[this.valueKey()]}`
         return terms.every((term) => str?.toLowerCase().includes(term))
       })
     }
@@ -145,7 +143,7 @@ export class NgmSelectComponent
   })
 
   public selectTrigger = computed(() => {
-    return this.selectOptions?.find((option) => option[this.valueKey] === this.value())
+    return this.selectOptions?.find((option) => option[this.valueKey()] === this.value())
   })
 
   autoInput = signal(null)
@@ -175,8 +173,8 @@ export class NgmSelectComponent
   constructor(_elementRef: ElementRef) {
     super(_elementRef)
     effect(() => {
-      const selectedOption = this.selectOptions.find((item) => item[this.valueKey] === this.value())
-      if (nonNullable(selectedOption?.[this.valueKey])) {
+      const selectedOption = this.selectOptions.find((item) => item[this.valueKey()] === this.value())
+      if (nonNullable(selectedOption?.[this.valueKey()])) {
         this.autoInput.set(selectedOption)
       } else {
         this.autoInput.set(null)
@@ -209,7 +207,7 @@ export class NgmSelectComponent
     if (typeof event === 'string') {
       this.searchControl.setValue(event)
     } else {
-      this.formControl.setValue(event?.[this.valueKey])
+      this.formControl.setValue(event?.[this.valueKey()])
       this.searchControl.setValue(null)
     }
   }
