@@ -1,0 +1,8 @@
+@use "sass:meta";
+
+body.light {
+  @include meta.load-css("prismjs/themes/prism-coy.min.css");
+}
+body.dark {
+  @include meta.load-css("prismjs/themes/prism-okaidia.min.css");
+}

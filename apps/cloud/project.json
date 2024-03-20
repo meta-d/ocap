@@ -87,8 +87,7 @@
         ],
         "styles": [
           "packages/angular/_index.scss",
-          "apps/cloud/src/styles.scss",
-          "node_modules/prismjs/themes/prism-okaidia.min.css"
+          "apps/cloud/src/styles.scss"
         ],
         "stylePreprocessorOptions": {
           "includePaths": ["node_modules/"]

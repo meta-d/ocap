@@ -760,9 +760,12 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
       .afterClosed())
   }
 
-  async explain() {
+  explain() {
     const explains = this.widgetService.explains()
-    await firstValueFrom(this._dialog.open(ExplainComponent, {data: [...(explains ?? []), {slicers: this.componentInstance$.value.slicers}]}).afterClosed())
+    this._dialog.open(ExplainComponent, {
+      panelClass: 'small',
+      data: [...(explains ?? []), {slicers: this.componentInstance$.value.slicers}]})
+      .afterClosed().subscribe(() => {})
   }
 
   onDragFab(event: CdkDragMove) {
