@@ -1238,7 +1238,8 @@
           "按产品类别统计访问量, 显示图例",
           "2023年某产品的访问量走势"
         ],
-        "SuggestCommandDescription": "为数据集提供提示建议"
+        "SuggestCommandDescription": "为数据集提供提问建议",
+        "ChartCommandDescription": "用图表洞察数据"
       }
     },
     "ApprovalPolicy": {

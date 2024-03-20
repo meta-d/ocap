@@ -168,7 +168,7 @@ export class InsightComponent {
   */
   readonly #chartCommand = injectCopilotCommand({
     name: 'chart',
-    description: '洞察数据图形',
+    description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', { Default: 'Use charts to gain insights into data' }),
     systemPrompt: () => {
       const entityType = this.insightService.entityType()
       return `你是一名 BI 多维模型数据分析专家, Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function tool.

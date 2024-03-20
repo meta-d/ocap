@@ -1,6 +1,6 @@
 <div class="relative flex-1 flex flex-col items-center overflow-auto p-4" [class.pac-indight__expand-model]="showModel() && entityType()">
   @if (answers()?.length) {
-    <mat-accordion class="flex-1 w-full md:w-1/2 lg:1/3 flex flex-col gap-1">
+    <mat-accordion class="flex-1 w-full lg:w-[600px] xl:w-[800px] flex flex-col gap-1">
     @for (answer of answers(); track answer.key; let index = $index;) {
       <mat-expansion-panel class="pac-indight__answer-panel group" togglePosition="before"
         [expanded]="answer.expanded"
@@ -84,7 +84,7 @@
     }
     </mat-accordion>
   } @else {
-    <div class="pac-insight-quick-guide flex-1 w-full md:w-1/2 lg:1/3" [@listAnimation]="suggestedPrompts()">
+    <div class="pac-insight-quick-guide flex-1 w-full lg:w-[600px] xl:w-[800px]" [@listAnimation]="suggestedPrompts()">
       <div class="my-8 text-3xl">{{ 'PAC.Home.Insight.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}:</div>
       <div class="italic my-4">
         {{ 'PAC.Home.Insight.AskAICopilotDesc' | translate: {Default: 'You can ask questions about your data, and immediately see your answers as visualizations. These visualizations can always be added to your story.'} }}
@@ -115,7 +115,7 @@
 </div>
 
 <div class="absolute bottom-0 w-full flex flex-col p-4 bg-bluegray-100/50 dark:bg-white/10 backdrop-blur-lg" cdkDropListGroup>
-  <div class="pac-insight__search-bar ngm-density__cosy relative w-full md:w-1/2 lg:1/3 mx-auto flex flex-wrap justify-start items-center p-2 gap-2">
+  <div class="pac-insight__search-bar ngm-density__cosy relative w-full lg:w-[600px] xl:w-[800px] mx-auto flex flex-wrap justify-start items-center p-2 gap-2">
     @if (entityType()) {
       <button mat-icon-button class="absolute -left-8" style="position: absolute;" (click)="showModel.set(!showModel())">
         @if (showModel()) {
@@ -185,7 +185,7 @@
         </div>
       }
     </div>
-    <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full md:w-1/2 lg:w-1/3 rounded-lg p-[2px]
+    <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full rounded-lg p-[2px]
      from-rose-400 via-fuchsia-500 to-indigo-500"
       [class.bg-gradient-to-br]="model && (hasCube$() ? cube : true)"
       [class.ngm-background-animate]="answering()"
@@ -226,7 +226,7 @@
   </div>
 
   @if (showModel() && entityType()) {
-    <div class="h-60 w-full md:w-1/2 lg:1/3 mx-auto overflow-auto">
+    <div class="h-60 w-full lg:w-[600px] xl:w-[800px] mx-auto overflow-auto">
       <div>
         <span class="font-bold">{{ 'PAC.KEY_WORDS.Dimensions' | translate: {Default: 'Dimensions'} }}:</span>
         <mat-chip-listbox cdkDropList
