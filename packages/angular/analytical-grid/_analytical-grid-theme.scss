@@ -10,16 +10,19 @@
   $warn: map.get($config, warn);
 
   .ngm-analytical-grid {
+    /* For analytical grid in dashboard styles */
     .mat-mdc-table {
-      background-color: transparent;
-    }
+      --mat-table-background-color: transparent;
+      thead, tfoot {
+        background: lighten(mat.get-color-from-palette($background, hover), 50%);
+      }
 
-    .mat-mdc-table thead, .mat-mdc-table tfoot, .mat-paginator {
+      tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row] {
+        background: unset;
+      }
+    }
+    .mat-paginator {
       background: lighten(mat.get-color-from-palette($background, hover), 50%);
-    }
-
-    .mat-mdc-table tbody, mat-header-row, mat-row, mat-footer-row, [mat-header-row], [mat-row], [mat-footer-row] {
-      background: unset;
     }
 
     .ngm-analytical-grid__want-order {

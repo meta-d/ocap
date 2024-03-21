@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { nonBlank } from '@metad/core'
@@ -66,11 +66,11 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   public readonly dimension = toSignal(this.dimensionService.dimension$)
 
   public readonly dimension$ = this.dimensionService.dimension$
-  readonly isMobile = toSignal(this.appService.isMobile$)
+  readonly isMobile = this.appService.isMobile
 
-  public readonly error$ = this.dimensionService.name$.pipe(
+  readonly error = toSignal(this.dimensionService.name$.pipe(
     switchMap((entity) => this.modelService.selectOriginalEntityError(entity))
-  )
+  ))
   
   /**
   |--------------------------------------------------------------------------
@@ -123,8 +123,11 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
       this.modelService.setCrrentEntity(id)
     })
 
-  #errorSub = this.error$.pipe(takeUntilDestroyed()).subscribe((err) => {
-    this.#toastrService.error(err)
+  #errorSub = effect(() => {
+    const error = this.error()
+    if (error) {
+      this.#toastrService.error(error)
+    }
   })
 
   ngOnInit(): void {
