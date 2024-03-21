@@ -5,12 +5,13 @@
   [formControl]="valueFormControl"
   [selectOptions]="selectOptions()"
 
-  [class.ngm-input-error]="formControl.invalid"
-
-  [validators]="validators"
+  [class.ngm-select-error]="error() || formControl.invalid"
 >
   @if (formControl.invalid) {
     <formly-validation-message ngmError [field]="field"></formly-validation-message>
+  }
+  @if (error()) {
+    <span ngmError>{{error()}}</span>
   }
   <div ngmSuffix class="flex items-center">
     <mat-progress-spinner class="hidden" color="primary" mode="indeterminate" diameter="16"></mat-progress-spinner>

@@ -99,7 +99,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     ],
     systemPrompt: () => {
       const sharedDimensionsPrompt = JSON.stringify(
-        this.dimensions().map((dimension) => ({
+        this.dimensions().filter((dimension) => dimension.hierarchies?.length).map((dimension) => ({
           name: dimension.name,
           caption: dimension.caption,
           table: dimension.hierarchies[0].tables[0]?.name,

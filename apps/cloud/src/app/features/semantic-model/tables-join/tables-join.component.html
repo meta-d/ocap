@@ -64,7 +64,7 @@
                 </button>
     
                 <div *ngFor="let joinField of table.join?.fields;index as i; first as isFirst; last as isLast"
-                    class="join-field-item flex justify-around items-end">
+                    class="join-field-item flex justify-around items-center">
                     
                     <ngm-input [label]="'PAC.MODEL.ENTITY.LeftKey' | translate: {Default: 'Left Key'}"
                         [ngModel]="joinField.leftKey" (ngModelChange)="changeLeftKey(table, i, $event)"

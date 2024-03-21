@@ -2,7 +2,7 @@ import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-dro
 import { DestroyRef, Injectable, inject } from '@angular/core'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -196,6 +196,13 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   private _saved$ = new Subject<void>()
   public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly modelType = toSignal(this.modelType$)
 
   constructor(
     private modelsService: ModelsService,

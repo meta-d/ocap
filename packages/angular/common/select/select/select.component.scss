@@ -3,7 +3,10 @@
 
   &.ngm-select-error {
     .mat-mdc-select.ngm-select-element {
-      border-color: var(--mat-form-field-error-text-color);
+      border-color: var(--mdc-theme-error);
+    }
+    .ngm-input-element {
+      border-color: var(--mdc-theme-error);
     }
   }
 }

@@ -1,7 +1,6 @@
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
 import { NgmFormlyToggleComponent } from '@metad/formly/mat-toggle'
 import { ConfigOption, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
-import { FormlyFieldTextArea } from '@ngx-formly/material/textarea'
 
 export function validateRequired(err, field: FormlyFieldConfig) {
   return `This field is required`
@@ -45,8 +44,8 @@ export function provideFormlyMaterial() {
       types: [
         {
           name: 'toggle',
-          component: NgmFormlyToggleComponent,
-        },
+          component: NgmFormlyToggleComponent
+        }
         // {
         //   name: 'textarea',
         //   component: FormlyFieldTextArea,

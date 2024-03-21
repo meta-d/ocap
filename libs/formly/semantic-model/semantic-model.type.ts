@@ -9,7 +9,7 @@ import { Observable, startWith } from 'rxjs'
   selector: 'pac-formly-semantic-model',
   template: `<ngm-select
     displayDensity="compact"
-    [label]="'FORMLY.SemanticModel.Label' | translate: { Default: 'Semantic Model' }"
+    [label]="'FORMLY.COMMON.SemanticModel' | translate: { Default: 'Semantic Model' }"
     [selectOptions]="selectOptions()"
     valueKey="key"
     [formControl]="valueControl"
@@ -29,7 +29,7 @@ import { Observable, startWith } from 'rxjs'
 
     <div ngmError>
       @if (notFound()) {
-        <span>{{ 'FORMLY.SemanticModel.NotFound' | translate: {Default: 'Not found value: '} }} {{notFound()}}</span>
+        <span>{{ 'FORMLY.COMMON.NotFoundValue' | translate: {Default: 'Not found value: '} }} {{notFound()}}</span>
       }
     </div>
   </ngm-select>`,

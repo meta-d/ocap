@@ -37,8 +37,8 @@ const passiveEventListenerOptions = normalizePassiveListenerOptions({ passive: t
     <div #backTop class="ngm-scroll-back block" [class.ngm-scroll-back-rtl]="dir === 'rtl'">
       <ng-template #defaultContent>
         <button
-          class="cursor-pointer bottom-0 z-10 rounded-full bg-clip-padding border border-solid
-      text-gray-600 bg-white dark:border-white/10 dark:bg-white/10 dark:text-gray-200 right-1/2 border-black/10"
+          class="cursor-pointer bottom-0 right-1/2 z-10 rounded-full bg-clip-padding border border-solid
+      text-gray-600 bg-white dark:border-white/10 dark:bg-neutral-800 dark:text-gray-200 border-black/10"
           (click)="scrollTo()"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="m-1 text-black dark:text-white" [class.rotate-180]="direction === 'top'">

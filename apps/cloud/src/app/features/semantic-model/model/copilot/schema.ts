@@ -57,7 +57,8 @@ export const CubeSchema = z.object({
       z.object({
         name: z.string().describe('The name of the measure'),
         caption: z.string().describe('The caption of the measure'),
-        column: z.string().describe('The column of the measure')
+        column: z.string().describe('The column of the measure'),
+        aggregator: z.enum(['sum', 'avg', 'count', 'max', 'min', 'distinct-count']).optional().describe('The aggregator of the measure'),
       })
     )
     .optional()
@@ -80,7 +81,7 @@ export const CubeSchema = z.object({
       })
     )
     .optional()
-    .describe('An array of shared dimensions used in this cube')
+    .describe('An array of shared dimensions ref used in this cube')
 })
 
 
