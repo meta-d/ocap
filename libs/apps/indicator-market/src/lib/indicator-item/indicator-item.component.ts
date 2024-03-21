@@ -1,9 +1,9 @@
 import { Component, Input, inject } from '@angular/core'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { BehaviorSubject, distinctUntilChanged, EMPTY, filter, switchMap, tap } from 'rxjs'
 import { IndicatorsStore } from '../services/store'
-import { IndicatorState, StatisticalType, TagEnum, Trend } from '../types'
+import { IndicatorState, IndicatorTagEnum, StatisticalType, Trend } from '../types'
 import { IndicatorItemDataService } from './indicator-item.service'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 
 /**
@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 })
 export class IndicatorItemComponent {
   statisticalType: StatisticalType = StatisticalType.CurrentPeriod
-  TagEnum = TagEnum
+  TagEnum = IndicatorTagEnum
   TREND = Trend
 
   private readonly dataService = inject(IndicatorItemDataService)
@@ -32,15 +32,14 @@ export class IndicatorItemComponent {
   }
   public indicator$ = new BehaviorSubject(null)
 
-  @Input() tag: TagEnum
+  @Input() tag: IndicatorTagEnum
 
-  public readonly lookBack$ = this.store.lookBack$
-  public readonly loading$ = this.dataService.loading$
+  readonly loading$ = this.dataService.loading$
 
   /**
    * Subscriptions
    */
-  private lookBackSub = this.lookBack$
+  readonly #lookBackSub = toObservable(this.store.lookback)
     .pipe(
       switchMap((lookBack) => {
         let initialized = false
@@ -69,7 +68,7 @@ export class IndicatorItemComponent {
       //
     })
 
-  private _indicatorResultSub = this.dataService.selectResult()
+  readonly #indicatorResultSub = this.dataService.selectResult()
     .pipe(
       filter((result: any) => result.indicator?.id && result.indicator?.id === this.indicator?.id),
       takeUntilDestroyed()

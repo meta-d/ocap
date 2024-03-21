@@ -87,12 +87,14 @@
       (explain)="onExplain($event)"
       >
       <div class=" flex-1 flex items-center md:gap-2">
-        <span *ngFor="let p of PERIODS" class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
-          [ngClass]="{selected: p.name === selectedPeriod?.name}"
-          (click)="selectedPeriod = p"
-        >
-          {{p.name}}
-        </span>
+        @for (p of PERIODS; track p.name) {
+          <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
+            [ngClass]="{selected: p.name === detailPeriods()}"
+            (click)="togglePeriod(p.name)"
+          >
+            {{p.name}}
+          </span>
+        }
       </div>
     </ngm-analytical-card>
 
@@ -131,7 +133,7 @@
         {{ 'IndicatorApp.DrillDown' | translate: {Default: 'Drill Down'} }}
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense gap-4">
         <ngm-analytical-card *ngFor="let drill of drillDimensions; index as i; trackBy: trackById" class="h-[400px]"
           [title]="drill.title"
           [dataSettings]="drill.dataSettings"

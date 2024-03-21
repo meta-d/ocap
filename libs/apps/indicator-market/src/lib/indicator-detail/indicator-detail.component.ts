@@ -8,11 +8,12 @@ import {
   HostBinding,
   inject,
   Input,
+  signal,
   ViewChild
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
-import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
+import { CopilotService } from '@metad/copilot'
 import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
@@ -72,7 +73,8 @@ import {
 import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -122,6 +124,16 @@ export class IndicatorDetailComponent {
       name: '3Y',
       granularity: TimeGranularity.Month,
       lookBack: 36
+    },
+    {
+      name: '4Y',
+      granularity: TimeGranularity.Month,
+      lookBack: 48
+    },
+    {
+      name: '5Y',
+      granularity: TimeGranularity.Month,
+      lookBack: 60
     }
   ]
 
@@ -156,12 +168,13 @@ export class IndicatorDetailComponent {
   | Properties
   |--------------------------------------------------------------------------
   */
-  businessAreaUser: IBusinessAreaUser
+  readonly businessAreaUser = signal<IBusinessAreaUser>(null)
+  // businessAreaUser: IBusinessAreaUser
   get modeler() {
     return (
       isNil(this.businessAreaUser) ||
-      this.businessAreaUser?.role === BusinessAreaRole.Modeler ||
-      this.businessAreaUser?.role === BusinessAreaRole.Adminer
+      this.businessAreaUser()?.role === BusinessAreaRole.Modeler ||
+      this.businessAreaUser()?.role === BusinessAreaRole.Adminer
     )
   }
   prompt = ''
@@ -173,19 +186,14 @@ export class IndicatorDetailComponent {
 
   readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
   readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
+  readonly detailPeriods = this.store.detailPeriods
+  readonly period = computed(() => this.PERIODS[this.detailPeriods()])
 
   /**
   |--------------------------------------------------------------------------
   | Observables
   |--------------------------------------------------------------------------
   */
-  public readonly period$ = new BehaviorSubject(null)
-  get selectedPeriod() {
-    return this.period$.value
-  }
-  set selectedPeriod(value) {
-    this.period$.next(value)
-  }
 
   public readonly freeSlicers$ = new BehaviorSubject<ISlicer[]>([])
 
@@ -212,8 +220,9 @@ export class IndicatorDetailComponent {
 
   private readonly timeGranularity$ = combineLatest([
     this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)),
-    this.period$.pipe(map((period) => period?.granularity))
+    toObservable(this.period).pipe(map((period) => period?.granularity))
   ]).pipe(map(([timeGranularity, granularity]) => granularity ?? timeGranularity))
+
   private readonly today$ = this.dsCoreService.currentTime$.pipe(map(({ today }) => today))
   private readonly calendar$ = combineLatest([
     this.indicator$.pipe(distinctUntilChanged((prev, curr) => prev?.calendar === curr?.calendar)),
@@ -231,8 +240,8 @@ export class IndicatorDetailComponent {
     this.calendar$,
     this.timeGranularity$,
     this.today$,
-    this.store.lookBack$,
-    this.period$
+    toObservable(this.store.lookback),
+    toObservable(this.period)
   ]).pipe(
     map(([{ dimension, hierarchy, level }, timeGranularity, today, lookBack, period]) => {
       const timeRange = calcRange(today, {
@@ -622,6 +631,7 @@ export class IndicatorDetailComponent {
   readonly indicator = toSignal(this.indicator$)
   readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
   readonly copilotEnabled = toSignal(this.copilotService.enabled$)
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions
@@ -635,14 +645,46 @@ export class IndicatorDetailComponent {
     this.prompt = ''
 
     if (indicator?.businessAreaId) {
-      this.businessAreaUser = await this.store.getBusinessAreaUser(indicator.businessAreaId)
+      this.businessAreaUser.set(await this.store.getBusinessAreaUser(indicator.businessAreaId))
     } else {
-      this.businessAreaUser = null
+      this.businessAreaUser.set(null)
     }
 
+    // remove when signals are ready
     setTimeout(() => {
       this._cdr.detectChanges()
     })
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot Commands
+  |--------------------------------------------------------------------------
+  */
+  #analysis = injectCopilotCommand({
+    name: 'analysis',
+    description: 'Analysis the indicator data',
+    systemPrompt: () => {
+      return `你是一名 BI 指标数据分析专家，请根据给出的指标数据进行分析，得出结论。`
+    },
+    // actions: [
+    //   injectMakeCopilotActionable({
+    //     name: 'report',
+    //     description: 'Give user the analysis report',
+    //     argumentAnnotations: [
+    //       {
+    //         name: 'result',
+    //         type: 'string',
+    //         description: 'The analysis result',
+    //         required: true
+    //       }
+    //     ],
+    //     implementation: async (result: string) => {
+
+    //       return result
+    //     }
+    //   })
+    // ]
   })
   
   constructor() {
@@ -666,6 +708,10 @@ export class IndicatorDetailComponent {
     } else {
       this.store.createFavorite(indicator)
     }
+  }
+
+  togglePeriod(name: string) {
+    this.store.toggleDetailPeriods(name)
   }
 
   async saveAsComment(id: string, comment: string, relative: boolean) {

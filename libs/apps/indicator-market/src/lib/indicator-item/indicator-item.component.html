@@ -1,4 +1,4 @@
-<ng-container *ngIf="indicator$ | async as indicator">
+@if (indicator$ | async; as indicator) {
 <div class="pac-item-meta flex-1 flex flex-col overflow-hidden"
   [class.text-gray-500]="loading$ | async"
 >
@@ -48,4 +48,4 @@
   </div>
 
 </div>
-</ng-container>
+}

@@ -14,8 +14,9 @@
   
     <div class="flex justify-end items-center">
       <div class="pac-indicator__tag uppercase bg-gray-500 bg-opacity-25" (click)="toggleTag($event)">
-        {{tagText$()}}
+        {{ 'IndicatorApp.TagEnum.' + tagType() | translate: {Default: IndicatorTagEnum[tagType()]} }}
       </div>
+
       <button mat-icon-button
         [popper]="options"
         [popperTrigger]="NgxPopperjsTriggers.click"
@@ -56,7 +57,7 @@
           (click)="click(item)"
           cdkDrag [cdkDragStartDelay]="200"
           >
-          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$()"></pac-indicator-item>
+          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tagType()"></pac-indicator-item>
           <div class="pac-indicator__placeholder" *cdkDragPlaceholder></div>
         </mat-list-item>
         <mat-divider></mat-divider>
@@ -85,7 +86,7 @@
 
     <label>{{ 'IndicatorApp.TimeGranularity' | translate: {Default: 'Time Granularity'} }}</label>
     <mat-button-toggle-group ngmAppearance="hero" color="accent" displayDensity="cosy"
-      [(ngModel)]="timeGranularity" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
+      [ngModel]="timeGranularity()" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
       <mat-button-toggle [value]="TIME_GRANULARITY.Year">
         {{ 'COMPONENTS.DATE_PICKER.Year' | translate: {Default: 'Year'} }}
       </mat-button-toggle>
@@ -102,14 +103,14 @@
 
     <mat-divider></mat-divider>
 
-    <label>{{ 'IndicatorApp.LookbackLimit' | translate: {Default: 'Lookback Limit'} }}</label>
+    <label>{{ 'IndicatorApp.LookbackPeriods' | translate: {Default: 'Lookback Periods'} }}</label>
     <mat-slider class="w-full" discrete color="accent"
       step="1"
       min="0"
-      [max]="lookbackLimit"
+      [max]="lookbackLimit()"
       (click)="$event.stopPropagation()"
     >
-      <input matSliderThumb [(ngModel)]="lookback" (valueChange)="onLookback($event)">
+      <input matSliderThumb [ngModel]="lookBack()" (valueChange)="onLookback($event)">
     </mat-slider>
 
     <mat-divider></mat-divider>

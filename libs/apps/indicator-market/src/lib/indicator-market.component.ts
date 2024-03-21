@@ -13,7 +13,7 @@ import {
   ViewChild,
   ViewContainerRef
 } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { MatDatepicker } from '@angular/material/datepicker'
@@ -23,7 +23,6 @@ import { LanguagesEnum } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { TranslateService } from '@ngx-translate/core'
 import { includes, some } from 'lodash-es'
 import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -32,7 +31,7 @@ import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/ope
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { MyDataSource } from './services/data-source'
 import { IndicatorsStore } from './services/store'
-import { IndicatorState, TagEnum } from './types'
+import { IndicatorState, IndicatorTagEnum, LookbackLimit } from './types'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +44,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   TIME_GRANULARITY = TimeGranularity
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
+  IndicatorTagEnum = IndicatorTagEnum
 
   readonly router = inject(Router)
 
@@ -53,18 +53,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   @ViewChild('searchInput') searchInputRef: ElementRef
 
-  readonly tag$ = toSignal(this.indicatorsStore.tag$)
-  readonly tagText$ = computed(() => {
-    const tag = this.tag$()
-    const tagEnum = this.translateService.instant('IndicatorApp.TagEnum', {
-      Default: {
-        [TagEnum.UNIT]: 'Unit',
-        [TagEnum.MOM]: 'MOM',
-        [TagEnum.YOY]: 'YOY'
-      }
-    })
-    return tagEnum[tag]
-  })
+  readonly tagType = this.indicatorsStore.tagType
 
   indicatorDataSource: MyDataSource // = new MyDataSource(this.indicatorsStore)
   readonly mediaMatcher$ = combineLatest(
@@ -86,12 +75,18 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   isShowModal = false
   private _bottomSheetRef: MatBottomSheetRef
-  timeGranularity = TimeGranularity.Month
-  lookback = 12
+  // timeGranularity = TimeGranularity.Month
+  // lookback = 12
   _currentDate = new Date()
   dateControl = new FormControl<Date>(this._currentDate)
 
   readonly queryParams = injectQueryParams()
+
+  readonly timeGranularity = this.indicatorsStore.timeGranularity
+  readonly lookBack = this.indicatorsStore.lookback
+  readonly lookbackLimit = computed(() => {
+    return LookbackLimit[this.timeGranularity()] ?? 100
+  })
 
   /**
    * Subscriptions
@@ -101,7 +96,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     .pipe(takeUntilDestroyed())
     .subscribe((id) => {
       this.indicatorsStore.init()
-      this.onLookback(this.lookback)
+      this.onLookback(this.lookBack())
       this.indicatorDataSource = new MyDataSource(this.indicatorsStore)
     })
 
@@ -109,7 +104,6 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     private store: Store,
     private indicatorsStore: IndicatorsStore,
     private dsCoreService: NgmDSCoreService,
-    private translateService: TranslateService,
     private breakpointObserver: BreakpointObserver,
     @Inject(LOCALE_ID)
     private locale: string,
@@ -119,8 +113,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
     super({})
     // TODO 演示时间
     this.dsCoreService.setToday(this._currentDate)
-    this.dsCoreService.setTimeGranularity(this.timeGranularity)
-    this.onLookback(this.lookback)
+    this.onLookback(this.lookBack())
 
     this.dateControl.valueChanges.subscribe((value) => {
       this.dsCoreService.setToday(value)
@@ -138,6 +131,10 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
         }
       }
     }, { allowSignalWrites: true })
+
+    effect(() => {
+      this.dsCoreService.setTimeGranularity(this.timeGranularity())
+    })
   }
 
   readonly openModal = this.effect((origin$: Observable<string>) => {
@@ -177,14 +174,14 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   }
 
   chosenYearHandler(event: Date | null, datepicker: MatDatepicker<any>) {
-    if (this.timeGranularity === TimeGranularity.Year) {
+    if (this.timeGranularity() === TimeGranularity.Year) {
       this.dateControl.setValue(event)
       datepicker.close()
     }
   }
 
   chosenMonthHandler(event, datepicker: MatDatepicker<any>) {
-    if (this.timeGranularity === TimeGranularity.Month || this.timeGranularity === TimeGranularity.Quarter) {
+    if (this.timeGranularity() === TimeGranularity.Month || this.timeGranularity() === TimeGranularity.Quarter) {
       this.dateControl.setValue(event)
       datepicker.close()
     }
@@ -200,27 +197,12 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   }
 
   onTimeGranularity(event: TimeGranularity) {
-    this.dsCoreService.setTimeGranularity(event)
     this.indicatorsStore.resetData()
+    this.indicatorsStore.updateTimeGranularity(event)
   }
 
-  get lookbackLimit() {
-    switch (this.timeGranularity) {
-      case TimeGranularity.Day:
-        return 365 * 2
-      case TimeGranularity.Month:
-        return 24
-      case TimeGranularity.Quarter:
-        return 8
-      case TimeGranularity.Year:
-        return 2
-      default:
-        return 5
-    }
-  }
-
-  onLookback(event) {
-    this.indicatorsStore.patchState({ lookBack: event })
+  onLookback(event: number) {
+    this.indicatorsStore.updateLookback(event)
   }
 
   toggleTag(event) {
@@ -247,6 +229,6 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.locale === LanguagesEnum.SimplifiedChinese
+    return this.indicatorsStore.currentLang() === LanguagesEnum.SimplifiedChinese
   }
 }

@@ -10,15 +10,16 @@ import {
   convertNewSemanticModelResult
 } from '@metad/cloud/state'
 import { nonNullable } from '@metad/core'
-import { IBusinessAreaUser, IComment, IIndicatorApp, ISemanticModel } from '@metad/contracts'
+import { IBusinessAreaUser, IComment, IIndicatorApp, ISemanticModel, TimeGranularity } from '@metad/contracts'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ComponentStore } from '@metad/store'
 import { StoryModel, convertStoryModel2DataSource } from '@metad/story/core'
 import { EntityAdapter, EntityState, Update, createEntityAdapter } from '@ngrx/entity'
 import { assign, includes, indexOf, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
 import { Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
-import { concatMap, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
-import { IndicatorState, TagEnum } from '../types'
+import { debounceTime, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { IndicatorState, IndicatorTagEnum, LookbackDefault } from '../types'
+import { TranslateService } from '@ngx-translate/core'
 
 type DataSources = {
   [id: string]: {
@@ -28,12 +29,15 @@ type DataSources = {
 }
 
 export interface IndicatorStoreState extends EntityState<IndicatorState> {
-  // currentIndicator?: string
+  /**
+   * Is the store initialized, then all changes should upload to the server
+   */
+  initialized: boolean
   dataSources: DataSources
   currentPage: number
-  tag: TagEnum
+
   search?: string
-  lookBack?: number
+
   locale?: string
 
   businessAreas: Record<string, IBusinessAreaUser>
@@ -55,9 +59,10 @@ export const adapter: EntityAdapter<IndicatorState> = createEntityAdapter<Indica
 })
 
 export const initialState: IndicatorStoreState = adapter.getInitialState({
+  initialized: false,
   dataSources: {},
   currentPage: 1,
-  tag: TagEnum.UNIT,
+  tag: IndicatorTagEnum.UNIT,
   businessAreas: {},
   app: null
 })
@@ -66,6 +71,7 @@ const { selectAll } = adapter.getSelectors()
 @Injectable()
 export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   readonly #iAppService = inject(IndicatorAppService)
+  readonly #translate = inject(TranslateService)
 
   private pageSize = 10
 
@@ -90,6 +96,14 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   | Signals
   |--------------------------------------------------------------------------
   */
+  readonly initialized = toSignal(this.select((state) => state.initialized))
+  readonly appState = toSignal(this.select((state) => state.app))
+  readonly appOptions = computed(() => this.appState()?.options)
+  readonly timeGranularity = computed(() => this.appOptions()?.timeGranularity ?? TimeGranularity.Month)
+  readonly lookback = computed(() => this.appOptions()?.lookback?.[this.timeGranularity()] ?? LookbackDefault[this.timeGranularity()])
+  readonly tagType = computed(() => this.appOptions()?.tagType ?? IndicatorTagEnum.UNIT)
+  readonly detailPeriods = computed(() => this.appOptions()?.detailPeriods)
+  
   readonly currentIndicator = signal<string | null>(null)
   readonly favorites = toSignal(this.select((state) => state.app?.options?.favorites))
   readonly sortedIndicators$ = toSignal(combineLatest([this.all$, this.select((state) => state.app?.options ?? {})]).pipe(
@@ -115,6 +129,8 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   ))
 
   readonly firstIndicator = computed(() => this.sortedIndicators$()[0] ?? null)
+
+  readonly currentLang = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
 
   /**
   |--------------------------------------------------------------------------
@@ -144,8 +160,16 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     distinctUntilChanged()
   )
 
-  public readonly tag$ = this.select((state) => state.tag)
-  public readonly lookBack$ = this.select((state) => state.lookBack)
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers (effects)
+  |--------------------------------------------------------------------------
+  */
+  #appStateSub = this.select((state) => state.app?.options).pipe(
+    distinctUntilChanged(isEqual),
+    filter(() => this.initialized()),
+    switchMap(() => this.#iAppService.upsert(this.appState()))
+  ).subscribe()
 
   constructor(
     private modelsService: ModelsService,
@@ -255,12 +279,17 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
 
       const items = indicators?.filter((item) => item.modelId && item.entity).map(convertIndicatorResult)
 
+      // Fetch semantic models details
       const models = uniq(items.map((item) => item.modelId)).filter((id) => !!id && !this.dataSources[id])
       if (!isEmpty(models)) {
         this.fetchSemanticModel(models)
       }
 
       this.setIndicators(items as IndicatorState[])
+
+      this.patchState({
+        initialized: true
+      })
     })
   }
 
@@ -329,73 +358,66 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   /**
    * Drag and drop to reorder and save to the server
    */
-  order = this.effect((event$: Observable<CdkDragDrop<IndicatorState[]>>) => {
-    return event$.pipe(
-      switchMap((event) => {
-        const indicators = this.sortedIndicators$().map(({ id }) => id) as string[]
-        moveItemInArray(indicators, event.previousIndex, event.currentIndex)
-        this.updateOrders(indicators)
-        const app = this.get((state) => state.app)
-        return this.#iAppService.upsert({
-          ...app
-        })
-      })
-    )
-  })
+  order(event: CdkDragDrop<IndicatorState[]>) {
+    const indicators = this.sortedIndicators$().map(({ id }) => id) as string[]
+    moveItemInArray(indicators, event.previousIndex, event.currentIndex)
+    this.updateOrders(indicators)
+  }
 
   private addFavorite = this.updater((state, id: string) => {
-    const app = state.app ?? {}
-    app.options = app.options ?? {}
-    app.options.favorites = app.options.favorites ?? []
-
-    if (!app.options.favorites?.includes(id)) {
-      app.options.favorites.push(id)
-    }
-    state.app = {
-      ...app
+    const options = this.getOrInitAppOptions(state)
+    options.favorites ??= []
+    if (!options.favorites?.includes(id)) {
+      options.favorites.push(id)
     }
   })
 
   private removeFavorite = this.updater((state, id: string) => {
-    const app = state.app ?? {}
-    app.options = app.options ?? {}
-    app.options.favorites = app.options.favorites ?? []
-
-    app.options.favorites = app.options.favorites.filter((_) => _ !== id)
-    state.app = {
-      ...app
-    }
+    const options = this.getOrInitAppOptions(state)
+    options.favorites = options.favorites?.filter((_) => _ !== id) ?? []
   })
 
-  createFavorite = this.effect((origin$: Observable<IndicatorState>) => {
-    return origin$.pipe(
-      concatMap((indicator) => {
-        this.addFavorite(indicator.id)
-        const app = this.get((state) => state.app)
-        return this.#iAppService.upsert({
-          ...app
-        })
-      })
-    )
+  createFavorite(indicator: IndicatorState) {
+    this.addFavorite(indicator.id)
+  }
+
+  deleteFavorite(indicator: IndicatorState) {
+    this.removeFavorite(indicator.id)
+  }
+
+  updateTimeGranularity = this.updater((state, timeGranularity: TimeGranularity) => {
+    const options = this.getOrInitAppOptions(state)
+    options.timeGranularity = timeGranularity
   })
 
-  deleteFavorite = this.effect((origin$: Observable<IndicatorState>) => {
-    return origin$.pipe(
-      concatMap((indicator) => {
-        this.removeFavorite(indicator.id)
-        const app = this.get((state) => state.app)
-        return this.#iAppService.upsert({
-          ...app
-        })
-      })
-    )
+  updateLookback = this.updater((state, lookback: number) => {
+    const options = this.getOrInitAppOptions(state)
+    options.lookback ??= { ...LookbackDefault }
+    options.lookback[this.timeGranularity()] = lookback
   })
 
+  toggleDetailPeriods = this.updater((state, name: string) => {
+    const options = this.getOrInitAppOptions(state)
+    options.detailPeriods = options.detailPeriods === name ? null : name
+  })
+
+  /**
+   * Switch the tag type
+   */
   readonly toggleTag = this.updater((state) => {
-    if (TagEnum[state.tag + 1]) {
-      state.tag = state.tag + 1
+    const tagType = this.tagType()
+    const options = this.getOrInitAppOptions(state)
+
+    if (IndicatorTagEnum[tagType + 1]) {
+      options.tagType = tagType + 1
     } else {
-      state.tag = 0
+      options.tagType = IndicatorTagEnum[IndicatorTagEnum[0]] // Ensure to start from 0
     }
   })
+
+  getOrInitAppOptions(state: IndicatorStoreState) {
+    state.app ??= {}
+    state.app.options ??= {}
+    return state.app.options
+  }
 }
