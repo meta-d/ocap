@@ -73,56 +73,57 @@
 </div>
 
 <div class="mat-typography flex-1 flex flex-col justify-start items-stretch overflow-auto" cdkDropListGroup>
-
-    <ng-container [ngSwitch]="calculationType.value">
-        <ng-container *ngSwitchCase="CALCULATION_TYPE.Calculated">
-            <!-- <ng-container [ngSwitch]="syntax">
+    @switch (calculationType.value) {
+        @case (CALCULATION_TYPE.Calculated) {
+            <!--
                 <ngm-calculation-sql *ngSwitchCase="SYNTAX.SQL"
-                    [dataSettings]="dataSettings"
-                    [entityType]="entityType"
-                    [coreService]="coreService"
-                    [(ngModel)]="calculation"
-                >
-                </ngm-calculation-sql> -->
-                <ngm-calculated-measure story opened class="max-w-full w-[1000px] h-full"
-                    [dsCoreService]="dsCoreService"
-                    [dataSettings]="dataSettings"
-                    [entityType]="entityType"
-                    [coreService]="coreService"
-                    [syntax]="syntax"
-                    [(ngModel)]="formula"
-                    >
-                </ngm-calculated-measure>
-            <!-- </ng-container> -->
-        </ng-container>
-        
-        <ngm-restricted-measure *ngSwitchCase="CALCULATION_TYPE.Restricted" class="sub-calculation"
-            [coreService]="coreService"
-            [dataSettings]="dataSettings"
-            [entityType]="entityType"
-            [(ngModel)]="calculation">
-        </ngm-restricted-measure>
-
-        <ngm-conditional-aggregation *ngSwitchCase="CALCULATION_TYPE.Aggregation" class="sub-calculation"
-            [coreService]="coreService"
-            [dsCoreService]="dsCoreService"
-            [dataSettings]="dataSettings"
-            [entityType]="entityType"
-            [(ngModel)]="calculation">
-        </ngm-conditional-aggregation>
-
-        <pac-calculation-variance *ngSwitchCase="CALCULATION_TYPE.Variance" class="sub-calculation"
-            [dsCoreService]="dsCoreService"
-            [dataSettings]="dataSettings"
-            [entityType]="entityType"
-            [(ngModel)]="calculation"
-        ></pac-calculation-variance>
-
-        <ngm-measure-control *ngSwitchCase="CALCULATION_TYPE.MeasureControl" class="sub-calculation"
-            [(ngModel)]="calculation"
-            [entityType]="entityType"
+                [dataSettings]="dataSettings"
+                [entityType]="entityType"
+                [coreService]="coreService"
+                [(ngModel)]="calculation"
             >
-        </ngm-measure-control>
-    </ng-container>
-    
+            </ngm-calculation-sql> -->
+        <ngm-calculated-measure story class="max-w-full w-[1000px] h-full"
+            [dsCoreService]="dsCoreService"
+            [dataSettings]="dataSettings"
+            [entityType]="entityType"
+            [coreService]="coreService"
+            [syntax]="syntax"
+            [(ngModel)]="formula"
+            >
+        </ngm-calculated-measure>
+        }
+        @case (CALCULATION_TYPE.Restricted) {
+            <ngm-restricted-measure class="sub-calculation"
+                [coreService]="coreService"
+                [dataSettings]="dataSettings"
+                [entityType]="entityType"
+                [(ngModel)]="calculation">
+            </ngm-restricted-measure>
+        }
+        @case (CALCULATION_TYPE.Aggregation) {
+            <ngm-conditional-aggregation class="sub-calculation"
+                [coreService]="coreService"
+                [dsCoreService]="dsCoreService"
+                [dataSettings]="dataSettings"
+                [entityType]="entityType"
+                [(ngModel)]="calculation">
+            </ngm-conditional-aggregation>
+        }
+        @case (CALCULATION_TYPE.Variance) {
+            <pac-calculation-variance class="sub-calculation"
+                [dsCoreService]="dsCoreService"
+                [dataSettings]="dataSettings"
+                [entityType]="entityType"
+                [(ngModel)]="calculation"
+            ></pac-calculation-variance>
+        }
+        @case (CALCULATION_TYPE.MeasureControl) {
+            <ngm-measure-control class="sub-calculation"
+                [(ngModel)]="calculation"
+                [entityType]="entityType"
+                >
+            </ngm-measure-control>
+        }
+    }
 </div>

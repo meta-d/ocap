@@ -13,7 +13,6 @@ import {
   ISlicer,
   isNil,
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import {
   BehaviorSubject,
   combineLatest,
@@ -43,7 +42,6 @@ export interface SmartSelectOptions extends ControlOptions {
   data?: Array<IMember>
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -144,7 +142,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
       }
       return selectOptions
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
   public readonly loading$ = this.smartFilterService.loading$

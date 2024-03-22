@@ -19,28 +19,35 @@ import { MatSliderModule } from '@angular/material/slider'
 import { FavoritesService, IndicatorsService } from '@metad/cloud/state'
 import { ReversePipe } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
-import { ControlsModule } from '@metad/ocap-angular/controls'
-import { AppearanceDirective, OcapCoreModule } from '@metad/ocap-angular/core'
-import { LetDirective } from '@ngrx/component'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { AppearanceDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
+import { LoggerModule } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { IndicatorItemComponent } from './indicator-item/indicator-item.component'
 import { IndicatorMarketRoutingModule } from './indicator-market-routing.module'
 import { IndicatoryMarketComponent } from './indicator-market.component'
+import { PACIndicatorDirective } from './shared/indicator.directive'
 import { ReplaceNullWithTextPipe } from './shared/replace-null-with-text.pipe'
-import { SharedModule } from './shared/shared.module'
+import { AppSparkLineDirective } from './shared/sparkline.directive'
 
 @NgModule({
-  declarations: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent, ReplaceNullWithTextPipe],
+  declarations: [
+    AppSparkLineDirective,
+    PACIndicatorDirective,
+    IndicatoryMarketComponent,
+    IndicatorItemComponent,
+    IndicatorDetailComponent,
+    ReplaceNullWithTextPipe
+  ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IndicatorMarketRoutingModule,
-    LetDirective,
     ScrollingModule,
     DragDropModule,
     MatListModule,
@@ -64,17 +71,17 @@ import { SharedModule } from './shared/shared.module'
     TranslateModule,
 
     // for DataSources
-    OcapCoreModule.forRoot(),
-    ControlsModule,
+    OcapCoreModule,
+    NgmControlsModule,
 
     // NxAnalyticsStoryModule,
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')
     }),
-    SharedModule,
-    AnalyticalCardModule
+    AnalyticalCardModule,
+    LoggerModule
   ],
   exports: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent],
-  providers: [IndicatorsService, FavoritesService]
+  providers: [provideOcapCore(), IndicatorsService, FavoritesService]
 })
 export class IndicatorMarketModule {}

@@ -1,10 +1,7 @@
 import { CopilotDefaultOptions } from '@metad/copilot'
 import { z } from 'zod'
 import zodToJsonSchema from 'zod-to-json-schema'
-
-const QueryCubeSchema = z.object({
-  statement: z.string().describe('The MDX statement of query the cube')
-})
+import { QueryCubeSchema } from '../schema'
 
 export const queryCube = {
   ...CopilotDefaultOptions,

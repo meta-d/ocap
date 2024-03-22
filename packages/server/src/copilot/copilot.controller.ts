@@ -1,15 +1,16 @@
 import { PermissionsEnum } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DeepPartial } from 'typeorm'
-import { CrudController } from '../core'
+import { CrudController, TransformInterceptor } from '../core'
 import { PermissionGuard, Permissions } from './../shared';
 import { Copilot } from './copilot.entity'
 import { CopilotService } from './copilot.service'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
+@UseInterceptors(TransformInterceptor)
 @Controller()
 export class CopilotController extends CrudController<Copilot> {
 	constructor(private readonly service: CopilotService, private readonly commandBus: CommandBus) {

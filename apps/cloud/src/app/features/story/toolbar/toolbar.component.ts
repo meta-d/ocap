@@ -22,7 +22,6 @@ import { CopilotChatMessage } from '@metad/copilot'
 import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep, omit } from '@metad/ocap-core'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
@@ -38,7 +37,6 @@ import {
   EmulatedDevice,
   NxStoryService,
   STORY_WIDGET_COMPONENT,
-  StoryCopilotEngineService,
   StoryPoint,
   StoryPointType,
   StoryWidget,
@@ -49,7 +47,7 @@ import { StorySharesComponent } from '@metad/story/story'
 import { combineLatest, firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
-import { CopilotChatComponent, MaterialModule, ProjectFilesComponent } from '../../../@shared'
+import { MaterialModule, ProjectFilesDialogComponent } from '../../../@shared'
 import { StoryDesignerComponent } from '../designer'
 import { SaveAsTemplateComponent } from '../save-as-template/save-as-template.component'
 import { StoryDetailsComponent } from '../story-details/story-details.component'
@@ -68,11 +66,9 @@ import { CHARTS } from '@metad/story/widgets/analytical-card'
     TranslateModule,
     FormsModule,
     IsNilPipe,
-    LetDirective,
     AppearanceDirective,
     DensityDirective,
     StoryDesignerComponent,
-    CopilotChatComponent,
     NgmInputComponent
   ],
   selector: 'pac-story-toolbar',
@@ -124,7 +120,6 @@ export class StoryToolbarComponent implements OnInit {
 
   public readonly storyService = inject(NxStoryService)
   public readonly toastrService = inject(ToastrService)
-  public readonly copilotEngine = inject(StoryCopilotEngineService)
   private readonly storiesService = inject(StoriesService)
   private readonly _elRef = inject(ElementRef)
   public toolbarService = inject(StoryToolbarService)
@@ -142,7 +137,7 @@ export class StoryToolbarComponent implements OnInit {
   @Output() deviceZoomChange = new EventEmitter()
   @Output() resetScalePan = new EventEmitter()
 
-  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences' | 'copilot'
+  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'
   _fullscreen: boolean
   @HostBinding('class.pac-toolbar__on-right')
   onRight = false
@@ -170,7 +165,6 @@ export class StoryToolbarComponent implements OnInit {
     map(([isDirty, saving]) => !isDirty || saving)
   )
   public readonly pointList$ = this.storyService.points$
-  public readonly isCopyWidgetSelected$ = this.storyService.copySelectedWidget$
 
   public readonly isMobile$ = this.storyService.isMobile$
 
@@ -181,7 +175,14 @@ export class StoryToolbarComponent implements OnInit {
   public readonly isPanMode$ = this.storyService.isPanMode$
 
   public readonly isWidgetSelected = computed(() => !this.storyService.currentWidget())
-
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly isCopyWidgetSelected$ = toSignal(this.storyService.copySelectedWidget$)
+  readonly story = toSignal(this.storyService.story$)
+  
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -308,7 +309,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openStoryDetails() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const result = await firstValueFrom(
       this._dialog
         .open(StoryDetailsComponent, {
@@ -375,7 +376,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openAdvancedStyle() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
 
     const advancedStyle = await firstValueFrom(
       this._dialog
@@ -395,22 +396,18 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openCalculations() {
-    // const dataSource = await firstValueFrom(this.storyService.dataSource$)
     const result = await firstValueFrom(
       this._dialog
         .open(ParametersComponent, {
           viewContainerRef: this._viewContainerRef,
           panelClass: 'medium',
-          data: {
-            // dataSource
-          }
         })
         .afterClosed()
     )
   }
 
   async saveAsTemplate() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const points = await firstValueFrom(this.storyService.pageStates$)
     const asTemplate = await firstValueFrom(
       this._dialog
@@ -466,20 +463,16 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
-  async openMaterials() {
-    const story = await firstValueFrom(this.storyService.story$)
-    const result = await firstValueFrom(
-      this._dialog
-        .open(ProjectFilesComponent, {
-          panelClass: 'medium',
-          data: {
-            projectId: story.projectId
-          }
-        })
-        .afterClosed()
-    )
-    if (result) {
-    }
+  openMaterials() {
+    const story = this.story()
+    this._dialog
+      .open(ProjectFilesDialogComponent, {
+        panelClass: 'medium',
+        data: {
+          projectId: story.projectId
+        }
+      })
+      .afterClosed().subscribe((result) => {})
   }
 
   /**
@@ -505,7 +498,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async openShare() {
-    const story = await firstValueFrom(this.storyService.story$)
+    const story = this.story()
     const isAuthenticated = await firstValueFrom(this.storyService.isAuthenticated$)
     const result = await firstValueFrom(
       this._dialog

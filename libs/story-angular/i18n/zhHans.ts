@@ -31,6 +31,7 @@ export const ZhHans = {
       Description: '描述',
       Theme: {
         Title: '主题',
+        Default: '默认',
         System: '跟随系统',
         Light: '浅色模式',
         Dark: '深色模式',
@@ -854,6 +855,8 @@ export const ZhHans = {
     Copilot: {
       InstructionExecutionComplete: '指令执行完成',
       InstructionExecutionError: '指令执行错误',
+      StoryStyleCommandDesc: '请描述想要的故事样式',
+      StoryPageCommandDesc: '请描述新的故事页面',
       PredefinedPrompts: [
         '/story 设置为暗色主题',
         '/story-style 设置科技感渐变色背景颜色',

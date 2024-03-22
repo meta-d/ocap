@@ -15,7 +15,7 @@ import {
   signal,
   SimpleChanges
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { MatListModule, MatSelectionListChange } from '@angular/material/list'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
@@ -31,7 +31,6 @@ import {
   isEmpty,
   ISlicer
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { BehaviorSubject } from 'rxjs'
 import { combineLatestWith, debounceTime, map, startWith, tap } from 'rxjs/operators'
 import { NgmSmartFilterService } from '../smart-filter.service'
@@ -44,7 +43,7 @@ export interface MemberListOptions extends ControlOptions {
   hideSingleSelectionIndicator?: boolean
 }
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -155,13 +154,13 @@ export class NgmMemberListComponent implements OnChanges, ControlValueAccessor {
 
   onChange: (input: any) => void
   //
-  private loadingSub = this.smartFilterService.loading$.subscribe((loading) => {
+  private loadingSub = this.smartFilterService.loading$.pipe(takeUntilDestroyed()).subscribe((loading) => {
     this.loadingChanging.emit(loading)
   })
-  private serviceSub = this.smartFilterService.onAfterServiceInit().subscribe(() => {
+  private serviceSub = this.smartFilterService.onAfterServiceInit().pipe(takeUntilDestroyed()).subscribe(() => {
     this.smartFilterService.refresh()
   })
-  private slicerSub = this.slicer$.subscribe((slicer) => {
+  private slicerSub = this.slicer$.pipe(takeUntilDestroyed()).subscribe((slicer) => {
     this.onChange?.({
       ...slicer,
       dimension: this.dimension

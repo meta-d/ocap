@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core'
-
+import { ChangeDetectionStrategy, Component } from '@angular/core'
+import { routeAnimations } from '../../../@core'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-settings-tenant',
   templateUrl: 'tenant.component.html',
+  animations: [routeAnimations],
   styles: [
     `
       :host {
@@ -17,8 +18,4 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
     `
   ]
 })
-export class PACTenantComponent implements OnInit {
-  ngOnInit(): void {
-  }
-
-}
+export class PACTenantComponent {}

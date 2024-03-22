@@ -16,7 +16,7 @@ import { AgentType, DataSettings, DataSource, Dimension, DisplayBehaviour, Type 
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
 import { Meta, moduleMetadata, Story } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
-import { ControlsModule } from '../controls.module'
+import { NgmControlsModule } from '../controls.module'
 import { MemberTreeSelectOptions, NgmMemberTreeSelectComponent } from './tree-select.component'
 
 @Component({
@@ -59,7 +59,7 @@ export default {
       imports: [
         BrowserAnimationsModule,
         FormsModule,
-        ControlsModule,
+        NgmControlsModule,
         OcapCoreModule,
         TranslateModule.forRoot({
           missingTranslationHandler: {

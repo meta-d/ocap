@@ -1,0 +1,338 @@
+<div class="text-base font-semibold p-2">
+  <span>{{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
+
+  @if (copilotEngine?.name) {
+    <span>:</span><span>{{copilotEngine.name}}</span>
+  }
+</div>
+
+<div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
+    <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
+      @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
+        @for (message of conversation; track message.id) {
+            @switch (message.role) {
+                @case (CopilotChatMessageRoleEnum.Assistant) {
+                <div class="pl-2 pr-4 flex">
+                    <div class="flex-1 flex items-start overflow-auto">
+                        <div class="relative flex flex-col items-center shrink-0">
+                            @if (assistantAvatar) {
+                                @if ((message.status === 'thinking' || message.status === 'answering') && thinkingAvatar) {
+                                    <img class="w-8 h-8 pointer-events-none" [src]="thinkingAvatar"/>
+                                } @else {
+                                    <img class="w-8 h-8 pointer-events-none" [src]="assistantAvatar"/>
+                                }
+                            } @else {
+                                <div class="w-8 h-8 rounded-full text-xl text-center font-notoColorEmoji">🤖</div>
+                            }
+                        </div>
+                        <div class="flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group">
+                        @if (message.templateRef) {
+                          <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
+                        } @else {
+                            @if (message.content) {
+                                <div class="ngm-copilot-chat__message-content">
+                                    <markdown clipboard class="whitespace-pre-line"
+                                        [clipboardButtonTemplate]="buttonTemplate"
+                                        lineNumbers
+                                        [start]="5"
+                                        [data]="message.content"
+                                    ></markdown>
+
+                                    @if (showTokenizer$() && message.content) {
+                                      <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                                    }
+
+                                  @if (message.status === 'done') {
+                                    <div class="flex self-end lg:self-center justify-center lg:justify-start mt-0 -ml-1 visible">
+                                        <span class="" data-state="closed">
+                                            @if (messageCopied().includes(message.id)) {
+                                                <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                                    transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
+                                                >
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg" class="icon-md">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                                            d="M18.0633 5.67375C18.5196 5.98487 18.6374 6.607 18.3262 7.06331L10.8262 18.0633C10.6585 18.3093 10.3898 18.4678 10.0934 18.4956C9.79688 18.5234 9.50345 18.4176 9.29289 18.2071L4.79289 13.7071C4.40237 13.3166 4.40237 12.6834 4.79289 12.2929C5.18342 11.9023 5.81658 11.9023 6.20711 12.2929L9.85368 15.9394L16.6738 5.93664C16.9849 5.48033 17.607 5.36263 18.0633 5.67375Z"
+                                                            fill="currentColor"></path>
+                                                    </svg>
+                                                </button>
+                                            } @else {
+                                                <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                                    transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
+                                                    [matTooltip]="'Ngm.Copilot.Copy' | translate: {Default: 'Copy'}"
+                                                    (click)="copyMessage(message)">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+                                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C10.8954 4 10 4.89543 10 6H14C14 4.89543 13.1046 4 12 4ZM8.53513 4C9.22675 2.8044 10.5194 2 12 2C13.4806 2 14.7733 2.8044 15.4649 4H17C18.6569 4 20 5.34315 20 7V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V7C4 5.34315 5.34315 4 7 4H8.53513ZM8 6H7C6.44772 6 6 6.44772 6 7V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7C18 6.44772 17.5523 6 17 6H16C16 7.10457 15.1046 8 14 8H10C8.89543 8 8 7.10457 8 6Z" fill="currentColor"></path>
+                                                    </svg>
+                                                </button>
+                                            }
+                                        </span>
+                                        
+                                        <span class="" data-state="closed">
+                                            <button class="p-1 rounded-md text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                            text-neutral-400 hover:text-neutral-900 transition-colors duration-100 dark:hover:text-neutral-300"
+                                            [matTooltip]="'Ngm.Copilot.Regenerate' | translate: {Default: 'Regenerate'}"
+                                            (click)="regenerate(message)"
+                                            >
+                                                <div class="flex items-center gap-1.5 text-xs">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 2.5C5.05228 2.5 5.5 2.94772 5.5 3.5V5.07196C7.19872 3.47759 9.48483 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C7.1307 21.5 3.11828 17.8375 2.565 13.1164C2.50071 12.5679 2.89327 12.0711 3.4418 12.0068C3.99033 11.9425 4.48712 12.3351 4.5514 12.8836C4.98798 16.6089 8.15708 19.5 12 19.5C16.1421 19.5 19.5 16.1421 19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C9.7796 4.5 7.7836 5.46469 6.40954 7H9C9.55228 7 10 7.44772 10 8C10 8.55228 9.55228 9 9 9H4.5C3.96064 9 3.52101 8.57299 3.50073 8.03859C3.49983 8.01771 3.49958 7.99677 3.5 7.9758V3.5C3.5 2.94772 3.94771 2.5 4.5 2.5Z" fill="currentColor"></path></svg>
+                                                </div>
+                                            </button>
+                                        </span>
+                                    </div>
+                                  }
+                                </div>
+                            }
+                            @if (message.error) {
+                              <div class="ngm-copilot-chat__message-content text-red-400">
+                                <span class="font-notoColorEmoji">🙈</span>
+                                <span>{{ message.error }}</span>
+                              </div>
+                            }
+                        }
+        
+                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                                (click)="deleteMessage(message)">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                }
+                @case (CopilotChatMessageRoleEnum.User) {
+                    <div class="pl-4 flex">
+                        <div class="flex-1 flex items-start justify-end overflow-auto">
+                            <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
+                                @if (message.templateRef) {
+                                    <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
+                                } @else {
+                                    @if (message.data) {
+                                        <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+                                            [columns]="message.data['columns']"
+                                            [data]="message.data['content']"
+                                            paging
+                                            [pageSizeOptions]="[10, 20, 50, 100]"
+                                        ></ngm-table>
+                                    } @else {
+                                        <div class="flex items-center gap-1 mb-[2px]">
+                                          @if (showTokenizer$() && message.content) {
+                                            <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
+                                          }
+                                          @if (message.command) {
+                                            <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{message.command}}</span>
+                                          }
+                                        </div>
+                                        <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
+                                            <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
+                                            focus-visible:bg-white dark:focus-visible:bg-black"
+                                                [attr.contenteditable]="true"
+                                                (focus)="onMessageFocus()"
+                                            >{{ message.content }}</div>
+                                        </div>
+                                        <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                                            (click)="resubmitMessage(message, msgContent.textContent)">
+                                            {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                                        </button>
+                                    }
+                                }
+            
+                                <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                                    (click)="deleteMessage(message)">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </div>
+                            
+                            <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
+                        </div>
+                    </div>
+                }
+                @case (CopilotChatMessageRoleEnum.Info) {
+                <div class="pl-4 flex">
+                    <div class="flex-1 flex items-start justify-end overflow-auto">
+                        <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
+                            {{ message.content }}
+                        </div>
+                    </div>
+                </div>
+                }
+            }
+        }
+
+        @if (!last) {
+          <mat-divider class="pb-4"></mat-divider>
+        }
+      }
+
+        <div class="flex-1 flex flex-col justify-center items-center gap-1">
+        @if (!conversations()?.length) {
+            <div class="text-lg drop-shadow-md">
+                <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
+            </div>
+            <div class="text-sm font-light opacity-50">
+                <span class="font-bold">Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
+            </div>
+        }
+        </div>
+    </div>
+
+    <ngm-scroll-back #scrollBack class="block absolute bottom-0 left-1/2" [class.animate-bounce]="answering()"
+        [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
+</div>
+
+<div class="relative m-3 border rounded-lg shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800"
+    [class.ngm-colpilot__active]="isFoucs(userInput)"
+>
+    <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
+
+    <div class="flex flex-col p-2" >
+        <textarea #userInput matInput
+            id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
+            [placeholder]="_placeholder || ('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'})"
+            [formControl]="promptControl"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+            cdkAutosizeMaxRows="8"
+            (keydown)="triggerFun($event, autoPrompts)"
+
+            [matAutocomplete]="autoPrompts"
+            matAutocompletePosition="above"
+            >
+        </textarea>
+
+        <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__compact"
+            autoActiveFirstOption hideSingleSelectionIndicator
+            (optionActivated)="onPromptActivated($event)"
+            (opened)="suggestionsOpened$.next(true)"
+            (closed)="suggestionsOpened$.next(false)"
+        >
+        @for (command of filteredCommands();  track command.prompt) {
+            <mat-option [value]="'/'+command.name+' '+(command.example || '')" [title]="command.description">
+                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300">
+                    /{{command.name}}
+                </span>
+                
+                @if (command.example) {
+                    <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
+                        [ngmHighlight]="prompt()"
+                        [content]="command.example"
+                        customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
+                    >{{command.example}}</div>
+                } @else {
+                    <span class="ml-auto opacity-50">{{command.description}}</span>
+                }
+            </mat-option>
+        }
+        </mat-autocomplete>
+
+        <div class="shrink-0 flex items-center">
+            <button mat-icon-button type="button" displayDensity="cosy"
+                [popper]="copilotOptions"
+                [popperTrigger]="NgxPopperjsTriggers.click"
+                [popperHideOnClickOutside]="true"
+                [popperHideOnScroll]="true"
+                [popperHideOnMouseLeave]="false"
+                [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+            >
+                <mat-icon fontSet="material-icons-round">tune</mat-icon>
+            </button>
+
+            <span class="flex-1"></span>
+            
+            @if (answering()) {
+                <button type="button" class="rounded-full m-1 border-solid border-2 border-gray-950 p-1 dark:border-gray-200" aria-label="停止生成"
+                    (click)="stopGenerating()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-2 w-2 text-token-text-primary" height="16" width="16">
+                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2z" stroke-width="0"></path>
+                    </svg>
+                </button>
+            } @else {
+                <button class="rounded-full bg-black md:bottom-3 md:right-3 dark:hover:bg-white right-2 disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white p-0.5 border border-solid border-black dark:border-white dark:bg-white bottom-1.5 transition-colors" data-testid="send-button"
+                    [disabled]="!prompt()"
+                    (click)="askCopilotStream(promptControl.value)"
+                >
+                    <span class="" data-state="closed">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-white dark:text-black">
+                            <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@if (!copilotEnabled()) {
+  <ngm-copilot-enable class="z-[101]"
+    [title]="welcomeTitle || 'Metad Copilot'"
+    [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
+    (toConfig)="onEnableCopilot()"/>
+}
+
+<popper-content #copilotOptions class="z-[101]">
+    <div class="w-80 flex flex-col max-w-sm p-4 border-0 border-gray-200 rounded-lg shadow-lg
+        dark:bg-gray-800/20 dark:border-gray-700 bg-white/60 backdrop-blur-lg"
+        displayDensity="compact">
+        <div class="text-base mb-2">
+            {{ 'Ngm.Copilot.Options' | translate: {Default: 'Options'} }}
+        </div>
+
+        <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
+            <label class="shrink-0">
+                {{ 'Ngm.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
+            </label>
+
+            <ngm-search class="flex-1" [formControl]="searchModel"/>
+
+          @if (canListModels()) {
+            <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
+                <mat-icon>refresh</mat-icon>
+            </button>
+          }
+        </div>
+        
+        <mat-selection-list class="flex flex-col gap-2 max-h-[120px] overflow-auto"
+            [(ngModel)]="selectedModel"
+            [multiple]="false"
+            (ngModelChange)="changeSelectedModel($event)">
+          @for (model of models(); track model.id) {
+            <mat-list-option [value]="model.id" class="rounded-md">
+                {{model.name}}
+            </mat-list-option>
+          }
+        </mat-selection-list>
+
+        <label class="pt-4 font-notoColorEmoji">Temperature:<span matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>
+        <mat-slider color="accent" min="0" max="2" step="0.1" value="1" discrete>
+            <input matSliderThumb [(ngModel)]="temperature">
+        </mat-slider>
+        
+        <label class="pt-4 font-notoColorEmoji">Choices:<span matTooltip="How many chat completion choices to generate for each input message.">💡</span></label>
+        <mat-slider color="accent" min="1" max="10" step="1" value="1" discrete>
+            <input matSliderThumb [(ngModel)]="n">
+        </mat-slider>
+
+        <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages" (click)="clear()">
+            {{ 'Ngm.Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
+        </button>
+    </div>
+</popper-content>
+
+<ng-template #buttonTemplate>
+    <!-- <button mat-flat-button displayDensity="compact" class="ngm-rounded-full"
+        (click)="run($event)">run</button> -->
+    <button #copyButton mat-flat-button displayDensity="compact" class="ngm-rounded-full" (click)="onCopy(copyButton)">
+      @if ($any(copyButton).copied) {
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M18.0633 5.67375C18.5196 5.98487 18.6374 6.607 18.3262 7.06331L10.8262 18.0633C10.6585 18.3093 10.3898 18.4678 10.0934 18.4956C9.79688 18.5234 9.50345 18.4176 9.29289 18.2071L4.79289 13.7071C4.40237 13.3166 4.40237 12.6834 4.79289 12.2929C5.18342 11.9023 5.81658 11.9023 6.20711 12.2929L9.85368 15.9394L16.6738 5.93664C16.9849 5.48033 17.607 5.36263 18.0633 5.67375Z" fill="currentColor">
+            </path>
+        </svg>
+      } @else {
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C10.8954 4 10 4.89543 10 6H14C14 4.89543 13.1046 4 12 4ZM8.53513 4C9.22675 2.8044 10.5194 2 12 2C13.4806 2 14.7733 2.8044 15.4649 4H17C18.6569 4 20 5.34315 20 7V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V7C4 5.34315 5.34315 4 7 4H8.53513ZM8 6H7C6.44772 6 6 6.44772 6 7V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7C18 6.44772 17.5523 6 17 6H16C16 7.10457 15.1046 8 14 8H10C8.89543 8 8 7.10457 8 6Z" fill="currentColor"></path>
+        </svg>
+      }
+    </button>
+</ng-template>

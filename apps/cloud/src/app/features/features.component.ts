@@ -1,6 +1,19 @@
 import { Location } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, Renderer2, ViewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnInit,
+  Renderer2,
+  ViewChild,
+  effect,
+  inject,
+  signal
+} from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
+import { MatDrawerMode, MatSidenav, MatSidenavContainer } from '@angular/material/sidenav'
 import {
   Event,
   NavigationCancel,
@@ -10,18 +23,20 @@ import {
   Router,
   RouterEvent
 } from '@angular/router'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { TranslateService } from '@ngx-translate/core'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
 import { isNotEmpty, nonNullable } from '@metad/core'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
+import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatestWith, firstValueFrom } from 'rxjs'
 import { filter, map, startWith, tap } from 'rxjs/operators'
-import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import {
   AbilityActions,
+  AnalyticsFeatures,
+  AnalyticsFeatures as AnalyticsFeaturesEnum,
   AnalyticsPermissionsEnum,
   EmployeesService,
   FeatureEnum,
@@ -30,21 +45,17 @@ import {
   IUser,
   MenuCatalog,
   PermissionsEnum,
-  routeAnimations,
+  RolesEnum,
   SelectorService,
   Store,
-  AnalyticsFeatures as AnalyticsFeaturesEnum,
-  AnalyticsFeatures,
-  RolesEnum
+  routeAnimations
 } from '../@core'
-import { AppService } from '../app.service'
-import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
-import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { StoryCreationComponent } from '../@shared'
-import { MatDrawerMode, MatSidenav } from '@angular/material/sidenav'
+import { AppService } from '../app.service'
+import { ModelCreationComponent } from './semantic-model/creation/creation.component'
+import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
+import { CopilotEngine } from '@metad/copilot'
 
-
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-features',
@@ -57,14 +68,18 @@ export class FeaturesComponent implements OnInit {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
   AbilityActions = AbilityActions
-  
-  @ViewChild('sidenav') sidenav: MatSidenav
 
+  readonly #destroyRef = inject(DestroyRef)
+
+  @ViewChild('sidenav') sidenav: MatSidenav
+  @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
+
+  copilotEngine: CopilotEngine | null = null
   sidenavMode = 'over' as MatDrawerMode
+  sidenavOpened = false
   isEmployee: boolean
   organization: IOrganization
   user: IUser
-  menu: PacMenuItem[] = []
 
   links = [
     {
@@ -81,22 +96,20 @@ export class FeaturesComponent implements OnInit {
     }
   ]
   activeLink = 'home'
-  isMobile = false
-  zIndex = 0
+  readonly isMobile = this.appService.isMobile
   get isAuthenticated() {
     return !!this.store.user
   }
   assetsSearch = ''
-
+  readonly fullscreenIndex$ = toSignal(this.appService.fullscreenIndex$)
   public readonly isAuthenticated$ = this.store.user$
   public readonly navigation$ = this.appService.navigation$.pipe(
     filter(nonNullable),
     combineLatestWith(this.translateService.stream('PAC.KEY_WORDS')),
     map(([navigation, i18n]) => {
-
       let catalogName: string
       let icon: string
-      switch(navigation.catalog) {
+      switch (navigation.catalog) {
         case MenuCatalog.Project:
           catalogName = i18n?.['Project'] ?? 'Project'
           icon = 'auto_stories'
@@ -128,32 +141,40 @@ export class FeaturesComponent implements OnInit {
     })
   )
 
-  isCollapsed = true
-  isCollapsedHidden = false
+  get isCollapsed() {
+    return this.sidenavOpened && this.sidenavMode === 'side'
+  }
 
   assetsInit = false
-  showIntelligent = false
-  loading = false
-  isDark$ = this.appService.isDark$
+  copilotDrawerOpened = false
+  readonly loading = signal(false)
 
-  public readonly copilotEnabled$ = this.appService.copilotEnabled$
+  readonly title = this.appService.title
+  readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
+  readonly user$ = toSignal(this.store.user$)
 
-  // Is mobile event listener
-  private _isMobileSub = this.appService.isMobile$.subscribe((isMobile) => {
-    this.isMobile = isMobile
-    if (isMobile) {
-      this.isCollapsedHidden = isMobile
-    }
-  })
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly menus = signal<PacMenuItem[]>([])
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effects)
+  |--------------------------------------------------------------------------
+  */
   private _userSub = this.store.user$
     .pipe(
       filter((user: IUser) => !!user),
+      takeUntilDestroyed()
     )
     .subscribe((value) => {
       this.checkForEmployee()
       this.logger?.debug(value)
     })
-  private _sidebarContentIndexSub = this.appService.fullscreenIndex$.subscribe((fullscreenIndex) => this.zIndex = fullscreenIndex)
+
   constructor(
     public readonly appService: AppService,
     private readonly employeeService: EmployeesService,
@@ -178,6 +199,15 @@ export class FeaturesComponent implements OnInit {
           this.sidenav.close()
         }
       })
+    effect(() => {
+      if (this.store.fixedLayoutSider()) {
+        this.sidenavMode = 'side'
+        this.sidenavOpened = true
+      } else {
+        this.sidenavMode = 'over'
+        this.sidenavOpened = false
+      }
+    })
   }
 
   async ngOnInit() {
@@ -189,10 +219,10 @@ export class FeaturesComponent implements OnInit {
         map((permissions) => permissions.map(({ permission }) => permission)),
         tap((permissions) => this.ngxPermissionsService.loadPermissions(permissions)),
         combineLatestWith(this.translateService.onLangChange.pipe(startWith(null))),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe(([permissions]) => {
-        this.menu = this.getMenuItems()
+        this.menus.set(this.getMenuItems())
         this.loadItems(this.selectorService.showSelectors(this.router.url).showOrganizationShortcuts)
         this._cdr.detectChanges()
       })
@@ -232,14 +262,17 @@ export class FeaturesComponent implements OnInit {
   }
 
   loadItems(withOrganizationShortcuts: boolean) {
-    this.menu = this.menu.map((item) => {
-      this.refreshMenuItem(item, withOrganizationShortcuts)
-      return item
+    // ??
+    this.menus.update((menus) => {
+      return menus.map((item) => {
+        this.refreshMenuItem(item, withOrganizationShortcuts)
+        return item
+      })
     })
   }
 
   refreshMenuItem(item, withOrganizationShortcuts) {
-    item.title = this.getTranslation('PAC.MENU.'+item.data.translationKey, {Default: item.data.translationKey})
+    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
     if (item.data.permissionKeys || item.data.hide) {
       const anyPermission = item.data.permissionKeys
         ? item.data.permissionKeys.reduce((permission, key) => {
@@ -271,15 +304,6 @@ export class FeaturesComponent implements OnInit {
     }
   }
 
-  getTranslation(prefix: string, params?: Object) {
-    let result = ''
-    this.translateService.get(prefix, params).subscribe((res) => {
-      result = res
-    })
-
-    return result
-  }
-
   checkForEmployee() {
     const { tenantId, id: userId } = this.store.user
     this.employeeService.getEmployeeByUserId(userId, [], { tenantId }).then(({ success }) => {
@@ -287,8 +311,19 @@ export class FeaturesComponent implements OnInit {
     })
   }
 
-  toggleInsight() {
-    this.appService.toggleInsight()
+  toggleSidenav(sidenav: MatSidenavContainer) {
+    if (this.sidenavMode === 'over') {
+      this.sidenavMode = 'side'
+      setTimeout(() => {
+        sidenav.ngDoCheck()
+      }, 200)
+      this.store.setFixedLayoutSider(true)
+    } else {
+      this.sidenav.toggle()
+      setTimeout(() => {
+        this.store.setFixedLayoutSider(false)
+      }, 1000)
+    }
   }
 
   onLink(item) {
@@ -313,26 +348,20 @@ export class FeaturesComponent implements OnInit {
   // Shows and hides the loading spinner during RouterEvent changes
   navigationInterceptor(event: RouterEvent): void {
     if (event instanceof NavigationStart) {
-      this.loading = true
+      this.loading.set(true)
     }
     if (event instanceof NavigationEnd) {
-      this.loading = false
-      // this.isCollapsedHidden = false
+      this.loading.set(false)
       if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.Project,
+          catalog: MenuCatalog.Project
         })
-      }
-      else
-      if (event.url.match(/^\/project/g)) {
+      } else if (event.url.match(/^\/project/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.Stories,
+          catalog: MenuCatalog.Stories
         })
-      }
-      else if (event.url.match(/^\/story/g)) {
-        // this.isCollapsedHidden = true
-      }
-      else if (event.url.match(/^\/models/g)) {
+      } else if (event.url.match(/^\/story/g)) {
+      } else if (event.url.match(/^\/models/g)) {
         // this.appService.setCatalog({
         //   catalog: MenuCatalog.Models,
         //   id: !event.url.match(/^\/models$/g)
@@ -344,20 +373,19 @@ export class FeaturesComponent implements OnInit {
         })
       } else if (event.url.match(/^\/indicator-app/g)) {
         this.appService.setCatalog({
-          catalog: MenuCatalog.IndicatorApp,
+          catalog: MenuCatalog.IndicatorApp
         })
-        // this.isCollapsedHidden = true
       } else {
-        this.appService.setCatalog({catalog: null})
+        this.appService.setCatalog({ catalog: null })
       }
     }
 
     // Set loading state to false in both of the below events to hide the spinner in case a request fails
     if (event instanceof NavigationCancel) {
-      this.loading = false
+      this.loading.set(false)
     }
     if (event instanceof NavigationError) {
-      this.loading = false
+      this.loading.set(false)
     }
 
     this._cdr.detectChanges()
@@ -368,10 +396,10 @@ export class FeaturesComponent implements OnInit {
   }
 
   onMenuClicked(event, isMobile) {
-    this.isCollapsed = true
-    if (isMobile) {
-      this.isCollapsedHidden=true
-    }
+    // this.isCollapsed = true
+    // if (isMobile) {
+    //   this.isCollapsedHidden = true
+    // }
   }
 
   toggleDark() {
@@ -397,7 +425,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home',
             data: {
               translationKey: 'Today',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -406,7 +434,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/catalog',
             data: {
               translationKey: 'Catalog',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -415,7 +443,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/trending',
             data: {
               translationKey: 'Trending',
-              featureKey: FeatureEnum.FEATURE_DASHBOARD,
+              featureKey: FeatureEnum.FEATURE_DASHBOARD
             }
           },
           {
@@ -424,7 +452,7 @@ export class FeaturesComponent implements OnInit {
             link: '/home/insight',
             data: {
               translationKey: 'Insights',
-              featureKey: AnalyticsFeatures.FEATURE_INSIGHT,
+              featureKey: AnalyticsFeatures.FEATURE_INSIGHT
             }
           }
         ]
@@ -460,7 +488,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Story',
               featureKey: AnalyticsFeatures.FEATURE_STORY,
               permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
-            },
+            }
           },
           {
             title: 'Indicators',
@@ -470,7 +498,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Indicators',
               featureKey: AnalyticsFeatures.FEATURE_STORY,
               permissionKeys: [AnalyticsPermissionsEnum.STORIES_VIEW]
-            },
+            }
           }
         ]
       },
@@ -491,39 +519,9 @@ export class FeaturesComponent implements OnInit {
         link: '/indicator-app',
         data: {
           translationKey: 'Indicator App',
-          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR,
+          featureKey: AnalyticsFeaturesEnum.FEATURE_INDICATOR
         }
       },
-      // {
-      //   title: 'Insight',
-      //   icon: 'message',
-      //   pathMatch: 'prefix',
-      //   data: {
-      //     translationKey: 'MENU.INSIGHT',
-      //     featureKey: AnalyticsFeatures.FEATURE_INSIGHT
-      //   },
-      //   children: [
-      //     {
-      //       title: 'Viwer',
-      //       icon: 'message',
-      //       link: '/insight',
-      //       data: {
-      //         translationKey: 'MENU.INSIGHT_VIEWER',
-      //         featureKey: AnalyticsFeatures.FEATURE_INSIGHT_VIEWER
-      //       }
-      //     },
-      //     {
-      //       title: 'Admin',
-      //       icon: 'import',
-      //       link: '/insight/admin',
-      //       data: {
-      //         translationKey: 'MENU.INSIGHT_ADMIN',
-      //         featureKey: AnalyticsFeatures.FEATURE_INSIGHT_ADMIN
-      //       }
-      //     }
-      //   ]
-      // },
-
       // {
       //   title: 'Subscription',
       //   icon: 'alert',
@@ -568,14 +566,6 @@ export class FeaturesComponent implements OnInit {
           featureKey: FeatureEnum.FEATURE_SETTING
         },
         children: [
-          // {
-          //   title: 'General',
-          //   matIcon: 'settings',
-          //   link: '/settings/general',
-          //   data: {
-          //     translationKey: 'General'
-          //   }
-          // },
           {
             title: 'Account',
             matIcon: 'account_circle',
@@ -688,7 +678,7 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Tenant',
               permissionKeys: [RolesEnum.SUPER_ADMIN]
             }
-          },
+          }
         ]
       }
     ]
@@ -702,10 +692,13 @@ export class FeaturesComponent implements OnInit {
   }
 
   async createStory() {
-    const story = await firstValueFrom(this.dialog.open(StoryCreationComponent, {
-      data: {
-      }
-    }).afterClosed())
+    const story = await firstValueFrom(
+      this.dialog
+        .open(StoryCreationComponent, {
+          data: {}
+        })
+        .afterClosed()
+    )
 
     if (story) {
       this.router.navigate(['story', story.id, 'edit'])
@@ -713,7 +706,7 @@ export class FeaturesComponent implements OnInit {
   }
 
   async createModel() {
-    const model =await firstValueFrom(this.dialog.open(ModelCreationComponent, {data: {}}).afterClosed())
+    const model = await firstValueFrom(this.dialog.open(ModelCreationComponent, { data: {} }).afterClosed())
     if (model) {
       this.router.navigate(['models', model.id])
     }
@@ -721,5 +714,9 @@ export class FeaturesComponent implements OnInit {
 
   async createIndicator() {
     this.router.navigate(['project', 'indicators', 'new'])
+  }
+
+  toEnableCopilot() {
+    this.router.navigate(['settings', 'copilot'])
   }
 }

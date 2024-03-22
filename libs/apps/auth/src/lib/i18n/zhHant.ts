@@ -19,6 +19,9 @@ export const ZhHant = {
     SignupSuccess: '🎉 註冊成功, 請檢測你的郵箱並點擊鏈接激活賬號',
     Varify: '驗證',
     VarifyEmailSuccess: '郵箱驗證成功, 請前往登錄',
+    Required: '必填',
+    AtLeast8Characters: '至少 8 個字符',
+    Mismatch: '密碼不匹配',
     ACCEPT_INVITE: {
       HEADING: '接受 {{ organizationName }} 的邀請',
       SUB_HEADING: '完善註冊信息 {{ email }}',

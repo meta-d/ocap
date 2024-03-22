@@ -5,12 +5,10 @@ import { MatButtonModule } from '@angular/material/button'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { ResizerModule } from '@metad/ocap-angular/common'
 import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { NgmSlicerPipe } from '@metad/ocap-angular/slicers'
 import { cloneDeep, C_MEASURES } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'ngm-ocap-explorer',
@@ -27,7 +25,7 @@ import { UntilDestroy } from '@ngneat/until-destroy'
     CommonModule,
     FormsModule,
     MatButtonModule,
-    FormulaModule,
+    NgmFormulaModule,
     ResizerModule,
     NgmEntitySchemaComponent,
     AnalyticalCardModule,

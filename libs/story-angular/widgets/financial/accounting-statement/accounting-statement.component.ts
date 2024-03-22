@@ -1,16 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core'
 import { compact, isNil } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { AbstractStoryWidget, DEFAULT_DIGITS_INFO, nonNullable } from '@metad/core'
 import { Observable, distinctUntilChanged, filter, map } from 'rxjs'
 import { AccountingStatementDataService } from './accounting-statement-data.service'
 import { AccountingStatementOptions, ArrowDirection, IndicatorOption } from './types'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 interface IndicatorData extends IndicatorOption {
   data: unknown
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-widget-accounting-statement',
@@ -80,14 +79,14 @@ export class AccountingStatementComponent extends AbstractStoryWidget<Accounting
   ngOnInit() {
     this.dataService
       .selectResult()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         this.setExplains(result.data)
       })
-    this.dataSettings$.pipe(distinctUntilChanged(), untilDestroyed(this)).subscribe((value) => {
+    this.dataSettings$.pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       this.dataService.dataSettings = value
     })
-    this.options$.pipe(filter(nonNullable), distinctUntilChanged(), untilDestroyed(this)).subscribe((options) => {
+    this.options$.pipe(filter(nonNullable), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef)).subscribe((options) => {
       this.dataService.patchState({
         options: options,
         indicatorId: options.indicators?.[0]?.id
@@ -96,7 +95,7 @@ export class AccountingStatementComponent extends AbstractStoryWidget<Accounting
 
     this.dataService
       .onAfterServiceInit()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.refresh()
       })
@@ -104,7 +103,7 @@ export class AccountingStatementComponent extends AbstractStoryWidget<Accounting
     // 订阅来自 `WidgetService` 的刷新事件进行刷新数据
     this.widgetService
       ?.onRefresh()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.refresh()
       })

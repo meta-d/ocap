@@ -1,5 +1,8 @@
+import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import {
+  afterNextRender,
+  afterRender,
   ChangeDetectorRef,
   Component,
   computed,
@@ -7,48 +10,48 @@ import {
   ElementRef,
   HostBinding,
   inject,
+  Injector,
   Input,
   OnInit,
   Renderer2,
+  runInInjectionContext,
   signal,
   ViewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { CdkDragEnd } from '@angular/cdk/drag-drop'
-import { ResizerModule } from '@metad/ocap-angular/common'
-import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { AgentType, isEqual } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
 import { IsDirty, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { AgentType, isEqual } from '@metad/ocap-core'
+import { StoryExplorerModule } from '@metad/story'
 import {
   EmulatedDevice,
   NxStoryService,
   Story,
-  StoryCopilotEngineService,
   StoryOptions,
   StoryPointType,
   WidgetComponentType
 } from '@metad/story/core'
-import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
-import { NxStoryComponent, NxStoryModule } from '@metad/story/story'
-import { StoryExplorerModule } from '@metad/story'
+import { injectStoryPageCommand, injectStoryStyleCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import { delay, distinctUntilChanged, filter, map, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
-import { MaterialModule } from '../../../@shared'
+import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
+import { effectStoryTheme } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 
-
 type ResponsiveBreakpointType = {
-  name: string;
-  width: number;
-  margin: number;
+  name: string
+  width: number
+  margin: number
 }
 
 @Component({
@@ -62,7 +65,9 @@ type ResponsiveBreakpointType = {
     ReversePipe,
 
     OcapCoreModule,
+    NgmDrawerTriggerComponent,
     ResizerModule,
+
     NxStoryModule,
     NxDesignerModule,
     StoryToolbarComponent,
@@ -74,13 +79,13 @@ type ResponsiveBreakpointType = {
   host: {
     class: 'ngm-story-designer'
   },
-  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService, StoryCopilotEngineService]
+  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService]
 })
-export class StoryComponent implements OnInit, IsDirty {
+export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
-  private coreService = inject(NxCoreService)
+  // private coreService = inject(NxCoreService)
   public readonly toolbarService = inject(StoryToolbarService)
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
@@ -90,13 +95,17 @@ export class StoryComponent implements OnInit, IsDirty {
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
-  private renderer = inject(Renderer2)
+  // private renderer = inject(Renderer2)
   private _cdr = inject(ChangeDetectorRef)
+  readonly #injector = inject(Injector)
 
   @Input() storyId: string
-  @Input() editable = true
 
-  @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent;
+  @HostBinding('class.editable')
+  @Input()
+  editable = true
+
+  @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent
   @ViewChild('storyContainer') storyContainer: ElementRef<any>
   @ViewChild(NxStoryComponent) storyComponent: NxStoryComponent
   @HostBinding('class.ngm-story--fullscreen')
@@ -164,6 +173,14 @@ export class StoryComponent implements OnInit, IsDirty {
 
   /**
   |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #styleCommand = injectStoryStyleCommand(this.storyService)
+  #pageCommand = injectStoryPageCommand(this.storyService)
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
@@ -206,71 +223,46 @@ export class StoryComponent implements OnInit, IsDirty {
     }
   })
 
-  private themeSub = this.storyService.themeChanging$.pipe(delay(300), takeUntilDestroyed(),).subscribe(async ([prev, current]) => {
-    const story = await firstValueFrom(this.storyService.story$)
-    const key = story.key || story.id
-    const echartsTheme = story.options?.echartsTheme
-
-    if (prev === 'light' || !prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-default')
-    }
-    if (prev) {
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'ngm-theme-' + prev)
-      this.renderer.removeClass(this.storyContainer.nativeElement, prev)
-      this.renderer.removeClass(this.storyContainer.nativeElement, 'dark')
-    }
-    if (current) {
-      this.renderer.addClass(this.storyContainer.nativeElement, 'ngm-theme-' + current)
-      this.renderer.addClass(this.storyContainer.nativeElement, current)
-      if (current === 'thin') {
-        this.renderer.addClass(this.storyContainer.nativeElement, 'dark')
-      }
-      if (echartsTheme?.[current]) {
-        this.coreService.changeTheme(`${current}-${key}`)
-      } else {
-        this.coreService.changeTheme(current)
-      }
-    }
-  })
-
   private _emulatedDeviceSub = this.storyService.storyOptions$
     .pipe(
       map((options) => options?.emulatedDevice),
-      takeUntilDestroyed(),
+      takeUntilDestroyed()
     )
     .subscribe((emulatedDevice) => {
       this.emulatedDevice = emulatedDevice
     })
 
   private echartsThemeSub = this.storyService.echartsTheme$
-    .pipe(
-      takeUntilDestroyed(),
-      filter(Boolean),
-      distinctUntilChanged(isEqual)
-    )
+    .pipe(takeUntilDestroyed(), filter(Boolean), distinctUntilChanged(isEqual))
     .subscribe(async (echartsTheme) => {
       const story = await firstValueFrom(this.storyService.story$)
-      const key = story.key || story.id;
-      ['light', 'dark', 'thin'].forEach((theme) => {
+      const key = story.key || story.id
+      ;['light', 'dark', 'thin'].forEach((theme) => {
         if (echartsTheme?.[theme]) {
           registerTheme(`${theme}-${key}`, echartsTheme[theme])
         }
       })
     })
 
-  private isAuthenticatedSub = this.appService.isAuthenticated$
-    .pipe(takeUntilDestroyed())
-    .subscribe((isAuthenticated) => {
-      this.storyService.setAuthenticated(isAuthenticated)
-    })
-
   constructor() {
+    super()
+
+    effect(() => {
+      this.storyService.setAuthenticated(this.appService.isAuthenticated())
+    }, { allowSignalWrites: true })
+
     effect(() => {
       const models = this.models()
       models?.forEach((model) => {
         if (model?.agentType === AgentType.Wasm) {
           registerWasmAgentModel(this.wasmAgent, model)
         }
+      })
+    })
+
+    afterNextRender(() => {
+      runInInjectionContext(this.#injector, () => {
+        effectStoryTheme(this.storyContainer)
       })
     })
   }
@@ -330,7 +322,9 @@ export class StoryComponent implements OnInit, IsDirty {
   }
 
   updateEmulatedDevice(emulatedDevice: Partial<EmulatedDevice>) {
-    this.storyService.updateStoryOptions({ emulatedDevice: { ...(this.emulatedDevice ?? {} as EmulatedDevice), ...emulatedDevice, name: 'Custom' } })
+    this.storyService.updateStoryOptions({
+      emulatedDevice: { ...(this.emulatedDevice ?? ({} as EmulatedDevice)), ...emulatedDevice, name: 'Custom' }
+    })
   }
   onEmulatedDeviceWidthChange(width: number) {
     this.updateEmulatedDevice({
@@ -351,13 +345,11 @@ export class StoryComponent implements OnInit, IsDirty {
     this.showExplorer.set(false)
     this._router.navigate([], {
       relativeTo: this.route,
-      queryParams: {explore: null, widgetKey: null},
+      queryParams: { explore: null, widgetKey: null },
       queryParamsHandling: 'merge' // remove to replace all query params by provided
     })
 
     if (event) {
-      console.log(`Update story widget: ${this.pageKey()}`, event)
-
       this.storyService.updateWidget({
         pageKey: this.pageKey(),
         widgetKey: this.widgetKey(),

@@ -1,15 +1,13 @@
 import { Injectable } from '@angular/core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
-import { FormlyFieldConfig } from '@ngx-formly/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { WidgetComponentType } from '@metad/story/core'
 import { CLASS_NAME_COL6, DataSettingsSchemaService, FORMLY_ROW } from '@metad/story/designer'
 import { WidgetComponentType as IndicatorCardWidgetType } from '@metad/story/widgets/indicator-card'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { map, startWith } from 'rxjs/operators'
 
-@UntilDestroy()
 @Injectable()
 export class TabGroupSchemaService extends DataSettingsSchemaService {
-
   getSchema() {
     return this.translate.stream('Story.Widgets').pipe(
       map((i18n) => {
@@ -84,7 +82,7 @@ export class TabGroupSchemaService extends DataSettingsSchemaService {
                     key: 'stretchTabs',
                     type: 'checkbox',
                     props: {
-                      label: i18n.TabGroup?.StretchTabs ?? 'Stretch Tabs',
+                      label: i18n.TabGroup?.StretchTabs ?? 'Stretch Tabs'
                     }
                   },
                   {
@@ -169,7 +167,7 @@ export class TabGroupSchemaService extends DataSettingsSchemaService {
                           field.props.designer = field.parent.formControl.valueChanges.pipe(
                             startWith(field.parent.model),
                             map((value) => value?.type),
-                            untilDestroyed(this)
+                            takeUntilDestroyed(this.destroyRef)
                           )
                         }
                       }

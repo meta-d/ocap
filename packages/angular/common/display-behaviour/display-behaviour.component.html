@@ -1,5 +1,5 @@
-<ng-container [ngSwitch]="displayBehaviour">
-  <ng-container *ngSwitchCase="DISPLAY_BEHAVIOUR.descriptionAndId">
+@switch (displayBehaviour) {
+  @case (DISPLAY_BEHAVIOUR.descriptionAndId) {
     <span class="ngm-display-behaviour__option-text" [title]="option.caption || option.label">
       <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of text">{{
         item.value
@@ -10,22 +10,22 @@
         item.value
       }}</span>
     </span>
-  </ng-container>
-  <ng-container *ngSwitchCase="DISPLAY_BEHAVIOUR.descriptionOnly">
+  }
+  @case(DISPLAY_BEHAVIOUR.descriptionOnly) {
     <span class="ngm-display-behaviour__option-text" [title]="option.caption || option.label">
       <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of text">{{
         item.value
       }}</span>
     </span>
-  </ng-container>
-  <ng-container *ngSwitchCase="DISPLAY_BEHAVIOUR.idOnly">
+  }
+  @case(DISPLAY_BEHAVIOUR.idOnly) {
     <span class="ngm-display-behaviour__option-value" [title]="option.key ?? option.value">
       <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of value">{{
         item.value
       }}</span>
     </span>
-  </ng-container>
-  <ng-container *ngSwitchCase="DISPLAY_BEHAVIOUR.idAndDescription">
+  }
+  @case(DISPLAY_BEHAVIOUR.idAndDescription) {
     <span class="ngm-display-behaviour__option-value" [title]="option.key ?? option.value">
       <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of value">{{
         item.value
@@ -36,20 +36,21 @@
         item.value
       }}</span>
     </span>
-  </ng-container>
+  }
+  @default {
+    <span class="ngm-display-behaviour__option-text" [title]="option.caption || option.label">
+      <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of text">{{
+        item.value
+      }}</span>
+    </span>
+    <span class="ngm-display-behaviour__option-value" [title]="option.key ?? option.value">
+      <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of value">{{
+        item.value
+      }}</span>
+    </span>
+  }
+}
 
-  <ng-container *ngSwitchDefault>
-    <span class="ngm-display-behaviour__option-text" [title]="option.caption || option.label">
-      <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of text">{{
-        item.value
-      }}</span>
-    </span>
-    <span class="ngm-display-behaviour__option-value" [title]="option.key ?? option.value">
-      <span [ngClass]="item.match ? 'ngm-display-behaviour__highlight' : ''" *ngFor="let item of value">{{
-        item.value
-      }}</span>
-    </span>
-  </ng-container>
-
-  <mat-icon *ngIf="option.selected" class="ngm-display-behaviour__selected" color="accent">done</mat-icon>
-</ng-container>
+@if (option.selected) {
+  <mat-icon class="ngm-display-behaviour__selected" color="accent">done</mat-icon>
+}

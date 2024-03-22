@@ -1,10 +1,7 @@
-import { isPlatformBrowser } from '@angular/common'
-import { HttpParams } from '@angular/common/http'
-import { Inject, Injectable, PLATFORM_ID, DebugElement, EventEmitter } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { HttpErrorResponse, HttpParams } from '@angular/common/http'
+import { DebugElement } from '@angular/core'
 import { isNil, negate, isEqual, isEmpty, merge, isString, includes } from 'lodash-es'
-import { Observable, Subject, Subscription, isObservable, of } from 'rxjs'
-import { filter, takeUntil, tap } from 'rxjs/operators'
+import { filter } from 'rxjs/operators'
 
 export const isNotNil = negate(isNil)
 export const filterNil = filter(negate(isNil))
@@ -198,24 +195,6 @@ export function getNodeSizeViaRange(range: Range, node: any): number {
 
   return width
 }
-/**
- *@hidden
- * Returns the actual size of the node content, using Canvas
- * ```typescript
- * let ctx = document.createElement('canvas').getContext('2d');
- * let column = this.grid.columnList.filter(c => c.field === 'ID')[0];
- *
- * let size = valToPxlsUsingCanvas(ctx, column.cells[0].nativeElement);
- * ```
- */
-// export function getNodeSizeViaCanvas(canvas2dCtx: any, node: any): number {
-//   const s = this.grid.document.defaultView.getComputedStyle(node)
-
-//   // need to set the font to get correct width
-//   canvas2dCtx.font = s.fontSize + ' ' + s.fontFamily
-
-//   return canvas2dCtx.measureText(node.textContent).width
-// }
 
 /**
  *@hidden
@@ -239,18 +218,18 @@ export function isFirefox(): boolean {
   return firefoxBrowser
 }
 
-/**
- * @hidden
- */
-@Injectable({ providedIn: 'root' })
-export class PlatformUtil {
-  public isBrowser: boolean = isPlatformBrowser(this.platformId)
+// /**
+//  * @hidden
+//  */
+// @Injectable({ providedIn: 'root' })
+// export class PlatformUtil {
+//   public isBrowser: boolean = isPlatformBrowser(this.platformId)
 
-  public isIOS =
-    this.isBrowser && /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+//   public isIOS =
+//     this.isBrowser && /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
-}
+//   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+// }
 
 /**
  * @hidden
@@ -306,25 +285,6 @@ export const SUPPORTED_KEYS = new Set([
   'esc',
 ])
 
-/**
- * @hidden
- * @internal
- *
- * Creates a new ResizeObserver on `target` and returns it as an Observable.
- * Run the resizeObservable outside angular zone, because it patches the MutationObserver which causes an infinite loop.
- * Related issue: https://github.com/angular/angular/issues/31712
- */
-export function resizeObservable(target: HTMLElement): Observable<ResizeObserverEntry[]> {
-  return new Observable((observer) => {
-    const instance = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-      observer.next(entries)
-    })
-    instance.observe(target)
-    const unsubscribe = () => instance.disconnect()
-    return unsubscribe
-  })
-}
-
 export function convertToBoolProperty(val: any): boolean {
   if (typeof val === 'string') {
     val = val.toLowerCase().trim()
@@ -351,18 +311,6 @@ export function click(
   } else {
     el.triggerEventHandler('click', eventObj)
   }
-}
-
-export function makeid(length) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-  const characters = chars + '0123456789'
-  const charactersLength = characters.length
-  // 首字母为英文字符
-  let result = chars.charAt(Math.floor(Math.random() * chars.length))
-  for (var i = 0; i < length - 1; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
-  }
-  return result
 }
 
 export const mkenum = <T extends { [index: string]: U }, U extends string>(x: T) => x;
@@ -431,29 +379,6 @@ function toSubParams(params: HttpParams, key: string, object: any) {
 }
 
 
-
-export function createEventEmitter<T>(
-  observable: Observable<T>,
-  options?: {
-    unsubscribe?: Observable<any>;
-    isAsync?: boolean;
-  },
-): EventEmitter<T> {
-  const { unsubscribe, isAsync } = options || {};
-
-  const emitter = new EventEmitter<T>(isAsync === true);
-
-  let obs = observable.pipe(tap(val => emitter.next(val)));
-
-  if (unsubscribe != null) {
-    obs = obs.pipe(takeUntil(unsubscribe));
-  }
-
-  obs.subscribe();
-
-  return emitter;
-}
-
 export function mergeOptions(obj1: unknown, ...objs: unknown[]) {
   return merge(obj1, ...objs.map(item => omitBlank(item)))
 }
@@ -472,46 +397,22 @@ export function omitBlank(obj) {
 }
 
 /**
- * Creates an effect.
- *
- * This effect is subscribed to throughout the lifecycle of the ComponentStore.
- * @param generator A function that takes an origin Observable input and
- *     returns an Observable. The Observable that is returned will be
- *     subscribed to for the life of the component.
- * @return A function that, when called, will trigger the origin Observable.
+ * Try get error message from any error object
  */
-export function effectAction<
-  // This type quickly became part of effect 'API'
-  ProvidedType = void,
-  // The actual origin$ type, which could be unknown, when not specified
-  OriginType extends
-    | Observable<ProvidedType>
-    | unknown = Observable<ProvidedType>,
-  // Unwrapped actual type of the origin$ Observable, after default was applied
-  ObservableType = OriginType extends Observable<infer A> ? A : never,
-  // Return either an empty callback or a function requiring specific types as inputs
-  ReturnType = ProvidedType | ObservableType extends void
-    ? () => void
-    : (
-        observableOrValue: ObservableType | Observable<ObservableType>
-      ) => Subscription
-  >(generator: (origin$: OriginType) => Observable<unknown>): ReturnType {
-    const _destroyed$ = takeUntilDestroyed()
-  const origin$ = new Subject<ObservableType>();
-  generator(origin$ as OriginType)
-    // tied to the lifecycle 👇 of ComponentStore
-    .pipe(_destroyed$)
-    .subscribe();
+export function getErrorMessage(err: any): string {
+  let error: string
+  if (typeof err === 'string') {
+    error = err
+  } else if (err instanceof HttpErrorResponse) {
+    error = err?.error?.message ?? err.message
+  } else if (err instanceof Error) {
+    error = err?.message
+  } else if (err?.error instanceof Error) {
+    error = err?.error?.message
+  } else if (err) {
+    // 实在没办法则转成 JSON string
+    error = JSON.stringify(err)
+  }
 
-  return (((
-    observableOrValue?: ObservableType | Observable<ObservableType>
-  ): Subscription => {
-    const observable$ = isObservable(observableOrValue)
-      ? observableOrValue
-      : of(observableOrValue);
-    return observable$.pipe(_destroyed$).subscribe((value) => {
-      // any new 👇 value is pushed into a stream
-      origin$.next(value as any);
-    });
-  }) as unknown) as ReturnType;
+  return error
 }

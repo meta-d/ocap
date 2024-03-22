@@ -1,8 +1,10 @@
+
+
 export enum PasswordStrengthEnum {
-    Tooweak = 'Tooweak',
-    Weak = 'Weak',
-    Medium = 'Medium',
-    Strong = 'Strong'
+  Tooweak = 'Tooweak',
+  Weak = 'Weak',
+  Medium = 'Medium',
+  Strong = 'Strong'
 }
 
 const PasswordStrengthOptions = [
@@ -63,7 +65,7 @@ const passwordStrength = (
     })
   }
 
-  const strength = {contains: null, length: null, value: null}
+  const strength = { contains: null, length: null, value: null }
 
   strength.contains = rules.filter((rule) => new RegExp(`${rule.regex}`).test(passwordCopy)).map((rule) => rule.message)
 
@@ -80,4 +82,4 @@ const passwordStrength = (
   return strength
 }
 
-export { passwordStrength, PasswordStrengthOptions }
+export { PasswordStrengthOptions, passwordStrength }

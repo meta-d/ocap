@@ -32,6 +32,9 @@ const ro = new ResizeObserver((entries) => {
   selector: 'ngm-splitter',
   templateUrl: './splitter.component.html',
   styleUrls: ['./splitter.component.scss'],
+  host: {
+    class: 'ngm-splitter',
+  }
 })
 export class SplitterComponent {
   private _type: SplitterType = SplitterType.Horizontal

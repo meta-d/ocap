@@ -1,11 +1,11 @@
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, Input, inject } from '@angular/core'
+import { Component, inject, input } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
-import { IOrganization, OrganizationsService, ScreenshotService } from '../../@core'
+import { IOrganization, OrganizationsService, ScreenshotService, Store } from '../../@core'
 import { UserPipe } from '../pipes'
 
 @Component({
@@ -13,21 +13,28 @@ import { UserPipe } from '../pipes'
   selector: 'pac-org-avatar-editor',
   templateUrl: './avatar-editor.component.html',
   styles: [``],
-  imports: [CommonModule, MatIconModule, CdkMenuModule, TranslateModule, UserPipe, DensityDirective, AppearanceDirective]
+  imports: [
+    CommonModule,
+    MatIconModule,
+    CdkMenuModule,
+    TranslateModule,
+    UserPipe,
+    DensityDirective,
+    AppearanceDirective
+  ]
 })
 export class OrgAvatarEditorComponent {
   private readonly screenshotService = inject(ScreenshotService)
   private readonly orgService = inject(OrganizationsService)
-  private readonly _cdr = inject(ChangeDetectorRef)
+  readonly #store = inject(Store)
 
-  @Input() org?: IOrganization
+  readonly org = input<IOrganization>()
 
   async uploadAvatar(event) {
     const file = (event.target as HTMLInputElement).files?.[0]
     const screenshot = await this.uploadScreenshot(file)
-    const org = await firstValueFrom(this.orgService.update(this.org.id, { imageUrl: screenshot.url }))
-    this.org = org
-    this._cdr.detectChanges()
+    const org = await firstValueFrom(this.orgService.update(this.org().id, { imageUrl: screenshot.url }))
+    this.#store.selectedOrganization = org
   }
 
   async uploadScreenshot(fileUpload: File) {
@@ -37,7 +44,8 @@ export class OrgAvatarEditorComponent {
   }
 
   async remove() {
-    this.org = await firstValueFrom(this.orgService.update(this.org.id, { imageUrl: null }))
-    this._cdr.detectChanges()
+    this.orgService.update(this.org().id, { imageUrl: null }).subscribe((org) => {
+      this.#store.selectedOrganization = org
+    })
   }
 }

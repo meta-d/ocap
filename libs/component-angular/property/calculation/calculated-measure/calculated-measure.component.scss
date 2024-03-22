@@ -57,7 +57,7 @@
         position: absolute;
         right: 0;
         border-radius: 2px;
-        @apply bg-gray-100;
+        @apply bg-gray-100 dark:bg-neutral-700;
       }
 
       &:not(.mdc-tab--active) {
@@ -86,12 +86,12 @@
 }
 
 .ngm-calculated-measure__helpers {
-  height: 100%;
+  --mdc-list-list-item-container-shape: theme('borderRadius.md');
+  @apply h-full;
 
   ngm-entity-member-select {
     flex: 1;
     min-width: 300px;
-    // min-height: 300px;
   }
 }
 

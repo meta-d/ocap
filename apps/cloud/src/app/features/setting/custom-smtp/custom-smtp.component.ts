@@ -1,10 +1,8 @@
 import { Component, inject } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { distinctUntilChanged, map } from 'rxjs'
 import { Store } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-tenant-custom-smtp',
   templateUrl: './custom-smtp.component.html',

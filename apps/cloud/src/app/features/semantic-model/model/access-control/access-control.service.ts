@@ -22,15 +22,17 @@ export class AccessControlStateService extends ComponentSubStore<IModelRole[], P
 
   // Updaters for Roles
   readonly addRole = this.updater((state, role: IModelRole) => {
-    const options = role.options ?? (role.type === 'union'
-    ? { name: '', roleUsages: [] }
-    : {
-        name: '',
-        schemaGrant: {
-          access: MDX.Access.all,
-          cubeGrants: []
-        }
-      })
+    const options =
+      role.options ??
+      (role.type === 'union'
+        ? { name: '', roleUsages: [] }
+        : {
+            name: '',
+            schemaGrant: {
+              access: MDX.Access.all,
+              cubeGrants: []
+            }
+          })
     state.push({
       ...role,
       options: options as MDX.Role,
@@ -72,4 +74,6 @@ export class AccessControlStateService extends ComponentSubStore<IModelRole[], P
       }
     })
   })
+
+  
 }

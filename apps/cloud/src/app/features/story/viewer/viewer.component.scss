@@ -1,6 +1,38 @@
-:host {
-  @apply relative h-full flex-1 max-w-full;
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
 
+// The prefix used to generate the fully qualified name for tokens in this file.
+$global-prefix: ngm;
+$prefix: (ngm, story-viewer);
+
+@function get-unthemable-tokens() {
+  @return (
+    container-rounded: var(--#{$global-prefix}-primary-container-rounded)
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    color-surface: var(--#{$global-prefix}-color-surface),
+    color-surface-container: var(--#{$global-prefix}-color-surface-container),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
+
+:host {
+  @include token-utils.create-token-values($prefix, get-token-slots());
+  @apply relative h-full flex-1 max-w-full;
+  
+  .pac-story-viewer__drawer {
+    --mat-sidenav-container-background-color: transparent;
+    --mat-sidenav-container-divider-color: transparent;
+  }
   &.pac-story-viewer.fullscreen {
     position: fixed;
     top: 0;
@@ -11,15 +43,20 @@
   }
 }
 
-.ngm-story {
-  width: 100%;
+@include token-utils.use-tokens($prefix, get-token-slots()) {
+  .pac-story-viewer__drawer-container {
+    --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(color-surface-container)});
+    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+  }
+  .mat-drawer-content {
+    background-color: var(#{token-utils.get-token-variable(color-surface)});
+    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+    @apply flex overflow-hidden;
+  }
 }
 
-.pac-story-viewer__anchor {
-  position: absolute;
-  bottom: 10px;
-  right: 0;
-  z-index: 1;
+.ngm-story {
+  width: 100%;
 }
 
 .pac-result {

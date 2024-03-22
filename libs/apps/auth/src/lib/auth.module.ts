@@ -70,9 +70,6 @@ export function nbOptionsFactory(options) {
     UserRegisterComponent,
     UserRegisterResultComponent,
     PacLogoutComponent,
-    PacMenuComponent,
-    PacMenuGroupComponent,
-
     ForgotPasswordComponent,
     ResetPasswordComponent,
     VarifyEmailComponent
@@ -99,7 +96,8 @@ export function nbOptionsFactory(options) {
 
     OcapCoreModule,
 
-    AcceptInviteModule
+    AcceptInviteModule,
+    PacMenuComponent
   ],
   exports: [
     PacAuthComponent,
@@ -108,7 +106,6 @@ export function nbOptionsFactory(options) {
     UserRegisterResultComponent,
     PacLogoutComponent,
     PacMenuComponent,
-    PacMenuGroupComponent
   ],
   providers: [
     PacAuthService,

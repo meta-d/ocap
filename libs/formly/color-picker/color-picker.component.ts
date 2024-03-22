@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ColorFormat } from '@ng-matero/extensions/colorpicker'
 import { FieldType } from '@ngx-formly/material/form-field'
 import { NgmColorInputComponent } from '@metad/components/form-field'
+import { DensityDirective } from '@metad/ocap-angular/core'
 
 @Component({
   standalone: true,
@@ -11,7 +12,7 @@ import { NgmColorInputComponent } from '@metad/components/form-field'
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './color-picker.component.html',
   styleUrls: ['./color-picker.component.scss'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgmColorInputComponent]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgmColorInputComponent, DensityDirective]
 })
 export class PACFormlyColorPickerComponent extends FieldType<any> {
   @HostBinding('class.pac-formly-color-picker') public _formlyColorPickerComponent = true

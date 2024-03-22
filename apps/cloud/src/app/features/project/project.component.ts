@@ -1,7 +1,7 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CdkTreeModule, FlatTreeControl } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, TemplateRef, ViewChild, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, ElementRef, TemplateRef, ViewChild, computed, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
@@ -9,7 +9,6 @@ import { Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, FlatTreeNode, TreeNodeInterface, hierarchize } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService, convertStory } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
@@ -40,6 +39,7 @@ import {
   Store,
   StoryStatusEnum,
   ToastrService,
+  routeAnimations,
   tryHttp
 } from '../../@core'
 import { MaterialModule, StoryCreationComponent } from '../../@shared'
@@ -48,8 +48,8 @@ import { AppService } from '../../app.service'
 import { ReleaseStoryDialog } from './release-story.component'
 import { SelectModelDialog } from './select-model.component'
 import { collectionId, treeDataSourceFactory } from './types'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -65,11 +65,12 @@ import { collectionId, treeDataSourceFactory } from './types'
     ButtonGroupDirective,
     NgmCommonModule,
     AppearanceDirective,
-    NgmTreeSelectComponent
+    NgmTreeSelectComponent,
   ],
   selector: 'pac-project',
   templateUrl: 'project.component.html',
-  styleUrls: ['project.component.scss']
+  styleUrls: ['project.component.scss'],
+  animations: [ routeAnimations ]
 })
 export class ProjectComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
@@ -93,16 +94,20 @@ export class ProjectComponent extends TranslationBaseComponent {
   dataSource: MatTreeFlatDataSource<TreeNodeInterface<any>, FlatTreeNode<any>>
   treeControl: FlatTreeControl<FlatTreeNode<any>>
 
+  /**
+   * @deprecated use projectSignal
+   */
   private _project$ = new BehaviorSubject<IProject>(null)
+  /**
+   * @deprecated use projectSignal
+   */
   get project(): IProject {
     return this._project$.value
-  }
-  get isDefaultProject() {
-    return !this.project?.id || this.project?.id === DefaultProject.id
   }
   get isOwner() {
     return this.store.user?.id === this.project?.ownerId
   }
+  
   moveToCollectionId: string
   public bookmarks = []
   public unfoldBookmarks = false
@@ -111,7 +116,8 @@ export class ProjectComponent extends TranslationBaseComponent {
   public modelsExpand = false
 
   // Is mobile
-  public readonly isMobile$ = this.appService.isMobile$
+  readonly isMobile = this.appService.isMobile
+  sideMenuOpened = !this.isMobile()
 
   public readonly projectId$ = this.store.selectedProject$.pipe(
     map((project) => (project?.id === DefaultProject.id ? null : project?.id)),
@@ -139,7 +145,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         this.storiesService.getAllByProject(projectId)
       ])
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -152,7 +158,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         labelProperty: 'name'
       })
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -185,17 +191,28 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly projectSignal = toSignal(this._project$)
+  readonly isDefaultProject = computed(() => {
+    return !this.projectSignal()?.id || this.projectSignal()?.id === DefaultProject.id
+  })
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private treeNodesSub = this.collectionTree$.subscribe((tree) => {
+  private treeNodesSub = this.collectionTree$.pipe(takeUntilDestroyed()).subscribe((tree) => {
     this.dataSource.data = tree
   })
   private _bookmarksSub = this.projectId$
     .pipe(
       switchMap((projectId) =>
         this.favoritesService.getProjectBookmarks(projectId, BusinessType.STORY, ['story', 'story.createdBy'])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((bookmarks) => {
       this.bookmarks = bookmarks
@@ -209,9 +226,10 @@ export class ProjectComponent extends TranslationBaseComponent {
           'models',
           'indicators',
           'indicators.businessArea',
-          'certifications'
+          'certifications',
         ])
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((project) => {
       this._project$.next(project)

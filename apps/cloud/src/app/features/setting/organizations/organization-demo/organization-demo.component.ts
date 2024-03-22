@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject, signal } from '@angular/core'
-import { FormControl } from '@angular/forms'
+import { FormControl, Validators } from '@angular/forms'
 import { TranslateModule } from '@ngx-translate/core'
 import {
   OrganizationDemoNetworkEnum,
@@ -9,7 +9,7 @@ import {
   getErrorMessage
 } from 'apps/cloud/src/app/@core'
 import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
-import { firstValueFrom } from 'rxjs'
+import { Subscription } from 'rxjs'
 import { EditOrganizationComponent } from '../edit-organization/edit-organization.component'
 
 @Component({
@@ -22,26 +22,39 @@ import { EditOrganizationComponent } from '../edit-organization/edit-organizatio
 export class OrganizationDemoComponent extends TranslationBaseComponent {
   OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
 
-  public editOrganizationComponent = inject(EditOrganizationComponent)
-  private orgsService = inject(OrganizationsService)
-  private readonly _toastrService = inject(ToastrService)
+  readonly editOrganizationComponent = inject(EditOrganizationComponent)
+  readonly orgsService = inject(OrganizationsService)
+  readonly _toastrService = inject(ToastrService)
 
   source = new FormControl(OrganizationDemoNetworkEnum.github)
+  fileUrl = new FormControl('', [Validators.required])
 
-  private readonly organization = this.editOrganizationComponent.organization
-  public readonly loading = signal(false)
-  public readonly generated = signal(false)
+  readonly organization$ = this.editOrganizationComponent.organization
+  readonly loading = signal(false)
+  readonly generated = signal(false)
 
-  async generate() {
-    try {
-      this.loading.set(true)
-      await firstValueFrom(this.orgsService.demo(this.organization().id, {source: this.source.value}))
-      this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED', { Default: 'Demo generated' })
-      this.loading.set(false)
-      this.generated.set(true)
-    } catch (err) {
-      this._toastrService.error(getErrorMessage(err))
-      this.loading.set(false)
-    }
+  #genSub: Subscription = null
+
+  /**
+   * Generate or regenerate demo data for current organization
+   */
+  generate() {
+    this.loading.set(true)
+    this.#genSub = this.orgsService.demo(this.organization$().id, { source: this.source.value ?? this.fileUrl.value }).subscribe({
+      next: () => {
+        this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED', { Default: 'Demo generated' })
+        this.loading.set(false)
+        this.generated.set(true)
+      },
+      error: (err) => {
+        this._toastrService.error(getErrorMessage(err))
+        this.loading.set(false)
+      }
+    })
+  }
+
+  cancel() {
+    this.#genSub?.unsubscribe()
+    this.loading.set(false)
   }
 }

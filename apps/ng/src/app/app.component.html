@@ -1,33 +1,52 @@
+<mat-toolbar color="primary">
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <!-- <span>{{ title$ | async }}</span> -->
+    <span class="example-spacer"></span>
 
-<div fxLayout="column" fxLayoutAlign="start stretch" [class.nx-theme-dark]="dark">
-    <mat-toolbar color="primary">
-        <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
-            <mat-icon>menu</mat-icon>
-        </button>
-        <!-- <span>{{ title$ | async }}</span> -->
-        <span class="example-spacer"></span>
+    <button mat-button routerLink="./charts" routerLinkActive="mat-accent">Charts</button>
+    <button mat-button routerLink="./covid" routerLinkActive="mat-accent">Covid</button>
+    <button mat-button routerLink="./foodmart" routerLinkActive="mat-accent">FoodMart</button>
+    <button mat-button routerLink="./query" routerLinkActive="mat-accent">Query</button>
+    <button mat-button routerLink="./explorer" routerLinkActive="mat-accent">Explorer</button>
+    <button mat-button routerLink="./langchain" routerLinkActive="mat-accent">LangChain</button>
+    <button mat-button routerLink="./copilot" routerLinkActive="mat-primary">Copilot</button>
 
-        <button mat-button routerLink="./charts" routerLinkActive="mat-accent">Charts</button>
-        <button mat-button routerLink="./covid" routerLinkActive="mat-accent">Covid</button>
-        <button mat-button routerLink="./foodmart" routerLinkActive="mat-accent">FoodMart</button>
-        <button mat-button routerLink="./query" routerLinkActive="mat-accent">Query</button>
-        <button mat-button routerLink="./explorer" routerLinkActive="mat-accent">Explorer</button>
-        <button mat-button routerLink="./langchain" routerLinkActive="mat-accent">LangChain</button>
+    <span style="flex: 1;"></span>
 
-        <span style="flex: 1;"></span>
-
-        <div fxLayout="row" fxLayoutAlign="space-around center" *ngIf="status$ | async as status">
+    <div class="flex items-center gap-2">
+        @if(status()) {
             <div>
-                <span>{{ status.status }}</span>
-                <span *ngIf="status.payload">{{ status.payload | number }} %</span>
+                <span>{{ status().status }}</span>
+                <span *ngIf="status().payload">{{ status().payload | number }} %</span>
             </div>
-            <button mat-icon-button [matTooltip]="error">
-                <mat-icon>support_agent</mat-icon>
-            </button>
-        </div>
-    </mat-toolbar>
-    
-    <div class="app-content" >
+        }
+        
+        <button mat-icon-button [matTooltip]="error">
+            <mat-icon>support_agent</mat-icon>
+        </button>
+
+        <mat-slide-toggle [(ngModel)]="isDark">Dark</mat-slide-toggle>
+
+        <button mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
+    </div>
+</mat-toolbar>
+
+<mat-sidenav-container class="example-sidenav-container"
+    [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
+    <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" opened
+        [fixedInViewport]="mobileQuery.matches" fixedTopGap="56">
+        <ngm-copilot-chat class="h-full w-80"
+            [user]="{
+                name: '元数信息',
+                imageUrl: '/assets/images/logo@3x.png'
+            }"
+        ></ngm-copilot-chat>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+        <div class="app-content" >
         <!-- <div fxLayout="row">
             <ngm-smart-filter [dataSettings]="dataSettings"
                 [options]="smartFilterOptions"
@@ -151,8 +170,7 @@
             ></ngm-smart-select>
         </div>
 -->
-
-        <router-outlet #o="outlet"></router-outlet>
-        
-    </div>
-</div>
+            <router-outlet #o="outlet"></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,5 +1,7 @@
-<mat-drawer-container class="w-full h-full" [hasBackdrop]="isMobile$ | async" [autosize]="true">
-  <mat-drawer #drawer [mode]="(isMobile$ | async) ? 'over' : 'side'" [opened]="!(isMobile$ | async)" class="w-64" ngmResizer [resizerWidth]="230">
+<mat-drawer-container class="w-full h-full" [autosize]="true">
+  <mat-drawer #drawer class="w-64" [mode]="isMobile() ? 'over' : 'side'"
+    [(opened)]="sideMenuOpened"
+    ngmResizer [resizerWidth]="230">
     <div class="p-4">
       <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
         [routerLink]="['/project']"
@@ -181,20 +183,31 @@
         routerLinkActive #rla4="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
         [class.active]="rla4.isActive"
       >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">trending_up</mat-icon>
-        <span >
+        <mat-icon fontSet="material-icons-outlined" class="shrink-0">trending_up</mat-icon>
+        <span class="ml-2">
           {{ 'PAC.Project.Indicators' | translate: {Default: 'Indicators'} }}
         </span>
       </div>
 
-      <div *ngIf="!isDefaultProject" class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
-        [routerLink]="['members']"
-        routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
-        [class.active]="rla5.isActive"
-      >
-        <mat-icon fontSet="material-icons-outlined" class="shrink-0 text-slate-500">people</mat-icon>
-        <span class="">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
-      </div>
+      @if (!isDefaultProject()) {
+        <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+          [routerLink]="['members']"
+          routerLinkActive #rla5="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+          [class.active]="rla5.isActive"
+        >
+          <mat-icon fontSet="material-icons-outlined" class="shrink-0">people</mat-icon>
+          <span class="ml-2">{{ 'PAC.Project.Members' | translate: {Default: 'Members'} }}</span>
+        </div>
+
+        <div class="pac-project__router-link p-2 pr-0 flex justify-start items-center group cursor-pointer rounded-md"
+          [routerLink]="['files']"
+          routerLinkActive #rla6="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+          [class.active]="rla6.isActive"
+        >
+          <mat-icon fontSet="material-icons-outlined" class="shrink-0">attach_file</mat-icon>
+          <span class="ml-2">{{ 'PAC.Project.Files' | translate: {Default: 'Files'} }}</span>
+        </div>
+      }
     </div>
 
     <div ngmResizerBar resizerBarPosition="right"
@@ -202,13 +215,10 @@
         cdkDragLockAxis="x"
     ></div>
   </mat-drawer>
-  <mat-drawer-content [ngStyle]="{'z-index': (isMobile$ | async) ? 0 : 10}">
-    <button mat-icon-button displayDensity="cosy" class="pac-project__anchor absolute -left-4 top-4 bg-white dark:bg-slate-500"
-      (click)="drawer.toggle()"
-    >
-      <mat-icon [class.rotate-180]="drawer.opened" class="duration-300">chevron_right</mat-icon>
-    </button>
+  <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
     <router-outlet #o="outlet"></router-outlet>
+
+    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
   </mat-drawer-content>
 </mat-drawer-container>
 

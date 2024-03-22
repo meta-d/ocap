@@ -7,3 +7,36 @@
 .mat-mdc-select {
   @apply text-xs;
 }
+::ng-deep {
+  formly-field {
+    .pac-formly-select [ngmsuffix] {
+      .mat-mdc-progress-spinner {
+        @apply hidden;
+      }
+    }
+
+    &.formly-loader {
+      .pac-formly-select [ngmsuffix] {
+        .mat-mdc-progress-spinner {
+          @apply block;
+        }
+      }
+    }
+  }
+
+  .mat-autocomplete-panel.pac-formly-select__autocomplete {
+    @apply mt-2;
+  }
+  .cdk-overlay-pane.mat-autocomplete-panel-above {
+    .mat-autocomplete-panel.pac-formly-select__autocomplete {
+      @apply mb-2;
+    }
+  }
+  .pac-formly-select {
+    .mat-mdc-select {
+      .mat-mdc-select-arrow-wrapper {
+        height: unset;
+      }
+    }
+  }
+}

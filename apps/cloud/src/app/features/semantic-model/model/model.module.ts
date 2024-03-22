@@ -1,18 +1,30 @@
+import { CdkMenuModule } from '@angular/cdk/menu'
 import { ScrollingModule } from '@angular/cdk/scrolling'
+import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { ContentLoaderModule } from '@ngneat/content-loader'
-import { FormlyModule } from '@ngx-formly/core'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { NxActionStripModule } from '@metad/components/action-strip'
 import { NxEditorModule } from '@metad/components/editor'
-import { NxTableModule } from '@metad/components/table'
+import {
+  NgmCommonModule,
+  NgmDrawerTriggerComponent,
+  NgmTableComponent,
+  ResizerModule,
+  SplitterModule
+} from '@metad/ocap-angular/common'
+import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
+import { ContentLoaderModule } from '@ngneat/content-loader'
+import { FormlyModule } from '@ngx-formly/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { NgmCommonModule, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
-import { CopilotChatComponent, CreatedByPipe, MaterialModule, UserPipe } from '../../../@shared'
+import { NgxPopperjsModule } from 'ngx-popperjs'
+import { CreatedByPipe, MaterialModule, UserPipe } from '../../../@shared'
+import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
-import { ModelRoutingModule } from './model-routing.module'
 import { ModelComponent } from './model.component'
+import { ModelOverviewComponent } from './overview/overview.component'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import {
   CalculatedMemberAttributesSchema,
@@ -31,58 +43,45 @@ import {
 } from './schema/index'
 import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
-import { ModelOverviewComponent } from './overview/overview.component'
-import { ModelUploadComponent } from '../upload/upload.component'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { NgxPopperjsModule } from 'ngx-popperjs'
-import { TranslateModule } from '@ngx-translate/core'
-import { CommonModule } from '@angular/common'
-import { LetDirective } from '@ngrx/component'
-import { CdkMenuModule } from '@angular/cdk/menu'
-import { registerModelCommands } from './copilot'
-
-registerModelCommands()
+import { ModelRoutingModule } from './routing'
 
 @NgModule({
-  declarations: [
-    ModelComponent,
-    ModelOverviewComponent,
-    ModelCreateEntityComponent,
-    ModelPreferencesComponent,
-  ],
+  declarations: [ModelComponent, ModelOverviewComponent, ModelCreateEntityComponent, ModelPreferencesComponent],
   imports: [
-    CommonModule,
     ModelRoutingModule,
+    CommonModule,
     FormsModule,
     MaterialModule,
     CdkMenuModule,
     TranslateModule,
     ReactiveFormsModule,
     ScrollingModule,
-    ContentLoaderModule,
-    FormlyModule,
-    NgxPopperjsModule,
-    LetDirective,
+    
     NxEditorModule,
-    NxTableModule,
     CreatedByPipe,
     UserPipe,
-    
     NxActionStripModule,
     NxDesignerModule,
     ModelUploadComponent,
-    CopilotChatComponent,
 
     // OCAP Modules
     ResizerModule,
     SplitterModule,
-    MonacoEditorModule.forRoot(),
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
     NgmCommonModule,
+    NgmCopilotChatComponent,
+    NgmTableComponent,
+    NgmDrawerTriggerComponent,
 
     // Thirdparty
+    MonacoEditorModule.forRoot(),
+    ContentLoaderModule,
+    FormlyModule,
+    NgxPopperjsModule,
   ],
   providers: [
+    provideOcapCore(),
+    // NgmCopilotService,
     StoryModelResolver,
     {
       provide: STORY_DESIGNER_COMPONENT,

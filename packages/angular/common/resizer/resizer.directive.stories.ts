@@ -18,7 +18,7 @@ export default {
 const Template: Story<any> = (args: any) => ({
   props: args,
   template: `
-<mat-drawer-container class="example-container" autosize>
+<mat-drawer-container class="ngm-drawer-container" autosize>
   <mat-drawer mode="side" [position]="drawerPosition" opened ngmResizer [resizerWidth]="200">Drawer content
     <div ngmResizerBar [resizerBarPosition]="barPosition" cdkDrag></div>
   </mat-drawer>

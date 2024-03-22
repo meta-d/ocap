@@ -1,0 +1,19 @@
+// popper
+.ngxp__container.ngxp__animation {
+  @apply p-0 shadow-none border-none z-10;
+
+  .ngxp__inner {
+    @apply shadow-lg overflow-hidden rounded-lg dark:shadow-neutral-800;
+  }
+
+  .ngxp__arrow::before {
+    @apply shadow-md;
+    background-color: var(--ngm-card-bg-color);
+  }
+
+  &[data-popper-placement='bottom-end'] {
+    .ngxp__arrow {
+      right: 12px;
+    }
+  }
+}

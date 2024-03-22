@@ -9,9 +9,9 @@ import {
   Inject,
   OnDestroy,
   OnInit,
-  Renderer2,
   ViewChild,
   ViewContainerRef,
+  effect,
   inject,
   signal
 } from '@angular/core'
@@ -20,7 +20,6 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { AbilityModule } from '@casl/angular'
 import { NgmDSCoreService, OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
 import { AgentType } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
@@ -43,13 +42,13 @@ import {
 } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
-import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { StoryScales, downloadStory } from '../types'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { StoryExplorerModule } from '@metad/story'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -61,7 +60,9 @@ import { StoryExplorerModule } from '@metad/story'
     TranslateModule,
     OcapCoreModule,
     NxStoryModule,
-    StoryExplorerModule
+    StoryExplorerModule,
+
+    NgmCommonModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-story-viewer',
@@ -97,9 +98,10 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   dataTimer: number
   pageTimer: number
 
+  // Is mobile
+  readonly isMobile = toSignal(this.appService.isMobile$)
+  sideMenuOpened = false
   globalFilterBarOpened = false
-
-  expandLess = true
 
   get storyOptions() {
     return this.story?.options
@@ -138,11 +140,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _authSub = this.appService.isAuthenticated$.subscribe((isAuthenticated) => {
-    this.storyService.setAuthenticated(isAuthenticated)
-  })
-
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   
   private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
@@ -151,6 +148,8 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
       this.explore.set(JSON.parse(decodeURIComponent(window.escape(window.atob(params.explore)))))
     }
   })
+
+  readonly #effectRef = effectStoryTheme(this._elementRef)
   
   constructor(
     public appService: AppService,
@@ -161,12 +160,12 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     private toastr: ToastrService,
     private route: ActivatedRoute,
     private _router: Router,
-    private renderer: Renderer2,
-    private coreService: NxCoreService,
     @Inject(DOCUMENT) private document: any,
     private _elementRef: ElementRef
   ) {
     super()
+
+    effect(() => this.storyService.setAuthenticated(this.appService.isAuthenticated()), { allowSignalWrites: true })
   }
 
   ngOnInit() {
@@ -366,6 +365,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
   
   @HostBinding('class.pac-story-viewer')
+  @HostBinding('class.ngm-story-container')
   get _storyViewerComponent() {
     return true
   }

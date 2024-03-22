@@ -16,7 +16,6 @@ import { ThemePalette } from '@angular/material/core'
 import { MatTabGroup, MatTabHeaderPosition } from '@angular/material/tabs'
 import { NgmAppearance } from '@metad/ocap-angular/core'
 import { DataSettings, IAdvancedFilter, ISlicer, nonNullable } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { IStoryWidget } from '@metad/core'
 import { WidgetComponentType } from '@metad/story/core'
 import { WidgetComponentType as IndicatorCardWidgetType } from '@metad/story/widgets/indicator-card'
@@ -62,7 +61,6 @@ export interface WidgetSwiperState {
   options: NxWidgetTabsetOptions
 }
 
-@UntilDestroy()
 @Component({
   selector: 'pac-story-widget-tabgroup',
   templateUrl: './tabset.component.html',

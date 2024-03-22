@@ -1,4 +1,4 @@
-name: Publish Package to npmjs
+name: Publish npm packages
 
 on:
   push:
@@ -8,12 +8,13 @@ on:
     workflows: ["Build"]
     types: [requested]
     branches:
-      - 'main'
       - 'develop'
+      - 'main'
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && !contains(github.ref, 'beta')
     environment:
       name: prod
     steps:
@@ -27,23 +28,67 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: yarn
       - run: yarn build
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public --tag latest
+        working-directory: ./dist/packages/copilot
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/store
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/echarts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public --tag latest
         working-directory: ./dist/packages/angular
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public --tag next
+      - run: npm publish --access public --tag latest
+        working-directory: ./dist/packages/xmla
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-beta:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.ref, 'beta')
+    environment:
+      name: prod
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: yarn
+      - run: yarn build
+      - run: npm publish --access public --tag beta
+        working-directory: ./dist/packages/copilot
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        working-directory: ./dist/packages/store
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        working-directory: ./dist/packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        working-directory: ./dist/packages/echarts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
+        working-directory: ./dist/packages/angular
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --tag beta
         working-directory: ./dist/packages/xmla
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,9 @@
+:host {
+  @apply relative;
+}
+
+.ping-badge {
+  span {
+    background-color: var(--ngm-color-secondary);
+  }
+}

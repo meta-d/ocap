@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, InjectFlags, Input, Output, ViewChildren, inject } from '@angular/core'
-import { SplitterType } from '@metad/ocap-angular/common'
+import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
 import {
   AggregationRole,
   CalculatedMember,
@@ -17,6 +17,13 @@ import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
+import { TranslateModule } from '@ngx-translate/core'
+import { PropertyDimensionComponent } from '../dimension/dimension.component'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NxActionStripModule } from '@metad/components/action-strip'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -26,10 +33,22 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
  * @returns cube 双向绑定的输出类型
  */
 @Component({
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-cube-structure',
   templateUrl: 'cube-structure.component.html',
-  styleUrls: ['cube-structure.component.scss']
+  styleUrls: ['cube-structure.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    TranslateModule,
+    NgmCommonModule,
+
+    PropertyDimensionComponent,
+    NgmEntityPropertyComponent,
+    NxActionStripModule
+  ]
 })
 export class ModelCubeStructureComponent {
   ModelDesignerType = ModelDesignerType
@@ -42,7 +61,7 @@ export class ModelCubeStructureComponent {
   private readonly modelService = inject(SemanticModelService)
   public readonly cubeState = inject(ModelEntityService)
   private readonly _cdr = inject(ChangeDetectorRef)
-  private readonly _logger? = inject(NGXLogger, InjectFlags.Optional)
+  private readonly _logger = inject(NGXLogger)
 
   @Input() modelType: MODEL_TYPE
   @Input() editable: boolean
@@ -69,11 +88,6 @@ export class ModelCubeStructureComponent {
     })
   )
 
-  public readonly measures$ = this.cubeState.measures$.pipe(map((measures) => measures?.map((measure) => ({
-    ...measure,
-    role: AggregationRole.measure
-  } as PropertyMeasure))))
-
   public readonly calculatedMembers = toSignal(this.cubeState.calculatedMembers$.pipe(
     map((members) => {
       return members?.map((member) => ({
@@ -86,6 +100,17 @@ export class ModelCubeStructureComponent {
 
   /** The selection for checklist */
   checklistSelection = new SelectionModel<string>()
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly measures$ = toSignal(this.cubeState.measures$.pipe(map((measures) => measures?.map((measure) => ({
+    ...measure,
+    role: AggregationRole.measure
+  } as PropertyMeasure)))))
+
+  readonly selectedProperty = toSignal(this.cubeState.select((state) => state.selectedProperty))
 
   /**
   |--------------------------------------------------------------------------
@@ -108,6 +133,10 @@ export class ModelCubeStructureComponent {
 
   trackById(index: number, el: any) {
     return el.name
+  }
+
+  isSelected(key: string) {
+    return this.selectedProperty() === key
   }
 
   /** Select the category so we can insert the new item. */
@@ -172,6 +201,8 @@ export class ModelCubeStructureComponent {
     return item.data?.type === SemanticModelEntityType.DIMENSION ||
       // Dimension from source table columns
       item.dropContainer.id === 'list-table-measures' || item.dropContainer.id === 'list-table-dimensions'
+      // db tables
+      || item.dropContainer.id === 'pac-model-entitysets'
   }
 
   measureEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
@@ -191,10 +222,27 @@ export class ModelCubeStructureComponent {
       // 将 Measure 变成 Dimension
       // this.cubeState.moveFromMeasureToDim(previousItem)
     } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
-      this.cubeState.newDimension({
-        index,
-        column: previousItem
-      })
+      // Insert as a level in hierarchy if it above a level node
+      if (event.container.getSortedItems()[event.currentIndex]?.data.role === AggregationRole.level) {
+        for (let i = event.currentIndex - 1; i >= 0; i--) {
+          if (event.container.getSortedItems()[i]?.data.role === AggregationRole.hierarchy) {
+            this.cubeState.newLevel({
+              id: event.container.getSortedItems()[i].data.__id__,
+              index: index - i - 1,
+              name: previousItem.name,
+              column: previousItem.name,
+              caption: previousItem.caption,
+            })
+            return
+          }
+        }
+      } else {
+        // Add as a dimension
+        this.cubeState.newDimension({
+          index,
+          column: previousItem
+        })
+      }
     }
 
     // Add shared dimension into this cube
@@ -211,6 +259,14 @@ export class ModelCubeStructureComponent {
           source: previousItem.dimension.name,
           foreignKey: previousItem.dimension.foreignKey
         }
+      })
+    }
+
+    // Add db table as dimension
+    if (event.previousContainer.id === 'pac-model-entitysets') {
+      this.cubeState.newDimension({
+        index,
+        table: previousItem
       })
     }
   }
@@ -230,5 +286,4 @@ export class ModelCubeStructureComponent {
       this.cubeState.newCalculatedMeasure({index: event.currentIndex, column: event.item.data.name})
     }
   }
-
 }

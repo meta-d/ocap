@@ -3,29 +3,20 @@ import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { RouterModule } from '@angular/router'
+import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { HighlightDirective } from '@metad/components/core'
-import formatRelative from 'date-fns/formatRelative'
+import { formatRelative } from 'date-fns'
 import { getDateLocale, IStory } from '../../../@core'
 import { LazyImgDirective } from '../../directives/lazy-img.directive'
 import { CreatedByPipe } from '../../pipes'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-story-card',
   templateUrl: 'story-card.component.html',
-  styles: [
-    `
-      :host {
-        flex: 1;
-        max-width: 100%;
-      }
-    `
-  ],
+  styleUrl: 'story-card.component.scss',
   imports: [
     CommonModule,
     RouterModule,
@@ -38,7 +29,7 @@ import { CreatedByPipe } from '../../pipes'
     CreatedByPipe,
 
     LazyImgDirective,
-    HighlightDirective
+    NgmHighlightDirective
   ]
 })
 export class StoryCardComponent {

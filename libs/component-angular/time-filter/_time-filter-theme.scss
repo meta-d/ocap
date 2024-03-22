@@ -17,10 +17,20 @@
   .ngm-density__cosy.ngm-today-filter,
   .ngm-density__cosy .ngm-today-filter {
     @include mat.form-field-density(-3);
+    .mat-datepicker-toggle {
+      .mdc-icon-button {
+        --mdc-icon-button-icon-size: 20px;
+      }
+    }
   }
   .ngm-density__compact.ngm-today-filter,
   .ngm-density__compact .ngm-today-filter {
     @include mat.form-field-density(-5);
+    .mat-datepicker-toggle {
+      .mdc-icon-button {
+        --mdc-icon-button-icon-size: 16px;
+      }
+    }
   }
 }
 

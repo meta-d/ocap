@@ -1,63 +1,51 @@
 <div class="flex flex-1 max-w-full" cdkDropListGroup>
-    <div class="ngm-theme-dark dark w-[400px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group" >
-      <div class="w-full flex justify-start items-center my-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
-        <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
-        <span class="text-lg pointer-events-none">
-          {{ 'PAC.KEY_WORDS.CalculatedFormula' | translate: {Default: 'Calculated Formula'} }}
-        </span>
-        <span *ngIf="measure?.caption">({{measure.caption}})</span>
-      </div>
-  
-      <div class="flex-1 flex flex-col justify-start items-stretch overflow-auto">
-        <ngm-search class="my-2" [formControl]="searchControl"></ngm-search>
-  
-        <mat-accordion cdkDropList [cdkDropListData]="FUNCTIONS">
-          <mat-expansion-panel hideToggle *ngFor="let f of functions$ | async" class="mat-elevation-z" style="background: transparent">
-              <mat-expansion-panel-header>
-                  <mat-panel-title cdkDrag
-                      [cdkDragData]="f.insertText">
-                      <span [highlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
-                          [content]="f.label">
-                      </span>
-                  </mat-panel-title>
-              </mat-expansion-panel-header>
-  
-              <ng-template matExpansionPanelContent>
-                <div class="my-2 text-xs font-mono italic text-slate-100">
-                  {{f.expression}}
-                </div>
-                <markdown [textContent]="f.documentation" class="text-slate-200"></markdown>
-              </ng-template>
-          </mat-expansion-panel>
-        </mat-accordion>
-          
-      </div>
-  
-      <div class="flex">
-        <div ngmButtonGroup>
-          <button mat-raised-button color="accent" [matDialogClose]="formula">
-            {{ ('COMPONENTS.COMMON.Apply' | translate: {Default: 'Apply'}) }}
-          </button>
-  
-          <button mat-button mat-dialog-close cdkFocusInitial >
-            {{ ('COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'}) }}
-          </button>
-        </div>
+  <div class="ngm-theme-dark dark w-[400px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group" >
+    <div class="w-full flex justify-start items-center my-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+      <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
+      <span class="text-lg pointer-events-none">
+        {{ 'PAC.KEY_WORDS.CalculatedFormula' | translate: {Default: 'Calculated Formula'} }}
+      </span>
+      <span *ngIf="measure?.caption">({{measure.caption}})</span>
+    </div>
+
+    <div class="flex-1 flex flex-col justify-start items-stretch overflow-hidden">
+      <ngm-copilot-chat class="flex-1 h-full w-full"></ngm-copilot-chat>
+    </div>
+
+    <div class="flex">
+      <div ngmButtonGroup>
+        <button mat-raised-button color="accent" [matDialogClose]="formula">
+          {{ ('COMPONENTS.COMMON.Apply' | translate: {Default: 'Apply'}) }}
+        </button>
+
+        <button mat-button mat-dialog-close cdkFocusInitial >
+          {{ ('COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'}) }}
+        </button>
       </div>
     </div>
+  </div>
   
-    <div class="flex-1 flex overflow-hidden">
-        <ngm-formula-editor *ngIf="syntax === Syntax.SQL" class="flex w-full h-full"
-            [dataSettings]="dataSettings"
-            [(ngModel)]="formula"
-        >
-        </ngm-formula-editor>
-        <ngm-calculated-measure *ngIf="syntax === Syntax.MDX" class="flex w-full h-full"
-            [syntax]="Syntax.MDX"
-            [dataSettings]="dataSettings"
-            [entityType]="entityType"
-            [(ngModel)]="formula"
+  <div class="min-w-[500px] flex-1 flex overflow-hidden">
+    @switch (syntax) {
+      @case (Syntax.MDX) {
+        <ngm-calculated-measure class="flex w-full h-full"
+          [syntax]="Syntax.MDX"
+          [dataSettings]="dataSettings"
+          [entityType]="entityType"
+          [(ngModel)]="formula"
         >
         </ngm-calculated-measure>
+      }
+      @case(Syntax.SQL) {
+        <ngm-formula-editor class="flex w-full h-full"
+          [editorOptions]="{
+            theme: themeName()
+          }"
+          [dataSettings]="dataSettings"
+          [(ngModel)]="formula"
+        >
+        </ngm-formula-editor>
+      }
+    }
   </div>
 </div>

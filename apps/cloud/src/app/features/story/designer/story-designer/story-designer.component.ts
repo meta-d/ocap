@@ -3,16 +3,15 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { assign, cloneDeep } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FormlyFieldConfig, FormlyFormOptions, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { PreferencesSchema } from '@metad/story'
 import { NxStoryService } from '@metad/story/core'
-import { debounceTime, firstValueFrom } from 'rxjs'
+import { debounceTime } from 'rxjs'
 import { InlineSearchComponent, MaterialModule } from '../../../../@shared'
 import { DesignerWidgetComponent } from '../widget/widget.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -47,11 +46,11 @@ export class StoryDesignerComponent {
   options: FormlyFormOptions
   model = {}
 
-  private formGroupSub = this.formGroup.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+  private formGroupSub = this.formGroup.valueChanges.pipe(debounceTime(300), takeUntilDestroyed()).subscribe((value) => {
     this.storyService.updateStoryPreferences(value)
   })
 
-  private preferencesSub = this.translateService.get('Story').subscribe((CSS) => {
+  private preferencesSub = this.translateService.get('Story').pipe(takeUntilDestroyed()).subscribe((CSS) => {
     this.fields = PreferencesSchema(CSS)
   })
 

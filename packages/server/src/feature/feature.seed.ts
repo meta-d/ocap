@@ -2,7 +2,7 @@ import { Connection } from 'typeorm';
 import * as path from 'path';
 import { copyFileSync, mkdirSync } from 'fs';
 import * as chalk from 'chalk';
-import * as rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import { ConfigService, environment as env } from '@metad/server-config';
 import {
 	IFeature,
@@ -190,16 +190,12 @@ async function cleanFeature(connection, config) {
 		);
 
 		// delete old generated feature image
-		rimraf(
-			`${dir}/!(rimraf|.gitkeep)`,
-			() => {
-				console.log(chalk.green(`CLEANED UP FEATURE IMAGES`));
-				resolve(null);
-			},
-			() => {
-				reject(null);
-			}
-		);
+		rimraf(`${dir}/!(rimraf|.gitkeep)`).then(() => {
+			console.log(chalk.green(`CLEANED UP FEATURE IMAGES`));
+			resolve(null);
+		}).catch(() => {
+			reject(null);
+		})
 	});
 }
 

@@ -12,7 +12,7 @@ import {
   SimpleChanges,
   inject
 } from '@angular/core'
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -24,18 +24,18 @@ import { MatTreeModule } from '@angular/material/tree'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmAppearance, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DataSettings } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { EntitySchemaDataSource, EntitySchemaFlatNode } from './data-source'
 import { EntityCapacity, EntitySchemaType } from './types'
+import { A11yModule } from '@angular/cdk/a11y'
 
 
-@UntilDestroy()
 @Component({
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    A11yModule,
     MatTreeModule,
     MatFormFieldModule,
     MatInputModule,
@@ -47,8 +47,9 @@ import { EntityCapacity, EntitySchemaType } from './types'
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    
     NgmCommonModule,
-    OcapCoreModule
+    OcapCoreModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-entity-schema',
@@ -65,7 +66,10 @@ export class NgmEntitySchemaComponent implements OnInit, OnChanges {
   @Input() dataSettings: DataSettings
   @Input() appearance: NgmAppearance
   @Input() selectedHierarchy: string
-  @Input() capacities: EntityCapacity[]
+  @Input() capacities: EntityCapacity[] = [
+    EntityCapacity.Dimension,
+    EntityCapacity.Measure,
+  ]
 
   get searchControl() {
     return this.dataSource.searchControl

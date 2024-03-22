@@ -1,15 +1,17 @@
-import { ChangeDetectorRef, Directive, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { ChangeDetectorRef, DestroyRef, Directive, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core'
 import { PeriodFunctions, SmartIndicatorDataService } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { IndicatorState } from '../types'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy()
 @Directive({
   selector: '[pacIndicator]',
   exportAs: 'pacIndicator',
   providers: [SmartIndicatorDataService]
 })
 export class PACIndicatorDirective implements OnInit, OnChanges {
+
+  readonly destroyRef = inject(DestroyRef)
+  
   @Input() indicator: IndicatorState
 
   data = {} as any
@@ -18,7 +20,7 @@ export class PACIndicatorDirective implements OnInit, OnChanges {
   ngOnInit() {
     this.dataService
       .selectResult()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ data }) => {
         this.data = {
           current: data[0]?.['CURRENT'],
@@ -33,7 +35,7 @@ export class PACIndicatorDirective implements OnInit, OnChanges {
 
     this.dataService
       .onAfterServiceInit()
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.dataService.refresh()
       })

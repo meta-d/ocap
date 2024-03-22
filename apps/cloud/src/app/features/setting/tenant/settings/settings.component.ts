@@ -42,6 +42,11 @@ export class SettingsComponent implements OnInit {
     this.updateEditCache()
   }
 
+  addNew(item?: ItemData) {
+    this.add(item)
+    this.startEdit(`${this.i}`)
+  }
+
   startEdit(id: string): void {
     this.editCache[id].edit = true
   }
@@ -75,7 +80,7 @@ export class SettingsComponent implements OnInit {
   updateEditCache(): void {
     this.listOfData.forEach((item) => {
       this.editCache[item.id] = {
-        edit: false,
+        ...(this.editCache[item.id] ?? {edit: false}),
         data: { ...item }
       }
     })

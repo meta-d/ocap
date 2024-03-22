@@ -1,6 +1,6 @@
 import { ISemanticModel } from '@metad/contracts'
 import { AgentType, DataSourceOptions, isEmpty, isNil, nonNullable, Syntax } from '@metad/ocap-core'
-import { combineLatest, firstValueFrom, Observable, tap } from 'rxjs'
+import { combineLatest, firstValueFrom, tap } from 'rxjs'
 import { NxStoryStore } from './story-store.service'
 import { ComponentStyling, StoryModel } from './types'
 
@@ -97,22 +97,6 @@ export async function downloadJson(myJson: any, fileName: string) {
   document.body.appendChild(element)
   element.click() // simulate click
   document.body.removeChild(element)
-}
-
-export function prefersColorScheme() {
-  return new Observable<string>((subscriber) => {
-    const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)')
-    function onChange({ matches }) {
-      if (matches) {
-        subscriber.next('dark')
-      } else {
-        subscriber.next('light')
-      }
-    }
-    mediaQueryList.addEventListener('change', onChange)
-    subscriber.next(mediaQueryList.matches ? 'dark' : 'light')
-    return () => mediaQueryList.removeEventListener('change', onChange)
-  })
 }
 
 export function componentStyling(styling: ComponentStyling) {

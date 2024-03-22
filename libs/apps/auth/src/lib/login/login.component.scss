@@ -17,7 +17,7 @@
 
 .pac-login__signin-button {
   img {
-    width: 30px;
-    height: 30px;
+    --mdc-icon-button-icon-size: 30px;
+    max-width: fit-content;
   }
 }

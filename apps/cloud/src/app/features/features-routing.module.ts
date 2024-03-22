@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router'
 import { NgxPermissionsGuard } from 'ngx-permissions'
 import { AnalyticsPermissionsEnum, AuthGuard } from '../@core'
 import { FeaturesComponent } from './features.component'
+import { NotFoundComponent } from './miscellaneous'
 
 export function redirectTo() {
   return '/home'
@@ -35,6 +36,7 @@ const routes: Routes = [
         loadChildren: () => import('./semantic-model/model.module').then((m) => m.SemanticModelModule),
         canActivate: [AuthGuard, NgxPermissionsGuard],
         data: {
+          title: 'Models',
           permissions: {
             only: [AnalyticsPermissionsEnum.MODELS_EDIT],
             redirectTo
@@ -71,27 +73,31 @@ const routes: Routes = [
       {
         path: 'indicator',
         loadChildren: () => import('./indicator/indicator.module').then((m) => m.PACIndicatorModule),
-        canActivate: [AuthGuard]
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Indicator',
+        }
       },
       // {
       //   path: 'subscription',
       //   loadChildren: () => import('./subscription/subscription.module').then((m) => m.PACSubscriptionModule),
       //   canActivate: [AuthGuard]
       // },
-      {
-        path: 'insight',
-        loadChildren: () => import('./insight/insight.module').then((m) => m.PACInsightModule)
-      },
+
       {
         path: 'settings',
         loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),
-        canActivate: [AuthGuard]
+        canActivate: [AuthGuard],
+        data: {
+          title: 'Settings',
+        }
       },
       {
         path: 'indicator-app',
         loadChildren: () => import('@metad/cloud/indicator-market').then((m) => m.IndicatorMarketModule),
         canActivate: [AuthGuard],
         data: {
+          title: 'Indicator-app',
           permissions: {
             only: [AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW],
             redirectTo
@@ -100,8 +106,15 @@ const routes: Routes = [
       },
       {
         path: 'organization',
-        loadChildren: () => import('./organization/organization.module').then((m) => m.OrganizationModule)
+        loadChildren: () => import('./organization/organization.module').then((m) => m.OrganizationModule),
+        data: {
+          title: 'Organization',
+        }
       },
+      {
+        path: '404',
+        component: NotFoundComponent
+      }
     ]
   }
 ]

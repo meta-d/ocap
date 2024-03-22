@@ -14,6 +14,8 @@
 }
 
 .pac-home__quick-guide {
+  background-color: var(--ngm-home-card-background-color);
+
   .step {
     width: 220px;
     @apply flex justify-center items-center px-4;
@@ -29,14 +31,6 @@
     .complete {
       font-size: 3rem;
     }
-  }
-}
-
-gridster {
-  background: transparent;
-
-  gridster-item {
-    overflow: visible;
   }
 }
 
@@ -75,4 +69,28 @@ gridster {
 
 .complete.emoji-loader {
   line-height: 3rem;
+}
+
+.pac-home__widget {
+  background-color: var(--ngm-home-card-background-color);
+}
+
+gridster {
+  background: transparent;
+
+  gridster-item {
+    overflow: visible;
+  }
+}
+
+:host::ng-deep {
+  gridster {
+    .gridster-row {
+      border-color: var(--ngm-color-outline);
+    }
+  
+    .gridster-column {
+      border-color: var(--ngm-color-outline);
+    }
+  }
 }

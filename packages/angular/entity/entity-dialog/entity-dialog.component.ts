@@ -1,17 +1,30 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, model, signal } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
 import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, ISelectOption } from '@metad/ocap-angular/core'
-import { DSCoreService } from '@metad/ocap-core'
+import { DSCoreService, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatestWith, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs'
+import { NGXLogger } from 'ngx-logger'
+import { combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
+
+export type EntitySelectResultType = {
+  dataSource: string
+  entities: string[]
+}
+export type EntitySelectDataType = {
+  dataSources: ISelectOption<string>[]
+  dsCoreService: DSCoreService
+  registerModel?: (key: string) => Promise<void>
+}
 
 @Component({
   standalone: true,
@@ -27,6 +40,7 @@ import { BehaviorSubject, combineLatestWith, distinctUntilChanged, map, startWit
     MatIconModule,
     MatRadioModule,
     MatListModule,
+    MatProgressSpinnerModule,
     DragDropModule,
     TranslateModule,
 
@@ -36,24 +50,24 @@ import { BehaviorSubject, combineLatestWith, distinctUntilChanged, map, startWit
   ]
 })
 export class NgmEntityDialogComponent {
-  public readonly data = inject<{
-    dataSources: ISelectOption<string>[]
-    dsCoreService: DSCoreService
-  }>(MAT_DIALOG_DATA)
-  public readonly dialogRef = inject<MatDialogRef<NgmEntityDialogComponent>>(MatDialogRef)
+  public readonly data = inject<EntitySelectDataType>(MAT_DIALOG_DATA)
 
-  private dataSource$ = new BehaviorSubject<string>(null)
-  get dataSource() {
-    return this.dataSource$.value
-  }
-  set dataSource(value) {
-    this.dataSource$.next(value)
-  }
+  readonly dialogRef = inject<MatDialogRef<NgmEntityDialogComponent, EntitySelectResultType>>(MatDialogRef)
+  readonly #logger = inject(NGXLogger)
+
+  readonly modelKey = model<string>(null)
 
   search = new FormControl('')
+  readonly loading = signal(false)
 
-  public readonly entities$ = this.dataSource$.pipe(
+  public readonly entities$ = toObservable(this.modelKey).pipe(
     distinctUntilChanged(),
+    filter(nonNullable),
+    tap((modelKey) => {
+      this.loading.set(true)
+      this.data.registerModel?.(modelKey)
+      this.entities.set([])
+    }),
     switchMap((dataSource) => this.data.dsCoreService.getDataSource(dataSource)),
     switchMap((dataSource) => dataSource.selectEntitySets()),
     map((entitySets) =>
@@ -63,26 +77,30 @@ export class NgmEntityDialogComponent {
       }))
     ),
     tap((entities) => {
-      if(!this.entities.length && entities.length) {
-        this.entities = [entities[0].key]
+      this.loading.set(false)
+      if (!this.entities().length && entities.length) {
+        this.entities.set([entities[0].key])
       }
     }),
     combineLatestWith(this.search.valueChanges.pipe(startWith(''))),
-    map(([entities, text]) => text ? entities.filter((item) => item.caption.toLowerCase().includes(text.toLowerCase())) : entities)
+    map(([entities, text]) =>
+      text ? entities.filter((item) => item.caption.toLowerCase().includes(text.toLowerCase())) : entities
+    )
   )
 
-  entities = []
+  // Selected entity keys
+  readonly entities = model<string[]>([])
 
   constructor() {
     if (this.data.dataSources.length === 1) {
-      this.dataSource = this.data.dataSources[0].value
+      this.modelKey.set(this.data.dataSources[0].key)
     }
   }
 
   onApply() {
     this.dialogRef.close({
-      dataSource: this.dataSource,
-      entities: this.entities
+      dataSource: this.modelKey(),
+      entities: this.entities()
     })
   }
 }

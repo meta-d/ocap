@@ -1,9 +1,11 @@
-<pac-menu-group [isCollapsed]="isCollapsed" [menu]="general$ | async"
+<pac-menu-group [isCollapsed]="isCollapsed" [menus]="general()"
     (clicked)="clicked.emit()">
 </pac-menu-group>
 
 <div class="pac-menu__space"></div>
 
-<pac-menu-group [isCollapsed]="isCollapsed" [menu]="admin$ | async"
+<ng-content></ng-content>
+
+<pac-menu-group [isCollapsed]="isCollapsed" [menus]="admin()"
     (clicked)="clicked.emit()">
 </pac-menu-group>

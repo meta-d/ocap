@@ -14,6 +14,12 @@ export class SemanticModelQueryDTO {
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
 	@IsOptional()
+	key: string
+
+	@Expose()
+	@ApiPropertyOptional({ type: () => String })
+	@IsString()
+	@IsOptional()
 	name: string
 
 	@Expose()

@@ -1,7 +1,9 @@
 {
   "name": "@metad/copilot",
-  "version": "0.0.1",
-  "dependencies": {
-    "openai": "^3.2.1"
+  "version": "2.0.0-beta.3",
+  "peerDependencies": {
+    "ai": "^2.2.30",
+    "nanoid": "^4.0.2",
+    "openai": "^4.6.0"
   }
 }

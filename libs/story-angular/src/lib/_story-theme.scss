@@ -1,6 +1,4 @@
 @use '@angular/material' as mat;
-@use '../../designer/_designer-theme' as designer;
-@import './settings/settings-theme';
 
 @mixin ngm-story__filter-bar($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -47,33 +45,6 @@
   $accent: map-get($config, accent);
 
   $grid-divider: 1px dashed map-get($foreground, divider);
-
-  @include designer.color($config-or-theme);
-
-  // // for cdk-drag-preview
-  // ngm-formly-dimension {
-  //   .mat-form-field {
-  //     flex: 1;
-  //   }
-  //   .mat-form-field-infix {
-  //     width: 80px;
-  //   }
-  // }
-
-  // .cdk-drag-preview.ngm-form--row {
-  //   display: flex;
-  //   background: map-get($background, background);
-  // }
-
-  // // 全局 icon svg 图标样式
-  // .mat-icon {
-  //   svg {
-  //     path {
-  //       fill: currentColor;
-  //     }
-  //   }
-  // }
-  
 }
 
 @mixin density($config-or-theme) {

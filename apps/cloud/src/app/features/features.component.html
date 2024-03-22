@@ -1,32 +1,56 @@
-<mat-sidenav-container class="pac-features__sidenav-container flex-1 h-full" >
-  <mat-sidenav #sidenav [mode]="sidenavMode" class="ngm-theme-dark w-[260px] flex flex-col bg-bluegray-900 text-white">
-    <div class="flex items-center border-b border-b-gray-600">
-      <button class="outline-none border-r border-r-gray-600 hover:text-yellow-600" (click)="sidenavMode==='over' ? sidenavMode='side' : sidenav.toggle()">
-        <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"></pac-sidenav-navigator>
+<mat-sidenav-container #sidenavContainer class="pac-features__sidenav-container flex-1 h-full"
+  [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}"
+  autosize>
+  <mat-sidenav #sidenav class="pac-features__sidenav flex flex-col"
+    [mode]="sidenavMode"
+    [(opened)]="sidenavOpened"
+    >
+    <div class="flex items-center"
+      [ngClass]="isCollapsed ? 'flex-col' : 'flex-row'">
+      <button class="outline-none hover:text-yellow-600"
+        (click)="toggleSidenav(sidenavContainer)">
+        <pac-sidenav-navigator [mode]="sidenavMode" class="w-12 h-12 flex justify-center items-center"/>
       </button>
-      <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"></pac-organization-selector>
+      <pac-organization-selector class="overflow-hidden flex-1 flex justify-center items-center hover:text-yellow-600 transition-colors"
+        [class.pl-[12px]]="isCollapsed"
+        [isCollapsed]="isCollapsed"/>
     </div>
 
-    <button *ngIf="AbilityActions.Manage | able:'Story'" mat-stroked-button color="accent" class="pac__toolbar-new m-2"
-      [matMenuTriggerFor]="creatMenu"
-      #mt="matMenuTrigger"
-      [class.active]="mt.menuOpen"
-      >
-      <div class="flex justify-center items-center">
-        <mat-icon class="shrink-0">add</mat-icon>
-        <span class="hidden md:inline">
-          {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
-        </span>
-      </div>
-    </button>
+    @if (AbilityActions.Manage | able:'Story') {
+      @if (isCollapsed) {
+        <button mat-icon-button color="accent" class="pac__toolbar-new m-2"
+          [matMenuTriggerFor]="creatMenu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen">
+          <mat-icon class="shrink-0">add</mat-icon>
+        </button>
+      } @else {
+        <button mat-stroked-button color="accent" class="pac__toolbar-new m-2"
+          [matMenuTriggerFor]="creatMenu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen"
+          >
+          <div class="flex justify-center items-center">
+            <mat-icon class="shrink-0">add</mat-icon>
+            <span class="hidden md:inline">
+              {{ 'PAC.ACTIONS.New' | translate: {Default: 'New'} }}
+            </span>
+          </div>
+        </button>
+      }
+    }
 
-    <pac-menu class="flex-1 p-2 flex overflow-auto" [isCollapsed]="isCollapsed" [menu]="menu"
-      (clicked)="onMenuClicked($event, isMobile)">
+    <pac-menu class="flex-1 p-2 flex overflow-auto"
+      [isCollapsed]="isCollapsed"
+      [menus]="menus()"
+      (clicked)="onMenuClicked($event, isMobile())">
+      <pac-notification class="flex justify-end"/>
+      <pac-tune class="flex justify-end"/>
     </pac-menu>
   </mat-sidenav>
 
-  <mat-sidenav-content class="pac_sidenav-content max-h-full overflow-hidden" [ngClass]="{'pac-fullscreen': zIndex > 1}">
-    <mat-toolbar class="pac__shell-bar mat-elevation-z2 flex justify-between items-center md:gap-2">
+  <mat-sidenav-content class="pac_sidenav-content max-h-full overflow-hidden" cdkDropListGroup>
+    <mat-toolbar class="pac__shell-bar flex justify-between items-center md:gap-2">
       <div class="flex justify-start items-center overflow-hidden">
         <button *ngIf="!(sidenav.opened && sidenavMode==='side')" class="w-12 outline-none hover:text-yellow-600 transition-colors"
           (click)="sidenav.toggle();sidenavMode='over'">
@@ -35,23 +59,33 @@
           </span>
         </button>
 
-        <span *ngIf="!isMobile" class="pac-home-title text-2xl" routerLink="/home">{{'PAC.title.short' | translate}}</span>
+        @if (!isMobile()) {
+          <span class="pac-home-title text-2xl" routerLink="/home">{{title() || ('PAC.title.short' | translate)}}</span>
 
-        <button *ngIf="!isMobile" mat-icon-button (click)="back()">
-          <mat-icon>navigate_before</mat-icon>
-        </button>
+          <button mat-icon-button (click)="back()">
+            <mat-icon>navigate_before</mat-icon>
+          </button>
+        }
 
-        <div *ngIf="navigation$ | async as navigation" class="flex items-center text-sm overflow-hidden">
-          <pac-header-project *ngIf="navigation.catalog === MENU_CATALOG.Project" class="h-full rounded-none"></pac-header-project>
-          <span class="font-bold flex items-center cursor-pointer text-slate-300 hover:text-white" (click)="navigate(navigation.catalog)">
-            <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="mx-1">{{navigation.icon}}</mat-icon>
-            <span *ngIf="!isMobile">{{ navigation.catalogName }}</span>
-          </span>
-          <ng-container *ngIf="navigation.id && !isMobile">
-            <span class="mx-1 font-bold">|</span>
-            <span class="text-ellipsis overflow-hidden">{{ navigation.label }}</span>
-          </ng-container>
-        </div>
+        @if (navigation$ | async; as navigation) {
+          <div class="flex items-center text-sm overflow-hidden">
+            @if (navigation.catalog === MENU_CATALOG.Project) {
+              <pac-header-project class="h-full rounded-none"/>
+            }
+            <span class="font-bold flex items-center cursor-pointer
+            text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-200"
+              (click)="navigate(navigation.catalog)">
+              <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="mx-1">{{navigation.icon}}</mat-icon>
+              @if (!isMobile()) {
+                <span>{{ navigation.catalogName }}</span>
+              }
+            </span>
+            @if(navigation.id && !isMobile()) {
+              <span class="mx-1 font-bold">|</span>
+              <span class="text-ellipsis overflow-hidden">{{ navigation.label }}</span>
+            }
+          </div>
+        }
       </div>
 
       <div class="flex flex-1">
@@ -59,11 +93,12 @@
 
       <!-- <header-notify></header-notify> -->
 
-      <div class="pac-toolbar-search w-32 md:w-80 flex items-center p-1 max-w-xs rounded-lg bg-gray-500 bg-opacity-25 text-base">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="pac-toolbar-search relative w-32 md:w-80 flex items-center max-w-xs text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-2 h-4 w-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        <input #searchInput class="flex-1 outline-none bg-transparent placeholder:text-bluegray-300 focus:placeholder:text-bluegray-200"
+        <input #searchInput class="flex-1 p-1 pl-8 rounded-lg outline-none placeholder:opacity-30 focus:placeholder:opacity-50 transition-all
+          bg-black/5 hover:bg-black/10 focus:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus:bg-white/10"
           type="text"
           [placeholder]=" ('PAC.ACTIONS.Search' | translate: {Default: 'Search'})+'...'"
           [matAutocomplete]="auto"
@@ -79,7 +114,16 @@
         <mat-option class="h-0" style="height: 0; min-height: 0;"></mat-option>
       </mat-autocomplete>
 
-      <pac-copilot-global *ngIf="copilotEnabled$ | async" displayDensity="cosy"></pac-copilot-global>
+      @if(copilotEnabled$()) {
+        <button mat-icon-button class="pac-copilot-trigger font-notoColorEmoji"
+          displayDensity="cosy"
+          [class.active]="copilotDrawer.opened"
+          [color]="copilotDrawer.opened?'accent':''"
+          (click)="copilotDrawer.toggle()"
+        >
+          <div class="flex justify-center items-center text-xl">🤖</div>
+        </button>
+      }
       
       <button mat-icon-button *ngIf="isAuthenticated$ | async as user" class="d-none d-sm-inline"
         displayDensity="cosy"
@@ -93,24 +137,53 @@
       </button>
     </mat-toolbar>
 
-    <div class="pac-app__page-outlet z-0" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title">
-      <router-outlet #o="outlet"></router-outlet>
-    </div>
-
-    <pac-status-bar class="pac__status-bar"></pac-status-bar>
+    <mat-drawer-container class="flex-1 h-full" [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}"
+      [hasBackdrop]="false"
+      autosize
+    >
+      <mat-drawer #copilotDrawer class="ngm-sidenav-container-bg-transparent mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
+        [(opened)]="copilotDrawerOpened"
+      >
+        @if(copilotEnabled$()) {
+        <ngm-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area h-full"
+          thinkingAvatar="assets/images/copilot_sparkle_processing.gif"
+          assistantAvatar="assets/images/copilot_sparkle.svg"
+          [user]="user$()"
+          [copilotEngine]="copilotEngine"
+          cdkDropList
+          (cdkDropListDropped)="copilotChat.dropCopilot($event)"
+          (enableCopilot)="toEnableCopilot()"
+        ></ngm-copilot-chat>
+        }
+        
+        <div ngmResizerBar resizerBarPosition="left"
+          cdkDrag
+          cdkDragLockAxis="x"
+        ></div>
+      </mat-drawer>
+      <mat-drawer-content class="pac-app__page-outlet relative z-0" 
+        [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
+        @if(copilotEnabled$()) {
+          <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
+        }
+        <router-outlet #o="outlet"></router-outlet>
+      </mat-drawer-content>
+    </mat-drawer-container>
   </mat-sidenav-content>
 </mat-sidenav-container>
 
+@if (loading()) {
+  <mat-progress-bar class="pac-router__progress-bar absolute top-0 left-0 w-full z-10"
+    color="accent" mode="indeterminate" >
+  </mat-progress-bar>
+}
 
-<mat-progress-bar *ngIf="loading" class="pac-router__progress-bar absolute top-0 left-0 w-full z-10"
-   color="accent" mode="indeterminate" >
-</mat-progress-bar>
-
-<popper-content #popperContent>
+<popper-content #popperContent class="pac-features__auth-popper">
   <pac-header-settings></pac-header-settings>
 </popper-content>
 
-<mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent">
+<mat-menu #creatMenu="matMenu" class="ngm-density__compact mat-color-accent"
+  xPosition="before">
   <button mat-menu-item (click)="createQuery()">
     <mat-icon fontSet="material-icons-outlined">reviews</mat-icon>
     {{ 'PAC.KEY_WORDS.Query' | translate: {Default: 'Query'} }}

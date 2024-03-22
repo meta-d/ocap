@@ -1,41 +1,36 @@
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { provideHttpClient } from '@angular/common/http'
 import { MatIconModule } from '@angular/material/icon'
+import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations'
 import {
   DisplayDensity,
   NgmDSCoreService,
-  NgmMissingTranslationHandler,
   OCAP_AGENT_TOKEN,
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN,
-  OcapCoreModule
+  OcapCoreModule,
+  provideOcapCore
 } from '@metad/ocap-angular/core'
+import { provideTranslate } from '@metad/ocap-angular/mock'
 import { AgentType, DataSource, DisplayBehaviour, FilterSelectionType, Type } from '@metad/ocap-core'
-import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata } from '@storybook/angular'
+import { TranslateModule } from '@ngx-translate/core'
+import { Meta, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
-import { ControlsModule } from '../controls.module'
+import { NgmControlsModule } from '../controls.module'
 import { NgmSmartFilterComponent } from './smart-filter.component'
-
+import { FormsModule } from '@angular/forms'
 
 export default {
   title: 'SmartFilter',
   component: NgmSmartFilterComponent,
   tags: ['autodocs'],
   decorators: [
+    applicationConfig({
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
+    }),
     moduleMetadata({
-      imports: [
-        BrowserAnimationsModule,
-        MatIconModule,
-        ControlsModule,
-        OcapCoreModule.forRoot(),
-        TranslateModule.forRoot({
-          missingTranslationHandler: {
-            provide: MissingTranslationHandler,
-            useClass: NgmMissingTranslationHandler
-          }
-        })
-      ],
+      imports: [BrowserAnimationsModule, FormsModule, MatIconModule, NgmControlsModule, OcapCoreModule, TranslateModule],
       providers: [
+        provideOcapCore(),
         NgmDSCoreService,
         {
           provide: OCAP_AGENT_TOKEN,
@@ -112,6 +107,8 @@ export const DensityCompact = {
       dimension: 'Department'
     },
     options: {},
+    appearance: {
+    },
     displayDensity: DisplayDensity.compact
   }
 }
@@ -130,8 +127,9 @@ export const SelectionTypeMultiple = {
       // selectionType: FilterSelectionType.Multiple
     },
     appearance: {
-      displayDensity: DisplayDensity.compact
-    }
+      
+    },
+    displayDensity: DisplayDensity.compact
   }
 }
 
@@ -191,24 +189,54 @@ export const WidthCompact = {
       selectionType: FilterSelectionType.Multiple
     },
     appearance: {
-      displayDensity: DisplayDensity.compact
-    }
+    },
+    displayDensity: DisplayDensity.compact
   }
 }
 
 export const Disabled = {
-  render,
   args: {
-    dataSettings: {
-      dataSource: 'Sales',
-      entitySet: 'SalesOrder3s'
+    props: {
+      dataSettings: {
+        dataSource: 'Sales',
+        entitySet: 'SalesOrder3s'
+      },
+      dimension: {
+        dimension: 'Department'
+      },
+      options: {},
+      disabled: true,
     },
-    dimension: {
-      dimension: 'Department'
+    model: {
+      members: [
+        {
+          key: '1',
+          caption: 'Department 1'
+        },
+        {
+          key: '2',
+          caption: 'Department 2'
+        }
+      ]
+    }
+  },
+  render: (args) => ({
+    props: {
+      ...args.props,
+      model: args.model
     },
-    options: {},
-    disabled: true
-  }
+    template: `<div class="flex flex-col gap-2">
+  <ngm-smart-filter ${argsToTemplate(args.props)}></ngm-smart-filter>
+  <ngm-smart-filter ${argsToTemplate(args.props)} [ngModel]="model"></ngm-smart-filter>
+</div>
+    
+    `,
+    styles: [
+      `.ngm-smart-filter {
+        width: 100px;
+      }`
+    ]
+  })
 }
 
 export const Prefix = {
@@ -230,7 +258,7 @@ export const Prefix = {
     dimension: {
       dimension: 'Department'
     },
-    options: {},
+    options: {}
   }
 }
 
@@ -253,6 +281,6 @@ export const Suffix = {
     dimension: {
       dimension: 'Department'
     },
-    options: {},
+    options: {}
   }
 }

@@ -2,15 +2,13 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DUCKDB_TOP_SUBSCRIBED_MODEL } from '@metad/ocap-duckdb'
-import { UntilDestroy } from '@ngneat/until-destroy'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, FormulaModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, NgmFormulaModule],
   selector: 'metad-ocap-query-lab',
   templateUrl: 'query-lab.component.html',
   styles: [],

@@ -1,4 +1,4 @@
-<ngm-table class="flex-1 overflow-hidden rounded-lg border border-gray-200 mt-2"
+<ngm-table class="flex-1 overflow-hidden rounded-lg border mt-2"
     paging
     [data]="approvals$ | async"
     [columns]="[
@@ -28,7 +28,7 @@
             pipe: getDateAtPipe()
         },
         {
-            name: 'users',
+            name: 'userApprovals',
             caption: 'PAC.KEY_WORDS.Users' | translate: {Default: 'Users'},
             cellTemplate: usersTempl
         },
@@ -60,14 +60,14 @@
 </ng-template>
 
 <ng-template #usersTempl let-userApprovals="userApprovals">
-    <mat-chip-list class="pac-user-chips" displayDensity="compact" [style.width.px]="userApprovals.length*20 + 120">
-        <mat-chip *ngFor="let userApproval of userApprovals; let i = index" [style.width.px]="120" [style.left.px]="i*20" style="position: absolute; overflow: hidden;">
-          <pac-user-avatar matChipAvatar [user]="userApproval.user" class="m-0 shrink-0"></pac-user-avatar>
-          <span class="text-ellipsis overflow-hidden whitespace-nowrap">
-            {{ userApproval.user | user }}
-          </span>
+    <mat-chip-set class="pac-user-chip-set" displayDensity="compact" [style.width.px]="userApprovals.length*20 + 120">
+        <mat-chip *ngFor="let userApproval of userApprovals; let i = index" [style.width.px]="120" [style.left.px]="i*20">
+            <pac-user-avatar matChipAvatar [user]="userApproval.user" class="m-0 shrink-0"></pac-user-avatar>
+            <span class="text-ellipsis overflow-hidden whitespace-nowrap">
+                {{ userApproval.user | user }}
+            </span>
         </mat-chip>
-    </mat-chip-list>
+    </mat-chip-set>
 </ng-template>
 
 <ng-template #actionTempl let-indicator="indicator" let-approvalId="id" let-status="status" let-loading="loading">

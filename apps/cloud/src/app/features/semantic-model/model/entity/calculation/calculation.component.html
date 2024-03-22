@@ -1,185 +1,28 @@
-<ngm-splitter class="flex-1" [type]="1">
-  <ngm-splitter-pane size='10rem' class="pac-model-calculation__formula-pane flex flex-col justify-start items-stretch">
-
-    <ngm-formula-editor *ngIf="entityType().syntax === Syntax.SQL" class="flex-1 w-full h-full"
-      [dataSettings]="dataSettings()"
-      [ngModel]="formula$ | async"
-      (ngModelChange)="setFormula($event)"
-      (keyDown)="onEditorKeyDown($event)"
-    ></ngm-formula-editor>
-    <ngm-calculated-measure *ngIf="entityType().syntax === Syntax.MDX" class="flex-1 w-full h-full"
-      [syntax]="Syntax.MDX"
-      [dataSettings]="dataSettings()"
-      [entityType]="entityType()"
-      [ngModel]="formula$ | async"
-      (ngModelChange)="setFormula($event)"
-      (keyDown)="onEditorKeyDown($event)"
-    >
-    </ngm-calculated-measure>
-
-    <ng-template #contentLoader>
-      <content-loader class="overflow-hidden">
-        <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
-        <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
-        <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
-        <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
-        <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
-        <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
-      </content-loader>
-    </ng-template>
-
-  </ngm-splitter-pane>
-  <ngm-splitter-pane class="flex flex-col justify-start items-stretch relative">
-      <div class="pac-model__shell-bar px-2 border-b border-gray-200 flex justify-between items-center">
-          <span>{{ 'PAC.MENU.PREVIEW' | translate: {Default: "Preview"} }}</span>
-          <div class="ngm-toolbar-actions flex items-center">
-              <mat-slide-toggle labelPosition="before" class="text-sm" [(ngModel)]="manualRefresh">
-                  {{ 'PAC.MENU.MANUAL_REFRESH' | translate: {Default: "Manual Refresh"} }}
-              </mat-slide-toggle>
-              <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'PAC.MODEL.ENTITY.CALCULATION.Refresh' | translate: {Default: 'Refresh'} "
-                (click)="refresh()">
-                  <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
-              </button>
-              <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'PAC.MODEL.ENTITY.CALCULATION.Pivot' | translate: {Default: 'Pivot'} "
-                [color]="reverse?'accent':''" (click)="reverse=!reverse;refresh()">
-                  <mat-icon fontSet="material-icons-outlined">pivot_table_chart</mat-icon>
-              </button>
-          </div>
-      </div>
-      <ngm-splitter class="flex-1">
-        <ngm-splitter-pane size='30%' class="max-w-[50%]">
-            <mat-accordion class="flex-1" displayDensity="compact" displayMode="flat" togglePosition="before" [multi]="true">
-              <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>
-                    {{ 'PAC.MODEL.ENTITY.CALCULATION.ROWS' | translate: {Default: "Rows"}  }}
-                  </mat-panel-title>
-
-                  <div class="flex justify-end items-center">
-                    <button mat-icon-button displayDensity="cosy"
-                      (click)="$event.stopPropagation();$event.preventDefault();add('rows')">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-
-                </mat-expansion-panel-header>
-
-                <div id="property-modeling-rows" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !rows?.length}"
-                  cdkDropList
-                  [cdkDropListData]="rows"
-                  (cdkDropListDropped)="drop($event)"
-                >
-                  <ngm-property-select *ngFor="let property of rows; index as i; trackBy: trackByIndex" displayDensity="compact"
-                    [dataSettings]="dataSettings()"
-                    [entityType]="entityType()"
-                    [capacities]="propertyCapacities"
-                    showAttributes
-                    [ngModel]="property"
-                    (ngModelChange)="onRowChange($event, i)"
-                    cdkDrag
-                  >
-                    <mat-icon ngmPrefix cdkDragHandle displayDensity="compact">drag_indicator</mat-icon>
-                    <button ngmSuffix mat-icon-button ngmAppearance="danger" displayDensity="compact"
-                      (click)="$event.stopPropagation();$event.preventDefault();removeRow(i)">
-                      <mat-icon>clear</mat-icon>
-                    </button>
-
-                    <div class="property-modeling-custom-placeholder" *cdkDragPlaceholder></div>
-                  </ngm-property-select>
-                </div>
-              </mat-expansion-panel>
-              <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>
-                    {{ 'PAC.MODEL.ENTITY.CALCULATION.COLUMNS' | translate: {Default: "Columns"} }}
-                  </mat-panel-title>
-                  <div class="flex justify-end items-center">
-                    <button mat-icon-button displayDensity="cosy"
-                      (click)="$event.stopPropagation();$event.preventDefault();add('columns')">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </mat-expansion-panel-header>
-                <div id="property-modeling-columns" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !columns?.length}"
-                  cdkDropList [cdkDropListData]="columns" (cdkDropListDropped)="drop($event)"
-                >
-                  <ngm-property-select *ngFor="let property of columns; index as i; trackBy: trackByIndex" displayDensity="compact"
-                    showAttributes
-                    [capacities]="propertyCapacities"
-                    [dataSettings]="dataSettings()"
-                    [entityType]="entityType()"
-                    [ngModel]="property"
-                    (ngModelChange)="onColumnChange($event, i)"
-                    cdkDrag
-                    >
-                    <mat-icon ngmPrefix cdkDragHandle displayDensity="compact">drag_indicator</mat-icon>
-                    <button ngmSuffix mat-icon-button ngmAppearance="danger" displayDensity="compact"
-                      (click)="$event.stopPropagation();$event.preventDefault();removeColumn(i)">
-                      <mat-icon>clear</mat-icon>
-                    </button>
-                    <div class="property-modeling-custom-placeholder" *cdkDragPlaceholder></div>
-                  </ngm-property-select>
-                </div>
-              </mat-expansion-panel>
-            
-              <mat-expansion-panel class="mat-elevation-z" [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>
-                    {{ 'PAC.MODEL.ENTITY.CALCULATION.FILTERS' | translate: {Default: "Slicers"}  }}
-                  </mat-panel-title>
-                  <div class="flex justify-end items-center">
-                    <!-- <button mat-icon-button displayDensity="cosy"
-                      (click)="$event.stopPropagation();$event.preventDefault();newSlicer()">
-                      <mat-icon>add</mat-icon>
-                    </button> -->
-                  </div>
-                </mat-expansion-panel-header>
-                
-                <div id="property-modeling-slicers" class="pac-cdk-drop__list pb-2" [ngClass]="{'ngm-property-modeling__empty': !slicers?.length}"
-                  cdkDropList [cdkDropListData]="slicers" (cdkDropListDropped)="drop($event)"
-                >
-                  <ngm-smart-filter *ngFor="let slicer of slicers$ | async; index as i; trackBy: trackByDim"
-                    [appearance]="{displayDensity: DisplayDensity.compact, appearance: 'fill'}"
-                    [dataSettings]="dataSettings()"
-                    [dimension]="slicer?.dimension"
-                    [options]="{multiple: true}"
-                    [ngModel]="slicer"
-                    (ngModelChange)="onSlicerChange($event, i)"
-                    cdkDrag>
-                    <button ngmSuffix mat-icon-button ngmAppearance="danger" displayDensity="compact"
-                      (click)="$event.stopPropagation();$event.preventDefault();removeSlicer(i)">
-                      <mat-icon>clear</mat-icon>
-                    </button>
-                  </ngm-smart-filter>
-                </div>
-              </mat-expansion-panel>
-            </mat-accordion>
-        </ngm-splitter-pane>
-        <ngm-splitter-pane size="auto" class="flex-1 flex">
-          <ngm-analytical-grid class="flex-1" displayDensity="compact"
-            [appearance]="{displayDensity: DisplayDensity.compact}"
-            [dataSettings]="analyticsDataSettings()"
-            [options]="{
-              sticky: true,
-              strip: true,
-              grid: true,
-              sortable: true,
-              initialRowLevel: 1,
-              initialColumnLevel: 1
-            }"
-          ></ngm-analytical-grid>
-        </ngm-splitter-pane>
-      </ngm-splitter>
-
-      <div *ngIf="entityType() | isNil" class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-        <content-loader class="overflow-hidden">
-          <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
-          <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
-          <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
-          <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
-          <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
-          <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
-        </content-loader>
-      </div>
-  </ngm-splitter-pane>
-</ngm-splitter>
+@if (modelType() === ModelType.SQL) {
+  <ngm-formula-editor class="pac-cdk-drop__list flex-1 w-full h-full"
+    [dataSettings]="dataSettings()"
+    [ngModel]="formula()"
+    (ngModelChange)="setFormula($event)"
+    (keyDown)="onEditorKeyDown($event)"
+  ></ngm-formula-editor>
+} @else {
+  <ngm-calculated-measure class="pac-cdk-drop__list flex-1 w-full h-full"
+    [opened]="false"
+    [syntax]="Syntax.MDX"
+    [dataSettings]="dataSettings()"
+    [entityType]="entityType()"
+    [ngModel]="formula()"
+    (ngModelChange)="setFormula($event)"
+    (keyDown)="onEditorKeyDown($event)"
+  >
+  </ngm-calculated-measure>
+}
+<!-- 
+<content-loader class="w-full m-4 overflow-hidden dark:opacity-20">
+  <svg:rect x="0" y="0" rx="3" ry="3" width="250" height="5" />
+  <svg:rect x="20" y="10" rx="3" ry="3" width="220" height="5" />
+  <svg:rect x="20" y="20" rx="3" ry="3" width="170" height="5" />
+  <svg:rect x="0" y="30" rx="3" ry="3" width="250" height="5" />
+  <svg:rect x="20" y="40" rx="3" ry="3" width="200" height="5" />
+  <svg:rect x="20" y="50" rx="3" ry="3" width="80" height="5" />
+</content-loader> -->

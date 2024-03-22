@@ -1,31 +1,31 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, ViewChild } from '@angular/core'
+import { ChangeDetectorRef, Component, HostListener, inject, model, OnDestroy, signal, ViewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { isNil } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { convertIndicatorResult, Indicator, IndicatorsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { IsDirty, IsNilPipe, nonBlank, nonNullable, saveAsYaml } from '@metad/core'
-import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared/language/translation-base.component'
 import { NGXLogger } from 'ngx-logger'
 import { EMPTY, firstValueFrom } from 'rxjs'
 import { catchError, delay, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { IIndicator, IndicatorType, ToastrService } from '../../../../@core/index'
-import { MaterialModule, userLabel } from '../../../../@shared'
+import { MaterialModule, userLabel, TranslationBaseComponent } from '../../../../@shared'
 import { ProjectComponent } from '../../project.component'
 import { exportIndicator } from '../../types'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 
+
 // AOA : array of array
 type AOA = any[][]
+const NewIndicatorCodePlaceholder = 'new'
 
-@UntilDestroy()
 @Component({
   standalone: true,
   imports: [
@@ -46,7 +46,6 @@ type AOA = any[][]
   selector: 'pac-project-indicator-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
-  providers: []
 })
 export class IndicatorRegisterComponent extends TranslationBaseComponent implements OnDestroy, IsDirty {
   private projectComponent = inject(ProjectComponent)
@@ -55,15 +54,16 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private toastrService = inject(ToastrService)
   private _route = inject(ActivatedRoute)
   private _router = inject(Router)
-  private readonly _cdr = inject(ChangeDetectorRef)
+  readonly _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private _logger? = inject(NGXLogger, {optional: true})
 
   @ViewChild('register_form') registerForm: IndicatorRegisterFormComponent
 
-  indicator: Indicator = {}
+  // indicator: Indicator = {}
+  readonly indicatorModel = model<Indicator>({})
 
-  loading = false
+  readonly loading = signal(false)
 
   get project() {
     return this.projectComponent.project
@@ -81,18 +81,23 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     startWith(this._route.snapshot.paramMap),
     map((paramMap) => paramMap.get('id')),
     tap((id) => {
-      if (id === 'new') {
-        this.indicatorsComponent?.setCurrentLink({id: 'new'} as Indicator)
+      if (id === NewIndicatorCodePlaceholder) {
+        this.indicatorsComponent?.setCurrentLink({id: NewIndicatorCodePlaceholder} as Indicator)
+        this._router.getCurrentNavigation().extras.state
+        this.indicatorModel.update((state) => ({
+          ...state,
+          ...(this._router.getCurrentNavigation().extras.state ?? {})
+        }))
       }
     }),
-    filter((id) => !isNil(id) && id !== 'new'),
+    filter((id) => !isNil(id) && id !== NewIndicatorCodePlaceholder),
     distinctUntilChanged(),
     switchMap((id) => {
-      this.loading = true
+      this.loading.set(true)
       return this.indicatorsService.getById(id, ['createdBy']).pipe(
-        tap(() => (this.loading = false)),
+        tap(() => (this.loading.set(false))),
         catchError((err) => {
-          this.loading = false
+          this.loading.set(false)
           if (err.status === 404) {
             this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', { Default: 'Indicator not found' })
           } else {
@@ -114,28 +119,28 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     .pipe(
       startWith(this._route.snapshot.queryParams),
       map((queryParams) => queryParams['modelId']),
-      filter(nonBlank)
+      filter(nonBlank),
+      takeUntilDestroyed()
     )
     .subscribe((id) => {
-      this.indicator = {
-        ...this.indicator,
+      this.indicatorModel.update((indicator) => ({
+        ...indicator,
         modelId: id
-      }
-      // this.formGroup.patchValue({
-      //   modelId: id
-      // })
+      }))
     })
+
   private indicatorSub = this.indicator$.pipe(
       filter(nonNullable),
       tap((indicator) => {
         this._logger?.debug('indicator register page on indicator change', indicator)
-        this.indicator = {
-          ...this.indicator,
+        this.indicatorModel.update((state) => ({
+          ...state,
           ...indicator,
           createdByName: userLabel(indicator.createdBy)
-        }
+        }))
       }),
-      delay(300)
+      delay(300),
+      takeUntilDestroyed()
     ).subscribe((indicator) => {
       this.registerForm.formGroup.markAsPristine()
       this.indicatorsComponent?.setCurrentLink(indicator)
@@ -147,20 +152,20 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   async onSubmit() {
     let indicator = {
-      ...this.indicator,
-      formula: this.indicator.type === IndicatorType.DERIVE ? this.indicator.formula : null,
+      ...this.indicatorModel(),
+      formula: this.indicatorModel().type === IndicatorType.DERIVE ? this.indicatorModel().formula : null,
       projectId: this.project.id ?? null
     }
     if (!indicator.id) {
       delete indicator.id
     }
 
-    this.loading = true
+    this.loading.set(true)
     try {
       indicator = await firstValueFrom(this.indicatorsService.create(indicator))
 
-      this.loading = false
-      if (this.indicator.id) {
+      this.loading.set(false)
+      if (this.indicatorModel().id) {
         this.toastrService.success('PAC.INDICATOR.REGISTER.SaveIndicator', { Default: 'Save Indicator' })
       } else {
         this.toastrService.success('PAC.INDICATOR.REGISTER.CreateIndicator', { Default: 'Create Indicator' })
@@ -169,19 +174,17 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
       await this.projectComponent.refreshIndicators()
     } catch (err) {
-      this.loading = false
+      this.loading.set(false)
       this.toastrService.error(err, '', {})
       return
     }
 
-    this.indicator = {
-      ...this.indicator,
+    this.indicatorModel.update((state) => ({
+      ...state,
       id: indicator.id
-    }
+    }))
     this.registerForm.formGroup.markAsPristine()
-    // this.formGroup.patchValue({ id: indicator.id })
-    // this.formGroup.markAsPristine()
-    this._cdr.detectChanges()
+    // this._cdr.detectChanges()
 
     if (this.type === 'copy') {
       this.type = 'edit'
@@ -191,11 +194,11 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   copy(indicator: IIndicator) {
     this.type = 'copy'
-    this.indicator = {
-      ...this.indicator,
+
+    this.indicatorModel.update((state) => ({
+      ...state,
       id: null
-    }
-    // this.formGroup.patchValue({ id: null })
+    }))
   }
 
   async deleteIndicator() {
@@ -203,14 +206,14 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       this._dialog
         .open(ConfirmDeleteComponent, {
           data: {
-            value: this.indicator.name
+            value: this.indicatorModel().name
           }
         })
         .afterClosed()
     )
     if (confirm) {
       try {
-        await firstValueFrom(this.indicatorsService.delete(this.indicator.id))
+        await firstValueFrom(this.indicatorsService.delete(this.indicatorModel().id))
         this.toastrService.success('PAC.INDICATOR.REGISTER.DeleteIndicator', { Default: 'Delete Indicator' })
 
         await this.projectComponent.refreshIndicators()
@@ -228,7 +231,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     const indicatorTmplFileName = await firstValueFrom(
       this.translateService.get('PAC.INDICATOR.IndicatorTemplateFileName', { Default: 'IndicatorTemplate' })
     )
-    saveAsYaml(`${indicatorTmplFileName}.yaml`, [exportIndicator(this.indicator)])
+    saveAsYaml(`${indicatorTmplFileName}.yaml`, [exportIndicator(this.indicatorModel())])
   }
 
   @HostListener('window:keydown', ['$event'])

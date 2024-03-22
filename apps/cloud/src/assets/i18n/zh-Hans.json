@@ -157,7 +157,16 @@
       "SemanticModels": "语义模型",
       "Stories": "故事",
       "Indicators": "指标",
-      "IndicatorMarket": "指标市场"
+      "IndicatorMarket": "指标市场",
+      "RemeberMe": "记住我",
+      "Tune": "设置",
+      "Notification": "通知",
+      "ClearAll": "清空",
+      "RestoreLayout": "重置布局",
+      "Undo": "撤销",
+      "Commit": "提交",
+      "Edit": "编辑",
+      "Unit": "单位"
     },
     "MENU": {
       "Certification": "认证",
@@ -180,6 +189,7 @@
       "Feature": "功能",
       "Email Template": "邮件模板",
       "Custom SMTP": "自定义 SMTP",
+      "Preview": "预览",
       "AGENT": "代理",
       "LOCAL_AGENT": "本地代理",
       "WASM_DB": "WASM 数据库",
@@ -328,7 +338,9 @@
         "DONE": "完成",
         "AuthType": "授权方式",
         "AuthType_None": "无",
-        "AuthType_Basic": "基本身份验证"
+        "AuthType_Basic": "基本身份验证",
+        "AuthType_None_Description": "系统统一授权，不需要用户提供账号",
+        "AuthType_Basic_Description": "用户需提供账号进行授权"
       },
       "Roles": {
         "General": "通用",
@@ -390,7 +402,8 @@
       "Search": "搜索",
       "Copy": "复制",
       "NewTag": "新建标签",
-      "Duplicate": "复制"
+      "Duplicate": "复制",
+      "OpenAttributesPanel": "打开属性面板"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "组织更新成功",
@@ -406,7 +419,8 @@
       "CreateStoryWidgetSuccess": "创建故事部件成功",
       "CreateDataSource": "创建数据源",
       "ConfirmExitDirtyData": "有未保存数据, 确认退出吗?",
-      "Sure": "确定"
+      "Sure": "确定",
+      "UserAuthenticationFailure": "用户认证失败"
     },
     "Messages": {
       "AlreadyExists": "{{value}}已存在",
@@ -417,7 +431,8 @@
         "DELETE_CONFIRM": "确定从服务器上删除此组织?",
         "DELETE_ORGANIZATION": "组织'{{name}}'删除成功",
         "DEMO_GENERATE_ERROR": "演示数据生成错误",
-        "DEMO_GENERATED": "演示数据生成"
+        "DEMO_GENERATED": "演示数据生成",
+        "AddNewOrganization": "添加新组织"
       },
       "ROLES": {
         "PERMISSION_UPDATED": "角色'{{name}}'更新成功",
@@ -558,7 +573,9 @@
       "Indicators": "指标",
       "Types": "类型",
       "IndicatorMarket": "指标市场",
-      "Certifications": "认证"
+      "Certifications": "认证",
+      "Copilot_CreateIndicator": "创建指标",
+      "Copilot_CreateFormula": "创建指标公式"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
@@ -773,7 +790,8 @@
           "Caption": "标签",
           "None": "无",
           "Unit": "单位",
-          "Decimal": "小数位"
+          "Decimal": "小数位",
+          "SourceDimension": "源维度"
         },
         "CUBE": {
           "TITLE": "多维数据集",
@@ -800,7 +818,8 @@
           },
           "CaptionColumn": "文本字段",
           "Column": "维度表主键",
-          "ForeignKey": "事实表外键"
+          "ForeignKey": "事实表外键",
+          "ForeignKey_Info": "具有独立维度表的内联维度需要在此指定事实表的关联外键"
         },
         "HIERARCHY": {
           "TITLE": "层次结构",
@@ -919,7 +938,25 @@
         "SharedDimension": "共享维度",
         "CubeAlreadyExists": "多维数据集已存在！",
         "DimensionAlreadyExists": "维度已存在！",
-        "MeasureAlreadyExists": "度量已存在！"
+        "MeasureAlreadyExists": "度量已存在！",
+        "PleaseSave": "请保存",
+        "PleaseSaveTheCorrectVirtualCube": "请先将正确的虚拟数据集保存后再进行公式操作"
+      },
+      "Copilot": {
+        "CreatedCube": "数据集创建成功！",
+        "CreatedDimension": "维度创建成功！",
+        "CreateCalculatedFormula": "创建计算度量公式",
+        "Examples": {
+          "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
+          "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
+          "QueryDBDesc": "请描述想要查询的数据",
+          "FixQueryDesc": "请描述如何修复此语句",
+          "create dimension by table": "根据表字段创建维度",
+          "create cube by table": "根据表字段创建多维数据集",
+          "create calcuated measure": "创建计算度量",
+          "The error is xxxx": "错误是 xxxx",
+          "query total sales amount by products": "查询产品的销售总额"
+        }
       }
     },
     "BUSINESS_AREA": {
@@ -967,6 +1004,9 @@
       "StoryCard": {
         "LastUpdated": "最后更新",
         "Open": "查看"
+      },
+      "AuthBottomSheet": {
+        "Title": "为数据源 {{name}} 提供账号"
       }
     },
     "INVITE_PAGE": {
@@ -1002,6 +1042,7 @@
         "Port": "端口号",
         "Path": "路径",
         "Username": "用户名",
+        "User": "用户名",
         "Password": "密码",
         "Database Name": "数据库名",
         "Use SSL": "使用加密连接",
@@ -1013,7 +1054,11 @@
         "ApiPort": "接口端口号",
         "Catalog": "目录",
         "Database": "数据库",
-        "Version": "版本"
+        "Version": "版本",
+        "Url": "主机链接",
+        "Request Timeout": "请求超时时间",
+        "Verify SSL certificate": "验证 SSL 证书",
+        "HTTP Path": "Http 路径"
       }
     },
     "Story": {
@@ -1124,7 +1169,18 @@
       "Templates": "模板",
       "AddSemanticModels": "添加语义模型",
       "New": "新建",
-      "Files": "文件"
+      "UploadFiles": "上传文件",
+      "Files": "文件",
+      "FileColumn": {
+        "originalName": "原始文件名",
+        "size": "大小",
+        "type": "类型",
+        "createdAt": "创建时间",
+        "mimetype": "MIME 类型",
+        "encoding": "编码",
+        "storageProvider": "存储提供商",
+        "createdByUser": "创建人"
+      }
     },
     "Certification": {
       "Certification": "认证",
@@ -1139,6 +1195,9 @@
       "GetYourApiKey": "获取你的 API Key",
       "ProvideOpenaiApiKey": "请提供 Openai API Key?",
       "Provider": "提供商",
+      "Provider_DashScope": "阿里云灵积",
+      "DefaultModel": "默认模型",
+      "ShowTokenizer": "显示词数",
       "YourAIPairProgrammer": "你的 AI 配对程序员!",
       "LetYourAIPairProgrammerEdits": "让你的 AI 配对程序员修改一下!",
       "SelectSomeCode": "选择代码，让你的 AI 配对程序员修改一下!",
@@ -1153,6 +1212,9 @@
       "ExamplesOfPrompts": "提示语示例",
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
+      "AskAICopilot": "向 AI 副驾驶询问问题",
+      "Prompt": "提示",
+      "SendPrompt": "发送提示",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",
@@ -1176,7 +1238,9 @@
           "访问量走势, 线条平滑，线粗5",
           "按产品类别统计访问量, 显示图例",
           "2023年某产品的访问量走势"
-        ]
+        ],
+        "SuggestCommandDescription": "为数据集提供提问建议",
+        "ChartCommandDescription": "用图表洞察数据"
       }
     },
     "ApprovalPolicy": {
@@ -1295,6 +1359,17 @@
           "Description": "启用业务域功能，创建和使用业务域"
         }
       }
+    },
+    "Themes": {
+      "System": "跟随系统",
+      "Light": "明亮",
+      "Dark": "暗色",
+      "Dark Green": "暗绿"
+    },
+    "PageNotFound": {
+      "FoundDoorwayGreat": "看起来您已经找到了通往伟大虚无的大门",
+      "SorryAboutThat": "很抱歉！请访问我们的主页以找到您需要的信息。",
+      "TakeMeThere": "带我去！"
     },
     "title": {
       "short": "分析云"
@@ -1470,7 +1545,9 @@
         "OfficialName": "组织全称",
         "ShortDescription": "组织简介",
         "Website": "网站链接",
-        "SelectDataNetwork": "选择数据网络"
+        "SelectDataNetwork": "选择数据网络",
+        "DataNetworkDescription": "服务端将从此网络存储地址下载相应的数据文件进行演示数据的导入",
+        "FileUrl": "文件链接"
       }
     }
   },
@@ -2770,7 +2847,9 @@
       "Search": "搜索",
       "Options": "配置",
       "Clear": "清空",
-      "Reset": "重置"
+      "Reset": "重置",
+      "NotFoundValue": "未找到值：",
+      "SemanticModel": "语义模型"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "参考线",
@@ -2887,9 +2966,6 @@
     },
     "Select": {
       "UnableLoadOptionList": "无法加载可选项"
-    },
-    "SemanticModel": {
-      "Label": "语义模型"
     },
     "Sort": {
       "Label": "排序字段"

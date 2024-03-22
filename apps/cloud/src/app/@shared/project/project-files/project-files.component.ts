@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
+import { Component, computed, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
+import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { Subscription, firstValueFrom, of, switchMap, tap } from 'rxjs'
+import { Subscription, firstValueFrom, of, startWith, switchMap, tap } from 'rxjs'
 import { IStorageFile, ProjectService, StorageFileService, ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-project-files',
@@ -31,36 +30,39 @@ import { MaterialModule } from '../../material.module'
   ],
   animations: [listAnimation]
 })
-export class ProjectFilesComponent {
-  private readonly _dialogRef = inject(MatDialogRef<ProjectFilesComponent>)
+export class ProjectFilesDialogComponent {
   private readonly _dialog = inject(MatDialog)
   private readonly _data = inject<{ projectId: string }>(MAT_DIALOG_DATA)
   private readonly _toastrService = inject(ToastrService)
-  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly projectService = inject(ProjectService)
   private readonly storageFileService = inject(StorageFileService)
 
-  public files: IStorageFile[]
-  public activedFile = null
+  readonly #files = signal<IStorageFile[]>([])
+  readonly activedFile = signal(null)
+  readonly searchControl = new FormControl('')
+  readonly search = toSignal(this.searchControl.valueChanges.pipe(startWith('')))
+  readonly filteredFiles = computed(() => {
+    const text = this.search()?.toLowerCase()
+    return text ? this.#files().filter((file) => file.originalName?.toLowerCase().includes(text)) : this.#files()
+  })
 
   private uploadSubscribtion: Subscription
   file: File | null = null
-  isLoading = false
+  readonly isLoading = signal(false)
   constructor() {
     this.projectService.getOne(this._data.projectId, ['files']).subscribe((project) => {
-      console.log(project)
-      this.files = project.files
+      this.#files.set(project.files)
     })
   }
 
   activeLink(file: IStorageFile) {
-    this.activedFile = file
+    this.activedFile.set(file)
   }
 
   onFileSelected(event: Event): void {
     this.file = (event.target as HTMLInputElement).files?.[0]
     if (this.file) {
-      this.isLoading = true
+      this.isLoading.set(true)
       this.uploadSubscribtion = of(this.file)
         .pipe(
           switchMap((file) => {
@@ -72,23 +74,22 @@ export class ProjectFilesComponent {
             return this.projectService
               .updateFiles(
                 this._data.projectId,
-                [...this.files, file].map(({ id }) => id)
+                [...this.#files(), file].map(({ id }) => id)
               )
               .pipe(
                 tap(() => {
-                  this.files = [...this.files, file]
+                  this.#files.update((files) => [...files, file])
+                  this.activeLink(file)
                 })
               )
           })
         )
         .subscribe({
           next: (project) => {
-            this.isLoading = false
-            this._cdr.detectChanges()
+            this.isLoading.set(false)
           },
           error: (err) => {
-            this.isLoading = false
-            this._cdr.detectChanges()
+            this.isLoading.set(false)
           }
         })
     }
@@ -104,8 +105,7 @@ export class ProjectFilesComponent {
 
     try {
       await firstValueFrom(this.projectService.removeFile(this._data.projectId, file.id))
-      this.files = this.files.filter(({ id }) => id !== file.id)
-      this._cdr.detectChanges()
+      this.#files.update((files) => files.filter(({ id }) => id !== file.id))
     } catch (error) {
       this._toastrService.error(error)
     }

@@ -5,10 +5,8 @@ import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
 import { EntitySchemaState } from './types'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 
-@UntilDestroy()
 @Injectable()
 export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> extends DataSettingsSchemaService<T> {
   protected readonly modelService = inject(SemanticModelService)

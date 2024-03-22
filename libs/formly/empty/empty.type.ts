@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FieldType } from '@ngx-formly/core'
 
-@UntilDestroy()
 @Component({
   selector: 'pac-formly-empty',
   template: ``,

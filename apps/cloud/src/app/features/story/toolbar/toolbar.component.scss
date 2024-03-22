@@ -4,11 +4,14 @@
   &.pac-toolbar__on-right {
     @apply flex-row-reverse;
   }
+}
 
+.pac-story-bar__detail-card {
+  background-color: var(--mdc-elevated-card-container-color);
 }
 
 .mat-divider {
-  @apply border border-dashed my-4;
+  @apply border-dashed my-4;
 }
 
 .mat-mdc-icon-button.mat-mdc-button-base {
@@ -23,8 +26,4 @@
   .pac-story-bar__scale-point {
     @apply bg-yellow-500;
   }
-}
-
-.pac-copilot-chat {
-  --pac-copilot-bg-color: transparent;
 }

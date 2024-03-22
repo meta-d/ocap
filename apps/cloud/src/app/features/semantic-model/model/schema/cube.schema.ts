@@ -3,13 +3,12 @@ import { nonBlank } from '@metad/core'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { Cube } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
-import { untilDestroyed } from '@ngneat/until-destroy'
 import { Observable } from 'rxjs'
 import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { EntitySchemaService } from './entity-schema.service'
 import { CubeSchemaState } from './types'
 import { FormlyFieldConfig } from '@ngx-formly/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 
 @Injectable()
@@ -47,7 +46,7 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
       { value: null, label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }) },
       ...properties.map((property) => ({ value: property.name, label: property.caption }))
     ]),
-    untilDestroyed(this),
+    takeUntilDestroyed(this.destroyRef),
     shareReplay(1)
   )
 

@@ -1,34 +1,30 @@
 <mat-toolbar class="pac__toolbar pac-model__shell-bar flex justify-between items-center">
     <div class="flex justify-start items-center" cdkMenuBar>
-        <button mat-button [color]="drawer.opened?'accent':''" (click)="drawer.toggle()">
-            <mat-icon fontSet="material-icons-outlined">toc</mat-icon>
-        </button>
-    
-        <button *ngIf="isMobile$ | async" cdkMenuItem class="pac-model__page-trigger flex-1"
+      @if (isMobile()) {
+        <button cdkMenuItem class="pac-model__page-trigger flex-1"
             [cdkMenuTriggerFor]="mobileMenu">
             <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
         </button>
-
-        <ng-container *ngIf="isNotMobile$ | async">
-            <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
-                <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
-                <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="dataMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.DATA' | translate: {Default: "Data"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-            <button cdkMenuItem [cdkMenuTriggerFor]="manageMenu" class="flex items-center">
-                <span>{{ 'PAC.KEY_WORDS.Management' | translate: {Default: "Management"} }}</span>
-                <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
-            </button>
-        </ng-container>
-
+      }
+      @if (!isMobile()) {
+        <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
+            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+            <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="dataMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.DATA' | translate: {Default: "Data"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+        <button cdkMenuItem [cdkMenuTriggerFor]="manageMenu" class="flex items-center">
+            <span>{{ 'PAC.KEY_WORDS.Management' | translate: {Default: "Management"} }}</span>
+            <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+        </button>
+      }
         <div [routerLink]="['./access']" routerLinkActive #rla="routerLinkActive">
             <button *ngIf="rla.isActive" mat-button [color]="'accent'">
                 <span class="font-notoColorEmoji">🔏</span>{{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
@@ -47,27 +43,27 @@
             <mat-icon *ngIf="!isFullscreen" fontSet="material-icons-round">fullscreen</mat-icon>
             <mat-icon *ngIf="isFullscreen" fontSet="material-icons-round">fullscreen_exit</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="copilotEnabled$ | async" class="pac-model__copilot-trigger font-notoColorEmoji"
+        <!-- <button mat-icon-button *ngIf="copilotEnabled$ | async" class="pac-model__copilot-trigger font-notoColorEmoji"
             displayDensity="cosy"
             [class.active]="copilotDrawer.opened"
             [color]="copilotDrawer.opened?'accent':''"
             (click)="copilotDrawer.toggle()"
         >
-            <span>🤖</span>
-        </button>
+            <div class="flex justify-center items-center text-xl">🤖</div>
+        </button> -->
     </div>
 
 </mat-toolbar>
 
-<mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize cdkDropListGroup>
-    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z"
-        opened
-        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+<mat-drawer-container class="flex-1" [hasBackdrop]="false" autosize>
+    <mat-drawer #drawer class="ngm-story__designer-drawer ngm-sidenav-container-bg-transparent mat-elevation-z"
+        [(opened)]="sideMenuOpened"
+        [mode]="isMobile() ? 'over' : 'side'"
         ngmResizer [resizerWidth]="230"
     >
-        <ngm-splitter class="flex-1" [type]="1">
+        <ngm-splitter class="h-full mr-1" [type]="1">
             <ngm-splitter-pane size='15rem' class="flex flex-col justify-items-stretch items-stretch">
-                <mat-toolbar displayDensity="compact" class="shrink-0 text-gray-600 dark:text-gray-300 flex justify-between items-center">
+                <mat-toolbar displayDensity="compact" class="shrink-0 flex justify-between items-center">
                     <span>{{ 'PAC.MODEL.MODEL.Entities' | translate: {Default: "Entities"} }}</span>
                     
                     <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action" [matTooltip]=" 'PAC.MODEL.MODEL.New' | translate: {Default: 'New'} "
@@ -83,7 +79,7 @@
                     (cdkDropListDropped)="drop($event)"
                     [cdkDropListEnterPredicate]="entityPredicate"
                 >
-                  <div class="max-h-full overflow-y-auto">
+                  <div class="max-h-full overflow-hidden hover:overflow-y-auto">
                     <a mat-list-item *ngFor="let entity of entities$ | async; trackBy: trackById" class="pac-model__nav-item"
                         [class.selected]="rla.isActive"
                         [routerLink]="[entity.type === SemanticModelEntityType.CUBE ? 'entity' : 'dimension', entity.id]"
@@ -128,8 +124,8 @@
                 </mat-nav-list>
             </ngm-splitter-pane>
 
-            <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch" *ngrxLet="isWasm$ as isWasm">
-                <mat-toolbar displayDensity="compact" class="shrink-0 text-gray-600 dark:text-gray-300">
+            <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
+                <mat-toolbar displayDensity="compact" class="shrink-0">
                     <mat-toolbar-row class="flex justify-between items-center">
                         <span>{{ 'PAC.MODEL.MODEL.TABLES' | translate: {Default: "Tables"} }}</span>
 
@@ -146,12 +142,12 @@
                                 (click)="refreshSchema()">
                                 <mat-icon fontSet="material-icons-round">refresh</mat-icon>
                             </button>
-                            <button *ngIf="isWasm" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+                            <button *ngIf="isWasm$()" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                                 [matTooltip]=" 'PAC.MODEL.MODEL.NewTable' | translate: {Default: 'New Table'} "
                                 (click)="addTable()">
                                 <mat-icon fontSet="material-icons-round">add</mat-icon>
                             </button>
-                            <button *ngIf="writable$ | async" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+                            <button *ngIf="writable$()" mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                                 [matTooltip]=" 'PAC.MODEL.MODEL.UploadTable' | translate: {Default: 'Upload Table'} "
                                 (click)="uploadTable()">
                                 <mat-icon fontSet="material-icons-round">upload</mat-icon>
@@ -170,54 +166,55 @@
                 </mat-toolbar>
 
                 <div class="relative flex-1">
-                    <cdk-virtual-scroll-viewport *ngIf="entitySets$ | async as entities; else contentLoader"
-                        class="pac-model__tables-viewport flex-1 h-full"
-                        itemSize="30" minBufferPx="360" maxBufferPx="1000"
-                    >
-                        <mat-nav-list displayDensity="compact" disableRipple class="pac-model__nav-list"
-                            id="pac-model-entitysets"
-                            #tableList="cdkDropList"
-                            cdkDropList
-                            [cdkDropListData]="entities"
-                            (cdkDropListDropped)="drop($event)"
-                            >
-                            <mat-list-item *cdkVirtualFor="let entity of entities"
-                                cdkDrag
-                                [cdkDragData]="entity"
-                                (cdkDragReleased)="onDragReleased($event)"
-                                (mouseenter)="actionStrip.show()"
-                                (mouseleave)="actionStrip.hide()">
-                                <ngm-display-behaviour class="flex-1 overflow-hidden"
-                                    [option]="{value: entity.name, label: entity.caption || entity.label}"
-                                    [highlight]="searchControl.value"
-                                    >
-                                </ngm-display-behaviour>
+                    
+                    @if (entitySets$ | async; as entities) {
+                        <cdk-virtual-scroll-viewport class="pac-model__tables-viewport flex-1 h-full overflow-hidden hover:overflow-y-auto"
+                            itemSize="30" minBufferPx="360" maxBufferPx="1000"
+                        >
+                            <mat-nav-list displayDensity="compact" disableRipple class="pac-model__nav-list ngm-list"
+                                id="pac-model-entitysets"
+                                #tableList="cdkDropList"
+                                cdkDropList
+                                [cdkDropListData]="entities"
+                                (cdkDropListDropped)="drop($event)"
+                                >
+                                <mat-list-item *cdkVirtualFor="let entity of entities"
+                                    cdkDrag
+                                    [cdkDragData]="entity"
+                                    (cdkDragReleased)="onDragReleased($event)"
+                                    (mouseenter)="actionStrip.show()"
+                                    (mouseleave)="actionStrip.hide()">
+                                    <ngm-display-behaviour class="flex-1 overflow-hidden"
+                                        [option]="{value: entity.name, label: entity.caption || entity.label}"
+                                        [highlight]="searchControl.value"
+                                        >
+                                    </ngm-display-behaviour>
 
-                                <ngm-action-strip #actionStrip [hidden]="true">
-                                    <button mat-icon-button *ngIf="isWasm && entity.sourceUrl" displayDensity="compact"
-                                        (click)="$event.stopPropagation();$event.preventDefault();editTable(entity)">
-                                        <mat-icon>edit</mat-icon>
-                                    </button>
-                                    <button mat-icon-button *ngIf="isWasm && entity.sourceUrl" color="warn" displayDensity="compact"
-                                        (click)="$event.stopPropagation();$event.preventDefault();deleteTable(entity)">
-                                        <mat-icon>delete</mat-icon>
-                                    </button>
-                                </ngm-action-strip>
-                            </mat-list-item>
-                        </mat-nav-list>
-                    </cdk-virtual-scroll-viewport>
+                                    <ngm-action-strip #actionStrip [hidden]="true">
+                                        <button mat-icon-button *ngIf="isWasm$() && entity.sourceUrl" displayDensity="compact"
+                                            (click)="$event.stopPropagation();$event.preventDefault();editTable(entity)">
+                                            <mat-icon>edit</mat-icon>
+                                        </button>
+                                        <button mat-icon-button *ngIf="isWasm$() && entity.sourceUrl" color="warn" displayDensity="compact"
+                                            (click)="$event.stopPropagation();$event.preventDefault();deleteTable(entity)">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </ngm-action-strip>
+                                </mat-list-item>
+                            </mat-nav-list>
+                        </cdk-virtual-scroll-viewport>
+                    } @else {
+                        <bullet-list-content-loader class="dark:opacity-20"/>
+                    }
 
-                    <ng-template #contentLoader>
-                        <list-content-loader class="flex-1"></list-content-loader>
-                    </ng-template>
-
-                    <div *ngIf="dbTablesError" class="pac-result w-full h-full absolute top-0 left-0 text-sm">
-                        <div class="bug font-notoColorEmoji">🐞</div>
-                        <div class="description flex-1 basis-0">
-                            {{dbTablesError}}
+                    @if (dbTablesError) {
+                        <div class="pac-result w-full h-full absolute top-0 left-0 text-sm">
+                            <div class="bug font-notoColorEmoji">🐞</div>
+                            <div class="description flex-1 basis-0">
+                                {{dbTablesError}}
+                            </div>
                         </div>
-                    </div>
-
+                    }
                 </div>
                 
             </ngm-splitter-pane>
@@ -228,25 +225,11 @@
             cdkDragLockAxis="x"
         ></div>
     </mat-drawer>
-    <mat-drawer-content class="flex">
-        <mat-drawer-container class="flex-1 h-full" [hasBackdrop]="false" autosize>
-            <mat-drawer #copilotDrawer class="mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="400">
-                <pac-copilot-chat #copilotChat class="pac-cdk-drop__list pac-cdk-drop__area w-full h-full rounded-lg shadow-lg overflow-hidden"
-                    [copilotEngine]="copilotEngine"
-                    cdkDropList
-                    (cdkDropListDropped)="dropCopilot($event)"
-                ></pac-copilot-chat>
-                
-                <div ngmResizerBar resizerBarPosition="left"
-                    cdkDrag
-                    cdkDragLockAxis="x"
-                ></div>
-            </mat-drawer>
-
-            <mat-drawer-content [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
-                <router-outlet #o="outlet"></router-outlet>
-            </mat-drawer-content>
-        </mat-drawer-container>
+    <mat-drawer-content>
+      <div class="pac-model-content w-full flex-1 overflow-auto">
+        <router-outlet #o="outlet"></router-outlet>
+      </div>
+      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
     
@@ -417,7 +400,7 @@
             {{ 'PAC.MODEL.Members' | translate: {Default: "Members"} }}
         </button>
     
-        <button cdkMenuItem *ngIf="isOlap$ | async" [routerLink]="['./access']">
+        <button cdkMenuItem *ngIf="isOlap$()" [routerLink]="['./access']">
             <mat-icon fontSet="material-icons-outlined">manage_accounts</mat-icon>
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
         </button>
@@ -437,3 +420,12 @@
         </button>
     </ng-template>
 </mat-menu>
+
+<ng-template #tableTemplate let-message="message">
+  <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+    [columns]="message.data['columns']"
+    [data]="message.data['content']"
+    paging
+    [pageSizeOptions]="[10, 20, 50, 100]"
+  ></ngm-table>
+</ng-template>

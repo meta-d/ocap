@@ -1,14 +1,14 @@
 import { Component, OnDestroy, computed, effect, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router } from '@angular/router'
 import { BusinessAreasService } from '@metad/cloud/state'
+import { BusinessType } from '@metad/contracts'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { BehaviorSubject, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs'
+import { computedAsync } from 'ngxtension/computed-async'
+import { injectParams } from 'ngxtension/inject-params'
+import { BehaviorSubject, EMPTY, catchError, switchMap } from 'rxjs'
 import { BusinessAreaInfoFormComponent } from '../area-info-form/area-info-form.component'
 import { BusinessAreaUsersComponent } from '../area-users/area-users.component'
 import { BusinessAreaComponent } from '../business-area.component'
-import { BusinessType } from '@metad/contracts'
 
 @Component({
   standalone: true,
@@ -20,25 +20,19 @@ import { BusinessType } from '@metad/contracts'
 export class EditBusinessAreaComponent implements OnDestroy {
   BUSINESS_AREA_TYPE = BusinessType
 
-  private route = inject(ActivatedRoute)
-  private router = inject(Router)
   private businessAreasService = inject(BusinessAreasService)
   private businessAreaComponent = inject(BusinessAreaComponent)
 
-  public readonly businessAreaId$ = this.route.params.pipe(
-    startWith(this.route.snapshot.params),
-    map((params) => params?.id),
-    filter((id) => !!id),
-    distinctUntilChanged()
-  )
+  readonly params = injectParams()
 
-  private readonly refresh$ = new BehaviorSubject<void>(null)
+  readonly refresh$ = new BehaviorSubject<void>(null)
+  businessArea = computedAsync(() => {
+    // will use switchMap under the hood by default
+    const { id } = this.params() // will recompute when queryParams change
+    return this.refresh$.pipe(switchMap(() => this.businessAreasService.getById(id)), catchError((err) => EMPTY)) // getData is a method that returns an Observable
+  }) // returns a signal
 
-  public readonly businessArea = toSignal(
-    this.businessAreaId$.pipe(
-      switchMap((id) => this.refresh$.pipe(switchMap(() => this.businessAreasService.getById(id))))
-    )
-  )
+  readonly businessAreaId = computed(() => this.params()?.id)
 
   public readonly name = computed(() => this.businessArea()?.name)
 
@@ -55,6 +49,7 @@ export class EditBusinessAreaComponent implements OnDestroy {
 
   refresh() {
     this.refresh$.next()
+    this.businessAreaComponent.refresh()
   }
 
   ngOnDestroy(): void {

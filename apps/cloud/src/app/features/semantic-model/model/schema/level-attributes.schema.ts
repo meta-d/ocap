@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import { map } from 'rxjs/operators'
-import { SemanticsExpansion } from './common'
+import { SemanticsAccordionWrapper } from './common'
 import { HierarchySchemaService } from './hierarchy.schema'
 import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 
@@ -71,7 +71,7 @@ export class LevelAttributesSchema extends HierarchySchemaService {
           ]
         },
 
-        SemanticsExpansion(COMMON)
+        ...SemanticsAccordionWrapper(COMMON)
       ]
     }
   }

@@ -1,19 +1,18 @@
 import { Component, computed, inject } from '@angular/core'
-import { TrendType, isNil } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling, WidgetMenuType, nonNullable } from '@metad/core'
+import { TrendType, isNil } from '@metad/ocap-core'
 import { ComponentStyling, componentStyling } from '@metad/story/core'
+import { NGXLogger } from 'ngx-logger'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { KeyPerformanceIndicatorService } from './key-performance-indicator.service'
 import { NxWidgetKPIOptions } from './types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export interface PacWidgetKPIStyling extends StoryWidgetStyling {
   title: ComponentStyling
   value: ComponentStyling
 }
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-widget-kpi',
   templateUrl: 'kpi.component.html',
@@ -22,11 +21,13 @@ export interface PacWidgetKPIStyling extends StoryWidgetStyling {
 })
 export class NxWidgetKpiComponent extends AbstractStoryWidget<
   NxWidgetKPIOptions,
-  StoryWidgetState<NxWidgetKPIOptions, PacWidgetKPIStyling>
+  StoryWidgetState<NxWidgetKPIOptions>,
+  PacWidgetKPIStyling
 > {
   TrendType = TrendType
 
   public readonly dataService = inject(KeyPerformanceIndicatorService)
+  readonly #logger = inject(NGXLogger)
 
   get intent() {
     return this.options?.intent
@@ -65,12 +66,10 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     map((additionals) => (additionals.length > 0 ? additionals : null))
   )
 
-  public readonly titleStyles$ = this.styling$.pipe(
-    filter(Boolean),
-    map((styling) => componentStyling(styling.title))
-  )
-  readonly valueStyles = computed(() => componentStyling(this.stylingSignal()?.value))
+  public readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
   
+  readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
+
   public readonly isLoading$ = this.dataService.loading$
   public readonly error$ = this.dataService.selectResult().pipe(map(({ error }) => error))
 
@@ -80,27 +79,39 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   |--------------------------------------------------------------------------
   */
   // slicers
-  private slicersSub = this.selectionVariant$.subscribe((selectionVariant) => {
+  private slicersSub = this.selectionVariant$.pipe(takeUntilDestroyed()).subscribe((selectionVariant) => {
     this.dataService.selectionVariant = selectionVariant
     this.refresh()
   })
-  private _settingsSub = this.dataSettings$.pipe(distinctUntilChanged()).subscribe((value) => {
+  private _settingsSub = this.dataSettings$.pipe(distinctUntilChanged(), takeUntilDestroyed()).subscribe((value) => {
     this.dataService.dataSettings = value
   })
-  private entityTypeSub = this.dataService.selectEntityType().pipe(takeUntilDestroyed()).subscribe((entityType) => {
-    this.entityType.set(entityType)
-  })
-  private _resultSub = this.dataService.selectResult().subscribe((result) => {
-    this.setExplains([result])
-  })
+  private entityTypeSub = this.dataService
+    .selectEntityType()
+    .pipe(takeUntilDestroyed())
+    .subscribe((entityType) => {
+      this.entityType.set(entityType)
+    })
+  private _resultSub = this.dataService
+    .selectResult()
+    .pipe(takeUntilDestroyed())
+    .subscribe((result) => {
+      this.#logger.debug(`Result from dataService in NxWidgetKpiComponent is:`, result)
+      this.setExplains([result, this.dataSettings])
+    })
 
-  private _serviceInitSub = this.dataService.onAfterServiceInit().subscribe(() => {
-    this.refresh()
-  })
+  private _serviceInitSub = this.dataService
+    .onAfterServiceInit()
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => {
+      this.refresh()
+    })
 
-  private _optionsSub = this.options$.pipe(filter(nonNullable), distinctUntilChanged()).subscribe((value) => {
-    this.dataService.options = value
-  })
+  private _optionsSub = this.options$
+    .pipe(filter(nonNullable), distinctUntilChanged(), takeUntilDestroyed())
+    .subscribe((value) => {
+      this.dataService.options = value
+    })
 
   refresh(force = false): void {
     this.dataService.refresh(force)

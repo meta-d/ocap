@@ -1,8 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { isNil } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs'
 import { debounceTime, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
@@ -20,14 +19,16 @@ import {
   ToastrService
 } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-roles',
   templateUrl: './roles.component.html',
   styleUrls: ['./roles.component.scss']
 })
 export class RolesComponent extends TranslationBaseComponent implements OnInit {
+  readonly destroyRef = inject(DestroyRef)
+  
   permissionGroups = PermissionGroups
 
   private readonly refresh$ = new BehaviorSubject<void>(null)
@@ -49,6 +50,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
   loading: boolean
   enabledPermissions: any = {}
   permissions$: Subject<void> = new Subject()
+
   constructor(
     private readonly rolePermissionsService: RolePermissionsService,
     private readonly rolesService: RoleService,
@@ -66,7 +68,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
       .pipe(
         filter((user: IUser) => !!user),
         tap((user: IUser) => (this.user = user)),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
   }
@@ -78,7 +80,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
         tap(() => (this.loading = true)),
         filter(() => !!this.role),
         switchMap(() => this.loadPermissions()),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: () => {
@@ -87,7 +89,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
         }
       })
 
-    this.roles$.pipe(untilDestroyed(this)).subscribe({
+    this.roles$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (items) => {
         this.roles = items
         this.onSelectedRole(this.roles[0])
@@ -226,7 +228,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
 		/**
 		 * Disabled all administration permissions except "SUPER_ADMIN"
 		 */
-		if (this.user.role.name === RolesEnum.SUPER_ADMIN) {
+		if (this.user?.role.name === RolesEnum.SUPER_ADMIN) {
 			if (this.role.name === RolesEnum.ADMIN || this.role.name === RolesEnum.TRIAL) {
 				return false;
 			}

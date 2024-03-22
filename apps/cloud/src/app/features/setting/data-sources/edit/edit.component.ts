@@ -4,7 +4,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateService } from '@ngx-translate/core'
 import { DataSourceService, DataSourceTypesService } from '@metad/cloud/state'
@@ -19,8 +18,9 @@ import {
   ServerAgent,
   ToastrService
 } from '../../../../@core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { environment } from 'apps/cloud/src/environments/environment'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -36,6 +36,7 @@ import {
 })
 export class PACDataSourceEditComponent implements OnInit {
   AuthenticationEnum = AuthenticationEnum
+  enableLocalAgent = environment.enableLocalAgent
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   loading = false
@@ -58,15 +59,16 @@ export class PACDataSourceEditComponent implements OnInit {
     return this.selected$.value
   }
 
-  public readonly dataSourceTypes$ = this.dataSourceTypes.types$.pipe(untilDestroyed(this))
-  public readonly schema$ = combineLatest([this.selected$.pipe(filter(Boolean)), this.dataSourceTypes$]).pipe(
+  public readonly dataSourceTypes$ = this.dataSourceTypes.types$.pipe(takeUntilDestroyed())
+
+  readonly schema$ = toSignal(combineLatest([this.selected$.pipe(filter(Boolean)), this.dataSourceTypes$]).pipe(
     map(([selected, types]) => types?.find((item) => item.type === selected.type?.type)?.configuration),
     filter(Boolean),
     switchMap(async (schema) => {
       const i18n = await firstValueFrom(this.translateService.get('PAC.DataSources.Schema'))
       return convertConfigurationSchema(schema, i18n)
     })
-  )
+  ))
 
   constructor(
     private dataSourceTypes: DataSourceTypesService,

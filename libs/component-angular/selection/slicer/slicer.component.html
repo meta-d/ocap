@@ -12,7 +12,7 @@
   </button>
 </div>
 
-<mat-chip-listbox *ngIf="slicer" [selectable]="false" (change)="onSlicersChange($event)">
+<mat-chip-listbox *ngIf="slicer" [selectable]="false" >
   <mat-chip-option *ngFor="let member of members(); index as i" [value]="member"
     [removable]="editable"
     [matTooltip]="(member.key || member.value) + ':\n' + (member.caption || member.label)"

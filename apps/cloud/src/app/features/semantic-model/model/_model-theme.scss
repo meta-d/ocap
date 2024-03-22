@@ -17,10 +17,6 @@
   @include dimension.color($config-or-theme);
   @include query-lab.color($config-or-theme);
 
-  .pac-data-type-tag {
-    @apply text-xs inline-flex items-center uppercase px-3 py-1 rounded-full bg-white text-gray-700 overflow-hidden text-ellipsis;
-  }
-
   .pac-model__nav-list {
 
     .mat-mdc-list-item.selected {
@@ -65,12 +61,7 @@
       }
     }
 
-    .mat-toolbar {
-      border-bottom: 1px solid mat.get-color-from-palette($foreground, divider);
-    }
-
     .pac-model__tables-viewport {
-      overflow-x: hidden;
       .cdk-virtual-scroll-content-wrapper {
         max-width: 100%;
       }

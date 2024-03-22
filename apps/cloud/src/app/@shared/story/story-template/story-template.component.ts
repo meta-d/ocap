@@ -4,7 +4,6 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { NgmTagsComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { find, sortBy, values } from 'lodash-es'
@@ -17,7 +16,6 @@ import { MaterialModule } from '../../material.module'
 import { UserPipe } from '../../pipes'
 import { TagViewerComponent } from '../../tag'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-story-template',

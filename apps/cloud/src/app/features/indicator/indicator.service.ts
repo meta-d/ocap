@@ -3,13 +3,13 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { getEntityDimensions, isEntityType } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { Indicator, IndicatorsService, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { includes, isString } from 'lodash-es'
 import { BehaviorSubject, EMPTY, combineLatest } from 'rxjs'
 import { catchError, filter, map, switchMap, tap } from 'rxjs/operators'
 import { IIndicator, registerModel } from '../../@core/index'
 import { nonBlank } from '@metad/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export interface IndicatorState {
   formModel: Indicator
@@ -17,7 +17,6 @@ export interface IndicatorState {
   dataSource: string
 }
 
-@UntilDestroy({ checkProperties: true })
 /**
  * 单一指标状态管理器
  */
@@ -83,7 +82,7 @@ export class PACIndicatorService extends ComponentStore<IndicatorState> {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private modelSub = this.storyModel$.subscribe((storyModel) => {
+  private modelSub = this.storyModel$.pipe(takeUntilDestroyed()).subscribe((storyModel) => {
     // 指标公式编辑时需要用到现有 Indicators
     // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
     const dataSource = registerModel(storyModel as NgmSemanticModel, this.dsCoreService, this.wasmAgent)

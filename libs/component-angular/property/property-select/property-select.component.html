@@ -8,8 +8,8 @@
   </ng-container>
 </label>
 
-<div class="flex flex-col items-stretch gap-2 w-full max-w-full p-1 text-xs rounded-lg 
-  bg-gray-100 ring-offset-1 ring-2 ring-transparent hover:ring-yellow-500/50">
+<div class="select-container flex flex-col items-stretch gap-2 w-full max-w-full p-1 text-xs rounded-lg 
+  ring-offset-1 ring-offset-transparent ring-2 ring-transparent hover:ring-yellow-500/50">
   <form [formGroup]="formGroup" class="flex-1 max-w-full flex justify-start items-center">
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
@@ -53,7 +53,9 @@
         </div>
       </mat-select-trigger>
 
-      <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl" (click)="$event.stopPropagation()"></ngm-search>
+      <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl"
+        (keydown)="onSearchKeydown($event)"
+        (click)="$event.stopPropagation()"></ngm-search>
 
       <mat-optgroup *ngIf="showDimension" [label]=" 'COMPONENTS.PROPERTY.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
         <mat-option [value]="property.name" *ngFor="let property of dimensions$ | async; trackBy: trackByName">

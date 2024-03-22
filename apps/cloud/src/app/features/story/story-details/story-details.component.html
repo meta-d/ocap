@@ -93,7 +93,7 @@
             <button mat-icon-button displayDensity="cosy" (click)="openSemanticModel(option.id)">
               <mat-icon>open_in_new</mat-icon>
             </button>
-            <span [highlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
+            <span [ngmHighlight]="highlight" [caseSensitive]="false" customClasses="bg-transparent font-semibold text-amber-500"
               [content]="option.name">
             </span>
           </div>

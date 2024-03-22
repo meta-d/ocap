@@ -62,6 +62,5 @@ export class NgmDialogComponent {
 
   onApply() {
     this.apply.emit(this.form?.value)
-    // this.dialogRef?.close(this.form?.value)
   }
 }

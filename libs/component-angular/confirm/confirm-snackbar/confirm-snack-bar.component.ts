@@ -13,20 +13,22 @@ import { MatSnackBarRef, MAT_SNACK_BAR_DATA } from '@angular/material/snack-bar'
 
   
 @Component({
-    selector: 'pac-confirm-snackbar',
+    selector: 'ngm-confirm-snackbar',
     template: `<span class="flex-1 flex">{{data.message}}</span>
-    <div class="pac-confirm-snackbar-action">
+    <div class="ngm-confirm-snackbar-action">
       <button mat-button (click)="dismiss()">
         {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
       </button>
     </div>
-    <div class="pac-confirm-snackbar-action" *ngIf="hasAction">
-      <button mat-button color="accent" (click)="action()">{{data.action}}</button>
-    </div>`,
+  @if(hasAction) {
+    <div class="ngm-confirm-snackbar-action">
+      <button mat-flat-button color="primary" (click)="action()">{{data.action}}</button>
+    </div>
+  }`,
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
-      'class': 'pac-confirm-snackbar',
+      'class': 'ngm-confirm-snackbar',
     },
     styleUrls: ['./confirm-snack-bar.scss']
 })

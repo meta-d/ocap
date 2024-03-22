@@ -20,11 +20,11 @@
         </mat-select>
       </mat-form-field>
     </div>
-  <div class="icon-form-field" *ngrxLet="preferredTheme$ as preferredTheme">
+  <div class="icon-form-field">
     <mat-icon color="primary">color_lens</mat-icon>
     <mat-form-field>
       <mat-label>{{'PAC.MENU.GENERAL.THEME' | translate: {Default: "Theme"} }}</mat-label>
-      <mat-select [ngModel]="preferredTheme"
+      <mat-select [ngModel]="preferredTheme$()"
                   (selectionChange)="onThemeSelect($event)"
                   name="theme">
         <ng-container  *ngFor="let l of themes">

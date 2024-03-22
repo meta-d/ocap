@@ -1,18 +1,16 @@
-import * as _axios from 'axios'
-import { Readable } from 'stream'
 import { Connection, Pool, createConnection } from 'mysql' // mysql2 package 的连不上 Doris
 import { BaseSQLQueryRunner, QueryOptions, SQLAdapterOptions, register } from '../../base'
-import { SkipHeaderTransformStream, convertMySQLSchema, pick, typeToMySqlDB, typeToStarrocksDB } from '../../helpers'
-import { CreationTable, File, IDSSchema } from '../../types'
-
-const axios = _axios.default
+import { convertMySQLSchema, pick, typeToMySqlDB } from '../../helpers'
+import { IDSSchema } from '../../types'
 
 export const MYSQL_TYPE = 'mysql'
 export const RDS_TYPE = 'rds_mysql'
-export const DORIS_TYPE = 'doris'
-export const STARROCKS_TYPE = 'starrocks'
 
-export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extends BaseSQLQueryRunner<T> {
+export interface MysqlAdapterOptions extends SQLAdapterOptions {
+  queryTimeout?: number
+}
+
+export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> extends BaseSQLQueryRunner<T> {
   readonly name: string = 'MySQL'
   readonly type: string = MYSQL_TYPE
   readonly syntax = 'sql'
@@ -30,12 +28,9 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
       type: 'object',
       properties: {
         host: { type: 'string' },
-        port: { type: 'number', default: 9030 },
+        port: { type: 'number', default: 3306 },
         username: { type: 'string', title: 'Username' },
         password: { type: 'string', title: 'Password' },
-        apiHost: { type: 'string' },
-        apiPort: { type: 'number', default: 8030 },
-        version: { type: 'number', default: 0 },
         catalog: { type: 'string' },
         database: { type: 'string' },
         // for SSL
@@ -54,15 +49,21 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
           type: 'textarea',
           title: 'Client key',
           depend: 'use_ssl'
+        },
+
+        queryTimeout: {
+          type: 'number',
+          title: 'Query timeout',
         }
       },
-      order: ['host', 'port', 'apiHost', 'apiPort', 'username', 'password'],
-      required: [],
+      order: ['host', 'port', 'username', 'password'],
+      required: ['username', 'password'],
       secret: ['password']
     }
   }
 
-  protected _connection(database?: string) {
+  #connection = null
+  protected createConnection(database?: string) {
     const config: any = pick(this.options, ['host', 'port', 'password', 'database'])
     if (this.options.username) {
       config.user = this.options.username
@@ -87,11 +88,19 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
       // maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
       // idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
       // queueLimit: 0,
-      // debug: true,
-      // trace: true
+      debug: this.options.debug,
+      trace: this.options.trace,
       charset: 'utf8',
       connectTimeout: 60000
     })
+  }
+
+  getConnection(catalog: string): Connection {
+    if (!this.#connection) {
+      this.#connection = this.createConnection(catalog)
+    }
+
+    return this.#connection
   }
 
   async query(connection: Connection | Pool, statment: string, values?: any) {
@@ -109,17 +118,20 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
         })
       }
 
-      values ? connection.query(statment, values, callback) : connection.query(statment, callback)
+      connection.query(
+        {
+          sql: statment,
+          timeout: this.options.queryTimeout || 60000 * 60, // 1h
+          values
+        },
+        callback
+      )
     })
   }
 
   async runQuery(query: string, options?: QueryOptions): Promise<any> {
-    const connection = this._connection(options?.catalog ?? this.options.catalog)
-    try {
-      return await this.query(connection, query)
-    } finally {
-      connection.end()
-    }
+    const connection = this.getConnection(options?.catalog ?? this.options.catalog)
+    return await this.query(connection, query)
   }
 
   async getCatalogs(): Promise<IDSSchema[]> {
@@ -151,7 +163,9 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
         '`table_comment` AS `table_comment` FROM `information_schema`.`tables` AS A WHERE ' +
         tableSchema
     }
-    return this.runQuery(query).then(({ data }) => convertMySQLSchema(data))
+
+    const { data } = await this.runQuery(query)
+    return convertMySQLSchema(data)
   }
 
   async describe(catalog: string, statement: string) {
@@ -160,7 +174,13 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
     }
 
     statement = `${statement} LIMIT 1`
-    return this.runQuery(statement, { catalog })
+    return await this.runQuery(statement, { catalog })
+  }
+
+  async createCatalog(catalog: string) {
+    // 用 `CREATE DATABASE` 使其适用于 Doris ？
+    const query = `CREATE DATABASE IF NOT EXISTS \`${catalog}\``
+    await this.runQuery(query)
   }
 
   /**
@@ -173,7 +193,7 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
   async import(params, options?: { catalog?: string }): Promise<void> {
     const { name, columns, data, append } = params
 
-    const connection = this._connection(options?.catalog ?? this.options?.catalog)
+    const connection = this.getConnection(options?.catalog ?? this.options?.catalog)
 
     const dropTableStatement = `DROP TABLE IF EXISTS \`${name}\``
     const createTableStatement = `CREATE TABLE IF NOT EXISTS \`${name}\` (${columns
@@ -207,7 +227,7 @@ export class MySQLRunner<T extends SQLAdapterOptions = SQLAdapterOptions> extend
   }
 
   async teardown() {
-    //
+    this.#connection?.destroy()
   }
 }
 
@@ -216,190 +236,5 @@ export class RDSMySQLRunner extends MySQLRunner {
   readonly type: string = RDS_TYPE
 }
 
-export interface DorisAdapterOptions extends SQLAdapterOptions {
-  apiHost?: string
-  apiPort?: number
-}
-
-export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
-  readonly name: string = 'Doris'
-  readonly type: string = DORIS_TYPE
-
-  /**
-   * Import data into db
-   * * Create table if not exist
-   *
-   * @param params
-   * @returns
-   */
-  async import(params: CreationTable, options?: { catalog?: string }): Promise<void> {
-    const { name, columns, data, file, format, mergeType } = params
-
-    const database = options?.catalog ?? this.options?.catalog
-    const connection = this._connection(database)
-
-    const statements = []
-    try {
-      // Recreate table when append mode
-      if (mergeType === 'DELETE') {
-        const keys = columns.filter(({ isKey }) => isKey).map(({ fieldName }) => `\`${fieldName}\``)
-        if (!keys.length) {
-          throw new Error(`Olap table should use key fields for 'DISTRIBUTED BY HASH'`)
-        }
-        const dropTableStatement = `DROP TABLE IF EXISTS \`${name}\``
-        const createTableStatement = `CREATE TABLE IF NOT EXISTS \`${name}\` (${columns
-          .map((col) => `\`${col.fieldName}\` ${typeToStarrocksDB(col.type, col.length, col.fraction)}`)
-          .join(', ')}) UNIQUE KEY (${keys.join(',')}) COMMENT "${name}" DISTRIBUTED BY HASH(${keys.join(
-          ','
-        )}) BUCKETS 10 PROPERTIES("replication_num" = "1")`
-        statements.push(dropTableStatement)
-        statements.push(createTableStatement)
-        await this.query(connection, dropTableStatement)
-        await this.query(connection, createTableStatement)
-      }
-
-      if (format && format !== 'data') {
-        return await this.streamLoad(database, name, file, params)
-      }
-
-      const values = data.map((row) => columns.map(({ name }) => row[name]))
-      const insertStatement = `INSERT INTO \`${name}\` (${columns
-        .map(({ fieldName }) => `\`${fieldName}\``)
-        .join(',')}) VALUES ?`
-      statements.push(insertStatement)
-      await this.query(connection, insertStatement, [values])
-    } catch (err: any) {
-      throw {
-        message: err.message,
-        stats: {
-          statements
-        }
-      }
-    } finally {
-      connection.end()
-    }
-
-    return null
-  }
-
-  async streamLoad(database: string, table: string, file: File, params: CreationTable) {
-    const {host, apiHost, apiPort, use_ssl} = this.options
-    const url = `${use_ssl ? 'https' : 'http'}://${apiHost || host}:${apiPort || '8030'}/api/${database}/${table}/_stream_load`
-    let fileStream = file.buffer ? Readable.from(file.buffer) : file.stream
-    const authorization = Buffer.from(`${this.options.username}:${this.options.password}`).toString('base64')
-    const headers: any = {
-      Authorization: `Basic ${authorization}`,
-      columns: params.columns.map(({ fieldName }) => fieldName).join(','),
-      format: params.format,
-    }
-    if (params.format === 'csv') {
-      headers.column_separator = params.columnSeparator || ','
-      if (params.withHeader) {
-        if (this.type === DORIS_TYPE) {
-          headers.format = 'csv_with_names'
-        } else {
-          // for Starrocks
-          headers.skip_header = 1
-          if (this.options.version < 3) {
-            fileStream = fileStream.pipe(new SkipHeaderTransformStream())
-          }
-        }
-      } else {
-        // for Starrocks
-        headers.skip_header = 0
-      }
-      // for Starrocks
-      headers.Expect = '100-continue'
-    } else if (params.format === 'json') {
-      headers.strict_mode = true
-    }
-    const result = await axios.put(url, fileStream, {
-      headers,
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    })
-
-    if (result.status === 200) {
-      if (result.data.Status === 'Success') {
-        return result.data
-      } else {
-        throw new Error(result.data.Message)
-      }
-    }
-
-    throw new Error(result.data.Message)
-  }
-}
-
-export class StarRocksRunner extends DorisRunner {
-  readonly name: string = 'StarRocks'
-  readonly type: string = STARROCKS_TYPE
-
-  /**
-   * Import data into db
-   * * Create table if not exist
-   *
-   * @param params
-   * @returns
-   */
-  async import(params: CreationTable, options?: { catalog?: string }): Promise<void> {
-    const { name, columns, data, file, format, mergeType } = params
-
-    // Connection
-    const database = options?.catalog ?? this.options?.catalog
-    const connection = this._connection(database)
-
-    const statements = []
-    try {
-      // Recreate table when append mode
-      if (mergeType === 'DELETE') {
-        // Must set key fields for 'DISTRIBUTED BY HASH'
-        const keys = columns.filter(({ isKey }) => isKey).map(({ fieldName }) => `\`${fieldName}\``)
-        if (!keys.length) {
-          throw new Error(`Olap table should use key fields for 'DISTRIBUTED BY HASH'`)
-        }
-
-        const dropTableStatement = `DROP TABLE IF EXISTS \`${name}\``
-        const createTableStatement = `CREATE TABLE IF NOT EXISTS \`${name}\` (${columns
-          .map((col) => `\`${col.fieldName}\` ${typeToStarrocksDB(col.type, col.length)}`)
-          .join(', ')}) PRIMARY KEY (${keys.join(',')}) COMMENT "${name}" DISTRIBUTED BY HASH(${keys.join(
-          ','
-        )}) BUCKETS 10 PROPERTIES("replication_num" = "1")`
-        statements.push(dropTableStatement)
-        statements.push(createTableStatement)
-        await this.query(connection, dropTableStatement)
-        await this.query(connection, createTableStatement)
-      }
-
-      // File stream load
-      if (format && format !== 'data') {
-        return await this.streamLoad(database, name, file, params)
-      }
-      
-      // Insert data using batch sql
-      const values = data.map((row) => columns.map(({ name }) => row[name]))
-      const insertStatement = `INSERT INTO \`${name}\` (${columns
-        .map(({ fieldName }) => `\`${fieldName}\``)
-        .join(',')}) VALUES ?`
-
-      statements.push(insertStatement)
-      await this.query(connection, insertStatement, [values])
-    } catch (err: any) {
-      throw {
-        message: err.message,
-        stats: {
-          statements
-        }
-      }
-    } finally {
-      connection.end()
-    }
-
-    return null
-  }
-}
-
 register(MYSQL_TYPE, MySQLRunner)
 register(RDS_TYPE, RDSMySQLRunner)
-register(DORIS_TYPE, DorisRunner)
-register(STARROCKS_TYPE, StarRocksRunner)

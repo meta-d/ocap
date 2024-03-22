@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http'
-import { IProject, ISubscription, IUser } from '@metad/contracts'
-import { StorySubscription } from '@metad/story/core'
+import { IProject, IUser } from '@metad/contracts'
 import { enUS, zhCN } from 'date-fns/locale'
 import ShortUniqueId from 'short-unique-id'
 export * from '@metad/contracts'
@@ -62,10 +61,6 @@ export enum MenuCatalog {
   IndicatorApp
 }
 
-export function convertStorySubscriptionResult(result: ISubscription): StorySubscription {
-  return result
-}
-
 export function getErrorMessage(err: any): string {
   let error: string
   if (typeof err === 'string') {
@@ -79,6 +74,11 @@ export function getErrorMessage(err: any): string {
   } else if (err) {
     // 实在没办法则转成 JSON string
     error = JSON.stringify(err)
+  }
+
+  // Stringify error object
+  if (error && typeof error !== 'string') {
+    error = JSON.stringify(error)
   }
 
   return error

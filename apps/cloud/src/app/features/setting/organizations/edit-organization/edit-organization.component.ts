@@ -53,6 +53,7 @@ export class EditOrganizationComponent {
     .subscribe((organization) => {
       this.setSelectedOrg(organization)
     })
+    
   constructor(
     private route: ActivatedRoute,
     private organizationsService: OrganizationsService,
@@ -63,7 +64,7 @@ export class EditOrganizationComponent {
       if (this.organization()) {
         this.setSelectedOrg(this.organization())
       }
-    })
+    }, { allowSignalWrites: true })
   }
 
   setSelectedOrg(selectedOrg: IOrganization) {

@@ -7,11 +7,14 @@
     draggable="true"
   >
     <button mat-icon-button disabled displayDensity="compact">
-      <mat-icon *ngIf="node.error" color="warn" fontSet="material-icons-round"
-        [matTooltip]="node.error">
+    </button>
+
+    @if (node.error) {
+      <mat-icon color="warn" fontSet="material-icons-round" displayDensity="compact"
+        [matTooltip]="node.error" matTooltipPosition="after">
         warning_amber
       </mat-icon>
-    </button>
+    }
 
     <div class="ngm-entity-schema__type">{{node.item.type?.[0]}}</div>
     <ngm-display-behaviour [option]="{value: node.item.name, caption: node.item.caption ?? node.item.label}"
@@ -40,7 +43,8 @@
       [highlight]="searchControl.value">
     </ngm-display-behaviour>
 
-    <ngm-search *ngIf="node.item.type === EntitySchemaType.Entity" class="w-0 overflow-hidden group-hover:w-auto"
+    <ngm-search *ngIf="node.item.type === EntitySchemaType.Entity" cdkMonitorSubtreeFocus
+      class="overflow-hidden"
       displayDensity="cosy"
       [formControl]="searchControl">
     </ngm-search>

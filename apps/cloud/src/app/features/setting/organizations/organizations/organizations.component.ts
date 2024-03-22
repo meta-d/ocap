@@ -1,25 +1,36 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { CommonModule } from '@angular/common'
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { Router, RouterModule } from '@angular/router'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NxTableModule } from '@metad/components/table'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
+import { firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
 import { IOrganization, OrganizationsService, ToastrService } from '../../../../@core'
 import { MaterialModule, OrgAvatarComponent, TranslationBaseComponent } from '../../../../@shared'
-import { OrganizationMutationComponent } from '../organization-mutation/organization-mutation.component'
+import { OrganizationsComponent } from '../organizations.component'
 
 @Component({
   standalone: true,
   selector: 'pac-all-organizations',
   templateUrl: './organizations.component.html',
   styleUrls: ['./organizations.component.scss'],
-  imports: [CommonModule, MaterialModule, TranslateModule, RouterModule, NxTableModule, OrgAvatarComponent]
+  imports: [
+    CommonModule,
+    MaterialModule,
+    TranslateModule,
+    RouterModule,
+    AppearanceDirective,
+    OrgAvatarComponent,
+    NgmTableComponent
+  ]
 })
 export class AllOrganizationsComponent extends TranslationBaseComponent {
-  private refresh$ = new BehaviorSubject<void>(null)
+  readonly #organizationsComponent = inject(OrganizationsComponent)
+
+  readonly refresh$ = this.#organizationsComponent.refresh$
   public readonly organizations$ = this.refresh$.pipe(
     switchMap(() => this.organizationsService.getAll().pipe(map(({ items }) => items))),
     shareReplay(1)
@@ -48,18 +59,18 @@ export class AllOrganizationsComponent extends TranslationBaseComponent {
     this.router.navigate(['/settings/organizations/', id])
   }
 
-  async addOrganization() {
-    const org = await firstValueFrom(this._dialog.open(OrganizationMutationComponent).afterClosed())
-    if (org) {
-      try {
-        await firstValueFrom(this.organizationsService.create(org))
-        this._toastrService.success('NOTES.ORGANIZATIONS.ADD_NEW_ORGANIZATION', { Default: 'Add New Organization' })
-        this.refresh$.next()
-      } catch (err) {
-        this._toastrService.error(err)
-      }
-    }
-  }
+  // async addOrganization() {
+  //   const org = await firstValueFrom(this._dialog.open(OrganizationMutationComponent).afterClosed())
+  //   if (org) {
+  //     try {
+  //       await firstValueFrom(this.organizationsService.create(org))
+  //       this._toastrService.success('NOTES.ORGANIZATIONS.ADD_NEW_ORGANIZATION', { Default: 'Add New Organization' })
+  //       this.refresh$.next()
+  //     } catch (err) {
+  //       this._toastrService.error(err)
+  //     }
+  //   }
+  // }
 
   async deleteOrganization(id: string) {
     const organizations = await firstValueFrom(this.organizations$)

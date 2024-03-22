@@ -1,15 +1,13 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
-import { AfterViewInit, ChangeDetectorRef, Component, ViewChildren, inject } from '@angular/core'
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ViewChildren, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { NgmCommonModule, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, ResizerModule, SplitterModule, SplitterType } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntitySchemaComponent, EntitySchemaNode, EntitySchemaType, EntityCapacity } from '@metad/ocap-angular/entity'
 import { C_MEASURES, DisplayBehaviour, PropertyLevel, Table } from '@metad/ocap-core'
 import { C_MEASURES_ROW_COUNT, serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { NxTableModule } from '@metad/components/table'
 import { nonNullable } from '@metad/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { NgmError, ToastrService, uuid } from 'apps/cloud/src/app/@core'
@@ -38,8 +36,8 @@ import { HierarchyColumnType, TOOLBAR_ACTION_CATEGORY } from '../../types'
 import { ModelDimensionComponent } from '../dimension.component'
 import { ModelDimensionService } from '../dimension.service'
 import { ModelHierarchyService } from './hierarchy.service'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-model-hierarchy',
@@ -53,15 +51,11 @@ import { ModelHierarchyService } from './hierarchy.service'
     SharedModule,
     MaterialModule,
     ContentLoaderModule,
-
-    NxTableModule,
-
     OcapCoreModule,
     ResizerModule,
     SplitterModule,
     NgmEntitySchemaComponent,
     NgmCommonModule,
-
     TablesJoinModule
   ]
 })
@@ -70,10 +64,12 @@ export class ModelHierarchyComponent implements AfterViewInit {
   DisplayBehaviour = DisplayBehaviour
   COLUMN_TYPE = HierarchyColumnType
   EntityCapacity = EntityCapacity
+  SplitterType = SplitterType
 
   private readonly dimensionComponent = inject(ModelDimensionComponent)
   private readonly settingsService = inject(NxSettingsPanelService)
   private readonly toastrService = inject(ToastrService)
+  readonly destroyRef = inject(DestroyRef)
 
   @ViewChildren(CdkDropList) cdkDropList: CdkDropList[]
 
@@ -191,7 +187,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
           })
     }),
     tap((result) => this.logger.debug(`Dimension Levels Preview Query result`, result)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -200,24 +196,31 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly levelSignal = toSignal(this.hierarchyService.levels$)
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
   // 手动 Stop Receiving dropListRef, 因为官方的程序在跨页面 DropList 间似乎 detectChanges 时间先后有问题
-  private _dragReleasedSub = this.modelService.dragReleased$.subscribe((_dropListRef) => {
+  private _dragReleasedSub = this.modelService.dragReleased$.pipe(takeUntilDestroyed()).subscribe((_dropListRef) => {
     this.cdkDropList.forEach((list) => list._dropListRef._stopReceiving(_dropListRef))
     this._cdr.detectChanges()
   })
 
   private toolbarActionsSub = this.modelComponent.toolbarAction$
-    .pipe(filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.HIERARCHY))
+    .pipe(filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.HIERARCHY), takeUntilDestroyed())
     .subscribe(({ category, action }) => {
       if (action === 'RemoveLevel') {
         this.hierarchyService.removeCurrentLevel()
       }
     })
   private countTSub = this.translateService
-    .get('PAC.MODEL.DIMENSION.Count', { Default: 'Count' })
+    .get('PAC.MODEL.DIMENSION.Count', { Default: 'Count' }).pipe(takeUntilDestroyed())
     .subscribe((value) => {
       this.T_Count = value
     })
@@ -237,7 +240,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
         map((paramMap) => paramMap.get('id')),
         filter((value) => !!value),
         distinctUntilChanged(),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((id) => {
         this.hierarchyService.init(id)

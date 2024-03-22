@@ -12,7 +12,7 @@
     
     <div *ngIf="trend$ | async as trend" class="ngm-kpi--trend flex justify-around items-end">
       <div class="ngm-kpi--reference">
-        <div class="ngm-kpi--title" [ngStyle]="titleStyles$ | async">
+        <div class="ngm-kpi--title" [ngStyle]="titleStyles$()">
           {{options?.targetText}}
         </div>
         <ngm-object-number
@@ -60,7 +60,7 @@
     'trend-down': kpiValue.arrow === TrendType.Down,
     'trend-strong-down': kpiValue.arrow === TrendType.StrongDown
   }">
-    <span class="ngm-kpi--title" [ngStyle]="titleStyles$ | async">{{kpiValue?.Title || options?.valueText}}</span>
+    <span class="ngm-kpi--title" [ngStyle]="titleStyles$()">{{kpiValue?.Title || options?.valueText}}</span>
     <div class="ngm-kpi--indicator flex" [ngStyle]="valueStyles()">
       <div *ngIf="kpiValue.arrow" class="ngm-kpi--arrow flex justify-center items-end">
         <ng-container [ngSwitch]="kpiValue.arrow">
@@ -104,8 +104,8 @@
   flex flex-col justify-center items-center backdrop-blur-md bg-white/10"
 >
   <span class="text-2xl font-notoColorEmoji">🐞</span>
-  <div class="whitespace-pre-wrap max-w-full w-full">
-      {{ error }}
+  <div class="whitespace-pre-wrap max-w-full">
+    {{ error }}
   </div>
 </div>
 

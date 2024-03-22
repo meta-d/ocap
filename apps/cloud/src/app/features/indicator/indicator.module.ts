@@ -3,16 +3,14 @@ import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatNativeDateModule } from '@angular/material/core'
 import { NgmCommonModule, ResizerModule, TreeTableModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
-import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { ButtonGroupDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
-import { FormulaModule } from '@metad/ocap-angular/formula'
+import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { ToastrService } from '@metad/cloud/state'
 import { CalculatedMeasureComponent } from '@metad/components/property'
-import { HighlightDirective } from '@metad/components/core'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { NxSelectionModule } from '@metad/components/selection'
-import { NxTableModule } from '@metad/components/table'
 import { IsNilPipe, NxCoreModule } from '@metad/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { MaterialModule, SharedModule } from '../../@shared'
@@ -37,21 +35,22 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     InlineSearchComponent,
     PACIndicatorRoutingModule,
 
-    NxTableModule,
     NgmDialogComponent,
     CalculatedMeasureComponent,
     IsNilPipe,
-    HighlightDirective,
 
     // OCAP Modules
-    OcapCoreModule.forRoot(),
+    OcapCoreModule,
     NgmCommonModule,
-    ControlsModule,
+    NgmControlsModule,
     TreeTableModule,
-    FormulaModule,
+    NgmFormulaModule,
     ResizerModule,
-    NgmHierarchySelectComponent
+    NgmHierarchySelectComponent,
   ],
-  providers: [ToastrService]
+  providers: [
+    provideOcapCore(),
+    ToastrService
+  ]
 })
 export class PACIndicatorModule {}

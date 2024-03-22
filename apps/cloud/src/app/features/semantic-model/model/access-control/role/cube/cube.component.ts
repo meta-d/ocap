@@ -1,14 +1,16 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatButtonToggleChange } from '@angular/material/button-toggle'
 import { MatRadioChange } from '@angular/material/radio'
 import { MatSlideToggleChange } from '@angular/material/slide-toggle'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MDX } from '@metad/contracts'
+import { nonBlank } from '@metad/core'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { EntitySchemaType } from '@metad/ocap-angular/entity'
 import { AggregationRole, C_MEASURES, EntityType, getEntityHierarchy } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
-import { nonBlank } from '@metad/core'
+import { TranslateService } from '@ngx-translate/core'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { SemanticModelService } from '../../../model.service'
 import { RoleComponent } from '../role.component'
@@ -18,7 +20,6 @@ import { CubeStateService } from './cube.service'
  * https://stackoverflow.com/questions/67337934/angular-nested-drag-and-drop-cdk-material-cdkdroplistgroup-cdkdroplist-nested
  * https://stackblitz.com/edit/angular-cdk-nested-drag-drop-tree-structure?file=src%2Fapp%2Fapp.component.html
  */
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-model-access-cube',
   templateUrl: 'cube.component.html',
@@ -29,52 +30,75 @@ export class CubeComponent {
   Access = MDX.Access
   RollupPolicy = MDX.RollupPolicy
 
-  private cubeState = inject(CubeStateService)
-  private modelService = inject(SemanticModelService)
-  private roleComponent = inject(RoleComponent)
-  private route = inject(ActivatedRoute)
-  private router = inject(Router)
-  private readonly _cdr = inject(ChangeDetectorRef)
+  readonly #cubeState = inject(CubeStateService)
+  readonly #modelService = inject(SemanticModelService)
+  readonly #roleComponent = inject(RoleComponent)
+  readonly #route = inject(ActivatedRoute)
+  readonly #router = inject(Router)
+  readonly _cdr = inject(ChangeDetectorRef)
+  readonly #translate = inject(TranslateService)
 
   public cubeGrant: MDX.CubeGrant
   public entityType: EntityType
   private cubeName: string
-  public readonly cubeName$ = this.route.paramMap.pipe(
-    startWith(this.route.snapshot.paramMap),
+  public readonly cubeName$ = this.#route.paramMap.pipe(
+    startWith(this.#route.snapshot.paramMap),
     map((paramMap) => paramMap.get('name')),
     filter(nonBlank),
     distinctUntilChanged()
   )
 
-  public readonly cubeGrant$ = this.cubeState.state$
+  public readonly cubeGrant$ = this.#cubeState.state$
 
   public readonly hierarchyGrants$ = this.cubeGrant$.pipe(map((cubeGrant) => cubeGrant.hierarchyGrants))
 
   get dropHierarchyPredicate() {
     return (event: CdkDrag<any>) => {
       if (event.data.type === EntitySchemaType.Member) {
-        return event.data.raw?.cubeName === this.cubeName 
+        return event.data.raw?.cubeName === this.cubeName
       } else {
-        return event.data.cubeName === this.cubeName &&
-        (event.data.role === AggregationRole.hierarchy ||
-          event.data.role === AggregationRole.dimension ||
-          event.data.role === AggregationRole.measure)
+        return (
+          event.data.cubeName === this.cubeName &&
+          (event.data.role === AggregationRole.hierarchy ||
+            event.data.role === AggregationRole.dimension ||
+            event.data.role === AggregationRole.measure)
+        )
       }
     }
   }
 
   /**
   |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #Command = injectCopilotCommand({
+    name: 'role',
+    description: this.#translate.instant('PAC.MODEL.Copilot.Examples.CreateNewRole', {
+      Default: 'Describe the role you want to create'
+    }),
+    systemPrompt: () => `Create or edit a role. 如何未提供 cube 信息，请先选择一个 cube`,
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'select_cube',
+        description: 'Select a cube',
+        argumentAnnotations: [],
+        implementation: async () => {}
+      })
+    ]
+  })
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private cubeNameSub = this.cubeName$.subscribe((name) => {
+  private cubeNameSub = this.cubeName$.pipe(takeUntilDestroyed()).subscribe((name) => {
     this.cubeName = name
-    this.cubeState.init(name)
-    this.roleComponent.selectedCube = name
+    this.#cubeState.init(name)
+    this.#roleComponent.selectedCube = name
   })
 
-  private cubeGrantSub = this.cubeGrant$.subscribe((cubeGrant) => {
+  private cubeGrantSub = this.cubeGrant$.pipe(takeUntilDestroyed()).subscribe((cubeGrant) => {
     this.cubeGrant = cubeGrant
   })
 
@@ -83,12 +107,12 @@ export class CubeComponent {
       map((cubeGrant) => cubeGrant?.cube),
       filter(nonBlank),
       distinctUntilChanged(),
-      switchMap((name) => this.modelService.selectEntityType(name)),
-      startWith(null)
+      switchMap((name) => this.#modelService.selectEntityType(name)),
+      startWith(null),
+      takeUntilDestroyed()
     )
     .subscribe((entityType) => {
       this.entityType = { ...entityType }
-      // this._cdr.detectChanges()
     })
 
   trackByName(index: number, item: MDX.HierarchyGrant) {
@@ -96,7 +120,7 @@ export class CubeComponent {
   }
 
   changeCubeAccess(event: MatRadioChange) {
-    this.cubeState.patchState({
+    this.#cubeState.patchState({
       access: event.value
     })
   }
@@ -104,7 +128,7 @@ export class CubeComponent {
   dropHierarchy(event: CdkDragDrop<{ name: string }[]>) {
     if (event.item.data.type === EntitySchemaType.Member) {
       const hierarchy = getEntityHierarchy(this.entityType, event.item.data.raw.hierarchy)
-      this.cubeState.addMember({
+      this.#cubeState.addMember({
         hierarchy: hierarchy.name,
         hierarchyCaption: hierarchy.caption,
         name: event.item.data.name,
@@ -112,15 +136,15 @@ export class CubeComponent {
       })
     } else {
       if (event.item.data.role === AggregationRole.hierarchy || event.item.data.role === AggregationRole.dimension) {
-        this.cubeState.addHierarchy(event.item.data)
+        this.#cubeState.addHierarchy(event.item.data)
       } else if (event.item.data.role === AggregationRole.measure) {
-        this.cubeState.addMeasure({ measure: event.item.data.name, caption: event.item.data.measureCaption })
+        this.#cubeState.addMeasure({ measure: event.item.data.name, caption: event.item.data.measureCaption })
       }
     }
   }
 
   changeRollupPolicy(event: MatButtonToggleChange, hierarchy: string) {
-    this.cubeState.updateHierarchy({
+    this.#cubeState.updateHierarchy({
       hierarchy,
       entity: {
         rollupPolicy: event.value
@@ -136,14 +160,14 @@ export class CubeComponent {
     if (entity.access !== MDX.Access.custom) {
       entity.memberGrants = []
     }
-    this.cubeState.updateHierarchy({
+    this.#cubeState.updateHierarchy({
       hierarchy,
       entity
     })
   }
 
   removeHierarchy(name: string) {
-    this.cubeState.removeHierarchy(name)
+    this.#cubeState.removeHierarchy(name)
   }
 
   getDropLevelPredicate(hierarchy: string) {
@@ -158,7 +182,7 @@ export class CubeComponent {
 
   dropLevel(event: CdkDragDrop<{ name: string }[]>, type: 'topLevel' | 'bottomLevel', hierarchy: string) {
     if (event.item.data.role === AggregationRole.level) {
-      this.cubeState.updateHierarchy({
+      this.#cubeState.updateHierarchy({
         hierarchy,
         entity: {
           [type]: event.item.data.name,
@@ -169,7 +193,7 @@ export class CubeComponent {
   }
 
   removeTopLevel(hierarchy: string) {
-    this.cubeState.updateHierarchy({
+    this.#cubeState.updateHierarchy({
       hierarchy,
       entity: {
         topLevel: null,
@@ -179,7 +203,7 @@ export class CubeComponent {
   }
 
   removeBottomLevel(hierarchy: string) {
-    this.cubeState.updateHierarchy({
+    this.#cubeState.updateHierarchy({
       hierarchy,
       entity: {
         bottomLevel: null,
@@ -203,13 +227,13 @@ export class CubeComponent {
 
   dropMember(event: CdkDragDrop<{ name: string }[]>, hierarchyGrant: MDX.HierarchyGrant) {
     if (event.item.data.type === EntitySchemaType.Member) {
-      this.cubeState.addMember({
+      this.#cubeState.addMember({
         hierarchy: hierarchyGrant.hierarchy,
         name: event.item.data.raw.memberUniqueName,
         caption: event.item.data.raw.memberCaption
       })
     } else if (event.item.data.role === AggregationRole.measure) {
-      this.cubeState.addMember({
+      this.#cubeState.addMember({
         hierarchy: hierarchyGrant.hierarchy,
         name: event.item.data.measureUniqueName,
         caption: event.item.data.measureCaption
@@ -218,25 +242,25 @@ export class CubeComponent {
   }
 
   clearMembers(hierarchy: string) {
-    this.cubeState.removeMember({ hierarchy })
+    this.#cubeState.removeMember({ hierarchy })
   }
 
   removeMember(hierarchy: string, member: string) {
-    this.cubeState.removeMember({
+    this.#cubeState.removeMember({
       hierarchy,
       member
     })
   }
 
   dropSortMember(event: CdkDragDrop<{ name: string }[]>, hierarchyGrant: MDX.HierarchyGrant) {
-    this.cubeState.moveMemberInArray({
+    this.#cubeState.moveMemberInArray({
       hierarchy: hierarchyGrant.hierarchy,
       event
     })
   }
 
   changeMemberAccess(event: MatSlideToggleChange, hierarchy: string, member: string) {
-    this.cubeState.updateMember({
+    this.#cubeState.updateMember({
       hierarchy,
       member,
       entity: {
@@ -246,6 +270,6 @@ export class CubeComponent {
   }
 
   openedHierarchy(hierarchy: string) {
-    this.roleComponent.selectedHierarchy = hierarchy
+    this.#roleComponent.selectedHierarchy = hierarchy
   }
 }

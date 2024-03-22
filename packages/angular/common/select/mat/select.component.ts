@@ -5,9 +5,11 @@ import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   forwardRef,
   HostBinding,
+  inject,
   Input,
   OnChanges,
   OnInit,
@@ -38,12 +40,11 @@ import { MatInputModule } from '@angular/material/input'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { BehaviorSubject } from 'rxjs'
 import { combineLatestWith, debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy()
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +91,8 @@ export class NgmMatSelectComponent
   )
   implements CanDisable, CanColor, CanDisableRipple, OnInit, OnChanges, ControlValueAccessor
 {
+  readonly #destroyRef = inject(DestroyRef)
+  
   @HostBinding('class.ngm-mat-select') _isSelectComponent = true
 
   @Input() appearance: MatFormFieldAppearance
@@ -161,7 +164,7 @@ export class NgmMatSelectComponent
       .pipe(
         filter(() => !this.multiple),
         distinctUntilChanged(),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe((value) => {
         if (typeof value !== 'string' && !Array.isArray(value)) {
@@ -169,12 +172,12 @@ export class NgmMatSelectComponent
         }
       })
 
-    this.selection.changed.pipe(filter(() => this.multiple)).subscribe(() => {
+    this.selection.changed.pipe(filter(() => this.multiple), takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this._updateLabel()
       this.onChange?.(this.selection.selected)
     })
 
-    this._selectOptions$.subscribe(() => {
+    this._selectOptions$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this._updateLabel()
     })
   }

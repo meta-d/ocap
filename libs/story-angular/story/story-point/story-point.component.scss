@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 :host {
   display: flex;
   height: 100%;
@@ -32,6 +34,23 @@
   &.grid-layout__fit {
     overflow: hidden;
   }
+
+  /* focusing */
+  &.ngm-story__focus {
+    @apply bg-neutral-300 dark:bg-neutral-700;
+    
+    ::ng-deep {
+      .ngm-story__widget:not(.ngm-story__focus) {
+        opacity: 0.35;
+      }
+      .ngm-story__widget.ngm-story__focus {
+        .ngm-story-widget__content {
+          background-color: var(--ngm-color-surface-container);
+          @include mat.elevation(8);
+        }
+      }
+    }
+  }
 }
 
 gridster {
@@ -45,6 +64,7 @@ gridster {
 
   gridster-item.ngm-story__widget {
     overflow: visible;
+    background: unset;
 
     .ngm-story-widget {
       position: absolute;
@@ -71,6 +91,31 @@ gridster {
   flex: 1;
   height: 100%;
   max-width: 100%;
+
+  ::ng-deep {
+    .ngm-story-widget {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 1rem;
+
+      .ngm-story-widget__content.ngm-story-widget__card {
+        min-height: 300px;
+      }
+      &.ngm-fullscreen {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+      }
+      .ngm-story-widget__content {
+        overflow: visible;
+      }
+
+      .ngm-story-widget__fab-menu {
+        top: -40px;
+        right: 0;
+      }
+    }
+  }
 }
 
 .ngm-story-point__responsive {
@@ -78,13 +123,38 @@ gridster {
   width: 100%;
 }
 
-.ngm-story__quick-start-widget {
-  @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
-    border-gray-300 active:bg-gray-200 active:shadow-lg dark:hover:bg-gray-600 hover:border-amber-300 active:border-amber-500;
-  @apply sm:p-16;
-  @apply dark:bg-gray-700;
-}
-
 .ngm-story__layout-widget-size.ngm-story__layout-widget-size-show {
   @apply inline-block;
+}
+
+.ngm-story-point__page {
+      
+  /* page size styling */
+  &.ngm-story-point__size-a4 {
+    @include mat.elevation(8);
+    margin: auto;
+    padding: 1rem;
+    width: 1240px;
+    height: 1754px;
+
+    &.ngm-story-point__size-continuous-height {
+      height: auto;
+    }
+  }
+}
+
+.ngm-story-point__quick-start .container {
+  background-color: var(--ngm-color-surface-container);
+  .ngm-story__quick-start-widget {
+    @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+      active:shadow-lg;
+    @apply sm:p-16;
+    background-color: var(--ngm-color-surface);
+    border-color: var(--ngm-color-outline);
+
+    &:hover {
+      background-color: var(--ngm-color-surface-container-high);
+      font-weight: 600;
+    }
+  }
 }

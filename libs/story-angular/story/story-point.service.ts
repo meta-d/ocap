@@ -1,9 +1,8 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Inject, Injectable, Optional } from '@angular/core'
+import { DestroyRef, Inject, Injectable, Optional, inject } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ISlicer, isAdvancedFilter, nonNullable } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { isNotEmpty, isNotEqual } from '@metad/core'
 import {
@@ -36,20 +35,22 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  pluck,
   startWith,
   switchMap,
   tap,
   withLatestFrom
 } from 'rxjs/operators'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 /**
  * 状态中 StoryPoint 与 Widgets 分开控制修改状态
  *
  */
-@UntilDestroy({ checkProperties: true })
 @Injectable()
 export class NxStoryPointService extends ComponentSubStore<StoryPointState, StoryState> {
+
+  readonly destroyRef = inject(DestroyRef)
+
   get storyPoint() {
     return this.get((state) => state.storyPoint)
   }
@@ -106,13 +107,14 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private currentWidgetSub = this.currentWidget$.subscribe((widget) => {
+  private currentWidgetSub = this.currentWidget$.pipe(takeUntilDestroyed()).subscribe((widget) => {
     this.storyService.setCurrentWidget(widget)
   })
+
   private isDirtySub = combineLatest([
     this.dirtyQuery.isDirty$.pipe(startWith(false)),
     this.widgetsDirtyQuery.isDirty$.pipe(startWith(false))
-  ]).subscribe(([storyPoint, widgets]) => {
+  ]).pipe(takeUntilDestroyed()).subscribe(([storyPoint, widgets]) => {
     this.logger?.debug(`[StoryPointService] isDirty = ${storyPoint} & ${widgets}`)
     this.patchState({ dirty: storyPoint || widgets })
   })
@@ -120,7 +122,8 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   private saveSub = this.storyService.save$
     .pipe(
       withLatestFrom(this.isDirty$),
-      filter(([, dirty]) => dirty)
+      filter(([, dirty]) => dirty),
+      takeUntilDestroyed()
     )
     .subscribe(() => {
       this.save()
@@ -156,7 +159,8 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
             } else if (event.type === StoryEventType.REMOVE_WIDGET) {
               this.removeWidget(event.data)
             }
-          })
+          }),
+          takeUntilDestroyed(this.destroyRef)
         )
       })
     )
@@ -250,7 +254,7 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
 
         return slicers
       }),
-      untilDestroyed(this)
+      takeUntilDestroyed(this.destroyRef)
     )
   }
 

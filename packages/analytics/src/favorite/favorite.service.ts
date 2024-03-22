@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
-	Employee,
 	RequestContext,
 	TenantOrganizationAwareCrudService,
 } from '@metad/server-core'
@@ -13,10 +12,8 @@ export class FavoriteService extends TenantOrganizationAwareCrudService<Favorite
 	constructor(
 		@InjectRepository(Favorite)
 		favRepository: Repository<Favorite>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>
 	) {
-		super(favRepository, employeeRepository)
+		super(favRepository)
 	}
 
 	my(options?: FindManyOptions<Favorite>) {

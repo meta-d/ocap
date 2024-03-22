@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '@angular/material' as mat;
 
 @mixin ngm-story-point($config-or-theme) {
@@ -23,22 +24,6 @@
       .ngm-story__widget.active {
         // 之前注释掉是因为影响到了多层部件下的上下关系???
         z-index: 2 !important;
-      }
-    }
-
-    .ngm-story-point__page {
-      
-      /* page size styling */
-      &.ngm-story-point__size-a4 {
-        @include mat.elevation(8);
-        margin: auto;
-        padding: 1rem;
-        width: 1240px;
-        height: 1754px;
-  
-        &.ngm-story-point__size-continuous-height {
-          height: auto;
-        }
       }
     }
 
@@ -69,63 +54,15 @@
 
       &:not(.ngm-fullscreen) {
         border: 1px dashed transparent;
+
         &.active.editable {
           @extend %widget-editable;
         }
-        &:hover.editable {
-          @extend %widget-editable;
+        &:hover.editable:not(.active) {
+          border-color: color.change(map-get($accent, 500), $alpha: 0.5);
         }
       }
       
-    }
-    
-    /* focusing */
-    &.ngm-story__focus {
-      background-color: rgb(204, 204, 204);
-
-      .ngm-story__widget:not(.ngm-story__focus) {
-        opacity: 0.35;
-      }
-      .ngm-story__widget.ngm-story__focus {
-        .ngm-story-widget__content {
-          @include mat.elevation(8);
-          background-color: mat.get-color-from-palette($background, card);
-        }
-      }
-    }
-
-    .ngm-story-point__quick-start {
-      .ngm-story-point__quick-start-widget:hover {
-        color: mat.get-color-from-palette($foreground, text);
-        background-color: mat.get-color-from-palette($primary);
-        font-weight: 600;
-      }
-    }
-  }
-
-  /* 移动端页面 */
-  .ngm-story__layout.mobile {
-    .ngm-story-widget {
-      width: 100%;
-      max-width: 100%;
-      margin-bottom: 1rem;
-
-      .ngm-story-widget__content.ngm-story-widget__card {
-        min-height: 300px;
-      }
-      &.ngm-fullscreen {
-        width: 100% !important;
-        height: 100% !important;
-        position: absolute !important;
-      }
-      .ngm-story-widget__content {
-        overflow: visible;
-      }
-
-      .ngm-story-widget__fab-menu {
-        top: -40px;
-        right: 0;
-      }
     }
   }
 
@@ -135,10 +72,6 @@
 
     &.gridSize:not(.fit) {
       margin: auto;
-    }
-    &.scrollVertical {
-      // position: initial;
-      // height: initial;
     }
     &.display-grid {
       .ngm-story__widget {
@@ -165,10 +98,6 @@
     }
   }
 
-  gridster-item.ngm-story__widget {
-    background: unset;
-  }
-
   @media print {
     header, footer, aside, form {
       display: none;
@@ -178,5 +107,4 @@
   .ngm-story-point__responsive {
     min-height: 100%;
   }
-  
 }

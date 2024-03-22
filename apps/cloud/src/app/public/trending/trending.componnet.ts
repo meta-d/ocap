@@ -2,18 +2,17 @@ import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, effect, inject, signal } from '@angular/core'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { RouterModule } from '@angular/router'
+import { StoriesService } from '@metad/cloud/state'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { effectAction } from '@metad/ocap-angular/core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
-import { StoriesService } from '@metad/cloud/state'
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs'
-import { StoryCardComponent } from '../../@shared'
 import { IStory, listAnimation } from '../../@core'
-import { MatButtonModule } from '@angular/material/button'
-
+import { StoryCardComponent } from '../../@shared'
 
 @Component({
   standalone: true,
@@ -99,6 +98,8 @@ export class TrendingComponent {
                 if (result.items.length < this.pageSize || this.currentPage * this.pageSize >= result.total) {
                   this.done = true
                 }
+
+                console.log(this.trends)
               },
               error: (err) => {
                 this.loading = false

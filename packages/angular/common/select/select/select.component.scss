@@ -1,3 +1,23 @@
 :host {
   @apply relative flex flex-col items-stretch min-w-[100px] w-full;
+
+  &.ngm-select-error {
+    .mat-mdc-select.ngm-select-element {
+      border-color: var(--mdc-theme-error);
+    }
+    .ngm-input-element {
+      border-color: var(--mdc-theme-error);
+    }
+  }
+}
+
+.mat-mdc-form-field-error {
+  display: block;
+  color: var(--mat-form-field-error-text-color);
+}
+
+:host::ng-deep {
+  .mat-mdc-select-placeholder {
+    @apply italic opacity-50;
+  }
 }

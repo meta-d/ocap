@@ -1,3 +1,7 @@
 :host {
   @apply max-w-full flex flex-row flex-1 overflow-hidden;
 }
+
+.ngm-prism-highlight {
+  border: var(--ngm-color-outline);
+}

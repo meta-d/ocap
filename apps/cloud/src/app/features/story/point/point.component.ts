@@ -8,26 +8,24 @@ import {
   ViewChild,
   inject
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
 import { NgmDSCoreService, NgmSmartFilterBarService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoryPointsService, convertStoryResult } from '@metad/cloud/state'
 import { NgmTransformScaleDirective, NxCoreService } from '@metad/core'
-import { NxStoryService, prefersColorScheme } from '@metad/story/core'
+import { NxStoryService } from '@metad/story/core'
 import { NxStoryModule, NxStoryPointComponent, NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY, Observable, interval } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { exitFullscreen, registerWasmAgentModel, requestFullscreen } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { registerStoryThemes, subscribeStoryTheme } from '../../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { AppService } from '../../../app.service'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +49,6 @@ export class StoryPointComponent extends TranslationBaseComponent {
   public appService = inject(AppService)
   public storyService = inject(NxStoryService)
   private pointsService = inject(StoryPointsService)
-  private coreService = inject(NxCoreService)
   private wasmAgent = inject(WasmAgentService)
   private route = inject(ActivatedRoute)
   private _renderer = inject(Renderer2)
@@ -101,7 +98,7 @@ export class StoryPointComponent extends TranslationBaseComponent {
           })
         )
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -131,23 +128,27 @@ export class StoryPointComponent extends TranslationBaseComponent {
 
   public readonly storySizeStyles = toSignal(this.storyService.storySizeStyles$)
 
-  // System theme
-  private prefersColorScheme$ = prefersColorScheme()
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this._renderer, this._elementRef)
+  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this._renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
-  private _storyChanged = this.story$.subscribe((story) => {
+  private _storyChanged = this.story$.pipe(takeUntilDestroyed()).subscribe((story) => {
     if (story) {
       this.storyService.setStory(story)
     }
   })
 
   private backgroundSub = this.storyService.preferences$
-    .pipe(map((preferences) => preferences?.storyStyling?.backgroundColor))
+    .pipe(map((preferences) => preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this._renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)
       }
     })
+
+  constructor() {
+    super()
+    
+    effectStoryTheme(this._elementRef)
+  }
 
   async toggleFullscreen(fullscreen?: boolean) {
     this.fullscreen = fullscreen ?? !this.fullscreen

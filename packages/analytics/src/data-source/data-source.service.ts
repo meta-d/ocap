@@ -1,5 +1,5 @@
 import { AdapterBaseOptions, createQueryRunnerByType, DBQueryRunner } from '@metad/adapter'
-import { AuthenticationEnum, IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
+import { IDataSource, IDSSchema, IDSTable } from '@metad/contracts'
 import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -30,57 +30,94 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		return this.findOne(result.id, { relations: ['type'] })
 	}
 
-	async prepareDataSource(id: string) {
-		const dataSource = await this.dsRepository.findOne(id, {
+	async prepareDataSource(id: string, newDataSource?: Partial<IDataSource>) {
+		const {authentications, options, ...ds} = newDataSource ?? {}
+
+		let dataSource = await this.dsRepository.findOne(id, {
 			relations: ['type', 'authentications']
 		})
+
+		dataSource.authentications = authentications ?? dataSource.authentications
+		dataSource.options = options ? {
+			...dataSource.options, ...options
+		} : dataSource.options
+
+		dataSource = {
+			...dataSource,
+			...(ds ?? {})
+		} as DataSource
+
 		return prepareDataSource(dataSource)
 	}
 
 	async getCatalogs(id: string): Promise<IDSSchema[]> {
 		const dataSource = await this.prepareDataSource(id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-		return runner.getCatalogs().catch((reason) => {
+
+		try {
+			return await runner.getCatalogs()
+		} catch (reason) {
 			console.error(reason)
 			// rejection
 			throw new Error(`配置错误`)
-		})
+		} finally {
+			await runner.teardown()
+		}
 	}
 
 	async getSchema(id: string, catalog?: string, table?: string, statement?: string): Promise<IDSTable[]> {
 		const dataSource = await this.prepareDataSource(id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
 
-		if (statement) {
-			return [await runner.describe(catalog, statement)]
+		try {
+			if (statement) {
+				return [await runner.describe(catalog, statement)]
+			}
+			return await runner.getSchema(catalog, table)
+		} finally {
+			await runner.teardown()
 		}
-		return await runner.getSchema(catalog, table)
 	}
 
 	/**
 	 * 处理向第三方平台的单个 xmla 请求
-	 * 
+	 *
 	 * @param id 数据源 ID
 	 * @param statement xmla 请求 Body
 	 * @param options 选项
-	 * @returns 
+	 * @returns
 	 */
 	async query(id: string, statement: string, options?: any): Promise<any> {
 		const dataSource = await this.prepareDataSource(id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-		return runner.runQuery(statement, options)
+
+		try {
+			return await runner.runQuery(statement, options)
+		} finally {
+			await runner.teardown()
+		}
 	}
 
 	async import(id: string, body: any, options) {
 		const dataSource = await this.prepareDataSource(id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-		return runner.import(body, options)
+
+		try {
+			return await runner.import(body, options)
+		} finally {
+			await runner.teardown()
+		}
 	}
 
 	async dropTable(id: string, tableName: any, options) {
 		const dataSource = await this.prepareDataSource(id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-		return runner.dropTable(tableName, options)
+
+		try {
+			return await runner.dropTable(tableName, options)
+		} finally {
+			await runner.teardown()
+		}
 	}
 
 	async olap(dataSource: DataSource, body: string, acceptLanguage?: string) {
@@ -103,27 +140,34 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		}).then(({ data }) => data)
 	}
 
-	async ping(dataSource: IDataSource): Promise<any>;
-	async ping(id: string, dataSource: IDataSource): Promise<any>;
+	async ping(dataSource: IDataSource): Promise<any>
+	async ping(id: string, dataSource: IDataSource): Promise<any>
 	async ping(id: string | IDataSource, dataSource?: IDataSource) {
-		let runner: DBQueryRunner
+		let _dataSource: IDataSource
 		if (typeof id === 'string') {
-			const _dataSource = await this.prepareDataSource(id)
-			// 用户自定义信息覆盖系统信息
-			runner = createQueryRunnerByType(_dataSource.type.type, {..._dataSource.options, ...dataSource.options})
+			_dataSource = await this.prepareDataSource(id, {
+				...dataSource,
+				authentications: dataSource.authentications?.map((item) => ({
+					...item,
+					userId: RequestContext.currentUserId()
+				}))
+			})
 		} else {
-			dataSource = id
-			if (dataSource.authType === AuthenticationEnum.BASIC) {
-				const auth = dataSource.authentications?.[0]
-				if (auth) {
-					dataSource.options.username = auth.username
-					dataSource.options.password = auth.password
-				}
-			}
-			runner = createQueryRunnerByType(dataSource.type.type, <AdapterBaseOptions><unknown>(dataSource.options ?? {}))
+			_dataSource = prepareDataSource({
+				...id,
+				authentications: id.authentications?.map((item) => ({
+					...item,
+					userId: RequestContext.currentUserId()
+				}))
+			} as DataSource)
 		}
-		
-		return runner.ping()
+
+		const runner: DBQueryRunner = createQueryRunnerByType(_dataSource.type.type, (_dataSource.options ?? {}) as unknown as AdapterBaseOptions)
+		try {
+			return await runner.ping()
+		} finally {
+			await runner.teardown()
+		}
 	}
 
 	async getMyAuthentication(id: string) {
@@ -133,7 +177,7 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		const authentication = await this.authRepository.findOne({
 			tenantId,
 			dataSourceId: id,
-			userId,
+			userId
 		})
 
 		if (!authentication) {
@@ -150,14 +194,14 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		let authentication = await this.authRepository.findOne({
 			tenantId,
 			dataSourceId: id,
-			userId,
+			userId
 		})
 
 		if (!authentication) {
 			authentication = {
 				tenantId,
 				dataSourceId: id,
-				userId,
+				userId
 			} as DataSourceAuthentication
 		}
 
@@ -175,7 +219,7 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		await this.authRepository.delete({
 			tenantId,
 			dataSourceId: id,
-			userId,
+			userId
 		})
 	}
 }

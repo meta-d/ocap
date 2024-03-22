@@ -7,5 +7,8 @@ export interface NgmAppearance {
   floatLabel?: FloatLabelType
   color?: ThemePalette
   hideRequiredMarker?: boolean
+  /**
+   * @deprecated use `displayDensity` independently
+   */
   displayDensity?: DisplayDensity
 }

@@ -19,6 +19,9 @@ export const ZhHans = {
     SignupSuccess: '🎉 注册成功, 请检测你的邮箱并点击链接激活账号',
     Varify: '验证',
     VarifyEmailSuccess: '邮箱验证成功, 请前往登录',
+    Required: '必填',
+    AtLeast8Characters: '至少 8 个字符',
+    Mismatch: '密码不匹配',
     ACCEPT_INVITE: {
       HEADING: '接受 {{ organizationName }} 的邀请',
       SUB_HEADING: '完善注册信息 {{ email }}',

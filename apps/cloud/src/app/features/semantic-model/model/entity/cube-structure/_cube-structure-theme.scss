@@ -56,10 +56,6 @@
       }
     }
 
-    .mat-tree.ngm-tree_selection {
-      background-color: unset;
-    }
-
     .ngm-list-item {
       .ngm-entity-property {
         flex: 1;
@@ -106,7 +102,6 @@
       position: absolute;
       right: 0;
       background-color: mat.get-color-from-palette($background, card);
-      // background-color: mat.get-color-from-palette($background, 'focused-button');
       border-radius: 15px;
     }
   }

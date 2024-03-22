@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http'
 import { Inject, Injectable, InjectionToken } from '@angular/core'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
-import { AgentEvent, AuthenticationEnum, IDataSource, ISemanticModel } from '@metad/contracts'
+import { AgentEvent, AuthenticationEnum, IDataSource, IDataSourceAuthentication, ISemanticModel } from '@metad/contracts'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, UUID } from '@metad/ocap-core'
 import { API_DATA_SOURCE, C_URI_API_MODELS, DataSourceService } from '@metad/cloud/state'
 import { chunk, flatten, groupBy } from 'lodash-es'
@@ -18,7 +18,7 @@ import {
   Subject,
 } from 'rxjs'
 import { getErrorMessage, uuid } from '../types'
-import { AbstractAgent } from './agent'
+import { AbstractAgent, AuthInfoType } from '../auth'
 
 export interface PacServerAgentDefaultOptions {
   modelBaseUrl: string
@@ -159,13 +159,13 @@ export class ServerAgent extends AbstractAgent implements Agent {
 
     // Require auth info if authType is Basic
     if (semanticModel?.dataSource?.authType === AuthenticationEnum.BASIC) {
-      const auth = await firstValueFrom(this.authenticate({data: {
+      const auth = await this.authenticate({data: {
         dataSource: semanticModel?.dataSource,
         request: {
           url,
           body
         }
-      }} as any))
+      }} as any)
 
       if (!semanticModel?.dataSource?.id && auth) {
         body.authentications = [auth]
@@ -270,14 +270,13 @@ export class ServerAgent extends AbstractAgent implements Agent {
     return Promise.reject(`未找到相应 Agent 响应方法`)
   }
 
-  getPingCallback(event: AgentEvent) {
-    let dataSource = event.data.request.body as IDataSource
-    return async (auth: any) => {
+  getPingCallback(request: any, dataSource?: IDataSource) {
+    return async (auth: AuthInfoType) => {
       dataSource = {
         ...dataSource,
         authentications: [
           {
-            ...auth,
+            ...auth as IDataSourceAuthentication,
           }
         ]
       }

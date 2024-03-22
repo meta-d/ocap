@@ -1,29 +1,34 @@
+import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { BusinessAreaRole, IBusinessAreaUser, IUser } from '@metad/contracts'
 import { BusinessAreaUserService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
+import { BusinessAreaRole, IBusinessAreaUser, IUser } from '@metad/contracts'
+import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
+import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService } from 'apps/cloud/src/app/@core'
-import { MaterialModule, TranslationBaseComponent, userLabel, UserProfileInlineComponent, UserRoleSelectComponent } from 'apps/cloud/src/app/@shared'
+import {
+  MaterialModule,
+  TranslationBaseComponent,
+  UserProfileInlineComponent,
+  UserRoleSelectComponent,
+  userLabel
+} from 'apps/cloud/src/app/@shared'
 import {
   BehaviorSubject,
+  Observable,
   combineLatest,
   combineLatestWith,
   debounceTime,
   firstValueFrom,
   map,
-  Observable,
   shareReplay,
   startWith,
   switchMap
 } from 'rxjs'
 import { EditBusinessAreaComponent } from '../business-area/business-area.component'
-import { NxTableModule } from '@metad/components/table'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
-import { CommonModule } from '@angular/common'
-
 
 @Component({
   standalone: true,
@@ -34,9 +39,9 @@ import { CommonModule } from '@angular/common'
     CommonModule,
     MaterialModule,
     TranslateModule,
-    NxTableModule,
     UserProfileInlineComponent,
-    NgmSearchComponent
+    NgmSearchComponent,
+    NgmTableComponent
   ]
 })
 export class BusinessAreaUsersComponent extends TranslationBaseComponent {
@@ -50,7 +55,7 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
   private readonly refresh$ = new BehaviorSubject<void>(null)
 
   public readonly businessAreaUsers$: Observable<Array<IBusinessAreaUser & { loading?: boolean }>> = combineLatest([
-    this.areaComponent.businessAreaId$,
+    toObservable(this.areaComponent.businessAreaId),
     this.refresh$
   ]).pipe(
     switchMap(([businessAreaId]) =>
@@ -86,13 +91,15 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
   }
 
   async removeUser(id: string, user: IUser) {
-    const confirm = await firstValueFrom(this._dialog.open(ConfirmDeleteComponent, {data: {value: userLabel(user)}}).afterClosed())
+    const confirm = await firstValueFrom(
+      this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(user) } }).afterClosed()
+    )
     if (confirm) {
       try {
         await firstValueFrom(this.businessAreaUserService.delete(id))
         this.refresh$.next()
-        this._toastrService.success('PAC.BUSINESS_AREA.RemoveUser', {Default: 'Remove User'})
-      } catch(err) {
+        this._toastrService.success('PAC.BUSINESS_AREA.RemoveUser', { Default: 'Remove User' })
+      } catch (err) {
         this._toastrService.error(err)
       }
     }
@@ -108,13 +115,15 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
       )
 
       this.refresh$.next()
-    } catch(err) {
+    } catch (err) {
       this._toastrService.error(err)
     }
   }
 
   async openUserSelect() {
-    const modelerLabel = this.getTranslation('PAC.BUSINESS_AREA.BusinessAreaRole', {Default: {Modeler: 'Modeler', Viewer: 'Viewer'}})
+    const modelerLabel = this.getTranslation('PAC.BUSINESS_AREA.BusinessAreaRole', {
+      Default: { Modeler: 'Modeler', Viewer: 'Viewer' }
+    })
     const value = await firstValueFrom(
       this._dialog
         .open(UserRoleSelectComponent, {

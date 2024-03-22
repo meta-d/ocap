@@ -79,11 +79,12 @@
         "compodoc": true,
         "compodocArgs": ["-e", "json", "-d", "packages/angular/.storybook"],
         "styles": [
-          "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-          "packages/angular/core/style/prebuilt/indigo-pink.scss",
           "packages/angular/.storybook/peview.scss",
           "packages/angular/_index.scss"
-        ]
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": ["node_modules/"]
+        }
       },
       "configurations": {
         "ci": {

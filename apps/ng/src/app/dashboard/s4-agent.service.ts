@@ -1,39 +1,56 @@
+
 import { Injectable } from '@angular/core'
 import { Agent, AgentStatus, AgentStatusEnum, AgentType, DataSourceOptions } from '@metad/ocap-core'
-import { Observable } from 'rxjs'
-
-
-export interface PacServerAgentDefaultOptions {
-  modelBaseUrl: string
-}
+import { EMPTY, Observable, of } from 'rxjs'
 
 @Injectable()
 export class S4ServerAgent implements Agent {
   type = AgentType.Server
 
   selectStatus(): Observable<AgentStatus | AgentStatusEnum> {
-    throw new Error('Method not implemented.')
+    return of({
+      status: AgentStatusEnum.ONLINE,
+      payload: null
+    })
   }
+
   selectError(): Observable<any> {
-    throw new Error('Method not implemented.')
+    return EMPTY
   }
+
   error(err: any): void {
     console.error(err)
   }
-  async request(dataSource: DataSourceOptions, options: any): Promise<any> {
-    console.log(dataSource, options)
 
-    const result = await fetch(`/sap/bw/xml/soap/xmla?sap-client=400`, {
+  /**
+   * Redirect dataSource request to current S4 backend system
+   * 
+   * @param dataSource DataSource options of model
+   * @param request Request options
+   * @returns response text
+   */
+  async request(dataSource: DataSourceOptions, request: {headers: any; body: string}): Promise<any> {
+    const result = await fetch(`/sap/bw/xml/soap/xmla`, {
       method: 'POST',
       headers: {
-        ...options.headers,
+        ...request.headers,
+        // 'Accept-Language': this.#translateService.lang() || ''
       },
-      body: options.body,
+      body: request.body
     })
 
     return await result.text()
   }
+
+  /**
+   * 
+   * @todo new api
+   * @param dataSource 
+   * @param options 
+   * @returns 
+   */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   _request?(dataSource: DataSourceOptions, options: any): Observable<any> {
-    throw new Error('Method not implemented.')
+    return EMPTY
   }
 }

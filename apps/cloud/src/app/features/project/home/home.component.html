@@ -55,26 +55,4 @@
         ></pac-story-card>
     </div>
 
-    <ng-container *ngIf="isOwner && project?.id">
-        <div class="text-xl my-4">
-            {{ 'PAC.Project.Manage' | translate: {Default: 'Manage'} }}
-        </div>
-
-        <div class="pac-confirm-card pac-confirm-card__delete w-60 group">
-            <div class="flex flex-col items-center p-4 gap-2">
-                <h5 class="mb-1 text-base font-medium">
-                    {{ 'PAC.Project.DeleteProject' | translate: { Default: 'Delete project' } }}
-                </h5>
-
-                <div ngmButtonGroup class="pac-confirm-card__delete-actions h-0 overflow-hidden group-hover:h-10 transition-all duration-300">
-                    <button mat-stroked-button color="warn" displayDensity="cosy" (click)="deleteProject()">
-                        <div class="flex items-center">
-                            <mat-icon fontSet="material-icons-outlined">delete_outline</mat-icon>
-                            {{ 'PAC.Project.ConfirmDelete' | translate: { Default: 'Confirm delete' } }}
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </ng-container>
 </div>

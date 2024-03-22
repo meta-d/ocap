@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxTableModule } from '@metad/components/table'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
 import { ICertification, IProject, IUser, ProjectService, Store, ToastrService } from '../../../@core'
 import {
@@ -21,6 +20,8 @@ import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { ProjectComponent } from '../project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { ConfirmDeleteComponent } from '@metad/components/confirm'
 
 
 @Component({
@@ -35,23 +36,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     InlineSearchComponent,
     UserProfileComponent,
     UserProfileInlineComponent,
-    NxTableModule,
     ButtonGroupDirective,
     DensityDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmTableComponent
   ],
   selector: 'pac-project-members',
   templateUrl: 'members.component.html',
   styles: [
-    `
-      :host {
-        width: 100%;
-        overflow: auto;
-      }
-      .rounded-full.mat-stroked-button {
-        border-radius: 50%;
-      }
-    `
+`
+:host {
+  width: 100%;
+  overflow: auto;
+}
+.rounded-full.mat-stroked-button {
+  border-radius: 50%;
+}
+`
   ]
 })
 export class ProjectMembersComponent extends TranslationBaseComponent {
@@ -155,9 +156,14 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
   async removeMember(id: string) {
     if (this.project?.id) {
       const member = this.members.find((item) => item.id === id)
-      member.loading = true
-      await firstValueFrom(this.projectService.deleteMember(this.project.id, id))
-      this.refresh$.next()
+      const confirm = await firstValueFrom(
+        this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(member.user) } }).afterClosed()
+      )
+      if (confirm) {
+        member.loading = true
+        await firstValueFrom(this.projectService.deleteMember(this.project.id, id))
+        this.refresh$.next()
+      }
     }
   }
 
@@ -196,6 +202,21 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
       } catch (err) {
         this._toastrService.error(err)
       }
+    }
+  }
+
+  async deleteProject() {
+    const confirm = await firstValueFrom(
+      this._dialog.open(ConfirmDeleteComponent, { data: { value: this.project.name } }).afterClosed()
+    )
+    if (!confirm) {
+      return
+    }
+    try {
+      await firstValueFrom(this.projectService.delete(this.project.id))
+      this._toastrService.success('PAC.ACTIONS.Delete', { Default: 'Delete' })
+    } catch (err) {
+      this._toastrService.error(err)
     }
   }
 }

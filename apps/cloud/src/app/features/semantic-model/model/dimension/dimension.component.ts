@@ -1,28 +1,28 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { PropertyHierarchy } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { nonBlank } from '@metad/core'
+import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
+import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { PropertyHierarchy } from '@metad/ocap-core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
+import { ContentLoaderModule } from '@ngneat/content-loader'
 import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { Observable } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
+import zodToJsonSchema from 'zod-to-json-schema'
 import { ToastrService, routeAnimations } from '../../../../@core'
 import { AppService } from '../../../../app.service'
+import { TablesJoinModule } from '../../tables-join'
+import { HierarchySchema } from '../copilot'
 import { ModelComponent } from '../model.component'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType, TOOLBAR_ACTION_CATEGORY } from '../types'
 import { ModelDimensionService } from './dimension.service'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { CommonModule } from '@angular/common'
-import { ContentLoaderModule } from '@ngneat/content-loader'
-import { NxTableModule } from '@metad/components/table'
-import { OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
-import { NgmCommonModule, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
-import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { TablesJoinModule } from '../../tables-join'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-model-dimension',
@@ -36,61 +36,99 @@ import { TablesJoinModule } from '../../tables-join'
     SharedModule,
     MaterialModule,
     ContentLoaderModule,
-    
-    NxTableModule,
+
     NxDesignerModule,
-    
+
     OcapCoreModule,
     ResizerModule,
     SplitterModule,
     NgmEntitySchemaComponent,
     NgmCommonModule,
+    NgmTableComponent,
 
     TablesJoinModule
   ]
 })
 export class ModelDimensionComponent extends TranslationBaseComponent implements OnInit {
+  public appService = inject(AppService)
+  public modelService = inject(SemanticModelService)
+  private modelComponent = inject(ModelComponent)
+  private dimensionService = inject(ModelDimensionService)
+  public settingsService = inject(NxSettingsPanelService)
+  #toastrService = inject(ToastrService)
+  #route = inject(ActivatedRoute)
+  #router = inject(Router)
+  #destroyRef = inject(DestroyRef)
+
   detailsOpen = false
 
   public readonly hierarchies = toSignal(this.dimensionService.hierarchies$)
   public readonly dimension = toSignal(this.dimensionService.dimension$)
 
-  public readonly isMobile$ = this.appService.isMobile$
   public readonly dimension$ = this.dimensionService.dimension$
+  readonly isMobile = this.appService.isMobile
 
-  public readonly error$ = this.dimensionService.name$.pipe(
-    switchMap((entity) => this.modelService.selectEntitySetError(entity))
-  )
-  constructor(
-    public appService: AppService,
-    public modelService: SemanticModelService,
-    private modelComponent: ModelComponent,
-    private dimensionService: ModelDimensionService,
-    public settingsService: NxSettingsPanelService,
-    private toastrService: ToastrService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    super()
-
-    this.route.paramMap
-      .pipe(
-        startWith(this.route.snapshot.paramMap),
-        map((paramMap) => paramMap.get('id')),
-        filter(nonBlank),
-        map(decodeURIComponent),
-        distinctUntilChanged(),
-        untilDestroyed(this)
-      )
-      .subscribe((id) => {
-        this.dimensionService.init(id)
-        this.modelService.setCrrentEntity(id)
+  readonly error = toSignal(this.dimensionService.name$.pipe(
+    switchMap((entity) => this.modelService.selectOriginalEntityError(entity))
+  ))
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #createHierarchyCommand = injectCopilotCommand({
+    name: 'h',
+    description: 'Create a new hierarchy',
+    examples: [`Create a new hierarchy`],
+    systemPrompt: () => {
+      return `Create a new hierarchy`
+    },
+    actions: [
+      injectMakeCopilotActionable({
+        name: 'create-model-hierarchy',
+        description: 'Should always be used to properly format output',
+        argumentAnnotations: [
+          {
+            name: 'hierarchy',
+            type: 'object', // Add or change types according to your needs.
+            description: 'The defination of hierarchy',
+            required: true,
+            properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
+          }
+        ],
+        implementation: async (h: PropertyHierarchy) => {
+          this.dimensionService.newHierarchy(h)
+        }
       })
+    ]
+  })
 
-    this.error$.pipe(untilDestroyed(this)).subscribe((err) => {
-      this.toastrService.error(err)
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers
+  |--------------------------------------------------------------------------
+  */
+  #paramSub = this.#route.paramMap
+    .pipe(
+      startWith(this.#route.snapshot.paramMap),
+      map((paramMap) => paramMap.get('id')),
+      filter(nonBlank),
+      map(decodeURIComponent),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    )
+    .subscribe((id) => {
+      this.dimensionService.init(id)
+      this.modelService.setCrrentEntity(id)
     })
-  }
+
+  #errorSub = effect(() => {
+    const error = this.error()
+    if (error) {
+      this.#toastrService.error(error)
+    }
+  })
 
   ngOnInit(): void {
     this.openDesigner()
@@ -98,12 +136,12 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
 
     this.modelComponent.toolbarAction$
       .pipe(
-        untilDestroyed(this),
-        filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.DIMENSION)
+        filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.DIMENSION),
+        takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe(({ category, action }) => {
         if (action === 'NewHierarchy') {
-          this.dimensionService.newHierarchy()
+          this.dimensionService.newHierarchy(null)
         } else if (action === 'RemoveHierarchy') {
           this.dimensionService.removeHierarchy('')
         }
@@ -125,7 +163,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
         this.settingsService.openDesigner(
           ModelDesignerType.dimension,
           this.dimension$.pipe(
-            map((dimension) => ({ modeling: dimension, shared: true, hierarchies: dimension.hierarchies })),
+            map((dimension) => ({ modeling: dimension, shared: true, hierarchies: dimension.hierarchies }))
           ),
           dimension.__id__
         )
@@ -151,7 +189,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   }
 
   newHierarchy() {
-    this.dimensionService.newHierarchy()
+    this.dimensionService.newHierarchy(null)
   }
 
   duplicateHierarchy(key: string) {
@@ -159,6 +197,6 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   }
 
   navigateTo(id: string) {
-    this.router.navigate([`hierarchy/${id}`], { relativeTo: this.route })
+    this.#router.navigate([`hierarchy/${id}`], { relativeTo: this.#route })
   }
 }

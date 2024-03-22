@@ -1,19 +1,36 @@
+import { nanoid } from 'ai'
 import { BehaviorSubject, Observable, filter, map } from 'rxjs'
-import { z } from 'zod'
-import zodToJsonSchema from 'zod-to-json-schema'
 import {
   CopilotChatConversation,
+  CopilotChatMessage,
   CopilotChatMessageRoleEnum,
   CopilotDefaultOptions,
   getFunctionCall,
   nonNullable
-} from './types'
+} from './types/types'
 
-export interface CopilotCommand {
+/**
+ * Copilot command, which can execute multiple actions.
+ */
+export interface CopilotCommand<Inputs extends any[] = any[]> {
   name: string
   description: string
   examples?: string[]
-  processor: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
+  systemPrompt?: () => string
+  /**
+   * @deprecated use implementation
+   *
+   * @param copilot
+   * @returns
+   */
+  processor?: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
+
+  implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
+
+  /**
+   * Action ids to execute.
+   */
+  actions?: string[]
 }
 
 export const CopilotCommands$ = new BehaviorSubject<Record<string, Record<string, CopilotCommand>>>({})
@@ -78,10 +95,12 @@ export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCo
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }
@@ -89,17 +108,7 @@ export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCo
       {
         ...CopilotDefaultOptions,
         ...copilot.options,
-        functions: [
-          {
-            name: 'assign-command',
-            description: 'Should always be used to properly format output',
-            parameters: zodToJsonSchema(
-              z.object({
-                command: z.string().describe('Name of command')
-              })
-            )
-          }
-        ],
+        functions: [],
         function_call: { name: 'assign-command' }
       }
     )
@@ -122,6 +131,7 @@ export function freeChat(copilot: CopilotChatConversation) {
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }

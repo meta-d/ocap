@@ -1,4 +1,4 @@
-import * as rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import * as path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
@@ -585,10 +585,10 @@ export class SeedDataService {
 			const dir = path.join(assetOptions.assetPublicPath, 'screenshots');
 
 			// delete old generated screenshots
-			rimraf(`${dir}/!(rimraf|.gitkeep)`, () => {
+			rimraf(`${dir}/!(rimraf|.gitkeep)`).then(() => {
 				this.log(chalk.green(`✅ CLEANED UP`));
 				resolve(true);
-			});
+			})
 		});
 	}
 

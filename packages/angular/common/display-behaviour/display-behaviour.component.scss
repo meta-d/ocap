@@ -30,12 +30,6 @@
 
     .ngm-display-behaviour__option-value {
       flex: 0;
-      margin-left: 0.25em;
-      font-size: 0.85em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: right;
     }
   }
 
@@ -64,13 +58,6 @@
 
     .ngm-display-behaviour__option-value {
       flex: 1;
-      margin-left: 0.25em;
-      /* descriptionAndId 中 value 作为辅助信息字体大小显示小一号 */
-      font-size: 0.85em;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: right;
     }
   }
 
@@ -96,5 +83,19 @@
 
   .ngm-display-behaviour__highlight {
     // color: map-get($accent, 500);
+  }
+
+  &.ngm-display-behaviour__auto, &.ngm-display-behaviour__descriptionAndId {
+    .ngm-display-behaviour__option-value {
+      /* value is displayed smaller as auxiliary information */
+      font-size: 0.85em;
+      opacity: .6;
+      font-style: oblique;
+      margin-left: 0.25em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
   }
 }

@@ -70,7 +70,7 @@ export class BusinessAreasService extends OrganizationBaseService {
   }
 
   create(input: Partial<IBusinessArea>) {
-    return this.httpClient.post(C_API_BUSINESS_AREA, input)
+    return this.httpClient.post<IBusinessArea>(C_API_BUSINESS_AREA, input)
   }
 
   update(id: string, input: Partial<IBusinessArea>) {

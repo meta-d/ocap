@@ -52,7 +52,7 @@
   </div>
 </div>
 
-<div class="mat-typography min-w-[300px] flex-1 flex flex-col justify-start items-stretch p-4 overflow-auto" cdkDropListGroup>
+<div class="mat-typography min-w-[300px] flex-1 flex flex-col justify-start items-stretch p-4 overflow-hidden" cdkDropListGroup>
 
   <div *ngIf="paramType.value === ParameterControlEnum.Input" class="flex flex-col justify-start items-start gap-8">
     <div class="flex flex-col justify-start items-start gap-2">
@@ -73,7 +73,7 @@
     
   </div>
 
-  <div *ngIf="paramType.value === ParameterControlEnum.Select" >
+  <div *ngIf="paramType.value === ParameterControlEnum.Select"  class="flex-1 overflow-y-auto">
     <div class="text-lg">{{ 'COMPONENTS.PROPERTY.AvailableMembers' | translate: {Default: "Available Members"} }}</div>
     <div *ngFor="let item of availableMembers.controls; let i = index;" class="flex justify-start items-center gap-2 group"
       [formGroup]="$any(item)"
@@ -100,7 +100,7 @@
     </button>
   </div>
 
-  <div *ngIf="paramType.value === ParameterControlEnum.Dimensions" class="flex-1 min-w-[400px] flex flex-col justify-start items-stretch">
+  <div *ngIf="paramType.value === ParameterControlEnum.Dimensions" class="flex-1 w-full max-w-full flex flex-col justify-start items-stretch">
     <ngm-hierarchy-select appearance="fill"
       [label]=" 'COMPONENTS.PROPERTY.Dimension' | translate: {Default: 'Dimension' } "
       [dimensions]="dimensions$ | async"

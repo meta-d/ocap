@@ -26,7 +26,8 @@ export const ZhHans = {
     Pie: '饼图',
     Bar: '柱图',
     TimeGranularity: '时间粒度',
-    LookbackLimit: '回溯限制',
-    Refresh: '刷新'
+    LookbackPeriods: '回溯期限',
+    Refresh: '刷新',
+    Comment: '评论',
   }
 }

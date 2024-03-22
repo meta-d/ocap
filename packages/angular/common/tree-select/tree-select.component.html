@@ -178,7 +178,7 @@
 
     <div matPrefix *ngIf="useAutocomplete" class="flex justify-start items-center">
 
-      <button mat-icon-button [displayDensity]="displayDensity"
+      <button mat-icon-button class="ngm-actionable-opacity" [displayDensity]="displayDensity"
         (click)="$event.stopPropagation();toggleExpand()">
         <mat-icon *ngIf="!unfold">unfold_more</mat-icon>
         <mat-icon *ngIf="unfold">unfold_less</mat-icon>
@@ -191,7 +191,7 @@
     </div>
 
     <div matSuffix class="flex justify-start items-center" >
-      <button *ngIf="isNotInitial" mat-icon-button displayDensity="cosy" ngmAppearance="danger" [disabled]="disabled"
+      <button *ngIf="isNotInitial" class="ngm-actionable-opacity" mat-icon-button displayDensity="cosy" ngmAppearance="danger" [disabled]="disabled"
         (click)="clear($event)">
         <mat-icon>close</mat-icon>
       </button>

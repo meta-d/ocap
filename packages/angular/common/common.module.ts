@@ -9,9 +9,11 @@ import { NgmSearchComponent } from './search/search.component'
 import { NgmMatSelectComponent, NgmSelectComponent } from './select'
 import { NgmSliderInputComponent } from './slider-input'
 import { SplitterModule } from './splitter/splitter.module'
-import { TableVirtualScrollModule } from './table'
+import { NgmSelectionTableComponent, NgmTableComponent, TableVirtualScrollModule } from './table'
 import { NgmTagsComponent } from './tag'
 import { NgmTreeSelectComponent } from './tree-select'
+import { NgmDrawerTriggerComponent } from './drawer-trigger'
+import { NgmScrollBackComponent } from './scroll'
 
 @NgModule({
   imports: [
@@ -32,7 +34,11 @@ import { NgmTreeSelectComponent } from './tree-select'
     NgmTagsComponent,
     DensityDirective,
     ButtonGroupDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmDrawerTriggerComponent,
+    NgmScrollBackComponent,
+    NgmTableComponent,
+    NgmSelectionTableComponent
   ],
   exports: [
     ResizerModule,
@@ -50,7 +56,11 @@ import { NgmTreeSelectComponent } from './tree-select'
     NgmTagsComponent,
     DensityDirective,
     ButtonGroupDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmDrawerTriggerComponent,
+    NgmScrollBackComponent,
+    NgmTableComponent,
+    NgmSelectionTableComponent
   ],
   declarations: [],
   providers: []

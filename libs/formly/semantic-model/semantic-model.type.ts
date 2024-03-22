@@ -1,15 +1,20 @@
-import { Component, inject } from '@angular/core'
+import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { Router } from '@angular/router'
+import { nonNullable } from '@metad/core'
 import { FieldType } from '@ngx-formly/core'
-import { Observable } from 'rxjs'
+import { Observable, startWith } from 'rxjs'
 
 @Component({
   selector: 'pac-formly-semantic-model',
-  template: `<ngm-select displayDensity="compact"
-    [label]="'FORMLY.SemanticModel.Label' | translate: { Default: 'Semantic Model' }"
-    [selectOptions]="selectOptions | async"
+  template: `<ngm-select
+    displayDensity="compact"
+    [label]="'FORMLY.COMMON.SemanticModel' | translate: { Default: 'Semantic Model' }"
+    [selectOptions]="selectOptions()"
+    valueKey="key"
     [formControl]="valueControl"
+    [class.ngm-select-error]="notFound()"
   >
     <ng-template ngmOptionContent let-option>
       <div class="flex items-center whitespace-nowrap overflow-hidden">
@@ -22,6 +27,12 @@ import { Observable } from 'rxjs'
         </div>
       </div>
     </ng-template>
+
+    <div ngmError>
+      @if (notFound()) {
+        <span>{{ 'FORMLY.COMMON.NotFoundValue' | translate: {Default: 'Not found value: '} }} {{notFound()}}</span>
+      }
+    </div>
   </ngm-select>`,
   styles: [
     `
@@ -31,14 +42,33 @@ import { Observable } from 'rxjs'
     `
   ]
 })
-export class PACFormlySemanticModelComponent extends FieldType {
+export class PACFormlySemanticModelComponent extends FieldType implements OnInit {
   private router = inject(Router)
+  readonly #destroyRef = inject(DestroyRef)
 
-  public get selectOptions() {
-    return this.props.options as Observable<any[]>
-  }
   get valueControl() {
     return this.formControl as FormControl
+  }
+  readonly selectOptions = signal<any[]>([])
+  readonly value = signal(null)
+  readonly notFound = signal<string | null>(null)
+
+  #validatorEffectRef = effect(() => {
+    if (nonNullable(this.value()) && !this.selectOptions().find((option) => option.key === this.value())) {
+      this.notFound.set(this.value())
+    } else {
+      this.notFound.set(null)
+    }
+  }, { allowSignalWrites: true })
+
+  ngOnInit() {
+    ;(this.props.options as Observable<any[]>)?.subscribe((options) => {
+      this.selectOptions.set(options)
+    })
+
+    this.valueControl.valueChanges.pipe(startWith(this.valueControl.value), takeUntilDestroyed(this.#destroyRef)).subscribe((value) => {
+      this.value.set(value)
+    })
   }
 
   openSemanticModel(key: string) {

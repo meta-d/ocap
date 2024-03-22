@@ -13,7 +13,9 @@
             <label for="email" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">
               {{ 'AUTH.LOGIN.ACCOUNT' | translate: {Default: 'Account'} }}
             </label>
-            <input matInput type="email" name="email" id="email" formControlName="userName" [placeholder]="'AUTH.LOGIN.USERNAME' | translate: {Default: 'Username / Email'} " class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="">
+            <input matInput type="email" name="email" id="email" formControlName="userName" [placeholder]="'AUTH.LOGIN.USERNAME' | translate: {Default: 'Username / Email'} "
+              class="ngm-input-element"
+              required>
           </div>
           <div>
               <label for="password" class="block mb-2 text-base font-medium text-gray-900 dark:text-white">
@@ -21,7 +23,8 @@
               </label>
               <input matInput type="password" name="password" id="password" formControlName="password"
                 placeholder="••••••••"
-                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required="">
+                class="ngm-input-element"
+                required>
           </div>
         </div>
       </mat-tab>
@@ -51,25 +54,29 @@
   </div>
 
 </form>
-  <!-- 
+
 <div class="pac-login__signins flex flex-wrap justify-center items-center gap-2">
-<button mat-icon-button (click)="open('dingtalk', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.DINGTALK' | translate: {Default: 'Dingtalk'}">
-    <img class="m-auto" src="/assets/images/destinations/dingtalk.svg">
-  </button>
+  @if (enableDingtalk()) {
+    <button mat-icon-button (click)="open('dingtalk', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.DINGTALK' | translate: {Default: 'Dingtalk'}">
+      <img class="m-auto" src="/assets/images/destinations/dingtalk.svg">
+    </button>
+  }
+  @if (enableFeishu()) {
+    <button mat-icon-button (click)="open('feishu', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.FEISHU' | translate: {Default: 'Feishu'}">
+      <img class="m-auto" src="/assets/images/destinations/feishu.png">
+    </button>
+  }
 
-  <button mat-icon-button (click)="open('feishu', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.FEISHU' | translate: {Default: 'Feishu'}">
-    <img class="m-auto" src="/assets/images/destinations/feishu.png">
-  </button> 
-
-  <button mat-icon-button (click)="open('github', 'window')" class="pac-login__signin-button"
-    [matTooltip]="'AUTH.LOGIN.GITHUB' | translate: {Default: 'Github'}">
-    <img class="m-auto" src="/assets/images/destinations/GitHub-Mark-120px-plus.png">
-  </button>
-
+  @if (enableGithub()) {
+    <button mat-icon-button (click)="open('github', 'window')" class="pac-login__signin-button"
+      [matTooltip]="'AUTH.LOGIN.GITHUB' | translate: {Default: 'Github'}">
+      <img class="m-auto" src="/assets/images/destinations/GitHub-Mark-120px-plus.png">
+    </button>
+  }
 </div>
--->
+
 <div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
   <mat-spinner diameter="30" strokeWidth="2">
   </mat-spinner>

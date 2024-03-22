@@ -1,54 +1,44 @@
-<div class="pac-nav-toolbar w-full flex p-1" displayDensity="compact">
-    <button mat-icon-button displayDensity="cosy" (click)="drawer.toggle()">
-        <mat-icon fontSet="material-icons-round">segment</mat-icon>
-    </button>
-    
-    <span *ngIf="cube$ | async as cube">
-        {{ cube.caption || cube.name}}
-    </span>
-
-    <button mat-icon-button displayDensity="compact" (click)="openCubeDesigner()">
-        <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
-    </button>
+<mat-toolbar class="pac-nav-toolbar pac-model__shell-bar flex items-center" displayDensity="compact">
+    <div class="flex items-center px-4">
+      @if (cube()) {
+        <a class="cursor-pointer" (click)="openCubeDesigner()"><span>{{ cube().caption || cube().name}}</span></a>
+      }
+    </div>
 
     <span class="flex-1 flex"></span>
-
-    <div class="flex justify-start items-center">
-        <button mat-button [routerLink]="['./structure']" routerLinkActive #rlaStructure="routerLinkActive"
+    
+    <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="accent" disableRipple mat-stretch-tabs="false" mat-align-tabs="start">
+        <span mat-tab-link [routerLink]="['./structure']" routerLinkActive #rlaStructure="routerLinkActive"
             [routerLinkActiveOptions]="{exact: true}"
-            [color]="rlaStructure.isActive?'accent':''"
-        >
-            {{ 'PAC.MENU.STRUCTURE' | translate: {Default: "Structure"} }}
-        </button>
-        <button mat-button [routerLink]="['./calculation']" routerLinkActive #rlaCalculation="routerLinkActive"
-            [color]="rlaCalculation.isActive?'accent':''"
-        >
-            {{ 'PAC.MENU.CALCULATION' | translate: {Default: "Calculation"} }}
-        </button>
-        <button mat-button [routerLink]="['./query']" routerLinkActive #rlaQuery="routerLinkActive"
+            [active]="rlaStructure.isActive"
+            >{{ 'PAC.MENU.STRUCTURE' | translate: {Default: "Structure"} }}</span>
+        <span mat-tab-link [routerLink]="['./preview']" routerLinkActive #rlaPreview="routerLinkActive"
             [routerLinkActiveOptions]="{exact: true}"
-            [color]="rlaQuery.isActive?'accent':''"
+            [active]="rlaPreview.isActive"
+            >{{ 'PAC.MENU.Preview' | translate: {Default: "Preview"} }}</span>
+        <span mat-tab-link [routerLink]="['./query']" routerLinkActive #rlaQuery="routerLinkActive"
+            [routerLinkActiveOptions]="{exact: true}"
+            [active]="rlaQuery.isActive"
+            >{{ 'PAC.MENU.QL_LAB' | translate: {Default: "QL Lab"} }}</span>
+        
+        <span mat-tab-link [matTooltip]="'PAC.ACTIONS.OpenAttributesPanel' | translate: {Default: 'Open attributes panel'}"
+            matTooltipPosition="above"
+            [active]="detailsOpen"
+            (click)="designerDrawer.toggle()"
         >
-            {{ 'PAC.MENU.QL_LAB' | translate: {Default: "QL Lab"} }}
-        </button>
-        <!-- 暂时未完成成员同步
-        <button mat-button [color]="current==='members'?'accent':''" (click)="openSub('members')">
-            {{ 'PAC.MENU.MEMBERS' | translate: {Default: "Members"} }}
-        </button> -->
-    </div>
-    <button mat-button [color]="detailsOpen?'accent':''" (click)="designerDrawer.toggle()">
-        <div class="flex justify-center items-center">
-            <mat-icon fontSet="material-icons-outlined">edit_attributes</mat-icon>
-            <span *ngIf="(isMobile$ | async)==false">{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
-        </div>
-    </button>
-</div>
+            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen?'accent':''">edit_attributes</mat-icon>
+            @if (!isMobile()) {
+              <span>{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
+            }
+        </span>
+    </nav>
+</mat-toolbar>
 
 <mat-drawer-container class="flex-1" autosize [hasBackdrop]="false">
     <mat-drawer #designerDrawer class="ngm-story__designer-drawer mat-elevation-z"
         position="end"
         ngmResizer [resizerWidth]="380"
-        [mode]="(isMobile$ | async) ? 'over' : 'side'"
+        [mode]="isMobile() ? 'over' : 'side'"
         [opened]="detailsOpen"
         (openedChange)="onDesignerDrawerChange($event)"
     >
@@ -64,7 +54,7 @@
     </mat-drawer>
     <mat-drawer-content class="flex">
         <mat-drawer-container class="flex-1 h-full" autosize>
-            <mat-drawer #drawer mode="side" opened ngmResizer [resizerWidth]="230">
+            <mat-drawer #drawer mode="side" [(opened)]="drawerOpened" ngmResizer [resizerWidth]="230">
                 <pac-model-cube-structure class="pac-model-entity__cube flex-1 h-full"
                     [modelType]="modelType$ | async"
                     [editable]="true"
@@ -76,10 +66,13 @@
             </mat-drawer>
             <mat-drawer-content>
                 <div class="pac-model-entity__workspace flex-1 h-full">
-                    <div class="pac-model-entity__workspace-router flex-1">
+                    <mat-tab-nav-panel #tabPanel class="pac-model-entity__workspace-router ngm-layout-container-secondary flex-1"
+                        [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
                         <router-outlet #o="outlet"></router-outlet>
-                    </div>
+                    </mat-tab-nav-panel>
                 </div>
+
+                <ngm-drawer-trigger class="absolute -left-2 top-1/2 z-40" [(opened)]="drawerOpened" ></ngm-drawer-trigger>
             </mat-drawer-content>
         </mat-drawer-container>
     </mat-drawer-content>

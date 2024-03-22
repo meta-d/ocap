@@ -21,11 +21,10 @@
 
             <div id="pac-model__query-entities" class="pac-model-query__schema pac-cdk-drop__list flex-1 flex flex-col overflow-auto"
                 cdkDropList
-                [cdkDropListData]="entities"
                 [cdkDropListEnterPredicate]="editorDropPredicate"
                 (cdkDropListDropped)="dropEntity($event)"
             >
-                <ngm-entity-schema *ngFor="let entity of entities"
+                <ngm-entity-schema *ngFor="let entity of entities()"
                     [dataSettings]="{dataSource: dataSourceName, entitySet: entity}"
                     [capacities]="[
                         EntityCapacity.Dimension,
@@ -42,7 +41,7 @@
     </mat-drawer>
 
     <mat-drawer-content>
-        <ngm-splitter class="flex-1 w-full h-full" [type]="1">
+        <ngm-splitter class="ngm-layout-container-secondary flex-1 w-full h-full" [type]="1">
             <ngm-splitter-pane size='15rem' class="flex flex-col justify-end items-stretch z-[101]">
                 <mat-toolbar class="pac-sub-toolbar pac-toolbar__editor flex justify-start items-center gap-2"
                     displayDensity="compact">
@@ -92,7 +91,7 @@
                     </button> -->
 
                     <span class="flex-1 flex"></span>
-                    <button mat-icon-button displayDensity="compact" class="font-notoColorEmoji"
+                    <!-- <button mat-icon-button displayDensity="compact" class="font-notoColorEmoji"
                         [popper]="ask"
                         [popperTrigger]="NgxPopperjsTriggers.click"
                         [popperHideOnClickOutside]="true"
@@ -108,7 +107,7 @@
                             ('PAC.Copilot.SelectSomeCode' | translate: {Default: 'Select some code and let your AI pair programmer to edits!'}) :
                             ('PAC.Copilot.LetYourAIPairProgrammerEdits' | translate: {Default: 'Let your AI pair programmer edits!'})"
                         >🧑‍💻</span>
-                    </button>
+                    </button> -->
 
                     <button mat-icon-button displayDensity="compact" 
                         (click)="triggerUndo()">
@@ -126,11 +125,13 @@
                         (click)="triggerClear()">
                         <mat-icon fontSet="material-icons-round">playlist_remove</mat-icon>
                     </button>
-                    
-                    <button *ngIf="!useMDX()" mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
-                        (click)="triggerCompress()">
-                        <mat-icon fontSet="material-icons-outlined">folder_zip</mat-icon>
-                    </button>
+
+                    @if (isMDX()) {
+                        <button mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
+                            (click)="triggerCompress()">
+                            <mat-icon fontSet="material-icons-outlined">folder_zip</mat-icon>
+                        </button>
+                    }
 
                     <button mat-icon-button displayDensity="compact" matTooltip="💡{{ 'PAC.KEY_WORDS.Format' | translate: {Default: 'Format'} }}"
                         (click)="triggerFormat()">
@@ -138,21 +139,20 @@
                     </button>
                 </mat-toolbar>
 
-                <ng-container [ngSwitch]="useMDX()">
-                    <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                @if (isMDX()) {
+                    <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [(ngModel)]="statement"
                         (selectionChange)="onSelectionChange($event)"
                         (keyDown)="onEditorKeyDown($event)"
 
                         cdkDropList
-                        [cdkDropListData]="entities"
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
                     </ngm-editor-mdx>
-        
-                    <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                } @else {
+                    <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
                         [actions]="sqlEditorActions"
@@ -162,13 +162,11 @@
                         (keyDown)="onEditorKeyDown($event)"
         
                         cdkDropList
-                        [cdkDropListData]="entities"
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
                         >
                     </ngm-editor-sql>
-                </ng-container>
-
+                }
             </ngm-splitter-pane>
             <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
                 <mat-toolbar class="pac-nav-toolbar" displayDensity="compact">
@@ -212,10 +210,17 @@
 
                 <mat-tab-nav-panel #tabPanel class="pac-cdk-drop__list pac-cdk-drop__area flex flex-col overflow-hidden"
                     cdkDropList
-                    [cdkDropListData]="entities"
                     [cdkDropListEnterPredicate]="editorDropPredicate"
                     (cdkDropListDropped)="dropTable($event)">
-                    <div *ngIf="activeResult" class="pac-model-ql-lab__stats">
+                  @if (activeResult) {
+                    <div class="pac-model-ql-lab__stats">
+                        <button mat-icon-button displayDensity="compact"
+                            [matTooltip]="'PAC.KEY_WORDS.EXPORT' | translate: {Default: 'Export'}"
+                            matTooltipPosition="above"
+                            (click)="export()">
+                            <mat-icon>file_download</mat-icon>
+                        </button>
+
                         <mat-icon fontSet="material-icons-outlined" displayDensity="compact"
                             [matTooltip]="activeResult.statement">info</mat-icon>
                         <span>
@@ -226,6 +231,7 @@
                         </span>
 
                     </div>
+                  }
 
                     <div *ngIf="activeResult?.error" class="pac-result flex-1">
                         <div class="bug font-notoColorEmoji" >🐞</div>
@@ -241,7 +247,7 @@
                             </div>
                         </div>
 
-                        <ngm-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result striped"
+                        <ngm-table *ngIf="activeResult?.preview" class="pac-model-ql-lab__result ngm-data-preview striped"
                             [columns]="activeResult?.columns"
                             [data]="activeResult?.preview"
                             [paging]="true"
@@ -271,26 +277,4 @@
     </button>
 
     <mat-divider></mat-divider>
-
-    <button mat-menu-item (click)="export()">
-        <mat-icon>file_download</mat-icon>
-        <span>{{ 'PAC.KEY_WORDS.EXPORT' | translate: {Default: "Export"} }}</span>
-    </button>
-
 </mat-menu>
-
-<popper-content #ask class="z-[101]">
-    <div class="flex flex-col bg-white p-2" displayDensity="compact">
-        <ngm-input class="w-64" [placeholder]="'PAC.MODEL.QUERY.CopilotPlaceholder' | translate: {
-                Default: 'Ask a question or request, type CTRL + Enter to send'
-            }"
-            [formControl]="prompt"
-            (keydown)="triggerAsk($event, ask);"
-        >
-            <button ngmSuffix mat-icon-button displayDensity="compact" [disabled]="answering()"
-                (click)="askCopilot(prompt.value, ask)">
-                <mat-icon fontSet="material-icons-round">send</mat-icon>
-            </button>
-        </ngm-input>
-    </div>
-</popper-content>

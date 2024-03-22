@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { isNumber, PeriodFunctions, QueryOptions, SmartIndicatorDataService } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { combineLatest, map } from 'rxjs'
 import { Trend } from '../types'
 
-@UntilDestroy()
 @Injectable()
 export class IndicatorItemDataService extends SmartIndicatorDataService<unknown> {
 

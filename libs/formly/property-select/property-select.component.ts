@@ -15,7 +15,6 @@ import {
   EntityType,
   getEntityProperty
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { FieldType } from '@ngx-formly/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NgmChromaticInterpolateGroup, getScaleChromaticInterpolates } from '@metad/components/palette'
@@ -39,7 +38,6 @@ import {
 } from 'rxjs'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-formly-property-select',
   templateUrl: './property-select.component.html',
@@ -254,13 +252,13 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
   ngOnInit(): void {
     // 初始化完成后再发送数据
     if (this.field?.props?.entitySet instanceof Observable) {
-      this.field.props.entitySet.pipe(untilDestroyed(this)).subscribe((event) => this.entitySet$.next(event))
+      this.field.props.entitySet.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => this.entitySet$.next(event))
     } else if (this.field.props.entitySet) {
       this.entitySet$.next(this.field.props.entitySet)
     }
 
     if (this.field?.props?.entityType instanceof Observable) {
-      this.field.props.entityType.pipe(untilDestroyed(this)).subscribe((event) => this.entityType$.next(event))
+      this.field.props.entityType.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => this.entityType$.next(event))
     } else if (this.field.props.entityType) {
       this.entityType$.next(this.field.props.entityType)
       // 注意: 这样的 of(event) 异步事件会紧跟着一个 complete 事件导致 this.entityType$ 被 Complete
@@ -268,26 +266,26 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
     }
 
     if (this.field?.props?.dataSettings instanceof Observable) {
-      this.field.props.dataSettings.pipe(untilDestroyed(this)).subscribe((event) => this.dataSettings$.next(event))
+      this.field.props.dataSettings.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => this.dataSettings$.next(event))
     } else if (this.field?.props?.dataSettings) {
       this.dataSettings$.next(this.field.props.dataSettings)
     }
 
     if (this.field?.props?.restrictedDimensions instanceof Observable) {
       this.field.props.restrictedDimensions
-        .pipe(untilDestroyed(this))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((event) => this.restrictedDimensions$.next(event))
     } else if (this.field?.props?.restrictedDimensions) {
       this.restrictedDimensions$.next(this.field.props.restrictedDimensions)
     }
 
     this.formControl.valueChanges
-      .pipe(startWith(this.formControl.value), distinctUntilChanged(isEqual), untilDestroyed(this))
+      .pipe(startWith(this.formControl.value), distinctUntilChanged(isEqual), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
         this._formControl.setValue(value)
       })
 
-    this._formControl.valueChanges.pipe(distinctUntilChanged(isEqual), untilDestroyed(this)).subscribe((value) => {
+    this._formControl.valueChanges.pipe(distinctUntilChanged(isEqual), takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
       this.patchValue(value || {})
     })
   }
@@ -333,7 +331,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
         title,
         true
       )
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result) {
           this.patchValue({
@@ -364,7 +362,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
         title,
         true
       )
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result) {
           this.patchValue({
@@ -387,7 +385,7 @@ export class PACFormlyPropertySelectComponent extends FieldType implements OnIni
       title,
       true
     )
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result) {
           this.patchValue({

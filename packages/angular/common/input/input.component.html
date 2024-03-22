@@ -1,6 +1,9 @@
-<label class="ngm-input-label shrink-0" [title]="label">
+@if (label) {
+  <label class="ngm-input-label shrink-0" [title]="label">
     {{ label }}
-</label>
+  </label>
+}
+
 <div class="relative">
     <input matInput class="ngm-input-element ngm-w-full"
         [type]="type || 'text'"
@@ -32,4 +35,6 @@
     </mat-option>
 </mat-autocomplete>
 
-<mat-error class="text-xs h-4"></mat-error>
+<mat-error class="text-xs h-4">
+  <ng-content select="[ngmError]"></ng-content>
+</mat-error>

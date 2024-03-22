@@ -1,4 +1,8 @@
 import { Injectable, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { PropertyCapacity } from '@metad/components/property'
+import { SlicersCapacity } from '@metad/components/selection'
+import { NxCoreService, NxISelectOption, nonNullable } from '@metad/core'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   CalculationProperty,
@@ -6,18 +10,16 @@ import {
   DataSettings,
   DataSource,
   EntityType,
+  Indicator,
   getEntityDimensions,
-  getEntityMeasures,
-  Indicator
+  getEntityMeasures
 } from '@metad/ocap-core'
-import { FormlyFieldConfig } from '@ngx-formly/core'
-import { PropertyCapacity } from '@metad/components/property'
-import { SlicersCapacity } from '@metad/components/selection'
-import { NxCoreService, NxISelectOption, nonNullable } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
+import { FormlyFieldConfig } from '@ngx-formly/core'
 import { isEqual, isNil, negate, pick, sortBy } from 'lodash-es'
-import { combineLatest, Observable } from 'rxjs'
+import { Observable, combineLatest, throwError } from 'rxjs'
 import {
+  catchError,
   combineLatestWith,
   distinctUntilChanged,
   filter,
@@ -25,10 +27,10 @@ import {
   pluck,
   shareReplay,
   switchMap,
+  tap
 } from 'rxjs/operators'
 import { BaseDesignerSchemaService, BaseSchemaState } from './base-designer-schema'
-import { AccordionWrappers, DataSettingsSchema } from './types'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { AccordionWrappers, DataSettingsSchema, FORMLY_ROW, FORMLY_W_1_2 } from './types'
 
 export interface SchemaState extends BaseSchemaState {
   dataSettings: DataSettings
@@ -38,7 +40,6 @@ export interface SchemaState extends BaseSchemaState {
 export abstract class DataSettingsSchemaService<
   T extends SchemaState = SchemaState
 > extends BaseDesignerSchemaService<T> {
-
   protected dsCoreService = inject(NgmDSCoreService)
   protected coreService? = inject(NxCoreService, { optional: true })
   protected storyService? = inject(NxStoryService, { optional: true })
@@ -112,11 +113,11 @@ export abstract class DataSettingsSchemaService<
     switchMap((dataSettings: any) => this.storyService.selectEntityType(dataSettings)),
     shareReplay(1)
   )
-  
+
   protected readonly properties$ = this.entityType$.pipe(
     filter((entityType) => !!entityType?.properties),
-    map((entityType) => sortBy(Object.values(entityType.properties), ['role', 'calculationType'])
-      .map((property) => ({
+    map((entityType) =>
+      sortBy(Object.values(entityType.properties), ['role', 'calculationType']).map((property) => ({
         key: property.name,
         caption: property.caption,
         value: property
@@ -151,9 +152,11 @@ export abstract class DataSettingsSchemaService<
   protected readonly indicators$: Observable<Indicator[]> = this.entity$.pipe(
     filter((entity) => !!entity),
     combineLatestWith(this._dataSource$),
-    switchMap(([entitySet, dataSource]) => dataSource.selectIndicators(entitySet)
-      // @TODO remove when fixed in @metad/ocap-core pachage
-      .pipe(map((indicators) => indicators?.filter((item) => item.entity === entitySet)))
+    switchMap(([entitySet, dataSource]) =>
+      dataSource
+        .selectIndicators(entitySet)
+        // @TODO remove when fixed in @metad/ocap-core pachage
+        .pipe(map((indicators) => indicators?.filter((item) => item.entity === entitySet)))
     ),
     shareReplay(1)
   )
@@ -161,10 +164,12 @@ export abstract class DataSettingsSchemaService<
   readonly indicatorSelectOptions$: Observable<NxISelectOption[]> = this.indicators$.pipe(
     map((indicators) => {
       return (
-        indicators?.filter((item) => item.visible).map((indicator) => ({
-          value: indicator.code,
-          label: `${indicator.name}`
-        })) ?? []
+        indicators
+          ?.filter((item) => item.visible)
+          .map((indicator) => ({
+            value: indicator.code,
+            label: `${indicator.name}`
+          })) ?? []
       )
     }),
     shareReplay(1)
@@ -212,19 +217,96 @@ export abstract class DataSettingsSchemaService<
 
   /**
    * Observe the data sources in story
-   * 
-   * @returns 
+   *
+   * @returns
    */
   selectDataSourceList() {
-    return this.storyService.dataSources$
+    return this.storyService.storyModelsOptions$
   }
 
   generateEntitySetRelated(field: FormlyFieldConfig, generator: (entityType: EntityType) => Array<any>) {
     return this.entityType$.pipe(map(generator))
   }
 
+  /**
+   * @deprecated use `makeDataSettingsContent` instead
+   */
   generateDataSettingsSchema(BUILDER, ...fieldGroups) {
     return DataSettingsSchema(BUILDER, this.selectDataSourceList(), this._dataSource$, ...fieldGroups)
+  }
+
+  makeDataSettingsContent(i18n: any, ...fieldGroups) {
+    const dataSources$ = this.selectDataSourceList()
+    const dataSource$ = this._dataSource$
+    return [
+      {
+        fieldGroupClassName: FORMLY_ROW,
+        fieldGroup: [
+          {
+            key: 'dataSource',
+            type: 'semantic-model',
+            className: FORMLY_W_1_2,
+            props: {
+              label: i18n?.SemanticModel ?? 'Semantic Model',
+              required: true,
+              options: dataSources$
+            }
+          },
+          {
+            key: 'entitySet',
+            type: 'ngm-select',
+            className: FORMLY_W_1_2,
+            props: {
+              label: i18n?.Entity ?? 'Entity',
+              searchable: true,
+              required: true
+            },
+            expressions: {
+              hide: `!model || !model.dataSource`
+            },
+            hooks: {
+              onInit: (field: FormlyFieldConfig) => {
+                if (!(field.className && field.className.indexOf('formly-loader') > -1)) {
+                  field.className = `${field.className} formly-loader`
+                }
+                field.props.options = dataSource$.pipe(
+                  tap(() => {
+                    field.className = field.className.includes('formly-loader')
+                      ? field.className
+                      : `${field.className} formly-loader`
+                  }),
+                  switchMap((dataSource: DataSource) =>
+                    combineLatest([
+                      dataSource.discoverMDCubes(), //.pipe(tap((options) => console.warn(options))),
+                      dataSource.selectSchema() //.pipe(tap((options) => console.warn(options)))
+                    ])
+                  ),
+                  map(([cubes, schema]) => {
+                    return cubes.map((cube: any) => ({
+                      value: cube.name,
+                      label: cube.caption,
+                      // @todo
+                      icon: schema?.cubes?.find((item) => item.name === cube.name)
+                        ? 'star_outline'
+                        : cube.cubeType === 'VIRTUAL CUBE'
+                        ? 'dataset_linked'
+                        : null,
+                      fontSet: 'material-icons-outlined'
+                    }))
+                  }),
+                  catchError((err) => {
+                    field.className = field.className.split('formly-loader').join('')
+                    return throwError(() => err)
+                  }),
+                  tap(() => (field.className = field.className.split('formly-loader').join('')))
+                )
+              }
+            }
+          }
+        ]
+      },
+      ...fieldGroups
+    ]
   }
 
   get visualization() {
@@ -233,112 +315,83 @@ export abstract class DataSettingsSchemaService<
 }
 
 export function SelectionVariantExpansion(BUILDER, dataSettings$: Observable<DataSettings>) {
-  return AccordionWrappers([{
-    key: 'selectionVariant',
-    label: BUILDER?.SELECTION_VARIANT ?? 'Selection Variant',
-    fieldGroup: [
-      {
-        key: 'selectOptions',
-        type: 'slicers',
-        props: {
-          label: BUILDER?.SELECT_OPTIONS ?? 'Select Options',
-          dataSettings: dataSettings$,
-          capacities: [
-            SlicersCapacity.CombinationSlicer,
-            SlicersCapacity.AdvancedSlicer,
-          ]
+  return AccordionWrappers([
+    {
+      key: 'selectionVariant',
+      label: BUILDER?.SELECTION_VARIANT ?? 'Selection Variant',
+      fieldGroup: [
+        {
+          key: 'selectOptions',
+          type: 'slicers',
+          props: {
+            label: BUILDER?.SELECT_OPTIONS ?? 'Select Options',
+            dataSettings: dataSettings$,
+            capacities: [SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]
+          }
         }
-      }
-    ]
-  }])
+      ]
+    }
+  ])
 }
 
 export function PresentationVariantExpansion(
   BUILDER,
   dataSettings$: Observable<DataSettings>,
   entityType$: Observable<EntityType>,
-  properties$: Observable<ISelectOption[]>,
+  properties$: Observable<ISelectOption[]>
 ) {
-  return AccordionWrappers([{
-    key: 'presentationVariant',
-    label: BUILDER?.PRESENTATION_VARIANT ?? 'Presentation Variant',
-    fieldGroup: [
-      {
-        key: 'maxItems',
-        type: 'slider',
-        props: {
-          label: BUILDER?.TOP ?? 'Top',
-          required: false,
-          type: 'number',
-          min: 1,
-          max: 10,
-          thumbLabel: true,
-          autoScale: true
-        }
-      },
-      {
-        key: 'sortOrder',
-        type: 'array',
-        props: {
-          label: BUILDER?.SORT_BY ?? 'Sort By',
-          sortable: true
-        },
-        fieldArray: {
-          type: 'sort',
+  return AccordionWrappers([
+    {
+      key: 'presentationVariant',
+      label: BUILDER?.PRESENTATION_VARIANT ?? 'Presentation Variant',
+      fieldGroup: [
+        {
+          key: 'maxItems',
+          type: 'slider',
           props: {
-            options: properties$
+            label: BUILDER?.TOP ?? 'Top',
+            required: false,
+            type: 'number',
+            min: 1,
+            max: 10,
+            thumbLabel: true,
+            autoScale: true
           }
-          // fieldGroup: [
-          //   {
-          //     className: FORMLY_W_1_2,
-          //     type: 'ngm-select',
-          //     key: 'by',
-          //     props: {
-          //       label: BUILDER?.BY_FIELD ?? 'By Field',
-          //       required: true
-          //     },
-          //     hooks: {
-          //       onInit: (field: FormlyFieldConfig) => {
-          //         field.props.options = combineLatest([dimensions$, measures$]).pipe(
-          //           map(([dimensions, measures]) => [...dimensions, ...measures])
-          //         )
-          //       }
-          //     }
-          //   },
-          //   {
-          //     className: FORMLY_W_1_2,
-          //     type: 'button-toggle',
-          //     key: 'order',
-          //     props: {
-          //       title: BUILDER?.ORDER ?? 'Order',
-          //       options: [
-          //         { value: 'ASC', label: 'ASC' },
-          //         { value: 'DESC', label: 'DESC' }
-          //       ]
-          //     }
-          //   }
-          // ]
-        }
-      },
-      {
-        key: 'groupBy',
-        type: 'array',
-        props: {
-          label: BUILDER?.DRILL_DOWN ?? 'Drill Down',
-          hideDelete: true,
-          sortable: true
         },
-        fieldArray: {
-          type: 'property-select',
+        {
+          key: 'sortOrder',
+          type: 'array',
           props: {
-            required: true,
-            removable: true,
-            dataSettings: dataSettings$,
-            entityType: entityType$,
-            capacities: [PropertyCapacity.Dimension]
+            label: BUILDER?.SORT_BY ?? 'Sort By',
+            sortable: true
+          },
+          fieldArray: {
+            type: 'sort',
+            props: {
+              options: properties$
+            }
+          }
+        },
+        {
+          key: 'groupBy',
+          type: 'array',
+          props: {
+            label: BUILDER?.DRILL_DOWN ?? 'Drill Down',
+            hideDelete: true,
+            sortable: true
+          },
+          fieldArray: {
+            type: 'chart-property',
+            props: {
+              required: true,
+              removable: true,
+              dataSettings: dataSettings$,
+              entityType: entityType$,
+              capacities: [PropertyCapacity.Dimension]
+            }
           }
         }
-      }
-    ]
-  }])
+      ]
+    }
+  ])
 }

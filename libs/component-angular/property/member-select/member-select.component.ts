@@ -7,6 +7,7 @@ import {
   Input,
   ViewContainerRef
 } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
@@ -22,10 +23,8 @@ import {
   getEntityProperty,
   isSemanticCalendar
 } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-property-member-select',
@@ -71,7 +70,6 @@ export class PropertyMemberSelectComponent implements ControlValueAccessor {
   @Input() disabled: boolean
 
   public readonly property$ = this.dimension$.pipe(map((dimension) => getEntityProperty(this.entityType, dimension)))
-  public readonly isCalendar$ = this.property$.pipe(map((property) => isSemanticCalendar(property)))
 
   readonly formGroup: FormGroup = new FormGroup({
     type: new FormControl(null, Validators.required),
@@ -106,6 +104,13 @@ export class PropertyMemberSelectComponent implements ControlValueAccessor {
   set value(value) {
     this.formGroup.patchValue({ value: value })
   }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly isCalendar$ = toSignal(this.property$.pipe(map((property) => isSemanticCalendar(property))))
 
   /**
   |--------------------------------------------------------------------------

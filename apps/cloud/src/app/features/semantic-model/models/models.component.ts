@@ -4,18 +4,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { Router } from '@angular/router'
-import { NgmTreeSelectComponent, TreeTableModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
-import { ButtonGroupDirective, DisplayDensity } from '@metad/ocap-angular/core'
-import { AgentType, Property, Syntax } from '@metad/ocap-core'
-import { MtxPopoverModule } from '@ng-matero/extensions/popover'
 import { DataSourceService, ModelsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxTableModule } from '@metad/components/table'
 import { uploadYamlFile } from '@metad/core'
+import { NgmTreeSelectComponent, TreeTableModule } from '@metad/ocap-angular/common'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
+import { ButtonGroupDirective, DisplayDensity } from '@metad/ocap-angular/core'
+import { AgentType, Property, Syntax } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel, uuid } from '@metad/story/core'
-import formatRelative from 'date-fns/formatRelative'
+import { MtxPopoverModule } from '@ng-matero/extensions/popover'
+import { formatRelative } from 'date-fns'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, shareReplay, switchMap, tap } from 'rxjs/operators'
@@ -42,12 +41,11 @@ import { exportSemanticModel } from '../types'
     NgxPermissionsModule,
     MtxPopoverModule,
     NgmDialogComponent,
-    NxTableModule,
 
     // OCAP Modles
     NgmTreeSelectComponent,
     TreeTableModule,
-    ControlsModule,
+    NgmControlsModule,
     ButtonGroupDirective
   ],
   selector: 'pac-models',

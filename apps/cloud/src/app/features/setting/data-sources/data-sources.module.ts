@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { LetDirective } from '@ngrx/component'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule, SharedModule } from '../../../@shared'
@@ -17,7 +16,6 @@ import { PACDataSourcesComponent } from './data-sources.component'
     TranslateModule,
     PACDataSourcesRoutingModule,
     ContentLoaderModule,
-    LetDirective,
 
     ButtonGroupDirective,
     DensityDirective

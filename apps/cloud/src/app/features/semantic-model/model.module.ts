@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core'
 import { MetadFormlyExpansionModule } from '@metad/formly-mat/expansion'
+import { LoggerModule } from 'ngx-logger'
 import { NgxPermissionsModule } from 'ngx-permissions'
+import { provideLogger } from '../../@core'
 import { MaterialModule, SharedModule } from '../../@shared'
-import { SemanticModelRoutingModule } from './model-routing.module'
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { SemanticModelRoutingModule } from './routing'
 
 @NgModule({
   declarations: [],
@@ -19,11 +20,8 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
      */
     MetadFormlyExpansionModule,
 
-    LoggerModule.forRoot({
-      level: NgxLoggerLevel.DEBUG,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    }),
+    LoggerModule
   ],
-  providers: []
+  providers: [provideLogger()]
 })
 export class SemanticModelModule {}

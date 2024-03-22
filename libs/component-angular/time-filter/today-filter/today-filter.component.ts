@@ -4,13 +4,11 @@ import { MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatDatepicker } from '@angular/material/datepicker'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { NxCoreService, TIME_GRANULARITY_SEQUENCES } from '@metad/core'
 import { getMonth, getYear, isDate, setMonth, setYear } from 'date-fns'
 import { filter } from 'rxjs/operators'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'ngm-today-filter',
   templateUrl: './today-filter.component.html',
@@ -37,7 +35,6 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   }
   set granularity(value) {
     this._timeGranularity = value
-    // this.coreService.setTimeGranularity(value)
     this.dsCoreService.setTimeGranularity(value)
   }
   private _timeGranularity = TimeGranularity.Month
@@ -84,7 +81,9 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
   registerOnTouched(fn: any): void {
     this.onTouched = fn
   }
-  setDisabledState?(isDisabled: boolean): void {}
+  setDisabledState?(isDisabled: boolean): void {
+    isDisabled ? this.date.disable() : this.date.enable()
+  }
 }
 
 @Component({
@@ -100,7 +99,7 @@ export class NxTodayFilterComponent implements OnInit, OnChanges, ControlValueAc
     ></mat-datepicker>
 
     <div matSuffix class="flex items-center">
-      <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"></mat-datepicker-toggle>
       <ng-content></ng-content>
     </div>
   </mat-form-field> `,
@@ -163,7 +162,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }
 
@@ -178,7 +177,7 @@ export class NxQuarterFilterComponent implements ControlValueAccessor {
 ></mat-datepicker>
 
 <div matSuffix class="abs flex items-center">
-  <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+  <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"/>
   <ng-content></ng-content>
 </div>
 `,
@@ -241,7 +240,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }
 
@@ -257,7 +256,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
     ></mat-datepicker>
 
     <div matSuffix class="flex items-center">
-      <mat-datepicker-toggle [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker-toggle class="ngm-actionable-opacity" [for]="dp"></mat-datepicker-toggle>
       <ng-content></ng-content>
     </div>
   </mat-form-field>`,
@@ -315,6 +314,6 @@ export class NxYearFilterComponent implements ControlValueAccessor {
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    // throw new Error('Method not implemented.')
+    isDisabled ? this.date.disable() : this.date.enable()
   }
 }

@@ -5,10 +5,8 @@ import { HammerModule } from '@angular/platform-browser'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmModule } from '@metad/components/confirm'
-import { TrialWatermarkModule } from '@metad/components/trial-watermark'
 import { IsNilPipe, NgMapPipeModule, NxCoreModule } from '@metad/core'
 import { NxStoryResponsiveModule } from '@metad/story/responsive'
 import { GridsterModule } from 'angular-gridster2'
@@ -26,7 +24,6 @@ import { NxStoryComponent } from './story/story.component'
   declarations: [],
   imports: [
     NxStorySharedModule,
-    LetDirective,
     OverlayModule,
     CdkMenuModule,
     GridsterModule,
@@ -34,7 +31,6 @@ import { NxStoryComponent } from './story/story.component'
     HammerModule,
     ConfirmModule,
     TranslateModule,
-    TrialWatermarkModule,
     IsNilPipe,
     NgMapPipeModule,
     ContentLoaderModule,

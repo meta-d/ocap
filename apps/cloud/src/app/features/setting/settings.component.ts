@@ -5,33 +5,8 @@ import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Stor
 
 @Component({
   selector: 'pac-settings',
-  template: `
-    <div class="z-10 flex flex-col w-36 md:w-64 max-w-xs p-2 md:p-4 md:pr-0">
-      <ul class="pac-nav__tab-bar flex-1 py-2 bg-slate-200 rounded-lg shadow-lg dark:bg-bluegray-800">
-        <li
-          class="pac-nav__tab-bar flex justify-start items-center px-4 py-2 cursor-pointer text-slate-600 dark:text-bluegray-100"
-          *ngFor="let e of menus$ | async"
-          [routerLink]="e.link"
-          [routerLinkActiveOptions]="{ exact: false }"
-          routerLinkActive
-          #rla="routerLinkActive"
-          [class.active]="rla.isActive"
-        >
-          <mat-icon *ngIf="e.icon" displayDensity="cosy" fontSet="material-icons-outlined">{{ e.icon }}</mat-icon>
-          <span class="ml-2">
-            {{ 'PAC.MENU.' + e.label | translate: { Default: e.label } }}
-          </span>
-        </li>
-      </ul>
-    </div>
-
-    <div [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.data && o.activatedRoute.routeConfig.data.title"
-      class="pac-nav__router relative flex-1"
-    >
-      <router-outlet #o="outlet"></router-outlet>
-    </div>
-  `,
-  styleUrls: ['./settings.component.scss'],
+  templateUrl: `settings.component.html`,
+  styleUrl: './settings.component.scss',
   animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -62,7 +37,8 @@ export class PACSettingComponent {
           label: 'Copilot',
           icon: 'assistant',
           data: {
-            featureKey: FeatureEnum.FEATURE_COPILOT
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
           }
         },
         {

@@ -4,6 +4,4 @@
 
 .mat-mdc-input-element {
     min-height: 25px;
-    @apply text-sm whitespace-nowrap px-2 border-2 border-solid border-gray-100 rounded-md bg-gray-100 text-gray-700 focus:outline-none ring-offset-2 ring-2 ring-transparent
-    focus:bg-white hover:ring-yellow-500/50 focus:ring-yellow-500 hover:bg-slate-500/10 dark:hover:bg-white/10 dark:focus:bg-white/20 dark:caret-slate-100;
 }

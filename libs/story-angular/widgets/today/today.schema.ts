@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { FORMLY_ROW, DataSettingsSchemaService, FORMLY_W_1_2, dateFilterOptions } from '@metad/story/designer'
 import { combineLatest } from 'rxjs'
 import { map } from 'rxjs/operators'
 
-@UntilDestroy()
 @Injectable()
 export class TodaySchemaService extends DataSettingsSchemaService {
   getSchema() {

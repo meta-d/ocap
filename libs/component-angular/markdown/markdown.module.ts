@@ -5,6 +5,9 @@ import { MatCardModule } from '@angular/material/card'
 import { MarkdownTooltipComponent, MarkdownTooltipDirective } from './markdown-tooltip.directive'
 import { MarkdownPipe } from './markdown.pipe'
 
+/**
+ * @deprecated
+ */
 @NgModule({
   declarations: [MarkdownPipe, MarkdownTooltipDirective, MarkdownTooltipComponent],
   imports: [CommonModule, OverlayModule, MatCardModule],

@@ -1,10 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core'
+import { Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute } from '@angular/router'
 import { CountdownConfirmationComponent } from '@metad/components/confirm'
 import { IFeature, IFeatureOrganization, IFeatureToggle } from '@metad/contracts'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { combineLatest, firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
@@ -12,7 +11,6 @@ import { FeatureService, FeatureStoreService, Store } from '../../@core/services
 import { TranslationBaseComponent } from '../language/translation-base.component'
 
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-feature-toggle',
   templateUrl: './feature-toggle.component.html',
@@ -24,6 +22,7 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
   private readonly _featureStoreService = inject(FeatureStoreService)
   private readonly _storeService = inject(Store)
   private readonly _matDialog = inject(MatDialog)
+  readonly destroyRef = inject(DestroyRef)
 
   loading = false
   featureToggles = []
@@ -57,7 +56,7 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
 
   ngOnInit(): void {
     combineLatest([this.featureTenant$, this.featureOrganizations$])
-      .pipe(withLatestFrom(combineLatest([this.isOrganization$, this.organization$])), untilDestroyed(this))
+      .pipe(withLatestFrom(combineLatest([this.isOrganization$, this.organization$])), takeUntilDestroyed(this.destroyRef))
       .subscribe(([[featureTenant, featureOrganizations], [isOrganization, organization]]) => {
         if (isOrganization && organization) {
           this._storeService.featureOrganizations = featureOrganizations
@@ -82,13 +81,13 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
     this._storeService.featureToggles$
       .pipe(
         tap((toggles) => (this.featureTogglesDefinitions = toggles)),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
   }
 
   getFeatures() {
-    this._featureStoreService.loadFeatures(['children']).pipe(untilDestroyed(this)).subscribe()
+    this._featureStoreService.loadFeatures(['children']).pipe(takeUntilDestroyed(this.destroyRef)).subscribe()
   }
 
   async featureChanged(isEnabled: boolean, feature: IFeature) {

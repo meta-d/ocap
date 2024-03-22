@@ -4,17 +4,15 @@ import { ActivatedRoute } from '@angular/router'
 import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { StoryPointsService, convertStoryResult } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
-import { NxStoryService, getSemanticModelKey, prefersColorScheme } from '@metad/story/core'
+import { NxStoryService } from '@metad/story/core'
 import { NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
-import { registerStoryThemes, subscribeStoryTheme } from '../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../@theme'
 import { registerWasmAgentModel } from '../../@core'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-public-point',
@@ -90,12 +88,13 @@ export class PublicPointComponent {
 
   public readonly storySizeStyles = toSignal(this.storyService.storySizeStyles$)
 
-  // System theme
-  private prefersColorScheme$ = prefersColorScheme()
-  private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
+  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
 
   constructor() {
+
+    effectStoryTheme(this._elementRef)
+
     effect(() => {
       if (this.story()) {
         this.storyService.setStory(this.story())

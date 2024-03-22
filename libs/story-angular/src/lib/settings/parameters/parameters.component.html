@@ -37,7 +37,7 @@
       </button>
     </div>
     
-    <mat-list *ngIf="parameters?.length" class="flex-1 divide-y ml-4" displayDensity="cosy">
+    <mat-list *ngIf="parameters?.length" class="flex-1 divide-y ml-4 dark:divide-neutral-800" displayDensity="cosy">
       <mat-list-item *ngFor="let parameter of parameters">
         <div class="flex item-center group">
           <ngm-display-behaviour class="flex-1" [option]="{value: parameter.name, label: parameter.caption}"></ngm-display-behaviour>
@@ -61,7 +61,7 @@
       </button>
     </div>
     
-    <mat-list *ngIf="calculations?.length" class="divide-y ml-4" displayDensity="cosy">
+    <mat-list *ngIf="calculations?.length" class="divide-y ml-4 dark:divide-neutral-800" displayDensity="cosy">
       <mat-list-item *ngFor="let calculation of calculations">
         <div class="flex items-center group">
           <ngm-display-behaviour class="flex-1" [option]="{value: calculation.name, label: calculation.caption}"></ngm-display-behaviour>

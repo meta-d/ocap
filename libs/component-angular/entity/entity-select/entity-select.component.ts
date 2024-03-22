@@ -7,6 +7,9 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs'
 import { map, startWith, switchMap, tap } from 'rxjs/operators'
 
+/**
+ * @deprecated
+ */
 @Component({
   selector: 'ngm-entity-select',
   templateUrl: './entity-select.component.html',
@@ -80,7 +83,6 @@ export class EntitySelectComponent implements OnInit {
   }
 
   openChange($event: boolean) {
-    console.log('open change', $event)
     if ($event) {
       this.cdkVirtualScrollViewPort.scrollToIndex(0)
       this.cdkVirtualScrollViewPort.checkViewportSize()

@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnDestroy,
+  computed,
+  inject
+} from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
+import { Store } from '@metad/cloud/state'
 import { CookieService } from 'ngx-cookie-service'
 import { firstValueFrom } from 'rxjs'
 import { PAC_AUTH_OPTIONS } from '../auth.options'
@@ -15,6 +25,8 @@ import { PacAuthService } from '../services/auth.service'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserLoginComponent implements OnDestroy {
+  readonly #store = inject(Store)
+
   showMessages: any = {}
 
   redirectDelay = 0
@@ -41,6 +53,15 @@ export class UserLoginComponent implements OnDestroy {
 
   count = 0
   interval$: any
+
+  /**
+   * Signals
+   */
+  readonly tenantSettings = toSignal(this.#store.tenantSettings$)
+  readonly enableDingtalk = computed(() => this.tenantSettings()?.tenant_enable_dingtalk)
+  readonly enableFeishu = computed(() => this.tenantSettings()?.tenant_enable_feishu)
+  readonly enableGithub = computed(() => this.tenantSettings()?.tenant_enable_github)
+
   constructor(
     private readonly cookieService: CookieService,
     @Inject(PAC_AUTH_OPTIONS) protected options = {},
@@ -117,10 +138,12 @@ export class UserLoginComponent implements OnDestroy {
     this.cdr.detectChanges()
 
     try {
-      const result = await firstValueFrom(this.authService.authenticate(this.strategy, {
-        ...this.form.value,
-        userName: this.form.value.userName?.toLowerCase()
-      }))
+      const result = await firstValueFrom(
+        this.authService.authenticate(this.strategy, {
+          ...this.form.value,
+          userName: this.form.value.userName?.toLowerCase()
+        })
+      )
 
       if (result.isSuccess()) {
         this.messages = result.getMessages()
@@ -136,7 +159,7 @@ export class UserLoginComponent implements OnDestroy {
       }
       this.loading = false
       this.cdr.detectChanges()
-    } catch(err) {
+    } catch (err) {
       this.loading = false
       this.cdr.detectChanges()
     }

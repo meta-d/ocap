@@ -11,7 +11,7 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
-import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmHighlightDirective, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntitySchemaComponent, NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
@@ -32,7 +32,6 @@ import { negate, sortBy } from 'lodash-es'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
 import { MDXReference } from '@metad/components/mdx'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { HighlightDirective } from '@metad/components/core'
 import { MarkdownModule } from 'ngx-markdown'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 
@@ -60,7 +59,7 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
     NgmEntityPropertyComponent,
     NgmEntitySchemaComponent,
     NxEditorModule,
-    HighlightDirective,
+    NgmHighlightDirective,
   ],
   selector: 'ngm-calculated-measure',
   templateUrl: './calculated-measure.component.html',
@@ -83,14 +82,6 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
-
-  @Input() get opened() {
-    return this._opened
-  }
-  set opened(value: boolean | string) {
-    this._opened = coerceBooleanProperty(value)
-  }
-  private _opened = false
 
   @Input() dsCoreService: NgmDSCoreService
   @Input() dataSettings: DataSettings
@@ -121,6 +112,8 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     this._disabled = coerceBooleanProperty(value)
   }
   private _disabled = false
+
+  @Input() opened = false
 
   @ViewChild('editor') editor!: BaseEditorDirective
 
@@ -196,7 +189,7 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     
     if (result) {
       // 参数创建成功
-      console.log(result)
+      console.debug(result)
     }
   }
 

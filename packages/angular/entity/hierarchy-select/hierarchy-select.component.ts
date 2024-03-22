@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common'
 import { Component, ElementRef, forwardRef, Input } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { CanColor, CanDisable, mixinColor, mixinDisabled, mixinDisableRipple } from '@angular/material/core'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectModule } from '@angular/material/select'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { PropertyDimension } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged } from 'rxjs'
 
 
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   imports: [CommonModule, MatFormFieldModule, MatSelectModule, ReactiveFormsModule, TranslateModule, NgmDisplayBehaviourComponent],
@@ -50,10 +49,13 @@ export class NgmHierarchySelectComponent
   formControl = new FormControl<string>(null)
   onChange: (input: any) => void
   onTouched: () => void
+  
   // Subscribers
-  private _formValueSub = this.formControl.valueChanges.pipe(distinctUntilChanged()).subscribe((value) => {
-    this.onChange?.(value)
-  })
+  private _formValueSub = this.formControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed())
+    .subscribe((value) => {
+      this.onChange?.(value)
+    })
+
   writeValue(obj: any): void {
     this.formControl.setValue(obj)
   }

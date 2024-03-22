@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { CovidRoutingModule } from './covid-routing.module'
 import { CovidComponent } from './covid.component'
@@ -20,7 +20,7 @@ import { CovidComponent } from './covid.component'
     AnalyticalCardModule,
     AnalyticalGridModule,
     OcapCoreModule,
-    ControlsModule,
+    NgmControlsModule,
     CovidRoutingModule
   ],
   exports: [],

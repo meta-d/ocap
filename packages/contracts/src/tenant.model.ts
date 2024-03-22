@@ -19,6 +19,7 @@ export interface ITenant {
 	rolePermissions?: IRolePermission[];
 	featureOrganizations?: IFeatureOrganization[];
 	importRecords?: IImportRecord[];
+	settings?: ISetting[];
 }
 
 export interface ITenantCreateInput {
@@ -32,8 +33,20 @@ export interface ITenantCreateInput {
 	defaultOrganization?: IOrganizationCreateInput
 }
 
+export interface ISetting {
+	name: string;
+	value: string;
+}
+
 export interface ITenantSetting extends S3FileStorageProviderConfig {
 	fileStorageProvider?: FileStorageProviderEnum;
+	tenant_title?: string
+	tenant_title_en?: string
+	tenant_enable_feishu?: boolean
+	tenant_enable_dingtalk?: boolean
+	tenant_enable_wechat?: boolean
+	tenant_enable_github?: boolean
+	tenant_enable_google?: boolean
 }
 
 export const DEFAULT_TENANT = 'Default Tenant';

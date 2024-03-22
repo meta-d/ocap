@@ -73,3 +73,4 @@ Thumbs.db
 .env
 /packages/**/.env
 .nx/cache
+.volumes/

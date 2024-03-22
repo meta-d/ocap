@@ -1,4 +1,4 @@
-<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800">
+<div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800 text-neutral-100">
     <div *ngIf="expandLess" class="w-full px-2 flex-1 flex flex-col overflow-x-hidden overflow-y-auto" >
         <ng-content></ng-content>
 
@@ -109,14 +109,14 @@
             <mat-icon *ngIf="showDetails==='widgets'&&!onRight||showDetails!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
         </button>
 
-        <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
+        <!-- <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
             matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
             matTooltipPosition="after"
             [class.active]="showDetails==='copilot'"
             (click)="showDetails=showDetails==='copilot'?null:'copilot'"
             >
             <div class="flex justify-center items-center font-notoColorEmoji text-xl">🤖</div>
-        </button>
+        </button> -->
 
         <div class="flex-1">
 
@@ -130,7 +130,7 @@
     
 </div>
 
-<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800"
+<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800 text-neutral-100"
     [ngClass]="onRight?'border-r':'border-l'"
 >
     <div class="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden">
@@ -174,7 +174,7 @@
         <button mat-icon-button [matTooltip]=" 'PAC.Project.Files' | translate: { Default: 'Files' } "
             matTooltipPosition="after"
             (click)="openMaterials()">
-            <mat-icon fontSet="material-icons-outlined">collections</mat-icon>
+            <mat-icon fontSet="material-icons-outlined">attach_file</mat-icon>
         </button>
 
         <!-- <button cdkMenuItem (click)="openQuerySettings()">
@@ -252,7 +252,7 @@
     </div>
 </div>
 
-<div *ngIf="showDetails === 'newPages'" @inOut class="relative w-96 h-full bg-white flex flex-col text-slate-800 p-2 overflow-auto" >
+<div *ngIf="showDetails === 'newPages'" @inOut class="pac-story-bar__detail-card relative w-96 h-full flex flex-col p-2 overflow-auto" >
 
     <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="showDetails=null">
         <mat-icon>close</mat-icon>
@@ -264,7 +264,8 @@
 
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let page of pages" class="h-20 m-2 flex justify-center items-center rounded-lg overflow-hidden
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             (click)="createStoryPage(page.value)"
             [matTooltip]="'Story.Toolbar.' + page.label | translate: {Default: page.label}"
             matTooltipPosition="above"
@@ -274,7 +275,7 @@
     </div>
 </div>
 
-<div *ngIf="showDetails === 'widgets'" @inOut class="w-80 h-full bg-white flex flex-col text-slate-800 p-2 overflow-auto">
+<div *ngIf="showDetails === 'widgets'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
     <div class="text-base text-center my-4">
         {{ 'Story.Toolbar.Charts' | translate: {Default: "Charts"} }}
     </div>
@@ -285,7 +286,9 @@
         </div>
         <div class="grid grid-cols-3 gap-2">
             <button *ngFor="let chart of group.charts" class="h-16 m-2 flex justify-center items-center rounded-lg overflow-hidden
-                ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+                ring-offset-2 ring-2 ring-transparent ring-offset-transparent hover:ring-violet-300 focus:ring-violet-500
+                hover:ring-offset-white dark:hover:ring-offset-black
+                bg-white"
                 [matTooltip]="'FORMLY.CHART.' + chart.label | translate: {Default: chart.label}"
                 matTooltipPosition="above"
                 draggable="true"
@@ -319,7 +322,8 @@
 
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let widget of widgets" class="h-16 m-2 flex justify-center items-center rounded-lg overflow-hidden
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent hover:ring-violet-300 focus:ring-violet-500
+            hover:ring-offset-white dark:hover:ring-offset-black"
             [matTooltip]="'Story.Toolbar.INSERT.' + widget.code | translate: {Default: widget.label}"
             matTooltipPosition="above"
             draggable="true"
@@ -350,16 +354,17 @@
     </div>
 </div>
 
-<pac-story-designer *ngIf="showDetails === 'storyDesigner'" @inOut class="w-96 h-full bg-white text-slate-800"></pac-story-designer>
+<pac-story-designer *ngIf="showDetails === 'storyDesigner'" @inOut class="pac-story-bar__detail-card w-96 h-full"></pac-story-designer>
 
-<div *ngIf="showDetails === 'devices'" @inOut class="w-80 h-full bg-white flex flex-col text-slate-800 p-2 overflow-auto">
+<div *ngIf="showDetails === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
 
     <div class="text-base text-center my-2">
         {{ 'Story.Toolbar.Devices' | translate: {Default: 'Devices'} }}
     </div>
     <div class="grid grid-cols-2 gap-2">
-        <button *ngFor="let device of EmulatedDevices" class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden bg-gray-50
-            ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+        <button *ngFor="let device of EmulatedDevices" class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             [class.ring-violet-500]="device.name === emulatedDevice?.name"
             (click)="toggleMobile(device.value)"
         >
@@ -384,7 +389,8 @@
     <div class="text-base text-center my-2">{{ 'Story.Toolbar.Fit' | translate: {Default: 'Fit'} }}</div>
     <div class="grid grid-cols-3 gap-2">
         <button *ngFor="let zoom of DeviceZooms" class="h-16 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
-                ring-offset-2 ring-2 ring-transparent hover:ring-violet-300 focus:ring-violet-500"
+            ring-offset-2 ring-2 ring-transparent ring-offset-transparent
+            hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             [class.ring-violet-500]="zoom.name === deviceZoom?.name"
             (click)="setDeviceZoom(zoom)">
             {{zoom.name}}
@@ -426,12 +432,11 @@
     </ng-container>
 </div>
 
-<div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
-    <pac-copilot-chat class="w-full h-full"
-        [copilotEngine]="copilotEngine"
-        [(conversations)]="conversations"
-    ></pac-copilot-chat>
-</div>
+<!-- <div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
+    <ngm-copilot-chat class="w-full h-full"
+        [welcomeTitle]=" 'Story.Toolbar.WelcomeCopilot' | translate: {Default: 'Metad Copilot'} "
+    ></ngm-copilot-chat>
+</div> -->
 
 <ng-template #fileMenu>
     <div cdkMenu displayDensity="cosy">
@@ -487,10 +492,10 @@
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
         <mat-divider></mat-divider>
-        <button cdkMenuItem *ngrxLet="isCopyWidgetSelected$ as isCopyWidgetSelected"
-            [cdkMenuItemDisabled]="!isCopyWidgetSelected"
-            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected"
-            (click)="isCopyWidgetSelected?pasteWidget():''">
+        <button cdkMenuItem
+            [cdkMenuItemDisabled]="!isCopyWidgetSelected$()"
+            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected$()"
+            (click)="isCopyWidgetSelected$() ? pasteWidget() : ''">
             {{ 'Story.Toolbar.COPY.PASTE' | translate: {Default: "Paste"} }}
         </button>
         
@@ -520,10 +525,10 @@
             {{ 'Story.Toolbar.COPY.DUPLICATE' | translate: {Default: "Duplicate"} }}
         </button>
         <mat-divider></mat-divider>
-        <button cdkMenuItem *ngrxLet="isCopyWidgetSelected$ as isCopyWidgetSelected"
-            [cdkMenuItemDisabled]="!isCopyWidgetSelected"
-            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected"
-            (click)="isCopyWidgetSelected?pasteWidget():''">
+        <button cdkMenuItem
+            [cdkMenuItemDisabled]="!isCopyWidgetSelected$()"
+            [class.ngm-cdk-menu-item__disabled]="!isCopyWidgetSelected$()"
+            (click)="isCopyWidgetSelected$() ? pasteWidget() : ''">
             {{ 'Story.Toolbar.COPY.PASTE' | translate: {Default: "Paste"} }}
         </button>
     </div>

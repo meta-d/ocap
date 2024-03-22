@@ -31,9 +31,9 @@ import {
   ISubscription,
   convertStoryPointResult,
   convertStoryResult,
-  convertStorySubscriptionResult,
   convertStoryWidgetResult
 } from '../@core/types'
+import { convertStorySubscriptionResult } from './types'
 
 @Injectable()
 export class StoryStoreService extends ComponentStore<{ entities?: Array<Story> }> implements NxStoryStore {

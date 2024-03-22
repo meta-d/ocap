@@ -1,6 +1,6 @@
-<form [formGroup]="formGroup" class="pac-indicator-register__form pac-page__body flex flex-col w-full md:w-96 lg:w-[600px] mx-auto" >
+<form [formGroup]="formGroup" class="pac-indicator-register__form pac-page__body flex flex-col w-full" >
 
-    <div class="w-full m-auto grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
+    <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
       <mat-form-field [appearance]="appearance">
         <mat-label>{{ 'PAC.INDICATOR.REGISTER.NAME' | translate: {Default: 'Name'} }}</mat-label>
         <input matInput formControlName="name" placeholder="{{ 'PAC.INDICATOR.REGISTER.NAME_PLACEHOLDER' | translate: {Default: 'Indicator Name'} }}">
@@ -12,11 +12,11 @@
       </mat-form-field>
     </div>
   
-    <div class="text-lg p-2 mb-4">
+    <div class="section text-lg p-2 mb-4">
       {{ 'PAC.INDICATOR.REGISTER.BASIC_INFO' | translate: {Default: 'Basic Info'} }}
     </div>
 
-    <div class="w-full m-auto grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
+    <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
       <ngm-tree-select formControlName="businessAreaId" [appearance]="appearance"
         label="{{ 'PAC.INDICATOR.REGISTER.BUSINESS_AREA' | translate: {Default: 'Business Area'} }}"
         [treeNodes]="groupTree$ | async"
@@ -66,11 +66,11 @@
       <pac-tag-editor class="col-span-1 sm:col-span-2" formControlName="tags" category="indicator"></pac-tag-editor>
     </div>
   
-    <div class="text-lg p-2 mb-4 mt-8">
+    <div class="section text-lg p-2 mb-4 mt-8">
       {{ 'PAC.INDICATOR.REGISTER.MODEL_INFO' | translate: {Default: 'Model Info'} }}
     </div>
 
-    <div class="w-full m-auto grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
+    <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
   
       <ngm-mat-select [appearance]="appearance" label="{{ 'PAC.INDICATOR.REGISTER.MODEL' | translate: {Default: 'Semantic Model'} }}"
         [selectOptions]="modelsOptions"
@@ -91,7 +91,15 @@
       ></ngm-mat-select>
   
       <mat-checkbox formControlName="visible" class="my-4">{{ 'PAC.INDICATOR.REGISTER.Visible' | translate: {Default: 'Visible'} }}</mat-checkbox>
-  
+
+      <ngm-hierarchy-select formControlName="calendar"
+        [appearance]="appearance"
+        [label]=" 'PAC.INDICATOR.REGISTER.Calendar' | translate: {Default: 'Calendar'} "
+        [dimensions]="calendars$ | async"
+      ></ngm-hierarchy-select>
+    </div>
+
+    <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
       <mat-radio-group formControlName="type" class="my-4">
         <mat-radio-button [value]="IndicatorType.BASIC">
           {{ 'PAC.INDICATOR.REGISTER.TYPE_BASIC' | translate: {Default: 'Basic'} }}
@@ -100,41 +108,51 @@
           {{ 'PAC.INDICATOR.REGISTER.TYPE_DERIVE' | translate: {Default: 'Derive'} }}
         </mat-radio-button>
       </mat-radio-group>
+  
+      @if (typeControl.value===IndicatorType.BASIC) {
+        <ngm-mat-select [appearance]="appearance"
+          label="{{ 'PAC.INDICATOR.REGISTER.MEASURE' | translate: {Default: 'Measure'} }}"
+          placeholder="{{ 'PAC.INDICATOR.REGISTER.MEASURE_PLACEHOLDER' | translate: {Default: 'Select Measure'} }}"
+          [loading]="entityTypeLoading$ | async"
+          [selectOptions]="measures$ | async"
+          formControlName="measure"
+        ></ngm-mat-select>
+      } @else if (typeControl.value === IndicatorType.DERIVE) {
+        <mat-form-field class="col-span-1 sm:col-span-2" [appearance]="appearance">
+          <mat-label>
+            {{ 'PAC.INDICATOR.REGISTER.FORMULA' | translate: {Default: 'Formula'} }}
+          </mat-label>
+          <textarea matInput formControlName="formula" placeholder="{{ 'PAC.INDICATOR.REGISTER.FORMULA_PLACEHOLDER' | translate: {Default: 'Calculation Formula'} }}"
+            cdkTextareaAutosize
+          ></textarea>
     
-      <ngm-mat-select *ngIf="typeControl.value===IndicatorType.BASIC" [appearance]="appearance"
-        label="{{ 'PAC.INDICATOR.REGISTER.MEASURE' | translate: {Default: 'Measure'} }}"
-        placeholder="{{ 'PAC.INDICATOR.REGISTER.MEASURE_PLACEHOLDER' | translate: {Default: 'Select Measure'} }}"
-        [loading]="entityTypeLoading$ | async"
-        [selectOptions]="measures$ | async"
-        formControlName="measure"
-      ></ngm-mat-select>
-  
-      <mat-form-field *ngIf="typeControl.value===IndicatorType.DERIVE" class="col-span-1 sm:col-span-2" [appearance]="appearance">
-        <mat-label>
-          {{ 'PAC.INDICATOR.REGISTER.FORMULA' | translate: {Default: 'Formula'} }}
-        </mat-label>
-        <textarea matInput formControlName="formula" placeholder="{{ 'PAC.INDICATOR.REGISTER.FORMULA_PLACEHOLDER' | translate: {Default: 'Calculation Formula'} }}"
-          cdkTextareaAutosize
-        ></textarea>
-  
-        <button mat-icon-button matSuffix [disabled]="entityType$ | async | isNil" (click)="openFormula()">
-          <mat-icon>code</mat-icon>
-        </button>
-      </mat-form-field>
-  
-      <ngm-mat-select *ngIf="typeControl.value===IndicatorType.DERIVE && (syntax$ | async) === Syntax.SQL" [appearance]="appearance"
-        [label]=" 'PAC.INDICATOR.REGISTER.Aggregator' | translate: {Default: 'Aggregator'} "
-        placeholder="{{ 'PAC.INDICATOR.REGISTER.Aggregator' | translate: {Default: 'Aggregator'} }}"
-        [selectOptions]="AGGREGATORS"
-        formControlName="aggregator"
-      ></ngm-mat-select>
-  
-      <ngm-hierarchy-select formControlName="calendar"
-        [appearance]="appearance"
-        [label]=" 'PAC.INDICATOR.REGISTER.Calendar' | translate: {Default: 'Calendar'} "
-        [dimensions]="calendars$ | async"
-      ></ngm-hierarchy-select>
-  
+          <button mat-icon-button matSuffix [disabled]="!entityType()" (click)="toggleFormula()">
+            <mat-icon>code</mat-icon>
+          </button>
+        </mat-form-field>
+      }
+    </div>
+      
+    @if (typeControl.value === IndicatorType.DERIVE && showFormula()) {
+      <ngm-calculated-measure class="col-span-1 sm:col-span-2 h-96 rounded-lg overflow-hidden border border-solid border-neutral-100 dark:border-neutral-800"
+          [syntax]="Syntax.MDX"
+          [dataSettings]="dataSettings()"
+          [entityType]="entityType()"
+          formControlName="formula"
+        >
+      </ngm-calculated-measure>
+    }
+
+    <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3 mt-4">
+      @if (typeControl.value===IndicatorType.DERIVE && (syntax$ | async) === Syntax.SQL) {
+        <ngm-mat-select [appearance]="appearance"
+          [label]=" 'PAC.INDICATOR.REGISTER.Aggregator' | translate: {Default: 'Aggregator'} "
+          placeholder="{{ 'PAC.INDICATOR.REGISTER.Aggregator' | translate: {Default: 'Aggregator'} }}"
+          [selectOptions]="AGGREGATORS"
+          formControlName="aggregator"
+        ></ngm-mat-select>
+      }
+
       <ngm-mat-select class="col-span-1 sm:col-span-2" [appearance]="appearance"
         label="{{ 'PAC.INDICATOR.REGISTER.DIMENSIONS' | translate: {Default: 'Free Dimensions'} }}"
         placeholder="{{ 'PAC.INDICATOR.REGISTER.DIMENSIONS_PLACEHOLDER' | translate: {Default: 'Select Free Dimensions'} }}"
@@ -143,7 +161,7 @@
         multiple
         formControlName="dimensions"
       ></ngm-mat-select>
-  
+
       <div class="col-span-1 sm:col-span-2 text-base font-medium">{{ 'PAC.INDICATOR.REGISTER.RestrictiveCondition' | translate: {Default: 'Restrictive Condition'} }}</div>
       <ngm-slicers class="col-span-1 sm:col-span-2" editable inline
         [dataSettings]="dataSettings$ | async"
@@ -152,8 +170,10 @@
       ></ngm-slicers>
     </div>
   
-    <div *ngIf="loading" class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
-      <mat-spinner diameter="30" strokeWidth="2">
-      </mat-spinner>
-    </div>
+    <!-- @if (loading()) {
+      <div class="absolute top-1/2 left-1/2 -mt-4 -ml-4 z-10">
+        <mat-spinner diameter="30" strokeWidth="2">
+        </mat-spinner>
+      </div>
+    } -->
 </form>

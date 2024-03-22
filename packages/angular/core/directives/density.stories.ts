@@ -1,27 +1,22 @@
+import { provideHttpClient } from '@angular/common/http'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
-import {MatChipsModule} from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips'
 import { MatIconModule } from '@angular/material/icon'
+import { provideAnimations } from '@angular/platform-browser/animations'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
-import { NgmMissingTranslationHandler, OcapCoreModule } from '@metad/ocap-angular/core'
-import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
-import { moduleMetadata } from '@storybook/angular'
-import { CustomTranslateLoader } from '../i18n/loader.spec'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { provideTranslate } from '@metad/ocap-angular/mock'
+import { applicationConfig, moduleMetadata } from '@storybook/angular'
 
 export default {
-  title: 'DisplayDensity',
+  title: 'Display Density',
   decorators: [
+    applicationConfig({
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
+    }),
     moduleMetadata({
-      imports: [
-        TranslateModule.forRoot({
-          missingTranslationHandler: {
-            provide: MissingTranslationHandler,
-            useClass: NgmMissingTranslationHandler
-          },
-          loader: { provide: TranslateLoader, useClass: CustomTranslateLoader },
-          defaultLanguage: 'zh-Hans'
-        }),
-        OcapCoreModule, MatIconModule, MatButtonModule, MatChipsModule, MatCheckboxModule, NgmSearchComponent],
+      imports: [OcapCoreModule, MatIconModule, MatButtonModule, MatChipsModule, MatCheckboxModule, NgmSearchComponent],
       providers: []
     })
   ]
@@ -81,11 +76,39 @@ const Template = (args: any) => ({
     </mat-chip-row>
   </mat-chip-grid>
 </div>
-  `
+
+<div class="flex items-center gap-2">
+  <mat-chip-grid displayDensity="comfort">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+  <mat-chip-grid displayDensity="cosy">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+  <mat-chip-grid displayDensity="compact">
+    <mat-chip-row>fruit
+      <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-grid>
+</div>
+
+<div class="flex items-center gap-2">
+  <mat-chip-set><mat-chip>fruit</mat-chip></mat-chip-set>
+  <mat-chip-set displayDensity="cosy"><mat-chip>fruit</mat-chip></mat-chip-set>
+  <mat-chip-set displayDensity="compact"><mat-chip>fruit</mat-chip></mat-chip-set>
+</div>
+`
 })
 
 export const Primary = Template.bind({
-  args: {
-
-  }
+  args: {}
 })

@@ -4,7 +4,7 @@ import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { BrowserModule, HammerModule } from '@angular/platform-browser'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { provideAnimations } from '@angular/platform-browser/animations'
 import { RouteReuseStrategy } from '@angular/router'
 import { ServiceWorkerModule } from '@angular/service-worker'
 import { Ability, PureAbility } from '@casl/ability'
@@ -40,7 +40,6 @@ function detectSubjectType(subject) {
   declarations: [AppComponent],
   imports: [
     // angular
-    BrowserAnimationsModule,
     BrowserModule,
     PlatformModule,
     HammerModule,
@@ -70,6 +69,7 @@ function detectSubjectType(subject) {
     MarkdownModule.forRoot()
   ],
   providers: [
+    provideAnimations(),
     UpdateService,
     {
       provide: LOCALE_ID,

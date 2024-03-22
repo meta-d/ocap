@@ -4,7 +4,6 @@ import { Repository } from 'typeorm'
 import { TenantOrganizationAwareCrudService } from '../core/crud'
 import { Copilot } from './copilot.entity'
 
-
 @Injectable()
 export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> {
 	constructor(
@@ -13,5 +12,4 @@ export class CopilotService extends TenantOrganizationAwareCrudService<Copilot> 
 	) {
 		super(repository)
 	}
-
 }

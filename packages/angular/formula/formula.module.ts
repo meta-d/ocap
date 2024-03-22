@@ -36,4 +36,4 @@ import { FormulaEditorComponent } from './editor/editor.component'
   declarations: [FormulaEditorComponent],
   providers: []
 })
-export class FormulaModule {}
+export class NgmFormulaModule {}

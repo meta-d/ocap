@@ -33,7 +33,7 @@ import {
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, switchMap, startWith, combineLatestWith, debounceTime, pairwise, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, pairwise } from 'rxjs/operators'
 import { FormattingComponent } from '@metad/components/entity'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreService } from '@metad/core'
@@ -57,7 +57,6 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatListModule } from '@angular/material/list'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatBadgeModule } from '@angular/material/badge'
-import { LetDirective } from '@ngrx/component'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 
@@ -113,7 +112,6 @@ export enum PropertyCapacity {
     MatCheckboxModule,
     MatBadgeModule,
     TranslateModule,
-    LetDirective,
     NgmCommonModule,
     NgmEntityPropertyComponent
   ]
@@ -126,10 +124,10 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
 
   @HostBinding('class.ngm-property-select') isPropertySelect = true
 
-  private readonly _dialog? = inject(MatDialog, {optional: true})
-  private readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})
-  private readonly _destroyRef = inject(DestroyRef)
-  private readonly _translateService = inject(TranslateService)
+  readonly _dialog? = inject(MatDialog, {optional: true})
+  readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})
+  readonly _destroyRef = inject(DestroyRef)
+  readonly #translate = inject(TranslateService)
 
   readonly DISPLAY_BEHAVIOUR_LIST = [
     {
@@ -600,7 +598,6 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       this.entityProperties$,
       this.dimensionControl.valueChanges
     ]).pipe(
-      tap(console.warn),
       map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
       takeUntilDestroyed(),
     ).subscribe(this.property$)
@@ -875,13 +872,19 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     this._propertySelect?.focus()
   }
 
-  getTranslation(key: string, params?: any) {
-    let t = ''
-    this._translateService.get(key, params).subscribe((value) => {
-      t = value
-    })
+  /**
+   * Prevent space keydown event to trigger select panel open when searching
+   * 
+   * @param event 
+   */
+  onSearchKeydown(event: KeyboardEvent) {
+    if (event.code === 'Space') {
+      event.stopPropagation()
+    }
+  }
 
-    return t
+  getTranslation(key: string, params?: any) {
+    return this.#translate.instant(key, params)
   }
 }
 

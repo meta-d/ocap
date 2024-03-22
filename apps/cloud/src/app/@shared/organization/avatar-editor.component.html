@@ -1,5 +1,5 @@
 <div class="relative w-16 h-16 rounded-full overflow-hidden group border border-solid border-transparent hover:border-gray-200">
-    <img class="" [src]="org?.imageUrl || '/assets/images/illustrations/default-company-logo.svg'" alt="{{org?.name}}"/>
+    <img class="" [src]="org()?.imageUrl || '/assets/images/illustrations/default-company-logo.svg'" alt="{{org?.name}}"/>
     <div class="absolute w-full h-full top-0 left-0 flex justify-center items-center cursor-pointer z-10
         opacity-0 bg-white/10 backdrop-blur-sm group-hover:opacity-100"
         [cdkMenuTriggerFor]="editorMenu"
@@ -17,7 +17,7 @@
         <button cdkMenuItem (click)="fileUpload.click()">
             {{ 'PAC.ACTIONS.Upload' | translate: { Default: 'Upload' } }}
         </button>
-        <button cdkMenuItem *ngIf="org?.imageUrl" ngmAppearance="danger" (click)="remove()">
+        <button cdkMenuItem *ngIf="org()?.imageUrl" ngmAppearance="danger" (click)="remove()">
             {{ 'PAC.ACTIONS.Remove' | translate: { Default: 'Remove' } }}
         </button>
     </div>

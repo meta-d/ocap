@@ -6,6 +6,10 @@ import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
 export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsage> {
+  readonly sharedDimensions$ = this.modelService.sharedDimensions$.pipe(
+    map((dimensions) => dimensions?.map((dimension) => ({ key: dimension.name, caption: dimension.caption })))
+  )
+
   getSchema() {
     return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
       map((SCHEMA) => {
@@ -21,7 +25,7 @@ export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsag
                 },
                 fieldGroup: this.usageSettings
               },
-              this.dataDistribution
+              // this.dataDistribution
             ]
           }
         ]
@@ -59,6 +63,16 @@ export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsag
                 type: 'input',
                 props: {
                   label: COMMON?.Caption ?? 'Caption'
+                }
+              },
+              {
+                className,
+                key: 'source',
+                type: 'ngm-select',
+                props: {
+                  label: COMMON?.SourceDimension ?? 'Source Dimension',
+                  options: this.sharedDimensions$,
+                  valueKey: 'key'
                 }
               },
               {

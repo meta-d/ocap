@@ -4,7 +4,6 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatDialog } from '@angular/material/dialog'
 import { NgmMatSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { UsersService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
@@ -12,7 +11,6 @@ import { BehaviorSubject, catchError, firstValueFrom, from, map, switchMap } fro
 import { CertificationService, ICertification, ToastrService } from '../../../@core'
 import { MaterialModule, SharedModule, UserProfileInlineComponent, userLabel } from '../../../@shared'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   selector: 'pac-settings-certification',

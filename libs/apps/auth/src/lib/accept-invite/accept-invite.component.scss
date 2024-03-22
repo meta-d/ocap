@@ -1,3 +1,7 @@
+:host {
+  @apply w-[368px] flex flex-col max-w-full px-8 mb-8;
+}
+
 .register-header {
-    margin-bottom: 10px;
+  @apply mb-4;
 }

@@ -63,7 +63,7 @@ export interface ModelQuery extends IModelQuery {
   entities: string[]
   statement?: string
   aiOptions?: AIOptions
-  conversations?: CopilotChatMessage[]
+  conversations?: Array<CopilotChatMessage[]>
 }
 
 export interface QueryResult {
@@ -162,7 +162,7 @@ export interface ModelCubeState extends SemanticModelEntity {
   /**
    * The current selected calculated member
    */
-  currentCalculatedMember?: string
+  // currentCalculatedMember?: string
 
   /**
    * Query lab in the entity

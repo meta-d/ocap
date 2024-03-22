@@ -1,22 +1,25 @@
-import { Injectable } from '@angular/core'
-import { BusinessType, IBusinessAreaUser, IComment, IFavorite, ISemanticModel } from '@metad/contracts'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { ComponentStore } from '@metad/store'
-import { createEntityAdapter, EntityAdapter, EntityState, Update } from '@ngrx/entity'
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   BusinessAreasService,
-  convertIndicatorResult,
-  convertNewSemanticModelResult,
-  FavoritesService,
+  IndicatorAppService,
   IndicatorsService,
-  ModelsService
+  ModelsService,
+  convertIndicatorResult,
+  convertNewSemanticModelResult
 } from '@metad/cloud/state'
-import { convertStoryModel2DataSource, StoryModel } from '@metad/story/core'
-import { assign, includes, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
-import { combineLatest, firstValueFrom, Observable, Subject } from 'rxjs'
-import { concatMap, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
-import { IndicatorState, TagEnum } from '../types'
-
+import { nonNullable } from '@metad/core'
+import { IBusinessAreaUser, IComment, IIndicatorApp, ISemanticModel, TimeGranularity } from '@metad/contracts'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { ComponentStore } from '@metad/store'
+import { StoryModel, convertStoryModel2DataSource } from '@metad/story/core'
+import { EntityAdapter, EntityState, Update, createEntityAdapter } from '@ngrx/entity'
+import { assign, includes, indexOf, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
+import { Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { IndicatorState, IndicatorTagEnum, LookbackDefault } from '../types'
+import { TranslateService } from '@ngx-translate/core'
 
 type DataSources = {
   [id: string]: {
@@ -26,15 +29,19 @@ type DataSources = {
 }
 
 export interface IndicatorStoreState extends EntityState<IndicatorState> {
-  currentIndicator?: string
+  /**
+   * Is the store initialized, then all changes should upload to the server
+   */
+  initialized: boolean
   dataSources: DataSources
   currentPage: number
-  tag: TagEnum
+
   search?: string
-  lookBack?: number
+
   locale?: string
 
   businessAreas: Record<string, IBusinessAreaUser>
+  app: IIndicatorApp
 }
 
 export function selectIndicatorId(a: IndicatorState): string {
@@ -52,15 +59,20 @@ export const adapter: EntityAdapter<IndicatorState> = createEntityAdapter<Indica
 })
 
 export const initialState: IndicatorStoreState = adapter.getInitialState({
+  initialized: false,
   dataSources: {},
   currentPage: 1,
-  tag: TagEnum.UNIT,
-  businessAreas: {}
+  tag: IndicatorTagEnum.UNIT,
+  businessAreas: {},
+  app: null
 })
-const { selectAll, selectEntities } = adapter.getSelectors()
+const { selectAll } = adapter.getSelectors()
 
 @Injectable()
 export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
+  readonly #iAppService = inject(IndicatorAppService)
+  readonly #translate = inject(TranslateService)
+
   private pageSize = 10
 
   get dataSources() {
@@ -71,7 +83,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     return this.get((state) => state.locale)
   }
   set locale(value) {
-    this.patchState({locale: value})
+    this.patchState({ locale: value })
   }
 
   private refresh$ = new Subject<boolean>()
@@ -79,14 +91,59 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   // TODO distinctUntilChanged 需要找到原因
   public readonly all$: Observable<IndicatorState[]> = this.select(selectAll).pipe(distinctUntilChanged(isEqual))
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly initialized = toSignal(this.select((state) => state.initialized))
+  readonly appState = toSignal(this.select((state) => state.app))
+  readonly appOptions = computed(() => this.appState()?.options)
+  readonly timeGranularity = computed(() => this.appOptions()?.timeGranularity ?? TimeGranularity.Month)
+  readonly lookback = computed(() => this.appOptions()?.lookback?.[this.timeGranularity()] ?? LookbackDefault[this.timeGranularity()])
+  readonly tagType = computed(() => this.appOptions()?.tagType ?? IndicatorTagEnum.UNIT)
+  readonly detailPeriods = computed(() => this.appOptions()?.detailPeriods)
+  
+  readonly currentIndicator = signal<string | null>(null)
+  readonly favorites = toSignal(this.select((state) => state.app?.options?.favorites))
+  readonly sortedIndicators$ = toSignal(combineLatest([this.all$, this.select((state) => state.app?.options ?? {})]).pipe(
+    map(([indicators, { favorites, order }]) => {
+      const favIndicators = (favorites ?? []).map((id) => {
+        const indicator = indicators.find((item) => item.id === id)
+        return indicator ? {
+          ...indicator,
+          favour: true,
+        } : null
+      }).filter(nonNullable)
+      const subIndicators = indicators.filter((item) => !favorites?.includes(item.id))
+
+      if (order) {
+        return [
+          ...sortBy(favIndicators, (obj) => indexOf(order, obj.id)),
+          ...sortBy(subIndicators, (obj) => indexOf(order, obj.id))
+        ]
+      }
+
+      return [...favIndicators, ...subIndicators]
+    })
+  ))
+
+  readonly firstIndicator = computed(() => this.sortedIndicators$()[0] ?? null)
+
+  readonly currentLang = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
+
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   public readonly indicators$ = this.select(
-    combineLatest([
-      this.all$.pipe(map((indicators) => sortBy(indicators, 'favour'))),
-      this.select((state) => state.search).pipe(debounceTime(200))
-    ]).pipe(
+    combineLatest([toObservable(this.sortedIndicators$), this.select((state) => state.search).pipe(debounceTime(200))]).pipe(
       map(([indicators, text]) => {
         if (text) {
-          return indicators.filter((indicator) => includes(indicator.name.toLowerCase(), text) || includes(indicator.code.toLowerCase(), text))
+          return indicators.filter(
+            (indicator) => includes(indicator.name.toLowerCase(), text) || includes(indicator.code.toLowerCase(), text)
+          )
         }
         return indicators
       })
@@ -97,34 +154,47 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     }
   ).pipe(shareReplay(1))
 
-  public readonly currentIndicatorId$ = this.select((state) => state.currentIndicator)
-  public readonly currentIndicator$ = combineLatest([this.currentIndicatorId$, this.all$]).pipe(
+  // public readonly currentIndicatorId$ = this.select((state) => state.currentIndicator)
+  readonly currentIndicator$ = combineLatest([toObservable(this.currentIndicator), this.all$]).pipe(
     map(([id, indicators]) => indicators.find((item) => item.id === id)),
     distinctUntilChanged()
   )
 
-  public readonly tag$ = this.select((state) => state.tag)
-  public readonly lookBack$ = this.select((state) => state.lookBack)
+  /**
+  |--------------------------------------------------------------------------
+  | Subscribers (effects)
+  |--------------------------------------------------------------------------
+  */
+  #appStateSub = this.select((state) => state.app?.options).pipe(
+    distinctUntilChanged(isEqual),
+    filter(() => this.initialized()),
+    switchMap(() => this.#iAppService.upsert(this.appState()))
+  ).subscribe()
 
   constructor(
     private modelsService: ModelsService,
     private indicatorService: IndicatorsService,
     private businessAreaService: BusinessAreasService,
-    private favoriteService: FavoritesService,
     private ngmDSCore: NgmDSCoreService
   ) {
     super(adapter.setAll([], initialState) as IndicatorStoreState)
   }
 
+  /**
+   * Fetch detailed information of all required semantic models at once.
+   */
   readonly fetchSemanticModel = this.effect((models$: Observable<string[]>) => {
     return models$.pipe(
-      switchMap((ids) => {
-        return combineLatest(
-          ids.map((id) => this.modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators']).pipe(map(convertNewSemanticModelResult)))
+      switchMap((ids) =>
+        combineLatest(
+          ids.map((id) =>
+            this.modelsService
+              .getById(id, ['dataSource', 'dataSource.type', 'indicators'])
+              .pipe(map(convertNewSemanticModelResult))
+          )
         )
-      }),
+      ),
       tap((storyModels: StoryModel[]) => {
-        // console.log(`涉及到的语义模型:`, storyModels)
         const dataSources = {}
         storyModels.forEach((storyModel) => {
           const dataSource = convertStoryModel2DataSource(storyModel)
@@ -191,83 +261,36 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     state.search = text
   })
 
-  readonly createFavorite = this.effect((origin$: Observable<IndicatorState>) => {
-    return origin$.pipe(
-      concatMap((indicator) => {
-        return this.favoriteService
-          .create({
-            type: BusinessType.INDICATOR,
-            indicatorId: indicator.id
-          })
-          .pipe(
-            tap((result: IFavorite) => {
-              this.updateIndicator({
-                id: indicator.id,
-                changes: {
-                  favour: true,
-                  favoriteId: result.id
-                }
-              })
-            })
-          )
-      })
-    )
-  })
-
-  readonly deleteFavorite = this.effect((origin$: Observable<IndicatorState>) => {
-    return origin$.pipe(
-      concatMap((indicator) => {
-        return this.favoriteService.delete(indicator.favoriteId).pipe(
-          tap((result) => {
-            this.updateIndicator({
-              id: indicator.id,
-              changes: {
-                favour: false,
-                favoriteId: null
-              }
-            })
-          })
-        )
-      })
-    )
-  })
-
-  readonly toggleTag = this.updater((state) => {
-    if (TagEnum[state.tag + 1]) {
-      state.tag = state.tag + 1
-    } else {
-      state.tag = 0
-    }
-  })
-
   init() {
     this.setState(adapter.setAll([], initialState))
   }
 
   /**
-   * 获取当前用户所有有权限查看数据的指标
+   * Get all indicators that the current user has permission to view data for.
    */
-  async fetchAll() {
-    const indicators = await firstValueFrom(this.indicatorService.getApp(['comments']))
-    const items = indicators?.filter((item) => item.modelId && item.entity).map(convertIndicatorResult)
+  fetchAll() {
+    combineLatest([
+      this.#iAppService.getMy().pipe(map((apps) => apps[apps.length - 1])),
+      this.indicatorService.getApp(['comments'])
+    ]).subscribe(([indicatorApp, indicators]) => {
+      this.patchState({
+        app: indicatorApp
+      })
 
-    const ids = uniq(items.map((item) => item.modelId)).filter((id) => !!id && !this.dataSources[id])
-    if (!isEmpty(ids)) {
-      this.fetchSemanticModel(ids)
-    }
+      const items = indicators?.filter((item) => item.modelId && item.entity).map(convertIndicatorResult)
 
-    this.setIndicators(items as IndicatorState[])
+      // Fetch semantic models details
+      const models = uniq(items.map((item) => item.modelId)).filter((id) => !!id && !this.dataSources[id])
+      if (!isEmpty(models)) {
+        this.fetchSemanticModel(models)
+      }
 
-    const favorites = await firstValueFrom(this.favoriteService.getByType(BusinessType.INDICATOR))
-    this.updateIndicators(
-      favorites.map((item) => ({
-        id: item.indicatorId,
-        changes: {
-          favour: true,
-          favoriteId: item.id
-        }
-      }))
-    )
+      this.setIndicators(items as IndicatorState[])
+
+      this.patchState({
+        initialized: true
+      })
+    })
   }
 
   isEmpty() {
@@ -277,10 +300,10 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   async getBusinessAreaUser(id: string) {
     const user = this.get((state) => state.businessAreas)[id]
     if (!user) {
-      const user = await firstValueFrom(this.businessAreaService.getMeInBusinessArea(id));
-      (this.updater((state, user: IBusinessAreaUser) => {
+      const user = await firstValueFrom(this.businessAreaService.getMeInBusinessArea(id))
+      this.updater((state, user: IBusinessAreaUser) => {
         state.businessAreas[id] = user
-      }))(user)
+      })(user)
     }
 
     return this.get((state) => state.businessAreas)[id]
@@ -295,10 +318,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     this.updateIndicator({
       id: comment.indicatorId,
       changes: {
-        comments: [
-          ...comments,
-          comment
-        ]
+        comments: [...comments, comment]
       }
     })
   }
@@ -319,5 +339,85 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
 
   refresh(force = false) {
     this.refresh$.next(force)
+  }
+
+  /**
+   * Update the order of the indicators
+   */
+  updateOrders = this.updater((state, indicators: string[]) => {
+    const app = state.app ?? {}
+    state.app = {
+      ...app,
+      options: {
+        ...(app.options ?? {}),
+        order: indicators
+      }
+    }
+  })
+
+  /**
+   * Drag and drop to reorder and save to the server
+   */
+  order(event: CdkDragDrop<IndicatorState[]>) {
+    const indicators = this.sortedIndicators$().map(({ id }) => id) as string[]
+    moveItemInArray(indicators, event.previousIndex, event.currentIndex)
+    this.updateOrders(indicators)
+  }
+
+  private addFavorite = this.updater((state, id: string) => {
+    const options = this.getOrInitAppOptions(state)
+    options.favorites ??= []
+    if (!options.favorites?.includes(id)) {
+      options.favorites.push(id)
+    }
+  })
+
+  private removeFavorite = this.updater((state, id: string) => {
+    const options = this.getOrInitAppOptions(state)
+    options.favorites = options.favorites?.filter((_) => _ !== id) ?? []
+  })
+
+  createFavorite(indicator: IndicatorState) {
+    this.addFavorite(indicator.id)
+  }
+
+  deleteFavorite(indicator: IndicatorState) {
+    this.removeFavorite(indicator.id)
+  }
+
+  updateTimeGranularity = this.updater((state, timeGranularity: TimeGranularity) => {
+    const options = this.getOrInitAppOptions(state)
+    options.timeGranularity = timeGranularity
+  })
+
+  updateLookback = this.updater((state, lookback: number) => {
+    const options = this.getOrInitAppOptions(state)
+    options.lookback ??= { ...LookbackDefault }
+    options.lookback[this.timeGranularity()] = lookback
+  })
+
+  toggleDetailPeriods = this.updater((state, name: string) => {
+    const options = this.getOrInitAppOptions(state)
+    options.detailPeriods = options.detailPeriods === name ? null : name
+  })
+
+  /**
+   * Switch the tag type
+   */
+  readonly toggleTag = this.updater((state) => {
+    const tagType = this.tagType()
+    const options = this.getOrInitAppOptions(state)
+
+    if (IndicatorTagEnum[tagType + 1]) {
+      options.tagType = tagType + 1
+    } else {
+      options.tagType = IndicatorTagEnum[IndicatorTagEnum[0]] // Ensure to start from 0
+    }
+  })
+
+  getOrInitAppOptions(state: IndicatorStoreState) {
+    state.app ??= {}
+    state.app.options ??= {}
+    return state.app.options
   }
 }

@@ -1,39 +1,56 @@
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import {
-  CreateChatCompletionRequest,
-  CreateChatCompletionResponse,
-  CreateChatCompletionResponseChoicesInner
-} from 'openai'
-import { Observable, catchError, of, switchMap, throwError } from 'rxjs'
+import { ChatRequest, ChatRequestOptions, JSONValue, Message, RequestOptions, UseChatOptions as AiUseChatOptions, nanoid } from 'ai'
+import { BehaviorSubject, Observable, catchError, map, of, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
-import { AIOptions, AI_PROVIDERS, CopilotChatMessage, CopilotChatResponseChoice, ICopilot } from './types'
+import { callChatApi } from './shared/call-chat-api'
+import { AI_PROVIDERS, AiProvider, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import { callChatApi as callDashScopeChatApi } from './dashscope/'
 
-export const DefaultModel = 'gpt-3.5-turbo'
+function chatCompletionsUrl(copilot: ICopilot) {
+  const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+  const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
+  return (
+    copilot.chatUrl ||
+    (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl)
+  )
+}
 
+function modelsUrl(copilot: ICopilot) {
+  const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
+  const modelsUrl: string = AI_PROVIDERS[copilot.provider]?.modelsUrl
+  return (
+    copilot.modelsUrl ||
+    (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + modelsUrl : apiHost + modelsUrl)
+  )
+}
+
+export type UseChatOptions = AiUseChatOptions & {
+  appendMessage?: (message: Message) => void;
+  abortController?: AbortController | null;
+  model: string;
+}
+
+/**
+ * Copilot Service
+ */
 export class CopilotService {
-  // private _copilotDefault = {
-  //   chatCompletionsUrl: '/v1/chat/completions'
-  // } as ICopilot
-  private _copilot = {} as ICopilot
+  readonly #copilot$ = new BehaviorSubject<ICopilot | null>({} as ICopilot)
   get copilot(): ICopilot {
-    return this._copilot
+    return this.#copilot$.value
   }
-  set copilot(value: Partial<ICopilot>) {
-    this._copilot = {
-      // ...this._copilotDefault,
-      ...this._copilot,
-      ...(value ?? {})
-    }
+  set copilot(value: Partial<ICopilot> | null) {
+    this.#copilot$.next(value ? {
+      ...this.#copilot$.value,
+      ...value
+    } : null)
   }
-  get chatCompletionsUrl() {
-    return (
-      (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) +
-      AI_PROVIDERS[this.copilot.provider].chatCompletionsUrl
-    )
-  }
-  get modelsUrl() {
-    return (this.copilot.apiHost || AI_PROVIDERS[this.copilot.provider].apiHost) + '/v1/models'
-  }
+
+  readonly copilot$ = this.#copilot$.asObservable()
+  readonly enabled$ = this.copilot$.pipe(map((copilot) => copilot?.enabled && copilot?.apiKey))
+  /**
+   * If the provider has tools function
+   */
+  readonly isTools$ = this.copilot$.pipe(map((copilot) => copilot?.provider && AI_PROVIDERS[copilot.provider]?.isTools))
 
   constructor(copilot?: ICopilot) {
     if (copilot) {
@@ -41,46 +58,66 @@ export class CopilotService {
     }
   }
 
-  async createChat(
-    messages: CopilotChatMessage[],
-    options?: {
-      request?: Partial<CreateChatCompletionRequest>
+  /**
+   * Custom request options, headers (Auth, others) and body
+   * 
+   * @returns 
+   */
+  requestOptions(): RequestOptions {
+    return {}
+  }
+
+  /**
+   * 
+   * @param messages 
+   * @param options 
+   * @returns 
+   */
+  async createChat(messages: CopilotChatMessage[], options?: {
+      request?: any
       signal?: AbortSignal
     }
   ) {
     const { request, signal } = options ?? {}
-    const response = await fetch(this.chatCompletionsUrl, {
+    const response = await fetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        'content-type': 'application/json',
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
       },
       signal,
       body: JSON.stringify({
         model: DefaultModel,
-        messages: messages,
+        messages: messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
         ...(request ?? {})
       })
     })
 
     if (response.status === 200) {
-      const answer: CreateChatCompletionResponse = await response.json()
+      const answer = await response.json()
       return answer.choices
     }
 
     throw new Error((await response.json()).error?.message)
   }
 
-  chatCompletions(messages: CopilotChatMessage[], request?: Partial<CreateChatCompletionRequest>): Observable<CreateChatCompletionResponse> {
-    return fromFetch(this.chatCompletionsUrl, {
+  chatCompletions(messages: CopilotChatMessage[], request?: any): Observable<any> {
+    return fromFetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        // Authorization: `Bearer ${this.copilot.apiKey}`
       },
       body: JSON.stringify({
         model: DefaultModel,
-        messages: messages,
+        messages: messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
         ...(request ?? {})
       })
     }).pipe(
@@ -97,18 +134,22 @@ export class CopilotService {
     )
   }
 
-  chatStream(messages: CopilotChatMessage[], request?: CreateChatCompletionRequest) {
-    return new Observable<CreateChatCompletionResponseChoicesInner[]>((subscriber) => {
+  chatStream(messages: CopilotChatMessage[], request?: any) {
+    return new Observable<any[]>((subscriber) => {
       const ctrl = new AbortController()
-      fetchEventSource(this.chatCompletionsUrl, {
+      fetchEventSource(chatCompletionsUrl(this.copilot), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.copilot.apiKey}`
+          ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+          // Authorization: `Bearer ${this.copilot.apiKey}`
         },
         body: JSON.stringify({
           model: DefaultModel,
-          messages: messages,
+          messages: messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
           ...(request ?? {}),
           stream: true
         }),
@@ -156,11 +197,12 @@ export class CopilotService {
   }
 
   getModels() {
-    return fromFetch(this.modelsUrl, {
+    return fromFetch(modelsUrl(this.copilot), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.copilot.apiKey}`
+        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        // Authorization: `Bearer ${this.copilot.apiKey}`
       }
     }).pipe(
       switchMap((response) => {
@@ -179,45 +221,69 @@ export class CopilotService {
       })
     )
   }
-}
 
-export interface CopilotEngine {
-  /**
-   * Copilot engine name
-   */
-  name?: string
-  /**
-   * AI Configuration
-   */
-  aiOptions: AIOptions
-  /**
-   * System prompt
-   */
-  systemPrompt?: string
-  /**
-   * Predefined prompts
-   */
-  prompts: string[]
-  /**
-   * Conversations
-   */
-  conversations: CopilotChatMessage[]
-  /**
-   * Placeholder in ask input
-   */
-  placeholder?: string
-
-  process(
-    data: { prompt: string; messages?: CopilotChatMessage[] },
-    options?: { action?: string }
-  ): Observable<CopilotChatMessage[] | string>
-  preprocess?(prompt: string, options?: any)
-  postprocess?(prompt: string, choices: CopilotChatResponseChoice[]): Observable<CopilotChatMessage[] | string>
-
-  /**
-   * Drop copilot data
-   * 
-   * @param event 
-   */
-  dropCopilot?(event);
+  // ai
+  async chat(
+    {
+      sendExtraMessageFields,
+      onResponse,
+      onFinish,
+      onError,
+      appendMessage,
+      credentials,
+      headers,
+      body,
+      generateId = nanoid,
+      abortController,
+      model
+    }: UseChatOptions = {
+      model: DefaultModel
+    },
+    chatRequest: ChatRequest,
+    { options, data }: ChatRequestOptions = {},
+  ): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
+    const callChatApiFuc = this.copilot.provider === AiProvider.DashScope ?  callDashScopeChatApi : callChatApi
+    return await callChatApiFuc({
+      api: chatCompletionsUrl(this.copilot),
+      model,
+      chatRequest,
+      messages: sendExtraMessageFields
+        ? chatRequest.messages
+        : chatRequest.messages.map(({ role, content, name, function_call }) => ({
+            role,
+            content,
+            ...(name !== undefined && { name }),
+            ...(function_call !== undefined && {
+              function_call
+            })
+          })),
+      body: {
+        data: chatRequest.data,
+        ...body,
+        ...(options?.body ?? {}),
+      },
+      headers: {
+        ...(this.requestOptions()?.headers ?? {}),
+        ...headers,
+        ...(options?.headers ?? {})
+      },
+      abortController: () => abortController,
+      credentials,
+      onResponse,
+      onUpdate(merged, data) {
+        console.log(`onUpdate`, merged, data)
+        // mutate([...chatRequest.messages, ...merged]);
+        // setStreamData([...existingData, ...(data ?? [])]);
+      },
+      onFinish,
+      appendMessage,
+      restoreMessagesOnFailure() {
+        // Restore the previous messages if the request fails.
+        // if (previousMessages.status === 'success') {
+        //   mutate(previousMessages.data);
+        // }
+      },
+      generateId
+    })
+  }
 }

@@ -6,6 +6,7 @@ import {
   ChangeDetectorRef,
   Component,
   ComponentRef,
+  DestroyRef,
   ElementRef,
   EventEmitter,
   HostBinding,
@@ -27,7 +28,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { assignDeepOmitBlank, DataFieldWithIntentBasedNavigation, DataSettings, mergeOptions, omit, OrderDirection } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmModule } from '@metad/components/confirm'
 import { Intent, IStoryWidget, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
@@ -37,7 +37,6 @@ import {
   NxStoryStore,
   NX_STORY_STORE,
   StoryComment,
-  StoryCopilotEngineService,
   StoryPointType,
   StoryWidgetComponentProvider,
   STORY_WIDGET_COMPONENT,
@@ -83,7 +82,6 @@ interface StoryWidgetState {
   comments: Array<StoryComment>
 }
 
-@UntilDestroy({checkProperties: true})
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -114,12 +112,13 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   STORY_POINT_TYPE = StoryPointType
   ORDER_DIRECTION = OrderDirection
 
+  readonly #logger? = inject(NGXLogger, { optional: true })
   private readonly _renderer = inject(Renderer2)
   private readonly _elementRef = inject(ElementRef)
-  private readonly storyCopilotEngine? = inject(StoryCopilotEngineService, {optional: true})
   private readonly pointComponent? = inject(NxStoryPointComponent, {optional: true})
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)
+  readonly destroyRef = inject(DestroyRef)
 
   @Input() key: string
 
@@ -270,7 +269,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   
   public readonly comments$ = this.select((state) => state.comments)
 
-  public readonly isAuthenticated$ = this.storyService.isAuthenticated$
+  readonly isAuthenticated = this.storyService.isAuthenticated
 
   // Story point components
   public readonly allowMultiLayer$ = combineLatest([
@@ -316,6 +315,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
       this.openEditAttributes()
     }
   })
+
   constructor(
     private readonly storyService: NxStoryService,
     private readonly storyPointService: NxStoryPointService,
@@ -328,8 +328,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     private readonly _dialog: MatDialog,
     private readonly _injector: Injector,
     private _viewContainerRef: ViewContainerRef,
-    @Optional()
-    private readonly _logger?: NGXLogger,
+    
     @Optional()
     public settingsService?: NxSettingsPanelService,
     @Optional()
@@ -358,7 +357,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
         switchMap((componentProvider) => {
           return from(this.createComponent(componentProvider))
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((componentRef: ComponentRef<IStoryWidget<any>>) => {
         this.initComponent(componentRef)
@@ -386,12 +385,12 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
             })
           )
         }),
-        untilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe()
 
     combineLatest([this.componentInstance$, this.editable$])
-      .pipe(untilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([componentInstance, editable]) => {
         if (componentInstance) {
           componentInstance.editable = editable
@@ -405,7 +404,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     if (this.widget().options?.hasComments) {
       this.storyStore
         .getWidgetComments(this.widget())
-        .pipe(map((comments) => (isEmpty(comments) ? null : comments)))
+        .pipe(map((comments) => (isEmpty(comments) ? null : comments)), takeUntilDestroyed(this.destroyRef))
         .subscribe((comments) => {
           this.patchState({
             comments
@@ -433,7 +432,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
      * 反向更新数据源配置, 从组件本身到故事组件
      */
     componentRef.instance.dataSettingsChange
-      ?.pipe(distinctUntilChanged(), withLatestFrom(this.widgetKey$), untilDestroyed(this))
+      ?.pipe(distinctUntilChanged(), withLatestFrom(this.widgetKey$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([dataSettings, widgetKey]) => {
         this.storyPointService.updateWidget({
           key: widgetKey,
@@ -443,7 +442,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     /**
      * 反向更新组件配置项, 从组件本身到故事组件
      */
-    componentRef.instance.optionsChange?.pipe(withLatestFrom(this.widget$), untilDestroyed(this))
+    componentRef.instance.optionsChange?.pipe(withLatestFrom(this.widget$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([options, widget]) => {
         // 根据 id 更新 options, 忽略其他属性
         this.storyPointService.updateWidget({
@@ -456,7 +455,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
      * 切片器与关联分析事件
      */
     componentRef.instance.slicersChange
-      ?.pipe(withLatestFrom(this.linkedAnalysis$), untilDestroyed(this))
+      ?.pipe(withLatestFrom(this.linkedAnalysis$), takeUntilDestroyed(this.destroyRef))
       .subscribe(([slicers, linkedAnalysis]) => {
         switch (linkedAnalysis?.interactionApplyTo) {
           case LinkedInteractionApplyTo.OnlySelectedWidgets:
@@ -484,9 +483,9 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     // selected 时不一定就是在编辑当前组件
     if (!this.laneKey) {
       this.openDesigner()
-      if (this.storyCopilotEngine) {
-        this.storyCopilotEngine.currentWidgetCopilot = this.stateService
-      }
+      // if (this.storyCopilotEngine) {
+      //   this.storyCopilotEngine.currentWidgetCopilot = this.stateService
+      // }
     }
   }
 
@@ -745,7 +744,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   async openShares() {
     const widget = this.widget()
     const story = await firstValueFrom(this.storyService.story$)
-    const isAuthenticated = await firstValueFrom(this.isAuthenticated$)
+    const isAuthenticated = this.isAuthenticated()
 
     await firstValueFrom(this._dialog
       .open(StorySharesComponent, {
@@ -761,9 +760,12 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
       .afterClosed())
   }
 
-  async explain() {
+  explain() {
     const explains = this.widgetService.explains()
-    await firstValueFrom(this._dialog.open(ExplainComponent, {data: [...(explains ?? []), {slicers: this.componentInstance$.value.slicers}]}).afterClosed())
+    this._dialog.open(ExplainComponent, {
+      panelClass: 'small',
+      data: [...(explains ?? []), {slicers: this.componentInstance$.value.slicers}]})
+      .afterClosed().subscribe(() => {})
   }
 
   onDragFab(event: CdkDragMove) {

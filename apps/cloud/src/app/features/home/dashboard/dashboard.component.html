@@ -14,14 +14,14 @@
         >
             <div class="step" *ngIf="demoPermission$ | async">
                 <div *ngIf="!creatingDemo" class="complete mr-4">
-                    <span *ngIf="!quickGuides.sample.complete">🔘</span>
-                    <span *ngIf="quickGuides.sample.complete">🟢</span>
+                    <span *ngIf="!quickGuides().sample.complete">🔘</span>
+                    <span *ngIf="quickGuides().sample.complete">🟢</span>
                 </div>
                 <div *ngIf="creatingDemo" class="complete mr-4 emoji-loader w-8" style="position: relative;"></div>
                 <span class="guide" >
                     <a *ngIf="!creatingDemo" class="cursor-pointer" (click)="createOrgDemo()">
-                        <span *ngIf="!quickGuides.sample.complete">{{ 'PAC.MENU.HOME.GenerateSamples' | translate: {Default: 'Generate Samples'} }}</span>
-                        <span *ngIf="quickGuides.sample.complete">{{ 'PAC.MENU.HOME.RegenerateSamples' | translate: {Default: 'Regenerate Samples'} }}</span>
+                        <span *ngIf="!quickGuides().sample.complete">{{ 'PAC.MENU.HOME.GenerateSamples' | translate: {Default: 'Generate Samples'} }}</span>
+                        <span *ngIf="quickGuides().sample.complete">{{ 'PAC.MENU.HOME.RegenerateSamples' | translate: {Default: 'Regenerate Samples'} }}</span>
                     </a>
                     <span *ngIf="creatingDemo" class="ml-4">
                         {{ 'PAC.MENU.HOME.GeneratingSamples' | translate: {Default: 'Generating Samples'} }}...
@@ -29,7 +29,7 @@
                 </span>
             </div>
 
-            <div class="step" *ngIf="!quickGuides.model.complete">
+            <div class="step" *ngIf="!quickGuides().model.complete">
                 <span class="complete mr-4">🔘</span>
                 <span class="guide">
                     <a routerLink="/models">
@@ -37,11 +37,11 @@
                     </a>
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides.model.complete">
+            <div class="step" *ngIf="quickGuides().model.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/models" class="hover:underline">
-                        <span class="text-lg font-bold italic">{{quickGuides.model.quantity}}</span>
+                        <span class="text-lg font-bold italic">{{quickGuides().model.quantity}}</span>
                         {{ 'PAC.KEY_WORDS.SemanticModels' | translate: {
                             Default: 'Semantic Models',
                         } }}
@@ -49,7 +49,7 @@
                 </span>
             </div>
 
-            <div class="step" *ngIf="!quickGuides.story.complete">
+            <div class="step" *ngIf="!quickGuides().story.complete">
                 <span class="complete mr-4">🔘</span>
                 <span class="guide">
                     <a routerLink="/project">
@@ -57,17 +57,17 @@
                     </a>
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides.story.complete">
+            <div class="step" *ngIf="quickGuides().story.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/project" class="hover:underline">
-                        <span class="text-lg font-bold italic">{{quickGuides.story.quantity}}</span>
+                        <span class="text-lg font-bold italic">{{quickGuides().story.quantity}}</span>
                         {{ 'PAC.KEY_WORDS.Stories' | translate: { Default: 'Stories' } }}
                     </a>
                 </span>
             </div>
 
-            <div class="step" *ngIf="!quickGuides.indicator.complete">
+            <div class="step" *ngIf="!quickGuides().indicator.complete">
                 <span class="complete mr-4">🔘</span>
                 <span class="guide">
                     <a routerLink="/project/indicator">
@@ -75,11 +75,11 @@
                     </a>
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides.indicator.complete">
+            <div class="step" *ngIf="quickGuides().indicator.complete">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/project/indicators" class="hover:underline">
-                        <span class="text-lg font-bold italic">{{quickGuides.indicator.quantity}}</span>
+                        <span class="text-lg font-bold italic">{{quickGuides().indicator.quantity}}</span>
                         {{ 'PAC.KEY_WORDS.Indicators' | translate: { Default: 'Indicators' } }}
                     </a>
                 </span>
@@ -95,42 +95,65 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <button *ngIf="!editable" mat-icon-button displayDensity="cosy" (click)="toggleEdit()">
+              @if (!editable) {
+                <button mat-icon-button displayDensity="cosy"
+                    [matTooltip]="'PAC.KEY_WORDS.Edit' |translate: {Default: 'Edit'}"
+                    (click)="toggleEdit()">
                     <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
                 </button>
-                
-                <button *ngIf="editable" mat-icon-button displayDensity="cosy" (click)="restore()">
+              }
+              @if (editable) {
+                <button mat-icon-button displayDensity="cosy"
+                    [matTooltip]="'PAC.KEY_WORDS.RestoreLayout' |translate: {Default: 'Restore layout'}"
+                    (click)="restore()">
                     <mat-icon fontSet="material-icons-outlined">restart_alt</mat-icon>
                 </button>
-                <button *ngIf="editable && dirty$ | async" mat-icon-button displayDensity="cosy" (click)="undoEdit()">
-                    <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
-                </button>
-                <button *ngIf="editable" mat-icon-button displayDensity="cosy" (click)="commitEdit()">
+                @if (dirty()) {
+                    <button mat-icon-button displayDensity="cosy"
+                        [matTooltip]="'PAC.KEY_WORDS.Undo' |translate: {Default: 'Undo'}"
+                        (click)="undoEdit()">
+                        <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
+                    </button>
+                }
+                <button mat-icon-button displayDensity="cosy"
+                    [matTooltip]="'PAC.KEY_WORDS.Commit' |translate: {Default: 'Commit'}"
+                    (click)="commitEdit()">
                     <mat-icon fontSet="material-icons-outlined">done</mat-icon>
                 </button>
+              }
             </div>
         </div>
 
         <gridster class="" [options]="options" [ngClass]="{editable: editable}">
-            <gridster-item [item]="feed.options.position" *ngFor="let feed of feeds$ | async; index as i; trackBy: trackById" class="pac-home__gridster-item"
+          @for (feed of feeds(); track feed.id; let i = $index) {
+            <gridster-item [item]="feed.options.position" class="pac-home__gridster-item"
                 (itemChange)="onGridsterItemChange($event, feed)">
-                <pac-story-widget-feed fxFlex="100" *ngIf="feed.type ==='StoryWidget'" [id]="feed.entityId">
-                </pac-story-widget-feed>
-
-                <pac-feed-recents fxFlex="100" *ngIf="feed.type ==='Recents'" class="pac-home__my-recent pac-home__widget"></pac-feed-recents>
-                <pac-feed-user-visit fxFlex="100" *ngIf="feed.type ==='UserVisits'" class="pac-home__widget"></pac-feed-user-visit>
+              @if (feed.type ==='StoryWidget') {
+                <pac-story-widget-feed [id]="feed.entityId"/>
+              }
+              @if (feed.type === 'Recents') {
+                <pac-feed-recents class="pac-home__my-recent pac-home__widget"/>
+              }
+              @if (feed.type ==='UserVisits') {
+                <pac-feed-user-visit class="pac-home__widget"/>
+              }
 
                 <div class="pac-home__widget-actions">
-                    <button *ngIf="editable" mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
+                  @if (editable) {
+                    <button mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
                         (click)="$event.preventDefault();$event.stopPropagation();removeWidget(feed)">
                         <mat-icon>close</mat-icon>
                     </button>
-                    <button *ngIf="feed.type ==='StoryWidget'" mat-icon-button displayDensity="cosy"
+                  }
+                  @if (feed.type ==='StoryWidget') {
+                    <button mat-icon-button displayDensity="cosy"
                         [routerLink]="['/story', feed.options.storyId]" [queryParams]="{pageKey: feed.options.pageKey, widgetKey: feed.options.widgetKey}">
                         <mat-icon fontSet="material-icons-round">launch</mat-icon>
                     </button>
+                  }
                 </div>
             </gridster-item>
+          }
         </gridster>
     </div>
 

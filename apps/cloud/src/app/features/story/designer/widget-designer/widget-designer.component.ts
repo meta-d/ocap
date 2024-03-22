@@ -2,14 +2,13 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE } from '@metad/story/designer'
 import { debounceTime, filter, isObservable, of } from 'rxjs'
 import { InlineSearchComponent, MaterialModule } from '../../../../@shared'
 import { DesignerWidgetComponent } from '../widget/widget.component'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -42,12 +41,12 @@ export class WidgetDesignerComponent {
     ? this._settingsComponent.model
     : of(this._settingsComponent.model)
   )
-    .pipe(filter((model) => !!model && this.initial))
+    .pipe(filter((model) => !!model && this.initial), takeUntilDestroyed())
     .subscribe((model: { component: any }) => {
       this.initial = false
       this.formControl.patchValue(model.component)
     })
-  private valueSub = this.formControl.valueChanges.pipe(debounceTime(500)).subscribe((value) => {
+  private valueSub = this.formControl.valueChanges.pipe(debounceTime(500), takeUntilDestroyed()).subscribe((value) => {
     this._settingsComponent.submit.next({ component: value })
   })
 }

@@ -24,16 +24,15 @@ import {
   inject,
   signal
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
 import { NgmSmartFilterBarService, OcapCoreModule, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { NgmTransformScaleDirective, NxCoreModule, nonNullable } from '@metad/core'
+import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject, nonNullable } from '@metad/core'
 import {
   ComponentSettingsType,
   MoveDirection,
@@ -69,13 +68,12 @@ import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { NxStorySharedModule } from '../shared.module'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { HammerModule } from '@angular/platform-browser'
-import { TrialWatermarkModule } from '@metad/components/trial-watermark'
+import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 /**
  * 暂时将 providers 放在此 Story 组件上, 后续考虑更好的位置
  */
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,7 +89,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
     CdkMenuModule,
     HammerModule,
     TranslateModule,
-    TrialWatermarkModule,
+    TrialWatermarkComponent,
     NgxPopperjsModule,
     NxCoreModule,
 
@@ -111,8 +109,9 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   NgxPopperjsPlacements = NgxPopperjsPlacements
   PageHeaderLabelEnum = PageHeaderLabelEnum
 
+  readonly #logger = inject(NGXLogger)
   private _renderer = inject(Renderer2)
-  private _cdr = inject(ChangeDetectorRef)
+  // private _cdr = inject(ChangeDetectorRef)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
@@ -173,8 +172,10 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
 
-  readonly preferences = toSignal(this.storyService.preferences$)
+  private style: any
+  private _nghost: string
 
+  readonly preferences = toSignal(this.storyService.preferences$)
 
   // State Query
   readonly currentStory$ = this.storyService.story$
@@ -185,18 +186,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   readonly preferences$ = this.storyService.preferences$
   
-  readonly enableWatermark$ = this.storyService.preferences$.pipe(
-    map((preferences) => preferences?.story?.enableWatermark)
-  )
-  readonly watermarkOptions$ = this.storyService.preferences$.pipe(
-    map((preferences) => {
-      const watermarkOptions = omitBlank(preferences?.story?.watermarkOptions)
-      return {
-        ...(watermarkOptions ?? {}),
-        text: watermarkOptions?.text || this.watermark
-      }
-    })
-  )
   readonly tabBar$ = this.storyService.preferences$.pipe(map((preferences) => preferences?.story?.tabBar))
   readonly tabHidden = toSignal(this.tabBar$.pipe(map((tabBar) => tabBar === 'hidden' || tabBar === 'point')))
 
@@ -253,12 +242,30 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly enableWatermark$ = toSignal(this.storyService.preferences$.pipe(
+    map((preferences) => preferences?.story?.enableWatermark)
+  ))
+  readonly watermarkOptions$ = toSignal(this.storyService.preferences$.pipe(
+    map((preferences) => {
+      const watermarkOptions = camelCaseObject(omitBlank(preferences?.story?.watermarkOptions))
+      return {
+        ...(watermarkOptions ?? {}),
+        text: watermarkOptions?.text || this.watermark
+      }
+    })
+  ))
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
   private _storySavedSubscriber = this.storyService
     .onSaved()
-    .pipe(debounce(() => interval(1000)))
+    .pipe(debounce(() => interval(1000)), takeUntilDestroyed())
     .subscribe(() => this.saved.emit())
   // 这里的 resize 还有用吗 ?
   private _resizeSubscriber = merge(
@@ -266,7 +273,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     // this.storyFilterDrawerChange
     // this.storyDesignerDrawerChange
   )
-    .pipe(withLatestFrom(this.storyService.currentPageKey$))
+    .pipe(withLatestFrom(this.storyService.currentPageKey$), takeUntilDestroyed())
     .subscribe(([event, currentId]) => {
       // console.warn(`resize selected story page layout`)
       // TODO 需要重构成更好的方式
@@ -277,7 +284,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     })
   private _intentSubscriber = this.storyService
     .onIntent()
-    .pipe(filter((intent) => intent?.semanticObject === 'StoryPoint'))
+    .pipe(filter((intent) => intent?.semanticObject === 'StoryPoint'), takeUntilDestroyed())
     .subscribe((intent) => {
       // this.selectedStoryPointKey = intent.action
       // let filters = this.currentPoint.filters || []
@@ -289,12 +296,12 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       // this.currentPoint.filters = filters
       this.storyService.setCurrentPageKey(intent.action)
     })
-  private _storyFiltersSubscriber = this.storyService.filters$.pipe(filter(isNotEmpty)).subscribe((filters) => {
-    this.logger?.debug(`Story全局固定过滤器:`, filters)
+  private _storyFiltersSubscriber = this.storyService.filters$.pipe(filter(isNotEmpty), takeUntilDestroyed()).subscribe((filters) => {
+    this.#logger?.debug(`Story全局固定过滤器:`, filters)
     // filters.forEach(item => this.filterBarService.put(item))
   })
   private _currentPageKeySubscriber = this.storyService.currentPageKey$
-    .pipe(filter(nonNullable))
+    .pipe(filter(nonNullable), takeUntilDestroyed())
     .subscribe(async (pageKey) => {
       const currentIndex = await firstValueFrom(this.storyService.currentIndex$)
       if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
@@ -321,7 +328,8 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
           }
         })
       }),
-      combineLatestWith(this.options$)
+      combineLatestWith(this.options$),
+      takeUntilDestroyed()
     )
     .subscribe(([story, options]) => {
       this.storyService.updateStoryOptions({
@@ -329,7 +337,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       })
     })
 
-  private advancedStyleSub = this.storyService.advancedStyle$.subscribe({
+  private advancedStyleSub = this.storyService.advancedStyle$.pipe(takeUntilDestroyed()).subscribe({
     next: (result) => {
       result = result?.replace(new RegExp(':host', 'g'), `[${this._nghost}]`)
       if (!isNil(this.style)) {
@@ -346,16 +354,23 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   })
 
   private backgroundSub = this.storyService.storyOptions$
-    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor))
+    .pipe(map((options) => options?.preferences?.storyStyling?.backgroundColor), takeUntilDestroyed())
     .subscribe((backgroundColor) => {
       if (backgroundColor) {
         this._renderer.setStyle(this._elementRef.nativeElement, 'background-color', backgroundColor)
       }
     })
 
-  style: any
-  private _nghost: string
-
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  /**
+   * @todo 工作量大
+   */
+  // #widgetCommand = injectStoryWidgetCommand(this.storyService)
+  
   constructor(
     public storyService: NxStoryService,
     private readonly translateService: TranslateService,
@@ -365,8 +380,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     private _elementRef: ElementRef,
     @Optional()
     public settingsService?: NxSettingsPanelService,
-    @Optional()
-    private logger?: NGXLogger
   ) {
     super({} as Story)
   }

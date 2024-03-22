@@ -7,7 +7,6 @@
 @use './appearance/appearance-theme' as appearance;
 @use './table/table-theme' as table;
 @use './tree-select/tree-select-theme' as tree-select;
-@use './search/search-theme' as search;
 
 @mixin common-color($config-or-theme) {
   $config: mat.get-color-config($config-or-theme);
@@ -18,17 +17,11 @@
   @include tabs.color($config-or-theme);
   @include table.color($config-or-theme);
   @include tree-select.color($config-or-theme);
-  @include search.color($config-or-theme);
 
   .ngm-display-behaviour {
     .ngm-display-behaviour__highlight {
       color: map-get($accent, 500);
     }
-  }
-
-  .ngm-resizer-bar:hover,
-  .ngm-resizer-bar.cdk-drag-dragging {
-    background-color: mat.get-color-from-palette($accent);
   }
 
   /**
@@ -43,6 +36,5 @@
 
 @mixin common-density($config-or-theme) {
   @include table.density($config-or-theme);
-  @include search.density($config-or-theme);
   @include tree-select.density($config-or-theme);
 }

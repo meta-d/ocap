@@ -7,7 +7,7 @@
   $foreground: map.get($config, foreground);
 
   .mat-mdc-menu-panel .mat-mdc-menu-item.active {
-    background-color: mat.get-color-from-palette($background, selected-button);
+    // background-color: mat.get-color-from-palette($background, selected-button);
   }
 
   // active status color for menu trigger icon button

@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core'
 import { RouterModule } from '@angular/router'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmTableComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { NxTableModule } from '@metad/components/table'
 import { MaterialModule, SharedModule } from '../../../@shared'
 import { DemoComponent } from './demo/demo.component'
 import { SettingsComponent } from './settings/settings.component'
@@ -16,8 +15,8 @@ import { PACTenantComponent } from './tenant.component'
     RouterModule,
     TenantRoutingModule,
     OcapCoreModule,
-    NxTableModule,
-    NgmCommonModule
+    NgmCommonModule,
+    NgmTableComponent
   ],
   exports: [],
   declarations: [PACTenantComponent, SettingsComponent, DemoComponent],

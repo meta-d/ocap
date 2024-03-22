@@ -58,7 +58,7 @@ export class DataSourceService extends OrganizationBaseService {
   }
 
   getAuthentication(id: string) {
-    return this.http.get(`${C_API_DATA_SOURCE}/${id}/authentication`)
+    return this.http.get<IDataSourceAuthentication>(`${C_API_DATA_SOURCE}/${id}/authentication`)
   }
 
   createAuthentication(id: string, auth: IDataSourceAuthentication) {

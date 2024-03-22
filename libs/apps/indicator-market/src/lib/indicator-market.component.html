@@ -14,8 +14,9 @@
   
     <div class="flex justify-end items-center">
       <div class="pac-indicator__tag uppercase bg-gray-500 bg-opacity-25" (click)="toggleTag($event)">
-        {{tagText$ | async}}
+        {{ 'IndicatorApp.TagEnum.' + tagType() | translate: {Default: IndicatorTagEnum[tagType()]} }}
       </div>
+
       <button mat-icon-button
         [popper]="options"
         [popperTrigger]="NgxPopperjsTriggers.click"
@@ -34,7 +35,7 @@
   <cdk-virtual-scroll-viewport itemSize="76" minBufferPx="1000" maxBufferPx="2000" class="pac-indicator-market__infinite-container flex-1">
 
     <div class="w-full flex mb-2">
-      <div class="pac-indicator-market__search-input flex items-center flex-1 p-1 space-x-4 rounded-lg bg-gray-500 bg-opacity-25">
+      <div class="pac-indicator-market__search-input flex items-center flex-1 p-1 space-x-4 rounded-lg bg-gray-300 bg-opacity-25 dark:bg-opacity-10">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
@@ -50,12 +51,17 @@
       </button>
     </div>
 
-    <mat-list *ngrxLet="selected$ as selected">
-      <mat-list-item *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0" matRipple
-        [class.selected]="selected === item.id"
-        (click)="click(item)">
-        <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tag$ | async"></pac-indicator-item>
-      </mat-list-item>
+    <mat-list class="pac-indicator-list" cdkDropList (cdkDropListDropped)="dropOrder($event)">
+      <ng-container *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0">
+        <mat-list-item matRipple [class.selected]="selected$() === item.id"
+          (click)="click(item)"
+          cdkDrag [cdkDragStartDelay]="200"
+          >
+          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tagType()"></pac-indicator-item>
+          <div class="pac-indicator__placeholder" *cdkDragPlaceholder></div>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
     </mat-list>
   </cdk-virtual-scroll-viewport>
 
@@ -69,19 +75,18 @@
   </div>
 </div>
 
-<ng-container *ngIf="notMobile$ | async">
-  <pac-indicator-detail *ngFor="let id of currentIndicatorIds$ | async; trackBy: trackBy"
-    [id]="id"
-    [desktop]="true">
-  </pac-indicator-detail>
-</ng-container>
+@if (notMobile$ | async) {
+  @for (id of currentIndicatorIds$(); track id) {
+    <pac-indicator-detail #indicatorDetail [id]="id" [desktop]="true"/>
+  }
+}
 
 <popper-content #options class="z-[101]">
   <div class="pac-indicator-app__options flex flex-col gap-2 p-2">
 
     <label>{{ 'IndicatorApp.TimeGranularity' | translate: {Default: 'Time Granularity'} }}</label>
     <mat-button-toggle-group ngmAppearance="hero" color="accent" displayDensity="cosy"
-      [(ngModel)]="timeGranularity" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
+      [ngModel]="timeGranularity()" (ngModelChange)="onTimeGranularity($event)" (click)="$event.stopPropagation()">
       <mat-button-toggle [value]="TIME_GRANULARITY.Year">
         {{ 'COMPONENTS.DATE_PICKER.Year' | translate: {Default: 'Year'} }}
       </mat-button-toggle>
@@ -98,14 +103,14 @@
 
     <mat-divider></mat-divider>
 
-    <label>{{ 'IndicatorApp.LookbackLimit' | translate: {Default: 'Lookback Limit'} }}</label>
+    <label>{{ 'IndicatorApp.LookbackPeriods' | translate: {Default: 'Lookback Periods'} }}</label>
     <mat-slider class="w-full" discrete color="accent"
       step="1"
       min="0"
-      [max]="lookbackLimit"
+      [max]="lookbackLimit()"
       (click)="$event.stopPropagation()"
     >
-      <input matSliderThumb [(ngModel)]="lookback" (valueChange)="onLookback($event)">
+      <input matSliderThumb [ngModel]="lookBack()" (valueChange)="onLookback($event)">
     </mat-slider>
 
     <mat-divider></mat-divider>

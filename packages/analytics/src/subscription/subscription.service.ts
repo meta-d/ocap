@@ -1,22 +1,17 @@
-import { Injectable, Logger } from "@nestjs/common"
-import { SchedulerRegistry } from "@nestjs/schedule";
+import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Employee, TenantOrganizationAwareCrudService } from "@metad/server-core"
-import { CronJob } from "cron";
-import { Repository } from "typeorm";
-import { Subscription } from "./subscription.entity";
+import { Repository } from 'typeorm'
+import { Subscription } from './subscription.entity'
 
 @Injectable()
 export class SubscriptionService extends TenantOrganizationAwareCrudService<Subscription> {
-	
-    constructor(
+	constructor(
 		@InjectRepository(Subscription)
-		private readonly repo: Repository<Subscription>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>
+		private readonly repo: Repository<Subscription>
 	) {
-		super(repo, employeeRepository)
-    }
+		super(repo)
+	}
 
 	async setupJobs() {
 		const subscriptions = await this.repository.find()

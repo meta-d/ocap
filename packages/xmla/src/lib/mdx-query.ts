@@ -167,7 +167,8 @@ export function getMDXProperty(entityType: EntityType, path: string | Dimension)
       }
     } else if (property) {
       return {
-        dimension: property.name
+        dimension: property.name,
+        hierarchy: property.defaultHierarchy || property.hierarchies.find((item) => item.name === property.name)?.name // Use the default or same name hierarchy with dimension
       }
     } else {
       const property = getEntityHierarchy(entityType, path)

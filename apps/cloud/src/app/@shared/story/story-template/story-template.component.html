@@ -31,7 +31,7 @@
 <div class="flex-1 flex flex-col">
 
   <div class="p-4 flex flex-col gap-4">
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
       <label class="w-10 shrink-0">
         {{ 'Story.Template.Type' | translate: {Default: 'Type'} }}
       </label>
@@ -48,7 +48,7 @@
       ></ngm-tags>
     </div>
   
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
       <label class="w-10 shrink-0">{{ 'Story.Template.Tags' | translate: {Default: 'Tags'} }}</label>
       <pac-tags class="flex-1 " [tags]="tags" [selectable]="true"
         (selectedChange)="onTagsChange($event)"
@@ -59,7 +59,8 @@
   <div class="p-4 pt-0 flex-1 overflow-auto grid grid-cols-3 gap-4" [@listAnimation]="(templates$ | async)?.length">
 
     <div *ngFor="let template of templates$ | async; trackBy: trackById" class="pac-template h-64 overflow-hidden flex flex-col" [class.active]="template.id === appliedTemplateId">
-      <div class="pac-template__preview flex-1 m-1 border-slate-200 rounded-lg bg-slate-50 border-2 overflow-hidden relative group" >
+      <div class="pac-template__preview flex-1 m-1 rounded-lg border-2 overflow-hidden relative group
+      border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-700">
         <img [src]="template.preview?.url ?? template.thumbnail" class="w-full h-44 object-cover" loading="lazy"/>
 
         <pac-tags [tags]="template.tags" [selectable]="true" (selectedChange)="onTagsChange($event)" class="absolute bottom-0 left-0 w-full p-2 z-10"></pac-tags>

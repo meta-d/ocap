@@ -19,7 +19,6 @@
   >
     <button mat-icon-button displayDensity="cosy" disabled></button>
 
-    <mat-icon *ngIf="node.isUsage" class="text-gray-500" displayDensity="compact" fontSet="material-icons-outlined">share</mat-icon>
     <ngm-entity-property [property]="node" [displayBehaviour]="displayBehaviour"></ngm-entity-property>
 
     <ngm-action-strip #actionStrip [hidden]="true">
@@ -51,8 +50,8 @@
     class="ngm-list-item"
     [ngClass]="isSelected(node) ? 'selected' : ''"
     (click)="onSelect(node)"
-    (mouseenter)="node.isUsage && usageStrip.show(); node.readonly || actionStrip.show()"
-    (mouseleave)="node.isUsage && usageStrip.hide(); node.readonly || actionStrip.hide()"
+    (mouseenter)="actionStrip.show()"
+    (mouseleave)="actionStrip.hide()"
     cdkDrag
     [cdkDragData]="node"
   >
@@ -61,27 +60,29 @@
         {{ treeControl.isExpanded(node) ? 'arrow_drop_down' : 'arrow_right' }}
       </mat-icon>
     </button>
-
-    <button mat-icon-button *ngIf="node.isUsage" displayDensity="compact"
-      (click)="toDimension.emit()">
-      <mat-icon class="text-gray-500" displayDensity="compact" fontSet="material-icons-outlined">share</mat-icon>
-    </button>
     
     <ngm-entity-property [property]="node" [displayBehaviour]="displayBehaviour"></ngm-entity-property>
 
-    <ngm-action-strip #usageStrip [hidden]="true">
-      <!-- <button mat-icon-button displayDensity="cosy" (click)="toDimensionUsage($event, node)">
-        <mat-icon>link</mat-icon>
-      </button> -->
-    </ngm-action-strip>
     <ngm-action-strip #actionStrip [hidden]="true">
-      <button mat-icon-button *ngIf="!readonly" displayDensity="cosy" (click)="addNewItem($event, node)">
-        <mat-icon fontSet="material-icons-round">add_circle_outline</mat-icon>
-      </button>
-      <button mat-icon-button *ngIf="!usage || node.role==='dimension'" displayDensity="cosy" color="warn"
-        (click)="onDelete($event, node)">
-        <mat-icon>delete</mat-icon>
-      </button>
+      @if (node.isUsage) {
+        <button mat-icon-button displayDensity="compact"
+          (click)="toDimension.emit()">
+          <mat-icon displayDensity="compact" fontSet="material-icons-outlined">share</mat-icon>
+        </button>
+      }
+
+      @if (!readonly) {
+        <button mat-icon-button displayDensity="cosy" (click)="addNewItem($event, node)">
+          <mat-icon fontSet="material-icons-round">add_circle_outline</mat-icon>
+        </button>
+      }
+
+      @if (!usage || node.role==='dimension') {
+        <button mat-icon-button displayDensity="cosy" color="warn"
+          (click)="onDelete($event, node)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      }
     </ngm-action-strip>
   </mat-tree-node>
 </mat-tree>

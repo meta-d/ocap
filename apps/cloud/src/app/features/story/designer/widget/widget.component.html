@@ -27,6 +27,8 @@
 
     <pac-image-upload *ngIf="enableBackgroundImage" class="w-2/3"
         [formControl]="backgroundImageObj"
+        [backgroundSize]="backgroundSize.value"
+        [backgroundRepeat]="backgroundRepeat.value"
     ></pac-image-upload>
 
 </div>
@@ -45,8 +47,9 @@
     </div>
 
     <div class="grid grid-cols-3 gap-1 max-h-80 overflow-auto" [@listAnimation]="backgroundImages?.length">
-        <div *ngFor="let bg of backgroundImages" class="pac-image-tile relative h-20 cursor-pointer bg-contain bg-no-repeat bg-center transition-colors hover:bg-slate-200
+        <div *ngFor="let bg of backgroundImages" class="pac-image-tile relative h-20 cursor-pointer bg-contain bg-no-repeat bg-center transition-colors
             m-2 rounded-lg outline outline-2 outline-offset-2 outline-transparent
+            hover:bg-slate-200 dark:hover:bg-slate-800
             group"
             [class.active]="bg.backgroundImageObj.url===backgroundImageUrl"
             [style.background-image]="'url(' + bg.backgroundImageObj.url + ')'"
@@ -76,8 +79,9 @@
     <div class="grid grid-cols-3 gap-1 w-full max-h-80 overflow-auto relative" [@listAnimation]="customImages?.length">
         <mat-spinner *ngIf="loadingCustomImages" class="absolute inset-0 m-auto" diameter="30"></mat-spinner>
 
-        <div *ngFor="let bg of customImages" class="pac-image-tile relative h-20 cursor-pointer bg-contain bg-no-repeat bg-center transition-colors hover:bg-slate-200
+        <div *ngFor="let bg of customImages" class="pac-image-tile relative h-20 cursor-pointer bg-contain bg-no-repeat bg-center transition-colors
             m-2 rounded-lg outline outline-2 outline-offset-2 outline-transparent
+            hover:bg-slate-200 dark:hover:bg-slate-800
             group"
             [class.active]="bg.url===backgroundImageUrl"
             [style.background-image]="'url(' + bg.url + ')'"
@@ -105,7 +109,11 @@
         {
             value: 'contain',
             label: 'Contain'
-        }
+        },
+        {
+            value: '100% 100%',
+            label: '100% 100%'
+        },
     ]"
     >
 </ngm-input>
@@ -144,7 +152,9 @@
 <ngm-input class="w-full" 
     [label]=" 'PAC.Story.BackdropFilter' | translate: {Default: 'Backdrop Filter'} "
     [placeholder]=" 'backdrop-filter' "
-    [formControl]="backdropFilter">
+    [formControl]="backdropFilter"
+    [options]="backdropOptions"
+    >
 </ngm-input>
 
 <pac-color-input class="w-full my-2" [label]=" 'PAC.Story.Border' | translate: {Default: 'Border'} "
@@ -384,7 +394,9 @@
 <ngm-input class="w-full" 
     [label]=" 'PAC.Story.Filter' | translate: {Default: 'Filter'} "
     [placeholder]=" 'filter' "
-    [formControl]="filter">
+    [formControl]="filter"
+    [options]="filterOptions"
+    >
 </ngm-input>
 
 <ngm-slider-input [label]=" 'PAC.Story.Opacity' | translate: {Default: 'Opacity'} " class="w-full"

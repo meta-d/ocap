@@ -1,7 +1,5 @@
-<pac-story-toolbar #toolbar class="ngm-story__toolbar shadow-xl
-    overflow-hidden absolute left-4 top-8 z-10
-    rounded-2xl  text-slate-200  dark:text-slate-500 dark:hover:text-slate-100
-    backdrop-blur-sm hover:backdrop-blur-lg"
+<pac-story-toolbar #toolbar class="ngm-story__toolbar shadow-xl overflow-hidden absolute left-4 top-8 z-10 rounded-2xl 
+    backdrop-blur-sm hover:backdrop-blur-lg dark:shadow-neutral-800"
     cdkDrag
     (cdkDragEnded)="onToolbarDragEnded($event)"
     [(editable)]="editable"
@@ -25,13 +23,13 @@
 </pac-story-toolbar>
 
 <mat-drawer-container class="ngm-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
-    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z "
+    <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z2"
         [mode]="isMobile() ? 'over' : 'side'"
         position="end" 
         [(opened)]="designerOpened"
         ngmResizer [resizerWidth]="400"
     >
-        <ngm-settings-panel class="ngm-story__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
+        <ngm-settings-panel class="ngm-story__settings-container overflow-hidden"
             liveMode
             [(opened)]="designerOpened" 
         >
@@ -43,14 +41,15 @@
         ></div>
     </mat-drawer>
     <mat-drawer-content class="ngm-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice}">
-
-        <div *ngIf="emulatedDevice" class="ngm-story__device-size-bar">
-
-            <div *ngIf="hoverSize" class="layout-size__label text-xs">
+      @if (emulatedDevice) {
+        <div class="ngm-story__device-size-bar">
+          @if (hoverSize) {
+            <div class="layout-size__label text-xs">
                 {{hoverSize.name}} - {{hoverSize.width}}px
             </div>
-
-            <div *ngFor="let size of ResponsiveBreakpoints | reverse" class="layout-size"
+          }
+          @for (size of ResponsiveBreakpoints | reverse; track size) {
+            <div class="layout-size"
                 [ngClass]="{hover: size.width <= hoverSize?.width}"
                 [ngStyle]="{'min-width': size.margin + 'px'}"
                 (mouseenter)="mouseEnter(size)"
@@ -58,8 +57,9 @@
                 (click)="selectSize(size)"
             >
             </div>
-            
-            <div *ngFor="let size of ResponsiveBreakpoints.slice(1)" class="layout-size"
+          }
+          @for (size of ResponsiveBreakpoints.slice(1); track size) {
+            <div class="layout-size"
                 [ngClass]="{hover: size.width <= hoverSize?.width}"
                 [ngStyle]="{'min-width': size.margin + 'px'}"
                 (mouseenter)="mouseEnter(size)"
@@ -67,9 +67,11 @@
                 (click)="selectSize(size)"
             >
             </div>
+          }
         </div>
+      }
 
-        <div #storyContainer class="ngm-story__device flex-1 max-w-full overflow-auto">
+        <div #storyContainer class="ngm-story__device ngm-story-container flex-1 max-w-full overflow-auto">
             <div class="relative w-full h-full origin-top shadow-md mx-auto"
                 [ngStyle]="{
                     'width': emulatedDevice ? (emulatedDevice.width + 'px') : '',
@@ -95,7 +97,7 @@
                 >
                 </ngm-story>
 
-                <div *ngIf="storyService.isEmpty$ | async" class="flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 dark:text-white">
+                <div *ngIf="storyService.isEmpty$ | async" class="ngm-story__quick-start flex flex-col justify-center items-center z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <span class="text-6xl font-notoColorEmoji">🛒</span>
                     <div class="text-lg my-2">
                         {{ 'Story.Designer.LookingEmpty' | translate: {Default: 'This story is looking empty'} }}.
@@ -105,15 +107,14 @@
                     </div>
 
                     <div class="flex flex-wrap justify-center items-center gap-4 mt-4">
-                        <div class="ngm-story-designer__template 
-                            bg-gray-50 active:bg-gray-200 active:shadow-lg dark:hover:bg-bray-800 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story__quick-start-widget"
                             (click)="storyService.createStoryPoint(STORY_POINT_TYPE.Canvas)">
                             <div>
                                 {{ 'Story.Toolbar.New_Canvas_Page' | translate: {Default: "New Canvas Page"} }}
                             </div>
                         </div>
 
-                        <div class="ngm-story-designer__template bg-gray-50 active:bg-gray-200 active:shadow-lg dark:hover:bg-bray-800 dark:bg-neutral-900 hover:bg-gray-100  dark:hover:bg-neutral-800 hover:border-amber-500 focus:border-amber-400"
+                        <div class="ngm-story__quick-start-widget"
                             (click)="toolbarService.openTemplates()">
                             <div>
                                 {{ 'Story.Toolbar.AddTemplate' | translate: {Default: "Add Template"} }}
@@ -136,6 +137,7 @@
 
         </div>
 
+        <ngm-drawer-trigger class="absolute right-2 top-2/3 -translate-y-1/2 z-40" [(opened)]="designerOpened" side="right"></ngm-drawer-trigger>
     </mat-drawer-content>
 </mat-drawer-container>
 

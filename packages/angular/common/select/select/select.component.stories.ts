@@ -1,31 +1,18 @@
-import { importProvidersFrom } from '@angular/core'
-import { provideAnimations } from '@angular/platform-browser/animations'
-import { NgmMissingTranslationHandler, OcapCoreModule } from '@metad/ocap-angular/core'
-import { CustomTranslateLoader } from '@metad/ocap-angular/core/i18n/loader.spec'
-import { MissingTranslationHandler, TranslateLoader, TranslateModule } from '@ngx-translate/core'
-import { Meta, StoryObj, applicationConfig, moduleMetadata } from '@storybook/angular'
-import { NgmSelectComponent } from './select.component'
-import { NgmSelectModule } from '../select.module'
+import { provideHttpClient } from '@angular/common/http'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { provideAnimations } from '@angular/platform-browser/animations'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { provideTranslate } from '@metad/ocap-angular/mock'
+import { Meta, StoryObj, applicationConfig, moduleMetadata } from '@storybook/angular'
+import { NgmSelectModule } from '../select.module'
+import { NgmSelectComponent } from './select.component'
 
 const meta: Meta<NgmSelectComponent> = {
   component: NgmSelectComponent,
   decorators: [
     applicationConfig({
-      providers: [
-        provideAnimations(),
-        importProvidersFrom(
-          TranslateModule.forRoot({
-            missingTranslationHandler: {
-              provide: MissingTranslationHandler,
-              useClass: NgmMissingTranslationHandler
-            },
-            loader: { provide: TranslateLoader, useClass: CustomTranslateLoader },
-            defaultLanguage: 'zh-Hans'
-          })
-        )
-      ]
+      providers: [provideAnimations(), provideHttpClient(), provideTranslate()]
     }),
     moduleMetadata({
       declarations: [],
@@ -86,7 +73,6 @@ export const Suffix = {
     selectOptions: TREE_NODE_DATA
   }
 }
-
 
 export const SuffixSearchable = {
   render: (args) => ({
@@ -179,6 +165,6 @@ export const Density: Story = {
     `
   }),
   args: {
-    selectOptions: TREE_NODE_DATA,
+    selectOptions: TREE_NODE_DATA
   }
 }

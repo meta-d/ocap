@@ -5,47 +5,32 @@
     </h3>:
 
     <span class="flex-1 overflow-hidden text-ellipsis">
-      {{ isAuthenticated$ | async | user }}
+      {{ user$() | user }}
     </span>
   </div>
-  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4" *ngIf="isAuthenticated$ | async as user">
+
+  @if (isAuthenticated$()) {
+  <div class="w-[220px] flex flex-col justify-start items-stretch gap-2 p-4">
     <ngm-select [label]="'PAC.MENU.GENERAL.LANGUAGE' | translate: { Default: 'Language' }"
       [placeholder]="'PAC.MENU.GENERAL.LANGUAGE_PLACEHOLDER' | translate: { Default: 'Select Language' }"
       [displayBehaviour]="DisplayBehaviour.descriptionOnly"
       [selectOptions]="languages"
-      [ngModel]="preferredLanguage$ | async"
+      [ngModel]="language$()"
       (ngModelChange)="onLanguageSelect($event)"
     >
       <mat-icon ngmSuffix>translate</mat-icon>
     </ngm-select>
 
-    <!-- not yet complete
     <ngm-select [label]="'PAC.MENU.GENERAL.THEME' | translate: { Default: 'Theme' }"
       [placeholder]="'PAC.MENU.GENERAL.ThemePlaceholder' | translate: { Default: 'Select Theme' }"
       [displayBehaviour]="DisplayBehaviour.descriptionOnly"
       [valueKey]="'key'"
-      [selectOptions]="[
-        {
-          key: 'light',
-          caption: 'Light',
-          icon: 'light_mode'
-        },
-        {
-          key: 'dark',
-          caption: 'Dark',
-          icon: 'dark_mode'
-        },
-        {
-          key: 'dark-green',
-          caption: 'Dark Green',
-          icon: 'dark_mode'
-        }
-      ]"
-      [ngModel]="preferredTheme$ | async"
+      [selectOptions]="themeOptions$()"
+      [ngModel]="preferredTheme$()"
       (ngModelChange)="onThemeSelect($event)"
     >
-      <mat-icon ngmSuffix>dark_mode</mat-icon>
-    </ngm-select> -->
+      <mat-icon ngmSuffix>{{preferredThemeIcon$()}}</mat-icon>
+    </ngm-select>
 
     <button mat-button (click)="onProfile()">
       <mat-icon>account_circle</mat-icon>
@@ -57,4 +42,5 @@
       <span>{{ 'PAC.MENU.Logout' | translate: {Default: 'Logout'} }}</span>
     </button>
   </div>
+  }
 </div>

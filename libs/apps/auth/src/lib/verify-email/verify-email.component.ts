@@ -1,11 +1,11 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
 import { AuthService } from '@metad/cloud/state'
-import { map, startWith, switchMap, take } from 'rxjs/operators'
+import { map, startWith, switchMap } from 'rxjs/operators'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-auth-varify-email',
   templateUrl: 'varify-email.component.html',
@@ -26,11 +26,13 @@ export class VarifyEmailComponent {
 
   messages = []
   errors = []
+
   private tokenSub = this.route.queryParams
     .pipe(
       startWith(this.route.snapshot.queryParams),
       map((params) => params['token']),
-      switchMap((token) => this.authService.verifyEmail(token))
+      switchMap((token) => this.authService.verifyEmail(token)),
+      takeUntilDestroyed()
     )
     .subscribe({
       next: () => {
@@ -47,13 +49,6 @@ export class VarifyEmailComponent {
     })
 
   getTranslation(key: string, params: any) {
-    let t = ''
-    this.translateService
-      .get(key, params)
-      .pipe(take(1))
-      .subscribe((value) => {
-        t = value
-      })
-    return t
+    return this.translateService.instant(key, params)
   }
 }

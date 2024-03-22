@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ToastrService, UsersService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NxTableModule } from '@metad/components/table'
 import { IUser, RolesEnum } from '@metad/contracts'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { MtxCheckboxGroupModule } from '@ng-matero/extensions/checkbox-group'
@@ -28,12 +27,11 @@ import { PACUsersComponent } from '../users.component'
     MaterialModule,
     // Standard components
     ButtonGroupDirective,
-    NxTableModule,
     MtxCheckboxGroupModule,
     InlineSearchComponent,
     // OCAP Modules
     OcapCoreModule,
-    UserProfileInlineComponent
+    UserProfileInlineComponent,
   ]
 })
 export class ManageUserComponent extends TranslationBaseComponent {

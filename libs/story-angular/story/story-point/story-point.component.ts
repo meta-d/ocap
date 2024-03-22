@@ -19,7 +19,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
 import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { assignDeepOmitBlank, omit, omitBlank } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { ConfirmModule, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreModule, nonNullable, uploadYamlFile } from '@metad/core'
 import {
@@ -70,9 +69,9 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NxStoryWidgetComponent } from "../story-widget/story-widget.component";
 import { NxStoryResponsiveModule } from "../../responsive/responsive.module";
-import { toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
     standalone: true,
     selector: 'ngm-story-point',
@@ -311,7 +310,7 @@ export class NxStoryPointComponent implements OnChanges {
       )
     }),
     tap((options) => (this.gridOptions = options)),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -332,20 +331,22 @@ export class NxStoryPointComponent implements OnChanges {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private stylingSub = this.storyPointService.styling$.subscribe((styling) => {
+  private stylingSub = this.storyPointService.styling$.pipe(takeUntilDestroyed()).subscribe((styling) => {
     const pageStyles = componentStyling(styling)
     Object.keys(pageStyles).forEach((key) => {
       this._renderer.setStyle(this._elementRef.nativeElement, key, pageStyles[key])
     })
   })
 
-  private stylingCanvasSub = this.stylingCanvas$.pipe(filter((value) => isObject(value))).subscribe((styling) => {
+  private stylingCanvasSub = this.stylingCanvas$.pipe(filter((value) => isObject(value)), takeUntilDestroyed()).subscribe((styling) => {
     Object.keys(styling).forEach((key) => {
       this._renderer.setStyle(this._elementRef.nativeElement, key, styling[key])
     })
   })
 
-  private flexLayoutSub = this.responsiveService.flexLayoutChange$.subscribe((value: FlexLayout) => {
+  private flexLayoutSub = this.responsiveService.flexLayoutChange$.pipe(
+    takeUntilDestroyed()
+  ).subscribe((value: FlexLayout) => {
     this.storyPointService.refactFlexLayout(value)
   })
 
@@ -358,18 +359,19 @@ export class NxStoryPointComponent implements OnChanges {
           take(1),
           map(() => filters)
         )
-      )
+      ),
+      takeUntilDestroyed()
     )
     .subscribe((filters) => {
       this.filterBarService.change(filters)
       this.filterBarService.go()
     })
   // Dirty
-  private dirtySub = this.storyPointService.isDirty$.subscribe((dirty) => {
+  private dirtySub = this.storyPointService.isDirty$.pipe(takeUntilDestroyed()).subscribe((dirty) => {
     this.dirty = this.editable && dirty
   })
   // Opened
-  private openedSub = this._opened$.subscribe((open) => {
+  private openedSub = this._opened$.pipe(takeUntilDestroyed()).subscribe((open) => {
     this.storyPointService.active(open)
     if (open) {
       // 打开页面时初始化此页面设置
@@ -377,7 +379,7 @@ export class NxStoryPointComponent implements OnChanges {
     }
   })
   // Responsive
-  private responsiveWidgetSelectedSub = this.responsiveService.selected$.subscribe((key: string) => {
+  private responsiveWidgetSelectedSub = this.responsiveService.selected$.pipe(takeUntilDestroyed()).subscribe((key: string) => {
     this.storyPointService.setCurrentFlexLayoutKey(key)
     if (key) {
       this.openResponsiveDesigner(key)

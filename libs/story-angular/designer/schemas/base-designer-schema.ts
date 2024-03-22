@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject } from '@angular/core'
+import { DestroyRef, Injectable, Injector, inject } from '@angular/core'
 import { ComponentStore } from '@ngrx/component-store'
 import { TranslateService } from '@ngx-translate/core'
 import { Observable, of } from 'rxjs'
@@ -13,8 +13,9 @@ export abstract class BaseDesignerSchemaService<T extends BaseSchemaState = Base
   extends ComponentStore<T>
   implements DesignerSchema
 {
-  protected translate = inject(TranslateService)
-  protected injector = inject(Injector)
+  protected readonly translate = inject(TranslateService)
+  protected readonly injector = inject(Injector)
+  protected readonly destroyRef = inject(DestroyRef)
 
   abstract getSchema()
 

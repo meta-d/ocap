@@ -6,12 +6,11 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { listEnterAnimation } from '@metad/core'
 import { Subject, debounceTime } from 'rxjs'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -58,7 +57,7 @@ export class NgmColorsComponent implements ControlValueAccessor {
   private _onChange: (value) => void
   private _onTouched: (value) => void
 
-  private onBlurSub = this.onBlur$.pipe(debounceTime(300)).subscribe(({ event, autocomplete }) => {
+  private onBlurSub = this.onBlur$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe(({ event, autocomplete }) => {
     const value = (<HTMLInputElement>event.target).value
     if (value !== this.value?.toString()) {
       if (typeof value === 'string') {

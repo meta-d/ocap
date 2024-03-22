@@ -1,11 +1,7 @@
-import { IIndicator } from '@metad/contracts'
+import { IIndicator, TimeGranularity } from '@metad/contracts'
 import { DataSettings, Indicator } from '@metad/ocap-core'
 
-export enum TagEnum {
-  UNIT,
-  MOM,
-  YOY
-}
+export { IndicatorTagEnum } from '@metad/contracts'
 
 export enum Trend {
   None,
@@ -34,7 +30,6 @@ export interface IndicatorState extends Partial<Indicator>, Omit<IIndicator, 'ty
   trends: Array<unknown>
   trend: Trend
   favour: boolean
-  favoriteId: string
   error?: string
 }
 
@@ -47,13 +42,19 @@ export enum StatisticalType {
   Mom = 'Mom'
 }
 
-export enum StatisticalTypeText {
-  CurrentPeriodText = '当期',
-  AccumulativeText = '累计',
-  YoyText = '同比',
-  MomText = '环比',
+export const ItemMaxLookback = 30
+export const LookbackDefault = {
+  [TimeGranularity.Year]: 5,
+  [TimeGranularity.Quarter]: 8,
+  [TimeGranularity.Month]: 24,
+  [TimeGranularity.Week]: 24,
+  [TimeGranularity.Day]: 30
+}
 
-  CurrentYoyText = '当期同比',
-  CurrentMomText = '当期环比',
-  AccumulativeYoyText = '累计同比'
+export const LookbackLimit = {
+  [TimeGranularity.Year]: 10,
+  [TimeGranularity.Quarter]: 40,
+  [TimeGranularity.Month]: 120,
+  [TimeGranularity.Week]: 240,
+  [TimeGranularity.Day]: 365
 }

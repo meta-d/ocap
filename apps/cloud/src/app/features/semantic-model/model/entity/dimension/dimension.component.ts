@@ -1,8 +1,20 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { FlatTreeControl } from '@angular/cdk/tree'
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
-import { AggregationRole, DimensionUsage, DisplayBehaviour, EntityProperty, isVisible, PropertyDimension } from '@metad/ocap-core'
+import { NxActionStripModule } from '@metad/components/action-strip'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import {
+  AggregationRole,
+  DimensionUsage,
+  DisplayBehaviour,
+  EntityProperty,
+  PropertyDimension,
+  isVisible
+} from '@metad/ocap-core'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { assign, isNil, omit } from 'lodash-es'
 import { ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
@@ -31,15 +43,19 @@ export class PropertyItemFlatNode {
 }
 
 @Component({
+  standalone: true,
   selector: 'pac-property-dimension',
   templateUrl: 'dimension.component.html',
   host: {
     class: 'pac-property-dimension'
-  }
+  },
+  imports: [CommonModule, FormsModule, MaterialModule, NgmEntityPropertyComponent, NxActionStripModule]
 })
-export class PropertyDimensionComponent implements OnInit, OnChanges {
+export class PropertyDimensionComponent implements OnChanges {
   AGGREGATION_ROLE = AggregationRole
   isVisible = isVisible
+
+  public cubeState = inject(ModelEntityService)
 
   @Input() dimension: PropertyDimension
   @Input() usage: DimensionUsage
@@ -51,7 +67,7 @@ export class PropertyDimensionComponent implements OnInit, OnChanges {
   @Output() newItem = new EventEmitter()
   @Output() delete = new EventEmitter()
 
-  dataSource: MatTreeFlatDataSource<PropertyItemNode, PropertyItemFlatNode, string>
+  
   /** The selection for checklist */
   flatNodeMap = new Map<PropertyItemFlatNode, PropertyItemNode>()
   nestedNodeMap = new Map<PropertyItemNode, PropertyItemFlatNode>()
@@ -81,13 +97,12 @@ export class PropertyDimensionComponent implements OnInit, OnChanges {
   treeControl = new FlatTreeControl<PropertyItemFlatNode, string>(this.getLevel, this.isExpandable, {
     trackBy: (dataNode: PropertyItemFlatNode) => dataNode.id
   })
+  dataSource: MatTreeFlatDataSource<PropertyItemNode, PropertyItemFlatNode, string>
+    = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
 
-  constructor(public cubeState: ModelEntityService) {
-    this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
+  constructor() {
     this.dataSource.data = []
   }
-
-  ngOnInit() {}
 
   ngOnChanges({ dimension }: SimpleChanges) {
     if (dimension?.currentValue) {
@@ -130,10 +145,10 @@ export class PropertyDimensionComponent implements OnInit, OnChanges {
   isSelected(node) {
     if (this.usage) {
       if (node.role === AggregationRole.dimension) {
-        return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage+'#'+this.usage.__id__)
+        return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage + '#' + this.usage.__id__)
       }
     } else {
-      return this.checklistSelection?.isSelected(node.role+'#'+node.id)
+      return this.checklistSelection?.isSelected(node.role + '#' + node.id)
     }
     return false
   }
@@ -146,10 +161,6 @@ export class PropertyDimensionComponent implements OnInit, OnChanges {
     } else {
       this.checklistSelection.toggle(`${node.role}#${node.__id__}`)
     }
-  }
-
-  drop(event) {
-    console.warn(event)
   }
 
   addNewItem(event, node: PropertyItemFlatNode) {
@@ -168,5 +179,4 @@ export class PropertyDimensionComponent implements OnInit, OnChanges {
       this.delete.emit(node.id)
     }
   }
-
 }

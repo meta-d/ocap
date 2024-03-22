@@ -28,7 +28,6 @@ import {
   Syntax,
   TimeGranularity,
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { NxAdvancedFilterComponent } from '@metad/components/advanced-filter'
 import {
   AbstractStoryWidget,
@@ -49,6 +48,7 @@ import {
   tap,
 } from 'rxjs/operators'
 import { CascadingEffect, FilterBarFieldOptions, ISmartFilterBarOptions } from './types'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 export interface NxFilterControl {
   required?: boolean
@@ -68,7 +68,7 @@ export interface NxFilterControl {
   appearance: NgmAppearance
 }
 
-@UntilDestroy({checkProperties: true})
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-widget-filter-bar',
@@ -143,7 +143,7 @@ export class NxSmartFilterBarComponent
         })
     }),
     distinctUntilChanged(isEqual),
-    untilDestroyed(this),
+    takeUntilDestroyed(this.destroyRef),
     shareReplay(1)
   )
 
@@ -272,7 +272,8 @@ export class NxSmartFilterBarComponent
       .pipe(
         map(([values, combinationSlicer]: [{ [key: string]: ISlicer }, IAdvancedFilter]) => {
           return compact([...Object.values(values).filter((slicer) => !isEmpty(slicer?.members)).map(cloneDeep), combinationSlicer])
-        })
+        }),
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((filters) => {
         this.smartFilterBarService?.change(filters)

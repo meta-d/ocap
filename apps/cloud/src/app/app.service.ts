@@ -1,10 +1,14 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { Injectable } from '@angular/core'
+import { computed, inject, Injectable } from '@angular/core'
 import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
 import { combineLatest } from 'rxjs'
-import { map, shareReplay } from 'rxjs/operators'
+import { map, shareReplay, startWith } from 'rxjs/operators'
 import { MenuCatalog, Store } from './@core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { prefersColorScheme, ThemesEnum } from '@metad/core'
+import { screenfull } from './@core/theme/'
+import { TranslateService } from '@ngx-translate/core'
 
 export interface PACAppState {
   insight: boolean
@@ -22,7 +26,19 @@ export interface PACAppState {
   providedIn: 'root'
 })
 export class AppService extends ComponentStore<PACAppState> {
+  readonly translate = inject(TranslateService)
+
+  readonly tenantSettings = toSignal(this.store.tenantSettings$)
+  readonly lang = toSignal(this.translate.onLangChange.pipe(map((event) => event.lang), startWith(this.translate.currentLang)))
+  readonly title = computed(() => {
+    const lang = this.lang()
+    return this.tenantSettings() && (this.tenantSettings()['tenant_title_' + lang] || this.tenantSettings()['tenant_title'])
+  })
+  /**
+   * @deprecated use signal {@link isAuthenticated} instead
+   */
   public isAuthenticated$ = this.store.user$.pipe(map((user) => !!user))
+  public isAuthenticated = toSignal(this.store.user$.pipe(map((user) => !!user)))
   public readonly fullscreenIndex$ = this.select((state) => state.zIndexs[state.zIndexs.length - 1])
   public insight$ = this.select((state) => state.insight)
   public catalog$ = this.select((state) => state.navigation?.catalog)
@@ -36,16 +52,42 @@ export class AppService extends ComponentStore<PACAppState> {
     })
   ).pipe(map((breakpoints) => breakpoints.filter((item) => item[1]).map((item) => item[0])))
 
+  /**
+   * @deprecated use signal {@link isMobile} instead
+   */
   public readonly isMobile$ = this.mediaMatcher$.pipe(
     map((values) => some(['XSmall', 'Small', 'HandsetPortrait'], (el) => includes(values, el))),
     shareReplay(1)
   )
+  readonly isMobile = toSignal(this.mediaMatcher$.pipe(
+    map((values) => some(['XSmall', 'Small', 'HandsetPortrait'], (el) => includes(values, el))),
+  ))
 
   public readonly isDark$ = this.select((state) => state.dark)
 
   public readonly copilotEnabled$ = this.store.featureOrganizations$.pipe(
     map(() => this.store.hasFeatureEnabled('FEATURE_COPILOT' as any)),
   )
+
+  
+  readonly preferredTheme$ = toSignal(this.store.preferredTheme$)
+  readonly systemColorScheme$ = toSignal(prefersColorScheme())
+
+  readonly theme$ = computed(() => {
+    let preferredTheme = this.preferredTheme$()
+    const systemColorScheme = this.systemColorScheme$()
+    if (preferredTheme === ThemesEnum.system || !preferredTheme) {
+      preferredTheme = systemColorScheme
+    }
+
+    const [primary, color] = preferredTheme.split('-')
+
+    return {
+      preferredTheme,
+      primary,
+      color,
+    }
+  })
   
   constructor(
     private store: Store,
@@ -86,12 +128,20 @@ export class AppService extends ComponentStore<PACAppState> {
       state.zIndexs.pop()
     }
     state.zIndexs.push(zIndex)
+
+    if (screenfull.isEnabled) {
+      screenfull.request();
+    }
   })
 
   public exitFullscreen = this.updater((state, zIndex: number) => {
     const index = state.zIndexs.findIndex((item) => item >= zIndex)
     if (index > -1) {
       state.zIndexs.splice(index)
+    }
+
+    if (screenfull.isEnabled) {
+      screenfull.exit()
     }
   })
 }

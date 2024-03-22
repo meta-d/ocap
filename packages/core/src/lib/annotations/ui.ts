@@ -251,7 +251,7 @@ export interface DataPointType {
   Value: Measure
 
   // Target value
-  TargetValue?: PrimitiveType
+  TargetValue?: Measure | PrimitiveType
   // Forecast value
   ForecastValue?: PrimitiveType
   // Minimum value (for output rendering)

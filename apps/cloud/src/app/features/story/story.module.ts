@@ -1,22 +1,20 @@
 import { NgModule } from '@angular/core'
 import { RouterModule } from '@angular/router'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxTableModule } from '@metad/components/table'
-import { NgmFormlyModule } from '@metad/formly'
-import { NgmCommonModule, TreeTableModule } from '@metad/ocap-angular/common'
-import { NgmStoryModule, NxStorySettingsModule, registerStoryCommands } from '@metad/story'
+import { NgmFormlyModule, provideFormly } from '@metad/formly'
+import { NgmCommonModule, NgmTableComponent, TreeTableModule } from '@metad/ocap-angular/common'
+import { NgmStoryModule, provideStorySettings } from '@metad/story'
 import { NgmFormlyChartPropertModule } from '@metad/story/widgets/analytical-card'
 import { TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular'
 import { NgxEchartsModule } from 'ngx-echarts'
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { LoggerModule } from 'ngx-logger'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { StoryResolver } from '../../@core/services'
 import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { PACFormlyImageUploadComponent, PACFormlyWidgetDesignerComponent } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
-
-registerStoryCommands()
+import { provideLogger } from '../../@core'
 
 @NgModule({
   declarations: [],
@@ -27,31 +25,15 @@ registerStoryCommands()
       echarts: () => import('echarts')
     }),
     MonacoEditorModule.forRoot(),
-    NxStorySettingsModule.forRoot(),
-    LoggerModule.forRoot({
-      level: NgxLoggerLevel.DEBUG,
-      serverLogLevel: NgxLoggerLevel.ERROR
-    }),
+    LoggerModule,
 
     // Formly
-    NgmFormlyModule.forRoot({
-      types: [
-        {
-          name: 'styling',
-          component: PACFormlyWidgetDesignerComponent
-        },
-        {
-          name: 'image-upload',
-          component: PACFormlyImageUploadComponent
-        }
-      ]
-    }),
+    NgmFormlyModule,
     NgmFormlyChartPropertModule,
 
     NgmCommonModule,
     NgmDialogComponent,
-    NxTableModule,
-
+    NgmTableComponent,
     TreeTableModule,
     NgmStoryModule
   ],
@@ -63,7 +45,21 @@ registerStoryCommands()
       useValue: '../assets/tinymce/tinymce.min.js'
     },
     ...STORY_WIDGET_COMPONENTS,
-    ...STORY_DESIGNER_COMPONENTS
+    ...STORY_DESIGNER_COMPONENTS,
+    provideStorySettings(),
+    provideFormly({
+      types: [
+        {
+          name: 'styling',
+          component: PACFormlyWidgetDesignerComponent
+        },
+        {
+          name: 'image-upload',
+          component: PACFormlyImageUploadComponent
+        }
+      ]
+    }),
+    provideLogger()
   ]
 })
 export class PACStoryModule {}

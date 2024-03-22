@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common'
 import { Component, Input, forwardRef, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
+import { ChartType, cloneDeep } from '@metad/ocap-core'
+import { AccordionWrappers } from '@metad/story/designer'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { chartSettingsFieldGroup, getChartOptionsSchema } from '../analytical-card.schema'
-import { ChartType, cloneDeep, isEqual } from '@metad/ocap-core'
-import { AccordionWrappers } from '@metad/story/designer'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { distinctUntilChanged, map } from 'rxjs/operators'
-import { BehaviorSubject, combineLatest } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { chartSettingsFieldGroup } from '../analytical-card.schema'
 
 @Component({
   standalone: true,
@@ -38,27 +38,26 @@ export class NgmChartSettingsComponent implements ControlValueAccessor {
     this.chartType$.next(value)
   }
   private chartType$ = new BehaviorSubject<ChartType>(null)
-  
+
   formGroup = new FormGroup({})
 
-  fields = toSignal(combineLatest([
-    this.chartType$.pipe(distinctUntilChanged(isEqual)),
-    this.translateService.stream('Story')
-  ]).pipe(
-    map(([chartType, i18nStory]) => {
-      return [
-        ...AccordionWrappers([
-          {
-            key: 'chartSettings',
-            label: i18nStory?.Widgets?.CHART?.ChartSettings ?? 'Chart Settings',
-            toggleable: false,
-            fieldGroup: chartSettingsFieldGroup(i18nStory?.Widgets)
-          }
-        ]),
-    
-        getChartOptionsSchema(chartType, i18nStory?.STYLING?.ECHARTS)
-      ]
-    }))
+  fields = toSignal(
+    this.translateService.stream('Story').pipe(
+      map((i18nStory) => {
+        return [
+          ...AccordionWrappers([
+            {
+              key: 'chartSettings',
+              label: i18nStory?.Widgets?.CHART?.ChartSettings ?? 'Chart Settings',
+              toggleable: false,
+              fieldGroup: chartSettingsFieldGroup(i18nStory?.Widgets)
+            }
+          ])
+
+          // getChartOptionsSchema(chartType, i18nStory?.STYLING?.ECHARTS)
+        ]
+      })
+    )
   )
 
   model = {}

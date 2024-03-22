@@ -24,7 +24,7 @@ import {
   UUID
 } from '@metad/ocap-core'
 import { NxWatermarkOptions } from '@metad/components/trial-watermark'
-import { IStoryWidget } from '@metad/core'
+import { DefaultDataSettings, IStoryWidget, ThemesEnum } from '@metad/core'
 import { GridsterConfig, GridsterItem } from 'angular-gridster2'
 import ShortUniqueId from 'short-unique-id'
 
@@ -113,7 +113,7 @@ export interface StoryPreferences {
      */
     styling?: cssStyle
 
-    themeName?: 'system' | 'light' | 'dark' | 'thin' | string
+    themeName?: ThemesEnum
     // Golbal options for all widgets in this story
     colors?: string[]
   }
@@ -163,6 +163,7 @@ export interface StoryOptions {
   locale?: string
 
   /**
+   * @deprecated use preferences.story.themeName
    * 主题
    */
   themeName?: 'system' | 'light' | 'dark' | 'thin' | string
@@ -656,10 +657,7 @@ export interface StoryState {
   /**
    * Default data source and cube configuration used by default.
    */
-  defaultDataSettings?: {
-    dataSource: string;
-    entities: string[];
-  }
+  defaultDataSettings?: DefaultDataSettings
 }
 
 /**

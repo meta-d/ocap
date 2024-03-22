@@ -1,3 +1,8 @@
 :host {
   @apply flex flex-col items-stretch justify-start;
 }
+
+.mat-mdc-form-field-error {
+  display: block;
+  color: var(--mat-form-field-error-text-color);
+}

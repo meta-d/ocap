@@ -1,19 +1,24 @@
 import { Platform } from '@angular/cdk/platform'
 import { DOCUMENT } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Inject, OnInit, Renderer2 } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, Renderer2, effect } from '@angular/core'
 import { DateFnsAdapter, MAT_DATE_FNS_FORMATS } from '@angular/material-date-fns-adapter'
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core'
 import { MatIconRegistry } from '@angular/material/icon'
 import { DomSanitizer, Title } from '@angular/platform-browser'
-import { ThemesEnum } from '@metad/cloud/state'
 import { nonBlank, nonNullable } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { combineLatest } from 'rxjs'
-import { filter, map } from 'rxjs/operators'
-import { ICONS, LanguagesService, PACThemeService, Store, UpdateService, mapDateLocale } from './@core'
+import { filter, startWith } from 'rxjs/operators'
+import {
+  ICONS,
+  LanguagesService,
+  PACThemeService,
+  Store,
+  UpdateService,
+  mapDateLocale,
+  navigatorLanguage
+} from './@core'
 import { AppService } from './app.service'
-
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,7 +33,9 @@ import { AppService } from './app.service'
     { provide: MAT_DATE_FORMATS, useValue: MAT_DATE_FNS_FORMATS }
   ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+  readonly isMobile$ = this.appService.isMobile
+
   constructor(
     private store: Store,
     public readonly appService: AppService,
@@ -48,29 +55,28 @@ export class AppComponent implements OnInit {
   ) {
     translate.setDefaultLang('en')
     // the lang to use, if the lang isn't available, it will use the current loader to get them
-    translate.use(this.store.preferredLanguage || navigator.language || 'en')
+    translate.use(this.store.preferredLanguage || navigatorLanguage())
     this.document.documentElement.lang = translate.currentLang
 
-    this.store.preferredLanguage$.pipe(filter(nonNullable)).subscribe((language) => {
+    this.store.preferredLanguage$.pipe(filter(nonNullable), startWith(translate.currentLang)).subscribe((language) => {
       this.translate.use(language)
       this.document.documentElement.lang = language
       this._adapter.setLocale(mapDateLocale(language))
     })
 
-    this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))
+    // this.translate.stream('PAC.Title').subscribe((title) => this.title.setTitle(title))
 
     ICONS.forEach((icon) => {
       this.matIconRegistry.addSvgIcon(icon.name, this.domSanitizer.bypassSecurityTrustResourceUrl(icon.resourceUrl))
     })
-  }
 
-  ngOnInit() {
-    combineLatest([this.appService.isMobile$, this.store.preferredTheme$])
-    .subscribe(([isMobile, preferredTheme]) => {
-      const [primaryTheme, primaryColor] = (preferredTheme ?? '').split('-')
-      preferredTheme = preferredTheme ?? ThemesEnum.default
-      const theme = `ngm-theme-${preferredTheme} ${primaryTheme} ${preferredTheme}`
-      // for body
+    effect(() => {
+      const isMobile = this.isMobile$()
+      const { preferredTheme, primary } = this.appService.theme$()
+
+      const theme = `ngm-theme-${preferredTheme} ${primary} ${preferredTheme}`
+
+      // for body's class
       const body = this.document.getElementsByTagName('body')[0]
       const bodyThemeRemove = Array.from(body.classList).filter(
         (item: string) => item.includes('-theme') || item.startsWith('light') || item.startsWith('dark')
@@ -78,14 +84,31 @@ export class AppComponent implements OnInit {
       if (bodyThemeRemove.length) {
         body.classList.remove(...bodyThemeRemove)
       }
-      theme.split(' ').filter(nonBlank).forEach((value) => {
-        this.renderer.addClass(body, value)
-      })
+      theme
+        .split(' ')
+        .filter(nonBlank)
+        .forEach((value) => {
+          this.renderer.addClass(body, value)
+        })
 
+      // for mobile
       if (isMobile && (this.platform.IOS || this.platform.ANDROID)) {
         this.renderer.addClass(body, 'mobile')
       } else {
         body.classList.remove('mobile')
+      }
+
+      // for <meta name="theme-color" content="white" />
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', primary === 'dark' ? 'black' : '#f5f5f5')
+      }
+    })
+
+    effect(() => {
+      const title = this.appService.title()
+      if (title) {
+        this.title.setTitle(title)
       }
     })
   }

@@ -3,7 +3,7 @@ import { Component } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
-import { IOrganization, OrganizationsService, ToastrService } from '../../../@core'
+import { IOrganization, OrganizationsService, ToastrService, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent } from '../../../@shared'
 import { OrganizationMutationComponent } from './organization-mutation/organization-mutation.component'
 
@@ -11,14 +11,17 @@ import { OrganizationMutationComponent } from './organization-mutation/organizat
 @Component({
   selector: 'pac-organizations',
   templateUrl: './organizations.component.html',
-  styleUrls: ['./organizations.component.scss']
+  styleUrls: ['./organizations.component.scss'],
+  animations: [
+    routeAnimations
+  ]
 })
 export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganization> {
-  private refresh$ = new BehaviorSubject<void>(null)
-  public readonly organizations$ = this.refresh$.pipe(
-    switchMap(() => this.organizationsService.getAll().pipe(map(({ items }) => items))),
-    shareReplay(1)
-  )
+  readonly refresh$ = new BehaviorSubject<void>(null)
+  // public readonly organizations$ = this.refresh$.pipe(
+  //   switchMap(() => this.organizationsService.getAll().pipe(map(({ items }) => items))),
+  //   shareReplay(1)
+  // )
 
   public readonly selection = new SelectionModel<string>()
 
@@ -47,7 +50,7 @@ export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganizat
     if (org) {
       try {
         await firstValueFrom(this.organizationsService.create(org))
-        this._toastrService.success('NOTES.ORGANIZATIONS.ADD_NEW_ORGANIZATION', { Default: 'Add New Organization' })
+        this._toastrService.success('PAC.NOTES.ORGANIZATIONS.AddNewOrganization', { Default: 'Add New Organization' })
         this.refresh$.next()
       } catch (err) {
         this._toastrService.error(err)
@@ -55,36 +58,36 @@ export class OrganizationsComponent extends ManageEntityBaseComponent<IOrganizat
     }
   }
 
-  async deleteOrganization(id: string) {
-    const organizations = await firstValueFrom(this.organizations$)
-    const organization = organizations.find((item) => item.id === id)
-    const information = await firstValueFrom(
-      this.getTranslation('PAC.NOTES.ORGANIZATIONS.DELETE_CONFIRM', {
-        Default: 'Confirm to delete the org from server?'
-      })
-    )
-    const confirm = await firstValueFrom(
-      this._dialog
-        .open(ConfirmDeleteComponent, {
-          data: {
-            value: organization?.name,
-            information
-          }
-        })
-        .afterClosed()
-    )
+  // async deleteOrganization(id: string) {
+  //   const organizations = await firstValueFrom(this.organizations$)
+  //   const organization = organizations.find((item) => item.id === id)
+  //   const information = await firstValueFrom(
+  //     this.getTranslation('PAC.NOTES.ORGANIZATIONS.DELETE_CONFIRM', {
+  //       Default: 'Confirm to delete the org from server?'
+  //     })
+  //   )
+  //   const confirm = await firstValueFrom(
+  //     this._dialog
+  //       .open(ConfirmDeleteComponent, {
+  //         data: {
+  //           value: organization?.name,
+  //           information
+  //         }
+  //       })
+  //       .afterClosed()
+  //   )
 
-    if (confirm) {
-      try {
-        await firstValueFrom(this.organizationsService.delete(organization.id))
-        this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DELETE_ORGANIZATION', {
-          Default: `Organization '{{ name }}' was removed`,
-          name: organization.name
-        })
-        this.refresh$.next()
-      } catch (err) {
-        this._toastrService.error(err)
-      }
-    }
-  }
+  //   if (confirm) {
+  //     try {
+  //       await firstValueFrom(this.organizationsService.delete(organization.id))
+  //       this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DELETE_ORGANIZATION', {
+  //         Default: `Organization '{{ name }}' was removed`,
+  //         name: organization.name
+  //       })
+  //       this.refresh$.next()
+  //     } catch (err) {
+  //       this._toastrService.error(err)
+  //     }
+  //   }
+  // }
 }

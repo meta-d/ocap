@@ -1,29 +1,5 @@
 <h2 class="text-xl">{{ 'PAC.MODEL.ModelOverview' | translate: {Default: 'Semantic Model Overview'} }}</h2>
 
-<div class="grid grid-cols-3 gap-4">
-    <div *ngFor="let item of analysis" class="group shadow-md rounded-md box-border border-2 border-transparent overflow-hidden	bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">
-        <div class="p-2 flex h-full flex-col justify-between bg-white">
-            <h1 class="text-lg">
-                {{ item.Statement }}
-            </h1>
-            <div class="h-0 overflow-hidden group-hover:h-24 transition-all duration-300 flex flex-col">
-                <p class="leading-relaxed m-0 text-slate-800 overflow-auto">
-                    {{ item.SQL }}
-                </p>
-                <div class="flex justify-end">
-                    <div ngmButtonGroup>
-                        <button mat-raised-button color="primary" displayDensity="cosy" (click)="applyAnalysis(item)">
-                          <mat-icon fontSet="material-icons-outlined">add</mat-icon>
-                          {{ 'PAC.KEY_WORDS.Apply' | translate: { Default: 'Apply' } }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
 <ng-container *ngIf="dimensions$ | async as dimensions">
 <h3 class="mb-2 mt-4">{{ 'PAC.MODEL.SharedDimensions' | translate: {Default: 'Shared Dimensions'} }}</h3>
 <ngm-table class="rounded-lg border overflow-hidden" paging [pageSizeOptions]="[10, 20]"

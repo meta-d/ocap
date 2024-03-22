@@ -1,25 +1,24 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { BehaviorSubject, map } from 'rxjs'
+import { CommonModule } from '@angular/common'
+import { Component, EventEmitter, Input, Output, computed, input } from '@angular/core'
+import { PacMenuGroupComponent } from '../menu-group/menu-group.component'
 import { PacMenuItem } from '../types'
 
 @Component({
+  standalone: true,
   selector: 'pac-menu',
   templateUrl: 'menu.component.html',
-  styleUrls: ['menu.component.scss']
+  styleUrls: ['menu.component.scss'],
+  imports: [CommonModule, PacMenuGroupComponent]
 })
 export class PacMenuComponent {
   @Input() isCollapsed = false
-  @Input() get menu(): PacMenuItem[] {
-    return this._menu$.value
-  }
-  set menu(value) {
-    this._menu$.next(value)
-  }
-  private _menu$ = new BehaviorSubject<PacMenuItem[]>([])
+
+  readonly menus = input.required<PacMenuItem[]>()
 
   @Output() clicked = new EventEmitter()
 
-  menus$ = this._menu$.pipe(map((menus) => menus.filter((menu) => !menu.hidden)))
-  general$ = this.menus$.pipe(map((menus) => menus.filter((menu) => !menu.admin)))
-  admin$ = this.menus$.pipe(map((menus) => menus.filter((menu) => menu.admin)))
+  readonly #menus = computed(() => this.menus().filter((menu) => !menu.hidden))
+  readonly general = computed(() => this.#menus().filter((menu) => !menu.admin))
+  readonly admin = computed(() => this.#menus().filter((menu) => menu.admin))
+
 }

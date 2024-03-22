@@ -16,7 +16,6 @@ import { NgmFormlyToggleComponent } from './toggle.type';
         {
           name: 'toggle',
           component: NgmFormlyToggleComponent,
-          // wrappers: ['form-field'],
         },
       ],
     }),

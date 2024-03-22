@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use 'sass:color';
 @use '@angular/material' as mat;
 @use 'libs/component-angular/styles/material/all-components' as components;
 @use 'libs/formly/formly-theme' as formly;
@@ -6,7 +8,7 @@
 @use 'libs/story-angular/src/lib/story-theme' as story-designer;
 @use 'libs/story-angular/widgets/widgets-theme' as widgets;
 @use 'libs/apps/auth/src/lib/auth-theme' as auth;
-// @use '@metad/ocap-angular/theming' as theming;
+
 @use 'packages/angular/theming' as ocap;
 
 
@@ -15,7 +17,6 @@ $primary: mat.define-palette(mat.$blue-grey-palette, 600);
 $accent:  mat.define-palette(mat.$amber-palette, A700, A400, A200);
 
 $material-typeface: Lato, 'Noto Serif SC', monospace;
-// mat.$light-theme-background-palette: map-merge(mat.$light-theme-background-palette, (surface: rgba(255, 255, 255, 0.875)));
 
 $mat-theme: mat.define-light-theme(
   (
@@ -53,19 +54,31 @@ $custom-typography: mat.define-typography-config(
 @include ocap.common-density($mat-theme);
 @include auth.theme($mat-theme);
 
-// For story dashboar theme ?
-// .ngm-story__device.ngm-theme-light {
-//   @include mat.all-component-colors($mat-theme);
-//   @include components.all-component-colors($mat-theme);
-//   @include formly.color($mat-theme);
-//   @include responsive.color($mat-theme);
-//   @include story.color($mat-theme);
-//   @include story-designer.color($mat-theme);
-//   @include widgets.color($mat-theme);
-//   @include ocap.core-color($mat-theme);
-//   @include ocap.analytical-grid-color($mat-theme);
-//   @include ocap.breadcrumb-color($mat-theme);
-//   @include ocap.controls-color($mat-theme);
-//   @include ocap.entity-color($mat-theme);
-//   @include ocap.common-color($mat-theme);
-// }
+$config: mat.get-color-config($mat-theme);
+$foreground: map.get($config, foreground);
+
+// Set color for the Story component separately to override global styles
+.ngm-theme-light, .ngm-story-container.ngm-theme-light.light {
+  --ngm-color-primary: #{mat.get-color-from-palette($primary)};
+  --ngm-color-on-primary-container: #{darken(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container: #{lighten(mat.get-color-from-palette($primary), 30%)};
+  --ngm-color-primary-container-variant: #{color.change(mat.get-color-from-palette($primary), $alpha: 0.1)};
+  --ngm-color-secondary: #{mat.get-color-from-palette($accent)};
+  --ngm-color-secondary-container: #{lighten(mat.get-color-from-palette($accent), 30%)};
+  --ngm-color-outline: #{map.get($foreground, divider)};
+
+  @include mat.all-component-colors($mat-theme);
+  @include components.all-component-colors($mat-theme);
+  @include formly.color($mat-theme);
+  @include responsive.color($mat-theme);
+  @include story.color($mat-theme);
+  @include story-designer.color($mat-theme);
+  @include widgets.color($mat-theme);
+  @include ocap.core-color($mat-theme);
+  @include ocap.analytical-grid-color($mat-theme);
+  @include ocap.breadcrumb-color($mat-theme);
+  @include ocap.controls-color($mat-theme);
+  @include ocap.entity-color($mat-theme);
+  @include ocap.common-color($mat-theme);
+  @include auth.color($mat-theme);
+}

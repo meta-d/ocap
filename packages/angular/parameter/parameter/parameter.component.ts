@@ -18,7 +18,7 @@ import { MatListModule } from '@angular/material/list'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatSliderDragEvent, MatSliderModule } from '@angular/material/slider'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { NgmAppearance, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -66,7 +66,7 @@ export interface ParameterOptions {
 
     OcapCoreModule,
     NgmCommonModule,
-    ControlsModule
+    NgmControlsModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-parameter',

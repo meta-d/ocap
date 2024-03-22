@@ -9,6 +9,9 @@ import {
 } from '@angular/core'
 import { DomSanitizer } from '@angular/platform-browser'
 
+/**
+ * @deprecated use `NgmHighlightDirective`
+ */
 @Directive({
   standalone: true,
   selector: '[highlight]'

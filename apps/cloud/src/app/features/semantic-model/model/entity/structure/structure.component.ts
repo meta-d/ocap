@@ -10,7 +10,7 @@ import {
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { NxCoreService, nonBlank } from '@metad/core'
-import { SplitterType } from '@metad/ocap-angular/common'
+import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
 import { effectAction } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
@@ -29,18 +29,33 @@ import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { isEmpty, values } from 'lodash-es'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
-import { TranslationBaseComponent } from '../../../../../@shared'
+import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { newDimensionFromColumn } from '../types'
+import { CommonModule } from '@angular/common'
+import { NxEditorModule } from '@metad/components/editor'
+import { FormsModule } from '@angular/forms'
+import { TranslateModule } from '@ngx-translate/core'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 
 
 @Component({
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-structure',
   templateUrl: './structure.component.html',
-  styleUrls: ['./structure.component.scss']
+  styleUrls: ['./structure.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    MaterialModule,
+    NxEditorModule,
+    NgmCommonModule,
+    NgmEntityPropertyComponent
+  ]
 })
 export class ModelEntityStructureComponent extends TranslationBaseComponent implements OnInit {
   @HostBinding('class.pac-model-cube-structure') _isModelCubeStructure = true

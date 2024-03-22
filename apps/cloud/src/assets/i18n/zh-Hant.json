@@ -157,7 +157,16 @@
       "SemanticModels": "語義模型",
       "Stories": "故事",
       "Indicators": "指標",
-      "IndicatorMarket": "指標市場"
+      "IndicatorMarket": "指標市場",
+      "RemeberMe": "記住我",
+      "Tune": "設置",
+      "Notification": "通知",
+      "ClearAll": "清空",
+      "RestoreLayout": "重置布局",
+      "Undo": "撤銷",
+      "Commit": "提交",
+      "Edit": "編輯",
+      "Unit": "單位"
     },
     "MENU": {
       "Certification": "認證",
@@ -180,6 +189,7 @@
       "Feature": "功能",
       "Email Template": "郵件模板",
       "Custom SMTP": "自定義 SMTP",
+      "Preview": "預覽",
       "AGENT": "代理",
       "LOCAL_AGENT": "本地代理",
       "WASM_DB": "WASM 數據庫",
@@ -328,7 +338,9 @@
         "DONE": "完成",
         "AuthType": "授權方式",
         "AuthType_None": "無",
-        "AuthType_Basic": "基本身份驗證"
+        "AuthType_Basic": "基本身份驗證",
+        "AuthType_None_Description": "系統統一授權，不需要用戶提供賬號",
+        "AuthType_Basic_Description": "用戶需提供賬號進行授權"
       },
       "Roles": {
         "General": "通用",
@@ -390,7 +402,8 @@
       "Search": "搜索",
       "Copy": "復製",
       "NewTag": "新建標簽",
-      "Duplicate": "復製"
+      "Duplicate": "復製",
+      "OpenAttributesPanel": "打開屬性面板"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "組織更新成功",
@@ -406,7 +419,8 @@
       "CreateStoryWidgetSuccess": "創建故事部件成功",
       "CreateDataSource": "創建數據源",
       "ConfirmExitDirtyData": "有未保存數據, 確認退出嗎?",
-      "Sure": "確定"
+      "Sure": "確定",
+      "UserAuthenticationFailure": "用戶認證失敗"
     },
     "Messages": {
       "AlreadyExists": "{{value}}已存在",
@@ -417,7 +431,8 @@
         "DELETE_CONFIRM": "確定從服務器上刪除此組織?",
         "DELETE_ORGANIZATION": "組織'{{name}}'刪除成功",
         "DEMO_GENERATE_ERROR": "演示數據生成錯誤",
-        "DEMO_GENERATED": "演示數據生成"
+        "DEMO_GENERATED": "演示數據生成",
+        "AddNewOrganization": "添加新組織"
       },
       "ROLES": {
         "PERMISSION_UPDATED": "角色'{{name}}'更新成功",
@@ -558,7 +573,9 @@
       "Indicators": "指標",
       "Types": "類型",
       "IndicatorMarket": "指標市場",
-      "Certifications": "認證"
+      "Certifications": "認證",
+      "Copilot_CreateIndicator": "創建指標",
+      "Copilot_CreateFormula": "創建指標公式"
     },
     "MODEL": {
       "ModelOverview": "語義模型概覽",
@@ -773,7 +790,8 @@
           "Caption": "標簽",
           "None": "無",
           "Unit": "單位",
-          "Decimal": "小數位"
+          "Decimal": "小數位",
+          "SourceDimension": "源維度"
         },
         "CUBE": {
           "TITLE": "多維數據集",
@@ -800,7 +818,8 @@
           },
           "CaptionColumn": "文本字段",
           "Column": "維度表主鍵",
-          "ForeignKey": "事實表外鍵"
+          "ForeignKey": "事實表外鍵",
+          "ForeignKey_Info": "具有獨立維度表的內聯維度需要在此指定事實表的關聯外鍵"
         },
         "HIERARCHY": {
           "TITLE": "層次結構",
@@ -919,7 +938,25 @@
         "SharedDimension": "共享維度",
         "CubeAlreadyExists": "多維數據集已存在！",
         "DimensionAlreadyExists": "維度已存在！",
-        "MeasureAlreadyExists": "度量已存在！"
+        "MeasureAlreadyExists": "度量已存在！",
+        "PleaseSave": "請保存",
+        "PleaseSaveTheCorrectVirtualCube": "請先將正確的虛擬數據集保存後再進行公式操作"
+      },
+      "Copilot": {
+        "CreatedCube": "數據集創建成功！",
+        "CreatedDimension": "維度創建成功！",
+        "CreateCalculatedFormula": "創建計算度量公式",
+        "Examples": {
+          "CreateCubeByTableInfo": "根據表信息創建立方體 Cube",
+          "CreateDimensionByTableInfo": "根據表信息創建維度 Dimension",
+          "QueryDBDesc": "請描述想要查詢的數據",
+          "FixQueryDesc": "請描述如何修復此語句",
+          "create dimension by table": "根據表字段創建維度",
+          "create cube by table": "根據表字段創建多維數據集",
+          "create calcuated measure": "創建計算度量",
+          "The error is xxxx": "錯誤是 xxxx",
+          "query total sales amount by products": "查詢產品的銷售總額"
+        }
       }
     },
     "BUSINESS_AREA": {
@@ -967,6 +1004,9 @@
       "StoryCard": {
         "LastUpdated": "最後更新",
         "Open": "查看"
+      },
+      "AuthBottomSheet": {
+        "Title": "為數據源 {{name}} 提供賬號"
       }
     },
     "INVITE_PAGE": {
@@ -1002,6 +1042,7 @@
         "Port": "端口號",
         "Path": "路徑",
         "Username": "用戶名",
+        "User": "用戶名",
         "Password": "密碼",
         "Database Name": "數據庫名",
         "Use SSL": "使用加密連接",
@@ -1013,7 +1054,11 @@
         "ApiPort": "接口端口號",
         "Catalog": "目錄",
         "Database": "數據庫",
-        "Version": "版本"
+        "Version": "版本",
+        "Url": "主機鏈接",
+        "Request Timeout": "請求超時時間",
+        "Verify SSL certificate": "驗證 SSL 證書",
+        "HTTP Path": "Http 路徑"
       }
     },
     "Story": {
@@ -1124,7 +1169,18 @@
       "Templates": "模板",
       "AddSemanticModels": "添加語義模型",
       "New": "新建",
-      "Files": "文件"
+      "UploadFiles": "上傳文件",
+      "Files": "文件",
+      "FileColumn": {
+        "originalName": "原始文件名",
+        "size": "大小",
+        "type": "類型",
+        "createdAt": "創建時間",
+        "mimetype": "MIME 類型",
+        "encoding": "編碼",
+        "storageProvider": "存儲提供商",
+        "createdByUser": "創建人"
+      }
     },
     "Certification": {
       "Certification": "認證",
@@ -1139,6 +1195,9 @@
       "GetYourApiKey": "獲取你的 API Key",
       "ProvideOpenaiApiKey": "請提供 Openai API Key?",
       "Provider": "提供商",
+      "Provider_DashScope": "阿裏雲靈積",
+      "DefaultModel": "默認模型",
+      "ShowTokenizer": "顯示詞數",
       "YourAIPairProgrammer": "你的 AI 配對程序員!",
       "LetYourAIPairProgrammerEdits": "讓你的 AI 配對程序員修改一下!",
       "SelectSomeCode": "選擇代碼，讓你的 AI 配對程序員修改一下!",
@@ -1153,6 +1212,9 @@
       "ExamplesOfPrompts": "提示語示例",
       "APIKey": "API 密鑰",
       "APIHost": "API 主機",
+      "AskAICopilot": "向 AI 副駕駛詢問問題",
+      "Prompt": "提示",
+      "SendPrompt": "發送提示",
       "Prompts": {
         "Set story theme dark": "設置故事暗黑主題",
         "Set story gradient background color sense of technology": "設置故事背景為科技感漸變色",
@@ -1176,7 +1238,9 @@
           "訪問量走勢, 線條平滑，線粗5",
           "按產品類別統計訪問量, 顯示圖例",
           "2023年某產品的訪問量走勢"
-        ]
+        ],
+        "SuggestCommandDescription": "為數據集提供提問建議",
+        "ChartCommandDescription": "用圖表洞察數據"
       }
     },
     "ApprovalPolicy": {
@@ -1295,6 +1359,17 @@
           "Description": "啟用業務域功能，創建和使用業務域"
         }
       }
+    },
+    "Themes": {
+      "System": "跟隨系統",
+      "Light": "明亮",
+      "Dark": "暗色",
+      "Dark Green": "暗綠"
+    },
+    "PageNotFound": {
+      "FoundDoorwayGreat": "看起來您已經找到了通往偉大虛無的大門",
+      "SorryAboutThat": "很抱歉！請訪問我們的主頁以找到您需要的信息。",
+      "TakeMeThere": "帶我去！"
     },
     "title": {
       "short": "分析雲"
@@ -1470,7 +1545,9 @@
         "OfficialName": "組織全稱",
         "ShortDescription": "組織簡介",
         "Website": "網站鏈接",
-        "SelectDataNetwork": "選擇數據網絡"
+        "SelectDataNetwork": "選擇數據網絡",
+        "DataNetworkDescription": "服務端將從此網絡存儲地址下載相應的數據文件進行演示數據的導入",
+        "FileUrl": "文件鏈接"
       }
     }
   },
@@ -2770,7 +2847,9 @@
       "Search": "搜索",
       "Options": "配置",
       "Clear": "清空",
-      "Reset": "重置"
+      "Reset": "重置",
+      "NotFoundValue": "未找到值：",
+      "SemanticModel": "語義模型"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "參考線",
@@ -2887,9 +2966,6 @@
     },
     "Select": {
       "UnableLoadOptionList": "無法加載可選項"
-    },
-    "SemanticModel": {
-      "Label": "語義模型"
     },
     "Sort": {
       "Label": "排序字段"

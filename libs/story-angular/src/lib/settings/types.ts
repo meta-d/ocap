@@ -1,8 +1,52 @@
-import { AggregationRole, EntitySet, EntityType } from '@metad/ocap-core'
-import { isNil } from 'lodash-es'
+import { ComponentSettingsType } from '@metad/story/core'
+import { NxComponentSettingsComponent, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
+import { StoryFilterBarSchemaService } from '@metad/story/widgets/filter-bar'
+import { FlexLayoutSchemaService, LinkedAnalysisSchemaService, StoryPointBuilderSchema } from './schemas'
+
+export function provideStorySettings() {
+  return [
+    {
+      provide: STORY_DESIGNER_COMPONENT,
+      useValue: {
+        type: ComponentSettingsType.StoryPoint,
+        component: NxComponentSettingsComponent,
+        schema: StoryPointBuilderSchema,
+        icon: 'handyman'
+      },
+      multi: true
+    },
+    {
+      provide: STORY_DESIGNER_COMPONENT,
+      useValue: {
+        type: ComponentSettingsType.LinkedAnalysis,
+        component: NxComponentSettingsComponent,
+        schema: LinkedAnalysisSchemaService
+      },
+      multi: true
+    },
+    {
+      provide: STORY_DESIGNER_COMPONENT,
+      useValue: {
+        type: ComponentSettingsType.FlexLayout,
+        component: NxComponentSettingsComponent,
+        schema: FlexLayoutSchemaService
+      },
+      multi: true
+    },
+    {
+      provide: STORY_DESIGNER_COMPONENT,
+      useValue: {
+        type: ComponentSettingsType.StoryFilterBar,
+        component: NxComponentSettingsComponent,
+        schema: StoryFilterBarSchemaService
+      },
+      multi: true
+    }
+  ]
+}
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateDimensionHierarchyLevelListSchema(entityType: EntityType) {
 //   return isNil(entityType?.properties)
@@ -26,9 +70,8 @@ import { isNil } from 'lodash-es'
 //         })
 // }
 
-
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateMeasureListSchema(entityType: EntityType) {
 //   return isNil(entityType?.properties)
@@ -46,7 +89,7 @@ import { isNil } from 'lodash-es'
 // }
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateHierarchyListSchema(entityType: EntityType) {
 //   return isNil(entityType?.properties)
@@ -67,7 +110,7 @@ import { isNil } from 'lodash-es'
 // }
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateDimensionListSchema(entityType: EntityType) {
 //   return isNil(entityType?.properties)
@@ -102,7 +145,7 @@ import { isNil } from 'lodash-es'
 // }
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateDimensionHierarchyLevelMeasureListSchema(entityType: EntityType) {
 //   return [
@@ -112,14 +155,14 @@ import { isNil } from 'lodash-es'
 // }
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateFieldsListSchema(entityType: EntityType) {
 //   return [...generateDimensionListSchema(entityType), ...generateMeasureListSchema(entityType)]
 // }
 
 // /**
-//  * @deprecated 
+//  * @deprecated
 //  */
 // export function generateEntitySetListSchema(entitySets: Array<EntitySet>) {
 //   return entitySets

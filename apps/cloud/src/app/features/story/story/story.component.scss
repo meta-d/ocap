@@ -1,5 +1,60 @@
+@use '@angular/material/core/tokens/token-utils';
+@use '@angular/material/core/style/sass-utils';
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$global-prefix: ngm;
+$prefix: (ngm, story-designer);
+
+@function get-unthemable-tokens() {
+  @return (
+    container-rounded: var(--#{$global-prefix}-primary-container-rounded)
+  );
+}
+
+@function get-color-tokens() {
+  @return (
+    color-surface: var(--#{$global-prefix}-color-surface),
+    color-surface-container: var(--#{$global-prefix}-color-surface-container),
+  );
+}
+
+@function get-token-slots() {
+  @return sass-utils.deep-merge-all(
+    get-unthemable-tokens(),
+    get-color-tokens(),
+  );
+}
+
 :host {
+  @include token-utils.create-token-values($prefix, get-token-slots());
+  --story-fullscreen-top: 0;
   @apply relative flex-1 flex flex-col max-w-full;
+
+  &.ngm-story--fullscreen:not(.editable) {
+    .ngm-story__toolbar {
+      @apply opacity-0 transition-all duration-200 ease-in-out;
+
+      &:hover {
+        opacity: 1;
+        top: 0;
+      }
+    }
+  }
+
+  &.ngm-story--fullscreen {
+    @apply z-50;
+    .ngm-story__container {
+      top: var(--story-fullscreen-top);
+      @apply fixed w-full h-full left-0 transition-all duration-200 ease-in-out;
+    }
+  }
+}
+
+@include token-utils.use-tokens($prefix, get-token-slots()) {
+  :host {
+    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+    overflow: hidden;
+  }
 }
 
 .ngm-story__container-content {
@@ -62,13 +117,6 @@
   max-width: 100%;
 }
 
-.ngm-story-designer__template {
-  @apply flex justify-center items-center text-lg border-2 border-gray-300 border-dashed rounded-lg cursor-pointer;
-
-  width: 220px;
-  height: 160px;
-}
-
 .ngm-story__device-size-bar {
   display: flex;
   flex-direction: row;
@@ -81,9 +129,13 @@
     display: flex;
     height: 1rem;
     opacity: 0.5;
-    border-left: 1px solid white;
-    border-right: 1px solid white;
-    border-top: 2px solid white;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-top: 2px solid;
+
+    background-color: var(--ngm-color-surface);
+    border-color: var(--ngm-color-outline);
+
     &:hover,
     &.hover {
       opacity: 1;
@@ -99,4 +151,29 @@
 
 .ngm-story__designer-drawer.mat-drawer-side.mat-drawer-end {
   @apply border-l-0;
+}
+
+.ngm-story__quick-start-widget {
+  @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+    active:shadow-lg;
+  @apply sm:p-16;
+  background-color: var(--ngm-color-surface-container-low);
+  border-color: var(--ngm-color-outline);
+  opacity: .5;
+
+  &:hover {
+    background-color: var(--ngm-color-surface-container-high);
+    font-weight: 600;
+    opacity: 1;
+  }
+}
+
+::ng-deep {
+  // Story designer pannel
+  .mat-drawer.ngm-story__designer-drawer {
+    .mat-drawer-inner-container {
+      display: flex;
+      flex-direction: column;
+    }
+  }
 }

@@ -157,7 +157,13 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     this._appearance.set(value)
   }
 
-  @Input() displayDensity: string
+  @Input() get displayDensity(): string {
+    return this.displayDensity$()
+  }
+  set displayDensity(value) {
+    this.displayDensity$.set(DisplayDensity[value])
+  }
+  readonly displayDensity$ = signal<DisplayDensity>(null)
 
   @Input()
   get disabled(): boolean {
@@ -173,6 +179,8 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   @ViewChild(CdkVirtualScrollViewport, { static: false })
   cdkVirtualScrollViewPort: CdkVirtualScrollViewport
 
+  @ViewChild('search') searchInput: ElementRef<HTMLInputElement>
+
   get multiple() {
     return this.options?.multiple
   }
@@ -187,6 +195,11 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
       level: null
     }
   }
+
+  /**
+   * Compatible with `displayDensity` and `appearance.displayDensity`
+   */
+  readonly _displayDensity = computed(() => this.displayDensity$() ?? this._appearance()?.displayDensity)
 
   get displayBehaviour() {
     return this.dimension?.displayBehaviour ?? DisplayBehaviour.descriptionOnly
@@ -242,7 +255,8 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     this.smartFilterService.selectOptions$
   ]).pipe(
     map(([members, selectOptions]) => {
-      return members?.map(({ value, caption }) => ({
+      return members?.map(({ key, value, caption }) => ({
+        key,
         value,
         caption: selectOptions?.find((item) => item.value === value)?.caption ?? caption
       }))
@@ -286,8 +300,6 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     )
   )
   readonly separatorKeysCodes: number[] = [ENTER, COMMA]
-
-  @ViewChild('search') searchInput: ElementRef<HTMLInputElement>
 
   onChange: (input: ISlicer) => any
 
@@ -364,11 +376,11 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     })
 
     effect(() => {
-      if (this.displayDensity) {
-        if (this.displayDensity === DisplayDensity.compact) {
+      if (this._displayDensity()) {
+        if (this._displayDensity() === DisplayDensity.compact) {
           this.treeNodePaddingIndent = 10
           this.virtualScrollItemSize = 30
-        } else if (this.displayDensity === DisplayDensity.cosy) {
+        } else if (this._displayDensity() === DisplayDensity.cosy) {
           this.treeNodePaddingIndent = 15
           this.virtualScrollItemSize = 36
         } else {

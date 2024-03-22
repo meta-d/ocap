@@ -5,6 +5,9 @@ export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   provider?: string
   apiKey?: string
   apiHost?: string
+  defaultModel?: string
+
+  showTokenizer?: boolean
 
   /**
    * Details config for openai api

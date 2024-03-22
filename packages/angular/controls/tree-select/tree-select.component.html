@@ -22,17 +22,20 @@
   (ngModelChange)="onModelChange($event)"
 >
   <div matSuffix style="display: flex; align-items: center;">
-    <mat-spinner *ngIf="loading$ | async" [color]="appearance?.color" strokeWidth="1" diameter="20"></mat-spinner>
+    @if (loading$ | async) {
+      <mat-spinner [color]="appearance?.color" strokeWidth="1" diameter="20"></mat-spinner>
+    }
+    @if (hierarchies()?.length > 1) {
+      <button mat-icon-button class="ngm-actionable-opacity"
+        [matMenuTriggerFor]="hierarchiesMenu"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+        (click)="$event.stopPropagation();$event.preventDefault();">
+        <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
+      </button>
+    }
 
-    <button mat-icon-button *ngIf="hierarchies()?.length > 1"
-      [matMenuTriggerFor]="hierarchiesMenu"
-      #mt="matMenuTrigger"
-      [class.active]="mt.menuOpen"
-      (click)="$event.stopPropagation();$event.preventDefault();">
-      <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
-    </button>
-
-    <button mat-icon-button type="button" [disabled]="disabled" class="ngm-smart-filter__help"
+    <button mat-icon-button type="button" [disabled]="disabled" class="ngm-smart-filter__help ngm-actionable-opacity"
       (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
     >
       <mat-icon>help_outline</mat-icon>
@@ -41,12 +44,14 @@
 </ngm-tree-select>
 
 <mat-radio-group [(ngModel)]="hierarchy">
-  <mat-menu #hierarchiesMenu="matMenu" class="ngm-density__compact">
-    <button mat-menu-item disableRipple *ngFor="let property of hierarchies(); trackBy: trackByName"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button class="flex-1" [value]="property.name">
-        <ngm-entity-property class="flex-1" hiddenIcon [property]="property" [displayBehaviour]="DisplayBehaviour.auto"></ngm-entity-property>
-      </mat-radio-button>
-    </button>
+  <mat-menu #hierarchiesMenu="matMenu" class="ngm-radio-menu">
+    @for (property of hierarchies(); track property.name) {
+      <button mat-menu-item disableRipple
+        (click)="$event.stopPropagation();">
+        <mat-radio-button class="flex-1" [value]="property.name">
+          <ngm-entity-property class="flex-1" hiddenIcon [property]="property" [displayBehaviour]="DisplayBehaviour.auto"></ngm-entity-property>
+        </mat-radio-button>
+      </button>
+    }
   </mat-menu>
 </mat-radio-group>

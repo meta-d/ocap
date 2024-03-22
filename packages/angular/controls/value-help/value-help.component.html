@@ -20,7 +20,7 @@
                         <mat-label>
                             {{ 'Ngm.Controls.ValueHelp.DisplayBehaviour' | translate: {Default: "Display Behaviour"} }}
                         </mat-label>
-                        <mat-select [(ngModel)]="displayBehaviour">
+                        <mat-select [ngModel]="displayBehaviour()" (ngModelChange)="setDisplayBehaviour($event)">
                             <mat-option [value]="DISPLAY_BEHAVIOUR.descriptionOnly">
                                 {{ 'Ngm.Common.DisplayBehaviour_Description' | translate: {Default: "Description"} }}
                             </mat-option>
@@ -33,6 +33,7 @@
                             <mat-option [value]="DISPLAY_BEHAVIOUR.idOnly">
                                 {{ 'Ngm.Common.DisplayBehaviour_ID' | translate: {Default: "ID"} }}
                             </mat-option>
+                            <!-- null can't be selected in mat-select, so use '' as default value -->
                             <mat-option [value]="''">
                                 {{ 'Ngm.Common.DisplayBehaviour_Auto' | translate: {Default: "Auto"} }}
                             </mat-option>
@@ -43,8 +44,10 @@
                         <mat-label>
                             {{ 'Ngm.Controls.ValueHelp.Hierarchy' | translate: {Default: "Hierarchy"} }}
                         </mat-label>
-                        <mat-select [(ngModel)]="hierarchy" >
-                            <mat-option *ngFor="let hierarchy of hierarchies()" [value]="hierarchy.name">{{hierarchy.caption}}</mat-option>
+                        <mat-select [ngModel]="hierarchy()" (ngModelChange)="setHierarchy($event)">
+                          @for (hierarchy of hierarchies(); track hierarchy.name) {
+                            <mat-option [value]="hierarchy.name">{{hierarchy.caption}}</mat-option>
+                          }
                         </mat-select>
                     </mat-form-field>
                 </div>
@@ -92,20 +95,19 @@
 
     <mat-divider [vertical]="true"></mat-divider>
 
-    <div class="ngm-value-help__selected" displayDensity="compact">
+    <div class="ngm-value-help__selected">
         <div class="ngm-value-help__selected-members flex flex-col gap-2">
             <div class="sub-title">
                 {{ 'Ngm.Controls.ValueHelp.SelectedMembers' | translate: {Default: "Selected Members"} }}
             </div>
 
-            <div class="ngm-value-help__selected-members-list" >
-                <mat-list >
-                    <mat-list-item *ngFor="let member of selectedMembers; let i = index;"
-                        class="hover:bg-gray-100 group"
-                    >
+            <div class="ngm-value-help__selected-members-list" displayDensity="compact">
+                <mat-list class="ngm-list">
+                  @for (member of selectedMembers; track member.key; let i = $index) {
+                    <mat-list-item class="group">
                         <div class="flex items-center overflow-hidden">
                             <ngm-display-behaviour class="flex-1 overflow-hidden"
-                                [displayBehaviour]="displayBehaviour"
+                                [displayBehaviour]="displayBehaviour()"
                                 [option]="member"
                                 [excludeSelected]="excludeSelected">
                             </ngm-display-behaviour>
@@ -114,6 +116,7 @@
                         </div>
                         <mat-divider></mat-divider>
                     </mat-list-item>
+                  }
                 </mat-list>
             </div>
             

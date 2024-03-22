@@ -4,10 +4,11 @@ import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModu
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmColorInputComponent } from '@metad/components/form-field'
 import { MaterialModule } from '../../../../@shared'
+import { DensityDirective } from '@metad/ocap-angular/core'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaterialModule, NgmColorInputComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, MaterialModule, NgmColorInputComponent, DensityDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-color-input',
   templateUrl: './color-input.component.html',

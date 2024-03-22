@@ -7,7 +7,26 @@
 }
 .pac-nav__router {
   display: flex;
-  /* max-height: calc(100% - 37px); */
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/**
+ * 纵向 nav bar
+ */
+.pac-nav__tab-bar {
+  background-color: var(--mdc-outlined-card-container-color);
+
+  .pac-nav__tab {
+    @apply -ml-2 -mr-2 border-2 border-transparent;
+  }
+  .pac-nav__tab:hover {
+    @apply bg-slate-100 border-slate-200 rounded-lg dark:bg-bluegray-600 dark:border-bluegray-500;
+  }
+  .pac-nav__tab:focus {
+    @apply bg-slate-50 border-slate-200 rounded-lg dark:bg-bluegray-600 dark:border-bluegray-500;
+  }
+  .pac-nav__tab.active {
+    @apply bg-slate-50 border-slate-200 rounded-lg dark:bg-bluegray-700 dark:border-bluegray-500;
+  }
 }

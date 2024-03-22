@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Employee, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { DeepPartial, FindManyOptions, In, Repository } from 'typeorm'
 import { SemanticModelMember } from './member.entity'
 
@@ -9,10 +9,8 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	constructor(
 		@InjectRepository(SemanticModelMember)
 		modelCacheRepository: Repository<SemanticModelMember>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
 	) {
-		super(modelCacheRepository, employeeRepository)
+		super(modelCacheRepository)
 	}
 
 	async bulkCreate(members: DeepPartial<SemanticModelMember[]>) {

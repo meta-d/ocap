@@ -1,8 +1,8 @@
-import { CdkDropList, DropListRef } from '@angular/cdk/drag-drop'
+import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DestroyRef, Injectable, inject } from '@angular/core'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -13,6 +13,7 @@ import {
   DBTable,
   Dimension,
   EntityType,
+  isEntitySet,
   isEntityType,
   omit,
   PropertyDimension,
@@ -56,6 +57,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   private readonly router = inject(Router)
   private readonly destroyRef = inject(DestroyRef)
   private readonly logger = inject(NGXLogger)
+  readonly #toastr = inject(ToastrService)
 
   get model() {
     return this.get((state) => state.model)
@@ -148,7 +150,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   public readonly roles$ = this.model$.pipe(combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))), map(([model, isOlap]) => model?.roles))
   public readonly indicators$ = this.model$.pipe(map((model) => model.indicators))
 
-  dataSource$ = new BehaviorSubject<DataSource>(null)
+  readonly dataSource$ = new BehaviorSubject<DataSource>(null)
   get dataSource() {
     return this.dataSource$.value
   }
@@ -195,11 +197,17 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly modelType = toSignal(this.modelType$)
+
   constructor(
     private modelsService: ModelsService,
     private dsCoreService: NgmDSCoreService,
     private wasmAgent: WasmAgentService,
-    private toastrService: ToastrService,
     private _router: Router,
     private _route: ActivatedRoute
   ) {
@@ -275,7 +283,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     const model = cloneDeep(this.get((state) => state.model))
     model.roles = model.roles.map((role, index) => ({...role, index}))
 
-    return this.toastrService.update({code: 'PAC.MODEL.MODEL.TITLE', params: {Default: 'Semantic Model'}}, () => {
+    return this.#toastr.update({code: 'PAC.MODEL.MODEL.TITLE', params: {Default: 'Semantic Model'}}, () => {
         return this.modelsService.update(model.id, model, {relations: ['roles', 'roles.users']})
       })
       .pipe(
@@ -524,34 +532,17 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   }
 
   /** ========================== Select Queries ========================== */
-  /**
-   * listen to error from entitySet
-   * 
-   * SQL Model / Olap Model: 用于验证 Schema 是否正确
-   * 
-   * @param entity 
-   */
-  selectEntitySetError(entity: string) {
-    return this.originalDataSource$.pipe(filter(Boolean),
-      switchMap((dataSource) =>
-        dataSource.selectEntitySet(entity).pipe(
-          filter((error) => error instanceof Error)
-        )
-      ),
-      takeUntilDestroyed(this.destroyRef)
+  selectEntitySet(cubeName: string) {
+    return this.dataSource$.pipe(
+      filter(nonNullable),
+      switchMap((dataSource) => dataSource.selectEntitySet(cubeName)),
     )
   }
 
-  selectEntityType(entity: string): Observable<EntityType> {
-    return this.dataSource$.pipe(
-      filter(nonNullable),
-      switchMap((dataSource) => dataSource.selectEntityType(entity)),
-      tap((entityType) => {
-        if (!isEntityType(entityType)) {
-          console.error(entityType)
-        }
-      }),
-      filter(isEntityType),
+  selectEntityType(cubeName: string): Observable<EntityType> {
+    return this.selectEntitySet(cubeName).pipe(
+      filter(isEntitySet),
+      map(({entityType}) => entityType)
     )
   }
 
@@ -571,6 +562,20 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     return this.dataSource$.pipe(filter(Boolean),
       switchMap((dataSource) => dataSource.selectMembers(entity, dimension)),
       takeUntilDestroyed(this.destroyRef)
+    )
+  }
+
+  /**
+   * Select error info for entity from origin db (Dimension or Cube in SQL Model)
+   * 
+   * @param entity 
+   * @returns 
+   */
+  selectOriginalEntityError(entity: string) {
+    return this.originalDataSource$.pipe(
+      filter(nonNullable),
+      switchMap((dataSource) => dataSource.selectEntitySet(entity)),
+      map((error) => isEntitySet(error) ? null : error)
     )
   }
 
@@ -674,4 +679,17 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
       this.router.navigate([`dimension/${entity.id}`], { relativeTo: this.route })
     }
   }
+  
+  moveItemInDimensions = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    moveItemInArray(state.dimensions, event.previousIndex, event.currentIndex)
+  })
+
+  moveItemInCubes = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    moveItemInArray(state.cubes, event.previousIndex, event.currentIndex)
+  })
+
+  moveItemInVirtualCubes = this.updater((state, event: {previousIndex: number; currentIndex: number;}) => {
+    const virtualCubes = state.model.schema.virtualCubes
+    moveItemInArray(virtualCubes, event.previousIndex, event.currentIndex)
+  })
 }

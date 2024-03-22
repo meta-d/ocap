@@ -4,6 +4,9 @@ export interface ISelectOption<T = unknown> {
    * @deprecated use key
    */
   value?: T
+  /**
+   * @deprecated use caption
+   */
   label?: string
   caption?: string
   selected?: boolean

@@ -1,23 +1,46 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core'
+import { MediaMatcher } from '@angular/cdk/layout'
+import { DOCUMENT } from '@angular/common'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { SmartFilterOptions } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmAppearance, NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentStatus, AgentType, DataSettings, DisplayBehaviour, FilterSelectionType, MemberSource } from '@metad/ocap-core'
-import { ANALYTICAL_CARDS, CARTESIAN_CARDS, DUCKDB_COVID19_DAILY_MODEL, DUCKDB_FOODMART_MODEL, DUCKDB_TOP_SUBSCRIBED_MODEL, DUCKDB_UNEMPLOYMENT_MODEL, DUCKDB_WASM_MODEL } from '@metad/ocap-duckdb'
+import { AgentStatus, DataSettings, DisplayBehaviour, FilterSelectionType, MemberSource } from '@metad/ocap-core'
+import {
+  ANALYTICAL_CARDS,
+  DUCKDB_COVID19_DAILY_MODEL,
+  DUCKDB_FOODMART_MODEL,
+  DUCKDB_TOP_SUBSCRIBED_MODEL,
+  DUCKDB_UNEMPLOYMENT_MODEL,
+  DUCKDB_WASM_MODEL
+} from '@metad/ocap-duckdb'
 import { cloneDeep } from 'lodash-es'
 import { Observable } from 'rxjs'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'metad-ocap-root',
+  selector: 'ngm-ocap-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   providers: [NgmSmartFilterBarService]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private wasmAgent = inject(WasmAgentService)
+  #document = inject(DOCUMENT)
+
   MemberSource = MemberSource
   DisplayBehaviour = DisplayBehaviour
-  dark: string
+  mobileQuery: MediaQueryList
+  private _mobileQueryListener: () => void
+
+  get isDark() {
+    return this.#dark()
+  }
+  set isDark(value) {
+    this.#dark.set(value)
+  }
+  #dark = signal(false)
+
   appearance: NgmAppearance = {
     appearance: 'outline',
     displayDensity: DisplayDensity.compact
@@ -41,7 +64,7 @@ export class AppComponent implements OnInit {
   smartFilterOptions: SmartFilterOptions = {
     dimension: {
       dimension: '[product]'
-    },
+    }
   }
   productFilterOptions: SmartFilterOptions = {
     dimension: {
@@ -107,20 +130,33 @@ export class AppComponent implements OnInit {
   ]
 
   error: string
-  
-  public readonly status$ = this.wasmAgent.selectStatus() as Observable<AgentStatus>
+
+  public readonly status = toSignal(this.wasmAgent.selectStatus() as Observable<AgentStatus>)
 
   store
   store1
   formula = `[Measures].[Sales] - [Measures].[Cost]`
   constructor(
     private smartFilterBar: NgmSmartFilterBarService,
-    private wasmAgent: WasmAgentService,
-    private dsCoreService: NgmDSCoreService
+    private dsCoreService: NgmDSCoreService,
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher
   ) {
+    this.mobileQuery = media.matchMedia('(max-width: 600px)')
+    this._mobileQueryListener = () => changeDetectorRef.detectChanges()
+    this.mobileQuery.addListener(this._mobileQueryListener)
     this.wasmAgent.selectError().subscribe((error) => {
       console.error(error)
       this.error += error + '\n'
+    })
+
+    effect(() => {
+      if (this.#dark()) {
+        // Add class to html node on document
+        this.#document.documentElement.classList.add('dark')
+      } else {
+        this.#document.documentElement.classList.remove('dark')
+      }
     })
   }
 
@@ -151,13 +187,12 @@ export class AppComponent implements OnInit {
       //     ignoreUnknownProperty: true
       //   },
       // })
-      
+
       await this.wasmAgent.registerModel(DUCKDB_WASM_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_COVID19_DAILY_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_FOODMART_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_UNEMPLOYMENT_MODEL)
       await this.wasmAgent.registerModel(DUCKDB_TOP_SUBSCRIBED_MODEL)
-
 
       // await this.wasmAgent.registerModel({
       //   ...DUCKDB_FOODMART_MODEL,
@@ -185,5 +220,9 @@ export class AppComponent implements OnInit {
 
   onFormulaChange(event: string) {
     console.log(event)
+  }
+
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this._mobileQueryListener)
   }
 }

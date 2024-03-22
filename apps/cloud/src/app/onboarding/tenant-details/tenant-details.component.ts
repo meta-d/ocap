@@ -11,12 +11,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatStepper, MatStepperModule } from '@angular/material/stepper'
 import { Router } from '@angular/router'
-import { DataSourceService, DataSourceTypesService } from '@metad/cloud/state'
+import { DataSourceService, DataSourceTypesService, Store } from '@metad/cloud/state'
+import { matchValidator } from '@metad/cloud/auth'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { omit } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatest, firstValueFrom, map, startWith } from 'rxjs'
+import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, startWith } from 'rxjs'
 import {
   AuthStrategy,
   BonusTypeEnum,
@@ -26,7 +27,6 @@ import {
   IDataSourceType,
   IOrganization,
   LanguagesEnum,
-  MatchValidator,
   OrganizationDemoNetworkEnum,
   OrganizationsService,
   ServerAgent,
@@ -35,6 +35,9 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../@core'
+import { nonNullable } from '@metad/core'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
+
 
 @Component({
   standalone: true,
@@ -53,6 +56,7 @@ import {
     MatDividerModule,
     MatProgressSpinnerModule,
     MatRadioModule,
+    MatProgressBarModule,
     FormlyModule,
 
     NgmCommonModule
@@ -61,6 +65,7 @@ import {
 export class TenantDetailsComponent {
   OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
   
+  readonly #store = inject(Store)
   private readonly tenantService = inject(TenantService)
   private readonly typesService = inject(DataSourceTypesService)
   private readonly dataSourceService = inject(DataSourceService)
@@ -76,7 +81,9 @@ export class TenantDetailsComponent {
 
   Languages = Object.values(LanguagesEnum)
 
-  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({ preferredLanguage: ['', [Validators.required]] })
+  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({ preferredLanguage: [
+    [this.translateService.currentLang], [Validators.required]
+  ] })
   userFormGroup: FormGroup = this._formBuilder.group(
     {
       firstName: [''],
@@ -87,7 +94,7 @@ export class TenantDetailsComponent {
       confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
     },
     {
-      validators: [MatchValidator.mustMatch('password', 'confirmPassword')]
+      validators: [matchValidator('password', 'confirmPassword')]
     }
   )
   demoFormGroup: FormGroup = this._formBuilder.group({
@@ -130,7 +137,7 @@ export class TenantDetailsComponent {
   model = {}
 
   private preferredLanguageSub = this.preferredLanguageFormGroup.get('preferredLanguage').valueChanges
-    .pipe(takeUntilDestroyed())
+    .pipe(map((languages) => languages?.[0]), filter(nonNullable), takeUntilDestroyed())
     .subscribe((language) => {
       this.translateService.use(language)
     })
@@ -140,7 +147,7 @@ export class TenantDetailsComponent {
   }
 
   mustMatchError() {
-    return this.userFormGroup.get('confirmPassword').getError('mustMatch')
+    return this.userFormGroup.get('confirmPassword').getError('mismatch')
   }
 
   dataSourceNameError() {
@@ -175,18 +182,26 @@ export class TenantDetailsComponent {
       })
 
       this.tenantCompleted.set(true)
-      this.loading.set(false)
+      
       this.defaultOrganization.set(tenant.organizations[0])
     } catch (error) {
+      console.error(error)
       this.loading.set(false)
       this.toastrService.error(getErrorMessage(error))
       return
     }
 
-    this.stepper.next()
-    await this.afterOnboard()
-  }
+    try {
+      await this.afterOnboard()
+    } catch (error) {
+      console.error(error)
+      this.toastrService.error(getErrorMessage(error))
+    }
 
+    this.loading.set(false)
+    this.stepper.next()
+  }
+  
   async afterOnboard() {
     await firstValueFrom(
       this.authStrategy.login({
@@ -195,9 +210,13 @@ export class TenantDetailsComponent {
       })
     )
 
+    this.#store.selectedOrganization = this.defaultOrganization()
     this.dataSourceTypes$.next(await firstValueFrom(this.typesService.getAll()))
   }
 
+  /**
+   * Generate demo data for default organization
+   */
   async generateDemo() {
     try {
       this.demoError.set(null)
@@ -262,7 +281,6 @@ export class TenantDetailsComponent {
       this.toastrService.success('PAC.ACTIONS.PING', { Default: 'Ping' })
 
       // Create datadource
-      this.dataSourceService
       const result = await firstValueFrom(this.dataSourceService.create(dataSource))
       this.toastrService.success('PAC.MESSAGE.CreateDataSource', { Default: 'Create data source' })
       this.loading.set(false)

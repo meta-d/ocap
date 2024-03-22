@@ -12,16 +12,14 @@ import {
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { AgentType, Catalog, DataSource, isNil } from '@metad/ocap-core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { BusinessAreasService, DataSourceService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import { BehaviorSubject, Observable, Subject, catchError, filter, firstValueFrom, map, of, startWith, switchMap, tap } from 'rxjs'
 import { IDataSource, ToastrService, getErrorMessage } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
-import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
+import { NgmSelectionTableComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,10 +32,10 @@ import { NgmTreeSelectComponent } from '@metad/ocap-angular/common'
     ReactiveFormsModule,
     MaterialModule,
     TranslateModule,
-    NxTableModule,
     DensityDirective,
     ButtonGroupDirective,
-    NgmTreeSelectComponent
+    NgmTreeSelectComponent,
+    NgmSelectionTableComponent
   ],
   host: {
     class: 'pac-model-creation'
@@ -169,7 +167,7 @@ export class ModelCreationComponent implements ControlValueAccessor {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _dataSourceSub = this.dataSource.valueChanges.pipe(filter(Boolean)).subscribe(async (dataSource) => {
+  private _dataSourceSub = this.dataSource.valueChanges.pipe(filter(Boolean), takeUntilDestroyed()).subscribe(async (dataSource) => {
     this.dsCoreService.registerModel({
       name: dataSource.name,
       type: dataSource.type.protocol.toUpperCase() as any,

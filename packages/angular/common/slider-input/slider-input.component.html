@@ -1,7 +1,8 @@
 <div class="flex justify-start items-center text-sm p-1" [title]="label">
     <label class="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{{label}}</label>
   
-    <input matInput type="number" [(ngModel)]="model" [disabled]="disabled" (ngModelChange)="onValueChange($event)">
+    <input matInput type="number" class="bg-transparent hover:bg-neutral-100 focus:bg-neutral-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+        [(ngModel)]="model" [disabled]="disabled" (ngModelChange)="onValueChange($event)">
     <span *ngIf="unit">{{unit}}</span>
 </div>
 <mat-slider [disabled]="disabled"

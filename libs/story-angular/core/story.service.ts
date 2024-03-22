@@ -34,7 +34,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  pairwise,
   shareReplay,
   startWith,
   switchMap,
@@ -61,15 +60,15 @@ import {
   WidgetComponentType,
   WIDGET_INIT_POSITION,
   StoryPointState,
-  MoveDirection
+  MoveDirection,
 } from './types'
-import { convertStoryModel2DataSource, getSemanticModelKey, prefersColorScheme } from './utils'
-import { NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
+import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
+import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 
 
 @Injectable()
 export class NxStoryService extends ComponentStore<StoryState> {
-  private readonly translateService = inject(TranslateService)
+  readonly #translate = inject(TranslateService)
 
   get story() {
     return this.get((state) => state.story)
@@ -143,6 +142,12 @@ export class NxStoryService extends ComponentStore<StoryState> {
     })
   )
 
+  readonly storyModelsOptions$ = this.storyModels$.pipe(map((models) => models.map((model) => ({
+    value: model.id,
+    key: model.key,
+    caption: model.name
+  }))))
+
   // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
     map((models) => models.map((model) => convertStoryModel2DataSource(model))),
@@ -150,13 +155,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     shareReplay(1)
   )
 
-  readonly dataSources$ = this.dataSourceOptions$.pipe(
-    map((dataSources) => dataSources.map((dataSource) => ({
-      key: dataSource.id,
-      value: dataSource.key ?? dataSource.name,
-      caption: dataSource.caption
-    })))
-  )
+  readonly dataSources = toSignal(this.storyModelsOptions$)
 
   readonly schemas$ = combineLatest([
     this.select((state) => state.story.schema),
@@ -175,23 +174,17 @@ export class NxStoryService extends ComponentStore<StoryState> {
     shareReplay(1)
   )
 
+  /**
+   * @deprecated use signal `themeName`
+   */
   public readonly themeName$ = this.storyOptions$.pipe(
-    map((options) => options?.preferences?.story?.themeName || options?.themeName),
+    map((options) => options?.preferences?.story?.themeName),
     distinctUntilChanged()
   )
+  readonly themeName = toSignal(this.storyOptions$.pipe(
+    map((options) => options?.preferences?.story?.themeName)
+  ))
 
-  // System theme
-  private prefersColorScheme$ = prefersColorScheme()
-  public readonly themeChanging$ = combineLatest([this.themeName$, this.prefersColorScheme$]).pipe(
-    map(([themeName, prefersColorScheme]) => {
-      if (!themeName || themeName === 'system') {
-        return prefersColorScheme
-      }
-      return themeName || 'light'
-    }),
-    startWith(null),
-    pairwise()
-  )
   public readonly editable$ = this.select((state) => state.editable)
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
@@ -229,7 +222,11 @@ export class NxStoryService extends ComponentStore<StoryState> {
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
+  /**
+   * @deprecated use Signal {@link isAuthenticated} instead
+   */
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
+  readonly isAuthenticated = toSignal(this.select((state) => state.isAuthenticated))
   public readonly isPanMode$ = this.select((state) => state.isPanMode)
 
   // FilterBar merge with global appearance
@@ -432,7 +429,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   getTranslation(prefix: string, text: string, params?: Record<string, unknown>) {
     let result: any
-    this.translateService.get(prefix, {Default: text, ...params}).subscribe((res) => {
+    this.#translate.get(prefix, {Default: text, ...params}).subscribe((res) => {
       result = res
     })
 
@@ -1289,21 +1286,26 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   async openDefultDataSettings() {
-    const dataSources = await firstValueFrom(this.dataSources$)
+    const dataSources = this.dataSources()
 
-    const result = await firstValueFrom(this._dialog.open(NgmEntityDialogComponent, {
-      data: {
-        dataSources,
-        dsCoreService: this.dsCoreService
-      }
-    }).afterClosed())
-    console.log(result)
+    const result = await firstValueFrom<EntitySelectResultType>(
+      this._dialog.open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
+        data: {
+          dataSources,
+          dsCoreService: this.dsCoreService
+        }
+      }).afterClosed()
+    )
     if (result) {
       this.patchState({
         defaultDataSettings: result
       })
     }
     return result
+  }
+
+  translate(key: string | string[], params?: Record<string, string>) {
+    return this.#translate.instant(key, params)
   }
 }
 

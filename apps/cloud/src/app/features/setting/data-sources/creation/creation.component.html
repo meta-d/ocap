@@ -68,16 +68,22 @@
             </mat-error>
         </mat-form-field>
 
-        <div class="flex justify-between items-center m-2">
-            <mat-slide-toggle formControlName="useLocalAgent" disableRipple labelPosition="before">
-                {{ 'PAC.MENU.DATA_SOURCES.USE_LOCAL_AGENT' | translate: {Default: 'Use Local Agent'} }}
-            </mat-slide-toggle>
+        <div class="flex justify-between items-center mx-2 mb-6">
+            @if (enableLocalAgent) {
+                <mat-slide-toggle formControlName="useLocalAgent" disableRipple labelPosition="before">
+                    {{ 'PAC.MENU.DATA_SOURCES.USE_LOCAL_AGENT' | translate: {Default: 'Use Local Agent'} }}
+                </mat-slide-toggle>
+            }
 
             <div class="flex justify-end items-center gap-2">
                 <mat-label>{{ 'PAC.MENU.DATA_SOURCES.AuthType' | translate: {Default: 'Auth Type'} }}</mat-label>
                 <mat-button-toggle-group formControlName="authType" name="authType" ngmAppearance="outline" displayDensity="compact" color="accent">
-                    <mat-button-toggle [value]="null">{{ 'PAC.MENU.DATA_SOURCES.AuthType_None' | translate: {Default: 'None'} }}</mat-button-toggle>
-                    <mat-button-toggle [value]="AuthenticationEnum.BASIC">{{ 'PAC.MENU.DATA_SOURCES.AuthType_Basic' | translate: {Default: 'Basic'} }}</mat-button-toggle>
+                    <mat-button-toggle [value]="null"
+                        [matTooltip]="'PAC.MENU.DATA_SOURCES.AuthType_None_Description' | translate: {Default: 'Unified system authorization, no need for users to provide accounts.'}"
+                    >{{ 'PAC.MENU.DATA_SOURCES.AuthType_None' | translate: {Default: 'None'} }}</mat-button-toggle>
+                    <mat-button-toggle [value]="AuthenticationEnum.BASIC"
+                        [matTooltip]="'PAC.MENU.DATA_SOURCES.AuthType_Basic_Description' | translate: {Default: 'Users need to provide an account for authorization.'}"
+                    >{{ 'PAC.MENU.DATA_SOURCES.AuthType_Basic' | translate: {Default: 'Basic'} }}</mat-button-toggle>
                 </mat-button-toggle-group>
             </div>
         </div>

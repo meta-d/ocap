@@ -1,17 +1,17 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { Component } from '@angular/core'
+import { Component, DestroyRef, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { IModelRole, MDX, RoleTypeEnum } from '@metad/contracts'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
+import { SplitterType } from '@metad/ocap-angular/common'
+import { EntityCapacity } from '@metad/ocap-angular/entity'
 import { combineLatestWith, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { SemanticModelService } from '../../model.service'
 import { SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { AccessControlStateService } from '../access-control.service'
 import { RoleStateService } from './role.service'
-import { EntityCapacity } from '@metad/ocap-angular/entity'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   selector: 'pac-model-role',
   templateUrl: 'role.component.html',
@@ -27,13 +27,25 @@ import { EntityCapacity } from '@metad/ocap-angular/entity'
       .pac-model-access__cubes {
         overflow-y: auto;
       }
+      .mat-mdc-list {
+        margin: 0 5px;
+      }
+      .mdc-list-item {
+        --mdc-list-list-item-container-shape: 5px;
+        &:hover {
+          background-color: var(--ngm-color-primary-container-variant);
+        }
+      }
     `
   ]
 })
 export class RoleComponent {
+  readonly destroyRef = inject(DestroyRef)
+
   Access = MDX.Access
   RoleTypeEnum = RoleTypeEnum
   EntityCapacity = EntityCapacity
+  SplitterType = SplitterType
 
   role: IModelRole
 
@@ -56,10 +68,16 @@ export class RoleComponent {
   searchRoleControl = new FormControl()
 
   public readonly roles$ = this.accessControlState.roles$.pipe(
-    combineLatestWith(this.roleState.state$.pipe(map((role) => role.name), distinctUntilChanged()), this.searchRoleControl.valueChanges.pipe(startWith(''))),
-    map(([roles, name, text]) => roles.filter((item) => item.name !== name && (
-      text ? item.name.toLowerCase().includes(text.toLowerCase()) : true
-    )))
+    combineLatestWith(
+      this.roleState.state$.pipe(
+        map((role) => role.name),
+        distinctUntilChanged()
+      ),
+      this.searchRoleControl.valueChanges.pipe(startWith(''))
+    ),
+    map(([roles, name, text]) =>
+      roles.filter((item) => item.name !== name && (text ? item.name.toLowerCase().includes(text.toLowerCase()) : true))
+    )
   )
 
   /**
@@ -67,7 +85,7 @@ export class RoleComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private roleSub = this.roleState.state$.subscribe((role) => {
+  private roleSub = this.roleState.state$.pipe(takeUntilDestroyed()).subscribe((role) => {
     this.role = role
   })
   constructor(
@@ -75,21 +93,21 @@ export class RoleComponent {
     private accessControlState: AccessControlStateService,
     public modelService: SemanticModelService,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {
-    this.roleKey$.pipe(untilDestroyed(this)).subscribe((key) => {
+    this.roleKey$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((key) => {
       this.roleState.init(key)
     })
   }
-  
+
   trackByName(index: number, item: MDX.CubeGrant) {
     return item.cube
   }
 
   dropCubeEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
-    return item.dropContainer.id === 'pac-model-entities' && (
-      item.data.type === SemanticModelEntityType.CUBE ||
-      item.data.type === SemanticModelEntityType.VirtualCube
+    return (
+      item.dropContainer.id === 'pac-model-entities' &&
+      (item.data.type === SemanticModelEntityType.CUBE || item.data.type === SemanticModelEntityType.VirtualCube)
     )
   }
 
@@ -97,7 +115,10 @@ export class RoleComponent {
     if (event.previousContainer === event.container) {
       this.roleState.moveItemInCubes(event)
     } else if (event.previousContainer.id === 'pac-model-entities') {
-      if (event.item.data.type === SemanticModelEntityType.CUBE || event.item.data.type === SemanticModelEntityType.VirtualCube) {
+      if (
+        event.item.data.type === SemanticModelEntityType.CUBE ||
+        event.item.data.type === SemanticModelEntityType.VirtualCube
+      ) {
         this.roleState.addCube(event.item.data.name)
       }
     }
@@ -115,5 +136,4 @@ export class RoleComponent {
   removeCube(event: CdkDragDrop<any[]>) {
     this.roleState.removeCube(event.item.data.name)
   }
-
 }

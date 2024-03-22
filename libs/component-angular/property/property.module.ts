@@ -21,14 +21,13 @@ import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ResizerModule, NgmSelectComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, DensityDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
   NgmEntitySchemaComponent,
   NgmEntityPropertyComponent,
   NgmHierarchySelectComponent,
 } from '@metad/ocap-angular/entity'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEditorModule } from '@metad/components/editor'
 import { NxEntityModule } from '@metad/components/entity'
@@ -79,13 +78,12 @@ import { PropertySelectComponent } from './property-select/property-select.compo
     NxEditorModule,
 
     DragDropModule,
-    LetDirective,
     TranslateModule,
     NxEntityModule,
 
     // OCAP Modules
     OcapCoreModule,
-    ControlsModule,
+    NgmControlsModule,
     NgmEntityPropertyComponent,
     NgmHierarchySelectComponent,
     ResizerModule,

@@ -1,4 +1,4 @@
-import { Employee, RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { RequestContext, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindOneOptions, Repository } from 'typeorm'
@@ -11,12 +11,9 @@ export class StoryPointService extends TenantOrganizationAwareCrudService<StoryP
 	constructor(
 		@InjectRepository(StoryPoint)
 		pointRepository: Repository<StoryPoint>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
-
 		private businessAreaService: BusinessAreaService
 	) {
-		super(pointRepository, employeeRepository)
+		super(pointRepository)
 	}
 
 	async findPublicOne(id: string, options: FindOneOptions) {

@@ -7,10 +7,10 @@
                 (click)="run()">
                 <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
 
-                <span *ngIf="textSelection?.text">
+                <span *ngIf="textSelection()?.text">
                     {{ 'PAC.MENU.RUN_BY_SELECTION' | translate: {Default: "Run By Selection"} }}
                 </span>
-                <span *ngIf="!textSelection?.text">
+                <span *ngIf="!textSelection()?.text">
                     {{ 'PAC.MENU.RUN' | translate: {Default: "Run"} }}
                 </span>
             </button>
@@ -26,21 +26,22 @@
                 <mat-icon fontSet="material-icons-round">playlist_remove</mat-icon>
             </button>
             
-            <button *ngIf="(useMDX$ | async)===false" mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
+          @if (!useMDX()) {
+            <button mat-icon-button displayDensity="compact" matTooltip="📦{{ 'PAC.KEY_WORDS.Compact' | translate: {Default: 'Compact'} }}"
                 (click)="triggerCompress()">
                 <mat-icon fontSet="material-icons-outlined">folder_zip</mat-icon>
             </button>
-
+          }
             <button mat-icon-button displayDensity="compact" matTooltip="💡{{ 'PAC.KEY_WORDS.Format' | translate: {Default: 'Format'} }}"
                 (click)="triggerFormat()">
                 <mat-icon fontSet="material-icons-round">format_indent_increase</mat-icon>
             </button>
         </div>
 
-        <ng-container [ngSwitch]="useMDX$ | async">
-            <ngm-editor-mdx #editor *ngSwitchCase="true" class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+        @if (useMDX()) {
+            <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
-                [entityType]="entityType$ | async"
+                [entityType]="entityType()"
                 [ngModel]="statement()"
                 (ngModelChange)="onStatementChange($event)"
                 (selectionChange)="onSelectionChange($event)"
@@ -51,11 +52,11 @@
                 (cdkDropListDropped)="drop($event)"
                 >
             </ngm-editor-mdx>
-
-            <ngm-editor-sql #editor *ngSwitchDefault class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+        } @else {
+            <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
-                [entityType]="entityType$ | async"
-                [entitySets]="tables$ | async"
+                [entityType]="entityType()"
+                [entitySets]="tables()"
                 [ngModel]="statement()"
                 (ngModelChange)="onStatementChange($event)"
                 (selectionChange)="onSelectionChange($event)"
@@ -66,8 +67,7 @@
                 (cdkDropListDropped)="drop($event)"
                 >
             </ngm-editor-sql>
-        </ng-container>
-
+        }
     </ngm-splitter-pane>
     <ngm-splitter-pane size='15rem' class="relative flex flex-col justify-start items-stretch"
         [collapsed]="!showQueryResult()"

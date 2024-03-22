@@ -17,11 +17,11 @@ import { PACNotificationDestinationsService } from '../@core'
 import {
   convertStoryPointResult,
   convertStoryResult,
-  convertStorySubscriptionResult,
   ID,
   IStory,
   ISubscription
 } from '../@core/types'
+import { convertStorySubscriptionResult } from './types'
 
 @Injectable()
 export class StoryPublicService implements NxStoryStore {

@@ -1,4 +1,10 @@
 :host {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+}
+
+:host::ng-deep {
+  .mat-datepicker-toggle {
+    @apply opacity-80 hover:opacity-100 transition-opacity duration-200;
+  }
 }

@@ -1,17 +1,17 @@
 import { Component, inject, OnInit } from '@angular/core'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgmPrismHighlightComponent } from '@metad/components/prism'
-import { NxTableModule } from '@metad/components/table'
+import { NgmPrismHighlightComponent } from '@metad/ocap-angular/prism'
 import { convertQueryResultColumns, nonNullable } from '@metad/core'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { isDataSettings } from '@metad/ocap-core'
 import { uuid } from '@metad/story/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { NxStorySharedModule } from '../shared.module'
 
 @Component({
   standalone: true,
-  imports: [NxStorySharedModule, TranslateModule, NxTableModule, NgmPrismHighlightComponent, OcapCoreModule],
+  imports: [NxStorySharedModule, TranslateModule, NgmTableComponent, NgmPrismHighlightComponent, OcapCoreModule],
   selector: 'pac-story-explain',
   templateUrl: 'explain.component.html',
   styleUrls: ['explain.component.scss']

@@ -13,16 +13,18 @@ import {
 	IProject,
 	FeatureEnum,
 	OrganizationPermissionsEnum,
-	AnalyticsFeatures
+	AnalyticsFeatures,
+	ITenantSetting
 } from '@metad/contracts';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { StoreConfig, Store as AkitaStore, Query } from '@datorama/akita';
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { merge, Subject } from 'rxjs';
+import { combineLatest, merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
-import { ThemesEnum } from './types';
 import { ComponentEnum } from './constants';
+import { ThemesEnum, prefersColorScheme } from '@metad/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 
 export interface AppState {
@@ -36,20 +38,37 @@ export interface AppState {
 	featureToggles: IFeatureToggle[];
 	featureOrganizations: IFeatureOrganization[];
 	featureTenant: IFeatureOrganization[];
+	tenantSettings?: ITenantSetting
 }
 
 export interface PersistState {
 	organizationId?: string;
+	/**
+	 * @deprecated unused
+	 */
 	clientId?: string;
 	token: string;
 	refreshToken: string;
 	userId: string;
+	/**
+	 * @deprecated unused
+	 */
 	serverConnection: number;
 	preferredLanguage: LanguagesEnum;
 	preferredTheme: ThemesEnum;
+	/**
+	 * @deprecated unused
+	 */
 	preferredComponentLayout: ComponentLayoutStyleEnum;
+	/**
+	 * @deprecated unused
+	 */
 	componentLayout: any[]; //This would be a Map but since Maps can't be serialized/deserialized it is stored as an array
+	/**
+	 * The cache level for the ocap framework
+	 */
 	cacheLevel: number
+	fixedLayoutSider?: boolean
 }
 
 export function createInitialAppState(): AppState {
@@ -71,6 +90,7 @@ export function createInitialPersistState(): PersistState {
 	const preferredLanguage = localStorage.getItem('preferredLanguage') || null;
 	const componentLayout = localStorage.getItem('componentLayout') || [];
 	const cacheLevel = localStorage.getItem('cacheLevel') || null;
+	const fixedLayoutSider = true
 
 	return {
 		token,
@@ -79,7 +99,8 @@ export function createInitialPersistState(): PersistState {
 		serverConnection,
 		preferredLanguage,
 		componentLayout,
-		cacheLevel
+		cacheLevel,
+		fixedLayoutSider
 	} as unknown as PersistState;
 }
 
@@ -115,14 +136,12 @@ export class PersistQuery extends Query<PersistState> {
 
 @Injectable({ providedIn: 'root' })
 export class Store {
-	constructor(
-		protected appStore: AppStore,
-		protected appQuery: AppQuery,
-		protected persistStore: PersistStore,
-		protected persistQuery: PersistQuery,
-		protected permissionsService: NgxPermissionsService,
-		protected ngxRolesService: NgxRolesService
-	) {}
+	protected appStore = inject(AppStore)
+	protected appQuery = inject(AppQuery)
+	protected persistStore = inject(PersistStore)
+	protected permissionsService = inject(NgxPermissionsService)
+	protected ngxRolesService = inject(NgxRolesService)
+	protected persistQuery = inject(PersistQuery)
 
 	user$ = this.appQuery.select((state) => state.user);
 	selectedOrganization$ = this.appQuery.select(
@@ -146,6 +165,10 @@ export class Store {
 	preferredTheme$ = this.persistQuery.select(
 		(state) => state.preferredTheme
 	);
+	readonly primaryTheme$ = combineLatest([this.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])), prefersColorScheme()])
+		.pipe(
+			map(([primary, systemColorScheme]) => (primary === ThemesEnum.system || !primary) ? systemColorScheme : primary)
+		)
 	preferredComponentLayout$ = this.persistQuery.select(
 		(state) => state.preferredComponentLayout
 	);
@@ -153,8 +176,14 @@ export class Store {
 		.select((state) => state.componentLayout)
 		.pipe(map((componentLayout) => new Map(componentLayout)));
 	systemLanguages$ = this.appQuery.select((state) => state.systemLanguages);
+	tenantSettings$ = this.appQuery.select((state) => state.tenantSettings);
 
+	token$ = this.persistQuery.select((state) => state.token);
+	
 	subject = new Subject<ComponentEnum>();
+
+	// Signals
+	fixedLayoutSider = toSignal(this.persistQuery.select((state) => state.fixedLayoutSider))
 
 	/**
 	 * Observe any change to the component layout.
@@ -317,17 +346,6 @@ export class Store {
 		});
 	}
 
-	// get selectedProposal(): IProposalViewModel {
-	// 	const { selectedProposal } = this.appQuery.getValue();
-	// 	return selectedProposal;
-	// }
-
-	// set selectedProposal(proposal: IProposalViewModel) {
-	// 	this.appStore.update({
-	// 		selectedProposal: proposal
-	// 	});
-	// }
-
 	get featureToggles(): IFeatureToggle[] {
 		const { featureToggles } = this.appQuery.getValue();
 		return featureToggles;
@@ -480,6 +498,22 @@ export class Store {
 		this.persistStore.update({
 			cacheLevel: cacheLevel
 		});
+	}
+
+	get tenantSettings(): ITenantSetting | null {
+		const { tenantSettings } = this.appQuery.getValue();
+		return tenantSettings;
+	}
+	set tenantSettings(tenantSettings: ITenantSetting) {
+		this.appStore.update({
+			tenantSettings: tenantSettings
+		});
+	}
+
+	setFixedLayoutSider(value) {
+		this.persistStore.update({
+			fixedLayoutSider: value
+		})
 	}
 
 	clear() {

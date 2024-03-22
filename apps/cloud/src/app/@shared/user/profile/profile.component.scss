@@ -1,5 +1,15 @@
+@use '@angular/material/core/tokens/token-utils';
+
+$global-prefix: ngm;
+$prefix: (ngm, color);
+
+@include token-utils.use-tokens($prefix, (surface-container-high: null)) {
+  :host {
+    background-color: var(#{token-utils.get-token-variable(surface-container-high)});
+    border-color: var(--mdc-outlined-card-outline-color);
+  }
+}
+
 :host {
-  background-color: var(--ngm-card-bg-color);
-  border-color: var(--ngm-card-border-color);
   @apply border rounded-lg;
 }

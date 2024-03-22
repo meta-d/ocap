@@ -1,3 +1,6 @@
 export * from './lib/copilot'
-export * from './lib/types'
 export * from './lib/command'
+export * from './lib/types/'
+export * from './lib/engine'
+export * from './lib/shared/process-chat-stream'
+export * from './lib/shared/functions'

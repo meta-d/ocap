@@ -56,6 +56,9 @@ export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaPro
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./textarea.type.scss'],
+  host: {
+    'class': 'pac-formly-textarea ngm-density__compact'
+  }
 })
 export class FormlyFieldTextAreaComponent extends FieldType<FieldTypeConfig<TextAreaProps>> {
   override defaultOptions = {

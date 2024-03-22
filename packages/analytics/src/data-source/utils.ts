@@ -1,11 +1,11 @@
-import { CreationTable, DBQueryRunner, createQueryRunnerByType, File } from '@metad/adapter'
+import { CreationTable, DBQueryRunner, File, createQueryRunnerByType } from '@metad/adapter'
 import { AuthenticationEnum } from '@metad/contracts'
 import { UploadSheetType, getErrorMessage, readExcelWorkSheets } from '@metad/server-common'
 import { RequestContext } from '@metad/server-core'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { DataSource } from './data-source.entity'
 
-export async function prepareDataSource(dataSource: DataSource) {
+export function prepareDataSource(dataSource: DataSource) {
 	const userId = RequestContext.currentUserId()
 	// Basic authentication for single user
 	if (dataSource.authType === AuthenticationEnum.BASIC) {
@@ -20,14 +20,21 @@ export async function prepareDataSource(dataSource: DataSource) {
 	return dataSource
 }
 
-export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
-	const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-	
+export async function importSheetTables(runner: DBQueryRunner, sheets: CreationTable[], file: File) {
+	const config = sheets[0]
+
+	// Check catalog of table is existed or create.
+	if (config.catalog) {
+		await runner.createCatalog(config.catalog)
+	}
+
 	if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
 		try {
 			return await loadFromExcel(runner, sheets, file)
 		} catch (error) {
 			throw new BadRequestException(error.message)
+		} finally {
+			await runner.teardown()
 		}
 	}
 
@@ -37,7 +44,6 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		data = _sheets[0].data
 	}
 
-	const config = sheets[0]
 	try {
 		return await runner.import(
 			{
@@ -51,6 +57,18 @@ export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], 
 		)
 	} catch (error) {
 		throw new BadRequestException(getErrorMessage(error))
+	}
+}
+
+export async function dataLoad(dataSource: DataSource, sheets: CreationTable[], file: File) {
+	const isDev = process.env.NODE_ENV === 'development'
+
+	const runner = createQueryRunnerByType(dataSource.type.type, { ...dataSource.options, debug: isDev, trace: isDev })
+
+	try {
+		return await importSheetTables(runner, sheets, file)
+	} finally {
+		await runner.teardown()
 	}
 }
 

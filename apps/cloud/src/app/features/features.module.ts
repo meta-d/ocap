@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
+import { PacAuthModule } from '@metad/cloud/auth'
+import { CopilotService } from '@metad/copilot'
+import { NgmFormlyModule, provideFormly } from '@metad/formly'
+import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -9,28 +14,21 @@ import {
 } from '@metad/ocap-angular/core'
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
-import { LetDirective } from '@ngrx/component'
-import { PacAuthModule } from '@metad/cloud/auth'
-import { NxTableModule } from '@metad/components/table'
-import { NgmFormlyModule } from '@metad/formly'
-import { NgmCopilotService } from '@metad/core'
-import { PACMaterialThemeModule } from '@metad/material-theme'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
+import { registerEChartsThemes } from '@metad/material-theme'
 import { NgxPopperjsModule } from 'ngx-popperjs'
-import { CopilotService, DirtyCheckGuard, LocalAgent, ServerAgent } from '../@core/index'
+import { environment } from '../../environments/environment'
+import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
-import {
-  CopilotChatComponent,
-  CopilotGlobalComponent,
-  MaterialModule,
-  PACStatusBarComponent,
-  SharedModule
-} from '../@shared/index'
+import { MaterialModule, SharedModule } from '../@shared/index'
 import { HeaderSettingsComponent, ProjectSelectorComponent } from '../@theme/header'
 import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
+import { NotificationComponent, TuneComponent } from '../@theme'
+
+registerEChartsThemes()
 
 @NgModule({
   declarations: [FeaturesComponent],
@@ -39,27 +37,29 @@ import { FeaturesComponent } from './features.component'
     FeaturesRoutingModule,
     MaterialModule,
     SharedModule,
-    PACMaterialThemeModule,
     PacAuthModule,
     PACThemeModule,
-    PACStatusBarComponent,
-    LetDirective,
     NgxPopperjsModule,
     HeaderSettingsComponent,
     AssetsComponent,
     ProjectSelectorComponent,
-    CopilotChatComponent,
-    NxTableModule.forRoot(),
     DensityDirective,
-    CopilotGlobalComponent,
 
     // Formly
-    NgmFormlyModule.forRoot({}),
+    NgmFormlyModule,
+
+    NgmCopilotChatComponent,
+    NgmDrawerTriggerComponent,
+    ResizerModule,
+    NgmTableComponent,
+    NotificationComponent,
+    TuneComponent
   ],
   providers: [
     DirtyCheckGuard,
     NgmAgentService,
     NgmDSCacheService,
+    provideFormly(),
     {
       provide: NGM_WASM_AGENT_WORKER,
       useValue: '/assets/ocap-agent-data-init.worker.js'
@@ -70,13 +70,17 @@ import { FeaturesComponent } from './features.component'
       useExisting: WasmAgentService,
       multi: true
     },
-    LocalAgent,
+    ...(environment.enableLocalAgent
+      ? [
+          LocalAgent,
+          {
+            provide: OCAP_AGENT_TOKEN,
+            useExisting: LocalAgent,
+            multi: true
+          }
+        ]
+      : []),
     ServerAgent,
-    {
-      provide: OCAP_AGENT_TOKEN,
-      useExisting: LocalAgent,
-      multi: true
-    },
     {
       provide: OCAP_AGENT_TOKEN,
       useExisting: ServerAgent,
@@ -117,9 +121,10 @@ import { FeaturesComponent } from './features.component'
       useClass: StoryFeedService
     },
     {
-      provide: NgmCopilotService,
-      useExisting: CopilotService
-    }
+      provide: CopilotService,
+      useExisting: PACCopilotService
+    },
+    NgmCopilotEngineService
   ]
 })
 export class FeaturesModule {}

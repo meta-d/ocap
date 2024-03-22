@@ -82,6 +82,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   public settingsService? = inject(NxSettingsPanelService, { optional: true })
   public translateService = inject(TranslateService)
 
+  @Input() label: string
   @Input() capacities: PropertyCapacity[]
 
   @Input() get dataSettings(): DataSettings {

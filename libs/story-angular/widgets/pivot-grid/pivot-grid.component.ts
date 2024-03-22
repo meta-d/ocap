@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, Input, OnInit, Optional } from '@angular/core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { AbstractStoryWidget, IStoryWidget, Semantic, WidgetService } from '@metad/core'
 import { getEntityProperty, getPropertyName, isDimension, RecursiveHierarchyType } from '@metad/ocap-core'
 import { NxSettingsPanelService } from '@metad/story/designer'

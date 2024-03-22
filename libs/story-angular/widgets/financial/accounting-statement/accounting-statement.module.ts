@@ -8,7 +8,6 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTableModule } from '@angular/material/table'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { ComponentCoreModule } from '@metad/components/core'
 import { NxSelectionModule } from '@metad/components/selection'
@@ -19,7 +18,6 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 @NgModule({
   imports: [
     CommonModule,
-    LetDirective,
     TranslateModule,
     MatCardModule,
     MatButtonModule,

@@ -1,5 +1,5 @@
 :host {
-  @apply flex flex-1 h-full w-full max-h-full max-w-full;
+  @apply flex flex-1 h-full w-full max-h-full max-w-full p-2;
 }
 
 .mat-drawer-content {
@@ -31,10 +31,9 @@
   padding: 2rem;
 }
 
-.mat-progress-spinner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-left: -15px;
-  margin-top: -15px;
+.pac-model-hierarchy__preview {
+  position: relative;
+  .mat-mdc-progress-spinner {
+    @apply absolute left-1/2 top-1/2 -ml-4 -mt-4;
+  }
 }

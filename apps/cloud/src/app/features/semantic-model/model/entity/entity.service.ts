@@ -18,20 +18,21 @@ import {
   PropertyMeasure,
   Table,
   getHierarchyById,
-  getLevelById
+  getLevelById,
+  isEntitySet
 } from '@metad/ocap-core'
 import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, isEqual, omit, omitBy } from 'lodash-es'
 import {
+  EMPTY,
   Observable,
   combineLatest,
   distinctUntilChanged,
   filter,
   map,
   of,
-  pluck,
   shareReplay,
   switchMap,
   tap,
@@ -39,19 +40,20 @@ import {
 } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { EntityPreview, MODEL_TYPE, ModelCubeState, ModelDesignerType, PACModelState } from '../types'
-import { newDimensionFromColumn } from './types'
+import { newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
 export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACModelState> implements OnDestroy {
-  private _router = inject(Router)
-  private _route = inject(ActivatedRoute)
-  private destroyRef = inject(DestroyRef)
+  #modelService = inject(SemanticModelService)
+  #settingsService = inject(NxSettingsPanelService)
+  #router = inject(Router)
+  #route = inject(ActivatedRoute)
+  #destroyRef = inject(DestroyRef)
 
   get preview() {
     return this.get((state) => state.preview)
   }
-
-  _statement = toSignal(this.select((state) => state.queryLab?.statement))
+  
   set statement(value) {
     this.patchState({ queryLab: {statement: value} })
   }
@@ -67,29 +69,39 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   public readonly cube$ = this.select((state) => state.cube)
   public readonly tables$ = this.cube$.pipe(map((cube) => cube?.tables))
   public readonly entityType$ = this.entityName$.pipe(
-    switchMap((name) => this.modelService.selectEntityType(name)),
+    switchMap((name) => this.#modelService.selectEntityType(name)),
     takeUntilDestroyed(),
     shareReplay(1)
   )
-  public readonly entityType = toSignal(this.entityType$)
+
+  readonly entityError$ = this.entityName$.pipe(
+    switchMap((entity) => this.#modelService.selectEntitySet(entity)),
+    map((error) => isEntitySet(error) ? null : error),
+    takeUntilDestroyed(),
+    shareReplay(1)
+  )
 
   public readonly originalEntityType$ = this.entityName$.pipe(
-    switchMap((name) => this.modelService.selectOriginalEntityType(name)),
+    switchMap((name) => this.#modelService.selectOriginalEntityType(name)),
     takeUntilDestroyed(),
     shareReplay(1)
   )
-
-  public readonly dimensionUsages$ = this.cube$.pipe(pluck('dimensionUsages'))
-  public readonly cubeDimensions$ = this.cube$.pipe(pluck('dimensions'))
-  public readonly measures$ = this.cube$.pipe(pluck('measures'))
-  public readonly calculatedMembers$ = this.cube$.pipe(map((x) => x?.calculatedMembers))
+  
+  public readonly dimensionUsages$ = this.cube$.pipe(map((cube) => cube?.dimensionUsages));
+  public readonly cubeDimensions$ = this.cube$.pipe(map((cube) => cube?.dimensions));
+  public readonly measures$ = this.cube$.pipe(map((cube) => cube?.measures));
+  public readonly calculatedMembers$ = this.cube$.pipe(map((cube) => cube?.calculatedMembers));
 
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
-  public readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
+  // readonly currentCalculatedMember = toSignal(this.select((state) => state.cube?.calculatedMembers?.find((item) => item.__id__ === state.currentCalculatedMember)))
+  readonly statement$ = toSignal(this.select((state) => state.queryLab?.statement))
+  readonly modelType = toSignal(this.#modelService.modelType$)
+  readonly entityType = toSignal(this.entityType$)
+  readonly cube = toSignal(this.cube$)
 
   /**
   |--------------------------------------------------------------------------
@@ -97,26 +109,66 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   |--------------------------------------------------------------------------
   */
   private _cubeSub = this.cube$.pipe(filter(Boolean), takeUntilDestroyed()).subscribe((cube) => {
-    this.modelService.updateDataSourceSchemaCube(cube)
+    this.#modelService.updateDataSourceSchemaCube(cube)
   })
   private _entityTypeSub = this.select((state) => state.entityType)
     .pipe(filter(Boolean), takeUntilDestroyed())
     .subscribe((cube) => {
-      this.modelService.updateDataSourceSchemaEntityType(cube)
+      this.#modelService.updateDataSourceSchemaEntityType(cube)
     })
+  private selectedSub = this.select((state) => state.selectedProperty).pipe(
+    switchMap((typeAndId) => {
+      if (!this.cube()) {
+        return EMPTY
+      }
+      
+      // Decode property type and key
+      const [type, key] = typeAndId?.split('#') ?? [ModelDesignerType.cube, this.cube().__id__]
 
-  constructor(public modelService: SemanticModelService, public settingsService: NxSettingsPanelService) {
+      return this.#settingsService
+        .openDesigner(
+          ModelDesignerType[type] + (this.modelType() === MODEL_TYPE.XMLA ? 'Attributes' : ''),
+          combineLatest([
+            this.cube$,
+            this.selectByTypeAndId(ModelDesignerType[type], key).pipe(
+              filter(Boolean) // 过滤已经被删除的等情况
+            )
+          ]).pipe(
+            map(([cube, modeling]) => ({
+              cube,
+              id: modeling.__id__,
+              modeling
+            })),
+            distinctUntilChanged(isEqual)
+          ),
+          key
+        )
+        .pipe(
+          distinctUntilChanged(isEqual),
+          tap((result) =>
+            this.updateCubeProperty({
+              id: key,
+              type: ModelDesignerType[type],
+              model: result.modeling
+            })
+          )
+        )
+    }),
+    takeUntilDestroyed()
+  ).subscribe()
+
+  constructor() {
     super({} as ModelCubeState)
   }
 
   public init(entity: string) {
-    this.connect(this.modelService, { parent: ['cubes', entity] })
+    this.connect(this.#modelService, { parent: ['cubes', entity] })
     this.dirtyCheckQuery.setHead()
-    this.modelService.saved$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.#modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this.dirtyCheckQuery.setHead()
     })
 
-    this.dirtyCheckQuery.isDirty$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((dirty) => {
+    this.dirtyCheckQuery.isDirty$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe((dirty) => {
       if (!this.get((state) => state.dirty)) {
         this.patchState({ dirty })
       }
@@ -124,7 +176,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   }
 
   query(statement: string) {
-    return this.modelService.dataSource.query({ statement })
+    return this.#modelService.dataSource.query({ statement })
   }
 
   readonly updateCube = this.updater((state, cube: Partial<Cube>) => {
@@ -217,10 +269,15 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
    * * blank
    * * from source table column
    */
-  readonly newDimension = this.updater((state, event?: { index: number; column: PropertyAttributes }) => {
+  readonly newDimension = this.updater((state, event?: { index: number; table?: {name: string; caption: string;}; column?: PropertyAttributes }) => {
     state.cube.dimensions = state.cube.dimensions ?? []
     if (event) {
-      state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column))
+      const isOlap = this.modelType() === MODEL_TYPE.OLAP
+      if (event.table) {
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromTable(state.cube.dimensions, event.table.name, event.table.caption, isOlap))
+      } else if (event.column) {
+        state.cube.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column, isOlap))
+      }
     } else if (!state.cube.dimensions.find((item) => item.name === '')) {
       state.cube.dimensions.push({
         __id__: uuid(),
@@ -254,14 +311,16 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     } as PropertyHierarchy)
   })
 
-  readonly newLevel = this.updater((state, { id, name }: { id: string; name: string }) => {
+  readonly newLevel = this.updater((state, { id, index, name, column, caption }: { id: string; index?: number; name: string; column?: string; caption?: string; }) => {
     const hierarchy = getHierarchyById(state.cube, id)
     // 检查是否已经存在新建条目
     if (!hierarchy.levels?.find((item) => item.name === name)) {
       hierarchy.levels = hierarchy.levels ?? []
-      hierarchy.levels.push({
+      hierarchy.levels.splice(index ?? hierarchy.levels.length, 0, {
         __id__: uuid(),
-        name
+        name,
+        column,
+        caption
       } as PropertyLevel)
     }
   })
@@ -301,7 +360,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
         __id__: uuid(),
         name: event.column,
         formula: event.column,
-        aggregator: 'sum'
+        aggregator: 'sum',
+        visible: true // default visible
       })
     } else if (!state.cube.calculatedMembers.find((item) => item.name === '')) {
       // 插入到第一个
@@ -309,7 +369,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
         __id__: uuid(),
         name: '',
         dimension: C_MEASURES,
-        formula: null
+        formula: null,
+        visible: true // default visible
       })
     }
   })
@@ -452,42 +513,8 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   /**
    * Set selected property name to open designer panel
    */
-  readonly setSelectedProperty = this.effect((origin$: Observable<string>) => {
-    return origin$.pipe(
-      withLatestFrom(this.state$, this.modelService.modelType$),
-      switchMap(([typeAndId, state, modelType]) => {
-        const [type, id] = typeAndId?.split('#') ?? [ModelDesignerType.cube, state.cube.__id__]
-
-        return this.settingsService
-          .openDesigner(
-            ModelDesignerType[type] + (modelType === MODEL_TYPE.XMLA ? 'Attributes' : ''),
-            combineLatest([
-              this.cube$,
-              this.selectByTypeAndId(ModelDesignerType[type], id).pipe(
-                filter(Boolean) // 过滤已经被删除的等情况
-              )
-            ]).pipe(
-              map(([cube, modeling]) => ({
-                cube,
-                id: modeling.__id__,
-                modeling
-              })),
-              distinctUntilChanged(isEqual)
-            ),
-            id
-          )
-          .pipe(
-            distinctUntilChanged(isEqual),
-            tap((result) =>
-              this.updateCubeProperty({
-                id,
-                type: ModelDesignerType[type],
-                model: result.modeling
-              })
-            )
-          )
-      })
-    )
+  setSelectedProperty = this.updater((state, key: string) => {
+    state.selectedProperty = key
   })
 
   selectCalculatedMember<T>(id: string): Observable<CalculatedMember> {
@@ -603,13 +630,18 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
     return origin$.pipe(
       withLatestFrom(this.dimensionUsages$),
       tap(([id, dimensionUsages]) => {
-        this.modelService.navigateDimension(dimensionUsages?.find((item) => item.__id__ === id)?.source)
+        this.#modelService.navigateDimension(dimensionUsages?.find((item) => item.__id__ === id)?.source)
       })
     )
   })
 
+  /**
+   * Navigate to calculation member page by key
+   * 
+   * @param key 
+   */
   navigateCalculation(key: string) {
-    this._router.navigate(['calculation', key], { relativeTo: this._route })
+    this.#router.navigate(['calculation', key], { relativeTo: this.#route })
   }
 
   readonly setPreview = this.updater((state, preview: EntityPreview) => {

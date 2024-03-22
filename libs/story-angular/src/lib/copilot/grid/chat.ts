@@ -1,11 +1,12 @@
 import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
-import { StoryCopilotChatConversation, StoryWidget, WidgetComponentType } from '@metad/story/core'
+import { StoryWidget, WidgetComponentType } from '@metad/story/core'
+import { nanoid } from 'nanoid'
 import { map, of, switchMap } from 'rxjs'
 import { analyticsAnnotationCheck, editWidgetGrid } from './schema'
 
-export function chatGridWidget(copilot: StoryCopilotChatConversation, widget?: StoryWidget) {
+export function chatGridWidget(copilot, widget?: StoryWidget) {
   const { logger, copilotService, prompt, entityType } = copilot
 
   const systemPrompt = `You are a BI analysis expert, please edit or create the grid widget configuration based on the cube information and the question.
@@ -17,10 +18,12 @@ Original widget is ${JSON.stringify(widget ?? 'empty')}`
     .chatCompletions(
       [
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.System,
           content: systemPrompt
         },
         {
+          id: nanoid(),
           role: CopilotChatMessageRoleEnum.User,
           content: prompt
         }
@@ -42,7 +45,7 @@ Original widget is ${JSON.stringify(widget ?? 'empty')}`
     )
 }
 
-export function editGridWidgetCommand(copilot: StoryCopilotChatConversation) {
+export function editGridWidgetCommand(copilot) {
   const { logger, storyService } = copilot
 
   const widget = storyService.currentWidget()
@@ -54,7 +57,7 @@ export function editGridWidgetCommand(copilot: StoryCopilotChatConversation) {
   const pageKey = page?.key
 
   return chatGridWidget(copilot, widget).pipe(
-    switchMap((copilot) => {
+    switchMap((copilot: any) => {
       const { response, entityType, dataSource } = copilot
       const { arguments: anwser } = response
 
@@ -66,10 +69,14 @@ export function editGridWidgetCommand(copilot: StoryCopilotChatConversation) {
           widgetKey,
           widget: {
             ...omit(anwser, 'analytics'),
-            dataSettings: assignDeepOmitBlank(cloneDeep(widget.dataSettings), {
-              ...(anwser.dataSettings ?? {}),
-              analytics: analyticsAnnotationCheck(anwser.analytics, entityType)
-            }, 5)
+            dataSettings: assignDeepOmitBlank(
+              cloneDeep(widget.dataSettings),
+              {
+                ...(anwser.dataSettings ?? {}),
+                analytics: analyticsAnnotationCheck(anwser.analytics, entityType)
+              },
+              5
+            )
           }
         })
       } else {

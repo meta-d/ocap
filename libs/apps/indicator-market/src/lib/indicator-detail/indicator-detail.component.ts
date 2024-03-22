@@ -3,23 +3,24 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   ElementRef,
   HostBinding,
   inject,
-  InjectFlags,
   Input,
-  LOCALE_ID,
+  signal,
   ViewChild
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { CopilotService } from '@metad/copilot'
 import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
   calcRange,
   ChartAnnotation,
   ChartDimensionRoleType,
+  ChartOptions,
   ChartOrient,
   ChartSettings,
   DataSettings,
@@ -40,6 +41,7 @@ import {
   isEqual,
   ISlicer,
   isNil,
+  isSlicer,
   OrderDirection,
   ReferenceLineAggregation,
   ReferenceLineType,
@@ -48,33 +50,34 @@ import {
   TimeGranularity,
   TimeRangeType
 } from '@metad/ocap-core'
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy'
 import { TranslateService } from '@ngx-translate/core'
-import { CommentsService, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, NgmCopilotService } from '@metad/core'
+import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
+import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { computedAsync } from 'ngxtension/computed-async'
 import {
   BehaviorSubject,
   combineLatest,
   delay,
   distinctUntilChanged,
+  EMPTY,
   filter,
   firstValueFrom,
   map,
   Observable,
-  pluck,
-  scan,
+  of,
   shareReplay,
+  startWith,
   switchMap,
   withLatestFrom
 } from 'rxjs'
 import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-indicator-detail',
@@ -123,21 +126,31 @@ export class IndicatorDetailComponent {
       name: '3Y',
       granularity: TimeGranularity.Month,
       lookBack: 36
+    },
+    {
+      name: '4Y',
+      granularity: TimeGranularity.Month,
+      lookBack: 48
+    },
+    {
+      name: '5Y',
+      granularity: TimeGranularity.Month,
+      lookBack: 60
     }
   ]
 
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
-  private logger = inject(NGXLogger)
-  private locale: string = inject(LOCALE_ID)
-  private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, InjectFlags.Optional)
-  private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, InjectFlags.Optional)
+  readonly #logger = inject(NGXLogger)
+  private data? = inject<{ id: string }>(MAT_BOTTOM_SHEET_DATA, { optional: true })
+  private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
   private toastrService = inject(ToastrService)
-  private translateService = inject(TranslateService)
-  private copilotService = inject(NgmCopilotService)
+  private copilotService = inject(CopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private commentsService = inject(CommentsService)
+  readonly #translate = inject(TranslateService)
+  readonly #store = inject(Store)
 
   private _id$ = new BehaviorSubject<string>(null)
   @Input()
@@ -152,78 +165,86 @@ export class IndicatorDetailComponent {
 
   @ViewChild('commentsContent') commentsContent: ElementRef<any>
 
-  get copilotEnabled() {
-    return this.copilotService.copilot?.enabled && this.copilotService.copilot?.apiKey
-  }
-
-  businessAreaUser: IBusinessAreaUser
-  get modeler() {
+  /**
+  |--------------------------------------------------------------------------
+  | Properties
+  |--------------------------------------------------------------------------
+  */
+  readonly businessAreaUser = signal<IBusinessAreaUser>(null)
+  readonly isModeler = computed(() => {
     return (
-      isNil(this.businessAreaUser) ||
-      this.businessAreaUser?.role === BusinessAreaRole.Modeler ||
-      this.businessAreaUser?.role === BusinessAreaRole.Adminer
+      isNil(this.businessAreaUser()) ||
+      this.businessAreaUser()?.role === BusinessAreaRole.Modeler ||
+      this.businessAreaUser()?.role === BusinessAreaRole.Adminer
     )
-  }
+  })
+  readonly explainDataSignal = signal<any>(null)
+
   prompt = ''
   answering = false
-  explainData
+  // explainData
   drillExplainData = []
   messages = []
   relative = true
 
-  public readonly period$ = new BehaviorSubject(null)
-  get selectedPeriod() {
-    return this.period$.value
-  }
-  set selectedPeriod(value) {
-    this.period$.next(value)
-  }
+  readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
+  readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
+  readonly detailPeriods = this.store.detailPeriods
+  readonly period = computed(() => this.PERIODS.find((item) => item.name === this.detailPeriods()))
 
+  readonly globalTimeGranularity = toSignal(this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)))
+  readonly timeGranularity = computed(() => {
+    const period = this.period()
+    const globalTimeGranularity = this.globalTimeGranularity()
+    return period?.granularity ?? globalTimeGranularity
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   public readonly freeSlicers$ = new BehaviorSubject<ISlicer[]>([])
-
   public readonly indicator$: Observable<IndicatorState> = this._id$.pipe(
     filter(Boolean),
     switchMap((id) => this.store.selectIndicator(id)),
     distinctUntilChanged(isEqual),
-    untilDestroyed(this),
+    filter(nonNullable),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
   public readonly isMobile$ = this.indicatoryMarketComponent.isMobile$
   public readonly notMobile$ = this.indicatoryMarketComponent.notMobile$
 
-  public readonly _dataSettings$ = this.indicator$.pipe(pluck('dataSettings'), filter(Boolean), distinctUntilChanged())
+  public readonly _dataSettings$ = this.indicator$.pipe(map((indicator) => indicator?.dataSettings), filter(Boolean), distinctUntilChanged())
 
-  public readonly title$ = this.indicator$.pipe(pluck('name'))
+  public readonly title$ = this.indicator$.pipe(map((indicator) => indicator?.name))
 
   public readonly entityType$ = this._dataSettings$.pipe(
     switchMap(({ dataSource, entitySet }) => this.dsCoreService.selectEntitySet(dataSource, entitySet)),
     map((entitySet) => entitySet?.entityType)
   )
 
-  private readonly timeGranularity$ = combineLatest([
-    this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)),
-    this.period$.pipe(map((period) => period?.granularity))
-  ]).pipe(map(([timeGranularity, granularity]) => granularity ?? timeGranularity))
   private readonly today$ = this.dsCoreService.currentTime$.pipe(map(({ today }) => today))
   private readonly calendar$ = combineLatest([
     this.indicator$.pipe(distinctUntilChanged((prev, curr) => prev?.calendar === curr?.calendar)),
     this.entityType$,
-    this.timeGranularity$
+    toObservable(this.timeGranularity)
   ]).pipe(
     map(([indicator, entityType, timeGranularity]) =>
       getEntityCalendar(entityType, indicator.calendar, timeGranularity)
     ),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
   private readonly timeSlicer$ = combineLatest([
     this.calendar$,
-    this.timeGranularity$,
+    toObservable(this.timeGranularity),
     this.today$,
-    this.store.lookBack$,
-    this.period$
+    toObservable(this.store.lookback),
+    toObservable(this.period)
   ]).pipe(
     map(([{ dimension, hierarchy, level }, timeGranularity, today, lookBack, period]) => {
       const timeRange = calcRange(today, {
@@ -242,7 +263,7 @@ export class IndicatorDetailComponent {
         operator: FilterOperator.BT
       } as IFilter
     }),
-    untilDestroyed(this),
+    takeUntilDestroyed(),
     shareReplay(1)
   )
 
@@ -322,8 +343,7 @@ export class IndicatorDetailComponent {
     map((indicator) => indicator.trend),
     distinctUntilChanged(),
     map((indicatorTrend) => {
-      const color =
-        this.locale === 'zh-Hans'
+      const color = this.currentLang$() === LanguagesEnum.SimplifiedChinese
           ? TrendReverseColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
           : TrendColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
       return {
@@ -404,8 +424,8 @@ export class IndicatorDetailComponent {
     })
   )
 
-  public readonly mom$ = this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down)))
-  public readonly yoy$ = this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down)))
+  readonly mom$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.MOM > 0 ? Trend.Up : Trend.Down))))
+  readonly yoy$ = toSignal(this.indicator$.pipe(map((indicator) => (indicator.data?.YOY > 0 ? Trend.Up : Trend.Down))))
 
   // Free dimensions as slicers bar
   public readonly freeDimensions$ = this.indicator$.pipe(
@@ -448,12 +468,13 @@ export class IndicatorDetailComponent {
     this.indicator$,
     this.periodSlicer$,
     this.freeSlicers$,
-    this.entityType$
+    this.entityType$,
+    this.#store.primaryTheme$
   ]).pipe(
-    map(([indicator, timeSlicer, freeSlicers, entityType]) => {
+    map(([indicator, timeSlicer, freeSlicers, entityType, primaryTheme]) => {
       const locale = this.store.locale
-      const pieName = this.translateService.instant('IndicatorApp.Pie', {Default: 'Pie'})
-      const barName = this.translateService.instant('IndicatorApp.Bar', {Default: 'Bar'})
+      const pieName = this.#translate.instant('IndicatorApp.Pie', {Default: 'Pie'})
+      const barName = this.#translate.instant('IndicatorApp.Bar', {Default: 'Bar'})
 
       return indicator.filters?.map((filter, index) => {
         const slicers = [...indicator.filters]
@@ -471,7 +492,15 @@ export class IndicatorDetailComponent {
               chartType: {
                 name: barName,
                 type: 'Bar',
-                orient: ChartOrient.horizontal
+                orient: ChartOrient.horizontal,
+                chartOptions: {
+                  seriesStyle: {
+                    barMinHeight: 10,
+                    label: {
+                      align: 'left',
+                    }
+                  }
+                }
               },
               dimensions: [
                 {
@@ -512,7 +541,7 @@ export class IndicatorDetailComponent {
             }
           },
           chartSettings: <ChartSettings>{
-            theme: 'dark',
+            theme: primaryTheme,
             universalTransition: true,
             chartTypes: [
               {
@@ -536,7 +565,13 @@ export class IndicatorDetailComponent {
               }
             ]
           },
-          chartOptions: {
+          chartOptions: <ChartOptions>{
+            aria: {
+              enabled: true,
+              decal: {
+                show: true
+              }
+            },
             grid: {
               right: 20
             },
@@ -592,21 +627,45 @@ export class IndicatorDetailComponent {
   )
 
   /**
-   * Subscriptions
-   */
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly indicator = toSignal(this.indicator$)
+  readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
+  readonly copilotEnabled = toSignal(this.copilotService.enabled$)
+
+  readonly entityType = computedAsync(() => {
+    const dataSource = this.explainDataSignal()?.[0].dataSource
+    const entitySet = this.explainDataSignal()?.[0].entitySet
+    if (dataSource) {
+      return this.dsCoreService.getDataSource(dataSource).pipe(
+        switchMap((dataSource) => dataSource.selectEntityType(entitySet))
+      )
+    }
+
+    return of(null)
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions
+  |--------------------------------------------------------------------------
+  */
   // New indicator
-  private _indicatorSub = this.indicator$.subscribe(async (indicator) => {
+  private _indicatorSub = this.indicator$.pipe(takeUntilDestroyed()).subscribe(async (indicator) => {
     // Clear free slicers when new indicator
     this.freeSlicers$.next([])
     this.messages = []
     this.prompt = ''
 
     if (indicator?.businessAreaId) {
-      this.businessAreaUser = await this.store.getBusinessAreaUser(indicator.businessAreaId)
+      this.businessAreaUser.set(await this.store.getBusinessAreaUser(indicator.businessAreaId))
     } else {
-      this.businessAreaUser = null
+      this.businessAreaUser.set(null)
     }
 
+    // remove when signals are ready
     setTimeout(() => {
       this._cdr.detectChanges()
     })
@@ -628,11 +687,15 @@ export class IndicatorDetailComponent {
   }
 
   toggleFavorite(indicator: IndicatorState) {
-    if (indicator.favour) {
+    if (this.favour()) {
       this.store.deleteFavorite(indicator)
     } else {
       this.store.createFavorite(indicator)
     }
+  }
+
+  togglePeriod(name: string) {
+    this.store.toggleDetailPeriods(name)
   }
 
   async saveAsComment(id: string, comment: string, relative: boolean) {
@@ -674,8 +737,11 @@ export class IndicatorDetailComponent {
   }
 
   onPeriodSlicerChange(slicers: ISlicer[]) {
+    this.#logger.debug(`indicator app detail slicer change:`, slicers)
     if (isAdvancedFilter(slicers[0])) {
       this.currentPeriodSlicer$.next(slicers[0].children[0])
+    } else if (isSlicer(slicers[0])) {
+      this.currentPeriodSlicer$.next(slicers[0])
     }
   }
 
@@ -691,32 +757,31 @@ export class IndicatorDetailComponent {
   }
 
   onExplain(event) {
-    this.logger.trace(`indicator app, detail explain:`, event)
-    this.explainData = event
+    this.#logger.trace(`[Indicator App] detail explain:`, event)
+    // this.explainData = event
+    this.explainDataSignal.set(event)
   }
 
   onDrillExplain(index, drill, event) {
-    this.logger.trace(`indicator app, detail drilldown explain:`, event)
+    this.#logger.trace(`indicator app, detail drilldown explain:`, event)
     this.drillExplainData[index] = {
       drill,
       event
     }
   }
 
-  // For AI Copilot
-  async askCopilot() {
-    const queryResult = this.explainData?.[1]
+  makeIndicatorDataPrompt() {
+    const queryResult = this.explainDataSignal()?.[1]
     if (queryResult) {
-      const lang = this.translateService.currentLang
-      const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
-      const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
+      const lang = this.#translate.currentLang
+      const entityType = this.entityType()
 
       if (isEntityType(entityType)) {
         let dataPrompt =
           this.getPromptForCube(entityType) +
           '\n' +
           'The main data trend on time series is:\n' +
-          this.getPromptForChartData(entityType, this.explainData)
+          this.getPromptForChartData(entityType, this.explainDataSignal())
 
         this.drillExplainData.forEach((drillItem) => {
           if (drillItem) {
@@ -726,47 +791,80 @@ export class IndicatorDetailComponent {
           }
         })
 
-        const userMessage = {
-          prompt: this.prompt,
-          content: '',
-          relative: true
-        }
-        this.messages.push(userMessage)
-
-        this.prompt = ''
-        this.answering = true
-        this.copilotService
-          .chatStream([
-            {
-              role: CopilotChatMessageRoleEnum.System,
-              content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
-            },
-            {
-              role: CopilotChatMessageRoleEnum.User,
-              content: userMessage.prompt + ':\n' + dataPrompt
-            }
-          ])
-          .pipe(
-            scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-            map((content) => content.trim())
-          )
-          .subscribe({
-            next: (content) => {
-              userMessage.content = content
-              this._cdr.detectChanges()
-            },
-            error: () => {
-              this.answering = false
-              this._cdr.detectChanges()
-            },
-            complete: () => {
-              this.answering = false
-              this._cdr.detectChanges()
-            }
-          })
+        return dataPrompt
       }
     }
+
+    return ``
   }
+
+  // For AI Copilot
+  // async askCopilot() {
+  //   const queryResult = this.explainData?.[1]
+  //   if (queryResult) {
+  //     const lang = this.#translate.currentLang
+  //     const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
+  //     const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
+
+  //     if (isEntityType(entityType)) {
+  //       let dataPrompt =
+  //         this.getPromptForCube(entityType) +
+  //         '\n' +
+  //         'The main data trend on time series is:\n' +
+  //         this.getPromptForChartData(entityType, this.explainData)
+
+  //       this.drillExplainData.forEach((drillItem) => {
+  //         if (drillItem) {
+  //           dataPrompt +=
+  //             `\nThe drilldown data on dimension ${drillItem.drill.title} at ${drillItem.drill.period} is:\n` +
+  //             this.getPromptForChartData(entityType, drillItem.event)
+  //         }
+  //       })
+
+  //       const userMessage = {
+  //         prompt: this.prompt,
+  //         content: '',
+  //         relative: true
+  //       }
+  //       this.messages.push(userMessage)
+
+  //       this.prompt = ''
+  //       this.answering = true
+
+  //       // this.copilotService
+  //       //   .chatStream([
+  //       //     {
+  //       //       id: nanoid(),
+  //       //       role: CopilotChatMessageRoleEnum.System,
+  //       //       content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
+  //       //     },
+  //       //     {
+  //       //       id: nanoid(),
+  //       //       role: CopilotChatMessageRoleEnum.User,
+  //       //       content: userMessage.prompt + ':\n' + dataPrompt
+  //       //     }
+  //       //   ])
+  //       //   .pipe(
+  //       //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
+  //       //     map((content) => content.trim())
+  //       //   )
+  //       //   .subscribe({
+  //       //     next: (content) => {
+  //       //       userMessage.content = content
+  //       //       this._cdr.detectChanges()
+  //       //     },
+  //       //     error: () => {
+  //       //       this.answering = false
+  //       //       this._cdr.detectChanges()
+  //       //     },
+  //       //     complete: () => {
+  //       //       this.answering = false
+  //       //       this._cdr.detectChanges()
+  //       //     }
+  //       //   })
+  //     }
+  //   }
+  // }
 
   getPromptForCube(entityType: EntityType) {
     return `The model ${entityType.caption} contain dimensions: ${getEntityDimensions(entityType)
@@ -818,6 +916,6 @@ export class IndicatorDetailComponent {
 
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.locale === 'zh-Hans'
+    return this.currentLang$() === LanguagesEnum.SimplifiedChinese
   }
 }

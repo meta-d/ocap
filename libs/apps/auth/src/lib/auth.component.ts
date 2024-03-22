@@ -1,11 +1,12 @@
 import { Location } from '@angular/common'
-import { Component } from '@angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
+import { Component, computed, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { Store } from '@metad/cloud/state'
-import { map } from 'rxjs/operators'
+import { TranslateService } from '@ngx-translate/core'
+import { map, startWith } from 'rxjs/operators'
 import { PacAuthService } from './services/auth.service'
 
-@UntilDestroy({ checkProperties: true })
+
 @Component({
   selector: 'pac-auth',
   styleUrls: ['./auth.component.scss'],
@@ -15,7 +16,21 @@ import { PacAuthService } from './services/auth.service'
   }
 })
 export class PacAuthComponent {
-  authenticated = false
+  readonly #translate = inject(TranslateService)
+  protected auth = inject(PacAuthService)
+  protected store = inject(Store)
+  protected location = inject(Location)
+
+  readonly tenantSettings = toSignal(this.store.tenantSettings$)
+  readonly language = toSignal(this.#translate.onLangChange.pipe(
+    startWith(this.#translate.defaultLang),
+    map(() => this.#translate.currentLang))
+  )
+  readonly title = computed(() => {
+    const langTitle = `tenant_title_${this.language()}`
+    return this.tenantSettings()?.[langTitle] || this.tenantSettings()?.tenant_title
+  })
+
   token = ''
 
   // showcase of how to use the onAuthenticationChange method
@@ -34,29 +49,12 @@ export class PacAuthComponent {
     }
   ]
 
-  set language(value: string) {
-    this.store.preferredLanguage = value
-  }
-
-  public readonly preferredLanguage$ = this.store.preferredLanguage$.pipe(
-    map((preferredLanguage) => preferredLanguage ?? navigator.language ?? 'en')
-  )
-
-  private _AuthSub = this.auth.onAuthenticationChange().subscribe((authenticated: boolean) => {
-    this.authenticated = authenticated
-  })
-  constructor(
-    protected auth: PacAuthService,
-    protected store: Store,
-    protected location: Location,
-  ) {}
-
   back() {
     this.location.back()
     return false
   }
 
   onLanguage(value) {
-    this.language = value
+    this.store.preferredLanguage = value
   }
 }

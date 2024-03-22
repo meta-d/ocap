@@ -5,8 +5,8 @@ import { TranslateService } from '@ngx-translate/core'
 import { take } from 'rxjs'
 import { NbAuthSocialLink, PAC_AUTH_OPTIONS } from '../auth.options'
 import { getDeepFromObject } from '../helpers'
-import { PacAuthResult, PacAuthService } from '../services'
-import { passwordStrength, PasswordStrengthEnum } from '../services/password-strength'
+import { matchValidator, PacAuthResult, PacAuthService, passwordStrength, PasswordStrengthEnum } from '../services'
+
 
 @Component({
   selector: 'pac-register',
@@ -44,9 +44,9 @@ export class UserRegisterComponent implements OnDestroy {
         // mobile: [null, [Validators.required, Validators.pattern(/^1\d{10}$/)]],
         // captcha: [null, [Validators.required]]
       },
-      // {
-      //   validators: MatchControl('password', 'confirm')
-      // }
+      {
+        validators: [matchValidator('password', 'confirm')]
+      }
     )
 
     this.redirectDelay = this.getConfigValue('forms.register.redirectDelay')
@@ -100,6 +100,10 @@ export class UserRegisterComponent implements OnDestroy {
 
   count = 0
   interval$: any
+
+  get mismatch() {
+    return this.form.hasError('mismatch') && this.form.get('confirm').dirty
+  }
 
   static checkPassword(control: FormControl) {
     if (!control) {

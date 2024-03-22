@@ -7,6 +7,7 @@ module.exports = {
     join(__dirname, '../../packages/angular/**/!(*.stories|*.spec).{ts,html}'),
     ...createGlobPatternsForDependencies(__dirname)
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

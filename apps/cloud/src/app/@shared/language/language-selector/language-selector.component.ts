@@ -1,17 +1,16 @@
-import { Component, OnInit, Input, Output, EventEmitter, forwardRef, ChangeDetectorRef, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, forwardRef, ChangeDetectorRef, signal, computed, inject, DestroyRef } from '@angular/core';
 import { ILanguage } from '@metad/contracts';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguagesService, Store } from '../../../@core';
 import { filter, tap } from 'rxjs/operators';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslationBaseComponent } from '../translation-base.component';
 import { NgmSelectComponent } from '@metad/ocap-angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-@UntilDestroy({ checkProperties: true })
 @Component({
 	standalone: true,
 	imports: [
@@ -34,6 +33,8 @@ import { NgmSelectComponent } from '@metad/ocap-angular/common';
 	]
 })
 export class LanguageSelectorComponent extends TranslationBaseComponent implements OnInit {
+	readonly destroyRef = inject(DestroyRef)
+	
 	languages = signal<ILanguage[]>([])
 	// languages: ILanguage[];
 	loading: boolean;
@@ -120,7 +121,7 @@ export class LanguageSelectorComponent extends TranslationBaseComponent implemen
 			.pipe(
 				filter((preferredLanguage: string) => !!preferredLanguage),
 				tap((preferredLanguage: string) => this.selectedLanguageCode = preferredLanguage),
-				untilDestroyed(this)
+				takeUntilDestroyed(this.destroyRef)
 			)
 			.subscribe();
 	}

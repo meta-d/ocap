@@ -1,4 +1,4 @@
-import { CreationTable, DORIS_TYPE, STARROCKS_TYPE } from '@metad/adapter'
+import { CreationTable, DORIS_TYPE, STARROCKS_TYPE, createQueryRunnerByType } from '@metad/adapter'
 import {
 	IBusinessArea,
 	IDataSource,
@@ -10,6 +10,7 @@ import {
 	IStoryWidget,
 	ITenant,
 	IUser,
+	OrganizationDemoNetworkEnum,
 	ProjectStatusEnum,
 	StoryStatusEnum,
 	Visibility
@@ -28,7 +29,7 @@ import * as _axios from 'axios'
 import { assign, isString } from 'lodash'
 import { RedisClientType } from 'redis'
 import { Repository } from 'typeorm'
-import { dataLoad, prepareDataSource } from '../../../data-source/utils'
+import { importSheetTables, prepareDataSource } from '../../../data-source/utils'
 import { updateXmlaCatalogContent } from '../../../model/helper'
 import {
 	BusinessArea,
@@ -44,6 +45,18 @@ import {
 import { readYamlFile } from '../../helper'
 import { REDIS_CLIENT } from '../../redis.module'
 
+type OrganizationDemoOptionsType = {
+	source: OrganizationDemoNetworkEnum
+}
+
+export enum InstallationModeEnum {
+	Standalone = 'standalone',
+	WithDoris = 'with-doris',
+	WithStarrocks = 'with-starrocks'
+}
+
+const OrganizationDemoNetworkAliyun = 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v1.0.0.zip'
+const OrganizationDemoNetworkGitHub = 'https://github.com/meta-d/samples/raw/main/ocap/demos-v1.0.0.zip'
 
 const axios = _axios.default
 
@@ -86,7 +99,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	) {}
 
 	public async execute(command: OrganizationDemoCommand): Promise<void> {
-		const { id, options } = command.input
+		const { id, options } = command.input as { id: string; options: OrganizationDemoOptionsType}
 		const userId = RequestContext.currentUserId()
 		const organization = await this.orgRepository.findOne(id, { relations: ['tenant'] })
 		this.organization = organization
@@ -94,21 +107,24 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		this.owner = RequestContext.currentUser()
 
 		const isDemo = this.configService.get('demo') as boolean
-		const withDoris = this.nestConfigService.get('INSTALLATION_MODE') === 'with-doris'
-		const withStarrocks = this.nestConfigService.get('INSTALLATION_MODE') === 'with-starrocks'
-		const standalone = !this.nestConfigService.get('INSTALLATION_MODE') || this.nestConfigService.get('INSTALLATION_MODE') === 'standalone'
+		const withDoris = this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.WithDoris
+		const withStarrocks = this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.WithStarrocks
+		const standalone = !this.nestConfigService.get('INSTALLATION_MODE') || this.nestConfigService.get('INSTALLATION_MODE') === InstallationModeEnum.Standalone
 
 		this.logger.log(`Generate demo data for tenant ${organization.tenantId}, organzation ${organization.id}, user ${userId}`)
 		
 		//extracted import data files directory path
 		const samplesPath = await this.getUserSamplesPath(userId)
 		const demosFolder = path.join(samplesPath, 'demos')
-		const file = options?.source === 'aliyun' ? 'https://metad-oss.oss-cn-shanghai.aliyuncs.com/ocap/demos-v0.5.0.zip' : 'https://github.com/meta-d/samples/raw/main/ocap/demos-v0.5.0.zip'
+		const file = options?.source === OrganizationDemoNetworkEnum.aliyun ? OrganizationDemoNetworkAliyun
+			: options?.source === OrganizationDemoNetworkEnum.github ? OrganizationDemoNetworkGitHub
+			: options?.source
 	    const files = await this.unzipAndRead(file, samplesPath)
 
-		this.logger.debug(files)
+		this.logger.debug(`Start to import files in demo file: ${files}`)
 
 		for await (const file of files) {
+			this.logger.debug(`	Start to import file: ${file}`)
 			let sheets
 			try {
 				sheets = await readYamlFile<
@@ -139,6 +155,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 				indicator,
 				story
 			} of sheets) {
+				this.logger.debug(`		Start to import record: ${name}`)
 
 				if (withStarrocks && installationMode && installationMode !== 'with-starrocks') {
 					continue;
@@ -194,16 +211,29 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 						throw new Error(`'dataSource' must be defined for 'dataset'`)
 					}
 
+					// Create dataSource runner
+					const isDev = process.env.NODE_ENV === 'development'
+					const runner = createQueryRunnerByType(dataSourceEntity.type.type, {...dataSourceEntity.options, debug: isDev, trace: isDev})
+
 					for await (const item of dataset) {
-						await dataLoad(dataSourceEntity, [item], {
-							stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
-							fieldname: '',
-							originalname: '',
-							path: path.join(demosFolder, item.fileUrl),
-							encoding: '',
-							mimetype: 'text/csv'
-						} as any)
+						this.logger.debug(`			Start to import dataset file: ${item.fileUrl}`)
+						try {
+							// Load data file into database table
+							await importSheetTables(runner, [item], {
+								stream: (withDoris || withStarrocks) ? fs.createReadStream(path.join(demosFolder, item.fileUrl)) : null,
+								fieldname: '',
+								originalname: '',
+								path: path.join(demosFolder, item.fileUrl),
+								encoding: '',
+								mimetype: 'text/csv'
+							} as any)
+						} catch(err) {
+							runner.teardown()
+							throw new Error(`Can't import dataset file: ${item.fileUrl} with error: ${err.message}`)
+						}
 					}
+
+					runner.teardown()
 				}
 
 				if (businessArea) {
@@ -258,6 +288,8 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 
 		// Delete the samples folder
 		// fs.rmSync(samplesPath, { recursive: true, force: true })
+		
+		this.logger.debug(`Generate demo data all done!`)
 
 		return Promise.resolve()
 	}
@@ -293,7 +325,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	}
 
 	async downloadDemoFile(url: string, destination: string) {
-		this.logger.debug(`download demo file from ${url} to ${destination}`)
+		this.logger.debug(`Download demo file from ${url} to ${destination}`)
 
 		const writer = fs.createWriteStream(destination)
 		const response = await axios({

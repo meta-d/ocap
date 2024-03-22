@@ -26,7 +26,8 @@ export const ZhHant = {
     Pie: '餅圖',
     Bar: '柱圖',
     TimeGranularity: '時間粒度',
-    LookbackLimit: '回溯限制',
-    Refresh: '刷新'
+    LookbackPeriods: '回溯期限',
+    Refresh: '刷新',
+    Comment: '評論',
   }
 }

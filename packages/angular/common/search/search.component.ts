@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, forwardRef } from '@angular/core'
+import { Component, HostBinding, Input, forwardRef, signal } from '@angular/core'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatInputModule } from '@angular/material/input'
+import { DisplayDensity } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 
 
@@ -25,6 +26,19 @@ import { TranslateModule } from '@ngx-translate/core'
 export class NgmSearchComponent implements ControlValueAccessor {
   @Input() formControl: FormControl
   @Input() disabled: boolean
+  
+  @Input() get displayDensity(): string {
+    return this.displayDensity$()
+  }
+  set displayDensity(value) {
+    this.displayDensity$.set(DisplayDensity[value])
+  }
+  readonly displayDensity$ = signal<DisplayDensity>(null)
+
+  @HostBinding('class.ngm-search__has-value')
+  get hasValue() {
+    return this._value !== null && this._value !== undefined && this._value !== ''
+  }
 
   public _value: string
   private onChange: (value: any) => void

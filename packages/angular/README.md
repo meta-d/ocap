@@ -10,3 +10,4 @@ Angular components for ocap project.
 - Chart
 - Grid
 - Common
+- Copilot

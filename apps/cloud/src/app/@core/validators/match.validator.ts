@@ -3,6 +3,8 @@ import { isEmpty } from 'lodash-es';
 
 /**
  * custom validator to check that two fields match
+ * 
+ * @deprecated use matchValidator function
  */
 export class MatchValidator {
     

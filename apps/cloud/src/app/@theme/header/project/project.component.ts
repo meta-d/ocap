@@ -1,24 +1,24 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { Router } from '@angular/router'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { firstValueFrom } from 'rxjs'
-import { map, startWith, switchMap, withLatestFrom } from 'rxjs/operators'
+import { combineLatest, firstValueFrom } from 'rxjs'
+import { map, startWith, switchMap } from 'rxjs/operators'
 import { DefaultProject, IProject, ProjectService, Store, ToastrService } from '../../../@core'
 import { InlineSearchComponent } from '../../../@shared'
 import { ProjectCreationComponent } from './creation/creation.component'
+import { computedAsync } from 'ngxtension/computed-async'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [
@@ -39,51 +39,63 @@ import { ProjectCreationComponent } from './creation/creation.component'
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-header-project',
-  templateUrl: `./project.component.html`,
+  templateUrl: `./project.component.html`
 })
 export class ProjectSelectorComponent {
-
+  private _dialog = inject(MatDialog)
+  private _toastrService = inject(ToastrService)
+  private _router = inject(Router)
   private projectService = inject(ProjectService)
   private translateService = inject(TranslateService)
-
-  // @ViewChild('creation') creation: TemplateRef<ElementRef>
+  readonly store = inject(Store)
 
   form = new FormGroup({
     name: new FormControl(null, [Validators.required]),
-    description: new FormControl(null, []),
+    description: new FormControl(null, [])
   })
 
   searchControl = new FormControl('')
 
-  private dialogRef: MatDialogRef<ElementRef<any>, any>
+  readonly selectedOrganization = toSignal(this.store.selectedOrganization$)
+  readonly projects = computedAsync(() => {
+    const org = this.selectedOrganization()
+    return this.projectService.onRefresh().pipe(
+      switchMap(() => this.projectService.getMy()),
+      map((items) => {
+        const defaultName = this.getDefaultProjectName()
+        return [
+          {
+            ...DefaultProject,
+            name: defaultName
+          },
+          ...items
+        ]
+      }),
+      switchMap((items) =>
+        this.searchControl.valueChanges.pipe(
+          startWith(''),
+          map((value) => value?.trim().toLowerCase()),
+          map((value) => (value ? items.filter((item) => item.name.toLowerCase().includes(value)) : items))
+        )
+      )
+    )
+  })
 
-  public readonly projects$ = this.projectService.onRefresh().pipe(
-    switchMap(() => this.projectService.getMy()),
-    switchMap(async (items) => {
-      const defaultName = await firstValueFrom(this.translateService.get('PAC.Project.DefaultProject', {Default: 'Default'}))
-      return [
-        {
-          ...DefaultProject,
-          name: defaultName
-        },
-        ...items
-      ]
-    }),
-    switchMap((items) => this.searchControl.valueChanges.pipe(
-      startWith(''),
-      map((value) => value?.trim().toLowerCase()),
-      map((value) => value ? items.filter((item) => item.name.toLowerCase().includes(value)) : items),
-    ))
+  readonly project = toSignal(
+    this.store.selectedProject$.pipe(
+      map(
+        (project) =>
+          project ?? {
+            ...DefaultProject,
+            name: this.getDefaultProjectName()
+          }
+      )
+    )
   )
 
-  public readonly project$ = this.store.selectedProject$.pipe(
-    withLatestFrom(this.translateService.get('PAC.Project.DefaultProject', {Default: 'Default'})),
-    map(([project, defaultName]) => project ?? {...DefaultProject, name: defaultName}),
-  )
-
-  private deletedSub = this.projectService.deleted$.subscribe(async (id) => {
+  private deletedSub = this.projectService.deleted$.pipe(takeUntilDestroyed()).subscribe((id) => {
     if (this.store.selectedProject?.id === id) {
-      const defaultName = await firstValueFrom(this.translateService.get('PAC.Project.DefaultProject', {Default: 'Default'}))
+      const defaultName = this.getDefaultProjectName()
       // Select default project
       this.selectProject({
         ...DefaultProject,
@@ -91,7 +103,6 @@ export class ProjectSelectorComponent {
       })
     }
   })
-  constructor(private store: Store, private _dialog: MatDialog, private _toastrService: ToastrService, private _router: Router,) {}
 
   selectProject(project: IProject) {
     this.store.selectedProject = project
@@ -102,17 +113,22 @@ export class ProjectSelectorComponent {
     if (newProject) {
       const userId = this.store.user.id
       try {
-        const project = await firstValueFrom(this.projectService.create({
-          ...newProject,
-          models: newProject.models.map((model) => ({id: model.id})),
-          ownerId: userId
-        }))
+        const project = await firstValueFrom(
+          this.projectService.create({
+            ...newProject,
+            models: newProject.models.map((model) => ({ id: model.id })),
+            ownerId: userId
+          })
+        )
         this.store.selectedProject = project
         this._router.navigate(['/project'])
-      } catch(err: any) {
+      } catch (err: any) {
         this._toastrService.error(err.message)
       }
     }
   }
 
+  getDefaultProjectName() {
+    return this.translateService.instant('PAC.Project.DefaultProject', { Default: 'Default' })
+  }
 }

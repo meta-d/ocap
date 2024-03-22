@@ -6,7 +6,7 @@ import { Subject, firstValueFrom, map } from 'rxjs'
 import { Group, IUser, ROUTE_ANIMATIONS_ELEMENTS, routeAnimations } from '../../../@core/index'
 import { MaterialModule, SharedModule, UserMutationComponent, userLabel } from '../../../@shared'
 import { InviteMutationComponent } from '../../../@shared/invite'
-import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
+import { TranslationBaseComponent } from '../../../@shared/'
 
 
 @Component({

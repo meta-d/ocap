@@ -7,7 +7,6 @@ import { Router } from '@angular/router'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoriesService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { uploadYamlFile } from '@metad/core'
 import { Story } from '@metad/story/core'
 import { firstValueFrom, switchMap, tap } from 'rxjs'
@@ -184,18 +183,4 @@ export class ProjectHomeComponent {
     }
   }
 
-  async deleteProject() {
-    const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: this.project.name } }).afterClosed()
-    )
-    if (!confirm) {
-      return
-    }
-    try {
-      await firstValueFrom(this.projectService.delete(this.project.id))
-      this._toastrService.success('PAC.ACTIONS.Delete', { Default: 'Delete' })
-    } catch (err) {
-      this._toastrService.error(err)
-    }
-  }
 }

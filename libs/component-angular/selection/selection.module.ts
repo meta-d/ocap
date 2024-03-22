@@ -13,10 +13,9 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
 import { NgmMeasureSelectComponent, PropertyModule } from '@metad/components/property'
@@ -43,13 +42,12 @@ import { NgmParameterModule } from '@metad/ocap-angular/parameter'
     MatMenuModule,
     MatSelectModule,
     TranslateModule,
-    LetDirective,
 
     NxEntityModule,
     PropertyModule,
 
     // OCAP Modules
-    ControlsModule,
+    NgmControlsModule,
     OcapCoreModule,
     NgmCommonModule,
     NgmEntityPropertyComponent,

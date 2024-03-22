@@ -14,12 +14,11 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { NgmParameterComponent } from '@metad/ocap-angular/parameter'
-import { LetDirective } from '@ngrx/component'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
 import { NgmMemberDatepickerModule } from '@metad/components/datepicker'
 import { NxInputControlComponent } from './input-control.component'
-import { ControlsModule } from '@metad/ocap-angular/controls'
+import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { InputControlPlaceholderComponent } from './placeholder/placeholder.component'
 
 @NgModule({
@@ -28,7 +27,6 @@ import { InputControlPlaceholderComponent } from './placeholder/placeholder.comp
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    LetDirective,
     MatChipsModule,
     MatMenuModule,
     MatIconModule,
@@ -47,7 +45,7 @@ import { InputControlPlaceholderComponent } from './placeholder/placeholder.comp
     NgmCommonModule,
     NgmParameterComponent,
     NgmEntityPropertyComponent,
-    ControlsModule,
+    NgmControlsModule,
     InputControlPlaceholderComponent
   ],
   exports: [NxInputControlComponent]

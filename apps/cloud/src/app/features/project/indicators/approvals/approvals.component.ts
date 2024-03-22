@@ -1,25 +1,24 @@
 import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { RouterModule } from '@angular/router'
+import { ToastrService } from '@metad/cloud/state'
 import { ButtonGroupDirective, DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ToastrService } from '@metad/cloud/state'
-import { NxTableModule } from '@metad/components/table'
 import {
-  getDateLocale,
   PermissionApprovalService,
   PermissionApprovalStatus,
-  PermissionApprovalStatusTypesEnum
+  PermissionApprovalStatusTypesEnum,
+  getDateLocale
 } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TranslationBaseComponent, userLabel } from 'apps/cloud/src/app/@shared'
-import formatRelative from 'date-fns/formatRelative'
+import { formatRelative } from 'date-fns'
 import { assign, isNil, omitBy } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { combineLatestWith, map, switchMap, tap } from 'rxjs/operators'
-import { UserPipe } from "../../../../@shared/pipes/created-by.pipe";
-import { UserAvatarComponent } from "../../../../@shared/user";
+import { UserPipe } from '../../../../@shared/pipes/created-by.pipe'
+import { UserAvatarComponent } from '../../../../@shared/user'
 import { ProjectComponent } from '../../project.component'
-
+import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -34,8 +33,8 @@ import { ProjectComponent } from '../../project.component'
     ButtonGroupDirective,
     DensityDirective,
     UserPipe,
-    NxTableModule,
-    UserAvatarComponent
+    UserAvatarComponent,
+    NgmTableComponent
   ]
 })
 export class ApprovalsComponent extends TranslationBaseComponent {
@@ -53,9 +52,11 @@ export class ApprovalsComponent extends TranslationBaseComponent {
     null
   )
   public readonly approvals$ = this.projectComponent.projectId$.pipe(
-    tap(() => this.loading = true),
-    switchMap((projectId)=> this.permissionApprovalService.getAllByProject(projectId, ['indicator', 'userApprovals', 'userApprovals.user'])),
-    tap(() => this.loading = false),
+    tap(() => (this.loading = true)),
+    switchMap((projectId) =>
+      this.permissionApprovalService.getAllByProject(projectId, ['indicator', 'userApprovals', 'userApprovals.user'])
+    ),
+    tap(() => (this.loading = false)),
     combineLatestWith(this.action$),
     map(([{ items }, action]) => {
       if (action) {
@@ -64,7 +65,7 @@ export class ApprovalsComponent extends TranslationBaseComponent {
           assign(item, omitBy(action, isNil))
         }
       }
-      return [...items]
+      return items
     })
   )
 

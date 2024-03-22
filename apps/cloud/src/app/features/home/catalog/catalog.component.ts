@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon'
 import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { UntilDestroy } from '@ngneat/until-destroy'
 import { TranslateModule } from '@ngx-translate/core'
 import { BusinessAreasService, StoriesService } from '@metad/cloud/state'
 import { sortBy } from 'lodash-es'
@@ -13,7 +12,6 @@ import { combineLatest, debounceTime, map, startWith, switchMap, tap } from 'rxj
 import { IBusinessArea, IStory, listAnimation } from '../../../@core'
 import { InlineSearchComponent, StoryCardComponent } from '../../../@shared'
 
-@UntilDestroy({ checkProperties: true })
 @Component({
   standalone: true,
   imports: [

@@ -38,6 +38,7 @@ import { CustomSmtpModule } from './custom-smtp/custom-smtp.module'
 import { LanguageModule } from './language/language.module'
 import { CopilotModule } from './copilot'
 import { StorageFileModule } from './storage-file/storage-file.module'
+import { AIModule } from './ai/ai.module'
 
 @Module({
   imports: [
@@ -90,7 +91,8 @@ import { StorageFileModule } from './storage-file/storage-file.module'
     CustomSmtpModule,
     LanguageModule,
     CopilotModule,
-    StorageFileModule
+    StorageFileModule,
+    AIModule
   ],
   controllers: [AppController],
   providers: [AppService],

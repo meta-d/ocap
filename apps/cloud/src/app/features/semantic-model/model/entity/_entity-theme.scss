@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use 'sass:color';
 @use '@angular/material' as mat;
-
 @use './dimension/dimension-theme' as dimension;
 
 
@@ -15,12 +14,6 @@
   @include dimension.color($config-or-theme);
   
   .pac-model-entity__cube {
-    overflow-y: auto;
-
-    .mat-toolbar {
-      font-size: 1rem;
-    }
-
     .mat-expansion-panel-header-title,
     .mat-expansion-panel-header-description {
       margin-right: unset;
@@ -35,10 +28,6 @@
     .mat-mdc-list-base .mat-mdc-list-option.mat-mdc-list-item-with-avatar {
       height: 36px;
       font-size: 1rem;
-
-      .mat-mdc-list-item-content {
-        // padding: 0;
-      }
     }
 
     .mat-mdc-list-text {

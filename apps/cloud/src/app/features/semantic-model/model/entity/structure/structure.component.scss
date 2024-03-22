@@ -5,8 +5,14 @@
   display: flex;
 }
 
+.mdc-list-item {
+  &:hover {
+    background-color: var(--ngm-color-primary-container-variant);
+  }
+}
+
 .pac-cube-structure-drop {
-  @apply rounded-md m-1 border border-dashed border-slate-200 p-4;
+  @apply rounded-xl m-1 border border-dashed border-slate-200 p-4 dark:border-neutral-800;
 }
 
 .pac-cube__join-table-container {
@@ -101,4 +107,10 @@
   .fit-form-field.mat-button {
     min-width: unset;
   }
+}
+
+.pac-data-type-tag {
+  background-color: var(--ngm-color-primary-container);
+  color: var(--ngm-color-on-primary-container);
+  @apply text-xs inline-flex items-center uppercase px-3 py-1 rounded-full overflow-hidden text-ellipsis;
 }

@@ -1,14 +1,15 @@
 <div class="pac-page-header">
-  <div class="w-full flex justify-between items-center">
+  <div class="w-full flex flex-wrap justify-between items-center">
     <h2 class="pac-page-title">
       {{ 'PAC.Project.ManageIndicators' | translate: {Default: "Manage Indicators"} }}
     </h2>
-    <div class="flex gap-2">
+
+    <div class="flex gap-2 ml-auto">
       <input #fileUpload type="file" class="file-input invisible"
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
       <div ngmButtonGroup>
-        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators?.length" (click)="export()">
+        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators()?.length" (click)="export()">
           <div class="flex items-center">
             <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
             {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
@@ -17,7 +18,7 @@
 
         <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
           <mat-icon fontSet="material-icons-round">upload</mat-icon>
-            {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
+          <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
         </button>
         
         <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicators/new']">
@@ -70,6 +71,7 @@
 </div>
 <mat-divider></mat-divider>
 
-<mat-tab-nav-panel #tabPanel class="pac-page-body flex flex-col items-center" [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
+<mat-tab-nav-panel #tabPanel class="pac-page-body flex flex-col items-center"
+  [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
   <router-outlet #o="outlet"></router-outlet>
 </mat-tab-nav-panel>
