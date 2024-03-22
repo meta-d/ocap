@@ -65,7 +65,7 @@ export class ApprovalsComponent extends TranslationBaseComponent {
           assign(item, omitBy(action, isNil))
         }
       }
-      return [...items.map((item) => ({ ...item, userApprovals: [...item.userApprovals, ...item.userApprovals, ...item.userApprovals] }))]
+      return items
     })
   )
 

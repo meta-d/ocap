@@ -29,7 +29,6 @@ export class AppInitService {
     try {
       const id = this.store.userId
       if (id) {
-        this.store.tenantSettings = await this.tenantService.getSettings()
 
         this.user = await this.usersService.getMe([
           'employee',
