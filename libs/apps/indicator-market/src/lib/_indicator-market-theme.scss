@@ -16,12 +16,13 @@
   }
 
   .pac-indicator-market__detail-container {
+    --ngm-indicator-app-bottom-sheet-height: calc(100vh - 50px);
     .mat-bottom-sheet-container {
       display: flex;
       background: unset;
       padding: 0;
-      height: 90vh;
-      max-height: 90vh;
+      height: var(--ngm-indicator-app-bottom-sheet-height);
+      max-height: var(--ngm-indicator-app-bottom-sheet-height);
 
       .mat-card {
         box-shadow: unset;

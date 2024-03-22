@@ -26,6 +26,12 @@ $prefix-color: (#{$prefix}, color);
 }
 
 @include token-utils.use-tokens($prefix, get-token-slots()) {
+  .mat-drawer-container {
+    border-top-left-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});
+  }
+  .mat-drawer.mat-drawer-over {
+    --mat-sidenav-container-background-color: var(#{token-utils.get-token-variable(color-surface)});
+  }
   .mat-drawer-content {
     background-color: var(#{token-utils.get-token-variable(color-surface)});
     border-top-left-radius: var(#{token-utils.get-token-variable(primary-container-rounded)});

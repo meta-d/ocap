@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, model } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { BusinessAreasService, IndicatorsService, Store, ToastrService, hierarchize } from '@metad/cloud/state'
@@ -23,6 +23,7 @@ import {
 import { MaterialModule, SharedModule, TagViewerComponent } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { IndicatorTypeComponent } from '../../../@shared/indicator'
+import { AppService } from '../../../app.service'
 
 @Component({
   standalone: true,
@@ -58,6 +59,7 @@ export class MarketComponent {
   public readonly translateService = inject(TranslateService)
   private readonly tagService = inject(TagService)
   private readonly store = inject(Store)
+  readonly appService = inject(AppService)
   private readonly indicatorStore = inject(IndicatorsService)
   private readonly businessGroupsStore = inject(BusinessAreasService)
   private readonly permissionApprovalService = inject(PermissionApprovalService)
@@ -66,9 +68,7 @@ export class MarketComponent {
 
   PAGE_SIZE = 10
   displayCompact = false
-  // Left side menu drawer open state
-  sideMenuOpened = true
-
+  
   businessArea = new FormControl<string>(null)
   search = new FormControl<string>(null)
   get highlight() {
@@ -266,6 +266,9 @@ export class MarketComponent {
       )
     )
   )
+  readonly isMobile = this.appService.isMobile
+  // Left side menu drawer open state
+  readonly sideMenuOpened = model(!this.isMobile())
 
   onPageIndexChange(index) {
     this.index$.next(index)

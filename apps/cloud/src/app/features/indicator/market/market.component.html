@@ -1,5 +1,6 @@
 <mat-drawer-container autosize class="flex-1">
-  <mat-drawer #drawer class="ngm-sidenav-container-bg-transparent" mode="side" [(opened)]="sideMenuOpened" ngmResizer [resizerWidth]="272">
+  <mat-drawer #drawer class="ngm-sidenav-container-bg-transparent" [mode]="isMobile() ? 'over' : 'side'"
+    [(opened)]="sideMenuOpened" ngmResizer [resizerWidth]="272">
     
     <div class="flex justify-start items-center gap-2 p-4">
       <label class="w-10 shrink-0">{{ 'PAC.INDICATOR.Types' | translate: {Default: 'Types'} }}</label>

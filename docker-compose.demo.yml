@@ -67,8 +67,9 @@ services:
 
   # OLAP Services
   olap:
-    container_name: olap
     image: metadc/metad-olap:1.0.0
+    deploy:
+      replicas: 1
     restart: unless-stopped
     healthcheck:
       test: curl -m 5 --silent --fail --request GET http://localhost:8080/ | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
