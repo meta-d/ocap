@@ -27,6 +27,7 @@ export const ZhHans = {
     Bar: '柱图',
     TimeGranularity: '时间粒度',
     LookbackPeriods: '回溯期限',
-    Refresh: '刷新'
+    Refresh: '刷新',
+    Comment: '评论',
   }
 }

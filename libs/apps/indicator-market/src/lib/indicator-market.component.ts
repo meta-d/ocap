@@ -10,6 +10,7 @@ import {
   inject,
   Inject,
   LOCALE_ID,
+  viewChild,
   ViewChild,
   ViewContainerRef
 } from '@angular/core'
@@ -32,6 +33,7 @@ import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.co
 import { MyDataSource } from './services/data-source'
 import { IndicatorsStore } from './services/store'
 import { IndicatorState, IndicatorTagEnum, LookbackLimit } from './types'
+import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +54,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   @HostBinding('class.searching') searching = false
 
   @ViewChild('searchInput') searchInputRef: ElementRef
+  readonly indicatorDetailComponent = viewChild(IndicatorDetailComponent)
 
   readonly tagType = this.indicatorsStore.tagType
 
@@ -89,8 +92,43 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   })
 
   /**
-   * Subscriptions
-   */
+  |--------------------------------------------------------------------------
+  | Copilot Commands
+  |--------------------------------------------------------------------------
+  */
+  #analysis = injectCopilotCommand({
+    name: 'analysis',
+    description: 'Analysis the indicator data',
+    systemPrompt: () => {
+      return `你是一名 BI 指标数据分析专家，请根据给出的指标数据进行分析，得出结论。
+${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
+`
+    },
+    actions: [
+    //   injectMakeCopilotActionable({
+    //     name: 'report',
+    //     description: 'Give user the analysis report',
+    //     argumentAnnotations: [
+    //       {
+    //         name: 'result',
+    //         type: 'string',
+    //         description: 'The analysis result',
+    //         required: true
+    //       }
+    //     ],
+    //     implementation: async (result: string) => {
+
+    //       return result
+    //     }
+    //   })
+    ]
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effects)
+  |--------------------------------------------------------------------------
+  */
   private _orgSub = this.store
     .selectOrganizationId()
     .pipe(takeUntilDestroyed())
@@ -134,7 +172,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
     effect(() => {
       this.dsCoreService.setTimeGranularity(this.timeGranularity())
-    })
+    }, { allowSignalWrites: true })
   }
 
   readonly openModal = this.effect((origin$: Observable<string>) => {

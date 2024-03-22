@@ -23,21 +23,26 @@ import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { AppearanceDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgxEchartsModule } from 'ngx-echarts'
+import { LoggerModule } from 'ngx-logger'
 import { MarkdownModule } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { IndicatorItemComponent } from './indicator-item/indicator-item.component'
 import { IndicatorMarketRoutingModule } from './indicator-market-routing.module'
 import { IndicatoryMarketComponent } from './indicator-market.component'
+import { PACIndicatorDirective } from './shared/indicator.directive'
 import { ReplaceNullWithTextPipe } from './shared/replace-null-with-text.pipe'
 import { AppSparkLineDirective } from './shared/sparkline.directive'
-import { PACIndicatorDirective } from './shared/indicator.directive'
-import { LoggerModule } from 'ngx-logger'
 
 @NgModule({
   declarations: [
-    AppSparkLineDirective, PACIndicatorDirective,
-    IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent, ReplaceNullWithTextPipe],
+    AppSparkLineDirective,
+    PACIndicatorDirective,
+    IndicatoryMarketComponent,
+    IndicatorItemComponent,
+    IndicatorDetailComponent,
+    ReplaceNullWithTextPipe
+  ],
   imports: [
     CommonModule,
     FormsModule,
@@ -77,10 +82,6 @@ import { LoggerModule } from 'ngx-logger'
     LoggerModule
   ],
   exports: [IndicatoryMarketComponent, IndicatorItemComponent, IndicatorDetailComponent],
-  providers: [
-    provideOcapCore(),
-    IndicatorsService,
-    FavoritesService
-  ]
+  providers: [provideOcapCore(), IndicatorsService, FavoritesService]
 })
 export class IndicatorMarketModule {}

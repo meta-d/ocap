@@ -27,6 +27,7 @@ export const ZhHant = {
     Bar: '柱圖',
     TimeGranularity: '時間粒度',
     LookbackPeriods: '回溯期限',
-    Refresh: '刷新'
+    Refresh: '刷新',
+    Comment: '評論',
   }
 }

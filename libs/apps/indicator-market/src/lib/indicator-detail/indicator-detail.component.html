@@ -181,31 +181,33 @@
         </button>
       </div>
 
-      <div *ngIf="modeler" class="w-full flex flex-col">
-        <div class="pac-indicator__comment-input relative w-full flex gap-2 p-2 rounded-lg">
-          <textarea type="text" id="simple-search" class="pac-indicator-app__comment-input block flex-1 p-0 bg-transparent border-none outline-none
-            text-base"
-            placeholder="{{ 'IndicatorApp.AskOrComment' | translate: {Default: 'Ask or comment'} }}..." required
-            matInput [(ngModel)]="prompt"
-            [disabled]="answering"
-            cdkTextareaAutosize
-          ></textarea>
-        </div>
+      @if (isModeler()) {
+        <div class="w-full flex flex-col">
+          <div class="pac-indicator__comment-input relative w-full flex gap-2 p-2 rounded-lg">
+            <textarea type="text" id="simple-search" class="pac-indicator-app__comment-input block flex-1 p-0 bg-transparent border-none outline-none
+              text-base"
+              placeholder="{{ 'IndicatorApp.Comment' | translate: {Default: 'Comment'} }}..." required
+              matInput [(ngModel)]="prompt"
+              [disabled]="answering"
+              cdkTextareaAutosize
+            ></textarea>
+          </div>
 
-        <div class="flex justify-end items-center gap-2 my-4">
-          <mat-checkbox [(ngModel)]="relative">
-            {{ 'IndicatorApp.IsPeriodRelated' | translate: {Default: 'Is Period Related'} }}
-          </mat-checkbox>
+          <div class="flex justify-end items-center gap-2 my-4">
+            <mat-checkbox [(ngModel)]="relative">
+              {{ 'IndicatorApp.IsPeriodRelated' | translate: {Default: 'Period Related'} }}
+            </mat-checkbox>
 
-          <button mat-button color="accent" class="ngm-accent" [disabled]="!copilotEnabled() || !prompt || answering" (click)="askCopilot()">
-            {{ 'IndicatorApp.AskCopilot' | translate: {Default: 'Ask Copilot'} }}
-          </button>
-  
-          <button mat-button color="accent" class="ngm-accent" [disabled]="!prompt || answering" (click)="saveAsComment(indicator.id, prompt, relative)">
-            {{ 'IndicatorApp.SaveAsComment' | translate: {Default: 'Save as Comment'} }}
-          </button>
+            <!-- <button mat-button color="accent" class="ngm-accent" [disabled]="!copilotEnabled() || !prompt || answering" (click)="askCopilot()">
+              {{ 'IndicatorApp.AskCopilot' | translate: {Default: 'Ask Copilot'} }}
+            </button> -->
+    
+            <button mat-button color="accent" class="ngm-accent" [disabled]="!prompt || answering" (click)="saveAsComment(indicator.id, prompt, relative)">
+              {{ 'IndicatorApp.SaveAsComment' | translate: {Default: 'Save as Comment'} }}
+            </button>
+          </div>
         </div>
-      </div>
+      }
 
       <div *ngFor="let comment of comments" class="flex flex-col justify-start items-stretch mb-4">
         <div class="relative ml-8 flex justify-end pt-2 pr-2">
@@ -215,10 +217,12 @@
             </div>
           </div>
 
-          <button *ngIf="modeler" mat-icon-button displayDensity="compact" class="pac-indicator-app__comment-remove"
-            (click)="deleteComment(comment)">
-            <mat-icon>close</mat-icon>
-          </button>
+          @if (isModeler()) {
+            <button mat-icon-button displayDensity="compact" class="pac-indicator-app__comment-remove"
+              (click)="deleteComment(comment)">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
         </div>
 
         <span *ngIf="comment.options?.period" class="pac-indicator__comment-period self-end text-xs font-medium mt-1 mr-2 px-2.5 py-0.5 rounded">

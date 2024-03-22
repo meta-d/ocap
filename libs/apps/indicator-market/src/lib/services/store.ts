@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, computed, inject, signal } from '@angular/core'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   BusinessAreasService,

@@ -27,6 +27,7 @@ export const JA = {
     Bar: '棒グラフ',
     TimeGranularity: '時間の粒度',
     LookbackPeriods: '過去の期間',
-    Refresh: 'リフレッシュ'
+    Refresh: 'リフレッシュ',
+    Comment: 'コメント',
   }
 }

@@ -56,15 +56,18 @@ import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { computedAsync } from 'ngxtension/computed-async'
 import {
   BehaviorSubject,
   combineLatest,
   delay,
   distinctUntilChanged,
+  EMPTY,
   filter,
   firstValueFrom,
   map,
   Observable,
+  of,
   shareReplay,
   startWith,
   switchMap,
@@ -74,7 +77,6 @@ import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -169,17 +171,18 @@ export class IndicatorDetailComponent {
   |--------------------------------------------------------------------------
   */
   readonly businessAreaUser = signal<IBusinessAreaUser>(null)
-  // businessAreaUser: IBusinessAreaUser
-  get modeler() {
+  readonly isModeler = computed(() => {
     return (
-      isNil(this.businessAreaUser) ||
+      isNil(this.businessAreaUser()) ||
       this.businessAreaUser()?.role === BusinessAreaRole.Modeler ||
       this.businessAreaUser()?.role === BusinessAreaRole.Adminer
     )
-  }
+  })
+  readonly explainDataSignal = signal<any>(null)
+
   prompt = ''
   answering = false
-  explainData
+  // explainData
   drillExplainData = []
   messages = []
   relative = true
@@ -187,16 +190,21 @@ export class IndicatorDetailComponent {
   readonly currentLang$ = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
   readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
   readonly detailPeriods = this.store.detailPeriods
-  readonly period = computed(() => this.PERIODS[this.detailPeriods()])
+  readonly period = computed(() => this.PERIODS.find((item) => item.name === this.detailPeriods()))
+
+  readonly globalTimeGranularity = toSignal(this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)))
+  readonly timeGranularity = computed(() => {
+    const period = this.period()
+    const globalTimeGranularity = this.globalTimeGranularity()
+    return period?.granularity ?? globalTimeGranularity
+  })
 
   /**
   |--------------------------------------------------------------------------
   | Observables
   |--------------------------------------------------------------------------
   */
-
   public readonly freeSlicers$ = new BehaviorSubject<ISlicer[]>([])
-
   public readonly indicator$: Observable<IndicatorState> = this._id$.pipe(
     filter(Boolean),
     switchMap((id) => this.store.selectIndicator(id)),
@@ -218,16 +226,11 @@ export class IndicatorDetailComponent {
     map((entitySet) => entitySet?.entityType)
   )
 
-  private readonly timeGranularity$ = combineLatest([
-    this.dsCoreService.currentTime$.pipe(map(({ timeGranularity }) => timeGranularity)),
-    toObservable(this.period).pipe(map((period) => period?.granularity))
-  ]).pipe(map(([timeGranularity, granularity]) => granularity ?? timeGranularity))
-
   private readonly today$ = this.dsCoreService.currentTime$.pipe(map(({ today }) => today))
   private readonly calendar$ = combineLatest([
     this.indicator$.pipe(distinctUntilChanged((prev, curr) => prev?.calendar === curr?.calendar)),
     this.entityType$,
-    this.timeGranularity$
+    toObservable(this.timeGranularity)
   ]).pipe(
     map(([indicator, entityType, timeGranularity]) =>
       getEntityCalendar(entityType, indicator.calendar, timeGranularity)
@@ -238,7 +241,7 @@ export class IndicatorDetailComponent {
 
   private readonly timeSlicer$ = combineLatest([
     this.calendar$,
-    this.timeGranularity$,
+    toObservable(this.timeGranularity),
     this.today$,
     toObservable(this.store.lookback),
     toObservable(this.period)
@@ -632,6 +635,18 @@ export class IndicatorDetailComponent {
   readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
   readonly copilotEnabled = toSignal(this.copilotService.enabled$)
 
+  readonly entityType = computedAsync(() => {
+    const dataSource = this.explainDataSignal()?.[0].dataSource
+    const entitySet = this.explainDataSignal()?.[0].entitySet
+    if (dataSource) {
+      return this.dsCoreService.getDataSource(dataSource).pipe(
+        switchMap((dataSource) => dataSource.selectEntityType(entitySet))
+      )
+    }
+
+    return of(null)
+  })
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions
@@ -654,37 +669,6 @@ export class IndicatorDetailComponent {
     setTimeout(() => {
       this._cdr.detectChanges()
     })
-  })
-
-  /**
-  |--------------------------------------------------------------------------
-  | Copilot Commands
-  |--------------------------------------------------------------------------
-  */
-  #analysis = injectCopilotCommand({
-    name: 'analysis',
-    description: 'Analysis the indicator data',
-    systemPrompt: () => {
-      return `你是一名 BI 指标数据分析专家，请根据给出的指标数据进行分析，得出结论。`
-    },
-    // actions: [
-    //   injectMakeCopilotActionable({
-    //     name: 'report',
-    //     description: 'Give user the analysis report',
-    //     argumentAnnotations: [
-    //       {
-    //         name: 'result',
-    //         type: 'string',
-    //         description: 'The analysis result',
-    //         required: true
-    //       }
-    //     ],
-    //     implementation: async (result: string) => {
-
-    //       return result
-    //     }
-    //   })
-    // ]
   })
   
   constructor() {
@@ -773,8 +757,9 @@ export class IndicatorDetailComponent {
   }
 
   onExplain(event) {
-    this.#logger.trace(`indicator app, detail explain:`, event)
-    this.explainData = event
+    this.#logger.trace(`[Indicator App] detail explain:`, event)
+    // this.explainData = event
+    this.explainDataSignal.set(event)
   }
 
   onDrillExplain(index, drill, event) {
@@ -785,20 +770,18 @@ export class IndicatorDetailComponent {
     }
   }
 
-  // For AI Copilot
-  async askCopilot() {
-    const queryResult = this.explainData?.[1]
+  makeIndicatorDataPrompt() {
+    const queryResult = this.explainDataSignal()?.[1]
     if (queryResult) {
       const lang = this.#translate.currentLang
-      const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
-      const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
+      const entityType = this.entityType()
 
       if (isEntityType(entityType)) {
         let dataPrompt =
           this.getPromptForCube(entityType) +
           '\n' +
           'The main data trend on time series is:\n' +
-          this.getPromptForChartData(entityType, this.explainData)
+          this.getPromptForChartData(entityType, this.explainDataSignal())
 
         this.drillExplainData.forEach((drillItem) => {
           if (drillItem) {
@@ -808,50 +791,80 @@ export class IndicatorDetailComponent {
           }
         })
 
-        const userMessage = {
-          prompt: this.prompt,
-          content: '',
-          relative: true
-        }
-        this.messages.push(userMessage)
-
-        this.prompt = ''
-        this.answering = true
-
-        // this.copilotService
-        //   .chatStream([
-        //     {
-        //       id: nanoid(),
-        //       role: CopilotChatMessageRoleEnum.System,
-        //       content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
-        //     },
-        //     {
-        //       id: nanoid(),
-        //       role: CopilotChatMessageRoleEnum.User,
-        //       content: userMessage.prompt + ':\n' + dataPrompt
-        //     }
-        //   ])
-        //   .pipe(
-        //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-        //     map((content) => content.trim())
-        //   )
-        //   .subscribe({
-        //     next: (content) => {
-        //       userMessage.content = content
-        //       this._cdr.detectChanges()
-        //     },
-        //     error: () => {
-        //       this.answering = false
-        //       this._cdr.detectChanges()
-        //     },
-        //     complete: () => {
-        //       this.answering = false
-        //       this._cdr.detectChanges()
-        //     }
-        //   })
+        return dataPrompt
       }
     }
+
+    return ``
   }
+
+  // For AI Copilot
+  // async askCopilot() {
+  //   const queryResult = this.explainData?.[1]
+  //   if (queryResult) {
+  //     const lang = this.#translate.currentLang
+  //     const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
+  //     const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
+
+  //     if (isEntityType(entityType)) {
+  //       let dataPrompt =
+  //         this.getPromptForCube(entityType) +
+  //         '\n' +
+  //         'The main data trend on time series is:\n' +
+  //         this.getPromptForChartData(entityType, this.explainData)
+
+  //       this.drillExplainData.forEach((drillItem) => {
+  //         if (drillItem) {
+  //           dataPrompt +=
+  //             `\nThe drilldown data on dimension ${drillItem.drill.title} at ${drillItem.drill.period} is:\n` +
+  //             this.getPromptForChartData(entityType, drillItem.event)
+  //         }
+  //       })
+
+  //       const userMessage = {
+  //         prompt: this.prompt,
+  //         content: '',
+  //         relative: true
+  //       }
+  //       this.messages.push(userMessage)
+
+  //       this.prompt = ''
+  //       this.answering = true
+
+  //       // this.copilotService
+  //       //   .chatStream([
+  //       //     {
+  //       //       id: nanoid(),
+  //       //       role: CopilotChatMessageRoleEnum.System,
+  //       //       content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
+  //       //     },
+  //       //     {
+  //       //       id: nanoid(),
+  //       //       role: CopilotChatMessageRoleEnum.User,
+  //       //       content: userMessage.prompt + ':\n' + dataPrompt
+  //       //     }
+  //       //   ])
+  //       //   .pipe(
+  //       //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
+  //       //     map((content) => content.trim())
+  //       //   )
+  //       //   .subscribe({
+  //       //     next: (content) => {
+  //       //       userMessage.content = content
+  //       //       this._cdr.detectChanges()
+  //       //     },
+  //       //     error: () => {
+  //       //       this.answering = false
+  //       //       this._cdr.detectChanges()
+  //       //     },
+  //       //     complete: () => {
+  //       //       this.answering = false
+  //       //       this._cdr.detectChanges()
+  //       //     }
+  //       //   })
+  //     }
+  //   }
+  // }
 
   getPromptForCube(entityType: EntityType) {
     return `The model ${entityType.caption} contain dimensions: ${getEntityDimensions(entityType)

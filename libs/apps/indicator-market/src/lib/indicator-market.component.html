@@ -77,7 +77,7 @@
 
 @if (notMobile$ | async) {
   @for (id of currentIndicatorIds$(); track id) {
-    <pac-indicator-detail [id]="id" [desktop]="true"/>
+    <pac-indicator-detail #indicatorDetail [id]="id" [desktop]="true"/>
   }
 }
 
