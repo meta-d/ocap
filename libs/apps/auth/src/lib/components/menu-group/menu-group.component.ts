@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core'
+import { Component, EventEmitter, HostBinding, Input, Output, input } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
@@ -29,7 +29,8 @@ export class PacMenuGroupComponent {
 
   @HostBinding('class.collapsed')
   @Input() isCollapsed = false
-  @Input() menu: PacMenuItem[]
+
+  readonly menus = input.required<PacMenuItem[]>()
 
   @Output() clicked = new EventEmitter()
 

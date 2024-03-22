@@ -19,12 +19,12 @@
 }
 
 .pac-sub-menu {
-  li {
-    @apply h-0 px-4 py-0 opacity-0 hidden invisible transition-all duration-200 ease-in-out;
+  li.pac-router-link {
+    @apply h-0 px-4 py-0 opacity-0 invisible transition-all duration-200 ease-in-out;
   }
   &.expanded {
-    li {
-      @apply h-10 px-4 py-2 opacity-100 block visible;
+    li.pac-router-link {
+      @apply h-10 px-4 py-2 opacity-100 visible;
     }
   }
 }

@@ -37,7 +37,8 @@ export class PACSettingComponent {
           label: 'Copilot',
           icon: 'assistant',
           data: {
-            featureKey: FeatureEnum.FEATURE_COPILOT
+            featureKey: FeatureEnum.FEATURE_COPILOT,
+            permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT]
           }
         },
         {

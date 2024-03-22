@@ -1,5 +1,5 @@
 <ul class="flex flex-col gap-1">
-  @for (item of menu; track $index) {
+  @for (item of menus(); track $index) {
     <li>
       <div class="pac-router-link flex justify-start items-center rounded-lg cursor-pointer"
         [class.has-submenu]="item.children"
@@ -26,20 +26,22 @@
 
         <mat-menu #subMenus="matMenu" xPosition="before">
           @for (child of item.children; track $index) {
-            <button mat-menu-item
-              [routerLink]="child.link"
-              routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
-              #rla="routerLinkActive"
-              (isActiveChange)="child.isActive = $event"
-              [class.active]="rla.isActive"
-              (click)="clicked.emit()"
-            >
-              @if (child.matIcon) {
-                <mat-icon fontSet="material-icons-round">{{ child.matIcon }}</mat-icon>
-              }
+            @if (!child.hidden) {
+              <button mat-menu-item
+                [routerLink]="child.link"
+                routerLinkActive [routerLinkActiveOptions]="{ exact: true }"
+                #rla="routerLinkActive"
+                (isActiveChange)="child.isActive = $event"
+                [class.active]="rla.isActive"
+                (click)="clicked.emit()"
+              >
+                @if (child.matIcon) {
+                  <mat-icon fontSet="material-icons-round">{{ child.matIcon }}</mat-icon>
+                }
 
-              <span>{{ child.title }}</span>
-            </button>
+                <span>{{ child.title }}</span>
+              </button>
+            }
           }
         </mat-menu>
 

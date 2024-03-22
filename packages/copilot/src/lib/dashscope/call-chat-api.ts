@@ -126,8 +126,6 @@ export async function callChatApi({
       // Update the chat state with the new message tokens.
       streamedResponse = decode(value);
 
-      console.log(streamedResponse)
-
       if (streamedResponse.startsWith('{"function_call":')) {
         // While the function call is streaming, it will be a string.
         responseMessage['function_call'] = streamedResponse;

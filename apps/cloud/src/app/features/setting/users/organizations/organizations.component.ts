@@ -1,15 +1,19 @@
 import { Component } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { MaterialModule, SharedModule, TranslationBaseComponent, UserProfileInlineComponent } from 'apps/cloud/src/app/@shared'
+import { NgmTableComponent } from '@metad/ocap-angular/common'
+import {
+  MaterialModule,
+  SharedModule,
+  TranslationBaseComponent,
+  UserProfileInlineComponent
+} from 'apps/cloud/src/app/@shared'
 import { differenceWith } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom } from 'rxjs'
 import { map, shareReplay, switchMap } from 'rxjs/operators'
 import { IOrganization, OrganizationsService, ToastrService, UsersOrganizationsService } from '../../../../@core'
 import { PACEditUserComponent } from '../edit-user/edit-user.component'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { NgmTableComponent } from '@metad/ocap-angular/common'
-
 
 @Component({
   standalone: true,
@@ -24,12 +28,7 @@ import { NgmTableComponent } from '@metad/ocap-angular/common'
       }
     `
   ],
-  imports: [
-    SharedModule,
-    MaterialModule,
-    UserProfileInlineComponent,
-    NgmTableComponent
-  ]
+  imports: [SharedModule, MaterialModule, UserProfileInlineComponent, NgmTableComponent]
 })
 export class PACUserOrganizationsComponent extends TranslationBaseComponent {
   private readonly refresh$ = new BehaviorSubject<void>(null)
@@ -40,14 +39,13 @@ export class PACUserOrganizationsComponent extends TranslationBaseComponent {
     shareReplay(1)
   )
 
-  public readonly organizations = toSignal(combineLatest([
-    this.organizationsService.getAll([]).pipe(map(({ items }) => items)),
-    this.userOrganizations$
-  ]).pipe(
-    map(([organizations, userOrganizations]) => {
-      return differenceWith(organizations, userOrganizations, (arrVal, othVal) => arrVal.id === othVal.organizationId)
-    })
-  ))
+  public readonly organizations = toSignal(
+    combineLatest([this.organizationsService.getAll([]).pipe(map(({ items }) => items)), this.userOrganizations$]).pipe(
+      map(([organizations, userOrganizations]) => {
+        return differenceWith(organizations, userOrganizations, (arrVal, othVal) => arrVal.id === othVal.organizationId)
+      })
+    )
+  )
 
   constructor(
     private readonly userComponent: PACEditUserComponent,
@@ -75,7 +73,7 @@ export class PACUserOrganizationsComponent extends TranslationBaseComponent {
   }
 
   async removeOrg(id: string, organization) {
-    await firstValueFrom(
+    const confirm = await firstValueFrom(
       this._dialog.open(ConfirmDeleteComponent, { data: { value: organization?.name } }).afterClosed()
     )
     if (confirm) {

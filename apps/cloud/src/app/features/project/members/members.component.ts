@@ -156,9 +156,14 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
   async removeMember(id: string) {
     if (this.project?.id) {
       const member = this.members.find((item) => item.id === id)
-      member.loading = true
-      await firstValueFrom(this.projectService.deleteMember(this.project.id, id))
-      this.refresh$.next()
+      const confirm = await firstValueFrom(
+        this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(member.user) } }).afterClosed()
+      )
+      if (confirm) {
+        member.loading = true
+        await firstValueFrom(this.projectService.deleteMember(this.project.id, id))
+        this.refresh$.next()
+      }
     }
   }
 

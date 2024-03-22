@@ -80,7 +80,6 @@ export class FeaturesComponent implements OnInit {
   isEmployee: boolean
   organization: IOrganization
   user: IUser
-  menu: PacMenuItem[] = []
 
   links = [
     {
@@ -154,6 +153,18 @@ export class FeaturesComponent implements OnInit {
   readonly copilotEnabled$ = toSignal(this.appService.copilotEnabled$)
   readonly user$ = toSignal(this.store.user$)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly menus = signal<PacMenuItem[]>([])
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effects)
+  |--------------------------------------------------------------------------
+  */
   private _userSub = this.store.user$
     .pipe(
       filter((user: IUser) => !!user),
@@ -211,7 +222,7 @@ export class FeaturesComponent implements OnInit {
         takeUntilDestroyed(this.#destroyRef)
       )
       .subscribe(([permissions]) => {
-        this.menu = this.getMenuItems()
+        this.menus.set(this.getMenuItems())
         this.loadItems(this.selectorService.showSelectors(this.router.url).showOrganizationShortcuts)
         this._cdr.detectChanges()
       })
@@ -251,9 +262,12 @@ export class FeaturesComponent implements OnInit {
   }
 
   loadItems(withOrganizationShortcuts: boolean) {
-    this.menu = this.menu.map((item) => {
-      this.refreshMenuItem(item, withOrganizationShortcuts)
-      return item
+    // ??
+    this.menus.update((menus) => {
+      return menus.map((item) => {
+        this.refreshMenuItem(item, withOrganizationShortcuts)
+        return item
+      })
     })
   }
 
