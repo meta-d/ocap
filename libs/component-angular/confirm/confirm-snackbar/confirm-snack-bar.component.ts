@@ -20,9 +20,11 @@ import { MatSnackBarRef, MAT_SNACK_BAR_DATA } from '@angular/material/snack-bar'
         {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
       </button>
     </div>
-    <div class="ngm-confirm-snackbar-action" *ngIf="hasAction">
-      <button mat-button color="accent" (click)="action()">{{data.action}}</button>
-    </div>`,
+  @if(hasAction) {
+    <div class="ngm-confirm-snackbar-action">
+      <button mat-flat-button color="primary" (click)="action()">{{data.action}}</button>
+    </div>
+  }`,
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
