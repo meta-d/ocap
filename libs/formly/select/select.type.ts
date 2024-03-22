@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { nonNullable } from '@metad/core'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
@@ -54,7 +55,7 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
 
   #validatorEffectRef = effect(
     () => {
-      if (!this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
+      if (nonNullable(this.value()) && !this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
         this.error.set(
           this.#translate.instant('FORMLY.COMMON.NotFoundValue', { Default: 'Not found value: ' }) + this.value()
         )

@@ -2,6 +2,7 @@ import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { Router } from '@angular/router'
+import { nonNullable } from '@metad/core'
 import { FieldType } from '@ngx-formly/core'
 import { Observable, startWith } from 'rxjs'
 
@@ -53,7 +54,7 @@ export class PACFormlySemanticModelComponent extends FieldType implements OnInit
   readonly notFound = signal<string | null>(null)
 
   #validatorEffectRef = effect(() => {
-    if (!this.selectOptions().find((option) => option.key === this.value())) {
+    if (nonNullable(this.value()) && !this.selectOptions().find((option) => option.key === this.value())) {
       this.notFound.set(this.value())
     } else {
       this.notFound.set(null)

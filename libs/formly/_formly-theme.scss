@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @use './mat-table/table-theme' as table-theme;
-@use './select/select-theme' as select;
 
 @mixin removeable($foreground) {
   border: 1px dashed transparent;
@@ -18,7 +17,6 @@
   $warn: map.get($config, warn);
 
   @include table-theme.color($config-or-theme);
-  @include select.color($config-or-theme);
 
   .ngm-formly-expansion__panel-row.removeable {
     @include removeable($foreground);
@@ -85,7 +83,6 @@
 
 @mixin density($config-or-theme) {
   @include table-theme.density($config-or-theme);
-  @include select.density($config-or-theme);
 
   formly-field-mat-radio {
     .mat-radio-group {

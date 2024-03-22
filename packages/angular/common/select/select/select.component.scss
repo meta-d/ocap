@@ -15,3 +15,9 @@
   display: block;
   color: var(--mat-form-field-error-text-color);
 }
+
+:host::ng-deep {
+  .mat-mdc-select-placeholder {
+    @apply italic opacity-50;
+  }
+}

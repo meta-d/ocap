@@ -23,4 +23,20 @@
       }
     }
   }
+
+  .mat-autocomplete-panel.pac-formly-select__autocomplete {
+    @apply mt-2;
+  }
+  .cdk-overlay-pane.mat-autocomplete-panel-above {
+    .mat-autocomplete-panel.pac-formly-select__autocomplete {
+      @apply mb-2;
+    }
+  }
+  .pac-formly-select {
+    .mat-mdc-select {
+      .mat-mdc-select-arrow-wrapper {
+        height: unset;
+      }
+    }
+  }
 }
