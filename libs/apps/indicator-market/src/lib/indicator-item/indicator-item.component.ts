@@ -1,15 +1,10 @@
-import { Component, Input, inject } from '@angular/core'
+import { Component, inject, input } from '@angular/core'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
-import { BehaviorSubject, distinctUntilChanged, EMPTY, filter, switchMap, tap } from 'rxjs'
+import { EMPTY, distinctUntilChanged, filter, switchMap, tap } from 'rxjs'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, IndicatorTagEnum, StatisticalType, Trend } from '../types'
 import { IndicatorItemDataService } from './indicator-item.service'
 
-
-/**
- * 由于 cdk-virtual-scroll 原理 (待严格确定) 此组件不会随 indicator 变化而重新创建, 所以此组件的 indicator 输入会变化, 导致指标数据显示混乱
- * 
- */
 @Component({
   selector: 'pac-indicator-item',
   templateUrl: 'indicator-item.component.html',
@@ -24,17 +19,11 @@ export class IndicatorItemComponent {
   private readonly dataService = inject(IndicatorItemDataService)
   private readonly store = inject(IndicatorsStore)
 
-  @Input() get indicator(): IndicatorState {
-    return this.indicator$.value
-  }
-  set indicator(value) {
-    this.indicator$.next(value)
-  }
-  public indicator$ = new BehaviorSubject(null)
-
-  @Input() tag: IndicatorTagEnum
+  readonly indicator = input.required<IndicatorState>()
+  readonly tag = input<IndicatorTagEnum>()
 
   readonly loading$ = this.dataService.loading$
+  readonly indicator$ = toObservable(this.indicator)
 
   /**
    * Subscriptions
@@ -51,7 +40,7 @@ export class IndicatorItemComponent {
                 indicatorId: indicator.id,
                 lookBack
               })
-              
+
               this.dataService.dataSettings = indicator.dataSettings
               initialized = true
 
@@ -59,7 +48,7 @@ export class IndicatorItemComponent {
             }
 
             return EMPTY
-          }),
+          })
         )
       }),
       takeUntilDestroyed()
@@ -68,9 +57,10 @@ export class IndicatorItemComponent {
       //
     })
 
-  readonly #indicatorResultSub = this.dataService.selectResult()
+  readonly #indicatorResultSub = this.dataService
+    .selectResult()
     .pipe(
-      filter((result: any) => result.indicator?.id && result.indicator?.id === this.indicator?.id),
+      filter((result: any) => result.indicator?.id && result.indicator?.id === this.indicator()?.id),
       takeUntilDestroyed()
     )
     .subscribe((result: any) => {
@@ -99,17 +89,12 @@ export class IndicatorItemComponent {
     })
 
   // Response to global refresh event
-  private refreshSub = this.store.onRefresh().pipe(takeUntilDestroyed()).subscribe((force) => {
-    this.dataService.refresh(force)
-  })
-
-  open() {
-    console.log('open')
-  }
-
-  close() {
-    console.log('close')
-  }
+  private refreshSub = this.store
+    .onRefresh()
+    .pipe(takeUntilDestroyed())
+    .subscribe((force) => {
+      this.dataService.refresh(force)
+    })
 
   toggleTag(event) {
     event.stopPropagation()
@@ -117,5 +102,4 @@ export class IndicatorItemComponent {
 
     this.store.toggleTag()
   }
-  
 }

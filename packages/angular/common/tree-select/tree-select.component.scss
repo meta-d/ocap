@@ -41,3 +41,15 @@
     border-radius: 10px;
   }
 }
+
+/* Deep styles */
+:host::ng-deep {
+  .mat-mdc-standard-chip {
+    .mdc-evolution-chip__cell--primary, .mat-mdc-chip-action-label {
+      @apply overflow-hidden;
+    }
+  }
+  .mat-mdc-form-field-icon-prefix, .mat-mdc-form-field-icon-suffix {
+    @apply self-end;
+  }
+}

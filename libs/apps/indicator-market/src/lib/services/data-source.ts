@@ -4,6 +4,9 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { IndicatorsStore } from './store'
 
+/**
+ * @deprecated
+ */
 export class MyDataSource extends DataSource<Indicator> {
   private pageSize = 10
   private cachedData: Indicator[] = []

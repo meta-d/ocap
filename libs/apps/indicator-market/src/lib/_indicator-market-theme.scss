@@ -94,7 +94,7 @@ $density-cosy: 12px;
 
     .pac-indicator-market__infinite-container {
       .mat-mdc-list-item {
-        height: auto;
+        --mdc-list-list-item-one-line-container-height: 70px;
         padding: $density-cosy 0;
         border-radius: $density-cosy;
 

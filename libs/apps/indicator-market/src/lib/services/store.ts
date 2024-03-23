@@ -131,7 +131,8 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
   readonly firstIndicator = computed(() => this.sortedIndicators$()[0] ?? null)
 
   readonly currentLang = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
-
+  readonly isEmpty = toSignal(this.select((state) => !state.ids.length))
+  
   /**
   |--------------------------------------------------------------------------
   | Observables
@@ -291,10 +292,6 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
         initialized: true
       })
     })
-  }
-
-  isEmpty() {
-    return this.get((state) => !state.ids.length)
   }
 
   async getBusinessAreaUser(id: string) {

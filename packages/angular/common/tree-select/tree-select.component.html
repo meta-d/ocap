@@ -1,7 +1,8 @@
-<mat-form-field *ngIf="!treeViewer" class="flex-1" [appearance]="appearance" [floatLabel]="floatLabel" [color]="color">
+@if (!treeViewer) {
+  <mat-form-field class="flex-1" [appearance]="appearance" [floatLabel]="floatLabel" [color]="color">
     <mat-label>{{ label }}</mat-label>
 
-    <ng-container *ngIf="useAutocomplete">
+    @if (useAutocomplete) {
       <mat-chip-grid #chipGrid >
         <mat-chip-row *ngFor="let chip of chipList$ | async" (removed)="removeChip(chip)">
           <ngm-display-behaviour [option]="{value: chip.key, label: chip.label}"
@@ -104,9 +105,9 @@
           </mat-option>
         </ng-template>
       </mat-autocomplete>
-    </ng-container>
+    } @else {
 
-    <mat-select *ngIf="!useAutocomplete" [formControl]="formControl" [compareWith]="compareWith" disableRipple
+    <mat-select [formControl]="formControl" [compareWith]="compareWith" disableRipple
       [panelClass]="'ngm-tree-select__panel ' + (multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
       [multiple]="multiple"
       [placeholder]="placeholder"
@@ -175,23 +176,27 @@
       </mat-option>
       
     </mat-select>
+    }
 
-    <div matPrefix *ngIf="useAutocomplete" class="flex justify-start items-center">
+    @if (useAutocomplete) {
+      <div matPrefix class="flex justify-start items-center">
 
-      <button mat-icon-button class="ngm-actionable-opacity" [displayDensity]="displayDensity"
-        (click)="$event.stopPropagation();toggleExpand()">
-        <mat-icon *ngIf="!unfold">unfold_more</mat-icon>
-        <mat-icon *ngIf="unfold">unfold_less</mat-icon>
-      </button>
+        <button mat-icon-button class="ngm-actionable-opacity" [displayDensity]="displayDensity"
+          (click)="$event.stopPropagation();toggleExpand()">
+          <mat-icon *ngIf="!unfold">unfold_more</mat-icon>
+          <mat-icon *ngIf="unfold">unfold_less</mat-icon>
+        </button>
 
-      <mat-checkbox *ngIf="multiple" class="mat-option-pseudo-checkbox"
-        [checked]="allSelect"
-        [indeterminate]="someSelect()"
-        (change)="setAll($event.checked)"></mat-checkbox>
-    </div>
+        <mat-checkbox *ngIf="multiple" class="mat-option-pseudo-checkbox"
+          [checked]="allSelect"
+          [indeterminate]="someSelect()"
+          (change)="setAll($event.checked)"></mat-checkbox>
+      </div>
+    }
 
     <div matSuffix class="flex justify-start items-center" >
-      <button *ngIf="isNotInitial" class="ngm-actionable-opacity" mat-icon-button displayDensity="cosy" ngmAppearance="danger" [disabled]="disabled"
+      <button *ngIf="isNotInitial" class="ngm-actionable-opacity" mat-icon-button displayDensity="cosy" ngmAppearance="danger"
+        [disabled]="disabled"
         (click)="clear($event)">
         <mat-icon>close</mat-icon>
       </button>
@@ -201,10 +206,8 @@
     </div>
 
     <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
-</mat-form-field>
-
-<ng-container *ngIf="treeViewer">
-
+  </mat-form-field>
+} @else {
   <ngm-search *ngIf="searchable" class="w-full shrink-0 p-2" [formControl]="autoControl"></ngm-search>
 
   <mat-tree class="selection ngm-tree-select__panel flex-1"
@@ -245,5 +248,4 @@
       </ngm-display-behaviour>
     </mat-tree-node>
   </mat-tree>
-  
-</ng-container>
+}
