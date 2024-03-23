@@ -30,7 +30,6 @@ import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { combineLatest, Observable } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
-import { MyDataSource } from './services/data-source'
 import { IndicatorsStore } from './services/store'
 import { IndicatorState, IndicatorTagEnum, LookbackLimit } from './types'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
@@ -40,7 +39,7 @@ import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
   selector: 'pac-indicator-market',
   templateUrl: 'indicator-market.component.html',
   styleUrls: [`indicator-market.component.scss`],
-  providers: [IndicatorsStore]
+  providers: [IndicatorsStore],
 })
 export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   TIME_GRANULARITY = TimeGranularity
@@ -58,7 +57,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   readonly tagType = this.indicatorsStore.tagType
 
-  indicatorDataSource: MyDataSource // = new MyDataSource(this.indicatorsStore)
+  readonly sortedIndicators$ = this.indicatorsStore.sortedIndicators$
   readonly mediaMatcher$ = combineLatest(
     Object.keys(Breakpoints).map((name) => {
       return this.breakpointObserver
@@ -78,8 +77,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   isShowModal = false
   private _bottomSheetRef: MatBottomSheetRef
-  // timeGranularity = TimeGranularity.Month
-  // lookback = 12
+
   _currentDate = new Date()
   dateControl = new FormControl<Date>(this._currentDate)
 
@@ -90,6 +88,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   readonly lookbackLimit = computed(() => {
     return LookbackLimit[this.timeGranularity()] ?? 100
   })
+  readonly isEmpty = this.indicatorsStore.isEmpty
 
   /**
   |--------------------------------------------------------------------------
@@ -134,8 +133,8 @@ ${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
     .pipe(takeUntilDestroyed())
     .subscribe((id) => {
       this.indicatorsStore.init()
+      this.indicatorsStore.fetchAll()
       this.onLookback(this.lookBack())
-      this.indicatorDataSource = new MyDataSource(this.indicatorsStore)
     })
 
   constructor(

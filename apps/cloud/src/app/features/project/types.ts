@@ -4,6 +4,8 @@ import { FlatTreeNode, TreeNodeInterface, isString, omitBlank } from '@metad/oca
 import { pick } from 'lodash-es'
 import { DefaultCollection, ICollection, IIndicator } from '../../@core'
 import { INDICATOR_COLUMNS } from '../indicator/types'
+import { inject } from '@angular/core'
+import { ModelsService } from '@metad/cloud/state'
 
 export function collectionId(collection: ICollection | string) {
   collection = isString(collection) ? collection : collection?.id
@@ -46,5 +48,12 @@ export function exportIndicator(indicator: IIndicator) {
     ...pick<IIndicator>(indicator, fieldNames),
     // don't export system fields of tags
     tags: indicator.tags?.map((tag) => omitBlank(pick(tag, 'name', 'description', 'category', 'color')))
+  }
+}
+
+export function injectFetchModelDetails() {
+  const modelsService = inject(ModelsService)
+  return (id: string) => {
+    return modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators'])
   }
 }

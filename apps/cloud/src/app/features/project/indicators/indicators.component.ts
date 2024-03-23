@@ -22,7 +22,7 @@ import { firstValueFrom } from 'rxjs'
 import { IIndicator, ISemanticModel, registerModel, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
 import { ProjectComponent } from '../project.component'
-import { exportIndicator } from '../types'
+import { exportIndicator, injectFetchModelDetails } from '../types'
 import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
 
 @Component({
@@ -40,7 +40,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly #translate = inject(TranslateService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
-  readonly modelsService = inject(ModelsService)
+  readonly fetchModelDetails = injectFetchModelDetails()
 
   get indicators() {
     return this.projectComponent.project?.indicators
@@ -183,9 +183,5 @@ ${calcEntityTypePrompt(this.currentEntityType())}
       this.openedLinks().splice(index, 1, indicator)
     }
     this.currentLink.set(indicator)
-  }
-
-  fetchModelDetails(id: string) {
-    return this.modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators'])
   }
 }

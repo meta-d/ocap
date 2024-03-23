@@ -66,7 +66,7 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
 
   readonly showAllMember$ = this.select((state) => state.options?.showAllMember)
 
-  readonly membersWithSchema$ = combineLatest([this.selectResult().pipe(filter(({ data }) => !isNil(data))),this.showAllMember$])
+  readonly membersWithSchema$ = combineLatest([this.selectResult().pipe(filter(({ data }) => !isNil(data))), this.showAllMember$])
     .pipe(
       withLatestFrom(this.selectEntityType()),
       map(([[{ data, schema }, showAllMember], entityType]) => {
@@ -80,16 +80,24 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
       })
     )
 
+  /**
+   * @deprecated 为什么需要用 uniqBy 对 value 进行去重？ 这个很影响性能。 暂时注释掉观察是否有需要用到的地方
+   */
   readonly selectOptions$ = this.membersWithSchema$.pipe(
-    map(({members, schema}) => {
-      return uniqBy<IMember>(
-        members.map((item) => ({
-          value: item.memberKey,
-          caption: item.memberCaption
-        })),
-        'value'
-      )
-    })
+    map(({ members }) => members.map((item) => ({
+      key: item.memberKey,
+      value: item.memberKey,
+      caption: item.memberCaption
+    } as IMember)))
+    // map(({members, schema}) => {
+    //   return uniqBy<IMember>(
+    //     members.map((item) => ({
+    //       value: item.memberKey,
+    //       caption: item.memberCaption
+    //     })),
+    //     'value'
+    //   )
+    // })
   )
 
   readonly membersTree$ = this.membersWithSchema$.pipe(

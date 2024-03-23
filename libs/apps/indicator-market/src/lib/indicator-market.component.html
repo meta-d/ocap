@@ -32,7 +32,7 @@
 
   </div>
 
-  <cdk-virtual-scroll-viewport itemSize="76" minBufferPx="1000" maxBufferPx="2000" class="pac-indicator-market__infinite-container flex-1">
+  <cdk-virtual-scroll-viewport itemSize="70" [minBufferPx]="10 * 70" [maxBufferPx]="20 * 70" class="pac-indicator-market__infinite-container flex-1">
 
     <div class="w-full flex mb-2">
       <div class="pac-indicator-market__search-input flex items-center flex-1 p-1 space-x-4 rounded-lg bg-gray-300 bg-opacity-25 dark:bg-opacity-10">
@@ -52,12 +52,12 @@
     </div>
 
     <mat-list class="pac-indicator-list" cdkDropList (cdkDropListDropped)="dropOrder($event)">
-      <ng-container *cdkVirtualFor="let item of indicatorDataSource; trackBy: trackById; templateCacheSize: 0">
+      <ng-container *cdkVirtualFor="let item of sortedIndicators$(); trackBy: trackById; templateCacheSize: 0">
         <mat-list-item matRipple [class.selected]="selected$() === item.id"
           (click)="click(item)"
           cdkDrag [cdkDragStartDelay]="200"
           >
-          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tagType()"></pac-indicator-item>
+          <pac-indicator-item class="flex-1 overflow-hidden" [indicator]="item" [tag]="tagType()"/>
           <div class="pac-indicator__placeholder" *cdkDragPlaceholder></div>
         </mat-list-item>
         <mat-divider></mat-divider>
@@ -65,14 +65,16 @@
     </mat-list>
   </cdk-virtual-scroll-viewport>
 
-  <div *ngIf="indicatorDataSource.isEmpty()" class="pac-indicator-market__empty">
-    <div class="signal font-notoColorEmoji">🛒</div>
-    <span>{{ 'IndicatorApp.Empty' | translate: {Default: 'Empty'} }}, 
-      {{ 'IndicatorApp.Goto' | translate: {Default: 'Please go to'} }}
-      <a class="underline" [routerLink]="['/indicator/market']" >{{ 'IndicatorApp.IndicatorMarket' | translate: {Default: 'Indicator Market'} }}</a>
-      {{ 'IndicatorApp.ApplyIndicatorPermission' | translate: {Default: 'apply indicator permission'} }}
-    </span>
-  </div>
+  @if (isEmpty()) {
+    <div class="pac-indicator-market__empty">
+      <div class="signal font-notoColorEmoji">🛒</div>
+      <span>{{ 'IndicatorApp.Empty' | translate: {Default: 'Empty'} }}, 
+        {{ 'IndicatorApp.Goto' | translate: {Default: 'Please go to'} }}
+        <a class="underline" [routerLink]="['/indicator/market']" >{{ 'IndicatorApp.IndicatorMarket' | translate: {Default: 'Indicator Market'} }}</a>
+        {{ 'IndicatorApp.ApplyIndicatorPermission' | translate: {Default: 'apply indicator permission'} }}
+      </span>
+    </div>
+  }
 </div>
 
 @if (notMobile$ | async) {

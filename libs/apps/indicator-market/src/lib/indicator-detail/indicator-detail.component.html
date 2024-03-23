@@ -105,28 +105,32 @@
       <div class="content whitespace-pre-wrap opacity-50">{{ indicator.business }}</div>
     </div>
     
-    <div *ngIf="freeDimensions$ | async as freeDimensions" class="flex flex-col">
-      <div class="text-lg my-4 ">
-        {{ 'IndicatorApp.FreeDimensions' | translate: {Default: 'Free Dimensions'} }}
+    @if (freeDimensions$ | async; as freeDimensions) {
+      <div class="flex flex-col">
+        <div class="text-lg my-4 ">
+          {{ 'IndicatorApp.FreeDimensions' | translate: {Default: 'Free Dimensions'} }}
+        </div>
+        <div class="flex flex-wrap justify-between gap-4">
+          @for (item of freeDimensions; track item.dimension.dimension) {
+            <ngm-member-tree-select class="flex-1 min-w-[300px]"
+              [dataSettings]="item.dataSettings"
+              [dimension]="item.dimension"
+              [appearance]="{
+                appearance: 'fill',
+                color: 'accent'
+              }"
+              [options]="{
+                searchable: true,
+                autocomplete: true,
+                virtualScroll: true
+              }"
+              [ngModel]="item.slicer"
+              (ngModelChange)="onSlicerChange($event)"
+            ></ngm-member-tree-select>
+          }
+        </div>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 2xl:grid-cols-4 gap-4">
-        <ngm-member-tree-select *ngFor="let dimension of freeDimensions" class="flex-1"
-          [dataSettings]="dimension.dataSettings"
-          [dimension]="dimension.dimension"
-          [appearance]="{
-            appearance: 'fill',
-            color: 'accent'
-          }"
-          [options]="{
-            searchable: true,
-            autocomplete: true,
-            virtualScroll: true
-          }"
-          [ngModel]="dimension.slicer"
-          (ngModelChange)="onSlicerChange($event)"
-        ></ngm-member-tree-select>
-      </div>
-    </div>
+    }
 
     <div *ngIf="drillDimensions$ | async as drillDimensions" class="flex flex-col">
       <div class="text-lg my-4 ">
