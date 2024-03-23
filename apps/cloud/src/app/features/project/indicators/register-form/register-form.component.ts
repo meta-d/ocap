@@ -50,7 +50,7 @@ import {
 } from 'rxjs'
 import { CalculatedMeasureComponent } from '@metad/components/property'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
-import { ProjectIndicatorsComponent } from '../indicators.component'
+import { injectFetchModelDetails } from '../../types'
 
 @Component({
   standalone: true,
@@ -86,12 +86,13 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 
-  readonly indicatorsComponent = inject(ProjectIndicatorsComponent)
-  private readonly _dialog = inject(MatDialog)
+  // readonly indicatorsComponent = inject(ProjectIndicatorsComponent)
+  // private readonly _dialog = inject(MatDialog)
   private readonly dsCoreSercie = inject(NgmDSCoreService)
   private readonly businessAreasStore = inject(BusinessAreasService)
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly wasmAgent = inject(WasmAgentService)
+  readonly fetchModelDetails = injectFetchModelDetails()
   readonly #logger = inject(NGXLogger)
   readonly #translate = inject(TranslateService)
 
@@ -295,7 +296,7 @@ ${calcEntityTypePrompt(this.entityType())}
       startWith(this.formGroup.get('modelId').value),
       distinctUntilChanged(),
       filter(nonBlank),
-      switchMap((id) => this.indicatorsComponent.fetchModelDetails(id)),
+      switchMap((id) => this.fetchModelDetails(id)),
       takeUntilDestroyed()
     )
     .subscribe((semanticModel) => {
