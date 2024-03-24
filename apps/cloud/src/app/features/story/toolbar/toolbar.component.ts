@@ -22,7 +22,7 @@ import { CopilotChatMessage } from '@metad/copilot'
 import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep, omit } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
@@ -123,6 +123,7 @@ export class StoryToolbarComponent implements OnInit {
   private readonly storiesService = inject(StoriesService)
   private readonly _elRef = inject(ElementRef)
   public toolbarService = inject(StoryToolbarService)
+  readonly #translate = inject(TranslateService)
   private _dialog = inject(MatDialog)
   private _viewContainerRef = inject(ViewContainerRef)
   private _widgetComponents?: Array<StoryWidgetComponentProvider> = inject(STORY_WIDGET_COMPONENT, { optional: true })
@@ -517,7 +518,10 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async createStoryPage(input: Partial<StoryPoint>) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {
+      data: {
+        title: this.#translate.instant('PAC.Story.StoryPointName', {Default: 'Story Point Name'}),
+      }}).afterClosed())
     if (name) {
       this.storyService.newStoryPage({
         ...input,
@@ -609,6 +613,10 @@ export class StoryToolbarComponent implements OnInit {
       element.style.right = 'auto'
       element.style.left = '14px'
     }
+  }
+
+  openNewPage() {
+    this.showDetails = 'newPages'
   }
 
   @HostListener('document:keydown.escape', ['$event'])

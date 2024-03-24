@@ -1109,7 +1109,8 @@
       "TextShadow": "文本阴影",
       "BackdropFilter": "背景滤镜",
       "Filter": "滤镜",
-      "Opacity": "透明度"
+      "Opacity": "透明度",
+      "StoryPointName": "故事点名称"
     },
     "Project": {
       "Project": "项目",
