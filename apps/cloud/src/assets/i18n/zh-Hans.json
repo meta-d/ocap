@@ -946,6 +946,7 @@
         "CreatedCube": "数据集创建成功！",
         "CreatedDimension": "维度创建成功！",
         "CreateCalculatedFormula": "创建计算度量公式",
+        "CreateHierarchy": "创建一个新的层次结构",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",

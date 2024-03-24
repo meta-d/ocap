@@ -72,3 +72,18 @@ export const MeasureSchema = z.object({
   order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
   chartOptions: z.any().optional().describe('The chart options of ECharts library')
 })
+
+export function makeTablePrompt(entityType: EntityType) {
+  if (!entityType?.properties) {
+    return undefined
+  }
+  return JSON.stringify({
+    name: entityType.name,
+    caption: entityType.caption ?? undefined,
+    columns: Object.values(entityType.properties).map((item) => ({
+      name: item.name,
+      caption: item.caption ?? undefined,
+      type: item.dataType
+    })),
+  })
+}
