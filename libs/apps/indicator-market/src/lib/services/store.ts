@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   BusinessAreasService,
@@ -17,7 +17,7 @@ import { StoryModel, convertStoryModel2DataSource } from '@metad/story/core'
 import { EntityAdapter, EntityState, Update, createEntityAdapter } from '@ngrx/entity'
 import { assign, includes, indexOf, isEmpty, isEqual, sortBy, uniq } from 'lodash-es'
 import { Observable, Subject, combineLatest, firstValueFrom } from 'rxjs'
-import { debounceTime, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { IndicatorState, IndicatorTagEnum, LookbackDefault } from '../types'
 import { TranslateService } from '@ngx-translate/core'
 
@@ -132,30 +132,23 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
 
   readonly currentLang = toSignal(this.#translate.onLangChange.pipe(map((event) => event.lang), startWith(this.#translate.currentLang)))
   readonly isEmpty = toSignal(this.select((state) => !state.ids.length))
+  readonly search = toSignal(this.select((state) => state.search))
+  readonly indicators = computed(() => {
+    const indicators = this.sortedIndicators$()
+    const text = this.search()
+    if (text) {
+      return indicators.filter(
+        (indicator) => includes(indicator.name.toLowerCase(), text) || includes(indicator.code.toLowerCase(), text)
+      )
+    }
+    return indicators
+  })
   
   /**
   |--------------------------------------------------------------------------
   | Observables
   |--------------------------------------------------------------------------
   */
-  public readonly indicators$ = this.select(
-    combineLatest([toObservable(this.sortedIndicators$), this.select((state) => state.search).pipe(debounceTime(200))]).pipe(
-      map(([indicators, text]) => {
-        if (text) {
-          return indicators.filter(
-            (indicator) => includes(indicator.name.toLowerCase(), text) || includes(indicator.code.toLowerCase(), text)
-          )
-        }
-        return indicators
-      })
-    ),
-    this.select((state) => state.currentPage),
-    (indicators, page) => {
-      return indicators.slice(0, page * this.pageSize)
-    }
-  ).pipe(shareReplay(1))
-
-  // public readonly currentIndicatorId$ = this.select((state) => state.currentIndicator)
   readonly currentIndicator$ = combineLatest([toObservable(this.currentIndicator), this.all$]).pipe(
     map(([id, indicators]) => indicators.find((item) => item.id === id)),
     distinctUntilChanged()
@@ -258,7 +251,7 @@ export class IndicatorsStore extends ComponentStore<IndicatorStoreState> {
     })
   })
 
-  readonly search = this.updater((state, text: string) => {
+  readonly updateSearch = this.updater((state, text: string) => {
     state.search = text
   })
 
