@@ -8,8 +8,10 @@ import { omit } from 'lodash-es'
 import { distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
 import { Store } from './store.service'
+import { environment } from 'apps/cloud/src/environments/environment'
 
-const API_CHAT = '/api/ai/chat'
+const baseUrl = environment.API_BASE_URL
+const API_CHAT = (baseUrl ?? '') + '/api/ai/chat'
 
 @Injectable({ providedIn: 'root' })
 export class PACCopilotService extends CopilotService {
