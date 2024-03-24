@@ -57,7 +57,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
 
   readonly tagType = this.indicatorsStore.tagType
 
-  readonly sortedIndicators$ = this.indicatorsStore.sortedIndicators$
+  readonly indicators = this.indicatorsStore.indicators
   readonly mediaMatcher$ = combineLatest(
     Object.keys(Breakpoints).map((name) => {
       return this.breakpointObserver
@@ -199,7 +199,7 @@ ${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
   }
 
   onSearch(event) {
-    this.indicatorsStore.search((<string>event.target.value)?.toLowerCase())
+    this.indicatorsStore.updateSearch((<string>event.target.value)?.toLowerCase())
   }
 
   trackById(index, el) {
@@ -256,7 +256,7 @@ ${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
   }
   onSearchDone() {
     this.searching = false
-    this.indicatorsStore.search('')
+    this.indicatorsStore.updateSearch('')
     this.searchInputRef.nativeElement.value = ''
   }
 

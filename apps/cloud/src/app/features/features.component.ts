@@ -615,7 +615,8 @@ export class FeaturesComponent implements OnInit {
               translationKey: 'Certification',
               // 同语义模型的功能绑定一起启用与否
               featureKey: AnalyticsFeatures.FEATURE_MODEL,
-              permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
+              permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
+              // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             }
           },
 

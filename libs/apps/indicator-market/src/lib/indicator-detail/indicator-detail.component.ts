@@ -62,7 +62,6 @@ import {
   combineLatest,
   delay,
   distinctUntilChanged,
-  EMPTY,
   filter,
   firstValueFrom,
   map,
@@ -204,7 +203,9 @@ export class IndicatorDetailComponent {
   | Observables
   |--------------------------------------------------------------------------
   */
-  public readonly freeSlicers$ = new BehaviorSubject<ISlicer[]>([])
+  readonly freeSlicers = signal<ISlicer[]>([])
+  readonly freeSlicers$ = toObservable(this.freeSlicers)
+  // public readonly freeSlicers$ = new BehaviorSubject<ISlicer[]>([])
   public readonly indicator$: Observable<IndicatorState> = this._id$.pipe(
     filter(Boolean),
     switchMap((id) => this.store.selectIndicator(id)),
@@ -655,7 +656,7 @@ export class IndicatorDetailComponent {
   // New indicator
   private _indicatorSub = this.indicator$.pipe(takeUntilDestroyed()).subscribe(async (indicator) => {
     // Clear free slicers when new indicator
-    this.freeSlicers$.next([])
+    this.freeSlicers.set([])
     this.messages = []
     this.prompt = ''
 
@@ -746,14 +747,20 @@ export class IndicatorDetailComponent {
   }
 
   onSlicerChange(event: ISlicer) {
-    const slicers = [...this.freeSlicers$.value]
-    const index = slicers.findIndex((item) => item.dimension.dimension === event.dimension.dimension)
-    if (event.members?.length) {
-      slicers.splice(index === -1 ? 0 : index, 1, event)
-    } else if (index > -1) {
-      slicers.splice(index, 1)
-    }
-    this.freeSlicers$.next(slicers)
+    this.freeSlicers.update((slicers) => {
+      slicers = [...slicers]
+      const index = slicers.findIndex((item) => item.dimension.dimension === event.dimension.dimension)
+      if (event.members?.length) {
+        if (index > -1) {
+          slicers.splice(index, 1, event)
+        } else {
+          slicers.splice(0, 0, event)
+        }
+      } else if (index > -1) {
+        slicers.splice(index, 1)
+      }
+      return slicers
+    })
   }
 
   onExplain(event) {
@@ -797,74 +804,6 @@ export class IndicatorDetailComponent {
 
     return ``
   }
-
-  // For AI Copilot
-  // async askCopilot() {
-  //   const queryResult = this.explainData?.[1]
-  //   if (queryResult) {
-  //     const lang = this.#translate.currentLang
-  //     const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(this.explainData?.[0].dataSource))
-  //     const entityType = await firstValueFrom(dataSource.selectEntityType(this.explainData?.[0].entitySet))
-
-  //     if (isEntityType(entityType)) {
-  //       let dataPrompt =
-  //         this.getPromptForCube(entityType) +
-  //         '\n' +
-  //         'The main data trend on time series is:\n' +
-  //         this.getPromptForChartData(entityType, this.explainData)
-
-  //       this.drillExplainData.forEach((drillItem) => {
-  //         if (drillItem) {
-  //           dataPrompt +=
-  //             `\nThe drilldown data on dimension ${drillItem.drill.title} at ${drillItem.drill.period} is:\n` +
-  //             this.getPromptForChartData(entityType, drillItem.event)
-  //         }
-  //       })
-
-  //       const userMessage = {
-  //         prompt: this.prompt,
-  //         content: '',
-  //         relative: true
-  //       }
-  //       this.messages.push(userMessage)
-
-  //       this.prompt = ''
-  //       this.answering = true
-
-  //       // this.copilotService
-  //       //   .chatStream([
-  //       //     {
-  //       //       id: nanoid(),
-  //       //       role: CopilotChatMessageRoleEnum.System,
-  //       //       content: `If you are a data analysis expert, please respond based on the prompts and provided data. Answer use language ${lang}`
-  //       //     },
-  //       //     {
-  //       //       id: nanoid(),
-  //       //       role: CopilotChatMessageRoleEnum.User,
-  //       //       content: userMessage.prompt + ':\n' + dataPrompt
-  //       //     }
-  //       //   ])
-  //       //   .pipe(
-  //       //     scan((acc, value: any) => acc + (value?.choices?.[0]?.delta?.content ?? ''), ''),
-  //       //     map((content) => content.trim())
-  //       //   )
-  //       //   .subscribe({
-  //       //     next: (content) => {
-  //       //       userMessage.content = content
-  //       //       this._cdr.detectChanges()
-  //       //     },
-  //       //     error: () => {
-  //       //       this.answering = false
-  //       //       this._cdr.detectChanges()
-  //       //     },
-  //       //     complete: () => {
-  //       //       this.answering = false
-  //       //       this._cdr.detectChanges()
-  //       //     }
-  //       //   })
-  //     }
-  //   }
-  // }
 
   getPromptForCube(entityType: EntityType) {
     return `The model ${entityType.caption} contain dimensions: ${getEntityDimensions(entityType)
