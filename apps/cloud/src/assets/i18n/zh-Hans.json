@@ -946,6 +946,7 @@
         "CreatedCube": "数据集创建成功！",
         "CreatedDimension": "维度创建成功！",
         "CreateCalculatedFormula": "创建计算度量公式",
+        "CreateHierarchy": "创建一个新的层次结构",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
@@ -1108,7 +1109,8 @@
       "TextShadow": "文本阴影",
       "BackdropFilter": "背景滤镜",
       "Filter": "滤镜",
-      "Opacity": "透明度"
+      "Opacity": "透明度",
+      "StoryPointName": "故事点名称"
     },
     "Project": {
       "Project": "项目",

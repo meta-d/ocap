@@ -33,10 +33,10 @@ export class CopilotController extends CrudController<Copilot> {
 	async create(@Body() entity: DeepPartial<Copilot>): Promise<Copilot> {
 		if (entity.id) {
 			await this.service.update(entity.id, entity)
-			entity = await this.service.findOne(entity.id)
 		} else {
 			entity = await this.service.create(entity)
 		}
+		entity = await this.service.findOne(entity.id)
 		return entity as Copilot
 	}
 }

@@ -5,7 +5,7 @@ let API_BASE_URL = 'http://localhost:3000'
 export const environment: IEnvironment = {
 	production: false,
 	DEMO: false,
-	API_BASE_URL: '',
+	API_BASE_URL: API_BASE_URL,
 	IS_ELECTRON: false,
 	enableLocalAgent: false,
 

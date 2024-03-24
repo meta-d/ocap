@@ -10,10 +10,10 @@ import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { environment } from 'apps/cloud/src/environments/environment'
 import { startWith } from 'rxjs'
 import { LANGUAGES, LanguagesMap, Store } from '../../../@core'
 import { UserPipe } from '../../../@shared'
+import { ThemesEnum } from '@metad/core'
 
 const THEMES = [
   {
@@ -57,7 +57,7 @@ const THEMES = [
 export class HeaderSettingsComponent {
   languages = LANGUAGES
   DisplayBehaviour = DisplayBehaviour
-  development = !environment.production
+  ThemesEnum = ThemesEnum
 
   readonly store = inject(Store)
   readonly router = inject(Router)

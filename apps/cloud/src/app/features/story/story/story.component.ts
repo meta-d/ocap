@@ -337,6 +337,10 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     })
   }
 
+  openNewPage() {
+    this.toolbarComponent.openNewPage()
+  }
+
   onToolbarDragEnded(event: CdkDragEnd) {
     this.toolbarComponent.calculateRightSide(event)
   }

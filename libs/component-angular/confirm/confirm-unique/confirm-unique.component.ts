@@ -1,14 +1,15 @@
 import { A11yModule } from '@angular/cdk/a11y'
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, HostBinding, Inject, OnInit } from '@angular/core'
+import { Component, HostBinding, OnInit, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
+import { isString } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -32,18 +33,26 @@ import { TranslateModule } from '@ngx-translate/core'
 export class ConfirmUniqueComponent implements OnInit {
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
+  public data = inject<string | { title: string; value: string }>(MAT_DIALOG_DATA)
+  private _dialogRef = inject(MatDialogRef<ConfirmUniqueComponent>)
+
   value: string
-  constructor(@Inject(MAT_DIALOG_DATA) public data: string, private _dialogRef: MatDialogRef<ConfirmUniqueComponent>) {}
+  title: string
 
   ngOnInit(): void {
-    this.value = this.data
+    this.reset()
   }
 
   reset() {
-    this.value = this.data
+    if (isString(this.data)) {
+      this.value = this.data
+    } else {
+      this.value = this.data?.value
+      this.title = this.data?.title
+    }
   }
 
-  onSubmit(event) {
+  onSubmit() {
     this._dialogRef.close(this.value)
   }
 }

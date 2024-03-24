@@ -1,7 +1,7 @@
 :host {
   background-color: var(--ngm-copilot-bg-color, theme('colors.white'));
   font-family: var(--ngm-copilot-font-family);
-  --mat-divider-color: var(--ngm-divider-color-secondary);
+  // --mat-divider-color: var(--ngm-divider-color-secondary);
   --hot-pink: oklch(59.91% .239 8.14);
   --hot-red: oklch(61.42% .238 15.34);
   --orange-red: oklch(63.32% .24 31.68);
