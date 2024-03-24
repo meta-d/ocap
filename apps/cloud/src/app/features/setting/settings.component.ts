@@ -55,6 +55,7 @@ export class PACSettingComponent {
           icon: 'verified_user',
           data: {
             permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
+            // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
           }
         },
         {

@@ -91,6 +91,7 @@ const routes: Routes = [
           title: 'settings/certification',
           permissions: {
             only: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT],
+            // only: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT],
             redirectTo
           }
         }

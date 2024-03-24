@@ -19,6 +19,7 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
 			AnalyticsPermissionsEnum.INSIGHT_EDIT,
 			AnalyticsPermissionsEnum.INSIGHT_VIEW,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
         ],
 	},
 	{
@@ -39,6 +40,7 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.NOTIFICATION_DESTINATION_VIEW,
 			AnalyticsPermissionsEnum.INSIGHT_EDIT,
 			AnalyticsPermissionsEnum.INSIGHT_VIEW,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
         ],
 	},
 	{
@@ -86,6 +88,7 @@ export const ANALYTICS_ROLE_PERMISSIONS = [
 			AnalyticsPermissionsEnum.INDICATOR_MARTKET_VIEW,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_EDIT,
 			AnalyticsPermissionsEnum.SUBSCRIPTION_VIEW,
+			AnalyticsPermissionsEnum.CERTIFICATION_EDIT
         ]
     }
 ]
