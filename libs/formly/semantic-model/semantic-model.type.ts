@@ -49,12 +49,12 @@ export class PACFormlySemanticModelComponent extends FieldType implements OnInit
   get valueControl() {
     return this.formControl as FormControl
   }
-  readonly selectOptions = signal<any[]>([])
+  readonly selectOptions = signal<any[] | null>(null)
   readonly value = signal(null)
   readonly notFound = signal<string | null>(null)
 
   #validatorEffectRef = effect(() => {
-    if (nonNullable(this.value()) && !this.selectOptions().find((option) => option.key === this.value())) {
+    if (nonNullable(this.value()) && nonNullable(this.selectOptions()) && !this.selectOptions().find((option) => option.key === this.value())) {
       this.notFound.set(this.value())
     } else {
       this.notFound.set(null)

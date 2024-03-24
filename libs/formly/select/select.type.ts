@@ -49,13 +49,13 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
     return this.formControl as FormControl
   }
 
-  readonly selectOptions = signal<Array<any>>([])
+  readonly selectOptions = signal<Array<any> | null>(null)
   readonly value = signal(null)
   readonly error = signal<string>('')
 
   #validatorEffectRef = effect(
     () => {
-      if (nonNullable(this.value()) && !this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
+      if (nonNullable(this.value()) && nonNullable(this.selectOptions()) && !this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
         this.error.set(
           this.#translate.instant('FORMLY.COMMON.NotFoundValue', { Default: 'Not found value: ' }) + this.value()
         )
@@ -90,11 +90,9 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
           // Reset errors
           this.valueFormControl.setErrors(null)
           this.selectOptions.set(event)
-          // this._selectOptions$.next(event)
         })
     } else if (this.props?.options) {
       this.selectOptions.set(this.props.options)
-      // this._selectOptions$.next(this.props.options)
     }
   }
 }
