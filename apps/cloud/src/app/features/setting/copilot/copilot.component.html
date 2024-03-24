@@ -19,12 +19,14 @@
         </mat-select>
     </mat-form-field>
 
+    <input type="text" id="username" name="username" autocomplete="username" aria-hidden="true" style="display: none;">
     <div class="self-stretch flex justify-start items-center gap-4">
         <mat-form-field appearance="fill" class="flex-1">
             <mat-label>
                 {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
             </mat-label>
-            <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password">
+            <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password"
+                autocomplete="current-password">
         </mat-form-field>
 
         <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">

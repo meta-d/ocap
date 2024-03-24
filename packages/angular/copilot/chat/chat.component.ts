@@ -180,7 +180,7 @@ export class NgmCopilotChatComponent {
   |--------------------------------------------------------------------------
   */
   readonly copilot = toSignal(this.copilotService.copilot$)
-  readonly copilotEnabled = computed(() => this.copilot()?.enabled && this.copilot()?.apiKey)
+  readonly copilotEnabled = toSignal(this.copilotService.enabled$)
   readonly showTokenizer$ = computed(() => this.copilot()?.showTokenizer)
   readonly #defaultModel = computed(() => this.copilot()?.defaultModel)
   readonly #predefinedModels = computed(() => AI_PROVIDERS[this.copilot()?.provider]?.models)

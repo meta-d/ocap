@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
@@ -16,7 +16,6 @@ import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 })
 export class CopilotComponent extends TranslationBaseComponent {
   readonly copilotService = inject(PACCopilotService)
-  readonly _cdr = inject(ChangeDetectorRef)
   readonly _toastrService = inject(ToastrService)
 
   formGroup = new FormGroup({
@@ -41,6 +40,11 @@ export class CopilotComponent extends TranslationBaseComponent {
 
   readonly saving = signal(false)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effects)
+  |--------------------------------------------------------------------------
+  */
   private enabledSub = this.formGroup
     .get('enabled')
     .valueChanges.pipe(startWith(false), distinctUntilChanged())
@@ -61,7 +65,7 @@ export class CopilotComponent extends TranslationBaseComponent {
     })
 
   private copilotSub = this.copilotService.copilot$.pipe(takeUntilDestroyed()).subscribe((copilot) => {
-    if (copilot) {
+    if (copilot?.enabled) {
       this.formGroup.patchValue(copilot)
     } else {
       this.formGroup.reset()
@@ -69,6 +73,11 @@ export class CopilotComponent extends TranslationBaseComponent {
     this.formGroup.markAsPristine()
   })
 
+  /**
+  |--------------------------------------------------------------------------
+  | Methods
+  |--------------------------------------------------------------------------
+  */
   async onSubmit() {
     try {
       this.saving.set(true)
