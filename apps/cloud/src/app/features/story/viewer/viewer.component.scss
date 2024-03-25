@@ -44,6 +44,12 @@ $prefix: (ngm, story-viewer);
 }
 
 @include token-utils.use-tokens($prefix, get-token-slots()) {
+  .mat-drawer-container {
+    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+  }
+  .mat-drawer.mat-drawer-over {
+    --mat-sidenav-container-background-color: var(#{token-utils.get-token-variable(color-surface)});
+  }
   .pac-story-viewer__drawer-container {
     --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(color-surface-container)});
     border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
