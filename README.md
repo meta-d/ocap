@@ -31,7 +31,17 @@ English | [中文](./README_zh.md)
 
 ## 💡 What's New
 
-We released new version which includes [AI Copilot](https://mtda.cloud/en/blog/copilot-1-assist-data-query) in query lab, it can assit you to write and optimize SQL or MDX queries.
+🎉🎉 Introducing the launch of Metad Analytics Platform version 2.0, bringing along a host of new features and improvements, including:
+
+- **Themes and Layouts** The website has undergone a complete overhaul, now fully supporting dark mode themes for enhanced comfort during nighttime work.
+- **AI Copilot** Upgraded to execute AI operations in the form of custom commands, with a rich set of built-in commands available. For more details, please refer to [AI Copilot](https://www.mtda.cloud/en/docs/server/copilot/).
+- **Indicator Application** The indicator application page has been optimized and upgraded, making it more convenient to view and analyze indicators across different devices.
+
+## 🎯 Mission
+
+__"One Table, One Model, An Indicator System"__
+
+Simple, efficient, integrated. Users can conduct analysis by simply dealing with one fact table. Through the multi-dimensional modeling function provided by the platform, a comprehensive set of indicators can be quickly obtained within the unified semantic model.
 
 ## 🌟 What is it
 
@@ -42,9 +52,9 @@ We released new version which includes [AI Copilot](https://mtda.cloud/en/blog/c
 * **Indicator Management**: Easily define, manage, and monitor key performance indicators (KPIs) to ensure data quality, consistency, and effective performance analysis.
 * **AI Copilot**: Benefit from AI-driven insights and recommendations to enhance decision-making processes and identify actionable opportunities.
 
-![Story Workspace](https://github.com/meta-d/meta-d/blob/main/img/en/story-workspace.png)
+![Story Workspace](https://github.com/meta-d/meta-d/raw/main/img/v2.0/story-workspace.png)
 
-![Indicator Application](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
+![Indicator Application](https://github.com/meta-d/meta-d/raw/main/img/v2.0/indicator-app-ai-copilot.png)
 
 ## ✨ Features
 
@@ -98,26 +108,23 @@ Basic feartures of the platform:
 <details>
 <summary>Show / Hide Screenshots</summary>
 
-### Sales overview [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b)
-![Sales overview Screenshot](https://github.com/meta-d/meta-d/blob/main/img/adv-sales-overview.png)
-
 ### Pareto analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=bsZ0sjxnxI)
-![Pareto analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/en/story-pareto-analysis.png)
+![Pareto analysis Screenshot](https://github.com/meta-d/meta-d/raw/main/img/v2.0/story-workspace.png)
 
 ### Product profit analysis [open in new tab](https://app.mtda.cloud/public/story/892690e5-66ab-4649-9bf5-c1a9c432c01b?pageKey=6S4oEUnVO3)
-![Product profit analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/profit-margin-analysis.jpg)
+![Product profit analysis Screenshot](https://github.com/meta-d/meta-d/raw/main/img/v2.0/story-viewer.png)
 
 ### Reseller analysis [open in new tab](https://app.mtda.cloud/public/story/a58112aa-fc9c-4b5b-a04e-4ea9b57ebba9?pageKey=nrEZxh1aqp)
-![Reseller analysis Screenshot](https://github.com/meta-d/meta-d/blob/main/img/reseller-profit-analysis.png)
+![Reseller analysis Screenshot](https://github.com/meta-d/meta-d/raw/main/img/reseller-profit-analysis.png)
 
 ### Bigview dashboard [open in new tab](https://app.mtda.cloud/public/story/9c462bea-89f6-44b8-a35e-34b21cd15a36)
-![Bigview dashboard Screenshot](https://github.com/meta-d/meta-d/blob/main/img/bigview-supermart-sales.png)
+![Bigview dashboard Screenshot](https://github.com/meta-d/meta-d/raw/main/img/bigview-supermart-sales.png)
 
 ### Indicator application [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
-![Indicator application Screenshot](https://github.com/meta-d/meta-d/blob/main/img/en/indicator-application.png)
+![Indicator application Screenshot](https://github.com/meta-d/meta-d/raw/main/img/v2.0/indicator-app-ai-copilot.png)
 
 ### Indicator mobile app [open in new tab](https://www.mtda.cloud/en/blog/2023/07/24/sample-adv-7-indicator-app)
-![Indicator mobile app Screenshot](https://github.com/meta-d/meta-d/blob/main/img/indicator-app-mobile.jpg)
+![Indicator mobile app Screenshot](https://github.com/meta-d/meta-d/raw/main/img/indicator-app-mobile.jpg)
 
 </details>
 
@@ -174,35 +181,7 @@ Please refer to our official [Platform Documentation](https://mtda.cloud/en/docs
 
 ## 🚀 Quick Start
 
-### With Docker Compose
-
-- Clone repo.
-- Make sure you have Docker Compose [installed locally](https://docs.docker.com/compose/install).
-- Copy `.env.compose` file into `.env` file in the root of mono-repo (the file contains default env variables definitions).
-- Run `docker-compose -f docker-compose.demo.yml up`, if you want to run the platform using our prebuild Docker images. _(Note: it uses latest images pre-build automatically from head of `main` branch using GitHub CI/CD.)_
-- Run `docker-compose up`, if you want to build everything (code and Docker images) locally. _(Note: this is extremely long process, option above is much faster.)_
-- Open <http://localhost:4200> in your browser.
-- The first time you will enter the onborading page. Follow the prompts to complete the initial settings ( organization, samples and connect your data source), and then you can start using it.
-- Enjoy!
-
-### Manually
-
-#### Required
-
-- Install [NodeJs](https://nodejs.org/en/download) LTS version or later, e.g. 18.x.
-- Install [Yarn](https://github.com/yarnpkg/yarn) (if you don't have it) with `npm i -g yarn`.
-- Install NPM packages and bootstrap solution using the command `yarn bootstrap`.
-- Copy [`.env.local`](./.env.local) file into `.env` and adjust settings in the file which is used in local runs.
-- Run command `docker-compose -f docker-compose.dev.yml up -d` to start PostgreSQL database and redis services.
-- Run both API, UI and OLAP engine with a single command: `yarn start`, or run them separately with `yarn start:api`, `yarn start:cloud` and `yarn start:olap`.
-- Open Metad UI on <http://localhost:4200> in your browser (API runs on <http://localhost:3000/api>).
-- Onboarding...
-- Enjoy!
-
-### Production
-
-- For simple deployment scenarios (e.g. for yourself or your own small organization), check our [Docker Compose file](./docker-compose.demo.yml), which we are using to deploy Metad Analytics Platform to docker cluster.
-- For production deployment scenarios (e.g. for enterprise organization), check our [Kubernetes configurations](https://github.com/meta-d/ocap/tree/develop/.deploy/k8s), which we are using to deploy Metad Analytics Platform into Kubernetes platform, for example [Aliyun k8s cluster](https://cn.aliyun.com/product/kubernetes).
+Please check our [Wiki - Development](https://github.com/meta-d/ocap/wiki/Development) to get started quickly.
 
 ## 💌 Contact Us
 
