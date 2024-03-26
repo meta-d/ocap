@@ -41,7 +41,11 @@ __“一张表，一个模型，一套指标体系”__
 
 主要功能：
 
-* **数据源**: 连接到各种不同的数据库和数据仓库。
+- **数据源**: 连接到各种不同的数据库和数据仓库。
+  - **OLAP 源**: SAP BW/BPC、HANA、SSAS、Mondrian、Kylin 等。
+  - **MPP 数据库**: StarRocks、Apache Doris、ClickHouse 等。
+  - **SQL 数据库**: MySQL、PostgreSQL 等。
+  - **MR 源**: Hive、Trino 等。
 * **语义模型**: 支持两种 OLAP 引擎 MDX 和 SQL 的统一语义建模，支持多维建模和分析。
   * **查询实验室**: 执行和分析 SQL 或 MDX 查询的环境，并具有 AI 副驾驶以帮助编写和优化 SQL 或 MDX 查询。
   * **虚拟立方体**: 从多个立方体中组合维度和度量形成一个虚拟的立方体。
@@ -62,7 +66,12 @@ __“一张表，一个模型，一套指标体系”__
   * **移动端**: 支持移动端自适应设计、支持移动端浏览器访问。
   * **故事模版**: 创建并分享一个统一的故事样式和布局模板。
   * **执行解释**: 解释数据查询和展示的执行过程，包括查询语句，切片器，查询结果和图表选项。
-  * **AI 副驾驶**: 帮助用户快速设计和实现故事仪表板。
+* **AI 副驾驶**: 使用自定义命令帮助用户快速设计和实现故事仪表板或指标。
+  - 使用 `/query` 命令执行 SQL 或 MDX 查询。
+  - 使用 `/story` 命令创建一个故事仪表板。
+  - 使用 `/indicator` 命令创建一个指标。
+  - 使用 `/clear` 命令清除屏幕。
+  - 。。。
 
 平台的基本功能：
 
@@ -152,7 +161,7 @@ Metad 分析云平台链接为 <https://app.mtda.cloud> 。
 - [PostgreSQL](https://www.postgresql.org)
 - [PM2](https://github.com/Unitech/pm2)
 
-注意：多亏了 Metad 将支持大量的数据库：PostgreSQL（开发/生产），MySql，MariaDb，CockroachDb，MS SQL，Oracle，MongoDb，以及其他，只需最小的更改。
+注意：得益于 TypeORM，OCAP 将支持许多数据库：PostgreSQL（开发/生产），MySQL，MariaDB，CockroachDB，MS SQL，Oracle，MongoDB 等等，并且只需进行最小的更改。
 
 #### 请参阅相应文件夹中的 README.md 和 CREDITS.md 文件以获取包含在平台中的库和软件列表，有关许可证的信息以及其他详细信息
 

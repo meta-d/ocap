@@ -60,7 +60,11 @@ Simple, efficient, integrated. Users can conduct analysis by simply dealing with
 
 Main features:
 
-* **Data Sources**: connects with lots of different databases and data warehouses.
+- **Data Sources**: connects with lots of different databases and data warehouses.
+  - **OLAP**: SAP BW/BPC, HANA, SSAS, Mondrian, Kylin etc.
+  - **MPP DB**: StarRocks, Apache Doris, ClickHouse etc.
+  - **SQL DB**: MySQL, PostgreSQL etc.
+  - **MR Source**: Hive, Trino etc.
 * **Semantic Model**: Supports the unified semantic modeling of two olap engines: MDX and SQL, and supports multi-dimensional modeling and analysis.
   * **Query Lab**: An environment for executing and analyzing SQL or MDX queries, with AI Copilot to assist in writing and optimizing SQL or MDX queries.
   * **Virtual Cube**: combine dimensions and measures from multiple cubes.
@@ -81,7 +85,12 @@ Main features:
   * **Mobile Design**: support mobile terminal adaptive design, support mobile terminal browser access.
   * **Story Template**: Create and share a unified style and layout template of story.
   * **Execution Explain**: Explain the execution process of SQL or MDX queries inculde query statement, slicers, query result and chart options.
-  * **AI Copilot**: assist users quickly design and implement story dashboards.
+* **AI Copilot**: assist users quickly design and implement story dashboards and indicators.
+  * `/query` command to execute SQL or MDX queries.
+  * `/story` command to create a story dashboard.
+  * `/indicator` command to create an indicator.
+  * `/clear` command to clear the screen.
+  * ...
 
 Basic feartures of the platform:
 
@@ -101,7 +110,7 @@ Basic feartures of the platform:
 * Invite
 * Business Area
 * Certification
-* Dark / Light / Thin and other themes
+* Dark / Light and other themes
 
 ## 🌼 Screenshots
 
