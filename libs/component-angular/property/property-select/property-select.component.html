@@ -71,9 +71,9 @@
           (click)="$event.stopPropagation();$event.preventDefault();">
           <button mat-button color="primary" ngmAppearance="dashed" class="ngm-property-select__create-calculation w-full"
             (click)="$event.stopPropagation();onCreateCalculation($event)">
-            <div class="flex justify-center items-center">
+            <div class="flex justify-center items-center whitespace-nowrap text-ellipsis overflow-hidden">
               <mat-icon>add</mat-icon>
-              {{ 'COMPONENTS.PROPERTY.CREATE_CALCULATION' | translate: {Default: 'Create Calculation'} }}
+              <span>{{ 'COMPONENTS.PROPERTY.CREATE_CALCULATION' | translate: {Default: 'Create Calculation'} }}</span>
             </div>
           </button>
         </mat-option>
