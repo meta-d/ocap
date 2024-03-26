@@ -394,7 +394,9 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
    * 删除维度及维度下的字段
    */
   readonly deleteDimensionProperty = this.updater((state, id: string) => {
+    // 所在的数组
     let parent = null
+    // 所在数组的索引位置
     let index = null
 
     state.cube.dimensionUsages?.find((usage, i) => {
@@ -433,7 +435,9 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
       })
     }
 
+    // 从 id 所在数组索引处删除该节点 Node
     if (parent) {
+      this.setSelectedProperty(null)
       parent.splice(index, 1)
     }
   })
@@ -441,6 +445,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   readonly deleteMeasure = this.updater((state, id: string) => {
     const index = state.cube.measures.findIndex((item) => item.__id__ === id)
     if (index > -1) {
+      this.setSelectedProperty(null)
       state.cube.measures.splice(index, 1)
     }
   })
@@ -448,6 +453,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
   readonly deleteCalculatedMember = this.updater((state, id: string) => {
     const index = state.cube.calculatedMembers.findIndex((item) => item.__id__ === id)
     if (index > -1) {
+      this.setSelectedProperty(null)
       state.cube.calculatedMembers.splice(index, 1)
     }
   })
@@ -593,6 +599,7 @@ export class ModelEntityService extends ComponentSubStore<ModelCubeState, PACMod
             ...model
           }
         } else {
+          // 都找不到 id 了为什么要 push 进来 ？？？
           state.cube.dimensions.push({
             ...model,
             __id__: id

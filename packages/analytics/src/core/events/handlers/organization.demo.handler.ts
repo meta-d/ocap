@@ -377,6 +377,8 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 		dataSource.options = assign({
 			host: dorisHost,
 			port: dorisPort,
+			// catalog 当前充当了 database 的角色， 后续要分开理清
+			catalog: dorisDatabase,
 			database: dorisDatabase,
 			username: dorisUsername,
 			password: dorisPassword,
@@ -424,7 +426,9 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 			version: starrocksVersion,
 			host: starrocksHost,
 			port: starrocksPort,
-			// database: starrocksDatabase,
+			// catalog 当前充当了 database 的角色， 后续要分开理清
+			catalog: starrocksDatabase,
+			database: starrocksDatabase,
 			username: starrocksUsername,
 			password: starrocksPassword,
 			apiHost: starrocksApiHost,

@@ -112,13 +112,7 @@ export class NgmSelectComponent
   }
   private _multiple = false
 
-  @Input() get selectOptions() {
-    return this.selectOptions$()
-  }
-  set selectOptions(options: Array<ISelectOption>) {
-    this.selectOptions$.set(options)
-  }
-  private selectOptions$ = signal<Array<ISelectOption>>([])
+  readonly selectOptions = input<Array<ISelectOption>>()
 
   @ContentChild(NgmOptionContent, { read: TemplateRef, static: true })
   _explicitContent: TemplateRef<any> = undefined!
@@ -134,16 +128,16 @@ export class NgmSelectComponent
     const text = this.highlight()?.trim().toLowerCase()
     if (text) {
       const terms = text.split(' ').filter((t) => !!t)
-      return this.selectOptions.filter((option) => {
+      return this.selectOptions()?.filter((option) => {
         const str = `${option.caption || option.label || ''}${option[this.valueKey()]}`
         return terms.every((term) => str?.toLowerCase().includes(term))
       })
     }
-    return this.selectOptions
+    return this.selectOptions()
   })
 
   public selectTrigger = computed(() => {
-    return this.selectOptions?.find((option) => option[this.valueKey()] === this.value())
+    return this.selectOptions()?.find((option) => option[this.valueKey()] === this.value())
   })
 
   autoInput = signal(null)
@@ -173,7 +167,7 @@ export class NgmSelectComponent
   constructor(_elementRef: ElementRef) {
     super(_elementRef)
     effect(() => {
-      const selectedOption = this.selectOptions.find((item) => item[this.valueKey()] === this.value())
+      const selectedOption = this.selectOptions()?.find((item) => item[this.valueKey()] === this.value())
       if (nonNullable(selectedOption?.[this.valueKey()])) {
         this.autoInput.set(selectedOption)
       } else {

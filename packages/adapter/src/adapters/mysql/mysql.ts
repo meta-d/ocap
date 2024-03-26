@@ -31,8 +31,9 @@ export class MySQLRunner<T extends MysqlAdapterOptions = MysqlAdapterOptions> ex
         port: { type: 'number', default: 3306 },
         username: { type: 'string', title: 'Username' },
         password: { type: 'string', title: 'Password' },
-        catalog: { type: 'string' },
-        database: { type: 'string' },
+        // 目前 catalog 用于指定数据库
+        catalog: { type: 'string', title: 'Database' },
+        // database: { type: 'string' },
         // for SSL
         use_ssl: { type: 'boolean', title: 'Use SSL' },
         ssl_cacert: {

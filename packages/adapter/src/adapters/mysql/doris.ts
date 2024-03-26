@@ -30,8 +30,9 @@ export class DorisRunner extends MySQLRunner<DorisAdapterOptions> {
         apiHost: { type: 'string' },
         apiPort: { type: 'number', default: 8030 },
         version: { type: 'number', default: 0 },
-        catalog: { type: 'string' },
-        database: { type: 'string' },
+        // 目前 catalog 用于指定数据库，Doris 的 catalog 只支持默认
+        catalog: { type: 'string', title: 'Database' },
+        // database: { type: 'string' },
         // for SSL
         use_ssl: { type: 'boolean', title: 'Use SSL' },
         ssl_cacert: {
