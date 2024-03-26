@@ -18,7 +18,7 @@ import { Observable, startWith } from 'rxjs'
   >
     <ng-template ngmOptionContent let-option>
       <div class="flex items-center whitespace-nowrap overflow-hidden">
-        <button mat-icon-button (click)="openSemanticModel(option.key)">
+        <button mat-icon-button (click)="openSemanticModel(option.value)">
           <mat-icon>open_in_new</mat-icon>
         </button>
 
@@ -71,8 +71,8 @@ export class PACFormlySemanticModelComponent extends FieldType implements OnInit
     })
   }
 
-  openSemanticModel(key: string) {
-    const url = this.router.serializeUrl(this.router.createUrlTree(['models', key]))
+  openSemanticModel(id: string) {
+    const url = this.router.serializeUrl(this.router.createUrlTree(['models', id]))
     window.open(url, '_blank')
   }
 }
