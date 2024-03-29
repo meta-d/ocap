@@ -1,47 +1,60 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, Optional, inject } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { Injectable, effect, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { nonNullable } from '@metad/core'
+import { effectAction } from '@metad/ocap-angular/core'
 import { EntityService, PropertyHierarchy, PropertyLevel, Table } from '@metad/ocap-core'
-import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { NgmError, ToastrService, uuid } from 'apps/cloud/src/app/@core'
-import { assign, cloneDeep, isEqual, isNil } from 'lodash-es'
+import { select, withProps } from '@ngneat/elf'
+import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
+import { assign, cloneDeep, isEqual, isNumber, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import {
-  combineLatestWith,
-  filter,
-  map,
-  Observable,
-  shareReplay,
-  switchMap,
-  tap,
-  withLatestFrom
-} from 'rxjs'
+import { Observable, combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs'
+import { createSubStore, dirtyCheckWith, write } from '../../../store'
 import { SemanticModelService } from '../../model.service'
-import { ModelDesignerType, ModelDimensionState } from '../../types'
+import { ModelDesignerType } from '../../types'
 import { ModelDimensionService } from '../dimension.service'
 
-
 @Injectable()
-export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, ModelDimensionState> {
+export class ModelHierarchyService {
+  readonly dimensionService = inject(ModelDimensionService)
   private readonly toastrService = inject(ToastrService)
   private readonly modelService = inject(SemanticModelService)
   private readonly settingsService = inject(NxSettingsPanelService)
-  private readonly logger? = inject(NGXLogger, {optional: true})
+  private readonly logger? = inject(NGXLogger, { optional: true })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.dimensionService.store,
+    { name: 'semantic_model_hierarchy', arrayKey: '__id__' },
+    withProps<PropertyHierarchy>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.dimensionService.pristineStore,
+    { name: 'semantic_model_hierarchy_pristine', arrayKey: '__id__' },
+    withProps<PropertyHierarchy>(null)
+  )
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
+  readonly hierarchy$ = this.store.pipe(
+    select((state) => state),
+    filter(nonNullable)
+  )
+  readonly levels$ = this.store.pipe(select((state) => state?.levels))
+  public readonly name$ = this.hierarchy$.pipe(map((hierarchy) => hierarchy?.name))
+  public readonly caption$ = this.hierarchy$.pipe(map((hierarchy) => hierarchy?.caption))
+  public readonly tables$ = this.hierarchy$.pipe(map((hierarchy) => hierarchy?.tables))
+  readonly tableName$ = this.hierarchy$.pipe(
+    map((hierarchy) => hierarchy.primaryKeyTable ?? hierarchy.tables?.[0]?.name)
+  )
 
   // Signals
+  readonly hierarchy = toSignal(this.hierarchy$)
   private readonly sharedDimensions = toSignal(this.modelService.dimensions$)
 
-  // Query
-  public readonly name$ = this.select((state) => state.name)
-  public readonly caption$ = this.select((state) => state.caption)
-  public readonly tables$ = this.select((state) => state.tables)
-  public tableName$ = this.select((state) => {
-    return state.primaryKeyTable ?? state.tables?.[0]?.name
-  })
-
-  public readonly hierarchy$ = this.select((state) => state)
-  public readonly levels$ = this.select((state) => state.levels)
   public readonly modeling$ = this.hierarchy$.pipe(
     combineLatestWith(this.parentService.dimension$),
     map(([hierarchy, dimension]) => ({
@@ -68,21 +81,29 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
    */
   column: string
 
-  constructor(
-    private parentService: ModelDimensionService,
-  ) {
-    super({} as PropertyHierarchy)
+  constructor(private parentService: ModelDimensionService) {
+    effect(
+      () => {
+        this.dimensionService.updateDirty(this.store.value.__id__, this.dirtyCheckResult.dirty())
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   public init(id: string) {
-    this.connect(this.parentService, {
-      parent: ['dimension', 'hierarchies', id],
-      arrayKey: '__id__'
-    })
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this.parentService.setCurrentHierarchy(id)
-      })
+    this.store.connect(['hierarchies', id])
+    this.pristineStore.connect(['hierarchies', id])
+    // this.dirtyCheckResult.setHead()
+    this.parentService.setCurrentHierarchy(id)
+
+    // this.connect(this.parentService, {
+    //   parent: ['dimension', 'hierarchies', id],
+    //   arrayKey: '__id__'
+    // })
+    //   .pipe(takeUntilDestroyed())
+    //   .subscribe(() => {
+    //     this.parentService.setCurrentHierarchy(id)
+    //   })
   }
 
   /**
@@ -90,16 +111,20 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
    *
    * 对于空值覆盖问题应该有更好的办法
    */
-  readonly updateHierarchy = this.updater((state, hierarchy: Partial<PropertyHierarchy>) => {
-    Object.keys(state).forEach((key) => {
-      if (key !== 'levels') {
-        state[key] = hierarchy[key] ?? state[key]
-      }
-    })
-    assign(state, hierarchy)
-  })
+  updateHierarchy(hierarchy: Partial<PropertyHierarchy>) {
+    this.store.update(
+      write((state) => {
+        Object.keys(state).forEach((key) => {
+          if (key !== 'levels') {
+            state[key] = hierarchy[key] ?? state[key]
+          }
+        })
+        assign(state, hierarchy)
+      })
+    )
+  }
 
-  readonly setupDesigner = this.effect((origin$: Observable<void>) => {
+  setupDesigner = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       withLatestFrom(this.hierarchy$),
       switchMap(([, hierarchy]) => {
@@ -112,12 +137,12 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
     )
   })
 
-  readonly setupLevelDesigner = this.effect((origin$: Observable<string>) => {
+  setupLevelDesigner = effectAction((origin$: Observable<string | number>) => {
     return origin$.pipe(
-      withLatestFrom(this.state$),
+      withLatestFrom(this.hierarchy$),
       switchMap(([id, state]) => {
         // this.column = column
-        const level = state.levels.find((level) => level.__id__ === id)
+        const level = isNumber(id) ? state.levels[id] : state.levels.find((level) => level.__id__ === id)
         const model = {
           hierarchy: state,
           modeling: cloneDeep(level)
@@ -126,18 +151,26 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
         return this.settingsService.openDesigner(ModelDesignerType.level, model, id).pipe(
           tap(({ modeling }: any) => {
             if (modeling.name) {
-              this.updateLevel(
-                {
-                  ...modeling,
-                  __id__: id
-                }
-              )
+              this.updateLevel({
+                ...modeling,
+                __id__: id
+              })
             }
           })
         )
       })
     )
   })
+
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: PropertyHierarchy, ...params: OriginType[]) => PropertyHierarchy | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(
+        write((state) => fn(state, ...params))
+      )
+    }
+  }
 
   readonly setTables = this.updater((state, tables: Table[]) => {
     if (!isEqual(state?.tables, tables)) {
@@ -149,10 +182,11 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
     state.tables = state.tables ?? []
     const _index = state.tables.findIndex((item) => item.name === name)
     if (_index < 0) {
-      const table: Table = {name}
+      const table: Table = { name }
       if (state.tables.length > 0) {
         table.join = {
-          type: 'Inner', fields: []
+          type: 'Inner',
+          fields: []
         }
       }
       state.tables.push(table)
@@ -166,11 +200,11 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
     }
   })
 
-  readonly moveItemInTables = this.updater((state, {previousIndex, currentIndex}: CdkDragDrop<Table[]>) => {
+  readonly moveItemInTables = this.updater((state, { previousIndex, currentIndex }: CdkDragDrop<Table[]>) => {
     moveItemInArray(state.tables, previousIndex, currentIndex)
   })
 
-  readonly appendLevel = this.updater((state, {name, table}: PropertyLevel) => {
+  readonly appendLevel = this.updater((state, { name, table }: PropertyLevel) => {
     state.levels = state.levels ?? []
     const index = state.levels.findIndex((level) => level.column === name)
     if (index < 0) {
@@ -183,9 +217,10 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
     } else {
       const primaryTable = state.primaryKeyTable || state.tables[0]?.name
       // 字段相同并且表相同
-      const index = state.levels.findIndex((level) => level.column === name && 
-        (!level.table ? primaryTable === table : level.table === table))
-      
+      const index = state.levels.findIndex(
+        (level) => level.column === name && (!level.table ? primaryTable === table : level.table === table)
+      )
+
       if (index < 0) {
         state.levels.push({
           __id__: uuid(),
@@ -194,7 +229,9 @@ export class ModelHierarchyService extends ComponentSubStore<PropertyHierarchy, 
           table
         })
       } else {
-        this.toastrService.error('PAC.MODEL.DIMENSION.SameLevelAlreadyExists', '', {Default: 'The same level already exists'})
+        this.toastrService.error('PAC.MODEL.DIMENSION.SameLevelAlreadyExists', '', {
+          Default: 'The same level already exists'
+        })
       }
     }
   })

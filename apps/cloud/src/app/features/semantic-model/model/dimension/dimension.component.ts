@@ -80,7 +80,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
     switchMap((entity) => this.modelService.selectOriginalEntityError(entity))
   ))
 
-  readonly tables = computed(() => uniq(this.hierarchies().flatMap((h) => h.tables).flatMap((t) => t.name)), { equal: isEqual })
+  readonly tables = computed(() => uniq(this.hierarchies()?.flatMap((h) => h.tables).flatMap((t) => t.name)), { equal: isEqual })
   readonly tableTypes = computedAsync(() => {
     const tables = this.tables()
     return combineLatest(tables.map((table) => this.modelService.selectOriginalEntityType(table)))
@@ -180,8 +180,8 @@ ${this.tableTypes().map((tableType) => makeTablePrompt(tableType)).join('\n')}
       })
   }
 
-  trackById(i: number, item: PropertyHierarchy) {
-    return item.__id__
+  isDirty(id: string) {
+    return this.dimensionService.dirty()[id]
   }
 
   openDesignerPanel() {

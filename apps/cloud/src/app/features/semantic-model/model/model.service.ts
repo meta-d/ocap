@@ -1,10 +1,10 @@
 import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Injectable, inject } from '@angular/core'
+import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   AgentType,
@@ -23,7 +23,9 @@ import {
 } from '@metad/ocap-core'
 import { ComponentStore, DirtyCheckQuery } from '@metad/store'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { cloneDeep, sortBy } from 'lodash-es'
+import { createStore, withProps, select, Store } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
+import { cloneDeep, isEqual, negate, pick, sortBy, take } from 'lodash-es'
 import { BehaviorSubject, combineLatest, from, Observable, Subject } from 'rxjs'
 import {
   combineLatestWith,
@@ -48,7 +50,7 @@ import {
   ModelQueryState
 } from './types'
 import { NGXLogger } from 'ngx-logger'
-
+import { dirtyCheck } from '../store'
 
 @Injectable()
 export class SemanticModelService extends ComponentStore<PACModelState> {
@@ -59,10 +61,35 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   private readonly logger = inject(NGXLogger)
   readonly #toastr = inject(ToastrService)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createStore({ name: 'semantic_model' }, withProps<NgmSemanticModel>(null))
+  readonly pristineStore = createStore({ name: 'pristine_semantic_model' }, withProps<NgmSemanticModel>(null))
+  readonly #stateHistory = stateHistory<Store, NgmSemanticModel>(this.store, {
+    comparatorFn: negate(isEqual),
+  })
+  readonly dirtyCheckResult = dirtyCheck(this.store)
+  readonly dirty = signal<Record<string, boolean>>({})
+  readonly stories = signal([])
+  readonly model$ = this.store
+  readonly cubes$ = this.store.pipe(select((state) => state.schema.cubes))
+  readonly dimensions$ = this.store.pipe(select((state) => state.schema.dimensions))
+  readonly cubeStates$ = this.store.pipe(map(initEntitySubState))
+  readonly dimensionStates$ = this.store.pipe(map(initDimensionSubState))
+  readonly modelSignal = toSignal(this.model$)
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   get model() {
     return this.get((state) => state.model)
   }
-  public readonly model$ = this.select((state) => state.model)
+  // public readonly model$ = this.select((state) => state.model)
   public readonly modelId$ = this.select((state) => state.model?.id)
   public readonly dialect$ = this.select((state) => state.model?.dataSource?.type?.type)
   public readonly isLocalAgent$ = this.select((state) => state.model?.dataSource?.type?.type === 'agent')
@@ -72,8 +99,8 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   }
 
   public readonly tables$ = this.model$.pipe(map((model) => model?.tables))
-  public readonly cubeStates$ = this.select((state) => state.cubes)
-  public readonly dimensionStates$ = this.select((state) => state.dimensions)
+  // public readonly cubeStates$ = this.select((state) => state.cubes)
+  // public readonly dimensionStates$ = this.select((state) => state.dimensions)
   public readonly sharedDimensions$ = this.dimensionStates$.pipe(
     map((states) => states?.map((state) => state.dimension))
   )
@@ -137,16 +164,16 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
 
   // Model Roles
   public readonly stories$ = this.select((state) => state.stories)
-  public readonly cubes$ = this.select((state) => state.model.schema?.cubes)
+  // public readonly cubes$ = this.select((state) => state.model.schema?.cubes)
   public readonly virtualCubes$ = this.select((state) => (state.model.schema as any)?.virtualCubes).pipe(
       combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))
     ),
     map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
   )
-  public readonly dimensions$ = this.select((state) => state.model?.schema?.dimensions).pipe(
-    combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
-    map(([dimensions]) => dimensions)
-  )
+  // public readonly dimensions$ = this.select((state) => state.model?.schema?.dimensions).pipe(
+  //   combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
+  //   map(([dimensions]) => dimensions)
+  // )
   public readonly roles$ = this.model$.pipe(combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))), map(([model, isOlap]) => model?.roles))
   public readonly indicators$ = this.model$.pipe(map((model) => model.indicators))
 
@@ -177,21 +204,21 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     switchMap((dataSource) => dataSource.discoverDBTables()),
   )
 
-  private dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
-    watchProperty: ['model', 'ids'],
-    clean: (head, current) => {
-      return this._saveModel()
-    }
-  })
+  // private dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
+  //   watchProperty: ['model', 'ids'],
+  //   clean: (head, current) => {
+  //     return this._saveModel()
+  //   }
+  // })
 
-  public dirty$ = combineLatest([
-    this.dirtyCheckQuery.isDirty$.pipe(startWith(false)),
-    this.entities$.pipe(map((entities) => entities.some((entity) => entity.dirty)))
-  ]).pipe(
-    map(([isDirty, entities]) => isDirty || entities),
-    takeUntilDestroyed(),
-    shareReplay(1)
-  )
+  // public dirty$ = combineLatest([
+  //   this.dirtyCheckQuery.isDirty$.pipe(startWith(false)),
+  //   this.entities$.pipe(map((entities) => entities.some((entity) => entity.dirty)))
+  // ]).pipe(
+  //   map(([isDirty, entities]) => isDirty || entities),
+  //   takeUntilDestroyed(),
+  //   shareReplay(1)
+  // )
 
   private _saved$ = new Subject<void>()
   public readonly saved$ = this._saved$.asObservable()
@@ -212,6 +239,9 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     private _route: ActivatedRoute
   ) {
     super({} as PACModelState)
+
+    // Pause state history until model is loaded
+    this.#stateHistory.pause()
 
     // TODO 一个状态改变产生另一个状态, 这种需求应该怎么处理??
     this.entities$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((entities) => {
@@ -265,47 +295,69 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   }
 
   initModel(model: ISemanticModel) {
-    this.patchState({ stories: model.stories })
-    this._setModel(convertNewSemanticModelResult(model))
-    this.dirtyCheckQuery.setHead()
+    // this.patchState({ stories: model.stories })
+    // this._setModel(convertNewSemanticModelResult(model))
+    // this.dirtyCheckQuery.setHead()
+
+    // New store
+    this.stories.set(model.stories)
+    const semanticModel = convertNewSemanticModelResult(model)
+    this.store.update(() => semanticModel)
+    this.pristineStore.update(() => cloneDeep(semanticModel))
+    this.dirtyCheckResult.setHead()
+    // Resume state history after model is loaded
+    this.#stateHistory.resume()
   }
 
-  saveModel() {
-    this.dirtyCheckQuery.reset()
+  undo() {
+    this.#stateHistory.undo()
   }
+
+  // saveModel() {
+  //   this.dirtyCheckQuery.reset()
+  // }
+  saveModel = effectAction((origin$: Observable<void>) => {
+    return origin$.pipe(
+      map(() => {
+        const model = cloneDeep(this.modelSignal())
+        // Update index of roles
+        model.roles = model.roles.map((role, index) => ({...role, index}))
+        return model
+      }),
+      switchMap((model) => this.#toastr.update({code: 'PAC.MODEL.MODEL.TITLE', params: {Default: 'Semantic Model'}}, () => {
+        return this.modelsService.update(model.id, model, {relations: ['roles', 'roles.users']})
+      })
+      .pipe(
+        tap((model) => {
+          // this.updateModel({roles: sortBy(model.roles, 'index')})
+          // this._saved$.next()
+          this.resetPristine()
+          this.dataSource?.clearCache()
+        })
+      ))
+    )
+  })
 
   /**
    * 语义模型保存
    *
    */
-  _saveModel() {
-    this.rollupEntities()
-    const model = cloneDeep(this.get((state) => state.model))
-    model.roles = model.roles.map((role, index) => ({...role, index}))
-
-    return this.#toastr.update({code: 'PAC.MODEL.MODEL.TITLE', params: {Default: 'Semantic Model'}}, () => {
-        return this.modelsService.update(model.id, model, {relations: ['roles', 'roles.users']})
-      })
-      .pipe(
-        tap(async (model) => {
-          this.updateModel({roles: sortBy(model.roles, 'index')})
-          this._saved$.next()
-          this._resetDirty()
-          this.dataSource?.clearCache()
-        })
-      )
-  }
+  // _saveModel() {
+  //   this.rollupEntities()
+  //   const model = cloneDeep(this.get((state) => state.model))
+  //   model.roles = model.roles.map((role, index) => ({...role, index}))
+  // }
 
   /**
    * 收集子状态中需要保存的数据
    */
-  readonly rollupEntities = this.updater((state) => {
-    state.model.schema = (state.model.schema || { name: state.model.name }) as Schema
-    state.model.schema.dimensions = state.dimensions
-      .map((dimensionState) => dimensionState.dimension)
-      .filter((cube) => !!cube)
-    state.model.schema.cubes = state.cubes.map((entityState) => entityState.cube).filter((cube) => !!cube)
-  })
+  // readonly rollupEntities = this.updater((state) => {
+  //   state.model.schema = (state.model.schema || { name: state.model.name }) as Schema
+  //   state.model.schema.dimensions = state.dimensions
+  //     .map((dimensionState) => dimensionState.dimension)
+  //     .filter((cube) => !!cube)
+  //   state.model.schema.cubes = state.cubes.map((entityState) => entityState.cube).filter((cube) => !!cube)
+  // })
 
   /**
    * 初始化 Semantic Model UI State 和子状态
@@ -324,10 +376,14 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     }
   })
 
-  private readonly _resetDirty = this.updater((state) => {
-    state.dimensions.forEach((dimension) => (dimension.dirty = false))
-    state.cubes.forEach((cube) => (cube.dirty = false))
-  })
+  resetPristine() {
+    this.pristineStore.update(() => cloneDeep(this.modelSignal()))
+  }
+
+  // private readonly _resetDirty = this.updater((state) => {
+  //   state.dimensions.forEach((dimension) => (dimension.dirty = false))
+  //   state.cubes.forEach((cube) => (cube.dirty = false))
+  // })
 
   /**
    * 激活(打开) Entity
@@ -692,4 +748,11 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     const virtualCubes = state.model.schema.virtualCubes
     moveItemInArray(virtualCubes, event.previousIndex, event.currentIndex)
   })
+
+  updateDirty(id: string, dirty: boolean) {
+    this.dirty.update((state) => ({
+      ...state,
+      [id]: dirty
+    }))
+  }
 }

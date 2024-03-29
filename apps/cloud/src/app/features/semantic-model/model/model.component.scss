@@ -87,6 +87,11 @@ $prefix: (ngm, model);
       font-size: 1rem;
     }
   }
+
+  .pac-model__settings-container {
+    height: 100%;
+    margin: 0;
+  }
 }
 
 .pac-fullscreen {

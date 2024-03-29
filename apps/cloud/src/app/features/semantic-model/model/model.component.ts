@@ -2,6 +2,7 @@ import { CdkDrag, CdkDragDrop, CdkDragRelease } from '@angular/cdk/drag-drop'
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   HostBinding,
   HostListener,
   TemplateRef,
@@ -85,6 +86,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _viewContainerRef = inject(ViewContainerRef)
   private toastrService = inject(ToastrService)
   readonly #logger = inject(NGXLogger)
+  readonly destroyRef = inject(DestroyRef)
 
   /**
   |--------------------------------------------------------------------------
@@ -310,7 +312,7 @@ ${sharedDimensionsPrompt}
   readonly isOlap$ = toSignal(this.modelService.isOlap$)
   readonly modelType$ = toSignal(this.modelService.modelType$)
   readonly writable$ = computed(() => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL))
-  readonly _isDirty = toSignal(this.modelService.dirty$)
+  // readonly _isDirty = toSignal(this.modelService.dirty$)
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
@@ -318,8 +320,8 @@ ${sharedDimensionsPrompt}
     this.modelService.initModel(this.model)
   }
 
-  isDirty(): boolean {
-    return this._isDirty()
+  isDirty(id?: string) {
+    return id ? this.modelService.dirty()[id] : Object.values(this.modelService.dirty()).some(Boolean)
   }
 
   trackById(i: number, item: SemanticModelEntity) {
@@ -532,7 +534,7 @@ ${sharedDimensionsPrompt}
   }
 
   undo() {
-    // this.modelService.undo()
+    this.modelService.undo()
   }
 
   redo() {}

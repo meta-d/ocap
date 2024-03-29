@@ -78,9 +78,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   // Signal
   // States
-  get designerComponentId() {
-    return this.settingsService.settingsComponent.id
-  }
+  readonly designerComponentId = toSignal(this.settingsService.settingsComponent$.pipe(map((settings) => settings?.id)))
 
   entities = [] as any
   get dataSourceName() {
@@ -224,6 +222,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
     .subscribe((value) => {
       this.T_Count = value
     })
+
   constructor(
     public modelService: SemanticModelService,
     private modelComponent: ModelComponent,
@@ -291,8 +290,8 @@ export class ModelHierarchyComponent implements AfterViewInit {
     }
   }
 
-  onLevelSelect(value: string) {
-    this.hierarchyService.setupLevelDesigner(value)
+  onLevelSelect(id: string | number) {
+    this.hierarchyService.setupLevelDesigner(id)
     this.dimensionComponent.openDesignerPanel()
   }
 

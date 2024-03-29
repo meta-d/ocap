@@ -24,15 +24,17 @@
                     [cdkDropListEnterPredicate]="levelPredicate"
                 >
                     <mat-nav-list class="max-h-full overflow-hidden hover:overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let level of levelSignal()" [activated]="level.__id__ === designerComponentId"
+                      @for (level of levelSignal(); track level.__id__; let i = $index) {
+                        <mat-list-item [activated]="(level.__id__ ?? i) === designerComponentId()"
                             cdkDrag
                             [cdkDragData]="level"
-                            (click)="onLevelSelect(level.__id__)"
+                            (click)="onLevelSelect(level.__id__ ?? i)"
                         >
                             <ngm-display-behaviour [option]="{value: level.name, label: level.caption}"
                                 [displayBehaviour]="DisplayBehaviour.descriptionAndId">
                             </ngm-display-behaviour>
                         </mat-list-item>
+                      }
                     </mat-nav-list>
                 </div>
             </ngm-splitter-pane>

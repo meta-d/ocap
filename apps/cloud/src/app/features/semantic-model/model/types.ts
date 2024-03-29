@@ -86,6 +86,7 @@ export interface ModelQueryState {
 }
 
 /**
+ * @deprecated split model and internal states into store and signals
  * 语义模型 UI State
  */
 export interface PACModelState {
@@ -102,9 +103,21 @@ export interface PACModelState {
   // entitySets: Array<EntitySet>
   // substates
   ids: string[] | number[]
+  /**
+   * @deprecated migrate to new store
+   */
   cubes: ModelCubeState[]
+  /**
+   * @deprecated migrate to new store
+   */
   dimensions: ModelDimensionState[]
+  /**
+   * @deprecated migrate to new store
+   */
   activedEntities: Array<ModelCubeState | ModelDimensionState>
+  /**
+   * @deprecated migrate to new store
+   */
   queries?: ModelQueryState[]
 }
 

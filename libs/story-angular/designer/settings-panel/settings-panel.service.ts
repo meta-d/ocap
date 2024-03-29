@@ -4,7 +4,7 @@ import { cloneDeep } from '@metad/ocap-core'
 import { uuid } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, EMPTY, Observable, Subject, combineLatest, from, of } from 'rxjs'
-import { debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators'
 import { DesignerComponentProvider, DesignerComponentType, STORY_DESIGNER_COMPONENT, SettingsComponent } from '../types'
 
 interface LocalSettingsComponent extends SettingsComponent {
@@ -82,7 +82,7 @@ export class NxSettingsPanelService {
     )
   }
 
-  openDesigner<T>(componentType: any, model: T | Observable<T>, id?: string): Observable<T> {
+  openDesigner<T>(componentType: any, model: T | Observable<T>, id?: string | number): Observable<T> {
     const componentProvider = this.components.find((item) => item.type === componentType)
 
     if (!componentProvider) {
