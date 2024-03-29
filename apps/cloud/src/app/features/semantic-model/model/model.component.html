@@ -314,6 +314,10 @@
             <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
             {{ 'PAC.ACTIONS.Undo' | translate: {Default: "Undo"} }}
         </button>
+        <button cdkMenuItem (click)="redo()">
+            <mat-icon fontSet="material-icons-outlined">redo</mat-icon>
+            {{ 'PAC.ACTIONS.Redo' | translate: {Default: "Redo"} }}
+        </button>
 
         <button cdkMenuItem (click)="createStory()">
             <mat-icon fontSet="material-icons-outlined">auto_stories</mat-icon>

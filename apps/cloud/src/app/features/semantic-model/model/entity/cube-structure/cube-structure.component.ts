@@ -110,7 +110,7 @@ export class ModelCubeStructureComponent {
     role: AggregationRole.measure
   } as PropertyMeasure)))))
 
-  readonly selectedProperty = toSignal(this.cubeState.select((state) => state.selectedProperty))
+  readonly selectedProperty = this.cubeState.selectedProperty
 
   /**
   |--------------------------------------------------------------------------

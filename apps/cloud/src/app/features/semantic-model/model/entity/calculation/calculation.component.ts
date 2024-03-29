@@ -105,7 +105,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   readonly modelType = toSignal(this.modelService.modelType$)
   readonly dialect = toSignal(this.modelService.dialect$)
-  readonly selectedProperty = toSignal(this.entityService.select((state) => state.selectedProperty))
+  readonly selectedProperty = this.entityService.selectedProperty
   readonly typeKey = computed(() => `${ModelDesignerType.calculatedMember}#${this.key()}`)
 
   /**
@@ -201,9 +201,7 @@ ${makeCubePrompt(this.cube())}
 
     effect(
       () => {
-        this.entityService.patchState({
-          selectedProperty: this.typeKey()
-        })
+        this.entityService.setSelectedProperty(this.typeKey())
       },
       { allowSignalWrites: true }
     )
@@ -255,9 +253,7 @@ ${makeCubePrompt(this.cube())}
 
   ngOnDestroy(): void {
     if (this.selectedProperty() === this.typeKey()) {
-      this.entityService.patchState({
-        selectedProperty: null
-      })
+      this.entityService.setSelectedProperty(null)
     }
   }
 }

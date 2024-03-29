@@ -120,8 +120,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     .pipe(
       combineLatestWith(
         this.isXmla$,
-        this.entityService.select((state) => state.dimensions),
-        this.entityService.select((state) => state.measures)
+        this.entityService.cubeDimensions$,
+        this.entityService.measures$
       ),
       filter(
         ([properties, isXmla, dimensions, measures]) => isXmla && isEmpty(this.dimensions) && isEmpty(this.measures)
@@ -141,8 +141,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
     this.fectTableFields$
       .pipe(
         combineLatestWith(
-          this.entityService.select((state) => state.dimensions),
-          this.entityService.select((state) => state.measures)
+          this.entityService.cubeDimensions$,
+          this.entityService.measures$
         ),
         filter(([properties, dimensions, measures]) => isEmpty(this.dimensions) && isEmpty(this.measures)),
         takeUntilDestroyed(this._destroyRef)
@@ -247,7 +247,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       measures
     })
     // Save current meta from data source
-    this.entityService.patchState(
+    this.entityService.updateCube(
       structuredClone({
         dimensions: this.dimensions,
         measures: this.measures
@@ -321,7 +321,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       measures
     })
     // Save current meta from data source
-    this.entityService.patchState(
+    this.entityService.updateCube(
       structuredClone({
         dimensions: this.dimensions,
         measures: this.measures

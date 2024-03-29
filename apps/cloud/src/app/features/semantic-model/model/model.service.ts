@@ -1,5 +1,5 @@
 import { CdkDropList, DropListRef, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core'
+import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { nonNullable } from '@metad/core'
 import { getSemanticModelKey } from '@metad/story/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -33,7 +33,6 @@ import {
   filter,
   map,
   shareReplay,
-  startWith,
   switchMap,
   tap,
 } from 'rxjs/operators'
@@ -67,7 +66,7 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   |--------------------------------------------------------------------------
   */
   readonly store = createStore({ name: 'semantic_model' }, withProps<NgmSemanticModel>(null))
-  readonly pristineStore = createStore({ name: 'pristine_semantic_model' }, withProps<NgmSemanticModel>(null))
+  readonly pristineStore = createStore({ name: 'semantic_model_pristine' }, withProps<NgmSemanticModel>(null))
   readonly #stateHistory = stateHistory<Store, NgmSemanticModel>(this.store, {
     comparatorFn: negate(isEqual),
   })
@@ -80,6 +79,10 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   readonly cubeStates$ = this.store.pipe(map(initEntitySubState))
   readonly dimensionStates$ = this.store.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
+  readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions)
+
+  readonly schema$ = this.store.pipe(select((state) => state?.schema), filter(nonNullable))
+  readonly virtualCubes$ = this.schema$.pipe(select((schema) => schema.virtualCubes))
   
   /**
   |--------------------------------------------------------------------------
@@ -165,11 +168,11 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   // Model Roles
   public readonly stories$ = this.select((state) => state.stories)
   // public readonly cubes$ = this.select((state) => state.model.schema?.cubes)
-  public readonly virtualCubes$ = this.select((state) => (state.model.schema as any)?.virtualCubes).pipe(
-      combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))
-    ),
-    map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
-  )
+  // public readonly virtualCubes$ = this.select((state) => (state.model.schema as any)?.virtualCubes).pipe(
+  //     combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))
+  //   ),
+  //   map(([virtualCubes]) => virtualCubes?.map((item) => ({...item, type: SemanticModelEntityType.VirtualCube})))
+  // )
   // public readonly dimensions$ = this.select((state) => state.model?.schema?.dimensions).pipe(
   //   combineLatestWith(this.isOlap$.pipe(filter((isOlap) => isOlap))),
   //   map(([dimensions]) => dimensions)
@@ -300,17 +303,21 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
     // this.dirtyCheckQuery.setHead()
 
     // New store
+    // Resume state history before model is loaded
+    this.#stateHistory.resume()
     this.stories.set(model.stories)
     const semanticModel = convertNewSemanticModelResult(model)
     this.store.update(() => semanticModel)
     this.pristineStore.update(() => cloneDeep(semanticModel))
     this.dirtyCheckResult.setHead()
-    // Resume state history after model is loaded
-    this.#stateHistory.resume()
   }
 
   undo() {
     this.#stateHistory.undo()
+  }
+
+  redo() {
+    this.#stateHistory.redo()
   }
 
   // saveModel() {
@@ -695,9 +702,9 @@ export class SemanticModelService extends ComponentStore<PACModelState> {
   }
 
   navigateDimension(name: string) {
-    const dimensions = this.get((state) => state.dimensions)
-    const dimension = dimensions.find((item) => item.dimension.name === name)
-    this._router.navigate([`dimension/${dimension.dimension.__id__}`], { relativeTo: this._route })
+    const dimensions = this.dimensions()
+    const dimension = dimensions.find((item) => item.name === name)
+    this._router.navigate([`dimension/${dimension.__id__}`], { relativeTo: this._route })
   }
 
   newQuery(statement?: string) {

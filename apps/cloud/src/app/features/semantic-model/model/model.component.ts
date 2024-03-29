@@ -582,9 +582,21 @@ ${sharedDimensionsPrompt}
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && (event.key === 's' || event.key === 'S')) {
-      this.modelService.saveModel()
-      event.preventDefault()
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+        if (event.key === 'z' || event.key === 'Z') {
+          this.modelService.redo()
+          event.preventDefault()
+        }
+      } else {
+        if (event.key === 's' || event.key === 'S') {
+          this.modelService.saveModel()
+          event.preventDefault()
+        } else if (event.key === 'z' || event.key === 'Z') {
+          this.modelService.undo()
+          event.preventDefault()
+        }
+      }
     }
   }
 
