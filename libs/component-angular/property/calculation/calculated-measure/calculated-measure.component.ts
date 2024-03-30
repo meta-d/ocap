@@ -85,7 +85,7 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
-  // readonly dsCoreService = input<NgmDSCoreService>()
+  readonly dsCoreService = input<NgmDSCoreService>()
   readonly dataSettings = input<DataSettings>()
   readonly entityType = input<EntityType>()
   readonly coreService = input<NxCoreService>()

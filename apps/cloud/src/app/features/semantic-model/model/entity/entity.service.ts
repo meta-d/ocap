@@ -199,8 +199,8 @@ export class ModelEntityService {
 
 
   public init(entity: string) {
-    this.store.connect(['schema', 'cubes', entity])
-    this.pristineStore.connect(['schema', 'cubes', entity])
+    this.store.connect(['model', 'schema', 'cubes', entity])
+    this.pristineStore.connect(['model', 'schema', 'cubes', entity])
 
     // this.connect(this.#modelService, { parent: ['cubes', entity] })
     // this.dirtyCheckQuery.setHead()

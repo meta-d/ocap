@@ -29,7 +29,7 @@ import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { ISemanticModel, MDX, ToastrService, getSQLSourceName, registerModel, uid10, uuid } from '../../../@core'
-import { dirtyCheck, dirtyCheckWith, write } from '../store'
+import { dirtyCheckWith, write } from '../store'
 import {
   MODEL_TYPE,
   ModelCubeState,
@@ -37,6 +37,7 @@ import {
   ModelQueryState,
   SemanticModelEntity,
   SemanticModelEntityType,
+  SemanticModelState,
   initDimensionSubState,
   initEntitySubState
 } from './types'
@@ -54,9 +55,9 @@ export class SemanticModelService {
   | Store
   |--------------------------------------------------------------------------
   */
-  readonly store = createStore({ name: 'semantic_model' }, withProps<NgmSemanticModel>(null))
-  readonly pristineStore = createStore({ name: 'semantic_model_pristine' }, withProps<NgmSemanticModel>(null))
-  readonly #stateHistory = stateHistory<Store, NgmSemanticModel>(this.store, {
+  readonly store = createStore({ name: 'semantic_model' }, withProps<SemanticModelState>({model: null}))
+  readonly pristineStore = createStore({ name: 'semantic_model_pristine' }, withProps<SemanticModelState>({model: null}))
+  readonly #stateHistory = stateHistory<Store, SemanticModelState>(this.store, {
     comparatorFn: negate(isEqual)
   })
   /**
@@ -68,15 +69,15 @@ export class SemanticModelService {
    */
   readonly dirty = signal<Record<string, boolean>>({})
   readonly stories = signal([])
-  readonly model$ = this.store
-  readonly cubes$ = this.store.pipe(select((state) => state.schema.cubes))
-  readonly dimensions$ = this.store.pipe(select((state) => state.schema.dimensions))
-  readonly cubeStates$ = this.store.pipe(map(initEntitySubState))
-  readonly dimensionStates$ = this.store.pipe(map(initDimensionSubState))
+  readonly model$ = this.store.pipe(select((state) => state.model), filter(nonNullable))
+  readonly cubes$ = this.model$.pipe(select((state) => state.schema.cubes))
+  readonly dimensions$ = this.model$.pipe(select((state) => state.schema.dimensions))
+  readonly cubeStates$ = this.model$.pipe(map(initEntitySubState))
+  readonly dimensionStates$ = this.model$.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
   readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions)
 
-  readonly schema$ = this.store.pipe(
+  readonly schema$ = this.model$.pipe(
     select((state) => state?.schema),
     filter(nonNullable)
   )
@@ -165,9 +166,6 @@ export class SemanticModelService {
   readonly semanticModelKey$ = this.model$.pipe(filter(nonNullable), map(getSemanticModelKey), filter(nonNullable), distinctUntilChanged())
 
   readonly dataSource$ = new BehaviorSubject<DataSource>(null)
-  // get dataSource() {
-  //   return this.dataSource$.value
-  // }
 
   /**
    * Original data source:
@@ -260,15 +258,11 @@ export class SemanticModelService {
   }
 
   initModel(model: ISemanticModel) {
-    // this.patchState({ stories: model.stories })
-    // this._setModel(convertNewSemanticModelResult(model))
-    // this.dirtyCheckQuery.setHead()
-
     // New store
     this.stories.set(model.stories)
     const semanticModel = convertNewSemanticModelResult(model)
-    this.store.update(() => semanticModel)
-    this.pristineStore.update(() => cloneDeep(semanticModel))
+    this.store.update(() => ({model: semanticModel}))
+    this.pristineStore.update(() => ({model: cloneDeep(semanticModel)}))
     // Resume state history after model is loaded
     this.#stateHistory.resume()
   }
@@ -285,13 +279,16 @@ export class SemanticModelService {
     fn: (state: NgmSemanticModel, ...params: OriginType[]) => NgmSemanticModel | void
   ) {
     return (...params: OriginType[]) => {
-      this.store.update(write((state) => fn(state, ...params)))
+      this.store.update(write((state) => {
+        const model = fn(state.model, ...params)
+        if (model) {
+          state.model = model
+        }
+        return state
+      }))
     }
   }
 
-  // saveModel() {
-  //   this.dirtyCheckQuery.reset()
-  // }
   saveModel = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       map(() => {
@@ -356,7 +353,7 @@ export class SemanticModelService {
   // })
 
   resetPristine() {
-    this.pristineStore.update(() => cloneDeep(this.modelSignal()))
+    this.pristineStore.update(() => ({model: cloneDeep(this.modelSignal())}))
   }
 
   setCrrentEntity(id: string) {

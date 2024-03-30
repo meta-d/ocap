@@ -77,6 +77,10 @@ export interface QueryResult {
   }
 }
 
+export type SemanticModelState = {
+  model: NgmSemanticModel
+}
+
 export interface ModelQueryState {
   key: string
   origin?: ModelQuery

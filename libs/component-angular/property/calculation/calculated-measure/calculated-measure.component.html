@@ -10,6 +10,7 @@
                 [cdkDropListData]="[]"
             >
                 <ngm-entity-schema class="flex-1 max-w-full w-full"
+                    [dsCoreService]="dsCoreService()"
                     [dataSettings]="dataSettings()"
                     [capacities]="[
                         EntityCapacity.Dimension,

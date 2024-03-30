@@ -109,8 +109,8 @@ export class ModelDimensionService {
   }
 
   public init(id: string) {
-    this.store.connect(['schema', 'dimensions', id])
-    this.pristineStore.connect(['schema', 'dimensions', id])
+    this.store.connect(['model', 'schema', 'dimensions', id])
+    this.pristineStore.connect(['model', 'schema', 'dimensions', id])
     this.initHierarchyIndex()
     // this.dirtyCheckResult.setHead()
 
@@ -121,10 +121,10 @@ export class ModelDimensionService {
     //     this.initHierarchyIndex()
     //   })
 
-    this.modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
+    // this.modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       // this.dirtyCheckQuery.setHead()
       // this.dirtyCheckResult.setHead()
-    })
+    // })
   }
 
   /**
