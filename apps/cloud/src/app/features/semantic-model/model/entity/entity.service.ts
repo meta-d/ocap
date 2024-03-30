@@ -216,7 +216,7 @@ export class ModelEntityService {
   }
 
   query(statement: string) {
-    return this.#modelService.dataSource.query({ statement })
+    return this.#modelService.dataSource$.value.query({ statement })
   }
 
   updater<ProvidedType = void, OriginType = ProvidedType>(

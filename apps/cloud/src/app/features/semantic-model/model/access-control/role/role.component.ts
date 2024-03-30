@@ -59,7 +59,7 @@ export class RoleComponent {
   public readonly cubes$ = this.roleState.cubes$
 
   get dataSourceName() {
-    return this.modelService.dataSource?.options.name
+    return this.modelService.dataSource$.value?.options.key
   }
 
   selectedCube: string

@@ -226,7 +226,7 @@ ${sharedDimensionsPrompt}
   public readonly toolbarAction$ = new Subject<{ category: TOOLBAR_ACTION_CATEGORY; action: string }>()
 
   get dbInitialization() {
-    return this.modelService.model?.dbInitialization
+    return this.modelService.modelSignal()?.dbInitialization
   }
   // Left side menu drawer open state
   sideMenuOpened = true
@@ -313,6 +313,7 @@ ${sharedDimensionsPrompt}
   readonly modelType$ = toSignal(this.modelService.modelType$)
   readonly writable$ = computed(() => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL))
   // readonly _isDirty = toSignal(this.modelService.dirty$)
+  readonly tables = toSignal(this.selectDBTables$)
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
@@ -321,7 +322,7 @@ ${sharedDimensionsPrompt}
   }
 
   isDirty(id?: string) {
-    return id ? this.modelService.dirty()[id] : Object.values(this.modelService.dirty()).some(Boolean)
+    return id ? this.modelService.dirty()[id] : this.modelService.isDirty()
   }
 
   trackById(i: number, item: SemanticModelEntity) {
@@ -353,8 +354,8 @@ ${sharedDimensionsPrompt}
   }
 
   async createEntity(entity?: SemanticModelEntity) {
-    const modelType = await firstValueFrom(this.modelService.modelType$)
-    const entitySets = await firstValueFrom(this.selectDBTables$)
+    const modelType = this.modelService.modelType()
+    const entitySets = this.tables()
     if (modelType === MODEL_TYPE.XMLA) {
       const result = await firstValueFrom(
         this._dialog
@@ -550,7 +551,7 @@ ${sharedDimensionsPrompt}
           panelClass: 'large',
           data: {
             dataSource: this.modelService.originalDataSource,
-            id: this.modelService.model.dataSource.id
+            id: this.modelService.modelSignal().dataSource.id
           },
           disableClose: true
         } as MatDialogConfig)

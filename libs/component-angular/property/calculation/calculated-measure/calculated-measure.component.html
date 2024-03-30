@@ -10,8 +10,7 @@
                 [cdkDropListData]="[]"
             >
                 <ngm-entity-schema class="flex-1 max-w-full w-full"
-                    [dsCoreService]="dsCoreService"
-                    [dataSettings]="dataSettings"
+                    [dataSettings]="dataSettings()"
                     [capacities]="[
                         EntityCapacity.Dimension,
                         EntityCapacity.Measure
@@ -121,24 +120,24 @@
            </div>
         </div>
 
-        @if (syntax===Syntax.MDX) {
+        @if (syntax()===Syntax.MDX) {
             <ngm-editor-mdx-member #editor class="ngm-calculated-measure__monaco-editor flex-1"
                 id="ngm-calculated-editor"
                 cdkDropList
                 [cdkDropListData]="calculations"
                 (cdkDropListDropped)="drop($event)"
-                [entityType]="entityType"
+                [entityType]="entityType()"
                 [disabled]="disabled"
                 [(ngModel)]="statement"
                 >
             </ngm-editor-mdx-member>
-        } @else if (syntax===Syntax.SQL) {
+        } @else if (syntax()===Syntax.SQL) {
             <ngm-editor-sql class="ngm-calculated-measure__monaco-editor flex-1"
                 id="ngm-calculated-editor"
                 cdkDropList
                 [cdkDropListData]="calculations"
                 (cdkDropListDropped)="drop($event)"
-                [entityType]="entityType"
+                [entityType]="entityType()"
                 [disabled]="disabled"
                 [(ngModel)]="statement"
             >

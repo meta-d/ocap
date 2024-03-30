@@ -180,7 +180,7 @@ export class ModelCreateTableComponent implements OnInit {
 
   tableNameValidator() {
     return (c: AbstractControl) => {
-      const tables = this.modelService.tables
+      const tables = this.modelService.tables()
       // 已存在并且不是修改
       if (tables?.find((item) => item.name === c.value) && !this.data?.model) {
         return {

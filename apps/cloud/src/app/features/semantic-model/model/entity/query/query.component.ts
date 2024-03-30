@@ -162,7 +162,7 @@ ${this.statement()}
         // Show query result or progress status
         this.showQueryResult.set(true)
         // Query data
-        return this.modelService.dataSource.query({ statement }).pipe(
+        return this.modelService.dataSource$.value.query({ statement }).pipe(
           catchError((error) => {
             console.error(error)
             this.error = error

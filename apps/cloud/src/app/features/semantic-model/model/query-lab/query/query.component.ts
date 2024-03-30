@@ -75,7 +75,7 @@ export class QueryComponent extends TranslationBaseComponent {
   }
 
   get dbInitialization() {
-    return this.modelService.model?.dbInitialization
+    return this.modelService.modelSignal()?.dbInitialization
   }
 
   textSelection: {

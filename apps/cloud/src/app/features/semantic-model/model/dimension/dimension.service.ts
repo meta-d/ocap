@@ -38,7 +38,7 @@ export class ModelDimensionService {
     { name: 'semantic_model_dimension_pristine', arrayKey: '__id__' },
     withProps<PropertyDimension>(null)
   )
-  readonly #stateHistory = stateHistory<Store, NgmSemanticModel>(this.store, {
+  readonly #stateHistory = stateHistory<Store, PropertyDimension>(this.store, {
     comparatorFn: negate(isEqual)
   })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
