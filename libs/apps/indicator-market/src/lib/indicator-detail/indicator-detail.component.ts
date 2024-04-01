@@ -32,6 +32,7 @@ import {
   getEntityHierarchy,
   getEntityLevel,
   getEntityProperty,
+  getEntityProperty2,
   getIndicatorMeasureName,
   getPropertyCaption,
   IFilter,
@@ -66,7 +67,6 @@ import {
   firstValueFrom,
   map,
   Observable,
-  of,
   shareReplay,
   startWith,
   switchMap,
@@ -613,7 +613,8 @@ export class IndicatorDetailComponent {
           period: slicerAsString(timeSlicer)
         }
       })
-    })
+    }),
+    shareReplay(1)
   )
 
   public readonly comments$ = combineLatest([
@@ -636,16 +637,23 @@ export class IndicatorDetailComponent {
   readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
   readonly copilotEnabled = toSignal(this.copilotService.enabled$)
 
-  readonly entityType = computedAsync(() => {
-    const dataSource = this.explainDataSignal()?.[0].dataSource
-    const entitySet = this.explainDataSignal()?.[0].entitySet
-    if (dataSource) {
-      return this.dsCoreService.getDataSource(dataSource).pipe(
-        switchMap((dataSource) => dataSource.selectEntityType(entitySet))
-      )
-    }
+  readonly entityType = toSignal(this.entityType$)
 
-    return of(null)
+  readonly drillLevels = signal<Record<string, string>>({})
+
+  readonly drillDimensions = computedAsync(() => {
+    const drillLevels = this.drillLevels()
+    return this.drillDimensions$.pipe(
+      // Update title from drillLevels (level from explain data)
+      map((drills) => drills.map((drill) => {
+        const level = drillLevels[drill.id]
+        if (level) {
+          const property = getEntityProperty2(this.entityType(), level)
+          return { ...drill, title: property?.caption ?? drill.title }
+        }
+        return drill
+      }))
+    )
   })
 
   /**
@@ -770,6 +778,16 @@ export class IndicatorDetailComponent {
     this.drillExplainData[index] = {
       drill,
       event
+    }
+    // Get drilldown level
+    const item = event.filter(nonNullable)?.find((item) => item.data?.length)?.data[0]
+    if (item?.hierarchy && item?.[`[${item.hierarchy}].[LEVEL_UNIQUE_NAME]`]) {
+      this.drillLevels.update((levels) => {
+        return {
+          ...levels,
+          [drill.id]: item?.[`[${item.hierarchy}].[LEVEL_UNIQUE_NAME]`]
+        }
+      })
     }
   }
 

@@ -134,7 +134,7 @@
       </div>
     }
    
-    @if (drillDimensions$ | async; as drillDimensions) {
+    @if (drillDimensions(); as drillDimensions) {
       <div class="flex flex-col">
         <div class="text-lg my-4 ">
           {{ 'IndicatorApp.DrillDown' | translate: {Default: 'Drill Down'} }}
