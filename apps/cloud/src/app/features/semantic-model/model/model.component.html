@@ -8,9 +8,11 @@
       }
       @if (!isMobile()) {
         <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
-            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
             <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
             <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+          @if (isDirty()) {
+            <pac-dirty-badge class="absolute left-2 top-2"/>
+          }
         </button>
         <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
             <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
@@ -104,10 +106,7 @@
                             </ngm-display-behaviour>
 
                           @if (isDirty(entity.id)) {
-                            <span class="ping-badge pointer-events-none absolute left-2 top-2 flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2"></span>
-                            </span>
+                            <pac-dirty-badge class="absolute left-2 top-2"/>
                           }
 
                             <button mat-icon-button displayDensity="compact" class="pac-model__nav-action"
@@ -253,9 +252,11 @@
 <ng-template #mobileMenu>
     <div cdkMenu>
         <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative">
-            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
             <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
             <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
+          @if (isDirty()) {
+            <pac-dirty-badge class="absolute left-2 top-2"/>
+          }
         </button>
         <button cdkMenuItem [cdkMenuTriggerFor]="editMenu">
             <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
