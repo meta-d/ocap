@@ -116,7 +116,7 @@ export class NxSettingsPanelService {
             liveMode: this.liveMode
           } as LocalSettingsComponent)
 
-        settingsComponent.model = model
+        settingsComponent.model = model as any
 
         this._settingsComponent$.next(settingsComponent)
 
@@ -198,7 +198,7 @@ export class NxSettingsPanelService {
           title
         } as LocalSettingsComponent
 
-        settingsComponent.model = model
+        settingsComponent.model = model as any
 
         this._settingsComponent$.next(settingsComponent)
 

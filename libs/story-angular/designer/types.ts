@@ -11,14 +11,17 @@ export interface DesignerComponentType<T> {
   model: T | Observable<T>
   submit?: Subject<T>
 }
+export interface ModelType<T> {
+  modeling: T
+}
 
-export interface SettingsComponent {
+export interface SettingsComponent<T extends ModelType<unknown> = ModelType<unknown>> {
   id?: string
   container: ComponentType<unknown>
-  model: any
+  model: T | Observable<T>
   componentType: string | number
   schema?: ComponentType<DesignerSchema>
-  submit: Subject<any>
+  submit: Subject<unknown>
   transition?: boolean
 }
 

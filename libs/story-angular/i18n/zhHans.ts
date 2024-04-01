@@ -79,7 +79,7 @@ export const ZhHans = {
     },
     Designer: {
       LookingEmpty: '这个故事看起来有些空洞',
-      LookingEmptyAddStoryPoint: '添加一个故事点来开始吧'
+      LookingEmptyAddStoryPoint: '添加一个故事点来开始吧',
     },
     Story: {
       Share: '分享',
@@ -1637,5 +1637,8 @@ export const ZhHans = {
         }
       }
     }
+  },
+  Designer: {
+    IsEmpty: '空'
   }
 }

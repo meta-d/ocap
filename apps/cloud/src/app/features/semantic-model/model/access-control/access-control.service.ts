@@ -30,9 +30,9 @@ export class AccessControlStateService {
     { name: 'semantic_model_roles_pristine', arrayKey: 'key' },
     withProps<IModelRole[]>(null)
   )
-  readonly #stateHistory = stateHistory<Store, IModelRole[]>(this.store, {
-    comparatorFn: negate(isEqual)
-  })
+  // readonly #stateHistory = stateHistory<Store, IModelRole[]>(this.store, {
+  //   comparatorFn: negate(isEqual)
+  // })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 

@@ -29,16 +29,21 @@
     </mat-drawer>
     <mat-drawer-content class="ngm-settings-panel__drawer-content">
         <ng-template [cdkPortalOutlet]="settingsPortal"></ng-template>
-
-        <mat-tab-group #tabGroup *ngIf="settingsPortals" class="h-full"
-            mat-stretch-tabs preserveContent fitInkBarToContent>
-            <mat-tab *ngFor="let settingsPortal of settingsPortals">
+      
+      @if (settingsPortals) {
+        <mat-tab-group #tabGroup class="h-full" mat-stretch-tabs preserveContent fitInkBarToContent>
+          @for (settingsPortal of settingsPortals; track settingsPortal) {
+            <mat-tab>
                 <ng-template mat-tab-label>
-                    <mat-icon *ngIf="settingsPortal.icon" fontSet="material-icons-outlined">{{settingsPortal.icon}}</mat-icon>
-                    {{settingsPortal.label | translate: {Default: settingsPortal.label} }}
+                  @if (settingsPortal.icon) {
+                    <mat-icon fontSet="material-icons-outlined">{{settingsPortal.icon}}</mat-icon>
+                  }
+                    <span>{{settingsPortal.label | translate: {Default: settingsPortal.label} }}</span>
                 </ng-template>
                 <ng-template [cdkPortalOutlet]="settingsPortal.portal"></ng-template>
             </mat-tab>
+          }
         </mat-tab-group>
+      }
     </mat-drawer-content>
 </mat-drawer-container>

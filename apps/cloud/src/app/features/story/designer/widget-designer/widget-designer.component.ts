@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { nonNullable } from '@metad/core'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
 import { STORY_DESIGNER_FORM, STORY_DESIGNER_LIVE_MODE } from '@metad/story/designer'
+import { TranslateModule } from '@ngx-translate/core'
 import { debounceTime, filter, isObservable, of } from 'rxjs'
 import { InlineSearchComponent, MaterialModule } from '../../../../@shared'
 import { DesignerWidgetComponent } from '../widget/widget.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -33,7 +34,7 @@ export class WidgetDesignerComponent {
   private readonly liveMode = inject(STORY_DESIGNER_LIVE_MODE)
   private readonly _cdr = inject(ChangeDetectorRef)
 
-  initial = true
+  readonly initial = signal(true)
 
   formControl = new FormControl()
 
@@ -41,11 +42,15 @@ export class WidgetDesignerComponent {
     ? this._settingsComponent.model
     : of(this._settingsComponent.model)
   )
-    .pipe(filter((model) => !!model && this.initial), takeUntilDestroyed())
-    .subscribe((model: { component: any }) => {
-      this.initial = false
-      this.formControl.patchValue(model.component)
+    .pipe(
+      filter((model) => nonNullable(model) && this.initial()),
+      takeUntilDestroyed()
+    )
+    .subscribe((model) => {
+      this.initial.set(false)
+      this.formControl.patchValue((<{ component: any; modeling: any }>model).component)
     })
+
   private valueSub = this.formControl.valueChanges.pipe(debounceTime(500), takeUntilDestroyed()).subscribe((value) => {
     this._settingsComponent.submit.next({ component: value })
   })

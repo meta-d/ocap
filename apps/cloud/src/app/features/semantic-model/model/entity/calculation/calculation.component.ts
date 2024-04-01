@@ -224,7 +224,8 @@ ${makeCubePrompt(this.cube())}
         return
       }
     }
-    if (!isNil(calculatedMember) && formula !== calculatedMember?.formula) {
+    // null and "" as the same
+    if (!isNil(calculatedMember) && (!formula !== !calculatedMember?.formula || !!formula)) {
       this.entityService.setCalculatedMember({
         ...calculatedMember,
         formula

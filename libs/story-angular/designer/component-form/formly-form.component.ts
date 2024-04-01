@@ -23,6 +23,10 @@ import {
   SettingsComponent
 } from '../types'
 
+/**
+ * @deprecated use NgmDesignerFormComponent instead
+ * 
+ */
 @Component({
   selector: 'ngm-component-settings',
   templateUrl: 'formly-form.component.html',

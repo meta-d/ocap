@@ -10,7 +10,6 @@ import {
   DimensionUsage,
   EntityProperty,
   EntityType,
-  Property,
   PropertyAttributes,
   PropertyDimension,
   PropertyHierarchy,
@@ -70,9 +69,9 @@ export class ModelEntityService {
     { name: 'semantic_model_cube_pristine', arrayKey: '__id__' },
     withProps<Cube>(null)
   )
-  readonly #stateHistory = stateHistory<Store, Cube>(this.store, {
-    comparatorFn: negate(isEqual)
-  })
+  // readonly #stateHistory = stateHistory<Store, Cube>(this.store, {
+  //   comparatorFn: negate(isEqual)
+  // })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
@@ -165,12 +164,12 @@ export class ModelEntityService {
           combineLatest([
             this.cube$,
             this.selectByTypeAndId(ModelDesignerType[type], key).pipe(
-              filter(Boolean) // 过滤已经被删除的等情况
+              // filter(Boolean) // 过滤已经被删除的等情况
             )
           ]).pipe(
             map(([cube, modeling]) => ({
               cube,
-              id: modeling.__id__,
+              id: key,
               modeling
             })),
             distinctUntilChanged(isEqual)

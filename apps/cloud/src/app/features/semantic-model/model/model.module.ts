@@ -14,7 +14,7 @@ import {
 } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
-import { NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
+import { NgmDesignerFormComponent, NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -41,7 +41,6 @@ import {
   MeasureAttributesSchema,
   MeasureSchemaService
 } from './schema/index'
-import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
 import { ModelRoutingModule } from './routing'
 
@@ -83,12 +82,12 @@ import { ModelRoutingModule } from './routing'
   providers: [
     provideOcapCore(),
     // NgmCopilotService,
-    StoryModelResolver,
+    // StoryModelResolver,
     {
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.cube,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CubeSchemaService
       },
       multi: true
@@ -142,7 +141,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.calculatedMember,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CalculatedMemberSchemaService
       },
       multi: true
