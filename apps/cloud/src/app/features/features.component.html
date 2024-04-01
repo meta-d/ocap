@@ -138,10 +138,11 @@
     </mat-toolbar>
 
     <mat-drawer-container class="flex-1 h-full" [ngClass]="{'pac-fullscreen': fullscreenIndex$() > 1}"
-      [hasBackdrop]="false"
       autosize
     >
-      <mat-drawer #copilotDrawer class="ngm-sidenav-container-bg-transparent mat-elevation-z" position="end" mode="side" ngmResizer [resizerWidth]="380"
+      <mat-drawer #copilotDrawer class="ngm-sidenav-container-bg-transparent mat-elevation-z max-w-full" position="end"
+        [mode]="isMobile() ? 'over' : 'side'"
+        ngmResizer [resizerWidth]="380"
         [(opened)]="copilotDrawerOpened"
       >
         @if(copilotEnabled$()) {
