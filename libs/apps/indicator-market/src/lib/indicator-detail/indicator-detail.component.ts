@@ -678,10 +678,6 @@ export class IndicatorDetailComponent {
     }
   }
 
-  trackById(index, item) {
-    return item?.id
-  }
-
   onClose(event) {
     this._bottomSheetRef.dismiss()
     event.preventDefault()
