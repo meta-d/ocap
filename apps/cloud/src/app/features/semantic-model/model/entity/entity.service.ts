@@ -10,6 +10,7 @@ import {
   DimensionUsage,
   EntityProperty,
   EntityType,
+  Property,
   PropertyAttributes,
   PropertyDimension,
   PropertyHierarchy,
@@ -92,6 +93,15 @@ export class ModelEntityService {
       statement: value
     }))
   }
+
+  /**
+   * Table fields for dimension role
+   */
+  readonly dimensions = signal<Property[] | null>(null)
+  /**
+   * Table fields for measure role
+   */
+  readonly measures = signal<Property[] | null>(null)
 
   // readonly dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
   //   watchProperty: ['entityType', 'cube'],
