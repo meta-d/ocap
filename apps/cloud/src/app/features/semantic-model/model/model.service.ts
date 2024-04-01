@@ -209,7 +209,7 @@ export class SemanticModelService {
     private _route: ActivatedRoute
   ) {
     // Pause state history until model is loaded
-    this.#stateHistory.pause()
+    // this.#stateHistory.pause()
 
     // TODO 一个状态改变产生另一个状态, 这种需求应该怎么处理??
     // this.entities$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((entities) => {
@@ -264,7 +264,7 @@ export class SemanticModelService {
     this.store.update(() => ({model: semanticModel}))
     this.pristineStore.update(() => ({model: cloneDeep(semanticModel)}))
     // Resume state history after model is loaded
-    this.#stateHistory.resume()
+    // this.#stateHistory.resume()
   }
 
   undo() {

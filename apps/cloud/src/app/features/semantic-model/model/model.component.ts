@@ -538,7 +538,9 @@ ${sharedDimensionsPrompt}
     this.modelService.undo()
   }
 
-  redo() {}
+  redo() {
+    this.modelService.redo()
+  }
 
   doAction(event) {
     this.toolbarAction$.next(event)
