@@ -2853,6 +2853,13 @@
       "NotFoundValue": "未找到值：",
       "SemanticModel": "语义模型"
     },
+    "VALIDATION": {
+      "REQUIRED": "必填",
+      "MinLength": "至少有 {{minLength}} 个字符",
+      "MaxLength": "最多有 {{maxLength}} 个字符",
+      "Min": "值不得小于 {{min}}",
+      "Max": "值不得大于 {{max}}"
+    },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "参考线",
       "None": "默认",

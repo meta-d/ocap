@@ -1,41 +1,65 @@
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
 import { NgmFormlyToggleComponent } from '@metad/formly/mat-toggle'
-import { ConfigOption, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
+import { FORMLY_CONFIG, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
+import { TranslateService } from '@ngx-translate/core'
 
-export function validateRequired(err, field: FormlyFieldConfig) {
-  return `This field is required`
-}
-export function validateMinLength(err, field: FormlyFieldConfig) {
-  return `Should have atleast ${field.props.minLength} characters`
-}
-export function validateMaxLength(err, field: FormlyFieldConfig) {
-  return `Should have less than ${field.props.maxLength} characters`
-}
-export function validateMin(err, field: FormlyFieldConfig) {
-  return 'This value should be more than ' + field.props.min
-}
-export function validateMax(err, field: FormlyFieldConfig) {
-  return `This value should be less than ${field.props.max}`
+export function provideFormly() {
+  return { provide: FORMLY_CONFIG, multi: true, useFactory: formlyValidationConfig, deps: [TranslateService] }
 }
 
-export function provideFormly(options?: ConfigOption) {
-  return FormlyModule.forRoot({
+export function formlyValidationConfig(translate: TranslateService) {
+  return {
     validationMessages: [
-      { name: 'required', message: validateRequired },
-      { name: 'minLength', message: validateMinLength },
-      { name: 'maxLength', message: validateMaxLength },
-      { name: 'min', message: validateMin },
-      { name: 'max', message: validateMax },
-      ...(options?.validationMessages ?? [])
+      {
+        name: 'required',
+        message() {
+          return translate.stream('FORMLY.VALIDATION.REQUIRED', { Default: 'Required' })
+        }
+      },
+      {
+        name: 'minLength',
+        message(err, field: FormlyFieldConfig) {
+          return translate.stream('FORMLY.VALIDATION.MinLength', {
+            Default: `Should have atleast ${field.props.minLength} characters`,
+            minLength: field.props.minLength
+          })
+        }
+      },
+      {
+        name: 'maxLength',
+        message(err, field: FormlyFieldConfig) {
+          return translate.stream('FORMLY.VALIDATION.MaxLength', {
+            Default: `Should have less than ${field.props.maxLength} characters`,
+            maxLength: field.props.maxLength
+          })
+        }
+      },
+      {
+        name: 'min',
+        message(err, field: FormlyFieldConfig) {
+          return translate.stream('FORMLY.VALIDATION.Min', {
+            Default: 'This value should be more than ' + field.props.min,
+            min: field.props.min
+          })
+        }
+      },
+      {
+        name: 'max',
+        message(err, field: FormlyFieldConfig) {
+          return translate.stream('FORMLY.VALIDATION.Max', {
+            Default: `This value should be less than ${field.props.max}`,
+            max: field.props.max
+          })
+        }
+      }
     ],
     types: [
       {
         name: 'colors',
         component: PacFormlyColorsComponent
-      },
-      ...(options?.types ?? [])
+      }
     ]
-  }).providers
+  }
 }
 
 export function provideFormlyMaterial() {
