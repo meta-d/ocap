@@ -593,7 +593,7 @@ export class IndicatorDetailComponent {
                 show: true,
                 position: 'insideRight',
                 formatter: (params) => {
-                  return formatNumber(params.data[measure], locale, '0.1-1')
+                  return indicator.unit === '%' ? formatNumber(params.data[measure] * 100, locale, '0.1-1') + '%' : formatNumber(params.data[measure], locale, '0.1-1')
                 }
               }
             },
@@ -645,7 +645,7 @@ export class IndicatorDetailComponent {
     const drillLevels = this.drillLevels()
     return this.drillDimensions$.pipe(
       // Update title from drillLevels (level from explain data)
-      map((drills) => drills.map((drill) => {
+      map((drills) => drills?.map((drill) => {
         const level = drillLevels[drill.id]
         if (level) {
           const property = getEntityProperty2(this.entityType(), level)
