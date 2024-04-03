@@ -27,8 +27,8 @@ import {
   LevelCaptionField,
   LevelContext
 } from './dimension'
-import { AggregateFunctions, allMemberCaption, allMemberName, SQLError, SQLErrorCode } from './types'
-import { serializeIntrinsicName, serializeMeasureName, serializeTableAlias } from './utils'
+import { AggregateFunctions } from './types'
+import { allMemberCaption, allMemberName, serializeIntrinsicName, serializeMeasureName, serializeTableAlias } from './utils'
 
 /**
  * Compile the cube of entity with it's dimensions to runtime entity type

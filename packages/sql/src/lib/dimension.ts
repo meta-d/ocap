@@ -20,8 +20,8 @@ import {
 } from '@metad/ocap-core'
 import { CubeFactTable } from './cube'
 import { Cast } from './functions'
-import { AggregateFunctions, allMemberCaption, allMemberName, C_MEASURES_ROW_COUNT } from './types'
-import { isSQLDialect, serializeIntrinsicName, serializeName, serializeTableAlias, serializeUniqueName } from './utils'
+import { AggregateFunctions, C_MEASURES_ROW_COUNT } from './types'
+import { allMemberCaption, allMemberName, isSQLDialect, serializeIntrinsicName, serializeName, serializeTableAlias, serializeUniqueName } from './utils'
 
 export interface ColumnContext {
   table?: string

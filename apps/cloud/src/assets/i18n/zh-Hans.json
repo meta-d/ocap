@@ -166,7 +166,11 @@
       "Undo": "撤销",
       "Commit": "提交",
       "Edit": "编辑",
-      "Unit": "单位"
+      "Unit": "单位",
+      "LevelNumber": "层级",
+      "ChildrenCardinality": "子节点数量",
+      "Tree": "树",
+      "Table": "表"
     },
     "MENU": {
       "Certification": "认证",

@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, effect, inject } from '@angular/core'
+import { Injectable, computed, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { nonNullable } from '@metad/core'
 import { effectAction } from '@metad/ocap-angular/core'
@@ -14,6 +14,7 @@ import { createSubStore, dirtyCheckWith, write } from '../../../store'
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType } from '../../types'
 import { ModelDimensionService } from '../dimension.service'
+import { allLevelCaption, allLevelName, allMemberCaption, allMemberName } from '@metad/ocap-sql'
 
 @Injectable()
 export class ModelHierarchyService {
@@ -53,7 +54,14 @@ export class ModelHierarchyService {
 
   // Signals
   readonly hierarchy = toSignal(this.hierarchy$)
-  private readonly sharedDimensions = toSignal(this.modelService.dimensions$)
+  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dimensionName = toSignal(this.parentService.name$)
+  readonly sharedDimensions = toSignal(this.modelService.dimensions$)
+  readonly hasAll = toSignal(this.hierarchy$.pipe(map((hierarchy) => hierarchy?.hasAll)))
+  readonly allMemberName = toSignal(this.hierarchy$.pipe(map(allMemberName)))
+  readonly allMemberCaption = toSignal(this.hierarchy$.pipe(map(allMemberCaption)))
+  readonly allLevelCaption = computed(() => this.hierarchy() ? allLevelCaption({...this.hierarchy(), dimension: this.dimensionName()}) : null)
+  readonly allLevelName = computed(() => this.hierarchy() ? allLevelName({...this.hierarchy(), dimension: this.dimensionName()}, this.dialect()) : null)
 
   public readonly modeling$ = this.hierarchy$.pipe(
     combineLatestWith(this.parentService.dimension$),

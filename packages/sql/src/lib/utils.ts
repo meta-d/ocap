@@ -1,4 +1,5 @@
-import { AggregationRole, isNil, SQL } from '@metad/ocap-core'
+import { AggregationRole, isNil, PropertyHierarchy, SQL } from '@metad/ocap-core'
+import { C_ALL_MEMBER_CAPTION, C_ALL_MEMBER_NAME } from './types'
 
 /**
  * 根据 SQL 查询结果对象分析出字段类型
@@ -55,6 +56,10 @@ export function serializeWrapCatalog(expression: string, dialect: string, catalo
     return `SET search_path TO ${catalog};${expression}`
   }
   return expression
+}
+
+export function serializeMemberCaption(name: string) {
+  return `${name}.[MEMBER_CAPTION]`
 }
 
 export function serializeUniqueName(
@@ -125,4 +130,19 @@ export function getErrorMessage(err: any): string {
   }
 
   return error
+}
+
+export function allLevelName(hierarchy: PropertyHierarchy, dialect: string) {
+  const allLevelName = allLevelCaption(hierarchy)
+  const allLevelUniqueName = serializeUniqueName(dialect, hierarchy.dimension, hierarchy.name, allLevelName)
+  return allLevelUniqueName
+}
+export function allLevelCaption(hierarchy: PropertyHierarchy) {
+  return hierarchy.allLevelName || `(All ${hierarchy.name || hierarchy.dimension}s)`
+}
+export function allMemberName(hierarchy: PropertyHierarchy) {
+  return hierarchy.allMemberName || C_ALL_MEMBER_NAME
+}
+export function allMemberCaption(hierarchy: PropertyHierarchy) {
+  return hierarchy.allMemberCaption || C_ALL_MEMBER_CAPTION
 }

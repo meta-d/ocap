@@ -1,15 +1,31 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ViewChildren, inject } from '@angular/core'
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ViewChildren,
+  computed,
+  effect,
+  inject,
+  model
+} from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
+import { nonNullable } from '@metad/core'
 import { NgmCommonModule, ResizerModule, SplitterModule, SplitterType } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { NgmEntitySchemaComponent, EntitySchemaNode, EntitySchemaType, EntityCapacity } from '@metad/ocap-angular/entity'
-import { C_MEASURES, DisplayBehaviour, PropertyLevel, Table } from '@metad/ocap-core'
-import { C_MEASURES_ROW_COUNT, serializeMeasureName, serializeUniqueName } from '@metad/ocap-sql'
+import {
+  EntityCapacity,
+  EntitySchemaNode,
+  EntitySchemaType,
+  NgmEntitySchemaComponent
+} from '@metad/ocap-angular/entity'
+import { C_MEASURES, Dimension, DisplayBehaviour, OrderDirection, PropertyLevel, QueryOptions, Table } from '@metad/ocap-core'
+import { C_MEASURES_ROW_COUNT, serializeMeasureName, serializeMemberCaption, serializeUniqueName } from '@metad/ocap-sql'
+import { NxSettingsPanelService } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateService } from '@ngx-translate/core'
-import { nonNullable } from '@metad/core'
-import { NxSettingsPanelService } from '@metad/story/designer'
 import { NgmError, ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
 import { isEqual } from 'lodash-es'
@@ -35,8 +51,9 @@ import { SemanticModelService } from '../../model.service'
 import { HierarchyColumnType, TOOLBAR_ACTION_CATEGORY } from '../../types'
 import { ModelDimensionComponent } from '../dimension.component'
 import { ModelDimensionService } from '../dimension.service'
+import { HierarchyTableComponent } from '../hierarchy-table/hierarchy-table.component'
+import { HierarchyTableDataType } from '../types'
 import { ModelHierarchyService } from './hierarchy.service'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -56,7 +73,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
     SplitterModule,
     NgmEntitySchemaComponent,
     NgmCommonModule,
-    TablesJoinModule
+    TablesJoinModule,
+    HierarchyTableComponent
   ]
 })
 export class ModelHierarchyComponent implements AfterViewInit {
@@ -98,32 +116,6 @@ export class ModelHierarchyComponent implements AfterViewInit {
   public readonly tableName$ = this.hierarchyService.tableName$
   public readonly levels$ = this.hierarchyService.levels$
 
-  readonly queryOptions$ = this.levels$.pipe(
-    filter((levels) => !!levels),
-    combineLatestWith(this.dimensionService.name$, this.hierarchyService.name$, this.modelService.dialect$),
-    map(([levels, dimension, hierarchy, dialect]) => {
-      return {
-        rows: levels.map((level) => ({
-          dimension: serializeUniqueName(dialect, dimension),
-          hierarchy: serializeUniqueName(dialect, dimension, hierarchy),
-          level: serializeUniqueName(dialect, dimension, hierarchy, level.name),
-          properties: level.properties
-            ?.filter((property) => property.column && property.name)
-            .map((property) => serializeUniqueName(dialect, dimension, hierarchy, property.name))
-        })),
-        columns: [
-          {
-            dimension: C_MEASURES,
-            measure: C_MEASURES_ROW_COUNT
-          }
-        ]
-      }
-    }),
-    // Avoid unnecessary refresh
-    distinctUntilChanged(isEqual),
-    shareReplay(1)
-  )
-
   public readonly columns$ = this.levels$.pipe(
     filter(nonNullable),
     combineLatestWith(this.dimensionService.name$, this.hierarchyService.name$, this.modelService.dialect$),
@@ -157,12 +149,111 @@ export class ModelHierarchyComponent implements AfterViewInit {
         caption: this.T_Count
       })
       return columns
-    }),
+    })
   )
 
   private refresh$ = new BehaviorSubject<void>(null)
 
-  readonly query$ = this.queryOptions$.pipe(
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dimensionName = toSignal(this.dimensionService.name$)
+  readonly hierarchyName = toSignal(this.hierarchyService.name$)
+  readonly levels = toSignal(this.hierarchyService.levels$)
+  readonly viewMode = model<'table' | 'tree'>('table')
+  readonly columns = toSignal(this.columns$)
+  readonly levelColumns = computed<Dimension[]>(() => {
+    const levels = this.levels()
+    const dialect = this.dialect()
+    const dimension = this.dimensionName()
+    const hierarchy = this.hierarchyName()
+
+    return levels.map((level) => ({
+      dimension: serializeUniqueName(dialect, dimension),
+      hierarchy: serializeUniqueName(dialect, dimension, hierarchy),
+      level: serializeUniqueName(dialect, dimension, hierarchy, level.name),
+      caption: level.caption || level.name,
+      properties: level.properties
+        ?.filter((property) => property.column && property.name)
+        .map((property) => serializeUniqueName(dialect, dimension, hierarchy, property.name))
+    }))
+  })
+  readonly levelTableColumns = computed(() => {
+    const columns = this.levelColumns()
+    const hasAll = this.hierarchyService.hasAll()
+    const allLevelName = this.hierarchyService.allLevelName()
+    const allLevelCaption = this.hierarchyService.allLevelCaption()
+    const tableColumns = columns.map((column) => ({
+      name: column.level,
+      caption: column.caption,
+    }))
+    if (hasAll) {
+      return [
+        {
+          name: allLevelName,
+          caption: allLevelCaption
+        },
+        ...tableColumns
+      ]
+    }
+    return tableColumns
+  })
+  
+  readonly treeData = computed(() => {
+    const data = this.data()
+    const hasAll = this.hierarchyService.hasAll()
+    const allMemberName = this.hierarchyService.allMemberName()
+    const allMemberCaption = this.hierarchyService.allMemberCaption()
+    const allLevelName = this.hierarchyService.allLevelName()
+    const levels = this.levelColumns()
+    if (data) {
+      const treeTable = arrayToTreeTable(
+        data,
+        levels.map((column) => ({
+          name: column.level,
+          caption: serializeMemberCaption(column.level)
+        }))
+      )
+      if (hasAll) {
+        return [
+          {
+            levelNumber: 0,
+            level: allLevelName,
+            children: treeTable,
+            value: {
+              [allLevelName]: allMemberName,
+              [serializeMemberCaption(allLevelName)]: allMemberCaption
+            }
+          }
+        ]
+      }
+      return treeTable
+    }
+    return null
+  })
+
+  readonly queryOptions = computed(() => {
+    return {
+      rows: this.levelColumns(),
+      columns: [
+        {
+          dimension: C_MEASURES,
+          measure: C_MEASURES_ROW_COUNT
+        }
+      ],
+      orderbys: [
+        ...this.levelColumns().map((column) => ({
+          by: column.level,
+          order: OrderDirection.ASC
+        }))
+      ]
+    } as QueryOptions
+  }, { equal: isEqual})
+
+  readonly query$ = toObservable(this.queryOptions).pipe(
     // Waiting for Dimension Schema updated in DataSource
     debounceTime(300),
     // Waiting for entityService
@@ -192,12 +283,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
   public readonly data$ = this.query$.pipe(map(({ data }) => data))
   public readonly error$ = this.query$.pipe(map(({ error }) => error))
 
-  /**
-  |--------------------------------------------------------------------------
-  | Signals
-  |--------------------------------------------------------------------------
-  */
-  readonly levelSignal = toSignal(this.hierarchyService.levels$)
+  readonly data = toSignal(this.data$)
 
   /**
   |--------------------------------------------------------------------------
@@ -211,14 +297,18 @@ export class ModelHierarchyComponent implements AfterViewInit {
   })
 
   private toolbarActionsSub = this.modelComponent.toolbarAction$
-    .pipe(filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.HIERARCHY), takeUntilDestroyed())
+    .pipe(
+      filter(({ category, action }) => category === TOOLBAR_ACTION_CATEGORY.HIERARCHY),
+      takeUntilDestroyed()
+    )
     .subscribe(({ category, action }) => {
       if (action === 'RemoveLevel') {
         this.hierarchyService.removeCurrentLevel()
       }
     })
   private countTSub = this.translateService
-    .get('PAC.MODEL.DIMENSION.Count', { Default: 'Count' }).pipe(takeUntilDestroyed())
+    .get('PAC.MODEL.DIMENSION.Count', { Default: 'Count' })
+    .pipe(takeUntilDestroyed())
     .subscribe((value) => {
       this.T_Count = value
     })
@@ -244,6 +334,10 @@ export class ModelHierarchyComponent implements AfterViewInit {
       .subscribe((id) => {
         this.hierarchyService.init(id)
       })
+
+    effect(() => {
+      console.log(this.treeData())
+    })
   }
 
   ngAfterViewInit(): void {
@@ -285,8 +379,8 @@ export class ModelHierarchyComponent implements AfterViewInit {
       } else if (event.previousContainer.id === 'pac-model-dimension__hierarchy-tables' && event.item.data.name) {
         this.hierarchyService.appendLevel({ name: event.item.data.name, table: event.item.data.entity })
       }
-    } catch(err: any) {
-      this.toastrService.error((<NgmError>err).code, '', {Default: (<NgmError>err).message})
+    } catch (err: any) {
+      this.toastrService.error((<NgmError>err).code, '', { Default: (<NgmError>err).message })
     }
   }
 
@@ -320,4 +414,43 @@ export class ModelHierarchyComponent implements AfterViewInit {
   refresh() {
     this.refresh$.next()
   }
+}
+
+function arrayToTreeTable<T>(array: Array<T>, levels: {name: string; caption: string;}[]): HierarchyTableDataType<T>[] {
+  const tree = []
+  const map = new Map()
+
+  array.forEach((item) => {
+    for (let i = 0; i < levels.length; i++) {
+      const key = levels
+        .slice(0, i + 1)
+        .map((level) => item[level.name])
+        .join('-')
+      if (!map.has(key)) {
+        const node = {
+          levelNumber: i + 1,
+          level: levels[i].name,
+          children: [],
+          value: {}
+        }
+        levels.slice(0, i + 1).forEach((level) => {
+          node.value[level.name] = item[level.name]
+          node.value[level.caption] = item[level.caption]
+        })
+        map.set(key, node)
+
+        if (i === 0) {
+          tree.push(node)
+        } else {
+          const parentKey = levels
+            .slice(0, i)
+            .map((level) => item[level.name])
+            .join('-')
+          map.get(parentKey).children.push(node)
+        }
+      }
+    }
+  })
+
+  return tree
 }
