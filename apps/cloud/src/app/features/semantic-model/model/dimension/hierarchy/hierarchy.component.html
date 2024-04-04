@@ -115,7 +115,7 @@
                     }
                   }
 
-                  @if (loading) {
+                  @if (loading()) {
                     <mat-spinner strokeWidth="2" diameter="30"/>
                   }
                   @if (error$ | async; as error) {

@@ -8,7 +8,8 @@ import {
   computed,
   effect,
   inject,
-  model
+  model,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
@@ -104,7 +105,6 @@ export class ModelHierarchyComponent implements AfterViewInit {
   }
 
   tablesJoinCollapsed = true
-  loading = false
 
   public readonly tables$ = this.hierarchyService.tables$.pipe(
     tap((tables) => {
@@ -253,6 +253,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
     } as QueryOptions
   }, { equal: isEqual})
 
+  readonly loading = signal(false)
   readonly query$ = toObservable(this.queryOptions).pipe(
     // Waiting for Dimension Schema updated in DataSource
     debounceTime(300),
@@ -266,8 +267,8 @@ export class ModelHierarchyComponent implements AfterViewInit {
             first(),
             switchMap(() => this.refresh$),
             switchMap(() => {
-              this.loading = true
-              return entityService.selectQuery(queryOptions).pipe(tap(() => (this.loading = false)))
+              this.loading.set(true)
+              return entityService.selectQuery(queryOptions).pipe(tap(() => (this.loading.set(false))))
             })
           )
         : of({

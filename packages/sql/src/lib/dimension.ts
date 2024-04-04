@@ -475,6 +475,12 @@ export function buildDimensionContext(
         })
       }
     })
+
+    // Ordinal Column
+    context.orderBys.push({
+      table,
+      column: level.ordinalColumn || level.column
+    })
   } else {
     throw new Error(`找不到 Level ${row.level}`)
   }
@@ -504,7 +510,7 @@ export function queryDimension(
   dialect?: string,
   catalog?: string
 ) {
-  let context = { selectFields: [] } as DimensionContext
+  let context = { selectFields: [], orderBys: [] } as DimensionContext
   // const selectFields = []
   const measures = []
 
@@ -569,6 +575,9 @@ export function queryDimension(
 
   if (measures.length) {
     statement += ` GROUP BY ` + serializeGroupByDimensions([context], dialect)
+  }
+  if (context.orderBys.length) {
+    statement += ` ORDER BY ` + context.orderBys.map((field) => serializeColumnContext(field, dialect)).join(', ')
   }
 
   statement = `SELECT ` + statement
