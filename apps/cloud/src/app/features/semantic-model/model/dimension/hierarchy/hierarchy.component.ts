@@ -285,6 +285,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
   public readonly error$ = this.query$.pipe(map(({ error }) => error))
 
   readonly data = toSignal(this.data$)
+  readonly showKey = model(false)
 
   /**
   |--------------------------------------------------------------------------

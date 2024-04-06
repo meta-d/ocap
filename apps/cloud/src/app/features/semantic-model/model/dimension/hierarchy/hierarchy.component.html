@@ -91,6 +91,13 @@
                                 <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="opacity-50">account_tree</mat-icon>
                             </mat-button-toggle>
                         </mat-button-toggle-group>
+
+                      @if (viewMode() === 'tree') {
+                        <mat-checkbox [(ngModel)]="showKey">
+                            {{ 'PAC.MODEL.DIMENSION.ShowMemberKey' | translate: {Default: 'Show Member Key'} }}
+                        </mat-checkbox>
+                      }
+
                         <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                             (click)="refresh()"
                         >
@@ -111,6 +118,7 @@
                         <ngm-hierarchy-table class="flex-1 max-w-full" displayDensity="compact"
                             [columns]="levelTableColumns()"
                             [data]="treeData()"
+                            [displayBehaviour]="showKey() ? DisplayBehaviour.descriptionAndId : DisplayBehaviour.descriptionOnly"
                         />
                     }
                   }
