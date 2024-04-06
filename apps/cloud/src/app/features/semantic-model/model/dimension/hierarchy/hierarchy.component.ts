@@ -336,10 +336,6 @@ export class ModelHierarchyComponent implements AfterViewInit {
       .subscribe((id) => {
         this.hierarchyService.init(id)
       })
-
-    effect(() => {
-      console.log(this.treeData())
-    })
   }
 
   ngAfterViewInit(): void {

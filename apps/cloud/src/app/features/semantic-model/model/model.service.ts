@@ -219,11 +219,9 @@ export class SemanticModelService {
     this.semanticModelKey$
       .pipe(
         filter(nonNullable),
-        tap((key) => console.log(`Semantic Key is`, key)),
         switchMap((key) => this.dsCoreService.getDataSource(key)),
         // 先清 DataSource 缓存再进行后续
         switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
-        tap((key) => console.log(`Semantic DataSource is`, key)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.dataSource$)

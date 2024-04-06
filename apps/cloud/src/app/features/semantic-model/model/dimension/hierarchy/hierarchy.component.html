@@ -83,6 +83,11 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-4">
+                      @if (viewMode() === 'tree') {
+                        <mat-checkbox [(ngModel)]="showKey">
+                            {{ 'PAC.MODEL.DIMENSION.ShowMemberKey' | translate: {Default: 'Show Member Key'} }}
+                        </mat-checkbox>
+                      }
                         <mat-button-toggle-group [(ngModel)]="viewMode" ngmAppearance="outline" color="accent">
                             <mat-button-toggle value="table" [matTooltip]=" 'PAC.KEY_WORDS.Table' | translate: {Default: 'Table'} ">
                                 <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="opacity-50">table_view</mat-icon>
@@ -91,12 +96,6 @@
                                 <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="opacity-50">account_tree</mat-icon>
                             </mat-button-toggle>
                         </mat-button-toggle-group>
-
-                      @if (viewMode() === 'tree') {
-                        <mat-checkbox [(ngModel)]="showKey">
-                            {{ 'PAC.MODEL.DIMENSION.ShowMemberKey' | translate: {Default: 'Show Member Key'} }}
-                        </mat-checkbox>
-                      }
 
                         <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
                             (click)="refresh()"
@@ -119,6 +118,7 @@
                             [columns]="levelTableColumns()"
                             [data]="treeData()"
                             [displayBehaviour]="showKey() ? DisplayBehaviour.descriptionAndId : DisplayBehaviour.descriptionOnly"
+                            paging
                         />
                     }
                   }
