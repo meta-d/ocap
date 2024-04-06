@@ -1,20 +1,20 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, computed, effect, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { nonNullable } from '@metad/core'
 import { effectAction } from '@metad/ocap-angular/core'
 import { EntityService, PropertyHierarchy, PropertyLevel, Table } from '@metad/ocap-core'
+import { allLevelCaption, allLevelName, allMemberCaption, allMemberName } from '@metad/ocap-sql'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { select, withProps } from '@ngneat/elf'
 import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
-import { assign, cloneDeep, isEqual, isNumber, negate } from 'lodash-es'
+import { assign, cloneDeep, isEqual, isNumber, negate, omit } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { Observable, combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs'
+import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../../store'
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType } from '../../types'
 import { ModelDimensionService } from '../dimension.service'
-import { allLevelCaption, allLevelName, allMemberCaption, allMemberName } from '@metad/ocap-sql'
 
 @Injectable()
 export class ModelHierarchyService {
@@ -60,18 +60,27 @@ export class ModelHierarchyService {
   readonly hasAll = toSignal(this.hierarchy$.pipe(map((hierarchy) => hierarchy?.hasAll)))
   readonly allMemberName = toSignal(this.hierarchy$.pipe(map(allMemberName)))
   readonly allMemberCaption = toSignal(this.hierarchy$.pipe(map(allMemberCaption)))
-  readonly allLevelCaption = computed(() => this.hierarchy() ? allLevelCaption({...this.hierarchy(), dimension: this.dimensionName()}) : null)
-  readonly allLevelName = computed(() => this.hierarchy() ? allLevelName({...this.hierarchy(), dimension: this.dimensionName()}, this.dialect()) : null)
+  readonly allLevelCaption = computed(() =>
+    this.hierarchy() ? allLevelCaption({ ...this.hierarchy(), dimension: this.dimensionName() }) : null
+  )
+  readonly allLevelName = computed(() =>
+    this.hierarchy() ? allLevelName({ ...this.hierarchy(), dimension: this.dimensionName() }, this.dialect()) : null
+  )
 
-  public readonly modeling$ = this.hierarchy$.pipe(
-    combineLatestWith(this.parentService.dimension$),
-    map(([hierarchy, dimension]) => ({
-      modeling: hierarchy,
-      dimension,
+  readonly modeling = computed(() => {
+    const hierarchy = this.hierarchy()
+    const dimension = this.parentService.dimension()
+    return {
+      modeling: {
+        hierarchy,
+        dimension: omit(dimension, ['hierarchies'])
+      },
       hierarchies: dimension?.hierarchies,
       dimensions: this.sharedDimensions()?.filter((item) => item.__id__ !== dimension.__id__)
-    }))
-  )
+    }
+  })
+
+  readonly modeling$ = toObservable(this.modeling).pipe(distinctUntilChanged(isEqual))
 
   public entityService$: Observable<EntityService<unknown>> = this.tableName$.pipe(
     filter((value) => !!value),
@@ -101,17 +110,7 @@ export class ModelHierarchyService {
   public init(id: string) {
     this.store.connect(['hierarchies', id])
     this.pristineStore.connect(['hierarchies', id])
-    // this.dirtyCheckResult.setHead()
     this.parentService.setCurrentHierarchy(id)
-
-    // this.connect(this.parentService, {
-    //   parent: ['dimension', 'hierarchies', id],
-    //   arrayKey: '__id__'
-    // })
-    //   .pipe(takeUntilDestroyed())
-    //   .subscribe(() => {
-    //     this.parentService.setCurrentHierarchy(id)
-    //   })
   }
 
   /**
@@ -139,8 +138,8 @@ export class ModelHierarchyService {
         return this.settingsService.openDesigner(ModelDesignerType.hierarchy, this.modeling$, hierarchy.__id__)
       }),
       tap((model: any) => {
-        this.updateHierarchy(model.modeling)
-        this.parentService.update(model.dimension)
+        this.updateHierarchy(model.modeling?.hierarchy)
+        this.parentService.update(model.modeling?.dimension)
       })
     )
   })
@@ -174,9 +173,7 @@ export class ModelHierarchyService {
     fn: (state: PropertyHierarchy, ...params: OriginType[]) => PropertyHierarchy | void
   ) {
     return (...params: OriginType[]) => {
-      this.store.update(
-        write((state) => fn(state, ...params))
-      )
+      this.store.update(write((state) => fn(state, ...params)))
     }
   }
 
@@ -244,7 +241,7 @@ export class ModelHierarchyService {
     }
   })
 
-  readonly moveLevelInArray = this.updater((state, {previousIndex, currentIndex}: CdkDragDrop<PropertyLevel[]>) => {
+  readonly moveLevelInArray = this.updater((state, { previousIndex, currentIndex }: CdkDragDrop<PropertyLevel[]>) => {
     moveItemInArray(state.levels, previousIndex, currentIndex)
   })
 

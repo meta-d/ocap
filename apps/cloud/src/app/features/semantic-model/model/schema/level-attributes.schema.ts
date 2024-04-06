@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 import { SemanticsAccordionWrapper } from './common'
 import { HierarchySchemaService } from './hierarchy.schema'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
-
 
 @Injectable()
 export class LevelAttributesSchema extends HierarchySchemaService {
@@ -16,6 +15,7 @@ export class LevelAttributesSchema extends HierarchySchemaService {
         this.LEVEL = SCHEMA.LEVEL
         return [
           {
+            key: 'modeling',
             type: 'tabs',
             fieldGroup: [
               {

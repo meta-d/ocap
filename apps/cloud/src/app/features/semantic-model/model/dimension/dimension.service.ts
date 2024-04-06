@@ -204,7 +204,7 @@ export class ModelDimensionService {
   })
 
   public readonly update = this.updater((state, d: PropertyDimension) => {
-    assign(state.dimension, d)
+    assign(state, d)
   })
 
   readonly setupHierarchyDesigner = effectAction((origin$: Observable<string>) => {

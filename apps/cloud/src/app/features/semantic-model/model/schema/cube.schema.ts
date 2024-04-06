@@ -3,7 +3,7 @@ import { nonBlank } from '@metad/core'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { Cube } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
-import { Observable } from 'rxjs'
+import { Observable, combineLatest } from 'rxjs'
 import { filter, map, shareReplay, switchMap } from 'rxjs/operators'
 import { EntitySchemaService } from './entity-schema.service'
 import { CubeSchemaState } from './types'
@@ -13,6 +13,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable()
 export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaState<T>> {
+  readonly sharedDimensions$ = this.modelService.sharedDimensions$
+
   public readonly cube$ = this.select((state) => state.cube)
   public readonly cubeName$ = this.cube$.pipe(map((cube) => cube?.name))
   public readonly factName$ = this.cube$.pipe(map((cube) => cube?.tables?.[0]?.name))
@@ -71,6 +73,27 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
   )
 
   public readonly cube = toSignal(this.cube$)
+
+  readonly dimension$ = this.select((state) => state.dimension)
+  readonly otherDimensions = toSignal(combineLatest([
+    this.dimension$.pipe(map((dimension) => dimension?.__id__)),
+    this.cube$.pipe(map((cube) => cube?.dimensions))
+  ])
+    .pipe(
+      map(([id, dimensions]) => dimensions?.filter((dimension) => dimension.__id__ !== id) ?? [])
+    ))
+
+  // dimensions = toSignal(combineLatest([
+  //   this.sharedDimensions$,
+  //   this.otherDimensions$
+  // ]).pipe(
+  //   map(([sharedDimensions, dimensions]) => {
+  //     return [
+  //       ...(dimensions ?? []),
+  //       ...(sharedDimensions ?? [])
+  //     ]
+  //   })
+  // ))
 
   SCHEMA: any
 
@@ -204,6 +227,12 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
         icon: 'policy'
       },
       fieldGroup: []
+    }
+  }
+
+  getTranslationFun() {
+    return (key: string, interpolateParams?: any) => {
+      return this.getTranslation(key, interpolateParams)
     }
   }
 }

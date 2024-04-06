@@ -38,23 +38,6 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
         })) ?? []
     ),
   )
-  readonly sharedDimensions$ = this.select((state) => state.dimensions)
-  readonly otherDimensions$ = combineLatest([this.dimension$.pipe(map((dimension) => dimension?.__id__)), this.cube$.pipe(map((cube) => cube?.dimensions))])
-    .pipe(
-      map(([id, dimensions]) => dimensions?.filter((dimension) => dimension.__id__ !== id) ?? [])
-    )
-
-  dimensions = toSignal(combineLatest([
-    this.sharedDimensions$,
-    this.otherDimensions$
-  ]).pipe(
-    map(([sharedDimensions, dimensions]) => {
-      return [
-        ...(dimensions ?? []),
-        ...(sharedDimensions ?? [])
-      ]
-    })
-  ))
 
   DIMENSION: any
   rt = false
@@ -89,14 +72,8 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
           key: 'cube',
           type: 'empty'
         },
-        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.dimensions(), this.rt, this.isCube)
+        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.otherDimensions(), this.rt, this.isCube)
       ]
-    }
-  }
-  
-  getTranslationFun() {
-    return (key: string, interpolateParams?: any) => {
-      return this.getTranslation(key, interpolateParams)
     }
   }
 }

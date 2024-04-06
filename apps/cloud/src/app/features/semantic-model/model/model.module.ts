@@ -159,7 +159,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.dimensionAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: DimensionAttributesSchema
       },
       multi: true
@@ -168,7 +168,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.hierarchyAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: HierarchyAttributesSchema
       },
       multi: true

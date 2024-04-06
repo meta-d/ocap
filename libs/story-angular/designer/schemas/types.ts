@@ -9,6 +9,9 @@ import { catchError, map, switchMap, tap } from 'rxjs/operators'
  * @deprecated use `FORMLY_W_1_2` instead
  */
 export const CLASS_NAME_COL6 = 'ngm-formly__col ngm-formly__col-6'
+/**
+ * @deprecated use `FORMLY_W_FULL` instead
+ */
 export const CLASS_NAME_COL12 = 'ngm-formly__col ngm-formly__col-12'
 export const FORMLY_W_FULL = 'ngm-formly__col ngm-formly__col-12'
 export const FORMLY_W_1_3 = 'ngm-formly__col ngm-formly__col-4'
@@ -23,7 +26,10 @@ export function AccordionWrappers(
   expansions: {
     key: string
     label: string
-    fieldGroup: any[]
+    type?: string
+    fieldGroup?: any[]
+    fieldGroupClassName?: string
+    fieldArray?: any
     showKey?: string
     expanded?: boolean
     toggleable?: boolean
@@ -44,16 +50,19 @@ export function AccordionWrappers(
         expandedMulti: options?.expandedMulti ?? false
       },
       fieldGroup: [
-        ...expansions.map(({ key, label, showKey, fieldGroup, expanded, toggleable }) => {
+        ...expansions.map(({ key, type, label, showKey, fieldGroup, fieldGroupClassName, fieldArray, expanded, toggleable }) => {
           showKey = showKey ?? `__show${key}__`
           const expansion = {
             key,
+            type,
             props: {
               label,
               keyShow: showKey,
               expanded
             },
             fieldGroup,
+            fieldGroupClassName,
+            fieldArray,
             expressions: {}
           } as any
           if (isNil(toggleable) || toggleable) {
