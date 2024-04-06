@@ -1,16 +1,14 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { NgmSemanticModel } from '@metad/cloud/state'
 import { nonNullable } from '@metad/core'
 import { effectAction } from '@metad/ocap-angular/core'
 import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { Store, select, withProps } from '@ngneat/elf'
-import { stateHistory } from '@ngneat/elf-state-history'
+import { select, withProps } from '@ngneat/elf'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, cloneDeep, isEqual, negate } from 'lodash-es'
-import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs'
+import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, tap, timer, withLatestFrom } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType } from '../types'
@@ -111,7 +109,11 @@ export class ModelDimensionService {
   public init(id: string) {
     this.store.connect(['model', 'schema', 'dimensions', id])
     this.pristineStore.connect(['model', 'schema', 'dimensions', id])
-    this.initHierarchyIndex()
+
+    timer(0).subscribe(() => {
+      this.initHierarchyIndex()
+    })
+
     // this.dirtyCheckResult.setHead()
 
     // this.connect(this.modelService, { parent: ['dimensions', id] })
@@ -122,8 +124,8 @@ export class ModelDimensionService {
     //   })
 
     // this.modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
-      // this.dirtyCheckQuery.setHead()
-      // this.dirtyCheckResult.setHead()
+    // this.dirtyCheckQuery.setHead()
+    // this.dirtyCheckResult.setHead()
     // })
   }
 
