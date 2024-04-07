@@ -1,16 +1,15 @@
 import { Injectable } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { AbstractControl } from '@angular/forms'
+import { nonBlank, nonNullable } from '@metad/core'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { DimensionType, EntityProperty, PropertyDimension, serializeUniqueName } from '@metad/ocap-core'
-import { nonBlank, nonNullable } from '@metad/core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators'
 import { SemanticsAccordionWrapper } from './common'
 import { CubeSchemaService } from './cube.schema'
-
 
 @Injectable()
 export class DimensionSchemaService<T extends EntityProperty = PropertyDimension> extends CubeSchemaService<T> {
@@ -36,7 +35,14 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
           value: serializeUniqueName(dimensionName, hierarchy.name),
           caption: hierarchy.caption
         })) ?? []
-    ),
+    )
+  )
+
+  readonly otherDimensions = toSignal(
+    combineLatest([
+      this.dimension$.pipe(map((dimension) => dimension?.__id__)),
+      this.cube$.pipe(map((cube) => cube?.dimensions))
+    ]).pipe(map(([id, dimensions]) => dimensions?.filter((dimension) => dimension.__id__ !== id) ?? []))
   )
 
   DIMENSION: any
@@ -72,7 +78,15 @@ export class DimensionSchemaService<T extends EntityProperty = PropertyDimension
           key: 'cube',
           type: 'empty'
         },
-        DimensionModeling(this.SCHEMA, this.getTranslationFun(), this.hierarchyOptions$, this.factFields$, this.otherDimensions(), this.rt, this.isCube)
+        DimensionModeling(
+          this.SCHEMA,
+          this.getTranslationFun(),
+          this.hierarchyOptions$,
+          this.factFields$,
+          this.otherDimensions(),
+          this.rt,
+          this.isCube
+        )
       ]
     }
   }
@@ -123,9 +137,16 @@ export function DimensionModeling(
             validators: {
               name: {
                 expression: (c: AbstractControl) => !(!c.value || dimensions.find((item) => item.name === c.value)),
-                message: (error: any, field: FormlyFieldConfig) => field.formControl.value ? 
-                  translate('PAC.Messages.AlreadyExists', {Default: `Name already exists`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})}) : 
-                  translate('PAC.Messages.IsRequired', {Default: `Name is required`, value: translate('PAC.KEY_WORDS.Name', {Default: 'Name'})})
+                message: (error: any, field: FormlyFieldConfig) =>
+                  field.formControl.value
+                    ? translate('PAC.Messages.AlreadyExists', {
+                        Default: `Name already exists`,
+                        value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                      })
+                    : translate('PAC.Messages.IsRequired', {
+                        Default: `Name is required`,
+                        value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                      })
               }
             }
           },
@@ -159,7 +180,9 @@ export function DimensionModeling(
                     options: factColumns$,
                     // required: isCube,
                     searchable: true,
-                    info: DIMENSION?.ForeignKey_Info ?? 'Inline dimension with independent tables need to specify the foreign key of this fact table here.',
+                    info:
+                      DIMENSION?.ForeignKey_Info ??
+                      'Inline dimension with independent tables need to specify the foreign key of this fact table here.'
                   }
                 }
               ]
@@ -208,7 +231,7 @@ export function DimensionModeling(
       },
       // Dimension 应该没有 KeyExpression
       // KeyExpression(COMMON),
-     ...SemanticsAccordionWrapper(COMMON) 
+      ...SemanticsAccordionWrapper(COMMON)
     ]
   }
 }

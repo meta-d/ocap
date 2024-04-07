@@ -148,6 +148,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
         const properties = this.fectTableFields()
         const dimensions = this.entityService.dimensions()
         const measures = this.entityService.measures()
+
         if (isEmpty(dimensions) && isEmpty(measures) && properties) {
           this.dimensions.set(
             dimensions ??

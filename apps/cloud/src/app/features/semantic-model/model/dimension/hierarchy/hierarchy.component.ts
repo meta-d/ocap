@@ -171,7 +171,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
     const dimension = this.dimensionName()
     const hierarchy = this.hierarchyName()
 
-    return levels.map((level) => ({
+    return levels?.map((level) => ({
       dimension: serializeUniqueName(dialect, dimension),
       hierarchy: serializeUniqueName(dialect, dimension, hierarchy),
       level: serializeUniqueName(dialect, dimension, hierarchy, level.name),
@@ -236,25 +236,30 @@ export class ModelHierarchyComponent implements AfterViewInit {
   })
 
   readonly queryOptions = computed(() => {
-    return {
-      rows: this.levelColumns(),
-      columns: [
-        {
-          dimension: C_MEASURES,
-          measure: C_MEASURES_ROW_COUNT
-        }
-      ],
-      orderbys: [
-        ...this.levelColumns().map((column) => ({
-          by: column.level,
-          order: OrderDirection.ASC
-        }))
-      ]
-    } as QueryOptions
+    const levelColumns = this.levelColumns()
+    if (levelColumns) {
+      return {
+        rows: levelColumns,
+        columns: [
+          {
+            dimension: C_MEASURES,
+            measure: C_MEASURES_ROW_COUNT
+          }
+        ],
+        orderbys: [
+          ...levelColumns.map((column) => ({
+            by: column.level,
+            order: OrderDirection.ASC
+          }))
+        ]
+      } as QueryOptions
+    }
+    return null
   }, { equal: isEqual})
 
   readonly loading = signal(false)
   readonly query$ = toObservable(this.queryOptions).pipe(
+    filter(nonNullable),
     // Waiting for Dimension Schema updated in DataSource
     debounceTime(300),
     // Waiting for entityService

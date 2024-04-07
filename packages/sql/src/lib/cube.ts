@@ -18,7 +18,9 @@ import {
   PropertyDimension,
   PropertyLevel,
   PropertyMeasure,
-  QueryOptions
+  QueryOptions,
+  EntityProperty,
+  CalculationProperty
 } from '@metad/ocap-core'
 import {
   compileDimensionSchema,
@@ -45,7 +47,7 @@ export function compileCubeSchema(
   dimensions: PropertyDimension[],
   dialect: string
 ): EntityType {
-  const properties = {}
+  const properties: Record<string, EntityProperty> = {}
 
   cube.dimensionUsages?.forEach((usage) => {
     const dimension = dimensions?.find((item) => item.name === usage.source)
@@ -98,7 +100,7 @@ export function compileCubeSchema(
           role: AggregationRole.measure,
           dataType: 'number',
           calculationType: CalculationType.Calculated
-        }
+        } as CalculationProperty
       }
     })
 
@@ -200,7 +202,7 @@ export function buildCubeContext(
         })
       })
     } else {
-      buildCubeDimensionContext(dimension, entityType)
+      buildCubeDimensionContext(dimension)
     }
   })
 
@@ -221,7 +223,7 @@ export function buildCubeContext(
  * @param row
  * @returns
  */
-export function buildCubeDimensionContext(context: DimensionContext, entityType: EntityType): DimensionContext {
+export function buildCubeDimensionContext(context: DimensionContext): DimensionContext {
   const row = context.dimension
   // const property = getEntityProperty(entityType, row)
   // if (!property) {
@@ -416,7 +418,6 @@ export function getOrBuildDimensionContext(cubeContext: CubeContext, row: Dimens
   if (!dimension) {
     dimension = buildCubeDimensionContext(
       { dialect, factTable, dimension: row, levels: [], role: 'row', selectFields: [] },
-      entityType
     )
     cubeContext.dimensions.push(dimension)
   }

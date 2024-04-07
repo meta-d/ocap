@@ -51,3 +51,14 @@
 .mat-accordion.mat-accordion-multi {
   overflow-y: auto;
 }
+
+.ngm-analytical-grid {
+  @apply border border-solid;
+  border-color: var(--ngm-color-outline-variant);
+}
+
+:host ::ng-deep {
+  .mdc-data-table__header-cell.mat-mdc-table-sticky {
+    background-color: var(--ngm-color-surface);
+  }
+}

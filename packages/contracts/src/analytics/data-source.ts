@@ -55,7 +55,14 @@ export interface IDSTable {
 export interface IColumnDef {
   name: string
   label?: string
-  type: string
+  /**
+   * Types in javascript
+   */
+  type: 'number' | 'string' | 'boolean'
+  /**
+   * Original data type in database
+   */
+  dataType: string
   nullable?: boolean
   position?: number
   /**

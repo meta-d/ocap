@@ -45,12 +45,20 @@ export interface SQLQueryProperty {
 }
 
 // Types for sql database exec
-
+/**
+ * Sync with @metad/contacts
+ */
 export interface IColumnDef {
   name: string
   label?: string
-  type: string
-  dbType?: string
+  /**
+   * Types in javascript
+   */
+  type: 'number' | 'string' | 'boolean'
+  /**
+   * Original data type in database
+   */
+  dataType: string
   nullable?: boolean
   position?: number
   /**
