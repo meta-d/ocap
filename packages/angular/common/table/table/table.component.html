@@ -50,8 +50,7 @@
             @if (column.cellTemplate) {
               <ng-container *ngTemplateOutlet="column.cellTemplate; context: _context(data, column)"></ng-container>
             } @else {
-              {{ data[column.name] }}
-              <!-- {{ column.pipe ? column.pipe(getValue(data, column.name)) : getValue(data, column.name) }} -->
+              {{ column.pipe ? column.pipe(getValue(data, column.name)) : getValue(data, column.name) }}
             }
           </td>
         </ng-container>
