@@ -48,12 +48,11 @@ import {
   ReferenceLineType,
   ReferenceLineValueType,
   slicerAsString,
-  TimeGranularity,
   TimeRangeType
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
+import { convertTableToCSV, LanguagesEnum, nonNullable, PERIODS } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -90,53 +89,7 @@ export class IndicatorDetailComponent {
   DisplayDensity = DisplayDensity
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
-  PERIODS = [
-    {
-      name: '1W',
-      granularity: TimeGranularity.Day,
-      lookBack: 7
-    },
-    {
-      name: '1M',
-      granularity: TimeGranularity.Day,
-      lookBack: 30
-    },
-    {
-      name: '3M',
-      granularity: TimeGranularity.Day,
-      lookBack: 90
-    },
-    {
-      name: '6M',
-      granularity: TimeGranularity.Day,
-      lookBack: 180
-    },
-    {
-      name: '1Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 12
-    },
-    {
-      name: '2Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 24
-    },
-    {
-      name: '3Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 36
-    },
-    {
-      name: '4Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 48
-    },
-    {
-      name: '5Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 60
-    }
-  ]
+  PERIODS = PERIODS
 
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)

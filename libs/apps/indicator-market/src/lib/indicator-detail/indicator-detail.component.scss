@@ -57,13 +57,6 @@ $prefix-color: (ngm, color);
   @apply bg-white/10;
 }
 
-.pac-indicator__period-tag {
-  @apply text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-200 dark:hover:bg-white/10 dark:focus:bg-white/20 dark:text-neutral-200;
-  &.selected {
-    @apply font-extrabold bg-neutral-200 text-neutral-800 dark:bg-white/20 dark:text-neutral-100;
-  }
-}
-
 @mixin _bg-surface-container() {
   background-color: var(#{token-utils.get-token-variable(surface-container)});
 }
@@ -91,5 +84,14 @@ $prefix-color: (ngm, color);
   .pac-indicator-app__comment-remove {
     @include _bg-surface-container();
     @apply absolute top-0 right-0;
+  }
+}
+
+::ng-deep {
+  .pac-indicator__period-tag {
+    @apply text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-200 dark:hover:bg-white/10 dark:focus:bg-white/20 dark:text-neutral-200;
+    &.selected {
+      @apply font-extrabold bg-neutral-200 text-neutral-800 dark:bg-white/20 dark:text-neutral-100;
+    }
   }
 }

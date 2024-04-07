@@ -579,7 +579,9 @@
       "IndicatorMarket": "指标市场",
       "Certifications": "认证",
       "Copilot_CreateIndicator": "创建指标",
-      "Copilot_CreateFormula": "创建指标公式"
+      "Copilot_CreateFormula": "创建指标公式",
+      "DataPreview": "数据预览",
+      "Period": "周期"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
