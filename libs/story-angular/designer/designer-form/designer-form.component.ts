@@ -5,11 +5,11 @@ import { ControlValueAccessor, FormGroup, FormsModule, NG_VALUE_ACCESSOR, Reacti
 import { nonNullable } from '@metad/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { isEqual } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { filter, isObservable, of } from 'rxjs'
 import { DesignerSchema, STORY_DESIGNER_FORM, STORY_DESIGNER_SCHEMA } from '../types'
-import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -48,11 +48,12 @@ export class NgmDesignerFormComponent implements ControlValueAccessor {
       takeUntilDestroyed()
     )
     .subscribe((model) => {
-      if (!nonNullable(model?.modeling) && !this.initial()) {
+      // if (!nonNullable(model?.modeling) && !this.initial()) {
+      if (!nonNullable(model) && !this.initial()) {
         this.isEmpty.set(true)
       } else {
         this.initial.set(false)
-        this.model = cloneDeep(model)
+        // this.model = cloneDeep(model)
         this.schema.model = model
       }
     })
