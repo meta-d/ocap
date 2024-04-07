@@ -34,7 +34,7 @@ export class PACSettingComponent {
         },
         {
           link: 'copilot',
-          label: 'Copilot',
+          label: 'AI Copilot',
           icon: 'assistant',
           data: {
             featureKey: FeatureEnum.FEATURE_COPILOT,

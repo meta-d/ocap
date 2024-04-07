@@ -642,11 +642,11 @@ export class FeaturesComponent implements OnInit {
           },
 
           {
-            title: 'Copilot',
+            title: 'AI Copilot',
             matIcon: 'assistant',
             link: '/settings/copilot',
             data: {
-              translationKey: 'Copilot',
+              translationKey: 'AI Copilot',
               permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
               featureKey: FeatureEnum.FEATURE_COPILOT
             }
