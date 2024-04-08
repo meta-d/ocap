@@ -65,46 +65,51 @@
         <!-- This is the tree node template for leaf nodes -->
         <cdk-tree-node *cdkTreeNodeDef="let node" cdkTreeNodePadding cdkTreeNodePaddingIndent="10px"
           class="pac-project__router-link flex items-center group cursor-pointer rounded-md"
-          [routerLink]="node.raw.__type__ === 'story' ? ['/story', node.key, 'edit'] : null" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
+          [routerLink]="node.raw.__type__ === 'story' ? ['/project', node.key] : null"
+          routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
           [class.active]="rla.isActive"
         >
           <!-- use a disabled button to provide padding for tree leaf -->
           <button mat-icon-button disabled displayDensity="cosy" class="ml-2"></button>
-          <ng-container *ngIf="node.raw.__type__ === 'collection'">
-            <mat-icon displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
-            <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-              {{node.caption}}
-            </span>
-          </ng-container>
-          <ng-container *ngIf="node.raw.__type__ === 'story'">
-            <span class="font-notoColorEmoji">📖</span>
-            <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-              <a [routerLink]="['/story', node.key, 'edit']" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}">{{node.caption}}</a>
-            </span>
-          </ng-container>
 
-          <span class="flex flex-1"></span>
-          <button *ngIf="node.raw.__type__ === 'collection'" class="opacity-0 group-hover:opacity-50"
-            mat-icon-button displayDensity="cosy"
-            [matMenuTriggerFor]="collectionMenu"
-            [matMenuTriggerData]="node"
-            #mt="matMenuTrigger"
-            [class.active]="mt.menuOpen"
-            (click)="$event.stopPropagation()"
-          >
-            <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-          </button>
+          @switch (node.raw.__type__) {
+            @case('collection') {
+              <mat-icon displayDensity="cosy" class="text-slate-200 group-hover:text-slate-400">folder</mat-icon>
+              <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                {{node.caption}}
+              </span>
 
-          <button *ngIf="node.raw.__type__ === 'story'" class="opacity-0 group-hover:opacity-50"
-            mat-icon-button displayDensity="cosy"
-            [matMenuTriggerFor]="storyMenu"
-            [matMenuTriggerData]="node"
-            #mt="matMenuTrigger"
-            [class.active]="mt.menuOpen"
-            (click)="$event.stopPropagation()"
-            >
-            <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
-          </button>
+              <span class="flex flex-1"></span>
+              <button class="opacity-0 group-hover:opacity-50"
+                mat-icon-button displayDensity="cosy"
+                [matMenuTriggerFor]="collectionMenu"
+                [matMenuTriggerData]="node"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+              </button>
+            }
+            @case('story') {
+              <span class="font-notoColorEmoji">📖</span>
+              <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
+                <a [routerLink]="['/project', node.key]" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}">{{node.caption}}</a>
+              </span>
+
+              <span class="flex flex-1"></span>
+              <button class="opacity-0 group-hover:opacity-50"
+                mat-icon-button displayDensity="cosy"
+                [matMenuTriggerFor]="storyMenu"
+                [matMenuTriggerData]="node"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
+                (click)="$event.stopPropagation()"
+                >
+                <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+              </button>
+            }
+          }
         </cdk-tree-node>
         <!-- This is the tree node template for expandable nodes -->
         <cdk-tree-node *cdkTreeNodeDef="let node; when: hasChild" cdkTreeNodePadding cdkTreeNodePaddingIndent="20px"
@@ -218,7 +223,7 @@
   <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
     <router-outlet #o="outlet"></router-outlet>
 
-    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
+    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" />
   </mat-drawer-content>
 </mat-drawer-container>
 
@@ -255,19 +260,31 @@
 
 <mat-menu #storyMenu="matMenu" class="ngm-density__compact">
   <ng-template matMenuContent let-story="raw">
-    <button mat-menu-item *ngIf="story.status!==StoryStatusEnum.RELEASED" (click)="releaseStory(story)">
-      <mat-icon>rocket_launch</mat-icon>
-      {{ 'PAC.Project.Release' | translate: {Default: 'Release'} }}
-    </button>
-    <button mat-menu-item *ngIf="story.status===StoryStatusEnum.RELEASED"
-      (click)="releaseStory(story)">
-      <mat-icon>rocket_launch</mat-icon>
-      {{ 'PAC.Project.Rerelease' | translate: {Default: 'Rerelease'} }}
-    </button>
-    <button mat-menu-item *ngIf="story.status===StoryStatusEnum.RELEASED"
-      (click)="archiveStory(story)">
-      <mat-icon>archive</mat-icon>
-      {{ 'PAC.Project.Archive' | translate: {Default: 'Archive'} }}
+    @switch (story.status) {
+      @case(StoryStatusEnum.RELEASED) {
+        <button mat-menu-item
+          (click)="releaseStory(story)">
+          <mat-icon>rocket_launch</mat-icon>
+          {{ 'PAC.Project.Rerelease' | translate: {Default: 'Rerelease'} }}
+        </button>
+
+        <button mat-menu-item
+          (click)="archiveStory(story)">
+          <mat-icon>archive</mat-icon>
+          {{ 'PAC.Project.Archive' | translate: {Default: 'Archive'} }}
+        </button>
+      }
+      @default {
+        <button mat-menu-item (click)="releaseStory(story)">
+          <mat-icon>rocket_launch</mat-icon>
+          {{ 'PAC.Project.Release' | translate: {Default: 'Release'} }}
+        </button>
+      }
+    }
+
+    <button mat-menu-item (click)="editStory(story)">
+      <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+      {{ 'PAC.KEY_WORDS.Edit' | translate: {Default: 'Edit'} }}
     </button>
 
     <button mat-menu-item (click)="copy(story)">

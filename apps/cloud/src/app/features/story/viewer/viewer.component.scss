@@ -27,7 +27,7 @@ $prefix: (ngm, story-viewer);
 
 :host {
   @include token-utils.create-token-values($prefix, get-token-slots());
-  @apply relative h-full flex-1 max-w-full;
+  @apply relative h-full flex-1 max-w-full flex;
   
   .pac-story-viewer__drawer {
     --mat-sidenav-container-background-color: transparent;
@@ -44,20 +44,11 @@ $prefix: (ngm, story-viewer);
 }
 
 @include token-utils.use-tokens($prefix, get-token-slots()) {
-  .mat-drawer-container {
-    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
+  .pac-story-bar {
+    background-color: var(#{token-utils.get-token-variable(color-surface-container)});
   }
-  .mat-drawer.mat-drawer-over {
-    --mat-sidenav-container-background-color: var(#{token-utils.get-token-variable(color-surface)});
-  }
-  .pac-story-viewer__drawer-container {
-    --mat-sidenav-content-background-color: var(#{token-utils.get-token-variable(color-surface-container)});
+  .ngm-story {
     border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
-  }
-  .mat-drawer-content {
-    background-color: var(#{token-utils.get-token-variable(color-surface)});
-    border-top-left-radius: var(#{token-utils.get-token-variable(container-rounded)});
-    @apply flex overflow-hidden;
   }
 }
 

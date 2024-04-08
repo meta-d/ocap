@@ -13,6 +13,7 @@ import {
   ViewContainerRef,
   effect,
   inject,
+  model,
   signal
 } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
@@ -99,9 +100,9 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   pageTimer: number
 
   // Is mobile
-  readonly isMobile = toSignal(this.appService.isMobile$)
-  sideMenuOpened = false
-  globalFilterBarOpened = false
+  readonly isMobile = this.appService.isMobile
+  readonly sideMenuOpened = model(false)
+  readonly globalFilterBarOpened = model(false)
 
   get storyOptions() {
     return this.story?.options
@@ -194,7 +195,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   toggleGlobalFilterBar() {
-    this.globalFilterBarOpened = !this.globalFilterBarOpened
+    this.globalFilterBarOpened.update((state) => !state)
   }
 
   toggleFullscreen(fullscreen?: boolean) {

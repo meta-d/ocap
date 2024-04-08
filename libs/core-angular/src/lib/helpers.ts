@@ -331,6 +331,9 @@ export function resizeObservable(target: HTMLElement): Observable<ResizeObserver
   })
 }
 
+/**
+ * @deprecated use `booleanAttribute` instead
+ */
 export function convertToBoolProperty(val: any): boolean {
   if (typeof val === 'string') {
     val = val.toLowerCase().trim()

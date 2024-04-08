@@ -1,55 +1,69 @@
 <div class="w-full h-full flex flex-col justify-between items-stretch">
   <div class="ngm-kpi--kpi flex-1 flex justify-center items-center">
-    <mat-icon *ngIf="options?.icon">{{options.icon}}</mat-icon>
+    @if (options?.icon) {
+      <mat-icon>{{options.icon}}</mat-icon>
+    }
+    
     <ng-content select=".ngm-kpi--icon"></ng-content>
 
-    <div *ngIf="kpiValue$ | async as kpiValue" class="ngm-kpi--content"
-      [class.ngm-kpi__intent]="intent?.semanticObject"
-      (click)="onIntentClick()"
-    >
-      <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options}"></ng-container>
-    </div>
+    @if (kpiValue$ | async; as kpiValue) {
+      <div class="ngm-kpi--content"
+        [class.ngm-kpi__intent]="intent?.semanticObject"
+        (click)="onIntentClick()"
+      >
+        <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options}"></ng-container>
+      </div>
+    }
     
-    <div *ngIf="trend$ | async as trend" class="ngm-kpi--trend flex justify-around items-end">
-      <div class="ngm-kpi--reference">
-        <div class="ngm-kpi--title" [ngStyle]="titleStyles$()">
-          {{options?.targetText}}
-        </div>
-        <ngm-object-number
+    @if (trend$ | async; as trend) {
+      <div class="ngm-kpi--trend flex justify-around items-end">
+        <div class="ngm-kpi--reference">
+          <div class="ngm-kpi--title" [ngStyle]="titleStyles$()">
+            {{options?.targetText}}
+          </div>
+          <ngm-object-number
             [number]="trend.referenceValue"
             [unit]="trend.referenceValueUnit"
             [digitsInfo]="options?.digitsInfo"
             [shortNumber]="options?.shortNumber"
-            [locale]="locale"></ngm-object-number>
-      </div>
-
-      <div class="ngm-kpi--reference ngm-kpi--deviation" *ngIf="options?.showDeviation">
-        <div class="ngm-kpi--title">
-          {{options?.deviationText || ('NX.SMART_KPI.DEVIATION_TEXT' | translate)}}
+            [locale]="locale">
+          </ngm-object-number>
         </div>
-        <ngm-object-number
-            [number]="trend.deviation"
-            unit="%"
-            [digitsInfo]="options?.digitsInfo"
-            [shortNumber]="false"
-            [locale]="locale"></ngm-object-number>
-      </div>
-      <ng-content select=".ngm-kpi--refs"></ng-content>
-    </div>
 
-    <mat-spinner class="ngm-kpi--loading"
-        [style.opacity]="(isLoading$ | async) ? '1' : '0'"
-        [style.visibility]="(isLoading$ | async) ? 'visible' : 'hidden'"
+        @if (options?.showDeviation) {
+          <div class="ngm-kpi--reference ngm-kpi--deviation">
+            <div class="ngm-kpi--title">
+              {{options?.deviationText || ('NX.SMART_KPI.DEVIATION_TEXT' | translate)}}
+            </div>
+            <ngm-object-number
+              [number]="trend.deviation"
+              unit="%"
+              [digitsInfo]="options?.digitsInfo"
+              [shortNumber]="false"
+              [locale]="locale">
+            </ngm-object-number>
+          </div>
+        }
+        <ng-content select=".ngm-kpi--refs"></ng-content>
+      </div>
+    }
+
+    @if (isLoading()) {
+      <mat-spinner class="ngm-kpi--loading"
         [diameter]="18"
         [strokeWidth]="1"
-    ></mat-spinner>
+      ></mat-spinner>
+    }
+    
   </div>
 
-  <div class="ngm-kpi--additional" *ngIf="additionalDataPoints$ | async as additionals">
-    <ng-container *ngFor="let kpiValue of additionals">
-      <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options?.additionalDataPoint || options}"></ng-container>
-    </ng-container>
-  </div>
+  @if (additionalDataPoints$ | async; as additionals) {
+    <div class="ngm-kpi--additional">
+      @for (kpiValue of additionals; track $index) {
+        <ng-container *ngTemplateOutlet="kpi; context: {kpiValue: kpiValue, options: options?.additionalDataPoint || options}"></ng-container>
+      }
+    </div>
+  }
 </div>
 
 <ng-template #kpi let-kpiValue="kpiValue" let-options="options">
@@ -62,26 +76,43 @@
   }">
     <span class="ngm-kpi--title" [ngStyle]="titleStyles$()">{{kpiValue?.Title || options?.valueText}}</span>
     <div class="ngm-kpi--indicator flex" [ngStyle]="valueStyles()">
-      <div *ngIf="kpiValue.arrow" class="ngm-kpi--arrow flex justify-center items-end">
-        <ng-container [ngSwitch]="kpiValue.arrow">
-          <mat-icon *ngSwitchCase="TrendType.StrongUp">north</mat-icon>
-          <mat-icon *ngSwitchCase="TrendType.Up">north_east</mat-icon>
-          <mat-icon *ngSwitchCase="TrendType.Down">south_east</mat-icon>
-          <mat-icon *ngSwitchCase="TrendType.StrongDown">south</mat-icon>
-          <mat-icon *ngSwitchDefault>remove</mat-icon>
-        </ng-container>
-      </div>
+      @if (kpiValue.arrow) {
+        <div class="ngm-kpi--arrow flex justify-center items-end">
+          @switch (kpiValue.arrow) {
+            @case (TrendType.StrongUp) {
+              <mat-icon>north</mat-icon>
+            }
+            @case (TrendType.Up) {
+              <mat-icon>north_east</mat-icon>
+            }
+            @case (TrendType.Down) {
+              <mat-icon>south_east</mat-icon>
+            }
+            @case (TrendType.StrongDown) {
+              <mat-icon>south</mat-icon>
+            }
+            @default {
+              <mat-icon>remove</mat-icon>
+            }
+          }
+        </div>
+      }
 
       <div class="flex flex-col justify-start items-stretch">
-        <div class="ngm-kpi--reference ngm-kpi--deviation" *ngIf="options?.showDeviation "> <!--&& kpiValue.deviation-->
-          <div *ngIf="options?.deviationText" class="ngm-kpi--title">
-            {{options?.deviationText}}
-          </div>
-          <ngm-object-number [number]="kpiValue.deviation" unit="%"
+        @if (options?.showDeviation) {
+          <div class="ngm-kpi--reference ngm-kpi--deviation">
+            @if (options?.deviationText) {
+              <div class="ngm-kpi--title">
+                {{options?.deviationText}}
+              </div>
+            }
+            <ngm-object-number [number]="kpiValue.deviation" unit="%"
               [digitsInfo]="options?.digitsInfo"
               [shortNumber]="false"
-              [locale]="locale"></ngm-object-number>
-        </div>
+              [locale]="locale">
+            </ngm-object-number>
+          </div>
+        }
 
         <ngm-object-number class="ngm-kpi--value"
           [number]="kpiValue.value"
@@ -100,16 +131,20 @@
   </div>
 </ng-template>
 
-<div *ngIf="error$ | async as error" class="pac-kpi-card__error ngm-card-error absolute left-0 top-0 w-full h-full overflow-auto 
-  flex flex-col justify-center items-center backdrop-blur-md bg-white/10"
->
-  <span class="text-2xl font-notoColorEmoji">🐞</span>
-  <div class="whitespace-pre-wrap max-w-full">
-    {{ error }}
+@if (error$ | async; as error) {
+  <div class="pac-kpi-card__error ngm-card-error absolute left-0 top-0 w-full h-full overflow-auto 
+    flex flex-col justify-center items-center backdrop-blur-md bg-white/10"
+  >
+    <span class="text-2xl font-notoColorEmoji">🐞</span>
+    <div class="whitespace-pre-wrap max-w-full">
+      {{ error }}
+    </div>
   </div>
-</div>
+}
 
-<div *ngIf="editable && (placeholder$ | async)" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
-  <pac-kpi-placeholder class="cursor-pointer" (click)="openDesigner()"></pac-kpi-placeholder>
-  <span>{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
-</div>
+@if (editable && (placeholder$ | async)) {
+  <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+    <pac-kpi-placeholder class="cursor-pointer" (click)="openDesigner()"></pac-kpi-placeholder>
+    <span>{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
+  </div>
+}
