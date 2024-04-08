@@ -202,10 +202,10 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     this.story.options = this.story.options ?? {}
     this.story.options.fullscreen = fullscreen ?? !this.story.options.fullscreen
     if (this.story.options.fullscreen) {
-      requestFullscreen(this.document)
+      // requestFullscreen(this.document)
       this.appService.requestFullscreen(2)
     } else {
-      exitFullscreen(this.document)
+      // exitFullscreen(this.document)
       this.appService.exitFullscreen(2)
     }
   }

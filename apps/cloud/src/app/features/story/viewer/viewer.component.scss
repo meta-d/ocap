@@ -65,3 +65,13 @@ $prefix: (ngm, story-viewer);
     @apply bg-yellow-500;
   }
 }
+
+.pac-story-bar {
+  @apply px-0 w-0;
+  max-width: 0;
+  &.opened {
+    @apply px-2 w-14;
+    max-width: 3.5rem;
+  }
+}
+

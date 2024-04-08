@@ -42,11 +42,8 @@ $prefix: (ngm, story-designer);
   }
 
   &.ngm-story--fullscreen {
-    @apply z-50;
-    .ngm-story__container {
-      top: var(--story-fullscreen-top);
-      @apply fixed w-full h-full left-0 transition-all duration-200 ease-in-out;
-    }
+    top: var(--story-fullscreen-top);
+    @apply z-50 fixed w-full h-full left-0 transition-all duration-200 ease-in-out;
   }
 }
 

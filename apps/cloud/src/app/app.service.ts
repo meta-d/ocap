@@ -129,9 +129,9 @@ export class AppService extends ComponentStore<PACAppState> {
     }
     state.zIndexs.push(zIndex)
 
-    if (screenfull.isEnabled) {
-      screenfull.request();
-    }
+    // if (screenfull.isEnabled) {
+    //   screenfull.request();
+    // }
   })
 
   public exitFullscreen = this.updater((state, zIndex: number) => {
@@ -140,8 +140,8 @@ export class AppService extends ComponentStore<PACAppState> {
       state.zIndexs.splice(index)
     }
 
-    if (screenfull.isEnabled) {
-      screenfull.exit()
-    }
+    // if (screenfull.isEnabled) {
+    //   screenfull.exit()
+    // }
   })
 }

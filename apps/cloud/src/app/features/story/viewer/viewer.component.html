@@ -1,5 +1,5 @@
-<div class="pac-story-bar p-2 shrink-0 flex flex-col justify-start items-center gap-2 z-20 overflow-hidden hover:overflow-auto transition-all duration-200"
-    [ngClass]="{'w-14': sideMenuOpened(), 'w-0': !sideMenuOpened(), 'px-0': !sideMenuOpened()}"
+<div class="pac-story-bar py-2 shrink-0 flex-grow-0 flex flex-col justify-start items-center gap-2 z-20 overflow-hidden hover:overflow-auto transition-all duration-200"
+    [class.opened]="sideMenuOpened()"
     >
     <!-- <button mat-icon-button displayDensity="cosy" matTooltip="{{ 'PAC.Story.GlobalFilterBar' | translate: {Default: 'Global Filter Bar'} }}"
         matTooltipPosition="right"
@@ -94,7 +94,7 @@
     </button>
 </div>
 
-<div class="flex-1 h-full relative overflow-hidden">
+<div class="flex-1 w-full h-full relative overflow-hidden">
     <ngm-story #storyComponent class="w-full h-full overflow-auto"
         [story]="story"
         [pageKey]="pageKey()"
