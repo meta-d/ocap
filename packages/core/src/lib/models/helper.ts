@@ -262,12 +262,14 @@ export function getPropertyUnitName(property: Property) {
 }
 
 /**
- * TODO 有问题
- * @param member
- * @returns
+ * @deprecated use {@link getMemberKey}
  */
 export function getMemberValue(member: Member): string {
-  return isString(member) ? member : (member?.value as string)
+  return isString(member) ? member : (member?.key || member?.value as string)
+}
+
+export function getMemberKey(member: Member): string {
+  return isString(member) ? member : (member?.key || member?.value as string)
 }
 
 export function hasLevel(dimension: Dimension | string) {
