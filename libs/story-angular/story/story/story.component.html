@@ -11,7 +11,7 @@
         [mat-stretch-tabs]="pageHeaderStretchTabs()"
         [ngStyle]="storyStyle$ | async"
         [class.tabBarHidden]="tabHidden()"
-        [selectedIndex]="currentPageIndex$ | async"
+        [selectedIndex]="currentPageIndex()"
         [headerPosition]="pageHeaderPosition()"
         [fitInkBarToContent]="pageHeaderFitInkBarToContent()"
         (selectedTabChange)="onSelectedTabChange($event)"

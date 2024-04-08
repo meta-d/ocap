@@ -22,6 +22,7 @@ import {
   ViewChildren,
   ViewContainerRef,
   computed,
+  effect,
   inject,
   signal
 } from '@angular/core'
@@ -31,7 +32,7 @@ import { HammerModule } from '@angular/platform-browser'
 import { ActivatedRoute, Params, Router } from '@angular/router'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
-import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject, nonNullable } from '@metad/core'
+import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmSmartFilterBarService, OcapCoreModule, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
@@ -209,9 +210,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     () => this.preferences()?.story?.pageHeaderFitInkBarToContent ?? false
   )
 
-  public currentPageIndex$ = this.storyService.currentIndex$
-  public currentPageKey = toSignal(this.storyService.currentPageKey$)
-
   public readonly storySizeStyles = toSignal(this.storyService.storySizeStyles$)
 
   public readonly scaleStyles$ = this.storyService.storyOptions$.pipe(
@@ -260,6 +258,8 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       })
     )
   )
+  readonly currentPageIndex = this.storyService.currentPageIndex
+  readonly currentPageKey = this.storyService.currentPageKey
 
   /**
   |--------------------------------------------------------------------------
@@ -311,20 +311,20 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
       this.#logger?.debug(`Story全局固定过滤器:`, filters)
       // filters.forEach(item => this.filterBarService.put(item))
     })
-  private _currentPageKeySubscriber = this.storyService.currentPageKey$
-    .pipe(filter(nonNullable), takeUntilDestroyed())
-    .subscribe(async (pageKey) => {
-      const currentIndex = await firstValueFrom(this.storyService.currentIndex$)
-      if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
-        const queryParams: Params = { pageKey }
-        this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: queryParams,
-          queryParamsHandling: 'merge', // remove to replace all query params by provided
-          skipLocationChange: true
-        })
-      }
-    })
+
+  #pageKeyEffect = effect(() => {
+    const currentIndex = this.storyService.currentPageIndex()
+    const pageKey = this.storyService.currentPageKey()
+    if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
+      const queryParams: Params = { pageKey }
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: queryParams,
+        queryParamsHandling: 'merge', // remove to replace all query params by provided
+      })
+    }
+  })
+
   private _storySub = this.story$
     .pipe(
       filter(Boolean),

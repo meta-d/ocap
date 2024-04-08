@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { inject, Inject, Injectable, Injector, Optional } from '@angular/core'
+import { computed, inject, Inject, Injectable, Injector, Optional } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
@@ -208,10 +208,6 @@ export class NxStoryService extends ComponentStore<StoryState> {
     )
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
-  
-  readonly currentIndex$ = this.select(this.displayPoints$, this.currentPageKey$, (displayPoints, currentPageKey) =>
-    displayPoints?.findIndex((item) => item.key === currentPageKey)
-  )
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
@@ -301,6 +297,16 @@ export class NxStoryService extends ComponentStore<StoryState> {
       }
     })
   )
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly displayPoints = toSignal(this.displayPoints$)
+  readonly currentPageIndex = computed(() => {
+    return this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
+  })
 
   /**
   |--------------------------------------------------------------------------
@@ -1137,7 +1143,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   // Gesture Actions
   async swipe(dir: 'left' | 'right', loop = false) {
-    const currentIndex = await firstValueFrom(this.currentIndex$)
+    const currentIndex = this.currentPageIndex()
     const displayPoints = await firstValueFrom(this.displayPoints$)
     let index = 0
     if (dir === 'left') {
