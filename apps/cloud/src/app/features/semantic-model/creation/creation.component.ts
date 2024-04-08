@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, forwardRef, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, forwardRef, inject, signal } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
   FormControl,
@@ -10,15 +11,26 @@ import {
   Validators
 } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
+import { BusinessAreasService, DataSourceService } from '@metad/cloud/state'
+import { NgmSelectionTableComponent, NgmTreeSelectComponent, SelectionTableColumn } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { AgentType, Catalog, DataSource, isNil } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { BusinessAreasService, DataSourceService } from '@metad/cloud/state'
-import { BehaviorSubject, Observable, Subject, catchError, filter, firstValueFrom, map, of, startWith, switchMap, tap } from 'rxjs'
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  catchError,
+  filter,
+  firstValueFrom,
+  map,
+  of,
+  startWith,
+  switchMap,
+  tap
+} from 'rxjs'
 import { IDataSource, ToastrService, getErrorMessage } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
-import { NgmSelectionTableComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -54,8 +66,9 @@ export class ModelCreationComponent implements ControlValueAccessor {
   private dataSourceService = inject(DataSourceService)
   private businessAreaService = inject(BusinessAreasService)
   private dsCoreService = inject(NgmDSCoreService)
-  private toastrService = inject(ToastrService)
-  private data = inject<{ name: string; description: string; businessAreaId: string; type: 'mdx' | 'sql' | null }>(MAT_DIALOG_DATA)
+  private data = inject<{ name: string; description: string; businessAreaId: string; type: 'mdx' | 'sql' | null }>(
+    MAT_DIALOG_DATA
+  )
   private dialogRef = inject(MatDialogRef<ModelCreationComponent>)
 
   formGroup = new FormGroup({
@@ -81,15 +94,14 @@ export class ModelCreationComponent implements ControlValueAccessor {
     )
   }
 
-  discoverDBCatalogsError = ''
-  uploading = false
+  // uploading = false
 
   public readonly dataSource$ = new Subject<DataSource>()
-  private _columns$ = new BehaviorSubject([
-    { value: 'name', label: 'Name' },
+  private _columns$ = new BehaviorSubject<SelectionTableColumn[]>([
+    { value: 'name', label: 'Name', sticky: true },
     { value: 'type.type', label: 'Type' },
     { value: 'type.protocol', label: 'Protocol' },
-    { value: 'useLocalAgent', label: 'UseLocalAgent' }
+    { value: 'useLocalAgent', label: 'UseLocalAgent', type: 'boolean' }
   ])
   public readonly columns$ = this._columns$.pipe(
     switchMap((columns) =>
@@ -103,10 +115,11 @@ export class ModelCreationComponent implements ControlValueAccessor {
       )
     )
   )
-  public readonly catalogColumns$ = of([
+  public readonly catalogColumns$ = of<SelectionTableColumn[]>([
     {
       value: 'name',
-      label: 'Name'
+      label: 'Name',
+      sticky: true
     },
     {
       value: 'label',
@@ -140,54 +153,60 @@ export class ModelCreationComponent implements ControlValueAccessor {
     )
   )
 
-  public catalogsLoading = false
   public readonly catalogs$ = this.dataSource$.pipe(
     tap(() => {
-      this.catalogsLoading = true
-      this.discoverDBCatalogsError = null
+      this.catalogsLoading.set(true)
+      this.discoverDBCatalogsError.set(null)
     }),
     switchMap((dataSource) =>
       dataSource.discoverDBCatalogs().pipe(
         catchError((err) => {
-          this.catalogsLoading = false
-          this.discoverDBCatalogsError = getErrorMessage(err)
+          this.catalogsLoading.set(false)
+          this.discoverDBCatalogsError.set(getErrorMessage(err))
           return of([])
         })
       )
     ),
-    tap(() => (this.catalogsLoading = false))
+    tap(() => (this.catalogsLoading.set(false)))
   )
 
-  public readonly businessAreas$ = this.businessAreaService
-    .getMyAreasTree()
-    .pipe(startWith([]))
+  public readonly businessAreas$ = this.businessAreaService.getMyAreasTree().pipe(startWith([]))
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly catalogsLoading = signal(false)
+  readonly discoverDBCatalogsError = signal('')
 
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _dataSourceSub = this.dataSource.valueChanges.pipe(filter(Boolean), takeUntilDestroyed()).subscribe(async (dataSource) => {
-    this.dsCoreService.registerModel({
-      name: dataSource.name,
-      type: dataSource.type.protocol.toUpperCase() as any,
-      agentType: dataSource.useLocalAgent ? AgentType.Local : AgentType.Server,
-      dataSource,
-      settings: {
-        dataSourceId: dataSource.id,
-        dataSourceInfo: dataSource.options?.data_source_info,
-        ignoreUnknownProperty: true
-      }
-    } as any)
+  private _dataSourceSub = this.dataSource.valueChanges
+    .pipe(filter(Boolean), takeUntilDestroyed())
+    .subscribe(async (dataSource) => {
+      this.dsCoreService.registerModel({
+        name: dataSource.name,
+        type: dataSource.type.protocol.toUpperCase() as any,
+        agentType: dataSource.useLocalAgent ? AgentType.Local : AgentType.Server,
+        dataSource,
+        settings: {
+          dataSourceId: dataSource.id,
+          dataSourceInfo: dataSource.options?.data_source_info,
+          ignoreUnknownProperty: true
+        }
+      } as any)
 
-    const _dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSource.name))
-    this.dataSource$.next(_dataSource)
-  })
+      const _dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSource.name))
+      this.dataSource$.next(_dataSource)
+    })
 
   private _formValueSub = this.formGroup.valueChanges.subscribe((value) => {
     this._onChange?.(value)
   })
-  
+
   private _onChange: (value: any) => void
   constructor() {
     if (this.data.type) {

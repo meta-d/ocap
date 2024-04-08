@@ -170,7 +170,8 @@
       "LevelNumber": "层级",
       "ChildrenCardinality": "子节点数量",
       "Tree": "树",
-      "Table": "表"
+      "Table": "表",
+      "StoryName": "故事名称"
     },
     "MENU": {
       "Certification": "认证",

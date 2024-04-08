@@ -18,7 +18,7 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
-import { IsDirty } from '@metad/core'
+import { IsDirty, nonBlank } from '@metad/core'
 import {
   NgmCopilotChatComponent,
   injectCopilotCommand,
@@ -418,25 +418,34 @@ ${sharedDimensionsPrompt}
     })
   }
 
-  async createStory() {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {}).afterClosed())
-
-    if (name) {
-      try {
-        const story = await firstValueFrom(
-          this.storyStore.createStory({
-            name: name,
-            model: {
+  createStory() {
+    this._dialog.open(ConfirmUniqueComponent, {
+      data: {
+        title: this.getTranslation('PAC.KEY_WORDS.StoryName', {Default: 'Story Name'}),
+      }
+    }).afterClosed().pipe(
+      filter(nonBlank),
+      switchMap((name) =>
+        this.storyStore.createStory({
+          name: name,
+          models: [
+            {
               id: this.model.id
-            } as StoryModel,
-            businessAreaId: this.model.businessAreaId
-          })
-        )
-        this.openStory(story.id)
-      } catch (err) {
+            } as StoryModel
+          ],
+          businessAreaId: this.model.businessAreaId
+        })
+      )
+    ).subscribe({
+      next: (story) => {
+        if (story) {
+          this.openStory(story.id)
+        }
+      },
+      error: (err) => {
         this.toastrService.error(err, 'PAC.MODEL.MODEL.CreateStory')
       }
-    }
+    })
   }
 
   async createByExpression(expression: string) {

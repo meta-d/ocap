@@ -70,8 +70,6 @@ export class SemanticModelService {
   readonly dirty = signal<Record<string, boolean>>({})
   readonly stories = signal([])
   readonly model$ = this.store.pipe(select((state) => state.model), filter(nonNullable))
-  readonly cubes$ = this.model$.pipe(select((state) => state.schema.cubes))
-  readonly dimensions$ = this.model$.pipe(select((state) => state.schema.dimensions))
   readonly cubeStates$ = this.model$.pipe(map(initEntitySubState))
   readonly dimensionStates$ = this.model$.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
@@ -81,6 +79,8 @@ export class SemanticModelService {
     select((state) => state?.schema),
     filter(nonNullable)
   )
+  readonly cubes$ = this.schema$.pipe(select((state) => state.cubes))
+  readonly dimensions$ = this.schema$.pipe(select((state) => state.dimensions))
   readonly virtualCubes$ = this.schema$.pipe(select((schema) => schema.virtualCubes))
 
   readonly modelId$ = this.model$.pipe(map((model) => model?.id))
