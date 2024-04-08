@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, EventEmitter, forwardRef, HostBinding, inject, Input, OnInit, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, EventEmitter, forwardRef, HostBinding, inject, Input, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -30,6 +30,7 @@ import {
   ParameterControlEnum,
   ParameterProperty,
   PropertyDimension,
+  IntrinsicMemberProperties,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable } from 'rxjs'
@@ -314,7 +315,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   readonly properties$ = this.level$.pipe(map(level => {
     // MDX 固有属性, 移到 entityType dimension 上 ?
     const options = [{
-      name: 'DESCRIPTION',
+      name: IntrinsicMemberProperties.DESCRIPTION,
       caption: 'DESCRIPTION'
     } as LevelProperty]
     options.push(

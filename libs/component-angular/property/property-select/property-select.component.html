@@ -130,11 +130,11 @@
     <span>{{ 'COMPONENTS.PROPERTY.Label' | translate: {Default: "Label"} }}</span>
   </button>
 
-  <button mat-menu-item>
+  <button mat-menu-item (click)="$event.stopPropagation();$event.preventDefault();">
     <ngm-input class="w-full flex-row" style="flex-direction: row; align-items: center;"
       label="{{ 'COMPONENTS.PROPERTY.Caption' | translate: {Default: 'Caption'} }}"
       [(ngModel)]="caption"
-      (click)="$event.stopPropagation();"
+      (keydown.space)="$event.stopPropagation();$event.preventDefault();"
     ></ngm-input>
   </button>
 
@@ -199,12 +199,14 @@
       </mat-radio-button>
     </button>
 
-    <button mat-menu-item disableRipple *ngFor="let item of labels$ | async"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button class="ngm-radio-button__property" [value]="item.name">
-        {{item.caption}}
-      </mat-radio-button>
-    </button>
+    @for (item of labels$ | async; track item.name) {
+      <button mat-menu-item disableRipple
+        (click)="$event.stopPropagation();">
+        <mat-radio-button class="ngm-radio-button__property" [value]="item.name" [title]="item.caption">
+          {{item.caption}}
+        </mat-radio-button>
+      </button>
+    }
   </mat-menu>
 </mat-radio-group>
 

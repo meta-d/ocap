@@ -216,6 +216,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
       } else {
         slicer.members = slicer.members ?? []
         slicer.members.push({
+          key: member.key,
           value: member.value,
           caption: member.caption
         })
@@ -223,6 +224,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
     } else {
       slicer.members = [
         {
+          key: member.key,
           value: member.value,
           caption: member.caption
         }
@@ -236,7 +238,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
   async setSelectedValues(values: string[]) {
     const selectOptions = await firstValueFrom(this.selectOptions$)
     values = Array.isArray(values) ? values : isNil(values) ? null : [values]
-    this.setMembers(values?.map((value) => selectOptions.find((item) => item.value === value) ?? { value }))
+    this.setMembers(values?.map((value) => selectOptions.find((item) => item.key === value) ?? { value, key: value }))
   }
 
   setMembers(members?: IMember[]) {

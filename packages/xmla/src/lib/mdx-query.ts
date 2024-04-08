@@ -639,10 +639,10 @@ export function processMDXDimensionProperties(
   //         : Descendants(dimension.defaultMember, dimension.level || 1, DescendantsFlag.SELF_AND_BEFORE)
   //   }
   // }
-  if (dimension.label) {
+  if (dimension.memberCaption) {
     return {
       ...dimension,
-      properties: [...dimension.properties, dimension.label]
+      properties: [...dimension.properties, dimension.memberCaption]
     }
   }
 

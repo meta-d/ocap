@@ -7,9 +7,9 @@ import {
   EntityType,
   getChartCategory,
   getChartSeries,
+  getDimensionMemberCaption,
   getEntityHierarchy,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   ISlicer,
   omitBlank,
@@ -55,6 +55,7 @@ export function themeRiver(
         dimension,
         members: [
           {
+            key: event.value[3],
             value: event.value[3],
             label: event.value[2],
             caption: event.value[2],
@@ -88,14 +89,14 @@ export function themeRiverCoordinate(
 ): ICoordinateSingleAxis {
   const { chartAnnotation, entityType, settings, options } = context
   const category = getChartCategory(chartAnnotation)
-  const categoryProperty = getEntityHierarchy(entityType, category)
-  const categoryCaption = getPropertyCaption(categoryProperty)
+  // const categoryProperty = getEntityHierarchy(entityType, category)
+  const categoryCaption = getDimensionMemberCaption(category, entityType)
   const category2 = getChartSeries(chartAnnotation)
   if (!category2) {
     throw new Error(`Can't find dimension for series`)
   }
-  const category2Hierarchy = getEntityHierarchy(entityType, category2)
-  const category2Caption = getPropertyCaption(category2Hierarchy)
+  // const category2Hierarchy = getEntityHierarchy(entityType, category2)
+  const category2Caption = getDimensionMemberCaption(category2, entityType)
   const measure = chartAnnotation.measures[0]
 
   const categoryName = getPropertyHierarchy(category)

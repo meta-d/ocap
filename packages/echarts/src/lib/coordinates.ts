@@ -1,7 +1,7 @@
 import {
   getChartTrellis,
+  getDimensionMemberCaption,
   getEntityHierarchy,
-  getPropertyCaption,
   getPropertyHierarchy,
   isNil,
   mergeOptions,
@@ -171,7 +171,7 @@ export function trellisCoordinates(
   const trellis = getChartTrellis(chartAnnotation)
   if (trellis) {
     const trellisName = getPropertyHierarchy(trellis)
-    const trellisCaption = getPropertyCaption(getEntityHierarchy(entityType, trellis))
+    const trellisCaption = getDimensionMemberCaption(trellis, entityType)
     const trellisResults = groupBy(data.data, trellisName)
 
     const coordinates = Object.keys(trellisResults).map((trellisKey) => {

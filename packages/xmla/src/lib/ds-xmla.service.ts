@@ -41,7 +41,8 @@ import {
   isEntityType,
   PropertyMeasure,
   omitBy,
-  omit
+  omit,
+  CAPTION_FIELD_SUFFIX
 } from '@metad/ocap-core'
 import { cloneDeep, groupBy, isArray, isEmpty, isNil, merge, mergeWith, sortBy } from 'lodash-es'
 import { combineLatest, firstValueFrom, from, Observable, of, throwError } from 'rxjs'
@@ -87,7 +88,7 @@ import { NxXmlaService } from './xmla.service'
 import { fetchDataFromMultidimensionalTuple } from './xmla/multidimensional'
 import { Xmla } from './xmla'
 
-export const XMLA_TEXT_FIELD_SUFFIX = '_Text'
+export const XMLA_TEXT_FIELD_SUFFIX = CAPTION_FIELD_SUFFIX
 
 export interface XmlaDataSourceSettings extends DataSourceSettings {
   dataSourceInfo: string

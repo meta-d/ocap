@@ -3,19 +3,24 @@ import {
   ChartMeasure,
   ChartMeasureRoleType,
   ChartSettings,
+  EntityType,
+  getDimensionDisplayBehaviour,
+  getDimensionMemberCaption,
+  getEntityHierarchy,
+  getEntityProperty,
   getPropertyUnitName,
   omitBlank,
   Property,
   PropertyMeasure
 } from '@metad/ocap-core'
 import {
+  _formatDimensionValue,
   echartsFormatNumber,
   formatCategoryLabel,
   formatMeasureLabel,
   formatMeasureNumber,
   formatMeasuresLabel,
-  getSeriesComponentMeasureName,
-  _formatDimensionValue
+  getSeriesComponentMeasureName
 } from '../common'
 import { AxisEnum, ITooltip, SeriesComponentType } from '../types'
 
@@ -37,7 +42,8 @@ export function valueFormatter(measure: ChartMeasure, property: PropertyMeasure,
  */
 export function getEChartsTooltip(
   tooltipOptions: ITooltip,
-  dimProperty: Property,
+  category: ChartDimension,
+  entityType: EntityType,
   measures: Array<{ measure: ChartMeasure; property: Property }>,
   seriesComponents: SeriesComponentType[],
   locale: string,
@@ -47,6 +53,11 @@ export function getEChartsTooltip(
     ...omitBlank(tooltipOptions),
     trigger: tooltipOptions?.trigger ?? 'item'
   }
+
+  const categoryProperty = getEntityProperty(entityType, category)
+  const categoryHierarchy = getEntityHierarchy(entityType, category)
+  const categoryMemberCaption = getDimensionMemberCaption(category, entityType)
+  const displayBehaviour = getDimensionDisplayBehaviour(category)
 
   const tooltipMeasures = measures.filter(({ measure }) => measure.role === ChartMeasureRoleType.Tooltip)
 
@@ -62,7 +73,15 @@ export function getEChartsTooltip(
       })
 
       const param = params[0]
-      texts.push(_formatDimensionValue(rowRuler(param.data), dimProperty))
+      texts.push(
+        _formatDimensionValue(
+          rowRuler(param.data),
+          categoryHierarchy.name,
+          categoryMemberCaption,
+          displayBehaviour,
+          categoryProperty.dataType
+        )
+      )
       params.forEach((param) => {
         // const property = seriesComponents[param.seriesIndex].property
         const measure = measures.find((item) => item.measure.measure === seriesComponents[param.seriesIndex].measure)
@@ -76,7 +95,16 @@ export function getEChartsTooltip(
       })
     } else {
       const row = rowRuler(params.data)
-      texts.push(params.marker + _formatDimensionValue(row, dimProperty))
+      texts.push(
+        params.marker +
+          _formatDimensionValue(
+            row,
+            categoryHierarchy.name,
+            categoryMemberCaption,
+            displayBehaviour,
+            categoryProperty.dataType
+          )
+      )
       texts.push(formatMeasuresLabel(row, measures, locale, tooltipOptions?.shortNumber))
     }
 

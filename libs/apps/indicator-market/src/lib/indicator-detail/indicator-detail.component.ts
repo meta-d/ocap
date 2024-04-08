@@ -27,6 +27,7 @@ import {
   Drill,
   EntityType,
   FilterOperator,
+  getDimensionMemberCaption,
   getEntityCalendar,
   getEntityDimensions,
   getEntityHierarchy,
@@ -34,7 +35,6 @@ import {
   getEntityProperty,
   getEntityProperty2,
   getIndicatorMeasureName,
-  getPropertyCaption,
   IFilter,
   Indicator,
   isAdvancedFilter,
@@ -785,7 +785,7 @@ export class IndicatorDetailComponent {
     const dimension = chartAnnotation.dimensions[0]
     const dimensionProperty = getEntityHierarchy(entityType, dimension)
     const dimensionLevel = getEntityLevel(entityType, dimension)
-    const dimensionCaption = getPropertyCaption(dimensionProperty)
+    const dimensionCaption = getDimensionMemberCaption(dimension, entityType)
     const measure = chartAnnotation.measures[0]
     const measureProperty = getEntityProperty(entityType, measure)
 

@@ -145,7 +145,8 @@ export class NgmMemberDatepickerComponent implements OnInit, OnChanges, ControlV
           dimension,
           members: [
             {
-              value: results[0]
+              key: results[0],
+              value: results[0],
             }
           ]
         }

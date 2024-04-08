@@ -24,8 +24,7 @@ import {
   DataSettings,
   Dimension,
   FilterSelectionType,
-  getEntityProperty,
-  getPropertyCaption,
+  getDimensionMemberCaption,
   getPropertyHierarchy,
   IDimensionMember,
   IMember,
@@ -234,15 +233,15 @@ export class NgmMemberTableComponent<T> implements ControlValueAccessor {
   }
 
   toggleMember(row: T) {
-    const property = getEntityProperty(this.smartFilterService.entityType, this.dimension)
-    const caption = getPropertyCaption(property)
+    const caption = getDimensionMemberCaption(this.dimension, this.smartFilterService.entityType)
     const member: IMember = {
+      key: row[getPropertyHierarchy(this.dimension)],
       value: row[getPropertyHierarchy(this.dimension)],
       label: row[caption],
       caption: row[caption]
     }
 
-    const index = this.slicer()?.members?.findIndex((item) => item.value === member.value)
+    const index = this.slicer()?.members?.findIndex((item) => item.key === member.key)
     if (index > -1) {
       this.slicer.update((state) => {
         const members = [...this.slicer().members]
@@ -274,8 +273,7 @@ export class NgmMemberTableComponent<T> implements ControlValueAccessor {
   }
 
   selectMembers(members: T[]) {
-    const property = getEntityProperty(this.smartFilterService.entityType, this.dimension)
-    const caption = getPropertyCaption(property)
+    const caption = getDimensionMemberCaption(this.dimension, this.smartFilterService.entityType)
 
     this.slicer.update((state) => {
       return {
@@ -283,6 +281,7 @@ export class NgmMemberTableComponent<T> implements ControlValueAccessor {
         members: members.map(
           (row) =>
             ({
+              key: row[getPropertyHierarchy(this.dimension)],
               value: row[getPropertyHierarchy(this.dimension)],
               label: row[caption],
               caption: row[caption]

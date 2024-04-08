@@ -272,9 +272,13 @@ export class NxAdvancedFilterComponent implements OnInit {
       //   this.selectedCondition
       // )
       // this.editedExpression.expression.members = this.searchValue
-      this.editedExpression.expression.members = [{value: this.searchValue}]
+      this.editedExpression.expression.members = [{
+        key: this.searchValue,
+        value: this.searchValue,
+      }]
       if (this.editedExpression.expression.operator === FilterOperator.BT && !isNil(this.highValue)) {
         this.editedExpression.expression.members.push({
+          key: this.highValue,
           value: this.highValue
         })
       }

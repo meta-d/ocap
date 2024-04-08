@@ -213,7 +213,8 @@ export function workOutTimeRangeSlicers(
         dimension: timeSlicer.dimension,
         members: [
           {
-            value: results[0]
+            key: results[0],
+            value: results[0],
           }
         ]
       }
@@ -221,7 +222,7 @@ export function workOutTimeRangeSlicers(
 
     return {
       dimension: timeSlicer.dimension,
-      members: results.map((value) => ({ value })),
+      members: results.map((key) => ({ key, value: key })),
       operator: FilterOperator.BT
     }
   })

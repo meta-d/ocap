@@ -12,13 +12,13 @@ import {
   getEntityHierarchy,
   getEntityLevel,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   mergeOptions,
   QueryReturn,
   isEmpty,
   isNil,
   ChartMeasure,
+  getDimensionMemberCaption,
 } from '@metad/ocap-core'
 import { parse, format, isDate } from 'date-fns'
 import { HeatmapChart } from 'echarts/charts'
@@ -103,7 +103,7 @@ export function cartesianCoordinate(context: EChartsContext, data: Array<Record<
   const { chartAnnotation, entityType, settings, options } = context
 
   const category = getChartCategory(chartAnnotation)
-  const categoryProperty = getEntityProperty(entityType, category)
+  // const categoryProperty = getEntityProperty(entityType, category)
   const category2 = getChartCategory2(chartAnnotation)
   // For the moment: support only one measure
   const measure = chartAnnotation.measures?.[0]
@@ -130,7 +130,8 @@ export function cartesianCoordinate(context: EChartsContext, data: Array<Record<
       seriesComponents,
       tooltip: getEChartsTooltip(
         options?.tooltip,
-        categoryProperty,
+        category,
+        entityType,
         chartAnnotation.measures.map((measure) => ({
           measure,
           property: getEntityProperty(entityType, measure)
@@ -272,7 +273,7 @@ export function calendarCoordinate(context: EChartsContext, data: Array<Record<s
 
   const calendar = getChartCalendar(chartAnnotation, entityType)
   const calendarHierarchy = getEntityHierarchy(entityType, calendar)
-  const calendarCaption = getPropertyCaption(calendarHierarchy)
+  const calendarCaption = getDimensionMemberCaption(calendar, entityType)
   const dateFormatter = options?.seriesStyle?.dateFormatter
   const calendarLevelProperty = getEntityLevel(entityType, calendar)
   const levelFormatter = calendarLevelProperty.semantics?.formatter

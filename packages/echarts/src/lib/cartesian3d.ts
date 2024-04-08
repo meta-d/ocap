@@ -5,9 +5,9 @@ import {
   ChartSettings,
   EntityType,
   getChartCategory,
+  getDimensionMemberCaption,
   getEntityHierarchy,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   getPropertyMeasure,
   getPropertyName,
@@ -86,7 +86,9 @@ export function cartesianCoordinate3d(
   const category = getChartCategory(chartAnnotation)
   const category2 = chartAnnotation.dimensions[1]
   const xHierarchy = getEntityHierarchy(entityType, category)
+  const xHierarchyCaption = getDimensionMemberCaption(category, entityType)
   const yHierarchy = getEntityHierarchy(entityType, category2)
+  const yHierarchyCaption = getDimensionMemberCaption(category2, entityType)
 
   const mainMeasure = chartAnnotation.measures[0]
 
@@ -105,12 +107,12 @@ export function cartesianCoordinate3d(
 
   const tooltips = [
     {
-      value: getPropertyCaption(xHierarchy),
+      value: xHierarchyCaption,
       label: xHierarchy.caption || xHierarchy.name,
       valueFormatter: null
     },
     {
-      value: getPropertyCaption(yHierarchy),
+      value: yHierarchyCaption,
       label: yHierarchy.caption || yHierarchy.name,
       valueFormatter: null
     },

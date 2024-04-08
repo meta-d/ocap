@@ -7,6 +7,9 @@ export type PrimitiveType = number | string | boolean | null | undefined
 export type UUID = string
 export type PropertyName = string
 export const C_MEASURES = 'Measures'
+export const CAPTION_FIELD_SUFFIX = '_Text'
+export const C_MEASURES_CAPTION = `[${C_MEASURES}]${CAPTION_FIELD_SUFFIX}`
+
 
 export enum Syntax {
   SQL = 'SQL',
@@ -15,7 +18,7 @@ export enum Syntax {
 }
 
 export interface IMember {
-  key?: string
+  key: string
   caption?: string
   /**
    * @deprecated use caption
@@ -24,7 +27,7 @@ export interface IMember {
   /**
    * @deprecated use key
    */
-  value: PrimitiveType
+  value?: PrimitiveType
 }
 
 export enum DisplayBehaviour {
@@ -58,12 +61,7 @@ export type Dimension = BaseProperty &
     name: string
     hierarchy: PropertyName
     level: PropertyName
-    /**
-     * displayBehaviour 中所要显示文本字段
-     * 
-     * @deprecated use caption
-     */
-    label: PropertyName
+
     /**
      * Caption field for dimension
      */
@@ -312,14 +310,6 @@ export function getPropertyMeasure(path: Measure | PropertyName) {
   return isString(path) ? path : path?.measure
 }
 
-export function getPropertyDisplayBehaviour(name: Dimension) {
-  if (isDimension(name)) {
-    return name.displayBehaviour
-  }
-
-  return null
-}
-
 /**
  * @deprecated use shortUUID
  * 
@@ -332,15 +322,15 @@ export function uuid(): UUID {
 export function displayByBehaviour(option: IMember, behaviour?: DisplayBehaviour): string {
   switch (behaviour) {
     case DisplayBehaviour.descriptionAndId:
-      return `${option.caption || option.label || ''}(${option.value})`
+      return `${option.caption || option.label || ''} (#${option.key || option.value})`
     case DisplayBehaviour.descriptionOnly:
       return `${option.caption || option.label || ''}`
     case DisplayBehaviour.idAndDescription:
-      return `${option.value}(${option.caption || option.label || ''})`
+      return `#${option.key || option.value} (${option.caption || option.label || ''})`
     case DisplayBehaviour.idOnly:
-      return `${option.value}`
+      return `${option.key || option.value}`
     default:
-      return `${option.caption || option.label || option.value}`
+      return `${option.caption || option.label || option.key || option.value}`
   }
 }
 

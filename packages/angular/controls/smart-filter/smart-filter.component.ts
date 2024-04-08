@@ -420,7 +420,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   }
 
   trackBy(index: number, item: IMember) {
-    return item.value
+    return item.key
   }
   trackByKey(index: number, item: FlatTreeNode<any>) {
     return item.key
@@ -434,27 +434,29 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   }
 
   isSelected(option: FlatTreeNode<unknown>) {
-    return this.slicer.members?.some((member) => member.value === option.key)
+    return this.slicer.members?.some((member) => member.key === option.key)
   }
 
   onCheckboxChange(event: MatCheckboxChange, option: FlatTreeNode<any>) {
     if (event.checked) {
       this.toggleMember({
+        key: option.key,
         value: option.key,
         caption: option.caption
       })
     } else {
       this.removeMember({
+        key: option.key,
         value: option.key,
         caption: option.caption
       })
     }
   }
 
-  removeMember({ value }: IMember) {
+  removeMember({ key }: IMember) {
     this.slicer = {
       ...this.slicer,
-      members: this.slicer.members.filter((member) => member.value !== value)
+      members: this.slicer.members.filter((member) => member.key !== key)
     }
   }
 
@@ -468,6 +470,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   selectMember(event: MatAutocompleteSelectedEvent) {
     const memberFlatNode = event.option.value as FlatTreeNode<IDimensionMember>
     this.toggleMember({
+      key: memberFlatNode.key,
       value: memberFlatNode.key,
       caption: memberFlatNode.caption
     })
@@ -481,24 +484,26 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
 
     if (event.checked) {
       if (this.options?.multiple || this.options?.selectionType === FilterSelectionType.Multiple) {
-        const index = members.findIndex((item) => item.value === member.value)
+        const index = members.findIndex((item) => item.key === member.key)
         if (index > -1) {
           members.splice(index, 1)
         }
         members.push({
+          key: member.key,
           value: member.value,
           label: member.caption
         })
       } else {
         members = [
           {
+            key: member.key,
             value: member.value,
             label: member.caption
           }
         ]
       }
     } else {
-      const index = members.findIndex((item) => item.value === member.value)
+      const index = members.findIndex((item) => item.key === member.key)
       if (index > -1) {
         members.splice(index, 1)
       }
@@ -513,11 +518,12 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   toggleMember(member: IMember) {
     let members = this.slicer.members ? [...this.slicer.members] : []
     if (this.options?.multiple || this.options?.selectionType === FilterSelectionType.Multiple) {
-      const index = members.findIndex((item) => item.value === member.value)
+      const index = members.findIndex((item) => item.key === member.key)
       if (index > -1) {
         members.splice(index, 1)
       } else {
         members.push({
+          key: member.key,
           value: member.value,
           label: member.caption
         })
@@ -525,6 +531,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     } else {
       members = [
         {
+          key: member.key,
           value: member.value,
           label: member.caption
         }

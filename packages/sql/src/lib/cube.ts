@@ -197,6 +197,7 @@ export function buildCubeContext(
           order: row.order
         })
         dimension.members.push({
+          key: measure.name,
           value: measure.name,
           caption: measure.caption
         })

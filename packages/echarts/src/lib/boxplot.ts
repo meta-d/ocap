@@ -6,8 +6,8 @@ import {
   EntityType,
   getChartCategory,
   getChartSeries,
+  getDimensionMemberCaption,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   getPropertyMeasure,
   QueryReturn
@@ -187,7 +187,7 @@ export function prepareBoxplotDataSource(
   data: any[]
 ) {
   const categoryName = getPropertyHierarchy(category)
-  const categoryCaption = getPropertyCaption(getEntityProperty(entityType, category))
+  const categoryCaption = getDimensionMemberCaption(category, entityType)
   const categoryMembers = groupBy(data, categoryName)
   const measureName = getPropertyMeasure(measure)
 

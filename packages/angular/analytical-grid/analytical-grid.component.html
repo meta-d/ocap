@@ -46,7 +46,7 @@
     [matSortDirection]="matSortDirection"
     >
     <!-- rows -->
-    <ng-container *ngFor="let column of rowAxes; let j = index; last as last">
+    @for (column of rowAxes; track column.name + column.caption; let j = $index; let last = $last) {
       <ng-container [matColumnDef]="column.name" [sticky]="column.sticky">
         <th mat-header-cell *matHeaderCellDef mat-sort-header [attr.rowspan]="pivotColumnRowCount"
           class="ngm-analytical-grid__dimension"
@@ -172,7 +172,7 @@
           </div>
         </td>
       </ng-container>
-    </ng-container>
+    }
     
     <ng-container *ngIf="pivotColumnRowCount > 1">
       <ng-container *ngFor="let columnAxis of columnAxes; let i = index" [matColumnDef]="columnAxis.dimension">

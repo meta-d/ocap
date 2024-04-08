@@ -9,8 +9,8 @@ import {
   EntityType,
   getChartCategory,
   getChartSeries,
+  getDimensionMemberCaption,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   getPropertyMeasure,
   IMember,
@@ -65,7 +65,7 @@ export function stackedForMeasure(
     return {
       ...measure,
       member: category2Value,
-      id: category2Value.value + measure.measure,
+      id: category2Value.key + measure.measure,
       name: category2Value.caption + measure.measure,
       caption: category2Value.caption,
       property: measureProperty,
@@ -139,8 +139,8 @@ export function getMatrixForMeasure(
 ) {
   const categoryName = getPropertyHierarchy(category)
   const category2Name = getPropertyHierarchy(category2)
-  const categoryTextName = getPropertyCaption(getEntityProperty(entityType, category))
-  const category2TextName = getPropertyCaption(getEntityProperty(entityType, category2))
+  const categoryTextName = getDimensionMemberCaption(category, entityType)
+  const category2TextName = getDimensionMemberCaption(category2, entityType)
   const measureName = getPropertyMeasure(measure)
 
   // Itmes key-value 化, 解决使用 lodash find 函数速度问题
@@ -152,6 +152,7 @@ export function getMatrixForMeasure(
   let categoryValues = uniqBy(items, categoryName).map(
     (x) =>
       ({
+        key: x[categoryName],
         value: x[categoryName],
         label: x[categoryTextName],
         caption: x[categoryTextName]
@@ -163,6 +164,7 @@ export function getMatrixForMeasure(
   let category2Values = uniqBy(items, category2Name).map(
     (x) =>
       ({
+        key: x[category2Name],
         value: x[category2Name],
         label: x[category2TextName],
         caption: x[category2TextName]
@@ -171,7 +173,7 @@ export function getMatrixForMeasure(
   if (measure.order) {
     const lastCategory = categoryValues[categoryValues.length - 1]
     category2Values = sortBy(category2Values, (member) => {
-      const item = itemsMap.get(`${lastCategory.value}/${member.value}`)
+      const item = itemsMap.get(`${lastCategory.key}/${member.key}`)
       if (item) {
         return item[measureName]
       }
@@ -182,8 +184,8 @@ export function getMatrixForMeasure(
     }
   }
 
-  const dataset = category2Values.map(({ value: category2Value }, i) => {
-    const values = categoryValues.map(({ value: categoryValue }) => {
+  const dataset = category2Values.map(({ key: category2Value }, i) => {
+    const values = categoryValues.map(({ key: categoryValue }) => {
       const item = itemsMap.get(`${categoryValue}/${category2Value}`)
       if (item) {
         return item[measureName]
@@ -198,8 +200,8 @@ export function getMatrixForMeasure(
     categoryValues,
     category2Values,
     source: [
-      [category2Name, ...categoryValues.map(({ value }) => value)],
-      ...category2Values.map(({ value }, i) => [`${value}`, ...dataset[i]]),
+      [category2Name, ...categoryValues.map(({ key }) => key)],
+      ...category2Values.map(({ key }, i) => [`${key}`, ...dataset[i]]),
       // Total value for measure
       [totalMeasureName(measure.measure), ...categoryValues.map((value, i) => sum(dataset.map((row) => row[i])))]
       // ...(this.settings?.summaries?.map((summary) => [summary.type, ...this.summary(dataset, summary)]) || []),
