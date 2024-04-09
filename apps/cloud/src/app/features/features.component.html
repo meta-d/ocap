@@ -69,7 +69,7 @@
 
         @if (navigation$ | async; as navigation) {
           <div class="flex items-center text-sm overflow-hidden">
-            @if (navigation.catalog === MENU_CATALOG.Project) {
+            @if (appService.inProject()) {
               <pac-header-project class="h-full rounded-none"/>
             }
             <span class="font-bold flex items-center cursor-pointer

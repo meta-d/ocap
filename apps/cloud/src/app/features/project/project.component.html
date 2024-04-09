@@ -94,7 +94,7 @@
             @case('story') {
               <span class="font-notoColorEmoji">📖</span>
               <span [title]="node.caption" class="whitespace-nowrap text-ellipsis overflow-hidden ml-2">
-                <a [routerLink]="['/project', node.key]" routerLinkActive #rla="routerLinkActive" [routerLinkActiveOptions]="{exact: true}">{{node.caption}}</a>
+                <a >{{node.caption}}</a>
               </span>
 
               <span class="flex flex-1"></span>

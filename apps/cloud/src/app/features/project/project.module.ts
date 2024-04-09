@@ -15,7 +15,6 @@ import { TINYMCE_SCRIPT_SRC } from '@tinymce/tinymce-angular'
 import { NgxEchartsModule } from 'ngx-echarts'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { StoryResolver } from '../../@core/services'
 import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { STORY_DESIGNER_COMPONENTS } from '../story/widgets'
 import { ProjectRoutingModule } from './project-routing.module'
@@ -45,7 +44,6 @@ import { provideLogger } from '../../@core'
   ],
   exports: [],
   providers: [
-    StoryResolver,
     {
       provide: TINYMCE_SCRIPT_SRC,
       useValue: '../assets/tinymce/tinymce.min.js'
