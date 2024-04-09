@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Inject, Injectable, inject } from '@angular/core'
+import { Inject, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { API_DATA_SOURCE, DataSourceService } from '@metad/cloud/state'
@@ -26,17 +26,15 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
   type = AgentType.Server
 
   private error$ = new Subject()
-  readonly queuePool = new Map<UUID, { resolve: (value) => void; reject: (reason?: any) => void; complete?: boolean }>()
+
+  readonly queuePoolSize = 500
+  readonly queuePool = signal<
+    Record<UUID, { resolve: (value) => void; reject: (reason?: any) => void; complete?: boolean }>
+  >({})
   readonly request$ = new Subject<ServerSocketEventType>()
 
-  get bufferSize() {
-    return this.queuePool.keys.length
-  }
-  get completeSize() {
-    return Array.from(this.queuePool.values()).filter((x) => x.complete).length
-  }
-
-  // batchSize = 10
+  readonly bufferSize = computed(() => Object.keys(this.queuePool()).length)
+  readonly completeSize = computed(() => Object.values(this.queuePool()).filter((x) => x.complete).length)
 
   constructor(
     @Inject(PAC_SERVER_AGENT_DEFAULT_OPTIONS)
@@ -62,23 +60,39 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
 
     this.#agentService.on('olap', (result) => {
       const { id, cache, data, status, statusText } = result
+      const request = this.queuePool()[id]
 
-      const { resolve, reject } = this.queuePool.get(id)
-      // this.queuePool.delete(id)
-      this.queuePool.get(id).complete = true
+      if (request) {
+        const { resolve, reject } = request
+        this.queuePool.update((state) => {
+          state[id] = {
+            ...state[id],
+            complete: true
+          }
 
-      if (status === 500) {
-        reject({
-          status: status,
-          error: statusText
+          //Clear completed requests when the queue is full
+          if (Object.keys(state).length > this.queuePoolSize) {
+            Object.keys(state).filter((key) => state[key].complete).forEach((key) => delete state[key])
+          }
+
+          return {
+            ...state
+          }
         })
-      } else if (data) {
-        resolve(data)
-      } else {
-        reject({
-          status: status,
-          error: statusText
-        })
+
+        if (status === 500) {
+          reject({
+            status: status,
+            error: statusText
+          })
+        } else if (data) {
+          resolve(data)
+        } else {
+          reject({
+            status: status,
+            error: statusText
+          })
+        }
       }
     })
 
@@ -151,7 +165,12 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
         // method = 'POST'
 
         return new Promise((resolve, reject) => {
-          this.queuePool.set(id, { resolve, reject })
+          this.queuePool.update((state) => {
+            state[id] = { resolve, reject }
+            return {
+              ...state
+            }
+          })
           this.request$.next({
             id,
             dataSourceId,

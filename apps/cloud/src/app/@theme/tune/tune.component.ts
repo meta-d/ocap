@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
 import { MatMenuModule } from '@angular/material/menu'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -17,7 +18,6 @@ import { TranslateModule } from '@ngx-translate/core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { Observable, of } from 'rxjs'
 import { AbstractAgent, LocalAgent, ServerSocketAgent, Store, ToastrService } from '../../@core'
-import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 @Component({
   standalone: true,
@@ -47,7 +47,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 export class TuneComponent {
   enableLocalAgent = environment.enableLocalAgent
   AgentStatusEnum = AgentStatusEnum
-  
+
   readonly toastrService = inject(ToastrService)
   readonly localAgent? = inject(LocalAgent, { optional: true })
   readonly wasmAgentService = inject(WasmAgentService)
@@ -90,6 +90,12 @@ export class TuneComponent {
 
     return null
   })
+
+  readonly progress = computed(() =>
+    this.serverAgent.bufferSize() > 0
+      ? Math.floor((this.serverAgent.completeSize() / this.serverAgent.bufferSize()) * 100)
+      : 100
+  )
 
   constructor() {
     if (this.store.cacheLevel !== null && this.cacheService.getCacheLevel() !== this.store.cacheLevel) {

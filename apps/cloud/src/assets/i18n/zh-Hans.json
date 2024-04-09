@@ -171,7 +171,11 @@
       "ChildrenCardinality": "子节点数量",
       "Tree": "树",
       "Table": "表",
-      "StoryName": "故事名称"
+      "StoryName": "故事名称",
+      "Agent": "代理",
+      "Progress": "进度",
+      "Complete": "完成",
+      "Request": "请求"
     },
     "MENU": {
       "Certification": "认证",

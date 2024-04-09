@@ -77,8 +77,17 @@
         </mat-tab>
       }
 
-      <mat-tab class="p-4" label="Agent">
-        <mat-progress-bar class="w-full" color="accent" mode="buffer" [bufferValue]="90" [value]="serverAgent.completeSize / serverAgent.bufferSize * 90" />
+      <mat-tab class="p-4" [label]=" 'PAC.KEY_WORDS.Agent' | translate: {Default: 'Agent'} ">
+        <div class="flex justify-between items-center">
+          <span></span>
+          <span>{{'PAC.KEY_WORDS.Progress' | translate: {Default: 'Progress'} }}: {{progress()}}%</span>
+        </div>
+        <mat-progress-bar class="w-full" [color]="progress() > 90 ? 'primary' : 'accent'" mode="buffer"
+          [bufferValue]="90" [value]="progress()" />
+        <div class="flex justify-between items-center">
+          <span><span>{{'PAC.KEY_WORDS.Complete' | translate: {Default: 'Complete'} }}:</span> {{serverAgent.completeSize()}}</span>
+          <span><span>{{'PAC.KEY_WORDS.Request' | translate: {Default: 'Request'} }}:</span>{{serverAgent.bufferSize()}}</span>
+        </div>
       </mat-tab>
 
       <mat-tab [label]=" 'PAC.MENU.Authentication' | translate: {Default: 'Authentication'} ">
