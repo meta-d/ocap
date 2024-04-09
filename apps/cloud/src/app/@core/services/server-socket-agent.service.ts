@@ -5,7 +5,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { API_DATA_SOURCE, DataSourceService } from '@metad/cloud/state'
 import { AuthenticationEnum, IDataSource, IDataSourceAuthentication, ISemanticModel } from '@metad/contracts'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, UUID } from '@metad/ocap-core'
-import { Observable, Subject, bufferToggle, firstValueFrom, merge, mergeMap, windowToggle } from 'rxjs'
+import { Observable, Subject, bufferToggle, firstValueFrom, from, merge, mergeMap, windowToggle } from 'rxjs'
 import { AbstractAgent, AuthInfoType } from '../auth'
 import { getErrorMessage, uuid } from '../types'
 import { AgentService } from './agent.service'
@@ -240,6 +240,10 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
     }
 
     return Promise.reject(`未找到相应 Agent 响应方法`)
+  }
+
+  _request?(semanticModel: ISemanticModel & DataSourceOptions, options: any): Observable<any> {
+    return from(this.request(semanticModel, options))
   }
 
   getPingCallback(request: any, dataSource?: IDataSource) {

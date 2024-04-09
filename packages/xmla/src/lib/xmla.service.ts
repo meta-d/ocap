@@ -1,5 +1,5 @@
 import { merge } from 'lodash-es'
-import { Observable } from 'rxjs'
+import { Observable, Subscription } from 'rxjs'
 import { MDOptions } from './types'
 import { Xmla } from './xmla/Xmla'
 
@@ -57,7 +57,7 @@ export class NxXmlaService {
 
   discoverSAPVariables(options: MDOptions): Observable<any> {
     return new Observable((subscriber) => {
-      this.xmla.discover(merge(
+      const sub: Subscription = this.xmla.discover(merge(
         options,
         {
           properties: {
@@ -79,7 +79,11 @@ export class NxXmlaService {
             subscriber.error(err)
           }
         }
-      ))
+      )).subscribe()
+
+      return function unsubscribe() {
+        sub.unsubscribe()
+      };
     })
   }
 
@@ -91,7 +95,7 @@ export class NxXmlaService {
         }},
         options
       )
-      this.xmla[name]({
+      const sub: Subscription = this.xmla[name]({
         ..._options,
         success: (xmla, request, response) => {
           subscriber.next(response)
@@ -103,7 +107,11 @@ export class NxXmlaService {
         error: (err, exception) => {
           subscriber.error(exception)
         }
-      })
+      }).subscribe()
+
+      return function unsubscribe() {
+        sub.unsubscribe()
+      };
     })
   }
 
@@ -115,7 +123,7 @@ export class NxXmlaService {
         }
       }, options)
 
-      this.xmla.execute({
+      const sub: Subscription = this.xmla.execute({
         statement,
         ..._options,
         semanticModel: this.options.semanticModel,
@@ -126,7 +134,11 @@ export class NxXmlaService {
         error: (err, exception) => {
           subscriber.error(exception)
         }
-      })
+      }).subscribe()
+
+      return function unsubscribe() {
+        sub.unsubscribe()
+      };
     })
   }
 

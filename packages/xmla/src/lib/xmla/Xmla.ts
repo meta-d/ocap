@@ -3,6 +3,7 @@
 import axios from 'axios'
 import { merge } from 'lodash-es'
 import { Axis } from '../types/dataset'
+import { EMPTY, catchError, tap } from 'rxjs'
 
 // types
 export interface XmlaOptions {
@@ -2038,9 +2039,8 @@ Xmla.prototype = {
         'Content-Type': 'text/xml',
       })
 
-      this.options.agent.request(options.semanticModel, ajaxOptions)
-      // _ajax(ajaxOptions, this.options.agent)
-        .then((body: string) => {
+      return this.options.agent._request(options.semanticModel, ajaxOptions).pipe(
+        tap((body: string) => {
           // Proccess ASCII 的 "\u0000"
           body = body.replace(/\u0000/g, '-')
           const xmlParser = new DOMParser() //创建 DOMParser 对象
@@ -2053,15 +2053,17 @@ Xmla.prototype = {
           }
 
           xmla._requestSuccess(options)
-        })
-        .catch(error => {
+        }),
+        catchError((error) => {
           const exception = Xmla.Exception._newError('HTTP_ERROR', '_ajax', error)
           options.exception = exception
           xmla._requestError(options, exception)
+          return EMPTY
         })
+      )
     }
 
-    return this.response
+    return EMPTY
   },
   _requestError: function (options, exception) {
     if (options.error) {
