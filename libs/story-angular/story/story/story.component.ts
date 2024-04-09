@@ -323,7 +323,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
         queryParamsHandling: 'merge', // remove to replace all query params by provided
       })
     }
-  })
+  }, { allowSignalWrites: true })
 
   private _storySub = this.story$
     .pipe(

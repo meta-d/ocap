@@ -16,7 +16,8 @@ import { AgentStatus, AgentStatusEnum } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { Observable, of } from 'rxjs'
-import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '../../@core'
+import { AbstractAgent, LocalAgent, ServerSocketAgent, Store, ToastrService } from '../../@core'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 
 @Component({
   standalone: true,
@@ -37,6 +38,7 @@ import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '..
     MatTabsModule,
     MatListModule,
     MatSliderModule,
+    MatProgressBarModule,
     ButtonGroupDirective,
     DensityDirective,
     NgFilterPipeModule
@@ -49,7 +51,7 @@ export class TuneComponent {
   readonly toastrService = inject(ToastrService)
   readonly localAgent? = inject(LocalAgent, { optional: true })
   readonly wasmAgentService = inject(WasmAgentService)
-  readonly serverAgent = inject(ServerAgent)
+  readonly serverAgent? = inject(ServerSocketAgent, { optional: true })
   readonly cacheService = inject(NgmDSCacheService)
   readonly store = inject(Store)
 

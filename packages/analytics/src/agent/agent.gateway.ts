@@ -1,10 +1,12 @@
 import { WsJWTGuard } from '@metad/server-core'
 import { UseGuards } from '@nestjs/common'
+import { QueryBus } from '@nestjs/cqrs'
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets'
 import { Observable, from } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { Server } from 'socket.io'
-import { SemanticModelService } from '../model'
+import { DataSourceOlapQuery } from '../data-source'
+import { ModelOlapQuery } from '../model'
 
 @WebSocketGateway({
 	cors: {
@@ -15,39 +17,51 @@ export class EventsGateway {
 	@WebSocketServer()
 	server: Server
 
-	constructor(private readonly modelService: SemanticModelService) {}
+	constructor(private readonly queryBus: QueryBus) {}
 
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
-	olap(@MessageBody() data: any): Observable<WsResponse<any>> {
-		console.log(data)
-		const { id, modelId, body, acceptLanguage, forceRefresh } = data
-		return from(
-			this.modelService
-				.olap(modelId, body, { acceptLanguage, forceRefresh })
-				.then(({ data, cache }) => {
-					return {
-						event: 'olap',
-						data: {
-							id,
-							status: 200,
-							data,
-							cache
-						}
-					}
-				})
-				.catch((error) => {
-					return {
-						event: 'olap',
-						data: {
-							id,
-							status: 500,
-							statusText: error.message ?? 'Internal Server Error',
-							data: error?.response ?? error
-						}
-					}
-				})
-		)
+	async olap(@MessageBody() data: any): Promise<WsResponse<any>> {
+		const { id, dataSourceId, modelId, body, acceptLanguage, forceRefresh } = data
+
+		try {
+			let result = null
+			if (modelId) {
+				result = await this.queryBus.execute(
+					new ModelOlapQuery({
+						id,
+						dataSourceId,
+						modelId,
+						body,
+						acceptLanguage,
+						forceRefresh
+					})
+				)
+			} else {
+				result = await this.queryBus.execute(
+					new DataSourceOlapQuery({ id, dataSourceId, body, forceRefresh, acceptLanguage })
+				)
+			}
+			return {
+				event: 'olap',
+				data: {
+					id,
+					status: 200,
+					data: result.data,
+					cache: result.cache
+				}
+			}
+		} catch (error) {
+			return {
+				event: 'olap',
+				data: {
+					id,
+					status: 500,
+					statusText: error.message ?? 'Internal Server Error',
+					data: error?.response ?? error
+				}
+			}
+		}
 	}
 
 	@UseGuards(WsJWTGuard)

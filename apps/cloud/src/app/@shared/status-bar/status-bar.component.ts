@@ -43,7 +43,7 @@ export class PACStatusBarComponent extends TranslationBaseComponent implements O
   private cacheService = inject(NgmDSCacheService)
   private agentService = inject(NgmAgentService)
   public localAgent? = inject(LocalAgent, { optional: true })
-  public serverAgent = inject(ServerAgent)
+  public serverAgent? = inject(ServerAgent, { optional: true })
   private wasmAgentService = inject(WasmAgentService)
   private toastrService = inject(ToastrService)
   private _cdr = inject(ChangeDetectorRef)

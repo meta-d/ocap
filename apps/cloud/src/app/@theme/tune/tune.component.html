@@ -76,6 +76,11 @@
           </div>
         </mat-tab>
       }
+
+      <mat-tab class="p-4" label="Agent">
+        <mat-progress-bar class="w-full" color="accent" mode="buffer" [bufferValue]="90" [value]="serverAgent.completeSize / serverAgent.bufferSize * 90" />
+      </mat-tab>
+
       <mat-tab [label]=" 'PAC.MENU.Authentication' | translate: {Default: 'Authentication'} ">
         <mat-list role="list">
           @if (enableLocalAgent && localAgent) {

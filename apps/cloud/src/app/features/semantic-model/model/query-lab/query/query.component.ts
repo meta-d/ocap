@@ -411,7 +411,7 @@ The query should be returned in plain text, not in JSON.
       }),
       switchMap((statement) =>
         statement
-          ? this.modelService.originalDataSource.query({ statement }).pipe(
+          ? this.modelService.originalDataSource.query({ statement, forceRefresh: true }).pipe(
               catchError((error) => {
                 this.error = error
                 this.appendResult({

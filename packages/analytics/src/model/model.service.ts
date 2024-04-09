@@ -1,6 +1,6 @@
 import { BusinessAreaRole, IUser } from '@metad/contracts'
 import { Employee, ITryRequest, RequestContext, User } from '@metad/server-core'
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as _axios from 'axios'
@@ -22,6 +22,8 @@ const axios = _axios.default
 
 @Injectable()
 export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticModel> {
+	private readonly logger = new Logger(SemanticModelService.name)
+
 	constructor(
 		@InjectRepository(SemanticModel)
 		modelRepository: Repository<SemanticModel>,
@@ -124,12 +126,17 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	/**
 	 * 针对 Semantic Model 的单个 Xmla 请求
 	 * 
+	 * @deprecated use {@link ModelOlapQuery} instead
+	 * 
 	 * @param modelId 模型 ID
 	 * @param query 查询 XML Body 数据
 	 * @param options 选项
 	 * @returns 
 	 */
 	async olap(modelId: string, query: string, options?: { acceptLanguage?: string; forceRefresh?: boolean }) {
+
+		this.logger.warn(`@deprecated use {@link ModelOlapQuery} instead`)
+
 		let key = ''
 
 		const model = await this.repository.findOne(modelId, {

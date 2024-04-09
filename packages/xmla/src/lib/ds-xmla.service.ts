@@ -200,14 +200,14 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     // throw new Error(`@deprecated use selectMembers`)
   }
 
-  query({ statement }: { statement: string }): Observable<QueryReturn<unknown>> {
+  override query({ statement, forceRefresh }: { statement: string; forceRefresh?: boolean }): Observable<QueryReturn<unknown>> {
     const language = this.options.settings?.language || ''
     const headers: HttpHeaders = {}
     if (language) {
       headers['Accept-Language'] = language
     }
 
-    return this.xmlaService.execute(statement, { headers }).pipe(
+    return this.xmlaService.execute(statement, { headers, forceRefresh }).pipe(
       // 转换错误, 取出错误文本信息
       catchError((error) => throwError(() => new Error(simplifyErrorMessage(error.exception?.message)))),
       map((dataset) => fetchDataFromMultidimensionalTuple(dataset)),

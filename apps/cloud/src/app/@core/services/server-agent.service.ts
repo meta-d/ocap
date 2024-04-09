@@ -38,6 +38,9 @@ export function PAC_SERVER_AGENT_DEFAULT_OPTIONS_FACTORY(): PacServerAgentDefaul
   return {modelBaseUrl: C_URI_API_MODELS};
 }
 
+/**
+ * @deprecated Only for http request, others to use {@link ServerSocketAgent} instead
+ */
 @Injectable()
 export class ServerAgent extends AbstractAgent implements Agent {
   
@@ -185,6 +188,7 @@ export class ServerAgent extends AbstractAgent implements Agent {
       }
     } else {
       if (semanticModel.type === 'XMLA') {
+        throw new Error('Use {@link ServerSocketAgent} instead of {@link ServerAgent} for XMLA')
         /**
          * @todo 使用更好的办法判断 (用类型判断?)
          */
@@ -192,6 +196,21 @@ export class ServerAgent extends AbstractAgent implements Agent {
           (<ISemanticModel>semanticModel).dataSourceId ? `${this.options.modelBaseUrl}/${modelId}/olap`
             : `${API_DATA_SOURCE}/${semanticModel.dataSource?.id}/olap`
         method = 'POST'
+
+        return new Promise((resolve, reject) => {
+          this.queuePool.set(id, { resolve, reject })
+          this.request$.next({
+            url,
+            id,
+            request: {
+              method,
+              url,
+              body,
+              params
+            },
+            forceRefresh: options.forceRefresh
+          })
+        })
       } else if (semanticModel.type === 'SQL') {
         url = `${API_DATA_SOURCE}/${semanticModel.dataSource?.id}`
         switch (options.url) {
@@ -236,34 +255,17 @@ export class ServerAgent extends AbstractAgent implements Agent {
           //   break
           // }
         }
-      }
-    }
 
-    if (semanticModel.type === 'XMLA') {
-      return new Promise((resolve, reject) => {
-        this.queuePool.set(id, { resolve, reject })
-        this.request$.next({
-          url,
-          id,
-          request: {
-            method,
-            url,
+        try {
+          return await firstValueFrom(this.httpClient.request(method, url, {
             body,
             params
-          },
-          forceRefresh: options.forceRefresh
-        })
-      })
-    } else if (semanticModel.type === 'SQL') {
-      try {
-        return await firstValueFrom(this.httpClient.request(method, url, {
-          body,
-          params
-        }))
-      } catch(err) {
-        const message = getErrorMessage(err)
-        this.error$.next(message)
-        throw new Error(message)
+          }))
+        } catch(err) {
+          const message = getErrorMessage(err)
+          this.error$.next(message)
+          throw new Error(message)
+        }
       }
     }
 
