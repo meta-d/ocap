@@ -27,6 +27,7 @@ import { StoryFeedService, StoryModelService, StoryStoreService } from '../servi
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
 import { NotificationComponent, TuneComponent } from '../@theme'
+import { MarkdownModule } from 'ngx-markdown'
 
 registerEChartsThemes()
 
@@ -53,7 +54,9 @@ registerEChartsThemes()
     ResizerModule,
     NgmTableComponent,
     NotificationComponent,
-    TuneComponent
+    TuneComponent,
+
+    MarkdownModule.forRoot()
   ],
   providers: [
     DirtyCheckGuard,

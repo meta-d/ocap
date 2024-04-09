@@ -56,7 +56,9 @@
     "seed:module": "cross-env NODE_ENV=development NODE_OPTIONS=--max_old_space_size=7000 yarn ts-node -r tsconfig-paths/register --project apps/api/tsconfig.app.json ./apps/api/src/seed-module.ts --name",
     "bootstrap": "yarn install",
     "b:sb:ocap-angular": "yarn nx run ocap-angular:build-storybook",
-    "b:docs": "concurrently \"yarn --cwd ./packages/store docs\" \"yarn --cwd ./packages/core docs\" \"yarn --cwd ./packages/xmla docs\" \"yarn --cwd ./packages/sql docs\" \"yarn --cwd ./packages/echarts docs\" \"yarn --cwd ./packages/duckdb docs\" \"yarn b:sb:ocap-angular\""
+    "b:docs": "concurrently \"yarn --cwd ./packages/store docs\" \"yarn --cwd ./packages/core docs\" \"yarn --cwd ./packages/xmla docs\" \"yarn --cwd ./packages/sql docs\" \"yarn --cwd ./packages/echarts docs\" \"yarn --cwd ./packages/duckdb docs\" \"yarn b:sb:ocap-angular\"",
+    "b:stats": "yarn nx build cloud --stats-json",
+    "analyze": "webpack-bundle-analyzer dist/apps/cloud/stats.json"
   },
   "dependencies": {
     "@angular/animations": "~17.3.0",
@@ -236,7 +238,8 @@
     "ts-node": "10.9.1",
     "typedoc": "^0.25.4",
     "typescript": "5.2.2",
-    "verdaccio": "^5.0.4"
+    "verdaccio": "^5.0.4",
+    "webpack-bundle-analyzer": "^4.10.1"
   },
   "workspaces": [
     "apps/*",

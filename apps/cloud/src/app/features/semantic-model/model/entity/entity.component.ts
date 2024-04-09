@@ -12,7 +12,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { z } from 'zod'
 import { AppService } from '../../../../app.service'
-import { CalculatedMeasureSchema, zodToAnnotations } from '../copilot'
+import { CalculatedMeasureSchema } from '../copilot'
 import { SemanticModelService } from '../model.service'
 import { ModelEntityService } from './entity.service'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
@@ -25,6 +25,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
 import { C_MEASURES, CalculatedMember, isEntitySet } from '@metad/ocap-core'
 import { calcEntityTypePrompt, makeCubePrompt, nonBlank, routeAnimations } from '@metad/core'
+import { zodToAnnotations } from '@metad/copilot'
 
 @Component({
   standalone: true,

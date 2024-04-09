@@ -17,7 +17,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotEngine, zodToAnnotations } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
 import {
   NgmCopilotChatComponent,
@@ -46,7 +46,7 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid, zodToAnnotations } from '../../../@core'
+import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'

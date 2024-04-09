@@ -23,11 +23,12 @@ import { filter, map } from 'rxjs/operators'
 import { Store, ToastrService, uuid } from '../../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared/'
 import { AppService } from '../../../../../app.service'
-import { CalculatedMeasureSchema, zodToAnnotations } from '../../copilot'
+import { CalculatedMeasureSchema } from '../../copilot'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
+import { zodToAnnotations } from '@metad/copilot'
 
 @Component({
   standalone: true,
