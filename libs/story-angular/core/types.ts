@@ -255,7 +255,7 @@ export interface Story extends Partial<StoryKey>, Omit<IStory, 'points' | 'optio
    */
   schemas?: {
     [key: string]: {
-      [ket: string]: EntityType
+      [key: string]: EntityType
     }
   }
 }
@@ -563,22 +563,17 @@ export interface StoryEvent {
   data: any
 }
 
-/**
- * State type for story point
- */
-export interface StoryPointState {
+export type NewStoryPointState = {
   /**
    * Inner state key
    */
   key: ID
+
   /**
    * Raw story point data from server
    */
   storyPoint: StoryPoint
-  /**
-   * Is point state dirty
-   */
-  dirty?: boolean
+
   /**
    * Is point active
    */
@@ -595,6 +590,50 @@ export interface StoryPointState {
    * Sub widgets states
    */
   widgets?: Array<StoryWidget>
+  /**
+   * Current widget key
+   */
+  currentWidgetKey?: ID
+  /**
+   * Pasted widgets data
+   */
+  pasteWidgets?: Array<StoryWidget>
+  /**
+   * Current FlexLayout key
+   */
+  currentFlexLayoutKey?: ID
+  /**
+   * Linked analysis states
+   */
+  linkedAnalysis?: Record<string, LinkedAnalysisEvent>
+}
+
+/**
+ * State type for story point
+ */
+export interface StoryPointState {
+  /**
+   * Inner state key
+   */
+  key: ID
+  /**
+   * Raw story point data from server
+   */
+  storyPoint: StoryPoint
+
+  /**
+   * Is point active
+   */
+  active?: boolean
+  /**
+   * Is point fetched
+   */
+  fetched?: boolean
+  /**
+   * Is point removed
+   */
+  removed?: boolean
+
   /**
    * Current widget key
    */

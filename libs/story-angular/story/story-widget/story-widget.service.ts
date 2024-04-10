@@ -1,8 +1,7 @@
 import { computed, inject, Inject, Injectable, Optional } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID } from '@metad/contracts'
-import { AIOptions } from '@metad/copilot'
-import { NgmCopilotService, WidgetService } from '@metad/core'
+import { createSubStore, dirtyCheckWith, NgmCopilotService, WidgetService } from '@metad/core'
 import { DataSettings } from '@metad/ocap-core'
 import { ComponentSubStore } from '@metad/store'
 import {
@@ -16,23 +15,57 @@ import { TranslateService } from '@ngx-translate/core'
 import { firstValueFrom, Observable } from 'rxjs'
 import { filter, tap } from 'rxjs/operators'
 import { NxStoryPointService } from '../story-point.service'
+import { Store, createStore, select, withProps } from '@ngneat/elf'
+import { toObservable } from '@angular/core/rxjs-interop'
+import { isEqual, negate } from 'lodash-es'
 
 @Injectable()
 export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPointState> {
+  readonly #storyPointService = inject(NxStoryPointService)
   private widgetService = inject(WidgetService)
   readonly copilot? = inject(NgmCopilotService, { optional: true })
 
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.#storyPointService.store,
+    { name: 'story_widget', arrayKey: 'key' },
+    withProps<StoryWidget>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.#storyPointService.pristineStore,
+    { name: 'story_widget_pristine', arrayKey: 'key' },
+    withProps<StoryWidget>(null)
+  )
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
+  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+
+  // get widget() {
+  //   return this.get((state) => state)
+  // }
   get widget() {
-    return this.get((state) => state)
+    return this.store.getValue()
   }
+  readonly state$ = this.store.asObservable()
+  // aiOptions = {
+  //   model: 'gpt-3.5-turbo',
+  //   useSystemPrompt: true
+  // } as AIOptions
+  // systemPrompt: string
+  // prompts: string[]
 
-  aiOptions = {
-    model: 'gpt-3.5-turbo',
-    useSystemPrompt: true
-  } as AIOptions
-  systemPrompt: string
-  prompts: string[]
 
+
+
+
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   readonly messages = computed(() => [])
   readonly conversations = computed(() => [])
 
@@ -44,7 +77,7 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
   readonly linkedAnalysis$ = this.select((state) => state.linkedAnalysis)
 
   constructor(
-    private readonly storyPointService: NxStoryPointService,
+    
     @Optional()
     @Inject(NX_STORY_FEED)
     private feedService?: NxStoryFeedService,
@@ -56,12 +89,15 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
 
   readonly init = this.effect((id$: Observable<ID>) => {
     return id$.pipe(
-      tap((id: ID) =>
-        this.connect(this.storyPointService, {
-          parent: ['widgets', id as string],
-          arrayKey: 'key'
-        })
-      )
+      tap((id: ID) => {
+        this.store.connect(['storyPoint', 'widgets', id])
+        this.pristineStore.connect(['storyPoint', 'widgets', id])
+
+        // this.connect(this.#storyPointService, {
+        //   parent: ['widgets', id as string],
+        //   arrayKey: 'key'
+        // })
+      })
     )
   })
 
@@ -91,7 +127,7 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
 
   async pin() {
     const widget = this.widget
-    const storyPoint = this.storyPointService.storyPoint
+    const storyPoint = this.#storyPointService.storyPoint
     if (!this.feedService) {
       throw new Error(`Not provide feed service`)
     }

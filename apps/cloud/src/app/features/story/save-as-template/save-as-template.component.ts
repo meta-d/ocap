@@ -79,7 +79,7 @@ export class SaveAsTemplateComponent {
     }
     this.formGroup.markAsPristine()
 
-    this.storyPoints = this.data.points.map((state) => ({ ...state.storyPoint, widgets: state.widgets }))
+    this.storyPoints = this.data.points.map((state) => ({ ...state.storyPoint, widgets: state.storyPoint.widgets }))
   }
 
   onFileSelected(event: Event): void {

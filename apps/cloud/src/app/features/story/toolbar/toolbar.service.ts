@@ -1,17 +1,15 @@
 import { Injectable, ViewContainerRef, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { ComponentSubStore } from '@metad/store'
-import { TranslateService } from '@ngx-translate/core'
 import { DeepPartial } from '@metad/core'
-import { NxStoryService, Story, StoryState, StoryWidget } from '@metad/story/core'
+import { NxStoryService, StoryWidget } from '@metad/story/core'
+import { TranslateService } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { IStoryTemplate, StoryTemplateType, ToastrService } from '../../../@core'
 import { StoryTemplateComponent } from '../../../@shared'
 
-
 @Injectable()
-export class StoryToolbarService extends ComponentSubStore<Story, StoryState> {
+export class StoryToolbarService {
   private readonly translateService = inject(TranslateService)
   public readonly toastrService = inject(ToastrService)
   public readonly _viewContainerRef = inject(ViewContainerRef)
@@ -24,10 +22,11 @@ export class StoryToolbarService extends ComponentSubStore<Story, StoryState> {
     map((widget) => widget?.component),
     distinctUntilChanged()
   )
-  constructor() {
-    super({} as Story)
-    this.connect(this.storyService, { parent: ['story'] })
-  }
+  // constructor() {
+  //   super({} as Story)
+
+  //   this.connect(this.storyService, { parent: ['story'] })
+  // }
 
   /**
    * 新创建 Story Widget

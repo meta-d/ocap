@@ -271,7 +271,7 @@ export class NxInputControlComponent
     }, {allowSignalWrites: true})
 
     effect(() => {
-      if (this.parameter() && this.storyPoints().some((point) => point.widgets?.some((widget) => widget.key !== this.key && widget.dataSettings?.dimension?.dimension === this.parameter().name))) {
+      if (this.parameter() && this.storyPoints().some((point) => point.storyPoint.widgets?.some((widget) => widget.key !== this.key && widget.dataSettings?.dimension?.dimension === this.parameter().name))) {
         this.error.set(this.getTranslation('Story.Widgets.InputControl.SamePropertyAlreadyExists', 'A component with the same property already exists'))
       } else {
         this.error.set(null)

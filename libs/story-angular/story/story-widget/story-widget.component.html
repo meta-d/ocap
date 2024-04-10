@@ -16,6 +16,7 @@
   [cdkDragDisabled]="editable"
   [cdkDragStartDelay]="100"
   (cdkDragMoved)="onDragFab($event)">
+  
   <button *ngIf="showMenu$ | async" mat-mini-fab [cdkMenuTriggerFor]="context_menu">
     <mat-icon fontSet="material-icons-outlined">menu</mat-icon>
   </button>

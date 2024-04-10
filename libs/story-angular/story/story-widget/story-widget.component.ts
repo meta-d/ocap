@@ -2,6 +2,7 @@ import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CdkDragMove } from '@angular/cdk/drag-drop'
 import {
   AfterViewInit,
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -14,12 +15,14 @@ import {
   inject,
   Inject,
   Injector,
+  input,
   Input,
   OnChanges,
   OnInit,
   Optional,
   Output,
   Renderer2,
+  signal,
   SimpleChanges,
   ViewChild,
   ViewContainerRef
@@ -27,10 +30,9 @@ import {
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { assignDeepOmitBlank, DataFieldWithIntentBasedNavigation, DataSettings, mergeOptions, omit, OrderDirection } from '@metad/ocap-core'
-import { ComponentStore } from '@metad/store'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ConfirmDeleteComponent, ConfirmModule } from '@metad/components/confirm'
-import { Intent, IStoryWidget, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
+import { Intent, IStoryWidget, nonBlank, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
 import {
   LinkedInteractionApplyTo,
   NxStoryService,
@@ -45,7 +47,7 @@ import {
   componentStyling,
 } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { cloneDeep, isEmpty, isEqual, isNil, negate, pick } from 'lodash-es'
+import { cloneDeep, isEmpty, isEqual, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, EMPTY, firstValueFrom, from, Observable, of } from 'rxjs'
 import {
@@ -66,7 +68,7 @@ import { StorySharesComponent } from '../shares/shares.component'
 import { NxStoryPointService } from '../story-point.service'
 import { NxStoryWidgetService } from './story-widget.service'
 import { NxStoryPointComponent } from '../story-point/story-point.component'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NxStorySharedModule } from '../shared.module'
 import { OverlayModule } from '@angular/cdk/overlay'
 import { CdkMenuModule } from '@angular/cdk/menu'
@@ -75,12 +77,8 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { StoryCommentsComponent } from '../story-comments/story-comments.component'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ActivatedRoute, Params, Router } from '@angular/router'
-
-interface StoryWidgetState {
-  selected: boolean
-  editable: boolean
-  comments: Array<StoryComment>
-}
+import { select } from '@ngneat/elf'
+import { effectAction } from '@metad/ocap-angular/core'
 
 @Component({
   standalone: true,
@@ -106,7 +104,7 @@ interface StoryWidgetState {
     StoryCommentsComponent
   ]
 })
-export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> implements OnInit, OnChanges, AfterViewInit {
+export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit {
   ComponentType = WidgetComponentType
   WIDGET_MENU_TYPE = WidgetMenuType
   STORY_POINT_TYPE = StoryPointType
@@ -124,30 +122,30 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
   readonly widget$ = this.stateService.state$
   readonly widget = toSignal(this.stateService.state$)
+
   public readonly widgetKey$ = this.widget$.pipe(
     map((widget) => widget.key),
     distinctUntilChanged()
   )
+  
+  readonly selected = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly selected$ = toObservable(this.selected)
 
-  @Input()
   @HostBinding('class.ngm-story-widget__active')
-  get selected(): boolean {
-    return this.get((state) => state.selected)
+  get _selected() {
+    return this.selected()
   }
-  set selected(selected: boolean) {
-    this.patchState({ selected })
-  }
-  readonly selected$ = this.select((state) => state.selected)
-
-  @Input()
+  
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly editable$ = toObservable(this.editable)
   @HostBinding('class.ngm-story-widget__editable')
-  get editable(): boolean {
-    return this.get((state) => state.editable)
+  get _editable() {
+    return this.editable()
   }
-  set editable(value) {
-    this.patchState({ editable: value })
-  }
-  readonly editable$ = this.select((state) => state.editable)
 
   // @Input()
   @HostBinding('class.ngm-story-widget__fullscreen')
@@ -181,22 +179,27 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
   isCommentOpen = false
   customSubMenus = []
 
+  readonly comments = signal(null)
+
   private readonly widgets = toSignal(this.storyPointService.widgets$)
 
-  readonly component$ = this.select(this.widget$, (widget) => {
+  readonly component$ = this.widget$.pipe(select((widget) => {
     if (this.editable && widget?.isTemplate) {
       return null
     }
     return widget?.component
-  })
+  }))
+  
   public readonly placeholder$ = this.component$.pipe(
     map((component) => !component),
     distinctUntilChanged()
   )
-  readonly dataSettings$ = this.select(this.widget$, (widget) => widget.dataSettings).pipe(
-    filter<DataSettings>(negate(isNil)),
-    filter<DataSettings>((dataSettings) => !!dataSettings.entitySet)
+  readonly dataSettings$ = this.widget$.pipe(
+    select((widget) => widget.dataSettings),
+    filter<DataSettings>(nonNullable),
+    filter<DataSettings>((dataSettings) => nonBlank(dataSettings.entitySet))
   )
+
   readonly componentInstance$ = new BehaviorSubject<IStoryWidget<any>>(null)
   readonly pointList$ = this.storyService.points$
 
@@ -238,7 +241,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     this.componentProvider$
   ]).pipe(
     filter(() => !this.disableStyles),
-    combineLatestWith(this.select(this.widget$, (widget) => widget.fullscreen)),
+    combineLatestWith(this.widget$.pipe(select((widget) => widget?.fullscreen))),
     map(([[preferences, styling, componentProvider], fullscreen]) => {
       if (fullscreen) {
         return null
@@ -267,7 +270,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
 
   public readonly linkedAnalysis$ = this.stateService.linkedAnalysis$
   
-  public readonly comments$ = this.select((state) => state.comments)
+  public readonly comments$ = toObservable(this.comments)
 
   readonly isAuthenticated = this.storyService.isAuthenticated
 
@@ -336,7 +339,6 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     private readonly _widgetComponents?: Array<StoryWidgetComponentProvider>,
     @Optional() private readonly _snackBar?: MatSnackBar
   ) {
-    super({} as StoryWidgetState)
   }
 
   ngOnChanges({ key, editable }: SimpleChanges): void {
@@ -370,7 +372,8 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
         withLatestFrom(this.componentProvider$),
         switchMap(([componentInstance, componentProvider]) => {
           const fields = componentProvider.mapping.filter((field) => field !== 'styling').map((field) =>
-            this.select(this.widget$, (widget) => widget[field]).pipe(map((value) => ({ name: field, value })))
+            this.widget$.pipe(select((widget) => widget[field]), map((value) => ({ name: field, value })))
+            // this.select(this.widget$, (widget) => widget[field]).pipe(map((value) => ({ name: field, value })))
           )
           fields.push(this.storyService.locale$.pipe(map((value) => ({ name: 'locale', value }))))
           fields.push(this.styling$.pipe(map((value) => ({ name: 'styling', value }))))
@@ -406,9 +409,10 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
         .getWidgetComments(this.widget())
         .pipe(map((comments) => (isEmpty(comments) ? null : comments)), takeUntilDestroyed(this.destroyRef))
         .subscribe((comments) => {
-          this.patchState({
-            comments
-          })
+          this.comments.set(comments)
+          // this.patchState({
+          //   comments
+          // })
         })
     }
   }
@@ -565,7 +569,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     }
   }
 
-  readonly openDesigner = this.effect((origin$: Observable<void>) => {
+  readonly openDesigner = effectAction((origin$: Observable<void>) => {
     const model$ = combineLatest([this.widget$, this.componentProvider$]).pipe(
       map(([widget, componentProvider]) => pick(widget, ...componentProvider.mapping)),
       /**
@@ -641,7 +645,7 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     }
   }
 
-  readonly createComment = this.effect((comment$: Observable<StoryComment>) => {
+  readonly createComment = effectAction((comment$: Observable<StoryComment>) => {
     return comment$.pipe(
       switchMap((comment) =>
         this.storyStore.createComment(comment).pipe(
@@ -655,15 +659,12 @@ export class NxStoryWidgetComponent extends ComponentStore<StoryWidgetState> imp
     )
   })
 
-  readonly addComment = this.updater((state, comment: StoryComment) => ({
-    ...state,
-    comments: [...(state.comments || []), comment]
-  }))
+  addComment(comment: StoryComment) {
+    this.comments.update((comments) => ([...(comments || []), comment]))
+  }
 
   onAddComment() {
-    this.patchState({
-      comments: this.get((state) => state.comments) || []
-    })
+    this.comments.update((comments) => comments || [])
     this.isCommentOpen = true
   }
 

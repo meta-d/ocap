@@ -13,11 +13,15 @@ import {
   TemplateRef,
   ViewChild,
   ViewContainerRef,
-  inject
+  booleanAttribute,
+  computed,
+  inject,
+  input,
+  signal
 } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
-import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
+import { NgmSmartFilterBarService, effectAction } from '@metad/ocap-angular/core'
 import { assignDeepOmitBlank, omit, omitBlank } from '@metad/ocap-core'
 import { ConfirmModule, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreModule, nonNullable, uploadYamlFile } from '@metad/core'
@@ -69,7 +73,7 @@ import { NgxPopperjsModule } from 'ngx-popperjs'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NxStoryWidgetComponent } from "../story-widget/story-widget.component";
 import { NxStoryResponsiveModule } from "../../responsive/responsive.module";
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 
 
 @Component({
@@ -100,6 +104,8 @@ export class NxStoryPointComponent implements OnChanges {
   STORY_POINT_TYPE = StoryPointType
   ComponentType = WidgetComponentType
 
+  readonly storyService = inject(NxStoryService)
+  readonly storyPointService = inject(NxStoryPointService)
   private _renderer = inject(Renderer2)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
@@ -112,21 +118,15 @@ export class NxStoryPointComponent implements OnChanges {
     return this.storyPointService.storyPoint ?? ({} as StoryPoint)
   }
 
-  @Input() get editable(): boolean {
-    return this._editable$.value
-  }
-  set editable(value) {
-    this._editable$.next(value)
-  }
-  private _editable$ = new BehaviorSubject<boolean>(false)
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly _editable$ = toObservable(this.editable)
 
-  @Input() get opened(): boolean {
-    return this._opened$.getValue()
-  }
-  set opened(value) {
-    this._opened$.next(value)
-  }
-  private _opened$ = new BehaviorSubject<boolean>(false)
+  readonly opened = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly _opened$ = toObservable(this.opened)
 
   /**
    * 聚焦 Widget
@@ -151,7 +151,8 @@ export class NxStoryPointComponent implements OnChanges {
     return this.gridster.curRowHeight
   }
 
-  public dirty = false
+  public readonly dirtySignal = computed(() => this.editable() && this.storyPointService.dirtyCheckResult.dirty())
+
   public gridOptions: GridsterConfig
 
   @HostBinding('class.ngm-story-point__multi-layer')
@@ -172,6 +173,7 @@ export class NxStoryPointComponent implements OnChanges {
     this._editable$,
     this.closedQuickStart$
   ]).pipe(map(([isEmpty, editable, closedQuickStart]) => editable && isEmpty && !closedQuickStart))
+  
   readonly widgets$ = this.storyPointService.widgets$.pipe(
     map((widgets) =>
       widgets?.map((widget) => ({
@@ -181,7 +183,8 @@ export class NxStoryPointComponent implements OnChanges {
           key: widget.key
         }
       }))
-    )
+    ),
+    tap((widgets) => console.log(`2. Widgets ...:`, widgets)),
   )
 
   public readonly unfetched$ = this.storyPointService.fetched$.pipe(map((fetched) => !fetched)) // 未获取到数据
@@ -253,7 +256,7 @@ export class NxStoryPointComponent implements OnChanges {
   public readonly gridOptions$ = combineLatest([
     this.storyPointService.styling$.pipe(startWith(null)),
     combineLatest([
-      this.storyPointService.gridOptions$,
+      this.storyPointService.gridOptions$.pipe(startWith({})),
       this.storyService.preferences$.pipe(
         // 向后兼容
         map((preferences) => preferences?.defaultGridOptions ?? preferences?.page?.defaultGridOptions)
@@ -265,7 +268,8 @@ export class NxStoryPointComponent implements OnChanges {
     ),
     this.storyService.creatingWidget$.pipe(
       map(nonNullable),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      startWith(null)
     ),
     this._editable$
   ]).pipe(
@@ -311,6 +315,7 @@ export class NxStoryPointComponent implements OnChanges {
     }),
     tap((options) => (this.gridOptions = options)),
     takeUntilDestroyed(),
+    tap((options) => console.log(`1. Grid options ...:`, options)),
     shareReplay(1)
   )
 
@@ -366,10 +371,10 @@ export class NxStoryPointComponent implements OnChanges {
       this.filterBarService.change(filters)
       this.filterBarService.go()
     })
-  // Dirty
-  private dirtySub = this.storyPointService.isDirty$.pipe(takeUntilDestroyed()).subscribe((dirty) => {
-    this.dirty = this.editable && dirty
-  })
+  // // Dirty
+  // private dirtySub = this.storyPointService.isDirty$.pipe(takeUntilDestroyed()).subscribe((dirty) => {
+  //   this.dirtySignal.set(this.editable && dirty)
+  // })
   // Opened
   private openedSub = this._opened$.pipe(takeUntilDestroyed()).subscribe((open) => {
     this.storyPointService.active(open)
@@ -387,8 +392,7 @@ export class NxStoryPointComponent implements OnChanges {
   })
 
   constructor(
-    public storyService: NxStoryService,
-    private storyPointService: NxStoryPointService,
+    
     private filterBarService: NgmSmartFilterBarService,
     private responsiveService: ResponsiveService,
     private router: Router,
@@ -468,7 +472,7 @@ export class NxStoryPointComponent implements OnChanges {
     if (!widget) {
       return
     }
-    if (!event && this.storyPointService.widgets?.find((item) => item.key !== widget?.key && item.fullscreen)) {
+    if (!event && this.storyPointService.widgets()?.find((item) => item.key !== widget?.key && item.fullscreen)) {
       return
     }
 
@@ -572,7 +576,7 @@ export class NxStoryPointComponent implements OnChanges {
     })
   }
 
-  readonly openPageDesigner = this.storyPointService.effect((origin$: Observable<void>) => {
+  readonly openPageDesigner = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       filter(() => !!this.storyPoint()),
       switchMap(() => {
@@ -618,7 +622,7 @@ export class NxStoryPointComponent implements OnChanges {
     )
   })
 
-  readonly openResponsiveDesigner = this.storyPointService.effect((origin$: Observable<string>) => {
+  readonly openResponsiveDesigner = effectAction((origin$: Observable<string>) => {
     return origin$.pipe(
       withLatestFrom(this.storyPoint$),
       switchMap(([key, storyPoint]) => {

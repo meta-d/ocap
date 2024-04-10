@@ -4,15 +4,17 @@
   </facebook-content-loader>
 }
 
-<ng-container [ngSwitch]="point.type">
-    <ng-container *ngSwitchCase="STORY_POINT_TYPE.Responsive">
-        <ngm-flex-layout *ngIf="responsive$ | async as responsive" class="ngm-story-point__responsive" 
-            [editable]="editable"
+@switch (point.type) {
+  @case(STORY_POINT_TYPE.Responsive) {
+    @if (responsive$ | async; as responsive) {
+        <ngm-flex-layout class="ngm-story-point__responsive" 
+            [editable]="editable()"
             [flexLayout]="responsive">
         </ngm-flex-layout>
-    </ng-container>
-    
-    <div *ngSwitchDefault class="ngm-story-point__page w-full"
+    }
+  }
+  @default {
+    <div class="ngm-story-point__page w-full"
         [ngClass]="{
             'ngm-story-point__size-continuous-height': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.continuousHeight,
             'ngm-story-point__size-a4': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A4',
@@ -21,8 +23,10 @@
         resizeObserver [resizeDebounceTime]="100" (sizeChange)="onResize($event)"
         [cdkContextMenuTriggerFor]="context_menu"
     >
-        <gridster class="ngm-story__layout" [options]="gridOptions$ | async" (contextmenu)="onGridContextmenu($event)" >
-            <gridster-item *ngFor="let widget of widgets$ | async; trackBy: trackWidget" class="ngm-story__widget group"
+      @if (gridOptions$ | async; as options) {
+        <gridster class="ngm-story__layout" [options]="options" (contextmenu)="onGridContextmenu($event)" >
+          @for (widget of widgets$ | async; track widget.key) {
+            <gridster-item class="ngm-story__widget group"
                 [item]="widget.position"
                 [ngStyle]="{'z-index': widget.key===currentWidget?.key ? maxLayerIndex : widget.position.layerIndex}"
                 [class.editable]="editable"
@@ -34,7 +38,7 @@
             >
                 <ngm-story-widget #widgetComponent
                     [selected]="widget.key===currentWidget?.key"
-                    [editable]="editable"
+                    [editable]="editable()"
                     [key]="widget.key"
                     (fullscreenChange)="onFullscreenChange($event, widget);"
                     (focusChange)="onFocus(widget.key)">
@@ -46,10 +50,13 @@
                     {{widget.position.cols}}x{{widget.position.rows}}
                 </div>
             </gridster-item>
+          }
         </gridster>
+      }
 
     </div>
-</ng-container>
+  }
+}
 
 <div *ngIf="quickStart$ | async;" class="ngm-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
     <div class="container relative p-12 rounded-xl flex flex-col justify-center items-center">

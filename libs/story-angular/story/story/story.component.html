@@ -22,7 +22,7 @@
             <ng-template matTabLabel>
                 <div class="relative flex items-center">
 
-                    <span *ngIf="story_point.dirty" class="absolute top-0 -left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    <span *ngIf="story_point.dirtySignal()" class="absolute top-0 -left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
 
                     <span [ngClass]="{'ngm-story--point-hidden': point.hidden && editable}">{{ point.name }}</span>
                     
