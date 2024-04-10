@@ -1,12 +1,12 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { computed, inject, Inject, Injectable, Injector, Optional } from '@angular/core'
+import { computed, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
+import { debugDirtyCheckComparator, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -84,7 +84,18 @@ export class NxStoryService {
   /**
    * Dirty check for whole story
    */
-  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { /*watchProperty: ['story'],*/ comparator: negate(isEqual )})
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
+    watchProperty: ['story'],
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
+  })
+  readonly pageDirty = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.dirty))))
+  readonly dirty = computed(() => this.dirtyCheckResult.dirty() || this.pageDirty())
+  readonly dirty$ = toObservable(this.dirty)
+
+  readonly storySaving = signal(false)
+  readonly pageSaving = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.saving))))
+  readonly saving = computed(() => this.storySaving() || this.pageSaving())
 
   // get story() {
   //   return this.get((state) => state.story)
@@ -100,7 +111,7 @@ export class NxStoryService {
   }
 
   private saved$ = new Subject<void>()
-  public readonly saving$ = new BehaviorSubject<boolean>(false)
+  // public readonly saving$ = new BehaviorSubject<boolean>(false)
   private readonly refresh$ = new Subject<boolean>()
 
   /**
@@ -270,6 +281,7 @@ export class NxStoryService {
   private _storyEvent$ = new Subject<StoryEvent>()
   public readonly creatingWidget$ = this.select((state) => state.creatingWidget)
   public save$ = new Subject<void>()
+
   // dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
   //   watchProperty: ['story'],
   //   clean: (head, current) => {
@@ -304,7 +316,7 @@ export class NxStoryService {
   //     return dirty || !!points?.find(({ removed }) => removed)
   //   }
   // ).pipe(shareReplay(1))
-  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+  
 
   public readonly storySizeStyles$ = combineLatest([
     this.editable$,
@@ -464,6 +476,40 @@ export class NxStoryService {
    */
   saveStory() {
     // this.dirtyCheckQuery.reset()
+    // Start saving
+    this.storySaving.set(true)
+    const pristineStory = this.pristineStore.query((state) => state.story)
+    const currentStory = this.store.query((state) => state.story)
+
+    return this._saveStory(pristineStory, currentStory).subscribe(
+      {
+        next: (result) => {
+          if (result) {
+            const successMessage = this.getTranslation('Story.Story.SaveSuccess', 'Save success')
+            this._snackBar.open(successMessage, '', {
+              duration: 2000
+            })
+            this.resetStory()
+          }
+          this.save$.next()
+          this.storySaving.set(false)
+        },
+        error: (error) => {
+          const errorMessage = this.getTranslation('Story.Story.SaveFailed', 'Save failed')
+          this._snackBar.open(errorMessage, getErrorMessage(error.statusText), {
+            duration: 2000
+          })
+          this.storySaving.set(false)
+        }
+      }
+    )
+  }
+
+  resetStory() {
+    this.pristineStore.update((state) => ({
+      ...state,
+      story: cloneDeep(this.store.getValue().story)
+    }))
   }
 
   refresh(force = false) {
@@ -837,7 +883,7 @@ export class NxStoryService {
       return combineLatest(updates)
     }
     
-    return of(true)
+    return of(null)
   }
 
   // actions for calculation measure

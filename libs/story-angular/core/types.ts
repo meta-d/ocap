@@ -563,51 +563,6 @@ export interface StoryEvent {
   data: any
 }
 
-export type NewStoryPointState = {
-  /**
-   * Inner state key
-   */
-  key: ID
-
-  /**
-   * Raw story point data from server
-   */
-  storyPoint: StoryPoint
-
-  /**
-   * Is point active
-   */
-  active?: boolean
-  /**
-   * Is point fetched
-   */
-  fetched?: boolean
-  /**
-   * Is point removed
-   */
-  removed?: boolean
-  /**
-   * Sub widgets states
-   */
-  widgets?: Array<StoryWidget>
-  /**
-   * Current widget key
-   */
-  currentWidgetKey?: ID
-  /**
-   * Pasted widgets data
-   */
-  pasteWidgets?: Array<StoryWidget>
-  /**
-   * Current FlexLayout key
-   */
-  currentFlexLayoutKey?: ID
-  /**
-   * Linked analysis states
-   */
-  linkedAnalysis?: Record<string, LinkedAnalysisEvent>
-}
-
 /**
  * State type for story point
  */
@@ -634,6 +589,12 @@ export interface StoryPointState {
    */
   removed?: boolean
 
+  dirty?: boolean
+
+  /**
+   * Saving state
+   */
+  saving?: boolean
   /**
    * Current widget key
    */

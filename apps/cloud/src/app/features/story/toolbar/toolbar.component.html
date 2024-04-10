@@ -5,13 +5,16 @@
         <button mat-icon-button [color]="(isDirty$ | async)?'accent':''"
             [matTooltip]="'Story.Toolbar.SAVE.SAVE' | translate: {Default: 'Save'}"
             matTooltipPosition="after"
-            [disabled]="disableSave$ | async"
+            [disabled]="disableSave()"
             (click)="storyService.saveStory()">
-            <mat-spinner *ngIf="saving$ | async; else saveIcon" color="accent" [diameter]="25"></mat-spinner>
-            <ng-template #saveIcon>
-                <span *ngIf="isDirty$ | async" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
-                <mat-icon fontSet="material-icons-outlined">save</mat-icon>
-            </ng-template>
+          @if (saving()) {
+            <mat-spinner color="accent" [diameter]="25"></mat-spinner>
+          } @else {
+            @if (isDirty$ | async) {
+                <span class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+            }
+            <mat-icon fontSet="material-icons-outlined">save</mat-icon>
+          }
         </button>
 
         <button mat-icon-button [color]="showDetails==='preferences'?'accent':''"

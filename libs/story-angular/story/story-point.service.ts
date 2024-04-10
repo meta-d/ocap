@@ -1,16 +1,15 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Inject, Injectable, Optional, inject } from '@angular/core'
+import { DestroyRef, Inject, Injectable, Optional, effect, inject } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ISlicer, isAdvancedFilter, nonNullable } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
-import { createSubStore, debugDirtyCheckComparator, dirtyCheckWith, isNotEmpty, isNotEqual, write } from '@metad/core'
+import { createSubStore, dirtyCheckWith, isNotEmpty, isNotEqual, write } from '@metad/core'
 import {
   ID,
   LinkedAnalysisEvent,
   LinkedInteractionApplyTo,
   NX_STORY_FEED,
   NX_STORY_STORE,
-  NewStoryPointState,
   NxStoryFeedService,
   NxStoryService,
   NxStoryStore,
@@ -18,7 +17,6 @@ import {
   StoryPoint,
   StoryPointState,
   StoryPointType,
-  StoryState,
   StoryWidget,
   WIDGET_INIT_POSITION,
   uuid
@@ -35,7 +33,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  startWith,
   switchMap,
   tap,
   withLatestFrom
@@ -62,14 +59,18 @@ export class NxStoryPointService {
   readonly store = createSubStore(
     this.#storyService.store,
     { name: 'story_point', arrayKey: 'key' },
-    withProps<NewStoryPointState>(null)
+    withProps<StoryPointState>(null)
   )
   readonly pristineStore = createSubStore(
     this.#storyService.pristineStore,
     { name: 'story_point_pristine', arrayKey: 'key' },
-    withProps<NewStoryPointState>(null)
+    withProps<StoryPointState>(null)
   )
-  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { watchProperty: ['storyPoint'], comparator: debugDirtyCheckComparator })
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
+    watchProperty: ['storyPoint'], 
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
+  })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
   // get storyPoint() {
@@ -123,8 +124,6 @@ export class NxStoryPointService {
 
   readonly responsive$ = this.select((state) => (state.fetched ? state.storyPoint?.responsive : null))
 
-  readonly isDirty$ = this.dirty$
-
   // dirtyQuery: DirtyCheckQuery = new DirtyCheckQuery<StoryPointState>(this as any, {
   //   watchProperty: ['storyPoint'],
   //   clean: (head, current) => {
@@ -158,7 +157,7 @@ export class NxStoryPointService {
   // 监听故事的保存事件通知: 进行故事点和部件的保存
   private saveSub = this.#storyService.save$
     .pipe(
-      withLatestFrom(this.isDirty$),
+      withLatestFrom(this.dirty$),
       filter(([, dirty]) => dirty),
       takeUntilDestroyed()
     )
@@ -166,7 +165,6 @@ export class NxStoryPointService {
       this.save()
     })
   constructor(
-    
     @Inject(NX_STORY_STORE)
     private readonly storyStore: NxStoryStore,
     @Optional()
@@ -176,6 +174,15 @@ export class NxStoryPointService {
     @Optional() protected logger?: NGXLogger,
     @Optional() private translateService?: TranslateService
   ) {
+
+    effect(() => {
+      this.store.update((state) => {
+        return {
+          ...state,
+          dirty: this.dirtyCheckResult.dirty()
+        }
+      })
+    }, { allowSignalWrites: true })
   }
 
   readonly init = effectAction((key$: Observable<ID>) => {
@@ -233,8 +240,21 @@ export class NxStoryPointService {
     this._applyPastedWidgets()
   }
 
-  async save() {
+  save() {
     // this.dirtyQuery.reset()
+    const pristinePoint = this.pristineStore.query((state) => state.storyPoint)
+    const currentPoint = this.store.query((state) => state.storyPoint)
+
+    this.patchState({ saving: true })
+
+    this._save(pristinePoint, currentPoint).subscribe((result) => {
+      this.patchState({ saving: false })
+      this.pristineStore.update(() => cloneDeep(this.store.getValue()))
+    })
+  }
+
+  patchState(state: Partial<StoryPointState>) {
+    this.store.update((s) => ({...s, ...state}))
   }
 
   updater<ProvidedType = void, OriginType = ProvidedType>(
@@ -494,30 +514,33 @@ export class NxStoryPointService {
       // update story point
       update = this.storyStore.updateStoryPoint(current).pipe(map(() => current))
     } else {
+      update = of(null)
       // this.widgetsDirtyQuery.reset()
+      
     }
 
-    if (update) {
-      return update.pipe(
-        tap(() => {
+    return update.pipe(
+      tap((point) => {
+        if (point) {
           const saveSuccess = this.getTranslation('Story.StoryPoint.SaveSuccess', 'Story page save success')
           this._snackBar.open(saveSuccess, '', {
             duration: 2000
           })
+        }
 
-          // this.widgetsDirtyQuery.reset()
-        }),
-        catchError((err, cah) => {
-          const storyPointSaveFail = this.getTranslation('Story.StoryPoint.SaveFailed', 'Story page save failed')
-          this._snackBar.open(storyPointSaveFail, err.status, {
-            duration: 2000
-          })
-          return EMPTY
+        // this.widgetsDirtyQuery.reset()
+      }),
+      catchError((err, cah) => {
+        const storyPointSaveFail = this.getTranslation('Story.StoryPoint.SaveFailed', 'Story page save failed')
+        this._snackBar.open(storyPointSaveFail, err.status, {
+          duration: 2000
         })
-      )
-    }
-
-    return of(true)
+        return EMPTY
+      }),
+      switchMap(() => {
+        return this._saveWidgets(pristine?.widgets, current.widgets)
+      })
+    )
   }
 
   /**

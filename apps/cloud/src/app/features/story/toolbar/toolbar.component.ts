@@ -161,10 +161,10 @@ export class StoryToolbarComponent implements OnInit {
 
   readonly isDirty$ = this.storyService.dirty$
   readonly isNotDirty$ = this.isDirty$.pipe(map((dirty) => !dirty))
-  readonly saving$ = this.storyService.saving$
-  readonly disableSave$ = combineLatest([this.isDirty$, this.saving$]).pipe(
-    map(([isDirty, saving]) => !isDirty || saving)
-  )
+  readonly saving = this.storyService.saving
+
+  readonly disableSave = computed(() => !this.storyService.dirty() || this.storyService.saving())
+  
   public readonly pointList$ = this.storyService.points$
 
   public readonly isMobile$ = this.storyService.isMobile$
