@@ -40,8 +40,10 @@ export class WsJWTGuard extends AuthGuard('ws-jwt') {
     // Make sure to check the authorization, for now, just return false to have a difference between public routes.
     return (<Promise<boolean>>super.canActivate(context)).catch((error) => {
       throw new WsException({
+        // indicates the client message id
+        id: context.switchToWs().getData().id,
         status: error.status,
-        message: error.response.message
+        message: error.response?.message
       })
     })
   }

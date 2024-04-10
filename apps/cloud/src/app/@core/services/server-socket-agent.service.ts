@@ -1,11 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Inject, Injectable, computed, effect, inject, signal } from '@angular/core'
+import { Inject, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { API_DATA_SOURCE, DataSourceService } from '@metad/cloud/state'
 import { AuthenticationEnum, IDataSource, IDataSourceAuthentication, ISemanticModel } from '@metad/contracts'
+import { nonNullable } from '@metad/core'
 import { Agent, AgentStatus, AgentType, DataSourceOptions, UUID } from '@metad/ocap-core'
-import { Observable, Subject, bufferToggle, firstValueFrom, from, merge, mergeMap, windowToggle } from 'rxjs'
+import { Observable, Subject, bufferToggle, filter, firstValueFrom, from, merge, mergeMap, windowToggle } from 'rxjs'
 import { AbstractAgent, AuthInfoType } from '../auth'
 import { getErrorMessage, uuid } from '../types'
 import { AgentService } from './agent.service'
@@ -29,7 +30,10 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
 
   readonly queuePoolSize = 500
   readonly queuePool = signal<
-    Record<UUID, { resolve: (value) => void; reject: (reason?: any) => void; complete?: boolean }>
+    Record<
+      UUID,
+      { resolve: (value) => void; reject: (reason?: any) => void; request: ServerSocketEventType; complete?: boolean }
+    >
   >({})
   readonly request$ = new Subject<ServerSocketEventType>()
 
@@ -46,8 +50,18 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
     super(dataSourceService, _bottomSheet)
 
     merge(
-      this.request$.pipe(bufferToggle(this.#agentService.disconnected$, () => this.#agentService.connected$)),
-      this.request$.pipe(windowToggle(this.#agentService.connected$, () => this.#agentService.disconnected$))
+      this.request$.pipe(
+        // Stop process (buffer them) when disconnected
+        bufferToggle(this.#agentService.disconnected$.pipe(filter(Boolean)), () =>
+          this.#agentService.connected$.pipe(filter(Boolean))
+        )
+      ),
+      // Start process when connected
+      this.request$.pipe(
+        windowToggle(this.#agentService.connected$.pipe(filter(Boolean)), () =>
+          this.#agentService.disconnected$.pipe(filter(Boolean))
+        )
+      )
     )
       .pipe(
         // then flatten buffer arrays and window Observables
@@ -72,7 +86,9 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
 
           //Clear completed requests when the queue is full
           if (Object.keys(state).length > this.queuePoolSize) {
-            Object.keys(state).filter((key) => state[key].complete).forEach((key) => delete state[key])
+            Object.keys(state)
+              .filter((key) => state[key].complete)
+              .forEach((key) => delete state[key])
           }
 
           return {
@@ -96,6 +112,17 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
       }
     })
 
+    this.#agentService.socket$.pipe(filter(nonNullable), takeUntilDestroyed()).subscribe((socket) => {
+      // Resend request when the server returns a 401 unauthorized status
+      socket.on('exception', (data) => {
+        const { id, status } = data
+        if (status === 401) {
+          this.request$.next(this.queuePool()[id].request)
+        }
+      })
+    })
+
+    // Initial connection
     this.#agentService.connect()
   }
 
@@ -165,19 +192,20 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
         // method = 'POST'
 
         return new Promise((resolve, reject) => {
-          this.queuePool.update((state) => {
-            state[id] = { resolve, reject }
-            return {
-              ...state
-            }
-          })
-          this.request$.next({
+          const message = {
             id,
             dataSourceId,
             modelId,
             body,
             forceRefresh: options.forceRefresh
+          }
+          this.queuePool.update((state) => {
+            return {
+              ...state,
+              [id]: { resolve, reject, request: message }
+            }
           })
+          this.request$.next(message)
         })
       } else if (semanticModel.type === 'SQL') {
         url = `${API_DATA_SOURCE}/${semanticModel.dataSource?.id}`

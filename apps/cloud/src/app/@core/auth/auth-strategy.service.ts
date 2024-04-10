@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core'
+import { Injectable, signal } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { IAuthResponse, ITag, ITenant, IUser, IUserLoginInput } from '@metad/contracts'
 import { PacAuthResult, PacAuthStrategy, PacAuthStrategyClass } from '@metad/cloud/auth'
 import { AuthService } from '@metad/cloud/state'
+import { IAuthResponse, ITag, ITenant, IUser, IUserLoginInput } from '@metad/contracts'
 import { CookieService } from 'ngx-cookie-service'
-import { from, Observable, of } from 'rxjs'
-import { catchError, map, tap } from 'rxjs/operators'
+import { Observable, from, of } from 'rxjs'
+import { catchError, map, shareReplay, tap } from 'rxjs/operators'
 import { Store } from '../services/store.service'
 
 @Injectable()
@@ -53,6 +53,11 @@ export class AuthStrategy extends PacAuthStrategy {
       defaultMessages: ['Your password has been successfully changed.']
     }
   }
+
+  /**
+   * Share the refresh token request, avoid duplicate requests.
+   */
+  readonly refreshTokenReq = signal<Observable<PacAuthResult>>(null)
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -135,7 +140,7 @@ export class AuthStrategy extends PacAuthStrategy {
       catchError((err) => {
         if (err.status === 409) {
           return of(new PacAuthResult(false, err.error, false, [err.error?.error], []))
-        } else if(err.status === 400) {
+        } else if (err.status === 400) {
           return of(new PacAuthResult(false, err.error, false, err.error?.message, []))
         }
         return of(
@@ -192,15 +197,31 @@ export class AuthStrategy extends PacAuthStrategy {
     )
   }
 
+  /**
+   * Refresh token
+   * 
+   * Will share the refresh token request, avoid duplicate requests.
+   * 
+   */
   refreshToken(data?: any): Observable<PacAuthResult> {
-    return this.authService.refreshAccessToken().pipe(
-      map((tokens: any) => {
-        this.store.token = tokens.token
-        this.store.refreshToken = tokens.refreshToken
+    if (!this.refreshTokenReq()) {
+      this.refreshTokenReq.set(
+        this.authService.refreshAccessToken().pipe(
+          map((tokens: any) => {
+            this.store.token = tokens.token
+            this.store.refreshToken = tokens.refreshToken
 
-        return new PacAuthResult(true, tokens, false)
-      })
-    )
+            return new PacAuthResult(true, tokens, false)
+          }),
+          tap(() => {
+            this.refreshTokenReq.set(null)
+          }),
+          shareReplay(1)
+        )
+      )
+    }
+
+    return this.refreshTokenReq()
   }
 
   requestPassword(data?: any): Observable<PacAuthResult> {

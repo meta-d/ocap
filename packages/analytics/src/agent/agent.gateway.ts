@@ -18,7 +18,7 @@ export class EventsGateway {
 	server: Server
 
 	constructor(private readonly queryBus: QueryBus) {}
-
+	
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
 	async olap(@MessageBody() data: any): Promise<WsResponse<any>> {

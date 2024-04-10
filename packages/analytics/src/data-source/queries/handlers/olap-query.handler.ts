@@ -14,9 +14,10 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 	constructor(private readonly dsService: DataSourceService, private configService: ConfigService) {}
 
 	async execute(query: DataSourceOlapQuery) {
-		const { dataSourceId, body, forceRefresh, acceptLanguage } = query.input
+		const { id, dataSourceId, body, forceRefresh, acceptLanguage } = query.input
 
-		this.logger.log(`Executing OLAP query for dataSourceId: ${dataSourceId}`)
+		this.logger.debug(`Executing OLAP query [${id}] for dataSource: ${dataSourceId}`)
+
 		const dataSource = await this.dsService.findOne(dataSourceId, {
 			relations: ['type']
 		})

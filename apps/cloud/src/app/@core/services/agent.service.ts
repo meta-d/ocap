@@ -22,41 +22,49 @@ export class AgentService {
     this.socket$.next(socket)
   }
 
-  readonly #connected$ = new Subject<boolean>()
+  readonly #connected$ = new BehaviorSubject<boolean>(false)
   readonly #disconnected$ = new Subject<boolean>()
   readonly connected$ = this.#connected$.asObservable().pipe(distinctUntilChanged())
   readonly disconnected$ = this.#disconnected$.asObservable().pipe(distinctUntilChanged())
-
-  readonly retry = signal(0)
+  readonly refreshTokening = signal(false)
 
   refreshToken() {
-    this.retry.update((retry) => retry + 1)
-    if (this.retry() < 3) {
-      this.#auth.refreshToken().subscribe(() => {
-        this.connect()
-      })
-    }
+    this.refreshTokening.set(true)
+    this.#auth.refreshToken().subscribe(() => {
+      /**
+       * Reconnect the socket using new token
+       */
+      this.connect()
+      this.refreshTokening.set(false)
+    })
   }
 
   connect() {
-    if (!this.socket || this.socket.disconnected) {
-      this.socket = io(`${getWebSocketUrl(environment.API_BASE_URL)}/?jwt-token=${this.#store.token}`)
-      this.socket.on('connect', () => {
-        this.#connected$.next(true)
-        this.retry.set(0)
-      })
-      this.socket.on('exception', (data) => {
-        console.error('exception', data)
-        this.#disconnected$.next(true)
-        if (data.status === 401) {
-          this.refreshToken()
+    if (!this.socket || this.socket.disconnected || !this.#connected$.value) {
+      this.socket = io(`${getWebSocketUrl(environment.API_BASE_URL)}/`, {
+        auth: (cb: (param: { token: string }) => void) => {
+          cb({ token: this.#store.token })
         }
       })
-      this.socket.on('disconnect', () => {
-        this.#disconnected$.next(true)
+
+      let socketId = this.socket.id
+      this.socket.on('connect', () => {
+        socketId = this.socket.id
+        this.setStatus(true)
       })
 
-      this.socket.io
+      this.socket.on('exception', (data) => {
+        if (data.status === 401 && socketId === this.socket.id) {
+          this.setStatus(false)
+          if (!this.refreshTokening()) {
+            this.refreshToken()
+          }
+        }
+      })
+
+      this.socket.on('disconnect', () => {
+        this.setStatus(false)
+      })
     }
 
     return this.socket
@@ -69,13 +77,20 @@ export class AgentService {
   }
 
   emit(event: string, ...args: any[]) {
-    this.socket.emit(event, ...args)
+    this.socket.emit(event, ...args, (val) => {
+      console.log('ack', val)
+    })
   }
 
   on(event: string, callback: (...args: any[]) => void) {
     this.socket$.pipe(filter(nonNullable)).subscribe((socket) => {
       socket.on(event, callback)
     })
+  }
+
+  setStatus(status: boolean) {
+    this.#connected$.next(status)
+    this.#disconnected$.next(!status)
   }
 
   getTenantAgentLocal(): Observable<string> {

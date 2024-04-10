@@ -25,7 +25,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 	async execute(query: ModelOlapQuery) {
 		const { id, modelId, body, forceRefresh, acceptLanguage } = query.input
 
-		this.logger.log(`Executing OLAP query [${id}] for model: ${modelId}`)
+		this.logger.debug(`Executing OLAP query [${id}] for model: ${modelId}`)
 
 		let key = ''
 		const model = await this.semanticModelService.findOne(modelId, {

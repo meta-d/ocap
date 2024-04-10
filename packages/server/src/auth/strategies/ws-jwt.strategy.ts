@@ -9,7 +9,13 @@ import { AuthService } from '../auth.service'
 export class WsJwtStrategy extends PassportStrategy(Strategy, 'ws-jwt') {
   constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromUrlQueryParameter('jwt-token'),
+      // jwtFromRequest: ExtractJwt.fromUrlQueryParameter('jwt-token'),
+      /**
+       * https://socket.io/docs/v4/middlewares/#sending-credentials
+       */
+      jwtFromRequest: ExtractJwt.fromExtractors([(request) => {
+        return (<any & {auth: {token: string}}>request).auth.token
+      }]),
       secretOrKey: configService.get('JWT_SECRET')
     })
   }
