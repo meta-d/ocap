@@ -115,7 +115,7 @@
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.0.0",
     "date-fns": "^3.0.4",
-    "echarts": "^5.4.2",
+    "echarts": "5.5.0",
     "echarts-gl": "^2.0.9",
     "expr-eval": "^2.0.2",
     "hammerjs": "2.0.8",
