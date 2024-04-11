@@ -90,16 +90,17 @@
             </ngm-parameter>
         
             <div *ngSwitchDefault class="ngm-input-control__select-model w-full flex-1">
-                <div *ngIf="editable" class="select-model-trigger flex flex-col justify-center items-center">
-                    <span>{{ 'Story.Widgets.InputControl.Title' | translate: {Default: 'Input Control'} }}</span>
-                </div>
+
             </div>
         </ng-container>
     </ng-container>
 </div>
 
-<div *ngIf="editable && asPlaceholder()" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
-    <pac-input-control-placeholder class="w-full h-full cursor-pointer" (click)="openDesigner()"></pac-input-control-placeholder>
+<div *ngIf="editable && asPlaceholder()" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+    <pac-input-control-placeholder class="absolute left-0 top-0 cursor-pointer" (click)="openDesigner()"/>
+    <span class="ngm-story-widget__placeholder-title">
+        {{ 'Story.Widgets.InputControl.Title' | translate: {Default: 'Input Control'} }}
+    </span>
 </div>
 
 <mat-menu #widgetInputControl="matMenu" class="ngm-density__compact">

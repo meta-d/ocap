@@ -143,8 +143,8 @@
 }
 
 @if (editable && (placeholder$ | async)) {
-  <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+  <div class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
     <pac-kpi-placeholder class="cursor-pointer" (click)="openDesigner()"></pac-kpi-placeholder>
-    <span>{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
+    <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.KPI.Title' | translate: {Default: 'KPI'} }}</span>
   </div>
 }

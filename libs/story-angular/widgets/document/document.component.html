@@ -24,9 +24,9 @@
 >
 </editor>
 
-<div *ngIf="editable && (placeholder$ | async)" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center z-0"
+<div *ngIf="editable && (placeholder$ | async)" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center z-0"
     (click)="start()"
 >
     <pac-placeholder-add></pac-placeholder-add>
-    <span>{{ 'Story.Widgets.Document.Title' | translate: {Default: 'Document'} }}</span>
+    <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.Document.Title' | translate: {Default: 'Document'} }}</span>
 </div>

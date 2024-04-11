@@ -75,6 +75,10 @@
   .ngm-menu-trigger.active {
     opacity: 1;
   }
+
+  .ngm-story-widget__placeholder-title {
+    opacity: .5;
+  }
 }
 
 @mixin density($config-or-theme) {

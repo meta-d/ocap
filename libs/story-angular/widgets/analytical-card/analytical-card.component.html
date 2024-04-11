@@ -24,16 +24,14 @@
   </div>
 </ngm-analytical-card>
 
-<div *ngIf="editable && (placeholder$ | async)" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
-  <pac-analytical-chart-placeholder *ngIf="chartAnnotation; else add" class="w-full h-full"
-    [chartAnnotation]="chartAnnotation">
-  </pac-analytical-chart-placeholder>
-
-  <ng-template #add>
+<div *ngIf="editable && (placeholder$ | async)" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+  @if (chartAnnotation) {
+    <pac-analytical-chart-placeholder class="w-full h-full"
+      [chartAnnotation]="chartAnnotation"/>
+  } @else {
     <pac-placeholder-add></pac-placeholder-add>
-    <span>{{ 'Story.Widgets.AnalyticalCard.Title' | translate: {Default: 'Analytical Card'} }}</span>
-  </ng-template>
-  
+    <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.AnalyticalCard.Title' | translate: {Default: 'Analytical Card'} }}</span>
+  }
 </div>
 
 <mat-menu #filtersMenu="matMenu" class="pac-widget__slicer-menu">
