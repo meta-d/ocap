@@ -146,7 +146,7 @@ gridster {
 .ngm-story-point__quick-start .container {
   background-color: var(--ngm-color-surface-container);
   .ngm-story__quick-start-widget {
-    @apply text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
+    @apply flex-1 min-w-[200px] text-2xl p-8 flex justify-center items-center cursor-pointer rounded-lg whitespace-nowrap border-2 border-dashed
       active:shadow-lg;
     @apply sm:p-16;
     background-color: var(--ngm-color-surface);

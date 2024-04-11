@@ -60,7 +60,7 @@
 
 @if (quickStart$ | async;) {
     <div class="ngm-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
-        <div class="container relative p-12 rounded-xl flex flex-col justify-center items-center">
+        <div class="container relative p-12 mx-8 rounded-xl flex flex-col justify-center items-center">
             <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="closeQuickStart()">
                 <mat-icon>close</mat-icon>
             </button>
@@ -73,7 +73,7 @@
                 {{ 'Story.StoryPoint.LookingEmptyAddWidget' | translate: {Default: 'Add a widget to start'} }}!
             </div>
         
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+            <div class="flex flex-wrap justify-between gap-4 mt-4">
                 <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalCard)">
                     {{ 'Story.Widget.AnalyticalCard' | translate: {Default: 'Chart'} }}
                 </div>
