@@ -17,25 +17,25 @@
           }
         </button>
 
-        <button mat-icon-button [color]="showDetails==='preferences'?'accent':''"
+        <button mat-icon-button [color]="showDetails()==='preferences'?'accent':''"
             [matTooltip]="'Story.Toolbar.PREFERENCES.TITLE' | translate: {Default: 'Preferences'}"
             matTooltipPosition="after"
-            (click)="showDetails=showDetails==='preferences'?null:'preferences'"
+            (click)="togglePreferences()"
         >
             <mat-icon fontSet="material-icons-outlined">settings_applications</mat-icon>
         </button>
 
-        <button mat-icon-button [color]="showDetails==='storyDesigner'?'accent':''"
+        <button mat-icon-button [color]="showDetails()==='storyDesigner'?'accent':''"
             [matTooltip]=" 'Story.Toolbar.GlobalStyles' | translate: {Default: 'Global Styles'} "
             matTooltipPosition="after"
-            (click)="showDetails=showDetails==='storyDesigner'?null:'storyDesigner'">
+            (click)="toggleStoryDesigner()">
             <mat-icon fontSet="material-icons-round">format_color_fill</mat-icon>
         </button>
 
-        <button mat-icon-button [color]="showDetails==='devices'?'accent':''"
+        <button mat-icon-button [color]="showDetails()==='devices'?'accent':''"
             [matTooltip]=" 'Story.Toolbar.Devices' | translate: {Default: 'Devices'} "
             matTooltipPosition="after"
-            (click)="showDetails=showDetails==='devices'?null:'devices'">
+            (click)="toggleDevices()">
             <mat-icon fontSet="material-icons-round">devices</mat-icon>
         </button>
 
@@ -106,20 +106,20 @@
             })">
             <mat-icon fontSet="material-icons-outlined">percent</mat-icon>
         </button>
-        <button mat-icon-button [color]="showDetails==='widgets'?'accent':''"
+        <button mat-icon-button [color]="showDetails()==='widgets'?'accent':''"
             matTooltipPosition="after"
-            [matTooltip]="showDetails==='widgets'?('Story.Toolbar.More' | translate: {Default: 'More'}):
+            [matTooltip]="showDetails()==='widgets'?('Story.Toolbar.More' | translate: {Default: 'More'}):
                 ('Story.Toolbar.Less' | translate: {Default: 'Less'})"
-            (click)="showDetails=showDetails==='widgets'?null:'widgets'">
-            <mat-icon *ngIf="showDetails!=='widgets'&&!onRight||showDetails==='widgets'&&onRight">keyboard_arrow_right</mat-icon>
-            <mat-icon *ngIf="showDetails==='widgets'&&!onRight||showDetails!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
+            (click)="toggleWidgets()">
+            <mat-icon *ngIf="showDetails()!=='widgets'&&!onRight||showDetails()==='widgets'&&onRight">keyboard_arrow_right</mat-icon>
+            <mat-icon *ngIf="showDetails()==='widgets'&&!onRight||showDetails()!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>
         </button>
 
         <!-- <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger text-lg"
             matTooltip="{{ 'PAC.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'} }}"
             matTooltipPosition="after"
-            [class.active]="showDetails==='copilot'"
-            (click)="showDetails=showDetails==='copilot'?null:'copilot'"
+            [class.active]="showDetails()==='copilot'"
+            (click)="showDetails()=showDetails()==='copilot'?null:'copilot'"
             >
             <div class="flex justify-center items-center font-notoColorEmoji text-xl">🤖</div>
         </button> -->
@@ -138,13 +138,13 @@
     
 </div>
 
-<div *ngIf="showDetails === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800 text-neutral-100"
+<div *ngIf="showDetails() === 'preferences'" class="ngm-theme-dark dark w-16 h-full flex flex-col border-solid border-0 border-gray-500 bg-bluegray-800 text-neutral-100"
     [ngClass]="onRight?'border-r':'border-l'"
 >
     <div class="flex-1 flex flex-col p-2 overflow-y-auto overflow-x-hidden">
         <button mat-icon-button [matTooltip]="'Story.Toolbar.NewPage' | translate: {Default: 'New Page'}"
             matTooltipPosition="after"
-            (click)="showDetails='newPages'"
+            (click)="showDetails.set('newPages')"
             >
             <mat-icon class="ngm-story--tab-icon">add</mat-icon>
         </button>
@@ -260,9 +260,9 @@
     </div>
 </div>
 
-<div *ngIf="showDetails === 'newPages'" @inOut class="pac-story-bar__detail-card relative w-96 h-full flex flex-col p-2 overflow-auto" >
+<div *ngIf="showDetails() === 'newPages'" @inOut class="pac-story-bar__detail-card relative w-96 h-full flex flex-col p-2 overflow-auto" >
 
-    <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="showDetails=null">
+    <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="showDetails.set(null)">
         <mat-icon>close</mat-icon>
     </button>
 
@@ -283,7 +283,7 @@
     </div>
 </div>
 
-<div *ngIf="showDetails === 'widgets'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
+<div *ngIf="showDetails() === 'widgets'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
     <div class="text-base text-center my-4">
         {{ 'Story.Toolbar.Charts' | translate: {Default: "Charts"} }}
     </div>
@@ -362,15 +362,16 @@
     </div>
 </div>
 
-<pac-story-designer *ngIf="showDetails === 'storyDesigner'" @inOut class="pac-story-bar__detail-card w-96 h-full"></pac-story-designer>
+<pac-story-designer *ngIf="showDetails() === 'storyDesigner'" @inOut class="pac-story-bar__detail-card w-96 h-full"></pac-story-designer>
 
-<div *ngIf="showDetails === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
+<div *ngIf="showDetails() === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
 
     <div class="text-base text-center my-2">
         {{ 'Story.Toolbar.Devices' | translate: {Default: 'Devices'} }}
     </div>
     <div class="grid grid-cols-2 gap-2">
-        <button *ngFor="let device of EmulatedDevices" class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
+      @for (device of EmulatedDevices; track $index) {
+        <button class="h-24 m-2 flex flex-col justify-center items-center rounded-lg overflow-hidden
             ring-offset-2 ring-2 ring-transparent ring-offset-transparent
             hover:ring-violet-300 focus:ring-violet-500 hover:ring-offset-white dark:hover:ring-offset-black"
             [class.ring-violet-500]="device.name === emulatedDevice?.name"
@@ -379,6 +380,7 @@
             <span>{{ ('Story.Toolbar.EmulatedDevice_' + device.name) | translate: {Default: device.name} }}</span>
             <span *ngIf="device.value">{{device.value.width ?? emulatedDevice?.width}} x {{device.value.height ?? emulatedDevice?.height}}</span>
         </button>
+      }
     </div>
 
     <div *ngIf="emulatedDevice" class="flex justify-center items-center gap-4">
@@ -440,7 +442,7 @@
     </ng-container>
 </div>
 
-<!-- <div *ngIf="showDetails === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
+<!-- <div *ngIf="showDetails() === 'copilot'" @inOut class="w-96 h-full flex flex-col text-slate-800 overflow-hidden backdrop-blur-sm bg-white/90">
     <ngm-copilot-chat class="w-full h-full"
         [welcomeTitle]=" 'Story.Toolbar.WelcomeCopilot' | translate: {Default: 'Metad Copilot'} "
     ></ngm-copilot-chat>

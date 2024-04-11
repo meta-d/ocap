@@ -93,8 +93,16 @@ export const DeviceZooms = [
     value: 0.75
   },
   {
+    name: '90%',
+    value: 0.9
+  },
+  {
     name: '100%',
     value: 1
+  },
+  {
+    name: '110%',
+    value: 1.1
   },
   {
     name: '125%',

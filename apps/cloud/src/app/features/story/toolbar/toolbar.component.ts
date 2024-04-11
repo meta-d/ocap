@@ -15,7 +15,8 @@ import {
   booleanAttribute,
   computed,
   inject,
-  input
+  input,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -145,7 +146,8 @@ export class StoryToolbarComponent implements OnInit {
   @Output() deviceZoomChange = new EventEmitter()
   @Output() resetScalePan = new EventEmitter()
 
-  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'
+  readonly showDetails = signal<null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'>(null)
+
   _fullscreen: boolean
   @HostBinding('class.pac-toolbar__on-right')
   onRight = false
@@ -220,9 +222,23 @@ export class StoryToolbarComponent implements OnInit {
     )
   }
 
+  togglePreferences() {
+    this.showDetails.update((state) => state === 'preferences' ? null : 'preferences')
+  }
+
+  toggleStoryDesigner() {
+    this.showDetails.update((state) => state === 'storyDesigner' ? null : 'storyDesigner')
+  }
+  toggleDevices() {
+    this.showDetails.update((state) => state === 'devices' ? null : 'devices')
+  }
+  toggleWidgets() {
+    this.showDetails.update((state) => state === 'widgets' ? null : 'widgets')
+  }
+
   toggleExpand() {
     if (this.expandLess) {
-      this.showDetails = null
+      this.showDetails.set(null)
     }
     this.expandLess = !this.expandLess
   }
@@ -535,7 +551,7 @@ export class StoryToolbarComponent implements OnInit {
         name,
         type: StoryPointType.Canvas
       })
-      this.showDetails = null
+      this.showDetails.set(null)
     }
   }
 
@@ -630,7 +646,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   openNewPage() {
-    this.showDetails = 'newPages'
+    this.showDetails.set('newPages')
   }
 
   @HostListener('document:keydown.escape', ['$event'])
