@@ -9,6 +9,7 @@
     <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
       [formControl]="formControl"
       [placeholder]="placeholder"
+      [panelWidth]="panelWidth()"
     >
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
         <span class="flex-1">

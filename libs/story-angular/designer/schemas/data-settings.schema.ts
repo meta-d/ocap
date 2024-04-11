@@ -249,7 +249,8 @@ export abstract class DataSettingsSchemaService<
             props: {
               label: i18n?.SemanticModel ?? 'Semantic Model',
               required: true,
-              options: dataSources$
+              options: dataSources$,
+              panelWidth: '300px',
             }
           },
           {

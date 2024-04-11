@@ -109,7 +109,8 @@ export function DataSettingsSchema(
                 props: {
                   label: BUILDER?.SemanticModel ?? 'Semantic Model',
                   required: true,
-                  options: dataSources$
+                  options: dataSources$,
+                  panelWidth: '300px',
                 }
               },
               {
