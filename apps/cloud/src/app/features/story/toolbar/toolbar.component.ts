@@ -44,7 +44,7 @@ import {
   WidgetComponentType
 } from '@metad/story/core'
 import { StorySharesComponent } from '@metad/story/story'
-import { combineLatest, firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
 import { MaterialModule, ProjectFilesDialogComponent } from '../../../@shared'
@@ -165,7 +165,7 @@ export class StoryToolbarComponent implements OnInit {
 
   readonly disableSave = computed(() => !this.storyService.dirty() || this.storyService.saving())
   
-  public readonly pointList$ = this.storyService.points$
+  public readonly pointList = this.storyService.points
 
   public readonly isMobile$ = this.storyService.isMobile$
 
@@ -409,7 +409,7 @@ export class StoryToolbarComponent implements OnInit {
 
   async saveAsTemplate() {
     const story = this.story()
-    const points = await firstValueFrom(this.storyService.pageStates$)
+    const points = this.storyService.points()
     const asTemplate = await firstValueFrom(
       this._dialog
         .open(SaveAsTemplateComponent, {
@@ -482,12 +482,12 @@ export class StoryToolbarComponent implements OnInit {
   async onCopyTo(pointKey: string) {
     const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
     if (name) {
-      this.storyService.copyTo({ name, pointKey })
+      this.storyService.copyWidgetTo({ name, pointKey })
     }
   }
 
   async onCopyToNew(type: StoryPointType) {
-    await this.storyService.copyToNew(type)
+    await this.storyService.copyWidgetToNewPage(type)
   }
 
   async pasteWidget() {
@@ -636,13 +636,22 @@ export class StoryToolbarComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-      this.storyService.saveStory()
-      event.preventDefault()
-      return
-    }
-
-    if (event.altKey) {
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+        if (event.key === 'z' || event.key === 'Z') {
+          this.storyService.redo()
+          event.preventDefault()
+        }
+      } else {
+        if (event.key === 's' || event.key === 'S') {
+          this.storyService.saveStory()
+          event.preventDefault()
+        } else if (event.key === 'z' || event.key === 'Z') {
+          this.storyService.undo()
+          event.preventDefault()
+        }
+      }
+    } else if (event.altKey) {
       switch (event.code) {
         case 'Minus':
           this.storyService.zoomOut()

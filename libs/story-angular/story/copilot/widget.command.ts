@@ -16,7 +16,7 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
   const logger = inject(NGXLogger)
 
   const widget = storyService.currentWidget()
-  const page = storyService.currentPage()
+  const page = storyService.currentStoryPoint()
 
   logger.debug(`Original chart widget is`, widget, page)
 

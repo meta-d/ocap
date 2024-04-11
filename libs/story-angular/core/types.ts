@@ -567,14 +567,11 @@ export interface StoryEvent {
  * State type for story point
  */
 export interface StoryPointState {
+  id: string
   /**
    * Inner state key
    */
   key: ID
-  /**
-   * Raw story point data from server
-   */
-  storyPoint: StoryPoint
 
   /**
    * Is point active

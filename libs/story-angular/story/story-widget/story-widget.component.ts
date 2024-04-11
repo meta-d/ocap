@@ -201,7 +201,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   )
 
   readonly componentInstance$ = new BehaviorSubject<IStoryWidget<any>>(null)
-  readonly pointList$ = this.storyService.points$
+  readonly pointList = this.storyService.points
 
   readonly componentProvider$ = this.component$.pipe(
     filter(Boolean),
@@ -686,7 +686,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
   async onCopyTo(pointKey: string) {
-    this.storyService.copyTo({ pointKey, widgetKey: this.widget().key })
+    this.storyService.copyWidgetTo({ pointKey, widgetKey: this.widget().key })
   }
 
   /**
@@ -696,7 +696,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
    */
   async onCopyToNew(type: StoryPointType) {
     try {
-      await this.storyService.copyToNew(type, this.widget().key)
+      await this.storyService.copyWidgetToNewPage(type, this.widget().key)
     }catch(err) {
       this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, {duration: 2000})
     }
@@ -713,7 +713,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
    */
   async onMoveToNew(type: StoryPointType) {
     try {
-      await this.storyService.moveWidgetToNew(this.storyPointService.storyPoint.key, this.widget().key, type)
+      await this.storyService.moveWidgetToNewPage(this.storyPointService.storyPoint.key, this.widget().key, type)
     }catch(err) {
       this._snackBar.open(`Error: ${(<Error>err).message}`, `Dismiss`, {duration: 2000})
     }

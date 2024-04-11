@@ -9,6 +9,7 @@ import {
   effect,
   ElementRef,
   HostBinding,
+  HostListener,
   inject,
   Injector,
   Input,
@@ -90,7 +91,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
   public appService = inject(AppService)
-  public storyService = inject(NxStoryService)
+  readonly storyService = inject(NxStoryService)
   private store = inject(Store)
   private route = inject(ActivatedRoute)
   private _router = inject(Router)

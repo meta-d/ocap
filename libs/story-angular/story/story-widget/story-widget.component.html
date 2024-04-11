@@ -209,9 +209,10 @@
     </button>
   
     <mat-divider></mat-divider>
-  
-    <button cdkMenuItem *ngFor="let point of pointList$ | async"
+    @for (point of pointList(); track point.key) {
+      <button cdkMenuItem
         (click)="onMoveTo(point.key)">{{ point.name }}</button>
+    }
   </div>
 </ng-template>
 
@@ -225,9 +226,11 @@
     </button>
   
     <mat-divider></mat-divider>
-  
-    <button cdkMenuItem *ngFor="let point of pointList$ | async"
+    
+    @for (point of pointList(); track point.key) {
+      <button cdkMenuItem
         (click)="onCopyTo(point.key)">{{ point.name }}</button>
+    }
   </div>
 </ng-template>
 

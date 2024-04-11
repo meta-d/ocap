@@ -47,6 +47,10 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
 
   connect(properties?: Array<string | number>) {
     properties = this.options.properties = properties ?? this.options.properties
+    if (!properties) {
+      return this
+    }
+
     this.#subscription?.unsubscribe()
     this.#subscription = this.parent
       .pipe(
@@ -94,6 +98,8 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
         )
       }
     )
+
+    return this
   }
 
   disconnect() {
@@ -110,7 +116,7 @@ export function createSubStore<T, S extends [PropsFactory<any, any>, ...PropsFac
   const { state, config } = createState(...propsFactories)
   const { name, arrayKey } = storeConfig
 
-  return new SubStore(parent, { name, state, config }, { arrayKey })
+  return new SubStore(parent, { name, state, config }, { arrayKey }).connect(storeConfig.properties)
 }
 
 type Head<State = any> = State | Partial<State>

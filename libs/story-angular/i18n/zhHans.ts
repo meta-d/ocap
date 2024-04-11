@@ -104,6 +104,7 @@ export const ZhHans = {
       SaveFailed: '保存失败',
       Upload: '上传',
       CurrentPageNotExist: "当前页面不存在",
+      NewPageName: '新页面名称'
     },
     StoryPoint: {
       SaveFailed: '故事页面保存失败',

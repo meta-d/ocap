@@ -1,26 +1,25 @@
 import { computed, inject, Inject, Injectable, Optional } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID } from '@metad/contracts'
-import { createSubStore, dirtyCheckWith, NgmCopilotService, WidgetService } from '@metad/core'
+import { createSubStore, dirtyCheckWith, NgmCopilotService, WidgetService, write } from '@metad/core'
 import { DataSettings } from '@metad/ocap-core'
-import { ComponentSubStore } from '@metad/store'
 import {
   LinkedAnalysisSettings,
   NX_STORY_FEED,
   NxStoryFeedService,
-  StoryPointState,
   StoryWidget
 } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { firstValueFrom, Observable } from 'rxjs'
 import { filter, tap } from 'rxjs/operators'
 import { NxStoryPointService } from '../story-point.service'
-import { Store, createStore, select, withProps } from '@ngneat/elf'
+import { select, withProps } from '@ngneat/elf'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { isEqual, negate } from 'lodash-es'
+import { effectAction } from '@metad/ocap-angular/core'
 
 @Injectable()
-export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPointState> {
+export class NxStoryWidgetService {
   readonly #storyPointService = inject(NxStoryPointService)
   private widgetService = inject(WidgetService)
   readonly copilot? = inject(NgmCopilotService, { optional: true })
@@ -50,16 +49,6 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
     return this.store.getValue()
   }
   readonly state$ = this.store.asObservable()
-  // aiOptions = {
-  //   model: 'gpt-3.5-turbo',
-  //   useSystemPrompt: true
-  // } as AIOptions
-  // systemPrompt: string
-  // prompts: string[]
-
-
-
-
 
   /**
   |--------------------------------------------------------------------------
@@ -77,21 +66,19 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
   readonly linkedAnalysis$ = this.select((state) => state.linkedAnalysis)
 
   constructor(
-    
     @Optional()
     @Inject(NX_STORY_FEED)
     private feedService?: NxStoryFeedService,
     @Optional() private translateService?: TranslateService,
     @Optional() private _snackBar?: MatSnackBar
   ) {
-    super({} as any)
   }
 
-  readonly init = this.effect((id$: Observable<ID>) => {
+  readonly init = effectAction((id$: Observable<ID>) => {
     return id$.pipe(
       tap((id: ID) => {
-        this.store.connect(['storyPoint', 'widgets', id])
-        this.pristineStore.connect(['storyPoint', 'widgets', id])
+        this.store.connect(['widgets', id])
+        this.pristineStore.connect(['widgets', id])
 
         // this.connect(this.#storyPointService, {
         //   parent: ['widgets', id as string],
@@ -100,6 +87,18 @@ export class NxStoryWidgetService extends ComponentSubStore<StoryWidget, StoryPo
       })
     )
   })
+
+  select<R>(fn: (state: StoryWidget) => R) {
+    return this.store.pipe(select(fn))
+  }
+
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryWidget, ...params: OriginType[]) => StoryWidget | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
+  }
 
   readonly setLinkedAnalysis = this.updater((state, linkedAnalysis: LinkedAnalysisSettings) => {
     state.linkedAnalysis = linkedAnalysis

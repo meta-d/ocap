@@ -14,6 +14,7 @@ import { Observable, startWith } from 'rxjs'
     [selectOptions]="selectOptions()"
     valueKey="key"
     [formControl]="valueControl"
+    [panelWidth]="props?.panelWidth"
     [class.ngm-select-error]="notFound()"
   >
     <ng-template ngmOptionContent let-option>

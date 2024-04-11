@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { debugDirtyCheckComparator, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
+import { createSubStore, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -25,20 +25,18 @@ import {
   assignDeepOmitBlank,
   assign,
 } from '@metad/ocap-core'
-import { Store, createStore, select, withProps } from '@ngneat/elf'
+import { Query, Store, createStore, select, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { TranslateService } from '@ngx-translate/core'
-import { cloneDeep, findKey, includes, isEmpty, isEqual, isNil, merge, negate, omit, some, sortBy } from 'lodash-es'
+import { cloneDeep, findKey, includes, isEmpty, isEqual, merge, negate, omit, some, sortBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
+import { combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
 import {
   distinctUntilChanged,
   filter,
   map,
   shareReplay,
-  startWith,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators'
@@ -62,6 +60,7 @@ import {
   WIDGET_INIT_POSITION,
   StoryPointState,
   MoveDirection,
+  StoryPointStyling,
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
@@ -78,7 +77,7 @@ export class NxStoryService {
   */
   readonly store = createStore({ name: 'story' }, withProps<StoryState>({story: null, points: []}))
   readonly pristineStore = createStore({ name: 'story_pristine' }, withProps<StoryState>({story: null, points: []}))
-  readonly #stateHistory = stateHistory<Store, StoryState>(this.store, {
+  readonly #stateHistory = stateHistory<Store, StoryState>(createSubStore(this.store, {properties: ['story'], name: 'sub_story'}, withProps<Story>(null)), {
     comparatorFn: negate(isEqual)
   })
   /**
@@ -226,12 +225,14 @@ export class NxStoryService {
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
   public readonly pageStates$ = this.select((state) => state.points).pipe(
-    filter(nonNullable))
-  readonly points$ = this.pageStates$.pipe(
-    map((states) => states.filter((item) => !item.removed).map((item) => item.storyPoint)),
+    filter(nonNullable)
   )
+  readonly storyPoints = toSignal(this.select((state) => state.story?.points))
+  readonly pageStates = toSignal(this.pageStates$)
+  readonly points = computed(() => this.storyPoints()?.filter((item) => !this.pageStates().some((state) => state.removed && state.key === item.key)))
+
   readonly displayPoints$ = combineLatest([
-      this.points$,
+      toObservable(this.points),
       this.editable$,
       this.currentPageKey$
     ]).pipe(
@@ -248,10 +249,9 @@ export class NxStoryService {
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  public readonly currentPageWidgets$ = this.currentPage$.pipe(
-    map((pageState) => pageState?.storyPoint.widgets),
-  )
-  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state?.storyPoint)))
+  readonly currentStoryPoint = computed(() => this.storyPoints().find((point) => point.key === this.currentPageKey()))
+  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
+  
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
@@ -450,23 +450,15 @@ export class NxStoryService {
       ...state,
       story: cloneDeep(story),
       points: story.points.map((item) => ({
+        id: item.id,
         key: item.key,
         storyPoint: cloneDeep(item)
       }))
     }))
-    this.pristineStore.update(() => ({story: cloneDeep(story), points: story.points.map((item) => ({
-      key: item.key,
-      storyPoint: cloneDeep(item)
-    }))}))
-
-    this.setState({
-      ...this.get(),
+    this.pristineStore.update(() => ({
       story: cloneDeep(story),
-      points: story.points.map((item) => ({
-        key: item.key,
-        storyPoint: cloneDeep(item)
-      }))
-    })
+      points: []
+    }))
 
     // this.dirtyCheckQuery.setHead()
   }
@@ -512,6 +504,14 @@ export class NxStoryService {
     }))
   }
 
+  undo() {
+    this.#stateHistory.undo()
+  }
+
+  redo() {
+    this.#stateHistory.redo()
+  }
+
   refresh(force = false) {
     this.refresh$.next(force)
   }
@@ -543,10 +543,10 @@ export class NxStoryService {
   }
 
   // ================================== Selectors ================================== //
-  get(fn?: (state: StoryState) => any) {
-    return this.store.query(fn ?? ((state) => state))
+  get<R>(fn?: Query<StoryState, R>) {
+    return this.store.query(fn ?? ((state) => state as R))
   }
-  select(fn: (state: StoryState) => any) {
+  select<R>(fn: (state: StoryState) => R) {
     return this.store.pipe(filter((state) => !!state.story), select(fn))
   }
   updater<ProvidedType = void, OriginType = ProvidedType>(
@@ -558,9 +558,6 @@ export class NxStoryService {
   }
   patchState(state: Partial<StoryState>) {
     this.store.update((s) => ({...s, ...state}))
-  }
-  setState(state: StoryState) {
-    this.store.update(() => state)
   }
 
   selectBreakpoint() {
@@ -608,45 +605,45 @@ export class NxStoryService {
     state.currentPageKey = key
   })
 
-  /**
-   *  @deprecated use newStoryPage ?
-   * 
-   * 输入页面唯一名称并在服务器端实际创建页面记录, 并将页面添加到当前故事看板中
-   *
-   * @param type
-   * @returns
-   */
-  private async _createStoryPoint(type: StoryPointType, name: string) {
-    const state = this.get()
-    const point = await firstValueFrom(this.storyStore.createStoryPoint({
-      name,
-      type,
-      key: uuid(),
-      widgets: null,
-      storyId: state.story.id,
-      index: state.points?.length || 0,
-      responsive: type === StoryPointType.Responsive ? defaultResponsive() : null,
-      gridOptions: getDefaultPageGrid()
-    }))
+  // /**
+  //  *  @deprecated use newStoryPage ?
+  //  * 
+  //  * 输入页面唯一名称并在服务器端实际创建页面记录, 并将页面添加到当前故事看板中
+  //  *
+  //  * @param type
+  //  * @returns
+  //  */
+  // private async _createStoryPoint(type: StoryPointType, name: string) {
+  //   const state = this.get()
+  //   const point = await firstValueFrom(this.storyStore.createStoryPoint({
+  //     name,
+  //     type,
+  //     key: uuid(),
+  //     widgets: null,
+  //     storyId: state.story.id,
+  //     index: state.points?.length || 0,
+  //     responsive: type === StoryPointType.Responsive ? defaultResponsive() : null,
+  //     gridOptions: getDefaultPageGrid()
+  //   }))
 
-    this.setStoryPoint(point)
-    return point
-  }
+  //   this.setStoryPoint(point)
+  //   return point
+  // }
 
-  /**
-   * @deprecated use newStoryPage ?
-   * 
-   * 创建故事页面
-   */
-  async createStoryPoint(type: StoryPointType) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const page = await this._createStoryPoint(type, name)
-      if (page) {
-        this.setCurrentPageKey(page.key)
-      }
-    }
-  }
+  // /**
+  //  * @deprecated use newStoryPage ?
+  //  * 
+  //  * 创建故事页面
+  //  */
+  // async createStoryPoint(type: StoryPointType) {
+  //   const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+  //   if (name) {
+  //     const page = await this._createStoryPoint(type, name)
+  //     if (page) {
+  //       this.setCurrentPageKey(page.key)
+  //     }
+  //   }
+  // }
 
   /**
    * New story page
@@ -654,7 +651,11 @@ export class NxStoryService {
    * @param page 
    */
   async newStoryPage(page: Partial<StoryPoint>) {
-    const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {
+      data: {
+        title: this.getTranslation('Story.Story.NewPageName', 'New Page Name')
+      }
+    }).afterClosed())
     if (name) {
       const key = page.key ?? uuid()
       const _page = {
@@ -681,50 +682,53 @@ export class NxStoryService {
    * Add page into story internal
    */
   private readonly addStoryPage = this.updater((state, input: StoryPoint) => {
-    state.points = state.points || []
+    state.points ??= []
     state.points.push({
+      id: null,
       key: input.key,
-      storyPoint: {
-        ...input,
-        index: input.index ?? state.points.length,
-      },
       fetched: true,
+    })
+
+    state.story.points ??= []
+    state.story.points.push({
+      ...input,
+      index: input.index ?? state.points.length,
     })
   })
 
-  /**
-   * @deprecated use addStoryPage ?
-   * 
-   * 添加一个新的页面
-   */
-  readonly setStoryPoint = this.updater((state, input: StoryPoint) => {
-    // 新的页面将 widgets 设置会 null ， 方便判断是否为新加载页面
-    input.widgets = null
-    const i = state.points?.findIndex(({ storyPoint: point }) => point.id === input.id)
-    if (i >= 0) {
-      state.points[i] = {
-        ...state.points[i],
-        storyPoint: input
-      }
-    } else {
-      state.points = state.points || []
-      state.points.push({
-        key: input.key,
-        storyPoint: input
-      })
-    }
+  // /**
+  //  * @deprecated use addStoryPage ?
+  //  * 
+  //  * 添加一个新的页面
+  //  */
+  // readonly setStoryPoint = this.updater((state, input: StoryPoint) => {
+  //   // 新的页面将 widgets 设置会 null ， 方便判断是否为新加载页面
+  //   input.widgets = null
+  //   const i = state.points?.findIndex(({ storyPoint: point }) => point.id === input.id)
+  //   if (i >= 0) {
+  //     state.points[i] = {
+  //       ...state.points[i],
+  //       storyPoint: input
+  //     }
+  //   } else {
+  //     state.points = state.points || []
+  //     state.points.push({
+  //       key: input.key,
+  //       storyPoint: input
+  //     })
+  //   }
 
-    const j = state.story.points?.findIndex((point) => point.id === input.id)
-    if (j >= 0) {
-      state.story.points[j] = {
-        ...state.story.points[j],
-        ...input
-      }
-    } else {
-      state.story.points = state.story.points || []
-      state.story.points.push(cloneDeep(input))
-    }
-  })
+  //   const j = state.story.points?.findIndex((point) => point.id === input.id)
+  //   if (j >= 0) {
+  //     state.story.points[j] = {
+  //       ...state.story.points[j],
+  //       ...input
+  //     }
+  //   } else {
+  //     state.story.points = state.story.points || []
+  //     state.story.points.push(cloneDeep(input))
+  //   }
+  // })
 
   // readonly setStoryPointDirty = this.updater((state, { id, dirty }: { id: ID; dirty: boolean }) => {
   //   const index = state.points.findIndex(({ storyPoint: point }) => point.id === id)
@@ -737,23 +741,31 @@ export class NxStoryService {
   // })
 
   /**
-   * Delete story point by key
+   * Delete story point by key in local state
    */
-  readonly deleteStoryPoint = this.updater((state, key: ID) => {
+  readonly #removeStoryPoint = this.updater((state, key: ID) => {
     state.points = state.points.filter((pointState) => pointState.key !== key)
+    state.story.points = state.story.points.filter((item) => item.key !== key)
   })
 
   /**
    * Set the removed flag of a story point
    */
-  readonly _removeStoryPoint = this.updater((state, key: ID) => {
+  readonly #deleteStoryPoint = this.updater((state, key: ID) => {
+    // Mark the point state as removed
     const index = state.points.findIndex((pointState) => pointState.key === key)
     if (index > -1) {
-      if (state.points[index].storyPoint.id) {
+      if (state.points[index].id) {
         state.points[index].removed = true
       } else {
         state.points.splice(index, 1)
       }
+    }
+
+    // Delete story point in story
+    const _index = state.story.points.findIndex((item) => item.key === key)
+    if (_index > -1) {
+      state.story.points.splice(_index, 1)
     }
   })
 
@@ -762,9 +774,9 @@ export class NxStoryService {
    * 
    * @param key 
    */
-  async removeStoryPoint(key: string) {
+  async deleteStoryPoint(key: string) {
     const displayPoints = await firstValueFrom(this.displayPoints$)
-    this._removeStoryPoint(key)
+    this.#deleteStoryPoint(key)
     const index = displayPoints.findIndex((item) => item.key === key)
     this.patchState({
       currentPageKey: displayPoints[index > 0 ? index - 1 : 1]?.key
@@ -783,9 +795,9 @@ export class NxStoryService {
   }
 
   readonly toggleStoryPointHidden = this.updater((state, key: string) => {
-    const storyPoint = state.points.find((item) => item.key === key)
+    const storyPoint = state.story.points.find((item) => item.key === key)
     if (storyPoint) {
-      storyPoint.storyPoint.hidden = !storyPoint.storyPoint.hidden
+      storyPoint.hidden = !storyPoint.hidden
     }
   })
 
@@ -797,7 +809,7 @@ export class NxStoryService {
    * Udpate story widget by pageKey and widgetId
    */
   readonly updateWidget = this.updater((state, {pageKey, widgetKey, widget}: {pageKey: string; widgetKey: string; widget: StoryWidget}) => {
-    const _widget = state.points.find((item) => item.key === pageKey).storyPoint.widgets.find((item) => item.key === widgetKey)
+    const _widget = state.story.points.find((item) => item.key === pageKey).widgets.find((item) => item.key === widgetKey)
     if (_widget) {
       assign(_widget, widget)
     }
@@ -806,7 +818,7 @@ export class NxStoryService {
   createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
 
-    if (!currentPageKey || !this.currentPage()) {
+    if (!currentPageKey || !this.currentStoryPoint()) {
       throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
     }
 
@@ -833,7 +845,7 @@ export class NxStoryService {
   })
 
   readonly duplicateWidget = this.updater((state) => {
-    this.copyTo({ pointKey: state.currentPageKey })
+    this.copyWidgetTo({ pointKey: state.currentPageKey })
   })
 
   readonly clearCopy = this.updater((state) => {
@@ -860,14 +872,14 @@ export class NxStoryService {
       updates.push(this.storyStore.updateStory(current))
     }
 
-    this.get((state) => state.points).filter((state) => state.removed && state.storyPoint.id).forEach((state) => {
+    this.get((state) => state.points).filter((state) => state.removed && state.id).forEach((state) => {
       // delete point
       updates.push(
-        this.storyStore.removeStoryPoint(pristine.id, state.storyPoint.id).pipe(
+        this.storyStore.removeStoryPoint(pristine.id, state.id).pipe(
           tap({
             next: () => {
               // Delete story point in local state
-              this.deleteStoryPoint(state.key)
+              this.#removeStoryPoint(state.key)
             },
             error: (error) => {
               this._snackBar.open('删除失败', error.status, {
@@ -1023,11 +1035,11 @@ export class NxStoryService {
    */
   readonly createInputControlWidget = this.updater(
     (state, { dataSource, entitySet, dimension }: DataSettings) => {
-      const storyPoint = state.points.find((item) => item.key === state.currentPageKey)
-      storyPoint.storyPoint.widgets.push({
+      const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
+      storyPoint.widgets.push({
         key: uuid(),
         storyId: state.story.id,
-        pointId: storyPoint.storyPoint.id,
+        pointId: storyPoint.id,
         name: dimension.name,
         title: dimension.name,
         component: WidgetComponentType.InputControl,
@@ -1045,7 +1057,7 @@ export class NxStoryService {
   )
 
   getCurrentWidget(widgetKey?: string) {
-    const state = this.get()
+    const state = this.get<StoryState>()
     let widget: StoryWidget
     if (widgetKey) {
       widget = findStoryWidget(state, widgetKey)
@@ -1060,7 +1072,7 @@ export class NxStoryService {
     return widget
   }
 
-  copyTo(orign: { name?: string; widgetKey?: ID; pointKey: ID }) {
+  copyWidgetTo(orign: { name?: string; widgetKey?: ID; pointKey: ID }) {
     const { name, pointKey, widgetKey } = orign
     const widget: StoryWidget = this.getCurrentWidget(widgetKey)
 
@@ -1069,13 +1081,18 @@ export class NxStoryService {
     this.setCurrentPageKey(pointKey)
   }
 
-  async copyToNew(type: StoryPointType, widgetKey?: ID) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const point = await this._createStoryPoint(type, name)
-      if (point) {
-        this.copyTo({ pointKey: point.key, widgetKey })
-      }
+  /**
+   * Copy the widget to a new page
+   * 
+   * @param type 
+   * @param widgetKey 
+   */
+  async copyWidgetToNewPage(type: StoryPointType, widgetKey?: string) {
+    const point = await this.newStoryPage({
+      type,
+    })
+    if (point) {
+      this.copyWidgetTo({ pointKey: point.key, widgetKey })
     }
   }
 
@@ -1084,14 +1101,16 @@ export class NxStoryService {
    */
   public readonly moveWidgetTo = this.updater((state, params: {widget: {pointKey: ID, key: ID}, pointKey: ID}) => {
     const { widget, pointKey } = params
-    const toPage = state.points.find((item) => item.key === pointKey)
-    const fromPage = state.points.find((item) => item.key === widget.pointKey)
-    if (fromPage && toPage) {
-      const index = fromPage.storyPoint.widgets.findIndex((item) => item.key === widget.key)
+    const toPageState = state.points.find((item) => item.key === pointKey)
+    const fromPage = state.story.points.find((item) => item.key === widget.pointKey)
+    if (fromPage && toPageState) {
+      const index = fromPage.widgets.findIndex((item) => item.key === widget.key)
       if (index > -1) {
-        const widgets = fromPage.storyPoint.widgets.splice(index, 1)
-        toPage.pasteWidgets = toPage.pasteWidgets ?? []
-        toPage.pasteWidgets.push({
+        const widgets = fromPage.widgets.splice(index, 1)
+
+        // Cache moved widgets in the target page states
+        toPageState.pasteWidgets = toPageState.pasteWidgets ?? []
+        toPageState.pasteWidgets.push({
           ...widgets[0],
           position: {
             ...widgets[0].position,
@@ -1110,30 +1129,38 @@ export class NxStoryService {
    * @param widgetKey 
    * @param type 
    */
-  async moveWidgetToNew(pointKey: ID, widgetKey: ID, type: StoryPointType) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const point = await this._createStoryPoint(type, name)
-      if (point) {
-        this.moveWidgetTo({ pointKey: point.key, widget: {pointKey, key: widgetKey} })
-      }
+  async moveWidgetToNewPage(pointKey: ID, widgetKey: ID, type: StoryPointType) {
+    const point = await this.newStoryPage({type})
+    if (point) {
+      this.moveWidgetTo({ pointKey: point.key, widget: {pointKey, key: widgetKey} })
     }
   }
 
   readonly duplicateStoryPoint = this.updater((state, key: string) => {
-    const index = state.points.findIndex((item) => item.key === key)
-    const storyPointState = state.points[index]
+    const index = state.story.points.findIndex((item) => item.key === key)
+    const storyPointState = state.story.points[index]
+
+    const newKey = uuid()
     if (storyPointState) {
       const newStoryPointState = cloneDeep(storyPointState)
-      newStoryPointState.key = uuid()
-      newStoryPointState.storyPoint.key = newStoryPointState.key
-      newStoryPointState.storyPoint.id = null
-      newStoryPointState.storyPoint.widgets?.forEach((widget) => {
+      newStoryPointState.key = newKey
+      newStoryPointState.id = null
+      newStoryPointState.widgets?.forEach((widget) => {
         widget.id = null
         widget.pointId = null
       })
       // newStoryPointState.dirty = true
-      state.points.splice(index + 1, 0, newStoryPointState)
+      state.story.points.splice(index + 1, 0, newStoryPointState)
+    }
+
+    // duplicate point state
+    const pointState = state.points.find((item) => item.key === key)
+    if (pointState) {
+      state.points.splice(index + 1, 0, {
+        key: newKey,
+        id: null,
+        fetched: true
+      })
     }
   })
 
@@ -1152,7 +1179,7 @@ export class NxStoryService {
    * 移动页面， 左一个、右一个、第一个、最后一个
    */
   readonly move = this.updater((state, { direction, key }: { direction: MoveDirection; key: ID }) => {
-    const points = sortBy(state.points, (o) => o.storyPoint.index)
+    const points = sortBy(state.story.points, (o) => o.index)
     const index = points.findIndex((item) => item.key === key)
     if (index > -1) {
       let swapTarget
@@ -1181,9 +1208,10 @@ export class NxStoryService {
           break
       }
 
+      // Reorder index
       points.forEach((item, i) => {
-        if (item.storyPoint) {
-          item.storyPoint.index = i
+        if (item) {
+          item.index = i
         } else {
           // console.warn(cloneDeep(item))
         }
@@ -1202,9 +1230,8 @@ export class NxStoryService {
 
   readonly pasteWidget = this.updater(
     (state, { name, widget, pointKey }: { name?: string; widget?: StoryWidget; pointKey?: ID }) => {
-      const point = pointKey
-        ? state.points.find((item) => item.key === pointKey)
-        : state.points.find((item) => item.key === state.currentPageKey)
+      const pageKey = pointKey ?? state.currentPageKey
+      const point = state.story.points.find((item) => item.key === pageKey)
 
       widget = cloneDeep(widget || state.copySelectedWidget)
 
@@ -1215,14 +1242,16 @@ export class NxStoryService {
       widget.id = null
       widget.key = uuid()
       widget.storyId = state.story.id
-      widget.pointId = point.storyPoint.id
+      widget.pointId = point.id
       widget.position = { ...widget.position, x: 0, y: 0 }
 
-      if (isNil(point.storyPoint.widgets)) {
-        point.pasteWidgets = point.pasteWidgets ?? []
-        point.pasteWidgets.push(widget)
+      const pointState = state.points.find((item) => item.key === point.key)
+
+      if (!pointState.fetched) {
+        pointState.pasteWidgets = pointState.pasteWidgets ?? []
+        pointState.pasteWidgets.push(widget)
       } else {
-        point.storyPoint.widgets.push(widget)
+        point.widgets.push(widget)
       }
     }
   )
@@ -1232,11 +1261,11 @@ export class NxStoryService {
    */
   readonly createMeasureControlWidget = this.updater((state, { dataSettings, name }: Partial<StoryWidget>) => {
     // Get current page state
-    const storyPoint = state.points.find((item) => item.key === state.currentPageKey)
-    storyPoint.storyPoint.widgets.push({
+    const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
+    storyPoint.widgets.push({
       key: uuid(),
       storyId: state.story.id,
-      pointId: storyPoint.storyPoint.id,
+      pointId: storyPoint.id,
       name,
       title: name,
       component: WidgetComponentType.InputControl,
@@ -1332,20 +1361,22 @@ export class NxStoryService {
     // Apply template
     if (template.type === StoryTemplateType.Template) {
       // Clear all story points
-      state.story.points = []
+      state.story.points = template.options.pages?.map((item) => {
+        return {
+            ...item,
+            storyId: state.story.id,
+            id: null
+        } as StoryPoint
+      })
 
       // create story points states
       state.points = template.options.pages?.map((item) => {
         return {
+          id: null,
           fetched: true,
           dirty: true,
           key: item.key,
-          storyPoint: {
-            ...item,
-            storyId: state.story.id,
-          },
-          widgets: item.widgets
-        } as StoryPointState
+        }
       })
 
       this.setCurrentPageKey(state.points[0]?.key)
@@ -1388,16 +1419,11 @@ export class NxStoryService {
 
   readonly updateStoryPointStyles = this.updater((state, styles: cssStyle) => {
     const currentPageKey = state.currentPageKey
-    const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
-    state.points[currentPageIndex].storyPoint = {
-      ...state.points[currentPageIndex].storyPoint,
-      styling: {
-        ...(state.points[currentPageIndex].storyPoint?.styling ?? {} as StoryPoint['styling']),
-        canvas: {
-          ...(state.points[currentPageIndex].storyPoint?.styling?.canvas ?? {}),
-          ...styles
-        }
-      }
+    const currentPageIndex = state.story.points.findIndex((item) => item.key === currentPageKey)
+    state.story.points[currentPageIndex].styling ??= {} as StoryPointStyling
+    state.story.points[currentPageIndex].styling.canvas = {
+      ...(state.story.points[currentPageIndex].styling.canvas ?? {}),
+      ...styles
     }
   })
 
@@ -1481,8 +1507,8 @@ function defaultResponsive() {
 
 export function findStoryWidget(state: StoryState, key: ID) {
   let widget: StoryWidget
-  state.points.find((point) => {
-    return point.storyPoint.widgets?.find((item) => {
+  state.story.points.find((point) => {
+    return point.widgets?.find((item) => {
       if (item.key === key) {
         widget = item
         return true

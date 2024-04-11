@@ -82,12 +82,12 @@
     </div>
 </popper-content>
   
-
-<ngm-trial-watermark *ngIf="enableWatermark$()" [options]="watermarkOptions$()"></ngm-trial-watermark>
+@if (enableWatermark$()) {
+  <ngm-trial-watermark [options]="watermarkOptions$()"/>
+}
  
 <mat-menu #pointMenu="matMenu" xPosition="before" class="ngm-density__compact">
-<ng-template matMenuContent let-point="point" let-component="component">
-
+  <ng-template matMenuContent let-point="point" let-component="component">
     <button mat-menu-item [disabled]="!component.dirty" (click)="saveStoryPoint(point.key)">
         <mat-icon fontSet="material-icons-outlined">save</mat-icon>
         {{ 'Story.Story.Save' | translate: {Default: "Save"} }}
@@ -146,7 +146,7 @@
         <mat-icon>delete_forever</mat-icon>
         {{ 'Story.Story.Delete' | translate: {Default: "Delete"} }}
     </button>
-</ng-template>
+  </ng-template>
 </mat-menu>
 
 <div *ngIf="tabIsPoint()" class="ngm-story__pagination ngm-story__pagination-bullets px-8"

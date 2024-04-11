@@ -543,7 +543,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     )
 
     if (confirm) {
-      this.storyService.removeStoryPoint(event.key)
+      this.storyService.deleteStoryPoint(event.key)
     }
   }
 

@@ -39,7 +39,7 @@ export class SaveAsTemplateComponent {
   StoryTemplateType = StoryTemplateType
 
   private _dialogRef = inject(MatDialogRef<SaveAsTemplateComponent>)
-  private readonly data: { story: Story; storyTemplate: IStoryTemplate; points: StoryPointState[] } =
+  private readonly data: { story: Story; storyTemplate: IStoryTemplate; points: StoryPoint[] } =
     inject(MAT_DIALOG_DATA)
   private readonly storyStore: NxStoryStore = inject(NX_STORY_STORE)
   private readonly storyTemplateService = inject(StoryTemplateService)
@@ -79,7 +79,7 @@ export class SaveAsTemplateComponent {
     }
     this.formGroup.markAsPristine()
 
-    this.storyPoints = this.data.points.map((state) => ({ ...state.storyPoint, widgets: state.storyPoint.widgets }))
+    this.storyPoints = this.data.points.map((state) => ({ ...state, widgets: state.widgets }))
   }
 
   onFileSelected(event: Event): void {

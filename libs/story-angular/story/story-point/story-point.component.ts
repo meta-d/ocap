@@ -730,7 +730,7 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   remove() {
-    this.storyService.removeStoryPoint(this.key)
+    this.storyService.deleteStoryPoint(this.key)
   }
 
   hidePage() {
