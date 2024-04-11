@@ -72,24 +72,13 @@ export class NxStoryPointService {
     // comparator: debugDirtyCheckComparator
   })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
-
-  // get storyPoint() {
-  //   return this.get((state) => state.storyPoint)
-  // }
+  
   get storyPoint() {
     return this.store.getValue().storyPoint
   }
-  // get widgets() {
-  //   return this.get((state) => state.widgets)
-  // }
 
   readonly widgets$ = this.select((state) => state?.storyPoint?.widgets)
   readonly widgets = toSignal(this.widgets$)
-
-
-
-  
-
 
   /**
   |--------------------------------------------------------------------------
@@ -412,7 +401,11 @@ export class NxStoryPointService {
         throw new Error(`未选中区域`)
       }
     } else {
-      widget.position = widget.position ?? { ...WIDGET_INIT_POSITION, x: 0, y: 0 }
+      widget.position = widget.position ?? {
+        ...WIDGET_INIT_POSITION, x: 0, y: 0,
+
+        
+      }
       if (state.storyPoint.gridOptions?.allowMultiLayer) {
         widget.position.layerIndex = state.storyPoint.widgets.length
       }

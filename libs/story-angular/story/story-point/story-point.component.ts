@@ -74,6 +74,7 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NxStoryWidgetComponent } from "../story-widget/story-widget.component";
 import { NxStoryResponsiveModule } from "../../responsive/responsive.module";
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { WIDGET_DEFAULT_SIZE, WIDGET_DEFAULT_SIZES } from '../types'
 
 
 @Component({
@@ -571,8 +572,13 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   createWidget(type: string) {
+    const DefaultSize = WIDGET_DEFAULT_SIZES[type] ?? WIDGET_DEFAULT_SIZE
     this.storyService.createStoryWidget({
-      component: type
+      component: type,
+      position: {
+        cols: Math.round(DefaultSize.width / this.gridColWidth),
+        rows: Math.round(DefaultSize.height / this.gridRowHeight)
+      }
     })
   }
 

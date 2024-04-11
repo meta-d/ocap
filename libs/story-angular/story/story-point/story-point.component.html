@@ -58,36 +58,38 @@
   }
 }
 
-<div *ngIf="quickStart$ | async;" class="ngm-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
-    <div class="container relative p-12 rounded-xl flex flex-col justify-center items-center">
-        <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="closeQuickStart()">
-            <mat-icon>close</mat-icon>
-        </button>
+@if (quickStart$ | async;) {
+    <div class="ngm-story-point__quick-start absolute top-0 left-0 w-full h-full flex justify-center items-center z-10">
+        <div class="container relative p-12 rounded-xl flex flex-col justify-center items-center">
+            <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="closeQuickStart()">
+                <mat-icon>close</mat-icon>
+            </button>
+            
+            <span class="text-6xl font-notoColorEmoji">🛒</span>
+            <div class="text-lg my-2">
+                {{ 'Story.StoryPoint.LookingEmpty' | translate: {Default: 'This story point is looking empty'} }}.
+            </div>
+            <div class="text-sm">
+                {{ 'Story.StoryPoint.LookingEmptyAddWidget' | translate: {Default: 'Add a widget to start'} }}!
+            </div>
         
-        <span class="text-6xl font-notoColorEmoji">🛒</span>
-        <div class="text-lg my-2">
-            {{ 'Story.StoryPoint.LookingEmpty' | translate: {Default: 'This story point is looking empty'} }}.
-        </div>
-        <div class="text-sm">
-            {{ 'Story.StoryPoint.LookingEmptyAddWidget' | translate: {Default: 'Add a widget to start'} }}!
-        </div>
-    
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalCard)">
-                {{ 'Story.Widget.AnalyticalCard' | translate: {Default: 'Chart'} }}
-            </div>
-            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalGrid)">
-                {{ 'Story.Widget.AnalyticalGrid' | translate: {Default: 'Table'} }}
-            </div>
-            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.InputControl)">
-                {{ 'Story.Widget.InputControl' | translate: {Default: 'Input Control'} }}
-            </div>
-            <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.KpiCard)">
-                {{ 'Story.Widget.KpiCard' | translate: {Default: 'KPI'} }}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalCard)">
+                    {{ 'Story.Widget.AnalyticalCard' | translate: {Default: 'Chart'} }}
+                </div>
+                <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.AnalyticalGrid)">
+                    {{ 'Story.Widget.AnalyticalGrid' | translate: {Default: 'Table'} }}
+                </div>
+                <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.InputControl)">
+                    {{ 'Story.Widget.InputControl' | translate: {Default: 'Input Control'} }}
+                </div>
+                <div class="ngm-story__quick-start-widget" (click)="createWidget(ComponentType.KpiCard)">
+                    {{ 'Story.Widget.KpiCard' | translate: {Default: 'KPI'} }}
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 <ng-template #defaultTemplate let-widget let-laneKey="laneKey" let-editable="editable" let-selected="selected">
     <ngm-story-widget [key]="widget.key" [laneKey]="laneKey" [editable]="editable" [selected]="selected" style="width: 100%;height: 100%;"></ngm-story-widget>

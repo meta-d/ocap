@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { debugDirtyCheckComparator, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
+import { debugDirtyCheckComparator, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -803,7 +803,7 @@ export class NxStoryService {
     }
   })
 
-  createStoryWidget(event: Partial<StoryWidget>) {
+  createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
 
     if (!currentPageKey || !this.currentPage()) {
