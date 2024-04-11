@@ -369,10 +369,7 @@ export class NxStoryPointService {
   })
 
   readonly updatePoint = this.updater2((state, point: Partial<StoryPoint>) => {
-    return {
-      ...state,
-      ...point
-    }
+    assign(state, point)
   })
 
   readonly setCurrentWidgetId = this.updater((state, key: ID) => {
@@ -518,9 +515,8 @@ export class NxStoryPointService {
     if (!current.id) {
       update = this.storyStore.createStoryPoint(current).pipe(
         tap((result) => {
-          this.updatePoint({
-            id: result.id
-          })
+          this.updatePoint({ id: result.id })
+          this.stateStore.update((state) => ({ ...state, id: result.id }))
         })
       )
     } else if (isNotEqual({ ...pristine, widgets: null }, { ...current, widgets: null })) {
@@ -529,7 +525,6 @@ export class NxStoryPointService {
     } else {
       update = of(null)
       // this.widgetsDirtyQuery.reset()
-      
     }
 
     return update.pipe(

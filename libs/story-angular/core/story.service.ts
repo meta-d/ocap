@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { createSubStore, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
+import { createSubStore, debugDirtyCheckComparator, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -32,9 +32,11 @@ import { cloneDeep, findKey, includes, isEmpty, isEqual, merge, negate, omit, so
 import { NGXLogger } from 'ngx-logger'
 import { combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
 import {
+  delayWhen,
   distinctUntilChanged,
   filter,
   map,
+  share,
   shareReplay,
   switchMap,
   tap,
@@ -85,8 +87,8 @@ export class NxStoryService {
    */
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
     watchProperty: ['story'],
-    comparator: negate(isEqual)
-    // comparator: debugDirtyCheckComparator
+    // comparator: negate(isEqual)
+    comparator: debugDirtyCheckComparator
   })
   readonly pageDirty = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.dirty))))
   readonly dirty = computed(() => this.dirtyCheckResult.dirty() || this.pageDirty())
@@ -469,11 +471,18 @@ export class NxStoryService {
   saveStory() {
     // this.dirtyCheckQuery.reset()
     // Start saving
-    this.storySaving.set(true)
     const pristineStory = this.pristineStore.query((state) => state.story)
     const currentStory = this.store.query((state) => state.story)
-
-    return this._saveStory(pristineStory, currentStory).subscribe(
+    // 0. Start saving story
+    this.storySaving.set(true)
+    // 1. To start saving story points and widgets
+    this.save$.next()
+    // 2. Saving story main info
+    const saveStoryReq = this._saveStory(pristineStory, currentStory).pipe(share())
+    // 3. Notify message and reset story when stop saving
+    saveStoryReq.pipe(
+      delayWhen(() => toObservable(this.saving, { injector: this.injector }).pipe(filter((saving) => !saving))),
+    ).subscribe(
       {
         next: (result) => {
           if (result) {
@@ -481,19 +490,25 @@ export class NxStoryService {
             this._snackBar.open(successMessage, '', {
               duration: 2000
             })
-            this.resetStory()
           }
-          this.save$.next()
-          this.storySaving.set(false)
+          this.resetStory()
         },
         error: (error) => {
           const errorMessage = this.getTranslation('Story.Story.SaveFailed', 'Save failed')
           this._snackBar.open(errorMessage, getErrorMessage(error.statusText), {
             duration: 2000
           })
-          this.storySaving.set(false)
         }
       }
+    )
+    // 4. Stop saving status of story main info
+    saveStoryReq.subscribe({
+      next: () => {
+        this.storySaving.set(false)
+      },
+      error: () => {
+        this.storySaving.set(false)
+      }}
     )
   }
 
@@ -1072,6 +1087,9 @@ export class NxStoryService {
     return widget
   }
 
+  /**
+   * Copy widget to this or another page
+   */
   copyWidgetTo(orign: { name?: string; widgetKey?: ID; pointKey: ID }) {
     const { name, pointKey, widgetKey } = orign
     const widget: StoryWidget = this.getCurrentWidget(widgetKey)
