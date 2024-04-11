@@ -44,6 +44,7 @@
 }
 
 <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-density__compact ngm-select__autocomplete-panel ngm-autocomplete-panel"
+  [panelWidth]="panelWidth()"
   [displayWith]="displayWith"
   (optionSelected)="onOptionSelected($event)"
 >

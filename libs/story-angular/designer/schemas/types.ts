@@ -119,7 +119,8 @@ export function DataSettingsSchema(
                 props: {
                   label: BUILDER?.Entity ?? 'Entity',
                   searchable: true,
-                  required: true
+                  required: true,
+                  panelWidth: '300px',
                 },
                 expressions: {
                   hide: `!model || !model.dataSource`

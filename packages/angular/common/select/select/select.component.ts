@@ -113,6 +113,7 @@ export class NgmSelectComponent
   private _multiple = false
 
   readonly selectOptions = input<Array<ISelectOption>>()
+  readonly panelWidth = input<string | number | null>(null)
 
   @ContentChild(NgmOptionContent, { read: TemplateRef, static: true })
   _explicitContent: TemplateRef<any> = undefined!

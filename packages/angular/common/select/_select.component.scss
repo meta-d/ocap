@@ -101,3 +101,9 @@ $prefix: (ngm, color);
     }
   }
 }
+
+.mat-mdc-autocomplete-panel.ngm-select__autocomplete-panel {
+  .cdk-virtual-scroll-content-wrapper {
+    @apply max-w-full;
+  }
+}
