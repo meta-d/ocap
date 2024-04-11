@@ -1,5 +1,5 @@
 <div class="ngm-theme-dark dark w-16 py-2 flex flex-col items-center h-full overflow-auto bg-bluegray-800 text-neutral-100">
-    <div *ngIf="expandLess" class="w-full px-2 flex-1 flex flex-col overflow-x-hidden overflow-y-auto" >
+    <div *ngIf="expandLess || !collapsible()" class="w-full px-2 flex-1 flex flex-col overflow-hidden hover:overflow-y-auto" >
         <ng-content></ng-content>
 
         <button mat-icon-button [color]="(isDirty$ | async)?'accent':''"
@@ -39,11 +39,14 @@
             <mat-icon fontSet="material-icons-round">devices</mat-icon>
         </button>
 
-        <button mat-icon-button [matTooltip]="editable ? ('Story.Toolbar.Preview' | translate: {Default: 'Preview'}) : ('Story.Toolbar.Editable' | translate: {Default: 'Editable'})"
+        <button mat-icon-button [matTooltip]="editable() ? ('Story.Toolbar.Preview' | translate: {Default: 'Preview'}) : ('Story.Toolbar.Editable' | translate: {Default: 'Editable'})"
             matTooltipPosition="after"
-            (click)="toggleEditable(!editable)">
-            <mat-icon *ngIf="editable" fontSet="material-icons-round">edit_off</mat-icon>
-            <mat-icon *ngIf="!editable" fontSet="material-icons-round">edit</mat-icon>
+            (click)="toggleEditable(!editable())">
+          @if (editable()) {
+            <mat-icon fontSet="material-icons-round">edit_off</mat-icon>
+          } @else {
+            <mat-icon fontSet="material-icons-round">edit</mat-icon>
+          }
         </button>
 
         <button mat-icon-button [matTooltip]="_fullscreen ? ('Story.Toolbar.ExitFullscreen' | translate: {Default: 'Exit Fullscreen'}) : 'Story.Toolbar.Fullscreen' | translate: {Default: 'Fullscreen'}"
@@ -126,10 +129,12 @@
         </div>
     </div>
 
+  @if (collapsible()) {
     <button mat-icon-button (click)="toggleExpand()">
         <mat-icon *ngIf="expandLess" fontSet="material-icons-round">expand_less</mat-icon>
         <mat-icon *ngIf="!expandLess" fontSet="material-icons-round">expand_more</mat-icon>
     </button>
+  }
     
 </div>
 

@@ -12,8 +12,10 @@ import {
   OnInit,
   Output,
   ViewContainerRef,
+  booleanAttribute,
   computed,
-  inject
+  inject,
+  input
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -128,7 +130,12 @@ export class StoryToolbarComponent implements OnInit {
   private _viewContainerRef = inject(ViewContainerRef)
   private _widgetComponents?: Array<StoryWidgetComponentProvider> = inject(STORY_WIDGET_COMPONENT, { optional: true })
 
-  @Input() editable: boolean
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly collapsible = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   @Output() editableChange = new EventEmitter()
   @Output() fieldControlDrawer = new EventEmitter()
@@ -613,6 +620,13 @@ export class StoryToolbarComponent implements OnInit {
       element.style.right = 'auto'
       element.style.left = '14px'
     }
+  }
+
+  resetPosition() {
+    const element: HTMLElement = this._elRef.nativeElement
+    element.style.right = 'auto'
+    element.style.left = '0'
+    element.style.transform = 'translate(0px, 0px)'
   }
 
   openNewPage() {
