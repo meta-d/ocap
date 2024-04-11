@@ -42,3 +42,6 @@ $prefix-color: (#{$prefix}, color);
     }
   }
 }
+.mat-error {
+  color: var(--mat-form-field-error-text-color);
+}

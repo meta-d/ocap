@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, EventEmitter, forwardRef, HostBinding, inject, Input, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
+import { AfterViewInit, booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, EventEmitter, forwardRef, HostBinding, inject, input, Output, signal, ViewChild, ViewContainerRef } from '@angular/core'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
@@ -31,10 +31,11 @@ import {
   ParameterProperty,
   PropertyDimension,
   IntrinsicMemberProperties,
+  isEntitySet,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
-import { BehaviorSubject, combineLatest, firstValueFrom, Observable } from 'rxjs'
-import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, pairwise } from 'rxjs/operators'
+import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
+import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, pairwise, switchMap } from 'rxjs/operators'
 import { FormattingComponent } from '@metad/components/entity'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreService } from '@metad/core'
@@ -42,7 +43,6 @@ import { MatSelect, MatSelectModule } from '@angular/material/select'
 import { getEntityMeasures, PropertyAttributes } from '@metad/ocap-core'
 import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ControlOptions, NgmValueHelpComponent } from '@metad/ocap-angular/controls'
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NgmEntityPropertyComponent, propertyIcon } from '@metad/ocap-angular/entity'
 import { CalculationEditorComponent } from '../calculation/index'
@@ -58,8 +58,9 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatListModule } from '@angular/material/list'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatBadgeModule } from '@angular/material/badge'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 
 
 export enum PropertyCapacity {
@@ -112,6 +113,7 @@ export enum PropertyCapacity {
     MatListModule,
     MatCheckboxModule,
     MatBadgeModule,
+    MatProgressSpinnerModule,
     TranslateModule,
     NgmCommonModule,
     NgmEntityPropertyComponent
@@ -149,65 +151,44 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     },
   ]
 
-  @Input() label: string
-  @Input() get required(): boolean {
-    return this._required
-  }
-  set required(value: any) {
-    this._required = coerceBooleanProperty(value)
-  }
-  private _required: boolean
+  /**
+  |--------------------------------------------------------------------------
+  | Inputs and Outputs
+  |--------------------------------------------------------------------------
+  */
+  readonly label = input<string>()
+  readonly value = signal<Dimension | Measure>(null)
+  readonly capacities = input<PropertyCapacity[]>()
 
-  @Input() value: Dimension | Measure
+  readonly required = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() capacities: PropertyCapacity[]
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() get editable(): boolean {
-    return this._editable
-  }
-  set editable(value: string | boolean) {
-    this._editable = coerceBooleanProperty(value)
-  }
-  private _editable = false
+  readonly showAttributes = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() get showAttributes(): boolean {
-    return this._showAttributes
-  }
-  set showAttributes(value: string | boolean) {
-    this._showAttributes = coerceBooleanProperty(value)
-  }
-  private _showAttributes = false
+  readonly dataSettings = input<DataSettings>()
+  readonly dataSettings$ = toObservable(this.dataSettings)
 
-  @Input() get dataSettings() {
-    return this.dataSettings$.value
-  }
-  set dataSettings(value) {
-    this.dataSettings$.next(value)
-  }
-  private readonly dataSettings$ = new BehaviorSubject<DataSettings>(null)
+  readonly entityType = input<EntityType>()
+  
+  readonly restrictedDimensions = input<string[]>()
+  readonly restrictedDimensions$ = toObservable(this.restrictedDimensions)
 
-  @Input() get entityType() {
-    return this.entityType$.value
-  }
-  set entityType(value) {
-    this.entityType$.next(value)
-  }
-  private readonly entityType$ = new BehaviorSubject<EntityType>(null)
+  readonly coreService = input<NxCoreService>()
+  readonly dsCoreService = input<NgmDSCoreService>()
 
-  @Input() get restrictedDimensions() {
-    return this.restrictedDimensions$.value
-  }
-  set restrictedDimensions(value) {
-    this.restrictedDimensions$.next(value)
-  }
-  private readonly restrictedDimensions$ = new BehaviorSubject<string[]>(null)
+  readonly syntax = input<Syntax>()
+  readonly disabled = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() coreService: NxCoreService
-  @Input() dsCoreService: NgmDSCoreService
-
-  @Input() syntax: Syntax
-  @Input() displayDensity: DisplayDensity | string
-  @Input() disabled: boolean
+  readonly displayDensity = input<DisplayDensity | string>(null)
 
   @Output() valueChange = new EventEmitter()
   @Output() calculationChange = new EventEmitter()
@@ -240,6 +221,44 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   get search() {
     return this.searchControl.value
   }
+  readonly _disabled = signal(false)
+
+  readonly #dataSettings = computed(() => ({
+    dataSource: this.dataSettings()?.dataSource,
+    entitySet: this.dataSettings()?.entitySet,
+  }), { equal: isEqual })
+
+  readonly entityTypeLoading = signal(false)
+  readonly entityTypeError = signal<string>('')
+  readonly #entityType = toSignal(this.dataSettings$.pipe(
+    map((dataSettings) => ({
+      dataSource: dataSettings?.dataSource,
+      entitySet: dataSettings?.entitySet,
+    })),
+    distinctUntilChanged(isEqual),
+    switchMap((dataSettings) => {
+      if (dataSettings.dataSource && dataSettings.entitySet && this.dsCoreService()) {
+        this.entityTypeError.set('')
+        this.entityTypeLoading.set(true)
+        return this.dsCoreService().getDataSource(dataSettings.dataSource).pipe(
+          switchMap((dataSource) => dataSource.selectEntitySet(dataSettings.entitySet)),
+          map((entitySet) => {
+            this.entityTypeLoading.set(false)
+            if (!isEntitySet(entitySet)) {
+              this.entityTypeError.set(entitySet.message)
+              return null
+            }
+            return entitySet.entityType
+          })
+        )
+      }
+      return of(null)
+    }),
+  ))
+
+  readonly entityType$ = combineLatest([toObservable(this.entityType), toObservable(this.#entityType)]).pipe(
+    map(([iEntityType, entityType]) => iEntityType ?? entityType)
+  )
 
   /**
    * 包含 parameters 字段们
@@ -248,7 +267,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     filter(negate(isNil)),
     map((entityType: EntityType) => {
       const properties: Array<PropertyAttributes> = Object.values(entityType.properties)
-      if (this.capacities?.includes(PropertyCapacity.MeasureGroup)) {
+      if (this.capacities()?.includes(PropertyCapacity.MeasureGroup)) {
         const caption = this.getTranslation('COMPONENTS.PROPERTY.MeasureGroup', {Default: 'Measure Group'})
         properties.push({
           name: C_MEASURES,
@@ -361,7 +380,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   readonly indicators$ = this.measures$.pipe(map(calculations => calculations?.filter(isIndicatorMeasureProperty) || []))
 
   private readonly _members = toSignal(this.formGroup.get('members').valueChanges.pipe(startWith([])))
-  public readonly membersSignal = computed(() => this.isMeasure() ? getEntityMeasures(this.entityType).map((property) => ({
+  public readonly membersSignal = computed(() => this.isMeasure() ? getEntityMeasures(this.entityType()).map((property) => ({
     ...property,
     selected: this._members()?.some((member) => member === property.name)
   })) : null )
@@ -572,25 +591,25 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   }
 
   get showDimension() {
-    return this.capacities?.includes(PropertyCapacity.Dimension)
+    return this.capacities()?.includes(PropertyCapacity.Dimension)
   }
   get showMeasure() {
-    return this.capacities?.includes(PropertyCapacity.Measure)
+    return this.capacities()?.includes(PropertyCapacity.Measure)
   }
   get showParameter() {
-    return this.capacities?.includes(PropertyCapacity.Parameter)
+    return this.capacities()?.includes(PropertyCapacity.Parameter)
   }
   get showMeasureControl() {
-    return this.capacities?.includes(PropertyCapacity.MeasureControl)
+    return this.capacities()?.includes(PropertyCapacity.MeasureControl)
   }
   get showMeasureAttributes() {
-    return this.capacities?.includes(PropertyCapacity.MeasureAttributes)
+    return this.capacities()?.includes(PropertyCapacity.MeasureAttributes)
   }
   get showOrder() {
-    return this.capacities?.includes(PropertyCapacity.Order)
+    return this.capacities()?.includes(PropertyCapacity.Order)
   }
 
-  showMore = signal(false)
+  readonly showMore = signal(false)
 
   private onChange: any
   private onTouched: any
@@ -608,7 +627,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
    */
   private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), filter(([prev, curr]) => !!prev), takeUntilDestroyed(this._destroyRef),)
     .subscribe(([,dimension]) => {
-      const property = getEntityProperty<PropertyDimension>(this.entityType, dimension)
+      const property = getEntityProperty<PropertyDimension>(this.entityType(), dimension)
       // Reset all fields and set default hierarchy
       this.formGroup.setValue({
         ...this._formValue,
@@ -623,11 +642,19 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       })
     })
 
+  constructor() {
+    effect(() => {
+      if (!isNil(this.disabled())) {
+        this._disabled.set(this.disabled())
+      }
+    }, { allowSignalWrites: true })
+  }
+
   writeValue(obj: any): void {
-    this.value = obj ?? {}
+    this.value.set(obj ?? {})
     // 避免双向绑定的循环更新
-    if (obj && !isEqual(this.value, this.formGroup.value)) {
-      this.patchValue(this.value)
+    if (obj && !isEqual(this.value(), this.formGroup.value)) {
+      this.patchValue(this.value())
     }
   }
   registerOnChange(fn: any): void {
@@ -637,7 +664,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
+    this._disabled.set(isDisabled)
   }
 
   ngAfterViewInit(): void {
@@ -645,7 +672,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
      * ngOnInit 后 template 完成各订阅后再发送初始值, 不记得什么情况下会报 "ExpressionChangedAfterItHasBeenCheckedError" 的错误
      * writeValue 双向绑定初始值是在 template 订阅之前, 所以初始值要放在 ngAfterViewInit
      */
-    this.patchValue(this.value)
+    this.patchValue(this.value())
 
     // subscribe formGroup to export value
     this.formGroup.valueChanges.pipe(
@@ -729,8 +756,8 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     const result = await firstValueFrom(this._dialog.open(NgmValueHelpComponent, {
       viewContainerRef: this._viewContainerRef,
       data: {
-        dsCoreService: this.dsCoreService,
-        dataSettings: this.dataSettings,
+        dsCoreService: this.dsCoreService(),
+        dataSettings: this.dataSettings(),
         dimension: cloneDeep(omit(this.formGroup.value, 'level')),
         slicer: {
           exclude: this.exclude,
@@ -755,11 +782,11 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     event.stopPropagation()
 
     const data = {
-      dataSettings: this.dataSettings,
-      entityType: this.entityType,
-      syntax: this.syntax,
-      coreService: this.coreService,
-      dsCoreService: this.dsCoreService,
+      dataSettings: this.dataSettings(),
+      entityType: this.entityType(),
+      syntax: this.syntax(),
+      coreService: this.coreService(),
+      dsCoreService: this.dsCoreService(),
       value: null
     }
 
@@ -788,10 +815,10 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       {
         viewContainerRef: this._viewContainerRef,
         data: {
-          coreService: this.coreService,
-          dsCoreService: this.dsCoreService,
-          dataSettings: this.dataSettings,
-          entityType: this.entityType,
+          coreService: this.coreService(),
+          dsCoreService: this.dsCoreService(),
+          dataSettings: this.dataSettings(),
+          entityType: this.entityType(),
           value: calculationProperty,
           syntax: Syntax.MDX,
         },
@@ -836,10 +863,10 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       .open(NgmParameterCreateComponent, {
         viewContainerRef: this._viewContainerRef,
         data: {
-          dsCoreService: this.dsCoreService,
-          dataSettings: this.dataSettings,
-          entityType: this.entityType,
-          coreService: this.coreService,
+          dsCoreService: this.dsCoreService(),
+          dataSettings: this.dataSettings(),
+          entityType: this.entityType(),
+          coreService: this.coreService(),
           dimension: pick(this.formGroup.value, 'dimension', 'hierarchy')
         }
       })
@@ -855,10 +882,10 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
       .open(NgmParameterCreateComponent, {
         viewContainerRef: this._viewContainerRef,
         data: {
-          dsCoreService: this.dsCoreService,
-          dataSettings: this.dataSettings,
-          entityType: this.entityType,
-          coreService: this.coreService,
+          dsCoreService: this.dsCoreService(),
+          dataSettings: this.dataSettings(),
+          entityType: this.entityType(),
+          coreService: this.coreService(),
           name: name ?? this.formGroup.value.dimension
         }
       })
