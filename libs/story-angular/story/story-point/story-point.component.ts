@@ -526,7 +526,7 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   selectWidget(widget: StoryWidget, disableFab: boolean) {
-    if (this.editable || !disableFab) {
+    if (this.editable() || !disableFab) {
       this.currentWidget = widget
       this.storyPointService.setCurrentWidgetId(this.currentWidget.key)
     }
@@ -685,7 +685,7 @@ export class NxStoryPointComponent implements OnChanges {
   })
 
   openEditAttributes() {
-    if (this.editable) {
+    if (this.editable()) {
       this.openPageDesigner()
       this.settingsService?.setEditable(true)
     }

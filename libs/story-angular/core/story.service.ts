@@ -144,6 +144,7 @@ export class NxStoryService {
     filter((story) => Boolean(story?.id)), map((story) => story?.options), distinctUntilChanged(isEqual),
     shareReplay(1)
   )
+  readonly storyOptions = toSignal(this.storyOptions$)
 
   // 语言代码
   readonly locale$ = this.storyOptions$.pipe(map((options) => options?.locale), distinctUntilChanged())

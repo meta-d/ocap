@@ -1,4 +1,3 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CdkDrag } from '@angular/cdk/drag-drop'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { DOCUMENT } from '@angular/common'
@@ -21,9 +20,11 @@ import {
   ViewChild,
   ViewChildren,
   ViewContainerRef,
+  booleanAttribute,
   computed,
   effect,
   inject,
+  input,
   signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -52,10 +53,10 @@ import {
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { ISmartFilterBarOptions } from '@metad/story/widgets/filter-bar'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { startsWith } from 'lodash-es'
+import { isEqual, startsWith } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, EMPTY, Observable, combineLatest, firstValueFrom, interval, merge } from 'rxjs'
+import { BehaviorSubject, EMPTY, Observable, firstValueFrom, interval, merge } from 'rxjs'
 import {
   combineLatestWith,
   debounce,
@@ -123,13 +124,9 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   }
   private story$ = new BehaviorSubject<Story>(null)
 
-  @Input() get editable(): boolean {
-    return this._editable()
-  }
-  set editable(value: string | boolean) {
-    this._editable.set(coerceBooleanProperty(value))
-  }
-  private readonly _editable = signal(false)
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   /**
    * 默认打开的 Page
@@ -192,9 +189,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   readonly tabIsPoint = computed(() => this.preferences()?.story?.tabBar === 'point')
 
   readonly isMobile$ = this.storyService.isMobile$
-  readonly pageStyle$ = this.storyService.preferences$.pipe(
-    map((preferences) => componentStyling(preferences?.pageStyling) ?? preferences?.page?.styles) // 向后兼容
-  )
+
 
   readonly displayPoints$ = this.storyService.displayPoints$
   readonly showStoryFilterBar$ = this.storyService.storyOptions$.pipe(
@@ -212,29 +207,60 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   public readonly storySizeStyles = toSignal(this.storyService.storySizeStyles$)
 
-  public readonly scaleStyles$ = this.storyService.storyOptions$.pipe(
-    map((options) => options?.scale),
-    distinctUntilChanged(),
-    map((scale) => {
-      return scale
+  // public readonly scaleStyles$ = $.pipe(
+  //   map((options) => options?.scale),
+  //   distinctUntilChanged(),
+  //   map((scale) => {
+  //     return scale
+  //       ? {
+  //           transform: `scale(${scale / 100})`,
+  //           'transform-origin': 'left top'
+  //         }
+  //       : {}
+  //   })
+  // )
+  readonly scaleStyles = computed(() => {
+    const storyOptions = this.storyService.storyOptions()
+    const scale = storyOptions?.scale
+    return scale
         ? {
             transform: `scale(${scale / 100})`,
             'transform-origin': 'left top'
           }
         : {}
-    })
-  )
-  readonly storyStyle$ = combineLatest([
-    this.storyService.preferences$.pipe(map((preferences) => componentStyling(preferences?.storyStyling))),
-    this.scaleStyles$
-  ]).pipe(
-    map(([storyStyling, scaleStyles]) => {
-      return {
-        ...storyStyling,
-        ...scaleStyles
-      }
-    })
-  )
+  }, { equal: isEqual})
+  readonly preferencesStoryStyling = computed(() => componentStyling(this.storyService.preferences()?.storyStyling))
+  readonly preferencesPageStyling = computed(() => componentStyling(this.storyService.preferences()?.pageStyling) ?? this.storyService.preferences()?.page?.styles)
+
+  readonly storyStyle = computed(() => {
+    const storyStyling = this.preferencesStoryStyling()
+    // const scaleStyles = this.scaleStyles()
+    return {
+      ...storyStyling,
+      // ...scaleStyles
+    }
+  })
+
+  readonly pageStyle = computed(() => {
+    const preferencesPageStyling = this.preferencesPageStyling()
+    const scaleStyles = this.scaleStyles()
+    return {
+      ...preferencesPageStyling,
+      ...scaleStyles
+    }
+  })
+
+  // readonly storyStyle$ = combineLatest([
+  //   this.storyService.preferences$.pipe(map((preferences) => componentStyling(preferences?.storyStyling))),
+  //   this.scaleStyles$
+  // ]).pipe(
+  //   map(([storyStyling, scaleStyles]) => {
+  //     return {
+  //       ...storyStyling,
+  //       ...scaleStyles
+  //     }
+  //   })
+  // )
 
   public readonly isPanMode$ = this.storyService.isPanMode$
   public readonly disablePanMode$ = this.isPanMode$.pipe(map((value) => !value))
@@ -397,12 +423,13 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     public settingsService?: NxSettingsPanelService
   ) {
     super({} as Story)
+
+    effect(() => {
+      this.storyService.setEditable(this.editable())
+    }, { allowSignalWrites: true })
   }
 
-  ngOnChanges({ editable, pageKey, filterBarOpened }: SimpleChanges): void {
-    if (editable) {
-      this.storyService.setEditable(editable.currentValue)
-    }
+  ngOnChanges({ pageKey, filterBarOpened }: SimpleChanges): void {
     if (pageKey) {
       if (pageKey.currentValue) {
         this.storyService.setCurrentPageKey(pageKey.currentValue)

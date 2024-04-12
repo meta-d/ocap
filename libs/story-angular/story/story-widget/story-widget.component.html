@@ -13,7 +13,7 @@
 <div class="ngm-story-widget__fab-menu flex flex-col justify-start items-center gap-2"
   cdkDragLockAxis="y"
   cdkDrag
-  [cdkDragDisabled]="editable"
+  [cdkDragDisabled]="editable()"
   [cdkDragStartDelay]="100"
   (cdkDragMoved)="onDragFab($event)">
   
@@ -129,7 +129,7 @@
       {{ 'Story.Widget.Share' | translate: {Default: "Share"} }}
     </button>
 
-    <ng-container *ngIf="editable">
+    <ng-container *ngIf="editable()">
       <mat-divider></mat-divider>
       <ng-container *ngIf="allowMultiLayer$ | async">
         <button cdkMenuItem (click)="bringForward()">

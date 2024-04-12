@@ -29,7 +29,7 @@
             <gridster-item class="ngm-story__widget group"
                 [item]="widget.position"
                 [ngStyle]="{'z-index': widget.key===currentWidget?.key ? maxLayerIndex : widget.position.layerIndex}"
-                [class.editable]="editable"
+                [class.editable]="editable()"
                 [class.active]="widget.key===currentWidget?.key"
                 [class.ngm-fullscreen]="widget.fullscreen"
                 [class.ngm-story__focus]="focus === widget.key"
@@ -44,7 +44,7 @@
                     (focusChange)="onFocus(widget.key)">
                 </ngm-story-widget>
                 <!-- <div *ngIf="editable" class="ngm-drag-handler"></div> -->
-                <div *ngIf="editable && (resizingWidgetKey === widget.key || !resizingWidgetKey)" class="ngm-story__layout-widget-size absolute -top-6 right-0 text-xs font-semibold py-1 px-2 rounded text-gray-600 bg-orange-200 last:mr-0 mr-1 hidden group-hover:inline-block"
+                <div *ngIf="editable() && (resizingWidgetKey === widget.key || !resizingWidgetKey)" class="ngm-story__layout-widget-size absolute -top-6 right-0 text-xs font-semibold py-1 px-2 rounded text-gray-600 bg-orange-200 last:mr-0 mr-1 hidden group-hover:inline-block"
                     [class.ngm-story__layout-widget-size-show]="resizingWidgetKey === widget.key"
                 >
                     {{widget.position.cols}}x{{widget.position.rows}}
@@ -92,7 +92,7 @@
 }
 
 <ng-template #defaultTemplate let-widget let-laneKey="laneKey" let-editable="editable" let-selected="selected">
-    <ngm-story-widget [key]="widget.key" [laneKey]="laneKey" [editable]="editable" [selected]="selected" style="width: 100%;height: 100%;"></ngm-story-widget>
+    <ngm-story-widget [key]="widget.key" [laneKey]="laneKey" [editable]="editable" [selected]="selected" style="width: 100%;height: 100%;"/>
 </ng-template>
 
 <ng-template #context_menu>
@@ -109,7 +109,7 @@
             <mat-icon fontSet="material-icons-outlined">share</mat-icon>
             {{ 'Story.Story.Share' | translate: {Default: "Share"} }}
         </button>
-        <ng-container *ngIf="editable">
+        <ng-container *ngIf="editable()">
             <mat-divider></mat-divider>
 
             <button cdkMenuItem (click)="openEditAttributes()">

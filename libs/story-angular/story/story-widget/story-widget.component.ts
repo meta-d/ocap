@@ -184,7 +184,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   private readonly widgets = toSignal(this.storyPointService.widgets$)
 
   readonly component$ = this.widget$.pipe(select((widget) => {
-    if (this.editable && widget?.isTemplate) {
+    if (this.editable() && widget?.isTemplate) {
       return null
     }
     return widget?.component
@@ -638,7 +638,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
   openEditAttributes() {
-    if (this.editable) {
+    if (this.editable()) {
       this.pointComponent?.selectWidget(this.widget(), this.disableFab)
       this.openDesigner()
       this.settingsService?.setEditable(true)

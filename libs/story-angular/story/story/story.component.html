@@ -1,15 +1,12 @@
-<div #panDragHandler class="ngm-story__story-container flex w-full h-full"
+<div  class="ngm-story__story-container flex w-full h-full"
     [ngStyle]="storySizeStyles()"
     ngmTransformScale
-    [ngmTransformDisabled]="editable"
-    cdkDrag
-    [cdkDragDisabled]="disablePanMode$ | async"
-    [class.cursor-grab.select-none]="isPanMode$ | async"
+    [ngmTransformDisabled]="editable()"
     >
     <mat-tab-group #pageTabs class="ngm-story__point-tab-group w-full h-full" disableRipple preserveContent
         [attr.mat-align-tabs]="pageHeaderAlignTabs()"
         [mat-stretch-tabs]="pageHeaderStretchTabs()"
-        [ngStyle]="storyStyle$ | async"
+        [ngStyle]="storyStyle()"
         [class.tabBarHidden]="tabHidden()"
         [selectedIndex]="currentPageIndex()"
         [headerPosition]="pageHeaderPosition()"
@@ -17,16 +14,17 @@
         (selectedTabChange)="onSelectedTabChange($event)"
         (click)="onSelectedIndex(pageTabs.selectedIndex)"
     >
-        <mat-tab *ngFor="let point of displayPoints$ | async; index as i; last as isLast; first as isFirst; trackBy: trackByKey">
-
+      @for (point of displayPoints$ | async; track point.key; let i = $index; let isLast = $last; let isFirst = $first;) {
+        <mat-tab>
             <ng-template matTabLabel>
                 <div class="relative flex items-center">
+                  @if (story_point.dirtySignal()) {
+                    <span class="absolute top-0 -left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
+                  }
 
-                    <span *ngIf="story_point.dirtySignal()" class="absolute top-0 -left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
-
-                    <span [ngClass]="{'ngm-story--point-hidden': point.hidden && editable}">{{ point.name }}</span>
+                    <span [ngClass]="{'ngm-story--point-hidden': point.hidden && editable()}">{{ point.name }}</span>
                     
-                    <button *ngIf="editable" mat-icon-button disableRipple displayDensity="cosy" class="ngm-story-point__tab-menu-trigger"
+                    <button *ngIf="editable()" mat-icon-button disableRipple displayDensity="cosy" class="ngm-story-point__tab-menu-trigger"
                         (click)="$event.preventDefault();$event.stopPropagation()"
                         [matMenuTriggerFor]="pointMenu"
                         [matMenuTriggerData]="{point: point, component: story_point}"
@@ -38,12 +36,15 @@
                 </div>
             </ng-template>
             
-            <ngm-story-point #story_point class="ngm-color"
-                [ngStyle]="pageStyle$ | async"
+            <ngm-story-point #story_point class="ngm-color" #panDragHandler
+                cdkDrag
+                [cdkDragDisabled]="disablePanMode$ | async"
+                [class.cursor-grab.select-none]="isPanMode$ | async"
+                [ngStyle]="pageStyle()"
                 [ngClass]="point.styling?.background ? 'ngm-color__' + point.styling.background : ''"
                 [story]="story"
                 [key]="point.key"
-                [editable]="editable"
+                [editable]="editable()"
                 [opened]="i === pageTabs.selectedIndex"
                 [focus]="pageKey && point.key === pageKey ? widgetKey : i === 0 ? widgetKey : null"
                 [isFirst]="isFirst"
@@ -52,6 +53,7 @@
             >
             </ngm-story-point>
         </mat-tab>
+      }
     </mat-tab-group>
 
     <!-- 暂时没时间实现 global filters 功能
@@ -76,7 +78,7 @@
             [dataSettings]="filterBar()?.dataSettings"
             [options]="filterBar()?.options"
             [styling]="filterBar()?.styling"
-            [editable]="editable"
+            [editable]="editable()"
             (optionsChange)="onStoryFilterBarOptionsChange($event)">
         </pac-widget-filter-bar> -->
     </div>
