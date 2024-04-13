@@ -27,7 +27,7 @@ import {
   input,
   signal
 } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { HammerModule } from '@angular/platform-browser'
 import { ActivatedRoute, Params, Router } from '@angular/router'
@@ -35,9 +35,8 @@ import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/component
 import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
 import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NgmSmartFilterBarService, OcapCoreModule, isNotEmpty } from '@metad/ocap-angular/core'
+import { NgmSmartFilterBarService, OcapCoreModule, effectAction, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
-import { ComponentStore } from '@metad/store'
 import {
   ComponentSettingsType,
   MoveDirection,
@@ -104,7 +103,7 @@ import { NxStoryPointComponent } from '../story-point/story-point.component'
     NxStoryPointComponent
   ]
 })
-export class NxStoryComponent extends ComponentStore<Story> implements OnChanges, AfterViewInit {
+export class NxStoryComponent implements OnChanges, AfterViewInit {
   ComponentType = WidgetComponentType
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
@@ -112,17 +111,16 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
 
   readonly #logger = inject(NGXLogger)
   private _renderer = inject(Renderer2)
-  // private _cdr = inject(ChangeDetectorRef)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
-  @Input() get story(): Story {
-    return this.story$.value
-  }
-  set story(value) {
-    this.story$.next(value)
-  }
-  private story$ = new BehaviorSubject<Story>(null)
+  /**
+  |--------------------------------------------------------------------------
+  | Inputs and Outputs
+  |--------------------------------------------------------------------------
+  */
+  readonly story = input<Story>(null)
+  private story$ = toObservable(this.story)
 
   readonly editable = input<boolean, string | boolean>(false, {
     transform: booleanAttribute
@@ -422,8 +420,6 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
     @Optional()
     public settingsService?: NxSettingsPanelService
   ) {
-    super({} as Story)
-
     effect(() => {
       this.storyService.setEditable(this.editable())
     }, { allowSignalWrites: true })
@@ -496,7 +492,7 @@ export class NxStoryComponent extends ComponentStore<Story> implements OnChanges
   /**
    * Open designer for filter bar
    */
-  readonly openStoryFilterBar = this.effect((origin$: Observable<void>) => {
+  readonly openStoryFilterBar = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       withLatestFrom(this.storyService.id$),
       switchMap(

@@ -1,21 +1,41 @@
 import { Injectable } from '@angular/core'
-import { ComponentStore } from '@metad/store'
-import { Subject } from 'rxjs'
+import { write } from '@metad/core'
 import { FlexLayout, ID } from '@metad/story/core'
+import { Store, createStore, select, withProps } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
+import { isEqual, negate } from 'lodash-es'
+import { Subject } from 'rxjs'
 
 export interface ResponsiveState {
   selected: string
 }
 
 @Injectable()
-export class ResponsiveService extends ComponentStore<ResponsiveState> {
+export class ResponsiveService {
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createStore({ name: 'story_responsive' }, withProps<ResponsiveState>({ selected: null }))
+  readonly pristineStore = createStore(
+    { name: 'story_responsive_pristine' },
+    withProps<ResponsiveState>({ selected: null })
+  )
+  readonly #stateHistory = stateHistory<Store, ResponsiveState>(this.store, {
+    comparatorFn: negate(isEqual)
+  })
 
-  readonly selected$ = this.select((state) => state.selected)
+  readonly selected$ = this.store.pipe(select((state) => state.selected))
 
   public flexLayoutChange$ = new Subject<FlexLayout>()
 
-  constructor() {
-    super({} as ResponsiveState)
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: ResponsiveState, ...params: OriginType[]) => ResponsiveState | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
   }
 
   readonly toggle = this.updater((state, key: ID) => {
