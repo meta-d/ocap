@@ -29,6 +29,7 @@ import {
   isAdvancedFilter,
   getDimensionMemberCaption,
   ISlicer,
+  Property,
 } from '@metad/ocap-core'
 import { ECharts, format, time, use, registerMap, graphic, getMap } from 'echarts/core'
 import {GlobeComponent, Geo3DComponent}  from 'echarts-gl/components'
@@ -161,7 +162,8 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
                   lastValueFrom,
                   assignDeepOmitBlank,
                   omitBlank,
-                  formatting
+                  formatting,
+                  getPropertyCaption
                 }, data)
                   
                 if (customContext) {
@@ -521,4 +523,11 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
       )
     )
   }
+}
+
+/**
+ * @deprecated 向后兼容，Will remove in version 2.3
+ */
+function getPropertyCaption(property: Property) {
+  return property.memberCaption || property.name
 }
