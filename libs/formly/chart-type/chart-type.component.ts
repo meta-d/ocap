@@ -27,6 +27,7 @@ import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-a
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { EditorThemeMap } from '@metad/components/editor'
+import { NgmFormlyArrayComponent } from '@metad/formly/array'
 
 
 @Component({
@@ -58,7 +59,11 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     }))
   ]
 
+  /**
+   * @deprecated use formlyArray2
+   */
   readonly formlyArray? = inject(MetadFormlyArrayComponent, { optional: true })
+  readonly formlyArray2? = inject(NgmFormlyArrayComponent, { optional: true })
   readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
   readonly #copilotService = inject(CopilotService)
   readonly #translate = inject(TranslateService)
@@ -322,6 +327,7 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     if (this.field.form instanceof FormArray) {
       const index = this.field.parent.fieldGroup.indexOf(this.field)
       this.formlyArray?.remove(index)
+      this.formlyArray2?.remove(index)
     } else {
       const index = this.field.parent.fieldGroup.findIndex((field) => field.key === this.field.key)
       if (index > -1) {

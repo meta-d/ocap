@@ -11,6 +11,14 @@ import { NGXLogger } from 'ngx-logger'
 import { filter, isObservable, of } from 'rxjs'
 import { DesignerSchema, STORY_DESIGNER_FORM, STORY_DESIGNER_SCHEMA } from '../types'
 
+/**
+ * Designer form component
+ * Two ways to bind model value:
+ * 1. Through STORY_DESIGNER_FORM to bind model value
+ * 2. Through ControlValueAccessor to bind model value
+ * 
+ * Both ways are build formly form through STORY_DESIGNER_SCHEMA
+ */
 @Component({
   standalone: true,
   selector: 'ngm-designer-form',
@@ -28,7 +36,7 @@ import { DesignerSchema, STORY_DESIGNER_FORM, STORY_DESIGNER_SCHEMA } from '../t
 export class NgmDesignerFormComponent implements ControlValueAccessor {
   readonly #logger = inject(NGXLogger)
   private schema: DesignerSchema = inject(STORY_DESIGNER_SCHEMA)
-  readonly #settingsComponent = inject(STORY_DESIGNER_FORM)
+  readonly #settingsComponent? = inject(STORY_DESIGNER_FORM, { optional: true })
 
   formGroup = new FormGroup({})
   model = {}
@@ -39,9 +47,9 @@ export class NgmDesignerFormComponent implements ControlValueAccessor {
 
   public readonly fields = toSignal(this.schema.getSchema())
 
-  private modelSub = (isObservable(this.#settingsComponent.model)
+  private modelSub = (isObservable(this.#settingsComponent?.model)
     ? this.#settingsComponent.model
-    : of(this.#settingsComponent.model)
+    : of(this.#settingsComponent?.model)
   )
     .pipe(
       filter((model) => this.initial() || !isEqual(model, this.model)),
@@ -88,7 +96,7 @@ export class NgmDesignerFormComponent implements ControlValueAccessor {
    */
   onSubmit(value?: unknown) {
     const newValue = value ?? this.model
-    this.#settingsComponent.submit.next(newValue)
+    this.#settingsComponent?.submit.next(newValue)
     this.onChange?.(newValue)
   }
 }
