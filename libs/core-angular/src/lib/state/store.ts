@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { PropsFactory, ReducerContext, Store, StoreConfig, StoreDef, createState, select } from '@ngneat/elf'
 import { produce } from 'immer'
 import { cloneDeep, isEqual, isObject, negate, pick } from 'lodash-es'
+import { NGXLogger } from 'ngx-logger'
 import { Observable, Subscription, distinctUntilChanged, filter, map, startWith } from 'rxjs'
 import { nonNullable } from '../helpers'
 
@@ -20,7 +21,9 @@ export interface SubStoreConfig extends StoreConfig {
 }
 
 export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extends Store<SDef, State> {
-  #destroyRef = inject(DestroyRef)
+  readonly #destroyRef = inject(DestroyRef)
+  readonly #logger? = inject(NGXLogger, { optional: true })
+
   #subscription: Subscription
   #upbackSubscription: Subscription
 
@@ -38,14 +41,12 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
   }
 
   subscribeParent(properties: Array<string | number>) {
-    const base = this.parent.pipe(
-      startWith(this.parent.getValue())
-    )
+    const base = this.parent.pipe(startWith(this.parent.getValue()))
     return properties.reduce((obs, prop) => {
       return obs.pipe(
         select((state) => {
-          return Array.isArray(state) ?
-            state.find((item) => item?.[this.options.arrayKey ?? 'id'] === prop)
+          return Array.isArray(state)
+            ? state.find((item) => item?.[this.options.arrayKey ?? 'id'] === prop)
             : state?.[prop]
         })
       )
@@ -60,13 +61,10 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
 
     this.#subscription?.unsubscribe()
     this.#subscription = this.subscribeParent(properties)
-      .pipe(
-        filter(nonNullable),
-        takeUntilDestroyed(this.#destroyRef)
-      )
+      .pipe(filter(nonNullable), takeUntilDestroyed(this.#destroyRef))
       .subscribe({
         next: (value) => {
-          console.log(`SubStore [${this.name}] update state from parent:`, value)
+          this.#logger?.trace(`SubStore [${this.name}] update state from parent:`, value)
           this.update(() => value)
         },
         error: (err) => {
@@ -80,7 +78,7 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
     this.#upbackSubscription?.unsubscribe()
     this.#upbackSubscription = this.pipe(distinctUntilChanged(), takeUntilDestroyed(this.#destroyRef)).subscribe(
       (newValue) => {
-        console.log(`SubStore [${this.name}] update back to parent:`, newValue)
+        this.#logger?.trace(`SubStore [${this.name}] update back to parent:`, newValue)
         this.parent.update(
           write((state) => {
             properties.reduce((accumulator, currentValue, currentIndex, arr) => {

@@ -1,9 +1,10 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DestroyRef, Inject, Injectable, Optional, effect, inject } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatSnackBar } from '@angular/material/snack-bar'
+import { createSubStore, dirtyCheckWith, isNotEmpty, isNotEqual, write } from '@metad/core'
+import { effectAction } from '@metad/ocap-angular/core'
 import { ISlicer, isAdvancedFilter, nonNullable } from '@metad/ocap-core'
-import { TranslateService } from '@ngx-translate/core'
-import { createSubStore, debugDirtyCheckComparator, dirtyCheckWith, isNotEmpty, isNotEqual, write } from '@metad/core'
 import {
   ID,
   LinkedAnalysisEvent,
@@ -23,6 +24,8 @@ import {
 } from '@metad/story/core'
 import { FlexItemType, FlexLayout } from '@metad/story/responsive'
 import { ISmartFilterBarOptions } from '@metad/story/widgets/filter-bar'
+import { select, withProps } from '@ngneat/elf'
+import { TranslateService } from '@ngx-translate/core'
 import { GridsterConfig } from 'angular-gridster2'
 import { assign, cloneDeep, compact, isEmpty, isEqual, isNil, merge, negate, omit, sortBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
@@ -37,9 +40,6 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { select, withProps } from '@ngneat/elf'
-import { effectAction } from '@metad/ocap-angular/core'
 
 /**
  * 状态中 StoryPoint 与 Widgets 分开控制修改状态
@@ -47,7 +47,6 @@ import { effectAction } from '@metad/ocap-angular/core'
  */
 @Injectable()
 export class NxStoryPointService {
-
   readonly #storyService = inject(NxStoryService)
   readonly destroyRef = inject(DestroyRef)
 
@@ -72,12 +71,11 @@ export class NxStoryPointService {
     withProps<StoryPoint>(null)
   )
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
-    // watchProperty: ['storyPoint'], 
-    // comparator: negate(isEqual)
-    comparator: debugDirtyCheckComparator
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
   })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
-  
+
   get storyPoint() {
     return this.store.getValue()
   }
@@ -92,10 +90,9 @@ export class NxStoryPointService {
   */
   public readonly linkedAnalysis$ = this.select2((state) => state.linkedAnalysis)
 
-  // readonly storyPoint$ = this.select((state) => state.storyPoint)
   readonly active$ = this.select2((state) => state.active)
   readonly fetched$ = this.select2((state) => state.fetched)
-  
+
   public readonly isEmpty$ = this.widgets$.pipe(
     combineLatestWith(this.fetched$),
     map(([widgets, fetched]) => fetched && isEmpty(widgets))
@@ -123,24 +120,12 @@ export class NxStoryPointService {
     distinctUntilChanged((x, y) => JSON.stringify(x) === JSON.stringify(y))
   )
 
-  readonly currentWidget$ = combineLatest([this.widgets$, this.stateStore.pipe(select((state) => state.currentWidgetKey))]).pipe(
-    select(([widgets, key]) => widgets?.find((item) => item.key === key))
-  )
+  readonly currentWidget$ = combineLatest([
+    this.widgets$,
+    this.stateStore.pipe(select((state) => state.currentWidgetKey))
+  ]).pipe(select(([widgets, key]) => widgets?.find((item) => item.key === key)))
 
   readonly responsive$ = this.select((state) => state?.responsive)
-
-  // dirtyQuery: DirtyCheckQuery = new DirtyCheckQuery<StoryPointState>(this as any, {
-  //   watchProperty: ['storyPoint'],
-  //   clean: (head, current) => {
-  //     return this._save(head.storyPoint, current.storyPoint)
-  //   }
-  // })
-  // widgetsDirtyQuery: DirtyCheckQuery = new DirtyCheckQuery<StoryPointState>(this as any, {
-  //   watchProperty: ['widgets'],
-  //   clean: (head, current) => {
-  //     return this._saveWidgets(head?.widgets, current.widgets)
-  //   }
-  // })
 
   /**
   |--------------------------------------------------------------------------
@@ -150,14 +135,6 @@ export class NxStoryPointService {
   private currentWidgetSub = this.currentWidget$.pipe(takeUntilDestroyed()).subscribe((widget) => {
     this.#storyService.setCurrentWidget(widget)
   })
-
-  // private isDirtySub = combineLatest([
-  //   this.dirtyQuery.isDirty$.pipe(startWith(false)),
-  //   this.widgetsDirtyQuery.isDirty$.pipe(startWith(false))
-  // ]).pipe(takeUntilDestroyed()).subscribe(([storyPoint, widgets]) => {
-  //   this.logger?.debug(`[StoryPointService] isDirty = ${storyPoint} & ${widgets}`)
-  //   this.patchState({ dirty: storyPoint || widgets })
-  // })
 
   // 监听故事的保存事件通知: 进行故事点和部件的保存
   private saveSub = this.#storyService.save$
@@ -179,15 +156,17 @@ export class NxStoryPointService {
     @Optional() protected logger?: NGXLogger,
     @Optional() private translateService?: TranslateService
   ) {
-
-    effect(() => {
-      this.stateStore.update((state) => {
-        return {
-          ...state,
-          dirty: this.dirtyCheckResult.dirty()
-        }
-      })
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        this.stateStore.update((state) => {
+          return {
+            ...state,
+            dirty: this.dirtyCheckResult.dirty()
+          }
+        })
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   readonly init = effectAction((key$: Observable<ID>) => {
@@ -196,12 +175,8 @@ export class NxStoryPointService {
         this.store.connect(['story', 'points', key])
         this.stateStore.connect(['points', key])
         this.pristineStore.connect(['story', 'points', key])
-
-        // this.connect(this.#storyService, { parent: ['points', key as string], arrayKey: 'key' })
       }),
       switchMap((key: ID) => {
-        // this.dirtyQuery.setHead()
-
         return this.#storyService.selectPointEvent(key).pipe(
           tap((event) => {
             if (event.type === StoryEventType.CREATE_WIDGET) {
@@ -223,20 +198,15 @@ export class NxStoryPointService {
   async fetchStoryPoint() {
     const storyPoint = this.storyPoint
     const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id))
-    // this._setWidgets(point.widgets)
     this.initWidgets(point.widgets)
 
     this.stateStore.update((state) => ({
       ...state,
-      fetched: true,
+      fetched: true
     }))
-    // this.patchState({ fetched: true })
-    // this.widgetsDirtyQuery.setHead()
   }
 
   async active(active: boolean) {
-    // this.patchState({ active })
-
     this.stateStore.update((state) => ({ ...state, active }))
     const fetched = await firstValueFrom(this.fetched$)
     if (active && !fetched) {
@@ -247,7 +217,6 @@ export class NxStoryPointService {
   }
 
   save() {
-    // this.dirtyQuery.reset()
     const pristinePoint = this.pristineStore.getValue()
     const currentPoint = this.store.getValue()
 
@@ -260,7 +229,7 @@ export class NxStoryPointService {
   }
 
   patchState(state: Partial<StoryPointState>) {
-    this.stateStore.update((s) => ({...s, ...state}))
+    this.stateStore.update((s) => ({ ...s, ...state }))
   }
 
   updater<ProvidedType = void, OriginType = ProvidedType>(
@@ -289,25 +258,17 @@ export class NxStoryPointService {
   initWidgets(widgets: Array<StoryWidget>) {
     // 对组件排序, 在移动端展示效果
     sortBy(widgets, 'index')
-    this.store.update(write((state) => {
-      state.widgets = widgets
-    }))
-    this.pristineStore.update(write((state) => {
-      state.widgets = widgets
-    }))
+    this.store.update(
+      write((state) => {
+        state.widgets = widgets
+      })
+    )
+    this.pristineStore.update(
+      write((state) => {
+        state.widgets = widgets
+      })
+    )
   }
-
-  // /**
-  //  * 初始化 Widgets 状态
-  //  */
-  // private readonly _setWidgets = this.updater1((state, widgets: Array<StoryWidget>) => {
-  //   state.widgets = state.widgets || []
-  //   state.widgets.push(...widgets)
-    
-  //   state.widgets = sortBy(state.widgets, 'index')
-
-  //   state.storyPoint.widgets = state.widgets
-  // })
 
   clearPastedWidgets() {
     this.stateStore.update((state) => ({
@@ -422,9 +383,9 @@ export class NxStoryPointService {
       }
     } else {
       widget.position = widget.position ?? {
-        ...WIDGET_INIT_POSITION, x: 0, y: 0,
-
-        
+        ...WIDGET_INIT_POSITION,
+        x: 0,
+        y: 0
       }
       if (state.gridOptions?.allowMultiLayer) {
         widget.position.layerIndex = state.widgets.length
@@ -434,7 +395,10 @@ export class NxStoryPointService {
 
     // Add new widget to linked analysis which connect newly
     state.widgets.forEach((item) => {
-      if (item.linkedAnalysis?.interactionApplyTo === LinkedInteractionApplyTo.OnlySelectedWidgets && item.linkedAnalysis?.connectNewly) {
+      if (
+        item.linkedAnalysis?.interactionApplyTo === LinkedInteractionApplyTo.OnlySelectedWidgets &&
+        item.linkedAnalysis?.connectNewly
+      ) {
         item.linkedAnalysis.linkedWidgets = item.linkedAnalysis.linkedWidgets || []
         item.linkedAnalysis.linkedWidgets.push(widget.key)
       }
@@ -499,20 +463,6 @@ export class NxStoryPointService {
 
     this._applyPastedWidgets()
   }
-
-  // readonly pasteWidget = this.updater((state, widget: StoryWidget) => {
-  //   const states = this.stateStore.getValue()
-  //   widget.key = uuid()
-  //   widget.storyId = state.storyId
-  //   widget.pointId = state.id
-  //   const pasteWidgets = states.pasteWidgets || []
-  //   if (isNil(state.widgets)) {
-  //     pasteWidgets.push(widget)
-  //     state.pasteWidgets = pasteWidgets
-  //   } else {
-  //     state.widgets.push(widget)
-  //   }
-  // })
 
   readonly moveWidgetInArray = this.updater2((state, event: CdkDragDrop<string[]>) => {
     moveItemInArray(state.widgets, event.previousIndex, event.currentIndex)

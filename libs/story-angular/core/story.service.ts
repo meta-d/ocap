@@ -1,31 +1,43 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { computed, effect, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
+import { computed, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { createSubStore, debugDirtyCheckComparator, DeepPartial, dirtyCheckWith, getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService, write } from '@metad/core'
+import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
+import {
+  createSubStore,
+  debugDirtyCheckComparator,
+  DeepPartial,
+  dirtyCheckWith,
+  getErrorMessage,
+  Intent,
+  isNotEmpty,
+  nonNullable,
+  NxCoreService,
+  write
+} from '@metad/core'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
-  CalculationProperty,
+  assign,
+  assignDeepOmitBlank,
   C_MEASURES,
+  CalculationProperty,
   DataSettings,
+  DataSourceSettings,
   EntityType,
+  isEntityType,
   isMeasureControlProperty,
   isRestrictedMeasureProperty,
   MeasureControlProperty,
+  mergeEntitySets,
   ParameterProperty,
   Property,
-  Schema,
-  mergeEntitySets,
-  isEntityType,
-  DataSourceSettings,
-  assignDeepOmitBlank,
-  assign,
+  Schema
 } from '@metad/ocap-core'
-import { Query, Store, createStore, select, withProps } from '@ngneat/elf'
+import { createStore, Query, select, Store, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, findKey, includes, isEmpty, isEqual, merge, negate, omit, some, sortBy } from 'lodash-es'
@@ -42,31 +54,28 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators'
-import { NxStoryStore, NX_STORY_STORE } from './story-store.service'
+import { NX_STORY_STORE, NxStoryStore } from './story-store.service'
 import {
   cssStyle,
   FlexLayout,
-  getDefaultPageGrid,
+  MoveDirection,
   Story,
   StoryEvent,
   StoryEventType,
   StoryFilterBar,
   StoryOptions,
   StoryPoint,
+  StoryPointState,
+  StoryPointStyling,
   StoryPointType,
   StoryPreferences,
   StoryState,
   StoryWidget,
   uuid,
-  WidgetComponentType,
   WIDGET_INIT_POSITION,
-  StoryPointState,
-  MoveDirection,
-  StoryPointStyling,
+  WidgetComponentType
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
-import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
-
 
 @Injectable()
 export class NxStoryService {
@@ -77,18 +86,21 @@ export class NxStoryService {
   | Store
   |--------------------------------------------------------------------------
   */
-  readonly store = createStore({ name: 'story' }, withProps<StoryState>({story: null, points: []}))
-  readonly pristineStore = createStore({ name: 'story_pristine' }, withProps<StoryState>({story: null, points: []}))
-  readonly #stateHistory = stateHistory<Store, StoryState>(createSubStore(this.store, {properties: ['story'], name: 'sub_story'}, withProps<Story>(null)), {
-    comparatorFn: negate(isEqual)
-  })
+  readonly store = createStore({ name: 'story' }, withProps<StoryState>({ story: null, points: [] }))
+  readonly pristineStore = createStore({ name: 'story_pristine' }, withProps<StoryState>({ story: null, points: [] }))
+  readonly #stateHistory = stateHistory<Store, StoryState>(
+    createSubStore(this.store, { properties: ['story'], name: 'sub_story' }, withProps<Story>(null)),
+    {
+      comparatorFn: negate(isEqual)
+    }
+  )
   /**
    * Dirty check for whole story
    */
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
     watchProperty: ['story'],
-    // comparator: negate(isEqual)
-    comparator: debugDirtyCheckComparator
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
   })
   readonly pageDirty = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.dirty))))
   readonly dirty = computed(() => this.dirtyCheckResult.dirty() || this.pageDirty())
@@ -98,21 +110,14 @@ export class NxStoryService {
   readonly pageSaving = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.saving))))
   readonly saving = computed(() => this.storySaving() || this.pageSaving())
 
-  // get story() {
-  //   return this.get((state) => state.story)
-  // }
   get story() {
     return this.store.getValue().story
   }
-  // get creatingWidget() {
-  //   return this.get((state) => state.creatingWidget)
-  // }
   get creatingWidget() {
     return this.store.getValue().creatingWidget
   }
 
   private saved$ = new Subject<void>()
-  // public readonly saving$ = new BehaviorSubject<boolean>(false)
   private readonly refresh$ = new Subject<boolean>()
 
   /**
@@ -138,16 +143,21 @@ export class NxStoryService {
 
   readonly story$ = this.select((state) => state.story)
   readonly id$ = this.select((state) => state.story?.id)
-  
+
   // Story options merge template
   public readonly storyOptions$ = this.story$.pipe(
-    filter((story) => Boolean(story?.id)), map((story) => story?.options), distinctUntilChanged(isEqual),
+    filter((story) => Boolean(story?.id)),
+    map((story) => story?.options),
+    distinctUntilChanged(isEqual),
     shareReplay(1)
   )
   readonly storyOptions = toSignal(this.storyOptions$)
 
   // 语言代码
-  readonly locale$ = this.storyOptions$.pipe(map((options) => options?.locale), distinctUntilChanged())
+  readonly locale$ = this.storyOptions$.pipe(
+    map((options) => options?.locale),
+    distinctUntilChanged()
+  )
   readonly preferences$: Observable<StoryPreferences> = this.storyOptions$.pipe(
     map((options) => options?.preferences),
     distinctUntilChanged()
@@ -162,7 +172,7 @@ export class NxStoryService {
     distinctUntilChanged()
   )
   readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
-  
+
   // 全局固定过滤条件
   public readonly filters$ = this.storyOptions$.pipe(
     map((options) => options?.filters),
@@ -180,11 +190,15 @@ export class NxStoryService {
     })
   )
 
-  readonly storyModelsOptions$ = this.storyModels$.pipe(map((models) => models.map((model) => ({
-    value: model.id,
-    key: model.key,
-    caption: model.name
-  }))))
+  readonly storyModelsOptions$ = this.storyModels$.pipe(
+    map((models) =>
+      models.map((model) => ({
+        value: model.id,
+        key: model.key,
+        caption: model.name
+      }))
+    )
+  )
 
   // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
@@ -219,21 +233,19 @@ export class NxStoryService {
     map((options) => options?.preferences?.story?.themeName),
     distinctUntilChanged()
   )
-  readonly themeName = toSignal(this.storyOptions$.pipe(
-    map((options) => options?.preferences?.story?.themeName)
-  ))
+  readonly themeName = toSignal(this.storyOptions$.pipe(map((options) => options?.preferences?.story?.themeName)))
 
   public readonly editable$ = this.select((state) => state.editable)
   readonly editable = toSignal(this.select((state) => state.editable))
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
-  public readonly pageStates$ = this.select((state) => state.points).pipe(
-    filter(nonNullable)
-  )
+  public readonly pageStates$ = this.select((state) => state.points).pipe(filter(nonNullable))
   readonly pageStates = toSignal(this.pageStates$)
   readonly storyPoints = toSignal(this.select((state) => state.story?.points))
-  readonly points = computed(() => this.storyPoints()?.filter((item) => !this.pageStates().some((state) => state.removed && state.key === item.key)))
+  readonly points = computed(() =>
+    this.storyPoints()?.filter((item) => !this.pageStates().some((state) => state.removed && state.key === item.key))
+  )
 
   readonly displayPoints = computed(() => {
     const points = this.points()
@@ -251,7 +263,7 @@ export class NxStoryService {
   )
   readonly currentStoryPoint = computed(() => this.storyPoints().find((point) => point.key === this.currentPageKey()))
   readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
-  
+
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
@@ -264,16 +276,18 @@ export class NxStoryService {
   readonly isPanMode = toSignal(this.select((state) => state.isPanMode))
 
   // FilterBar merge with global appearance
-  public readonly filterBar$ = combineLatest([
-    this.appearance$,
-    this.select((state) => state.story?.filterBar)
-  ]).pipe(
+  public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
     map(([appearance, filterBar]) => {
-      return filterBar ? merge({
-        styling: {
-          appearance
-        }
-      }, filterBar) : null
+      return filterBar
+        ? merge(
+            {
+              styling: {
+                appearance
+              }
+            },
+            filterBar
+          )
+        : null
     }),
     shareReplay(1)
   )
@@ -282,42 +296,6 @@ export class NxStoryService {
   private _storyEvent$ = new Subject<StoryEvent>()
   public readonly creatingWidget$ = this.select((state) => state.creatingWidget)
   public save$ = new Subject<void>()
-
-  // dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
-  //   watchProperty: ['story'],
-  //   clean: (head, current) => {
-  //     // Start saving
-  //     this.saving$.next(true)
-  //     return this._saveStory(head.story, current.story).pipe(
-  //       tap({
-  //         next: () => {
-  //           const successMessage = this.getTranslation('Story.Story.SaveSuccess', 'Save success')
-  //           this._snackBar.open(successMessage, '', {
-  //             duration: 2000
-  //           })
-  //           this.save$.next()
-  //           this.saving$.next(false)
-  //         },
-  //         error: (error) => {
-  //           const errorMessage = this.getTranslation('Story.Story.SaveFailed', 'Save failed')
-  //           this._snackBar.open(errorMessage, getErrorMessage(error.statusText), {
-  //             duration: 2000
-  //           })
-  //           this.saving$.next(false)
-  //         }
-  //       })
-  //     )
-  //   }
-  // })
-
-  // readonly dirty$ = this.select(
-  //   this.dirtyCheckQuery.isDirty$.pipe(startWith(false)),
-  //   this.select((state) => state.points),
-  //   (dirty, points) => {
-  //     return dirty || !!points?.find(({ removed }) => removed)
-  //   }
-  // ).pipe(shareReplay(1))
-  
 
   public readonly storySizeStyles$ = combineLatest([
     this.editable$,
@@ -368,51 +346,54 @@ export class NxStoryService {
 
         // 2. Story 级别的 Schema 合并
         if (schemas?.[dataSource.name]) {
-          const schema = schemas?.[dataSource.name] as Record<string, EntityType>;
+          const schema = schemas?.[dataSource.name] as Record<string, EntityType>
           dataSource = {
             ...dataSource,
             schema: {
               ...(dataSource.schema ?? {}),
-              entitySets: mergeEntitySets(dataSource.schema?.entitySets,
+              entitySets: mergeEntitySets(
+                dataSource.schema?.entitySets,
                 // 向后兼容，需要重构 dataSource.schema.entitySets
                 Object.values(schema).reduce((acc, cur) => {
                   acc[cur.name as string] = {
                     name: cur.name as string,
-                    entityType: cur,
-                  };
-                  return acc;
-                }, {}))
+                    entityType: cur
+                  }
+                  return acc
+                }, {})
+              )
             } as Schema
-          };
+          }
         }
 
         this.logger?.debug(`[StoryService] register model`, dataSource.name)
-        this.dsCoreService.registerModel(dataSource);
+        this.dsCoreService.registerModel(dataSource)
       }
     })
   // 对于一次性异步任务部分改造成 async await 的方式
-  private schemaSub = this.schemas$.pipe(
-      filter(nonNullable),
-    ).subscribe(async (schemas) => {
-      for await(const name of Object.keys(schemas)) {
-        const schema = schemas[name]
-        const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(name))
-        dataSource.setSchema({
-          ...dataSource.options.schema,
-          entitySets: //mergeEntitySets(dataSource.options.schema?.entitySets,
-            // 向后兼容
-            Object.values(schema).reduce((acc, cur) => {
-              acc[cur.name] = {
-                name: cur.name,
-                entityType: cur,
-              }
-              return acc
-            }, {}) // )
-        })
-      }
-    })
+  private schemaSub = this.schemas$.pipe(filter(nonNullable)).subscribe(async (schemas) => {
+    for await (const name of Object.keys(schemas)) {
+      const schema = schemas[name]
+      const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(name))
+      dataSource.setSchema({
+        ...dataSource.options.schema,
+        //mergeEntitySets(dataSource.options.schema?.entitySets,
+        entitySets:
+          // 向后兼容
+          Object.values(schema).reduce((acc, cur) => {
+            acc[cur.name] = {
+              name: cur.name,
+              entityType: cur
+            }
+            return acc
+          }, {}) // )
+      })
+    }
+  })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.dsCoreService.onStoryUpdate().pipe(takeUntilDestroyed())
+  private storyUpdateEventSub = this.dsCoreService
+    .onStoryUpdate()
+    .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
       if (type === 'Parameter') {
@@ -433,11 +414,7 @@ export class NxStoryService {
     @Optional() protected logger?: NGXLogger,
     @Optional() private _snackBar?: MatSnackBar,
     @Optional() private _dialog?: MatDialog
-  ) {
-    effect(() => {
-      console.log(`currentPageState`, this.currentPageState())
-    })
-  }
+  ) {}
 
   onSaved() {
     return this.saved$
@@ -462,8 +439,6 @@ export class NxStoryService {
       story: cloneDeep(story),
       points: []
     }))
-
-    // this.dirtyCheckQuery.setHead()
   }
 
   /**
@@ -481,10 +456,9 @@ export class NxStoryService {
     // 2. Saving story main info
     const saveStoryReq = this._saveStory(pristineStory, currentStory).pipe(share())
     // 3. Notify message and reset story when stop saving
-    saveStoryReq.pipe(
-      delayWhen(() => toObservable(this.saving, { injector: this.injector }).pipe(filter((saving) => !saving))),
-    ).subscribe(
-      {
+    saveStoryReq
+      .pipe(delayWhen(() => toObservable(this.saving, { injector: this.injector }).pipe(filter((saving) => !saving))))
+      .subscribe({
         next: (result) => {
           if (result) {
             const successMessage = this.getTranslation('Story.Story.SaveSuccess', 'Save success')
@@ -500,8 +474,7 @@ export class NxStoryService {
             duration: 2000
           })
         }
-      }
-    )
+      })
     // 4. Stop saving status of story main info
     saveStoryReq.subscribe({
       next: () => {
@@ -509,8 +482,8 @@ export class NxStoryService {
       },
       error: () => {
         this.storySaving.set(false)
-      }}
-    )
+      }
+    })
   }
 
   resetStory() {
@@ -541,12 +514,7 @@ export class NxStoryService {
   })
 
   getTranslation(prefix: string, text: string, params?: Record<string, unknown>) {
-    let result: any
-    this.#translate.get(prefix, {Default: text, ...params}).subscribe((res) => {
-      result = res
-    })
-
-    return result
+    return this.#translate.instant(prefix, { Default: text, ...params })
   }
 
   getDefaultDataSource() {
@@ -563,7 +531,10 @@ export class NxStoryService {
     return this.store.query(fn ?? ((state) => state as R))
   }
   select<R>(fn: (state: StoryState) => R) {
-    return this.store.pipe(filter((state) => !!state.story), select(fn))
+    return this.store.pipe(
+      filter((state) => !!state.story),
+      select(fn)
+    )
   }
   updater<ProvidedType = void, OriginType = ProvidedType>(
     fn: (state: StoryState, ...params: OriginType[]) => StoryState | void
@@ -573,7 +544,7 @@ export class NxStoryService {
     }
   }
   patchState(state: Partial<StoryState>) {
-    this.store.update((s) => ({...s, ...state}))
+    this.store.update((s) => ({ ...s, ...state }))
   }
 
   selectBreakpoint() {
@@ -621,57 +592,23 @@ export class NxStoryService {
     state.currentPageKey = key
   })
 
-  // /**
-  //  *  @deprecated use newStoryPage ?
-  //  * 
-  //  * 输入页面唯一名称并在服务器端实际创建页面记录, 并将页面添加到当前故事看板中
-  //  *
-  //  * @param type
-  //  * @returns
-  //  */
-  // private async _createStoryPoint(type: StoryPointType, name: string) {
-  //   const state = this.get()
-  //   const point = await firstValueFrom(this.storyStore.createStoryPoint({
-  //     name,
-  //     type,
-  //     key: uuid(),
-  //     widgets: null,
-  //     storyId: state.story.id,
-  //     index: state.points?.length || 0,
-  //     responsive: type === StoryPointType.Responsive ? defaultResponsive() : null,
-  //     gridOptions: getDefaultPageGrid()
-  //   }))
-
-  //   this.setStoryPoint(point)
-  //   return point
-  // }
-
-  // /**
-  //  * @deprecated use newStoryPage ?
-  //  * 
-  //  * 创建故事页面
-  //  */
-  // async createStoryPoint(type: StoryPointType) {
-  //   const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-  //   if (name) {
-  //     const page = await this._createStoryPoint(type, name)
-  //     if (page) {
-  //       this.setCurrentPageKey(page.key)
-  //     }
-  //   }
-  // }
-
   /**
    * New story page
-   * 
-   * @param page 
+   *
+   * @param page
    */
   async newStoryPage(page: Partial<StoryPoint>) {
-    const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {
-      data: {
-        title: this.getTranslation('Story.Story.NewPageName', 'New Page Name')
-      }
-    }).afterClosed())
+    const name =
+      page.name ||
+      (await firstValueFrom(
+        this._dialog
+          .open(ConfirmUniqueComponent, {
+            data: {
+              title: this.getTranslation('Story.Story.NewPageName', 'New Page Name')
+            }
+          })
+          .afterClosed()
+      ))
     if (name) {
       const key = page.key ?? uuid()
       const _page = {
@@ -681,17 +618,18 @@ export class NxStoryService {
         name,
         storyId: this.story.id,
         // Add widgets
-        widgets: page.widgets?.map((widget) => ({
-          ...widget,
-          key: widget.key ?? uuid(),
-        })) ?? []
+        widgets:
+          page.widgets?.map((widget) => ({
+            ...widget,
+            key: widget.key ?? uuid()
+          })) ?? []
       }
 
       this.addStoryPage(_page)
       this.setCurrentPageKey(key)
 
       return _page
-    }  
+    }
   }
 
   /**
@@ -702,59 +640,15 @@ export class NxStoryService {
     state.points.push({
       id: null,
       key: input.key,
-      fetched: true,
+      fetched: true
     })
 
     state.story.points ??= []
     state.story.points.push({
       ...input,
-      index: input.index ?? state.points.length,
+      index: input.index ?? state.points.length
     })
   })
-
-  // /**
-  //  * @deprecated use addStoryPage ?
-  //  * 
-  //  * 添加一个新的页面
-  //  */
-  // readonly setStoryPoint = this.updater((state, input: StoryPoint) => {
-  //   // 新的页面将 widgets 设置会 null ， 方便判断是否为新加载页面
-  //   input.widgets = null
-  //   const i = state.points?.findIndex(({ storyPoint: point }) => point.id === input.id)
-  //   if (i >= 0) {
-  //     state.points[i] = {
-  //       ...state.points[i],
-  //       storyPoint: input
-  //     }
-  //   } else {
-  //     state.points = state.points || []
-  //     state.points.push({
-  //       key: input.key,
-  //       storyPoint: input
-  //     })
-  //   }
-
-  //   const j = state.story.points?.findIndex((point) => point.id === input.id)
-  //   if (j >= 0) {
-  //     state.story.points[j] = {
-  //       ...state.story.points[j],
-  //       ...input
-  //     }
-  //   } else {
-  //     state.story.points = state.story.points || []
-  //     state.story.points.push(cloneDeep(input))
-  //   }
-  // })
-
-  // readonly setStoryPointDirty = this.updater((state, { id, dirty }: { id: ID; dirty: boolean }) => {
-  //   const index = state.points.findIndex(({ storyPoint: point }) => point.id === id)
-  //   if (index >= 0) {
-  //     state.points[index] = {
-  //       ...state.points[index],
-  //       dirty
-  //     }
-  //   }
-  // })
 
   /**
    * Delete story point by key in local state
@@ -787,8 +681,8 @@ export class NxStoryService {
 
   /**
    * Remove a story point by key
-   * 
-   * @param key 
+   *
+   * @param key
    */
   deleteStoryPoint(key: string) {
     const displayPoints = this.displayPoints()
@@ -824,12 +718,16 @@ export class NxStoryService {
   /**
    * Udpate story widget by pageKey and widgetId
    */
-  readonly updateWidget = this.updater((state, {pageKey, widgetKey, widget}: {pageKey: string; widgetKey: string; widget: StoryWidget}) => {
-    const _widget = state.story.points.find((item) => item.key === pageKey).widgets.find((item) => item.key === widgetKey)
-    if (_widget) {
-      assign(_widget, widget)
+  readonly updateWidget = this.updater(
+    (state, { pageKey, widgetKey, widget }: { pageKey: string; widgetKey: string; widget: StoryWidget }) => {
+      const _widget = state.story.points
+        .find((item) => item.key === pageKey)
+        .widgets.find((item) => item.key === widgetKey)
+      if (_widget) {
+        assign(_widget, widget)
+      }
     }
-  })
+  )
 
   createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
@@ -843,7 +741,7 @@ export class NxStoryService {
       type: StoryEventType.CREATE_WIDGET,
       data: {
         dataSettings: this.getDefaultDataSource(),
-        ...event,
+        ...event
       }
     })
   }
@@ -875,42 +773,43 @@ export class NxStoryService {
   /**
    * 保存故事: 1. 故事变化; 2. 创建删除故事点;
    * 其他的变化由 StoryPoint 服务进行保存.
-   * 
-   * @param pristine 
-   * @param current 
-   * @returns 
+   *
+   * @param pristine
+   * @param current
+   * @returns
    */
   private _saveStory(pristine: Story, current: Story): Observable<any> {
-    
     const updates: Observable<void>[] = []
     // update story
     if (!isEqual({ ...pristine, points: [] }, { ...current, points: [] })) {
       updates.push(this.storyStore.updateStory(current))
     }
 
-    this.get((state) => state.points).filter((state) => state.removed && state.id).forEach((state) => {
-      // delete point
-      updates.push(
-        this.storyStore.removeStoryPoint(pristine.id, state.id).pipe(
-          tap({
-            next: () => {
-              // Delete story point in local state
-              this.#removeStoryPoint(state.key)
-            },
-            error: (error) => {
-              this._snackBar.open('删除失败', error.status, {
-                duration: 2000
-              })
-            }
-          })
+    this.get((state) => state.points)
+      .filter((state) => state.removed && state.id)
+      .forEach((state) => {
+        // delete point
+        updates.push(
+          this.storyStore.removeStoryPoint(pristine.id, state.id).pipe(
+            tap({
+              next: () => {
+                // Delete story point in local state
+                this.#removeStoryPoint(state.key)
+              },
+              error: (error) => {
+                this._snackBar.open('删除失败', error.status, {
+                  duration: 2000
+                })
+              }
+            })
+          )
         )
-      )
-    })
+      })
 
     if (isNotEmpty(updates)) {
       return combineLatest(updates)
     }
-    
+
     return of(null)
   }
 
@@ -925,7 +824,12 @@ export class NxStoryService {
       }: { dataSettings: DataSettings; calculation: CalculationProperty & { options?: any }; entityCaption?: string }
     ) => {
       // const schema = (state.story.schema = state.story.schema || { name: null, entitySets: {} })
-      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption).properties
+      const properties = getOrInitEntityType(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      ).properties
 
       const originName = findKey(properties, (o) => o.__id__ === calculation.__id__)
       if (originName) {
@@ -954,7 +858,6 @@ export class NxStoryService {
         if (!originName) {
           this.createMeasureControlWidget({ dataSettings, name: calculation.name })
         }
-        
       }
 
       if (isRestrictedMeasureProperty(property)) {
@@ -986,7 +889,12 @@ export class NxStoryService {
       }: { dataSettings: DataSettings; calculation: Partial<CalculationProperty>; entityCaption?: string }
     ) => {
       // Find the measure entity position in story schema
-      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption).properties
+      const properties = getOrInitEntityType(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      ).properties
 
       const originName = findKey(properties, (o) => o.__id__ === calculation.__id__)
       let originProperty = {} as Property
@@ -1004,18 +912,32 @@ export class NxStoryService {
   /**
    * 如何安全地删除计算成员， 保证使用到的地方都被提醒到？
    */
-  readonly removeCalculation = this.updater((state, {dataSettings, name}: {dataSettings: DataSettings, name: string;}) => {
-    // Find the measure entity position in story schema
-    const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet).properties
-    delete properties[name]
-  })
+  readonly removeCalculation = this.updater(
+    (state, { dataSettings, name }: { dataSettings: DataSettings; name: string }) => {
+      // Find the measure entity position in story schema
+      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet).properties
+      delete properties[name]
+    }
+  )
 
   /**
    * 更新或者创建 Entity Parameter
    */
   readonly upsertParamter = this.updater(
-    (state, { dataSettings, parameter, entityCaption }: { dataSettings: DataSettings; parameter: Partial<ParameterProperty>; entityCaption?: string }) => {
-      const parameters = getOrInitEntityParameters(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption)
+    (
+      state,
+      {
+        dataSettings,
+        parameter,
+        entityCaption
+      }: { dataSettings: DataSettings; parameter: Partial<ParameterProperty>; entityCaption?: string }
+    ) => {
+      const parameters = getOrInitEntityParameters(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      )
       const key = findKey(parameters, (o) => o.__id__ === parameter.__id__)
       let origin = {} as ParameterProperty
       if (key) {
@@ -1038,39 +960,39 @@ export class NxStoryService {
     }
   )
 
-  readonly removeEntityParameter = this.updater((state, {dataSource, entity, parameter}: {dataSource: string, entity: string, parameter: string;}) => {
-    const parameters = getOrInitEntityParameters(state, dataSource, entity)
-    const key = findKey(parameters, (o) => o.name === parameter)
-    if (key) {
-      delete parameters[key]
+  readonly removeEntityParameter = this.updater(
+    (state, { dataSource, entity, parameter }: { dataSource: string; entity: string; parameter: string }) => {
+      const parameters = getOrInitEntityParameters(state, dataSource, entity)
+      const key = findKey(parameters, (o) => o.name === parameter)
+      if (key) {
+        delete parameters[key]
+      }
     }
-  })
+  )
 
   /**
    * 创建 dimension 的 Input Control
    */
-  readonly createInputControlWidget = this.updater(
-    (state, { dataSource, entitySet, dimension }: DataSettings) => {
-      const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
-      storyPoint.widgets.push({
-        key: uuid(),
-        storyId: state.story.id,
-        pointId: storyPoint.id,
-        name: dimension.name,
-        title: dimension.name,
-        component: WidgetComponentType.InputControl,
-        position: { x: 0, y: 0, ...WIDGET_INIT_POSITION },
-        dataSettings: {
-          dataSource,
-          entitySet,
-          dimension
-        },
-        options: {
-          dimension
-        }
-      } as StoryWidget)
-    }
-  )
+  readonly createInputControlWidget = this.updater((state, { dataSource, entitySet, dimension }: DataSettings) => {
+    const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
+    storyPoint.widgets.push({
+      key: uuid(),
+      storyId: state.story.id,
+      pointId: storyPoint.id,
+      name: dimension.name,
+      title: dimension.name,
+      component: WidgetComponentType.InputControl,
+      position: { x: 0, y: 0, ...WIDGET_INIT_POSITION },
+      dataSettings: {
+        dataSource,
+        entitySet,
+        dimension
+      },
+      options: {
+        dimension
+      }
+    } as StoryWidget)
+  })
 
   getCurrentWidget(widgetKey?: string) {
     const state = this.get<StoryState>()
@@ -1080,7 +1002,7 @@ export class NxStoryService {
       if (!widget) {
         throw new Error(`Can't found widget '${widgetKey}'`)
       }
-    } else if(state.currentWidget) {
+    } else if (state.currentWidget) {
       widget = state.currentWidget
     } else {
       throw new Error(`Please select an widget!`)
@@ -1102,13 +1024,13 @@ export class NxStoryService {
 
   /**
    * Copy the widget to a new page
-   * 
-   * @param type 
-   * @param widgetKey 
+   *
+   * @param type
+   * @param widgetKey
    */
   async copyWidgetToNewPage(type: StoryPointType, widgetKey?: string) {
     const point = await this.newStoryPage({
-      type,
+      type
     })
     if (point) {
       this.copyWidgetTo({ pointKey: point.key, widgetKey })
@@ -1118,7 +1040,7 @@ export class NxStoryService {
   /**
    * Move widget to another page
    */
-  public readonly moveWidgetTo = this.updater((state, params: {widget: {pointKey: ID, key: ID}, pointKey: ID}) => {
+  public readonly moveWidgetTo = this.updater((state, params: { widget: { pointKey: ID; key: ID }; pointKey: ID }) => {
     const { widget, pointKey } = params
     const toPageState = state.points.find((item) => item.key === pointKey)
     const fromPage = state.story.points.find((item) => item.key === widget.pointKey)
@@ -1143,15 +1065,15 @@ export class NxStoryService {
 
   /**
    * Move widget to new page
-   * 
-   * @param pointKey 
-   * @param widgetKey 
-   * @param type 
+   *
+   * @param pointKey
+   * @param widgetKey
+   * @param type
    */
   async moveWidgetToNewPage(pointKey: ID, widgetKey: ID, type: StoryPointType) {
-    const point = await this.newStoryPage({type})
+    const point = await this.newStoryPage({ type })
     if (point) {
-      this.moveWidgetTo({ pointKey: point.key, widget: {pointKey, key: widgetKey} })
+      this.moveWidgetTo({ pointKey: point.key, widget: { pointKey, key: widgetKey } })
     }
   }
 
@@ -1242,8 +1164,7 @@ export class NxStoryService {
     this._storyEvent$.next({
       key,
       type: StoryEventType.SAVE,
-      data: {
-      }
+      data: {}
     })
   }
 
@@ -1350,7 +1271,8 @@ export class NxStoryService {
 
   readonly mergeStoryPreferences = this.updater((state, preferences: Partial<StoryPreferences>) => {
     state.story.options = state.story.options ?? {}
-    state.story.options.preferences = assignDeepOmitBlank((state.story.options?.preferences ?? {}),
+    state.story.options.preferences = assignDeepOmitBlank(
+      state.story.options?.preferences ?? {},
       preferences,
       Number.MAX_SAFE_INTEGER
     )
@@ -1360,17 +1282,19 @@ export class NxStoryService {
     fn: (state: StoryPointState, ...params: OriginType[]) => StoryPointState | void
   ) {
     return (...params: OriginType[]) => {
-      this.store.update(write((state) => {
-        const currentPageKey = state.currentPageKey
-        const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
-        const result = fn(state.points[currentPageIndex], ...params)
-        if (result) {
-          state.points[currentPageIndex] = result
-        }
-      }))
+      this.store.update(
+        write((state) => {
+          const currentPageKey = state.currentPageKey
+          const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
+          const result = fn(state.points[currentPageIndex], ...params)
+          if (result) {
+            state.points[currentPageIndex] = result
+          }
+        })
+      )
     }
   }
-  
+
   readonly resetZoom = this.updateCurrentPageState((state) => {
     state.scale = null
   })
@@ -1393,15 +1317,19 @@ export class NxStoryService {
   readonly applyTemplate = this.updater((state, template: IStoryTemplate) => {
     state.story.templateId = template.id
     // Apply theme
-    state.story.options = assignDeepOmitBlank(state.story.options, template?.options?.story?.options, Number.MAX_SAFE_INTEGER)
+    state.story.options = assignDeepOmitBlank(
+      state.story.options,
+      template?.options?.story?.options,
+      Number.MAX_SAFE_INTEGER
+    )
     // Apply template
     if (template.type === StoryTemplateType.Template) {
       // Clear all story points
       state.story.points = template.options.pages?.map((item) => {
         return {
-            ...item,
-            storyId: state.story.id,
-            id: null
+          ...item,
+          storyId: state.story.id,
+          id: null
         } as StoryPoint
       })
 
@@ -1411,13 +1339,12 @@ export class NxStoryService {
           id: null,
           fetched: true,
           dirty: true,
-          key: item.key,
+          key: item.key
         }
       })
 
       this.setCurrentPageKey(state.points[0]?.key)
     }
-
   })
 
   readonly setCreatingWidget = this.updater((state, creatingWidget: Partial<StoryWidget>) => {
@@ -1428,9 +1355,9 @@ export class NxStoryService {
     state.story.options = {
       ...(state.story.options ?? {}),
       preferences: {
-        ...(state.story.options?.preferences ?? {} as StoryPreferences),
+        ...(state.story.options?.preferences ?? ({} as StoryPreferences)),
         story: {
-          ...(state.story.options?.preferences?.story ?? {} as StoryPreferences['story']),
+          ...(state.story.options?.preferences?.story ?? ({} as StoryPreferences['story'])),
           styling: {
             ...(state.story.options?.preferences?.story?.styling ?? {}),
             ...styles
@@ -1444,9 +1371,9 @@ export class NxStoryService {
     state.story.options = {
       ...(state.story.options ?? {}),
       preferences: {
-        ...(state.story.options?.preferences ?? {} as StoryPreferences),
+        ...(state.story.options?.preferences ?? ({} as StoryPreferences)),
         widget: {
-          ...(state.story.options?.preferences?.widget ?? {} as StoryPreferences['widget']),
+          ...(state.story.options?.preferences?.widget ?? ({} as StoryPreferences['widget'])),
           ...styles
         }
       }
@@ -1467,12 +1394,14 @@ export class NxStoryService {
     const dataSources = this.dataSources()
 
     const result = await firstValueFrom<EntitySelectResultType>(
-      this._dialog.open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
-        data: {
-          dataSources,
-          dsCoreService: this.dsCoreService
-        }
-      }).afterClosed()
+      this._dialog
+        .open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
+          data: {
+            dataSources,
+            dsCoreService: this.dsCoreService
+          }
+        })
+        .afterClosed()
     )
     if (result) {
       this.patchState({
@@ -1563,12 +1492,12 @@ function getOrInitEntityParameters(state: StoryState, dataSource: string, entity
 }
 
 function getOrInitEntityType(state: StoryState, dataSource: string, entity: string, caption?: string) {
-  const schemas = state.story.schemas = state.story.schemas ?? {}
-  const schema = schemas[dataSource] = schemas[dataSource] ?? {}
-  const entityType = schema[entity] = schema[entity] ?? {
+  const schemas = (state.story.schemas = state.story.schemas ?? {})
+  const schema = (schemas[dataSource] = schemas[dataSource] ?? {})
+  const entityType = (schema[entity] = schema[entity] ?? {
     name: entity,
     caption: caption,
     properties: {}
-  }
+  })
   return entityType
 }

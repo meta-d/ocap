@@ -14,18 +14,14 @@ import {
   OnChanges,
   Optional,
   Output,
-  QueryList,
   Renderer2,
   SimpleChanges,
-  ViewChild,
-  ViewChildren,
   ViewContainerRef,
   booleanAttribute,
   computed,
   effect,
   inject,
   input,
-  signal,
   viewChildren
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
@@ -162,9 +158,6 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   @Output() saved = new EventEmitter()
   @Output() dataExploration = new EventEmitter()
 
-  // @ViewChildren(NxStoryPointComponent) storyPointComponents: QueryList<NxStoryPointComponent>
-  // @ViewChild('story_point', { read: CdkDrag }) cdkDrag: CdkDrag
-
   readonly storyPointComponents = viewChildren('story_point', { read: NxStoryPointComponent })
   readonly cdkDrags = viewChildren('story_point', { read: CdkDrag })
 
@@ -192,7 +185,6 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   readonly isMobile$ = this.storyService.isMobile$
 
-
   readonly displayPoints = this.storyService.displayPoints
   readonly showStoryFilterBar$ = this.storyService.storyOptions$.pipe(
     map((options) => options?.hideStoryFilterBar),
@@ -209,37 +201,29 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   public readonly storySizeStyles = toSignal(this.storyService.storySizeStyles$)
 
-  // public readonly scaleStyles$ = $.pipe(
-  //   map((options) => options?.scale),
-  //   distinctUntilChanged(),
-  //   map((scale) => {
-  //     return scale
-  //       ? {
-  //           transform: `scale(${scale / 100})`,
-  //           'transform-origin': 'left top'
-  //         }
-  //       : {}
-  //   })
-  // )
-  readonly scaleStyles = computed(() => {
-    const storyOptions = this.storyService.storyOptions()
-    const scale = storyOptions?.scale
-    return scale
+  readonly scaleStyles = computed(
+    () => {
+      const storyOptions = this.storyService.storyOptions()
+      const scale = storyOptions?.scale
+      return scale
         ? {
             transform: `scale(${scale / 100})`,
             'transform-origin': 'left top'
           }
         : {}
-  }, { equal: isEqual})
+    },
+    { equal: isEqual }
+  )
   readonly preferencesStoryStyling = computed(() => componentStyling(this.storyService.preferences()?.storyStyling))
-  readonly preferencesPageStyling = computed(() => componentStyling(this.storyService.preferences()?.pageStyling) ?? this.storyService.preferences()?.page?.styles)
+  readonly preferencesPageStyling = computed(
+    () =>
+      componentStyling(this.storyService.preferences()?.pageStyling) ?? this.storyService.preferences()?.page?.styles
+  )
 
   readonly storyStyle = computed(() => {
     const storyStyling = this.preferencesStoryStyling()
-    // const scaleStyles = this.scaleStyles()
     return {
-      ...storyStyling,
-      // ...scaleStyles
+      ...storyStyling
     }
   })
 
@@ -251,18 +235,6 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       ...scaleStyles
     }
   })
-
-  // readonly storyStyle$ = combineLatest([
-  //   this.storyService.preferences$.pipe(map((preferences) => componentStyling(preferences?.storyStyling))),
-  //   this.scaleStyles$
-  // ]).pipe(
-  //   map(([storyStyling, scaleStyles]) => {
-  //     return {
-  //       ...storyStyling,
-  //       ...scaleStyles
-  //     }
-  //   })
-  // )
 
   public readonly isPanMode$ = this.storyService.isPanMode$
   public readonly disablePanMode$ = this.isPanMode$.pipe(map((value) => !value))
@@ -292,7 +264,6 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   readonly currentPageComponent = computed(() =>
     this.storyPointComponents()?.find((item) => item.key() === this.currentPageKey())
   )
-
 
   /**
   |--------------------------------------------------------------------------
@@ -344,18 +315,21 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       // filters.forEach(item => this.filterBarService.put(item))
     })
 
-  #pageKeyEffect = effect(() => {
-    const currentIndex = this.storyService.currentPageIndex()
-    const pageKey = this.storyService.currentPageKey()
-    if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
-      const queryParams: Params = { pageKey }
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: queryParams,
-        queryParamsHandling: 'merge', // remove to replace all query params by provided
-      })
-    }
-  }, { allowSignalWrites: true })
+  #pageKeyEffect = effect(
+    () => {
+      const currentIndex = this.storyService.currentPageIndex()
+      const pageKey = this.storyService.currentPageKey()
+      if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
+        const queryParams: Params = { pageKey }
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: queryParams,
+          queryParamsHandling: 'merge' // remove to replace all query params by provided
+        })
+      }
+    },
+    { allowSignalWrites: true }
+  )
 
   private _storySub = this.story$
     .pipe(
@@ -428,9 +402,12 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
     @Optional()
     public settingsService?: NxSettingsPanelService
   ) {
-    effect(() => {
-      this.storyService.setEditable(this.editable())
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        this.storyService.setEditable(this.editable())
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   ngOnChanges({ pageKey, filterBarOpened }: SimpleChanges): void {

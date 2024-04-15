@@ -410,9 +410,6 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
         .pipe(map((comments) => (isEmpty(comments) ? null : comments)), takeUntilDestroyed(this.destroyRef))
         .subscribe((comments) => {
           this.comments.set(comments)
-          // this.patchState({
-          //   comments
-          // })
         })
     }
   }
