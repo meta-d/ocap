@@ -7,16 +7,32 @@
   [displayDensity]="appearance?.displayDensity"
 >
   <mat-label>{{label$ | async}}</mat-label>
-  <mat-select [placeholder]="placeholder$ | async"
+  @if (multiple$ | async) {
+    <mat-select [placeholder]="placeholder$ | async"
+      [disabled]="disabled"
+      [ngModel]="memberValues$ | async"
+      (ngModelChange)="setSelectedValues($event)"
+      multiple
+    >
+      @for (option of selectOptions$ | async; track option.key) {
+        <mat-option [value]="option.key ?? option.value">
+          {{ option.caption || (option.key ?? option.value) }}
+        </mat-option>
+      }
+    </mat-select>
+  } @else {
+    <mat-select [placeholder]="placeholder$ | async"
     [disabled]="disabled"
     [ngModel]="memberValues$ | async"
     (ngModelChange)="setSelectedValues($event)"
-    [multiple]="multiple$ | async"
   >
-    <mat-option [value]="option.value" *ngFor="let option of selectOptions$ | async">
-      {{ option.caption || option.value }}
-    </mat-option>
+    @for (option of selectOptions$ | async; track option.key) {
+      <mat-option [value]="option.key ?? option.value">
+        {{ option.caption || (option.key ?? option.value) }}
+      </mat-option>
+    }
   </mat-select>
+  }
 
   <div matSuffix class="flex items-center">
     <button *ngIf="(isInitial$ | async) === false" mat-icon-button [disabled]="disabled" aria-label="Clear"
