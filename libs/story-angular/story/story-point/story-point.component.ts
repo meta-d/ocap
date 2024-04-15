@@ -113,8 +113,8 @@ export class NxStoryPointComponent implements OnChanges {
   private smartFilterBar = inject(NgmSmartFilterBarService)
   public settingsService? = inject(NxSettingsPanelService, {optional: true})
 
-  @Input() story: Story
-  @Input() key: string
+  readonly key = input<string>()
+
   get point(): StoryPoint {
     return this.storyPointService.storyPoint ?? ({} as StoryPoint)
   }
@@ -323,6 +323,8 @@ export class NxStoryPointComponent implements OnChanges {
   public readonly multiLayer$ = this.gridOptions$.pipe(
     map((options) => pick(options, 'allowMultiLayer', 'defaultLayerIndex', 'maxLayerIndex', 'baseLayerIndex'))
   )
+
+  readonly scaleStyles$ = this.storyPointService.scaleStyles$
 
   // nativeElement.scrollTop
   private _scrollTop = 0
@@ -726,25 +728,25 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   duplicate() {
-    this.storyService.duplicateStoryPoint(this.key)
+    this.storyService.duplicateStoryPoint(this.key())
   }
 
   remove() {
-    this.storyService.deleteStoryPoint(this.key)
+    this.storyService.deleteStoryPoint(this.key())
   }
 
   hidePage() {
-    this.storyService.hideStoryPage(this.key)
+    this.storyService.hideStoryPage(this.key())
   }
 
   showPage() {
-    this.storyService.toggleStoryPointHidden(this.key)
+    this.storyService.toggleStoryPointHidden(this.key())
   }
 
   move(direction: MoveDirection) {
     this.storyService.move({
       direction,
-      key: this.key
+      key: this.key()
     })
   }
 

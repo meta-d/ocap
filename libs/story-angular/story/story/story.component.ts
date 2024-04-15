@@ -25,7 +25,8 @@ import {
   effect,
   inject,
   input,
-  signal
+  signal,
+  viewChildren
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
@@ -161,8 +162,11 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   @Output() saved = new EventEmitter()
   @Output() dataExploration = new EventEmitter()
 
-  @ViewChildren(NxStoryPointComponent) storyPointComponents: QueryList<NxStoryPointComponent>
-  @ViewChild('panDragHandler', { read: CdkDrag }) cdkDrag: CdkDrag
+  // @ViewChildren(NxStoryPointComponent) storyPointComponents: QueryList<NxStoryPointComponent>
+  // @ViewChild('story_point', { read: CdkDrag }) cdkDrag: CdkDrag
+
+  readonly storyPointComponents = viewChildren('story_point', { read: NxStoryPointComponent })
+  readonly cdkDrags = viewChildren('story_point', { read: CdkDrag })
 
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
@@ -189,7 +193,7 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   readonly isMobile$ = this.storyService.isMobile$
 
 
-  readonly displayPoints$ = this.storyService.displayPoints$
+  readonly displayPoints = this.storyService.displayPoints
   readonly showStoryFilterBar$ = this.storyService.storyOptions$.pipe(
     map((options) => options?.hideStoryFilterBar),
     map((value) => value === false)
@@ -285,6 +289,11 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   readonly currentPageIndex = this.storyService.currentPageIndex
   readonly currentPageKey = this.storyService.currentPageKey
 
+  readonly currentPageComponent = computed(() =>
+    this.storyPointComponents()?.find((item) => item.key() === this.currentPageKey())
+  )
+
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -307,9 +316,8 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
     .subscribe(([event, currentId]) => {
       // console.warn(`resize selected story page layout`)
       // TODO 需要重构成更好的方式
-      this.storyPointComponents
-        .toArray()
-        .find((item) => item.point.id === currentId)
+      this.storyPointComponents()
+        ?.find((item) => item.point.id === currentId)
         ?.resize()
     })
   private _intentSubscriber = this.storyService
@@ -622,8 +630,9 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   }
 
   resetScalePanState() {
-    this.cdkDrag?.reset()
-    this.storyService.updateStoryOptions({ scale: null })
+    // this.cdkDrag?.reset()
+    this.cdkDrags()?.forEach((item) => item.reset())
+    this.storyService.resetZoom()
   }
 
   @HostListener('document:keydown', ['$event'])

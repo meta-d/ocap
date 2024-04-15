@@ -106,6 +106,19 @@ export class NxStoryPointService {
     distinctUntilChanged()
   )
   readonly styling$ = this.select((state) => state.styling)
+  readonly scaleStyles$ = this.stateStore.pipe(
+    select((state) => state?.scale),
+    distinctUntilChanged(),
+    map((scale) => {
+      return scale
+        ? {
+            transform: `scale(${scale / 100})`,
+            'transform-origin': 'left top'
+          }
+        : {}
+    })
+  )
+
   public filters$: Observable<Array<ISlicer>> = this.select((state) => state.filters).pipe(
     distinctUntilChanged((x, y) => JSON.stringify(x) === JSON.stringify(y))
   )

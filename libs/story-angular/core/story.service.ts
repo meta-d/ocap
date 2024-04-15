@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { computed, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
+import { computed, effect, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
@@ -224,31 +224,28 @@ export class NxStoryService {
   ))
 
   public readonly editable$ = this.select((state) => state.editable)
+  readonly editable = toSignal(this.select((state) => state.editable))
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
   public readonly pageStates$ = this.select((state) => state.points).pipe(
     filter(nonNullable)
   )
-  readonly storyPoints = toSignal(this.select((state) => state.story?.points))
   readonly pageStates = toSignal(this.pageStates$)
+  readonly storyPoints = toSignal(this.select((state) => state.story?.points))
   readonly points = computed(() => this.storyPoints()?.filter((item) => !this.pageStates().some((state) => state.removed && state.key === item.key)))
 
-  readonly displayPoints$ = combineLatest([
-      toObservable(this.points),
-      this.editable$,
-      this.currentPageKey$
-    ]).pipe(
-      map(([points, editable, currentPageKey]) => {
-        return sortBy(
-          points?.filter((item) => editable || !item.hidden || item.key === currentPageKey) || [],
-          'index'
-        )
-      }),
-      shareReplay(1)
-    )
+  readonly displayPoints = computed(() => {
+    const points = this.points()
+    const editable = this.editable()
+    const currentPageKey = this.currentPageKey()
+
+    return sortBy(points?.filter((item) => editable || !item.hidden || item.key === currentPageKey) || [], 'index')
+  })
+  readonly displayPoints$ = toObservable(this.displayPoints)
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
+  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
@@ -264,6 +261,7 @@ export class NxStoryService {
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
   readonly isAuthenticated = toSignal(this.select((state) => state.isAuthenticated))
   public readonly isPanMode$ = this.select((state) => state.isPanMode)
+  readonly isPanMode = toSignal(this.select((state) => state.isPanMode))
 
   // FilterBar merge with global appearance
   public readonly filterBar$ = combineLatest([
@@ -345,7 +343,6 @@ export class NxStoryService {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly displayPoints = toSignal(this.displayPoints$)
   readonly currentPageIndex = computed(() => {
     return this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
   })
@@ -437,6 +434,9 @@ export class NxStoryService {
     @Optional() private _snackBar?: MatSnackBar,
     @Optional() private _dialog?: MatDialog
   ) {
+    effect(() => {
+      console.log(`currentPageState`, this.currentPageState())
+    })
   }
 
   onSaved() {
@@ -609,8 +609,8 @@ export class NxStoryService {
   }
 
   // ================================== Actions ================================== //
-  async setCurrentIndex(index: number) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+  setCurrentIndex(index: number) {
+    const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)
   }
 
@@ -790,8 +790,8 @@ export class NxStoryService {
    * 
    * @param key 
    */
-  async deleteStoryPoint(key: string) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+  deleteStoryPoint(key: string) {
+    const displayPoints = this.displayPoints()
     this.#deleteStoryPoint(key)
     const index = displayPoints.findIndex((item) => item.key === key)
     this.patchState({
@@ -799,8 +799,8 @@ export class NxStoryService {
     })
   }
 
-  async hideStoryPage(key: string) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+  hideStoryPage(key: string) {
+    const displayPoints = this.displayPoints()
 
     this.toggleStoryPointHidden(key)
 
@@ -1302,7 +1302,7 @@ export class NxStoryService {
   // Gesture Actions
   async swipe(dir: 'left' | 'right', loop = false) {
     const currentIndex = this.currentPageIndex()
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+    const displayPoints = this.displayPoints()
     let index = 0
     if (dir === 'left') {
       index = Math.max(currentIndex - 1, 0)
@@ -1355,19 +1355,36 @@ export class NxStoryService {
       Number.MAX_SAFE_INTEGER
     )
   })
-  
-  readonly zoomIn = this.updater((state) => {
-    state.story.options = {
-      ...(state.story.options ?? {}),
-      scale: (state.story.options?.scale ?? 100) + 10
+
+  updateCurrentPageState<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryPointState, ...params: OriginType[]) => StoryPointState | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => {
+        const currentPageKey = state.currentPageKey
+        const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
+        const result = fn(state.points[currentPageIndex], ...params)
+        if (result) {
+          state.points[currentPageIndex] = result
+        }
+      }))
     }
+  }
+  
+  readonly resetZoom = this.updateCurrentPageState((state) => {
+    state.scale = null
   })
 
-  readonly zoomOut = this.updater((state) => {
-    state.story.options = {
-      ...(state.story.options ?? {}),
-      scale: (state.story.options?.scale ?? 100) - 10
-    }
+  readonly zoomIn = this.updateCurrentPageState((state) => {
+    state.scale = (state.scale ?? 100) + 10
+  })
+
+  readonly zoomOut = this.updateCurrentPageState((state) => {
+    state.scale = (state.scale ?? 100) - 10
+  })
+
+  readonly setZoom = this.updateCurrentPageState((state, scale: number) => {
+    state.scale = scale
   })
 
   /**

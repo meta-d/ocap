@@ -15,6 +15,7 @@
   }
   @default {
     <div class="ngm-story-point__page w-full"
+        [ngStyle]="scaleStyles$ | async"
         [ngClass]="{
             'ngm-story-point__size-continuous-height': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.continuousHeight,
             'ngm-story-point__size-a4': point.styling?.pageSize?.type === 'fixed' && point.styling?.pageSize?.size === 'A4',

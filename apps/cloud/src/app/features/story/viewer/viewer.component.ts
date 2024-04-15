@@ -11,6 +11,7 @@ import {
   OnInit,
   ViewChild,
   ViewContainerRef,
+  computed,
   effect,
   inject,
   model,
@@ -128,9 +129,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   public readonly isAuthenticated$ = this.storyService.isAuthenticated$
   public readonly isPanMode$ = this.storyService.isPanMode$
 
-  public readonly scale = toSignal(this.storyService.storyOptions$.pipe(
-    map((options) => options?.scale ?? 100)
-  ))
+  readonly scale = computed(() => this.storyService.currentPageState()?.scale ?? 100)
 
   // Story explorer
   showExplorer = signal(false)
@@ -305,9 +304,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   setScale(scale: number) {
-    this.storyService.updateStoryOptions({
-      scale
-    })
+    this.storyService.setZoom(scale)
   }
 
   resetScalePan() {

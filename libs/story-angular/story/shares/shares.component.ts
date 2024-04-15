@@ -88,7 +88,7 @@ export class StorySharesComponent implements OnInit {
 
   @ViewChild('copyMessage') copyMessage: TemplateRef<any>
 
-  private readonly pages = toSignal(this.storyService.displayPoints$)
+  private readonly pages = this.storyService.displayPoints
   public readonly pagesSelectOptions = computed(() => {
     const pages = [
       {

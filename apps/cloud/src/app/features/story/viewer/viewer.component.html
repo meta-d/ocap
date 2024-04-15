@@ -167,7 +167,8 @@
                 Alt + Esc
             </span>
         </button>
-        <button cdkMenuItem *ngFor="let item of StoryScales" class="pac-story-bar__scale-item group"
+      @for (item of StoryScales; track item.value) {
+        <button cdkMenuItem class="pac-story-bar__scale-item group"
             [class.active]="scale() === item.value"
             (click)="setScale(item.value)">
             <span class="pac-story-bar__scale-point inline-flex items-center justify-center w-2 h-2 ml-2 mr-4 text-xs font-semibold bg-gray-200 rounded-full group-hover:bg-yellow-500">
@@ -175,5 +176,6 @@
             
             <span>{{item.name}}</span>
         </button>
+      }
     </div>
 </ng-template>

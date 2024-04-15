@@ -14,7 +14,7 @@
         (selectedTabChange)="onSelectedTabChange($event)"
         (click)="onSelectedIndex(pageTabs.selectedIndex)"
     >
-      @for (point of displayPoints$ | async; track point.key; let i = $index; let isLast = $last; let isFirst = $first;) {
+      @for (point of displayPoints(); track point.key; let i = $index; let isLast = $last; let isFirst = $first;) {
         <mat-tab>
             <ng-template matTabLabel>
                 <div class="relative flex items-center">
@@ -36,13 +36,12 @@
                 </div>
             </ng-template>
             
-            <ngm-story-point #story_point class="ngm-color" #panDragHandler
+            <ngm-story-point #story_point class="ngm-color"
                 cdkDrag
                 [cdkDragDisabled]="disablePanMode$ | async"
                 [class.cursor-grab.select-none]="isPanMode$ | async"
                 [ngStyle]="pageStyle()"
                 [ngClass]="point.styling?.background ? 'ngm-color__' + point.styling.background : ''"
-                [story]="story"
                 [key]="point.key"
                 [editable]="editable()"
                 [opened]="i === pageTabs.selectedIndex"
@@ -158,7 +157,7 @@
 >
     <div class="ngm-story__pagination-horizontal overflow-auto whitespace-nowrap pointer-events-auto flex flex-wrap justify-start items-center
         rounded-lg px-2 py-1 bg-slate-500/10 backdrop-blur-md">
-        <div *ngFor="let point of displayPoints$ | async; index as i;" class="ngm-story__pagination-page flex items-center cursor-pointer group hover:underline pointer-events-auto"
+        <div *ngFor="let point of displayPoints(); index as i;" class="ngm-story__pagination-page flex items-center cursor-pointer group hover:underline pointer-events-auto"
             (click)="storyService.setCurrentPageKey(point.key)"
         >
             <div class="ngm-story__pagination-bullet shrink-0 inline-block w-4 h-4 rounded-full mx-1 opacity-50 group-hover:opacity-100"

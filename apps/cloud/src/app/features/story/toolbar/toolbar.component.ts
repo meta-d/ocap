@@ -14,6 +14,7 @@ import {
   ViewContainerRef,
   booleanAttribute,
   computed,
+  effect,
   inject,
   input,
   signal
@@ -178,11 +179,14 @@ export class StoryToolbarComponent implements OnInit {
 
   public readonly isMobile$ = this.storyService.isMobile$
 
-  public readonly storyOptions = toSignal(this.storyService.storyOptions$)
-  public readonly scale = computed(() => this.storyOptions()?.scale ?? 100)
+  // public readonly storyOptions = toSignal(this.storyService.storyOptions$)
+  // public readonly scale = computed(() => this.storyOptions()?.scale ?? 100)
+  readonly currentPage = this.storyService.currentPageState
+  readonly scale = computed(() => this.currentPage()?.scale ?? 100)
+
 
   public readonly creatingWidget$ = this.toolbarService.creatingWidget$
-  public readonly isPanMode$ = this.storyService.isPanMode$
+  readonly isPanMode = this.storyService.isPanMode
 
   public readonly isWidgetSelected = computed(() => !this.storyService.currentWidget())
   /**
@@ -252,9 +256,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   setScale(scale: number) {
-    this.storyService.updateStoryOptions({
-      scale
-    })
+    this.storyService.setZoom(scale)
   }
 
   toggleMobile(device: EmulatedDevice) {
@@ -577,21 +579,17 @@ export class StoryToolbarComponent implements OnInit {
     this.fullscreen.emit(this._fullscreen)
   }
 
-  async togglePanTool() {
-    const isPanMode = await firstValueFrom(this.isPanMode$)
+  togglePanTool() {
+    const isPanMode = this.isPanMode()
     this.storyService.patchState({ isPanMode: !isPanMode })
   }
 
   async zoomIn() {
-    this.storyService.updateStoryOptions({
-      scale: this.scale() + 10
-    })
+    this.storyService.zoomIn()
   }
 
   async zoomOut() {
-    this.storyService.updateStoryOptions({
-      scale: this.scale() - 10
-    })
+    this.storyService.zoomOut()
   }
 
   calculateRightSide(event: CdkDragEnd) {
@@ -684,10 +682,10 @@ export class StoryToolbarComponent implements OnInit {
     } else if (event.altKey) {
       switch (event.code) {
         case 'Minus':
-          this.storyService.zoomOut()
+          this.zoomOut()
           break
         case 'Equal':
-          this.storyService.zoomIn()
+          this.zoomIn()
           break
         case 'Escape':
           this.resetScalePan.emit()

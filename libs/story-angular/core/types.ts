@@ -179,6 +179,7 @@ export interface StoryOptions {
   advancedStyle?: string
   emulatedDevice?: EmulatedDevice
   /**
+   * @deprecated use scale in StoryPointState
    * Transform scale base 100
    * * 70 means
     ```css
@@ -608,6 +609,16 @@ export interface StoryPointState {
    * Linked analysis states
    */
   linkedAnalysis?: Record<string, LinkedAnalysisEvent>
+  /**
+   * Page transform scale, Transform scale base 100
+   * 
+   * For example: 70 means
+    ```css
+    transform: scale(.7);
+    transform-origin: 0 0;
+    ```
+   */
+  scale?: number
 }
 
 /**
