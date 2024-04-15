@@ -636,20 +636,7 @@ export function mapEntityTypeHierarchy2Tree(entityType: EntityType) {
     })
 }
 
-/**
- * @deprecated use getMemberFromRow2
- */
-export function getMemberFromRow(row: unknown, property: Property) {
-  const label = _getPropertyCaption(property)
-  return {
-    key: row[property.name],
-    value: row[property.name],
-    label: label ? row[label] : null,
-    caption: label ? row[label] : null,
-  }
-}
-
-export function getMemberFromRow2(row: unknown, dimension: Dimension, entityType?: EntityType) {
+export function getMemberFromRow(row: unknown, dimension: Dimension, entityType?: EntityType) {
   const caption = getDimensionMemberCaption(dimension, entityType)
   return {
     key: row[dimension.hierarchy || dimension.dimension],

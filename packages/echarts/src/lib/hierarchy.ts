@@ -5,7 +5,6 @@ import {
   ChartMeasure,
   ChartOrient,
   ChartSettings,
-  compact,
   displayByBehaviour,
   EntityType,
   getChartCategory,
@@ -482,6 +481,7 @@ export function sankeyMeasure(
   const recursiveHierarchy = data.schema?.recursiveHierarchy
   const { nodes, links } = recursiveHierarchy
     ? convertTree2NodeLinks(
+        entityType,
         data.data,
         getEntityHierarchy(entityType, { hierarchy: recursiveHierarchy.valueProperty }),
         recursiveHierarchy.parentNodeProperty,
@@ -560,7 +560,7 @@ export function leveledHierarchy(
       const childs = groupBy(parent.children, levelName)
       parent.children = Object.keys(childs).map((key) => {
         const item = childs[key][0]
-        const caption = displayByBehaviour(getMemberFromRow(item, levelProperty), level.displayBehaviour)
+        const caption = displayByBehaviour(getMemberFromRow(item, levelProperty, entityType), level.displayBehaviour)
         const child = {
           key,
           id: key,
@@ -614,7 +614,7 @@ export function leveledGraph(
       const childs = groupBy(parent.children, levelName)
       Object.keys(childs).forEach((key) => {
         const item = childs[key][0]
-        const caption = displayByBehaviour(getMemberFromRow(item, levelProperty), level.displayBehaviour)
+        const caption = displayByBehaviour(getMemberFromRow(item, levelProperty, entityType), level.displayBehaviour)
         if (!nodes[key]) {
           nodes[key] = {
             key,
@@ -650,6 +650,7 @@ export function leveledGraph(
 }
 
 export function convertTree2NodeLinks(
+  entityType: EntityType,
   data: Array<unknown>,
   child: PropertyHierarchy,
   parent: string,
@@ -658,6 +659,7 @@ export function convertTree2NodeLinks(
   measure: string,
   options: EChartsOptions
 ) {
+
   const nodes = []
   const links = []
 
@@ -667,7 +669,7 @@ export function convertTree2NodeLinks(
   // 解析nodes 和 links
   const nodesMap = new Map()
   data.forEach((item) => {
-    const caption = displayByBehaviour(getMemberFromRow(item, child), dimension.displayBehaviour)
+    const caption = displayByBehaviour(getMemberFromRow(item, child, entityType), dimension.displayBehaviour)
     nodesMap.set(item[child.name], {
       name: item[child.name],
       caption,
