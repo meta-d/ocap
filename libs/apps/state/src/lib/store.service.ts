@@ -69,6 +69,10 @@ export interface PersistState {
 	 */
 	cacheLevel: number
 	fixedLayoutSider?: boolean
+	/**
+	 * Pin the story toolbar on the left side of designer
+	 */
+	pinStoryToolbar?: boolean
 }
 
 export function createInitialAppState(): AppState {
@@ -184,6 +188,7 @@ export class Store {
 
 	// Signals
 	fixedLayoutSider = toSignal(this.persistQuery.select((state) => state.fixedLayoutSider))
+	readonly pinStoryToolbar = toSignal(this.persistQuery.select((state) => state.pinStoryToolbar))
 
 	/**
 	 * Observe any change to the component layout.
@@ -513,6 +518,12 @@ export class Store {
 	setFixedLayoutSider(value) {
 		this.persistStore.update({
 			fixedLayoutSider: value
+		})
+	}
+
+	setPinStoryToolbar(value: boolean) {
+		this.persistStore.update({
+			pinStoryToolbar: value
 		})
 	}
 

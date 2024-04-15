@@ -92,7 +92,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   private readonly wasmAgent = inject(WasmAgentService)
   public appService = inject(AppService)
   readonly storyService = inject(NxStoryService)
-  private store = inject(Store)
+  readonly #store = inject(Store)
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
@@ -117,7 +117,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   readonly models = computed(() => this.story()?.models)
   storyOptions: StoryOptions
 
-  readonly pinToolbar = signal(false)
+  readonly pinToolbar = this.#store.pinStoryToolbar
 
   error: string
   emulatedDevice: EmulatedDevice = null
@@ -163,7 +163,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     }
   ]
 
-  readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
+  readonly watermark$ = this.#store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark = toSignal(this.appService.isDark$)
   readonly _isDirty = toSignal(this.storyService.dirty$)
   readonly isMobile = toSignal(this.storyService.isMobile$)
@@ -291,8 +291,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   }
 
   toggleToolbarPin() {
-    this.pinToolbar.update((pin) => !pin)
-    if (this.pinToolbar()) {
+    this.#store.setPinStoryToolbar(!this.#store.pinStoryToolbar())
+    if (this.#store.pinStoryToolbar()) {
       this.toolbarComponent.resetPosition()
     }
   }
