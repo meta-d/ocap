@@ -1,6 +1,6 @@
 import { DestroyRef, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { PropsFactory, ReducerContext, Store, StoreConfig, StoreDef, createState } from '@ngneat/elf'
+import { PropsFactory, ReducerContext, Store, StoreConfig, StoreDef, createState, select } from '@ngneat/elf'
 import { produce } from 'immer'
 import { cloneDeep, isEqual, isObject, negate, pick } from 'lodash-es'
 import { Observable, Subscription, distinctUntilChanged, filter, map, startWith } from 'rxjs'
@@ -37,12 +37,19 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
     super(storeDef)
   }
 
-  subReducer<T>(state: T, properties: Array<string | number>) {
-    return properties.reduce((accumulator, currentValue) => {
-      return Array.isArray(accumulator)
-        ? accumulator.find((item) => item?.[this.options.arrayKey ?? 'id'] === currentValue)
-        : accumulator?.[currentValue]
-    }, state)
+  subscribeParent(properties: Array<string | number>) {
+    const base = this.parent.pipe(
+      startWith(this.parent.getValue())
+    )
+    return properties.reduce((obs, prop) => {
+      return obs.pipe(
+        select((state) => {
+          return Array.isArray(state) ?
+            state.find((item) => item?.[this.options.arrayKey ?? 'id'] === prop)
+            : state?.[prop]
+        })
+      )
+    }, base)
   }
 
   connect(properties?: Array<string | number>) {
@@ -52,10 +59,8 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
     }
 
     this.#subscription?.unsubscribe()
-    this.#subscription = this.parent
+    this.#subscription = this.subscribeParent(properties)
       .pipe(
-        startWith(this.parent.getValue()),
-        map((state) => this.subReducer(state, this.options.properties)),
         filter(nonNullable),
         takeUntilDestroyed(this.#destroyRef)
       )
