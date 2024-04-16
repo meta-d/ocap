@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnChanges, SimpleChanges, forwardRef, inject, signal } from '@angular/core'
+import { Component, Input, OnChanges, SimpleChanges, effect, forwardRef, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
@@ -10,7 +10,6 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms'
-import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { BusinessAreasService, NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
@@ -22,6 +21,7 @@ import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   ISlicer,
+  Indicator,
   IndicatorType,
   Syntax,
   getEntityDimensions,
@@ -32,7 +32,6 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ISemanticModel, ITag, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TagEditorComponent } from 'apps/cloud/src/app/@shared'
-import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
 import { NGXLogger } from 'ngx-logger'
 import {
   BehaviorSubject,
@@ -51,6 +50,7 @@ import {
 import { CalculatedMeasureComponent } from '@metad/components/property'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { injectFetchModelDetails } from '../../types'
+
 
 @Component({
   standalone: true,
@@ -86,12 +86,9 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 
-  // readonly indicatorsComponent = inject(ProjectIndicatorsComponent)
-  // private readonly _dialog = inject(MatDialog)
-  private readonly dsCoreSercie = inject(NgmDSCoreService)
-  private readonly businessAreasStore = inject(BusinessAreasService)
-  private readonly dsCoreService = inject(NgmDSCoreService)
-  private readonly wasmAgent = inject(WasmAgentService)
+  readonly businessAreasStore = inject(BusinessAreasService)
+  readonly dsCoreService = inject(NgmDSCoreService)
+  readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
   readonly #logger = inject(NGXLogger)
   readonly #translate = inject(TranslateService)
@@ -165,7 +162,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   private readonly dataSource$ = this.dataSourceName$.pipe(
     distinctUntilChanged(),
     filter(nonNullable),
-    switchMap((modelName) => this.dsCoreSercie.getDataSource(modelName))
+    switchMap((modelName) => this.dsCoreService.getDataSource(modelName))
   )
   public readonly entitiesLoading$ = new BehaviorSubject<boolean>(false)
   public readonly entities$ = this.dataSource$.pipe(
@@ -198,7 +195,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   public readonly entityType$ = this.dataSettings$.pipe(
     tap(() => this.entityTypeLoading$.next(true)),
     switchMap(({ dataSource, entitySet }) =>
-      this.dsCoreSercie
+      this.dsCoreService
         .getDataSource(dataSource)
         .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet)))
     ),
@@ -232,6 +229,14 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   readonly dataSettings = toSignal(this.dataSettings$)
   readonly entityType = toSignal(this.entityType$)
   readonly showFormula = signal(false)
+  readonly semanticModel = toSignal(this.formGroup.get('modelId').valueChanges.pipe(
+    startWith(this.formGroup.get('modelId').value),
+    distinctUntilChanged(),
+    filter(nonBlank),
+    switchMap((id) => this.fetchModelDetails(id)),
+  ))
+  readonly indicator = toSignal(this.formGroup.valueChanges.pipe(startWith(this.formGroup.value)))
+
 
   /**
   |--------------------------------------------------------------------------
@@ -290,31 +295,37 @@ ${calcEntityTypePrompt(this.entityType())}
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private modelSub = this.formGroup
-    .get('modelId')
-    .valueChanges.pipe(
-      startWith(this.formGroup.get('modelId').value),
-      distinctUntilChanged(),
-      filter(nonBlank),
-      switchMap((id) => this.fetchModelDetails(id)),
-      takeUntilDestroyed()
-    )
-    .subscribe((semanticModel) => {
-      // 指标公式编辑时需要用到现有 Indicators
-      // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
-      const dataSource = registerModel(
-        {
-          ...semanticModel
-          // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
-        } as NgmSemanticModel,
-        this.dsCoreService,
-        this.wasmAgent
-      )
-      this.dataSourceName$.next(dataSource.name)
-    })
+  #valueSub = this.formGroup.valueChanges.pipe(
+    debounceTime(500),
+    takeUntilDestroyed()
+  ).subscribe((value) => this._onChange?.(value))
 
   constructor() {
-    this.formGroup.valueChanges.pipe(debounceTime(500)).subscribe((value) => this._onChange?.(value))
+    effect(() => {
+      const indicator = this.indicator()
+      const semanticModel = this.semanticModel()
+      if (semanticModel && indicator) {
+        // 指标公式编辑时需要用到现有 Indicators
+        // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
+        const indicators = [...semanticModel.indicators]
+        const index = indicators.findIndex((item) => item.id === indicator.id)
+        if (index >= 0) {
+          indicators.splice(index, 1, indicator as Indicator)
+        } else {
+          indicators.push(indicator as Indicator)
+        }
+        const dataSource = registerModel(
+          {
+            ...semanticModel,
+            indicators
+            // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
+          } as NgmSemanticModel,
+          this.dsCoreService,
+          this.wasmAgent
+        )
+        this.dataSourceName$.next(dataSource.key)
+      }
+    }, { allowSignalWrites: true })
   }
 
   ngOnChanges({ models }: SimpleChanges): void {
@@ -343,29 +354,5 @@ ${calcEntityTypePrompt(this.entityType())}
   toggleFormula() {
     this.showFormula.update((state) => !state)
   }
-  
-  // openFormula() {
-  //   const entityType = this.entityType()
-  //   const dataSettings = this.dataSettings()
-  //   this._dialog
-  //     .open(ModelFormulaComponent, {
-  //       panelClass: 'large',
-  //       data: {
-  //         dataSettings,
-  //         entityType,
-  //         measure: {
-  //           name: this.code,
-  //           caption: this.name
-  //         },
-  //         formula: this.formula
-  //       }
-  //     })
-  //     .afterClosed()
-  //     .subscribe((_formula) => {
-  //       if (_formula && this.formula !== _formula) {
-  //         this.formula = _formula
-  //         this.formGroup.markAsDirty()
-  //       }
-  //     })
-  // }
+
 }

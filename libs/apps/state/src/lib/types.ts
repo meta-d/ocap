@@ -92,7 +92,7 @@ export function convertStory(story: Partial<Story>): Partial<Story> {
       status: story.status,
       templateId: story.templateId,
       // 服务端暂不支持级联更新多对多表
-      // models: story.models.map((item) => ({id: item.id})),
+      models: story.models?.map((item) => ({id: item.id})),
       points: story.points?.map(convertStoryPoint),
       options: pick(story, 'title', 'filterBar', 'options', 'schema', 'schemas')
     },

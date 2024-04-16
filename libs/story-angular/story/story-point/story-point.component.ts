@@ -1,3 +1,5 @@
+import { CdkMenuModule } from '@angular/cdk/menu'
+import { OverlayModule } from '@angular/cdk/overlay'
 import {
   ChangeDetectorRef,
   Component,
@@ -6,26 +8,29 @@ import {
   HostBinding,
   HostListener,
   Input,
-  OnChanges,
   Output,
   Renderer2,
-  SimpleChanges,
   TemplateRef,
   ViewChild,
   ViewContainerRef,
-  inject
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input
 } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
-import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
-import { assignDeepOmitBlank, omit, omitBlank } from '@metad/ocap-core'
 import { ConfirmModule, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreModule, nonNullable, uploadYamlFile } from '@metad/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmSmartFilterBarService, effectAction } from '@metad/ocap-angular/core'
+import { assignDeepOmitBlank, omit, omitBlank } from '@metad/ocap-core'
 import {
   ComponentSettingsType,
   MoveDirection,
   NxStoryService,
-  Story,
   StoryPageSize,
   StoryPoint,
   StoryPointType,
@@ -35,6 +40,8 @@ import {
 } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { FlexItemType, FlexLayout, ResponsiveService } from '@metad/story/responsive'
+import { ContentLoaderModule } from '@ngneat/content-loader'
+import { TranslateModule } from '@ngx-translate/core'
 import {
   CompactType,
   DisplayGrid,
@@ -43,9 +50,10 @@ import {
   GridsterComponentInterface,
   GridsterConfig,
   GridsterItem,
-  GridsterModule,
+  GridsterModule
 } from 'angular-gridster2'
 import { cloneDeep, isObject, merge, pick } from 'lodash-es'
+import { NgxPopperjsModule } from 'ngx-popperjs'
 import { BehaviorSubject, EMPTY, Observable, combineLatest, firstValueFrom } from 'rxjs'
 import {
   distinctUntilChanged,
@@ -58,75 +66,64 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators'
-import { NxStoryPointService } from '../story-point.service'
-import { StorySharesComponent } from '../shares/shares.component'
+import { NxStoryResponsiveModule } from '../../responsive/responsive.module'
 import { NxStorySharedModule } from '../shared.module'
-import { OverlayModule } from '@angular/cdk/overlay'
-import { CdkMenuModule } from '@angular/cdk/menu'
-import { TranslateModule } from '@ngx-translate/core'
-import { ContentLoaderModule } from '@ngneat/content-loader'
-import { NgxPopperjsModule } from 'ngx-popperjs'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NxStoryWidgetComponent } from "../story-widget/story-widget.component";
-import { NxStoryResponsiveModule } from "../../responsive/responsive.module";
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-
+import { StorySharesComponent } from '../shares/shares.component'
+import { NxStoryPointService } from '../story-point.service'
+import { NxStoryWidgetComponent } from '../story-widget/story-widget.component'
+import { WIDGET_DEFAULT_SIZE, WIDGET_DEFAULT_SIZES } from '../types'
 
 @Component({
-    standalone: true,
-    selector: 'ngm-story-point',
-    templateUrl: './story-point.component.html',
-    styleUrls: ['./story-point.component.scss'],
-    host: {
-        class: 'ngm-story-point'
-    },
-    providers: [NxStoryPointService, NgmSmartFilterBarService, ResponsiveService],
-    imports: [
-        NxStorySharedModule,
-        OverlayModule,
-        CdkMenuModule,
-        ConfirmModule,
-        TranslateModule,
-        ContentLoaderModule,
-        NgxPopperjsModule,
-        NxCoreModule,
-        NgmCommonModule,
-        NxStoryWidgetComponent,
-        NxStoryResponsiveModule,
-        GridsterModule
-    ]
+  standalone: true,
+  selector: 'ngm-story-point',
+  templateUrl: './story-point.component.html',
+  styleUrls: ['./story-point.component.scss'],
+  host: {
+    class: 'ngm-story-point'
+  },
+  providers: [NxStoryPointService, NgmSmartFilterBarService, ResponsiveService],
+  imports: [
+    NxStorySharedModule,
+    OverlayModule,
+    CdkMenuModule,
+    ConfirmModule,
+    TranslateModule,
+    ContentLoaderModule,
+    NgxPopperjsModule,
+    NxCoreModule,
+    NgmCommonModule,
+    NxStoryWidgetComponent,
+    NxStoryResponsiveModule,
+    GridsterModule
+  ]
 })
-export class NxStoryPointComponent implements OnChanges {
+export class NxStoryPointComponent {
   STORY_POINT_TYPE = StoryPointType
   ComponentType = WidgetComponentType
 
+  readonly storyService = inject(NxStoryService)
+  readonly storyPointService = inject(NxStoryPointService)
   private _renderer = inject(Renderer2)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
   private smartFilterBar = inject(NgmSmartFilterBarService)
-  public settingsService? = inject(NxSettingsPanelService, {optional: true})
+  public settingsService? = inject(NxSettingsPanelService, { optional: true })
 
-  @Input() story: Story
-  @Input() key: string
+  readonly key = input<string>()
+
   get point(): StoryPoint {
     return this.storyPointService.storyPoint ?? ({} as StoryPoint)
   }
 
-  @Input() get editable(): boolean {
-    return this._editable$.value
-  }
-  set editable(value) {
-    this._editable$.next(value)
-  }
-  private _editable$ = new BehaviorSubject<boolean>(false)
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly _editable$ = toObservable(this.editable)
 
-  @Input() get opened(): boolean {
-    return this._opened$.getValue()
-  }
-  set opened(value) {
-    this._opened$.next(value)
-  }
-  private _opened$ = new BehaviorSubject<boolean>(false)
+  readonly opened = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly _opened$ = toObservable(this.opened)
 
   /**
    * 聚焦 Widget
@@ -141,9 +138,8 @@ export class NxStoryPointComponent implements OnChanges {
   @Output() resizeEvent = new EventEmitter()
 
   @ViewChild(GridsterComponent) gridster: GridsterComponent
-  // @ViewChildren(NxStoryWidgetComponent) widgets: QueryList<NxStoryWidgetComponent>
   @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<Element>
-  
+
   get gridColWidth() {
     return this.gridster.curColWidth
   }
@@ -151,7 +147,8 @@ export class NxStoryPointComponent implements OnChanges {
     return this.gridster.curRowHeight
   }
 
-  public dirty = false
+  public readonly dirtySignal = computed(() => this.editable() && this.storyPointService.dirtyCheckResult.dirty())
+
   public gridOptions: GridsterConfig
 
   @HostBinding('class.ngm-story-point__multi-layer')
@@ -172,6 +169,7 @@ export class NxStoryPointComponent implements OnChanges {
     this._editable$,
     this.closedQuickStart$
   ]).pipe(map(([isEmpty, editable, closedQuickStart]) => editable && isEmpty && !closedQuickStart))
+
   readonly widgets$ = this.storyPointService.widgets$.pipe(
     map((widgets) =>
       widgets?.map((widget) => ({
@@ -253,7 +251,7 @@ export class NxStoryPointComponent implements OnChanges {
   public readonly gridOptions$ = combineLatest([
     this.storyPointService.styling$.pipe(startWith(null)),
     combineLatest([
-      this.storyPointService.gridOptions$,
+      this.storyPointService.gridOptions$.pipe(startWith({})),
       this.storyService.preferences$.pipe(
         // 向后兼容
         map((preferences) => preferences?.defaultGridOptions ?? preferences?.page?.defaultGridOptions)
@@ -263,10 +261,7 @@ export class NxStoryPointComponent implements OnChanges {
         assignDeepOmitBlank({}, assignDeepOmitBlank(defaultGridOptions, gridOptions))
       )
     ),
-    this.storyService.creatingWidget$.pipe(
-      map(nonNullable),
-      distinctUntilChanged()
-    ),
+    this.storyService.creatingWidget$.pipe(map(nonNullable), distinctUntilChanged(), startWith(null)),
     this._editable$
   ]).pipe(
     map(([styling, options, isCreatingWidget, editable]) => {
@@ -318,6 +313,8 @@ export class NxStoryPointComponent implements OnChanges {
     map((options) => pick(options, 'allowMultiLayer', 'defaultLayerIndex', 'maxLayerIndex', 'baseLayerIndex'))
   )
 
+  readonly scaleStyles$ = this.storyPointService.scaleStyles$
+
   // nativeElement.scrollTop
   private _scrollTop = 0
   private _scrollLeft = 0
@@ -338,17 +335,22 @@ export class NxStoryPointComponent implements OnChanges {
     })
   })
 
-  private stylingCanvasSub = this.stylingCanvas$.pipe(filter((value) => isObject(value)), takeUntilDestroyed()).subscribe((styling) => {
-    Object.keys(styling).forEach((key) => {
-      this._renderer.setStyle(this._elementRef.nativeElement, key, styling[key])
+  private stylingCanvasSub = this.stylingCanvas$
+    .pipe(
+      filter((value) => isObject(value)),
+      takeUntilDestroyed()
+    )
+    .subscribe((styling) => {
+      Object.keys(styling).forEach((key) => {
+        this._renderer.setStyle(this._elementRef.nativeElement, key, styling[key])
+      })
     })
-  })
 
-  private flexLayoutSub = this.responsiveService.flexLayoutChange$.pipe(
-    takeUntilDestroyed()
-  ).subscribe((value: FlexLayout) => {
-    this.storyPointService.refactFlexLayout(value)
-  })
+  private flexLayoutSub = this.responsiveService.flexLayoutChange$
+    .pipe(takeUntilDestroyed())
+    .subscribe((value: FlexLayout) => {
+      this.storyPointService.refactFlexLayout(value)
+    })
 
   // filters 改变并且此页面打开后刷新
   private filterSub = this.storyPointService.filters$
@@ -366,10 +368,7 @@ export class NxStoryPointComponent implements OnChanges {
       this.filterBarService.change(filters)
       this.filterBarService.go()
     })
-  // Dirty
-  private dirtySub = this.storyPointService.isDirty$.pipe(takeUntilDestroyed()).subscribe((dirty) => {
-    this.dirty = this.editable && dirty
-  })
+
   // Opened
   private openedSub = this._opened$.pipe(takeUntilDestroyed()).subscribe((open) => {
     this.storyPointService.active(open)
@@ -379,28 +378,28 @@ export class NxStoryPointComponent implements OnChanges {
     }
   })
   // Responsive
-  private responsiveWidgetSelectedSub = this.responsiveService.selected$.pipe(takeUntilDestroyed()).subscribe((key: string) => {
-    this.storyPointService.setCurrentFlexLayoutKey(key)
-    if (key) {
-      this.openResponsiveDesigner(key)
-    }
-  })
+  private responsiveWidgetSelectedSub = this.responsiveService.selected$
+    .pipe(takeUntilDestroyed())
+    .subscribe((key: string) => {
+      this.storyPointService.setCurrentFlexLayoutKey(key)
+      if (key) {
+        this.openResponsiveDesigner(key)
+      }
+    })
 
   constructor(
-    public storyService: NxStoryService,
-    private storyPointService: NxStoryPointService,
     private filterBarService: NgmSmartFilterBarService,
     private responsiveService: ResponsiveService,
     private router: Router,
     private route: ActivatedRoute,
     private _elementRef: ElementRef,
-    private _cdr: ChangeDetectorRef,
-  ) {}
-
-  ngOnChanges({ key }: SimpleChanges): void {
-    if (key?.currentValue) {
-      this.storyPointService.init(key.currentValue)
-    }
+    private _cdr: ChangeDetectorRef
+  ) {
+    effect(() => {
+      if (this.key()) {
+        this.storyPointService.init(this.key())
+      }
+    }, { allowSignalWrites: true })
   }
 
   onGridsterItemChange({ item }: { item: GridsterItem }, widget: StoryWidget) {
@@ -415,21 +414,21 @@ export class NxStoryPointComponent implements OnChanges {
         ...creatingWidget,
         dataSettings: {
           ...dataSettings,
-          ...(creatingWidget.dataSettings ?? {}),
+          ...(creatingWidget.dataSettings ?? {})
         },
         position: {
           x: item.x,
           y: item.y,
           cols: Math.round(creatingWidget.position.width / this.gridColWidth),
           rows: Math.round(creatingWidget.position.height / this.gridRowHeight)
-        },
+        }
       })
     } else {
       this.storyPointService.createWidget({
         ...(this.storyService.creatingWidget ?? {}),
         dataSettings: {
           ...dataSettings,
-          ...(this.storyService.creatingWidget?.dataSettings ?? {}),
+          ...(this.storyService.creatingWidget?.dataSettings ?? {})
         },
         position: {
           x: item.x,
@@ -468,7 +467,7 @@ export class NxStoryPointComponent implements OnChanges {
     if (!widget) {
       return
     }
-    if (!event && this.storyPointService.widgets?.find((item) => item.key !== widget?.key && item.fullscreen)) {
+    if (!event && this.storyPointService.widgets()?.find((item) => item.key !== widget?.key && item.fullscreen)) {
       return
     }
 
@@ -521,7 +520,7 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   selectWidget(widget: StoryWidget, disableFab: boolean) {
-    if (this.editable || !disableFab) {
+    if (this.editable() || !disableFab) {
       this.currentWidget = widget
       this.storyPointService.setCurrentWidgetId(this.currentWidget.key)
     }
@@ -567,12 +566,17 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   createWidget(type: string) {
+    const DefaultSize = WIDGET_DEFAULT_SIZES[type] ?? WIDGET_DEFAULT_SIZE
     this.storyService.createStoryWidget({
-      component: type
+      component: type,
+      position: {
+        cols: Math.round(DefaultSize.width / this.gridColWidth),
+        rows: Math.round(DefaultSize.height / this.gridRowHeight)
+      }
     })
   }
 
-  readonly openPageDesigner = this.storyPointService.effect((origin$: Observable<void>) => {
+  readonly openPageDesigner = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       filter(() => !!this.storyPoint()),
       switchMap(() => {
@@ -618,7 +622,7 @@ export class NxStoryPointComponent implements OnChanges {
     )
   })
 
-  readonly openResponsiveDesigner = this.storyPointService.effect((origin$: Observable<string>) => {
+  readonly openResponsiveDesigner = effectAction((origin$: Observable<string>) => {
     return origin$.pipe(
       withLatestFrom(this.storyPoint$),
       switchMap(([key, storyPoint]) => {
@@ -675,7 +679,7 @@ export class NxStoryPointComponent implements OnChanges {
   })
 
   openEditAttributes() {
-    if (this.editable) {
+    if (this.editable()) {
       this.openPageDesigner()
       this.settingsService?.setEditable(true)
     }
@@ -716,25 +720,25 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   duplicate() {
-    this.storyService.duplicateStoryPoint(this.key)
+    this.storyService.duplicateStoryPoint(this.key())
   }
 
   remove() {
-    this.storyService.removeStoryPoint(this.key)
+    this.storyService.deleteStoryPoint(this.key())
   }
 
   hidePage() {
-    this.storyService.hideStoryPage(this.key)
+    this.storyService.hideStoryPage(this.key())
   }
 
   showPage() {
-    this.storyService.toggleStoryPointHidden(this.key)
+    this.storyService.toggleStoryPointHidden(this.key())
   }
 
   move(direction: MoveDirection) {
     this.storyService.move({
       direction,
-      key: this.key
+      key: this.key()
     })
   }
 
@@ -743,11 +747,11 @@ export class NxStoryPointComponent implements OnChanges {
   }
 
   async pasteWidget() {
-    this.storyService.pasteWidget({ })
+    this.storyService.pasteWidget({})
   }
 
   async onUploadChange(event) {
-    for await(const file of event.target.files) {
+    for await (const file of event.target.files) {
       const widget = await uploadYamlFile<StoryWidget>(file)
       this.storyPointService.createWidget({
         ...widget
@@ -758,18 +762,19 @@ export class NxStoryPointComponent implements OnChanges {
   async openShare() {
     const story = await firstValueFrom(this.storyService.story$)
     const isAuthenticated = await firstValueFrom(this.storyService.isAuthenticated$)
-    await firstValueFrom(this._dialog
-      .open(StorySharesComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          access: story.access,
-          visibility: story.visibility,
-          isAuthenticated,
-          id: story.id,
-          point: this.point
-        }
-      })
-      .afterClosed()
+    await firstValueFrom(
+      this._dialog
+        .open(StorySharesComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            access: story.access,
+            visibility: story.visibility,
+            isAuthenticated,
+            id: story.id,
+            point: this.point
+          }
+        })
+        .afterClosed()
     )
   }
 
@@ -785,26 +790,25 @@ export class NxStoryPointComponent implements OnChanges {
     if (copySelectedWidget) {
       event.stopPropagation()
       event.preventDefault()
-  
+
       const position = {
         x: 0,
         y: 0
       }
       position.x = this.gridster.pixelsToPositionX(event.offsetX, Math.round)
       position.y = this.gridster.pixelsToPositionY(event.offsetY, Math.round)
-  
+
       this.storyPointService.pasteWidget({
         ...copySelectedWidget,
         position: {
           ...copySelectedWidget.position,
-          ...position,
+          ...position
         }
       })
 
       this.storyService.clearCopy()
     }
   }
-
 }
 
 function setDefaultTemplate(flexLayout: FlexLayout, template, widgets) {

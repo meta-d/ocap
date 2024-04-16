@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { computed, inject, Injectable } from '@angular/core'
+import { computed, inject, Injectable, signal } from '@angular/core'
 import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
 import { combineLatest } from 'rxjs'
@@ -88,6 +88,8 @@ export class AppService extends ComponentStore<PACAppState> {
       color,
     }
   })
+
+  readonly inProject = signal(false)
   
   constructor(
     private store: Store,
@@ -129,9 +131,9 @@ export class AppService extends ComponentStore<PACAppState> {
     }
     state.zIndexs.push(zIndex)
 
-    if (screenfull.isEnabled) {
-      screenfull.request();
-    }
+    // if (screenfull.isEnabled) {
+    //   screenfull.request();
+    // }
   })
 
   public exitFullscreen = this.updater((state, zIndex: number) => {
@@ -140,8 +142,8 @@ export class AppService extends ComponentStore<PACAppState> {
       state.zIndexs.splice(index)
     }
 
-    if (screenfull.isEnabled) {
-      screenfull.exit()
-    }
+    // if (screenfull.isEnabled) {
+    //   screenfull.exit()
+    // }
   })
 }

@@ -12,7 +12,9 @@ import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateService } from '@ngx-translate/core'
 import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
-import { Observable, combineLatest, of } from 'rxjs'
+import { isEqual, uniq } from 'lodash-es'
+import { computedAsync } from 'ngxtension/computed-async'
+import { Observable, combineLatest } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { ToastrService, routeAnimations } from '../../../../@core'
@@ -23,8 +25,6 @@ import { ModelComponent } from '../model.component'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType, TOOLBAR_ACTION_CATEGORY } from '../types'
 import { ModelDimensionService } from './dimension.service'
-import { computedAsync } from 'ngxtension/computed-async'
-import { isEqual, uniq } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -76,16 +76,24 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   public readonly hierarchies = toSignal(this.dimensionService.hierarchies$)
   public readonly dimension = toSignal(this.dimensionService.dimension$)
   readonly isMobile = this.appService.isMobile
-  readonly error = toSignal(this.dimensionService.name$.pipe(
-    switchMap((entity) => this.modelService.selectOriginalEntityError(entity))
-  ))
+  readonly error = toSignal(
+    this.dimensionService.name$.pipe(switchMap((entity) => this.modelService.selectOriginalEntityError(entity)))
+  )
 
-  readonly tables = computed(() => uniq(this.hierarchies().flatMap((h) => h.tables).flatMap((t) => t.name)), { equal: isEqual })
+  readonly tables = computed(
+    () =>
+      uniq(
+        this.hierarchies()
+          ?.flatMap((h) => h.tables)
+          .flatMap((t) => t?.name)
+      ),
+    { equal: isEqual }
+  )
   readonly tableTypes = computedAsync(() => {
     const tables = this.tables()
     return combineLatest(tables.map((table) => this.modelService.selectOriginalEntityType(table)))
   })
-  
+
   /**
   |--------------------------------------------------------------------------
   | Copilot
@@ -93,10 +101,8 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   */
   #createHierarchyCommand = injectCopilotCommand({
     name: 'h',
-    description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', {Default: 'Create a new hierarchy'}),
-    examples: [
-      this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', {Default: 'Create a new hierarchy'})
-    ],
+    description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
+    examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
     systemPrompt: () => {
       return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy， 名称不要与现有名称重复，并且名称要尽量简短。
 层次结构中的 Levels 顺序一般按照所使用字段在现实中的含义由上到下（或者叫由粗粒度到细粒度）排列，例如：年份、季度、月份、日期。
@@ -106,7 +112,9 @@ ${JSON.stringify(this.dimension())}
 \`\`\`
 当前维度已使用到的表信息：
 \`\`\`
-${this.tableTypes().map((tableType) => makeTablePrompt(tableType)).join('\n')}
+${this.tableTypes()
+  .map((tableType) => makeTablePrompt(tableType))
+  .join('\n')}
 \`\`\`
 `
     },
@@ -180,8 +188,8 @@ ${this.tableTypes().map((tableType) => makeTablePrompt(tableType)).join('\n')}
       })
   }
 
-  trackById(i: number, item: PropertyHierarchy) {
-    return item.__id__
+  isDirty(id: string) {
+    return this.dimensionService.dirty()[id]
   }
 
   openDesignerPanel() {

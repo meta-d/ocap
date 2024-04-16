@@ -2,16 +2,20 @@ import { Injectable } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { AbstractControl } from '@angular/forms'
 import { nonBlank } from '@metad/core'
-import { EntityProperty, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
+import { EntityProperty, PropertyDimension, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { combineLatest } from 'rxjs'
 import { distinctUntilChanged, filter, map, switchMap, take } from 'rxjs/operators'
-import { DimensionModeling, DimensionSchemaService } from './dimension.schema'
-import { CubeSchemaState } from './types'
+import { DimensionModeling } from './dimension.schema'
+import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
-export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy> extends DimensionSchemaService<T> {
+export class HierarchySchemaService<T extends {hierarchy: PropertyHierarchy; dimension: EntityProperty} = {
+  hierarchy: PropertyHierarchy;
+  dimension: PropertyDimension
+}> extends CubeSchemaService<T>  {
+
   private readonly _dimension$ = this.select((state) => state.dimension)
   readonly dimensionName$ = this._dimension$.pipe(
     map((dimension) => dimension?.name),
@@ -19,7 +23,7 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
     distinctUntilChanged()
   )
   readonly hierarchies$ = this.select((state) => state.hierarchies)
-  readonly hierarchy$ = this.select((state) => state.modeling)
+  readonly hierarchy$ = this.select((state) => state.modeling?.hierarchy)
 
   readonly hierarchyOptions$ = combineLatest([this.dimensionName$, this.hierarchies$]).pipe(
     map(
@@ -33,24 +37,23 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
   )
 
   readonly otherHierarchies = toSignal(
-    this.select((state) => state.hierarchies?.filter((item) => item.__id__ !== state.modeling?.__id__))
+    this.select((state) => state.hierarchies?.filter((item) => item.__id__ !== state.modeling?.hierarchy?.__id__))
   )
 
   /**
    * 多张表关联的维度, 需要为 Hierarchy 指定 `primaryKeyTable`
    */
-  readonly hierarchyTables$ = this.select(
-    (state: CubeSchemaState<PropertyHierarchy>) =>
-      state.modeling?.tables?.map((table) => ({
-        key: table.name,
-        value: table.name,
-        caption: table.name
-      })) ?? []
+  readonly hierarchyTables$ = this.hierarchy$.pipe(
+    map((hierarchy) => hierarchy?.tables?.map((table) => ({
+      key: table.name,
+      value: table.name,
+      caption: table.name
+    })) ?? [])
   )
 
-  readonly table$ = this.select(
-    (state: CubeSchemaState<PropertyHierarchy>) => state.modeling?.primaryKeyTable || state.modeling?.tables?.[0]?.name
-  )
+  readonly table$ = this.hierarchy$.pipe(
+    map((hierarchy) => hierarchy?.primaryKeyTable || hierarchy?.tables?.[0]?.name
+  ))
 
   readonly members$ = combineLatest([
     this._dimension$.pipe(
@@ -84,7 +87,6 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
     return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
       map((SCHEMA) => {
         this.SCHEMA = SCHEMA
-        this.DIMENSION = SCHEMA?.DIMENSION
         this.HIERARCHY = SCHEMA?.HIERARCHY
 
         const dimensionModeling = DimensionModeling(
@@ -92,11 +94,12 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
           this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
-          this.dimensions()
+          this.otherDimensions()
         )
         dimensionModeling.key = 'dimension'
         return [
           {
+            key: 'modeling',
             type: 'tabs',
             fieldGroup: [
               {
@@ -104,11 +107,11 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
                   label: this.HIERARCHY?.TITLE ?? 'Hierarchy',
                   icon: 'h_mobiledata'
                 },
-                fieldGroup: [this.modeling]
+                fieldGroup: [this.hierarchy]
               },
               {
                 props: {
-                  label: this.DIMENSION?.TITLE ?? 'Dimension',
+                  label: SCHEMA?.DIMENSION?.TITLE ?? 'Dimension',
                   icon: 'account_tree'
                 },
                 fieldGroup: [dimensionModeling]
@@ -120,14 +123,14 @@ export class HierarchySchemaService<T extends EntityProperty = PropertyHierarchy
     )
   }
 
-  get modeling() {
+  get hierarchy() {
     const COMMON = this.SCHEMA?.COMMON
     const HIERARCHY = this.HIERARCHY
     const className = FORMLY_W_1_2
     const allMemberHide = `model === null || !model.hasAll`
     const translate = this.getTranslationFun()
     return {
-      key: 'modeling',
+      key: 'hierarchy',
       wrappers: ['panel'],
       props: {
         label: HIERARCHY?.Modeling ?? 'Modeling',

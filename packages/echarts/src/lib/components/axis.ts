@@ -6,8 +6,9 @@ import {
   ChartMeasureRoleType,
   ChartOrient,
   EntityType,
+  getDimensionMemberCaption,
+  getEntityHierarchy,
   getEntityProperty,
-  getPropertyCaption,
   PropertyHierarchy,
   PropertyMeasure
 } from '@metad/ocap-core'
@@ -48,13 +49,14 @@ export function getCategoryAxis(
   measure: string,
   categoryType = 'category'
 ) {
-  const axisPointer = getCategoryAxisPointer(context, items, categoryProperty, measure)
+  const { entityType } = context
+  const axisPointer = getCategoryAxisPointer(context, items, dimension, measure)
   let categoryAxis: any = {
     type: categoryType,
     axisPointer
   }
 
-  setCategoryAxisLabel(categoryAxis, items, dimension, categoryProperty)
+  setCategoryAxisLabel(categoryAxis, items, dimension, entityType)
 
   categoryAxis = assignDeepOmitBlank(categoryAxis, chartOptions?.categoryAxis, 2)
 
@@ -149,9 +151,12 @@ export function getMeasureAxis(
 export function getCategoryAxisPointer(
   context: EChartsContext,
   items: Array<unknown>,
-  categoryProperty: PropertyHierarchy,
+  category: ChartDimension,
   measure: string
 ) {
+  const { entityType } = context
+  const categoryProperty: PropertyHierarchy = getEntityHierarchy(entityType, category)
+  const categoryCaption = getDimensionMemberCaption(category, entityType)
   const dataset = context.datasets?.find(({ dataset }) => !dataset.measure || dataset.measure === measure)
 
   const axisPointer: any = {
@@ -163,7 +168,7 @@ export function getCategoryAxisPointer(
     if (dataset?.dataset.categories) {
       label = dataset.dataset.categories.find((item) => item.value === params.value)?.label
     } else {
-      label = items.find((item) => item[categoryProperty.name] === params.value)?.[getPropertyCaption(categoryProperty)]
+      label = items.find((item) => item[categoryProperty.name] === params.value)?.[categoryCaption]
     }
     return label || params.value
   }

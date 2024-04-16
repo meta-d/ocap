@@ -609,7 +609,7 @@ export const DUCKDB_FOODMART_MODEL: SemanticModel = {
             },
             members: [
               {
-                value: '[ADJ]'
+                key: '[ADJ]'
               }
             ]
           }
@@ -630,7 +630,7 @@ export const DUCKDB_FOODMART_MODEL: SemanticModel = {
             },
             members: [
               {
-                value: '[ADJ]'
+                key: '[ADJ]'
               }
             ]
           }
@@ -652,7 +652,7 @@ export const DUCKDB_FOODMART_MODEL: SemanticModel = {
             },
             members: [
               {
-                value: '[ADJ]'                      
+                key: '[ADJ]'
               }
             ]
           }

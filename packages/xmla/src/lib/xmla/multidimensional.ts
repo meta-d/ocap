@@ -1,4 +1,4 @@
-import { Cellset, C_MEASURES, Dataset, Dimension, EntityType, getEntityHierarchy, getEntityProperty, isMeasure, Property, wrapBrackets } from '@metad/ocap-core'
+import { Cellset, C_MEASURES, Dataset, Dimension, EntityType, getEntityHierarchy, getEntityProperty, isMeasure, Property, wrapBrackets, CAPTION_FIELD_SUFFIX } from '@metad/ocap-core'
 import { isNil, isEmpty, merge } from 'lodash-es'
 import { IntrinsicMemberProperties } from '../reference'
 import { Axis, convertHierarchyMemberValue, C_MDX_FIELD_NAME_REGEX, Dataset as XmlaDataset, _PivotColumn as PivotColumn } from '../types/index'
@@ -129,7 +129,7 @@ export function fetchDataFromMultidimensionalTuple(dataset: XmlaDataset, entityT
       const caption = rowAxis.hierarchy(member.hierarchy).Caption.name
       const hierarchyName = uniqueName.replace('.[MEMBER_UNIQUE_NAME]', '')
       row[hierarchyName] = convertHierarchyMemberValue(hierarchyName, member[uniqueName])
-      row[caption.replace('.[MEMBER_CAPTION]', '') + '_Text'] = member[caption]
+      row[caption.replace('.[MEMBER_CAPTION]', '') + CAPTION_FIELD_SUFFIX] = member[caption]
       row[member[`[${member.hierarchy}].[LEVEL_UNIQUE_NAME]`]] = row[hierarchyName]
 
       Object.keys(IntrinsicMemberProperties).forEach((name) => {
@@ -175,7 +175,7 @@ export function fetchDataFromMultidimensionalTuple(dataset: XmlaDataset, entityT
       name,
       dataType: 'string',
       text: {
-        name: name + '_Text',
+        name: name + CAPTION_FIELD_SUFFIX,
         dataType: 'string'
       }
     }

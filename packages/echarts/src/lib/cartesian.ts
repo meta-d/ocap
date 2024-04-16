@@ -7,8 +7,7 @@ import {
   getChartCategory,
   getChartCategory2,
   getChartSeries,
-  getEntityProperty,
-  getPropertyCaption,
+  getDimensionMemberCaption,
   getPropertyHierarchy,
   isArray,
   isNil,
@@ -77,7 +76,8 @@ export function cartesianCoordinate(context: EChartsContext, data: Array<Record<
   const { chartAnnotation, entityType, settings, options } = context
 
   const category = getChartCategory(chartAnnotation)
-  const categoryProperty = getEntityProperty(entityType, category)
+  // const categoryProperty = getEntityProperty(entityType, category)
+  const categoryMemberCaption = getDimensionMemberCaption(category, entityType)
   const category2 = getChartCategory2(chartAnnotation)
   const chartSeries = getChartSeries(chartAnnotation)
 
@@ -179,7 +179,7 @@ export function cartesianCoordinate(context: EChartsContext, data: Array<Record<
             tooltip: seriesComponent.tooltip
           }
           if (!settings?.universalTransition) {
-            series.encode.itemName = getPropertyCaption(categoryProperty)
+            series.encode.itemName = categoryMemberCaption
           }
         }
 

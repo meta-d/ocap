@@ -1,23 +1,61 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { IModelRole, MDX } from '@metad/contracts'
 import { ComponentSubStore } from '@metad/store'
 import { ToastrService } from 'apps/cloud/src/app/@core'
-import { includes } from 'lodash-es'
+import { includes, isEqual, negate } from 'lodash-es'
 import { SemanticModelService } from '../model.service'
 import { PACModelState } from '../types'
+import { createSubStore, dirtyCheckWith, write } from '../../store'
+import { Store, withProps } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
+import { toObservable } from '@angular/core/rxjs-interop'
 
 @Injectable()
-export class AccessControlStateService extends ComponentSubStore<IModelRole[], PACModelState> {
+export class AccessControlStateService {
+  readonly modelService = inject(SemanticModelService)
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.modelService.store,
+    { name: 'semantic_model_roles', arrayKey: 'key' },
+    withProps<IModelRole[]>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.modelService.pristineStore,
+    { name: 'semantic_model_roles_pristine', arrayKey: 'key' },
+    withProps<IModelRole[]>(null)
+  )
+  // readonly #stateHistory = stateHistory<Store, IModelRole[]>(this.store, {
+  //   comparatorFn: negate(isEqual)
+  // })
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
+  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+
+
   get roles() {
-    return this.get((state) => state)
+    return this.store.state
   }
 
-  public readonly roles$ = this.select((state) => state)
-  constructor(public modelService: SemanticModelService, private _toastrService: ToastrService) {
-    super([] as IModelRole[])
+  readonly roles$ = this.store
+  readonly state$ = this.store.asObservable()
 
-    this.connect(this.modelService, { parent: ['model', 'roles'] })
+  constructor() {
+
+    // this.connect(this.modelService, { parent: ['model', 'roles'] })
+    this.store.connect(['roles'])
+  }
+
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: IModelRole[], ...params: OriginType[]) => IModelRole[] | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
   }
 
   // Updaters for Roles

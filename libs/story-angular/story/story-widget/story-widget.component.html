@@ -13,9 +13,10 @@
 <div class="ngm-story-widget__fab-menu flex flex-col justify-start items-center gap-2"
   cdkDragLockAxis="y"
   cdkDrag
-  [cdkDragDisabled]="editable"
+  [cdkDragDisabled]="editable()"
   [cdkDragStartDelay]="100"
   (cdkDragMoved)="onDragFab($event)">
+  
   <button *ngIf="showMenu$ | async" mat-mini-fab [cdkMenuTriggerFor]="context_menu">
     <mat-icon fontSet="material-icons-outlined">menu</mat-icon>
   </button>
@@ -128,7 +129,7 @@
       {{ 'Story.Widget.Share' | translate: {Default: "Share"} }}
     </button>
 
-    <ng-container *ngIf="editable">
+    <ng-container *ngIf="editable()">
       <mat-divider></mat-divider>
       <ng-container *ngIf="allowMultiLayer$ | async">
         <button cdkMenuItem (click)="bringForward()">
@@ -208,9 +209,10 @@
     </button>
   
     <mat-divider></mat-divider>
-  
-    <button cdkMenuItem *ngFor="let point of pointList$ | async"
+    @for (point of pointList(); track point.key) {
+      <button cdkMenuItem
         (click)="onMoveTo(point.key)">{{ point.name }}</button>
+    }
   </div>
 </ng-template>
 
@@ -224,9 +226,11 @@
     </button>
   
     <mat-divider></mat-divider>
-  
-    <button cdkMenuItem *ngFor="let point of pointList$ | async"
+    
+    @for (point of pointList(); track point.key) {
+      <button cdkMenuItem
         (click)="onCopyTo(point.key)">{{ point.name }}</button>
+    }
   </div>
 </ng-template>
 

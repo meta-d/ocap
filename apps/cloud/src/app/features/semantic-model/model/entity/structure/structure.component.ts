@@ -1,17 +1,23 @@
 import { CdkDrag, CdkDragDrop, CdkDragRelease, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
+import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   DestroyRef,
   HostBinding,
-  OnInit,
-  inject
+  computed,
+  effect,
+  inject,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
+import { NxEditorModule } from '@metad/components/editor'
 import { NxCoreService, nonBlank } from '@metad/core'
 import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
 import { effectAction } from '@metad/ocap-angular/core'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
   Join,
@@ -25,8 +31,11 @@ import {
   getEntityMeasures,
   pick
 } from '@metad/ocap-core'
+import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { isEmpty, values } from 'lodash-es'
+import { NGXLogger } from 'ngx-logger'
+import { computedAsync } from 'ngxtension/computed-async'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
@@ -34,12 +43,6 @@ import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { newDimensionFromColumn } from '../types'
-import { CommonModule } from '@angular/common'
-import { NxEditorModule } from '@metad/components/editor'
-import { FormsModule } from '@angular/forms'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
-
 
 @Component({
   standalone: true,
@@ -57,7 +60,7 @@ import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
     NgmEntityPropertyComponent
   ]
 })
-export class ModelEntityStructureComponent extends TranslationBaseComponent implements OnInit {
+export class ModelEntityStructureComponent extends TranslationBaseComponent {
   @HostBinding('class.pac-model-cube-structure') _isModelCubeStructure = true
   SplitterType = SplitterType
 
@@ -67,47 +70,51 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
   private readonly _toastrService = inject(ToastrService)
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
+  readonly #logger = inject(NGXLogger)
 
-  dimensions: Property[] = []
-  measures: Property[] = []
-  allVisible = false
-  get visibleIndeterminate() {
-    return (
-      !!(this.dimensions.find((item) => item.visible) || this.measures.find((item) => item.visible)) && this.allVisible
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly dimensions = signal<Property[]>([])
+  readonly measures = signal<Property[]>([])
+  readonly allVisible = signal(false)
+  readonly fectTableFields = computedAsync(() => {
+    return this.factTable$.pipe(
+      map((table) => table?.name),
+      filter(nonBlank),
+      switchMap((tableName) => this.modelService.selectOriginalEntityProperties(tableName))
     )
-  }
-  get visibleEmpty() {
-    return !(this.dimensions.find((item) => item.visible) || this.measures.find((item) => item.visible))
-  }
+  })
+  readonly fectTableFieldOptions = computed(() =>
+    this.fectTableFields()?.map((property) => ({
+      key: property.name,
+      value: property,
+      caption: property.caption
+    }))
+  )
+
+  readonly visibleIndeterminate = computed(
+    () =>
+      (this.dimensions().some((item) => item.visible) || this.measures().some((item) => item.visible)) &&
+      !this.allVisible()
+  )
+  readonly visibleEmpty = computed(
+    () => !(this.dimensions().some((item) => item.visible) || this.measures().some((item) => item.visible))
+  )
 
   public readonly isXmla$ = this.modelService.modelType$.pipe(filter((modelType) => modelType === MODEL_TYPE.XMLA))
   public readonly isSQLSource$ = this.modelService.isSQLSource$
 
   public readonly tables$ = this.entityService.tables$
   public readonly factTable$ = this.tables$.pipe(map((tables) => tables?.[0]))
-  readonly fectTableFields$ = this.factTable$.pipe(
-    map((table) => table?.name),
-    filter(nonBlank),
-    switchMap((tableName) => this.modelService.selectOriginalEntityProperties(tableName)),
-    takeUntilDestroyed(),
-    shareReplay(1)
-  )
-  public readonly fectTableFieldOptions$ = this.fectTableFields$.pipe(
-    map((properties) =>
-      properties.map((property) => ({
-        key: property.name,
-        value: property,
-        caption: property.caption
-      }))
-    )
-  )
 
   options$ = combineLatest([this.modelService.wordWrap$, this.coreService.onThemeChange()]).pipe(
     map(([wordWrap, { name }]) => ({
       wordWrap,
       theme: name === 'default' ? 'vs' : `vs-${name}`
     })),
-    tap((options) => console.debug(`[pac-model-structure] editor options`, options))
   )
 
   public readonly expression = toSignal(this.entityService.cube$.pipe(map((cube) => cube?.expression)))
@@ -118,52 +125,64 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
   // Subscribers
   private _originEntityTypeSub$ = this.entityService.originalEntityType$
     .pipe(
-      combineLatestWith(
-        this.isXmla$,
-        this.entityService.select((state) => state.dimensions),
-        this.entityService.select((state) => state.measures)
-      ),
+      combineLatestWith(this.isXmla$, this.entityService.cubeDimensions$, this.entityService.measures$),
       filter(
-        ([properties, isXmla, dimensions, measures]) => isXmla && isEmpty(this.dimensions) && isEmpty(this.measures)
-      )
+        ([properties, isXmla, dimensions, measures]) => isXmla && isEmpty(this.dimensions()) && isEmpty(this.measures())
+      ),
+      takeUntilDestroyed()
     )
     .subscribe(([entityType, isXmla, dimensions, measures]) => {
-      this.dimensions = structuredClone(
-        dimensions ?? getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' }))
+      this.dimensions.set(
+        structuredClone(dimensions ?? getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
       )
-      this.measures = structuredClone(
-        measures ?? getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' }))
+      this.measures.set(
+        structuredClone(measures ?? getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' })))
       )
-      this._cdr.detectChanges()
     })
 
-  ngOnInit(): void {
-    this.fectTableFields$
-      .pipe(
-        combineLatestWith(
-          this.entityService.select((state) => state.dimensions),
-          this.entityService.select((state) => state.measures)
-        ),
-        filter(([properties, dimensions, measures]) => isEmpty(this.dimensions) && isEmpty(this.measures)),
-        takeUntilDestroyed(this._destroyRef)
-      )
-      .subscribe(([properties, dimensions, measures]) => {
-        this.dimensions =
-          dimensions ??
-          properties.filter(
-            (item) => item.role === AggregationRole.dimension && item.dataType?.toLowerCase() !== 'numeric'
+  constructor() {
+    super()
+
+    effect(
+      () => {
+        const properties = this.fectTableFields()
+        const dimensions = this.entityService.dimensions()
+        const measures = this.entityService.measures()
+
+        if (isEmpty(dimensions) && isEmpty(measures) && properties) {
+          this.dimensions.set(
+            dimensions ??
+              properties.filter(
+                (item) => item.role === AggregationRole.dimension && item.dataType?.toLowerCase() !== 'numeric'
+              )
           )
-        this.measures =
-          measures ??
-          properties.filter(
-            (item) => item.role === AggregationRole.measure || item.dataType?.toLowerCase() === 'numeric'
+
+          this.measures.set(
+            measures ??
+              properties.filter(
+                (item) => item.role === AggregationRole.measure || item.dataType?.toLowerCase() === 'numeric'
+              )
           )
-        this._cdr.detectChanges()
-      })
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
-  trackById(index, item) {
-    return item.__id__
+  toggleDimVisible(property: Property, visible: boolean) {
+    this.dimensions.update((dimensions) => {
+      const index = dimensions.findIndex((item) => item === property)
+      dimensions[index].visible = visible
+      return [...dimensions]
+    })
+  }
+
+  toggleMeasureVisible(property: Property, visible: boolean) {
+    this.measures.update((measures) => {
+      const index = measures.findIndex((item) => item === property)
+      measures[index].visible = visible
+      return [...measures]
+    })
   }
 
   dropEnterPredicate(item: CdkDrag<any>) {
@@ -187,8 +206,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
 
   async confirmOverwriteCube() {
     if (
-      !this.dimensions.filter((item) => item.visible).length &&
-      !this.measures.filter((item) => item.visible).length
+      !this.dimensions().filter((item) => item.visible).length &&
+      !this.measures().filter((item) => item.visible).length
     ) {
       this._toastrService.warning('PAC.MODEL.ENTITY.PleaseSelectFields', { Default: 'Please select fields!' })
       return false
@@ -219,7 +238,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
 
     const modelType = await firstValueFrom(this.modelService.modelType$)
 
-    const dimensions = this.dimensions
+    const dimensions = this.dimensions()
       .filter((item) => item.visible)
       // Xmla 数据源的直接同步，sql 数据源的 1 生成 olap 维度 2 生成 sql 维度
       .map((item) =>
@@ -228,7 +247,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
           : newDimensionFromColumn(item, modelType === MODEL_TYPE.OLAP)
       )
 
-    const measures = this.measures
+    const measures = this.measures()
       .filter((item) => item.visible)
       .map((measure) => {
         return {
@@ -247,16 +266,12 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       measures
     })
     // Save current meta from data source
-    this.entityService.patchState(
-      structuredClone({
-        dimensions: this.dimensions,
-        measures: this.measures
-      })
-    )
+    this.entityService.dimensions.set(this.dimensions())
+    this.entityService.measures.set(this.measures())
   }
 
   async createDimension() {
-    const levels = this.dimensions.filter((item) => item.visible)
+    const levels = this.dimensions().filter((item) => item.visible)
     this.entityService.addDimension({
       __id__: uuid(),
       name: '',
@@ -286,7 +301,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       return
     }
 
-    const dimensions = this.dimensions
+    const dimensions = this.dimensions()
       .filter((item) => item.visible)
       .map((dim) => {
         const dimension = pick(dim, '__id__', 'name', 'caption') as PropertyDimension
@@ -305,7 +320,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
         return dimension
       })
 
-    const measures = this.measures
+    const measures = this.measures()
       .filter((item) => item.visible)
       .map(
         (measure) =>
@@ -320,18 +335,14 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent impl
       dimensions,
       measures
     })
-    // Save current meta from data source
-    this.entityService.patchState(
-      structuredClone({
-        dimensions: this.dimensions,
-        measures: this.measures
-      })
-    )
+    // Save current meta from data source: @todo Why???
+    this.entityService.dimensions.set(this.dimensions())
+    this.entityService.measures.set(this.measures())
   }
 
   toggleVisibleAll(visible: boolean) {
-    this.dimensions.forEach((item) => (item.visible = visible))
-    this.measures.forEach((item) => (item.visible = visible))
+    this.dimensions.update((dimensions) => dimensions.map((item) => ({ ...item, visible })))
+    this.measures.update((measures) => measures.map((item) => ({ ...item, visible })))
   }
 
   selectTableJoin(table: Table) {

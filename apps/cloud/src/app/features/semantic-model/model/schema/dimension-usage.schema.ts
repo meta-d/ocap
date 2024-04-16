@@ -6,7 +6,8 @@ import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
 export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsage> {
-  readonly sharedDimensions$ = this.modelService.sharedDimensions$.pipe(
+  
+  readonly sharedDimensionOptions$ = this.modelService.sharedDimensions$.pipe(
     map((dimensions) => dimensions?.map((dimension) => ({ key: dimension.name, caption: dimension.caption })))
   )
 
@@ -71,7 +72,7 @@ export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsag
                 type: 'ngm-select',
                 props: {
                   label: COMMON?.SourceDimension ?? 'Source Dimension',
-                  options: this.sharedDimensions$,
+                  options: this.sharedDimensionOptions$,
                   valueKey: 'key'
                 }
               },

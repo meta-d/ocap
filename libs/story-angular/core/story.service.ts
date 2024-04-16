@@ -1,88 +1,130 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout'
-import { inject, Inject, Injectable, Injector, Optional } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { computed, inject, Inject, Injectable, Injector, Optional, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { ComponentStore, DirtyCheckQuery } from '@metad/store'
-import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
-import { getErrorMessage, Intent, isNotEmpty, nonNullable, NxCoreService } from '@metad/core'
+import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
+import {
+  createSubStore,
+  debugDirtyCheckComparator,
+  DeepPartial,
+  dirtyCheckWith,
+  getErrorMessage,
+  Intent,
+  isNotEmpty,
+  nonNullable,
+  NxCoreService,
+  write
+} from '@metad/core'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
-  CalculationProperty,
+  assign,
+  assignDeepOmitBlank,
   C_MEASURES,
+  CalculationProperty,
   DataSettings,
+  DataSourceSettings,
   EntityType,
+  isEntityType,
   isMeasureControlProperty,
   isRestrictedMeasureProperty,
   MeasureControlProperty,
+  mergeEntitySets,
   ParameterProperty,
   Property,
-  Schema,
-  mergeEntitySets,
-  isEntityType,
-  DataSourceSettings,
-  assignDeepOmitBlank,
-  assign,
+  Schema
 } from '@metad/ocap-core'
+import { createStore, Query, select, Store, withProps } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
 import { TranslateService } from '@ngx-translate/core'
-import { cloneDeep, findKey, includes, isEmpty, isEqual, isNil, merge, omit, some, sortBy } from 'lodash-es'
+import { cloneDeep, findKey, includes, isEmpty, isEqual, merge, negate, omit, some, sortBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
+import { combineLatest, firstValueFrom, Observable, of, Subject } from 'rxjs'
 import {
+  delayWhen,
   distinctUntilChanged,
   filter,
   map,
+  share,
   shareReplay,
-  startWith,
   switchMap,
-  takeUntil,
   tap,
   withLatestFrom
 } from 'rxjs/operators'
-import { NxStoryStore, NX_STORY_STORE } from './story-store.service'
+import { NX_STORY_STORE, NxStoryStore } from './story-store.service'
 import {
   cssStyle,
   FlexLayout,
-  getDefaultPageGrid,
+  MoveDirection,
   Story,
   StoryEvent,
   StoryEventType,
   StoryFilterBar,
   StoryOptions,
   StoryPoint,
+  StoryPointState,
+  StoryPointStyling,
   StoryPointType,
   StoryPreferences,
   StoryState,
   StoryWidget,
   uuid,
-  WidgetComponentType,
   WIDGET_INIT_POSITION,
-  StoryPointState,
-  MoveDirection,
+  WidgetComponentType
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
-import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
-
 
 @Injectable()
-export class NxStoryService extends ComponentStore<StoryState> {
+export class NxStoryService {
   readonly #translate = inject(TranslateService)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createStore({ name: 'story' }, withProps<StoryState>({ story: null, points: [] }))
+  readonly pristineStore = createStore({ name: 'story_pristine' }, withProps<StoryState>({ story: null, points: [] }))
+  readonly #stateHistory = stateHistory<Store, StoryState>(
+    createSubStore(this.store, { properties: ['story'], name: 'sub_story' }, withProps<Story>(null)),
+    {
+      comparatorFn: negate(isEqual)
+    }
+  )
+  /**
+   * Dirty check for whole story
+   */
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
+    watchProperty: ['story'],
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
+  })
+  readonly pageDirty = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.dirty))))
+  readonly dirty = computed(() => this.dirtyCheckResult.dirty() || this.pageDirty())
+  readonly dirty$ = toObservable(this.dirty)
+
+  readonly storySaving = signal(false)
+  readonly pageSaving = toSignal(this.store.pipe(select((state) => state.points?.some((item) => item.saving))))
+  readonly saving = computed(() => this.storySaving() || this.pageSaving())
+
   get story() {
-    return this.get((state) => state.story)
+    return this.store.getValue().story
   }
-
   get creatingWidget() {
-    return this.get((state) => state.creatingWidget)
+    return this.store.getValue().creatingWidget
   }
-  
-  private saved$ = new Subject<void>()
-  public readonly saving$ = new BehaviorSubject<boolean>(false)
 
+  private saved$ = new Subject<void>()
   private readonly refresh$ = new Subject<boolean>()
 
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
   /**
    * 当前运行环境是否为移动端
    */
@@ -101,15 +143,21 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   readonly story$ = this.select((state) => state.story)
   readonly id$ = this.select((state) => state.story?.id)
-  
+
   // Story options merge template
   public readonly storyOptions$ = this.story$.pipe(
-    filter((story) => Boolean(story?.id)), map((story) => story?.options), distinctUntilChanged(isEqual),
+    filter((story) => Boolean(story?.id)),
+    map((story) => story?.options),
+    distinctUntilChanged(isEqual),
     shareReplay(1)
   )
+  readonly storyOptions = toSignal(this.storyOptions$)
 
   // 语言代码
-  readonly locale$ = this.storyOptions$.pipe(map((options) => options?.locale), distinctUntilChanged())
+  readonly locale$ = this.storyOptions$.pipe(
+    map((options) => options?.locale),
+    distinctUntilChanged()
+  )
   readonly preferences$: Observable<StoryPreferences> = this.storyOptions$.pipe(
     map((options) => options?.preferences),
     distinctUntilChanged()
@@ -124,7 +172,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     distinctUntilChanged()
   )
   readonly appearance$ = this.preferences$.pipe(map((preferences) => preferences?.story?.appearance))
-  
+
   // 全局固定过滤条件
   public readonly filters$ = this.storyOptions$.pipe(
     map((options) => options?.filters),
@@ -142,11 +190,15 @@ export class NxStoryService extends ComponentStore<StoryState> {
     })
   )
 
-  readonly storyModelsOptions$ = this.storyModels$.pipe(map((models) => models.map((model) => ({
-    value: model.id,
-    key: model.key,
-    caption: model.name
-  }))))
+  readonly storyModelsOptions$ = this.storyModels$.pipe(
+    map((models) =>
+      models.map((model) => ({
+        value: model.id,
+        key: model.key,
+        caption: model.name
+      }))
+    )
+  )
 
   // Convert semantic models into data sources
   readonly dataSourceOptions$ = this.storyModels$.pipe(
@@ -161,7 +213,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
     this.select((state) => state.story.schema),
     this.select((state) => state.story.schemas)
   ]).pipe(
-    map(([schema, schemas]) => {
+    map(([schema, schemas]: [any, Story['schemas']]) => {
       const model = this.get((state) => state.story.model)
       schemas = cloneDeep(schemas) ?? {}
       if (schema && model) {
@@ -181,44 +233,37 @@ export class NxStoryService extends ComponentStore<StoryState> {
     map((options) => options?.preferences?.story?.themeName),
     distinctUntilChanged()
   )
-  readonly themeName = toSignal(this.storyOptions$.pipe(
-    map((options) => options?.preferences?.story?.themeName)
-  ))
+  readonly themeName = toSignal(this.storyOptions$.pipe(map((options) => options?.preferences?.story?.themeName)))
 
   public readonly editable$ = this.select((state) => state.editable)
+  readonly editable = toSignal(this.select((state) => state.editable))
   public readonly currentPageKey$ = this.select((state) => state.currentPageKey)
   public readonly currentPageKey = toSignal(this.select((state) => state.currentPageKey))
 
   public readonly pageStates$ = this.select((state) => state.points).pipe(filter(nonNullable))
-  readonly points$ = this.pageStates$.pipe(
-    map((states) => states.filter((item) => !item.removed).map((item) => item.storyPoint))
+  readonly pageStates = toSignal(this.pageStates$)
+  readonly storyPoints = toSignal(this.select((state) => state.story?.points))
+  readonly points = computed(() =>
+    this.storyPoints()?.filter((item) => !this.pageStates().some((state) => state.removed && state.key === item.key))
   )
-  readonly displayPoints$ = combineLatest([
-      this.points$,
-      this.editable$,
-      this.currentPageKey$
-    ]).pipe(
-      map(([points, editable, currentPageKey]) => {
-        return sortBy(
-          points?.filter((item) => editable || !item.hidden || item.key === currentPageKey) || [],
-          'index'
-        )
-      }),
-      shareReplay(1)
-    )
+
+  readonly displayPoints = computed(() => {
+    const points = this.points()
+    const editable = this.editable()
+    const currentPageKey = this.currentPageKey()
+
+    return sortBy(points?.filter((item) => editable || !item.hidden || item.key === currentPageKey) || [], 'index')
+  })
+  readonly displayPoints$ = toObservable(this.displayPoints)
 
   public readonly isEmpty$ = this.pageStates$.pipe(map((points) => isEmpty(points)))
-  
-  readonly currentIndex$ = this.select(this.displayPoints$, this.currentPageKey$, (displayPoints, currentPageKey) =>
-    displayPoints?.findIndex((item) => item.key === currentPageKey)
-  )
+  readonly currentPageState = computed(() => this.pageStates()?.find((item) => item.key === this.currentPageKey()))
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  public readonly currentPageWidgets$ = this.currentPage$.pipe(
-    map((pageState) => pageState?.widgets),
-  )
-  readonly currentPage = toSignal(this.currentPage$.pipe(map((state) => state?.storyPoint)))
+  readonly currentStoryPoint = computed(() => this.storyPoints().find((point) => point.key === this.currentPageKey()))
+  readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
+
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
   readonly copySelectedWidget$ = this.select((state) => state.copySelectedWidget)
 
@@ -228,18 +273,21 @@ export class NxStoryService extends ComponentStore<StoryState> {
   public readonly isAuthenticated$ = this.select((state) => state.isAuthenticated)
   readonly isAuthenticated = toSignal(this.select((state) => state.isAuthenticated))
   public readonly isPanMode$ = this.select((state) => state.isPanMode)
+  readonly isPanMode = toSignal(this.select((state) => state.isPanMode))
 
   // FilterBar merge with global appearance
-  public readonly filterBar$ = combineLatest([
-    this.appearance$,
-    this.select((state) => state.story?.filterBar)
-  ]).pipe(
+  public readonly filterBar$ = combineLatest([this.appearance$, this.select((state) => state.story?.filterBar)]).pipe(
     map(([appearance, filterBar]) => {
-      return filterBar ? merge({
-        styling: {
-          appearance
-        }
-      }, filterBar) : null
+      return filterBar
+        ? merge(
+            {
+              styling: {
+                appearance
+              }
+            },
+            filterBar
+          )
+        : null
     }),
     shareReplay(1)
   )
@@ -248,40 +296,6 @@ export class NxStoryService extends ComponentStore<StoryState> {
   private _storyEvent$ = new Subject<StoryEvent>()
   public readonly creatingWidget$ = this.select((state) => state.creatingWidget)
   public save$ = new Subject<void>()
-  dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
-    watchProperty: ['story'],
-    clean: (head, current) => {
-      // Start saving
-      this.saving$.next(true)
-      return this._saveStory(head.story, current.story).pipe(
-        tap({
-          next: () => {
-            const successMessage = this.getTranslation('Story.Story.SaveSuccess', 'Save success')
-            this._snackBar.open(successMessage, '', {
-              duration: 2000
-            })
-            this.save$.next()
-            this.saving$.next(false)
-          },
-          error: (error) => {
-            const errorMessage = this.getTranslation('Story.Story.SaveFailed', 'Save failed')
-            this._snackBar.open(errorMessage, getErrorMessage(error.statusText), {
-              duration: 2000
-            })
-            this.saving$.next(false)
-          }
-        })
-      )
-    }
-  })
-
-  readonly dirty$ = this.select(
-    this.dirtyCheckQuery.isDirty$.pipe(startWith(false)),
-    this.select((state) => state.points),
-    (dirty, points) => {
-      return dirty || !!points?.find(({ dirty, removed }) => dirty || removed)
-    }
-  ).pipe(shareReplay(1))
 
   public readonly storySizeStyles$ = combineLatest([
     this.editable$,
@@ -304,11 +318,20 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   /**
   |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly currentPageIndex = computed(() => {
+    return this.displayPoints()?.findIndex((item) => item.key === this.currentPageKey())
+  })
+
+  /**
+  |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
   private dataSourceSub = combineLatest([this.dataSourceOptions$, this.locale$])
-    .pipe(withLatestFrom(this.schemas$), takeUntil(this.destroy$))
+    .pipe(withLatestFrom(this.schemas$), takeUntilDestroyed())
     .subscribe(([[dataSources, locale], schemas]) => {
       for (let dataSource of dataSources) {
         if (locale) {
@@ -323,49 +346,54 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
         // 2. Story 级别的 Schema 合并
         if (schemas?.[dataSource.name]) {
-          const schema = schemas?.[dataSource.name]
+          const schema = schemas?.[dataSource.name] as Record<string, EntityType>
           dataSource = {
             ...dataSource,
             schema: {
               ...(dataSource.schema ?? {}),
-              entitySets: mergeEntitySets(dataSource.schema?.entitySets,
+              entitySets: mergeEntitySets(
+                dataSource.schema?.entitySets,
                 // 向后兼容，需要重构 dataSource.schema.entitySets
                 Object.values(schema).reduce((acc, cur) => {
-                  acc[cur.name] = {
-                    name: cur.name,
-                    entityType: cur,
+                  acc[cur.name as string] = {
+                    name: cur.name as string,
+                    entityType: cur
                   }
                   return acc
-                }, {}))
+                }, {})
+              )
             } as Schema
           }
         }
+
+        this.logger?.debug(`[StoryService] register model`, dataSource.name)
         this.dsCoreService.registerModel(dataSource)
       }
     })
   // 对于一次性异步任务部分改造成 async await 的方式
-  private schemaSub = this.schemas$.pipe(
-      filter(nonNullable),
-    ).subscribe(async (schemas) => {
-      for await(const name of Object.keys(schemas)) {
-        const schema = schemas[name]
-        const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(name))
-        dataSource.setSchema({
-          ...dataSource.options.schema,
-          entitySets: //mergeEntitySets(dataSource.options.schema?.entitySets,
-            // 向后兼容
-            Object.values(schema).reduce((acc, cur) => {
-              acc[cur.name] = {
-                name: cur.name,
-                entityType: cur,
-              }
-              return acc
-            }, {}) // )
-        })
-      }
-    })
+  private schemaSub = this.schemas$.pipe(filter(nonNullable)).subscribe(async (schemas) => {
+    for await (const name of Object.keys(schemas)) {
+      const schema = schemas[name]
+      const dataSource = await firstValueFrom(this.dsCoreService.getDataSource(name))
+      dataSource.setSchema({
+        ...dataSource.options.schema,
+        //mergeEntitySets(dataSource.options.schema?.entitySets,
+        entitySets:
+          // 向后兼容
+          Object.values(schema).reduce((acc, cur) => {
+            acc[cur.name] = {
+              name: cur.name,
+              entityType: cur
+            }
+            return acc
+          }, {}) // )
+      })
+    }
+  })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.dsCoreService.onStoryUpdate().pipe(takeUntilDestroyed())
+  private storyUpdateEventSub = this.dsCoreService
+    .onStoryUpdate()
+    .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
       if (type === 'Parameter') {
@@ -374,6 +402,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
         this.addCalculationMeasure({ dataSettings, calculation: property })
       }
     })
+
   constructor(
     private dsCoreService: NgmDSCoreService,
     private coreService: NxCoreService,
@@ -385,34 +414,91 @@ export class NxStoryService extends ComponentStore<StoryState> {
     @Optional() protected logger?: NGXLogger,
     @Optional() private _snackBar?: MatSnackBar,
     @Optional() private _dialog?: MatDialog
-  ) {
-    super({ story: {} } as StoryState)
-  }
+  ) {}
 
   onSaved() {
     return this.saved$
   }
 
+  /**
+   * Init story state
+   */
   setStory(story: Story) {
     this.logger?.debug(`[StoryService] new story`, story)
 
-    this.setState({
-      ...this.get(),
+    this.store.update((state) => ({
+      ...state,
       story: cloneDeep(story),
       points: story.points.map((item) => ({
+        id: item.id,
         key: item.key,
         storyPoint: cloneDeep(item)
       }))
-    })
-
-    this.dirtyCheckQuery.setHead()
+    }))
+    this.pristineStore.update(() => ({
+      story: cloneDeep(story),
+      points: []
+    }))
   }
 
   /**
    * Trigger DirtyCheckQuery to check state dirty then call the actual save method `_saveStory`
    */
   saveStory() {
-    this.dirtyCheckQuery.reset()
+    // this.dirtyCheckQuery.reset()
+    // Start saving
+    const pristineStory = this.pristineStore.query((state) => state.story)
+    const currentStory = this.store.query((state) => state.story)
+    // 0. Start saving story
+    this.storySaving.set(true)
+    // 1. To start saving story points and widgets
+    this.save$.next()
+    // 2. Saving story main info
+    const saveStoryReq = this._saveStory(pristineStory, currentStory).pipe(share())
+    // 3. Notify message and reset story when stop saving
+    saveStoryReq
+      .pipe(delayWhen(() => toObservable(this.saving, { injector: this.injector }).pipe(filter((saving) => !saving))))
+      .subscribe({
+        next: (result) => {
+          if (result) {
+            const successMessage = this.getTranslation('Story.Story.SaveSuccess', 'Save success')
+            this._snackBar.open(successMessage, '', {
+              duration: 2000
+            })
+          }
+          this.resetStory()
+        },
+        error: (error) => {
+          const errorMessage = this.getTranslation('Story.Story.SaveFailed', 'Save failed')
+          this._snackBar.open(errorMessage, getErrorMessage(error.statusText), {
+            duration: 2000
+          })
+        }
+      })
+    // 4. Stop saving status of story main info
+    saveStoryReq.subscribe({
+      next: () => {
+        this.storySaving.set(false)
+      },
+      error: () => {
+        this.storySaving.set(false)
+      }
+    })
+  }
+
+  resetStory() {
+    this.pristineStore.update((state) => ({
+      ...state,
+      story: cloneDeep(this.store.getValue().story)
+    }))
+  }
+
+  undo() {
+    this.#stateHistory.undo()
+  }
+
+  redo() {
+    this.#stateHistory.redo()
   }
 
   refresh(force = false) {
@@ -428,12 +514,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   getTranslation(prefix: string, text: string, params?: Record<string, unknown>) {
-    let result: any
-    this.#translate.get(prefix, {Default: text, ...params}).subscribe((res) => {
-      result = res
-    })
-
-    return result
+    return this.#translate.instant(prefix, { Default: text, ...params })
   }
 
   getDefaultDataSource() {
@@ -446,6 +527,26 @@ export class NxStoryService extends ComponentStore<StoryState> {
   }
 
   // ================================== Selectors ================================== //
+  get<R>(fn?: Query<StoryState, R>) {
+    return this.store.query(fn ?? ((state) => state as R))
+  }
+  select<R>(fn: (state: StoryState) => R) {
+    return this.store.pipe(
+      filter((state) => !!state.story),
+      select(fn)
+    )
+  }
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryState, ...params: OriginType[]) => StoryState | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
+  }
+  patchState(state: Partial<StoryState>) {
+    this.store.update((s) => ({ ...s, ...state }))
+  }
+
   selectBreakpoint() {
     return this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.HandsetPortrait])
   }
@@ -460,9 +561,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
   }
 
   selectWidget(pointId: ID, widgetId: ID) {
-    return this.select(
-      this.select(this.story$, (story) => story.points?.find((item) => item.id === pointId)),
-      (point) => point?.widgets?.find((item) => item.id === widgetId)
+    return this.story$.pipe(
+      select((story) => story.points?.find((item) => item.id === pointId)),
+      select((point) => point?.widgets?.find((item) => item.id === widgetId))
     )
   }
 
@@ -479,8 +580,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
   }
 
   // ================================== Actions ================================== //
-  async setCurrentIndex(index: number) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+  setCurrentIndex(index: number) {
+    const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)
   }
 
@@ -492,52 +593,22 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   /**
-   *  @deprecated use newStoryPage ?
-   * 
-   * 输入页面唯一名称并在服务器端实际创建页面记录, 并将页面添加到当前故事看板中
-   *
-   * @param type
-   * @returns
-   */
-  private async _createStoryPoint(type: StoryPointType, name: string) {
-    const state = this.get()
-    const point = await firstValueFrom(this.storyStore.createStoryPoint({
-      name,
-      type,
-      key: uuid(),
-      widgets: null,
-      storyId: state.story.id,
-      index: state.points?.length || 0,
-      responsive: type === StoryPointType.Responsive ? defaultResponsive() : null,
-      gridOptions: getDefaultPageGrid()
-    }))
-
-    this.setStoryPoint(point)
-    return point
-  }
-
-  /**
-   * @deprecated use newStoryPage ?
-   * 
-   * 创建故事页面
-   */
-  async createStoryPoint(type: StoryPointType) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const page = await this._createStoryPoint(type, name)
-      if (page) {
-        this.setCurrentPageKey(page.key)
-      }
-    }
-  }
-
-  /**
    * New story page
-   * 
-   * @param page 
+   *
+   * @param page
    */
   async newStoryPage(page: Partial<StoryPoint>) {
-    const name = page.name || await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const name =
+      page.name ||
+      (await firstValueFrom(
+        this._dialog
+          .open(ConfirmUniqueComponent, {
+            data: {
+              title: this.getTranslation('Story.Story.NewPageName', 'New Page Name')
+            }
+          })
+          .afterClosed()
+      ))
     if (name) {
       const key = page.key ?? uuid()
       const _page = {
@@ -547,116 +618,83 @@ export class NxStoryService extends ComponentStore<StoryState> {
         name,
         storyId: this.story.id,
         // Add widgets
-        widgets: page.widgets?.map((widget) => ({
-          ...widget,
-          key: widget.key ?? uuid(),
-        }))
+        widgets:
+          page.widgets?.map((widget) => ({
+            ...widget,
+            key: widget.key ?? uuid()
+          })) ?? []
       }
+
       this.addStoryPage(_page)
       this.setCurrentPageKey(key)
 
       return _page
-    }  
+    }
   }
 
   /**
    * Add page into story internal
    */
   private readonly addStoryPage = this.updater((state, input: StoryPoint) => {
-    state.points = state.points || []
+    state.points ??= []
     state.points.push({
+      id: null,
       key: input.key,
-      storyPoint: {
-        ...input,
-        index: input.index ?? state.points.length,
-      },
-      widgets: input.widgets ?? [],
-      fetched: true,
-      dirty: true
+      fetched: true
+    })
+
+    state.story.points ??= []
+    state.story.points.push({
+      ...input,
+      index: input.index ?? state.points.length
     })
   })
 
   /**
-   * @deprecated use addStoryPage ?
-   * 
-   * 添加一个新的页面
+   * Delete story point by key in local state
    */
-  readonly setStoryPoint = this.updater((state, input: StoryPoint) => {
-    // 新的页面将 widgets 设置会 null ， 方便判断是否为新加载页面
-    input.widgets = null
-    const i = state.points?.findIndex(({ storyPoint: point }) => point.id === input.id)
-    if (i >= 0) {
-      state.points[i] = {
-        ...state.points[i],
-        storyPoint: input
-      }
-    } else {
-      state.points = state.points || []
-      state.points.push({
-        key: input.key,
-        storyPoint: input
-      })
-    }
-
-    const j = state.story.points?.findIndex((point) => point.id === input.id)
-    if (j >= 0) {
-      state.story.points[j] = {
-        ...state.story.points[j],
-        ...input
-      }
-    } else {
-      state.story.points = state.story.points || []
-      state.story.points.push(cloneDeep(input))
-    }
-  })
-
-  readonly setStoryPointDirty = this.updater((state, { id, dirty }: { id: ID; dirty: boolean }) => {
-    const index = state.points.findIndex(({ storyPoint: point }) => point.id === id)
-    if (index >= 0) {
-      state.points[index] = {
-        ...state.points[index],
-        dirty
-      }
-    }
-  })
-
-  /**
-   * Delete story point by key
-   */
-  readonly deleteStoryPoint = this.updater((state, key: ID) => {
+  readonly #removeStoryPoint = this.updater((state, key: ID) => {
     state.points = state.points.filter((pointState) => pointState.key !== key)
+    state.story.points = state.story.points.filter((item) => item.key !== key)
   })
 
   /**
    * Set the removed flag of a story point
    */
-  readonly _removeStoryPoint = this.updater((state, key: ID) => {
+  readonly #deleteStoryPoint = this.updater((state, key: ID) => {
+    // Mark the point state as removed
     const index = state.points.findIndex((pointState) => pointState.key === key)
     if (index > -1) {
-      if (state.points[index].storyPoint.id) {
+      if (state.points[index].id) {
         state.points[index].removed = true
       } else {
         state.points.splice(index, 1)
       }
     }
+
+    // Delete story point in story
+    const _index = state.story.points.findIndex((item) => item.key === key)
+    if (_index > -1) {
+      state.story.points.splice(_index, 1)
+    }
   })
 
   /**
    * Remove a story point by key
-   * 
-   * @param key 
+   *
+   * @param key
    */
-  async removeStoryPoint(key: string) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
-    this._removeStoryPoint(key)
+  deleteStoryPoint(key: string) {
+    const displayPoints = this.displayPoints()
+    this.#deleteStoryPoint(key)
     const index = displayPoints.findIndex((item) => item.key === key)
     this.patchState({
       currentPageKey: displayPoints[index > 0 ? index - 1 : 1]?.key
     })
   }
 
-  async hideStoryPage(key: string) {
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+  hideStoryPage(key: string) {
+    const displayPoints = this.displayPoints()
 
     this.toggleStoryPointHidden(key)
 
@@ -667,9 +705,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
   }
 
   readonly toggleStoryPointHidden = this.updater((state, key: string) => {
-    const storyPoint = state.points.find((item) => item.key === key)
+    const storyPoint = state.story.points.find((item) => item.key === key)
     if (storyPoint) {
-      storyPoint.storyPoint.hidden = !storyPoint.storyPoint.hidden
+      storyPoint.hidden = !storyPoint.hidden
     }
   })
 
@@ -680,17 +718,21 @@ export class NxStoryService extends ComponentStore<StoryState> {
   /**
    * Udpate story widget by pageKey and widgetId
    */
-  readonly updateWidget = this.updater((state, {pageKey, widgetKey, widget}: {pageKey: string; widgetKey: string; widget: StoryWidget}) => {
-    const _widget = state.points.find((item) => item.key === pageKey).widgets.find((item) => item.key === widgetKey)
-    if (_widget) {
-      assign(_widget, widget)
+  readonly updateWidget = this.updater(
+    (state, { pageKey, widgetKey, widget }: { pageKey: string; widgetKey: string; widget: StoryWidget }) => {
+      const _widget = state.story.points
+        .find((item) => item.key === pageKey)
+        .widgets.find((item) => item.key === widgetKey)
+      if (_widget) {
+        assign(_widget, widget)
+      }
     }
-  })
+  )
 
-  createStoryWidget(event: Partial<StoryWidget>) {
+  createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
 
-    if (!currentPageKey || !this.currentPage()) {
+    if (!currentPageKey || !this.currentStoryPoint()) {
       throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
     }
 
@@ -699,7 +741,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
       type: StoryEventType.CREATE_WIDGET,
       data: {
         dataSettings: this.getDefaultDataSource(),
-        ...event,
+        ...event
       }
     })
   }
@@ -717,7 +759,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
   })
 
   readonly duplicateWidget = this.updater((state) => {
-    this.copyTo({ pointKey: state.currentPageKey })
+    this.copyWidgetTo({ pointKey: state.currentPageKey })
   })
 
   readonly clearCopy = this.updater((state) => {
@@ -731,43 +773,44 @@ export class NxStoryService extends ComponentStore<StoryState> {
   /**
    * 保存故事: 1. 故事变化; 2. 创建删除故事点;
    * 其他的变化由 StoryPoint 服务进行保存.
-   * 
-   * @param pristine 
-   * @param current 
-   * @returns 
+   *
+   * @param pristine
+   * @param current
+   * @returns
    */
   private _saveStory(pristine: Story, current: Story): Observable<any> {
-    
     const updates: Observable<void>[] = []
     // update story
     if (!isEqual({ ...pristine, points: [] }, { ...current, points: [] })) {
       updates.push(this.storyStore.updateStory(current))
     }
 
-    this.get((state) => state.points).filter((state) => state.removed && state.storyPoint.id).forEach((state) => {
-      // delete point
-      updates.push(
-        this.storyStore.removeStoryPoint(pristine.id, state.storyPoint.id).pipe(
-          tap({
-            next: () => {
-              // Delete story point in local state
-              this.deleteStoryPoint(state.key)
-            },
-            error: (error) => {
-              this._snackBar.open('删除失败', error.status, {
-                duration: 2000
-              })
-            }
-          })
+    this.get((state) => state.points)
+      .filter((state) => state.removed && state.id)
+      .forEach((state) => {
+        // delete point
+        updates.push(
+          this.storyStore.removeStoryPoint(pristine.id, state.id).pipe(
+            tap({
+              next: () => {
+                // Delete story point in local state
+                this.#removeStoryPoint(state.key)
+              },
+              error: (error) => {
+                this._snackBar.open('删除失败', error.status, {
+                  duration: 2000
+                })
+              }
+            })
+          )
         )
-      )
-    })
+      })
 
     if (isNotEmpty(updates)) {
       return combineLatest(updates)
     }
-    
-    return of(true)
+
+    return of(null)
   }
 
   // actions for calculation measure
@@ -781,7 +824,12 @@ export class NxStoryService extends ComponentStore<StoryState> {
       }: { dataSettings: DataSettings; calculation: CalculationProperty & { options?: any }; entityCaption?: string }
     ) => {
       // const schema = (state.story.schema = state.story.schema || { name: null, entitySets: {} })
-      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption).properties
+      const properties = getOrInitEntityType(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      ).properties
 
       const originName = findKey(properties, (o) => o.__id__ === calculation.__id__)
       if (originName) {
@@ -810,7 +858,6 @@ export class NxStoryService extends ComponentStore<StoryState> {
         if (!originName) {
           this.createMeasureControlWidget({ dataSettings, name: calculation.name })
         }
-        
       }
 
       if (isRestrictedMeasureProperty(property)) {
@@ -842,7 +889,12 @@ export class NxStoryService extends ComponentStore<StoryState> {
       }: { dataSettings: DataSettings; calculation: Partial<CalculationProperty>; entityCaption?: string }
     ) => {
       // Find the measure entity position in story schema
-      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption).properties
+      const properties = getOrInitEntityType(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      ).properties
 
       const originName = findKey(properties, (o) => o.__id__ === calculation.__id__)
       let originProperty = {} as Property
@@ -860,18 +912,32 @@ export class NxStoryService extends ComponentStore<StoryState> {
   /**
    * 如何安全地删除计算成员， 保证使用到的地方都被提醒到？
    */
-  readonly removeCalculation = this.updater((state, {dataSettings, name}: {dataSettings: DataSettings, name: string;}) => {
-    // Find the measure entity position in story schema
-    const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet).properties
-    delete properties[name]
-  })
+  readonly removeCalculation = this.updater(
+    (state, { dataSettings, name }: { dataSettings: DataSettings; name: string }) => {
+      // Find the measure entity position in story schema
+      const properties = getOrInitEntityType(state, dataSettings.dataSource, dataSettings.entitySet).properties
+      delete properties[name]
+    }
+  )
 
   /**
    * 更新或者创建 Entity Parameter
    */
   readonly upsertParamter = this.updater(
-    (state, { dataSettings, parameter, entityCaption }: { dataSettings: DataSettings; parameter: Partial<ParameterProperty>; entityCaption?: string }) => {
-      const parameters = getOrInitEntityParameters(state, dataSettings.dataSource, dataSettings.entitySet, entityCaption)
+    (
+      state,
+      {
+        dataSettings,
+        parameter,
+        entityCaption
+      }: { dataSettings: DataSettings; parameter: Partial<ParameterProperty>; entityCaption?: string }
+    ) => {
+      const parameters = getOrInitEntityParameters(
+        state,
+        dataSettings.dataSource,
+        dataSettings.entitySet,
+        entityCaption
+      )
       const key = findKey(parameters, (o) => o.__id__ === parameter.__id__)
       let origin = {} as ParameterProperty
       if (key) {
@@ -894,49 +960,49 @@ export class NxStoryService extends ComponentStore<StoryState> {
     }
   )
 
-  readonly removeEntityParameter = this.updater((state, {dataSource, entity, parameter}: {dataSource: string, entity: string, parameter: string;}) => {
-    const parameters = getOrInitEntityParameters(state, dataSource, entity)
-    const key = findKey(parameters, (o) => o.name === parameter)
-    if (key) {
-      delete parameters[key]
+  readonly removeEntityParameter = this.updater(
+    (state, { dataSource, entity, parameter }: { dataSource: string; entity: string; parameter: string }) => {
+      const parameters = getOrInitEntityParameters(state, dataSource, entity)
+      const key = findKey(parameters, (o) => o.name === parameter)
+      if (key) {
+        delete parameters[key]
+      }
     }
-  })
+  )
 
   /**
    * 创建 dimension 的 Input Control
    */
-  readonly createInputControlWidget = this.updater(
-    (state, { dataSource, entitySet, dimension }: DataSettings) => {
-      const storyPoint = state.points.find((item) => item.key === state.currentPageKey)
-      storyPoint.widgets.push({
-        key: uuid(),
-        storyId: state.story.id,
-        pointId: storyPoint.storyPoint.id,
-        name: dimension.name,
-        title: dimension.name,
-        component: WidgetComponentType.InputControl,
-        position: { x: 0, y: 0, ...WIDGET_INIT_POSITION },
-        dataSettings: {
-          dataSource,
-          entitySet,
-          dimension
-        },
-        options: {
-          dimension
-        }
-      } as StoryWidget)
-    }
-  )
+  readonly createInputControlWidget = this.updater((state, { dataSource, entitySet, dimension }: DataSettings) => {
+    const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
+    storyPoint.widgets.push({
+      key: uuid(),
+      storyId: state.story.id,
+      pointId: storyPoint.id,
+      name: dimension.name,
+      title: dimension.name,
+      component: WidgetComponentType.InputControl,
+      position: { x: 0, y: 0, ...WIDGET_INIT_POSITION },
+      dataSettings: {
+        dataSource,
+        entitySet,
+        dimension
+      },
+      options: {
+        dimension
+      }
+    } as StoryWidget)
+  })
 
   getCurrentWidget(widgetKey?: string) {
-    const state = this.get()
+    const state = this.get<StoryState>()
     let widget: StoryWidget
     if (widgetKey) {
       widget = findStoryWidget(state, widgetKey)
       if (!widget) {
         throw new Error(`Can't found widget '${widgetKey}'`)
       }
-    } else if(state.currentWidget) {
+    } else if (state.currentWidget) {
       widget = state.currentWidget
     } else {
       throw new Error(`Please select an widget!`)
@@ -944,7 +1010,10 @@ export class NxStoryService extends ComponentStore<StoryState> {
     return widget
   }
 
-  copyTo(orign: { name?: string; widgetKey?: ID; pointKey: ID }) {
+  /**
+   * Copy widget to this or another page
+   */
+  copyWidgetTo(orign: { name?: string; widgetKey?: ID; pointKey: ID }) {
     const { name, pointKey, widgetKey } = orign
     const widget: StoryWidget = this.getCurrentWidget(widgetKey)
 
@@ -953,29 +1022,36 @@ export class NxStoryService extends ComponentStore<StoryState> {
     this.setCurrentPageKey(pointKey)
   }
 
-  async copyToNew(type: StoryPointType, widgetKey?: ID) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const point = await this._createStoryPoint(type, name)
-      if (point) {
-        this.copyTo({ pointKey: point.key, widgetKey })
-      }
+  /**
+   * Copy the widget to a new page
+   *
+   * @param type
+   * @param widgetKey
+   */
+  async copyWidgetToNewPage(type: StoryPointType, widgetKey?: string) {
+    const point = await this.newStoryPage({
+      type
+    })
+    if (point) {
+      this.copyWidgetTo({ pointKey: point.key, widgetKey })
     }
   }
 
   /**
    * Move widget to another page
    */
-  public readonly moveWidgetTo = this.updater((state, params: {widget: {pointKey: ID, key: ID}, pointKey: ID}) => {
+  public readonly moveWidgetTo = this.updater((state, params: { widget: { pointKey: ID; key: ID }; pointKey: ID }) => {
     const { widget, pointKey } = params
-    const toPage = state.points.find((item) => item.key === pointKey)
-    const fromPage = state.points.find((item) => item.key === widget.pointKey)
-    if (fromPage && toPage) {
+    const toPageState = state.points.find((item) => item.key === pointKey)
+    const fromPage = state.story.points.find((item) => item.key === widget.pointKey)
+    if (fromPage && toPageState) {
       const index = fromPage.widgets.findIndex((item) => item.key === widget.key)
       if (index > -1) {
         const widgets = fromPage.widgets.splice(index, 1)
-        toPage.pasteWidgets = toPage.pasteWidgets ?? []
-        toPage.pasteWidgets.push({
+
+        // Cache moved widgets in the target page states
+        toPageState.pasteWidgets = toPageState.pasteWidgets ?? []
+        toPageState.pasteWidgets.push({
           ...widgets[0],
           position: {
             ...widgets[0].position,
@@ -989,35 +1065,43 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   /**
    * Move widget to new page
-   * 
-   * @param pointKey 
-   * @param widgetKey 
-   * @param type 
+   *
+   * @param pointKey
+   * @param widgetKey
+   * @param type
    */
-  async moveWidgetToNew(pointKey: ID, widgetKey: ID, type: StoryPointType) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
-    if (name) {
-      const point = await this._createStoryPoint(type, name)
-      if (point) {
-        this.moveWidgetTo({ pointKey: point.key, widget: {pointKey, key: widgetKey} })
-      }
+  async moveWidgetToNewPage(pointKey: ID, widgetKey: ID, type: StoryPointType) {
+    const point = await this.newStoryPage({ type })
+    if (point) {
+      this.moveWidgetTo({ pointKey: point.key, widget: { pointKey, key: widgetKey } })
     }
   }
 
   readonly duplicateStoryPoint = this.updater((state, key: string) => {
-    const index = state.points.findIndex((item) => item.key === key)
-    const storyPointState = state.points[index]
+    const index = state.story.points.findIndex((item) => item.key === key)
+    const storyPointState = state.story.points[index]
+
+    const newKey = uuid()
     if (storyPointState) {
       const newStoryPointState = cloneDeep(storyPointState)
-      newStoryPointState.key = uuid()
-      newStoryPointState.storyPoint.key = newStoryPointState.key
-      newStoryPointState.storyPoint.id = null
+      newStoryPointState.key = newKey
+      newStoryPointState.id = null
       newStoryPointState.widgets?.forEach((widget) => {
         widget.id = null
         widget.pointId = null
       })
-      newStoryPointState.dirty = true
-      state.points.splice(index + 1, 0, newStoryPointState)
+      // newStoryPointState.dirty = true
+      state.story.points.splice(index + 1, 0, newStoryPointState)
+    }
+
+    // duplicate point state
+    const pointState = state.points.find((item) => item.key === key)
+    if (pointState) {
+      state.points.splice(index + 1, 0, {
+        key: newKey,
+        id: null,
+        fetched: true
+      })
     }
   })
 
@@ -1036,7 +1120,7 @@ export class NxStoryService extends ComponentStore<StoryState> {
    * 移动页面， 左一个、右一个、第一个、最后一个
    */
   readonly move = this.updater((state, { direction, key }: { direction: MoveDirection; key: ID }) => {
-    const points = sortBy(state.points, (o) => o.storyPoint.index)
+    const points = sortBy(state.story.points, (o) => o.index)
     const index = points.findIndex((item) => item.key === key)
     if (index > -1) {
       let swapTarget
@@ -1065,9 +1149,10 @@ export class NxStoryService extends ComponentStore<StoryState> {
           break
       }
 
+      // Reorder index
       points.forEach((item, i) => {
-        if (item.storyPoint) {
-          item.storyPoint.index = i
+        if (item) {
+          item.index = i
         } else {
           // console.warn(cloneDeep(item))
         }
@@ -1079,16 +1164,14 @@ export class NxStoryService extends ComponentStore<StoryState> {
     this._storyEvent$.next({
       key,
       type: StoryEventType.SAVE,
-      data: {
-      }
+      data: {}
     })
   }
 
   readonly pasteWidget = this.updater(
     (state, { name, widget, pointKey }: { name?: string; widget?: StoryWidget; pointKey?: ID }) => {
-      const point = pointKey
-        ? state.points.find((item) => item.key === pointKey)
-        : state.points.find((item) => item.key === state.currentPageKey)
+      const pageKey = pointKey ?? state.currentPageKey
+      const point = state.story.points.find((item) => item.key === pageKey)
 
       widget = cloneDeep(widget || state.copySelectedWidget)
 
@@ -1099,12 +1182,14 @@ export class NxStoryService extends ComponentStore<StoryState> {
       widget.id = null
       widget.key = uuid()
       widget.storyId = state.story.id
-      widget.pointId = point.storyPoint.id
+      widget.pointId = point.id
       widget.position = { ...widget.position, x: 0, y: 0 }
 
-      if (isNil(point.widgets)) {
-        point.pasteWidgets = point.pasteWidgets ?? []
-        point.pasteWidgets.push(widget)
+      const pointState = state.points.find((item) => item.key === point.key)
+
+      if (!pointState.fetched) {
+        pointState.pasteWidgets = pointState.pasteWidgets ?? []
+        pointState.pasteWidgets.push(widget)
       } else {
         point.widgets.push(widget)
       }
@@ -1116,11 +1201,11 @@ export class NxStoryService extends ComponentStore<StoryState> {
    */
   readonly createMeasureControlWidget = this.updater((state, { dataSettings, name }: Partial<StoryWidget>) => {
     // Get current page state
-    const storyPoint = state.points.find((item) => item.key === state.currentPageKey)
+    const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
     storyPoint.widgets.push({
       key: uuid(),
       storyId: state.story.id,
-      pointId: storyPoint.storyPoint.id,
+      pointId: storyPoint.id,
       name,
       title: name,
       component: WidgetComponentType.InputControl,
@@ -1137,8 +1222,8 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   // Gesture Actions
   async swipe(dir: 'left' | 'right', loop = false) {
-    const currentIndex = await firstValueFrom(this.currentIndex$)
-    const displayPoints = await firstValueFrom(this.displayPoints$)
+    const currentIndex = this.currentPageIndex()
+    const displayPoints = this.displayPoints()
     let index = 0
     if (dir === 'left') {
       index = Math.max(currentIndex - 1, 0)
@@ -1186,24 +1271,44 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   readonly mergeStoryPreferences = this.updater((state, preferences: Partial<StoryPreferences>) => {
     state.story.options = state.story.options ?? {}
-    state.story.options.preferences = assignDeepOmitBlank((state.story.options?.preferences ?? {}),
+    state.story.options.preferences = assignDeepOmitBlank(
+      state.story.options?.preferences ?? {},
       preferences,
       Number.MAX_SAFE_INTEGER
     )
   })
-  
-  readonly zoomIn = this.updater((state) => {
-    state.story.options = {
-      ...(state.story.options ?? {}),
-      scale: (state.story.options?.scale ?? 100) + 10
+
+  updateCurrentPageState<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryPointState, ...params: OriginType[]) => StoryPointState | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(
+        write((state) => {
+          const currentPageKey = state.currentPageKey
+          const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
+          const result = fn(state.points[currentPageIndex], ...params)
+          if (result) {
+            state.points[currentPageIndex] = result
+          }
+        })
+      )
     }
+  }
+
+  readonly resetZoom = this.updateCurrentPageState((state) => {
+    state.scale = null
   })
 
-  readonly zoomOut = this.updater((state) => {
-    state.story.options = {
-      ...(state.story.options ?? {}),
-      scale: (state.story.options?.scale ?? 100) - 10
-    }
+  readonly zoomIn = this.updateCurrentPageState((state) => {
+    state.scale = (state.scale ?? 100) + 10
+  })
+
+  readonly zoomOut = this.updateCurrentPageState((state) => {
+    state.scale = (state.scale ?? 100) - 10
+  })
+
+  readonly setZoom = this.updateCurrentPageState((state, scale: number) => {
+    state.scale = scale
   })
 
   /**
@@ -1212,29 +1317,34 @@ export class NxStoryService extends ComponentStore<StoryState> {
   readonly applyTemplate = this.updater((state, template: IStoryTemplate) => {
     state.story.templateId = template.id
     // Apply theme
-    state.story.options = assignDeepOmitBlank(state.story.options, template?.options?.story?.options, Number.MAX_SAFE_INTEGER)
+    state.story.options = assignDeepOmitBlank(
+      state.story.options,
+      template?.options?.story?.options,
+      Number.MAX_SAFE_INTEGER
+    )
     // Apply template
     if (template.type === StoryTemplateType.Template) {
       // Clear all story points
-      state.story.points = []
+      state.story.points = template.options.pages?.map((item) => {
+        return {
+          ...item,
+          storyId: state.story.id,
+          id: null
+        } as StoryPoint
+      })
 
       // create story points states
       state.points = template.options.pages?.map((item) => {
         return {
+          id: null,
           fetched: true,
           dirty: true,
-          key: item.key,
-          storyPoint: {
-            ...item,
-            storyId: state.story.id,
-          },
-          widgets: item.widgets
-        } as StoryPointState
+          key: item.key
+        }
       })
 
       this.setCurrentPageKey(state.points[0]?.key)
     }
-
   })
 
   readonly setCreatingWidget = this.updater((state, creatingWidget: Partial<StoryWidget>) => {
@@ -1245,9 +1355,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
     state.story.options = {
       ...(state.story.options ?? {}),
       preferences: {
-        ...(state.story.options?.preferences ?? {} as StoryPreferences),
+        ...(state.story.options?.preferences ?? ({} as StoryPreferences)),
         story: {
-          ...(state.story.options?.preferences?.story ?? {} as StoryPreferences['story']),
+          ...(state.story.options?.preferences?.story ?? ({} as StoryPreferences['story'])),
           styling: {
             ...(state.story.options?.preferences?.story?.styling ?? {}),
             ...styles
@@ -1261,9 +1371,9 @@ export class NxStoryService extends ComponentStore<StoryState> {
     state.story.options = {
       ...(state.story.options ?? {}),
       preferences: {
-        ...(state.story.options?.preferences ?? {} as StoryPreferences),
+        ...(state.story.options?.preferences ?? ({} as StoryPreferences)),
         widget: {
-          ...(state.story.options?.preferences?.widget ?? {} as StoryPreferences['widget']),
+          ...(state.story.options?.preferences?.widget ?? ({} as StoryPreferences['widget'])),
           ...styles
         }
       }
@@ -1272,16 +1382,11 @@ export class NxStoryService extends ComponentStore<StoryState> {
 
   readonly updateStoryPointStyles = this.updater((state, styles: cssStyle) => {
     const currentPageKey = state.currentPageKey
-    const currentPageIndex = state.points.findIndex((item) => item.key === currentPageKey)
-    state.points[currentPageIndex].storyPoint = {
-      ...state.points[currentPageIndex].storyPoint,
-      styling: {
-        ...(state.points[currentPageIndex].storyPoint?.styling ?? {} as StoryPoint['styling']),
-        canvas: {
-          ...(state.points[currentPageIndex].storyPoint?.styling?.canvas ?? {}),
-          ...styles
-        }
-      }
+    const currentPageIndex = state.story.points.findIndex((item) => item.key === currentPageKey)
+    state.story.points[currentPageIndex].styling ??= {} as StoryPointStyling
+    state.story.points[currentPageIndex].styling.canvas = {
+      ...(state.story.points[currentPageIndex].styling.canvas ?? {}),
+      ...styles
     }
   })
 
@@ -1289,12 +1394,14 @@ export class NxStoryService extends ComponentStore<StoryState> {
     const dataSources = this.dataSources()
 
     const result = await firstValueFrom<EntitySelectResultType>(
-      this._dialog.open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
-        data: {
-          dataSources,
-          dsCoreService: this.dsCoreService
-        }
-      }).afterClosed()
+      this._dialog
+        .open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
+          data: {
+            dataSources,
+            dsCoreService: this.dsCoreService
+          }
+        })
+        .afterClosed()
     )
     if (result) {
       this.patchState({
@@ -1365,7 +1472,7 @@ function defaultResponsive() {
 
 export function findStoryWidget(state: StoryState, key: ID) {
   let widget: StoryWidget
-  state.points.find((point) => {
+  state.story.points.find((point) => {
     return point.widgets?.find((item) => {
       if (item.key === key) {
         widget = item
@@ -1385,12 +1492,12 @@ function getOrInitEntityParameters(state: StoryState, dataSource: string, entity
 }
 
 function getOrInitEntityType(state: StoryState, dataSource: string, entity: string, caption?: string) {
-  const schemas = state.story.schemas = state.story.schemas ?? {}
-  const schema = schemas[dataSource] = schemas[dataSource] ?? {}
-  const entityType = schema[entity] = schema[entity] ?? {
+  const schemas = (state.story.schemas = state.story.schemas ?? {})
+  const schema = (schemas[dataSource] = schemas[dataSource] ?? {})
+  const entityType = (schema[entity] = schema[entity] ?? {
     name: entity,
     caption: caption,
     properties: {}
-  }
+  })
   return entityType
 }

@@ -27,13 +27,14 @@ import {
   Drill,
   EntityType,
   FilterOperator,
+  getDimensionMemberCaption,
   getEntityCalendar,
   getEntityDimensions,
   getEntityHierarchy,
   getEntityLevel,
   getEntityProperty,
+  getEntityProperty2,
   getIndicatorMeasureName,
-  getPropertyCaption,
   IFilter,
   Indicator,
   isAdvancedFilter,
@@ -47,12 +48,11 @@ import {
   ReferenceLineType,
   ReferenceLineValueType,
   slicerAsString,
-  TimeGranularity,
   TimeRangeType
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
+import { convertTableToCSV, LanguagesEnum, nonNullable, PERIODS } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -66,7 +66,6 @@ import {
   firstValueFrom,
   map,
   Observable,
-  of,
   shareReplay,
   startWith,
   switchMap,
@@ -90,53 +89,7 @@ export class IndicatorDetailComponent {
   DisplayDensity = DisplayDensity
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
-  PERIODS = [
-    {
-      name: '1W',
-      granularity: TimeGranularity.Day,
-      lookBack: 7
-    },
-    {
-      name: '1M',
-      granularity: TimeGranularity.Day,
-      lookBack: 30
-    },
-    {
-      name: '3M',
-      granularity: TimeGranularity.Day,
-      lookBack: 90
-    },
-    {
-      name: '6M',
-      granularity: TimeGranularity.Day,
-      lookBack: 180
-    },
-    {
-      name: '1Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 12
-    },
-    {
-      name: '2Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 24
-    },
-    {
-      name: '3Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 36
-    },
-    {
-      name: '4Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 48
-    },
-    {
-      name: '5Y',
-      granularity: TimeGranularity.Month,
-      lookBack: 60
-    }
-  ]
+  PERIODS = PERIODS
 
   private store = inject(IndicatorsStore)
   private indicatoryMarketComponent = inject(IndicatoryMarketComponent)
@@ -593,7 +546,7 @@ export class IndicatorDetailComponent {
                 show: true,
                 position: 'insideRight',
                 formatter: (params) => {
-                  return formatNumber(params.data[measure], locale, '0.1-1')
+                  return indicator.unit === '%' ? formatNumber(params.data[measure] * 100, locale, '0.1-1') + '%' : formatNumber(params.data[measure], locale, '0.1-1')
                 }
               }
             },
@@ -613,7 +566,8 @@ export class IndicatorDetailComponent {
           period: slicerAsString(timeSlicer)
         }
       })
-    })
+    }),
+    shareReplay(1)
   )
 
   public readonly comments$ = combineLatest([
@@ -636,16 +590,23 @@ export class IndicatorDetailComponent {
   readonly favour = computed(() => this.store.favorites()?.includes(this.indicator()?.id))
   readonly copilotEnabled = toSignal(this.copilotService.enabled$)
 
-  readonly entityType = computedAsync(() => {
-    const dataSource = this.explainDataSignal()?.[0].dataSource
-    const entitySet = this.explainDataSignal()?.[0].entitySet
-    if (dataSource) {
-      return this.dsCoreService.getDataSource(dataSource).pipe(
-        switchMap((dataSource) => dataSource.selectEntityType(entitySet))
-      )
-    }
+  readonly entityType = toSignal(this.entityType$)
 
-    return of(null)
+  readonly drillLevels = signal<Record<string, string>>({})
+
+  readonly drillDimensions = computedAsync(() => {
+    const drillLevels = this.drillLevels()
+    return this.drillDimensions$.pipe(
+      // Update title from drillLevels (level from explain data)
+      map((drills) => drills?.map((drill) => {
+        const level = drillLevels[drill.id]
+        if (level) {
+          const property = getEntityProperty2(this.entityType(), level)
+          return { ...drill, title: property?.caption ?? drill.title }
+        }
+        return drill
+      }))
+    )
   })
 
   /**
@@ -676,10 +637,6 @@ export class IndicatorDetailComponent {
     if (this.data?.id) {
       this.id = this.data.id
     }
-  }
-
-  trackById(index, item) {
-    return item?.id
   }
 
   onClose(event) {
@@ -775,6 +732,16 @@ export class IndicatorDetailComponent {
       drill,
       event
     }
+    // Get drilldown level
+    const item = event.filter(nonNullable)?.find((item) => item.data?.length)?.data[0]
+    if (item?.hierarchy && item?.[`[${item.hierarchy}].[LEVEL_UNIQUE_NAME]`]) {
+      this.drillLevels.update((levels) => {
+        return {
+          ...levels,
+          [drill.id]: item?.[`[${item.hierarchy}].[LEVEL_UNIQUE_NAME]`]
+        }
+      })
+    }
   }
 
   makeIndicatorDataPrompt() {
@@ -818,7 +785,7 @@ export class IndicatorDetailComponent {
     const dimension = chartAnnotation.dimensions[0]
     const dimensionProperty = getEntityHierarchy(entityType, dimension)
     const dimensionLevel = getEntityLevel(entityType, dimension)
-    const dimensionCaption = getPropertyCaption(dimensionProperty)
+    const dimensionCaption = getDimensionMemberCaption(dimension, entityType)
     const measure = chartAnnotation.measures[0]
     const measureProperty = getEntityProperty(entityType, measure)
 

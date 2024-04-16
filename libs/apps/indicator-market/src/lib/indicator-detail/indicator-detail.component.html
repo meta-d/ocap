@@ -75,28 +75,30 @@
       <ng-container *ngTemplateOutlet="indicators"></ng-container>
     </div>
 
-    <ngm-analytical-card class="h-[300px]" *ngFor="let dataSettings of dataSettings$ | async; trackBy: trackById"
-      [dataSettings]="dataSettings"
-      [chartOptions]="chartOptions$ | async"
-      [chartSettings]="{theme: primaryTheme$()}"
-      [options]="{
-        realtimeLinked: true,
-        disableContextMenu: true
-      }"
-      (slicersChanging)="onPeriodSlicerChange($event)"
-      (explain)="onExplain($event)"
-      >
-      <div class=" flex-1 flex items-center md:gap-2">
-        @for (p of PERIODS; track p.name) {
-          <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
-            [ngClass]="{selected: p.name === detailPeriods()}"
-            (click)="togglePeriod(p.name)"
-          >
-            {{p.name}}
-          </span>
-        }
-      </div>
-    </ngm-analytical-card>
+    @for (dataSettings of dataSettings$ | async; track dataSettings.id) {
+      <ngm-analytical-card class="h-[300px]"
+        [dataSettings]="dataSettings"
+        [chartOptions]="chartOptions$ | async"
+        [chartSettings]="{theme: primaryTheme$()}"
+        [options]="{
+          realtimeLinked: true,
+          disableContextMenu: true
+        }"
+        (slicersChanging)="onPeriodSlicerChange($event)"
+        (explain)="onExplain($event)"
+        >
+        <div class=" flex-1 flex items-center md:gap-2">
+          @for (p of PERIODS; track p.name) {
+            <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
+              [ngClass]="{selected: p.name === detailPeriods()}"
+              (click)="togglePeriod(p.name)"
+            >
+              {{p.name}}
+            </span>
+          }
+        </div>
+      </ngm-analytical-card>
+    }
 
     <div *ngIf="indicator.business" class="pac-indicator-app__business mt-2">
       <div class="title text-lg">
@@ -131,28 +133,32 @@
         </div>
       </div>
     }
+   
+    @if (drillDimensions(); as drillDimensions) {
+      <div class="flex flex-col">
+        <div class="text-lg my-4 ">
+          {{ 'IndicatorApp.DrillDown' | translate: {Default: 'Drill Down'} }}
+        </div>
 
-    <div *ngIf="drillDimensions$ | async as drillDimensions" class="flex flex-col">
-      <div class="text-lg my-4 ">
-        {{ 'IndicatorApp.DrillDown' | translate: {Default: 'Drill Down'} }}
+        <div class="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense gap-4">
+          @for (drill of drillDimensions; track drill.id; let i = $index) {
+            <ngm-analytical-card class="h-[400px]"
+              [title]="drill.title"
+              [dataSettings]="drill.dataSettings"
+              [chartOptions]="drill.chartOptions"
+              [chartSettings]="drill.chartSettings"
+              [options]="{
+              }"
+              (explain)="onDrillExplain(i, drill, $event)"
+              >
+              <mat-chip-list displayDensity="cosy" class="mr-2">
+                <mat-chip class="whitespace-nowrap text-ellipsis overflow-hidden">{{drill.period}}</mat-chip>
+              </mat-chip-list>
+            </ngm-analytical-card>
+          }
+        </div>
       </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense gap-4">
-        <ngm-analytical-card *ngFor="let drill of drillDimensions; index as i; trackBy: trackById" class="h-[400px]"
-          [title]="drill.title"
-          [dataSettings]="drill.dataSettings"
-          [chartOptions]="drill.chartOptions"
-          [chartSettings]="drill.chartSettings"
-          [options]="{
-          }"
-          (explain)="onDrillExplain(i, drill, $event)"
-          >
-          <mat-chip-list displayDensity="cosy" class="mr-2">
-            <mat-chip class="whitespace-nowrap text-ellipsis overflow-hidden">{{drill.period}}</mat-chip>
-          </mat-chip-list>
-        </ngm-analytical-card>
-      </div>
-    </div>
+    }
 
     <div class="text-lg mb-4 mt-8">
       {{ 'IndicatorApp.Comments' | translate: {Default: 'Comments'} }}

@@ -50,7 +50,8 @@ $prefix: (ngm, color);
     dark:placeholder-gray-400 dark:text-white
     dark:focus:ring-yellow-500
     disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none disabled:ring-0 disabled:cursor-not-allowed
-    placeholder:italic placeholder:text-slate-400/50 dark:placeholder:text-slate-500/50;
+    placeholder:italic placeholder:text-slate-400/50 dark:placeholder:text-slate-500/50
+    dark:disabled:border-neutral-800;
 
   &.ngm-input__searching {
     @apply focus:bg-white dark:focus:bg-gray-800;

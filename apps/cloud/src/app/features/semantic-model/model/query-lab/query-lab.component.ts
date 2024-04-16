@@ -26,23 +26,17 @@ import { QueryLabService } from './query-lab.service'
 export class QueryLabComponent extends TranslationBaseComponent implements IsDirty {
   public readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
-  private readonly modelId = toSignal(this.modelService.select((state) => state.model.id))
-  private readonly modelQueries = toSignal(
-    this.modelService.select(
-      (state) =>
-        state.queries ??
-        state.model.queries.map((query) => {
-          query = convertModelQueryResult(query)
-          return {
-            key: query.key,
-            origin: cloneDeep(query),
-            query: query,
-            dirty: false,
-            results: []
-          } as ModelQueryState
-        })
-    )
-  )
+  private readonly modelId = toSignal(this.modelService.modelId$)
+  private readonly modelQueries = toSignal(this.modelService.model$.pipe(map((model) => model.queries.map((query) => {
+    query = convertModelQueryResult(query)
+    return {
+      key: query.key,
+      origin: cloneDeep(query),
+      query: query,
+      dirty: false,
+      results: []
+    } as ModelQueryState
+  }))))
 
   constructor(
     public modelService: SemanticModelService,

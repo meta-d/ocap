@@ -235,14 +235,14 @@ export class SmartIndicatorDataService<
             dimension: this.calendar.name,
             hierarchy: this.calendarHierarchy.name
           },
-          members: [{ value: timeRange[0] }]
+          members: [{ key: timeRange[0] }]
         }
       : {
           dimension: {
             dimension: this.calendar.name,
             hierarchy: this.calendarHierarchy.name
           },
-          members: timeRange.map((value) => ({ value })),
+          members: timeRange.map((key) => ({ key })),
           operator: FilterOperator.BT
         }
   }

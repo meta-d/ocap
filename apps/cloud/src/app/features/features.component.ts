@@ -9,7 +9,8 @@ import {
   ViewChild,
   effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
@@ -71,8 +72,9 @@ export class FeaturesComponent implements OnInit {
 
   readonly #destroyRef = inject(DestroyRef)
 
-  @ViewChild('sidenav') sidenav: MatSidenav
+  // @ViewChild('sidenav') sidenav: MatSidenav
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
+  readonly sidenav = viewChild('sidenav', { read: MatSidenav })
 
   copilotEngine: CopilotEngine | null = null
   sidenavMode = 'over' as MatDrawerMode
@@ -189,14 +191,14 @@ export class FeaturesComponent implements OnInit {
     public dialog: MatDialog,
     private location: Location,
     private logger: NGXLogger,
-    private _cdr: ChangeDetectorRef
+    // private _cdr: ChangeDetectorRef
   ) {
     this.router.events
       .pipe(filter((e: Event | RouterEvent): e is RouterEvent => e instanceof RouterEvent))
       .subscribe((e: RouterEvent) => {
         this.navigationInterceptor(e)
         if (e instanceof NavigationEnd && this.sidenavMode === 'over') {
-          this.sidenav.close()
+          this.sidenav().close()
         }
       })
     effect(() => {
@@ -224,7 +226,7 @@ export class FeaturesComponent implements OnInit {
       .subscribe(([permissions]) => {
         this.menus.set(this.getMenuItems())
         this.loadItems(this.selectorService.showSelectors(this.router.url).showOrganizationShortcuts)
-        this._cdr.detectChanges()
+        // this._cdr.detectChanges()
       })
   }
 
@@ -319,7 +321,7 @@ export class FeaturesComponent implements OnInit {
       }, 200)
       this.store.setFixedLayoutSider(true)
     } else {
-      this.sidenav.toggle()
+      this.sidenav().toggle()
       setTimeout(() => {
         this.store.setFixedLayoutSider(false)
       }, 1000)
@@ -387,8 +389,7 @@ export class FeaturesComponent implements OnInit {
     if (event instanceof NavigationError) {
       this.loading.set(false)
     }
-
-    this._cdr.detectChanges()
+    // this._cdr.detectChanges()
   }
 
   back(): void {
@@ -642,11 +643,11 @@ export class FeaturesComponent implements OnInit {
           },
 
           {
-            title: 'Copilot',
+            title: 'AI Copilot',
             matIcon: 'assistant',
             link: '/settings/copilot',
             data: {
-              translationKey: 'Copilot',
+              translationKey: 'AI Copilot',
               permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
               featureKey: FeatureEnum.FEATURE_COPILOT
             }

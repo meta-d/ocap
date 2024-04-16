@@ -2,6 +2,7 @@ import { CdkDrag, CdkDragDrop, CdkDragRelease } from '@angular/cdk/drag-drop'
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   HostBinding,
   HostListener,
   TemplateRef,
@@ -16,8 +17,8 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
-import { IsDirty } from '@metad/core'
+import { CopilotChatMessageRoleEnum, CopilotEngine, zodToAnnotations } from '@metad/copilot'
+import { IsDirty, nonBlank } from '@metad/core'
 import {
   NgmCopilotChatComponent,
   injectCopilotCommand,
@@ -45,7 +46,7 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid, zodToAnnotations } from '../../../@core'
+import { ISemanticModel, MenuCatalog, ToastrService, getErrorMessage, routeAnimations, uuid } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
@@ -85,6 +86,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private _viewContainerRef = inject(ViewContainerRef)
   private toastrService = inject(ToastrService)
   readonly #logger = inject(NGXLogger)
+  readonly destroyRef = inject(DestroyRef)
 
   /**
   |--------------------------------------------------------------------------
@@ -224,7 +226,7 @@ ${sharedDimensionsPrompt}
   public readonly toolbarAction$ = new Subject<{ category: TOOLBAR_ACTION_CATEGORY; action: string }>()
 
   get dbInitialization() {
-    return this.modelService.model?.dbInitialization
+    return this.modelService.modelSignal()?.dbInitialization
   }
   // Left side menu drawer open state
   sideMenuOpened = true
@@ -310,7 +312,8 @@ ${sharedDimensionsPrompt}
   readonly isOlap$ = toSignal(this.modelService.isOlap$)
   readonly modelType$ = toSignal(this.modelService.modelType$)
   readonly writable$ = computed(() => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL))
-  readonly _isDirty = toSignal(this.modelService.dirty$)
+  // readonly _isDirty = toSignal(this.modelService.dirty$)
+  readonly tables = toSignal(this.selectDBTables$)
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
@@ -318,8 +321,8 @@ ${sharedDimensionsPrompt}
     this.modelService.initModel(this.model)
   }
 
-  isDirty(): boolean {
-    return this._isDirty()
+  isDirty(id?: string) {
+    return id ? this.modelService.dirty()[id] : this.modelService.isDirty()
   }
 
   trackById(i: number, item: SemanticModelEntity) {
@@ -351,8 +354,8 @@ ${sharedDimensionsPrompt}
   }
 
   async createEntity(entity?: SemanticModelEntity) {
-    const modelType = await firstValueFrom(this.modelService.modelType$)
-    const entitySets = await firstValueFrom(this.selectDBTables$)
+    const modelType = this.modelService.modelType()
+    const entitySets = this.tables()
     if (modelType === MODEL_TYPE.XMLA) {
       const result = await firstValueFrom(
         this._dialog
@@ -415,25 +418,34 @@ ${sharedDimensionsPrompt}
     })
   }
 
-  async createStory() {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {}).afterClosed())
-
-    if (name) {
-      try {
-        const story = await firstValueFrom(
-          this.storyStore.createStory({
-            name: name,
-            model: {
+  createStory() {
+    this._dialog.open(ConfirmUniqueComponent, {
+      data: {
+        title: this.getTranslation('PAC.KEY_WORDS.StoryName', {Default: 'Story Name'}),
+      }
+    }).afterClosed().pipe(
+      filter(nonBlank),
+      switchMap((name) =>
+        this.storyStore.createStory({
+          name: name,
+          models: [
+            {
               id: this.model.id
-            } as StoryModel,
-            businessAreaId: this.model.businessAreaId
-          })
-        )
-        this.openStory(story.id)
-      } catch (err) {
+            } as StoryModel
+          ],
+          businessAreaId: this.model.businessAreaId
+        })
+      )
+    ).subscribe({
+      next: (story) => {
+        if (story) {
+          this.openStory(story.id)
+        }
+      },
+      error: (err) => {
         this.toastrService.error(err, 'PAC.MODEL.MODEL.CreateStory')
       }
-    }
+    })
   }
 
   async createByExpression(expression: string) {
@@ -532,10 +544,12 @@ ${sharedDimensionsPrompt}
   }
 
   undo() {
-    // this.modelService.undo()
+    this.modelService.undo()
   }
 
-  redo() {}
+  redo() {
+    this.modelService.redo()
+  }
 
   doAction(event) {
     this.toolbarAction$.next(event)
@@ -548,7 +562,7 @@ ${sharedDimensionsPrompt}
           panelClass: 'large',
           data: {
             dataSource: this.modelService.originalDataSource,
-            id: this.modelService.model.dataSource.id
+            id: this.modelService.modelSignal().dataSource.id
           },
           disableClose: true
         } as MatDialogConfig)
@@ -580,9 +594,21 @@ ${sharedDimensionsPrompt}
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && (event.key === 's' || event.key === 'S')) {
-      this.modelService.saveModel()
-      event.preventDefault()
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+        if (event.key === 'z' || event.key === 'Z') {
+          this.modelService.redo()
+          event.preventDefault()
+        }
+      } else {
+        if (event.key === 's' || event.key === 'S') {
+          this.modelService.saveModel()
+          event.preventDefault()
+        } else if (event.key === 'z' || event.key === 'Z') {
+          this.modelService.undo()
+          event.preventDefault()
+        }
+      }
     }
   }
 

@@ -18,7 +18,7 @@ import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core
 import { registerEChartsThemes } from '@metad/material-theme'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
-import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent } from '../@core/index'
+import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerSocketAgent } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import { MaterialModule, SharedModule } from '../@shared/index'
 import { HeaderSettingsComponent, ProjectSelectorComponent } from '../@theme/header'
@@ -27,6 +27,7 @@ import { StoryFeedService, StoryModelService, StoryStoreService } from '../servi
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
 import { NotificationComponent, TuneComponent } from '../@theme'
+import { MarkdownModule } from 'ngx-markdown'
 
 registerEChartsThemes()
 
@@ -53,7 +54,9 @@ registerEChartsThemes()
     ResizerModule,
     NgmTableComponent,
     NotificationComponent,
-    TuneComponent
+    TuneComponent,
+
+    MarkdownModule.forRoot()
   ],
   providers: [
     DirtyCheckGuard,
@@ -80,10 +83,10 @@ registerEChartsThemes()
           }
         ]
       : []),
-    ServerAgent,
+    ServerSocketAgent,
     {
       provide: OCAP_AGENT_TOKEN,
-      useExisting: ServerAgent,
+      useExisting: ServerSocketAgent,
       multi: true
     },
     {

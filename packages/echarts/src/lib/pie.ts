@@ -5,11 +5,11 @@ import {
   getChartCategory,
   getEntityProperty,
   getPropertyHierarchy,
-  getPropertyCaption,
   mergeOptions,
   QueryReturn,
   isNil,
-  assignDeepOmitBlank
+  assignDeepOmitBlank,
+  getDimensionMemberCaption
 } from '@metad/ocap-core'
 import { trellisCoordinates, gatherCoordinates } from './coordinates'
 import { getEChartsTooltip } from './components/tooltip'
@@ -61,7 +61,11 @@ export function pieCoordinate(
 ): ICoordinate {
   const { chartAnnotation, entityType, settings, options } = context
   const category = getChartCategory(chartAnnotation)
+  const categoryMemberCaption = getDimensionMemberCaption(category, entityType)
   const categoryProperty = getEntityProperty(entityType, category)
+  if (!categoryProperty) {
+    return null
+  }
 
   context.datasets = []
 
@@ -79,7 +83,8 @@ export function pieCoordinate(
       seriesComponents,
       tooltip: getEChartsTooltip(
         options?.tooltip,
-        categoryProperty,
+        category,
+        entityType,
         chartAnnotation.measures.map((measure) => ({
           measure,
           property: getEntityProperty(entityType, measure)
@@ -126,7 +131,7 @@ export function pieCoordinate(
         if (isNil(series.seriesLayoutBy)) {
           series.encode = {
             itemId: getPropertyHierarchy(category),
-            itemName: getPropertyCaption(categoryProperty),
+            itemName: categoryMemberCaption,
             value: seriesComponent.measure,
             tooltip: seriesComponent.tooltip
           }

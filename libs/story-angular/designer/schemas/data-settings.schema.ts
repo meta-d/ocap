@@ -249,7 +249,8 @@ export abstract class DataSettingsSchemaService<
             props: {
               label: i18n?.SemanticModel ?? 'Semantic Model',
               required: true,
-              options: dataSources$
+              options: dataSources$,
+              panelWidth: '300px',
             }
           },
           {
@@ -259,7 +260,8 @@ export abstract class DataSettingsSchemaService<
             props: {
               label: i18n?.Entity ?? 'Entity',
               searchable: true,
-              required: true
+              required: true,
+              panelWidth: '300px',
             },
             expressions: {
               hide: `!model || !model.dataSource`

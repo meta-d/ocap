@@ -14,13 +14,13 @@ import {
 } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
-import { NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
+import { NgmDesignerFormComponent, NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgxPopperjsModule } from 'ngx-popperjs'
-import { CreatedByPipe, MaterialModule, UserPipe } from '../../../@shared'
+import { CreatedByPipe, DirtyBadgeComponent, MaterialModule, UserPipe } from '../../../@shared'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
 import { ModelComponent } from './model.component'
@@ -41,7 +41,6 @@ import {
   MeasureAttributesSchema,
   MeasureSchemaService
 } from './schema/index'
-import { StoryModelResolver } from './story-model.resolver'
 import { ModelDesignerType } from './types'
 import { ModelRoutingModule } from './routing'
 
@@ -63,6 +62,7 @@ import { ModelRoutingModule } from './routing'
     NxActionStripModule,
     NxDesignerModule,
     ModelUploadComponent,
+    DirtyBadgeComponent,
 
     // OCAP Modules
     ResizerModule,
@@ -82,12 +82,12 @@ import { ModelRoutingModule } from './routing'
   providers: [
     provideOcapCore(),
     // NgmCopilotService,
-    StoryModelResolver,
+    // StoryModelResolver,
     {
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.cube,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CubeSchemaService
       },
       multi: true
@@ -141,7 +141,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.calculatedMember,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CalculatedMemberSchemaService
       },
       multi: true
@@ -159,7 +159,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.dimensionAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: DimensionAttributesSchema
       },
       multi: true
@@ -168,7 +168,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.hierarchyAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: HierarchyAttributesSchema
       },
       multi: true

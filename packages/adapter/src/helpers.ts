@@ -1,4 +1,5 @@
 import { Transform } from 'stream'
+import { IColumnDef, IDSSchema } from './types'
 
 
 /**
@@ -57,7 +58,7 @@ export function getPGSchemaQuery(schemaName: string, tableName: string) {
   return query
 }
 
-export function convertPGSchema(data: any[]) {
+export function convertPGSchema(data: any[]): IDSSchema[] {
   const schemas = groupBy(data, 'table_schema')
   return Object.keys(schemas).map((schema) => {
     const tableGroup = groupBy(schemas[schema], 'table_name')
@@ -72,8 +73,9 @@ export function convertPGSchema(data: any[]) {
           .map((item) => ({
             name: item.column_name,
             type: pgTypeMap(item.data_type),
-            label: item.column_comment
-          }))
+            label: item.column_comment,
+            dataType: item.data_type
+          } as IColumnDef))
       }
     })
 
@@ -81,7 +83,7 @@ export function convertPGSchema(data: any[]) {
       schema,
       name: schema,
       tables
-    }
+    } as IDSSchema
   })
 }
 

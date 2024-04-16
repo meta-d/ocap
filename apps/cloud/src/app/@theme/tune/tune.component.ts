@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
 import { MatMenuModule } from '@angular/material/menu'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -16,7 +17,7 @@ import { AgentStatus, AgentStatusEnum } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { Observable, of } from 'rxjs'
-import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '../../@core'
+import { AbstractAgent, LocalAgent, ServerSocketAgent, Store, ToastrService } from '../../@core'
 
 @Component({
   standalone: true,
@@ -37,6 +38,7 @@ import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '..
     MatTabsModule,
     MatListModule,
     MatSliderModule,
+    MatProgressBarModule,
     ButtonGroupDirective,
     DensityDirective,
     NgFilterPipeModule
@@ -45,11 +47,11 @@ import { AbstractAgent, LocalAgent, ServerAgent, Store, ToastrService } from '..
 export class TuneComponent {
   enableLocalAgent = environment.enableLocalAgent
   AgentStatusEnum = AgentStatusEnum
-  
+
   readonly toastrService = inject(ToastrService)
   readonly localAgent? = inject(LocalAgent, { optional: true })
   readonly wasmAgentService = inject(WasmAgentService)
-  readonly serverAgent = inject(ServerAgent)
+  readonly serverAgent? = inject(ServerSocketAgent, { optional: true })
   readonly cacheService = inject(NgmDSCacheService)
   readonly store = inject(Store)
 
@@ -88,6 +90,12 @@ export class TuneComponent {
 
     return null
   })
+
+  readonly progress = computed(() =>
+    this.serverAgent.bufferSize() > 0
+      ? Math.floor((this.serverAgent.completeSize() / this.serverAgent.bufferSize()) * 100)
+      : 100
+  )
 
   constructor() {
     if (this.store.cacheLevel !== null && this.cacheService.getCacheLevel() !== this.store.cacheLevel) {

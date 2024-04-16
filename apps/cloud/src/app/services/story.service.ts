@@ -67,7 +67,7 @@ export class StoryStoreService extends ComponentStore<{ entities?: Array<Story> 
   }
 
   updateStory(story: Story): Observable<void> {
-    return this.httpClient.put(C_API_STORY + '/' + story.id, convertStory(omit(story, 'points'))).pipe(map(() => {}))
+    return this.httpClient.put(C_API_STORY + '/' + story.id, convertStory(omit(story, 'points', 'models'))).pipe(map(() => {}))
   }
   /**
    * @deprecated 应用场景 ???

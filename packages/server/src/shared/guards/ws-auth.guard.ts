@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
+import { WsException } from '@nestjs/websockets'
 
 @Injectable()
 export class WsJWTGuard extends AuthGuard('ws-jwt') {
@@ -37,6 +38,13 @@ export class WsJWTGuard extends AuthGuard('ws-jwt') {
     }
 
     // Make sure to check the authorization, for now, just return false to have a difference between public routes.
-    return super.canActivate(context)
+    return (<Promise<boolean>>super.canActivate(context)).catch((error) => {
+      throw new WsException({
+        // indicates the client message id
+        id: context.switchToWs().getData().id,
+        status: error.status,
+        message: error.response?.message
+      })
+    })
   }
 }

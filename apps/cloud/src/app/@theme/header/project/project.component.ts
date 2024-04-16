@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -12,12 +12,12 @@ import { MatMenuModule } from '@angular/material/menu'
 import { Router } from '@angular/router'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { combineLatest, firstValueFrom } from 'rxjs'
+import { computedAsync } from 'ngxtension/computed-async'
+import { firstValueFrom } from 'rxjs'
 import { map, startWith, switchMap } from 'rxjs/operators'
 import { DefaultProject, IProject, ProjectService, Store, ToastrService } from '../../../@core'
 import { InlineSearchComponent } from '../../../@shared'
 import { ProjectCreationComponent } from './creation/creation.component'
-import { computedAsync } from 'ngxtension/computed-async'
 
 @Component({
   standalone: true,
@@ -56,9 +56,9 @@ export class ProjectSelectorComponent {
 
   searchControl = new FormControl('')
 
-  readonly selectedOrganization = toSignal(this.store.selectedOrganization$)
+  readonly selectedOrganizationId = toSignal(this.store.selectedOrganization$.pipe(map((org) => org?.id)))
   readonly projects = computedAsync(() => {
-    const org = this.selectedOrganization()
+    const orgId = this.selectedOrganizationId()
     return this.projectService.onRefresh().pipe(
       switchMap(() => this.projectService.getMy()),
       map((items) => {

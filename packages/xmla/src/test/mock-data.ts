@@ -1038,10 +1038,10 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[Excel].[Excel Monthly Auto Magazine]'
+            key: '[Excel].[Excel Monthly Auto Magazine]'
           },
           {
-            value: 'CDR'
+            key: 'CDR'
           }
         ]
       },
@@ -1052,7 +1052,7 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[USA].[San Francisco]'
+            key: '[USA].[San Francisco]'
           }
         ]
       }
@@ -1080,10 +1080,10 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[Excel].[Excel Monthly Auto Magazine]'
+            key: '[Excel].[Excel Monthly Auto Magazine]'
           },
           {
-            value: 'CDR'
+            key: 'CDR'
           }
         ]
       },
@@ -1094,7 +1094,7 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[USA]'
+            key: '[USA]'
           }
         ],
         exclude: true
@@ -1117,10 +1117,10 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[Excel].[Excel Monthly Auto Magazine]'
+            key: '[Excel].[Excel Monthly Auto Magazine]'
           },
           {
-            value: 'CDR'
+            key: 'CDR'
           }
         ]
       },
@@ -1131,7 +1131,7 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[USA]'
+            key: '[USA]'
           }
         ],
         exclude: true
@@ -1187,7 +1187,7 @@ export const INDICATORS: Indicator[] = [
                 },
                 members: [
                   {
-                    value: '[Excel].[Excel Monthly Auto Magazine]'
+                    key: '[Excel].[Excel Monthly Auto Magazine]'
                   }
                 ]
               },
@@ -1197,7 +1197,7 @@ export const INDICATORS: Indicator[] = [
                 },
                 members: [
                   {
-                    value: 'CDR'
+                    key: 'CDR'
                   }
                 ]
               }
@@ -1212,7 +1212,7 @@ export const INDICATORS: Indicator[] = [
                 },
                 members: [
                   {
-                    value: '[USA]'
+                    key: '[USA]'
                   }
                 ]
               },
@@ -1222,7 +1222,7 @@ export const INDICATORS: Indicator[] = [
                 },
                 members: [
                   {
-                    value: '[USA].[San Francisco]'
+                    key: '[USA].[San Francisco]'
                   }
                 ],
                 exclude: true
@@ -1271,10 +1271,10 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[Excel].[Excel Monthly Auto Magazine]'
+            key: '[Excel].[Excel Monthly Auto Magazine]'
           },
           {
-            value: 'CDR'
+            key: 'CDR'
           }
         ]
       },
@@ -1284,7 +1284,7 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[(All)]'
+            key: '[(All)]'
           }
         ]
       },
@@ -1328,10 +1328,10 @@ export const INDICATORS: Indicator[] = [
         },
         members: [
           {
-            value: '[Excel].[Excel Monthly Auto Magazine]'
+            key: '[Excel].[Excel Monthly Auto Magazine]'
           },
           {
-            value: 'CDR'
+            key: 'CDR'
           }
         ]
       }

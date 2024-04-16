@@ -4,11 +4,17 @@ import { get, isArray, isEqual, isFunction, isString, matches } from 'lodash-es'
 import { Observable, BehaviorSubject, combineLatest, merge } from 'rxjs'
 import { distinctUntilChanged, filter, map, withLatestFrom } from 'rxjs/operators'
 
-
+/**
+ * 作为状态管理功能的初创原型
+ * @deprecated 使用 @ngneat/elf
+ */
 export interface SelectConfig {
   distinctDeeply?: boolean
 }
-
+/**
+ * 作为状态管理功能的初创原型
+ * @deprecated 使用 @ngneat/elf
+ */
 export interface ComponentOptions<T> {
   // 最终结果
   options: T

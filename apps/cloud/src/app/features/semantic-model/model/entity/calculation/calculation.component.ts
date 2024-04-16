@@ -23,11 +23,12 @@ import { filter, map } from 'rxjs/operators'
 import { Store, ToastrService, uuid } from '../../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared/'
 import { AppService } from '../../../../../app.service'
-import { CalculatedMeasureSchema, zodToAnnotations } from '../../copilot'
+import { CalculatedMeasureSchema } from '../../copilot'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
+import { zodToAnnotations } from '@metad/copilot'
 
 @Component({
   standalone: true,
@@ -105,7 +106,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   readonly modelType = toSignal(this.modelService.modelType$)
   readonly dialect = toSignal(this.modelService.dialect$)
-  readonly selectedProperty = toSignal(this.entityService.select((state) => state.selectedProperty))
+  readonly selectedProperty = this.entityService.selectedProperty
   readonly typeKey = computed(() => `${ModelDesignerType.calculatedMember}#${this.key()}`)
 
   /**
@@ -201,9 +202,7 @@ ${makeCubePrompt(this.cube())}
 
     effect(
       () => {
-        this.entityService.patchState({
-          selectedProperty: this.typeKey()
-        })
+        this.entityService.setSelectedProperty(this.typeKey())
       },
       { allowSignalWrites: true }
     )
@@ -226,7 +225,8 @@ ${makeCubePrompt(this.cube())}
         return
       }
     }
-    if (!isNil(calculatedMember) && formula !== calculatedMember?.formula) {
+    // null and "" as the same
+    if (!isNil(calculatedMember) && (!formula !== !calculatedMember?.formula || !!formula)) {
       this.entityService.setCalculatedMember({
         ...calculatedMember,
         formula
@@ -255,9 +255,7 @@ ${makeCubePrompt(this.cube())}
 
   ngOnDestroy(): void {
     if (this.selectedProperty() === this.typeKey()) {
-      this.entityService.patchState({
-        selectedProperty: null
-      })
+      this.entityService.setSelectedProperty(null)
     }
   }
 }

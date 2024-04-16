@@ -1,10 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { IStoryPoint } from '@metad/contracts'
-import { Story } from '@metad/story/core'
-import { map } from 'rxjs'
 import { C_API_STORY_POINT } from './constants'
-import { convertStory, convertStoryResult } from './types'
 
 @Injectable({
   providedIn: 'root'
@@ -34,9 +31,12 @@ export class StoryPointsService {
     return this.httpClient.post<IStoryPoint>(C_API_STORY_POINT, point)
   }
 
-  create(story: Story) {
-    return this.httpClient.post(C_API_STORY_POINT, convertStory(story)).pipe(map(convertStoryResult))
-  }
+  // /**
+  //  * @deprecated Why is Story
+  //  */
+  // create(story: Story) {
+  //   return this.httpClient.post(C_API_STORY_POINT, convertStory(story)).pipe(map(convertStoryResult))
+  // }
 
   copy(id: string) {
     return this.httpClient.post(`${C_API_STORY_POINT}/${id}/copy`, {})

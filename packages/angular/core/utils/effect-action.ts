@@ -26,7 +26,7 @@ export function effectAction<
         observableOrValue: ObservableType | Observable<ObservableType>
       ) => Subscription
   >(generator: (origin$: OriginType) => Observable<unknown>): ReturnType {
-    const _destroyed$ = takeUntilDestroyed()
+  const _destroyed$ = takeUntilDestroyed()
   const origin$ = new Subject<ObservableType>();
   generator(origin$ as OriginType)
     // tied to the lifecycle 👇 of ComponentStore

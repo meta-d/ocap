@@ -1,12 +1,51 @@
 <ngm-splitter [type]="SplitterType.Vertical" class="flex-1">
     <ngm-splitter-pane size="50%">
-        <div *ngIf="expression(); else tables" class="w-full h-full">
+      @if (expression()) {
+        <div class="w-full h-full">
             <ngm-editor-sql #editor class="w-full h-full"
                 [ngModel]="expression()"
                 (ngModelChange)="changeExpression($event)"
                 >
             </ngm-editor-sql>
         </div>
+      } @else {
+        <div class="pac-cube-structure-drop w-full"
+            cdkDropList
+            [cdkDropListData]="tables$ | async"
+            (cdkDropListDropped)="drop($event)"
+        >
+            <div class="pac-cube__join-table-container">
+              @for (item of tables$ | async; track item.__id__) {
+                @if (item.join) {
+                    <div class="table-join">
+                        <span class="join-icon join-icon-with-connector"
+                            [ngClass]="{
+                            'inner-join-icon': item.join.type === 'Inner',
+                            'left-join-icon': item.join.type === 'Left',
+                            'right-join-icon': item.join.type === 'Right'
+                            }"
+                            [matMenuTriggerFor]="joinMenu"
+                            [matMenuTriggerData]="{table: item}"
+                        ></span>
+                    </div>
+                }
+            
+                <div class="join-table">
+                    <span class="join-table-name">
+                        {{ item.name }}
+                    </span>
+                
+                    <button mat-icon-button displayDensity="compact"
+                        [matMenuTriggerFor]="tableMenu"
+                        [matMenuTriggerData]="{table: item}"
+                    >
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                </div>
+              }
+            </div>
+        </div>
+      }
     </ngm-splitter-pane>
 
     <ngm-splitter-pane size="50%" class="flex flex-col">
@@ -14,27 +53,29 @@
             <span class="">
                 {{ 'PAC.MODEL.ENTITY.SourceFields' | translate: {Default: "Source Fields"} }}
             </span>
-            <ng-container *ngIf="isSQLSource$ | async">
-                <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
-                    [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeyGenerateModel' | translate: {Default: 'One-key generate model by table fields'} "
-                    (click)="generate()">
-                    <mat-icon>auto_fix_high</mat-icon>
-                    <span>
-                        {{ 'PAC.MODEL.ENTITY.OnekeyGeneration' | translate: {Default: "One-key Generation"} }}
-                    </span>
-                </button>
 
-                <button [disabled]="visibleEmpty" mat-button displayDensity="compact"
-                    [matTooltip]=" 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: 'Create dimension'} "
-                    (click)="createDimension()">
-                    <mat-icon>auto_fix_high</mat-icon>
-                    <span>
-                        {{ 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: "Create an dimension"} }}
-                    </span>
-                </button>
-            </ng-container>
+          @if (isSQLSource$ | async) {
+            <button [disabled]="visibleEmpty()" mat-button displayDensity="compact"
+                [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeyGenerateModel' | translate: {Default: 'One-key generate model by table fields'} "
+                (click)="generate()">
+                <mat-icon>auto_fix_high</mat-icon>
+                <span>
+                    {{ 'PAC.MODEL.ENTITY.OnekeyGeneration' | translate: {Default: "One-key Generation"} }}
+                </span>
+            </button>
 
-            <button *ngIf="isXmla$ | async" [disabled]="visibleEmpty" mat-button displayDensity="compact"
+            <button [disabled]="visibleEmpty()" mat-button displayDensity="compact"
+                [matTooltip]=" 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: 'Create dimension'} "
+                (click)="createDimension()">
+                <mat-icon>auto_fix_high</mat-icon>
+                <span>
+                    {{ 'PAC.MODEL.ENTITY.CreateDimension' | translate: {Default: "Create an dimension"} }}
+                </span>
+            </button>
+          }
+
+          @if (isXmla$ | async) {
+            <button [disabled]="visibleEmpty()" mat-button displayDensity="compact"
                 [matTooltip]=" 'PAC.MODEL.ENTITY.OnekeySyncModel' | translate: {Default: 'One-key sync model by source cube defination'} "
                 (click)="sync()">
                 <mat-icon>auto_fix_high</mat-icon>
@@ -42,8 +83,10 @@
                     {{ 'PAC.MODEL.ENTITY.OnekeySync' | translate: {Default: "One-key Sync"} }}
                 </span>
             </button>
+          }
 
-            <mat-checkbox displayDensity="cosy" [indeterminate]="visibleIndeterminate" [ngModel]="allVisible" (ngModelChange)="toggleVisibleAll($event)">
+            <mat-checkbox displayDensity="cosy" [indeterminate]="visibleIndeterminate()" [ngModel]="allVisible()"
+                (ngModelChange)="toggleVisibleAll($event)">
                 {{ 'PAC.MODEL.ENTITY.SelectAll' | translate: {Default: "Select All"} }}
             </mat-checkbox>
         </mat-toolbar>
@@ -57,24 +100,25 @@
             
                 <div id="list-table-dimensions" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-y-auto"
                     cdkDropList
-                    [cdkDropListData]="dimensions"
+                    [cdkDropListData]="dimensions()"
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
                     <mat-list class="overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let property of dimensions" class="flex justify-between"
+                      @for (property of dimensions(); track property.name) {
+                        <mat-list-item class="flex justify-between"
                             cdkDrag
                             [cdkDragData]="property"
                             (cdkDragReleased)="onDragReleased($event)">
                             <div matLine>
                                 <div class="flex justify-between items-center gap-2">
                                     <ngm-entity-property class="flex-1" [property]="property" hiddenIcon></ngm-entity-property>
-                                    <mat-checkbox [(ngModel)]="property.visible">
-                                    </mat-checkbox>
+                                    <mat-checkbox [ngModel]="property.visible" (ngModelChange)="toggleDimVisible(property, $event)"/>
 
-                                    <span class="pac-data-type-tag w-24">{{property.dataType}}</span>
+                                    <span class="pac-data-type-tag">{{property.dataType}}</span>
                                 </div>
                             </div>
                         </mat-list-item>
+                      }
                     </mat-list>
                 </div>
             </ngm-splitter-pane>
@@ -85,11 +129,12 @@
                 
                 <div id="list-table-measures" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-y-auto"
                     cdkDropList
-                    [cdkDropListData]="measures"
+                    [cdkDropListData]="measures()"
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
                     <mat-list class="overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let property of measures" class="flex justify-between"
+                      @for (property of measures(); track property.name) {
+                        <mat-list-item class="flex justify-between"
                             cdkDrag
                             [cdkDragData]="property"
                             (cdkDragReleased)="onDragReleased($event)"
@@ -97,57 +142,18 @@
                             <div matLine>
                                 <div class="flex justify-between items-center gap-2">
                                     <ngm-entity-property class="flex-1" [property]="property" hiddenIcon></ngm-entity-property>
-                                    <mat-checkbox [(ngModel)]="property.visible">
-                                    </mat-checkbox>
-                                    <span class="pac-data-type-tag w-24">{{property.dataType}}</span>
+                                    <mat-checkbox [ngModel]="property.visible" (ngModelChange)="toggleMeasureVisible(property, $event)"/>
+                                    <span class="pac-data-type-tag">{{property.dataType}}</span>
                                 </div>
                             </div>
                         </mat-list-item>
+                      }
                     </mat-list>
                 </div>
             </ngm-splitter-pane>
         </ngm-splitter>
     </ngm-splitter-pane>
 </ngm-splitter>
-
-<ng-template #tables>
-<div class="pac-cube-structure-drop w-full"
-  cdkDropList
-  [cdkDropListData]="tables$ | async"
-  (cdkDropListDropped)="drop($event)"
->
-    <div class="pac-cube__join-table-container">
-        <ng-container *ngFor="let item of tables$ | async; trackBy: trackById">
-            <div *ngIf="item.join" class="table-join">
-                <span class="join-icon join-icon-with-connector"
-                    [ngClass]="{
-                    'inner-join-icon': item.join.type === 'Inner',
-                    'left-join-icon': item.join.type === 'Left',
-                    'right-join-icon': item.join.type === 'Right'
-                    }"
-                    [matMenuTriggerFor]="joinMenu"
-                    [matMenuTriggerData]="{table: item}"
-                ></span>
-            </div>
-        
-            <div class="join-table">
-                <span class="join-table-name">
-                    {{ item.name }}
-                </span>
-            
-                <button mat-icon-button displayDensity="compact"
-                    [matMenuTriggerFor]="tableMenu"
-                    [matMenuTriggerData]="{table: item}"
-                >
-                    <mat-icon>more_vert</mat-icon>
-                </button>
-            </div>
-        </ng-container>
-
-    </div>
-    
-</div>
-</ng-template>
 
 <mat-menu #tableMenu="matMenu" class="ngm-density__compact">
     <ng-template matMenuContent let-table="table">
@@ -185,7 +191,7 @@
                     
                     <ngm-input [label]="'PAC.MODEL.ENTITY.LeftKey' | translate: {Default: 'Left Key'}"
                         [ngModel]="joinField.leftKey" (ngModelChange)="changeLeftKey(table, i, $event)"
-                        [options]="fectTableFieldOptions$ | async"
+                        [options]="fectTableFieldOptions()"
                         [valueKey]="'key'"
                         (click)="$event.preventDefault();$event.stopPropagation()">
                         <ng-template ngmOptionContent let-field="value">

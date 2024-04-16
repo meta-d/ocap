@@ -22,5 +22,5 @@ export interface CubeSchemaState<T> extends EntitySchemaState<T> {
   dimension: PropertyDimension
   hierarchy: PropertyHierarchy
   hierarchies: Array<PropertyHierarchy>
-  dimensions: Array<PropertyDimension>
+  // dimensions: Array<PropertyDimension>
 }

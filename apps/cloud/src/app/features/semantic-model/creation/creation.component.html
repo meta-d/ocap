@@ -46,8 +46,7 @@
     <div class="flex justify-start">
         <div ngmButtonGroup>
           <button mat-raised-button color="accent" cdkFocusInitial [disabled]="formGroup.invalid || formGroup.pristine" (click)="create()">
-            <mat-spinner *ngIf="uploading" color="accent" diameter="20" strokeWidth="2" class="m-2"></mat-spinner>
-            <span *ngIf="!uploading">
+            <span>
               {{ 'Story.Common.Save' | translate: { Default: 'Save' } }}
             </span>
           </button>
@@ -56,7 +55,7 @@
 </div>
 
 <div mat-dialog-content class="pac-dialog-content w-[400px] max-h-full overflow-auto">
-<form [formGroup]="formGroup" class="flex flex-col items-stretch p-4 overflow-auto">
+  <form [formGroup]="formGroup" class="flex flex-col items-stretch p-4 overflow-auto">
     <label class="text-lg">
         {{ 'PAC.MODEL.DataSource' | translate: { Default: 'Data source' } }}
     </label>
@@ -73,21 +72,24 @@
     <label class="text-lg mt-4">
         {{ 'PAC.MENU.MODEL.SELECT_CATALOG' | translate: { Default: 'Select Catalog' } }}
     </label>
-    <mat-progress-bar *ngIf="catalogsLoading" mode="query"></mat-progress-bar>
+    @if (catalogsLoading()) {
+      <mat-progress-bar mode="query"></mat-progress-bar>
+    }
     <div class="relative flex flex-col">
-        <ngm-selection-table class="z-0"
-            appearance="outline"
-            displayDensity="compact"
-            grid
-            [data]="catalogs$ | async"
-            [columns]="catalogColumns$ | async"
-            formControlName="catalog"
-        >
-        </ngm-selection-table>
-
-        <div *ngIf="discoverDBCatalogsError" class="absolute top-0 left-0 w-full h-full flex justify-center items-center overflow-hidden text-ellipsis bg-slate-500/20 backdrop-blur-lg">
-            {{discoverDBCatalogsError}}
+      <ngm-selection-table class="z-0"
+          appearance="outline"
+          displayDensity="compact"
+          grid
+          [data]="catalogs$ | async"
+          [columns]="catalogColumns$ | async"
+          formControlName="catalog"
+      >
+      </ngm-selection-table>
+      @if (discoverDBCatalogsError()) {
+        <div class="absolute top-0 left-0 w-full h-full flex justify-center items-center overflow-hidden text-ellipsis bg-slate-500/20 backdrop-blur-lg">
+          {{discoverDBCatalogsError()}}
         </div>
+      }
     </div>
-</form>
+  </form>
 </div>

@@ -14,6 +14,7 @@ import {
   HostBinding,
   HostListener,
   inject,
+  input,
   Input,
   OnChanges,
   OnDestroy,
@@ -22,7 +23,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MAT_PAGINATOR_DEFAULT_OPTIONS, MatPaginator } from '@angular/material/paginator'
 import { MatSort, SortDirection } from '@angular/material/sort'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
@@ -32,15 +33,16 @@ import {
   assign,
   assignDeepOmitBlank,
   C_MEASURES,
+  C_MEASURES_CAPTION,
   compact,
   DataSettings,
   Dimension,
   DisplayBehaviour,
   EntityType,
   FlatTreeNode,
+  getDimensionMemberCaption,
   getEntityHierarchy,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   hierarchize,
   IMember,
@@ -140,13 +142,16 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
 
   @Input() appearance: NgmAppearance
   @Input() styling: any
-  @Input() get columns() {
-    return this._columns$.value
-  }
-  set columns(value) {
-    this._columns$.next(value ?? {})
-  }
-  private _columns$ = new BehaviorSubject<Record<string, AnalyticalGridColumnOptions>>({})
+  // @Input() get columns() {
+  //   return this._columns$.value
+  // }
+  // set columns(value) {
+  //   this._columns$.next(value ?? {})
+  // }
+  // private _columns$ = new BehaviorSubject<Record<string, AnalyticalGridColumnOptions>>({})
+
+  readonly columns = input<Record<string, AnalyticalGridColumnOptions>>({})
+  readonly _columns$ = toObservable(this.columns)
 
   @Input() get slicers() {
     return this._slicers()
@@ -269,18 +274,14 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
         return (
           analytics.rows
             ?.map((column: any) => {
-              column.name = column.dimension === C_MEASURES ? wrapBrackets(C_MEASURES) : column.property?.name
-              column.caption =
-                column.caption || column.dimension === C_MEASURES ? C_MEASURES : column.property?.caption ?? column.name
-
-              column.memberCaption =
-                column.memberCaption || column.dimension === C_MEASURES
-                  ? '[Measures]_Text'
-                  : column.property
-                  ? getPropertyCaption(column.property)
-                  : column.name
-              column.displayBehaviour = column.displayBehaviour ?? DisplayBehaviour.descriptionOnly
-              return column
+              return {
+                ...column,
+                name: column.dimension === C_MEASURES ? wrapBrackets(C_MEASURES) : column.property?.name,
+                caption: column.caption || (column.dimension === C_MEASURES ? C_MEASURES : (column.property?.caption ?? column.name)),
+                memberCaption: getDimensionMemberCaption(column, this.entityType()) ||
+                  (column.dimension === C_MEASURES ? C_MEASURES_CAPTION : column.name),
+                displayBehaviour: column.displayBehaviour ?? DisplayBehaviour.descriptionOnly
+              }
             })
             .filter((column) => !isNil(column?.name)) ?? []
         )
@@ -845,7 +846,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
               members: [
                 {
                   key: row[getPropertyHierarchy(column)],
-                  caption: row[column.memberCaption || getPropertyCaption(column.property)],
+                  caption: row[column.memberCaption],
                   value: row[getPropertyHierarchy(column)]
                 }
               ]
@@ -873,7 +874,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
             members: [
               {
                 key: row[getPropertyHierarchy(column)],
-                caption: row[column.memberCaption || getPropertyCaption(column.property)],
+                caption: row[column.memberCaption],
                 value: row[getPropertyHierarchy(column)]
               }
             ]
@@ -1108,6 +1109,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
     string,
     { members: Observable<IMember[]>; filteredMembers: Observable<IMember[]>; search: BehaviorSubject<string> }
   >()
+
   subscribeColumnMembers(column: any): Observable<IMember[]> {
     if (!this._columnMembers.get(column.name)) {
       const search = new BehaviorSubject<string>(null)
@@ -1115,8 +1117,10 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
         combineLatestWith(this._dimensionFilters$.pipe(map((filters) => omit(filters, column.name)))),
         map(([data, filters]) =>
           uniqBy(filterArray(data as any[], filters), column.name).map((item) => ({
+            key: item[column.name],
             value: item[column.name],
-            label: item[column.name] ? item[column.memberCaption] : '(Blanks)'
+            label: item[column.name] ? item[column.memberCaption] : '(Blanks)',
+            caption: item[column.name] ? item[column.memberCaption] : '(Blanks)'
           }))
         ),
         shareReplay(1)
@@ -1128,7 +1132,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
           map(([members, text]) => {
             text = text?.trim().toLowerCase()
             if (text) {
-              return members.filter(({ value, label }) => label.toLowerCase().includes(text.toLowerCase()))
+              return members.filter(({ key, caption }) => caption?.toLowerCase().includes(text.toLowerCase()))
             }
 
             return members

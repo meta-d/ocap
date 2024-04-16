@@ -11,8 +11,10 @@ import {
   OnInit,
   ViewChild,
   ViewContainerRef,
+  computed,
   effect,
   inject,
+  model,
   signal
 } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
@@ -99,9 +101,9 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   pageTimer: number
 
   // Is mobile
-  readonly isMobile = toSignal(this.appService.isMobile$)
-  sideMenuOpened = false
-  globalFilterBarOpened = false
+  readonly isMobile = this.appService.isMobile
+  readonly sideMenuOpened = model(false)
+  readonly globalFilterBarOpened = model(false)
 
   get storyOptions() {
     return this.story?.options
@@ -127,9 +129,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   public readonly isAuthenticated$ = this.storyService.isAuthenticated$
   public readonly isPanMode$ = this.storyService.isPanMode$
 
-  public readonly scale = toSignal(this.storyService.storyOptions$.pipe(
-    map((options) => options?.scale ?? 100)
-  ))
+  readonly scale = computed(() => this.storyService.currentPageState()?.scale ?? 100)
 
   // Story explorer
   showExplorer = signal(false)
@@ -194,17 +194,17 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   toggleGlobalFilterBar() {
-    this.globalFilterBarOpened = !this.globalFilterBarOpened
+    this.globalFilterBarOpened.update((state) => !state)
   }
 
   toggleFullscreen(fullscreen?: boolean) {
     this.story.options = this.story.options ?? {}
     this.story.options.fullscreen = fullscreen ?? !this.story.options.fullscreen
     if (this.story.options.fullscreen) {
-      requestFullscreen(this.document)
+      // requestFullscreen(this.document)
       this.appService.requestFullscreen(2)
     } else {
-      exitFullscreen(this.document)
+      // exitFullscreen(this.document)
       this.appService.exitFullscreen(2)
     }
   }
@@ -304,9 +304,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   setScale(scale: number) {
-    this.storyService.updateStoryOptions({
-      scale
-    })
+    this.storyService.setZoom(scale)
   }
 
   resetScalePan() {

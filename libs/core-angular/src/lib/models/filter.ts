@@ -1,6 +1,5 @@
 import { EventEmitter } from '@angular/core'
 import { IFilter, ISlicer } from '@metad/ocap-core'
-import { SelectedMemberOptions } from './filter-type'
 import { IBaseEventArgs } from './state'
 
 export interface IFilterChangedEventArgs extends IBaseEventArgs {
@@ -19,14 +18,14 @@ export interface IFilterChange {
   filterChange?: EventEmitter<IFilter[]>
 }
 
-export function convertSelectMemberToSlicer(options: SelectedMemberOptions): ISlicer {
-  if (!options?.propertyName) {
-    return null
-  }
+// export function convertSelectMemberToSlicer(options: SelectedMemberOptions): ISlicer {
+//   if (!options?.propertyName) {
+//     return null
+//   }
 
-  return {
-    dimension: options.propertyName,
-    members: options.selectedMembers,
-    exclude: options.excludeSelected
-  }
-}
+//   return {
+//     dimension: options.propertyName,
+//     members: options.selectedMembers,
+//     exclude: options.excludeSelected
+//   }
+// }

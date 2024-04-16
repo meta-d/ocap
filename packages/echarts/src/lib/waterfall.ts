@@ -5,11 +5,11 @@ import {
   ChartSettings,
   EntityType,
   QueryReturn,
+  _getPropertyCaption,
   getChartCategory,
   getChartSeries,
-  getEntityHierarchy,
+  getDimensionMemberCaption,
   getEntityProperty,
-  getPropertyCaption,
   isNil,
   omitBlank
 } from '@metad/ocap-core'
@@ -81,8 +81,8 @@ export function waterfallCoordinate(context: EChartsContext, data: Array<Record<
   const { chartAnnotation, entityType, settings, options } = context
 
   const category = getChartCategory(chartAnnotation)
-  const categoryProperty = getEntityHierarchy(entityType, category)
-  const categoryCaption = getPropertyCaption(categoryProperty)
+  // const categoryProperty = getEntityHierarchy(entityType, category)
+  const categoryCaption = getDimensionMemberCaption(category, entityType)
   const chartSeries = getChartSeries(chartAnnotation)
 
   let datasets: IDataset[] = []
@@ -230,7 +230,7 @@ export function waterfallSeriesComponent(
   const { accumulate } = seriesStyle
   const { measure } = seriesComponents[0]
   const property = getEntityProperty(entityType, measure)
-  const caption = getPropertyCaption(property) || measure
+  const caption = _getPropertyCaption(property) || measure
 
   const digitsInfo = defaultDigitsInfo(seriesComponents[0])
 

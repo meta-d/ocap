@@ -5,6 +5,13 @@ import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { FlatTreeNode, Property, TreeNodeInterface } from '@metad/ocap-core'
 
+export type TreeTableColumn = Property & {
+  cellTemplate?: TemplateRef<any>,
+  pipe?: (value: any) => any;
+  sticky?: boolean
+  stickyEnd?: boolean
+}
+
 @Component({
   selector: 'ngm-tree-table',
   templateUrl: 'tree-table.component.html',
@@ -15,7 +22,7 @@ import { FlatTreeNode, Property, TreeNodeInterface } from '@metad/ocap-core'
 })
 export class TreeTableComponent<T> implements OnInit, OnChanges {
   @Input() data: TreeNodeInterface<T>[]
-  @Input() columns: Array<Property & { cellTemplate?: TemplateRef<any>, pipe?: (value: any) => any }>
+  @Input() columns: Array<TreeTableColumn>
   @Input() nameLabel: string
   @Input() nameCellTemplate: TemplateRef<any>
   @Input() displayDensity: DisplayDensity

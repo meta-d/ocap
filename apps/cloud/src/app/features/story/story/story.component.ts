@@ -9,6 +9,7 @@ import {
   effect,
   ElementRef,
   HostBinding,
+  HostListener,
   inject,
   Injector,
   Input,
@@ -90,8 +91,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
   public appService = inject(AppService)
-  public storyService = inject(NxStoryService)
-  private store = inject(Store)
+  readonly storyService = inject(NxStoryService)
+  readonly #store = inject(Store)
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
@@ -115,6 +116,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   readonly story = signal<Story>(null)
   readonly models = computed(() => this.story()?.models)
   storyOptions: StoryOptions
+
+  readonly pinToolbar = this.#store.pinStoryToolbar
 
   error: string
   emulatedDevice: EmulatedDevice = null
@@ -160,7 +163,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     }
   ]
 
-  readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
+  readonly watermark$ = this.#store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark = toSignal(this.appService.isDark$)
   readonly _isDirty = toSignal(this.storyService.dirty$)
   readonly isMobile = toSignal(this.storyService.isMobile$)
@@ -285,6 +288,13 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
 
   openDataExploration(id: string) {
     this._router.navigate([`/models/${id}`])
+  }
+
+  toggleToolbarPin() {
+    this.#store.setPinStoryToolbar(!this.#store.pinStoryToolbar())
+    if (this.#store.pinStoryToolbar()) {
+      this.toolbarComponent.resetPosition()
+    }
   }
 
   onFullscreen(event: boolean) {

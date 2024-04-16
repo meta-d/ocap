@@ -1,20 +1,14 @@
+import { FocusOrigin } from '@angular/cdk/a11y'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Component, ViewChild, computed, effect, forwardRef, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { EntitySchemaType } from '@metad/ocap-angular/entity'
-import {
-  PropertyMeasure,
-  QueryReturn,
-  formatting,
-  getEntityProperty,
-  indicatorFormatter,
-} from '@metad/ocap-core'
 import { AbstractStoryWidget, IStoryWidget, WidgetMenu, WidgetMenuType, replaceParameters } from '@metad/core'
+import { EntitySchemaType } from '@metad/ocap-angular/entity'
+import { PropertyMeasure, QueryReturn, formatting, getEntityProperty, indicatorFormatter } from '@metad/ocap-core'
 import { EditorComponent } from '@tinymce/tinymce-angular'
 import { Observable, firstValueFrom, map, startWith, tap } from 'rxjs'
 import { DocumentDataService } from './document-data.service'
-import { FocusOrigin } from '@angular/cdk/a11y'
 
 export interface NxWidgetDocumentOptions {
   content: string
@@ -89,7 +83,7 @@ export class NxWidgetDocumentComponent
   public readonly content = computed(() => {
     let content = this.contentSignal()
     // 替换指标 ID => 实际值
-    if (this.preview() || !this.editable) {
+    if (this.preview() || !this.editableSignal()) {
       content = replaceParameters(content, this.entityType())
       Object.keys(this.results()).forEach((name) => {
         content = content.replace(indicatorFormatter(name), this.results()[name])
@@ -115,9 +109,12 @@ export class NxWidgetDocumentComponent
     .subscribe(() => {
       this.refresh()
     })
-  private readonly entityTypeSub = this.dataService.selectEntityType().pipe(takeUntilDestroyed()).subscribe((entityType) => {
-    this.entityType.set(entityType)
-  })
+  private readonly entityTypeSub = this.dataService
+    .selectEntityType()
+    .pipe(takeUntilDestroyed())
+    .subscribe((entityType) => {
+      this.entityType.set(entityType)
+    })
   private slicersSub = this.selectOptions$.pipe(takeUntilDestroyed()).subscribe((selectOptions) => {
     this.dataService.slicers = selectOptions
     this.refresh()
@@ -140,7 +137,7 @@ export class NxWidgetDocumentComponent
     super()
 
     effect(() => {
-      if (this.preview() || !this.editable) {
+      if (this.preview() || !this.editableSignal()) {
         this.dataService.setMeasures(this.measures())
         this.editorComponent?.setDisabledState(true)
       } else {
@@ -163,7 +160,7 @@ export class NxWidgetDocumentComponent
   }
 
   onchange(event) {
-    if (!this.preview() && this.editable) {
+    if (!this.preview() && this.editableSignal()) {
       this.onChangeCallback?.(event.editor.getContent())
       this.optionsChange.emit({ content: event.editor.getContent() })
     }

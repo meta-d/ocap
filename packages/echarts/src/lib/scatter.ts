@@ -7,9 +7,9 @@ import {
   FilteringLogic,
   getChartCategory,
   getChartSeries,
+  getDimensionMemberCaption,
   getEntityHierarchy,
   getEntityProperty,
-  getPropertyCaption,
   getPropertyHierarchy,
   omitBlank,
   QueryReturn
@@ -56,19 +56,22 @@ export function scatter(
     onClick: (event) => {
       const dimension = chartAnnotation.dimensions[0]
       const hierarchy = getEntityHierarchy(entityType, dimension)
+      const caption = getDimensionMemberCaption(dimension, entityType)
       const slicer =
         chartAnnotation.dimensions.length > 1
           ? {
               filteringLogic: FilteringLogic.And,
               children: chartAnnotation.dimensions.map((dimension) => {
                 const hierarchy = getEntityHierarchy(entityType, dimension)
+                const caption = getDimensionMemberCaption(dimension, entityType)
                 return {
                   dimension,
                   members: [
                     {
+                      key: event.data[hierarchy.name],
                       value: event.data[hierarchy.name],
-                      label: event.data[getPropertyCaption(hierarchy)],
-                      caption: event.data[getPropertyCaption(hierarchy)]
+                      label: event.data[caption],
+                      caption: event.data[caption]
                     }
                   ]
                 }
@@ -78,9 +81,10 @@ export function scatter(
               dimension,
               members: [
                 {
+                  key: event.data[hierarchy.name],
                   value: event.data[hierarchy.name],
-                  label: event.data[getPropertyCaption(hierarchy)],
-                  caption: event.data[getPropertyCaption(hierarchy)]
+                  label: event.data[caption],
+                  caption: event.data[caption]
                 }
               ]
             }
@@ -108,7 +112,7 @@ export function scatter(
 export function scatterCoordinate(context: EChartsContext, data: Array<unknown>): ICoordinate {
   const { chartAnnotation, entityType, settings, options } = context
   const category = getChartCategory(chartAnnotation)
-  const categoryProperty = getEntityProperty(entityType, category)
+  const categoryCaption = getDimensionMemberCaption(category, entityType)
   const chartSeries = getChartSeries(chartAnnotation)
 
   // @todo 抽象成同一的 Axis 类型以支持 Dimension 和 Measure
@@ -118,7 +122,7 @@ export function scatterCoordinate(context: EChartsContext, data: Array<unknown>)
   context.datasets = []
   if (chartSeries) {
     const chartSeriesName = getPropertyHierarchy(chartSeries)
-    const chartSeriesTextName = getPropertyCaption(getEntityProperty(entityType, chartSeries))
+    const chartSeriesTextName = getDimensionMemberCaption(chartSeries, entityType)
     const categoryValues = uniqBy(data, chartSeriesName).map((x) => ({
       value: x[chartSeriesName],
       label: x[chartSeriesTextName]
@@ -196,7 +200,8 @@ export function scatterCoordinate(context: EChartsContext, data: Array<unknown>)
         seriesComponents: [seriesComponent],
         tooltip: getEChartsTooltip(
           options?.tooltip,
-          categoryProperty,
+          category,
+          entityType,
           chartAnnotation.measures.map((measure) => ({
             measure,
             property: getEntityProperty(entityType, measure)
@@ -249,7 +254,7 @@ export function scatterCoordinate(context: EChartsContext, data: Array<unknown>)
     gridOptions.datasets.push({
       dataset,
       series: seriesComponents.map((seriesComponent) => {
-        const { series, visualMaps } = serializeSeriesComponent(
+        const { series } = serializeSeriesComponent(
           dataset,
           seriesComponent,
           entityType,
@@ -268,7 +273,7 @@ export function scatterCoordinate(context: EChartsContext, data: Array<unknown>)
           series.encode = {
             [AxisEnum[categoryAxis.orient]]: axis1?.measure,
             [AxisEnum[valueAxis.orient]]: axis2?.measure,
-            itemName: getPropertyCaption(categoryProperty),
+            itemName: categoryCaption,
             tooltip: [axis1?.measure, axis2?.measure, ...seriesComponent.tooltip]
           }
         }

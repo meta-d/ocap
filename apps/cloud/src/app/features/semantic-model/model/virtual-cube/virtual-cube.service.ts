@@ -1,33 +1,74 @@
-import { Injectable } from '@angular/core'
-import { MDX } from '@metad/contracts'
-import { ComponentSubStore } from '@metad/store'
-import { Property, PropertyMeasure } from '@metad/ocap-core'
-import { ToastrService } from 'apps/cloud/src/app/@core'
-import { SemanticModelService } from '../model.service'
-import { PACModelState } from '../types'
-import { remove } from 'lodash-es'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
+import { Injectable, inject } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { MDX } from '@metad/contracts'
+import { Property, PropertyMeasure } from '@metad/ocap-core'
+import { select, withProps } from '@ngneat/elf'
+import { ToastrService } from 'apps/cloud/src/app/@core'
+import { isEqual, negate, remove } from 'lodash-es'
+import { createSubStore, dirtyCheckWith, write } from '../../store'
+import { SemanticModelService } from '../model.service'
 
 @Injectable()
-export class VirtualCubeStateService extends ComponentSubStore<MDX.VirtualCube, PACModelState> {
-  public readonly virtualCube$ = this.state$
-  public readonly cubes$ = this.select((state) => state.cubeUsages)
-  public readonly dimensions$ = this.select((state) => state.virtualCubeDimensions)
-  public readonly measures$ = this.select((state) => state.virtualCubeMeasures)
-  public readonly calculatedMembers$ = this.select((state) => state.calculatedMembers)
+export class VirtualCubeStateService {
+  readonly modelService = inject(SemanticModelService)
+  readonly #toastrService = inject(ToastrService)
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.modelService.store,
+    { name: 'semantic_model_virtual_cube', arrayKey: '__id__' },
+    withProps<MDX.VirtualCube>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.modelService.pristineStore,
+    { name: 'semantic_model_virtual_cube_pristine', arrayKey: '__id__' },
+    withProps<MDX.VirtualCube>(null)
+  )
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
+  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
-  constructor(public modelService: SemanticModelService, private _toastrService: ToastrService) {
-    super({} as MDX.VirtualCube)
-  }
+  public readonly virtualCube$ = this.store
+  public readonly cubes$ = this.store.pipe(select((state) => state.cubeUsages))
+  public readonly dimensions$ = this.store.pipe(select((state) => state.virtualCubeDimensions))
+  public readonly measures$ = this.store.pipe(select((state) => state.virtualCubeMeasures))
+  public readonly calculatedMembers$ = this.store.pipe(select((state) => state.calculatedMembers))
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly virtualCube = toSignal(this.store)
 
   init(key: string) {
-    this.connect(this.modelService, { parent: ['model', 'schema', 'virtualCubes', key], arrayKey: '__id__' })
+    // this.connect(this.modelService, { parent: ['model', 'schema', 'virtualCubes', key], arrayKey: '__id__' })
+    this.store.connect(['model', 'schema', 'virtualCubes', key])
+    this.pristineStore.connect(['model', 'schema', 'virtualCubes', key])
   }
 
-  readonly addCube = this.updater((state, {index, cubeName}: {index: number, cubeName: string}) => {
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: MDX.VirtualCube, ...params: OriginType[]) => MDX.VirtualCube | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
+  }
+
+  patchState(vCube: MDX.VirtualCube) {
+    this.store.update((state) => ({
+      ...state,
+      ...vCube
+    }))
+  }
+
+  readonly addCube = this.updater((state, { index, cubeName }: { index: number; cubeName: string }) => {
     state.cubeUsages = state.cubeUsages ?? []
     if (state.cubeUsages.find((item) => item.cubeName === cubeName)) {
-      this._toastrService.warning('PAC.MODEL.VirtualCube.CubeAlreadyExists', {Default: 'Cube already exists!'})
+      this.#toastrService.warning('PAC.MODEL.VirtualCube.CubeAlreadyExists', { Default: 'Cube already exists!' })
     } else {
       state.cubeUsages.splice(index, 0, {
         cubeName,
@@ -54,11 +95,13 @@ export class VirtualCubeStateService extends ComponentSubStore<MDX.VirtualCube, 
     moveItemInArray(state.cubeUsages, event.previousIndex, event.currentIndex)
   })
 
-  readonly addDimension = this.updater((state, {index, dimension}: {index: number, dimension: Property}) => {
+  readonly addDimension = this.updater((state, { index, dimension }: { index: number; dimension: Property }) => {
     state.virtualCubeDimensions = state.virtualCubeDimensions ?? []
     const dimensionName = (dimension as any).dimensionName
     if (state.virtualCubeDimensions.find((item) => item.name === dimensionName)) {
-      this._toastrService.warning('PAC.MODEL.VirtualCube.DimensionAlreadyExists', {Default: 'Dimension already exists!'})
+      this.#toastrService.warning('PAC.MODEL.VirtualCube.DimensionAlreadyExists', {
+        Default: 'Dimension already exists!'
+      })
     } else {
       state.virtualCubeDimensions.splice(index, 0, {
         name: dimensionName,
@@ -87,10 +130,10 @@ export class VirtualCubeStateService extends ComponentSubStore<MDX.VirtualCube, 
     moveItemInArray(state.virtualCubeDimensions, event.previousIndex, event.currentIndex)
   })
 
-  readonly addMeasure = this.updater((state, {index, measure}: {index: number, measure: PropertyMeasure}) => {
+  readonly addMeasure = this.updater((state, { index, measure }: { index: number; measure: PropertyMeasure }) => {
     state.virtualCubeMeasures = state.virtualCubeMeasures ?? []
     if (state.virtualCubeMeasures.find((item) => item.name === measure.uniqueName)) {
-      this._toastrService.warning('PAC.MODEL.VirtualCube.MeasureAlreadyExists', {Default: 'Measure already exists!'})
+      this.#toastrService.warning('PAC.MODEL.VirtualCube.MeasureAlreadyExists', { Default: 'Measure already exists!' })
     } else {
       state.virtualCubeMeasures.splice(index, 0, {
         name: measure.uniqueName,

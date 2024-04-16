@@ -10,6 +10,7 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  input,
   Input,
   OnChanges,
   SimpleChanges,
@@ -137,8 +138,8 @@ export class NgmTreeSelectComponent<T>
   @Input() displayDensity: DisplayDensity | string
   @Input() label: string
   @Input() placeholder: string
-  @Input() panelWidth: string | number
   @Input() validators: ValidatorFn | ValidatorFn[] | null
+  readonly panelWidth = input<string | number | null>('auto')
 
   @Input() get treeNodes(): TreeNodeInterface<T>[] {
     return this.treeNodes$.value

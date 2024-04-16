@@ -1,7 +1,7 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { SelectionModel } from '@angular/cdk/collections'
 import { CommonModule } from '@angular/common'
-import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges, TemplateRef, ViewChild } from '@angular/core'
+import { Component, forwardRef, Input, model, OnChanges, OnInit, SimpleChanges, TemplateRef, ViewChild } from '@angular/core'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -13,6 +13,15 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import get from 'lodash-es/get'
+import { NgmSearchComponent } from '../../search/search.component'
+
+export type SelectionTableColumn = {
+  value: string
+  label: string
+  cellTemplate?: TemplateRef<any>
+  type?: 'boolean' | 'string' | 'number' | 'date'
+  sticky?: boolean
+}
 
 /**
  */
@@ -33,7 +42,8 @@ import get from 'lodash-es/get'
     MatButtonModule,
     MatSortModule,
     MatInputModule,
-    DensityDirective
+    DensityDirective,
+    NgmSearchComponent
   ],
   providers: [
     {
@@ -44,10 +54,11 @@ import get from 'lodash-es/get'
   ]
 })
 export class NgmSelectionTableComponent implements OnInit, OnChanges, ControlValueAccessor {
-
   @Input() displayDensity: DisplayDensity | string = DisplayDensity.comfortable
   @Input() data: Array<any>
-  @Input() columns: { value: string; label: string; cellTemplate?: TemplateRef<any> }[]
+
+  @Input() columns: SelectionTableColumn[]
+
   @Input() get multiple() {
     return this._multiple
   }
@@ -74,7 +85,7 @@ export class NgmSelectionTableComponent implements OnInit, OnChanges, ControlVal
   selection = new SelectionModel<any>(false, [])
 
   dataSource = new MatTableDataSource([])
-  searchText: string = null
+  readonly searchText = model('')
   /**
    * Invoked when the model has been changed
    */
@@ -140,7 +151,7 @@ export class NgmSelectionTableComponent implements OnInit, OnChanges, ControlVal
   _context(data: Record<string, unknown>, column) {
     return {
       ...data,
-      $implicit: get(data, column.name), 
+      $implicit: get(data, column.name)
     }
   }
 

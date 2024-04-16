@@ -32,6 +32,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatTreeModule } from '@angular/material/tree'
 import {MatDatepickerModule} from '@angular/material/datepicker'
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet'
+import { MatPaginatorModule } from '@angular/material/paginator'
 
 const MATERIAL_MODULES = [
   DragDropModule,
@@ -67,7 +68,8 @@ const MATERIAL_MODULES = [
   MatProgressSpinnerModule,
   MatDatepickerModule,
   MatBottomSheetModule,
-  MatNativeDateModule
+  MatNativeDateModule,
+  MatPaginatorModule
 ]
 
 @NgModule({

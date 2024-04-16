@@ -8,9 +8,11 @@
       }
       @if (!isMobile()) {
         <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative flex items-center">
-            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
             <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
             <mat-icon fontSet="material-icons-outlined">keyboard_arrow_down</mat-icon>
+          @if (isDirty()) {
+            <pac-dirty-badge class="absolute left-2 top-2"/>
+          }
         </button>
         <button cdkMenuItem [cdkMenuTriggerFor]="editMenu" class="flex items-center">
             <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
@@ -80,27 +82,40 @@
                     [cdkDropListEnterPredicate]="entityPredicate"
                 >
                   <div class="max-h-full overflow-hidden hover:overflow-y-auto">
-                    <a mat-list-item *ngFor="let entity of entities$ | async; trackBy: trackById" class="pac-model__nav-item"
-                        [class.selected]="rla.isActive"
-                        [routerLink]="[entity.type === SemanticModelEntityType.CUBE ? 'entity' : 'dimension', entity.id]"
-                        routerLinkActive #rla="routerLinkActive"
-                        cdkDrag
-                        [cdkDragData]="entity"
-                    >
-                        <mat-icon *ngIf="entity.type === SemanticModelEntityType.CUBE" class="pac-model__nav-icon"
-                            displayDensity="compact" fontSet="material-icons-outlined">view_in_ar</mat-icon>
-                        <mat-icon *ngIf="entity.type === SemanticModelEntityType.DIMENSION" class="pac-model__nav-icon"
-                            displayDensity="compact" fontSet="material-icons-outlined">account_tree</mat-icon>
-                        <ngm-display-behaviour class="flex-1 overflow-hidden"
-                            [option]="{value: entity.name, label: entity.caption}">
-                        </ngm-display-behaviour>
+                    @for (entity of entities$ | async; track entity.id) {
+                        <a mat-list-item class="pac-model__nav-item relative"
+                            [class.selected]="rla.isActive"
+                            [routerLink]="[entity.type === SemanticModelEntityType.CUBE ? 'entity' : 'dimension', entity.id]"
+                            routerLinkActive #rla="routerLinkActive"
+                            cdkDrag
+                            [cdkDragData]="entity"
+                        >
+                          @switch (entity.type) {
+                            @case(SemanticModelEntityType.CUBE) {
+                                <mat-icon class="pac-model__nav-icon"
+                                    displayDensity="compact" fontSet="material-icons-outlined">view_in_ar</mat-icon>
+                            }
+                            @case(SemanticModelEntityType.DIMENSION) {
+                                <mat-icon class="pac-model__nav-icon"
+                                    displayDensity="compact" fontSet="material-icons-outlined">account_tree</mat-icon>
+                            }
+                          }
+                            
+                            <ngm-display-behaviour class="flex-1 overflow-hidden"
+                                [option]="{key: entity.name, caption: entity.caption}">
+                            </ngm-display-behaviour>
 
-                        <button mat-icon-button displayDensity="compact" class="pac-model__nav-action"
-                            [matMenuTriggerFor]="entityMenu"
-                            [matMenuTriggerData]="{entity: entity}">
-                            <mat-icon>more_vert</mat-icon>
-                        </button>
-                    </a>
+                          @if (isDirty(entity.id)) {
+                            <pac-dirty-badge class="absolute left-2 top-2"/>
+                          }
+
+                            <button mat-icon-button displayDensity="compact" class="pac-model__nav-action"
+                                [matMenuTriggerFor]="entityMenu"
+                                [matMenuTriggerData]="{entity: entity}">
+                                <mat-icon>more_vert</mat-icon>
+                            </button>
+                        </a>
+                    }
 
                     <a mat-list-item *ngFor="let entity of virtualCubes$ | async; trackBy: trackById"
                         [routerLink]="['virtual-cube', entity.__id__]"
@@ -237,9 +252,11 @@
 <ng-template #mobileMenu>
     <div cdkMenu>
         <button cdkMenuItem [cdkMenuTriggerFor]="generalMenu" class="relative">
-            <span *ngIf="isDirty()" class="absolute top-2 left-2 w-2 h-2 bg-yellow-500 rounded-full"></span>
             <span>{{ 'PAC.KEY_WORDS.GENERAL' | translate: {Default: "General"} }}</span>
             <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
+          @if (isDirty()) {
+            <pac-dirty-badge class="absolute left-2 top-2"/>
+          }
         </button>
         <button cdkMenuItem [cdkMenuTriggerFor]="editMenu">
             <span>{{ 'PAC.KEY_WORDS.EDIT' | translate: {Default: "Edit"} }}</span>
@@ -294,10 +311,19 @@
 
 <ng-template #editMenu>
     <div cdkMenu>
+        <button cdkMenuItem (click)="undo()">
+            <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
+            {{ 'PAC.ACTIONS.Undo' | translate: {Default: "Undo"} }}
+        </button>
+        <button cdkMenuItem (click)="redo()">
+            <mat-icon fontSet="material-icons-outlined">redo</mat-icon>
+            {{ 'PAC.ACTIONS.Redo' | translate: {Default: "Redo"} }}
+        </button>
+
         <button cdkMenuItem (click)="createStory()">
             <mat-icon fontSet="material-icons-outlined">auto_stories</mat-icon>
             {{ 'PAC.ACTIONS.CREATE_STORY' | translate: {Default: "Create Story"} }}
-    </button>
+        </button>
         <button cdkMenuItem (click)="createIndicator()">
             <mat-icon fontSet="material-icons-outlined">trending_up</mat-icon>
             {{ 'PAC.ACTIONS.CreateIndicator' | translate: {Default: "Create Indicator"} }}

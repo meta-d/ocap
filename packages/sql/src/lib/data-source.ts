@@ -396,7 +396,7 @@ function mapTableSchemaEntityType(entity: string, item: SQLTableSchema, dialect)
       __id__: column.name,
       name: column.name,
       caption: column.label,
-      dataType: column.type,
+      dataType: column.dataType,
       // 从后端进行推荐角色, 因为不同数据库字段类型差别很大
       // 似乎后端判断也不合适
       role: decideRole(column.type),

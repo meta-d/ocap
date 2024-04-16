@@ -58,7 +58,7 @@
 
 </swiper>
 
-<div *ngIf="editable && (slides$ | async | isNil)" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+<div *ngIf="editable && (slides$ | async | isNil)" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
   <pac-placeholder-add></pac-placeholder-add>
-  <span>{{ 'Story.Widgets.Swiper.Title' | translate: {Default: 'Swiper'} }}</span>
+  <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.Swiper.Title' | translate: {Default: 'Swiper'} }}</span>
 </div>

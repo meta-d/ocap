@@ -11,7 +11,6 @@ import { Ability, PureAbility } from '@casl/ability'
 import { AbilityModule } from '@casl/angular'
 import { NxCoreModule } from '@metad/core'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
-import { MarkdownModule } from 'ngx-markdown'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import {
   APIInterceptor,
@@ -65,8 +64,6 @@ function detectSubjectType(subject) {
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
     }),
-
-    MarkdownModule.forRoot()
   ],
   providers: [
     provideAnimations(),

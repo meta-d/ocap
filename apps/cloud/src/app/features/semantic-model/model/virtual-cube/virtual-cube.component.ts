@@ -1,6 +1,6 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
@@ -18,13 +18,13 @@ import { EntityCapacity, NgmEntitySchemaComponent } from '@metad/ocap-angular/en
 import { AggregationRole, C_MEASURES, Syntax } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
-import { ModelFormulaComponent } from 'apps/cloud/src/app/@shared/model'
 import { NgmNotificationComponent } from 'apps/cloud/src/app/@theme'
 import { NGXLogger } from 'ngx-logger'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { SemanticModelService } from '../model.service'
 import { SemanticModelEntityType } from '../types'
 import { VirtualCubeStateService } from './virtual-cube.service'
+
 
 @Component({
   standalone: true,
@@ -71,7 +71,7 @@ export class VirtualCubeComponent {
   public readonly calculatedMembers$ = this.virtualCubeState.calculatedMembers$
 
   selectedCube: string
-  virtualCube: MDX.VirtualCube
+  readonly virtualCube = signal<MDX.VirtualCube>(null)
   calcMemberFormGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     caption: new FormControl(),
@@ -93,8 +93,8 @@ export class VirtualCubeComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly dataSource$ = toSignal(this.modelState.dataSource$.pipe(map((dataSource) => dataSource?.options.key)))
-  readonly virtualCube$ = toSignal(this.virtualCubeState.state$)
+  readonly dataSource$ = toSignal(this.modelState.semanticModelKey$)
+  readonly virtualCube$ = this.virtualCubeState.virtualCube
   readonly dimensions$ = toSignal(this.virtualCubeState.dimensions$)
   readonly virtualCubeName$ = computed(() => this.virtualCube$().name)
   readonly dataSettings$ = computed(() => ({
@@ -137,7 +137,9 @@ export class VirtualCubeComponent {
       if (this.showCalculatedMember()) {
         prompt += `\n当前计算度量为:
 \`\`\`
-${Object.entries(this.calcMemberFormGroup.value).map(([key, value]) => `${key}: ${value}`).join('\n')}
+${Object.entries(this.calcMemberFormGroup.value)
+  .map(([key, value]) => `${key}: ${value}`)
+  .join('\n')}
 \`\`\`
 `
       }
@@ -180,23 +182,29 @@ ${calcEntityTypePrompt(this.entityType())}
     ]
   })
 
+  constructor() {
+    effect(() => {
+      console.log(`[VirtualCubeComponent] dataSettings`, this.dataSettings$())
+    })
+  }
+
   trackByName(index: number, item: MDX.CubeUsage) {
     return item.cubeName
   }
 
-  editVirtualCube(cube) {
-    this.virtualCube = { ...cube }
+  editVirtualCube(cube: MDX.VirtualCube) {
+    this.virtualCube.set({ ...cube })
   }
 
   applyVirtualCube() {
     this.virtualCubeState.patchState({
-      ...this.virtualCube
+      ...this.virtualCube()
     })
-    this.virtualCube = null
+    this.virtualCube.set(null)
   }
 
   cancelVirtualCube() {
-    this.virtualCube = null
+    this.virtualCube.set(null)
   }
 
   cubePredicate(item: CdkDrag<any>) {

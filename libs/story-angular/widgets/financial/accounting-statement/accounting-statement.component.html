@@ -80,7 +80,7 @@
   ></ngm-slicers>
 </mat-menu>
 
-<div *ngIf="placeholder$ | async" class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
+<div *ngIf="placeholder$ | async" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
   <pac-placeholder-add></pac-placeholder-add>
-  <span>{{ 'Story.Widgets.AccountingStatement.Title' | translate: {Default: 'Accounting Statement'} }}</span>
+  <span class="ngm-story-widget__placeholder-title">{{ 'Story.Widgets.AccountingStatement.Title' | translate: {Default: 'Accounting Statement'} }}</span>
 </div>

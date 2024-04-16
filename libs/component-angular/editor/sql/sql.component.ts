@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { Component, forwardRef, Input, OnInit } from '@angular/core'
+import { Component, forwardRef, input, Input, OnInit } from '@angular/core'
 import { NG_VALUE_ACCESSOR } from '@angular/forms'
 import { nonNullable } from '@metad/core'
 import { BehaviorSubject, combineLatest } from 'rxjs'
@@ -29,6 +29,8 @@ import { createInfoProvider } from '../providers/index'
   ]
 })
 export class SQLEditorComponent extends BaseEditorDirective implements OnInit {
+  readonly entityType = input<EntityType>()
+
   // EntityType
   @Input() get entitySets() {
     return this._entitySets$.value
@@ -39,13 +41,13 @@ export class SQLEditorComponent extends BaseEditorDirective implements OnInit {
   private _entitySets$ = new BehaviorSubject<Array<EntitySet>>(null)
 
   // EntityType
-  @Input() get entityType() {
-    return this._entityType$.value
-  }
-  set entityType(value) {
-    this._entityType$.next(value)
-  }
-  private _entityType$ = new BehaviorSubject<EntityType>(null)
+  // @Input() get entityType() {
+  //   return this._entityType$.value
+  // }
+  // set entityType(value) {
+  //   this._entityType$.next(value)
+  // }
+  // private _entityType$ = new BehaviorSubject<EntityType>(null)
 
   languageId = 'sql'
 

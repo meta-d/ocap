@@ -1,11 +1,12 @@
 import { FlatTreeControl } from '@angular/cdk/tree'
+import { inject } from '@angular/core'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
+import { ModelsService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { FlatTreeNode, TreeNodeInterface, isString, omitBlank } from '@metad/ocap-core'
 import { pick } from 'lodash-es'
+import { map } from 'rxjs/operators'
 import { DefaultCollection, ICollection, IIndicator } from '../../@core'
 import { INDICATOR_COLUMNS } from '../indicator/types'
-import { inject } from '@angular/core'
-import { ModelsService } from '@metad/cloud/state'
 
 export function collectionId(collection: ICollection | string) {
   collection = isString(collection) ? collection : collection?.id
@@ -54,6 +55,8 @@ export function exportIndicator(indicator: IIndicator) {
 export function injectFetchModelDetails() {
   const modelsService = inject(ModelsService)
   return (id: string) => {
-    return modelsService.getById(id, ['dataSource', 'dataSource.type', 'indicators'])
+    return modelsService
+      .getById(id, ['dataSource', 'dataSource.type', 'indicators'])
+      .pipe(map((model) => convertNewSemanticModelResult(model)))
   }
 }

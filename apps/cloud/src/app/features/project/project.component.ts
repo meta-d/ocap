@@ -1,7 +1,7 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CdkTreeModule, FlatTreeControl } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, TemplateRef, ViewChild, computed, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, TemplateRef, ViewChild, computed, inject, model } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
@@ -79,6 +79,7 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   private readonly collectionService = inject(CollectionService)
   private readonly appService = inject(AppService)
+  readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('collectionCreation') collectionCreation: TemplateRef<ElementRef>
   @ViewChild('moveTo') moveTo: TemplateRef<ElementRef>
@@ -117,7 +118,7 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   // Is mobile
   readonly isMobile = this.appService.isMobile
-  sideMenuOpened = !this.isMobile()
+  readonly sideMenuOpened = model(!this.isMobile())
 
   public readonly projectId$ = this.store.selectedProject$.pipe(
     map((project) => (project?.id === DefaultProject.id ? null : project?.id)),
@@ -250,6 +251,11 @@ export class ProjectComponent extends TranslationBaseComponent {
     const { dataSource, treeControl } = treeDataSourceFactory()
     this.dataSource = dataSource
     this.treeControl = treeControl
+    
+    this.appService.inProject.set(true)
+    this.destroyRef.onDestroy(() => {
+      this.appService.inProject.set(false)
+    })
   }
 
   hasChild = (_: number, node: FlatTreeNode<any>) => node.expandable
@@ -347,6 +353,10 @@ export class ProjectComponent extends TranslationBaseComponent {
         })
       ))
     }
+  }
+
+  editStory(story: Story) {
+    this._router.navigate(['/story', story.id, 'edit'])
   }
 
   async releaseStory(story: Story) {

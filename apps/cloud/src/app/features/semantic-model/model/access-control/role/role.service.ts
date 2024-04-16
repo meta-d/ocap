@@ -1,27 +1,60 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, inject } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { IModelRole, IUser, MDX } from '@metad/contracts'
-import { ComponentSubStore } from '@metad/store'
+import { Store, select, withProps } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import { userLabel } from 'apps/cloud/src/app/@shared'
+import { isEqual, negate } from 'lodash-es'
+import { createSubStore, dirtyCheckWith, write } from '../../../store'
 import { SemanticModelService } from '../../model.service'
-import { PACModelState } from '../../types'
 
 @Injectable()
-export class RoleStateService extends ComponentSubStore<IModelRole, PACModelState> {
+export class RoleStateService {
   #toastrService = inject(ToastrService)
 
-  public readonly schemaGrant$ = this.select((state) => state.options.schemaGrant)
-  public readonly cubes$ = this.select((state) => state.options.schemaGrant?.cubeGrants)
-  public readonly roleUsages$ = this.select((state) => state.options?.roleUsages)
-  public readonly roleUsers$ = this.select((state) => state.users)
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.modelService.store,
+    { name: 'semantic_model_role', arrayKey: 'key' },
+    withProps<IModelRole>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.modelService.pristineStore,
+    { name: 'semantic_model_role_pristine', arrayKey: 'key' },
+    withProps<IModelRole>(null)
+  )
+  // readonly #stateHistory = stateHistory<Store, IModelRole>(this.store, {
+  //   comparatorFn: negate(isEqual)
+  // })
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
+  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
-  constructor(public modelService: SemanticModelService) {
-    super({} as IModelRole)
-  }
+  readonly state$ = this.store
+  public readonly schemaGrant$ = this.store.pipe(select((state) => state.options.schemaGrant))
+  public readonly cubes$ = this.store.pipe(select((state) => state.options.schemaGrant?.cubeGrants))
+  public readonly roleUsages$ = this.store.pipe(select((state) => state.options?.roleUsages))
+  public readonly roleUsers$ = this.store.pipe(select((state) => state.users))
+
+  constructor(public modelService: SemanticModelService) {}
 
   public init(key: string) {
-    this.connect(this.modelService, { parent: ['model', 'roles', key], arrayKey: 'key' })
+    // this.connect(this.modelService, { parent: ['model', 'roles', key], arrayKey: 'key' })
+    this.store.connect(['roles', key])
+    this.pristineStore.connect(['roles', key])
+  }
+
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: IModelRole, ...params: OriginType[]) => IModelRole | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
   }
 
   readonly updateSchemaGrant = this.updater((state, schemaGrant: Partial<MDX.SchemaGrant>) => {
@@ -32,7 +65,7 @@ export class RoleStateService extends ComponentSubStore<IModelRole, PACModelStat
   })
 
   readonly addCube = this.updater((state, cube: string) => {
-    state.options.schemaGrant = state.options.schemaGrant ?? { cubeGrants: [] } as MDX.SchemaGrant
+    state.options.schemaGrant = state.options.schemaGrant ?? ({ cubeGrants: [] } as MDX.SchemaGrant)
     state.options.schemaGrant.cubeGrants = state.options.schemaGrant.cubeGrants ?? []
     if (state.options.schemaGrant.cubeGrants?.find((item) => item.cube === cube)) {
       this.#toastrService.warning('多维数据集已经存在')

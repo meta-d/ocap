@@ -79,7 +79,7 @@ export const ZhHans = {
     },
     Designer: {
       LookingEmpty: '这个故事看起来有些空洞',
-      LookingEmptyAddStoryPoint: '添加一个故事点来开始吧'
+      LookingEmptyAddStoryPoint: '添加一个故事点来开始吧',
     },
     Story: {
       Share: '分享',
@@ -104,6 +104,7 @@ export const ZhHans = {
       SaveFailed: '保存失败',
       Upload: '上传',
       CurrentPageNotExist: "当前页面不存在",
+      NewPageName: '新页面名称'
     },
     StoryPoint: {
       SaveFailed: '故事页面保存失败',
@@ -221,6 +222,8 @@ export const ZhHans = {
       Height: '高度',
       EmulatedDevice_Unset: '重置',
       EmulatedDevice_Custom: '自定义',
+      OpenFloatingToolbar: '打开浮动工具栏',
+      PinToolbar: '固定工具栏',
       PREFERENCES: {
         TITLE: '首选项',
         PREFERENCES: '首选项',
@@ -1637,5 +1640,8 @@ export const ZhHans = {
         }
       }
     }
+  },
+  Designer: {
+    IsEmpty: '空'
   }
 }

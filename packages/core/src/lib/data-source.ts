@@ -227,7 +227,7 @@ export interface DataSource {
    *
    * @param statement
    */
-  query(options: { statement: string }): Observable<any>
+  query(options: { statement: string; forceRefresh?: boolean }): Observable<any>
 
   /**
    * 清除浏览器端缓存
@@ -272,7 +272,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   abstract selectMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
   abstract createEntity(name: string, columns: any[], data?: any[]): Observable<string>
   abstract dropEntity(name: string): Promise<void>
-  abstract query(options: { statement: string }): Observable<any>
+  abstract query(options: { statement: string; forceRefresh?: boolean }): Observable<any>
 
   setSchema(schema: Schema): void {
     this.options$.next({ ...this.options$.value, schema })

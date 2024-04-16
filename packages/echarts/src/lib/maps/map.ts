@@ -4,14 +4,13 @@ import {
   ChartSettings,
   EntityType,
   getChartCategory,
-  getEntityProperty,
   getPropertyHierarchy,
   getPropertyMeasure,
   getPropertyName,
-  getPropertyCaption,
   isChartMapType,
   QueryReturn,
   assignDeepOmitBlank,
+  getDimensionMemberCaption,
 } from '@metad/ocap-core'
 import { MapChart } from 'echarts/charts'
 import { registerMap, use } from 'echarts/core'
@@ -110,7 +109,7 @@ export function mapChart(
 
   const chartCategory = getChartCategory(chartAnnotation)
   const chartCategoryName = getPropertyHierarchy(chartCategory)
-  const chartCategoryCaption = getPropertyCaption(getEntityProperty(entityType, chartCategory))
+  const chartCategoryCaption = getDimensionMemberCaption(chartCategory, entityType)
   const chartMeasure = chartAnnotation.measures[0]
   const chartMeasureName = getPropertyMeasure(chartMeasure)
 

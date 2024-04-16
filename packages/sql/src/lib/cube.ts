@@ -18,7 +18,9 @@ import {
   PropertyDimension,
   PropertyLevel,
   PropertyMeasure,
-  QueryOptions
+  QueryOptions,
+  EntityProperty,
+  CalculationProperty
 } from '@metad/ocap-core'
 import {
   compileDimensionSchema,
@@ -27,8 +29,8 @@ import {
   LevelCaptionField,
   LevelContext
 } from './dimension'
-import { AggregateFunctions, allMemberCaption, allMemberName, SQLError, SQLErrorCode } from './types'
-import { serializeIntrinsicName, serializeMeasureName, serializeTableAlias } from './utils'
+import { AggregateFunctions } from './types'
+import { allMemberCaption, allMemberName, serializeIntrinsicName, serializeMeasureName, serializeTableAlias } from './utils'
 
 /**
  * Compile the cube of entity with it's dimensions to runtime entity type
@@ -45,7 +47,7 @@ export function compileCubeSchema(
   dimensions: PropertyDimension[],
   dialect: string
 ): EntityType {
-  const properties = {}
+  const properties: Record<string, EntityProperty> = {}
 
   cube.dimensionUsages?.forEach((usage) => {
     const dimension = dimensions?.find((item) => item.name === usage.source)
@@ -98,7 +100,7 @@ export function compileCubeSchema(
           role: AggregationRole.measure,
           dataType: 'number',
           calculationType: CalculationType.Calculated
-        }
+        } as CalculationProperty
       }
     })
 
@@ -195,12 +197,13 @@ export function buildCubeContext(
           order: row.order
         })
         dimension.members.push({
+          key: measure.name,
           value: measure.name,
           caption: measure.caption
         })
       })
     } else {
-      buildCubeDimensionContext(dimension, entityType)
+      buildCubeDimensionContext(dimension)
     }
   })
 
@@ -221,7 +224,7 @@ export function buildCubeContext(
  * @param row
  * @returns
  */
-export function buildCubeDimensionContext(context: DimensionContext, entityType: EntityType): DimensionContext {
+export function buildCubeDimensionContext(context: DimensionContext): DimensionContext {
   const row = context.dimension
   // const property = getEntityProperty(entityType, row)
   // if (!property) {
@@ -416,7 +419,6 @@ export function getOrBuildDimensionContext(cubeContext: CubeContext, row: Dimens
   if (!dimension) {
     dimension = buildCubeDimensionContext(
       { dialect, factTable, dimension: row, levels: [], role: 'row', selectFields: [] },
-      entityType
     )
     cubeContext.dimensions.push(dimension)
   }

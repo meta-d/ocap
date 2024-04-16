@@ -1,16 +1,34 @@
-<pac-story-toolbar #toolbar class="ngm-story__toolbar shadow-xl overflow-hidden absolute left-4 top-8 z-10 rounded-2xl 
+<div class="toolbar-container" [class.pin]="pinToolbar()">
+</div>
+
+<pac-story-toolbar #toolbar class="ngm-story__toolbar absolute shadow-xl overflow-hidden z-10
     backdrop-blur-sm hover:backdrop-blur-lg dark:shadow-neutral-800"
+    [class.pin]="pinToolbar()"
     cdkDrag
+    [cdkDragDisabled]="pinToolbar()"
     (cdkDragEnded)="onToolbarDragEnded($event)"
     [(editable)]="editable"
+    [collapsible]="!pinToolbar()"
     (fullscreen)="onFullscreen($event)"
     (emulatedDeviceChange)="onEmulatedDevice($event)"
     (deviceZoomChange)="deviceZoom=$event"
     (resetScalePan)="resetScalePanState()"
     >
-
+  @if (!pinToolbar()) {
     <button mat-icon-button cdkDragHandle class="pac-cdk__drag-handle">
         <mat-icon>drag_indicator</mat-icon>
+    </button>
+  }
+
+    <button mat-icon-button (click)="toggleToolbarPin()" [matTooltip]="pinToolbar() ? 
+        ('Story.Toolbar.OpenFloatingToolbar' | translate: {Default: 'Open Floating Toolbar'}) :
+        ('Story.Toolbar.PinToolbar' | translate: {Default: 'Pin Toolbar'})"
+        matTooltipPosition="after">
+      @if (pinToolbar()) {
+        <mat-icon fontSet="material-icons-outlined">open_in_new</mat-icon>
+      } @else {
+        <mat-icon fontSet="material-icons-outlined">push_pin</mat-icon>
+      }
     </button>
 
     <button mat-icon-button class="pac-story-designer__menu-trigger mat-menu-trigger"

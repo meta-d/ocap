@@ -107,6 +107,11 @@ export const ZhHans = {
         Format: '格式化',
         Help: '帮助'
       }
+    },
+    Table: {
+      Select: '选择',
+      NoData: '无数据',
+      MatchingFilter: '匹配过滤条件"{{value}}"',
     }
   }
 }

@@ -19,20 +19,22 @@
                 <div id="pac-model-dimension__hierarchy-levels"
                     class="pac-cdk-drop__list flex-1"
                     cdkDropList
-                    [cdkDropListData]="levelSignal()"
+                    [cdkDropListData]="levels()"
                     (cdkDropListDropped)="dropLevel($event)"
                     [cdkDropListEnterPredicate]="levelPredicate"
                 >
                     <mat-nav-list class="max-h-full overflow-hidden hover:overflow-y-auto" displayDensity="compact">
-                        <mat-list-item *ngFor="let level of levelSignal()" [activated]="level.__id__ === designerComponentId"
+                      @for (level of levels(); track level.__id__; let i = $index) {
+                        <mat-list-item [activated]="(level.__id__ ?? i) === designerComponentId()"
                             cdkDrag
                             [cdkDragData]="level"
-                            (click)="onLevelSelect(level.__id__)"
+                            (click)="onLevelSelect(level.__id__ ?? i)"
                         >
                             <ngm-display-behaviour [option]="{value: level.name, label: level.caption}"
                                 [displayBehaviour]="DisplayBehaviour.descriptionAndId">
                             </ngm-display-behaviour>
                         </mat-list-item>
+                      }
                     </mat-nav-list>
                 </div>
             </ngm-splitter-pane>
@@ -42,11 +44,12 @@
                     <span>
                         {{ 'PAC.MODEL.DIMENSION.DimensionTables' | translate: {Default: 'Dimension Tables'} }}
                     </span>
+                    
                     <button mat-icon-button color="warn" displayDensity="cosy" class="pac-cdk-drop__recycle-bin"
                         cdkDropList
                         [cdkDropListEnterPredicate]="tableRemovePredicate"
                         (cdkDropListDropped)="removeTable($event)"
-                    >
+                        >
                         <mat-icon color="warn" fontSet="material-icons-round">delete</mat-icon>
                     </button>
                 </mat-toolbar>
@@ -79,30 +82,56 @@
                             {{ 'PAC.MODEL.DIMENSION.DataPreview' | translate: {Default: 'Data Preview'} }}
                         </span>
                     </div>
+                    <div class="flex items-center gap-4">
+                      @if (viewMode() === 'tree') {
+                        <mat-checkbox [(ngModel)]="showKey">
+                            {{ 'PAC.MODEL.DIMENSION.ShowMemberKey' | translate: {Default: 'Show Member Key'} }}
+                        </mat-checkbox>
+                      }
+                        <mat-button-toggle-group [(ngModel)]="viewMode" ngmAppearance="outline" color="accent">
+                            <mat-button-toggle value="table" [matTooltip]=" 'PAC.KEY_WORDS.Table' | translate: {Default: 'Table'} ">
+                                <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="opacity-50">table_view</mat-icon>
+                            </mat-button-toggle>
+                            <mat-button-toggle value="tree" [matTooltip]=" 'PAC.KEY_WORDS.Tree' | translate: {Default: 'Tree'} ">
+                                <mat-icon fontSet="material-icons-outlined" displayDensity="compact" class="opacity-50">account_tree</mat-icon>
+                            </mat-button-toggle>
+                        </mat-button-toggle-group>
 
-                    <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
-                        (click)="refresh()"
-                    >
-                        <mat-icon fontSet="material-icons-round">refresh</mat-icon>
-                    </button>
+                        <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action"
+                            (click)="refresh()"
+                        >
+                            <mat-icon fontSet="material-icons-round">refresh</mat-icon>
+                        </button>
+                    </div>
                 </mat-toolbar>
                 <div style="flex: 1; max-height: calc(100% - 34px)" class="flex">
-                    <ngm-table class="ngm-data-preview striped flex-1 max-w-full"
-                        [columns]="columns$ | async"
-                        [data]="data$ | async"
-                        [paging]="true"
-                    ></ngm-table>
+                  @switch (viewMode()) {
+                    @case('table') {
+                        <ngm-table class="ngm-data-preview striped flex-1 max-w-full"
+                            [columns]="columns()"
+                            [data]="data()"
+                            [paging]="true"
+                        ></ngm-table>
+                    }
+                    @case('tree') {
+                        <ngm-hierarchy-table class="flex-1 max-w-full" displayDensity="compact"
+                            [columns]="levelTableColumns()"
+                            [data]="treeData()"
+                            [displayBehaviour]="showKey() ? DisplayBehaviour.descriptionAndId : DisplayBehaviour.descriptionOnly"
+                            paging
+                        />
+                    }
+                  }
 
-                    @if (loading) {
-                        <mat-spinner strokeWidth="2" diameter="30"/>
-                    }
-                    @if (error$ | async; as error) {
-                        <div class="pac-model-hierarchy__error">
-                            <div style="font-size: 4rem;" class="font-notoColorEmoji">🐞</div>
-                            <div>{{error}}</div>
-                        </div>
-                    }
-                    
+                  @if (loading()) {
+                    <mat-spinner strokeWidth="2" diameter="30"/>
+                  }
+                  @if (error$ | async; as error) {
+                    <div class="pac-model-hierarchy__error">
+                        <div style="font-size: 4rem;" class="font-notoColorEmoji">🐞</div>
+                        <div>{{error}}</div>
+                    </div>
+                  }
                 </div>
             </ngm-splitter-pane>
             <ngm-splitter-pane size='10rem' [collapsed]="tablesJoinCollapsed">

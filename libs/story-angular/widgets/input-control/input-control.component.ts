@@ -30,7 +30,7 @@ import {
   WidgetMenuType,
   nonBlank,
 } from '@metad/core'
-import { FilterControlType, NxStoryService, StoryPointState } from '@metad/story/core'
+import { FilterControlType, NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, firstValueFrom, timer } from 'rxjs'
 import {
@@ -217,7 +217,7 @@ export class NxInputControlComponent
   public readonly asPlaceholder = computed(() => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet))
 
   // Inner states
-  private storyPoints = toSignal<StoryPointState[]>(this.storyService.pageStates$)
+  readonly storyPoints = this.storyService.storyPoints
   public readonly error = signal<string>(null)
   /**
   |--------------------------------------------------------------------------

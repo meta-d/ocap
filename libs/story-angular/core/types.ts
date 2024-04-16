@@ -179,6 +179,7 @@ export interface StoryOptions {
   advancedStyle?: string
   emulatedDevice?: EmulatedDevice
   /**
+   * @deprecated use scale in StoryPointState
    * Transform scale base 100
    * * 70 means
     ```css
@@ -255,7 +256,7 @@ export interface Story extends Partial<StoryKey>, Omit<IStory, 'points' | 'optio
    */
   schemas?: {
     [key: string]: {
-      [ket: string]: EntityType
+      [key: string]: EntityType
     }
   }
 }
@@ -567,18 +568,12 @@ export interface StoryEvent {
  * State type for story point
  */
 export interface StoryPointState {
+  id: string
   /**
    * Inner state key
    */
   key: ID
-  /**
-   * Raw story point data from server
-   */
-  storyPoint: StoryPoint
-  /**
-   * Is point state dirty
-   */
-  dirty?: boolean
+
   /**
    * Is point active
    */
@@ -591,10 +586,13 @@ export interface StoryPointState {
    * Is point removed
    */
   removed?: boolean
+
+  dirty?: boolean
+
   /**
-   * Sub widgets states
+   * Saving state
    */
-  widgets?: Array<StoryWidget>
+  saving?: boolean
   /**
    * Current widget key
    */
@@ -611,6 +609,16 @@ export interface StoryPointState {
    * Linked analysis states
    */
   linkedAnalysis?: Record<string, LinkedAnalysisEvent>
+  /**
+   * Page transform scale, Transform scale base 100
+   * 
+   * For example: 70 means
+    ```css
+    transform: scale(.7);
+    transform-origin: 0 0;
+    ```
+   */
+  scale?: number
 }
 
 /**

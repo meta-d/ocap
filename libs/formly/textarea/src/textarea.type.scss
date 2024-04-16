@@ -1,3 +1,7 @@
 :host {
-    @apply w-full flex flex-col;
+  @apply w-full flex flex-col;
+}
+
+.mat-mdc-input-element.cdk-textarea-autosize {
+  @apply whitespace-nowrap;
 }

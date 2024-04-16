@@ -3,17 +3,18 @@ import { SelectionModel } from '@angular/cdk/collections'
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   Injectable,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges,
-  ViewChild,
-  inject
+  Injector,
+  afterNextRender,
+  effect,
+  inject,
+  input,
+  output,
+  runInInjectionContext,
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
@@ -121,55 +122,53 @@ export class MyCustomPaginatorIntl implements MatPaginatorIntl {
     NgmSearchComponent
   ]
 })
-export class NgmTableComponent implements OnChanges, AfterViewInit {
-  @Input() columns: Array<TableColumn>
-  @Input() get data(): Array<unknown> {
-    return this._data
-  }
-  set data(value) {
-    this._data = value
-    this.dataSource.data = value ?? []
-  }
-  private _data: Array<unknown>
+export class NgmTableComponent {
+  readonly #injector = inject(Injector)
 
-  @Input() get paging(): boolean {
-    return this._paging
-  }
-  set paging(value: string | boolean) {
-    this._paging = coerceBooleanProperty(value)
-  }
-  private _paging: boolean
+  /**
+  |--------------------------------------------------------------------------
+  | Inputs and Outputs
+  |--------------------------------------------------------------------------
+  */
+  readonly data = input<Array<unknown>>([])
 
-  @Input() pageSizeOptions: MatPaginatorDefaultOptions['pageSizeOptions'] = [20, 50, 100]
+  readonly columns = input<Array<TableColumn>>(null)
 
-  @Input() get grid() {
-    return this._grid
-  }
-  set grid(value: string | boolean) {
-    this._grid = coerceBooleanProperty(value)
-  }
-  private _grid = false
+  readonly paging = input<boolean, boolean | string>(false, {
+    transform: coerceBooleanProperty
+  })
 
-  @Input() get selectable() {
-    return this._selectable
-  }
-  set selectable(value: string | boolean) {
-    this._selectable = coerceBooleanProperty(value)
-  }
-  private _selectable = false
+  readonly pageSizeOptions = input<MatPaginatorDefaultOptions['pageSizeOptions']>([20, 50, 100])
 
-  @Input() displayDensity: DisplayDensity | string = DisplayDensity.compact
+  readonly grid = input<boolean, boolean | string>(false, {
+    transform: coerceBooleanProperty
+  })
+
+  readonly selectable = input<boolean, boolean | string>(false, {
+    transform: coerceBooleanProperty
+  })
+
+  readonly displayDensity = input<DisplayDensity | string>(DisplayDensity.compact)
 
   /**
    * A cell or row was selected.
    */
-  // @Output() select: EventEmitter<any> = new EventEmitter()
-  @Output() rowSelectionChanging = new EventEmitter<any[]>()
+  readonly rowSelectionChanging = output<any[]>()
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Child Components
+  |--------------------------------------------------------------------------
+  */
+  readonly paginator = viewChild(MatPaginator)
+  readonly sort = viewChild(MatSort)
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator
-  @ViewChild(MatSort) sort: MatSort
-
-  displayedColumns = []
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly displayedColumns = signal<string[]>([])
 
   dataSource = new MatTableDataSource<any>()
 
@@ -177,42 +176,52 @@ export class NgmTableComponent implements OnChanges, AfterViewInit {
   searchingColumn = ''
   selection = new SelectionModel<any>(true, [])
 
-  private _searchValueSub = this.searchControl.valueChanges.subscribe((value) => {
+  readonly #searchValueSub = this.searchControl.valueChanges.subscribe((value) => {
     this.dataSource.filter = value
   })
 
   constructor() {
     this.selection.changed.subscribe(() => this.rowSelectionChanging.emit(this.selection.selected))
-  }
 
-  ngOnChanges({ columns }: SimpleChanges): void {
-    if (columns?.currentValue) {
-      this.displayedColumns = columns.currentValue.map(({ name }) => name)
-      if (this.selectable) {
-        this.displayedColumns.unshift('select')
-      }
-    }
-  }
+    afterNextRender(() => {
+      this.dataSource.paginator = this.paginator()
+      this.dataSource.sort = this.sort()
+      // If the user changes the sort order, reset back to the first page.
+      this.sort()?.sortChange.subscribe((sort) => {
+        if (this.paginator) {
+          this.paginator().pageIndex = 0
+        }
+      })
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator
-    this.dataSource.sort = this.sort
-    // If the user changes the sort order, reset back to the first page.
-    this.sort?.sortChange.subscribe((sort) => {
-      if (this.paginator) {
-        this.paginator.pageIndex = 0
+      this.dataSource.filterPredicate = (data: any, filter: string): boolean => {
+        // Transform the data into a lowercase string of all property values.
+        const dataStr = ('' + data[this.searchingColumn]).toLowerCase()
+
+        // Transform the filter by converting it to lowercase and removing whitespace.
+        const transformedFilter = filter.trim().toLowerCase()
+
+        return dataStr.indexOf(transformedFilter) != -1
       }
+
+      runInInjectionContext(this.#injector, () => {
+        effect(() => {
+          this.dataSource.data = this.data()
+        }, { allowSignalWrites: true })
+      })
     })
 
-    this.dataSource.filterPredicate = (data: any, filter: string): boolean => {
-      // Transform the data into a lowercase string of all property values.
-      const dataStr = ('' + data[this.searchingColumn]).toLowerCase()
-
-      // Transform the filter by converting it to lowercase and removing whitespace.
-      const transformedFilter = filter.trim().toLowerCase()
-
-      return dataStr.indexOf(transformedFilter) != -1
-    }
+    effect(() => {
+      const columns = this.columns()
+      if (columns) {
+        this.displayedColumns.set(columns.map(({ name }) => name))
+        if (this.selectable()) {
+          this.displayedColumns.update((columns) => {
+            columns.unshift('select')
+            return [...columns]
+          }) 
+        }
+      }
+    }, { allowSignalWrites: true })
   }
 
   _context(data: Record<string, unknown>, column: TableColumn) {

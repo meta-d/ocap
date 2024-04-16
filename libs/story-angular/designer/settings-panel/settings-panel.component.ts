@@ -12,7 +12,7 @@ import {
   ViewChild,
   ViewContainerRef,
   effect,
-  inject
+  inject,
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatTabGroup } from '@angular/material/tabs'
@@ -179,6 +179,7 @@ export class NgmSettingsPanelComponent implements OnChanges {
       this._cdr.markForCheck()
       this._cdr.detectChanges()
     })
+
   private _closeSub = this.settingsService.close$.pipe(takeUntilDestroyed()).subscribe(() => {
     if (this.drawerOpened) {
       this.closeDrawer()

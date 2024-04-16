@@ -27,9 +27,10 @@ import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom, map } from 'rxjs'
-import { RoleSchema, zodToAnnotations } from '../copilot'
+import { RoleSchema } from '../copilot'
 import { SemanticModelService } from '../model.service'
 import { AccessControlStateService } from './access-control.service'
+import { zodToAnnotations } from '@metad/copilot'
 
 @Component({
   selector: 'pac-model-access-control',

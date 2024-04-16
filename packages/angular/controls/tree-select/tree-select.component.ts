@@ -221,11 +221,12 @@ export class NgmMemberTreeSelectComponent implements ControlValueAccessor {
       dimension: this.dimension,
       members: Array.isArray(event)
         ? event.map((key) => ({
+            key,
             value: key,
-            caption: this.members()?.find((item) => item.value === key)?.caption
+            caption: this.members()?.find((item) => item.key === key)?.caption
           }))
         : event
-        ? [{ value: event, caption: this.members()?.find((item) => item.value === event)?.caption }]
+        ? [{ key: event, value: event, caption: this.members()?.find((item) => item.key === event)?.caption }]
         : null
     })
   }

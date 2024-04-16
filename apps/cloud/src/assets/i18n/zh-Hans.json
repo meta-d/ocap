@@ -166,11 +166,21 @@
       "Undo": "撤销",
       "Commit": "提交",
       "Edit": "编辑",
-      "Unit": "单位"
+      "Unit": "单位",
+      "LevelNumber": "层级",
+      "ChildrenCardinality": "子节点数量",
+      "Tree": "树",
+      "Table": "表",
+      "StoryName": "故事名称",
+      "Agent": "代理",
+      "Progress": "进度",
+      "Complete": "完成",
+      "Request": "请求"
     },
     "MENU": {
       "Certification": "认证",
       "Copilot": "副驾驶",
+      "AI Copilot": "AI 副驾驶",
       "Dashboard": "仪表板",
       "Semantic Model": "语义模型",
       "Story": "故事",
@@ -575,7 +585,9 @@
       "IndicatorMarket": "指标市场",
       "Certifications": "认证",
       "Copilot_CreateIndicator": "创建指标",
-      "Copilot_CreateFormula": "创建指标公式"
+      "Copilot_CreateFormula": "创建指标公式",
+      "DataPreview": "数据预览",
+      "Period": "周期"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
@@ -734,7 +746,8 @@
         "Count": "计数",
         "EditAttributes": "编辑属性",
         "SameLevelAlreadyExists": "相同层级已存在",
-        "DimensionNotFound": "维度未找到！"
+        "DimensionNotFound": "维度未找到！",
+        "ShowMemberKey": "显示成员键"
       },
       "UPLOAD": {
         "Title": "上传数据文件",
@@ -2852,6 +2865,13 @@
       "Reset": "重置",
       "NotFoundValue": "未找到值：",
       "SemanticModel": "语义模型"
+    },
+    "VALIDATION": {
+      "REQUIRED": "必填",
+      "MinLength": "至少有 {{minLength}} 个字符",
+      "MaxLength": "最多有 {{maxLength}} 个字符",
+      "Min": "值不得小于 {{min}}",
+      "Max": "值不得大于 {{max}}"
     },
     "PROPERTY_SELECT": {
       "REFERENCE_LINE": "参考线",

@@ -1,10 +1,10 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Inject, Injectable, Optional, inject } from '@angular/core'
+import { DestroyRef, Inject, Injectable, Optional, effect, inject } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatSnackBar } from '@angular/material/snack-bar'
+import { createSubStore, dirtyCheckWith, isNotEmpty, isNotEqual, write } from '@metad/core'
+import { effectAction } from '@metad/ocap-angular/core'
 import { ISlicer, isAdvancedFilter, nonNullable } from '@metad/ocap-core'
-import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
-import { TranslateService } from '@ngx-translate/core'
-import { isNotEmpty, isNotEqual } from '@metad/core'
 import {
   ID,
   LinkedAnalysisEvent,
@@ -18,15 +18,16 @@ import {
   StoryPoint,
   StoryPointState,
   StoryPointType,
-  StoryState,
   StoryWidget,
   WIDGET_INIT_POSITION,
   uuid
 } from '@metad/story/core'
 import { FlexItemType, FlexLayout } from '@metad/story/responsive'
 import { ISmartFilterBarOptions } from '@metad/story/widgets/filter-bar'
+import { select, withProps } from '@ngneat/elf'
+import { TranslateService } from '@ngx-translate/core'
 import { GridsterConfig } from 'angular-gridster2'
-import { assign, cloneDeep, compact, isEmpty, isNil, merge, omit, sortBy } from 'lodash-es'
+import { assign, cloneDeep, compact, isEmpty, isEqual, isNil, merge, negate, omit, sortBy } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { EMPTY, Observable, combineLatest, firstValueFrom, of } from 'rxjs'
 import {
@@ -35,72 +36,96 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  startWith,
   switchMap,
   tap,
   withLatestFrom
 } from 'rxjs/operators'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 /**
  * 状态中 StoryPoint 与 Widgets 分开控制修改状态
  *
  */
 @Injectable()
-export class NxStoryPointService extends ComponentSubStore<StoryPointState, StoryState> {
-
+export class NxStoryPointService {
+  readonly #storyService = inject(NxStoryService)
   readonly destroyRef = inject(DestroyRef)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.#storyService.store,
+    { name: 'story_point', arrayKey: 'key' },
+    withProps<StoryPoint>(null)
+  )
+  readonly stateStore = createSubStore(
+    this.#storyService.store,
+    { name: 'story_point_state', arrayKey: 'key' },
+    withProps<StoryPointState>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.#storyService.pristineStore,
+    { name: 'story_point_pristine', arrayKey: 'key' },
+    withProps<StoryPoint>(null)
+  )
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, {
+    comparator: negate(isEqual)
+    // comparator: debugDirtyCheckComparator
+  })
+  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+
   get storyPoint() {
-    return this.get((state) => state.storyPoint)
+    return this.store.getValue()
   }
-  get widgets() {
-    return this.get((state) => state.widgets)
-  }
+  readonly storyPoint$ = this.store
+  readonly widgets$ = this.select((state) => state.widgets)
+  readonly widgets = toSignal(this.widgets$)
 
-  public readonly linkedAnalysis$ = this.select((state) => state.linkedAnalysis)
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
+  public readonly linkedAnalysis$ = this.select2((state) => state.linkedAnalysis)
 
-  readonly storyPoint$ = this.select((state) => state.storyPoint)
-  readonly active$ = this.select((state) => state.active)
-  readonly fetched$ = this.select((state) => state.fetched)
-  readonly widgets$ = this.select((state) => state?.widgets)
+  readonly active$ = this.select2((state) => state.active)
+  readonly fetched$ = this.select2((state) => state.fetched)
+
   public readonly isEmpty$ = this.widgets$.pipe(
     combineLatestWith(this.fetched$),
     map(([widgets, fetched]) => fetched && isEmpty(widgets))
   )
-  readonly gridOptions$ = this.select((state) => state.storyPoint.gridOptions)
+  readonly gridOptions$ = this.select((state) => state.gridOptions)
   public readonly allowMultiLayer$ = this.gridOptions$.pipe(
     map((gridOptions) => gridOptions?.allowMultiLayer),
     distinctUntilChanged()
   )
-  readonly styling$ = this.select((state) => state.storyPoint?.styling)
-  public filters$: Observable<Array<ISlicer>> = this.select((state) => state.storyPoint).pipe(
-    filter(nonNullable),
-    map(({filters}) => filters),
+  readonly styling$ = this.select((state) => state.styling)
+  readonly scaleStyles$ = this.stateStore.pipe(
+    select((state) => state?.scale),
+    distinctUntilChanged(),
+    map((scale) => {
+      return scale
+        ? {
+            transform: `scale(${scale / 100})`,
+            'transform-origin': 'left top'
+          }
+        : {}
+    })
+  )
+
+  public filters$: Observable<Array<ISlicer>> = this.select((state) => state.filters).pipe(
     distinctUntilChanged((x, y) => JSON.stringify(x) === JSON.stringify(y))
   )
 
-  readonly currentWidget$ = this.select(
+  readonly currentWidget$ = combineLatest([
     this.widgets$,
-    this.select((state) => state.currentWidgetKey),
-    (widgets, key) => widgets?.find((item) => item.key === key)
-  )
+    this.stateStore.pipe(select((state) => state.currentWidgetKey))
+  ]).pipe(select(([widgets, key]) => widgets?.find((item) => item.key === key)))
 
-  readonly responsive$ = this.select((state) => (state.fetched ? state.storyPoint?.responsive : null))
-
-  isDirty$ = this.select((state) => state.dirty)
-  dirtyQuery: DirtyCheckQuery = new DirtyCheckQuery<StoryPointState>(this as any, {
-    watchProperty: ['storyPoint'],
-    clean: (head, current) => {
-      return this._save(head.storyPoint, current.storyPoint)
-    }
-  })
-  widgetsDirtyQuery: DirtyCheckQuery = new DirtyCheckQuery<StoryPointState>(this as any, {
-    watchProperty: ['widgets'],
-    clean: (head, current) => {
-      return this._saveWidgets(head?.widgets, current.widgets)
-    }
-  })
+  readonly responsive$ = this.select((state) => state?.responsive)
 
   /**
   |--------------------------------------------------------------------------
@@ -108,20 +133,13 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   |--------------------------------------------------------------------------
   */
   private currentWidgetSub = this.currentWidget$.pipe(takeUntilDestroyed()).subscribe((widget) => {
-    this.storyService.setCurrentWidget(widget)
+    this.#storyService.setCurrentWidget(widget)
   })
 
-  private isDirtySub = combineLatest([
-    this.dirtyQuery.isDirty$.pipe(startWith(false)),
-    this.widgetsDirtyQuery.isDirty$.pipe(startWith(false))
-  ]).pipe(takeUntilDestroyed()).subscribe(([storyPoint, widgets]) => {
-    this.logger?.debug(`[StoryPointService] isDirty = ${storyPoint} & ${widgets}`)
-    this.patchState({ dirty: storyPoint || widgets })
-  })
   // 监听故事的保存事件通知: 进行故事点和部件的保存
-  private saveSub = this.storyService.save$
+  private saveSub = this.#storyService.save$
     .pipe(
-      withLatestFrom(this.isDirty$),
+      withLatestFrom(this.dirty$),
       filter(([, dirty]) => dirty),
       takeUntilDestroyed()
     )
@@ -129,7 +147,6 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
       this.save()
     })
   constructor(
-    private storyService: NxStoryService,
     @Inject(NX_STORY_STORE)
     private readonly storyStore: NxStoryStore,
     @Optional()
@@ -139,16 +156,28 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     @Optional() protected logger?: NGXLogger,
     @Optional() private translateService?: TranslateService
   ) {
-    super({} as any)
+    effect(
+      () => {
+        this.stateStore.update((state) => {
+          return {
+            ...state,
+            dirty: this.dirtyCheckResult.dirty()
+          }
+        })
+      },
+      { allowSignalWrites: true }
+    )
   }
 
-  readonly init = this.effect((key$: Observable<ID>) => {
+  readonly init = effectAction((key$: Observable<ID>) => {
     return key$.pipe(
-      tap((key: ID) => this.connect(this.storyService, { parent: ['points', key as string], arrayKey: 'key' })),
+      tap((key: ID) => {
+        this.store.connect(['story', 'points', key])
+        this.stateStore.connect(['points', key])
+        this.pristineStore.connect(['story', 'points', key])
+      }),
       switchMap((key: ID) => {
-        this.dirtyQuery.setHead()
-
-        return this.storyService.selectPointEvent(key).pipe(
+        return this.#storyService.selectPointEvent(key).pipe(
           tap((event) => {
             if (event.type === StoryEventType.CREATE_WIDGET) {
               this.createWidget(event.data)
@@ -167,15 +196,18 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   })
 
   async fetchStoryPoint() {
-    const storyPoint = await firstValueFrom(this.storyPoint$)
+    const storyPoint = this.storyPoint
     const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id))
-    this._setWidgets(point.widgets)
-    this.patchState({ fetched: true })
-    this.widgetsDirtyQuery.setHead()
+    this.initWidgets(point.widgets)
+
+    this.stateStore.update((state) => ({
+      ...state,
+      fetched: true
+    }))
   }
 
   async active(active: boolean) {
-    this.patchState({ active })
+    this.stateStore.update((state) => ({ ...state, active }))
     const fetched = await firstValueFrom(this.fetched$)
     if (active && !fetched) {
       await this.fetchStoryPoint()
@@ -184,31 +216,79 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     this._applyPastedWidgets()
   }
 
-  async save() {
-    this.dirtyQuery.reset()
+  save() {
+    const pristinePoint = this.pristineStore.getValue()
+    const currentPoint = this.store.getValue()
+
+    this.patchState({ saving: true })
+
+    this._save(pristinePoint, currentPoint).subscribe((result) => {
+      this.patchState({ saving: false })
+      this.pristineStore.update(() => cloneDeep(this.store.getValue()))
+    })
   }
 
-  /**
-   * 初始化 Widgets 状态
-   */
-  private readonly _setWidgets = this.updater((state, widgets: Array<StoryWidget>) => {
-    state.widgets = state.widgets || []
-    state.widgets.push(...widgets)
-    // 对组件排序, 在移动端展示效果
-    state.widgets = sortBy(state.widgets, 'index')
-  })
+  patchState(state: Partial<StoryPointState>) {
+    this.stateStore.update((s) => ({ ...s, ...state }))
+  }
 
-  private readonly _applyPastedWidgets = this.updater((state) => {
-    if (isNotEmpty(state.pasteWidgets)) {
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryPointState, ...params: OriginType[]) => StoryPointState | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.stateStore.update(write((state) => fn(state, ...params)))
+    }
+  }
+
+  updater2<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: StoryPoint, ...params: OriginType[]) => StoryPoint | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
+  }
+
+  select<R>(fn: (state: StoryPoint) => R) {
+    return this.store.pipe(select(fn))
+  }
+  select2<R>(fn: (state: StoryPointState) => R) {
+    return this.stateStore.pipe(select(fn))
+  }
+
+  initWidgets(widgets: Array<StoryWidget>) {
+    // 对组件排序, 在移动端展示效果
+    sortBy(widgets, 'index')
+    this.store.update(
+      write((state) => {
+        state.widgets = widgets
+      })
+    )
+    this.pristineStore.update(
+      write((state) => {
+        state.widgets = widgets
+      })
+    )
+  }
+
+  clearPastedWidgets() {
+    this.stateStore.update((state) => ({
+      ...state,
+      pasteWidgets: []
+    }))
+  }
+
+  private _applyPastedWidgets = this.updater2((state) => {
+    const pasteWidgets = this.stateStore.getValue().pasteWidgets
+    if (isNotEmpty(pasteWidgets) && this.stateStore.query((state) => state.fetched)) {
       state.widgets.push(
-        ...state.pasteWidgets.map((item) => ({
+        ...pasteWidgets.map((item) => ({
           ...item,
           // Apply this point id and story id
-          storyId: this.storyPoint.storyId,
-          pointId: this.storyPoint.id
+          storyId: state.storyId,
+          pointId: state.id
         }))
       )
-      state.pasteWidgets = []
+      this.clearPastedWidgets()
     }
   })
 
@@ -231,7 +311,7 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
       filter(nonNullable),
       map((linkedAnalysis) => {
         const slicers = []
-        const events = Object.values(linkedAnalysis).filter((event) => {
+        const events = Object.values(linkedAnalysis).filter((event: any) => {
           return (
             !isEmpty(
               event.slicers?.filter((slicer) =>
@@ -244,7 +324,7 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
           )
         })
         for (let i = events.length - 1; i >= 0; i--) {
-          const event = events[i]
+          const event = events[i] as any
           event.slicers.forEach((slicer) => {
             if (!slicers.find((item) => item.dimension?.dimension === slicer.dimension?.dimension)) {
               slicers.push(slicer)
@@ -258,15 +338,12 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     )
   }
 
-  readonly updateGridOptions = this.updater((state, options: GridsterConfig) => {
-    state.storyPoint.gridOptions = assign({}, state.storyPoint.gridOptions, options)
+  readonly updateGridOptions = this.updater2((state, options: GridsterConfig) => {
+    state.gridOptions = assign({}, state.gridOptions, options)
   })
 
-  readonly updatePoint = this.updater((state, point: Partial<StoryPoint>) => {
-    state.storyPoint = {
-      ...state.storyPoint,
-      ...point
-    }
+  readonly updatePoint = this.updater2((state, point: Partial<StoryPoint>) => {
+    assign(state, point)
   })
 
   readonly setCurrentWidgetId = this.updater((state, key: ID) => {
@@ -280,19 +357,20 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   /**
    * Create new widget
    */
-  readonly createWidget = this.updater((state, input: Partial<StoryWidget>) => {
+  readonly createWidget = this.updater2((state, input: Partial<StoryWidget>) => {
     const untitledTitle = this.getTranslation('Story.Common.Untitled', 'Untitled')
+    const states = this.stateStore.getValue()
     const widget = {
       ...input,
       key: uuid(),
-      storyId: state.storyPoint.storyId,
-      pointId: state.storyPoint.id,
+      storyId: state.storyId,
+      pointId: state.id,
       title: input.title || untitledTitle
     } as StoryWidget
 
-    if (state.storyPoint.type === StoryPointType.Responsive) {
-      if (state.currentFlexLayoutKey) {
-        const flexLayout = findFlexLayout(state.storyPoint.responsive, state.currentFlexLayoutKey)
+    if (state.type === StoryPointType.Responsive) {
+      if (states.currentFlexLayoutKey) {
+        const flexLayout = findFlexLayout(state.responsive, states.currentFlexLayoutKey)
         flexLayout.children = flexLayout.children || []
         flexLayout.children.push({
           key: uuid(),
@@ -304,8 +382,12 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
         throw new Error(`未选中区域`)
       }
     } else {
-      widget.position = widget.position ?? { ...WIDGET_INIT_POSITION, x: 0, y: 0 }
-      if (state.storyPoint.gridOptions?.allowMultiLayer) {
+      widget.position = widget.position ?? {
+        ...WIDGET_INIT_POSITION,
+        x: 0,
+        y: 0
+      }
+      if (state.gridOptions?.allowMultiLayer) {
         widget.position.layerIndex = state.widgets.length
       }
       state.widgets.push(widget)
@@ -313,18 +395,21 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
 
     // Add new widget to linked analysis which connect newly
     state.widgets.forEach((item) => {
-      if (item.linkedAnalysis?.interactionApplyTo === LinkedInteractionApplyTo.OnlySelectedWidgets && item.linkedAnalysis?.connectNewly) {
+      if (
+        item.linkedAnalysis?.interactionApplyTo === LinkedInteractionApplyTo.OnlySelectedWidgets &&
+        item.linkedAnalysis?.connectNewly
+      ) {
         item.linkedAnalysis.linkedWidgets = item.linkedAnalysis.linkedWidgets || []
         item.linkedAnalysis.linkedWidgets.push(widget.key)
       }
     })
   })
 
-  readonly setWidget = this.updater((state, [index, widget]: [number, StoryWidget]) => {
+  readonly setWidget = this.updater2((state, [index, widget]: [number, StoryWidget]) => {
     state.widgets[index] = widget
   })
 
-  readonly updateWidget = this.updater((state, widget: Partial<StoryWidget>) => {
+  readonly updateWidget = this.updater2((state, widget: Partial<StoryWidget>) => {
     const index = state.widgets.findIndex((item) => item.key === widget.key)
     if (index >= 0) {
       state.widgets[index] = {
@@ -337,7 +422,7 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   /**
    * @deprecated hardcode for AnalyticalCard component
    */
-  readonly updateWidgetChartOptions = this.updater((state, widget: Partial<StoryWidget>) => {
+  readonly updateWidgetChartOptions = this.updater2((state, widget: Partial<StoryWidget>) => {
     const index = state.widgets.findIndex((item) => item.key === widget.key)
     if (index >= 0) {
       state.widgets[index] = {
@@ -347,7 +432,7 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     }
   })
 
-  readonly updateWidgetLayer = this.updater((state, widget: Partial<StoryWidget>) => {
+  readonly updateWidgetLayer = this.updater2((state, widget: Partial<StoryWidget>) => {
     const index = state.widgets.findIndex((item) => item.key === widget.key)
     if (index >= 0) {
       state.widgets[index].position = {
@@ -357,33 +442,29 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     }
   })
 
-  readonly removeWidget = this.updater((state, key: ID) => {
+  readonly removeWidget = this.updater2((state, key: ID) => {
     state.widgets = state.widgets.filter((item) => item.key !== key)
   })
 
   getTranslation(code: string, text: string, params?) {
-    let result = text
-    this.translateService?.get(code, { Default: text, ...(params ?? {}) }).subscribe((value) => {
-      result = value
-    })
-
-    return result
+    return this.translateService.instant(code, { Default: text, ...(params ?? {}) })
   }
 
-  readonly pasteWidget = this.updater((state, widget: StoryWidget) => {
+  pasteWidget(widget: StoryWidget) {
+    const current = this.store.getValue()
     widget.key = uuid()
-    widget.storyId = state.storyPoint.storyId
-    widget.pointId = state.storyPoint.id
-    const pasteWidgets = state.pasteWidgets || []
-    if (isNil(state.widgets)) {
-      pasteWidgets.push(widget)
-      state.pasteWidgets = pasteWidgets
-    } else {
-      state.widgets.push(widget)
-    }
-  })
+    widget.storyId = current.storyId
+    widget.pointId = current.id
 
-  readonly moveWidgetInArray = this.updater((state, event: CdkDragDrop<string[]>) => {
+    this.stateStore.update((state) => ({
+      ...state,
+      pasteWidgets: [...(state.pasteWidgets ?? []), widget]
+    }))
+
+    this._applyPastedWidgets()
+  }
+
+  readonly moveWidgetInArray = this.updater2((state, event: CdkDragDrop<string[]>) => {
     moveItemInArray(state.widgets, event.previousIndex, event.currentIndex)
     state.widgets.forEach((item, i) => (item.index = i))
   })
@@ -397,39 +478,40 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     if (!current.id) {
       update = this.storyStore.createStoryPoint(current).pipe(
         tap((result) => {
-          this.updatePoint({
-            id: result.id
-          })
+          this.updatePoint({ id: result.id })
+          this.stateStore.update((state) => ({ ...state, id: result.id }))
         })
       )
     } else if (isNotEqual({ ...pristine, widgets: null }, { ...current, widgets: null })) {
       // update story point
       update = this.storyStore.updateStoryPoint(current).pipe(map(() => current))
     } else {
-      this.widgetsDirtyQuery.reset()
+      update = of(null)
+      // this.widgetsDirtyQuery.reset()
     }
 
-    if (update) {
-      return update.pipe(
-        tap(() => {
+    return update.pipe(
+      tap((point) => {
+        if (point) {
           const saveSuccess = this.getTranslation('Story.StoryPoint.SaveSuccess', 'Story page save success')
           this._snackBar.open(saveSuccess, '', {
             duration: 2000
           })
+        }
 
-          this.widgetsDirtyQuery.reset()
-        }),
-        catchError((err, cah) => {
-          const storyPointSaveFail = this.getTranslation('Story.StoryPoint.SaveFailed', 'Story page save failed')
-          this._snackBar.open(storyPointSaveFail, err.status, {
-            duration: 2000
-          })
-          return EMPTY
+        // this.widgetsDirtyQuery.reset()
+      }),
+      catchError((err, cah) => {
+        const storyPointSaveFail = this.getTranslation('Story.StoryPoint.SaveFailed', 'Story page save failed')
+        this._snackBar.open(storyPointSaveFail, err.status, {
+          duration: 2000
         })
-      )
-    }
-
-    return of(true)
+        return EMPTY
+      }),
+      switchMap(() => {
+        return this._saveWidgets(pristine?.widgets, current.widgets)
+      })
+    )
   }
 
   /**
@@ -507,14 +589,14 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
     return of(true)
   }
 
-  readonly toggleFullscreen = this.updater((state, { key, fullscreen }: { key: ID; fullscreen: boolean }) => {
+  readonly toggleFullscreen = this.updater2((state, { key, fullscreen }: { key: ID; fullscreen: boolean }) => {
     const widget = state.widgets.find((item) => item.key === key)
     widget.fullscreen = fullscreen
-    state.storyPoint.fullscreen = fullscreen
+    state.fullscreen = fullscreen
   })
 
-  readonly removeFlexLayout = this.updater((state, key: string) => {
-    const flexLayout = removeFlexLayout(state.storyPoint.responsive, key)
+  readonly removeFlexLayout = this.updater2((state, key: string) => {
+    const flexLayout = removeFlexLayout(state.responsive, key)
     if (flexLayout?.widgetKey) {
       this.removeWidget(flexLayout.widgetKey)
     }
@@ -523,33 +605,33 @@ export class NxStoryPointService extends ComponentSubStore<StoryPointState, Stor
   /**
    * 根据输入结构重构状态中的结构
    */
-  readonly refactFlexLayout = this.updater((state, flexLayout: FlexLayout) => {
-    refactFlexLayout(state.storyPoint.responsive, flexLayout)
+  readonly refactFlexLayout = this.updater2((state, flexLayout: FlexLayout) => {
+    refactFlexLayout(state.responsive, flexLayout)
     // 清理不再被 Layout 引用到的 Widgets
-    state.widgets = state.widgets.filter((item) => findFlexLayoutByWidgetKey(state.storyPoint.responsive, item.key))
+    state.widgets = state.widgets.filter((item) => findFlexLayoutByWidgetKey(state.responsive, item.key))
   })
 
   /**
    * 只更新输入的本节点属性
    */
-  readonly updateFlexLayout = this.updater((state, flexLayout: Partial<FlexLayout>) => {
-    const item = findFlexLayout(state.storyPoint.responsive, flexLayout.key)
+  readonly updateFlexLayout = this.updater2((state, flexLayout: Partial<FlexLayout>) => {
+    const item = findFlexLayout(state.responsive, flexLayout.key)
     if (item) {
       assign(item, omit(flexLayout, ['template', 'templateContext']))
     }
   })
 
-  readonly setFilterBarOptions = this.updater((state, options: ISmartFilterBarOptions) => {
-    state.storyPoint.filterBar.options = options
+  readonly setFilterBarOptions = this.updater2((state, options: ISmartFilterBarOptions) => {
+    state.filterBar.options = options
   })
 
   // get methods
   findFlexLayout(key: ID) {
-    return this.get((state) => findFlexLayout(state.storyPoint.responsive, key))
+    return this.store.query((state) => findFlexLayout(state.responsive, key))
   }
 
   findWidget(key: ID) {
-    return this.get((state) => state.storyPoint?.widgets?.find((item) => item.key === key))
+    return this.store.query((state) => state.widgets?.find((item) => item.key === key))
   }
 }
 

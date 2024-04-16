@@ -5,7 +5,6 @@ import {
   getChartCategory,
   getChartSeries,
   getEntityHierarchy,
-  getPropertyCaption,
   IChartClickEvent,
   isChartMapType,
   mergeOptions,
@@ -28,6 +27,9 @@ import {
   omitBlank,
   formatting,
   isAdvancedFilter,
+  getDimensionMemberCaption,
+  ISlicer,
+  Property,
 } from '@metad/ocap-core'
 import { ECharts, format, time, use, registerMap, graphic, getMap } from 'echarts/core'
 import {GlobeComponent, Geo3DComponent}  from 'echarts-gl/components'
@@ -148,7 +150,7 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
                   },
                   getEntityHierarchy,
                   getEntityProperty,
-                  getPropertyCaption,
+                  getDimensionMemberCaption,
                   getDefaultHierarchy,
                   stringifyProperty,
                   isVisible,
@@ -160,7 +162,8 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
                   lastValueFrom,
                   assignDeepOmitBlank,
                   omitBlank,
-                  formatting
+                  formatting,
+                  getPropertyCaption
                 }, data)
                   
                 if (customContext) {
@@ -294,17 +297,19 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
       return { ...event, event: event.event?.event, filter: {
         filteringLogic: FilteringLogic.And,
         children: chartAnnotation.dimensions.map((dimension) => {
-          const property = getEntityHierarchy(entityType, dimension) 
+          const property = getEntityHierarchy(entityType, dimension)
+          const caption = getDimensionMemberCaption(dimension, entityType)
           return {
             dimension,
             members: [
               {
+                key: item[property.name],
                 value: item[property.name],
-                label: item[getPropertyCaption(property)],
-                caption: item[getPropertyCaption(property)],
-              }
+                label: item[caption],
+                caption: item[caption],
+              } as IMember
             ]
-          }
+          } as ISlicer
         })
       }} as IChartClickEvent
 
@@ -456,15 +461,16 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
               filteringLogic: FilteringLogic.And,
               children: dimensions.map((dimension) => {
                 const hierarchy = getEntityHierarchy(entityType, dimension)
-                const caption = getPropertyCaption(hierarchy)
+                const caption = getDimensionMemberCaption(dimension, entityType)
                 return {
                   dimension,
                   members: dataIndex.map((index) => ({
+                    key: dataset.source[index][hierarchy.name],
                     value: dataset.source[index][hierarchy.name],
                     label: dataset.source[index][caption],
                     caption: dataset.source[index][caption],
                   }))
-                }
+                } as ISlicer
               })
             }
           })
@@ -517,4 +523,11 @@ export class SmartEChartEngine extends SmartChartEngine<SmartChartEngineState> {
       )
     )
   }
+}
+
+/**
+ * @deprecated 向后兼容，Will remove in version 2.3
+ */
+function getPropertyCaption(property: Property) {
+  return property.memberCaption || property.name
 }

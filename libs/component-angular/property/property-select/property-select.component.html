@@ -1,21 +1,22 @@
 <label class="flex item p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">
-  <span *ngIf="label" class="mr-1">{{label}}</span>
-  <ng-container *ngIf="label$ | async as label">
+  <span *ngIf="label()" class="mr-1">{{label()}}</span>
+  @if (label$ | async; as label) {
     <mat-icon *ngIf="label.icon" displayDensity="compact">{{ label.icon }}</mat-icon>
     <span>
       {{ 'COMPONENTS.COMMON.'+(label?.label ?? 'DIMENSION_MEASURE') | translate: {Default: label?.label ?? 'Dimension/Measure'} }}
     </span>
-  </ng-container>
+  }
 </label>
 
 <div class="select-container flex flex-col items-stretch gap-2 w-full max-w-full p-1 text-xs rounded-lg 
   ring-offset-1 ring-offset-transparent ring-2 ring-transparent hover:ring-yellow-500/50">
-  <form [formGroup]="formGroup" class="flex-1 max-w-full flex justify-start items-center">
+  <form [formGroup]="formGroup" class="relative flex-1 max-w-full flex justify-start items-center">
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
-    <mat-select #propertySelect formControlName="dimension" panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" class="overflow-hidden flex-1"
-      [required]="required">
+    <mat-select #propertySelect formControlName="dimension" class="overflow-hidden flex-1"
+      panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" 
+      [required]="required()">
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden pl-2">
         <ngm-entity-property hiddenIcon [property]="selectTrigger()" class="flex-1" ></ngm-entity-property>
 
@@ -26,7 +27,7 @@
             <mat-icon *ngIf="showMore()">expand_less</mat-icon>
           </button>
 
-          <button mat-icon-button *ngIf="showAttributes" [displayDensity]="displayDensity"
+          <button mat-icon-button *ngIf="showAttributes()" [displayDensity]="displayDensity()"
             [matMenuTriggerFor]="dimensionMenu"
             #mt="matMenuTrigger"
             [class.active]="mt.menuOpen"
@@ -34,7 +35,7 @@
               <mat-icon>more_vert</mat-icon>
           </button>
     
-          <button mat-icon-button *ngIf="hierarchies$ | async" [displayDensity]="displayDensity"
+          <button mat-icon-button *ngIf="hierarchies$ | async" [displayDensity]="displayDensity()"
             [matMenuTriggerFor]="hierarchyMenu"
             #mt="matMenuTrigger"
             [class.active]="mt.menuOpen"
@@ -42,7 +43,7 @@
               <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
           </button>
     
-          <button mat-icon-button *ngIf="membersSignal()" [displayDensity]="displayDensity"
+          <button mat-icon-button *ngIf="membersSignal()" [displayDensity]="displayDensity()"
             [matMenuTriggerFor]="membersMenu"
             #mt="matMenuTrigger"
             [class.active]="mt.menuOpen"
@@ -67,7 +68,7 @@
         <mat-option *ngFor="let property of calculations$ | async" [value]="property.name">
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
-        <mat-option *ngIf="editable" class="ngm-property-select__action" [value]="null"
+        <mat-option *ngIf="editable()" class="ngm-property-select__action" [value]="null"
           (click)="$event.stopPropagation();$event.preventDefault();">
           <button mat-button color="primary" ngmAppearance="dashed" class="ngm-property-select__create-calculation w-full"
             (click)="$event.stopPropagation();onCreateCalculation($event)">
@@ -84,7 +85,7 @@
           <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
         </mat-option>
 
-        <mat-option *ngIf="editable">
+        <mat-option *ngIf="editable()">
           <button mat-button color="primary" ngmAppearance="dashed" (click)="onCreateCalculation($event, CalculationType.MeasureControl)">
             <mat-icon>add</mat-icon>
             {{ 'COMPONENTS.PROPERTY.CREATE_MEASURE_CONTROL' | translate: {Default: 'Create Measure Control'} }}
@@ -110,6 +111,19 @@
         </mat-option>
       </mat-optgroup>
     </mat-select>
+    
+    <div class="absolute left-0 top-0 h-full max-w-full flex items-center overflow-hidden">
+      @if (entityTypeLoading()) {
+        <mat-spinner
+          [diameter]="20"
+          [strokeWidth]="1"
+        />
+      }
+
+      @if (entityTypeError()) {
+        <div class="mat-error overflow-hidden text-ellipsis whitespace-nowrap">{{entityTypeError()}}</div>
+      }
+    </div>
 
     <ng-content select="[ngmSuffix]"></ng-content>
   </form>
@@ -130,11 +144,11 @@
     <span>{{ 'COMPONENTS.PROPERTY.Label' | translate: {Default: "Label"} }}</span>
   </button>
 
-  <button mat-menu-item>
+  <button mat-menu-item (click)="$event.stopPropagation();$event.preventDefault();">
     <ngm-input class="w-full flex-row" style="flex-direction: row; align-items: center;"
       label="{{ 'COMPONENTS.PROPERTY.Caption' | translate: {Default: 'Caption'} }}"
       [(ngModel)]="caption"
-      (click)="$event.stopPropagation();"
+      (keydown.space)="$event.stopPropagation();$event.preventDefault();"
     ></ngm-input>
   </button>
 
@@ -199,12 +213,14 @@
       </mat-radio-button>
     </button>
 
-    <button mat-menu-item disableRipple *ngFor="let item of labels$ | async"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button class="ngm-radio-button__property" [value]="item.name">
-        {{item.caption}}
-      </mat-radio-button>
-    </button>
+    @for (item of labels$ | async; track item.name) {
+      <button mat-menu-item disableRipple
+        (click)="$event.stopPropagation();">
+        <mat-radio-button class="ngm-radio-button__property" [value]="item.name" [title]="item.caption">
+          {{item.caption}}
+        </mat-radio-button>
+      </button>
+    }
   </mat-menu>
 </mat-radio-group>
 
@@ -247,13 +263,13 @@
       </span>
     </button>
 
-    <button mat-menu-item *ngIf="showAttributes" disableRipple [matMenuTriggerFor]="propertiesMenu">
+    <button mat-menu-item *ngIf="showAttributes()" disableRipple [matMenuTriggerFor]="propertiesMenu">
       <mat-icon class="shrink-0" fontSet="material-icons-outlined">extension</mat-icon>
       {{ 'COMPONENTS.PROPERTY.PropertyList' | translate: {Default: "Property List"} }}
       
     </button>
 
-    <button mat-menu-item *ngIf="showAttributes" disableRipple (click)="$event.stopPropagation();">
+    <button mat-menu-item *ngIf="showAttributes()" disableRipple (click)="$event.stopPropagation();">
       <mat-checkbox [(ngModel)]="displayHierarchy" style="width: 100%;">
         {{ 'COMPONENTS.PROPERTY.DisplayHierarchy' | translate: {Default: "Display as Hierarchy"} }}
       </mat-checkbox>

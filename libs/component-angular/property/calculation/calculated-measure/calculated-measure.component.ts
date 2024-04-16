@@ -1,39 +1,41 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, forwardRef, inject, Input, ViewChild, ViewContainerRef } from '@angular/core'
+import { Component, Input, ViewChild, ViewContainerRef, effect, forwardRef, inject, input } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
+import { MatExpansionModule } from '@angular/material/expansion'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
+import { BaseEditorDirective, NxEditorModule } from '@metad/components/editor'
+import { MDXReference } from '@metad/components/mdx'
+import { NxCoreService } from '@metad/core'
 import { NgmCommonModule, NgmHighlightDirective, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { EntityCapacity, NgmEntitySchemaComponent, NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import {
   C_MEASURES,
   DataSettings,
   EntityType,
+  ParameterProperty,
+  Syntax,
   getEntityCalculations,
   getEntityParameters,
   isIndicatorMeasureProperty,
-  isPropertyMeasure,
-  ParameterProperty,
-  Syntax
+  isPropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BaseEditorDirective, NxEditorModule } from '@metad/components/editor'
-import { NxCoreService } from '@metad/core'
 import { negate, sortBy } from 'lodash-es'
-import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
-import { MDXReference } from '@metad/components/mdx'
-import { MatExpansionModule } from '@angular/material/expansion'
 import { MarkdownModule } from 'ngx-markdown'
-import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
+import { combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
+
 
 @Component({
   standalone: true,
@@ -59,7 +61,7 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
     NgmEntityPropertyComponent,
     NgmEntitySchemaComponent,
     NxEditorModule,
-    NgmHighlightDirective,
+    NgmHighlightDirective
   ],
   selector: 'ngm-calculated-measure',
   templateUrl: './calculated-measure.component.html',
@@ -79,24 +81,27 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   Syntax = Syntax
   EntityCapacity = EntityCapacity
   FUNCTIONS = []
-  
+
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
-  @Input() dsCoreService: NgmDSCoreService
-  @Input() dataSettings: DataSettings
+  readonly dsCoreService = input<NgmDSCoreService>()
+  readonly dataSettings = input<DataSettings>()
+  readonly entityType = input<EntityType>()
+  readonly coreService = input<NxCoreService>()
+  readonly syntax = input<Syntax>()
 
-  @Input()
-  get entityType(): EntityType {
-    return this.entityType$.value
-  }
-  set entityType(value) {
-    this.entityType$.next(value)
-  }
-  private entityType$ = new BehaviorSubject<EntityType>(null)
-  
-  @Input() coreService: NxCoreService
-  @Input() syntax: Syntax
+  // @Input()
+  // get entityType(): EntityType {
+  //   return this.entityType$.value
+  // }
+  // set entityType(value) {
+  //   this.entityType$.next(value)
+  // }
+  // private entityType$ = new BehaviorSubject<EntityType>(null)
+
+  // @Input() coreService: NxCoreService
+  // @Input() syntax: Syntax
 
   @Input() get story() {
     return this._story
@@ -105,6 +110,7 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     this._story = coerceBooleanProperty(value)
   }
   private _story = false
+
   @Input() get disabled() {
     return this._disabled
   }
@@ -134,22 +140,25 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     this._onChange?.(this._statement)
   }
   private _statement = ''
-  
+
   calculations = []
   private _onChange: any
 
-  public readonly calculations$ = this.entityType$.pipe(
+  public readonly calculations$ = toObservable(this.entityType).pipe(
     map(getEntityCalculations),
     map((values) => [
       ...sortBy(values.filter(negate(isIndicatorMeasureProperty)), 'calculationType'),
       ...values.filter(isIndicatorMeasureProperty)
     ]),
     combineLatestWith(this.calculatedMemberSearch.valueChanges.pipe(startWith(''))),
-    map(([values, search]) => values.filter((v) => v.caption?.toLowerCase().includes(search.toLowerCase()) ||
-      v.name.toLowerCase().includes(search.toLowerCase()))
-    ),
+    map(([values, search]) =>
+      values.filter(
+        (v) =>
+          v.caption?.toLowerCase().includes(search.toLowerCase()) || v.name.toLowerCase().includes(search.toLowerCase())
+      )
+    )
   )
-  public readonly parameters$ = this.entityType$.pipe(map(getEntityParameters))
+  public readonly parameters$ = toObservable(this.entityType).pipe(map(getEntityParameters))
 
   public readonly functions$ = of(sortBy(MDXReference.FUNCTIONS, 'label')).pipe(
     switchMap((functions) =>
@@ -163,6 +172,12 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     )
   )
 
+  constructor() {
+    effect(() => {
+      console.log(this.dataSettings())
+    })
+  }
+
   writeValue(obj: any): void {
     this._statement = obj
   }
@@ -175,18 +190,21 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   }
 
   async openCreateParameter(parameter?: ParameterProperty) {
-    const result = await firstValueFrom(this._dialog.open(NgmParameterCreateComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          dataSettings: this.dataSettings,
-          entityType: this.entityType,
-          coreService: this.coreService,
-          dimension: {}, // TODO
-          name: parameter?.name
-        }
-      })
-      .afterClosed())
-    
+    const result = await firstValueFrom(
+      this._dialog
+        .open(NgmParameterCreateComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            dataSettings: this.dataSettings,
+            entityType: this.entityType,
+            coreService: this.coreService,
+            dimension: {}, // TODO
+            name: parameter?.name
+          }
+        })
+        .afterClosed()
+    )
+
     if (result) {
       // 参数创建成功
       console.debug(result)
@@ -205,7 +223,7 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
         } else {
           this.editor.insert(event.item.data.name)
         }
-      } else if(typeof event.item.data === 'string') {
+      } else if (typeof event.item.data === 'string') {
         this.editor.insert(event.item.data)
       }
     }

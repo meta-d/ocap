@@ -1,11 +1,18 @@
-import { Component, computed, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { CommonModule } from '@angular/common'
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
+import { MatIconModule } from '@angular/material/icon'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { NxObjectNumberComponent } from '@metad/components/object-number'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling, WidgetMenuType, nonNullable } from '@metad/core'
 import { TrendType, isNil } from '@metad/ocap-core'
 import { ComponentStyling, componentStyling } from '@metad/story/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { KeyPerformanceIndicatorService } from './key-performance-indicator.service'
+import { KPIPlaceholderComponent } from './placeholder/placeholder.component'
 import { NxWidgetKPIOptions } from './types'
 
 export interface PacWidgetKPIStyling extends StoryWidgetStyling {
@@ -14,10 +21,22 @@ export interface PacWidgetKPIStyling extends StoryWidgetStyling {
 }
 
 @Component({
+  standalone: true,
   selector: 'pac-widget-kpi',
   templateUrl: 'kpi.component.html',
   styleUrls: ['kpi.component.scss'],
-  providers: [KeyPerformanceIndicatorService]
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [KeyPerformanceIndicatorService],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+
+    NxObjectNumberComponent,
+    KPIPlaceholderComponent
+  ]
 })
 export class NxWidgetKpiComponent extends AbstractStoryWidget<
   NxWidgetKPIOptions,
@@ -66,12 +85,16 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     map((additionals) => (additionals.length > 0 ? additionals : null))
   )
 
-  public readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
-  
-  readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
-
-  public readonly isLoading$ = this.dataService.loading$
   public readonly error$ = this.dataService.selectResult().pipe(map(({ error }) => error))
+
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly isLoading = toSignal(this.dataService.loading$)
+  readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
+  readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
 
   /**
   |--------------------------------------------------------------------------
@@ -96,7 +119,7 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     .selectResult()
     .pipe(takeUntilDestroyed())
     .subscribe((result) => {
-      this.#logger.debug(`Result from dataService in NxWidgetKpiComponent is:`, result)
+      // this.#logger.debug(`Result from dataService in NxWidgetKpiComponent is:`, result)
       this.setExplains([result, this.dataSettings])
     })
 

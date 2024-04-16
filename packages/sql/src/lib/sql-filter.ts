@@ -1,17 +1,11 @@
 import {
   compact,
-  EntityType,
   FilteringLogic,
   FilterOperator,
   flatten,
-  getPropertyName,
   IFilter,
   IMember,
   isAdvancedFilter,
-  isArray,
-  isEmpty,
-  isFilter,
-  ISlicer,
   isNumber,
   isString,
   PropertyLevel
@@ -19,8 +13,7 @@ import {
 import { CubeContext } from './cube'
 import { createDimensionContext, DimensionContext } from './dimension'
 import { And, Not, Or, Parentheses } from './functions'
-import { allMemberName } from './types'
-import { serializeName, serializeTableAlias } from './utils'
+import { allMemberName, serializeName, serializeTableAlias } from './utils'
 
 // /**
 //  * @deprecated use compileFilters
@@ -123,7 +116,9 @@ export function compileSlicer(slicer: IFilter, cube: CubeContext, dialect: strin
   const { entityType } = cube
   if (isAdvancedFilter(slicer)) {
     const children = slicer.children.map((child) => compileSlicer(child, cube, dialect)).filter(Boolean)
-    return slicer.filteringLogic === FilteringLogic.And ? And(...Parentheses(...children)) : Or(...Parentheses(...children))
+    return slicer.filteringLogic === FilteringLogic.And
+      ? And(...Parentheses(...children))
+      : Or(...Parentheses(...children))
   }
 
   const factTable = cube.factTable
@@ -147,8 +142,13 @@ export function compileSlicer(slicer: IFilter, cube: CubeContext, dialect: strin
 
   const operator = (<IFilter>slicer).operator
   if (operator === FilterOperator.BT) {
-    const btMembers = compileMembers(slicer.members, levels, dimensionContext);
-    const statement = And(...Parentheses(serializeCPMembers(btMembers[0], FilterOperator.GE), serializeCPMembers(btMembers[1], FilterOperator.LE)))
+    const btMembers = compileMembers(slicer.members, levels, dimensionContext)
+    const statement = And(
+      ...Parentheses(
+        serializeCPMembers(btMembers[0], FilterOperator.GE),
+        serializeCPMembers(btMembers[1], FilterOperator.LE)
+      )
+    )
 
     return slicer.exclude ? Not(statement) : statement
   }
@@ -189,10 +189,7 @@ export function compileMembers(members: IMember[], levels: PropertyLevel[], dime
       .split('].[')
       .filter(
         (value, i) =>
-          !(
-            i === 0 &&
-            dimensionContext.hierarchy.hasAll && allMemberName(dimensionContext.hierarchy) === value
-          )
+          !(i === 0 && dimensionContext.hierarchy.hasAll && allMemberName(dimensionContext.hierarchy) === value)
       )
       .map((value, i) => {
         const level = levels[i]
@@ -201,7 +198,9 @@ export function compileMembers(members: IMember[], levels: PropertyLevel[], dime
         const levelColumn = level.nameColumn || level.column
 
         if (!levelColumn) {
-          throw new Error(`Can't find table column for level '${level.name}' of dimension '${dimensionContext.dimension.dimension}'`)
+          throw new Error(
+            `Can't find table column for level '${level.name}' of dimension '${dimensionContext.dimension.dimension}'`
+          )
         }
 
         const columnName = `${serializeName(
@@ -238,17 +237,16 @@ export function serializeCPMembers(
       break
   }
 
-  const conditions = members
-    .reduce((conditions, member, currentIndex) => {
-      const conditionGroup = [
-        ...members
-          .slice(0, currentIndex)
-          .map((member) => (isString(member) ? member : `${member.columnName} = ${member.value}`)),
-        isString(member) ? member : `${member.columnName} ${op} ${member.value}`
-      ]
-      conditions.push(conditionGroup.length === 1 ? conditionGroup[0] : `( ${And(...conditionGroup)} )`)
-      return conditions
-    }, [])
+  const conditions = members.reduce((conditions, member, currentIndex) => {
+    const conditionGroup = [
+      ...members
+        .slice(0, currentIndex)
+        .map((member) => (isString(member) ? member : `${member.columnName} = ${member.value}`)),
+      isString(member) ? member : `${member.columnName} ${op} ${member.value}`
+    ]
+    conditions.push(conditionGroup.length === 1 ? conditionGroup[0] : `( ${And(...conditionGroup)} )`)
+    return conditions
+  }, [])
 
   if ([FilterOperator.GE, FilterOperator.LE].includes(operator)) {
     conditions.push(`( ${serializeEQMembers(members)} )`)

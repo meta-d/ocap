@@ -18,7 +18,7 @@ export class KpiSchemaService extends DataSettingsSchemaService {
   }
 
   getBuilderSchema(i18nStoryWidgets?: any) {
-    const dataSettings = this.generateDataSettingsSchema(
+    const dataSettings = this.makeDataSettingsContent(
       i18nStoryWidgets?.Common,
       this.getKPIAnnotation(i18nStoryWidgets)
     )
@@ -29,7 +29,7 @@ export class KpiSchemaService extends DataSettingsSchemaService {
         label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
         toggleable: false,
         expanded: true,
-        fieldGroup: dataSettings.fieldGroup[0].fieldGroup
+        fieldGroup: dataSettings
       },
       {
         key: 'options',

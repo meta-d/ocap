@@ -7,7 +7,10 @@ import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
 export class CalculatedMemberAttributesSchema extends CubeSchemaService<CalculatedMember> {
-  public readonly dimension$ = this.select((state) => state.modeling?.dimension)
+  readonly calculatedMember$ = this.select((state) => state.modeling)
+  
+  readonly memberDimension$ = this.calculatedMember$.pipe(map((calculatedMember) => calculatedMember?.dimension))
+
   public readonly runtimeDimension$ = this.entityService?.originalEntityType$.pipe(
     map((entityType) => {
       return [
@@ -28,7 +31,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
   )
 
   public readonly rtHierarchies$ = this.entityService.entityType$.pipe(
-    combineLatestWith(this.dimension$),
+    combineLatestWith(this.memberDimension$),
     switchMap(async ([entityType, dimension]) => {
       if (dimension === C_MEASURES) {
         return [

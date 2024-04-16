@@ -12,8 +12,12 @@ import {
   OnInit,
   Output,
   ViewContainerRef,
+  booleanAttribute,
   computed,
-  inject
+  effect,
+  inject,
+  input,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -44,7 +48,7 @@ import {
   WidgetComponentType
 } from '@metad/story/core'
 import { StorySharesComponent } from '@metad/story/story'
-import { combineLatest, firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { ToastrService, tryHttp } from '../../../@core'
 import { MaterialModule, ProjectFilesDialogComponent } from '../../../@shared'
@@ -128,7 +132,12 @@ export class StoryToolbarComponent implements OnInit {
   private _viewContainerRef = inject(ViewContainerRef)
   private _widgetComponents?: Array<StoryWidgetComponentProvider> = inject(STORY_WIDGET_COMPONENT, { optional: true })
 
-  @Input() editable: boolean
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly collapsible = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   @Output() editableChange = new EventEmitter()
   @Output() fieldControlDrawer = new EventEmitter()
@@ -138,7 +147,8 @@ export class StoryToolbarComponent implements OnInit {
   @Output() deviceZoomChange = new EventEmitter()
   @Output() resetScalePan = new EventEmitter()
 
-  showDetails: null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'
+  readonly showDetails = signal<null | 'newPages' | 'storyDesigner' | 'widgets' | 'devices' | 'preferences'>(null)
+
   _fullscreen: boolean
   @HostBinding('class.pac-toolbar__on-right')
   onRight = false
@@ -161,19 +171,22 @@ export class StoryToolbarComponent implements OnInit {
 
   readonly isDirty$ = this.storyService.dirty$
   readonly isNotDirty$ = this.isDirty$.pipe(map((dirty) => !dirty))
-  readonly saving$ = this.storyService.saving$
-  readonly disableSave$ = combineLatest([this.isDirty$, this.saving$]).pipe(
-    map(([isDirty, saving]) => !isDirty || saving)
-  )
-  public readonly pointList$ = this.storyService.points$
+  readonly saving = this.storyService.saving
+
+  readonly disableSave = computed(() => !this.storyService.dirty() || this.storyService.saving())
+  
+  public readonly pointList = this.storyService.points
 
   public readonly isMobile$ = this.storyService.isMobile$
 
-  public readonly storyOptions = toSignal(this.storyService.storyOptions$)
-  public readonly scale = computed(() => this.storyOptions()?.scale ?? 100)
+  // public readonly storyOptions = toSignal(this.storyService.storyOptions$)
+  // public readonly scale = computed(() => this.storyOptions()?.scale ?? 100)
+  readonly currentPage = this.storyService.currentPageState
+  readonly scale = computed(() => this.currentPage()?.scale ?? 100)
+
 
   public readonly creatingWidget$ = this.toolbarService.creatingWidget$
-  public readonly isPanMode$ = this.storyService.isPanMode$
+  readonly isPanMode = this.storyService.isPanMode
 
   public readonly isWidgetSelected = computed(() => !this.storyService.currentWidget())
   /**
@@ -213,9 +226,23 @@ export class StoryToolbarComponent implements OnInit {
     )
   }
 
+  togglePreferences() {
+    this.showDetails.update((state) => state === 'preferences' ? null : 'preferences')
+  }
+
+  toggleStoryDesigner() {
+    this.showDetails.update((state) => state === 'storyDesigner' ? null : 'storyDesigner')
+  }
+  toggleDevices() {
+    this.showDetails.update((state) => state === 'devices' ? null : 'devices')
+  }
+  toggleWidgets() {
+    this.showDetails.update((state) => state === 'widgets' ? null : 'widgets')
+  }
+
   toggleExpand() {
     if (this.expandLess) {
-      this.showDetails = null
+      this.showDetails.set(null)
     }
     this.expandLess = !this.expandLess
   }
@@ -229,9 +256,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   setScale(scale: number) {
-    this.storyService.updateStoryOptions({
-      scale
-    })
+    this.storyService.setZoom(scale)
   }
 
   toggleMobile(device: EmulatedDevice) {
@@ -409,7 +434,7 @@ export class StoryToolbarComponent implements OnInit {
 
   async saveAsTemplate() {
     const story = this.story()
-    const points = await firstValueFrom(this.storyService.pageStates$)
+    const points = this.storyService.points()
     const asTemplate = await firstValueFrom(
       this._dialog
         .open(SaveAsTemplateComponent, {
@@ -482,12 +507,12 @@ export class StoryToolbarComponent implements OnInit {
   async onCopyTo(pointKey: string) {
     const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
     if (name) {
-      this.storyService.copyTo({ name, pointKey })
+      this.storyService.copyWidgetTo({ name, pointKey })
     }
   }
 
   async onCopyToNew(type: StoryPointType) {
-    await this.storyService.copyToNew(type)
+    await this.storyService.copyWidgetToNewPage(type)
   }
 
   async pasteWidget() {
@@ -528,7 +553,7 @@ export class StoryToolbarComponent implements OnInit {
         name,
         type: StoryPointType.Canvas
       })
-      this.showDetails = null
+      this.showDetails.set(null)
     }
   }
 
@@ -554,21 +579,17 @@ export class StoryToolbarComponent implements OnInit {
     this.fullscreen.emit(this._fullscreen)
   }
 
-  async togglePanTool() {
-    const isPanMode = await firstValueFrom(this.isPanMode$)
+  togglePanTool() {
+    const isPanMode = this.isPanMode()
     this.storyService.patchState({ isPanMode: !isPanMode })
   }
 
   async zoomIn() {
-    this.storyService.updateStoryOptions({
-      scale: this.scale() + 10
-    })
+    this.storyService.zoomIn()
   }
 
   async zoomOut() {
-    this.storyService.updateStoryOptions({
-      scale: this.scale() - 10
-    })
+    this.storyService.zoomOut()
   }
 
   calculateRightSide(event: CdkDragEnd) {
@@ -615,8 +636,15 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
+  resetPosition() {
+    const element: HTMLElement = this._elRef.nativeElement
+    element.style.right = 'auto'
+    element.style.left = '0'
+    element.style.transform = 'translate(0px, 0px)'
+  }
+
   openNewPage() {
-    this.showDetails = 'newPages'
+    this.showDetails.set('newPages')
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -636,19 +664,28 @@ export class StoryToolbarComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-      this.storyService.saveStory()
-      event.preventDefault()
-      return
-    }
-
-    if (event.altKey) {
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+        if (event.key === 'z' || event.key === 'Z') {
+          this.storyService.redo()
+          event.preventDefault()
+        }
+      } else {
+        if (event.key === 's' || event.key === 'S') {
+          this.storyService.saveStory()
+          event.preventDefault()
+        } else if (event.key === 'z' || event.key === 'Z') {
+          this.storyService.undo()
+          event.preventDefault()
+        }
+      }
+    } else if (event.altKey) {
       switch (event.code) {
         case 'Minus':
-          this.storyService.zoomOut()
+          this.zoomOut()
           break
         case 'Equal':
-          this.storyService.zoomIn()
+          this.zoomIn()
           break
         case 'Escape':
           this.resetScalePan.emit()

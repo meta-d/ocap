@@ -256,24 +256,54 @@ export function SemanticsAccordionWrapper(i18n) {
   ])
 }
 
-/**
- * @deprecated use SemanticsAccordionWrapper
- */
-export function SemanticsExpansion(COMMON?) {
+export function KeyExpressionAccordion(COMMON) {
   return {
-    fieldGroupClassName: FORMLY_ROW,
-    key: 'semantics',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      label: COMMON?.Semantics ?? 'Semantics',
-      icon: 'location_on',
-      toggleable: true
-    },
-    fieldGroup: [Semantic(COMMON), CalendarFormatter(COMMON)]
+    key: 'keyExpression',
+    label: COMMON?.KeyExpression ?? 'Key Expression',
+    toggleable: true,
+    fieldGroup: [SQLExpression(COMMON)]
   }
 }
 
+export function NameExpressionAccordion(COMMON) {
+  return {
+    key: 'nameExpression',
+    label: COMMON?.NameExpression ?? 'Name Expression',
+    toggleable: true,
+    fieldGroup: [SQLExpression(COMMON)]
+  }
+}
+
+export function CaptionExpressionAccordion(COMMON) {
+  return {
+    key: 'captionExpression',
+    label: COMMON?.CaptionExpression ?? 'Caption Expression',
+    toggleable: true,
+    fieldGroup: [SQLExpression(COMMON)]
+  }
+}
+
+export function OrdinalExpressionAccordion(COMMON) {
+  return {
+    key: 'ordinalExpression',
+    label: COMMON?.OrdinalExpression ?? 'Ordinal Expression',
+    toggleable: true,
+    fieldGroup: [SQLExpression(COMMON)]
+  }
+}
+
+export function ParentExpressionAccordion(COMMON) {
+  return {
+    key: 'parentExpression',
+    label: COMMON?.ParentExpression ?? 'Parent Expression',
+    toggleable: true,
+    fieldGroup: [SQLExpression(COMMON)]
+  }
+}
+
+/**
+ * @deprecated use KeyExpressionAccordion
+ */
 export function KeyExpression(COMMON?) {
   return {
     key: 'keyExpression',
@@ -287,7 +317,9 @@ export function KeyExpression(COMMON?) {
     fieldGroup: [SQLExpression(COMMON)]
   }
 }
-
+/**
+ * @deprecated use NameExpressionAccordion
+ */
 export function NameExpression(COMMON?) {
   return {
     key: 'nameExpression',
@@ -300,7 +332,9 @@ export function NameExpression(COMMON?) {
     fieldGroup: [SQLExpression(COMMON)]
   }
 }
-
+/**
+ * @deprecated use CaptionExpressionAccordion
+ */
 export function CaptionExpression(COMMON?) {
   return {
     key: 'captionExpression',
@@ -314,7 +348,9 @@ export function CaptionExpression(COMMON?) {
     fieldGroup: [SQLExpression(COMMON)]
   }
 }
-
+/**
+ * @deprecated use OrdinalExpressionAccordion
+ */
 export function OrdinalExpression(COMMON?) {
   return {
     key: 'ordinalExpression',
@@ -327,7 +363,9 @@ export function OrdinalExpression(COMMON?) {
     fieldGroup: [SQLExpression(COMMON)]
   }
 }
-
+/**
+ * @deprecated use ParentExpressionAccordion
+ */
 export function ParentExpression(COMMON?) {
   return {
     key: 'parentExpression',

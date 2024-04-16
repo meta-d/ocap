@@ -1,4 +1,4 @@
-import { DataSourceOptions, DataSourceSettings, Dimension, Measure, Property, PropertyHierarchy } from '@metad/ocap-core'
+import { DataSourceOptions, DataSourceSettings, Dimension, Measure, Property } from '@metad/ocap-core'
 
 // 固有度量字段 行计数
 export const C_MEASURES_ROW_COUNT = 'Measures_Row_Count'
@@ -13,7 +13,7 @@ export interface SQLDataSourceSettings extends DataSourceSettings {
 
 /**
  * Database original schema
- * 
+ *
  * 三段式数据库命名 catalog.schema.table
  */
 export interface SQLSchema {
@@ -45,12 +45,20 @@ export interface SQLQueryProperty {
 }
 
 // Types for sql database exec
-
+/**
+ * Sync with @metad/contacts
+ */
 export interface IColumnDef {
   name: string
   label?: string
-  type: string
-  dbType?: string
+  /**
+   * Types in javascript
+   */
+  type: 'number' | 'string' | 'boolean'
+  /**
+   * Original data type in database
+   */
+  dataType: string
   nullable?: boolean
   position?: number
   /**
@@ -75,15 +83,8 @@ export enum AggregateFunctions {
 export const C_ALL_MEMBER_NAME = `(All)`
 export const C_ALL_MEMBER_CAPTION = `All`
 
-export function allMemberName(hierarchy: PropertyHierarchy) {
-  return hierarchy.allMemberName || C_ALL_MEMBER_NAME
-}
-export function allMemberCaption(hierarchy: PropertyHierarchy) {
-  return hierarchy.allMemberCaption || C_ALL_MEMBER_CAPTION
-}
-
 export const SQLErrorCode = {
-  CUBE_DEFAULT_MEASURE: 'Cube default measure is required!',
+  CUBE_DEFAULT_MEASURE: 'Cube default measure is required!'
 }
 
 export class SQLError extends Error {

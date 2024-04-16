@@ -8,7 +8,7 @@ import { DataSourceService, ModelsService } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { uploadYamlFile } from '@metad/core'
-import { NgmTreeSelectComponent, TreeTableModule } from '@metad/ocap-angular/common'
+import { NgmTreeSelectComponent, TreeTableColumn, TreeTableModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { AgentType, Property, Syntax } from '@metad/ocap-core'
@@ -138,9 +138,10 @@ export class ModelsComponent extends TranslationBaseComponent implements AfterVi
       {
         name: 'actions',
         caption: this.getTranslation('PAC.MODEL.Actions', { Default: 'Actions' }),
-        cellTemplate: this.actions
+        cellTemplate: this.actions,
+        stickyEnd: true
       }
-    ]
+    ] as TreeTableColumn[]
   }
 
   getUpdatedAtPipe() {

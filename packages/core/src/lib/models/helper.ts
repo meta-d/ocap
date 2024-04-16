@@ -1,5 +1,5 @@
 import { Semantics } from '../annotations'
-import { Dimension, getPropertyName, IMember, isDimension, ISlicer, isMeasure, Measure, Member } from '../types'
+import { Dimension, getPropertyHierarchy, getPropertyName, IMember, isDimension, ISlicer, isMeasure, Measure, Member } from '../types'
 import { assignDeepOmitBlank, isEmpty, isNil, isString, omit, omitBy } from '../utils'
 import {
   CalculationProperty,
@@ -8,6 +8,7 @@ import {
   isIndicatorMeasureProperty,
   RestrictedMeasureProperty
 } from './calculated'
+import { IntrinsicMemberProperties } from './member'
 import { AggregationRole, EntityProperty, PropertyAttributes } from './property'
 import {
   Cube,
@@ -230,14 +231,30 @@ export function getHierarchyProperty(hierarchy: PropertyHierarchy, name: string)
   return property
 }
 
-/**
- * 获取字段的文本字段, 向后兼容 text 属性
- *
- * @param property
- * @returns
- */
-export function getPropertyCaption(property: Property) {
-  return property?.memberCaption
+export function _getPropertyCaption(property: Property) {
+  return property?.caption
+}
+
+export function getDimensionMemberCaption(dimension: Dimension, entityType?: EntityType) {
+  if (dimension.memberCaption) {
+    if (IntrinsicMemberProperties[dimension.memberCaption]) {
+      return `${getPropertyHierarchy(dimension)}.[${dimension.memberCaption}]`
+    }
+    return dimension.memberCaption
+  }
+  if (entityType) {
+    const property = getEntityProperty(entityType, dimension)
+    return property?.memberCaption
+  }
+  return null
+}
+
+export function getDimensionDisplayBehaviour(dimension: Dimension) {
+  if (isDimension(dimension)) {
+    return dimension.displayBehaviour
+  }
+
+  return null
 }
 
 export function getPropertyUnitName(property: Property) {
@@ -245,28 +262,14 @@ export function getPropertyUnitName(property: Property) {
 }
 
 /**
- * 获取维度的文本字段
- *
- * @param entityType
- * @param dimension
- * @returns
- */
-export function getDimensionLabel(entityType: EntityType, dimension: Dimension) {
-  if (dimension.memberCaption) {
-    return dimension.memberCaption
-  }
-  const property = getEntityProperty(entityType, dimension)
-
-  return getPropertyCaption(property)
-}
-
-/**
- * TODO 有问题
- * @param member
- * @returns
+ * @deprecated use {@link getMemberKey}
  */
 export function getMemberValue(member: Member): string {
-  return isString(member) ? member : (member?.value as string)
+  return isString(member) ? member : (member?.key || member?.value as string)
+}
+
+export function getMemberKey(member: Member): string {
+  return isString(member) ? member : (member?.key || member?.value as string)
 }
 
 export function hasLevel(dimension: Dimension | string) {
@@ -633,11 +636,13 @@ export function mapEntityTypeHierarchy2Tree(entityType: EntityType) {
     })
 }
 
-export function getMemberFromRow(row: unknown, property: Property) {
-  const label = getPropertyCaption(property)
+export function getMemberFromRow(row: unknown, dimension: Dimension, entityType?: EntityType) {
+  const caption = getDimensionMemberCaption(dimension, entityType)
   return {
-    value: row[property.name],
-    label: label ? row[label] : null
+    key: row[dimension.hierarchy || dimension.dimension],
+    value: row[dimension.hierarchy || dimension.dimension],
+    label: caption ? row[caption] : null,
+    caption: caption ? row[caption] : null,
   }
 }
 

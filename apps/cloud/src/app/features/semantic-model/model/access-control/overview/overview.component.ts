@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { IUser, RoleTypeEnum } from '@metad/contracts'
-import { userLabel, UserRoleSelectComponent } from 'apps/cloud/src/app/@shared'
+import { UserRoleSelectComponent, userLabel } from 'apps/cloud/src/app/@shared'
 import { BehaviorSubject } from 'rxjs'
 import { combineLatestWith, debounceTime, map, startWith } from 'rxjs/operators'
 import { AccessControlStateService } from '../access-control.service'
@@ -12,7 +12,7 @@ import { AccessControlStateService } from '../access-control.service'
   templateUrl: 'overview.component.html',
   styleUrls: ['overview.component.scss']
 })
-export class AccessOverviewComponent implements OnInit {
+export class AccessOverviewComponent {
   RoleTypeEnum = RoleTypeEnum
   roleDisplayedColumns: string[] = ['name', 'type', 'action']
   displayedColumns: string[] = ['user', 'roles', 'action']
@@ -45,7 +45,7 @@ export class AccessOverviewComponent implements OnInit {
     map(([userRoles, newUsers]) => {
       newUsers.forEach((newUser) => {
         if (!userRoles.users.find((item) => item.user.id === newUser.id)) {
-          userRoles.users.push({user: newUser, roles: []})
+          userRoles.users.push({ user: newUser, roles: [] })
         }
       })
 
@@ -60,7 +60,6 @@ export class AccessOverviewComponent implements OnInit {
     }),
     combineLatestWith(this.searchControl.valueChanges.pipe(debounceTime(300), startWith(''))),
     map(([userRoles, text]) => {
-
       if (text.trim()) {
         text = text.trim().toLowerCase()
         return {
@@ -72,10 +71,7 @@ export class AccessOverviewComponent implements OnInit {
       return userRoles
     })
   )
-  constructor(private accessControlState: AccessControlStateService,
-    private _dialog: MatDialog) {}
-
-  ngOnInit() {}
+  constructor(private accessControlState: AccessControlStateService, private _dialog: MatDialog) {}
 
   onAddUser() {
     this._dialog

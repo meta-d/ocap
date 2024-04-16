@@ -249,7 +249,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
           dimension: {
             dimension: property.name
           },
-          members: [{ value: language }]
+          members: [{ value: language, key: language }]
         })
       }
     }

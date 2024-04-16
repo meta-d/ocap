@@ -1,9 +1,14 @@
 import {
   ChartDimension,
   ChartMeasure,
+  DisplayBehaviour,
   displayByBehaviour,
+  EntityType,
+  getDimensionDisplayBehaviour,
+  getDimensionMemberCaption,
+  getEntityHierarchy,
   getMeasurePropertyUnit,
-  getPropertyCaption,
+  IMember,
   PrimitiveType,
   Property,
   PropertyMeasure
@@ -91,25 +96,27 @@ export function formatMeasureNumber(
   return result
 }
 
-export function _formatDimensionValue(item, dimProperty?: Property | null) {
-  if (!item || !dimProperty) {
+export function _formatDimensionValue(item, key: string, caption: string, displayBehaviour: DisplayBehaviour, dataType: string) {
+  if (!item || !key) {
     return ''
   }
 
-  if (dimProperty?.dataType === 'Edm.DateTime') {
+  if (dataType === 'Edm.DateTime') {
     // if (dimProperty.displayFormat === 'Date') {
     //   return format(item[dimProperty.name], 'yyyy-MM-dd')
     // }
     // TODO
-    return format(item[dimProperty.name], 'yyyy-MM-dd')
+    return format(item[key], 'yyyy-MM-dd')
   }
 
   return displayByBehaviour(
     {
-      value: item[dimProperty?.name],
-      label: item[getPropertyCaption(dimProperty)]
-    }
-    // dimProperty?.displayBehaviour
+      key: item[key],
+      value: item[key],
+      label: item[caption],
+      caption: item[caption],
+    } as IMember,
+    displayBehaviour
   )
 }
 
@@ -150,16 +157,18 @@ export function formatMeasuresLabel(
     .join('<br>')
 }
 
-export function setCategoryAxisLabel(category, items: any[], chartCategory: ChartDimension, property: Property) {
+export function setCategoryAxisLabel(category, items: any[], chartCategory: ChartDimension, entityType: EntityType) {
   // 暂时只支持一个 dimension
   const behaviour = chartCategory.displayBehaviour
+  const property = getEntityHierarchy(entityType, chartCategory)
+  const caption = getDimensionMemberCaption(chartCategory, entityType)
   category.axisLabel = category.axisLabel || {}
   category.axisLabel.formatter = (value, index) => {
-    const textName = getPropertyCaption(property)
+    const textName = caption
     if (textName) {
       const item = find(items, (item) => item[property.name] === value)
       if (item) {
-        return displayByBehaviour({ value: item[property.name], label: item[textName] }, behaviour)
+        return displayByBehaviour({ key: item[property.name], caption: item[textName] }, behaviour)
       }
     }
 
@@ -234,7 +243,7 @@ export function formatCategoryLabel(
   category: ChartDimension
 ) {
   const label = valueTexts?.get(value) || ''
-  return displayByBehaviour({ value, label }, category.displayBehaviour)
+  return displayByBehaviour({ key: `${value}`, value, label, caption: label }, getDimensionDisplayBehaviour(category))
 }
 
 /**

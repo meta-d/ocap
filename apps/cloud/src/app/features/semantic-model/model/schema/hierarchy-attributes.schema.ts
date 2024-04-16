@@ -1,19 +1,17 @@
 import { Injectable } from '@angular/core'
-import { PropertyHierarchy } from '@metad/ocap-core'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { map } from 'rxjs/operators'
 import { DimensionModeling } from './dimension.schema'
 import { HierarchySchemaService } from './hierarchy.schema'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 
 @Injectable()
-export class HierarchyAttributesSchema extends HierarchySchemaService<PropertyHierarchy> {
+export class HierarchyAttributesSchema extends HierarchySchemaService {
   HIERARCHY: any
 
   getSchema() {
     return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
       map((SCHEMA) => {
         this.SCHEMA = SCHEMA
-        this.DIMENSION = SCHEMA?.DIMENSION
         this.HIERARCHY = SCHEMA?.HIERARCHY
 
         const dimensionModeling = DimensionModeling(
@@ -21,7 +19,7 @@ export class HierarchyAttributesSchema extends HierarchySchemaService<PropertyHi
           this.getTranslationFun(),
           this.hierarchyOptions$,
           this.fields$,
-          this.dimensions()
+          this.otherDimensions()
         )
         dimensionModeling.key = 'dimension'
         return [
@@ -37,7 +35,7 @@ export class HierarchyAttributesSchema extends HierarchySchemaService<PropertyHi
               },
               {
                 props: {
-                  label: this.DIMENSION?.TITLE ?? 'Dimension',
+                  label: SCHEMA?.DIMENSION?.TITLE ?? 'Dimension',
                   icon: 'account_tree'
                 },
                 fieldGroup: [dimensionModeling]

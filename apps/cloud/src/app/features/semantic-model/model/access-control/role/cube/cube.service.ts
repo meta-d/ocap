@@ -1,24 +1,57 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, inject } from '@angular/core'
-import { IModelRole, MDX } from '@metad/contracts'
+import { MDX } from '@metad/contracts'
 import { C_MEASURES, PropertyHierarchy, serializeUniqueName } from '@metad/ocap-core'
-import { ComponentSubStore } from '@metad/store'
+import { withProps } from '@ngneat/elf'
 import { TranslateService } from '@ngx-translate/core'
 import { ToastrService } from 'apps/cloud/src/app/@core'
+import { createSubStore, write } from '../../../../store'
 import { RoleStateService } from '../role.service'
 
+
 @Injectable()
-export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRole> {
+export class CubeStateService {
   readonly #translate = inject(TranslateService)
   readonly #toastr = inject(ToastrService)
   readonly roleState = inject(RoleStateService)
 
-  constructor() {
-    super({} as any)
-  }
+  /**
+  |--------------------------------------------------------------------------
+  | Store
+  |--------------------------------------------------------------------------
+  */
+  readonly store = createSubStore(
+    this.roleState.store,
+    { name: 'semantic_model_role_cube', arrayKey: 'cube' },
+    withProps<MDX.CubeGrant>(null)
+  )
+  readonly pristineStore = createSubStore(
+    this.roleState.pristineStore,
+    { name: 'semantic_model_role_cube_pristine', arrayKey: 'cube' },
+    withProps<MDX.CubeGrant>(null)
+  )
+
+  readonly state$ = this.store.asObservable()
 
   public init(name: string) {
-    this.connect(this.roleState, { parent: ['options', 'schemaGrant', 'cubeGrants', name], arrayKey: 'cube' })
+    // this.connect(this.roleState, { parent: ['options', 'schemaGrant', 'cubeGrants', name], arrayKey: 'cube' })
+    this.store.connect(['options', 'schemaGrant', 'cubeGrants', name])
+    this.pristineStore.connect(['options', 'schemaGrant', 'cubeGrants', name])
+  }
+
+  patchState(value: Partial<MDX.CubeGrant>) {
+    this.store.update(write((state) => ({
+      ...state,
+      ...value
+    })))
+  }
+
+  updater<ProvidedType = void, OriginType = ProvidedType>(
+    fn: (state: MDX.CubeGrant, ...params: OriginType[]) => MDX.CubeGrant | void
+  ) {
+    return (...params: OriginType[]) => {
+      this.store.update(write((state) => fn(state, ...params)))
+    }
   }
 
   readonly addHierarchy = this.updater((state, hierarchy: PropertyHierarchy) => {
@@ -156,10 +189,6 @@ export class CubeStateService extends ComponentSubStore<MDX.CubeGrant, IModelRol
   })
 
   getTranslation(key: string, params?: any) {
-    let t = ''
-    this.#translate.get(key, params).subscribe((value) => {
-      t = value
-    })
-    return t
+    return this.#translate.instant(key, params)
   }
 }

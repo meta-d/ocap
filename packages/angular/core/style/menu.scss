@@ -2,3 +2,13 @@
   overflow: hidden;
   max-height: 80vh;
 }
+
+.mat-mdc-menu-panel {
+  .mat-mdc-menu-item {
+    .mat-mdc-radio-button {
+      .mdc-label {
+        @apply whitespace-nowrap text-ellipsis;
+      }
+    }
+  }
+}
