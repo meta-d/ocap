@@ -28,7 +28,7 @@
       <mat-autocomplete #auto="matAutocomplete" disableRipple class="ngm-tree-select__panel"
         [class]="'ngm-autocomplete-panel ' + (multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
         [displayWith]="displayWith"
-        [panelWidth]="panelWidth"
+        [panelWidth]="panelWidth()"
         [autoActiveFirstOption]="autoActiveFirstOption"
         [autoSelectActiveOption]="autoSelectActiveOption"
         (opened)="onAutocompleteOpened()"
