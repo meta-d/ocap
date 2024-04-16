@@ -77,8 +77,8 @@ export class PACDataSourceEditComponent implements OnInit {
     public dialogRef: MatDialogRef<PACDataSourceEditComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Pick<IDataSource, 'id'>,
     private toastrService: ToastrService,
+    private serverAgent: ServerAgent,
     @Optional() private localAgent?: LocalAgent,
-    @Optional() private serverAgent?: ServerAgent,
   ) {}
 
   async ngOnInit() {
