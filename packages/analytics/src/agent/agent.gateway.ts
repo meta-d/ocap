@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@metad/server-common'
 import { WsJWTGuard } from '@metad/server-core'
 import { UseGuards } from '@nestjs/common'
 import { QueryBus } from '@nestjs/cqrs'
@@ -18,7 +19,7 @@ export class EventsGateway {
 	server: Server
 
 	constructor(private readonly queryBus: QueryBus) {}
-	
+
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
 	async olap(@MessageBody() data: any): Promise<WsResponse<any>> {
@@ -58,7 +59,7 @@ export class EventsGateway {
 					id,
 					status: 500,
 					statusText: error.message ?? 'Internal Server Error',
-					data: error?.response ?? error
+					data: getErrorMessage(error)
 				}
 			}
 		}
