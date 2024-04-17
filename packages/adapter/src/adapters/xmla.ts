@@ -51,7 +51,7 @@ export class XMLA extends BaseHTTPQueryRunner<XmlaAdapterOptions> {
     return url
   }
 
-  runQuery(query: string, options?: Record<string, any>) {
+  override runQuery(query: string, options?: Record<string, any>) {
     const headers = options?.headers || {}
     return this.post(query, {
       auth: {

@@ -1,5 +1,6 @@
+import { IUser } from '@metad/contracts'
 import { getErrorMessage } from '@metad/server-common'
-import { WsJWTGuard } from '@metad/server-core'
+import { WsJWTGuard, WsUser } from '@metad/server-core'
 import { UseGuards } from '@nestjs/common'
 import { QueryBus } from '@nestjs/cqrs'
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets'
@@ -22,25 +23,28 @@ export class EventsGateway {
 
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
-	async olap(@MessageBody() data: any): Promise<WsResponse<any>> {
+	async olap(@MessageBody() data: any, @WsUser() user: IUser): Promise<WsResponse<any>> {
 		const { id, dataSourceId, modelId, body, acceptLanguage, forceRefresh } = data
 
 		try {
 			let result = null
 			if (modelId) {
 				result = await this.queryBus.execute(
-					new ModelOlapQuery({
-						id,
-						dataSourceId,
-						modelId,
-						body,
-						acceptLanguage,
-						forceRefresh
-					})
+					new ModelOlapQuery(
+						{
+							id,
+							dataSourceId,
+							modelId,
+							body,
+							acceptLanguage,
+							forceRefresh
+						},
+						user
+					)
 				)
 			} else {
 				result = await this.queryBus.execute(
-					new DataSourceOlapQuery({ id, dataSourceId, body, forceRefresh, acceptLanguage })
+					new DataSourceOlapQuery({ id, dataSourceId, body, forceRefresh, acceptLanguage }, user)
 				)
 			}
 			return {
