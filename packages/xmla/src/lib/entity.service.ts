@@ -45,7 +45,7 @@ import { generateMDXQuery } from './mdx-query'
 import { generateMDXStatement } from './mdx-statement'
 import { IntrinsicMemberProperties } from './reference'
 import { escapeBWSlash, LANGUAGE_CODES_SAPBW, MDXDialect, wrapHierarchyValue } from './types'
-import { getErrorMessage, simplifyErrorMessage } from './utils'
+import { getErrorMessage, getExceptionMessage, simplifyErrorMessage } from './utils'
 import { fetchDataFromMultidimensionalTuple } from './xmla/multidimensional'
 
 export class XmlaEntityService<T> extends AbstractEntityService<T> implements EntityService<T> {
@@ -192,7 +192,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
 
             return of({
               status: 'ERROR' as QueryReturn<T>['status'],
-              error: simplifyErrorMessage(error.exception?.message ?? getErrorMessage(error)),
+              error: simplifyErrorMessage(getExceptionMessage(error.exception) ?? getErrorMessage(error)),
               stats: {
                 statements: [
                   mdx

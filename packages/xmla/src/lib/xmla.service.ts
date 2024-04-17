@@ -131,8 +131,8 @@ export class NxXmlaService {
           subscriber.next(response)
           subscriber.complete()
         },
-        error: (err, exception) => {
-          subscriber.error(exception)
+        error: (err, error) => {
+          subscriber.error(error)
         }
       }).subscribe()
 
