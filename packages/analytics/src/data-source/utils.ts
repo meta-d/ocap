@@ -5,8 +5,8 @@ import { RequestContext } from '@metad/server-core'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { DataSource } from './data-source.entity'
 
-export function prepareDataSource(dataSource: DataSource) {
-	const userId = RequestContext.currentUserId()
+export function prepareDataSource(dataSource: DataSource, userId?: string) {
+	userId ||= RequestContext.currentUserId()
 	// Basic authentication for single user
 	if (dataSource.authType === AuthenticationEnum.BASIC) {
 		const authentication = dataSource.authentications?.find((item) => item.userId === userId)

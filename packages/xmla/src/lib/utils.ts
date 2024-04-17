@@ -1,3 +1,5 @@
+import { Exception } from "./xmla/types"
+
 /**
  * Get error message text tentatively
  * 
@@ -21,6 +23,10 @@ export function getErrorMessage(err: any): string {
   }
 
   return error
+}
+
+export function getExceptionMessage(exception: Exception) {
+  return exception.data?.error || exception.message
 }
 
 /**

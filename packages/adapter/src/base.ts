@@ -38,7 +38,8 @@ export interface AdapterBaseOptions {
  * Options of single query
  */
 export interface QueryOptions {
-  catalog: string
+  catalog?: string
+  headers?: Record<string, string>
 }
 
 /**

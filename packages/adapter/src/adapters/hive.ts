@@ -1,7 +1,7 @@
 import { IColumnDef, IDSSchema, IDSTable } from '../types'
 import { auth, connections, HiveClient, HiveUtils, thrift } from 'hive-driver'
 import { ColumnRequest, TablesRequest } from 'hive-driver/dist/contracts/IHiveSession'
-import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../base'
+import { BaseSQLQueryRunner, QueryOptions, QueryResult, register, SQLAdapterOptions } from '../base'
 import { groupBy } from '../helpers'
 
 const { TCLIService, TCLIService_types } = thrift
@@ -87,7 +87,7 @@ export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
     await client.close()
   }
 
-  async runQuery(query: string, options?: any) {
+  async runQuery(query: string, options?: QueryOptions) {
     const client = await this.connectClient()
     const session = await this.openSession(client)
     const selectDataOperation = await session.executeStatement(query, {

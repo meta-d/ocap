@@ -255,10 +255,6 @@ export class StoryToolbarComponent implements OnInit {
     this.editableChange.emit(editable)
   }
 
-  setScale(scale: number) {
-    this.storyService.setZoom(scale)
-  }
-
   toggleMobile(device: EmulatedDevice) {
     if (this.emulatedDevice?.name === device?.name) {
       this._emulatedDevice = this.emulatedDevice
@@ -584,12 +580,20 @@ export class StoryToolbarComponent implements OnInit {
     this.storyService.patchState({ isPanMode: !isPanMode })
   }
 
-  async zoomIn() {
+  setScale(scale: number) {
+    this.storyService.setZoom(scale)
+  }
+
+  zoomIn() {
     this.storyService.zoomIn()
   }
 
-  async zoomOut() {
+  zoomOut() {
     this.storyService.zoomOut()
+  }
+
+  resetZoom() {
+    this.storyService.resetZoom()
   }
 
   calculateRightSide(event: CdkDragEnd) {
@@ -682,10 +686,16 @@ export class StoryToolbarComponent implements OnInit {
     } else if (event.altKey) {
       switch (event.code) {
         case 'Minus':
+        case 'NumpadSubtract':
           this.zoomOut()
           break
         case 'Equal':
+        case 'NumpadAdd':
           this.zoomIn()
+          break
+        case 'Digit0':
+        case 'Numpad0':
+          this.resetZoom()
           break
         case 'Escape':
           this.resetScalePan.emit()

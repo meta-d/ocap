@@ -73,7 +73,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 						body,
 						acceptLanguage: language,
 						forceRefresh
-					})
+					}, query.user)
 				)
 			} else {
 				queryResult = await this.innerOlap(body, language, roleNames)

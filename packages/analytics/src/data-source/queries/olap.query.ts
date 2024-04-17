@@ -1,3 +1,4 @@
+import { IUser } from '@metad/contracts'
 import { IQuery } from '@nestjs/cqrs'
 
 export class DataSourceOlapQuery implements IQuery {
@@ -6,10 +7,11 @@ export class DataSourceOlapQuery implements IQuery {
 	constructor(
 		public readonly input: {
 			id: string
-			dataSourceId: string;
+			dataSourceId: string
 			body: string
 			forceRefresh: boolean
 			acceptLanguage?: string
-		}
+		},
+		public readonly user: Partial<IUser>
 	) {}
 }

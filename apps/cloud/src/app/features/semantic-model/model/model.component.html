@@ -285,6 +285,11 @@
             {{ 'PAC.KEY_WORDS.PREFERENCES' | translate: {Default: "Preferences"} }}
         </button>
 
+        <button cdkMenuItem (click)="onDownload()">
+            <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+            {{ 'PAC.ACTIONS.Download' | translate: {Default: 'Download'} }}
+        </button>
+
         <mat-divider></mat-divider>
         <button cdkMenuItem [cdkMenuTriggerFor]="storyMenu" class="flex justify-between items-center">
             <span>
@@ -293,31 +298,17 @@
             <mat-icon fontSet="material-icons-round">arrow_right</mat-icon>
         </button>
     </div>
-    
-    <!-- <button mat-menu-item>
-        <mat-icon fontSet="material-icons-outlined">share</mat-icon>
-        {{ 'PAC.ACTIONS.SHARE' | translate: {Default: "Share"} }}
-    </button>
-    <button mat-menu-item (click)="undo()">
-        <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
-        {{ 'PAC.ACTIONS.UNDO' | translate: {Default: "Undo"} }}
-    </button>
-    <button mat-menu-item (click)="redo()">
-        <mat-icon fontSet="material-icons-outlined">redo</mat-icon>
-        {{ 'PAC.ACTIONS.REDO' | translate: {Default: "Redo"} }}
-    </button> -->
-    
 </ng-template>
 
 <ng-template #editMenu>
     <div cdkMenu>
         <button cdkMenuItem (click)="undo()">
             <mat-icon fontSet="material-icons-outlined">undo</mat-icon>
-            {{ 'PAC.ACTIONS.Undo' | translate: {Default: "Undo"} }}
+            {{ 'PAC.KEY_WORDS.Undo' | translate: {Default: "Undo"} }}
         </button>
         <button cdkMenuItem (click)="redo()">
             <mat-icon fontSet="material-icons-outlined">redo</mat-icon>
-            {{ 'PAC.ACTIONS.Redo' | translate: {Default: "Redo"} }}
+            {{ 'PAC.KEY_WORDS.Redo' | translate: {Default: "Redo"} }}
         </button>
 
         <button cdkMenuItem (click)="createStory()">
@@ -332,11 +323,6 @@
         <button cdkMenuItem (click)="reset()">
             <mat-icon fontSet="material-icons-outlined">restart_alt</mat-icon>
             {{ 'PAC.MODEL.Reset' | translate: {Default: "Reset"} }}
-        </button>
-    
-        <button cdkMenuItem (click)="onDownload()">
-            <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
-            {{ 'PAC.ACTIONS.Download' | translate: {Default: 'Download'} }}
         </button>
     
         <!-- <button mat-menu-item>

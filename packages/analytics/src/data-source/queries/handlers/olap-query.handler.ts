@@ -1,8 +1,11 @@
+import { createQueryRunnerByType } from '@metad/adapter'
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
 import * as _axios from 'axios'
+import { AxiosResponse } from 'axios'
 import { DataSourceService } from '../../data-source.service'
+import { prepareDataSource } from '../../utils'
 import { DataSourceOlapQuery } from '../olap.query'
 
 const axios = _axios.default
@@ -15,11 +18,12 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 
 	async execute(query: DataSourceOlapQuery) {
 		const { id, dataSourceId, body, forceRefresh, acceptLanguage } = query.input
+		const user = query.user
 
 		this.logger.debug(`Executing OLAP query [${id}] for dataSource: ${dataSourceId}`)
 
-		const dataSource = await this.dsService.findOne(dataSourceId, {
-			relations: ['type']
+		let dataSource = await this.dsService.findOne(dataSourceId, {
+			relations: ['type', 'authentications']
 		})
 
 		if (dataSource.type.protocol !== 'xmla') {
@@ -35,12 +39,20 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 			return result.data
 		}
 
-		const result = await this.dsService.query(dataSource.id, body, {
-			headers: { 'Accept-Language': acceptLanguage || '' }
-		})
-		return {
-			data: result.data,
-			cache: false
+		// Determine the user authentication
+		dataSource = prepareDataSource(dataSource, user.id)
+		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
+		try {
+			const result: AxiosResponse<any> = (await runner.runQuery(body, {
+				headers: { 'Accept-Language': acceptLanguage || '' }
+			})) as AxiosResponse<any>
+
+			return {
+				data: result.data,
+				cache: false
+			}
+		} finally {
+			await runner.teardown()
 		}
 	}
 }

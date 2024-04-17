@@ -1,3 +1,4 @@
+import { IUser } from '@metad/contracts'
 import { IQuery } from '@nestjs/cqrs'
 
 export class ModelOlapQuery implements IQuery {
@@ -11,6 +12,7 @@ export class ModelOlapQuery implements IQuery {
 			body: string
 			forceRefresh: boolean
 			acceptLanguage?: string
-		}
+		},
+		public readonly user: Partial<IUser>
 	) {}
 }
