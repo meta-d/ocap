@@ -89,7 +89,7 @@
  
 <mat-menu #pointMenu="matMenu" xPosition="before" class="ngm-density__compact">
   <ng-template matMenuContent let-point="point" let-component="component">
-    <button mat-menu-item [disabled]="!component.dirty" (click)="saveStoryPoint(point.key)">
+    <button mat-menu-item [disabled]="!component.dirtySignal()" (click)="saveStoryPoint(point.key)">
         <mat-icon fontSet="material-icons-outlined">save</mat-icon>
         {{ 'Story.Story.Save' | translate: {Default: "Save"} }}
     </button>

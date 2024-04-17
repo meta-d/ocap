@@ -32,7 +32,7 @@ export class PACDataSourceCreationComponent implements OnInit {
   private data: IDataSource = inject(MAT_DIALOG_DATA, { optional: true })
   public dialogRef = inject(MatDialogRef<PACDataSourceCreationComponent>)
   private localAgent? = inject(LocalAgent, { optional: true })
-  private serverAgent? = inject(ServerAgent, { optional: true })
+  private serverAgent = inject(ServerAgent)
 
   loading = false
 
