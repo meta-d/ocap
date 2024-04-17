@@ -99,6 +99,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
       return EMPTY
     }
 
+    const dialect = this.dataSource.options.dialect
     const cube = this.dataSource.options.schema?.cubes?.find(({ name }) => name === this.entitySet)
     try {
       if (options) {
@@ -135,14 +136,16 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
           map(({ rows, columns, data, cellset, columnAxes }) => {
             const fields = [...mdxQuery.rows, ...mdxQuery.columns]
             // for SAP BW escaped property name _
-            fields.forEach((field) => {
-              field.properties?.forEach((property) => {
-                const escaped = escapeBWSlash(field.dimension, property)
-                data.forEach((element) => {
-                  element[property] = element[escaped]
+            if (dialect === MDXDialect.SAPBW) {
+              fields.forEach((field) => {
+                field.properties?.forEach((property) => {
+                  const escaped = escapeBWSlash(field.dimension, property)
+                  data.forEach((element) => {
+                    element[property] = element[escaped]
+                  })
                 })
               })
-            })
+            }
 
             let results = data.map((item) => {
               const _item = { ...item }
