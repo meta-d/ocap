@@ -4,11 +4,15 @@ import { firstValueFrom, of, ReplaySubject, Subject } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 import { AuthInfoType, BottomSheetBasicAuthComponent } from '../auth'
 import { AgentEvent, IDataSource, IDataSourceAuthentication } from '../types'
+import { signal } from '@angular/core'
 
 export abstract class AbstractAgent {
-  private _auth: Record<string, [string, Subject<any>]> = {}
+
+  #auth = signal<Record<string, [string, Subject<any>]>>({})
+
+  // private _auth: Record<string, [string, Subject<any>]> = {}
   get auth() {
-    return this._auth
+    return this.#auth
   }
   private _retryAuth: Record<string, boolean> = {}
 
@@ -21,8 +25,12 @@ export abstract class AbstractAgent {
     const dataSource = event.data.dataSource
 
     if (dataSource.id) {
-      if (!this._auth[dataSource.id]) {
-        this._auth[dataSource.id] = [dataSource.name, new ReplaySubject(1)]
+      if (!this.#auth()[dataSource.id]) {
+        // this.#auth()[dataSource.id] = [dataSource.name, new ReplaySubject(1)]
+        this.#auth.update((state) => ({
+          ...state,
+          [dataSource.id]: [dataSource.name, new ReplaySubject(1)]
+        }))
         let auth: AuthInfoType = null
         try {
           auth = await firstValueFrom(this.dataSourceService.getAuthentication(dataSource.id))
@@ -38,18 +46,18 @@ export abstract class AbstractAgent {
             }
           }
           if (auth) {
-            this._auth[dataSource.id][1].next(auth)
+            this.#auth()[dataSource.id][1].next(auth)
           } else {
-            this._auth[dataSource.id][1].error(`未提供账号`)
-            this._auth[dataSource.id] = null
+            this.#auth()[dataSource.id][1].error(`未提供账号`)
+            this.#auth()[dataSource.id] = null
           }
         } catch (err) {
-          this._auth[dataSource.id][1].error(err)
-          this._auth[dataSource.id] = null
+          this.#auth()[dataSource.id][1].error(err)
+          this.#auth()[dataSource.id] = null
         }
       }
 
-      return firstValueFrom(this._auth[dataSource.id][1])
+      return firstValueFrom(this.#auth()[dataSource.id][1])
     } else {
       return this.signIn(dataSource, event)
     }
@@ -71,8 +79,12 @@ export abstract class AbstractAgent {
   retryAuthenticate(request: AgentEvent) {
     const dataSource = request.data.dataSource
     if (!this._retryAuth[dataSource.id]) {
-      this._auth[dataSource.id]?.[1].complete()
-      this._auth[dataSource.id] = [dataSource.name, new ReplaySubject(1)]
+      this.#auth()[dataSource.id]?.[1].complete()
+      this.#auth.update((state) => ({
+        ...state,
+        [dataSource.id]: [dataSource.name, new ReplaySubject(1)]
+      }))
+      // this.#auth()[dataSource.id] = [dataSource.name, new ReplaySubject(1)]
       this._retryAuth[dataSource.id] = true
 
       this._bottomSheet
@@ -88,27 +100,37 @@ export abstract class AbstractAgent {
         .subscribe({
           next: (auth) => {
             if (auth) {
-              this._auth[dataSource.id][1].next(auth)
+              this.#auth()[dataSource.id][1].next(auth)
             } else {
-              this._auth[dataSource.id][1].error(`未提供账号`)
-              this._auth[dataSource.id] = null
+              this.#auth()[dataSource.id][1].error(`未提供账号`)
+              this.#auth.update((state) => ({
+                ...state,
+                [dataSource.id]: null
+              }))
+              // this._auth[dataSource.id] = null
               this._retryAuth[dataSource.id] = false
             }
           },
           error: (err) => {
-            this._auth[dataSource.id][1].error(err)
-            this._auth[dataSource.id] = null
+            this.#auth()[dataSource.id][1].error(err)
+            this.#auth.update((state) => ({
+              ...state,
+              [dataSource.id]: null
+            }))
             this._retryAuth[dataSource.id] = false
           }
         })
     }
 
-    return this._auth[dataSource.id][1]
+    return this.#auth()[dataSource.id][1]
   }
 
   async deleteAuthentication(id: string) {
     await firstValueFrom(this.dataSourceService.deleteAuthentication(id))
-    this._auth[id] = null
+    this.#auth.update((state) => ({
+      ...state,
+      [id]: null
+    }))
   }
 
   abstract getPingCallback(
