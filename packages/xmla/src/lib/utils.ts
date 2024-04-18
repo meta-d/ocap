@@ -1,8 +1,8 @@
-import { Exception } from "./xmla/types"
+import { Exception } from './xmla/types'
 
 /**
  * Get error message text tentatively
- * 
+ *
  * @todo Is there a better way ?
  *
  * @param err
@@ -26,15 +26,17 @@ export function getErrorMessage(err: any): string {
 }
 
 export function getExceptionMessage(exception: Exception) {
-  return exception.data?.error || exception.message
+  return typeof exception.data?.error === 'string' ? exception.data.error : exception.message
 }
 
 /**
  * Simplify error messages
- * 
- * @param message 
- * @returns 
+ *
+ * @param message
+ * @returns
  */
 export function simplifyErrorMessage(message: string): string {
-  return typeof message === 'string' ? message.trim().replace(/^00[A-Z0-9]{5,6}\s*The Mondrian XML: (Mondrian Error:)?/g, '') : message
+  return typeof message === 'string'
+    ? message.trim().replace(/^00[A-Z0-9]{5,6}\s*The Mondrian XML: (Mondrian Error:)?/g, '')
+    : message
 }
