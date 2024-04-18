@@ -5,10 +5,12 @@ import {
   ChartMeasure,
   DataSettings,
   EntityType,
-  ISlicer
+  ISlicer,
+  assignDeepOmitBlank
 } from '@metad/ocap-core'
 import { tryFixDimension } from '@metad/story/story'
-import { upperFirst } from 'lodash-es'
+import { getChartType } from '@metad/story/widgets/analytical-card'
+import { cloneDeep, upperFirst } from 'lodash-es'
 import { z } from 'zod'
 import { ChartTypes } from './types'
 
@@ -85,65 +87,6 @@ export interface QuestionAnswer {
   title: string
 }
 
-// export const DemoModelCubes = [
-//   {
-//     name: 'Visit',
-//     caption: '访问',
-//     dimensions: [
-//       {
-//         name: '[Time]',
-//         caption: '日历',
-//         hierarchies: [
-//           {
-//             name: '[Time]',
-//             caption: '日历',
-//             levels: [
-//               {
-//                 name: '[Time].[Year]',
-//                 caption: '年'
-//               },
-//               {
-//                 name: '[Time].[Month]',
-//                 caption: '月'
-//               },
-//               {
-//                 name: '[Time].[Day]',
-//                 caption: '日'
-//               }
-//             ]
-//           }
-//         ]
-//       },
-//       {
-//         name: '[Product]',
-//         caption: '产品',
-//         hierarchies: [
-//           {
-//             name: '[Product]',
-//             caption: '产品',
-//             levels: [
-//               {
-//                 name: '[Product].[Category]',
-//                 caption: '类别'
-//               },
-//               {
-//                 name: '[Product].[Name]',
-//                 caption: '名称'
-//               }
-//             ]
-//           }
-//         ]
-//       }
-//     ],
-//     measures: [
-//       {
-//         name: 'visits',
-//         caption: '访问量'
-//       }
-//     ]
-//   }
-// ]
-
 /**
  * Transform copilot answer to chart annotation
  *
@@ -154,10 +97,11 @@ export interface QuestionAnswer {
 export function transformCopilotChart(answer: any, entityType: EntityType) {
   const chartAnnotation = {} as ChartAnnotation
   if (answer.chartType) {
-    chartAnnotation.chartType = {
-      ...answer.chartType,
-      type: upperFirst(answer.chartType.type)
-    }
+    chartAnnotation.chartType = assignDeepOmitBlank(
+      cloneDeep(getChartType(upperFirst(answer.chartType.type))),
+      answer.chartType,
+      5
+    )
   } else {
     chartAnnotation.chartType = {
       type: 'Bar'
