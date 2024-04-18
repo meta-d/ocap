@@ -8,6 +8,7 @@ import {
   ToolCall,
 } from 'ai';
 import { COMPLEX_HEADER, createChunkDecoder } from 'ai';
+import JSON5 from 'json5';
 
 export async function callChatApi({
   api,
@@ -38,14 +39,15 @@ export async function callChatApi({
   onFinish?: (message: Message) => void;
   generateId: IdGenerator;
 }): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
+  body = {
+    messages,
+    stream: true,
+    ...body,
+    model,
+  }
   const response = await fetch(api, {
     method: 'POST',
-    body: JSON.stringify({
-      messages,
-      ...body,
-      model,
-      stream: true
-    }),
+    body: JSON.stringify(body),
     headers: {
       'Content-Type': 'application/json',
       ...headers,
@@ -77,7 +79,7 @@ export async function callChatApi({
   }
 
   // const reader = response.body.getReader();
-  const reader = OpenAIStream(response).getReader();
+  const reader = body['stream'] ? OpenAIStream(response).getReader() : response.body.getReader()
   const isComplexMode = response.headers.get(COMPLEX_HEADER) === 'true';
 
   if (isComplexMode) {
@@ -122,7 +124,7 @@ export async function callChatApi({
       } else if (streamedResponse.startsWith('{"tool_calls":')) {
         // While the tool calls are streaming, it will be a string.
         responseMessage['tool_calls'] = streamedResponse;
-      } else {
+      } else if(body['stream']) {
         responseMessage['content'] = streamedResponse;
       }
 
@@ -135,23 +137,42 @@ export async function callChatApi({
       }
     }
 
-    if (streamedResponse.startsWith('{"function_call":')) {
-      // Once the stream is complete, the function call is parsed into an object.
-      const parsedFunctionCall: FunctionCall =
-        JSON.parse(streamedResponse).function_call;
+    console.log(streamedResponse)
 
-      responseMessage['function_call'] = parsedFunctionCall;
-
-      appendMessage({ ...responseMessage });
-    }
-    if (streamedResponse.startsWith('{"tool_calls":')) {
-      // Once the stream is complete, the tool calls are parsed into an array.
-      const parsedToolCalls: ToolCall[] =
-        JSON.parse(streamedResponse).tool_calls;
-
-      responseMessage['tool_calls'] = parsedToolCalls;
-
-      appendMessage({ ...responseMessage });
+    if (body['stream']) {
+      if (streamedResponse.startsWith('{"function_call":')) {
+        // Once the stream is complete, the function call is parsed into an object.
+        const parsedFunctionCall: FunctionCall =
+          JSON.parse(streamedResponse).function_call;
+  
+        responseMessage['function_call'] = parsedFunctionCall;
+  
+        appendMessage({ ...responseMessage });
+      }
+      if (streamedResponse.startsWith('{"tool_calls":')) {
+        // Once the stream is complete, the tool calls are parsed into an array.
+        const parsedToolCalls: ToolCall[] =
+          JSON.parse(streamedResponse).tool_calls;
+  
+        responseMessage['tool_calls'] = parsedToolCalls;
+  
+        appendMessage({ ...responseMessage });
+      }
+    } else {
+      const parsedResponse = JSON5.parse(streamedResponse)
+      const message = parsedResponse.choices[0]?.message
+      if (message) {
+        if (message.function_call) {
+          const parsedFunctionCall: FunctionCall = message.function_call;
+          responseMessage['function_call'] = parsedFunctionCall;
+          appendMessage({ ...responseMessage });
+        }
+        if (message.tool_calls) {
+          const parsedToolCalls: ToolCall[] = message.tool_calls;
+          responseMessage['tool_calls'] = parsedToolCalls;
+          appendMessage({ ...responseMessage });
+        }
+      }
     }
 
     if (onFinish) {

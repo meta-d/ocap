@@ -231,7 +231,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         ...this.aiOptions
       }
       if (functions.length) {
-        body.functions = functions
+        body.functions = functions,
+        body.stream = false
       }
 
       await this.triggerRequest(
