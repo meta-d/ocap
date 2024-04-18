@@ -1,8 +1,8 @@
 @use '@angular/material' as mat;
 
 :host {
-  display: flex;
-  height: 100%;
+  @apply inline-block;
+  // height: 100%;
   // overflow: auto;
 
   &.ngm-fullscreen {
@@ -128,6 +128,7 @@ gridster {
 }
 
 .ngm-story-point__page {
+  @apply inline-block;
       
   /* page size styling */
   &.ngm-story-point__size-a4 {
