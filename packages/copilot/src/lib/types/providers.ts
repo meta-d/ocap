@@ -36,6 +36,10 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
         name: 'GPT-3.5 Turbo 16k'
       },
       {
+        id: 'gpt-4-turbo',
+        name: 'GPT-4 Turbo'
+      },
+      {
         id: 'gpt-4',
         name: 'GPT-4'
       },
@@ -58,6 +62,10 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
       {
         id: 'gpt-3.5-turbo-16k',
         name: 'GPT-3.5 Turbo 16k'
+      },
+      {
+        id: 'gpt-4-turbo',
+        name: 'GPT-4 Turbo'
       },
       {
         id: 'gpt-4',
