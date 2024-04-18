@@ -165,13 +165,15 @@ export async function callChatApi({
         if (message.function_call) {
           const parsedFunctionCall: FunctionCall = message.function_call;
           responseMessage['function_call'] = parsedFunctionCall;
-          appendMessage({ ...responseMessage });
-        }
-        if (message.tool_calls) {
+          // appendMessage({ ...responseMessage });
+        } else if (message.tool_calls) {
           const parsedToolCalls: ToolCall[] = message.tool_calls;
           responseMessage['tool_calls'] = parsedToolCalls;
-          appendMessage({ ...responseMessage });
+          
+        } else {
+          responseMessage['content'] = message.content
         }
+        // appendMessage({ ...responseMessage });
       }
     }
 

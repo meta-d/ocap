@@ -9,7 +9,7 @@
 <div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
-        @for (message of conversation; track message.id) {
+        @for (message of conversation.messages; track message.id) {
             @switch (message.role) {
                 @case (CopilotChatMessageRoleEnum.Assistant) {
                 <div class="pl-2 pr-4 flex">
@@ -129,10 +129,12 @@
                                                 (focus)="onMessageFocus()"
                                             >{{ message.content }}</div>
                                         </div>
-                                        <button *ngIf="isFoucs(msgContent)" mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
+                                      @if (isFoucs(msgContent)) {
+                                        <button mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
                                             (click)="resubmitMessage(message, msgContent.textContent)">
                                             {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
                                         </button>
+                                      }
                                     }
                                 }
             

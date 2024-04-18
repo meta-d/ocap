@@ -27,7 +27,7 @@ import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { AIOptions, AI_PROVIDERS, AiModelType, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
+import { AIOptions, AI_PROVIDERS, AiModelType, CopilotChatConversation, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
 import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent, NgmScrollBackComponent } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
@@ -129,7 +129,10 @@ export class NgmCopilotChatComponent {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
-  _mockConversations: Array<NgmCopilotChatMessage[]> = [PlaceholderMessages]
+  _mockConversations: Array<CopilotChatConversation<NgmCopilotChatMessage>> = [{
+    id: '',
+    messages: PlaceholderMessages
+  }]
 
   // Copilot
   private openaiOptions = {
@@ -186,7 +189,7 @@ export class NgmCopilotChatComponent {
   readonly #predefinedModels = computed(() => AI_PROVIDERS[this.copilot()?.provider]?.models)
   readonly canListModels = computed(() => !!AI_PROVIDERS[this.copilot()?.provider]?.modelsUrl)
   readonly latestModels = signal<AiModelType[]>([])
-  readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine?.conversations())
+  readonly conversations = computed<Array<CopilotChatConversation<NgmCopilotChatMessage>>>(() => this.copilotEngine?.conversations())
   readonly isTools = toSignal(this.copilotService.isTools$)
 
   /**
@@ -387,7 +390,8 @@ export class NgmCopilotChatComponent {
   }
 
   async resubmitMessage(message: CopilotChatMessage, content: string) {
-    this.copilotEngine.updateLastConversation((messages) => {
+    this.copilotEngine.updateLastConversation((conversation) => {
+      const messages = conversation.messages
       const index = messages.findIndex((item) => item.id === message.id)
       if (index > -1) {
         // 删除答案
@@ -396,9 +400,15 @@ export class NgmCopilotChatComponent {
         }
         // 删除提问
         messages.splice(index, 1)
-        return [...messages]
+        if (!messages.filter((message) => message.role === CopilotChatMessageRoleEnum.User).length) {
+          return null
+        }
+        return {
+          ...conversation,
+          messages: [...messages]
+        }
       }
-      return messages
+      return conversation
     })
     await this.askCopilotStream(content, {command: message.command})
   }
@@ -411,10 +421,11 @@ export class NgmCopilotChatComponent {
    * @deprecated regenerate method should in copilot engine service
    */
   async regenerate(message: CopilotChatMessage) {
-    this.copilotEngine.updateLastConversation((conversations) => {
-      const index = conversations.findIndex((item) => item.id === message.id)
-      conversations.splice(index)
-      return [...conversations]
+    this.copilotEngine.updateLastConversation((conversation) => {
+      const messages = conversation.messages
+      const index = messages.findIndex((item) => item.id === message.id)
+      messages.splice(index)
+      return {...conversation, messages: [...messages]}
     })
     await this.askCopilotStream(null, { assistantMessageId: message.id })
   }

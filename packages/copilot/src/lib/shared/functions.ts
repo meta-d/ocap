@@ -1,5 +1,6 @@
 import { ChatRequest, FunctionCall, Message, nanoid } from 'ai'
 import { ChatCompletionCreateParams } from 'openai/resources'
+import JSON5 from 'json5'
 import { AnnotatedFunction } from '../types'
 
 export const defaultCopilotContextCategories = ['global']
@@ -26,7 +27,7 @@ export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<
     if (entryPointFunction) {
       let parsedFunctionCallArguments: Record<string, any>[] = []
       if (functionCall.arguments) {
-        parsedFunctionCallArguments = JSON.parse(functionCall.arguments)
+        parsedFunctionCallArguments = JSON5.parse(functionCall.arguments)
       }
 
       const paramsInCorrectOrder: any[] = []

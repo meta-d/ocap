@@ -2,7 +2,6 @@ import { Message } from 'ai'
 import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
-import { CopilotService } from '../copilot'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
@@ -62,6 +61,8 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
   command?: string
 
   status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
+
+  
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -98,24 +99,24 @@ export function getCommandPrompt(prompt: string) {
   }
 }
 
-export interface CopilotChatConversation {
-  command: string
-  prompt: string
-  options: any
-  response?: { arguments: any } | any
-  error?: string | Error
+// export interface CopilotChatConversation {
+//   command: string
+//   prompt: string
+//   options: any
+//   response?: { arguments: any } | any
+//   error?: string | Error
 
-  copilotService: CopilotService
-  logger?: {
-    trace(message?: any | (() => any), ...additional: any[]): void
-    debug(message?: any | (() => any), ...additional: any[]): void
-    info(message?: any | (() => any), ...additional: any[]): void
-    log(message?: any | (() => any), ...additional: any[]): void
-    warn(message?: any | (() => any), ...additional: any[]): void
-    error(message?: any | (() => any), ...additional: any[]): void
-    fatal(message?: any | (() => any), ...additional: any[]): void
-  }
-}
+//   copilotService: CopilotService
+//   logger?: {
+//     trace(message?: any | (() => any), ...additional: any[]): void
+//     debug(message?: any | (() => any), ...additional: any[]): void
+//     info(message?: any | (() => any), ...additional: any[]): void
+//     log(message?: any | (() => any), ...additional: any[]): void
+//     warn(message?: any | (() => any), ...additional: any[]): void
+//     error(message?: any | (() => any), ...additional: any[]): void
+//     fatal(message?: any | (() => any), ...additional: any[]): void
+//   }
+// }
 
 export const CopilotDefaultOptions = {
   model: 'gpt-3.5-turbo-0613',

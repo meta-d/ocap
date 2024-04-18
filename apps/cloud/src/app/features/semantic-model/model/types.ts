@@ -13,7 +13,7 @@ import {
 } from '@metad/ocap-core'
 import { NgmSemanticModel } from '@metad/cloud/state'
 import { uuid } from '../../../@core'
-import { AIOptions, CopilotChatMessage } from '@metad/copilot'
+import { AIOptions, CopilotChatConversation, CopilotChatMessage } from '@metad/copilot'
 
 export enum MODEL_TYPE {
   /**
@@ -63,7 +63,7 @@ export interface ModelQuery extends IModelQuery {
   entities: string[]
   statement?: string
   aiOptions?: AIOptions
-  conversations?: Array<CopilotChatMessage[]>
+  conversations?: Array<CopilotChatConversation>
 }
 
 export interface QueryResult {
