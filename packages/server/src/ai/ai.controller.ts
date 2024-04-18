@@ -38,11 +38,9 @@ export class AIController {
 		}
 
 		const copilot = result.items[0]
-
-		this.#logger.debug(`Try call ai api '${chatCompletionsUrl(copilot)}' with body ...`)
-
+		const copilotUrl = chatCompletionsUrl(copilot)
 		try {
-			const response = await fetch(chatCompletionsUrl(copilot), {
+			const response = await fetch(copilotUrl, {
 				method: 'POST',
 				body: JSON.stringify(body),
 				headers: {
@@ -56,6 +54,11 @@ export class AIController {
 				await streamToResponse(response, resp, { status: response.status })
 			}
 		} catch (error) {
+			this.#logger.error(`Try to call ai api '${copilotUrl}' with body:
+\`\`\`
+${JSON.stringify(body)}
+\`\`\`
+failed: ${error.message}`)
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
 	}
