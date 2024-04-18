@@ -355,7 +355,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
               //   this.deleteMessage(thinkingMessage)
               // },
               onFinish: (message) => {
-                this.upsertMessage({ ...message, status: 'done' })
+                // this.upsertMessage({ ...message, status: 'done' })
               },
               appendMessage: (message) => {
                 this.upsertMessage({ ...message, status: 'answering' })
