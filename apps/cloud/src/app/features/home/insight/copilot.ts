@@ -7,7 +7,8 @@ import {
   DataSettings,
   EntityType,
   ISlicer,
-  assignDeepOmitBlank
+  assignDeepOmitBlank,
+  omit
 } from '@metad/ocap-core'
 import { tryFixDimension } from '@metad/story/story'
 import { cloneDeep, upperFirst } from 'lodash-es'
@@ -43,7 +44,7 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
   if (answer.chartType) {
     chartAnnotation.chartType = assignDeepOmitBlank(
       cloneDeep(getChartType(upperFirst(answer.chartType.type))),
-      answer.chartType,
+      omit(answer.chartType, 'type'),
       5
     )
   } else {
