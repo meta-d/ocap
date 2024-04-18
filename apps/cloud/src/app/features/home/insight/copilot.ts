@@ -43,7 +43,7 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
   const chartAnnotation = {} as ChartAnnotation
   if (answer.chartType) {
     chartAnnotation.chartType = assignDeepOmitBlank(
-      cloneDeep(getChartType(upperFirst(answer.chartType.type))),
+      cloneDeep(getChartType(upperFirst(answer.chartType.type))?.value.chartType),
       omit(answer.chartType, 'type'),
       5
     )

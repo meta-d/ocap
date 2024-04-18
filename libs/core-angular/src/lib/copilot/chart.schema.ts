@@ -2,6 +2,7 @@ import { ChartAnnotation, ChartDimensionRoleType, ChartMeasureRoleType, ChartOri
 import { z } from 'zod'
 import { DeepPartial } from '../helpers'
 import { NxChartType } from '../smart-chart'
+import { DimensionSchema, MeasureSchema } from './cube.schema'
 
 export function makeChartRulesPrompt() {
   return ``
@@ -26,24 +27,24 @@ export function makeChartSchema() {
         })
         .describe('The chart options of ECharts library')
     }),
-    dimensions: z
-      .array(
-        z.object({
-          dimension: z.string().describe('The name of dimension'),
-          hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-          level: z.string().optional().describe('The name of the level in the hierarchy')
-        })
-      )
-      .describe('The dimensions used by the chart, at least one dimension'),
-    measures: z
-      .array(
-        z.object({
-          measure: z.string().describe('The name of the measure'),
-          order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
-          chartOptions: z.any().optional().describe('The chart options of ECharts library')
-        })
-      )
-      .describe('The measures used by the chart, At least one measure'),
+    // dimensions: z
+    //   .array(
+    //     z.object({
+    //       dimension: z.string().describe('The name of dimension'),
+    //       hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
+    //       level: z.string().optional().describe('The name of the level in the hierarchy')
+    //     })
+    //   )
+    //   .describe('The dimensions used by the chart, at least one dimension'),
+    // measures: z
+    //   .array(
+    //     z.object({
+    //       measure: z.string().describe('The name of the measure'),
+    //       order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
+    //       chartOptions: z.any().optional().describe('The chart options of ECharts library')
+    //     })
+    //   )
+    //   .describe('The measures used by the chart, At least one measure'),
     slicers: z
       .array(
         z.object({
@@ -65,7 +66,15 @@ export function makeChartSchema() {
         })
       )
       .describe('The slicers used by the chart')
-  })
+  }).describe('The chart schema')
+}
+
+export function makeChartDimensionSchema() {
+  return DimensionSchema
+}
+
+export function makeChartMeasureSchema() {
+  return MeasureSchema
 }
 
 export interface ChartGroup {

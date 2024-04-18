@@ -45,7 +45,7 @@ import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
 import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
 import { nanoid } from 'nanoid'
-import { calcEntityTypePrompt, makeChartSchema, makeCubeRulesPrompt, zodToProperties } from '@metad/core'
+import { calcEntityTypePrompt, makeChartDimensionSchema, makeChartMeasureSchema, makeChartSchema, makeCubeRulesPrompt, zodToProperties } from '@metad/core'
 import { AppService } from '../../../app.service'
 
 @Component({
@@ -191,23 +191,42 @@ ${calcEntityTypePrompt(entityType)}
             type: 'object',
             properties: zodToAnnotations(makeChartSchema()),
             required: true
-          }
+          },
+          {
+            name: 'dimension',
+            description: 'dimension configuration for chart',
+            type: 'object',
+            properties: zodToAnnotations(makeChartDimensionSchema()),
+            required: true
+          },
+          {
+            name: 'measure',
+            description: 'measure configuration for chart',
+            type: 'object',
+            properties: zodToAnnotations(makeChartMeasureSchema()),
+            required: true
+          },
         ],
-        implementation: async (answer: any, options: FunctionCallHandlerOptions) => {
-          this.#logger.debug('New chart by copilot command with:', answer, options)
+        implementation: async (chart: any, dimension, measure, options: FunctionCallHandlerOptions) => {
+          this.#logger.debug('New chart by copilot command with:', chart, dimension, measure, options)
           const userMessage = options.messages.find((item) => item.role === 'user')
           const dataSourceName = this.insightService.dataSourceName()
           const cubes = this.insightService.allCubes()
 
           try {
-            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer, this.entityType())
+            chart.cube ??= this.entityType().name
+            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart({
+              ...chart,
+              dimension,
+              measure
+            }, this.entityType())
             const answerMessage: Partial<QuestionAnswer> = {
               key: options.conversationId,
               title: userMessage?.content,
-              message: JSON.stringify(answer, null, 2),
+              message: JSON.stringify(chart, null, 2),
               dataSettings: {
                 dataSource: dataSourceName,
-                entitySet: answer.cube,
+                entitySet: chart.cube,
                 chartAnnotation,
                 presentationVariant: {
                   maxItems: limit,
@@ -220,7 +239,7 @@ ${calcEntityTypePrompt(entityType)}
               } as DataSettings,
               slicers,
               chartOptions,
-              isCube: cubes.find((item) => item.name === answer.cube),
+              isCube: cubes.find((item) => item.name === chart.cube),
               answering: false,
               expanded: true
             }

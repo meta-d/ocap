@@ -312,35 +312,34 @@ export class NgmCopilotEngineService implements CopilotEngine {
       conversationId?: string
     } = {}
   ): Promise<ChatRequest | null | undefined> {
+    this.error.set(undefined)
+    this.isLoading.set(true)
+    abortController = abortController ?? new AbortController()
+    const getCurrentMessages = () => this.lastConversation()?.messages ?? []
+
+    let chatRequest: ChatRequest = {
+      messages: messagesSnapshot as Message[],
+      options,
+      data,
+    }
+
+    assistantMessageId = assistantMessageId ?? nanoid()
+    const thinkingMessage: CopilotChatMessage = {
+      id: assistantMessageId,
+      role: CopilotChatMessageRoleEnum.Assistant,
+      content: '',
+      status: 'thinking'
+    }
+
+    this.upsertMessage(thinkingMessage)
+
+    // Remove thinking message when abort
+    const removeMessageWhenAbort = () => {
+      this.deleteMessage(thinkingMessage)
+    }
+    abortController.signal.addEventListener('abort', removeMessageWhenAbort)
+
     try {
-      this.error.set(undefined)
-      this.isLoading.set(true)
-
-      abortController = abortController ?? new AbortController()
-
-      const getCurrentMessages = () => this.lastConversation()?.messages ?? []
-
-      let chatRequest: ChatRequest = {
-        messages: messagesSnapshot as Message[],
-        options,
-        data,
-      }
-
-      assistantMessageId = assistantMessageId ?? nanoid()
-      const thinkingMessage: CopilotChatMessage = {
-        id: assistantMessageId,
-        role: CopilotChatMessageRoleEnum.Assistant,
-        content: '',
-        status: 'thinking'
-      }
-
-      this.upsertMessage(thinkingMessage)
-
-      // Remove thinking message when abort
-      abortController.signal.addEventListener('abort', () => {
-        this.deleteMessage(thinkingMessage)
-      })
-
       const message = await processChatStream({
         getStreamedResponse: async () => {
           return await this.copilot.chat(
@@ -355,7 +354,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
               //   this.deleteMessage(thinkingMessage)
               // },
               onFinish: (message) => {
-                // this.upsertMessage({ ...message, status: 'done' })
+                this.upsertMessage({ ...message, status: 'answering' })
               },
               appendMessage: (message) => {
                 this.upsertMessage({ ...message, status: 'answering' })
@@ -375,7 +374,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         getCurrentMessages: () => getCurrentMessages(),
         conversationId
       })
-      abortController = null
+      // abortController = null
 
       if (message) {
         this.upsertMessage({ ...message, id: assistantMessageId, status: 'done' })
@@ -386,7 +385,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     } catch (err) {
       // Ignore abort errors as they are expected.
       if ((err as any).name === 'AbortError') {
-        abortController = null
+        // abortController = null
         return null
       }
 
@@ -404,6 +403,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       return null
     } finally {
+      abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
       this.isLoading.set(false)
     }
   }
