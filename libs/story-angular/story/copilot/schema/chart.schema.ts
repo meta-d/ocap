@@ -1,10 +1,10 @@
-import { DimensionSchema, MeasureSchema } from '@metad/core'
-import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, flatten, omit } from '@metad/ocap-core'
-import { CHARTS, ChartMainTypeEnum, getChartType } from '@metad/story/widgets/analytical-card'
+import { DimensionSchema, MeasureSchema, getChartType, makeChartEnum } from '@metad/core'
+import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
+import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
 import { fixDimension } from '../types'
 
-const ChartTypes = flatten(CHARTS.map((g) => g.charts.map((c) => c.label))) as any
+const ChartTypes = makeChartEnum()
 
 export const EChartsOptions = z
   .object({
@@ -30,7 +30,7 @@ export const EChartsOptions = z
 
 export const ChartSchema = z.object({
   chartType: z.object({
-    type: z.enum(ChartTypes).describe('The chart type'),
+    type: z.enum(ChartTypes as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
   dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),

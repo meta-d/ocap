@@ -30,7 +30,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
-import { DeepPartial, IsNilPipe } from '@metad/core'
+import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
 import {
   ParametersComponent,
   PreferencesComponent,
@@ -58,7 +58,6 @@ import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
-import { CHARTS } from '@metad/story/widgets/analytical-card'
 
 
 @Component({

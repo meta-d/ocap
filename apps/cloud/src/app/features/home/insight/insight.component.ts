@@ -43,9 +43,9 @@ import { firstValueFrom } from 'rxjs'
 import { ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { InsightService } from './insight.service'
-import { ChartSchema, QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
+import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
 import { nanoid } from 'nanoid'
-import { calcEntityTypePrompt, zodToProperties } from '@metad/core'
+import { calcEntityTypePrompt, makeChartSchema, makeCubeRulesPrompt, zodToProperties } from '@metad/core'
 import { AppService } from '../../../app.service'
 
 @Component({
@@ -171,7 +171,9 @@ export class InsightComponent {
     description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', { Default: 'Use charts to gain insights into data' }),
     systemPrompt: () => {
       const entityType = this.insightService.entityType()
-      return `你是一名 BI 多维模型数据分析专家, Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function tool.
+      return `You are a BI multidimensional model data analysis expert, please design and create a specific graphic accurately based on the following detailed instructions.
+${makeCubeRulesPrompt()}
+Please call the function tool. Also call function tool when fixed function call error.
 The cube is:
 \`\`\`
 ${calcEntityTypePrompt(entityType)}
@@ -187,7 +189,7 @@ ${calcEntityTypePrompt(entityType)}
             name: 'chart',
             description: 'Chart configuration',
             type: 'object',
-            properties: zodToAnnotations(ChartSchema),
+            properties: zodToAnnotations(makeChartSchema()),
             required: true
           }
         ],
