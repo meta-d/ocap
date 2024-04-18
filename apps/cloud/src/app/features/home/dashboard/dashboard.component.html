@@ -10,34 +10,42 @@
 
         <!-- *ngIf="AbilityActions.Manage | able:'Story'"  -->
         <div class="pac-home__quick-guide flex flex-wrap justify-start items-center"
-            [class.pac-dashboard__created-demo]="createdDemo$ | async"
+            [class.pac-dashboard__created-demo]="createdDemo()"
         >
-            <div class="step" *ngIf="demoPermission$ | async">
-                <div *ngIf="!creatingDemo" class="complete mr-4">
-                    <span *ngIf="!quickGuides().sample.complete">🔘</span>
-                    <span *ngIf="quickGuides().sample.complete">🟢</span>
+          @if (demoPermission()) {
+            <div class="step">
+              @if (creatingDemo()) {
+                <div class="complete mr-4 emoji-loader w-8 h-12" style="position: relative;"></div>
+              } @else {
+                <div class="complete mr-4">
+                  @if (quickGuides().sample.complete) {
+                    <span>🟢</span>
+                  } @else {
+                    <span>🔘</span>
+                  }
                 </div>
-                <div *ngIf="creatingDemo" class="complete mr-4 emoji-loader w-8" style="position: relative;"></div>
+              }
+                
                 <span class="guide" >
-                    <a *ngIf="!creatingDemo" class="cursor-pointer" (click)="createOrgDemo()">
-                        <span *ngIf="!quickGuides().sample.complete">{{ 'PAC.MENU.HOME.GenerateSamples' | translate: {Default: 'Generate Samples'} }}</span>
-                        <span *ngIf="quickGuides().sample.complete">{{ 'PAC.MENU.HOME.RegenerateSamples' | translate: {Default: 'Regenerate Samples'} }}</span>
-                    </a>
-                    <span *ngIf="creatingDemo" class="ml-4">
+                  @if (creatingDemo()) {
+                    <span class="ml-4">
                         {{ 'PAC.MENU.HOME.GeneratingSamples' | translate: {Default: 'Generating Samples'} }}...
                     </span>
-                </span>
-            </div>
-
-            <div class="step" *ngIf="!quickGuides().model.complete">
-                <span class="complete mr-4">🔘</span>
-                <span class="guide">
-                    <a routerLink="/models">
-                        {{ 'PAC.MENU.HOME.CreateYourFirstSemanticModel' | translate: {Default: 'Create your first semantic model'} }}
+                  } @else {
+                    <a class="cursor-pointer" (click)="createOrgDemo()">
+                      @if (quickGuides().sample.complete) {
+                        <span>{{ 'PAC.MENU.HOME.RegenerateSamples' | translate: {Default: 'Regenerate Samples'} }}</span>
+                      } @else {
+                        <span>{{ 'PAC.MENU.HOME.GenerateSamples' | translate: {Default: 'Generate Samples'} }}</span>
+                      }
                     </a>
+                  }
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides().model.complete">
+          }
+
+          @if (quickGuides().model.complete) {
+            <div class="step">
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/models" class="hover:underline">
@@ -48,16 +56,19 @@
                     </a>
                 </span>
             </div>
-
-            <div class="step" *ngIf="!quickGuides().story.complete">
+          } @else {
+            <div class="step">
                 <span class="complete mr-4">🔘</span>
                 <span class="guide">
-                    <a routerLink="/project">
-                        {{ 'PAC.MENU.HOME.CreateYourFirstStory' | translate: {Default: 'Create your first story'} }}
+                    <a routerLink="/models">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstSemanticModel' | translate: {Default: 'Create your first semantic model'} }}
                     </a>
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides().story.complete">
+          }
+
+          @if (quickGuides().story.complete) {
+            <div class="step" >
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/project" class="hover:underline">
@@ -66,16 +77,19 @@
                     </a>
                 </span>
             </div>
-
-            <div class="step" *ngIf="!quickGuides().indicator.complete">
+          } @else {
+            <div class="step" >
                 <span class="complete mr-4">🔘</span>
                 <span class="guide">
-                    <a routerLink="/project/indicator">
-                        {{ 'PAC.MENU.HOME.CreateYourFirstIndicator' | translate: {Default: 'Create your first indicator'} }}
+                    <a routerLink="/project">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstStory' | translate: {Default: 'Create your first story'} }}
                     </a>
                 </span>
             </div>
-            <div class="step" *ngIf="quickGuides().indicator.complete">
+          }
+            
+          @if (quickGuides().indicator.complete) {
+            <div class="step" >
                 <span class="complete mr-4">🟢</span>
                 <span class="guide">
                     <a routerLink="/project/indicators" class="hover:underline">
@@ -84,6 +98,16 @@
                     </a>
                 </span>
             </div>
+          } @else {
+            <div class="step" >
+                <span class="complete mr-4">🔘</span>
+                <span class="guide">
+                    <a routerLink="/project/indicator">
+                        {{ 'PAC.MENU.HOME.CreateYourFirstIndicator' | translate: {Default: 'Create your first indicator'} }}
+                    </a>
+                </span>
+            </div>
+          }
         </div>
 
         <div class="flex justify-between items-center self-stretch">
@@ -95,14 +119,7 @@
             </div>
 
             <div class="flex items-center gap-2">
-              @if (!editable) {
-                <button mat-icon-button displayDensity="cosy"
-                    [matTooltip]="'PAC.KEY_WORDS.Edit' |translate: {Default: 'Edit'}"
-                    (click)="toggleEdit()">
-                    <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-                </button>
-              }
-              @if (editable) {
+              @if (editable()) {
                 <button mat-icon-button displayDensity="cosy"
                     [matTooltip]="'PAC.KEY_WORDS.RestoreLayout' |translate: {Default: 'Restore layout'}"
                     (click)="restore()">
@@ -120,11 +137,17 @@
                     (click)="commitEdit()">
                     <mat-icon fontSet="material-icons-outlined">done</mat-icon>
                 </button>
+              } @else {
+                <button mat-icon-button displayDensity="cosy"
+                    [matTooltip]="'PAC.KEY_WORDS.Edit' |translate: {Default: 'Edit'}"
+                    (click)="toggleEdit()">
+                    <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+                </button>
               }
             </div>
         </div>
 
-        <gridster class="" [options]="options" [ngClass]="{editable: editable}">
+        <gridster class="" [options]="options" [ngClass]="{editable: editable()}">
           @for (feed of feeds(); track feed.id; let i = $index) {
             <gridster-item [item]="feed.options.position" class="pac-home__gridster-item"
                 (itemChange)="onGridsterItemChange($event, feed)">
@@ -139,7 +162,7 @@
               }
 
                 <div class="pac-home__widget-actions">
-                  @if (editable) {
+                  @if (editable()) {
                     <button mat-icon-button displayDensity="cosy" class="pac-home__widget-remove"
                         (click)="$event.preventDefault();$event.stopPropagation();removeWidget(feed)">
                         <mat-icon>close</mat-icon>

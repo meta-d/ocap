@@ -75,6 +75,10 @@
   background-color: var(--ngm-home-card-background-color);
 }
 
+.emoji-loader::before {
+  font-size: 3rem;
+}
+
 gridster {
   background: transparent;
 

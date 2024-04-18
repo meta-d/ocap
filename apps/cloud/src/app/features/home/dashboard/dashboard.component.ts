@@ -1,11 +1,14 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { Component, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { TimeGranularity } from '@metad/ocap-core'
 import { IndicatorsService, ModelsService, Store, StoriesService } from '@metad/cloud/state'
 import { getErrorMessage } from '@metad/core'
-import { GridType, GridsterComponent, GridsterConfig, GridsterItem } from 'angular-gridster2'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { TimeGranularity } from '@metad/ocap-core'
+import { NxStoryModule } from '@metad/story/story'
+import { TranslateModule } from '@ngx-translate/core'
+import { GridType, GridsterComponent, GridsterConfig, GridsterItem, GridsterModule } from 'angular-gridster2'
 import { cloneDeep, compact, isEqual, pick } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -28,7 +31,10 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   ToastrService
 } from '../../../@core'
-import { createTimer, TranslationBaseComponent } from '../../../@shared'
+import { MaterialModule, SharedModule, TranslationBaseComponent, createTimer } from '../../../@shared'
+import { RecentsComponent } from '../recents/recents.component'
+import { StoryWidgetFeedComponent } from '../story-widget/story-widget.component'
+import { UserVisitComponent } from '../user-visit/user-visit.component'
 
 const QuickGuidesInit = {
   sample: {
@@ -49,6 +55,19 @@ const QuickGuidesInit = {
 }
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    SharedModule,
+    MaterialModule,
+    TranslateModule,
+    GridsterModule,
+    NxStoryModule,
+
+    StoryWidgetFeedComponent,
+    UserVisitComponent,
+    RecentsComponent
+  ],
   selector: 'pac-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
@@ -65,7 +84,6 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   private organizationsService = inject(OrganizationsService)
   private dsCoreService = inject(NgmDSCoreService)
   private toastrService = inject(ToastrService)
-  private readonly _cdr = inject(ChangeDetectorRef)
 
   @ViewChild(GridsterComponent) gridster: GridsterComponent
 
@@ -74,7 +92,6 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   searchAssets = null
   searchAssetsType = 'story'
 
-  editable = false
   options: GridsterConfig = {
     gridType: GridType.Fixed,
     setGridSize: true,
@@ -89,22 +106,32 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     },
     resizable: {
       enabled: false
-    },
+    }
     // displayGrid: 'always'
   }
 
+  readonly editable = signal(false)
   readonly quickGuides = signal(cloneDeep(QuickGuidesInit))
-  showTrending = false
-  creatingDemo = false
 
   public readonly user$ = this.store.user$
   public readonly organization$ = this.store.selectedOrganization$
-  public readonly createdDemo$ = this.organization$.pipe(map((organization) => organization?.createdDemo))
 
+  readonly showTrending = signal(false)
+  readonly creatingDemo = signal(false)
   readonly pristineFeeds = signal([])
   readonly #feeds = signal([])
   readonly feeds = computed(() => compact(this.#feeds()).filter((item) => !item?.hidden))
   readonly dirty = computed(() => !isEqual(this.#feeds(), this.pristineFeeds()))
+  readonly createdDemo = toSignal(this.organization$.pipe(map((organization) => organization?.createdDemo)))
+  readonly demoPermission = toSignal(
+    this.store.userRolePermissions$.pipe(
+      map((rolePermissions) => {
+        return !!rolePermissions.find(
+          (rolePermission) => rolePermission.permission === PermissionsEnum.ORG_DEMO_EDIT && rolePermission.enabled
+        )
+      })
+    )
+  )
 
   public readonly searchAssets$ = this.searchControl.valueChanges.pipe(
     debounceTime(500),
@@ -134,14 +161,6 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   public timer$ = createTimer()
 
   dateControl = new FormControl<Date>(new Date())
-
-  public readonly demoPermission$ = this.store.userRolePermissions$.pipe(
-    map((rolePermissions) => {
-      return !!rolePermissions.find(
-        (rolePermission) => rolePermission.permission === PermissionsEnum.ORG_DEMO_EDIT && rolePermission.enabled
-      )
-    })
-  )
 
   private refreshAssets$ = new BehaviorSubject<void>(null)
 
@@ -199,10 +218,10 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       this.quickGuides.update((quickGuides) => {
         quickGuides.model.quantity = modelCount
         quickGuides.model.complete = modelCount > 0
-  
+
         quickGuides.story.quantity = storyCount
         quickGuides.story.complete = storyCount > 0
-  
+
         quickGuides.indicator.quantity = indicatorCount
         quickGuides.indicator.complete = indicatorCount > 0
         return quickGuides
@@ -212,12 +231,20 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     this.dsCoreService.setToday(value)
   })
 
-  private demoSub = this.createdDemo$.pipe(takeUntilDestroyed()).subscribe((createdDemo) => {
-    this.quickGuides.update((quickGuides) => {
-      quickGuides.sample.complete = createdDemo
-      return quickGuides
-    })
-  })
+  constructor() {
+    super()
+
+    effect(
+      () => {
+        const createdDemo = this.createdDemo()
+        this.quickGuides.update((quickGuides) => {
+          quickGuides.sample.complete = createdDemo
+          return quickGuides
+        })
+      },
+      { allowSignalWrites: true }
+    )
+  }
 
   ngOnInit(): void {
     this.dsCoreService.setTimeGranularity(TimeGranularity.Day)
@@ -228,14 +255,16 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   }
 
   async createOrgDemo() {
-    if (this.creatingDemo) {
+    if (this.creatingDemo()) {
       return
     }
-    this.creatingDemo = true
+    this.creatingDemo.set(true)
     try {
-      await firstValueFrom(this.organizationsService.demo(this.store.organizationId, {
-        source: OrganizationDemoNetworkEnum.aliyun
-      }))
+      await firstValueFrom(
+        this.organizationsService.demo(this.store.organizationId, {
+          source: OrganizationDemoNetworkEnum.aliyun
+        })
+      )
       this.toastrService.success('PAC.MENU.HOME.GenerateSamples', { Default: 'Generate samples' })
       this.quickGuides.update((quickGuides) => {
         quickGuides.sample.complete = true
@@ -250,22 +279,22 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     } catch (err) {
       this.toastrService.error(getErrorMessage(err))
     } finally {
-      this.creatingDemo = false
-      this._cdr.detectChanges()
+      this.creatingDemo.set(false)
+      // this._cdr.detectChanges()
     }
   }
 
   toggleEdit() {
-    this.editable = !this.editable
+    this.editable.update((state) => !state)
     this.options = {
       ...this.options,
       draggable: {
         ...this.options.draggable,
-        enabled: this.editable
+        enabled: this.editable()
       },
       resizable: {
         ...this.options.resizable,
-        enabled: this.editable
+        enabled: this.editable()
       }
     }
 
@@ -290,17 +319,19 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
 
   restore() {
     this.undoEdit()
-    this.#feeds.update((feeds) => feeds.map((item) => ({
-      ...item,
-      hidden: false,
-      options: {
-        ...(item.options ?? {}),
-        position: {
-          rows: 3,
-          cols: 3
+    this.#feeds.update((feeds) =>
+      feeds.map((item) => ({
+        ...item,
+        hidden: false,
+        options: {
+          ...(item.options ?? {}),
+          position: {
+            rows: 3,
+            cols: 3
+          }
         }
-      }
-    })))
+      }))
+    )
   }
 
   async commitEdit() {
@@ -349,11 +380,5 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
 
   onGridsterItemChange({ item }: { item: GridsterItem }, feed: any) {
     // this.feeds = this.feeds
-  }
-
-  onIntersection(event) {
-    // if (event[0].isIntersecting) {
-    //   this.showTrending = true
-    // }
   }
 }

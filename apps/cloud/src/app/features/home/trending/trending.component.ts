@@ -5,7 +5,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { effectAction } from '@metad/ocap-angular/core'
+import { AppearanceDirective, DensityDirective, effectAction } from '@metad/ocap-angular/core'
 import { IntersectionObserverModule } from '@ng-web-apis/intersection-observer'
 import { TranslateModule } from '@ngx-translate/core'
 import { StoriesService } from '@metad/cloud/state'
@@ -26,6 +26,8 @@ import { StoryCardComponent } from '../../../@shared'
 
     TranslateModule,
     NgmCommonModule,
+    AppearanceDirective,
+    DensityDirective,
 
     StoryCardComponent
   ],
