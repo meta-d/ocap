@@ -14,11 +14,12 @@ import {
   Input,
   Output,
   signal,
+  viewChild,
   ViewChild
 } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
@@ -125,6 +126,8 @@ export class NgmCopilotChatComponent {
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
+  readonly autocompleteTrigger = viewChild('userInput', { read: MatAutocompleteTrigger })
+
   get _placeholder() {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
@@ -211,6 +214,7 @@ export class NgmCopilotChatComponent {
   // Available models
   searchModel = new FormControl<string>('')
   readonly searchText = toSignal(this.searchModel.valueChanges.pipe(startWith('')), { initialValue: '' })
+  readonly triggerCharacter = signal('')
   readonly models = computed(() => {
     const text = this.searchText()?.toLowerCase()
     const models = this.latestModels()?.length ? this.latestModels() : this.#predefinedModels()
@@ -243,9 +247,13 @@ export class NgmCopilotChatComponent {
 
   readonly filteredCommands = computed(() => {
     const text = this.prompt()
+    if (this.triggerCharacter() === '@') {
+      return this.commands()
+    }
     if (text) {
       return this.commands()?.filter((item) => item.prompt.includes(text)) ?? []
     }
+
     return []
   })
 
@@ -442,6 +450,8 @@ export class NgmCopilotChatComponent {
       this.askCopilotStream(this.prompt())
     }
 
+    this.triggerCharacter.set('')
+
     // Tab 键补全提示语
     if (event.key === 'Tab') {
       event.preventDefault()
@@ -466,6 +476,11 @@ export class NgmCopilotChatComponent {
 
         this.promptControl.setValue(historyQuestions[this.historyIndex()] ?? '')
       }
+    }
+
+    if (event.key === '@') {
+      this.triggerCharacter.set('@')
+      this.autocompleteTrigger().openPanel()
     }
   }
 
