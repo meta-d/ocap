@@ -88,35 +88,23 @@ export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
   }
 }
 
+/**
+ * Split the prompt into command and prompt
+ * 
+ * @param prompt 
+ * @returns 
+ */
 export function getCommandPrompt(prompt: string) {
-  // a regex match `/command `
-  const match = prompt.match(/\/([a-zA-Z\-]*)\s*/i)
+  prompt = prompt.trim()
+  // a regex match `/command prompt`
+  const match = prompt.match(/^\/([a-zA-Z\-]*)\s*/i)
   const command = match?.[1]
 
   return {
     command,
-    prompt: prompt.replace(`/${command}`, '').trim()
+    prompt: command ? prompt.replace(`/${command}`, '').trim() : prompt
   }
 }
-
-// export interface CopilotChatConversation {
-//   command: string
-//   prompt: string
-//   options: any
-//   response?: { arguments: any } | any
-//   error?: string | Error
-
-//   copilotService: CopilotService
-//   logger?: {
-//     trace(message?: any | (() => any), ...additional: any[]): void
-//     debug(message?: any | (() => any), ...additional: any[]): void
-//     info(message?: any | (() => any), ...additional: any[]): void
-//     log(message?: any | (() => any), ...additional: any[]): void
-//     warn(message?: any | (() => any), ...additional: any[]): void
-//     error(message?: any | (() => any), ...additional: any[]): void
-//     fatal(message?: any | (() => any), ...additional: any[]): void
-//   }
-// }
 
 export const CopilotDefaultOptions = {
   model: 'gpt-3.5-turbo-0613',

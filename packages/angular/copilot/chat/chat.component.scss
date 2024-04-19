@@ -70,6 +70,12 @@
   background-color: var(--ngm-copilot-bg-color, white);
 }
 
+.icon-md {
+  stroke-width: 1.5;
+  height: 18px;
+  width: 18px;
+}
+
 :host::ng-deep {
   markdown {
     p:first-child {
@@ -161,10 +167,4 @@
       @apply pl-2;
     }
   }
-}
-
-.icon-md {
-  stroke-width: 1.5;
-  height: 18px;
-  width: 18px;
 }

@@ -1256,7 +1256,8 @@
           "2023年某产品的访问量走势"
         ],
         "SuggestCommandDescription": "为数据集提供提问建议",
-        "ChartCommandDescription": "用图表洞察数据"
+        "ChartCommandDescription": "用图表洞察数据",
+        "SelectCubeFirstly": "请先选择一个多维数据集"
       }
     },
     "ApprovalPolicy": {

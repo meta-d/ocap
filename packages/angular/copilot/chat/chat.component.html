@@ -137,6 +137,12 @@
                                       }
                                     }
                                 }
+
+                              @if (message.error) {
+                                <div class="ngm-error">
+                                    {{ message.error }}
+                                </div>
+                              }
             
                                 <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                     (click)="deleteMessage(message)">

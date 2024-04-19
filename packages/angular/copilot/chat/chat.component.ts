@@ -335,11 +335,10 @@ export class NgmCopilotChatComponent {
           this.copilotEngine.upsertMessage(message)
         }
 
-        this._cdr.detectChanges()
+        // this._cdr.detectChanges()
         this.scrollBottom()
       } catch (err) {
         this.conversationsChange.emit(this.conversations)
-        // this._cdr.detectChanges()
       } finally {
         this.answering.set(false)
       }

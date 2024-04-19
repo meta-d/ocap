@@ -204,33 +204,44 @@ export class NgmCopilotEngineService implements CopilotEngine {
       prompt = data.prompt
     }
 
-    if (command) {
-      const _command = this.getCommand(command)
-
-      if (!_command) {
-        throw new Error(`Command '${command}' not found`)
-      }
-
-      if (_command.systemPrompt) {
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: _command.systemPrompt()
-        })
-      }
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt,
-        command
-      })
-
+    const _command = this.getCommand(command)
+    if (command && !_command) {
+      prompt = `/${command} ${prompt}`
+      this.#logger?.warn(`Copilot command '${command}' is not found`)
+    }
+    if (command && _command) {
       this.upsertConversation('command')
       // Last user messages before add new messages
       const lastUserMessages = this.lastUserMessages()
-      // Append new messages to conversation
-      this.upsertMessage(...newMessages)
 
+      try {
+        if (_command.systemPrompt) {
+          newMessages.push({
+            id: nanoid(),
+            role: CopilotChatMessageRoleEnum.System,
+            content: _command.systemPrompt()
+          })
+        }
+        newMessages.push({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt,
+          command
+        })
+      } catch (err: any) {
+        newMessages.push({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt,
+          command,
+          error: err.message
+        })
+        return
+      } finally {
+        // Append new messages to conversation
+        this.upsertMessage(...newMessages)
+      }
+      
       // Exec command implementation
       if (_command.implementation) {
         return await _command.implementation()
