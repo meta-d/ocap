@@ -261,7 +261,7 @@ export class NxStoryService {
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  readonly currentStoryPoint = computed(() => this.storyPoints().find((point) => point.key === this.currentPageKey()))
+  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
   readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
 
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))

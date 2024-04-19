@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { DirtyCheckGuard, storyResolver } from '../../@core/index'
 import { StoryPointComponent } from './point/point.component'
-import { StoryComponent } from './story/story.component'
+import { StoryDesignerComponent } from './story/story.component'
 import { StoryViewerComponent } from './viewer/viewer.component'
 import { StoryWidgetComponent } from './widget/widget.component'
 
@@ -23,7 +23,7 @@ const routes: Routes = [
   },
   {
     path: ':id/edit',
-    component: StoryComponent,
+    component: StoryDesignerComponent,
     canDeactivate: [DirtyCheckGuard],
     data: { title: 'pac.menu.story' },
     resolve: { story: storyResolver }
