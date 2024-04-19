@@ -131,7 +131,7 @@
                                         </div>
                                       @if (isFoucs(msgContent)) {
                                         <button mat-raised-button class="ngm-copilot__resubmit" displayDensity="compact"
-                                            (click)="resubmitMessage(message, msgContent.textContent)">
+                                            (click)="resubmitMessage(conversation.id, message, msgContent.textContent)">
                                             {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
                                         </button>
                                       }

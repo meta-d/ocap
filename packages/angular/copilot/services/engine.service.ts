@@ -16,6 +16,7 @@ import {
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
+import { compact } from '@metad/ocap-core'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
@@ -50,7 +51,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   readonly lastConversation = computed(() => {
     const conversation = this.conversations$()[this.conversations$().length - 1] ?? { messages: [] }
-    
+
     // Get last conversation messages
     const lastMessages = []
     let lastUserMessage = null
@@ -83,8 +84,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   readonly lastUserMessages = computed(() => {
-    const conversation = this.conversations$()[this.conversations$().length - 1] ?? { messages: [] }
+    const conversation = this.conversations$()[this.conversations$().length - 1]
     const messages = []
+    if (!conversation) {
+      return messages
+    }
     for (let i = conversation.messages.length - 1; i >= 0; i--) {
       const message = conversation.messages[i]
       if (message.role === CopilotChatMessageRoleEnum.User && !message.command) {
@@ -110,7 +114,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
   })
   readonly getGlobalFunctionDescriptions = computed(() => {
-    const ids = Object.keys(this.#entryPoints()).filter((id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id)))
+    const ids = Object.keys(this.#entryPoints()).filter(
+      (id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id))
+    )
     return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
   })
 
@@ -197,7 +203,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       command = data.command
       prompt = data.prompt
     }
-    
+
     if (command) {
       const _command = this.getCommand(command)
 
@@ -219,6 +225,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         command
       })
 
+      this.upsertConversation('command')
       // Last user messages before add new messages
       const lastUserMessages = this.lastUserMessages()
       // Append new messages to conversation
@@ -237,8 +244,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         ...this.aiOptions
       }
       if (functions.length) {
-        body.functions = functions,
-        body.stream = false
+        ;(body.functions = functions), (body.stream = false)
       }
 
       await this.triggerRequest(
@@ -255,9 +261,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
       )
 
-      // New conversation after command completion
-      this.newConversation()
+      // // New conversation after command completion
+      // this.newConversation()
     } else {
+      this.upsertConversation('free')
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
       // Allow empty prompt
@@ -320,7 +327,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     let chatRequest: ChatRequest = {
       messages: messagesSnapshot as Message[],
       options,
-      data,
+      data
     }
 
     assistantMessageId = assistantMessageId ?? nanoid()
@@ -335,7 +342,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     // Remove thinking message when abort
     const removeMessageWhenAbort = () => {
-      this.deleteMessage(thinkingMessage)
+      this.stopMessage(thinkingMessage.id)
     }
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
 
@@ -363,7 +370,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
               model: this.aiOptions.model
             },
             chatRequest,
-            { options, data },
+            { options, data }
           )
         },
         experimental_onFunctionCall: this.getFunctionCallHandler(),
@@ -419,22 +426,38 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return nanoid()
   }
 
-  newConversation() {
-    const conversation = this.#newConversation()
+  newConversation(type: CopilotChatConversation['type']) {
+    const conversation = this.#newConversation(type)
     this.#conversationId.set(conversation.id)
     this.conversations$.update((conversations) => [...conversations, conversation])
   }
 
-  #newConversation() {
+  #newConversation(type: CopilotChatConversation['type']): CopilotChatConversation {
     return {
       id: nanoid(),
-      messages: []
+      messages: [],
+      type
+    }
+  }
+
+  upsertConversation(type: CopilotChatConversation['type']) {
+    const conversations = this.conversations$()
+    const lastConversation = conversations[conversations.length - 1]
+    if (lastConversation?.type) {
+      if(lastConversation.type !== type) {
+        this.newConversation(type)
+      }
+    } else {
+      this.updateLastConversation((conversation) => ({
+        ...(conversation ?? this.#newConversation(type)),
+        type
+      }))
     }
   }
 
   upsertMessage(...messages: CopilotChatMessage[]) {
     this.conversations$.update((conversations) => {
-      const lastConversation = conversations[conversations.length - 1] ?? this.#newConversation()
+      const lastConversation = conversations[conversations.length - 1]
       const lastMessages = lastConversation.messages
       messages.forEach((message) => {
         const index = lastMessages.findIndex((item) => item.id === message.id)
@@ -444,19 +467,24 @@ export class NgmCopilotEngineService implements CopilotEngine {
           lastMessages.push(message)
         }
       })
-      return [...conversations.slice(0, conversations.length - 1), {
-        ...lastConversation,
-        messages: lastMessages
-      }]
+      return [
+        ...conversations.slice(0, conversations.length - 1),
+        {
+          ...lastConversation,
+          messages: lastMessages
+        }
+      ]
     })
   }
 
   deleteMessage(message: CopilotChatMessage | string) {
     const messageId = typeof message === 'string' ? message : message.id
-    this.conversations$.update((conversations) => conversations.map((conversation) => ({
-      ...conversation,
-      messages: conversation.messages.filter((item) => item.id !== messageId)
-    })))
+    this.conversations$.update((conversations) =>
+      conversations.map((conversation) => ({
+        ...conversation,
+        messages: conversation.messages.filter((item) => item.id !== messageId)
+      }))
+    )
   }
 
   clear() {
@@ -467,15 +495,32 @@ export class NgmCopilotEngineService implements CopilotEngine {
     this.conversations$.update(fn)
   }
 
+  updateConversation(id: string, fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void {
+    this.conversations$.update((conversations) => {
+      const index = conversations.findIndex((conversation) => conversation.id === id)
+      if (index > -1) {
+        conversations[index] = fn(conversations[index])
+      }
+      return compact(conversations)
+    })
+  }
+
   updateLastConversation(fn: (conversations: CopilotChatConversation) => CopilotChatConversation): void {
     this.conversations$.update((conversations) => {
-      const lastIndex = conversations[conversations.length - 1]?.messages.length ? conversations.length - 1 : conversations.length - 2
-      const lastConversation = conversations[lastIndex] ?? this.#newConversation()
+      const lastIndex = conversations.length - 1 < 0 ? 0 : conversations.length - 1
+      const lastConversation = conversations[lastIndex]
       conversations[lastIndex] = fn(lastConversation)
-      if (!conversations[lastIndex]) {
-        conversations.splice(lastIndex, 1)
+      return compact(conversations)
+    })
+  }
+
+  stopMessage(id: string) {
+    this.updateLastConversation((conversation) => {
+      const message = conversation.messages.find((m) => m.id === id)
+      if (message) {
+        message.status = 'done'
       }
-      return [...conversations]
+      return conversation
     })
   }
 

@@ -137,8 +137,6 @@ export async function callChatApi({
       }
     }
 
-    console.log(streamedResponse)
-
     if (body['stream']) {
       if (streamedResponse.startsWith('{"function_call":')) {
         // Once the stream is complete, the function call is parsed into an object.

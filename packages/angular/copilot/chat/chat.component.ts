@@ -129,9 +129,10 @@ export class NgmCopilotChatComponent {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
-  _mockConversations: Array<CopilotChatConversation<NgmCopilotChatMessage>> = [{
+  readonly _mockConversations: Array<CopilotChatConversation<NgmCopilotChatMessage>> = [{
     id: '',
-    messages: PlaceholderMessages
+    messages: PlaceholderMessages,
+    type: 'free'
   }]
 
   // Copilot
@@ -389,8 +390,8 @@ export class NgmCopilotChatComponent {
     this.conversationsChange.emit(this.conversations)
   }
 
-  async resubmitMessage(message: CopilotChatMessage, content: string) {
-    this.copilotEngine.updateLastConversation((conversation) => {
+  async resubmitMessage(id: string, message: CopilotChatMessage, content: string) {
+    this.copilotEngine.updateConversation(id, (conversation) => {
       const messages = conversation.messages
       const index = messages.findIndex((item) => item.id === message.id)
       if (index > -1) {
