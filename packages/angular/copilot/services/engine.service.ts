@@ -444,7 +444,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const conversations = this.conversations$()
     const lastConversation = conversations[conversations.length - 1]
     if (lastConversation?.type) {
-      if(lastConversation.type !== type) {
+      // Don't create new conversation only if two types are the same 'free'
+      if(!(type === 'free' && lastConversation.type === 'free')) {
         this.newConversation(type)
       }
     } else {

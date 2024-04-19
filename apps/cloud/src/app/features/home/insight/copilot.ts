@@ -15,7 +15,7 @@ import { cloneDeep, upperFirst } from 'lodash-es'
 import { z } from 'zod'
 
 export const SuggestsSchema = z.object({
-  suggests: z.array(z.string().describe('The suggested prompt')).describe('The suggested prompts')
+  suggests: z.array(z.string().describe('The suggested prompt')).describe('The suggested prompts').nonempty()
 })
 
 export interface QuestionAnswer {

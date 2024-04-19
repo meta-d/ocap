@@ -209,7 +209,7 @@ ${calcEntityTypePrompt(entityType)}
         ],
         implementation: async (chart: any, dimension, measure, options: FunctionCallHandlerOptions) => {
           this.#logger.debug('New chart by copilot command with:', chart, dimension, measure, options)
-          const userMessage = options.messages.find((item) => item.role === 'user')
+          const userMessage = options.messages.reverse().find((item) => item.role === 'user')
           const dataSourceName = this.insightService.dataSourceName()
           const cubes = this.insightService.allCubes()
 
