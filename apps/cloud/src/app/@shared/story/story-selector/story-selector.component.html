@@ -37,7 +37,8 @@
             <mat-label>
               {{ 'PAC.KEY_WORDS.StoryPoint' | translate: {Default: 'Story Point'} }}
             </mat-label>
-            <mat-select [formControl]="pointControl" [compareWith]="compareWith">
+            <mat-select [formControl]="pointControl" [compareWith]="compareWith"
+              panelClass="ngm-select-panel ngm-density__cosy">
               <mat-option *ngFor="let point of points" [value]="point">
                 {{point.name}}
               </mat-option>
