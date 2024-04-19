@@ -161,33 +161,17 @@
 
       @if (hasCube$()) {
         <div class="rounded-lg p-[2px] from-rose-400 via-fuchsia-500 to-indigo-500">
-          <mat-select class="ngm-select-element w-10 rounded-md p-3 flex items-center" style="width: 100px; display: flex; align-items: center;"
+          <ngm-select [selectOptions]="cubeSelectOptions()" searchable virtualScroll [panelWidth]="300" displayDensity="cosy"
             placeholder="{{'PAC.KEY_WORDS.Cube' | translate: { Default: 'Cube' } }}"
-            panelClass="ngm-select-panel ngm-density__cosy"
-            [panelWidth]="300"
-            [compareWith]="compareWithName"
-            [ngModel]="cube"
-            (ngModelChange)="onCubeChange($event)"
-            (click)="$event.stopPropagation();">
-            <mat-option *ngFor="let cube of cubes$ | async" [value]="cube" class="group">
-              <div class="w-full flex justify-between items-baseline">
-                <span class="overflow-hidden text-ellipsis whitespace-nowrap">
-                  {{cube.caption}}
-                </span>
-                
-                <span class="text-xs opacity-0 group-hover:opacity-80 duration-300 overflow-hidden text-ellipsis whitespace-nowrap">
-                  {{cube.name}}
-                </span>
-              </div>
-              
-            </mat-option>
-          </mat-select>
+            [(ngModel)]="cube"
+          >
+          </ngm-select>
         </div>
       }
     </div>
     <div class="pac-insight__ask-input pac-cdk-drop__list relative flex-1 w-full rounded-lg p-[2px]
      from-rose-400 via-fuchsia-500 to-indigo-500"
-      [class.bg-gradient-to-br]="model && (hasCube$() ? cube : true)"
+      [class.bg-gradient-to-br]="model && (hasCube$() ? cube() : true)"
       [class.ngm-background-animate]="answering()"
 
       cdkDropList

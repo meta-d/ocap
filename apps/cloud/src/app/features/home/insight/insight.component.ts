@@ -2,7 +2,7 @@ import { CdkDrag, CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
 import { ENTER } from '@angular/cdk/keycodes'
 import { CdkTreeModule } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import { Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -82,7 +82,6 @@ export class InsightComponent {
   separatorKeysCodes: number[] = [ENTER]
   SlicersCapacity = SlicersCapacity
 
-  private _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private router = inject(Router)
   private readonly _title = inject(Title)
@@ -96,9 +95,6 @@ export class InsightComponent {
 
   get model(): NgmSemanticModel {
     return this.insightService.model
-  }
-  get cube() {
-    return this.insightService.cube$()
   }
 
   promptControl = new FormControl()
@@ -116,10 +112,16 @@ export class InsightComponent {
   readonly copilotEnabled = this.insightService.copilotEnabled
   readonly models$ = this.insightService.models$
   readonly hasCube$ = this.insightService.hasCube$
-  readonly cubes$ = this.insightService.cubes$
+  // readonly cubes$ = this.insightService.cubes$
 
   readonly entityType = this.insightService.entityType
 
+  readonly cube = this.insightService.cube
+  readonly cubes = this.insightService.cubes
+  readonly cubeSelectOptions = computed(() => {
+    const cubes = this.insightService.cubes()
+    return cubes.map((item) => ({ key: item.name, caption: item.caption, value: item }))
+  })
   readonly dimensions = computed(() => {
     if (this.entityType()) {
       return getEntityDimensions(this.entityType())
@@ -343,7 +345,7 @@ ${calcEntityTypePrompt(entityType)}
 
   async onModelChange(value: NgmSemanticModel) {
     await this.insightService.setModel(value)
-    this._cdr.detectChanges()
+    // this._cdr.detectChanges()
   }
 
   async onCubeChange(cube: Cube) {

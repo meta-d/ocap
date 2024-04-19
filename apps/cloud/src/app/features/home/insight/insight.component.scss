@@ -49,3 +49,13 @@
     background-color: var(--ngm-color-surface-container-low);
   }
 }
+
+:host::ng-deep {
+  .pac-insight__search-bar {
+    .ngm-select {
+      .mat-mdc-form-field-error.mat-mdc-form-field-bottom-align {
+        display: none;
+      }
+    }
+  }
+}

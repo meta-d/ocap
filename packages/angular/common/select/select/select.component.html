@@ -4,7 +4,7 @@
   </label>
 }
 
-@if (!searchable) {
+@if (!searchable()) {
   <div class="relative">
     <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
       [formControl]="formControl"
@@ -49,7 +49,7 @@
   [displayWith]="displayWith"
   (optionSelected)="onOptionSelected($event)"
 >
-  @if (virtualScroll) {
+  @if (virtualScroll()) {
     <cdk-virtual-scroll-viewport class="nx-formly__virtual-scroll-viewport" minBufferPx="200" maxBufferPx="400"
       [style.height.px]="240" [itemSize]="30"
     >

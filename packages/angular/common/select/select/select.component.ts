@@ -9,6 +9,7 @@ import {
   ElementRef,
   Input,
   TemplateRef,
+  booleanAttribute,
   computed,
   effect,
   forwardRef,
@@ -93,14 +94,13 @@ export class NgmSelectComponent
   readonly valueKey = input<'value' | 'key' | string>('value')
   @Input() label: string
   @Input() placeholder: string
-  @Input() get searchable(): boolean {
-    return this._searchable
-  }
-  set searchable(value: boolean | string) {
-    this._searchable = coerceBooleanProperty(value)
-  }
-  private _searchable = false
-  @Input() virtualScroll: boolean
+
+  readonly searchable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+  readonly virtualScroll = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   readonly validators = input<ValidatorFn | ValidatorFn[] | null>()
 
