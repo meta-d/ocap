@@ -1,14 +1,15 @@
 import { Location } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
+  HostListener,
   OnInit,
   Renderer2,
   ViewChild,
   effect,
   inject,
+  model,
   signal,
   viewChild
 } from '@angular/core'
@@ -26,6 +27,7 @@ import {
 } from '@angular/router'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
+import { CopilotEngine } from '@metad/copilot'
 import { isNotEmpty, nonNullable } from '@metad/core'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { TranslateService } from '@ngx-translate/core'
@@ -55,7 +57,6 @@ import { StoryCreationComponent } from '../@shared'
 import { AppService } from '../app.service'
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
-import { CopilotEngine } from '@metad/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -148,7 +149,7 @@ export class FeaturesComponent implements OnInit {
   }
 
   assetsInit = false
-  copilotDrawerOpened = false
+  readonly copilotDrawerOpened = model(false)
   readonly loading = signal(false)
 
   readonly title = this.appService.title
@@ -190,9 +191,9 @@ export class FeaturesComponent implements OnInit {
     private router: Router,
     public dialog: MatDialog,
     private location: Location,
-    private logger: NGXLogger,
-    // private _cdr: ChangeDetectorRef
-  ) {
+    private logger: NGXLogger
+  ) // private _cdr: ChangeDetectorRef
+  {
     this.router.events
       .pipe(filter((e: Event | RouterEvent): e is RouterEvent => e instanceof RouterEvent))
       .subscribe((e: RouterEvent) => {
@@ -274,7 +275,9 @@ export class FeaturesComponent implements OnInit {
   }
 
   refreshMenuItem(item, withOrganizationShortcuts) {
-    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
+    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, {
+      Default: item.data.translationKey
+    })
     if (item.data.permissionKeys || item.data.hide) {
       const anyPermission = item.data.permissionKeys
         ? item.data.permissionKeys.reduce((permission, key) => {
@@ -720,5 +723,19 @@ export class FeaturesComponent implements OnInit {
 
   toEnableCopilot() {
     this.router.navigate(['settings', 'copilot'])
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+
+      } else {
+        if (event.key === 'b' || event.key === 'B') {
+          this.copilotDrawerOpened.update((value) => !value)
+          event.preventDefault()
+        }
+      }
+    }
   }
 }
