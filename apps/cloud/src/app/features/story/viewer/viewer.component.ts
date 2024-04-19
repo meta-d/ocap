@@ -311,6 +311,10 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     this.storyComponent.resetScalePanState()
   }
 
+  resetZoom() {
+    this.storyService.resetZoom()
+  }
+
   closeExplorer(event) {
     this.showExplorer.set(false)
     this._router.navigate([], {
@@ -350,11 +354,17 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     if (event.altKey) {
       switch (event.code) {
         case 'Minus':
+        case 'NumpadSubtract':
           this.storyService.zoomOut()
           break;
         case 'Equal':
+        case 'NumpadAdd':
           this.storyService.zoomIn()
           break;
+        case 'Digit0':
+        case 'Numpad0':
+          this.resetZoom()
+          break
         case 'Escape':
           this.resetScalePan()
           break;
