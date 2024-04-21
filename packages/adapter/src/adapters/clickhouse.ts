@@ -139,6 +139,10 @@ export class ClickHouseRunner extends BaseSQLQueryRunner<ClickHouseAdapterOption
     return this.runQuery(statement, { catalog })
   }
 
+  override async createCatalog(catalog: string, options?: {}) {
+    await this.runQuery(`CREATE DATABASE IF NOT EXISTS ${catalog}`)
+  }
+
   async teardown() {
     //
   }

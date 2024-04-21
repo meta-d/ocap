@@ -172,7 +172,7 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
     return this.runQuery(statement)
   }
 
-  async createCatalog(catalog: string) {
+  override async createCatalog(catalog: string) {
     await this.runQuery(`CREATE SCHEMA IF NOT EXISTS ${catalog}`)
   }
 

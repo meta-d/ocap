@@ -2,6 +2,7 @@
   "name": "@metad/adapter",
   "version": "2.1.0",
   "dependencies": {
+    "@sap/hana-client": "^2.20.20",
     "axios": "^0.21.4",
     "clickhouse": "^2.4.1",
     "hive-driver": "^0.1.7",

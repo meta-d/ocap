@@ -241,6 +241,15 @@ export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
     return this.runQuery(statement, { catalog })
   }
 
+  /**
+   * @todo Implement
+   * @param catalog 
+   * @param options 
+   */
+  override async createCatalog(catalog: string, options?: {}) {
+    throw new Error('Method not implemented.')
+  }
+
   async teardown() {
     return null
   }

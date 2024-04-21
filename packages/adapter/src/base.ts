@@ -234,6 +234,8 @@ export abstract class BaseSQLQueryRunner<T extends SQLAdapterOptions = SQLAdapte
     return null
   }
 
+  abstract createCatalog?(catalog: string): Promise<void>
+
   async ping(): Promise<void> {
     await this.runQuery(`SELECT 1`)
   }

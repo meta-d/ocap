@@ -138,6 +138,15 @@ export class RedshiftRunner extends BaseSQLQueryRunner<RedshiftAdapterOptions> {
     return this.runQuery(statement)
   }
 
+  /**
+   * @todo Implement
+   * @param catalog 
+   * @param options 
+   */
+  override async createCatalog(catalog: string, options?: {}) {
+    throw new Error('Method not implemented.')
+  }
+
   async teardown() {
     await this.redshiftDataClient.destroy()
   }
