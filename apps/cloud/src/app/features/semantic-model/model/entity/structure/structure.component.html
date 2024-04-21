@@ -8,7 +8,7 @@
                 >
             </ngm-editor-sql>
         </div>
-      } @else {
+      <!-- } @else {
         <div class="pac-cube-structure-drop w-full"
             cdkDropList
             [cdkDropListData]="tables$ | async"
@@ -44,7 +44,9 @@
                 </div>
               }
             </div>
-        </div>
+        </div> -->
+      } @else {
+        <div #rete class="w-full h-full"></div>
       }
     </ngm-splitter-pane>
 

@@ -5,11 +5,15 @@ import {
   ChangeDetectorRef,
   Component,
   DestroyRef,
+  ElementRef,
   HostBinding,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -43,10 +47,11 @@ import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { newDimensionFromColumn } from '../types'
+import { createEditor } from '../../../er'
 
 @Component({
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
   selector: 'pac-model-structure',
   templateUrl: './structure.component.html',
   styleUrls: ['./structure.component.scss'],
@@ -71,6 +76,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
   readonly #logger = inject(NGXLogger)
+  readonly injector = inject(Injector)
+
+  readonly reteContainer = viewChild('rete', { read: ElementRef })
+
 
   /**
   |--------------------------------------------------------------------------
@@ -142,6 +151,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
 
   constructor() {
     super()
+
+    afterNextRender(() => {
+      createEditor(this.reteContainer().nativeElement, this.injector)
+    })
 
     effect(
       () => {
