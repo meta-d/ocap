@@ -1,7 +1,7 @@
-import { IColumnDef, IDSSchema, IDSTable } from '../types'
+import { IColumnDef, IDSSchema, IDSTable, QueryOptions } from '../types'
 import { auth, connections, HiveClient, HiveUtils, thrift } from 'hive-driver'
 import { ColumnRequest, TablesRequest } from 'hive-driver/dist/contracts/IHiveSession'
-import { BaseSQLQueryRunner, QueryOptions, QueryResult, register, SQLAdapterOptions } from '../base'
+import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../base'
 import { groupBy } from '../helpers'
 
 const { TCLIService, TCLIService_types } = thrift

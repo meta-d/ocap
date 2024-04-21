@@ -1,7 +1,7 @@
 import { Client, ClientConfig, types } from 'pg'
-import { BaseSQLQueryRunner, QueryOptions, QueryResult, register, SQLAdapterOptions } from '../../base'
+import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../../base'
 import { convertPGSchema, getPGSchemaQuery, pgTypeMap, typeToPGDB } from '../../helpers'
-import { CreationTable, IDSSchema } from '../../types'
+import { CreationTable, IDSSchema, QueryOptions } from '../../types'
 import { pgFormat } from './pg-format'
 
 

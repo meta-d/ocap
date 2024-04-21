@@ -1,7 +1,7 @@
 import { Connection, createConnection } from '@sap/hana-client'
-import { BaseSQLQueryRunner, QueryOptions, QueryResult, SQLAdapterOptions, register } from '../base'
+import { BaseSQLQueryRunner, QueryResult, SQLAdapterOptions, register } from '../base'
 import { groupBy } from '../helpers'
-import { CreationTable, IDSSchema } from '../types'
+import { CreationTable, IDSSchema, QueryOptions } from '../types'
 
 export interface HANAAdapterOptions extends SQLAdapterOptions {
   database: string
