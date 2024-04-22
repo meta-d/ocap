@@ -1,4 +1,4 @@
-name: Prod - Build and Publish olap Docker Images
+name: Publish olap docker image
 
 on:
   push:
@@ -40,7 +40,6 @@ jobs:
       env:
         GITHUB_REF_NAME: ${{ github.ref_name }}
       run: |
-        docker push metadc/ocap-olap:latest
         docker tag metadc/ocap-olap:latest metadc/ocap-olap:$GITHUB_REF_NAME
         docker push metadc/ocap-olap:$GITHUB_REF_NAME
 
@@ -53,7 +52,6 @@ jobs:
 
     - name: Push to Github Registry
       run: |
-          docker push ghcr.io/meta-d/ocap-olap:latest
           docker tag ghcr.io/meta-d/ocap-olap:latest ghcr.io/meta-d/ocap-olap:$GITHUB_REF_NAME
           docker push ghcr.io/meta-d/ocap-olap:$GITHUB_REF_NAME
 
@@ -65,7 +63,6 @@ jobs:
 
     - name: Push to Aliyun Registry
       run: |
-          docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:latest
           docker tag registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:latest registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:$GITHUB_REF_NAME
           docker push registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:$GITHUB_REF_NAME
           
