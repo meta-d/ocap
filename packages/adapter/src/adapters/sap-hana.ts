@@ -119,7 +119,7 @@ export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
       query = `SELECT A.SCHEMA_NAME, A.TABLE_NAME, A.COMMENTS AS TABLE_LABEL, COLUMN_NAME, B.COMMENTS AS COLUMN_LABEL, DATA_TYPE_NAME, LENGTH, SCALE, IS_NULLABLE
 FROM "SYS"."TABLES" AS A JOIN "SYS"."TABLE_COLUMNS" AS B
 ON A.SCHEMA_NAME = B.SCHEMA_NAME AND A.TABLE_NAME = B.TABLE_NAME
-WHERE ${whereCondition}`
+WHERE ${whereCondition} ORDER BY A.SCHEMA_NAME, A.TABLE_NAME, B.POSITION`
     } else {
       query = `SELECT A.SCHEMA_NAME, A.TABLE_NAME, A.COMMENTS AS TABLE_LABEL FROM "SYS"."TABLES" AS A`
       if (catalog) {
@@ -137,14 +137,15 @@ WHERE ${whereCondition}`
             database,
             schema: database,
             name,
-            label: tableGroups[name][0].VIEW_LABEL,
+            label: tableGroups[name][0].TABLE_LABEL,
             columns: tableGroups[name]
               .filter((item) => item.COLUMN_NAME)
               .map((item) => ({
                 name: item.COLUMN_NAME,
                 label: item.COLUMN_LABEL,
+                dataType: concatHANAType(item.DATA_TYPE_NAME, item.LENGTH, item.SCALE),
                 type: hanaTypeMap(item.DATA_TYPE_NAME),
-                nullable: item.IS_NULLABLE.toLowerCase() === 'true'
+                nullable: item.IS_NULLABLE.toLowerCase() === 'true',
               }))
           })
         })
@@ -313,6 +314,16 @@ function typeToHANADB(type: string, isKey: boolean, length: number) {
       return 'BOOLEAN'
     default:
       return 'NVARCHAR(1000)'
+  }
+}
+
+function concatHANAType(type: HANAType, length: number, scale: number) {
+  if (type === 'DECIMAL') {
+    return scale ? `${type}(${length},${scale})` : `${type}(${length})`
+  } else if (type === 'NVARCHAR') {
+    return `${type}(${length})`
+  } else {
+    return type
   }
 }
 

@@ -222,6 +222,7 @@ export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
               .filter((col) => col.TABLE_SCHEM === item.TABLE_SCHEM && col.TABLE_NAME === item.TABLE_NAME)
               .map((col) => ({
                 name: col.COLUMN_NAME,
+                dataType: col.TYPE_NAME.toLowerCase(),
                 type: typeMap(col.TYPE_NAME.toLowerCase()),
                 label: col.REMARKS,
                 nullable: col.NULLABLE === 1

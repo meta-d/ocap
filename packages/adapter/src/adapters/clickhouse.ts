@@ -114,6 +114,7 @@ export class ClickHouseRunner extends BaseSQLQueryRunner<ClickHouseAdapterOption
             name: table,
             columns: columns.map((item: any) => ({
               name: item.name,
+              dataType: item.type,
               type: typeMap(item.type),
             })),
           }

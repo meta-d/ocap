@@ -31,6 +31,7 @@ export function convertMySQLSchema(data: Array<any>) {
           .filter((item) => !!item.column_name)
           .map((item) => ({
             name: item.column_name,
+            dataType: item.data_type,
             type: pgTypeMap(item.data_type),
             label: item.column_comment
           }))
