@@ -11,10 +11,10 @@ WORKDIR /app
 
 # COPY .deploy/olap/settings.xml /usr/share/maven/ref/
 COPY packages/olap/pom.xml ./pom.xml
-RUN mvn -B -s /usr/share/maven/ref/settings.xml dependency:resolve
+RUN mvn -B dependency:resolve
 
 COPY packages/olap/src ./src
-RUN mvn -B -s /usr/share/maven/ref/settings.xml clean install
+RUN mvn -B clean install
 
 # ==================================================== Stage ==========================================================#
 FROM adoptopenjdk:11-jre-hotspot AS webapp
