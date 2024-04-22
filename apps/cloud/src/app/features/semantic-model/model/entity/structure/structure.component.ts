@@ -73,7 +73,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   public modelService = inject(SemanticModelService)
   public entityService = inject(ModelEntityService)
   private readonly _toastrService = inject(ToastrService)
-  private readonly _cdr = inject(ChangeDetectorRef)
+  // private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
   readonly #logger = inject(NGXLogger)
   readonly injector = inject(Injector)

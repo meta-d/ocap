@@ -12,7 +12,7 @@
     }
   </mat-toolbar>
 
-  <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     [cdkDropListEnterPredicate]="dropDimensionPredicate"
     (cdkDropListDropped)="dropDimension($event)"
     >
@@ -60,7 +60,7 @@
     }
   </mat-toolbar>
         
-  <div class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     id="list-measures"
     cdkDropList
     [cdkDropListData]="measures$()"
@@ -106,7 +106,7 @@
     </button>
   </mat-toolbar>
         
-  <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     cdkDropList
     [cdkDropListData]="calculatedMembers()"
     [cdkDropListEnterPredicate]="calculatedEnterPredicate"
