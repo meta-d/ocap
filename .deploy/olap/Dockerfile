@@ -9,7 +9,7 @@ FROM maven:3.8-openjdk-11 AS build
 
 WORKDIR /app
 
-COPY .deploy/olap/settings.xml /usr/share/maven/ref/
+# COPY .deploy/olap/settings.xml /usr/share/maven/ref/
 COPY packages/olap/pom.xml ./pom.xml
 RUN mvn -B -s /usr/share/maven/ref/settings.xml dependency:resolve
 

@@ -175,14 +175,6 @@
 			<id>pentaho-public</id>
 			<name>Pentaho Public</name>
 			<url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
-			<releases>
-			  <enabled>true</enabled>
-			  <updatePolicy>daily</updatePolicy>
-			</releases>
-			<snapshots>
-			  <enabled>true</enabled>
-			  <updatePolicy>interval:15</updatePolicy>
-			</snapshots>
 		</repository>
 		<!-- 
 		<repository>
