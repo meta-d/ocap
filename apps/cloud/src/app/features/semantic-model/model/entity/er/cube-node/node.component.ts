@@ -11,17 +11,14 @@ import { ReteModule } from "rete-angular-plugin/17";
   
   @Component({
     standalone: true,
-    imports: [
-        CommonModule,
-        ReteModule
-    ],
+    imports: [CommonModule, ReteModule],
     templateUrl: "./node.component.html",
     styleUrls: ["./node.component.scss"],
     host: {
       "data-testid": "node"
     }
   })
-  export class DimensionNodeComponent implements OnChanges {
+  export class CubeNodeComponent implements OnChanges {
     @Input() data!: ClassicPreset.Node;
     @Input() emit!: (data: any) => void;
     @Input() rendered!: () => void;

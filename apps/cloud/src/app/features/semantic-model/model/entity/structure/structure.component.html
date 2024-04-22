@@ -44,10 +44,20 @@
                 </div>
               }
             </div>
-        </div> -->
+        </div> 
       } @else {
-        <div #rete class="w-full h-full"></div>
-      }
+        <div class="w-full h-full relative">
+            <div #rete class="w-full h-full"></div>
+            <div class="absolute right-0 top-0 flex items-center">
+                <button mat-flat-button (click)="autoLayout()">
+                    {{ 'Layout' }}
+                </button>
+            </div>
+        </div>
+      }-->
+    } @else {
+        <pac-model-er class="w-full h-full"></pac-model-er>
+    }
     </ngm-splitter-pane>
 
     <ngm-splitter-pane size="50%" class="flex flex-col">

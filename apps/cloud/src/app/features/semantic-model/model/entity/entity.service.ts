@@ -1,7 +1,9 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Injectable, OnDestroy, computed, effect, inject, signal } from '@angular/core'
+import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
+import { nonNullable } from '@metad/core'
+import { effectAction } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
   C_MEASURES,
@@ -21,8 +23,8 @@ import {
   getLevelById,
   isEntitySet
 } from '@metad/ocap-core'
-import { ComponentSubStore, DirtyCheckQuery } from '@metad/store'
 import { NxSettingsPanelService } from '@metad/story/designer'
+import { select, withProps } from '@ngneat/elf'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { assign, isEqual, negate, omit, omitBy } from 'lodash-es'
 import {
@@ -32,20 +34,15 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  of,
   shareReplay,
   switchMap,
   tap,
   withLatestFrom
 } from 'rxjs'
-import { SemanticModelService } from '../model.service'
-import { EntityPreview, MODEL_TYPE, ModelCubeState, ModelDesignerType, PACModelState } from '../types'
-import { newDimensionFromColumn, newDimensionFromTable } from './types'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
-import { Store, select, withProps } from '@ngneat/elf'
-import { stateHistory } from '@ngneat/elf-state-history'
-import { nonNullable } from '@metad/core'
-import { effectAction } from '@metad/ocap-angular/core'
+import { SemanticModelService } from '../model.service'
+import { EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
+import { newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
 export class ModelEntityService {
@@ -70,20 +67,20 @@ export class ModelEntityService {
     { name: 'semantic_model_cube_pristine', arrayKey: '__id__' },
     withProps<Cube>(null)
   )
-  // readonly #stateHistory = stateHistory<Store, Cube>(this.store, {
-  //   comparatorFn: negate(isEqual)
-  // })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
-  readonly entityName$ = this.store.pipe(select((state) => state.name), filter(nonNullable))
+  readonly entityName$ = this.store.pipe(
+    select((state) => state.name),
+    filter(nonNullable)
+  )
   public readonly cube$ = this.store.pipe(select((state) => state))
 
   readonly _preview = signal(null)
   get preview() {
     return this._preview()
   }
-  
+
   readonly queryLab = signal<{
     statement?: string
   }>({})
@@ -103,13 +100,6 @@ export class ModelEntityService {
    */
   readonly measures = signal<Property[] | null>(null)
 
-  // readonly dirtyCheckQuery: DirtyCheckQuery = new DirtyCheckQuery(this, {
-  //   watchProperty: ['entityType', 'cube'],
-  //   clean: (head, current) => {
-  //     return of(true)
-  //   }
-  // })
-  
   public readonly tables$ = this.cube$.pipe(map((cube) => cube?.tables))
   public readonly entityType$ = this.entityName$.pipe(
     switchMap((name) => this.#modelService.selectEntityType(name)),
@@ -119,7 +109,7 @@ export class ModelEntityService {
 
   readonly entityError$ = this.entityName$.pipe(
     switchMap((entity) => this.#modelService.selectEntitySet(entity)),
-    map((error) => isEntitySet(error) ? null : error),
+    map((error) => (isEntitySet(error) ? null : error)),
     takeUntilDestroyed(),
     shareReplay(1)
   )
@@ -129,11 +119,11 @@ export class ModelEntityService {
     takeUntilDestroyed(),
     shareReplay(1)
   )
-  
-  public readonly dimensionUsages$ = this.cube$.pipe(map((cube) => cube?.dimensionUsages));
-  public readonly cubeDimensions$ = this.cube$.pipe(map((cube) => cube?.dimensions));
-  public readonly measures$ = this.cube$.pipe(map((cube) => cube?.measures));
-  public readonly calculatedMembers$ = this.cube$.pipe(map((cube) => cube?.calculatedMembers));
+
+  public readonly dimensionUsages$ = this.cube$.pipe(map((cube) => cube?.dimensionUsages))
+  public readonly cubeDimensions$ = this.cube$.pipe(map((cube) => cube?.dimensions))
+  public readonly measures$ = this.cube$.pipe(map((cube) => cube?.measures))
+  public readonly calculatedMembers$ = this.cube$.pipe(map((cube) => cube?.calculatedMembers))
 
   /**
   |--------------------------------------------------------------------------
@@ -159,78 +149,69 @@ export class ModelEntityService {
   //   .subscribe((cube) => {
   //     this.#modelService.updateDataSourceSchemaEntityType(cube)
   //   })
-  private selectedSub = toObservable(this.selectedProperty).pipe(
-    switchMap((typeAndId) => {
-      if (!this.cube()) {
-        return EMPTY
-      }
-      
-      // Decode property type and key
-      const [type, key] = typeAndId?.split('#') ?? [ModelDesignerType.cube, this.cube().__id__]
+  private selectedSub = toObservable(this.selectedProperty)
+    .pipe(
+      switchMap((typeAndId) => {
+        if (!this.cube()) {
+          return EMPTY
+        }
 
-      return this.#settingsService
-        .openDesigner(
-          ModelDesignerType[type] + (this.modelType() === MODEL_TYPE.XMLA ? 'Attributes' : ''),
-          combineLatest([
-            this.cube$,
-            this.selectByTypeAndId(ModelDesignerType[type], key).pipe(
-              // filter(Boolean) // 过滤已经被删除的等情况
-            )
-          ]).pipe(
-            map(([cube, modeling]) => ({
-              cube,
-              id: key,
-              modeling
-            })),
-            distinctUntilChanged(isEqual)
-          ),
-          key
-        )
-        .pipe(
-          distinctUntilChanged(isEqual),
-          tap((result) =>
-            this.updateCubeProperty({
-              id: key,
-              type: ModelDesignerType[type],
-              model: result.modeling
-            })
+        // Decode property type and key
+        const [type, key] = typeAndId?.split('#') ?? [ModelDesignerType.cube, this.cube().__id__]
+
+        return this.#settingsService
+          .openDesigner(
+            ModelDesignerType[type] + (this.modelType() === MODEL_TYPE.XMLA ? 'Attributes' : ''),
+            combineLatest([
+              this.cube$,
+              this.selectByTypeAndId(ModelDesignerType[type], key)
+                .pipe
+                // filter(Boolean) // 过滤已经被删除的等情况
+                ()
+            ]).pipe(
+              map(([cube, modeling]) => ({
+                cube,
+                id: key,
+                modeling
+              })),
+              distinctUntilChanged(isEqual)
+            ),
+            key
           )
-        )
-    }),
-    takeUntilDestroyed()
-  ).subscribe()
+          .pipe(
+            distinctUntilChanged(isEqual),
+            tap((result) =>
+              this.updateCubeProperty({
+                id: key,
+                type: ModelDesignerType[type],
+                model: result.modeling
+              })
+            )
+          )
+      }),
+      takeUntilDestroyed()
+    )
+    .subscribe()
 
   constructor() {
-    effect(() => {
-      this.#modelService.updateDirty(this.cube().__id__, this.dirtyCheckResult.dirty())
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        this.#modelService.updateDirty(this.cube().__id__, this.dirtyCheckResult.dirty())
+      },
+      { allowSignalWrites: true }
+    )
   }
-
 
   public init(entity: string) {
     this.store.connect(['model', 'schema', 'cubes', entity])
     this.pristineStore.connect(['model', 'schema', 'cubes', entity])
-
-    // this.connect(this.#modelService, { parent: ['cubes', entity] })
-    // this.dirtyCheckQuery.setHead()
-    // this.#modelService.saved$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
-    //   this.dirtyCheckQuery.setHead()
-    // })
-
-    // this.dirtyCheckQuery.isDirty$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe((dirty) => {
-    //   if (!this.get((state) => state.dirty)) {
-    //     this.patchState({ dirty })
-    //   }
-    // })
   }
 
   query(statement: string) {
     return this.#modelService.dataSource$.value.query({ statement })
   }
 
-  updater<ProvidedType = void, OriginType = ProvidedType>(
-    fn: (state: Cube, ...params: OriginType[]) => Cube | void
-  ) {
+  updater<ProvidedType = void, OriginType = ProvidedType>(fn: (state: Cube, ...params: OriginType[]) => Cube | void) {
     return (...params: OriginType[]) => {
       this.store.update(write((state) => fn(state, ...params)))
     }
@@ -326,22 +307,28 @@ export class ModelEntityService {
    * * blank
    * * from source table column
    */
-  readonly newDimension = this.updater((state, event?: { index: number; table?: {name: string; caption: string;}; column?: PropertyAttributes }) => {
-    state.dimensions = state.dimensions ?? []
-    if (event) {
-      const isOlap = this.modelType() === MODEL_TYPE.OLAP
-      if (event.table) {
-        state.dimensions.splice(event.index, 0, newDimensionFromTable(state.dimensions, event.table.name, event.table.caption, isOlap))
-      } else if (event.column) {
-        state.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column, isOlap))
+  readonly newDimension = this.updater(
+    (state, event?: { index: number; table?: { name: string; caption: string }; column?: PropertyAttributes }) => {
+      state.dimensions = state.dimensions ?? []
+      if (event) {
+        const isOlap = this.modelType() === MODEL_TYPE.OLAP
+        if (event.table) {
+          state.dimensions.splice(
+            event.index,
+            0,
+            newDimensionFromTable(state.dimensions, event.table.name, event.table.caption, isOlap)
+          )
+        } else if (event.column) {
+          state.dimensions.splice(event.index, 0, newDimensionFromColumn(event.column, isOlap))
+        }
+      } else if (!state.dimensions.find((item) => item.name === '')) {
+        state.dimensions.push({
+          __id__: uuid(),
+          name: ''
+        } as PropertyDimension)
       }
-    } else if (!state.dimensions.find((item) => item.name === '')) {
-      state.dimensions.push({
-        __id__: uuid(),
-        name: ''
-      } as PropertyDimension)
     }
-  })
+  )
 
   readonly addDimension = this.updater((state, dimension: PropertyDimension) => {
     state.dimensions = state.dimensions ?? []
@@ -368,19 +355,30 @@ export class ModelEntityService {
     } as PropertyHierarchy)
   })
 
-  readonly newLevel = this.updater((state, { id, index, name, column, caption }: { id: string; index?: number; name: string; column?: string; caption?: string; }) => {
-    const hierarchy = getHierarchyById(state, id)
-    // 检查是否已经存在新建条目
-    if (!hierarchy.levels?.find((item) => item.name === name)) {
-      hierarchy.levels = hierarchy.levels ?? []
-      hierarchy.levels.splice(index ?? hierarchy.levels.length, 0, {
-        __id__: uuid(),
+  readonly newLevel = this.updater(
+    (
+      state,
+      {
+        id,
+        index,
         name,
         column,
         caption
-      } as PropertyLevel)
+      }: { id: string; index?: number; name: string; column?: string; caption?: string }
+    ) => {
+      const hierarchy = getHierarchyById(state, id)
+      // 检查是否已经存在新建条目
+      if (!hierarchy.levels?.find((item) => item.name === name)) {
+        hierarchy.levels = hierarchy.levels ?? []
+        hierarchy.levels.splice(index ?? hierarchy.levels.length, 0, {
+          __id__: uuid(),
+          name,
+          column,
+          caption
+        } as PropertyLevel)
+      }
     }
-  })
+  )
 
   readonly newMeasure = this.updater((state, event?: { index: number; column?: string }) => {
     state.measures = state.measures ?? []
@@ -556,10 +554,7 @@ export class ModelEntityService {
         moveItemInArray(
           state.dimensionUsages,
           fromIndex,
-          Math.max(
-            Math.min(fromIndex + event.currentIndex - event.previousIndex, state.dimensionUsages.length - 1),
-            0
-          )
+          Math.max(Math.min(fromIndex + event.currentIndex - event.previousIndex, state.dimensionUsages.length - 1), 0)
         )
       } else {
         // Dimension
@@ -701,8 +696,8 @@ export class ModelEntityService {
 
   /**
    * Navigate to calculation member page by key
-   * 
-   * @param key 
+   *
+   * @param key
    */
   navigateCalculation(key: string) {
     this.#router.navigate(['calculation', key], { relativeTo: this.#route })

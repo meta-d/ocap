@@ -47,7 +47,7 @@ import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { newDimensionFromColumn } from '../types'
-import { createEditor } from '../../../er'
+import { ERComponent, createEditor } from '../er'
 
 @Component({
   standalone: true,
@@ -62,7 +62,9 @@ import { createEditor } from '../../../er'
     MaterialModule,
     NxEditorModule,
     NgmCommonModule,
-    NgmEntityPropertyComponent
+    NgmEntityPropertyComponent,
+
+    ERComponent
   ]
 })
 export class ModelEntityStructureComponent extends TranslationBaseComponent {
@@ -73,7 +75,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   public modelService = inject(SemanticModelService)
   public entityService = inject(ModelEntityService)
   private readonly _toastrService = inject(ToastrService)
-  // private readonly _cdr = inject(ChangeDetectorRef)
+  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
   readonly #logger = inject(NGXLogger)
   readonly injector = inject(Injector)
@@ -131,6 +133,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   private _tableJoins = {}
   private _tableTypes = {}
 
+  #layout: (animate: boolean) => void
+
   // Subscribers
   private _originEntityTypeSub$ = this.entityService.originalEntityType$
     .pipe(
@@ -152,9 +156,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   constructor() {
     super()
 
-    afterNextRender(() => {
-      createEditor(this.reteContainer().nativeElement, this.injector)
-    })
+    // afterNextRender(async () => {
+    //   const { layout, destroy } = await createEditor(this.reteContainer().nativeElement, this.injector)
+    //   this.#layout = layout
+    // })
 
     effect(
       () => {
@@ -180,6 +185,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       },
       { allowSignalWrites: true }
     )
+  }
+
+  autoLayout() {
+    this.#layout(true)
   }
 
   toggleDimVisible(property: Property, visible: boolean) {
