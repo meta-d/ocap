@@ -34,6 +34,7 @@ export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
         encoding: { type: 'string' }
       },
       required: ['username', 'password', 'host', 'port', 'database'],
+      order: ['host', 'port', 'username', 'password', 'database', 'catalog'],
       extra_options: ['encoding'],
       secret: ['password']
     }
@@ -60,7 +61,6 @@ export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
       if (this.connection.state() === 'connected') {
         resolve(this.connection)
       } else {
-        console.log(`Connecting to HANA DB:`, conn_params)
         this.connection.connect(conn_params, (err) => {
           if (err) {
             return reject(err)
@@ -120,12 +120,7 @@ export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
 FROM "SYS"."TABLES" AS A JOIN "SYS"."TABLE_COLUMNS" AS B
 ON A.SCHEMA_NAME = B.SCHEMA_NAME AND A.TABLE_NAME = B.TABLE_NAME
 WHERE ${whereCondition}`
-      // query = `SELECT A.SCHEMA_NAME, A.VIEW_NAME, A.COMMENTS AS VIEW_LABEL, COLUMN_NAME, B.COMMENTS AS COLUMN_LABEL, DATA_TYPE_NAME, LENGTH, SCALE, IS_NULLABLE
-      // FROM "SYS"."VIEWS" AS A JOIN "SYS"."VIEW_COLUMNS" AS B
-      // ON A.SCHEMA_NAME = B.SCHEMA_NAME AND A.VIEW_NAME = B.VIEW_NAME
-      // WHERE A.SCHEMA_NAME = '${catalog}' AND A.VIEW_NAME = '${tableName}'`
     } else {
-      // query = `SELECT A.SCHEMA_NAME, A.VIEW_NAME, A.COMMENTS AS VIEW_LABEL FROM "SYS"."VIEWS" AS A`
       query = `SELECT A.SCHEMA_NAME, A.TABLE_NAME, A.COMMENTS AS TABLE_LABEL FROM "SYS"."TABLES" AS A`
       if (catalog) {
         query = query + ` WHERE A.SCHEMA_NAME = '${catalog}'`
@@ -195,16 +190,17 @@ WHERE ${whereCondition}`
     }
 
     const tableName = `"${name}"` // options?.catalog ? `"${options.catalog}"."${name}"` :
-    // const dropTableStatement = `DROP TABLE IF EXISTS ${tableName}`
+
     const createTableStatement = `CREATE COLUMN TABLE ${tableName} (${columns
       .map(
         (col) => `"${col.fieldName}" ${typeToHANADB(col.type, col.isKey, col.length)}${col.isKey ? ' PRIMARY KEY' : ''}`
       )
       .join(', ')} )`
     const values = data.map((row) =>
-      columns.map(({ name, type, length }) => {
-        if (type === 'Date' && row[name] instanceof Date) {
-          return row[name].toISOString().slice(0, length ?? 10)
+      columns.map(({ name, type, length, isKey }) => {
+        const hanaType = typeToHANADB(type, isKey, length) as HANAType
+        if (row[name] instanceof Date || isDateType(hanaType)) {
+          return formatDateToHANA(row[name], hanaType)
         } else {
           return row[name]
         }
@@ -225,7 +221,6 @@ WHERE ${whereCondition}`
           .join(',')})`
       )
 
-      console.log(`Insert data:`, stmt, values)
       return new Promise((resolve, reject) => {
         stmt.execBatch(values, function (err, rows) {
           if (err) {
@@ -246,7 +241,13 @@ WHERE ${whereCondition}`
     // throw new Error(`Method 'import' of HANA DB adapter not implemented.`)
   }
 
+  /**
+   * Drop table if exists
+   * @param name Table Name
+   * @param options 
+   */
   async dropTable(name: string, options?: QueryOptions): Promise<void> {
+    // Check if table exists
     const schemas = await this.getSchema(options.catalog, name)
     if (schemas[0]?.tables?.length > 0) {
       await this.execute(`DROP TABLE "${name}"`, options)
@@ -283,6 +284,8 @@ export function hanaTypeMap(type: string): string {
   }
 }
 
+export type HANAType = 'INT' | 'DECIMAL' | 'NVARCHAR' | 'DATE' | 'TIME' | 'TIMESTAMP' | 'BOOLEAN'
+
 function typeToHANADB(type: string, isKey: boolean, length: number) {
   switch (type) {
     case 'number':
@@ -300,13 +303,33 @@ function typeToHANADB(type: string, isKey: boolean, length: number) {
     case 'date':
     case 'Date':
       return 'DATE'
+    case 'Time':
+      return 'TIME'
     case 'Datetime':
     case 'datetime':
-      return 'DATETIME'
+      return 'TIMESTAMP'
     case 'boolean':
     case 'Boolean':
       return 'BOOLEAN'
     default:
       return 'NVARCHAR(1000)'
   }
+}
+
+function formatDateToHANA(d: Date | string, type: HANAType) {
+  const ds = d instanceof Date ? d.toISOString() : d
+  switch (type) {
+    case 'DATE':
+      return ds.slice(0, 10)
+    case 'TIME':
+      return ds.slice(11, 19)
+    case 'TIMESTAMP':
+      return ds.slice(0, 10) + ' ' + ds.slice(11, 23)
+    default:
+      return ds
+  }
+}
+
+function isDateType(type: HANAType) {
+  return ['DATE', 'TIME', 'TIMESTAMP'].includes(type)
 }

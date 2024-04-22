@@ -1,11 +1,10 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
+import { Component, booleanAttribute, input, output } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { NgmDndDirective } from '@metad/core'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgmDndDirective } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -22,20 +21,14 @@ import { NgmDndDirective } from '@metad/core'
   templateUrl: './upload.component.html',
   styleUrls: ['./upload.component.scss']
 })
-export class UploadComponent implements OnInit {
-  @Input() files: File[] = []
+export class UploadComponent {
+  readonly files = input<File[]>([])
+  readonly multiple = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() get multiple() {
-    return this._multiple
-  }
-  set multiple(value: boolean | string) {
-    this._multiple = coerceBooleanProperty(value)
-  }
-  private _multiple = false
-
-  @Output() filesChange = new EventEmitter()
-
-  ngOnInit(): void {}
+  readonly filesChange = output<FileList>()
+  readonly removeFileChange = output<File[]>()
 
   /**
    * on file drop handler
@@ -47,19 +40,15 @@ export class UploadComponent implements OnInit {
   /**
    * handle file from browsing
    */
-  async fileBrowseHandler(event) {
+  async fileBrowseHandler(event: EventTarget & { files?: FileList }) {
     await this.uploadStorageFile(event.files)
   }
 
   async uploadStorageFile(files: FileList) {
-    this.files.push(...Array.from(files))
-
-    this.filesChange.emit(this.files)
+    this.filesChange.emit(files)
   }
 
-  removeFile(index: number) {
-    this.files.splice(index, 1)
-    this.files = [...this.files]
-    this.filesChange.emit(this.files)
+  removeFile(file: File) {
+    this.removeFileChange.emit([file])
   }
 }

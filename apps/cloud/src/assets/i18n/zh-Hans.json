@@ -176,7 +176,10 @@
       "Agent": "代理",
       "Progress": "进度",
       "Complete": "完成",
-      "Request": "请求"
+      "Request": "请求",
+      "Length": "长度",
+      "PrimaryKey": "主键",
+      "TableName": "表名"
     },
     "MENU": {
       "Certification": "认证",

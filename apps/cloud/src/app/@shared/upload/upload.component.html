@@ -32,12 +32,14 @@
         </span>
       </label>
 
-      <div *ngFor="let file of files; index as i" class="flex justify-end items-center">
-        {{ file.name }}
-        <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" (click)="removeFile(i)">
-          <mat-icon>close</mat-icon> 
-        </button>
-      </div>
+      @for (file of files(); track i; let i = $index) {
+        <div class="flex justify-end items-center">
+          {{ file.name }}
+          <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" (click)="removeFile(file)">
+            <mat-icon>close</mat-icon> 
+          </button>
+        </div>
+      }
     </div>
     
 </div>

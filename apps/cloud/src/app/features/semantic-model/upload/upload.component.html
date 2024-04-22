@@ -1,4 +1,4 @@
-<div class="ngm-theme-dark dark w-[400px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
+<div class="ngm-theme-dark dark w-[400px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 p-4 group">
     <div class="w-full flex justify-start items-center my-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
       <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
       <span class="text-lg pointer-events-none">
@@ -30,11 +30,9 @@
                 <mat-list-item *ngFor="let sheet of sheets$ | async" class="mt-1"
                     [class.active]="activeLink === sheet.name"
                     (click)="activeSheet(sheet)">
-                    <span class="w-full p-2 ">
-                        <input matInput [(ngModel)]="sheet.name" class="w-full"
-                            [placeholder]=" 'PAC.MODEL.CREATE_TABLE.InputTableName' | translate: {Default: 'Input Table Name'} "
-                            (keydown)="activeSheet(sheet);onKeyup($event)"/>
-                    </span>
+                    <ngm-input [label]="'PAC.KEY_WORDS.TableName' | translate: {Default: 'Table Name'}" [(ngModel)]="sheet.name" class="w-full"
+                        [placeholder]=" 'PAC.MODEL.CREATE_TABLE.InputTableName' | translate: {Default: 'Input Table Name'} "
+                        (keydown)="activeSheet(sheet);onKeyup($event)"/>
                 </mat-list-item>
             </mat-nav-list>
 
@@ -67,60 +65,76 @@
         </div>
     
         <div ngmButtonGroup>
+          @if (stepper.selectedIndex > 0) {
             <button mat-raised-button
-                *ngIf="stepper.selectedIndex>0" [disabled]="uploading"
+                [disabled]="uploading()"
                 (click)="stepper.previous()"
             >
                 {{ 'PAC.ACTIONS.PREVIOUS' | translate: {Default: "Previous"} }}
             </button>
+          }
+
+          @if (stepper.selectedIndex < 2) {
             <button mat-raised-button color="accent"
                 [disabled]="stepper.selected?.stepControl?.invalid || !fileList.length"
-                *ngIf="stepper.selectedIndex < 2"
                 (click)="stepper.next()"
             >
                 {{ 'PAC.ACTIONS.NEXT' | translate: {Default: "Next"} }}
             </button>
+          }
     
-            <ng-container *ngIf="stepper.selectedIndex===2">
-                <button mat-raised-button *ngIf="!done" color="accent" (click)="upload()">
-                    {{ 'PAC.MODEL.UPLOAD.Import' | translate: {Default: 'Import'} }}
-                </button>
-                <button mat-raised-button *ngIf="done" color="accent" [disabled]="uploading" mat-dialog-close>
+          @if (stepper.selectedIndex===2) {
+            @if (done) {
+                <button mat-raised-button color="accent" [disabled]="uploading()" mat-dialog-close>
                     {{ 'PAC.MODEL.UPLOAD.Done' | translate: {Default: 'Done'} }}
                 </button>
-            </ng-container>
+            } @else {
+                <button mat-raised-button color="accent" (click)="upload()">
+                    {{ 'PAC.MODEL.UPLOAD.Import' | translate: {Default: 'Import'} }}
+                </button>
+            }
+          }
         </div>
     
     </div>
 </div>
 
 <div class="relative flex-1 flex flex-col justify-start items-stretch overflow-auto">
-    <pac-upload *ngIf="stepper.selectedIndex === 0" class="flex-1"
-        [files]="fileList"
-        (filesChange)="onFileListChange($event)"
-    ></pac-upload>
-
-    <ng-container *ngIf="stepper.selectedIndex === 1">
-        <mat-progress-spinner *ngIf="isLoading" strokeWidth="2" color="accent" diameter="50" [value]="progress" class="ngm-card__loading" style="margin: auto;"></mat-progress-spinner>
-        <div *ngFor="let sheet of activedSheets" class="flex w-full h-full overflow-auto">
+  @switch (stepper.selectedIndex) {
+    @case(0) {
+        <pac-upload class="flex-1"
+            [files]="fileList"
+            (filesChange)="onFileListChange($event)"
+            (removeFileChange)="removeFiles($event)"
+        ></pac-upload>
+    }
+    @case(1) {
+      @if (isLoading()) {
+        <mat-progress-spinner strokeWidth="2" color="accent" diameter="50" [value]="progress" class="ngm-card__loading" style="margin: auto;"></mat-progress-spinner>
+      }
+      @for (sheet of activedSheets; track $index) {
+        <div class="flex w-full h-full overflow-auto">
             <div class="w-full overflow-auto">
                 <table mat-table [dataSource]="sheet.preview" class="mat-elevation-z w-full">
                     <ng-container *ngFor="let header of sheet.columns; let i = index" [matColumnDef]="header.name">
                         <th mat-header-cell *matHeaderCellDef [cdkContextMenuTriggerFor]="context_menu">
                             <div class="p-2 flex flex-col justify-start items-start">
                                 <div class="flex justify-start items-center gap-2">
-                                    <mat-checkbox [(ngModel)]="header.isKey" matTooltip="Key"></mat-checkbox>
-                                    <select [(ngModel)]="header.type" class="ngm-select p-2">
+                                    <mat-checkbox [(ngModel)]="header.isKey" [matTooltip]="'PAC.KEY_WORDS.PrimaryKey' | translate: {Default: 'Primary Key'}"></mat-checkbox>
+                                    <select [(ngModel)]="header.type" class="ngm-select">
                                         <option value="String">String</option>
                                         <option value="Number">Integer</option>
                                         <option value="Numeric">Numeric</option>
                                         <option value="Date">Date</option>
+                                        <option value="Time">Time</option>
                                         <option value="Datetime">Datetime</option>
                                     </select>
-                                    <input matInput [(ngModel)]="header.length" placeholder="length" class="pac-upload-preview__length"/>
+                                    <input matInput [(ngModel)]="header.length" class="pac-upload-preview__length"
+                                        type="number"
+                                        [placeholder]="'PAC.KEY_WORDS.Length' | translate: {Default: 'Length'}" />
                                 </div>
 
-                                <input matInput [(ngModel)]="header.fieldName" class="ngm-input hover:bg-neutral-100 dark:hover:bg-neutral-700" />
+                                <input matInput [(ngModel)]="header.fieldName" class="ngm-input"/>
                             </div>
                         </th>
                         <td mat-cell *matCellDef="let element"> {{element[header.name]}} </td>
@@ -144,39 +158,56 @@
                 </table>
             </div>
         </div>
-    </ng-container>
-
-    <mat-list *ngIf="stepper.selectedIndex === 2" role="list">
-        <mat-list-item role="listitem" *ngFor="let sheet of sheets" class="hover:bg-slate-500/10 text-ellipsis overflow-hidden">
-            <div class="flex items-center justify-start">
-                <button *ngIf="!sheet.status" mat-icon-button ngmAppearance="danger" displayDensity="compact"
-                    (click)="remove(sheet)">
-                    <mat-icon fontSet="material-icons-outlined">remove</mat-icon>
-                </button>
-                
-                <span *ngIf="sheet.status==='done'" class="mr-2">✅</span>
-                <span *ngIf="sheet.status==='uploading'" class="mr-2">
-                    {{timer$ | async}}
-                </span>
-                <span *ngIf="sheet.status === 'error'" class="mr-2">❌</span>
-
-                <span class="pac-upload-table__upload-name whitespace-nowrap">{{sheet.name}}:</span>
-                
-                <span *ngIf="sheet.status === 'error'" class="whitespace-nowrap overflow-hidden text-ellipsis"
-                    [matTooltip]="sheet.info"
-                >{{sheet.info}}</span>
-                <span *ngIf="sheet.status==='done'">
-                    {{ 'PAC.MODEL.UPLOAD.Uploaded' | translate: {Default: 'Uploaded'} }}
-                    {{sheet.data.length}}
-                    {{ 'PAC.MODEL.UPLOAD.Records' | translate: {Default: 'Records'} }}
-                </span>
-            </div>
-        </mat-list-item>
-    </mat-list>
-
-    <div *ngIf="error" class="absolute w-full h-full top-0 left-0 flex justify-center items-center p-16 bg-white/50 backdrop-blur-sm">
+      }
+    }
+    @case(2) {
+        <mat-list role="list">
+            <mat-list-item role="listitem" *ngFor="let sheet of sheets" class="hover:bg-slate-500/10 text-ellipsis overflow-hidden">
+                <div class="flex items-center justify-start">
+                  @switch (sheet.status) {
+                    @case('uploading') {
+                        <span class="mr-2">
+                            {{timer$ | async}}
+                        </span>
+                    }
+                    @case('done') {
+                        <span class="mr-2">✅</span>
+                    }
+                    @case('error') {
+                        <span class="mr-2">❌</span>
+                    }
+                    @default {
+                        <button mat-icon-button ngmAppearance="danger" displayDensity="compact"
+                            (click)="remove(sheet)">
+                            <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+                        </button>
+                    }
+                  }
+    
+                    <span class="pac-upload-table__upload-name whitespace-nowrap">{{sheet.name}}:</span>
+                    
+                  @if (sheet.status === 'error') {
+                    <span class="whitespace-nowrap overflow-hidden text-ellipsis opacity-60"
+                        [matTooltip]="sheet.info"
+                    >{{sheet.info}}</span>
+                  } @else if (sheet.status==='done') {
+                    <span class="opacity-60">
+                        {{ 'PAC.MODEL.UPLOAD.Uploaded' | translate: {Default: 'Uploaded'} }}
+                        {{sheet.data.length}}
+                        {{ 'PAC.MODEL.UPLOAD.Records' | translate: {Default: 'Records'} }}
+                    </span>
+                  }
+                </div>
+            </mat-list-item>
+        </mat-list>
+    }
+  }
+    
+  @if (error) {
+    <div class="absolute w-full h-full top-0 left-0 flex justify-center items-center p-16 bg-white/50 backdrop-blur-sm">
         <span>
             {{ error }}
         </span>
     </div>
+  }
 </div>
