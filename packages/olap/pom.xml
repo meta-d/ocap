@@ -17,7 +17,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<mondrian-version>9.3.0.1-552</mondrian-version>
+		<mondrian-version>9.4.0.0-343</mondrian-version>
 		<foodmart-hsqldb-version>0.4</foodmart-hsqldb-version>
 	</properties>
 
