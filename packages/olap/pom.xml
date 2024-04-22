@@ -184,6 +184,7 @@
 			  <updatePolicy>interval:15</updatePolicy>
 			</snapshots>
 		</repository>
+		<!-- 
 		<repository>
 			<releases>
 				<enabled>true</enabled>
@@ -194,7 +195,7 @@
 			<name>Pentaho</name>
 			<url>https://nexus.pentaho.org/repository/proxy-pentaho-public-release-group/</url>
 		</repository>
-		<!-- <repository>
+		<repository>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
