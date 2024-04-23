@@ -78,14 +78,14 @@
       }
 
       @if (cube()) {
-        <div #cubeRef class="absolute bg-neutral-200 rounded-lg cursor-pointer z-10 w-64 flex flex-col border border-solid border-neutral-300
-        dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-700 dark:hover:border-neutral-500
-        "
-            [ngStyle]="{
-                left: layout()[cube().__id__]?.x + 'px',
-                top: layout()[cube().__id__]?.y + 'px'
-            }"
-            (click)="select($event, ModelDesignerType.cube, cube().__id__)"
+        <div #cubeRef class="cube absolute bg-neutral-200 rounded-lg cursor-pointer z-10 w-64 flex flex-col border border-solid border-neutral-300
+          dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-700 dark:hover:border-neutral-500"
+          [class.selected]="selected()?.key === cube().__id__"
+          [ngStyle]="{
+              left: layout()[cube().__id__]?.x + 'px',
+              top: layout()[cube().__id__]?.y + 'px'
+          }"
+          (click)="select($event, ModelDesignerType.cube, cube().__id__)"
         >
             <div class="p-2">
                 <span class="text-lg font-bold">{{cube().caption}}</span>
@@ -119,11 +119,11 @@
       }
 
       @for (connection of connections(); track connection.id) {
-        <svg width="100%" height="100%" class="absolute top-0 left-0 z-0">
+        <svg width="100%" height="100%" class="connection-item absolute top-0 left-0 z-0"
+          [class.selected]="selected()?.key === connection.id">
             <path
                 [attr.d]="edges()[connection.id]?.path"
                 fill="none"
-                stroke="black"
                 stroke-width="2"
             />
         </svg>

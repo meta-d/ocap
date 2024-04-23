@@ -2,18 +2,14 @@ import { CdkDrag, CdkDragDrop, CdkDragRelease, moveItemInArray, transferArrayIte
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
-  ElementRef,
   HostBinding,
   Injector,
-  afterNextRender,
   computed,
   effect,
   inject,
-  signal,
-  viewChild
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -46,8 +42,8 @@ import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { ERComponent } from '../er'
 import { newDimensionFromColumn } from '../types'
-import { ERComponent, createEditor } from '../er'
 
 @Component({
   standalone: true,
@@ -75,13 +71,9 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   public modelService = inject(SemanticModelService)
   public entityService = inject(ModelEntityService)
   private readonly _toastrService = inject(ToastrService)
-  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
   readonly #logger = inject(NGXLogger)
   readonly injector = inject(Injector)
-
-  readonly reteContainer = viewChild('rete', { read: ElementRef })
-
 
   /**
   |--------------------------------------------------------------------------
@@ -125,15 +117,13 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     map(([wordWrap, { name }]) => ({
       wordWrap,
       theme: name === 'default' ? 'vs' : `vs-${name}`
-    })),
+    }))
   )
 
   public readonly expression = toSignal(this.entityService.cube$.pipe(map((cube) => cube?.expression)))
 
   private _tableJoins = {}
   private _tableTypes = {}
-
-  #layout: (animate: boolean) => void
 
   // Subscribers
   private _originEntityTypeSub$ = this.entityService.originalEntityType$
@@ -155,11 +145,6 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
 
   constructor() {
     super()
-
-    // afterNextRender(async () => {
-    //   const { layout, destroy } = await createEditor(this.reteContainer().nativeElement, this.injector)
-    //   this.#layout = layout
-    // })
 
     effect(
       () => {
@@ -185,10 +170,6 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       },
       { allowSignalWrites: true }
     )
-  }
-
-  autoLayout() {
-    this.#layout(true)
   }
 
   toggleDimVisible(property: Property, visible: boolean) {
@@ -294,6 +275,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
 
   async createDimension() {
     const levels = this.dimensions().filter((item) => item.visible)
+    // Add new dimension using fields as levels
     this.entityService.addDimension({
       __id__: uuid(),
       name: '',
@@ -311,8 +293,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
         }
       ]
     })
-
+    // Deselect all fields
     this.toggleVisibleAll(false)
+    // Emit dimension created event
+    this.entityService.event$.next({ type: 'dimension-created' })
   }
 
   /**
@@ -357,6 +341,9 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       dimensions,
       measures
     })
+    // Emit dimension created event
+    this.entityService.event$.next({ type: 'dimension-created' })
+    
     // Save current meta from data source: @todo Why???
     this.entityService.tableDimensions.set(this.dimensions())
     this.entityService.tableMeasures.set(this.measures())

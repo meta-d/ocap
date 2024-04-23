@@ -42,7 +42,7 @@ import {
 } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
-import { EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
+import { EntityPreview, MODEL_TYPE, ModelDesignerType, ModelSchemaValueTypes } from '../types'
 import { CubeDimensionType, CubeEventType, newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
@@ -662,7 +662,11 @@ export class ModelEntityService {
         }
         if (type === ModelDesignerType.hierarchy) {
           const hierarchy = getHierarchyById(cube, id)
-          return omit(hierarchy, ['levels'])
+          let dimension = cube.dimensions?.find((item) => item.name === hierarchy.dimension)
+          return {
+            hierarchy: omit(hierarchy, ['levels']),
+            dimension: omit(dimension, ['hierarchies'])
+          }
         }
         if (type === ModelDesignerType.level) {
           return getLevelById(cube, id) ?? { __id__: id }
@@ -715,7 +719,9 @@ export class ModelEntityService {
       }
       if (type === ModelDesignerType.hierarchy) {
         const hierarchy = getHierarchyById(state, id)
-        assign(hierarchy, model)
+        const dimension = state.dimensions.find((item) => item.name === hierarchy.dimension)
+        assign(hierarchy, model.hierarchy)
+        assign(dimension, model.dimension)
       }
       if (type === ModelDesignerType.level) {
         const level = getLevelById(state, id)

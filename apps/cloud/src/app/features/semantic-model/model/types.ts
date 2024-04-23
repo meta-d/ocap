@@ -253,3 +253,10 @@ export enum HierarchyColumnType {
 export interface RuntimeProperty extends Property {
   error?: string
 }
+
+export type ModelSchemaValueTypes = {
+  [ModelDesignerType.hierarchy]: {
+    hierarchy: PropertyHierarchy;
+    dimension: PropertyDimension;
+  }
+}

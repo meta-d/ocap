@@ -114,7 +114,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.hierarchy,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: HierarchySchemaService
       },
       multi: true
