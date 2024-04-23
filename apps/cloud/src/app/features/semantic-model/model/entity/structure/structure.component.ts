@@ -164,8 +164,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     effect(
       () => {
         const properties = this.fectTableFields()
-        const dimensions = this.entityService.dimensions()
-        const measures = this.entityService.measures()
+        const dimensions = this.entityService.tableDimensions()
+        const measures = this.entityService.tableMeasures()
 
         if (isEmpty(dimensions) && isEmpty(measures) && properties) {
           this.dimensions.set(
@@ -288,8 +288,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       measures
     })
     // Save current meta from data source
-    this.entityService.dimensions.set(this.dimensions())
-    this.entityService.measures.set(this.measures())
+    this.entityService.tableDimensions.set(this.dimensions())
+    this.entityService.tableMeasures.set(this.measures())
   }
 
   async createDimension() {
@@ -358,8 +358,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       measures
     })
     // Save current meta from data source: @todo Why???
-    this.entityService.dimensions.set(this.dimensions())
-    this.entityService.measures.set(this.measures())
+    this.entityService.tableDimensions.set(this.dimensions())
+    this.entityService.tableMeasures.set(this.measures())
   }
 
   toggleVisibleAll(visible: boolean) {

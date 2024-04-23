@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
+import { DestroyRef, Injectable, computed, effect, inject, output, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { nonNullable } from '@metad/core'
@@ -30,6 +30,7 @@ import { assign, isEqual, negate, omit, omitBy } from 'lodash-es'
 import {
   EMPTY,
   Observable,
+  Subject,
   combineLatest,
   distinctUntilChanged,
   filter,
@@ -42,7 +43,7 @@ import {
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
 import { EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
-import { newDimensionFromColumn, newDimensionFromTable } from './types'
+import { CubeDimensionType, CubeEventType, newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
 export class ModelEntityService {
@@ -94,11 +95,11 @@ export class ModelEntityService {
   /**
    * Table fields for dimension role
    */
-  readonly dimensions = signal<Property[] | null>(null)
+  readonly tableDimensions = signal<Property[] | null>(null)
   /**
    * Table fields for measure role
    */
-  readonly measures = signal<Property[] | null>(null)
+  readonly tableMeasures = signal<Property[] | null>(null)
 
   public readonly tables$ = this.cube$.pipe(map((cube) => cube?.tables))
   public readonly entityType$ = this.entityName$.pipe(
@@ -120,8 +121,6 @@ export class ModelEntityService {
     shareReplay(1)
   )
 
-  public readonly dimensionUsages$ = this.cube$.pipe(map((cube) => cube?.dimensionUsages))
-  public readonly cubeDimensions$ = this.cube$.pipe(map((cube) => cube?.dimensions))
   public readonly measures$ = this.cube$.pipe(map((cube) => cube?.measures))
   public readonly calculatedMembers$ = this.cube$.pipe(map((cube) => cube?.calculatedMembers))
 
@@ -135,6 +134,47 @@ export class ModelEntityService {
   readonly entityType = toSignal(this.entityType$)
   readonly cube = toSignal(this.cube$)
   readonly selectedProperty = signal<string>(null)
+
+  readonly dimensionUsages = toSignal(this.cube$.pipe(map((cube) => cube?.dimensionUsages)))
+  readonly dimensions = toSignal(this.cube$.pipe(map((cube) => cube?.dimensions)))
+  readonly measures = toSignal(this.cube$.pipe(map((cube) => cube?.measures)))
+  readonly calculatedMembers = toSignal(this.cube$.pipe(map((cube) => cube?.calculatedMembers)))
+  readonly sharedDimensions = toSignal(this.#modelService.sharedDimensions$)
+
+  readonly dimensionUsages$ = toObservable(this.dimensionUsages)
+  /**
+   * @deprecated use signal `dimensions` instead
+   */
+  readonly cubeDimensions$ = toObservable(this.dimensions)
+  readonly cubeDimensions = computed<CubeDimensionType[]>(() => {
+    const dimensionUsages = this.dimensionUsages()
+    const sharedDimensions = this.sharedDimensions()
+    const dimensions = this.dimensions()
+    const cubeDimensions = []
+    for (const usage of dimensionUsages) {
+      const dimension = sharedDimensions.find((d) => d.name === usage.source)
+      if (dimension) {
+        cubeDimensions.push({
+          ...dimension,
+          __id__: usage.__id__,
+          name: usage.name,
+          caption: usage.caption,
+          isUsage: true
+        })
+      }
+    }
+    return [...cubeDimensions, ...(dimensions ?? [])]
+  })
+
+  /**
+  |--------------------------------------------------------------------------
+  | Events
+  |--------------------------------------------------------------------------
+  */
+  /**
+   * Events
+   */
+  readonly event$ = new Subject<CubeEventType>()
 
   /**
   |--------------------------------------------------------------------------
@@ -571,8 +611,20 @@ export class ModelEntityService {
   /**
    * Set selected property name to open designer panel
    */
-  setSelectedProperty(key: string) {
-    this.selectedProperty.set(key)
+  setSelectedProperty(type: string, key?: string): void {
+    if (key) {
+      this.selectedProperty.set(`${type}#${key}`)
+    } else {
+      this.selectedProperty.set(type)
+    }
+  }
+  toggleSelectedProperty(type: string, key: string) {
+    const selected = key ? `${type}#${key}` : type
+    this.selectedProperty.update((state) => state === selected ? null : selected)
+  }
+  isSelectedProperty(type: string, key: string) {
+    const [_type, _key] = this.selectedProperty()?.split('#') ?? []
+    return _type === type && _key === key
   }
 
   selectCalculatedMember<T>(id: string): Observable<CalculatedMember> {
@@ -583,7 +635,10 @@ export class ModelEntityService {
   }
 
   selectDimension(id: string) {
-    return this.cubeDimensions$.pipe(map((dimensions) => dimensions?.find((item) => item.__id__ === id)))
+    return this.cube$.pipe(
+      map((cube) => cube?.dimensions),
+      map((dimensions) => dimensions?.find((item) => item.__id__ === id))
+    )
   }
 
   selectByTypeAndId<T>(type: ModelDesignerType, id: string): Observable<any> {
@@ -687,7 +742,7 @@ export class ModelEntityService {
 
   readonly navigateDimension = effectAction((origin$: Observable<string>) => {
     return origin$.pipe(
-      withLatestFrom(this.dimensionUsages$),
+      withLatestFrom(this.cube$.pipe(map((cube) => cube?.dimensionUsages))),
       tap(([id, dimensionUsages]) => {
         this.#modelService.navigateDimension(dimensionUsages?.find((item) => item.__id__ === id)?.source)
       })

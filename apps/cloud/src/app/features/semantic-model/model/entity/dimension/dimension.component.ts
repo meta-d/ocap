@@ -11,6 +11,7 @@ import {
   DimensionUsage,
   DisplayBehaviour,
   EntityProperty,
+  PropertyAttributes,
   PropertyDimension,
   isVisible
 } from '@metad/ocap-core'
@@ -60,7 +61,7 @@ export class PropertyDimensionComponent implements OnChanges {
   @Input() dimension: PropertyDimension
   @Input() usage: DimensionUsage
   @Input() readonly: boolean
-  @Input() checklistSelection: SelectionModel<string>
+  // @Input() checklistSelection: SelectionModel<string>
   @Input() displayBehaviour: DisplayBehaviour
 
   @Output() toDimension = new EventEmitter()
@@ -142,24 +143,28 @@ export class PropertyDimensionComponent implements OnChanges {
     ]
   }
 
-  isSelected(node) {
+  isSelected(node: PropertyAttributes) {
     if (this.usage) {
       if (node.role === AggregationRole.dimension) {
-        return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage + '#' + this.usage.__id__)
+        return this.cubeState.isSelectedProperty(ModelDesignerType.dimensionUsage, this.usage.__id__)
+        // return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage + '#' + this.usage.__id__)
       }
     } else {
-      return this.checklistSelection?.isSelected(node.role + '#' + node.id)
+      return this.cubeState.isSelectedProperty(node.role, node.__id__)
+      // return this.checklistSelection?.isSelected(node.role + '#' + node.id)
     }
     return false
   }
 
-  onSelect(node) {
+  onSelect(node: PropertyAttributes) {
     if (this.usage) {
       if (node.role === AggregationRole.dimension) {
-        this.checklistSelection.toggle(`${ModelDesignerType.dimensionUsage}#${this.usage.__id__}`)
+        this.cubeState.setSelectedProperty(ModelDesignerType.dimensionUsage, this.usage.__id__)
+        // this.checklistSelection.toggle(`${}#${}`)
       }
     } else {
-      this.checklistSelection.toggle(`${node.role}#${node.__id__}`)
+      // this.checklistSelection.toggle(`${node.role}#${node.__id__}`)
+      this.cubeState.toggleSelectedProperty(node.role, node.__id__)
     }
   }
 

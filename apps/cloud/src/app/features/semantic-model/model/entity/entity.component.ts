@@ -1,10 +1,19 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, Component, HostBinding, OnInit, inject } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { CommonModule } from '@angular/common'
+import { ChangeDetectionStrategy, Component, HostBinding, OnInit, inject, model } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from '@angular/router'
+import { zodToAnnotations } from '@metad/copilot'
+import { calcEntityTypePrompt, makeCubePrompt, nonBlank, routeAnimations } from '@metad/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { C_MEASURES, CalculatedMember } from '@metad/ocap-core'
+import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
+import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService } from 'apps/cloud/src/app/@core'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { isNil, negate } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
@@ -13,19 +22,10 @@ import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/op
 import { z } from 'zod'
 import { AppService } from '../../../../app.service'
 import { CalculatedMeasureSchema } from '../copilot'
-import { SemanticModelService } from '../model.service'
-import { ModelEntityService } from './entity.service'
-import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { ModelComponent } from '../model.component'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { TranslateModule } from '@ngx-translate/core'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { SemanticModelService } from '../model.service'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
-import { C_MEASURES, CalculatedMember, isEntitySet } from '@metad/ocap-core'
-import { calcEntityTypePrompt, makeCubePrompt, nonBlank, routeAnimations } from '@metad/core'
-import { zodToAnnotations } from '@metad/copilot'
+import { ModelEntityService } from './entity.service'
 
 @Component({
   standalone: true,
@@ -63,9 +63,9 @@ export class ModelEntityComponent implements OnInit {
   public isFullscreen = false
 
   private zIndex = 3
-  detailsOpen = false
+  readonly detailsOpen = model(false)
   // Cube structure opened state
-  drawerOpened = true
+  readonly drawerOpened = model(true)
 
   public readonly entityId$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
@@ -152,7 +152,7 @@ ${makeCubePrompt(this.cube())}
 \`\`\`
 `
       }
-   
+
       return prompt
     },
     actions: [
@@ -182,7 +182,7 @@ ${makeCubePrompt(this.cube())}
 
           return `✅`
         }
-      }),
+      })
     ]
   })
 
@@ -197,15 +197,26 @@ ${makeCubePrompt(this.cube())}
   })
 
   /**
+   * When selected property first time to open the attributes panel
+   */
+  readonly #selectedPropertySub = toObservable(this.entityService.selectedProperty).pipe(
+    map((selected) => !!selected),
+    distinctUntilChanged(),
+    filter(Boolean),
+    takeUntilDestroyed()
+  ).subscribe((selected) => {
+    this.detailsOpen.set(true)
+  })
+
+  /**
    * 监听当前实体类型变化, 将错误信息打印出来;
    * SQL Model / Olap Model: 用于验证 Schema 是否正确
    */
-  private entityErrorSub = this.entityService.entityError$.pipe(
-    filter(nonBlank),
-    takeUntilDestroyed()
-  ).subscribe((error) => {
-    this.#toastr.error(error)
-  })
+  private entityErrorSub = this.entityService.entityError$
+    .pipe(filter(nonBlank), takeUntilDestroyed())
+    .subscribe((error) => {
+      this.#toastr.error(error)
+    })
 
   ngOnInit() {
     this.entityService.setSelectedProperty(null)
@@ -220,14 +231,14 @@ ${makeCubePrompt(this.cube())}
   }
 
   onDesignerDrawerChange(opened: boolean) {
-    this.detailsOpen = opened
+    // this.detailsOpen.set(opened)
     this.settingsService.setEditable(opened)
   }
 
   openCubeDesigner() {
     this.entityService.setSelectedProperty(null)
     this.settingsService.setEditable(true)
-    this.detailsOpen = true
+    this.detailsOpen.set(true)
   }
 
   openSub(event) {
@@ -235,8 +246,8 @@ ${makeCubePrompt(this.cube())}
   }
 
   propertySelectedChange(selected: string) {
-    this.entityService.setSelectedProperty(selected)
-    this.detailsOpen = true
+    // this.entityService.setSelectedProperty(selected)
+    this.detailsOpen.set(true)
   }
 
   onPropertyEdit(event) {
@@ -264,7 +275,7 @@ ${makeCubePrompt(this.cube())}
           businessAreaId: this.#model.model.businessAreaId
         })
       )
-      
+
       this.openStory(newStory.id)
     } catch (err) {
       this.#toastr.error(err, 'PAC.MODEL.MODEL.CreateStory')
