@@ -33,6 +33,11 @@ export const STORY_DESIGNER_SCHEMA = new InjectionToken<DesignerSchema<unknown>>
 export interface DesignerSchema<T = any> {
   model: T
 
+  title(): string
+
+  /**
+   * @deprecated use signal `title()` instead
+   */
   getTitle(): Observable<string>
 
   /**

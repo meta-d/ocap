@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ReferenceLineAggregation, ReferenceLineType, ReferenceLineValueType } from '@metad/ocap-core'
 import { DesignerSchema, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { TranslateService } from '@ngx-translate/core'
@@ -15,12 +16,15 @@ export class ReferenceLineSchemaService implements DesignerSchema<any> {
   }
   private readonly model$ = new BehaviorSubject<any>(null)
 
-  public readonly storyDesigner$ = this.translate.stream('Story.Widgets')
+  readonly storyDesigner$ = this.translate.stream('Story.Widgets')
+
+  readonly title$ = this.storyDesigner$.pipe(
+    map((i18n) => i18n?.CHART?.ReferenceLine?.Title ?? 'Create Reference Lines')
+  )
+  readonly title = toSignal(this.title$)
 
   getTitle(): Observable<string> {
-    return this.storyDesigner$.pipe(
-      map((i18n) => i18n?.CHART?.ReferenceLine?.Title ?? 'Create Reference Lines')
-    )
+    return this.title$
   }
 
   getSchema() {

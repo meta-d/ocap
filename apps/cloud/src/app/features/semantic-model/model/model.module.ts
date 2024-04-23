@@ -14,7 +14,7 @@ import {
 } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
-import { NgmDesignerFormComponent, NxComponentSettingsComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
+import { NgmDesignerFormComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -26,6 +26,7 @@ import { ModelCreateEntityComponent } from './create-entity/create-entity.compon
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
+import { ModelRoutingModule } from './routing'
 import {
   CalculatedMemberAttributesSchema,
   CalculatedMemberSchemaService,
@@ -42,7 +43,6 @@ import {
   MeasureSchemaService
 } from './schema/index'
 import { ModelDesignerType } from './types'
-import { ModelRoutingModule } from './routing'
 
 @NgModule({
   declarations: [ModelComponent, ModelOverviewComponent, ModelCreateEntityComponent, ModelPreferencesComponent],
@@ -55,7 +55,7 @@ import { ModelRoutingModule } from './routing'
     TranslateModule,
     ReactiveFormsModule,
     ScrollingModule,
-    
+
     NxEditorModule,
     CreatedByPipe,
     UserPipe,
@@ -77,12 +77,10 @@ import { ModelRoutingModule } from './routing'
     MonacoEditorModule.forRoot(),
     ContentLoaderModule,
     FormlyModule,
-    NgxPopperjsModule,
+    NgxPopperjsModule
   ],
   providers: [
     provideOcapCore(),
-    // NgmCopilotService,
-    // StoryModelResolver,
     {
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
@@ -96,7 +94,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.dimension,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: DimensionSchemaService
       },
       multi: true
@@ -105,7 +103,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.dimensionUsage,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: DimensionUsageSchemaService
       },
       multi: true
@@ -123,7 +121,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.level,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: LevelSchemaService
       },
       multi: true
@@ -132,7 +130,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.measure,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: MeasureSchemaService
       },
       multi: true
@@ -150,7 +148,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.cubeAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CubeAttributesSchema
       },
       multi: true
@@ -177,7 +175,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.levelAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: LevelAttributesSchema
       },
       multi: true
@@ -186,7 +184,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.measureAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: MeasureAttributesSchema
       },
       multi: true
@@ -195,7 +193,7 @@ import { ModelRoutingModule } from './routing'
       provide: STORY_DESIGNER_COMPONENT,
       useValue: {
         type: ModelDesignerType.calculatedMemberAttributes,
-        component: NxComponentSettingsComponent,
+        component: NgmDesignerFormComponent,
         schema: CalculatedMemberAttributesSchema
       },
       multi: true
