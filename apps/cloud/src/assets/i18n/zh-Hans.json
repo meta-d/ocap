@@ -697,6 +697,7 @@
         "CUBE_TABLE": "立方体的表",
         "Field": "字段",
         "Measure": "度量",
+        "Dimension": "维度",
         "AssociatedDimension": "关联维度",
         "PrimaryKey": "主键",
         "Visible": "可见",

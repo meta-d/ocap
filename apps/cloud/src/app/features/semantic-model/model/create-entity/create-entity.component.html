@@ -81,43 +81,50 @@
         <div class="flex-1">
           {{ 'PAC.MODEL.CREATE_ENTITY.Field' | translate: { Default: 'Field' } }}
         </div>
-        <div class="w-10">
+        <div class="w-10 overflow-hidden text-ellipsis">
           {{ 'PAC.MODEL.CREATE_ENTITY.Measure' | translate: { Default: 'Measure' } }}
         </div>
+        <div class="w-10 overflow-hidden text-ellipsis">
+          {{ 'PAC.MODEL.CREATE_ENTITY.Dimension' | translate: { Default: 'Dimension' } }}
+        </div>
         <div class="" style="width: 150px;">
-          {{ 'PAC.MODEL.CREATE_ENTITY.AssociatedDimension' | translate: { Default: 'Dimension' } }}
+          {{ 'PAC.MODEL.CREATE_ENTITY.AssociatedDimension' | translate: { Default: 'Associated' } }}
         </div>
       </div>
       <mat-list role="list" class="block overflow-auto">
-        <mat-list-item *ngFor="let column of columns"
-          role="listitem" class="group rounded-lg">
-          <div class="flex items-center">
-            <ngm-display-behaviour class="flex-1 ml-8" [option]="{key: column.name, caption: column.caption}" displayBehaviour="descriptionAndId"></ngm-display-behaviour>
-            <div class="mx-4 w-12 shrink-0 flex justify-center">
-              <mat-checkbox [(ngModel)]="column.measure"></mat-checkbox>
+        @for (column of columns; track column.name) {
+          <mat-list-item role="listitem" class="group rounded-lg">
+            <div class="flex items-center">
+              <ngm-display-behaviour class="flex-1 ml-8" [option]="{key: column.name, caption: column.caption}" displayBehaviour="descriptionAndId"></ngm-display-behaviour>
+              <div class="mx-4 w-10 shrink-0 flex justify-center">
+                <mat-checkbox [(ngModel)]="column.isMeasure" (ngModelChange)="toggleMeasure($event, column)"/>
+              </div>
+              <div class="mx-4 w-10 shrink-0 flex justify-center">
+                <mat-checkbox [(ngModel)]="column.isDimension" (ngModelChange)="toggleDimension($event, column)"/>
+              </div>
+              <div style="width: 140px;" class="shrink-0">
+                <mat-select *ngIf="!column.isMeasure"
+                  class="ngm-density__compact p-1 rounded-md hover:bg-slate-500/10 dark:hover:bg-white/10 focus:bg-slate-500/20 dark:focus:bg-white/20 dark:caret-slate-100"
+                  panelClass="ngm-select-panel ngm-density__compact"
+                  [(ngModel)]="column.dimension"
+                >
+                  <mat-select-trigger>
+                    <ngm-display-behaviour *ngIf="column.dimension" class="flex-1" [option]="{key: column.dimension.name, caption: column.dimension.caption}"></ngm-display-behaviour>
+                    <span *ngIf="!column.dimension">
+                      {{ 'PAC.MODEL.CREATE_ENTITY.AssociatedDimension' | translate: { Default: 'Dimension' } }}
+                    </span>
+                  </mat-select-trigger>
+                  <mat-option [value]="null">
+                    {{ 'PAC.KEY_WORDS.None' | translate: { Default: 'None' } }}
+                  </mat-option>
+                  <mat-option *ngFor="let dimension of sharedDimensions()" [value]="dimension">
+                    <ngm-display-behaviour class="flex-1" [option]="{key: dimension.name, caption: dimension.caption}"></ngm-display-behaviour>
+                  </mat-option>
+                </mat-select>
+              </div>
             </div>
-            <div style="width: 140px;" class="shrink-0">
-              <mat-select *ngIf="!column.measure"
-                class="ngm-density__compact p-1 rounded-md hover:bg-slate-500/10 dark:hover:bg-white/10 focus:bg-slate-500/20 dark:focus:bg-white/20 dark:caret-slate-100"
-                panelClass="ngm-select-panel ngm-density__compact"
-                [(ngModel)]="column.dimension"
-              >
-                <mat-select-trigger>
-                  <ngm-display-behaviour *ngIf="column.dimension" class="flex-1" [option]="{key: column.dimension.name, caption: column.dimension.caption}"></ngm-display-behaviour>
-                  <span *ngIf="!column.dimension">
-                    {{ 'PAC.MODEL.CREATE_ENTITY.AssociatedDimension' | translate: { Default: 'Dimension' } }}
-                  </span>
-                </mat-select-trigger>
-                <mat-option [value]="null">
-                  {{ 'PAC.KEY_WORDS.None' | translate: { Default: 'None' } }}
-                </mat-option>
-                <mat-option *ngFor="let dimension of sharedDimensions()" [value]="dimension">
-                  <ngm-display-behaviour class="flex-1" [option]="{key: dimension.name, caption: dimension.caption}"></ngm-display-behaviour>
-                </mat-option>
-              </mat-select>
-            </div>
-          </div>
-        </mat-list-item>
+          </mat-list-item>
+        }
       </mat-list>
     } @case(SemanticModelEntityType.DIMENSION) {
       <div class="px-4 flex gap-4">

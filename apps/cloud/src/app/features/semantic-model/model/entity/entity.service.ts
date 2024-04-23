@@ -150,20 +150,18 @@ export class ModelEntityService {
     const dimensionUsages = this.dimensionUsages()
     const sharedDimensions = this.sharedDimensions()
     const dimensions = this.dimensions()
-    const cubeDimensions = []
-    for (const usage of dimensionUsages) {
+    return [...(dimensionUsages?.map((usage) => {
       const dimension = sharedDimensions.find((d) => d.name === usage.source)
       if (dimension) {
-        cubeDimensions.push({
+        return {
           ...dimension,
           __id__: usage.__id__,
           name: usage.name,
           caption: usage.caption,
           isUsage: true
-        })
+        }
       }
-    }
-    return [...cubeDimensions, ...(dimensions ?? [])]
+    }) ?? []), ...(dimensions ?? [])]
   })
 
   /**

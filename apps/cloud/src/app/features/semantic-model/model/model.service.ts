@@ -41,6 +41,7 @@ import {
   initDimensionSubState,
   initEntitySubState
 } from './types'
+import { CreateEntityDialogRetType } from './create-entity/create-entity.component'
 
 @Injectable()
 export class SemanticModelService {
@@ -189,8 +190,8 @@ export class SemanticModelService {
     switchMap((dataSource) => dataSource.discoverDBTables())
   )
 
-  private _saved$ = new Subject<void>()
-  public readonly saved$ = this._saved$.asObservable()
+  // private _saved$ = new Subject<void>()
+  // public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
 
   /**
@@ -245,9 +246,7 @@ export class SemanticModelService {
 
     // @todo 存在不必要的注册动作，需要重构
     this.model$.pipe(filter(nonNullable), takeUntilDestroyed(this.destroyRef)).subscribe((model) => {
-      this.logger.debug(`Model changed => call registerModel`, getSemanticModelKey(model))
-      // Not contain indicators when building model
-      registerModel(omit(model, 'indicators'), this.dsCoreService, this.wasmAgent)
+      this.registerModel()
     })
 
     this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
@@ -287,6 +286,16 @@ export class SemanticModelService {
     }
   }
 
+  /**
+   * Register current model into ocap framwork
+   */
+  registerModel() {
+    const model = this.modelSignal()
+    this.logger.debug(`Model changed => call registerModel`, getSemanticModelKey(model))
+    // Not contain indicators when building model
+    registerModel(omit(model, 'indicators'), this.dsCoreService, this.wasmAgent)
+  }
+
   saveModel = effectAction((origin$: Observable<void>) => {
     return origin$.pipe(
       map(() => {
@@ -306,6 +315,8 @@ export class SemanticModelService {
               // this._saved$.next()
               this.resetPristine()
               this.dataSource$.value?.clearCache()
+              // Register model after saved to refresh metadata of entity
+              this.registerModel()
             })
           )
       )
@@ -415,7 +426,7 @@ export class SemanticModelService {
   /**
    * Create cube : Cube
    */
-  createCube({ name, caption, table, expression, columns }) {
+  createCube({ name, caption, table, expression, columns }: CreateEntityDialogRetType) {
     const id = uuid()
     const cube: Cube = {
       __id__: id,
@@ -439,7 +450,7 @@ export class SemanticModelService {
     }
 
     columns?.forEach((column) => {
-      if (column.measure) {
+      if (column.isMeasure) {
         cube.measures.push({
           __id__: uuid(),
           name: column.name,
@@ -455,6 +466,27 @@ export class SemanticModelService {
           caption: column.dimension.caption,
           foreignKey: column.name,
           source: column.dimension.name
+        })
+      } else if(column.isDimension) {
+        cube.dimensions.push({
+          __id__: uuid(),
+          name: column.name,
+          caption: column.caption,
+          hierarchies: [
+            {
+              name: '',
+              __id__: uuid(),
+              hasAll: true,
+              levels: [
+                {
+                  __id__: uuid(),
+                  name: column.name,
+                  caption: column.caption,
+                  column: column.name
+                }
+              ]
+            }
+          ]
         })
       }
     })
@@ -472,7 +504,7 @@ export class SemanticModelService {
     return state
   }
 
-  readonly createVirtualCube = this.updater((state, { id, name, caption, cubes }: any) => {
+  readonly createVirtualCube = this.updater((state, { id, name, caption, cubes }: CreateEntityDialogRetType & { id: string }) => {
     const schema = state.schema as Schema
     schema.virtualCubes ??= []
     schema.virtualCubes.push({
@@ -481,12 +513,13 @@ export class SemanticModelService {
       caption,
       cubeUsages:
         cubes?.map((cube: Cube) => ({
-          cubeName: cube.name
+          cubeName: cube.name,
+          ignoreUnrelatedDimensions: true
         })) ?? []
     } as Partial<MDX.VirtualCube>)
   })
 
-  createDimension({ name, caption, table, expression, primaryKey, columns }) {
+  createDimension({ name, caption, table, expression, primaryKey, columns }: CreateEntityDialogRetType) {
     const id = uuid()
     const dimension = {
       __id__: id,
@@ -581,7 +614,11 @@ export class SemanticModelService {
     this.dataSource$.value?.setEntityType(entityType)
   }
 
-  /** ========================== Select Queries ========================== */
+  /**
+  |--------------------------------------------------------------------------
+  | Selectors
+  |--------------------------------------------------------------------------
+  */
   selectEntitySet(cubeName: string) {
     return this.dataSource$.pipe(
       filter(nonNullable),

@@ -12,19 +12,20 @@ import {
   viewChild,
   viewChildren
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { AggregationRole, CalculationType } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import ELK from 'elkjs'
+import { debounceTime } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
 import { ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { debounceTime } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -37,7 +38,8 @@ import { debounceTime } from 'rxjs'
     ButtonGroupDirective,
     MatIconModule,
     DensityDirective,
-    NgmEntityPropertyComponent
+    NgmEntityPropertyComponent,
+    NgmDisplayBehaviourComponent
   ],
   selector: 'pac-model-er',
   templateUrl: './er.component.html',
@@ -65,8 +67,11 @@ export class ERComponent {
   readonly measures = this.cubeService.measures
   readonly calculatedMembers = computed(() => {
     const members = this.cubeService.calculatedMembers()
-    return members.map((member) => ({...member, role: AggregationRole.measure,
-      calculationType: CalculationType.Calculated }))
+    return members?.map((member) => ({
+      ...member,
+      role: AggregationRole.measure,
+      calculationType: CalculationType.Calculated
+    }))
   })
 
   readonly edges = signal<Record<string, any>>({})
@@ -121,6 +126,8 @@ export class ERComponent {
   }
 
   arrange() {
+    if (!this.cube().__id__) return
+
     const dimensions = this.dimensionElements()
     const graph = {
       id: 'root',

@@ -12,7 +12,7 @@
             [class.selected]="selected()?.key === dimension.__id__"
             [ngStyle]="{
                 left: layout()[dimension.__id__]?.x + 'px',
-                top: layout()[dimension.__id__]?.y + 'px'
+                top: layout()[dimension.__id__]?.y + 'px' 
             }"
             [attr.data-key]="dimension.__id__"
             cdkDrag
@@ -20,7 +20,7 @@
             (click)="select($event, dimension.isUsage ? ModelDesignerType.dimensionUsage : ModelDesignerType.dimension, dimension.__id__)"
         >
             <div class="flex justify-between items-center p-2">
-                <span class="text-base font-semibold">{{dimension.caption || dimension.name}}</span>
+              <ngm-entity-property class="flex-1 text-lg font-bold" [property]="dimension" [role]="AggregationRole.dimension"/>
 
               @if (dimension.isUsage) {
                 <button mat-icon-button displayDensity="compact" class="opacity-50 group-hover:opacity-90" (click)="toDimensionUsage(dimension.__id__)">
@@ -88,7 +88,12 @@
           (click)="select($event, ModelDesignerType.cube, cube().__id__)"
         >
             <div class="p-2">
-                <span class="text-lg font-bold">{{cube().caption}}</span>
+              <ngm-display-behaviour class="flex-1 text-lg font-bold"
+                [option]="{
+                  key: cube().name,
+                  caption: cube().caption
+                }"
+              />
             </div>
 
             <div class="flex flex-col overflow-hidden hover:overflow-auto max-h-[200px]">
