@@ -26,7 +26,7 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
 	ApiOperation,
 	ApiResponse,
@@ -40,7 +40,7 @@ import { Invite } from './invite.entity';
 import { InviteService } from './invite.service';
 import { LanguageDecorator, Permissions, Public } from './../shared/decorators';
 import { PermissionGuard, TenantPermissionGuard } from './../shared/guards';
-import { ParseJsonPipe, UUIDValidationPipe } from './../shared/pipes';
+import { ParseJsonPipe, UUIDValidationPipe, UseValidationPipe } from './../shared/pipes';
 import { TransformInterceptor } from './../core/interceptors';
 import {
 	InviteAcceptEmployeeCommand,
@@ -50,7 +50,8 @@ import {
 	InviteOrganizationContactCommand,
 	InviteResendCommand
 } from './commands';
-import { CreateInviteDTO } from './dto';
+import { CreateInviteDTO, ValidateInviteQueryDTO } from './dto';
+import { FindInviteByEmailTokenQuery } from './queries';
 
 @ApiTags('Invite')
 @UseInterceptors(TransformInterceptor)
@@ -58,7 +59,8 @@ import { CreateInviteDTO } from './dto';
 export class InviteController {
 	constructor(
 		private readonly inviteService: InviteService,
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
 	) {}
 
 	@ApiOperation({ summary: 'Create email invites' })
@@ -88,6 +90,12 @@ export class InviteController {
 		);
 	}
 
+	/**
+	 * Validate invite by token and email
+	 *
+	 * @param options
+	 * @returns
+	 */
 	@ApiOperation({ summary: 'Get invite.' })
 	@ApiResponse({
 		status: HttpStatus.OK,
@@ -98,18 +106,18 @@ export class InviteController {
 		status: HttpStatus.NOT_FOUND,
 		description: 'Record not found'
 	})
-	@Get('validate')
 	@Public()
-	async validateInvite(
-		@Query('data', ParseJsonPipe) data: any
-	): Promise<Invite> {
-		const { relations, findInput: { email, token } } = data;
-		if (!email && !token) {
-			throw new BadRequestException('Email & Token Mandatory');
-		}
-		return await this.inviteService.validate(relations, email, token);
+	@Get('validate')
+	@UseValidationPipe({ whitelist: true })
+	async validateInviteByToken(@Query() options: ValidateInviteQueryDTO) {
+		return await this.queryBus.execute(
+			new FindInviteByEmailTokenQuery({
+				email: options.email,
+				token: options.token
+			})
+		);
 	}
-
+	
 	@ApiOperation({ summary: 'Find all invites.' })
 	@ApiResponse({
 		status: HttpStatus.OK,

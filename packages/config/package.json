@@ -1,10 +1,11 @@
 {
   "name": "@metad/server-config",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "commonjs",
   "dependencies": {
-    "@nestjs/common": "^8.0.0",
-    "@nestjs/typeorm": "^8.0.3",
+    "@nestjs/common": "^10.3.7",
+    "@nestjs/typeorm": "^10.0.2",
+    "@nestjs/config": "^3.2.0",
     "cache-manager": "^3.6.1",
     "dotenv": "^16.0.0",
     "typeorm": "^0.2.37"

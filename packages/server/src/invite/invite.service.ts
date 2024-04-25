@@ -19,10 +19,10 @@ import {
 	InvitationTypeEnum,
 	IJoinEmployeeModel
 } from '@metad/contracts';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { sign } from 'jsonwebtoken';
-import { Brackets, IsNull, MoreThanOrEqual, Repository, SelectQueryBuilder, WhereExpressionBuilder } from 'typeorm';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
+import { Brackets, FindOptionsWhere, IsNull, MoreThanOrEqual, Repository, SelectQueryBuilder, WhereExpressionBuilder } from 'typeorm';
 import { TenantAwareCrudService } from './../core/crud';
 import { Invite } from './invite.entity';
 import { EmailService } from '../email/email.service';
@@ -101,10 +101,8 @@ export class InviteService extends TenantAwareCrudService<Invite> {
 			organizationContactIds || []
 		);
 
-		const organization: IOrganization = await this.organizationRepository.findOne(
-			organizationId
-		);
-		const role: IRole = await this.roleRepository.findOne(roleId);
+		const organization: IOrganization = await this.organizationRepository.findOneBy({id: organizationId});
+		const role: IRole = await this.roleRepository.findOneBy({id: roleId});
 		const user: IUser = await this.userService.findOneByIdString(invitedById, {
 			relations: ['role']
 		});
@@ -292,13 +290,9 @@ export class InviteService extends TenantAwareCrudService<Invite> {
 			languageCode
 		} = inviteInput;
 
-		const organizationContact: IOrganizationContact = await this.organizationContactRepository.findOne(
-			organizationContactId
-		);
+		const organizationContact: IOrganizationContact = await this.organizationContactRepository.findOneBy({id: organizationContactId});
 
-		const organization: Organization = await this.organizationRepository.findOne(
-			organizationId
-		);
+		const organization: Organization = await this.organizationRepository.findOneBy({id: organizationId});
 
 		const inviterUser: IUser = await this.userService.findOneByIdString(invitedById);
 
@@ -333,33 +327,107 @@ export class InviteService extends TenantAwareCrudService<Invite> {
 		return createdInvite;
 	}
 
-	async validate(relations, email: string, token: string): Promise<Invite> {
-		return await this.repository.findOne({
-			where: (query: SelectQueryBuilder<Invite>) => {
-				query.andWhere(
-					new Brackets((qb: WhereExpressionBuilder) => { 
-						qb.where(
-							[
-								{
-									expireDate: MoreThanOrEqual(new Date())
-								},
-								{
-									expireDate: IsNull()
+	/**
+	 * Check, if invite exist or expired for user
+	 * Validate invited by token
+	 *
+	 * @param where
+	 * @returns
+	 */
+	async validateByToken(where: FindOptionsWhere<Invite>): Promise<IInvite> {
+		try {
+			const { email, token } = where;
+			const payload: string | JwtPayload = verify(token as string, environment.JWT_SECRET);
+
+			if (typeof payload === 'object' && 'email' in payload) {
+				if (payload.email === email) {
+					const query = this.typeOrmRepository.createQueryBuilder(this.tableName);
+					query.setFindOptions({
+						select: {
+							id: true,
+							email: true,
+							// fullName: true,
+							organization: {
+								name: true
+							}
+						},
+						relations: {
+							organization: true
+						}
+					});
+					query.where((qb: SelectQueryBuilder<Invite>) => {
+						qb.andWhere({
+							email,
+							token,
+							status: InviteStatusEnum.INVITED,
+							...(payload['code']
+								? {
+									code: payload['code']
 								}
-							]
-						);
-					})
-				);
-				query.andWhere(
-					new Brackets((qb: WhereExpressionBuilder) => { 
-						qb.andWhere(`"${query.alias}"."email" = :email`, { email });
-						qb.andWhere(`"${query.alias}"."token" = :token`, { token });
-						qb.andWhere(`"${query.alias}"."status" = :status`, { status: InviteStatusEnum.INVITED });
-					})
-				);
-			},
-			relations
-		});
+								: {})
+						});
+						qb.andWhere([
+							{
+								expireDate: MoreThanOrEqual(new Date())
+							},
+							{
+								expireDate: IsNull()
+							}
+						]);
+					});
+					return await query.getOneOrFail();
+				}
+			}
+			throw new BadRequestException();
+		} catch (error) {
+			throw new BadRequestException();
+		}
+	}
+
+	/**
+	 * Validate invited by code
+	 *
+	 * @param where
+	 * @returns
+	 */
+	async validateByCode(where: FindOptionsWhere<Invite>): Promise<IInvite> {
+		const { email, code } = where;
+
+		try {
+			const query = this.typeOrmRepository.createQueryBuilder(this.tableName);
+			query.setFindOptions({
+				select: {
+					id: true,
+					email: true,
+					fullName: true,
+					organization: {
+						name: true
+					}
+				},
+				relations: {
+					organization: true
+				}
+			});
+			query.where((qb: SelectQueryBuilder<Invite>) => {
+				qb.andWhere({
+					email,
+					code,
+					status: InviteStatusEnum.INVITED
+				});
+				qb.andWhere([
+					{
+						expireDate: MoreThanOrEqual(new Date())
+					},
+					{
+						expireDate: IsNull()
+					}
+				]);
+			});
+			return await query.getOneOrFail();
+		} catch (error) {
+			console.error(`Cant validate code '${code}' for email '${email}'`, error);
+			throw new BadRequestException();
+		}
 	}
 
 	createToken(email): string {

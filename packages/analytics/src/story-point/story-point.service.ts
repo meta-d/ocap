@@ -5,6 +5,7 @@ import { FindOneOptions, Repository } from 'typeorm'
 import { BusinessArea, BusinessAreaService } from '../business-area/index'
 import { StoryPointPublicDTO } from './dto'
 import { StoryPoint } from './story-point.entity'
+import { Visibility } from '@metad/contracts'
 
 @Injectable()
 export class StoryPointService extends TenantOrganizationAwareCrudService<StoryPoint> {
@@ -17,13 +18,15 @@ export class StoryPointService extends TenantOrganizationAwareCrudService<StoryP
 	}
 
 	async findPublicOne(id: string, options: FindOneOptions) {
-		const point = await this.repository.findOne(id, {
-			relations: ['story', ...(options?.relations ?? [])],
+		const point = await this.repository.findOne({
 			where: {
+				id,
 				story: {
-					visibility: 'public'
+					visibility: Visibility.Public
 				}
-			}
+			 },
+			 // @todo
+			relations: ['story', ...(options?.relations as string[] ?? [])],
 		})
 
 		if (!point) {
@@ -33,7 +36,7 @@ export class StoryPointService extends TenantOrganizationAwareCrudService<StoryP
 		return new StoryPointPublicDTO(point)
 	}
 
-	protected async checkUpdateAuthorization(id: string | number) {
+	protected async checkUpdateAuthorization(id: string) {
 		const userId = RequestContext.currentUserId()
 		const storyPoint = await this.findOne(id, { relations: ['story', 'story.businessArea'] })
 

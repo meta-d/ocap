@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RouterModule } from 'nest-router';
+import { RouterModule } from '@nestjs/core';
 import { EmailTemplate, EmailTemplateModule } from '../email-template';
 import { Email } from './email.entity';
 import { EmailService } from './email.service';
@@ -11,7 +11,7 @@ import { CustomSmtpModule } from '../custom-smtp/custom-smtp.module';
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([{ path: '/email', module: EmailModule }]),
+		RouterModule.register([{ path: '/email', module: EmailModule }]),
 		forwardRef(() =>
 			TypeOrmModule.forFeature([Email, Organization])
 		),

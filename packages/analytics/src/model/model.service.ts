@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import * as _axios from 'axios'
 import { RedisClientType } from 'redis'
-import { FindConditions, FindManyOptions, ILike, ObjectLiteral, Repository } from 'typeorm'
+import { FindManyOptions, FindOptionsWhere, ILike, ObjectLiteral, Repository } from 'typeorm'
 import { Md5 } from '../core/helper'
 import { BusinessAreaAwareCrudService } from '../core/crud/index'
 import { DataSourceService } from '../data-source/data-source.service'
@@ -16,6 +16,7 @@ import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
 import { REDIS_CLIENT } from '../core/redis.module'
+import { SemanticModelCache } from './cache/cache.entity'
 
 const axios = _axios.default
 
@@ -48,7 +49,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	 */
 	protected findConditionsWithTenantByUser(
 		user: User
-	): FindConditions<SemanticModel>[] | FindConditions<SemanticModel> | ObjectLiteral | string {
+	): FindOptionsWhere<SemanticModel> {
 		const organizationId = RequestContext.getOrganizationId()
 		const organizationWhere = organizationId
 			? {
@@ -84,7 +85,8 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	 * @returns 
 	 */
 	async updateCatalogContent(id: string) {
-		const model = await this.repository.findOne(id, {
+		const model = await this.repository.findOne({
+			where: { id },
 			relations: ['dataSource', 'dataSource.type', 'roles']
 		})
 
@@ -100,7 +102,8 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	}
 
 	async query(modelId: string, query: { statement: string }, options: Record<string, unknown>) {
-		const model = await this.repository.findOne(modelId, {
+		const model = await this.repository.findOne({
+			where: { id: modelId },
 			relations: ['dataSource', 'dataSource.type']
 		})
 		return this.dsService.query(model.dataSourceId, query.statement, {
@@ -110,14 +113,16 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	}
 
 	async import(modelId: string, body: any) {
-		const model = await this.repository.findOne(modelId, {
+		const model = await this.repository.findOne({
+			where: { id: modelId },
 			relations: ['dataSource', 'dataSource.type']
 		})
 		return this.dsService.import(model.dataSourceId, body, {catalog: model.catalog})
 	}
 
 	async dropTable(modelId: string, tableName: string) {
-		const model = await this.repository.findOne(modelId, {
+		const model = await this.repository.findOne({
+			where: { id: modelId },
 			relations: ['dataSource', 'dataSource.type']
 		})
 		return this.dsService.dropTable(model.dataSourceId, tableName, {catalog: model.catalog})
@@ -139,7 +144,8 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 
 		let key = ''
 
-		const model = await this.repository.findOne(modelId, {
+		const model = await this.repository.findOne({
+			where: { id: modelId },
 			relations: ['dataSource', 'dataSource.type', 'roles', 'roles.users']
 		})
 
@@ -150,7 +156,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		// Query
 		//   Cache
 		const language = model.preferences?.language || options?.acceptLanguage
-		let cache: ITryRequest
+		let cache: ITryRequest<SemanticModelCache>
 		if (model.preferences?.enableCache) {
 			const md5 = new Md5()
 			md5.appendStr(query)
@@ -252,7 +258,8 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 			take: 20
 		})
 
-		const [items, total] = await this.repository.findAndCount(condition)
+		// @todo
+		const [items, total] = await this.repository.findAndCount(condition as any)
 
 		return {
 			total,
@@ -271,7 +278,8 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		
 		const condition = await this.myBusinessAreaConditions(conditions, BusinessAreaRole.Modeler)
 		
-		const [items, total] = await this.repository.findAndCount(condition)
+		// @todo
+		const [items, total] = await this.repository.findAndCount(condition as any)
 
 		return {
 			total,
@@ -291,9 +299,9 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		})
 	}
 
-	public async checkViewerAuthorization(id: string | number) {
+	public async checkViewerAuthorization(id: string) {
 		const userId = RequestContext.currentUserId()
-		const model = await this.findOne(id, { relations: ['businessArea', 'members'] })
+		const model = await this.findOneByIdString(id, { relations: ['businessArea', 'members'] })
 
 		if (model.createdById === userId || model.members.find((member) => member.id === userId)) {
 			return
@@ -309,9 +317,9 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		throw new UnauthorizedException('Access reject')
 	}
 
-	public async checkUpdateAuthorization(id: string | number) {
+	public async checkUpdateAuthorization(id: string) {
 		const userId = RequestContext.currentUserId()
-		const model = await this.findOne(id, { relations: ['businessArea'] })
+		const model = await this.findOneByIdString(id, { relations: ['businessArea'] })
 
 		if (model.businessArea) {
 			const businessAreaUser = await this.businessAreaService.getAccess(model.businessArea as BusinessArea)

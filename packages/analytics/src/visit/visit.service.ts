@@ -58,18 +58,19 @@ export class VisitService extends TenantOrganizationAwareCrudService<Visit> {
 			order: {
 				updatedAt: 'DESC'
 			},
-			where: (query: SelectQueryBuilder<Visit>) => {
-				const tenantId = RequestContext.currentTenantId()
-				const organizationId = RequestContext.getOrganizationId()
-				query.andWhere(
-					new Brackets((qb: WhereExpressionBuilder) => { 
-						qb.andWhere(`"${query.alias}"."tenantId" = :tenantId`, { tenantId });
-						qb.andWhere(`"${query.alias}"."organizationId" = :organizationId`, { organizationId });
-					})
-				)
+			// @todo
+			// where: (query: SelectQueryBuilder<Visit>) => {
+			// 	const tenantId = RequestContext.currentTenantId()
+			// 	const organizationId = RequestContext.getOrganizationId()
+			// 	query.andWhere(
+			// 		new Brackets((qb: WhereExpressionBuilder) => { 
+			// 			qb.andWhere(`"${query.alias}"."tenantId" = :tenantId`, { tenantId });
+			// 			qb.andWhere(`"${query.alias}"."organizationId" = :organizationId`, { organizationId });
+			// 		})
+			// 	)
 				
-				query.andWhere(`"${query.alias}"."id" IN (${subQb.getQuery()})`)
-			}
+			// 	query.andWhere(`"${query.alias}"."id" IN (${subQb.getQuery()})`)
+			// }
 		})
 
 		return items.map((item) => new VisitPublicDTO(item))

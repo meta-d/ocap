@@ -13,7 +13,7 @@ export class FeedService extends TenantOrganizationAwareCrudService<Feed> {
 		super(repo)
 	}
 
-	public async create(entity: DeepPartial<Feed>, ...options: any[]): Promise<Feed> {
+	public async create(entity: DeepPartial<Feed>): Promise<Feed> {
 		const exist = await super.findMy({
 			where: {
 				type: entity.type,
@@ -25,6 +25,6 @@ export class FeedService extends TenantOrganizationAwareCrudService<Feed> {
 			return exist.items[0]
 		}
 
-		return super.create(entity, options)
+		return super.create(entity)
 	}
 }

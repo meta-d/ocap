@@ -7,6 +7,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Column, Entity, Index, ManyToOne, RelationId } from 'typeorm';
 import { Role, TenantBaseEntity } from '../core/entities/internal';
+import { MultiORMColumn } from '../core/decorators';
 
 @Entity('role_permission')
 export class RolePermission
@@ -22,6 +23,10 @@ export class RolePermission
 	@ApiPropertyOptional({ type: () => Boolean, default: false })
 	@Column({ nullable: true, default: false })
 	enabled: boolean;
+
+	@ApiPropertyOptional({ type: () => String })
+	@MultiORMColumn({ nullable: true })
+	description: string;
 
 	/*
     |--------------------------------------------------------------------------

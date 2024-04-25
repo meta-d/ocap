@@ -21,7 +21,7 @@ export abstract class BusinessAreaAwareCrudService<
 	T extends TenantOrganizationBaseEntity
 > extends TenantOrganizationAwareCrudService<T> {
 	protected constructor(
-		protected readonly repository: Repository<T>,
+		readonly repository: Repository<T>,
 		protected readonly employeeRepository: Repository<Employee>,
 		protected readonly commandBus: CommandBus,
 	) {
@@ -61,7 +61,8 @@ export abstract class BusinessAreaAwareCrudService<
 	async findMy(conditions?: FindManyOptions<T>) {
 		
 		const condition = await this.myBusinessAreaConditions(conditions)
-		const [items, total] = await this.repository.findAndCount(condition)
+		// @todo
+		const [items, total] = await this.repository.findAndCount(condition as any)
 
 		return {
 			total,
@@ -75,7 +76,8 @@ export abstract class BusinessAreaAwareCrudService<
 
 	public async countMy(conditions?: FindManyOptions<T>) {
 		const condition = await this.myBusinessAreaConditions(conditions)
-		const total = await this.repository.count(condition)
+		// @todo
+		const total = await this.repository.count(condition as any)
 
 		return total
 	}

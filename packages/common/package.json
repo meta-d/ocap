@@ -1,9 +1,10 @@
 {
   "name": "@metad/server-common",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "commonjs",
   "dependencies": {
-    "@nestjs/typeorm": "^8.0.3",
+    "@nestjs/common": "^10.3.7",
+		"@nestjs/typeorm": "^10.0.2",
     "xlsx": "^0.18.5"
   }
 }

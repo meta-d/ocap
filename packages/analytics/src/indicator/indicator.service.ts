@@ -44,7 +44,8 @@ export class IndicatorService extends BusinessAreaAwareCrudService<Indicator> {
 			take: 20
 		})
 
-		const [items, total] = await this.repository.findAndCount(condition)
+		// @todo
+		const [items, total] = await this.repository.findAndCount(condition as any)
 
 		return {
 			total,

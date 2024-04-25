@@ -48,7 +48,7 @@ export class TrialUserCreatedHandler
 
 	async handle(event: TrialUserCreatedEvent) {
 
-		const employee = await this.employeeRepository.findOne(event.employeeId)
+		const employee = await this.employeeRepository.findOneBy({id: event.employeeId})
 
 		await createLocalAgentDataSource(
 			employee,

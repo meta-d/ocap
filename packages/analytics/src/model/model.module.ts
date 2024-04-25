@@ -2,7 +2,7 @@ import { EmployeeModule, SharedModule, TenantModule, UserModule } from '@metad/s
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { BusinessAreaModule } from '../business-area'
 import { BusinessAreaUserModule } from '../business-area-user/index'
 import { DataSourceModule } from '../data-source/data-source.module'
@@ -20,7 +20,7 @@ import { RedisModule } from '../core/redis.module'
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([
+		RouterModule.register([
 			{ path: '/semantic-model', module: SemanticModelModule },
 			{ path: '/semantic-model-member', module: SemanticModelMemberModule }
 		]),

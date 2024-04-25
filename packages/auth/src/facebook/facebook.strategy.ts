@@ -38,9 +38,10 @@ export const config = (configService: ConfigService) => {
 	return {
 		clientID: FACEBOOK_CONFIG.clientId || 'disabled',
 		clientSecret: FACEBOOK_CONFIG.clientSecret || 'disabled',
-		callbackURL:
-			FACEBOOK_CONFIG.oauthRedirectUri ||
-			`${baseUrl}/api/auth/google/callback`,
+		// @todo
+		// callbackURL:
+		// 	FACEBOOK_CONFIG.oauthRedirectUri ||
+		// 	`${baseUrl}/api/auth/google/callback`,
 		scope: 'email',
 		profileFields: ['emails', 'name']
 	};

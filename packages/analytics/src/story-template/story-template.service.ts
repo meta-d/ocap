@@ -26,7 +26,7 @@ export class StoryTemplateService extends TenantAwareCrudService<StoryTemplate> 
 	 * @param options 
 	 * @returns 
 	 */
-	public async create(entity: DeepPartial<StoryTemplate>, ...options: any[]): Promise<StoryTemplate> {
+	public async create(entity: DeepPartial<StoryTemplate>): Promise<StoryTemplate> {
 		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
 
@@ -42,9 +42,9 @@ export class StoryTemplateService extends TenantAwareCrudService<StoryTemplate> 
 				...entity,
 				tenant: { id: tenantId },
 			}
-			return super.create(entityWithTenant, ...options)
+			return super.create(entityWithTenant)
 		}
-		return super.create(entity, ...options)
+		return super.create(entity)
 	}
 
 	/**

@@ -1,109 +1,95 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect, FindOptionsWhere } from 'typeorm';
+import { Transform, TransformFnParams, Type, plainToClass } from 'class-transformer';
 import { IsNotEmpty, IsOptional, Max, Min, ValidateNested } from 'class-validator';
-import { TenantOrganizationBaseDTO } from '../dto';
+import { parseToBoolean } from '@metad/server-common';
+import { TenantOrganizationBaseDTO } from './../../core/dto';
+import { SimpleObjectLiteral, convertNativeParameters, parseObject } from './pagination.helper';
 
-export enum OrderTypeEnum {
-	DESC = 'DESC',
-	ASC = 'ASC'
+
+
+/**
+ * Specifies what columns should be retrieved.
+ */
+export class OptionsSelect<T = any> {
+
+	@ApiPropertyOptional({ type: 'object' })
+	@IsOptional()
+	@Transform(({ value }: TransformFnParams) => parseObject(value, parseToBoolean))
+	readonly select?: FindOptionsSelect<T>;
+}
+
+/**
+ * Indicates what relations of entity should be loaded (simplified left join form).
+*/
+export class OptionsRelations<T = any> extends OptionsSelect<T> {
+
+	@ApiPropertyOptional({ type: 'object' })
+	@IsOptional()
+	readonly relations?: FindOptionsRelations<T>;
+}
+
+export class OptionParams<T> extends OptionsRelations<T> {
+	/**
+	 * Order, in which entities should be ordered.
+	 */
+	@ApiPropertyOptional({ type: 'object' })
+	@IsOptional()
+	readonly order: FindOptionsOrder<T>;
+
+	/**
+	 * Simple condition that should be applied to match entities.
+	 */
+	@ApiProperty({ type: 'object' })
+	@IsNotEmpty()
+	@ValidateNested({ each: true })
+	@Type(() => TenantOrganizationBaseDTO)
+	@Transform(({ value }: TransformFnParams) => value ? escapeQueryWithParameters(value) : {})
+	readonly where: FindOptionsWhere<T>;
+
+	/**
+	* Indicates if soft-deleted rows should be included in entity result.
+	*/
+	@ApiPropertyOptional({ type: 'boolean' })
+	@IsOptional()
+	@Transform(({ value }: TransformFnParams) => value ? parseToBoolean(value) : false)
+	readonly withDeleted: boolean;
 }
 
 /**
  * Describes generic pagination params
  */
-export abstract class PaginationParams<T> {
+export class PaginationParams<T = any> extends OptionParams<T> {
 	/**
-	 * Pagination limit
+	 * Limit (paginated) - max number of entities should be taken.
 	 */
-	@ApiPropertyOptional({ type: () => Number, minimum: 0, maximum: 50 })
+	@ApiPropertyOptional({ type: () => 'number', minimum: 0, maximum: 100 })
 	@IsOptional()
 	@Min(0)
-	@Max(50)
-	@Transform((val: TransformFnParams) => parseInt(val as unknown as string, 10))
-	readonly take = 10;
+	@Max(100)
+	@Transform((params: TransformFnParams) => parseInt(params.value, 10))
+	readonly take: number;
 
 	/**
-	 * Pagination offset
+	 * Offset (paginated) where from entities should be taken.
 	 */
-	@ApiPropertyOptional({ type: () => Number, minimum: 0 })
+	@ApiPropertyOptional({ type: () => 'number', minimum: 0 })
 	@IsOptional()
 	@Min(0)
-	@Transform((val: TransformFnParams) => parseInt(val as unknown as string, 10))
-	readonly skip = 0;
-
-	/**
-	 * OrderBy
-	 */
-	@ApiPropertyOptional()
-	@IsOptional()
-	abstract readonly order?: { [P in keyof T]?: OrderTypeEnum };
-
-	/**
-     * Simple condition that should be applied to match entities.
-     */
-	@ApiProperty({ type: Object, readOnly: true })
-	@IsNotEmpty()
-	@ValidateNested({ each: true })
-	@Type(() => TenantOrganizationBaseDTO)
-	readonly where: {
-		[P in keyof T]?: any // TODO
-	};
-
-	/**
-     * Indicates what relations of entity should be loaded (simplified left join form).
-     */
-	@ApiPropertyOptional({ type: Object, readOnly: true })
-	@IsOptional()
-	readonly relations?: any
+	@Transform((params: TransformFnParams) => parseInt(params.value, 10))
+	readonly skip: number;
 }
 
-// export abstract class OptionParams<T> {
-// 	/**
-// 	 * Order, in which entities should be ordered.
-// 	 */
-// 	@ApiPropertyOptional({ type: Object, readOnly: true })
-// 	@IsOptional()
-// 	readonly order: FindOptionsOrder<T>;
+/**
+ * Function to escape query parameters and convert to DTO class.
+ * @param nativeParameters - The original query parameters.
+ * @returns {TenantOrganizationBaseDTO} - The escaped and converted query parameters as a DTO instance.
+ */
+export function escapeQueryWithParameters(nativeParameters: SimpleObjectLiteral): TenantOrganizationBaseDTO {
 
-// 	/**
-//      * Simple condition that should be applied to match entities.
-//      */
-// 	@ApiProperty({ type: Object, readOnly: true })
-// 	@IsNotEmpty()
-// 	@ValidateNested({ each: true })
-// 	@Type(() => TenantOrganizationBaseDTO)
-// 	readonly where: {
-// 		[P in keyof T]?: FindOptionsWhereProperty<NonNullable<T[P]>>;
-// 	};
+	// Convert native parameters based on the database connection type
+	const builtParameters: SimpleObjectLiteral = convertNativeParameters(nativeParameters);
 
-// 	/**
-//      * Indicates what relations of entity should be loaded (simplified left join form).
-//      */
-// 	@ApiPropertyOptional({ type: Object, readOnly: true })
-// 	@IsOptional()
-// 	readonly relations?: FindOptionsRelations<T>;
-// }
-
-// /**
-//  * Describes generic pagination params
-//  */
-// export abstract class PaginationParams<T = any> extends OptionParams<T>{
-// 	/**
-//      * Limit (paginated) - max number of entities should be taken.
-//      */
-// 	@ApiPropertyOptional({ type: () => Number, minimum: 0, maximum: 100 })
-// 	@IsOptional()
-// 	@Min(0)
-// 	@Max(100)
-// 	@Transform((params: TransformFnParams) => parseInt(params.value, 10))
-// 	readonly take: number = 10;
-
-// 	/**
-//      * Offset (paginated) where from entities should be taken.
-//      */
-// 	@ApiPropertyOptional({ type: () => Number, minimum: 0 })
-// 	@IsOptional()
-// 	@Min(0)
-// 	@Transform((params: TransformFnParams) => parseInt(params.value, 10))
-// 	readonly skip: number = 0;
-// }
+	// Convert to DTO class using class-transformer's plainToClass
+	return plainToClass(TenantOrganizationBaseDTO, builtParameters, { enableImplicitConversion: true });
+}

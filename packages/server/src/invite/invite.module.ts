@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RouterModule } from 'nest-router';
+import { RouterModule } from '@nestjs/core';
 import { AuthService } from '../auth/auth.service';
 import { EmailModule } from '../email/email.module';
 import { EmailService } from '../email/email.service';
@@ -19,10 +19,11 @@ import { UserOrganizationModule } from './../user-organization/user-organization
 import { InviteController } from './invite.controller';
 import { Invite } from './invite.entity';
 import { InviteService } from './invite.service';
+import { QueryHandlers } from './queries/handlers';
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([
+		RouterModule.register([
 			{ path: '/invite', module: InviteModule }
 		]),
 		TypeOrmModule.forFeature([ Invite ]),
@@ -43,6 +44,7 @@ import { InviteService } from './invite.service';
 	providers: [
 		InviteService,
 		...CommandHandlers,
+		...QueryHandlers,
 		AuthService,
 		EmailService,
 	],

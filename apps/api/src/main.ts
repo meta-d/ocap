@@ -5,7 +5,7 @@ import { AnalyticsModule, AnalyticsService, prepare, seedModule } from '@metad/a
 import { AuthGuard, seedDefault } from '@metad/server-core'
 import { json, urlencoded, text } from 'express'
 import yargs from 'yargs'
-import { AppModule } from './app/app.module'
+import { BootstrapModule } from './app/app.module'
 import { pluginConfig } from './plugin-config'
 
 const LOGGER_LEVELS = ['error', 'warn', 'log', 'debug', 'verbose'] as LogLevel[]
@@ -14,7 +14,7 @@ const LoggerIndex = LOGGER_LEVELS.findIndex((value) => value === (process.env.LO
 prepare()
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(BootstrapModule, {
     logger: LOGGER_LEVELS.slice(0, LoggerIndex + 1)
   })
 
@@ -39,9 +39,9 @@ async function bootstrap() {
   const globalPrefix = 'api'
   app.setGlobalPrefix(globalPrefix)
 
-  // Seed default values
-  const service = app.select(AnalyticsModule).get(AnalyticsService)
-  await service.seedDBIfEmpty()
+  // // Seed default values
+  // const service = app.select(AnalyticsModule).get(AnalyticsService)
+  // await service.seedDBIfEmpty()
 
   // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
   // subscriptionService.setupJobs()

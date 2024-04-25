@@ -16,7 +16,7 @@ export interface IEmailTemplateFindInput
 	languageCode?: string;
 }
 
-export enum EmailTemplateNameEnum {
+export enum EmailTemplateEnum {
 	PASSWORD_RESET = 'password',
 	// APPOINTMENT_CONFIRMATION = 'appointment-confirmation',
 	// APPOINTMENT_CANCELLATION = 'appointment-cancellation',
@@ -42,7 +42,7 @@ export enum EmailTemplateNameEnum {
 
 export interface ICustomizeEmailTemplateFindInput
 	extends IBasePerTenantAndOrganizationEntityModel {
-	name: EmailTemplateNameEnum;
+	name: EmailTemplateEnum;
 	languageCode: LanguagesEnum;
 }
 

@@ -37,7 +37,7 @@ export const config = (configService: ConfigService) => {
   return {
     clientID: GITHUB_CONFIG.clientId || 'disabled',
     clientSecret: GITHUB_CONFIG.clientSecret || 'disabled',
-    callbackURL: GITHUB_CONFIG.callbackUrl || `${baseUrl}/api/auth/github/callback`,
+    callbackURL: GITHUB_CONFIG.callbackURL || `${baseUrl}/api/auth/github/callback`,
     passReqToCallback: true,
     scope: ['user:email']
   }

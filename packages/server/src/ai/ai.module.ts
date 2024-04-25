@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { TenantModule } from '../tenant'
 import { AIController } from './ai.controller'
 import { CopilotModule } from '../copilot'
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([
+		RouterModule.register([
 			{
 				path: '/ai',
 				module: AIModule

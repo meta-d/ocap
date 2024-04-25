@@ -21,7 +21,8 @@ export class IndicatorMyHandler implements IQueryHandler<IndicatorMyQuery> {
 
 	async execute(query: IndicatorMyQuery) {
 		const { options } = query
-		const relations = options?.relations
+		// @todo
+		const relations = options?.relations as string[]
 		const where = <ObjectLiteral>options?.where ?? {}
 
 		const me = RequestContext.currentUser()

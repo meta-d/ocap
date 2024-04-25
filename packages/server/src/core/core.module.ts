@@ -1,20 +1,11 @@
-import {
-	DynamicModule,
-	MiddlewareConsumer,
-	Module,
-	NestModule
-} from '@nestjs/common';
-import * as path from 'path';
-import { ConfigService, environment } from '@metad/server-config';
-import { RequestContextMiddleware } from './context';
-import { FileStorageModule } from './file-storage';
-import { GraphqlModule } from '../graphql/graphql.module';
-import { GraphqlApiModule } from '../graphql/graphql-api.module';
-import { DatabaseProviderModule } from './database-provider.module';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { DatabaseModule } from '../database'
+import { RequestContextMiddleware } from './context'
+import { FileStorageModule } from './file-storage'
 
 @Module({
 	imports: [
-		DatabaseProviderModule,
+		DatabaseModule,
 		// GraphqlApiModule,
 		// GraphqlModule.registerAsync((configService: ConfigService) => ({
 		// 	path: configService.graphqlConfigOptions.path,
@@ -47,6 +38,6 @@ import { DatabaseProviderModule } from './database-provider.module';
 })
 export class CoreModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(RequestContextMiddleware).forRoutes('*');
+		consumer.apply(RequestContextMiddleware).forRoutes('*')
 	}
 }

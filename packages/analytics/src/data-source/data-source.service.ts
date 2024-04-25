@@ -25,15 +25,16 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		super(dsRepository)
 	}
 
-	async create(entity: DeepPartial<DataSource>, ...options: any[]) {
-		const result = await super.create(entity, ...options)
+	async create(entity: DeepPartial<DataSource>) {
+		const result = await super.create(entity)
 		return this.findOne(result.id, { relations: ['type'] })
 	}
 
 	async prepareDataSource(id: string, newDataSource?: Partial<IDataSource>) {
 		const {authentications, options, ...ds} = newDataSource ?? {}
 
-		let dataSource = await this.dsRepository.findOne(id, {
+		let dataSource = await this.dsRepository.findOne({
+			where: { id },
 			relations: ['type', 'authentications']
 		})
 
@@ -174,7 +175,7 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		const tenantId = RequestContext.currentTenantId()
 		const userId = RequestContext.currentUserId()
 
-		const authentication = await this.authRepository.findOne({
+		const authentication = await this.authRepository.findOneBy({
 			tenantId,
 			dataSourceId: id,
 			userId
@@ -191,7 +192,7 @@ export class DataSourceService extends TenantOrganizationAwareCrudService<DataSo
 		const tenantId = RequestContext.currentTenantId()
 		const userId = RequestContext.currentUserId()
 
-		let authentication = await this.authRepository.findOne({
+		let authentication = await this.authRepository.findOneBy({
 			tenantId,
 			dataSourceId: id,
 			userId

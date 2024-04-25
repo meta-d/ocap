@@ -2,7 +2,7 @@ import { EmployeeModule, SharedModule, TenantModule, UserModule } from '@metad/s
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { BusinessAreaUserController } from './business-area-user.controller'
 import { BusinessAreaUser } from './business-area-user.entity'
 import { BusinessAreaUserService } from './business-area-user.service'
@@ -10,7 +10,7 @@ import { CommandHandlers } from './commands/handlers'
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([{ path: '/business-area-user', module: BusinessAreaUserModule }]),
+		RouterModule.register([{ path: '/business-area-user', module: BusinessAreaUserModule }]),
 		forwardRef(() => TypeOrmModule.forFeature([BusinessAreaUser])),
 		SharedModule,
 		CqrsModule,

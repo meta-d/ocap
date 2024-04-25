@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, InsertResult, SelectQueryBuilder, Like, Brackets, WhereExpressionBuilder } from 'typeorm';
+import { Repository, InsertResult, SelectQueryBuilder, Like, Brackets, WhereExpressionBuilder, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { environment as env } from '@metad/server-config'
 import { User } from './user.entity';
@@ -38,20 +38,20 @@ export class UserService extends TenantAwareCrudService<User> {
 	async getIfExistsUser(user: IUser): Promise<IUser> {
 		let _user: IUser = null
 		if (user.email) {
-			const userExists = await this.findOneOrFail({email: user.email})
+			const userExists = await this.findOneOrFailByWhereOptions({email: user.email})
 			if (userExists.success) {
 				_user = userExists.record
 			}
 		}
 		
 		if (!_user && user.mobile) {
-			const userExists = await this.findOneOrFail({mobile: user.mobile})
+			const userExists = await this.findOneOrFailByWhereOptions({mobile: user.mobile})
 			if (userExists.success) {
 				_user = userExists.record
 			}
 		}
 		if (!_user && user.thirdPartyId) {
-			const userExists = await this.findOneOrFail({thirdPartyId: user.thirdPartyId})
+			const userExists = await this.findOneOrFailByWhereOptions({thirdPartyId: user.thirdPartyId})
 			if (userExists.success) {
 				_user = userExists.record
 			}
@@ -103,7 +103,7 @@ export class UserService extends TenantAwareCrudService<User> {
 	}
 
 	async changePassword(id: string, hash: string) {
-		const user = await this.findOne(id);
+		const user = await this.findOneByIdString(id);
 		user.hash = hash;
 		return await this.repository.save(user);
 	}
@@ -113,7 +113,7 @@ export class UserService extends TenantAwareCrudService<User> {
 			throw new ForbiddenException()
 		}
 
-		const user = await this.findOne(id, {relations: ['role']});
+		const user = await this.findOneByIdString(id, {relations: ['role']});
 		if (!user) {
 			throw new NotFoundException(`The user was not found`);
 		}
@@ -131,7 +131,7 @@ export class UserService extends TenantAwareCrudService<User> {
 	 * Update user profile
 	 */
 	async updateProfile(
-		id: string | number,
+		id: string,
 		partialEntity: User,
 		...options: any[]
 	): Promise<User> {
@@ -148,7 +148,7 @@ export class UserService extends TenantAwareCrudService<User> {
 			}
 		}
 		try {
-			const user = await this.findOne(id, {relations: ['role']});
+			const user = await this.findOneByIdString(id, {relations: ['role']});
 			if (!user) {
 				throw new NotFoundException(`The user was not found`);
 			}
@@ -173,34 +173,31 @@ export class UserService extends TenantAwareCrudService<User> {
 	}
 
 	async getAdminUsers(tenantId: string): Promise<User[]> {
-		const roleNames =[RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN];		
-		return await this.repository.find({
+		return await this.typeOrmRepository.find({
 			join: {
 				alias: 'user',
 				leftJoin: {
 					role: 'user.role'
-				},
-			},
-			where: (qb: SelectQueryBuilder<User>) => {
-					qb.andWhere(`"${qb.alias}"."tenantId" = :tenantId`, {
-						tenantId
-					});
-					qb.andWhere(`role.name IN (:...roleNames)`, {
-						roleNames
-					});
 				}
-			});		
+			},
+			where: {
+				tenantId,
+				role: {
+					name: In([RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN])
+				}
+			}
+		});
 	}
 
 	/*
 	 * Update user preferred language
 	 */
 	async updatePreferredLanguage(
-		id: string | number,
+		id: string,
 		preferredLanguage: LanguagesEnum
 	): Promise<IUser> {
 		try {
-			const user = await this.findOne(id);
+			const user = await this.findOneByIdString(id);
 			if (!user) {
 				throw new NotFoundException(`The user was not found`);
 			}
@@ -215,11 +212,11 @@ export class UserService extends TenantAwareCrudService<User> {
 	 * Update user preferred component layout
 	 */
 	async updatePreferredComponentLayout(
-		id: string | number,
+		id: string,
 		preferredComponentLayout: ComponentLayoutStyleEnum
 	): Promise<IUser> {
 		try {
-			const user = await this.findOne(id);
+			const user = await this.findOneByIdString(id);
 			if (!user) {
 				throw new NotFoundException(`The user was not found`);
 			}

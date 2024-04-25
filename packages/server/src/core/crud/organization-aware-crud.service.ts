@@ -1,11 +1,12 @@
-import { DeepPartial, FindConditions, IsNull, ObjectLiteral, Repository, UpdateResult } from 'typeorm'
-import { IBasePerTenantAndOrganizationEntityModel } from '@metad/contracts'
+import { DeepPartial, FindManyOptions, FindOneOptions, FindOptionsWhere, IsNull, ObjectLiteral, Repository, UpdateResult } from 'typeorm'
+import { IBasePerTenantAndOrganizationEntityModel, IUser } from '@metad/contracts'
 import { BadRequestException } from '@nestjs/common'
 import { User } from '../../user/user.entity'
 import { RequestContext } from '../context'
 import { TenantOrganizationBaseEntity } from '../entities/internal'
 import { ICrudService } from './icrud.service'
 import { TenantAwareCrudService } from './tenant-aware-crud.service'
+import { MikroOrmBaseEntityRepository } from '../repository'
 
 /**
  * This abstract class adds tenantId and organizationId to all query filters if a user is available in the current RequestContext
@@ -17,13 +18,47 @@ export abstract class TenantOrganizationAwareCrudService<
 	extends TenantAwareCrudService<T>
 	implements ICrudService<T>
 {
-	protected constructor(protected readonly repository: Repository<T>) {
-		super(repository)
+	constructor(typeOrmRepository: Repository<T>, mikroOrmRepository?: MikroOrmBaseEntityRepository<T>) {
+		super(typeOrmRepository, mikroOrmRepository);
+	}
+
+	/**
+	 * @deprecated
+	 */
+	protected findConditionsWithUser(
+		user: IUser,
+		where?: FindManyOptions['where'] // FindConditions<T> | ObjectLiteral | FindConditions<T>[]
+	): FindManyOptions['where'] {
+
+		if (Array.isArray(where)) {
+			return where.map((options) => ({
+				...options,
+				createdBy: {
+					id: user.id
+				}
+			}))
+		}
+
+		if (typeof where === 'string') {
+			return where
+		}
+		return where
+			? {
+				...where,
+				createdBy: {
+					id: user.id
+				}
+			  }
+			: {
+				createdBy: {
+					id: user.id
+				}
+			  }
 	}
 
 	protected findConditionsWithTenantByUser(
 		user: User
-	): FindConditions<T>[] | FindConditions<T> | ObjectLiteral | string {
+	): FindOptionsWhere<T> {
 		const organizationId = RequestContext.getOrganizationId()
 		const organizationWhere = organizationId
 			? {
@@ -40,13 +75,13 @@ export abstract class TenantOrganizationAwareCrudService<
 				id: user.tenantId,
 			},
 			...organizationWhere,
-		}
+		} as FindOptionsWhere<T>;
 	}
 
 	protected findConditionsWithTenant(
 		user: User,
-		where?: FindConditions<T> | ObjectLiteral | FindConditions<T>[]
-	): FindConditions<T> | ObjectLiteral | FindConditions<T>[] {
+		where?: FindOptionsWhere<T>[] | FindOptionsWhere<T>
+	): FindOptionsWhere<T>[] | FindOptionsWhere<T> {
 		const organizationId = RequestContext.getOrganizationId()
 
 		if (Array.isArray(where)) {
@@ -70,7 +105,7 @@ export abstract class TenantOrganizationAwareCrudService<
 					tenant: {
 						id: user.tenantId,
 					},
-				} as FindConditions<T>
+				} as FindOptionsWhere<T>
 			})
 		}
 
@@ -91,16 +126,16 @@ export abstract class TenantOrganizationAwareCrudService<
 						id: user.tenantId,
 					},
 					...organizationWhere,
-			  } as FindConditions<T>)
+			  } as FindOptionsWhere<T>)
 			: ({
 					tenant: {
 						id: user.tenantId,
 					},
 					...organizationWhere,
-			  } as ObjectLiteral)
+			  } as FindOptionsWhere<T>)
 	}
 
-	public async create(entity: DeepPartial<T>, ...options: any[]): Promise<T> {
+	public async create(entity: DeepPartial<T>): Promise<T> {
 		const tenantId = RequestContext.currentTenantId()
 		const user = RequestContext.currentUser()
 		const organizationId = RequestContext.getOrganizationId()
@@ -117,35 +152,35 @@ export abstract class TenantOrganizationAwareCrudService<
 				...entity,
 				tenant: { id: tenantId },
 			}
-			return super.create(entityWithTenant, ...options)
+			return super.create(entityWithTenant)
 		}
-		return super.create(entity, ...options)
+		return super.create(entity)
 	}
 
-	/**
-	 * Soft Delete entity by id and current tenant id
-	 *
-	 * @param id entity id
-	 * @returns
-	 */
-	async softDelete(id: string, options?: IBasePerTenantAndOrganizationEntityModel): Promise<UpdateResult> {
-		const { organizationId } = options ?? {}
-		try {
-			await this.findOneByIdString(id, {
-				where: {
-					tenantId: RequestContext.currentTenantId(),
-					organizationId: organizationId ?? RequestContext.getOrganizationId()
-				}
-			});
-			return await this.repository.softDelete({
-				id,
-				tenantId: RequestContext.currentTenantId(),
-				organizationId: organizationId ?? RequestContext.getOrganizationId()
-			} as any);
-		} catch (error) {
-			throw new BadRequestException(error.message);
-		}
-	}
+	// /**
+	//  * Soft Delete entity by id and current tenant id
+	//  *
+	//  * @param id entity id
+	//  * @returns
+	//  */
+	// async softDelete(criteria: string | number | FindOptionsWhere<T>,
+	// 	options?: FindOneOptions<T>): Promise<UpdateResult> {
+	// 	try {
+	// 		await this.findOneByIdString(id, {
+	// 			where: {
+	// 				tenantId: RequestContext.currentTenantId(),
+	// 				organizationId: organizationId ?? RequestContext.getOrganizationId()
+	// 			}
+	// 		});
+	// 		return await this.repository.softDelete({
+	// 			id,
+	// 			tenantId: RequestContext.currentTenantId(),
+	// 			organizationId: organizationId ?? RequestContext.getOrganizationId()
+	// 		} as any);
+	// 	} catch (error) {
+	// 		throw new BadRequestException(error.message);
+	// 	}
+	// }
 
 	/**
 	 * Alternatively, You can recover the soft deleted rows by using the restore() method:

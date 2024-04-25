@@ -216,7 +216,7 @@ export class SeedDataService {
 			await this.createConnection();
 
 			// Find tenant or default tenant
-			this.tenant = await (await this.connection.getRepository(Tenant)).findOne({name})
+			this.tenant = await (await this.connection.getRepository(Tenant)).findOneBy({name})
 
 			// Seed email templates
 			await this.tryExecute(
@@ -509,7 +509,7 @@ export class SeedDataService {
 			await this.createConnection();
 
 			// Find tenant or default tenant
-			this.tenant = await (await this.connection.getRepository(Tenant)).findOne({name: tenantName})
+			this.tenant = await (await this.connection.getRepository(Tenant)).findOneBy({name: tenantName})
 
 			// Find all roles in tenant
 			this.roles = await (await this.connection.getRepository(Role)).find({

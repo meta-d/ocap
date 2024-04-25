@@ -3,27 +3,30 @@ import { IBasePerTenantEntityModel } from './base-entity.model'
 import { IRole } from './role.model'
 
 export interface IRolePermission extends IBasePerTenantEntityModel {
-  roleId: string
-  permission: string
-  role: IRole
-  enabled: boolean
+  roleId: string;
+	permission: string;
+	role: IRole;
+	enabled: boolean;
+	description: string;
 }
 
 export interface IRolePermissionMigrateInput extends IBasePerTenantEntityModel {
-  permission: string
-  role: string
-  isImporting: boolean
-  sourceId: string
+	permission: string;
+	role: string;
+	isImporting: boolean;
+	sourceId: string;
+	description: string;
 }
 
 export interface IRolePermissionCreateInput extends IBasePerTenantEntityModel {
-  roleId: string
-  permission: string
-  enabled: boolean
+	role?: IRole;
+	roleId: string;
+	permission: string;
+	enabled: boolean;
 }
 
-export interface IRolePermissionUpdateInput {
-  enabled: boolean
+export interface IRolePermissionUpdateInput extends IRolePermissionCreateInput {
+	enabled: boolean;
 }
 
 export enum PermissionsEnum {

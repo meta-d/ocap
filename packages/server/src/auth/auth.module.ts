@@ -2,7 +2,7 @@ import { SocialAuthModule } from '@metad/server-auth'
 import { Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { EmailModule, EmailService } from '../email'
 import { PasswordResetModule } from '../password-reset/password-reset.module'
 import { RoleModule } from '../role/role.module'
@@ -21,7 +21,7 @@ const providers = [AuthService, UserService, UserOrganizationService, EmailServi
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([
+		RouterModule.register([
 			{
 				path: '/auth',
 				module: AuthModule,
@@ -29,7 +29,13 @@ const providers = [AuthService, UserService, UserOrganizationService, EmailServi
 			}
 		]),
 		SocialAuthModule.registerAsync({
-			imports: [AuthModule, CqrsModule, TenantModule, UserModule, PasswordResetModule, RoleModule],
+			imports: [
+				AuthModule,
+				UserModule,
+				RoleModule,
+				PasswordResetModule,
+				CqrsModule
+			],
 			useClass: AuthService
 		}),
 		TypeOrmModule.forFeature([UserOrganization, Organization]),

@@ -4,12 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { EmployeeModule, SharedModule, TenantModule } from '@metad/server-core'
 import { ModelQueryService } from './query.service'
 import { ModelQuery } from './query.entity'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { ModelQueryController } from './query.controller'
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([
+		RouterModule.register([
 			{ path: '/model-query', module: ModelQueryModule },
 		]),
 		forwardRef(() => TypeOrmModule.forFeature([ModelQuery])),

@@ -140,3 +140,15 @@ export interface IUserViewModel extends IBasePerTenantEntityModel {
 	role?: string;
 	tags?: ITag[];
 }
+
+export interface IUserEmailInput {
+	email: string;
+}
+
+export interface IUserTokenInput {
+	token: string;
+}
+
+export interface IUserCodeInput {
+	code: string;
+}

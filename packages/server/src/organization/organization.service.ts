@@ -33,13 +33,17 @@ export class OrganizationService extends TenantAwareCrudService<Organization> {
 		}
 
 		return await this.organizationRepository.findOne(
-			{ profile_link },
-			findObj
+			{
+				...findObj,
+				where: {
+					profile_link
+				}
+			}
 		);
 	}
 
 	public async generateDemo(id: string, options: any) {
-		const organization = await this.organizationRepository.findOne(id);
+		const organization = await this.organizationRepository.findOneBy({id})
 
 		await this.commandBus.execute(
 			new OrganizationDemoCommand({

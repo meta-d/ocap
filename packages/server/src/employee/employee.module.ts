@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RouterModule } from 'nest-router';
+import { RouterModule } from '@nestjs/core';
 import { Employee } from './employee.entity';
 import { UserModule } from './../user/user.module';
 import { CommandHandlers } from './commands/handlers';
@@ -14,7 +14,7 @@ import { TenantModule } from '../tenant/tenant.module';
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([{ path: '/employee', module: EmployeeModule }]),
+		RouterModule.register([{ path: '/employee', module: EmployeeModule }]),
 		TypeOrmModule.forFeature([Employee]),
 		EmailModule,
 		UserOrganizationModule,

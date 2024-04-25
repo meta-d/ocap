@@ -1,11 +1,10 @@
 import {
 	IPluginConfig,
-	DEFAULT_API_PORT,
 	DEFAULT_GRAPHQL_API_PATH,
 	DEFAULT_API_HOST,
 	DEFAULT_API_BASE_URL
 } from '@metad/server-common';
-import { ConnectionOptions } from 'typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as path from 'path';
 
 let assetPath;
@@ -60,14 +59,14 @@ export const pluginConfig: IPluginConfig = {
 	// plugins: [KnowledgeBasePlugin, ChangelogPlugin]
 };
 
-function getDbConfig(): ConnectionOptions {
+function getDbConfig(): TypeOrmModuleOptions {
 	const dbType =
 		process.env.DB_TYPE && process.env.DB_TYPE === 'postgres'
 			? 'postgres'
 			: 'sqlite';
 
 	switch (dbType) {
-		case 'postgres':
+		case 'postgres': {
 			const ssl = process.env.DB_SSL_MODE === 'true' ? true : undefined;
 
 			return {
@@ -87,7 +86,8 @@ function getDbConfig(): ConnectionOptions {
 				uuidExtension: 'pgcrypto'
 			};
 
-		case 'sqlite':
+			}
+		case 'sqlite': {
 			const sqlitePath =
 				process.env.DB_PATH ||
 				path.join(
@@ -103,5 +103,7 @@ function getDbConfig(): ConnectionOptions {
 				logger: 'file',
 				synchronize: true
 			};
+		}
+			
 	}
 }

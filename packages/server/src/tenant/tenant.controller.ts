@@ -75,8 +75,8 @@ export class TenantController extends CrudController<Tenant> {
 	@Public()
 	@HttpCode(HttpStatus.OK)
 	@Get('onboard')
-	async getOnboardDefault(): Promise<boolean> {
-		const defaultTenant = await this.tenantService.findOneOrFail({
+	async getOnboardDefault(): Promise<boolean | ITenant> {
+		const defaultTenant = await this.tenantService.findOneOrFailByOptions({
 			where: {
 				name: DEFAULT_TENANT
 			},
@@ -107,7 +107,7 @@ export class TenantController extends CrudController<Tenant> {
 		if (id !== tenantId) {
 			throw new ForbiddenException();
 		}
-		return this.tenantService.findOne(tenantId);
+		return this.tenantService.findOneByIdString(tenantId);
 	}
 
 	@ApiOperation({
@@ -150,7 +150,7 @@ export class TenantController extends CrudController<Tenant> {
 	@HttpCode(HttpStatus.CREATED)
 	@Post('onboard')
 	async onboardDefault(@Body() entity: ITenantCreateInput): Promise<Tenant> {
-		const defaultTenant = await this.tenantService.findOneOrFail({name: entity.name})
+		const defaultTenant = await this.tenantService.findOneOrFailByWhereOptions({name: entity.name})
 		if (defaultTenant.success) {
 			throw new BadRequestException('Tenant already exists');
 		}

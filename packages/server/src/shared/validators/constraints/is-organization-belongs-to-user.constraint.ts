@@ -37,7 +37,7 @@ export class IsOrganizationBelongsToUserConstraint implements ValidatorConstrain
 		}
 
 		try {
-            return !!await this.repository.findOneOrFail({
+            return !!await this.repository.findOneByOrFail({
 				tenantId: RequestContext.currentTenantId(),
 				userId: RequestContext.currentUserId(),
 				organizationId

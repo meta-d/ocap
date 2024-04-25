@@ -40,11 +40,9 @@ export class AuthService extends SocialAuthService {
 	}
 
 	async validateUser(email: string, password: string): Promise<any> {
-		const user = await this.userService.findOneByConditions({ email, emailVerified: true }, {
-			order: {
-				createdAt: 'DESC'
-			}
-		})
+		const user = await this.userService.findOneByOptions({ where: { email, emailVerified: true }, order: {
+			createdAt: 'DESC'
+		}})
 		if (!user || !(await bcrypt.compare(password, user.hash))) {
 		  throw new UnauthorizedException();
 		}
@@ -59,7 +57,9 @@ export class AuthService extends SocialAuthService {
 	 * @returns 
 	 */
 	async login(email: string, password: string): Promise<IAuthResponse | null> {
-		const user = await this.userService.findOneByConditions({ email, emailVerified: true }, {
+		const user = await this.userService.findOneByOptions(
+		{
+			where: { email, emailVerified: true }, 
 			relations: ['role', 'role.rolePermissions', 'employee'],
 			order: {
 				createdAt: 'DESC'
@@ -86,7 +86,8 @@ export class AuthService extends SocialAuthService {
 	): Promise<{ token: string } | null> {
 
 		try {
-			const user = await this.userService.findOneByConditions(request, {
+			const user = await this.userService.findOneByOptions({
+				where: request,
 				relations: ['role', 'employee']
 			});
 			try {

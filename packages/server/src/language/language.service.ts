@@ -10,10 +10,10 @@ import { createLanguages } from './language.seed'
 export class LanguageService extends CrudService<Language> {
 	constructor(
 		@InjectRepository(Language)
-		private readonly tagRepository: Repository<Language>,
-		private readonly entityManager: EntityManager
+		private readonly repository: Repository<Language>,
+		// private readonly entityManager: EntityManager
 	) {
-		super(tagRepository)
+		super(repository)
 	}
 
 	async findOneByName(name: string): Promise<Language> {
@@ -25,6 +25,7 @@ export class LanguageService extends CrudService<Language> {
 	}
 
 	async initialize(): Promise<ILanguage[]> {
-		return await createLanguages(this.entityManager.connection)
+		// return await createLanguages(this.entityManager.connection)
+		return []
 	}
 }

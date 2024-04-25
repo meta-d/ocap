@@ -21,7 +21,8 @@ export class ProjectGetHandler implements IQueryHandler<ProjectGetQuery> {
 	async execute(query: ProjectGetQuery) {
 		const { input } = query
 		const { id, options } = input
-		const relations = options?.relations
+		// @todo
+		const relations = options?.relations as string[]
 		const user = RequestContext.currentUser()
 		const organizationId = RequestContext.getOrganizationId()
 

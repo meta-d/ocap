@@ -3,14 +3,14 @@ import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ClientsModule, Transport } from '@nestjs/microservices'
 import { SharedModule, TenantModule } from '@metad/server-core'
-import { RouterModule } from 'nest-router'
+import { RouterModule } from '@nestjs/core'
 import { InsightModel } from './insight-model.entity'
 import { InsightController } from './insight.controller'
 import { InsightService } from './insight.service'
 
 @Module({
 	imports: [
-		RouterModule.forRoutes([{ path: '/insight', module: InsightModule }]),
+		RouterModule.register([{ path: '/insight', module: InsightModule }]),
 		forwardRef(() => TypeOrmModule.forFeature([InsightModel])),
 		forwardRef(() => TenantModule),
 		SharedModule,

@@ -12,6 +12,11 @@ export interface IRoleCreateInput extends IBasePerTenantEntityModel {
 	name: string
 }
 
+export interface IRoleFindInput extends IBasePerTenantEntityModel {
+	name?: string;
+	isSystem?: boolean;
+}
+
 export enum RolesEnum {
 	SUPER_ADMIN = 'SUPER_ADMIN',
 	ADMIN = 'ADMIN',
@@ -29,3 +34,12 @@ export interface IRoleMigrateInput extends IBasePerTenantEntityModel {
 	isImporting: boolean;
 	sourceId: string;
 }
+
+/** Default system role */
+export const SYSTEM_DEFAULT_ROLES = [
+	RolesEnum.SUPER_ADMIN,
+	RolesEnum.ADMIN,
+	RolesEnum.EMPLOYEE,
+	RolesEnum.CANDIDATE,
+	RolesEnum.VIEWER
+];

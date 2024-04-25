@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { TenantAwareCrudService } from '@metad/server-core'
 import { EMPTY } from 'rxjs'
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom'
-import { FindConditions, Repository, UpdateResult } from 'typeorm'
+import { Repository, UpdateResult } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { InsightModel } from './insight-model.entity'
 
@@ -22,13 +22,12 @@ export class InsightService extends TenantAwareCrudService<InsightModel> {
 	}
 
 	public async update(
-		id: string | number | FindConditions<InsightModel>,
+		id: string,
 		partialEntity: QueryDeepPartialEntity<InsightModel>,
-		...options: any[]
 	): Promise<UpdateResult | InsightModel> {
 		const pattern = { cmd: channel }
 		this.aiClient.send(pattern, JSON.stringify(partialEntity)).subscribe()
-		return super.update(id, partialEntity, options)
+		return super.update(id, partialEntity)
 	}
 
 	public async suggests(statement: string) {

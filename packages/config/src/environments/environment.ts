@@ -53,22 +53,10 @@ export const environment: IEnvironment = {
 		}
 	},
 
-	facebookConfig: {
-		loginDialogUri: 'https://www.facebook.com/v2.12/dialog/oauth',
-		accessTokenUri: 'https://graph.facebook.com/v2.12/oauth/access_token',
-		clientId: process.env.FACEBOOK_CLIENT_ID,
-		clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-		fbGraphVersion: process.env.FACEBOOK_GRAPH_VERSION,
-		oauthRedirectUri:
-			process.env.FACEBOOK_CALLBACK_URL ||
-			`${process.env.HOST}:${process.env.PORT}/api/auth/facebook/callback`,
-		state: '{fbstate}'
-	},
-
 	googleConfig: {
 		clientId: process.env.GOOGLE_CLIENT_ID,
 		clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-		callbackUrl:
+		callbackURL:
 			process.env.GOOGLE_CALLBACK_URL ||
 			`http://${process.env.HOST}:${process.env.PORT}/api/auth/google/callback`
 	},
@@ -76,54 +64,9 @@ export const environment: IEnvironment = {
 	githubConfig: {
 		clientId: process.env.GITHUB_CLIENT_ID,
 		clientSecret: process.env.GITHUB_CLIENT_SECRET,
-		callbackUrl:
-			process.env.GITHUB_CALLBACK_URL ||
-			`http://${process.env.HOST}:${process.env.PORT}/api/auth/google/callback`
-	},
-
-	microsoftConfig: {
-		clientId: process.env.MICROSOFT_CLIENT_ID,
-		clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-		resource: process.env.MICROSOFT_RESOURCE,
-		tenant: process.env.MICROSOFT_TENANT,
-		callbackUrl:
-			process.env.MICROSOFT_CALLBACK_URL ||
-			`http://${process.env.HOST}:${process.env.PORT}/api/auth/microsoft/callback`
-	},
-
-	linkedinConfig: {
-		clientId: process.env.LINKEDIN_CLIENT_ID,
-		clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-		callbackUrl:
-			process.env.LINKEDIN_CALLBACK_URL ||
-			`http://${process.env.HOST}:${process.env.PORT}/api/auth/linked/callback`
-	},
-
-	twitterConfig: {
-		clientId: process.env.TWITTER_CLIENT_ID,
-		clientSecret: process.env.TWITTER_CLIENT_SECRET,
-		callbackUrl:
-			process.env.TWITTER_CALLBACK_URL ||
-			`http://${process.env.HOST}:${process.env.PORT}/api/auth/twitter/callback`
-	},
-
-	fiverrConfig: {
-		clientId: process.env.FIVERR_CLIENT_ID,
-		clientSecret: process.env.FIVERR_CLIENT_SECRET
-	},
-
-	keycloakConfig: {
-		realm: process.env.KEYCLOAK_REALM,
-		clientId: process.env.KEYCLOAK_CLIENT_ID,
-		secret: process.env.KEYCLOAK_SECRET,
-		authServerUrl: process.env.KEYCLOAK_AUTH_SERVER_URL,
-		cookieKey: process.env.KEYCLOAK_COOKIE_KEY
-	},
-
-	auth0Config: {
-		clientID: process.env.AUTH0_CLIENT_ID,
-		clientSecret: process.env.AUTH0_CLIENT_SECRET,
-		domain: process.env.AUTH0_DOMAIN
+		callbackURL: process.env.GITHUB_CALLBACK_URL ||
+			`http://${process.env.HOST}:${process.env.PORT}/api/auth/google/callback`,
+		userAgent: ''
 	},
 
 	feishuConfig: {

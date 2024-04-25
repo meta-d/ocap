@@ -31,7 +31,8 @@ export class PermissionGuard implements CanActivate {
 			// };
 			const id = RequestContext.currentUserId();
 
-			const user = await this.userService.findOne(id, {
+			const user = await this.userService.findOneByOptions({
+				where: { id },
 				relations: ['role', 'role.rolePermissions']
 			});
 

@@ -39,7 +39,7 @@ import { CrudController, ITryRequest, PaginationParams } from './../core/crud';
 import { RequestContext } from '../core/context';
 import { TransformInterceptor } from './../core/interceptors';
 import { Permissions, Public } from './../shared/decorators';
-import { ParseJsonPipe, UUIDValidationPipe } from './../shared/pipes';
+import { ParseJsonPipe, UUIDValidationPipe, UseValidationPipe } from './../shared/pipes';
 import { PermissionGuard, TenantPermissionGuard } from './../shared/guards';
 import { Employee } from './employee.entity';
 import { EmployeeService } from './employee.service';
@@ -224,9 +224,9 @@ export class EmployeeController extends CrudController<Employee> {
 	async findByUserId(
 		@Param('userId', UUIDValidationPipe) userId: string,
 		@Query('data', ParseJsonPipe) data?: any
-	): Promise<ITryRequest> {
+	): Promise<ITryRequest<Employee>> {
 		const { relations = [] } = data;
-		return this.employeeService.findOneOrFail({
+		return this.employeeService.findOneOrFailByOptions({
 			where: {
 				userId
 			},
@@ -261,42 +261,6 @@ export class EmployeeController extends CrudController<Employee> {
 		return await this.commandBus.execute(
 			new EmployeeBulkCreateCommand(entity, languageCode)
 		);
-	}
-
-	
-	/**
-	 * GET employee count in the same tenant.
-	 * 
-	 * @param filter 
-	 * @returns 
-	 */
-	@Get('count')
-	@UsePipes(new ValidationPipe({ transform: true }))
-	async getCount(
-		@Query() filter: PaginationParams<IEmployee>
-	): Promise<number> {
-		return this.employeeService.count({
-			where: {
-				tenantId: RequestContext.currentTenantId()
-			},
-			...filter
-		});
-	}
-
-	/**
-	 * GET employees by pagination in the same tenant.
-	 * 
-	 * @param filter 
-	 * @returns 
-	 */
-	// @UseGuards(PermissionGuard)
-	// @Permissions(PermissionsEnum.ORG_INCOMES_VIEW)
-	@Get('pagination')
-	@UsePipes(new ValidationPipe({ transform: true }))
-	async pagination(
-		@Query() filter: PaginationParams<IEmployee>
-	): Promise<IPagination<Employee>> {
-		return this.employeeService.paginate(filter);
 	}
 
 	/**

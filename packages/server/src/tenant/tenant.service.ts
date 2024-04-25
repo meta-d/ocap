@@ -66,7 +66,7 @@ export class TenantService extends CrudService<Tenant> {
 		);
 
 		//4. Find SUPER_ADMIN role to relative tenant.
-		const role = await this.roleService.findOne({
+		const role = await this.roleService.findOneByWhereOptions({
 			tenant,
 			name: RolesEnum.SUPER_ADMIN
 		});
@@ -121,7 +121,7 @@ export class TenantService extends CrudService<Tenant> {
 	}
 
 	public async generateDemo(id: string): Promise<Tenant> {
-		const tenant = this.publisher.mergeObjectContext(await this.findOne(id))
+		const tenant = this.publisher.mergeObjectContext(await this.findOneByIdString(id))
 
 		tenant.apply(new TenantCreatedEvent(tenant.id))
 		tenant.commit()
@@ -130,7 +130,7 @@ export class TenantService extends CrudService<Tenant> {
 	}
 
 	public async getDefaultTenant() {
-		return await this.findOne({
+		return await this.findOneByOptions({
 			where: {
 				name: DEFAULT_TENANT
 			}

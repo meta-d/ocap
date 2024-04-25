@@ -5,7 +5,7 @@ import {
 	ID,
 	IUser,
 } from '@metad/contracts'
-import { IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsOptional, IsString } from 'class-validator'
 import {
 	Column,
 	CreateDateColumn,
@@ -15,6 +15,7 @@ import {
 	RelationId,
 	UpdateDateColumn,
 } from 'typeorm'
+import { PrimaryKey, Property } from '@mikro-orm/core'
 import { User } from './internal'
 
 export abstract class Model extends AggregateRoot {
@@ -29,9 +30,11 @@ export abstract class Model extends AggregateRoot {
 }
 
 export abstract class BaseEntity extends Model implements IBaseEntityModel {
+	// Primary key of UUID type
 	@ApiPropertyOptional({ type: () => String })
+	@PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' }) // For Mikro-ORM compatibility
 	@PrimaryGeneratedColumn('uuid')
-	id?: ID
+	id?: string;
 
 	@ApiPropertyOptional({ type: () => String })
 	@RelationId((t: BaseEntity) => t.createdBy)
@@ -66,23 +69,53 @@ export abstract class BaseEntity extends Model implements IBaseEntityModel {
 	@IsOptional()
 	updatedBy?: IUser
 
-	@ApiProperty({
+	// Date when the record was created
+	@ApiPropertyOptional({
 		type: 'string',
 		format: 'date-time',
-		example: '2018-11-21T06:20:32.232Z',
+		example: '2018-11-21T06:20:32.232Z'
 	})
-	@CreateDateColumn({
-		type: 'timestamptz'
+	@CreateDateColumn() // TypeORM decorator for creation date
+	@Property({
+		// Automatically set the property value when entity gets created, executed during flush operation.
+		onCreate: () => new Date(), // Set creation date on record creation
 	})
-	createdAt?: Date
+	createdAt?: Date;
 
-	@ApiProperty({
+	// Date when the record was last updated
+	@ApiPropertyOptional({
 		type: 'string',
 		format: 'date-time',
-		example: '2018-11-21T06:20:32.232Z',
+		example: '2018-11-21T06:20:32.232Z'
 	})
-	@UpdateDateColumn({
-		type: 'timestamptz'
+	@UpdateDateColumn() // TypeORM decorator for update date
+	@Property({
+		// Automatically set the property value when entity gets created, executed during flush operation.
+		onCreate: () => new Date(), // Set at record creation
+		// Automatically update the property value every time entity gets updated, executed during flush operation.
+		onUpdate: () => new Date(), // Update every time the entity is changed
 	})
-	updatedAt?: Date
+	updatedAt?: Date;
+
+	// Indicates if record is active now
+	@ApiPropertyOptional({
+		type: Boolean,
+		default: true
+	})
+	@IsOptional() // Field can be optional
+	@IsBoolean() // Should be a boolean type
+	// @ColumnIndex()
+	// @MultiORMColumn({ nullable: true, default: true }) // TypeORM and Mikro-ORM compatibility
+	isActive?: boolean;
+
+	// Indicate if record is archived
+	@ApiPropertyOptional({
+		type: Boolean,
+		default: false
+	})
+	@IsOptional() // Field can be optional
+	@IsBoolean() // Should be a boolean type
+	// @ColumnIndex()
+	// @MultiORMColumn({ nullable: true, default: false }) // TypeORM and Mikro-ORM compatibility
+	isArchived?: boolean;
 }

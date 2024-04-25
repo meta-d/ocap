@@ -4,7 +4,7 @@ import { FindEmailTemplateQuery } from '../email-template.find.query';
 import {
 	ICustomizableEmailTemplate,
 	LanguagesEnum,
-	EmailTemplateNameEnum
+	EmailTemplateEnum
 } from '@metad/contracts';
 import { IsNull } from 'typeorm';
 import { RequestContext } from './../../../core/context';
@@ -47,7 +47,7 @@ export class FindEmailTemplateHandler
 
 	private async _fetchTemplate(
 		languageCode: LanguagesEnum,
-		name: EmailTemplateNameEnum,
+		name: EmailTemplateEnum,
 		organizationId: string,
 		tenantId: string,
 		type: 'html' | 'subject'
@@ -67,7 +67,7 @@ export class FindEmailTemplateHandler
 			template = mjml;
 		} catch (error) {
 			// If no email template present for given organization, use default email template
-			const { success, record } = await this.emailTemplateService.findOneOrFail({
+			const { success, record } = await this.emailTemplateService.findOneOrFailByWhereOptions({
 				languageCode,
 				name: `${name}/${type}`,
 				organizationId: IsNull(),

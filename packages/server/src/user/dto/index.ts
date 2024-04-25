@@ -1,3 +1,6 @@
 export * from './user-public.dto'
 export * from './register-user.dto'
 export * from './reset-password.dto'
+export * from './user-code.dto'
+export * from './user-email.dto'
+export * from './user-token.dto'

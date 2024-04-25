@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommandBus } from '@nestjs/cqrs';
-import { getManager, Repository } from 'typeorm';
-import { IRole, ITenant, RolesEnum, IRoleMigrateInput, IImportRecord } from '@metad/contracts';
+import { DeleteResult, getManager, In, Not, Repository } from 'typeorm';
+import { IRole, ITenant, RolesEnum, IRoleMigrateInput, IImportRecord, SYSTEM_DEFAULT_ROLES } from '@metad/contracts';
 import { TenantAwareCrudService } from './../core/crud';
 import { Role } from './role.entity';
 import { RequestContext } from './../core/context';
@@ -19,55 +19,66 @@ export class RoleService extends TenantAwareCrudService<Role> {
 		super(roleRepository);
 	}
 
-	async createBulk(tenants: ITenant[]): Promise<IRole[]> {
+	/**
+	 * Creates multiple roles for each tenant and saves them.
+	 * @param tenants - An array of tenants for which roles will be created.
+	 * @returns A promise that resolves to an array of created roles.
+	 */
+	async createBulk(tenants: ITenant[]): Promise<IRole[] & Role[]> {
 		const roles: IRole[] = [];
 		const rolesNames = Object.values(RolesEnum);
-		
+
 		for await (const tenant of tenants) {
 			for await (const name of rolesNames) {
 				const role = new Role();
 				role.name = name;
 				role.tenant = tenant;
+				role.isSystem = SYSTEM_DEFAULT_ROLES.includes(name);
 				roles.push(role);
 			}
 		}
-		await this.roleRepository.save(roles);
-		return roles;
+		return await this.typeOrmRepository.save(roles);
 	}
 
 	async migrateRoles(): Promise<IRoleMigrateInput[]> {
-		const roles: IRole[] = await this.repository.find({
+		const roles: IRole[] = await this.typeOrmRepository.find({
 			where: {
 				tenantId: RequestContext.currentTenantId()
 			}
 		});
-		const payload: IRoleMigrateInput[] = []; 
+		const payload: IRoleMigrateInput[] = [];
 		for await (const item of roles) {
 			const { id: sourceId, name } = item;
 			payload.push({
 				name,
 				isImporting: true,
-				sourceId 
-			})
+				sourceId
+			});
 		}
 		return payload;
 	}
 
 	async migrateImportRecord(roles: IRoleMigrateInput[]) {
-		const records: IImportRecord[] = [];
+		let records: IImportRecord[] = [];
 		for await (const item of roles) {
 			const { isImporting, sourceId, name } = item;
 			if (isImporting && sourceId) {
-				const destinantion = await this.roleRepository.findOne({ tenantId: RequestContext.currentTenantId(), name }, {
-					order: { createdAt: 'DESC' }
+				const destination = await this.typeOrmRepository.findOne({
+					where: {
+						tenantId: RequestContext.currentTenantId(),
+						name
+					},
+					order: {
+						createdAt: 'DESC'
+					}
 				});
-				if (destinantion) {
+				if (destination) {
 					records.push(
 						await this._commandBus.execute(
 							new ImportRecordUpdateOrCreateCommand({
-								entityType: getManager().getRepository(Role).metadata.tableName,
+								entityType: this.typeOrmRepository.metadata.tableName,
 								sourceId,
-								destinationId: destinantion.id,
+								destinationId: destination.id,
 								tenantId: RequestContext.currentTenantId()
 							})
 						)
@@ -76,5 +87,20 @@ export class RoleService extends TenantAwareCrudService<Role> {
 			}
 		}
 		return records;
+	}
+
+	/**
+	 * Few Roles can't be removed/delete for tenant
+	 * RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN, RolesEnum.EMPLOYEE, RolesEnum.VIEWER, RolesEnum.CANDIDATE
+	 *
+	 * @param id
+	 * @returns
+	 */
+	async delete(id: IRole['id']): Promise<DeleteResult> {
+		return await super.delete({
+			id,
+			isSystem: false,
+			name: Not(In(SYSTEM_DEFAULT_ROLES))
+		});
 	}
 }

@@ -27,6 +27,8 @@ import {
 	TenantOrganizationBaseEntity,
 	User
 } from '../core/entities/internal';
+import { Exclude } from 'class-transformer';
+import { MultiORMColumn } from '../core/decorators';
 
 @Entity('invite')
 export class Invite extends TenantOrganizationBaseEntity implements IInvite {
@@ -59,6 +61,17 @@ export class Invite extends TenantOrganizationBaseEntity implements IInvite {
 	@IsDate()
 	@Column({ nullable: true })
 	actionDate?: Date;
+
+	@ApiPropertyOptional({ type: () => String })
+	@Exclude({ toPlainOnly: true })
+	@MultiORMColumn({ nullable: true })
+	public code?: string;
+
+	@ApiPropertyOptional({ type: () => String })
+	@MultiORMColumn({ nullable: true })
+	public fullName?: string;
+
+	public isExpired?: boolean;
 
 	/*
     |--------------------------------------------------------------------------

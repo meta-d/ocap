@@ -2,7 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeeModule, SharedModule, TagModule, TenantModule } from '@metad/server-core';
-import { RouterModule } from 'nest-router';
+import { RouterModule } from '@nestjs/core';
 import { IndicatorController } from './indicator.controller';
 import { Indicator } from './indicator.entity';
 import { IndicatorService } from './indicator.service';
@@ -12,7 +12,7 @@ import { CommandHandlers } from './commands/handlers';
 
 @Module({
   imports: [
-    RouterModule.forRoutes([
+    RouterModule.register([
       { path: '/indicator', module: IndicatorModule }
     ]),
     forwardRef(() => TypeOrmModule.forFeature([ Indicator ])),

@@ -27,11 +27,11 @@ import {
 	ApiResponse,
 	ApiTags
 } from '@nestjs/swagger';
-import { UpdateResult } from 'typeorm';
+import { FindOptionsWhere, UpdateResult } from 'typeorm';
 import { CrudController, PaginationParams } from './../core/crud';
 import { RequestContext } from './../core/context';
 import { TenantPermissionGuard } from './../shared/guards';
-import { ParseJsonPipe, UUIDValidationPipe } from './../shared/pipes';
+import { ParseJsonPipe, UUIDValidationPipe, UseValidationPipe } from './../shared/pipes';
 import { LanguageDecorator } from './../shared/decorators';
 import { EmailTemplate } from './email-template.entity';
 import { EmailTemplateService } from './email-template.service';
@@ -54,17 +54,19 @@ export class EmailTemplateController extends CrudController<EmailTemplate> {
 	) {
 		super(emailTemplateService);
 	}
-
+	
+	/**
+	 * GET count for email templates in the same tenant
+	 *
+	 * @param options
+	 * @returns
+	 */
 	@Get('count')
-	@UsePipes(new ValidationPipe({ transform: true }))
-	async getCount(
-		@Query() filter: PaginationParams<IEmailTemplate>
-	): Promise<number> {
-		return this.emailTemplateService.count({
-			where: {
-				tenantId: RequestContext.currentTenantId()
-			},
-			...filter
+	@UseValidationPipe()
+	async getCount(@Query() options: FindOptionsWhere<EmailTemplate>): Promise<number> {
+		return await this.emailTemplateService.countBy({
+			...options,
+			tenantId: RequestContext.currentTenantId()
 		});
 	}
 
@@ -155,7 +157,7 @@ export class EmailTemplateController extends CrudController<EmailTemplate> {
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string
 	): Promise<EmailTemplate> {
-		return this.emailTemplateService.findOne(id, {
+		return this.emailTemplateService.findOneByIdString(id, {
 			where: {
 				tenantId: RequestContext.currentTenantId(),
 			}

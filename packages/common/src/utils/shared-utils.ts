@@ -103,3 +103,11 @@ export function average(items: any, column: string) {
 export const ArraySum = function (t, n) {
 	return parseFloat(t) + parseFloat(n);
 };
+
+/**
+ * Parses the given value and converts it to a boolean using JSON.parse.
+ *
+ * @param value - The value to be parsed.
+ * @returns {boolean} - The boolean representation of the parsed value.
+ */
+export const parseToBoolean = (value: any): boolean => Boolean(JSON.parse(value));

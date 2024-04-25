@@ -5,10 +5,8 @@ import {
   ServeStaticModuleOptions,
 } from '@nestjs/serve-static'
 import { LanguagesEnum } from '@metad/contracts'
-import { ConfigService, environment } from '@metad/server-config'
+import { ConfigModule, ConfigService, environment } from '@metad/server-config'
 import { EmployeeModule } from './employee/employee.module'
-import { RouterModule } from 'nest-router'
-import { HeaderResolver, I18nJsonParser, I18nModule } from 'nestjs-i18n'
 import * as path from 'path'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -43,30 +41,18 @@ import { AIModule } from './ai/ai.module'
 @Module({
   imports: [
     ServeStaticModule.forRootAsync({
-      useFactory: async (
-        configService: ConfigService
-      ): Promise<ServeStaticModuleOptions[]> => {
-        return await resolveServeStaticPath(configService)
-      },
-      inject: [ConfigService],
-      imports: [],
-    }),
+			useFactory: async (): Promise<ServeStaticModuleOptions[]> => {
+				console.log('Serve Static Module Creating');
+				return [
+          {
+            rootPath: 
+                path.resolve(process.cwd(), 'public'),
+            serveRoot: '/public/'
+          }
+        ]
+			},
+		}),
     MulterModule.register(),
-    RouterModule.forRoutes([
-      {
-        path: '',
-        children: [{ path: '/', module: HomeModule }],
-      },
-    ]),
-    I18nModule.forRoot({
-      fallbackLanguage: LanguagesEnum.English,
-      parser: I18nJsonParser,
-      parserOptions: {
-        path: path.resolve(__dirname, 'i18n/'),
-        watch: !environment.production,
-      },
-      resolvers: [new HeaderResolver(['language'])],
-    }),
     CoreModule,
     AuthModule,
     UserModule,
@@ -94,8 +80,8 @@ import { AIModule } from './ai/ai.module'
     StorageFileModule,
     AIModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
   exports: [],
 })
 export class ServerAppModule {}

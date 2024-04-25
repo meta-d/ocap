@@ -7,7 +7,6 @@ import {
 	IGithubConfig,
 	IGoogleConfig,
 	IKeycloakConfig,
-	ILinkedinConfig,
 	IMicrosoftConfig,
 	ISMTPConfig,
 	ITwitterConfig,
@@ -62,15 +61,10 @@ export interface IEnvironment {
 	awsConfig?: IAWSConfig;
 	aliyunConfig?: IAliyunConfig;
 
-	facebookConfig: IFacebookConfig;
+	facebookConfig?: IFacebookConfig;
 	googleConfig: IGoogleConfig;
 	githubConfig: IGithubConfig;
-	microsoftConfig: IMicrosoftConfig;
-	linkedinConfig: ILinkedinConfig;
-	twitterConfig: ITwitterConfig;
-	fiverrConfig: IFiverrConfig;
-	keycloakConfig: IKeycloakConfig;
-	auth0Config: IAuth0Config;
+	auth0Config?: IAuth0Config;
 	feishuConfig: IFeishuConfig;
 	dingtalkConfig: IDingtalkConfig;
 

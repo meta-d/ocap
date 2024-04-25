@@ -1,4 +1,4 @@
-import { ITryRequest, RequestContext } from '@metad/server-core'
+import { ITryRequest } from '@metad/server-core'
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs'
@@ -8,6 +8,7 @@ import { Md5 } from '../../../core/helper'
 import { SemanticModelCacheService } from '../../cache/cache.service'
 import { SemanticModelService } from '../../model.service'
 import { ModelOlapQuery } from '../olap.query'
+import { SemanticModelCache } from '../../cache/cache.entity'
 
 const axios = _axios.default
 
@@ -44,7 +45,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 		// Query
 		//   Cache
 		const language = model.preferences?.language || acceptLanguage
-		let cache: ITryRequest
+		let cache: ITryRequest<SemanticModelCache>
 		if (model.preferences?.enableCache) {
 			const md5 = new Md5()
 			md5.appendStr(body)

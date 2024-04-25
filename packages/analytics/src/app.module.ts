@@ -1,6 +1,5 @@
 import { EmployeeModule, OrganizationModule, TenantModule } from '@metad/server-core'
 import { forwardRef, Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ScheduleModule } from '@nestjs/schedule'
 import { AgentModule } from './agent/index'
@@ -38,9 +37,6 @@ import { IndicatorAppModule } from './indicator-app/'
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true
-		}),
 		ScheduleModule.forRoot(),
 		CqrsModule,
 		RedisModule,

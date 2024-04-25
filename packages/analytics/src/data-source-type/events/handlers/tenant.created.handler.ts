@@ -18,7 +18,7 @@ export class TenantCreatedHandler implements IEventHandler<TenantCreatedEvent> {
 	async handle(event: TenantCreatedEvent) {
 		this.logger.debug('Tenant Created Event: seed dataSource types')
 		const { tenantId } = event
-		const tenant = await this.entityManager.findOne(Tenant, tenantId)
+		const tenant = await this.entityManager.findOneBy(Tenant, {id: tenantId})
 		await seedDefaultDataSourceTypes(this.entityManager.connection, tenant)
 	}
 }

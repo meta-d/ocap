@@ -1,7 +1,7 @@
 // import { Module } from '@nestjs/common';
 // import { CqrsModule } from '@nestjs/cqrs';
 // import { TypeOrmModule } from '@nestjs/typeorm';
-// import { RouterModule } from 'nest-router';
+// import { RouterModule } from '@nestjs/core';
 // import { getConfig } from '@metad/server-config';
 
 // import { coreEntities } from './../../core/entities';
@@ -116,7 +116,7 @@
 
 // @Module({
 // 	imports: [
-// 		RouterModule.forRoutes([
+// 		RouterModule.register([
 // 			{ path: '/download', module: ExportAllModule }
 // 		]),
 // 		CqrsModule,
