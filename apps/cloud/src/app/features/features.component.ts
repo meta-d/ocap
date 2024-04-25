@@ -78,27 +78,27 @@ export class FeaturesComponent implements OnInit {
   readonly sidenav = viewChild('sidenav', { read: MatSidenav })
 
   copilotEngine: CopilotEngine | null = null
-  sidenavMode = 'over' as MatDrawerMode
-  sidenavOpened = false
+  readonly sidenavMode = signal<MatDrawerMode>('over')
+  readonly sidenavOpened = model(false)
   isEmployee: boolean
   organization: IOrganization
   user: IUser
 
-  links = [
-    {
-      link: 'home',
-      icon: 'home'
-    },
-    {
-      link: 'story',
-      icon: 'auto_stories'
-    },
-    {
-      link: 'models',
-      icon: 'apartment'
-    }
-  ]
-  activeLink = 'home'
+  // links = [
+  //   {
+  //     link: 'home',
+  //     icon: 'home'
+  //   },
+  //   {
+  //     link: 'story',
+  //     icon: 'auto_stories'
+  //   },
+  //   {
+  //     link: 'models',
+  //     icon: 'apartment'
+  //   }
+  // ]
+  // activeLink = 'home'
   readonly isMobile = this.appService.isMobile
   get isAuthenticated() {
     return !!this.store.user
@@ -145,7 +145,7 @@ export class FeaturesComponent implements OnInit {
   )
 
   get isCollapsed() {
-    return this.sidenavOpened && this.sidenavMode === 'side'
+    return this.sidenavOpened() && this.sidenavMode() === 'side'
   }
 
   assetsInit = false
@@ -192,25 +192,25 @@ export class FeaturesComponent implements OnInit {
     public dialog: MatDialog,
     private location: Location,
     private logger: NGXLogger
-  ) // private _cdr: ChangeDetectorRef
-  {
+  ) {
     this.router.events
       .pipe(filter((e: Event | RouterEvent): e is RouterEvent => e instanceof RouterEvent))
       .subscribe((e: RouterEvent) => {
         this.navigationInterceptor(e)
-        if (e instanceof NavigationEnd && this.sidenavMode === 'over') {
+        if (e instanceof NavigationEnd && this.sidenavMode() === 'over') {
           this.sidenav().close()
         }
       })
+
     effect(() => {
       if (this.store.fixedLayoutSider()) {
-        this.sidenavMode = 'side'
-        this.sidenavOpened = true
+        this.sidenavMode.set('side')
+        this.sidenavOpened.set(true)
       } else {
-        this.sidenavMode = 'over'
-        this.sidenavOpened = false
+        this.sidenavMode.set('over')
+        this.sidenavOpened.set(false)
       }
-    })
+    }, { allowSignalWrites: true })
   }
 
   async ngOnInit() {
@@ -317,8 +317,8 @@ export class FeaturesComponent implements OnInit {
   }
 
   toggleSidenav(sidenav: MatSidenavContainer) {
-    if (this.sidenavMode === 'over') {
-      this.sidenavMode = 'side'
+    if (this.sidenavMode() === 'over') {
+      this.sidenavMode.set('side')
       setTimeout(() => {
         sidenav.ngDoCheck()
       }, 200)
@@ -331,10 +331,10 @@ export class FeaturesComponent implements OnInit {
     }
   }
 
-  onLink(item) {
-    this.activeLink = item.link
-    this.router.navigate([item.link])
-  }
+  // onLink(item) {
+  //   this.activeLink = item.link
+  //   this.router.navigate([item.link])
+  // }
 
   navigate(link: MenuCatalog) {
     switch (link) {

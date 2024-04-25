@@ -179,7 +179,9 @@
       "Request": "请求",
       "Length": "长度",
       "PrimaryKey": "主键",
-      "TableName": "表名"
+      "TableName": "表名",
+      "DataAgent": "数据代理",
+      "ServerAgent": "服务器代理"
     },
     "MENU": {
       "Certification": "认证",
