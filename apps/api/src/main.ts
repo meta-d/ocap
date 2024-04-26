@@ -28,12 +28,14 @@ async function bootstrap() {
   }))
   app.use(json({ limit: '50mb' }))
   app.use(urlencoded({ extended: true, limit: '50mb' }))
+
+  const headersForOpenAI = 'x-stainless-os, x-stainless-lang, x-stainless-package-version, x-stainless-runtime, x-stainless-arch, x-stainless-runtime-version'
 	app.enableCors({
 		origin: '*',
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
 		credentials: true,
 		allowedHeaders:
-			'Authorization, Language, Tenant-Id, Organization-Id, X-Requested-With, X-Auth-Token, X-HTTP-Method-Override, Content-Type, Content-Language, Accept, Accept-Language, Observe'
+			'Authorization, Language, Tenant-Id, Organization-Id, X-Requested-With, X-Auth-Token, X-HTTP-Method-Override, Content-Type, Content-Language, Accept, Accept-Language, Observe, ' + headersForOpenAI
 	})
 
   const globalPrefix = 'api'
