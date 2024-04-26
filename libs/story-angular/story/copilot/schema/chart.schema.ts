@@ -1,8 +1,8 @@
-import { DimensionSchema, MeasureSchema, getChartType, makeChartEnum } from '@metad/core'
+import { DeepPartial, DimensionSchema, MeasureSchema, getChartType, makeChartEnum } from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
-import { fixDimension } from '../types'
+import { tryFixDimension } from '../types'
 
 const ChartTypes = makeChartEnum()
 
@@ -85,7 +85,11 @@ export const ChartWidgetSchema = z.object({
  * @param entityType
  * @returns
  */
-export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityType: EntityType, schema?: any): ChartAnnotation {
+export function chartAnnotationCheck(
+  chartAnnotation: DeepPartial<ChartAnnotation>,
+  entityType: EntityType,
+  schema?: any
+): DeepPartial<ChartAnnotation> {
   if (!chartAnnotation) {
     return chartAnnotation
   }
@@ -110,19 +114,21 @@ export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityTyp
   return {
     ...chartAnnotation,
     chartType,
-    dimensions: (chartAnnotation.dimensions ?? schema.dimensions)?.map((item) => fixDimension(item, entityType)),
-    measures: chartAnnotation.measures ?? schema.measures
+    dimensions: (chartAnnotation.dimensions ?? schema?.dimensions)?.map((item) => tryFixDimension(entityType, item)),
+    measures: chartAnnotation.measures ?? schema?.measures
   }
 }
 
-export function completeChartAnnotation(chart: ChartAnnotation) {
-  return chart && {
-    ...chart,
-    measures: chart.measures?.map((item) => ({
-      ...item,
-      formatting: {
-        shortNumber: true
-      }
-    }))
-  }
+export function completeChartAnnotation(chart: DeepPartial<ChartAnnotation>): DeepPartial<ChartAnnotation> {
+  return (
+    chart && {
+      ...chart,
+      measures: chart.measures?.map((item) => ({
+        ...item,
+        formatting: {
+          shortNumber: true
+        }
+      }))
+    }
+  )
 }

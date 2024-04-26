@@ -1,14 +1,14 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 import { AI_PROVIDERS } from './providers'
 
-function chatCompletionsUrl(copilot: ICopilot) {
+function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
 	const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
-	return (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) : apiHost) + chatCompletionsUrl
+	return (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) : apiHost) + (path ?? chatCompletionsUrl)
 }
 
 @ApiTags('AI/Chat')
@@ -39,6 +39,40 @@ export class AIController {
 
 		const copilot = result.items[0]
 		const copilotUrl = chatCompletionsUrl(copilot)
+		try {
+			const response = await fetch(copilotUrl, {
+				method: 'POST',
+				body: JSON.stringify(body),
+				headers: {
+					'content-type': 'application/json',
+					authorization: `Bearer ${copilot.apiKey}`,
+					accept: headers.accept
+				},
+			})
+			
+			if (!resp.headersSent) {
+				await streamToResponse(response, resp, { status: response.status })
+			}
+		} catch (error) {
+			this.#logger.error(`Try to call ai api '${copilotUrl}' with body:
+\`\`\`
+${JSON.stringify(body)}
+\`\`\`
+failed: ${error.message}`)
+			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+		}
+	}
+
+	@Post('proxy/:m/:f')
+	async proxy(@Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+		console.log('path:', m +'/'+ f)
+
+		const result = await this.copilotService.findAll()
+		if (result.total === 0) {
+			throw new Error('No copilot found')
+		}
+		const copilot = result.items[0]
+		const copilotUrl = chatCompletionsUrl(copilot, '/' + m +'/'+ f)
 		try {
 			const response = await fetch(copilotUrl, {
 				method: 'POST',

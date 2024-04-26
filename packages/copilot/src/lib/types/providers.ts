@@ -22,9 +22,9 @@ export type AiProviderType = {
 
 export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
   [AiProvider.OpenAI]: {
-    apiHost: 'https://api.openai.com',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models',
+    apiHost: 'https://api.openai.com/v1',
+    chatCompletionsUrl: '/chat/completions',
+    modelsUrl: '/models',
     isTools: true,
     models: [
       {
@@ -51,8 +51,8 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
   },
   [AiProvider.Azure]: {
     apiHost: '',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models',
+    chatCompletionsUrl: '/chat/completions',
+    modelsUrl: '/models',
     isTools: true,
     models: [
       {
@@ -78,8 +78,8 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
     ]
   },
   [AiProvider.DashScope]: {
-    apiHost: 'https://dashscope.aliyuncs.com',
-    chatCompletionsUrl: '/api/v1/services/aigc/text-generation/generation',
+    apiHost: 'https://dashscope.aliyuncs.com/api/v1',
+    chatCompletionsUrl: '/services/aigc/text-generation/generation',
     modelsUrl: null,
     isTools: false,
     models: [

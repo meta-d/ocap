@@ -33,7 +33,14 @@ import {
   WidgetComponentType
 } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
-import { injectStoryPageCommand, injectStoryStyleCommand, injectStoryWidgetCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import {
+  injectMathCommand,
+  injectStoryPageCommand,
+  injectStoryStyleCommand,
+  injectStoryWidgetCommand,
+  NxStoryComponent,
+  NxStoryModule
+} from '@metad/story/story'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
@@ -46,7 +53,6 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
-
 
 @Component({
   standalone: true,
@@ -149,6 +155,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #styleCommand = injectStoryStyleCommand(this.storyService)
   #pageCommand = injectStoryPageCommand(this.storyService)
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
+  #mathCommand = injectMathCommand(this.storyService)
 
   /**
   |--------------------------------------------------------------------------

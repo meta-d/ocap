@@ -1,3 +1,5 @@
+import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
+import { AgentExecutor } from 'langchain/agents'
 import { BehaviorSubject, filter, map } from 'rxjs'
 import { CopilotChatMessage, nonNullable } from './types/types'
 
@@ -16,6 +18,14 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * Action ids to execute.
    */
   actions?: string[]
+  /**
+   * Tools for agent (langchain)
+   */
+  tools?: Array<DynamicStructuredTool | DynamicTool>
+
+  prompt?: any
+
+  agentExecutor?: AgentExecutor
 }
 
 export const CopilotCommands$ = new BehaviorSubject<Record<string, Record<string, CopilotCommand>>>({})
@@ -58,77 +68,3 @@ export function getCommand(area: string, name: string) {
 export const SystemCommandClear = 'clear'
 export const SystemCommandFree = 'free'
 export const SystemCommands = [`/${SystemCommandClear}`]
-
-// export function logResult<T extends CopilotChatConversation = CopilotChatConversation>(copilot: T): void {
-//   const { logger, prompt } = copilot
-//   logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
-// }
-
-// export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCommand[]) {
-//   const { copilotService, prompt } = copilot
-//   const systemPrompt = `请将提示语分配相应的 command。Commands are ${JSON.stringify([
-//     ...commands.map((item) => ({
-//       name: item.name,
-//       description: item.description
-//     })),
-//     {
-//       name: SystemCommandFree,
-//       description: 'Free prompt'
-//     }
-//   ])}`
-//   return copilotService
-//     .chatCompletions(
-//       [
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.System,
-//           content: systemPrompt
-//         },
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: prompt
-//         }
-//       ],
-//       {
-//         ...CopilotDefaultOptions,
-//         ...copilot.options,
-//         functions: [],
-//         function_call: { name: 'assign-command' }
-//       }
-//     )
-//     .pipe(
-//       map(({ choices }) => {
-//         try {
-//           copilot.response = getFunctionCall(choices[0].message)
-//         } catch (err) {
-//           copilot.error = err as Error
-//         }
-//         return copilot
-//       })
-//     )
-// }
-
-// export function freeChat(copilot: CopilotChatConversation) {
-//   const { copilotService, prompt } = copilot
-
-//   return copilotService
-//     .chatCompletions(
-//       [
-//         {
-//           id: nanoid(),
-//           role: CopilotChatMessageRoleEnum.User,
-//           content: prompt
-//         }
-//       ],
-//       {
-//         ...CopilotDefaultOptions,
-//         ...copilot.options
-//       }
-//     )
-//     .pipe(
-//       map(({ choices }) => {
-//         return choices[0].message.content
-//       })
-//     )
-// }

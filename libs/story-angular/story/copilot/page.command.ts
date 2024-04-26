@@ -6,7 +6,7 @@ import { NxStoryService, StoryPointType } from '@metad/story/core'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import { StoryWidgetSchema, schemaToWidget } from './schema'
+import { StoryWidgetSchema } from './schema'
 import { StoryPageSchema } from './schema/page.schema'
 
 export function injectStoryPageCommand(storyService: NxStoryService) {
@@ -87,7 +87,7 @@ ${calcEntityTypePrompt(defaultCube)}
           storyService.newStoryPage({
             ...page,
             type: StoryPointType.Canvas,
-            widgets: widgets.map((item) => schemaToWidget(item, dataSourceName, defaultCube))
+            // widgets: widgets.map((item) => schemaToWidget(item, dataSourceName, defaultCube))
           })
           return `✅ ${storyService.translate('Story.Copilot.InstructionExecutionComplete', {
             Default: 'Instruction Execution Complete'

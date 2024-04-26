@@ -61,7 +61,9 @@ export function tryFixAnalyticsAnnotation(entityType: EntityType, analytics: Ana
   )
 }
 
-
+/**
+ * @deprecated use tryFixDimension
+ */
 export function fixDimension(item: Dimension, entityType: EntityType) {
   if ((<Measure>item).measure) {
     return fixMeasure(item, entityType)

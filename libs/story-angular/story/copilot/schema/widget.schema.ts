@@ -27,19 +27,19 @@ export const StoryWidgetSchema = z.object({
   })
 })
 
-export function schemaToWidget(schema: any, dataSource: string, entityType: EntityType): StoryPoint {
-  return {
-    name: schema.title,
-    ...schema,
-    position: schema.position,
-    dataSettings: {
-      dataSource,
-      entitySet: entityType.name,
-      chartAnnotation: completeChartAnnotation(chartAnnotationCheck(schema.chartAnnotation, entityType, schema)),
-      analytics: tryFixAnalyticsAnnotation(entityType, schema.analytics)
-    },
-    options: {
-      gridSettings: schema.gridSettings
-    }
-  }
-}
+// export function schemaToWidget(schema: any, dataSource: string, entityType: EntityType): StoryPoint {
+//   return {
+//     name: schema.title,
+//     ...schema,
+//     position: schema.position,
+//     dataSettings: {
+//       dataSource,
+//       entitySet: entityType.name,
+//       chartAnnotation: completeChartAnnotation(chartAnnotationCheck(schema.chartAnnotation, entityType, schema)),
+//       analytics: tryFixAnalyticsAnnotation(entityType, schema.analytics)
+//     },
+//     options: {
+//       gridSettings: schema.gridSettings
+//     }
+//   }
+// }

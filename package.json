@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "start": "concurrently \"yarn start:api\" \"yarn start:olap\" \"yarn start:cloud\"",
-    "start:cloud": "nx serve cloud --disableHostCheck --host 0.0.0.0",
+    "start:cloud": "cross-env NODE_ENV=development NODE_OPTIONS=--max-old-space-size=12288 yarn nx serve cloud --disableHostCheck --host 0.0.0.0",
     "start:analytics": "yarn --cwd ./packages/analytics start",
     "start:angular": "nx serve --project ng --port 4400 --disableHostCheck --host 0.0.0.0",
     "start:react": "nx serve --project rc --port 4300",
@@ -80,6 +80,8 @@
     "@casl/angular": "^6.0.0",
     "@datorama/akita": "^6.2.3",
     "@duckdb/duckdb-wasm": "1.25.0",
+    "@langchain/community": "^0.0.51",
+    "@langchain/openai": "^0.0.28",
     "@metad/formly-mat": "0.2.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@ng-matero/extensions": "^13.1.0",
@@ -125,7 +127,7 @@
     "immer": "^10.0.1",
     "js-yaml": "^4.1.0",
     "json5": "^2.2.3",
-    "langchain": "^0.0.152",
+    "langchain": "^0.1.35",
     "lato-font": "^3.0.0",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
@@ -164,8 +166,6 @@
     "tslib": "^2.3.0",
     "typeorm": "^0.2.37",
     "xlsx": "^0.18.5",
-    "zod": "^3.22.2",
-    "zod-to-json-schema": "^3.21.4",
     "zone.js": "~0.14.0"
   },
   "devDependencies": {

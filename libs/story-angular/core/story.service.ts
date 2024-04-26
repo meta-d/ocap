@@ -719,15 +719,14 @@ export class NxStoryService {
    * Udpate story widget by pageKey and widgetId
    */
   readonly updateWidget = this.updater(
-    (state, { pageKey, widgetKey, widget }: { pageKey: string; widgetKey: string; widget: StoryWidget }) => {
-      const _widget = state.story.points
-        .find((item) => item.key === pageKey)
-        .widgets.find((item) => item.key === widgetKey)
-      if (_widget) {
-        assign(_widget, widget)
-      }
+    (state, { pageKey, widgetKey, widget }: { pageKey?: string; widgetKey: string; widget: DeepPartial<StoryWidget>}) => {
+    const pointKey = pageKey ?? state.currentPageKey
+    const currentPage = state.story.points.find((item) => item.key === pointKey)
+    const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
+    if (index > -1) {
+      currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
     }
-  )
+  })
 
   createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
@@ -736,12 +735,17 @@ export class NxStoryService {
       throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
     }
 
+    const { dataSource, entitySet } = this.getDefaultDataSource()
     this._storyEvent$.next({
       key: currentPageKey,
       type: StoryEventType.CREATE_WIDGET,
       data: {
-        dataSettings: this.getDefaultDataSource(),
-        ...event
+        ...event,
+        dataSettings: {
+          dataSource,
+          entitySet,
+          ...(event.dataSettings ?? {})
+        }
       }
     })
   }

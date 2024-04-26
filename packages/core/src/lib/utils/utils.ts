@@ -17,7 +17,8 @@ export function mergeOptions(obj1: object, ...objs: unknown[]) {
  * * Plain Object
  * * Array
  * * Other
- *
+ * @deprecated 不应该产生新对象结果，应该直接修改 source 对象
+ * 
  * @param source
  * @param target
  * @param dpth The depth of merge

@@ -14,6 +14,7 @@ import {
   entryPointsToChatCompletionFunctions,
   entryPointsToFunctionCallHandler,
   getCommandPrompt,
+  nonNullable,
   processChatStream
 } from '@metad/copilot'
 import { compact } from '@metad/ocap-core'
@@ -21,6 +22,9 @@ import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
+import { filter, firstValueFrom } from 'rxjs'
+import { AgentExecutor, createOpenAIToolsAgent } from "langchain/agents";
+
 
 let uniqueId = 0
 
@@ -121,7 +125,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   // Commands
-  readonly #commands = signal<Record<string, CopilotCommand>>({})
+  readonly #commands = signal<Record<string, CopilotCommand & {
+    agentExecutor?: AgentExecutor
+  }>>({})
   readonly commands = computed(() => Object.values(this.#commands()))
 
   readonly #dropActions = signal<Record<string, DropAction>>({})
@@ -154,11 +160,33 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
-  registerCommand(name: string, command: CopilotCommand) {
-    this.#commands.update((state) => ({
-      ...state,
-      [name]: command
-    }))
+  async registerCommand(name: string, command: CopilotCommand) {
+    if (command.tools) {
+      const llm = await firstValueFrom(this.copilot.llm$.pipe(filter(nonNullable)))
+      const agent = await createOpenAIToolsAgent({
+        llm,
+        tools: command.tools,
+        prompt: command.prompt,
+      })
+      this.#commands.update((state) => ({
+        ...state,
+        [name]: {
+          ...command,
+          agentExecutor: new AgentExecutor({
+            agent,
+            tools: command.tools as any[],
+            verbose: true,
+          })
+        }
+      }))
+    } else {
+      this.#commands.update((state) => ({
+        ...state,
+        [name]: {
+          ...command,
+        }
+      }))
+    }
   }
 
   unregisterCommand(name: string) {
@@ -214,6 +242,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
       // Last user messages before add new messages
       const lastUserMessages = this.lastUserMessages()
 
+      // Exec command implementation
+      if (_command.implementation) {
+        return await _command.implementation()
+      }
+
+      // For agent command
+      if (_command.agentExecutor) {
+        return await this.triggerCommandAgent(prompt, _command, { conversationId: assistantMessageId })
+      }
+
       try {
         if (_command.systemPrompt) {
           newMessages.push({
@@ -240,11 +278,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       } finally {
         // Append new messages to conversation
         this.upsertMessage(...newMessages)
-      }
-      
-      // Exec command implementation
-      if (_command.implementation) {
-        return await _command.implementation()
       }
 
       const functions = _command.actions
@@ -313,6 +346,77 @@ export class NgmCopilotEngineService implements CopilotEngine {
           conversationId
         }
       )
+    }
+  }
+
+  async triggerCommandAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
+    let { conversationId, abortController } = options ?? {}
+    conversationId ??= nanoid()
+    abortController ??= new AbortController()
+
+    const messages = []
+    let systemPrompt = ''
+    try {
+      if (command.systemPrompt) {
+        systemPrompt = command.systemPrompt()
+      }
+
+      messages.push({
+        id: nanoid(),
+      role: CopilotChatMessageRoleEnum.User,
+      content: content,
+      command: command.name
+      })
+    } catch (err: any) {
+      messages.push({
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        content: content,
+        command: command.name,
+        error: err.message
+      })
+      return
+    } finally {
+      this.upsertMessage(...messages)
+    }
+
+    const assistantId = conversationId ?? nanoid()
+    this.upsertMessage({
+      id: assistantId,
+      role: CopilotChatMessageRoleEnum.Assistant,
+      content: '',
+      status: 'thinking'
+    })
+    // Remove thinking message when abort
+    const removeMessageWhenAbort = () => {
+      this.stopMessage(assistantId)
+    }
+    abortController.signal.addEventListener('abort', removeMessageWhenAbort)
+
+    try {
+      const agentExecutor = command.agentExecutor
+      const result = await agentExecutor.invoke({input: content, system_prompt: systemPrompt})
+      
+      this.#logger?.debug(`Agent command '${command.name}' result:`, result)
+
+      this.upsertMessage({
+        id: assistantId,
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: result['output'],
+        status: 'done'
+      })
+      return null
+    } catch (err: any) {
+      this.upsertMessage({
+        id: assistantId,
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: '',
+        status: 'error',
+        error: err.message
+      })
+      return
+    } finally {
+      abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
     }
   }
 

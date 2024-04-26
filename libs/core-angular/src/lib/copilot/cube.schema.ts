@@ -1,4 +1,4 @@
-import { C_MEASURES } from '@metad/ocap-core'
+import { C_MEASURES, OrderDirection } from '@metad/ocap-core'
 import { z } from 'zod'
 
 export function makeCubeRulesPrompt() {
@@ -23,6 +23,6 @@ export const DimensionSchema = z.object({
 export const MeasureSchema = z.object({
   dimension: z.enum([C_MEASURES]),
   measure: z.string().describe('The name of the measure'),
-  order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
+  order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).optional().describe('The order of the measure'),
   chartOptions: z.any().optional().describe('The chart options of ECharts library')
 })
