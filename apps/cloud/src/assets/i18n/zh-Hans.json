@@ -2652,7 +2652,8 @@
       "Order_ASC": "正序",
       "Order_DESC": "倒序",
       "Dimension": "维度",
-      "AvailableMembers": "可用成员"
+      "AvailableMembers": "可用成员",
+      "DimensionNotFound": "在数据集‘{{cube}}’中未找到维度‘{{dimension}}’"
     },
     "CALCULATION": {
       "TITLE": "计算编辑器",

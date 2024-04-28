@@ -120,8 +120,8 @@
         />
       }
 
-      @if (entityTypeError()) {
-        <div class="mat-error overflow-hidden text-ellipsis whitespace-nowrap">{{entityTypeError()}}</div>
+      @if (error()) {
+        <div class="mat-error overflow-hidden text-ellipsis whitespace-nowrap">{{error()}}</div>
       }
     </div>
 
