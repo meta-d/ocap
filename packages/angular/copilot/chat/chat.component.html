@@ -195,7 +195,7 @@
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
 
-    <div class="flex flex-col p-2" >
+    <div class="relative flex flex-col p-2">
         <textarea #userInput matInput
             id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
             [placeholder]="_placeholder || ('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'})"
@@ -209,6 +209,11 @@
             matAutocompletePosition="above"
             >
         </textarea>
+
+      @if (command()) {
+        <span class="absolute top-2 left-2 bg-neutral-200 rounded-md"
+            [title]="commandTitle()">{{command()}}</span>
+      }
 
         <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__compact"
             autoActiveFirstOption hideSingleSelectionIndicator

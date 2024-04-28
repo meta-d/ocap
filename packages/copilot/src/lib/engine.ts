@@ -98,7 +98,15 @@ export interface CopilotEngine {
    * @param fn
    */
   updateConversations?(fn: (conversations: Array<CopilotChatConversation>) => Array<CopilotChatConversation>): void
+
+  /**
+   * Update conversation by id
+   * 
+   * @param id conversation id
+   * @param fn update function
+   */
   updateConversation?(id: string, fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
+  
   /**
    * Update the last conversation messages
    * @param fn
