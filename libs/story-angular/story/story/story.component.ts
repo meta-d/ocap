@@ -22,6 +22,7 @@ import {
   effect,
   inject,
   input,
+  signal,
   viewChildren
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
@@ -166,6 +167,8 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   private style: any
   private _nghost: string
+
+  readonly isFocused = signal(false)
 
   readonly preferences = toSignal(this.storyService.preferences$)
 
@@ -623,5 +626,52 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
         this.slideNext()
       }
     }
+
+    if (this.editable() && this.isFocused()) {
+      if (event.metaKey || event.ctrlKey) {
+        if (event.shiftKey) {
+          if (event.key === 'z' || event.key === 'Z') {
+            this.storyService.redo()
+            event.preventDefault()
+          }
+        } else {
+          if (event.key === 's' || event.key === 'S') {
+            this.storyService.saveStory()
+            event.preventDefault()
+          } else if (event.key === 'z' || event.key === 'Z') {
+            this.storyService.undo()
+            event.preventDefault()
+          }
+        }
+      } else if (event.altKey) {
+        switch (event.code) {
+          case 'Minus':
+          case 'NumpadSubtract':
+            this.storyService.zoomOut()
+            break
+          case 'Equal':
+          case 'NumpadAdd':
+            this.storyService.zoomIn()
+            break
+          case 'Digit0':
+          case 'Numpad0':
+            this.storyService.resetZoom()
+            break
+          case 'Escape':
+            this.resetScalePanState()
+            break
+        }
+      }
+    }
+  }
+
+  @HostListener('focus')
+  onFocus() {
+    this.isFocused.set(true)
+  }
+
+  @HostListener('blur')
+  onBlur() {
+    this.isFocused.set(false)
   }
 }

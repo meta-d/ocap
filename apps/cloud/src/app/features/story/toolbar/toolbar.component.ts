@@ -665,46 +665,46 @@ export class StoryToolbarComponent implements OnInit {
     this.storyService.patchState({ isPanMode: false })
   }
 
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
-    if (event.metaKey || event.ctrlKey) {
-      if (event.shiftKey) {
-        if (event.key === 'z' || event.key === 'Z') {
-          this.storyService.redo()
-          event.preventDefault()
-        }
-      } else {
-        if (event.key === 's' || event.key === 'S') {
-          this.storyService.saveStory()
-          event.preventDefault()
-        } else if (event.key === 'z' || event.key === 'Z') {
-          this.storyService.undo()
-          event.preventDefault()
-        }
-      }
-    } else if (event.altKey) {
-      switch (event.code) {
-        case 'Minus':
-        case 'NumpadSubtract':
-          this.zoomOut()
-          break
-        case 'Equal':
-        case 'NumpadAdd':
-          this.zoomIn()
-          break
-        case 'Digit0':
-        case 'Numpad0':
-          this.resetZoom()
-          break
-        case 'Escape':
-          this.resetScalePan.emit()
-          break
-      }
-    }
+  // @HostListener('document:keydown', ['$event'])
+  // onKeyDown(event: KeyboardEvent) {
+  //   if (event.metaKey || event.ctrlKey) {
+  //     if (event.shiftKey) {
+  //       if (event.key === 'z' || event.key === 'Z') {
+  //         this.storyService.redo()
+  //         event.preventDefault()
+  //       }
+  //     } else {
+  //       if (event.key === 's' || event.key === 'S') {
+  //         this.storyService.saveStory()
+  //         event.preventDefault()
+  //       } else if (event.key === 'z' || event.key === 'Z') {
+  //         this.storyService.undo()
+  //         event.preventDefault()
+  //       }
+  //     }
+  //   } else if (event.altKey) {
+  //     switch (event.code) {
+  //       case 'Minus':
+  //       case 'NumpadSubtract':
+  //         this.zoomOut()
+  //         break
+  //       case 'Equal':
+  //       case 'NumpadAdd':
+  //         this.zoomIn()
+  //         break
+  //       case 'Digit0':
+  //       case 'Numpad0':
+  //         this.resetZoom()
+  //         break
+  //       case 'Escape':
+  //         this.resetScalePan.emit()
+  //         break
+  //     }
+  //   }
 
-    // 在其他地方点 Delete 也会删除 Widget, 除非给 Widget 加上 Focus
-    // if (event.key === 'Delete') {
-    //   this.storyService.removeCurrentWidget()
-    // }
-  }
+  //   // 在其他地方点 Delete 也会删除 Widget, 除非给 Widget 加上 Focus
+  //   // if (event.key === 'Delete') {
+  //   //   this.storyService.removeCurrentWidget()
+  //   // }
+  // }
 }
