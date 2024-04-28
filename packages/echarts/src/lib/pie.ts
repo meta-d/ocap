@@ -9,7 +9,8 @@ import {
   QueryReturn,
   isNil,
   assignDeepOmitBlank,
-  getDimensionMemberCaption
+  getDimensionMemberCaption,
+  PieVariant
 } from '@metad/ocap-core'
 import { trellisCoordinates, gatherCoordinates } from './coordinates'
 import { getEChartsTooltip } from './components/tooltip'
@@ -137,13 +138,13 @@ export function pieCoordinate(
           }
         }
 
-        if (chartAnnotation.chartType.variant === 'Doughnut') {
+        if (chartAnnotation.chartType.variant === PieVariant.Doughnut) {
           series.radius = ['40%', '80%']
           series.itemStyle = {
             borderRadius: 5
           }
         }
-        if (chartAnnotation.chartType.variant === 'Nightingale') {
+        if (chartAnnotation.chartType.variant === PieVariant.Nightingale) {
           series.roseType = 'area'
           series.radius = ['20%', '80%']
           series.itemStyle = {

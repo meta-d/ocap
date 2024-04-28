@@ -147,6 +147,39 @@ export interface ChartAnnotation extends Annotation {
   options?: any
 }
 
+export enum BarVariant {
+  None = 'none',
+  Polar = 'polar',
+  Stacked = 'stacked'
+}
+
+export enum WaterfallVariant {
+  None = 'none',
+  Polar = 'polar'
+}
+
+export enum PieVariant {
+  None = 'none',
+  Doughnut = 'doughnut',
+  Nightingale = 'nightingale'
+}
+
+export enum ScatterVariant {
+  None = 'none',
+  Polar = 'polar'
+}
+
+export enum TreeVariant {
+  None = 'none',
+  Reverse = 'reverse',
+  Radial = 'radial'
+}
+
+export enum HeatmapVariant {
+  None = 'none',
+  Calendar = 'calendar'
+}
+
 // type guards
 export const isChartMapType = (toBe): toBe is ChartMapType => toBe?.type === 'GeoMap'
 

@@ -4,7 +4,7 @@ import { isNil } from './isNil'
 import { isPlainObject } from './isPlainObject'
 import { isString } from './isString'
 
-export function isBlank(value) {
+export function isBlank(value: unknown) {
   return isNil(value) || (isString(value) && !value.trim())
 }
 
@@ -50,7 +50,7 @@ export function assignDeepOmitBlank(source: object, target: object, dpth = 1) {
   }
 }
 
-export function omitBlank(obj) {
+export function omitBlank(obj: Array<unknown> | object | unknown) {
   if (Array.isArray(obj)) {
     return obj.map((value) => omitBlank(value))
   } else if (isPlainObject(obj)) {

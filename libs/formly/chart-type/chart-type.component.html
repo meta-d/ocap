@@ -57,25 +57,33 @@
         [formControl]="name"
       ></ngm-input>
       
-      <div *ngIf="HAS_ORIENTS[type]" class="flex flex-col justify-start items-start">
-        <label class="ngm-input-label">{{ 'FORMLY.CHART.Orient' | translate: {Default: 'Orient'} }}</label>
+      @if (HAS_ORIENTS[type]) {
+        <div class="flex flex-col justify-start items-start">
+          <label class="ngm-input-label">{{ 'FORMLY.CHART.Orient' | translate: {Default: 'Orient'} }}</label>
 
-        <mat-button-toggle-group [(ngModel)]="orient" ngmAppearance="hero" color="accent" class="self-start">
-          <mat-button-toggle *ngFor="let orient of ORIENTS" [value]="orient.value">
-            {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
+          <mat-button-toggle-group [(ngModel)]="orient" ngmAppearance="hero" color="accent" class="self-start">
+            @for (orient of ORIENTS; track orient.value) {
+              <mat-button-toggle [value]="orient.value">
+                {{'FORMLY.CHART.'+orient.label | translate: {Default: orient.label} }}
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      }
 
-      <div *ngIf="VARIANTS[type]" class="flex flex-col justify-start items-start">
-        <label class="ngm-input-label">{{ 'FORMLY.CHART.Variant' | translate: {Default: 'Variant'} }}</label>
+      @if (VARIANTS[type]) {
+        <div class="flex flex-col justify-start items-start">
+          <label class="ngm-input-label">{{ 'FORMLY.CHART.Variant' | translate: {Default: 'Variant'} }}</label>
 
-        <mat-button-toggle-group [(ngModel)]="variant" ngmAppearance="hero" color="accent" class="self-start">
-          <mat-button-toggle *ngFor="let option of VARIANTS[type]" [value]="option.value">
-            {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
+          <mat-button-toggle-group [(ngModel)]="variant" ngmAppearance="hero" color="accent" class="self-start">
+            @for (option of VARIANTS[type]; track option.value) {
+              <mat-button-toggle [value]="option.value">
+                {{ 'FORMLY.CHART.'+option.label | translate: {Default: option.label} }}
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      }
     </div>
 
     <form *ngIf="type===NxChartType.GeoMap" class="surface-content flex flex-col justify-start items-start gap-2 rounded-lg p-2"

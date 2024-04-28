@@ -1,4 +1,13 @@
-import { ChartAnnotation, ChartDimensionRoleType, ChartMeasureRoleType, ChartOrient, ChartType, pick } from '@metad/ocap-core'
+import {
+  BarVariant,
+  ChartAnnotation,
+  ChartDimensionRoleType,
+  ChartMeasureRoleType,
+  ChartOrient,
+  ChartType,
+  PieVariant,
+  pick
+} from '@metad/ocap-core'
 import { z } from 'zod'
 import { DeepPartial } from '../helpers'
 import { NxChartType } from '../smart-chart'
@@ -13,60 +22,62 @@ export function makeChartEnum() {
 }
 
 export function makeChartSchema() {
-  return z.object({
-    cube: z.string().describe('The cube name used by the chart'),
-    chartType: z.object({
-      type: z.enum(makeChartEnum() as z.EnumValues).describe('The chart type'),
-      chartOptions: z
-        .object({
-          seriesStyle: z.any().describe('The series options of ECharts library'),
-          legend: z.any().describe('The legend options of ECharts library'),
-          axis: z.any().describe('The axis options of ECharts library'),
-          dataZoom: z.any().describe('The dataZoom options of ECharts library'),
-          tooltip: z.any().describe('The tooltip options of ECharts library')
-        })
-        .describe('The chart options of ECharts library')
-    }),
-    // dimensions: z
-    //   .array(
-    //     z.object({
-    //       dimension: z.string().describe('The name of dimension'),
-    //       hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-    //       level: z.string().optional().describe('The name of the level in the hierarchy')
-    //     })
-    //   )
-    //   .describe('The dimensions used by the chart, at least one dimension'),
-    // measures: z
-    //   .array(
-    //     z.object({
-    //       measure: z.string().describe('The name of the measure'),
-    //       order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
-    //       chartOptions: z.any().optional().describe('The chart options of ECharts library')
-    //     })
-    //   )
-    //   .describe('The measures used by the chart, At least one measure'),
-    slicers: z
-      .array(
-        z.object({
-          dimension: z
-            .object({
-              dimension: z.string().describe('The name of the dimension'),
-              hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-              level: z.string().optional().describe('The name of the level in the hierarchy')
-            })
-            .describe('The dimension of the slicer'),
-          members: z
-            .array(
-              z.object({
-                value: z.string().describe('the key of the member'),
-                caption: z.string().describe('the caption of the member')
+  return z
+    .object({
+      cube: z.string().describe('The cube name used by the chart'),
+      chartType: z.object({
+        type: z.enum(makeChartEnum() as z.EnumValues).describe('The chart type'),
+        chartOptions: z
+          .object({
+            seriesStyle: z.any().describe('The series options of ECharts library'),
+            legend: z.any().describe('The legend options of ECharts library'),
+            axis: z.any().describe('The axis options of ECharts library'),
+            dataZoom: z.any().describe('The dataZoom options of ECharts library'),
+            tooltip: z.any().describe('The tooltip options of ECharts library')
+          })
+          .describe('The chart options of ECharts library')
+      }),
+      // dimensions: z
+      //   .array(
+      //     z.object({
+      //       dimension: z.string().describe('The name of dimension'),
+      //       hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
+      //       level: z.string().optional().describe('The name of the level in the hierarchy')
+      //     })
+      //   )
+      //   .describe('The dimensions used by the chart, at least one dimension'),
+      // measures: z
+      //   .array(
+      //     z.object({
+      //       measure: z.string().describe('The name of the measure'),
+      //       order: z.enum(['ASC', 'DESC']).optional().describe('The order of the measure'),
+      //       chartOptions: z.any().optional().describe('The chart options of ECharts library')
+      //     })
+      //   )
+      //   .describe('The measures used by the chart, At least one measure'),
+      slicers: z
+        .array(
+          z.object({
+            dimension: z
+              .object({
+                dimension: z.string().describe('The name of the dimension'),
+                hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
+                level: z.string().optional().describe('The name of the level in the hierarchy')
               })
-            )
-            .describe('The members in the slicer')
-        })
-      )
-      .describe('The slicers used by the chart')
-  }).describe('The chart schema')
+              .describe('The dimension of the slicer'),
+            members: z
+              .array(
+                z.object({
+                  value: z.string().describe('the key of the member'),
+                  caption: z.string().describe('the caption of the member')
+                })
+              )
+              .describe('The members in the slicer')
+          })
+        )
+        .describe('The slicers used by the chart')
+    })
+    .describe('The chart schema')
 }
 
 export function makeChartDimensionSchema() {
@@ -91,7 +102,8 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Bar,
-            orient: ChartOrient.horizontal
+            orient: ChartOrient.horizontal,
+            variant: BarVariant.None
           },
           dimensions: [{}],
           measures: [{}]
@@ -103,7 +115,8 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Bar,
-            orient: ChartOrient.vertical
+            orient: ChartOrient.vertical,
+            variant: BarVariant.None
           },
           dimensions: [{}],
           measures: [{}]
@@ -115,7 +128,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.vertical,
-            variant: 'stacked'
+            variant: BarVariant.Stacked
           },
           dimensions: [
             {},
@@ -133,7 +146,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.horizontal,
-            variant: 'stacked'
+            variant: BarVariant.Stacked
           },
           dimensions: [
             {},
@@ -152,7 +165,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.horizontal,
-            variant: 'polar',
+            variant: BarVariant.Polar,
             chartOptions: {
               seriesStyle: {
                 colorBy: 'data',
@@ -171,7 +184,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.horizontal,
-            variant: 'polar',
+            variant: BarVariant.Polar,
             chartOptions: {
               seriesStyle: {
                 colorBy: 'data',
@@ -192,7 +205,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.vertical,
-            variant: 'polar',
+            variant: BarVariant.Polar,
             chartOptions: {
               seriesStyle: {
                 colorBy: 'data',
@@ -211,6 +224,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.vertical,
+            variant: BarVariant.None,
             chartOptions: {
               seriesStyle: {
                 barWidth: '99.3%'
@@ -228,6 +242,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.vertical,
+            variant: BarVariant.None,
             chartOptions: {
               seriesStyle: {}
             }
@@ -250,6 +265,7 @@ export const CHARTS: ChartGroup[] = [
           chartType: {
             type: NxChartType.Bar,
             orient: ChartOrient.vertical,
+            variant: BarVariant.None,
             chartOptions: {
               seriesStyle: {}
             }
@@ -269,6 +285,7 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Pie,
+            variant: PieVariant.None,
             chartOptions: {
               seriesStyle: {}
             }
@@ -283,7 +300,7 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Pie,
-            variant: 'Doughnut',
+            variant: PieVariant.Doughnut,
             chartOptions: {
               seriesStyle: {}
             }
@@ -298,7 +315,7 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Pie,
-            variant: 'Doughnut',
+            variant: PieVariant.Doughnut,
             chartOptions: {
               seriesStyle: {
                 radius: ['80%', '90%']
@@ -315,7 +332,7 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Pie,
-            variant: 'Nightingale',
+            variant: PieVariant.Nightingale,
             chartOptions: {
               seriesStyle: {}
             }
@@ -330,7 +347,7 @@ export const CHARTS: ChartGroup[] = [
         value: {
           chartType: {
             type: NxChartType.Pie,
-            variant: 'Nightingale',
+            variant: PieVariant.Nightingale,
             chartOptions: {
               seriesStyle: {
                 radius: [0]
@@ -716,7 +733,6 @@ export const CHARTS: ChartGroup[] = [
   }
 ]
 
-
 /**
  * Find Chart Type by type/variant/orient
  * @param chartType
@@ -740,9 +756,11 @@ export function getChartType(chartType: ChartType | string) {
       if (
         chart.value.chartType.type === chartType?.type &&
         (chartType?.variant ? chart.value.chartType.variant === chartType?.variant : true) &&
-        (chartType?.orient ? chart.value.chartType.orient === chartType?.orient : 
-          chart.value.chartType.orient ? chart.value.chartType.orient === ChartOrient.vertical :
-            true)
+        (chartType?.orient
+          ? chart.value.chartType.orient === chartType?.orient
+          : chart.value.chartType.orient
+          ? chart.value.chartType.orient === ChartOrient.vertical
+          : true)
       ) {
         return chart
       }
