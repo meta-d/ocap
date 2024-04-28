@@ -72,8 +72,6 @@ export const ChartWidgetSchema = z.object({
   }).optional(),
   dataSettings: z
     .object({
-      dataSource: z.string().optional().describe('The data source of the widget'),
-      entitySet: z.string().optional().describe('The entity set of the widget'),
       limit: z.number().optional().describe('The limit of the records')
     })
     .optional()

@@ -360,9 +360,10 @@ export class NxStoryPointService {
   readonly createWidget = this.updater2((state, input: Partial<StoryWidget>) => {
     const untitledTitle = this.getTranslation('Story.Common.Untitled', 'Untitled')
     const states = this.stateStore.getValue()
+    const key = input.key ?? uuid()
     const widget = {
       ...input,
-      key: uuid(),
+      key,
       storyId: state.storyId,
       pointId: state.id,
       title: input.title || untitledTitle

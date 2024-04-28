@@ -3,13 +3,36 @@ import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { calcEntityTypePrompt } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
-import { NxStoryService, WidgetComponentType } from '@metad/story/core'
+import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { createStoryPickCubeTool } from './pick-cube-tool'
-import { ChartSchema, ChartWidgetSchema, chartAnnotationCheck, completeChartAnnotation } from './schema'
+import { ChartSchema, ChartWidgetSchema, chartAnnotationCheck, completeChartAnnotation, createTableWidgetSchema, createWidgetSchema, createWidgetStyleSchema, tryFixAnalyticsAnnotation } from './schema'
+
+function createUpdateChartTools(storyService: NxStoryService) {
+  return [new DynamicStructuredTool({
+    name: 'updateChartStyle',
+    description: 'Update sytle of chart widget in story page.',
+    schema: z.object({
+      key: z.string().describe('The key of the widget'),
+      chart: ChartSchema.describe('The chart config')
+    }),
+    func: async ({ key, chart }) => {
+      const entityType = await firstValueFrom(storyService.selectWidgetEntityType(key))
+      storyService.updateWidget({
+        widgetKey: key,
+        widget: {
+          dataSettings: {
+            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType))
+          }
+        }
+      })
+      return `The styles of story chart widget updated!`
+    }
+  })]
+}
 
 /**
  */
@@ -22,12 +45,12 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
 
   const { defaultDataSource, defaultCube, tool } = createStoryPickCubeTool(storyService)
 
-  const createWidgetTool = new DynamicStructuredTool({
-    name: 'createWidget',
+  const createChartTool = new DynamicStructuredTool({
+    name: 'createChartWidget',
     description: 'Create a new widget in story page.',
     schema: ChartWidgetSchema,
     func: async ({ title, position, dataSettings, chartAnnotation }) => {
-      console.log('createWidget', title, position, dataSettings, chartAnnotation)
+      logger.debug('[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:', title, position, dataSettings, chartAnnotation)
 
       const entityType = defaultCube()
       storyService.createStoryWidget({
@@ -40,7 +63,30 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
         }
       })
 
-      return `Story widget created!`
+      return `Story chart widget created!`
+    }
+  })
+
+  const createTableTool = new DynamicStructuredTool({
+    name: 'createTableWidget',
+    description: 'Create a new table widget.',
+    schema: createWidgetSchema(createTableWidgetSchema()),
+    func: async ({ title, component, position, analytics, options }) => {
+      logger.debug('[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:', title, position, analytics, options)
+
+      const entityType = defaultCube()
+      const key = uuid()
+      storyService.createStoryWidget({
+        key,
+        component: component || WidgetComponentType.AnalyticalGrid,
+        position: position,
+        title: title,
+        dataSettings: {
+          analytics: tryFixAnalyticsAnnotation(analytics, entityType)
+        }
+      })
+
+      return `Story table widget '${key}' created!`
     }
   })
 
@@ -68,7 +114,28 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     }
   })
 
-  const tools = [tool, createWidgetTool, updateWidgetTool]
+  const updateWidgetStyleTool = new DynamicStructuredTool({
+    name: 'updateWidgetStyle',
+    description: 'Update styles of the widget.',
+    schema: z.object({
+      key: z.string().describe('The key of the widget'),
+      styles: createWidgetStyleSchema().describe('The styles of the widget')
+    }),
+    func: async ({ key, styles }) => {
+      logger.debug('[Story] [AI Copilot] [Command tool] [updateWidgetStyle] inputs:', key, styles)
+      storyService.updateWidget({
+        widgetKey: key,
+        widget: {
+          styling: {
+            component: styles
+          }
+        }
+      })
+      return `Story widget styles updated!`
+    }
+  })
+
+  const tools = [tool, createTableTool, createChartTool, updateWidgetTool, updateWidgetStyleTool, ...createUpdateChartTools(storyService)]
 
   return injectCopilotCommand({
     name: 'widget',
@@ -121,28 +188,7 @@ export function injectWidgetStyleCommand(storyService: NxStoryService) {
   const currentWidget = storyService.currentWidget
   const currentStoryPoint = storyService.currentStoryPoint
 
-  const updateWidgetTool = new DynamicStructuredTool({
-    name: 'updateChartStyle',
-    description: 'Update sytle of chart widget in story page.',
-    schema: z.object({
-      key: z.string().describe('The key of the widget'),
-      chart: ChartSchema.describe('The chart config')
-    }),
-    func: async ({ key, chart }) => {
-      const entityType = await firstValueFrom(storyService.selectWidgetEntityType(key))
-      storyService.updateWidget({
-        widgetKey: key,
-        widget: {
-          dataSettings: {
-            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType))
-          }
-        }
-      })
-      return `The styles of story chart widget updated!`
-    }
-  })
-
-  const tools = [updateWidgetTool]
+  const tools = [...createUpdateChartTools(storyService)]
 
   return injectCopilotCommand({
     name: 'chartStyle',
