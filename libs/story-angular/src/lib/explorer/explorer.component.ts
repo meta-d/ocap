@@ -32,7 +32,7 @@ import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
 import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmFormlyChartTypeComponent } from '@metad/story/widgets/analytical-card'
+import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmSchemaChartTypeComponent } from '@metad/story/widgets/analytical-card'
 import { NgmGridSettingsComponent } from '@metad/story/widgets/analytical-grid'
 import {
   C_MEASURES,
@@ -95,7 +95,7 @@ import { ExplainComponent, injectCalclatedMeasureCommand } from '@metad/story/st
     NgmSearchComponent,
     NgmChartSettingsComponent,
     NgmChartPropertyComponent,
-    NgmFormlyChartTypeComponent,
+    NgmSchemaChartTypeComponent,
     NgmGridSettingsComponent
   ],
   selector: 'ngm-story-explorer',

@@ -9,7 +9,7 @@
     <mat-select class="ngm-select-element relative" [panelClass]="'ngm-select-panel ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
       [formControl]="formControl"
       [placeholder]="placeholder"
-      [panelWidth]="panelWidth()"
+      [panelWidth]="panelWidth() || 'auto'"
     >
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
         <span class="flex-1">
@@ -45,7 +45,7 @@
 }
 
 <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-density__compact ngm-select__autocomplete-panel ngm-autocomplete-panel"
-  [panelWidth]="panelWidth()"
+  [panelWidth]="panelWidth() || 'auto'"
   [displayWith]="displayWith"
   (optionSelected)="onOptionSelected($event)"
 >

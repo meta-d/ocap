@@ -18,7 +18,7 @@
   </div>
 
   <div class="w-full flex flex-col items-stretch gap-1">
-    <ng-container *ngIf="showChartAttributes && isDimension()">
+    @if (showChartAttributes && isDimension()) {
       <div class="ngm-chart-property__card">
         <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
           <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">category</mat-icon>
@@ -37,9 +37,10 @@
           <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
           <span>{{ 'Story.ChartProperty.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
         </label>
-        <ngm-designer-form class="w-full text-sm" [(ngModel)]="chartOptions"></ngm-designer-form>
+
+        <ngm-chart-dimension-form class="w-full text-sm" [(ngModel)]="chartOptions" />
       </div>
-    </ng-container>
+    }
 
     <div *ngIf="showMeasureRole" class="ngm-chart-property__card">
       <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
@@ -132,16 +133,18 @@
       <ngm-reference-line class="w-full text-sm" [(ngModel)]="referenceLines"></ngm-reference-line>
     </div>
 
-    <div *ngIf="showMeasureChartOptions" class="ngm-chart-property__card">
-      <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
-        <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
-        <span>{{ 'Story.ChartProperty.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
-      </label>
+    @if (showMeasureChartOptions) {
+      <div class="ngm-chart-property__card">
+        <label class="ngm-chart-property__card-title flex justify-start items-center px-2 py-1">
+          <mat-icon class="shrink-0" fontSet="material-icons-outlined" displayDensity="compact">analytics</mat-icon>
+          <span>{{ 'Story.ChartProperty.ChartOptions' | translate: {Default: 'Chart Options'} }}</span>
+        </label>
 
-      <ngm-chart-measure-form class="w-full text-sm" [(ngModel)]="chartOptions"
-        [chartType]="chartType"
-      ></ngm-chart-measure-form>
-    </div>
+        <ngm-chart-measure-form class="w-full text-sm" [(ngModel)]="chartOptions"
+          [chartType]="chartType"
+        ></ngm-chart-measure-form>
+      </div>
+    }
   </div>
 </ngm-property-select>
 

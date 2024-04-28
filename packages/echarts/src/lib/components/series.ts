@@ -10,6 +10,7 @@ import {
   getPropertyMeasure,
   isEmpty,
   isNil,
+  nonNullable,
   omitBlank,
   ReferenceLineType,
   ReferenceLineValueType
@@ -245,7 +246,7 @@ export function referenceLines(
     }
   }
 
-  axis1?.referenceLines?.forEach((referenceLine) => {
+  axis1?.referenceLines?.filter((nonNullable)).forEach((referenceLine) => {
     if (referenceLine.type) {
       const referenceLineData = mergeChartOptions(
         {
