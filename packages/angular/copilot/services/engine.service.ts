@@ -19,12 +19,11 @@ import {
 } from '@metad/copilot'
 import { compact } from '@metad/ocap-core'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
+import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { DropAction } from '../types'
 import { filter, firstValueFrom } from 'rxjs'
-import { AgentExecutor, createOpenAIToolsAgent } from "langchain/agents";
-
+import { DropAction } from '../types'
 
 let uniqueId = 0
 
@@ -125,9 +124,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   // Commands
-  readonly #commands = signal<Record<string, CopilotCommand & {
-    agentExecutor?: AgentExecutor
-  }>>({})
+  readonly #commands = signal<
+    Record<
+      string,
+      CopilotCommand & {
+        agentExecutor?: AgentExecutor
+      }
+    >
+  >({})
   readonly commands = computed(() => Object.values(this.#commands()))
 
   readonly #dropActions = signal<Record<string, DropAction>>({})
@@ -166,7 +170,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       const agent = await createOpenAIToolsAgent({
         llm,
         tools: command.tools,
-        prompt: command.prompt,
+        prompt: command.prompt
       })
       this.#commands.update((state) => ({
         ...state,
@@ -175,7 +179,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           agentExecutor: new AgentExecutor({
             agent,
             tools: command.tools as any[],
-            verbose: true,
+            verbose: true
           })
         }
       }))
@@ -183,7 +187,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.#commands.update((state) => ({
         ...state,
         [name]: {
-          ...command,
+          ...command
         }
       }))
     }
@@ -198,8 +202,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
+  /**
+   * Find command by name or alias
+   *
+   * @param name Name or alias of command
+   * @returns AI Command
+   */
   getCommand(name: string) {
-    return this.#commands()[name]
+    return this.#commands()[name] ?? Object.values(this.#commands()).find((command) => command.alias === name)
   }
 
   registerDropAction(dropAction: DropAction) {
@@ -363,9 +373,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       messages.push({
         id: nanoid(),
-      role: CopilotChatMessageRoleEnum.User,
-      content: content,
-      command: command.name
+        role: CopilotChatMessageRoleEnum.User,
+        content: content,
+        command: command.name
       })
     } catch (err: any) {
       messages.push({
@@ -395,8 +405,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     try {
       const agentExecutor = command.agentExecutor
-      const result = await agentExecutor.invoke({input: content, system_prompt: systemPrompt})
-      
+      const result = await agentExecutor.invoke({ input: content, system_prompt: systemPrompt })
+
       this.#logger?.debug(`Agent command '${command.name}' result:`, result)
 
       this.upsertMessage({
@@ -560,7 +570,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const lastConversation = conversations[conversations.length - 1]
     if (lastConversation?.type) {
       // Don't create new conversation only if two types are the same 'free'
-      if(!(type === 'free' && lastConversation.type === 'free')) {
+      if (!(type === 'free' && lastConversation.type === 'free')) {
         this.newConversation(type)
       }
     } else {

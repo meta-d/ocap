@@ -33,8 +33,8 @@ export const ChartSchema = z.object({
     type: z.enum(ChartTypes as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
-  dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
-  measures: z.array(MeasureSchema).describe('The measures used by the chart'),
+  dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
+  measures: z.array(MeasureSchema).optional().describe('The measures used by the chart'),
 
   slicers: z
     .array(
@@ -63,13 +63,13 @@ export const ChartSchema = z.object({
 })
 
 export const ChartWidgetSchema = z.object({
-  title: z.string().describe(`Title of the widget`),
+  title: z.string().optional().describe(`Title of the widget`),
   position: z.object({
     x: z.number().describe(`Position x of the widget in the page layout`),
     y: z.number().describe(`Position y of the widget in the page layout`),
     cols: z.number().describe('Width of the widget in page layout'),
     rows: z.number().describe('Height of the widget in page layout')
-  }),
+  }).optional(),
   dataSettings: z
     .object({
       dataSource: z.string().optional().describe('The data source of the widget'),

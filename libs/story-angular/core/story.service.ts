@@ -526,7 +526,11 @@ export class NxStoryService {
     }
   }
 
-  // ================================== Selectors ================================== //
+  /**
+  |--------------------------------------------------------------------------
+  | Selectors
+  |--------------------------------------------------------------------------
+  */
   get<R>(fn?: Query<StoryState, R>) {
     return this.store.query(fn ?? ((state) => state as R))
   }
@@ -560,6 +564,34 @@ export class NxStoryService {
       .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType))))
   }
 
+  /**
+   * Select entity type for widget by widget key
+   * 
+   * @param widgetKey 
+   * @returns 
+   */
+  selectWidgetEntityType(widgetKey: string) {
+    const widget = this.store.query((state) => {
+      let widget: StoryWidget = null
+      for (const point of state.story.points) {
+        widget = point.widgets.find((widget) => widget.key === widgetKey)
+        if (widget) {
+          return widget
+        }
+      }
+      return null
+    })
+
+    if (!widget) {
+      throw new Error(`Widget '${widgetKey}' not found`)
+    }
+    const { dataSource, entitySet } = widget.dataSettings ?? {}
+    if (!dataSource || !entitySet) {
+      throw new Error(`Widget '${widgetKey}' data settings not found`)
+    }
+    return this.selectEntityType({ dataSource, entitySet })
+  }
+
   selectWidget(pointId: ID, widgetId: ID) {
     return this.story$.pipe(
       select((story) => story.points?.find((item) => item.id === pointId)),
@@ -579,7 +611,11 @@ export class NxStoryService {
     return this.coreService.onIntent()
   }
 
-  // ================================== Actions ================================== //
+  /**
+  |--------------------------------------------------------------------------
+  | Actions
+  |--------------------------------------------------------------------------
+  */
   setCurrentIndex(index: number) {
     const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)

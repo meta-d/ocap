@@ -41,6 +41,7 @@ import {
   CopilotChatConversation,
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
+  CopilotCommand,
   CopilotEngine,
   CopilotService
 } from '@metad/copilot'
@@ -258,7 +259,7 @@ export class NgmCopilotChatComponent {
     return text ? models?.filter((item) => item.name.toLowerCase().includes(text)) : models
   })
 
-  readonly commands = computed(() => {
+  readonly commands = computed<Array<CopilotCommand & {example: string}>>(() => {
     if (this.copilotEngine?.commands && this.isTools()) {
       const commands = []
       this.copilotEngine.commands().forEach((command) => {
@@ -282,13 +283,15 @@ export class NgmCopilotChatComponent {
     return []
   })
 
-  readonly filteredCommands = computed(() => {
-    const text = this.prompt()
+  readonly filteredCommands = computed<Array<CopilotCommand & {example: string}>>(() => {
+    const text = this.prompt()?.toLowerCase()
+
     if (this.triggerCharacter() === '@') {
       return this.commands()
     }
+
     if (text) {
-      return this.commands()?.filter((item) => item.prompt.includes(text)) ?? []
+      return this.commands()?.filter((item) => item.prompt.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)) ?? []
     }
 
     return []

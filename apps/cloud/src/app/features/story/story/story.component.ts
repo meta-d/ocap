@@ -38,6 +38,7 @@ import {
   injectStoryPageCommand,
   injectStoryStyleCommand,
   injectStoryWidgetCommand,
+  injectWidgetStyleCommand,
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
@@ -156,6 +157,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #pageCommand = injectStoryPageCommand(this.storyService)
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
   #mathCommand = injectMathCommand(this.storyService)
+  #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
 
   /**
   |--------------------------------------------------------------------------

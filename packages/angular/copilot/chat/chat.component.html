@@ -221,23 +221,26 @@
             (opened)="suggestionsOpened$.next(true)"
             (closed)="suggestionsOpened$.next(false)"
         >
-        @for (command of filteredCommands();  track command.prompt) {
+          @for (command of filteredCommands();  track command.prompt) {
             <mat-option [value]="'/'+command.name+' '+(command.example || '')" [title]="command.description">
-                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300">
-                    /{{command.name}}
-                </span>
-                
-                @if (command.example) {
-                    <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
-                        [ngmHighlight]="prompt()"
-                        [content]="command.example"
-                        customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
-                    >{{command.example}}</div>
-                } @else {
-                    <span class="ml-auto opacity-50">{{command.description}}</span>
-                }
+                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300"
+                >/{{command.name}}</span>
+              @if (command.alias) {
+                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300"
+                >/{{command.alias}}</span>
+              }
+
+              @if (command.example) {
+                <div class="whitespace-nowrap text-ellipsis overflow-hidden text-gray-500 italic"
+                    [ngmHighlight]="prompt()"
+                    [content]="command.example"
+                    customClasses="text-gray-600 bg-gray-200 font-bold not-italic"
+                >{{command.example}}</div>
+              } @else {
+                <span class="ml-auto opacity-50">{{command.description}}</span>
+              }
             </mat-option>
-        }
+          }
         </mat-autocomplete>
 
         <div class="shrink-0 flex items-center">

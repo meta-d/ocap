@@ -7,24 +7,49 @@ import { CopilotChatMessage, nonNullable } from './types/types'
  * Copilot command, which can execute multiple actions.
  */
 export interface CopilotCommand<Inputs extends any[] = any[]> {
-  name: string
-  description: string
-  examples?: string[]
-  systemPrompt?: () => string
-
-  implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
-
   /**
-   * Action ids to execute.
+   * Full name of the command
+   */
+  name: string
+  /**
+   * Alias (short name) of the command
+   */
+  alias?: string
+  /**
+   * Description of the command
+   */
+  description: string
+  /**
+   * Examples of the command usage
+   */
+  examples?: string[]
+  /**
+   * Get system prompt message
+   * 
+   * @returns System prompt message
+   */
+  systemPrompt?: () => string
+  /**
+   * 
+   * @param args 
+   * @returns 
+   */
+  implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
+  /**
+   * @deprecated use `tools` instead
    */
   actions?: string[]
   /**
    * Tools for agent (langchain)
    */
   tools?: Array<DynamicStructuredTool | DynamicTool>
-
+  /**
+   * Prompt template for Agent executor
+   */
   prompt?: any
-
+  /**
+   * Agent executor for command
+   */
   agentExecutor?: AgentExecutor
 }
 
