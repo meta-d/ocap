@@ -119,7 +119,7 @@ export function pieCoordinate(
       series: seriesComponents.map((seriesComponent) => {
         const { series, visualMaps } = serializeSeriesComponent(
           dataset,
-          seriesComponent,
+          {...seriesComponent, seriesType: 'pie'},
           entityType,
           valueAxis,
           settings,
