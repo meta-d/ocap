@@ -297,12 +297,17 @@ export class NxStoryService {
   public readonly creatingWidget$ = this.select((state) => state.creatingWidget)
   public save$ = new Subject<void>()
 
-  public readonly storySizeStyles$ = combineLatest([
+  /**
+   * Story page size: emulated device size when in desktop device,
+   * but not emulated when in mobile device or editing mode (that provided by actual device size).
+   */
+  readonly storySizeStyles$ = combineLatest([
     this.editable$,
+    this.isMobile$,
     this.storyOptions$.pipe(map((options) => options?.emulatedDevice))
   ]).pipe(
-    map(([editable, emulatedDevice]) => {
-      if (editable) {
+    map(([editable, isMobile, emulatedDevice]) => {
+      if (editable || isMobile) {
         return {
           width: null,
           height: null
@@ -761,6 +766,8 @@ export class NxStoryService {
     const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
     if (index > -1) {
       currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
+    } else {
+      throw new Error(this.getTranslation('Story.Story.WidgetNotExistInPage', `Widget '${widgetKey}' does not exist in page '${pointKey}'`))
     }
   })
 

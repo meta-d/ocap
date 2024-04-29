@@ -90,7 +90,7 @@
       }
 
         <div #storyContainer class="ngm-story__device ngm-story-container flex-1 max-w-full overflow-auto">
-            <div class="relative w-full h-full origin-top shadow-md mx-auto"
+            <div class="relative w-full h-full origin-top shadow-md mx-auto mb-4"
                 [ngStyle]="emulatedDeviceSizeStyle()"
                 [style.transform]="'scale('+deviceZoom()?.value ?? 1+')'"
                 ngmResizer [resizerWidth]="emulatedDevice()?.width" [resizerHeight]="emulatedDevice()?.height"
@@ -150,7 +150,10 @@
 
         </div>
 
-        <ngm-drawer-trigger class="absolute right-2 top-2/3 -translate-y-1/2 z-40" [(opened)]="designerOpened" side="right"></ngm-drawer-trigger>
+        <ngm-drawer-trigger class="absolute right-2 top-2/3 -translate-y-1/2 z-40" [(opened)]="designerOpened" side="right"
+          [matTooltip]="'Story.Toolbar.AttributesPanel' | translate: {Default: 'Attributes Panel'}"
+          matTooltipPosition="before"
+        />
     </mat-drawer-content>
 </mat-drawer-container>
 

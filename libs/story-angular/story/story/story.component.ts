@@ -617,6 +617,10 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (!this.isFocused()) {
+      return
+    }
+
     // Alt + ArrowLeft
     // Alt + ArrowRight
     if (event.altKey) {
@@ -625,9 +629,27 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       } else if (event.key === 'ArrowRight') {
         this.slideNext()
       }
+
+      switch (event.code) {
+        case 'Minus':
+        case 'NumpadSubtract':
+          this.storyService.zoomOut()
+          break
+        case 'Equal':
+        case 'NumpadAdd':
+          this.storyService.zoomIn()
+          break
+        case 'Digit0':
+        case 'Numpad0':
+          this.storyService.resetZoom()
+          break
+        case 'Escape':
+          this.resetScalePanState()
+          break
+      }
     }
 
-    if (this.editable() && this.isFocused()) {
+    if (this.editable()) {
       if (event.metaKey || event.ctrlKey) {
         if (event.shiftKey) {
           if (event.key === 'z' || event.key === 'Z') {
@@ -643,24 +665,24 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
             event.preventDefault()
           }
         }
-      } else if (event.altKey) {
-        switch (event.code) {
-          case 'Minus':
-          case 'NumpadSubtract':
-            this.storyService.zoomOut()
-            break
-          case 'Equal':
-          case 'NumpadAdd':
-            this.storyService.zoomIn()
-            break
-          case 'Digit0':
-          case 'Numpad0':
-            this.storyService.resetZoom()
-            break
-          case 'Escape':
-            this.resetScalePanState()
-            break
-        }
+      }
+    }
+  }
+
+  @HostListener('wheel', ['$event'])
+  onWheel(event: WheelEvent) {
+    if (!this.isFocused()) return
+
+    event.preventDefault() // Prevent default scrolling behavior
+
+    console.log(event.altKey)
+
+    // Increase or decrease the scale based on the direction of the scroll
+    if (event.altKey) {
+      if (event.deltaY > 0) {
+        this.storyService.zoomOut()
+      } else {
+        this.storyService.zoomIn()
       }
     }
   }

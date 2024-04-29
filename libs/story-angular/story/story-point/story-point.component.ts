@@ -17,7 +17,8 @@ import {
   computed,
   effect,
   inject,
-  input
+  input,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
@@ -158,6 +159,18 @@ export class NxStoryPointComponent {
   get maxLayerIndex() {
     return this.gridOptions?.maxLayerIndex
   }
+  @HostBinding('class.grid-layout__fixed')
+  get gridTypeFixed(): boolean {
+    return this.gridOptions?.gridType === GridType.Fixed
+  }
+  @HostBinding('class.grid-layout__vertical-fixed')
+  get gridTypeVerticalFixed(): boolean {
+    return this.gridOptions?.gridType === GridType.VerticalFixed
+  }
+  @HostBinding('class.grid-layout__horizontal-fixed')
+  get gridTypeHorizontalFixed(): boolean {
+    return this.gridOptions?.gridType === GridType.HorizontalFixed
+  }
 
   private closedQuickStart$ = new BehaviorSubject<boolean>(false)
 
@@ -202,7 +215,8 @@ export class NxStoryPointComponent {
 
   public readonly isCopyWidgetSelected$ = this.storyService.copySelectedWidget$
 
-  currentWidget: StoryWidget
+  readonly currentWidget = signal<StoryWidget>(null)
+  readonly currentWidgetKey = computed(() => this.currentWidget()?.key)
   currentComponentType: WidgetComponentType | string
   resizingWidgetKey: string
   private defaultGridOptions: GridsterConfig = {
@@ -486,7 +500,7 @@ export class NxStoryPointComponent {
         this._cdr.detectChanges()
       })
     } else {
-      this.currentWidget = null
+      this.currentWidget.set(null)
       setTimeout(() => {
         this._elementRef.nativeElement.scrollTo({
           top: this._scrollTop,
@@ -521,8 +535,8 @@ export class NxStoryPointComponent {
 
   selectWidget(widget: StoryWidget, disableFab: boolean) {
     if (this.editable() || !disableFab) {
-      this.currentWidget = widget
-      this.storyPointService.setCurrentWidgetId(this.currentWidget.key)
+      this.currentWidget.set(widget)
+      this.storyPointService.setCurrentWidgetId(this.currentWidget().key)
     }
 
     if (this.focus !== widget.key) {
@@ -536,9 +550,9 @@ export class NxStoryPointComponent {
       return
     }
 
-    this.currentWidget = null
+    this.currentWidget.set(null)
     this.storyPointService.setCurrentWidgetId(null)
-    this.openPageDesigner()
+    // this.openPageDesigner()
     this.unFocus()
   }
 
@@ -581,7 +595,7 @@ export class NxStoryPointComponent {
       filter(() => !!this.storyPoint()),
       switchMap(() => {
         const storyPoint = this.storyPoint()
-        this.currentWidget = null
+        this.currentWidget.set(null)
         if (storyPoint.type === StoryPointType.Responsive) {
           this.openResponsiveDesigner(storyPoint.responsive?.key)
           return EMPTY

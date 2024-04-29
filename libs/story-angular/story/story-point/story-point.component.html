@@ -29,16 +29,16 @@
           @for (widget of widgets$ | async; track widget.key) {
             <gridster-item class="ngm-story__widget group"
                 [item]="widget.position"
-                [ngStyle]="{'z-index': widget.key===currentWidget?.key ? maxLayerIndex : widget.position.layerIndex}"
+                [ngStyle]="{'z-index': widget.key === currentWidgetKey() ? maxLayerIndex : widget.position.layerIndex}"
                 [class.editable]="editable()"
-                [class.active]="widget.key===currentWidget?.key"
+                [class.active]="widget.key === currentWidgetKey()"
                 [class.ngm-fullscreen]="widget.fullscreen"
                 [class.ngm-story__focus]="focus === widget.key"
                 (itemChange)="onGridsterItemChange($event, widget)"
                 (click)="onWidgetItemClick($event, widget, widgetComponent)"
             >
                 <ngm-story-widget #widgetComponent
-                    [selected]="widget.key===currentWidget?.key"
+                    [selected]="widget.key === currentWidgetKey()"
                     [editable]="editable()"
                     [key]="widget.key"
                     (fullscreenChange)="onFullscreenChange($event, widget);"

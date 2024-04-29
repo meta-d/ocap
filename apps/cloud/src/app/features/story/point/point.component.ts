@@ -23,7 +23,7 @@ import { BehaviorSubject, EMPTY, Observable, interval } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { exitFullscreen, registerWasmAgentModel, requestFullscreen } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
+import { _effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { AppService } from '../../../app.service'
 
 @Component({
@@ -147,7 +147,7 @@ export class StoryPointComponent extends TranslationBaseComponent {
   constructor() {
     super()
     
-    effectStoryTheme(this._elementRef)
+    _effectStoryTheme(this._elementRef)
   }
 
   async toggleFullscreen(fullscreen?: boolean) {

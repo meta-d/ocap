@@ -223,7 +223,9 @@
   <mat-drawer-content [ngStyle]="{'z-index': isMobile() ? 0 : 10}" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
     <router-outlet #o="outlet"></router-outlet>
 
-    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" />
+    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" 
+      [matTooltip]="'PAC.Project.ProjectNavigations' | translate: {Default: 'Project Navigations'}"
+      matTooltipPosition="after" />
   </mat-drawer-content>
 </mat-drawer-container>
 

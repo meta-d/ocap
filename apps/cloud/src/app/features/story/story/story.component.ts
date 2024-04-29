@@ -49,7 +49,7 @@ import { firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { effectStoryTheme } from '../../../@theme'
+import { _effectStoryTheme } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
@@ -245,7 +245,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
 
     afterNextRender(() => {
       runInInjectionContext(this.#injector, () => {
-        effectStoryTheme(this.storyContainer)
+        _effectStoryTheme(this.storyContainer)
       })
     })
   }

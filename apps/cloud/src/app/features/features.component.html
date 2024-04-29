@@ -165,7 +165,10 @@
       <mat-drawer-content class="pac-app__page-outlet relative z-0" 
         [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
         @if(copilotEnabled$()) {
-          <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"></ngm-drawer-trigger>
+          <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"
+            [matTooltip]="'PAC.Copilot.AICopilot' | translate: {Default: 'AI Copilot'}"
+            matTooltipPosition="before"
+          />
         }
         <router-outlet #o="outlet"></router-outlet>
       </mat-drawer-content>

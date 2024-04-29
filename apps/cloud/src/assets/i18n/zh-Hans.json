@@ -1083,6 +1083,7 @@
       }
     },
     "Story": {
+      "StoryToolbar": "故事工具栏",
       "EditStory": "编辑故事",
       "DuplicateStory": "复印故事",
       "DownloadStory": "下载故事",
@@ -1202,7 +1203,8 @@
         "encoding": "编码",
         "storageProvider": "存储提供商",
         "createdByUser": "创建人"
-      }
+      },
+      "ProjectNavigations": "项目导航栏"
     },
     "Certification": {
       "Certification": "认证",

@@ -1,7 +1,8 @@
 @use '@angular/material' as mat;
 
 :host {
-  @apply inline-block;
+  // @apply inline-block; // Why inline-block?
+  @apply block;
   // height: 100%;
   // overflow: auto;
 
@@ -32,7 +33,34 @@
   }
 
   &.grid-layout__fit {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    .ngm-story-point__page {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  &.grid-layout__fixed {
+
+  }
+  &.grid-layout__vertical-fixed {
+    width: 100%;
+    .ngm-story-point__page {
+      width: 100%;
+      .ngm-story__layout {
+        width: 100%;
+      }
+    }
+  }
+  &.grid-layout__horizontal-fixed {
+    height: 100%;
+    .ngm-story-point__page {
+      height: 100%;
+      .ngm-story__layout {
+        height: 100%;
+      }
+    }
   }
 
   /* focusing */

@@ -12,7 +12,7 @@ import { NxStoryModule, NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { registerWasmAgentModel } from '../../../@core'
-import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
+import { _effectStoryTheme, registerStoryThemes } from '../../../@theme'
 
 
 @Component({
@@ -111,6 +111,6 @@ export class StoryWidgetComponent {
   })
 
   constructor() {
-    effectStoryTheme(this._elementRef)
+    _effectStoryTheme(this._elementRef)
   }
 }

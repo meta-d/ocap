@@ -10,7 +10,7 @@ import { NxStoryService } from '@metad/story/core'
 import { NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
-import { effectStoryTheme, registerStoryThemes } from '../../@theme'
+import { _effectStoryTheme, registerStoryThemes } from '../../@theme'
 import { registerWasmAgentModel } from '../../@core'
 
 @Component({
@@ -93,7 +93,7 @@ export class PublicPointComponent {
 
   constructor() {
 
-    effectStoryTheme(this._elementRef)
+    _effectStoryTheme(this._elementRef)
 
     effect(() => {
       if (this.story()) {

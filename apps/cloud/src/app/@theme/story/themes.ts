@@ -1,4 +1,4 @@
-import { ElementRef, Renderer2, effect, inject } from '@angular/core'
+import { ElementRef, Renderer2, Signal, effect, inject, isSignal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { NxCoreService, ThemesEnum } from '@metad/core'
 import { isEqual } from '@metad/ocap-core'
@@ -22,7 +22,7 @@ export function registerStoryThemes(storyService: NxStoryService) {
     })
 }
 
-export function effectStoryTheme(elementRef: ElementRef) {
+export function effectStoryTheme(elementRef: Signal<ElementRef<unknown>> | ElementRef<unknown>) {
   const storyService = inject(NxStoryService)
   const coreService = inject(NxCoreService)
   const appService = inject(AppService)
@@ -35,16 +35,21 @@ export function effectStoryTheme(elementRef: ElementRef) {
     const key = storyKey$()
     const echartsTheme = echartsTheme$()
 
+    const nativeElement = isSignal(elementRef) ? elementRef()?.nativeElement : elementRef.nativeElement
+    if (!nativeElement) {
+      return
+    }
+
     Object.values(ThemesEnum).forEach((theme) => {
-      renderer.removeClass(elementRef.nativeElement, 'ngm-theme-' + theme)
-      renderer.removeClass(elementRef.nativeElement, theme)
+      renderer.removeClass(nativeElement, 'ngm-theme-' + theme)
+      renderer.removeClass(nativeElement, theme)
     })
 
     let current = storyService.themeName()
 
     if (current && current !== ThemesEnum.default && current !== ThemesEnum.system) {
-      renderer.addClass(elementRef.nativeElement, 'ngm-theme-' + current)
-      renderer.addClass(elementRef.nativeElement, current)
+      renderer.addClass(nativeElement, 'ngm-theme-' + current)
+      renderer.addClass(nativeElement, current)
     }
 
     if (current === ThemesEnum.system || current === ThemesEnum.default || !current) {
@@ -57,4 +62,11 @@ export function effectStoryTheme(elementRef: ElementRef) {
       coreService.changeTheme(current)
     }
   })
+}
+
+/**
+ * @deprecated use effectStoryTheme
+ */
+export function _effectStoryTheme(elementRef: ElementRef) {
+  return effectStoryTheme(elementRef)
 }
