@@ -45,7 +45,7 @@ import {
   isMobile
 } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { _effectStoryTheme, effectStoryTheme, registerStoryThemes } from '../../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryScales, downloadStory } from '../types'
 
@@ -326,8 +326,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     })
 
     if (event) {
-      console.log(`Update story widget: ${this.pageKey()}`, event)
-
       this.storyService.updateWidget({
         pageKey: this.pageKey(),
         widgetKey: this.widgetKey(),
@@ -350,29 +348,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   onSpaceKeyUp(event: KeyboardEvent) {
     this.storyService.patchState({ isPanMode: false })
   }
-
-  // @HostListener('document:keydown', ['$event'])
-  // onKeyDown(event: KeyboardEvent) {
-  //   if (event.altKey) {
-  //     switch (event.code) {
-  //       case 'Minus':
-  //       case 'NumpadSubtract':
-  //         this.storyService.zoomOut()
-  //         break;
-  //       case 'Equal':
-  //       case 'NumpadAdd':
-  //         this.storyService.zoomIn()
-  //         break;
-  //       case 'Digit0':
-  //       case 'Numpad0':
-  //         this.resetZoom()
-  //         break
-  //       case 'Escape':
-  //         this.resetScalePan()
-  //         break;
-  //     }
-  //   }
-  // }
 
   @HostBinding('class.pac-story-viewer')
   @HostBinding('class.ngm-story-container')

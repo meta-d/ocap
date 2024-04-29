@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostBinding, booleanAttribute, computed, inject, input, signal } from '@angular/core'
+import { Directive, ElementRef, HostBinding, Injector, afterNextRender, booleanAttribute, computed, inject, input, runInInjectionContext, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { resizeObservable } from '../helpers'
 
@@ -8,6 +8,7 @@ import { resizeObservable } from '../helpers'
 })
 export class NgmTransformScaleDirective {
   private host = inject(ElementRef)
+  readonly #injector = inject(Injector)
 
   readonly width = input<number | string>()
   readonly height = input<number | string>()
@@ -75,24 +76,28 @@ export class NgmTransformScaleDirective {
   parentObserver: ResizeObserver
 
   constructor() {
-    resizeObservable(this.host.nativeElement)
-      .pipe(
-        // debounceTime(1000),
-        takeUntilDestroyed()
-      )
-      .subscribe((entries) => {
-        this._width.set(entries[0].contentRect.width)
-        this._height.set(entries[0].contentRect.height)
-      })
+    afterNextRender(() => {
+      runInInjectionContext(this.#injector, () => {
+        resizeObservable(this.host.nativeElement)
+        .pipe(
+          // debounceTime(1000),
+          takeUntilDestroyed()
+        )
+        .subscribe((entries) => {
+          this._width.set(entries[0].contentRect.width)
+          this._height.set(entries[0].contentRect.height)
+        })
 
-    resizeObservable(this.host.nativeElement.parentElement)
-      .pipe(
-        // debounceTime(1000),
-        takeUntilDestroyed()
-      )
-      .subscribe((entries) => {
-        this._targetWidth.set(entries[0].contentRect.width)
-        this._targetHeight.set(entries[0].contentRect.height)
+      resizeObservable(this.host.nativeElement.parentElement)
+        .pipe(
+          // debounceTime(1000),
+          takeUntilDestroyed()
+        )
+        .subscribe((entries) => {
+          this._targetWidth.set(entries[0].contentRect.width)
+          this._targetHeight.set(entries[0].contentRect.height)
+        })
       })
+    })
   }
 }

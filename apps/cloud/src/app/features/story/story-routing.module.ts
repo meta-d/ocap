@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
-import { DirtyCheckGuard, storyResolver } from '../../@core/index'
+import { DirtyCheckGuard, storyPointResolver, storyResolver } from '../../@core/index'
 import { StoryPointComponent } from './point/point.component'
 import { StoryDesignerComponent } from './story/story.component'
 import { StoryViewerComponent } from './viewer/viewer.component'
@@ -9,7 +9,8 @@ import { StoryWidgetComponent } from './widget/widget.component'
 const routes: Routes = [
   {
     path: 'point/:id',
-    component: StoryPointComponent
+    component: StoryPointComponent,
+    resolve: { storyPoint: storyPointResolver }
   },
   {
     path: 'widget/:id',

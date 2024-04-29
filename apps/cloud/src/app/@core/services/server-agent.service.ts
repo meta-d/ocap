@@ -150,6 +150,10 @@ export class ServerAgent extends AbstractAgent implements Agent {
     this.error$.next(err)
   }
 
+  _request?(semanticModel: ISemanticModel & DataSourceOptions, options: any): Observable<any> {
+    return from(this.request(semanticModel, options))
+  }
+
   async request(semanticModel: ISemanticModel & DataSourceOptions, options: any): Promise<any> {
     options.headers = options.headers || {}
     const modelId = semanticModel.id
@@ -188,7 +192,7 @@ export class ServerAgent extends AbstractAgent implements Agent {
       }
     } else {
       if (semanticModel.type === 'XMLA') {
-        throw new Error('Use {@link ServerSocketAgent} instead of {@link ServerAgent} for XMLA')
+        // throw new Error('Use {@link ServerSocketAgent} instead of {@link ServerAgent} for XMLA')
         /**
          * @todo 使用更好的办法判断 (用类型判断?)
          */

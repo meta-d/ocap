@@ -30,7 +30,7 @@ export interface NxStoryStore {
 
   getStories(): Observable<Array<Story>>
   getStory(id: ID): Observable<Story>
-  getStoryPoint(storyId: ID, pointId: ID): Observable<StoryPoint>
+  getStoryPoint(storyId: ID, pointId: ID, options?: { token: string }): Observable<StoryPoint>
 
   // Comments
   createComment(comment: StoryComment): Observable<StoryComment>

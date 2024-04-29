@@ -6,7 +6,7 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxStoryService, Story } from '@metad/story/core'
 import { map } from 'rxjs/operators'
 import { AgentType, registerWasmAgentModel } from '../../@core'
-import { _effectStoryTheme, registerStoryThemes } from '../../@theme'
+import { effectStoryTheme, registerStoryThemes } from '../../@theme'
 import { AppService } from '../../app.service'
 
 @Component({
@@ -55,7 +55,7 @@ export class StoryViewerComponent implements OnInit {
     })
 
   constructor() {
-    _effectStoryTheme(this._elementRef)
+    effectStoryTheme(this._elementRef)
 
     effect(() => {
       const models = this.models()

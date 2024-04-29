@@ -19,10 +19,10 @@
         </mat-radio-button>
       </mat-radio-group>
 
-      <ng-container *ngIf="visibility!==Visibility.Public">
-        <mat-slide-toggle class="my-2" [(ngModel)]="secret">{{ 'Story.Shares.Visibility_secret' | translate: {Default: 'Secret'} }}</mat-slide-toggle>
+      <ng-container *ngIf="visibility() !== Visibility.Public">
+        <mat-slide-toggle class="my-2" [(ngModel)]="isSecret">{{ 'Story.Shares.Visibility_secret' | translate: {Default: 'Secret'} }}</mat-slide-toggle>
 
-        <ng-container *ngIf="secret">
+        <ng-container *ngIf="isSecret()">
           <label>
             {{ 'Story.Shares.Expires' | translate: {Default: 'Expires (minutes)'} }}
             <span class="text-xs text-gray-400">
@@ -33,7 +33,7 @@
             thumbLabel
             step="10"
             min="0"
-            max="1000"
+            [max]="60 * 24 * 2"
             discrete
             >
             <input matSliderThumb [(ngModel)]="expires">
@@ -57,7 +57,7 @@
         </button>
       </div>
 
-      <div *ngIf="applicationUrl" class="flex justify-end items-center">
+      <div *ngIf="applicationUrl()" class="flex justify-end items-center">
         <button mat-icon-button displayDensity="cosy" (click)="togglePreview()">
           <mat-icon [ngStyle]="showPreview ? {
             'transform': 'rotate(180deg)',
@@ -72,13 +72,13 @@
     </div>
 
     <ngm-input [label]="'Story.Shares.ApplicationURL' | translate: {Default: 'Application URL'}"
-      [ngModel]="applicationUrl"
+      [ngModel]="applicationUrl()"
     >
       <div ngmSuffix class="block rounded-full bg-gray-500">
         <button mat-icon-button displayDensity="cosy"
           [matTooltip]="'Story.Shares.CopyURL' | translate: {Default: 'Copy URL'}"
-          [disabled]="!applicationUrl"
-          (click)="copy(applicationUrl)">
+          [disabled]="!applicationUrl()"
+          (click)="copy(applicationUrl())">
           <mat-icon>content_copy</mat-icon>
         </button>
       </div>

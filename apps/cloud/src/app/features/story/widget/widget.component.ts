@@ -1,19 +1,18 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ElementRef, Renderer2, inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { ActivatedRoute } from '@angular/router'
+import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
+import { NxCoreService } from '@metad/core'
 import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
-import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
-import { NxCoreService } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { NxStoryModule, NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { registerWasmAgentModel } from '../../../@core'
-import { _effectStoryTheme, registerStoryThemes } from '../../../@theme'
-
+import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 
 @Component({
   standalone: true,
@@ -31,10 +30,8 @@ export class StoryWidgetComponent {
   public storyService = inject(NxStoryService)
   private pointService = inject(NxStoryPointService)
   private widgetsService = inject(WidgetsService)
-  private coreService = inject(NxCoreService)
   private wasmAgent = inject(WasmAgentService)
   private route = inject(ActivatedRoute)
-  private renderer = inject(Renderer2)
   private _elementRef = inject(ElementRef)
 
   public readonly widgetId$ = this.route.params.pipe(
@@ -100,7 +97,6 @@ export class StoryWidgetComponent {
 
   public error$ = new BehaviorSubject(null)
 
-  // private _themeSub = subscribeStoryTheme(this.storyService, this.coreService, this.renderer, this._elementRef)
   private _echartsThemeSub = registerStoryThemes(this.storyService)
   private _storySub = this.story$.pipe(takeUntilDestroyed()).subscribe((story) => {
     this.storyService.setStory(story)
@@ -111,6 +107,6 @@ export class StoryWidgetComponent {
   })
 
   constructor() {
-    _effectStoryTheme(this._elementRef)
+    effectStoryTheme(this._elementRef)
   }
 }

@@ -53,6 +53,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isEqual, startsWith } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { BehaviorSubject, EMPTY, Observable, firstValueFrom, interval, merge } from 'rxjs'
 import {
   combineLatestWith,
@@ -161,6 +162,8 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   readonly storyPointComponents = viewChildren('story_point', { read: NxStoryPointComponent })
   readonly cdkDrags = viewChildren('story_point', { read: CdkDrag })
+
+  readonly queryParams = injectQueryParams()
 
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
@@ -411,6 +414,13 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      const token = this.queryParams()['token']
+      if (token) {
+        this.storyService.patchState({ token })
+      }
+    }, { allowSignalWrites: true })
   }
 
   ngOnChanges({ pageKey, filterBarOpened }: SimpleChanges): void {
@@ -674,8 +684,6 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
     if (!this.isFocused()) return
 
     event.preventDefault() // Prevent default scrolling behavior
-
-    console.log(event.altKey)
 
     // Increase or decrease the scale based on the direction of the scroll
     if (event.altKey) {

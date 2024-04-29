@@ -518,11 +518,10 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
-  async openShare() {
+  openShare() {
     const story = this.story()
-    const isAuthenticated = await firstValueFrom(this.storyService.isAuthenticated$)
-    const result = await firstValueFrom(
-      this._dialog
+    const isAuthenticated = this.storyService.isAuthenticated()
+    this._dialog
         .open(StorySharesComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
@@ -534,7 +533,7 @@ export class StoryToolbarComponent implements OnInit {
           }
         })
         .afterClosed()
-    )
+        .subscribe()
   }
 
   async createStoryPage(input: Partial<StoryPoint>) {

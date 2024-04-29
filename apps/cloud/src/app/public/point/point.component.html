@@ -1,17 +1,19 @@
-<facebook-content-loader *ngIf="!pointKey()" class="absolute w-full h-full p-4"
-    [animate]="true">
-</facebook-content-loader>
+@if (!pointKey()) {
+  <facebook-content-loader class="absolute w-full h-full p-4"
+    [animate]="true" />
+}
 
 <div class="pac-story-point-viewer block absolute top-0 w-full h-full">
-    <ngm-story-point *ngIf="pointKey()" class="w-full h-full"
-        ngmTransformScale
-        [ngStyle]="storySizeStyles()"
-        [key]="pointKey()"
-        [opened]="true"
-    >
-    </ngm-story-point>
+  @if (pointKey()) {
+    <pac-single-page-story tabindex="0" class="block w-full h-full"
+      [story]="story()"
+      [pointKey]="pointKey()"
+    />
+  }
 </div>
 
-<a *ngIf="storyPoint()" class="absolute right-1 bottom-0 z-10" href="/">
+@if (storyPoint()) {
+  <a class="absolute right-1 bottom-0 z-10" href="/">
     {{'@'}}{{ storyPoint().createdBy | createdBy }}
-</a>
+  </a>
+}

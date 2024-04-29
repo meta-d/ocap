@@ -1,15 +1,16 @@
-import { IPagination, IStoryPoint } from '@metad/contracts'
-import { CrudController, ParseJsonPipe, Public, UUIDValidationPipe } from '@metad/server-core'
+import { IPagination, ISecretToken, IStoryPoint } from '@metad/contracts'
+import { CrudController, ParseJsonPipe, Public, SecretTokenGetCommand, UUIDValidationPipe } from '@metad/server-core'
 import {
 	ClassSerializerInterceptor,
 	Controller,
+	ForbiddenException,
 	Get,
 	NotFoundException,
 	Param,
 	Query,
 	UseInterceptors
 } from '@nestjs/common'
-import { QueryBus } from '@nestjs/cqrs'
+import { CommandBus, QueryBus } from '@nestjs/cqrs'
 import { FindOneOptions } from 'typeorm'
 import { StoryPointPublicDTO } from './dto'
 import { StoryPointOneQuery } from './queries'
@@ -18,7 +19,11 @@ import { StoryPointService } from './story-point.service'
 
 @Controller()
 export class StoryPointController extends CrudController<StoryPoint> {
-	constructor(private readonly storyPointService: StoryPointService, private readonly queryBus: QueryBus,) {
+	constructor(
+		private readonly storyPointService: StoryPointService,
+		private readonly commandBus: CommandBus,
+		private readonly queryBus: QueryBus
+	) {
 		super(storyPointService)
 	}
 
@@ -45,7 +50,6 @@ export class StoryPointController extends CrudController<StoryPoint> {
 		@Param('id', UUIDValidationPipe) id: string,
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<IStoryPoint>
 	): Promise<StoryPointPublicDTO> {
-
 		const { relations } = options
 		const point = await this.storyPointService.findPublicOne(id, { relations })
 
@@ -56,11 +60,35 @@ export class StoryPointController extends CrudController<StoryPoint> {
 		return point
 	}
 
+	/**
+	 * Get story point by id
+	 * - If private shared token is provided
+	 * - Otherwise you have permission to access the story point
+	 * 
+	 * @param id 
+	 * @param options 
+	 * @param token 
+	 * @returns 
+	 */
 	@Get(':id')
 	async findById(
 		@Param('id', UUIDValidationPipe) id: string,
-		@Query('$query', ParseJsonPipe) options: FindOneOptions<IStoryPoint>
+		@Query('$query', ParseJsonPipe) options: FindOneOptions<StoryPoint>,
+		@Query('token') token: string
 	): Promise<StoryPoint> {
-		return await this.queryBus.execute(new StoryPointOneQuery(id, options))
+		if (token) {
+			const secretToken: ISecretToken = await this.commandBus.execute(new SecretTokenGetCommand({ token }))
+			if (secretToken && !secretToken.expired) {
+				const where = secretToken.entityId === id ? { id } : { id, storyId: secretToken.entityId }
+				return await this.storyPointService.findOne({
+					...(options ?? {}),
+					where
+				})
+			} else {
+				throw new ForbiddenException('The token is invalid or expired')
+			}
+		} else {
+			return await this.queryBus.execute(new StoryPointOneQuery(id, options))
+		}
 	}
 }

@@ -4,20 +4,19 @@ import { CommonModule } from '@angular/common'
 import { HttpParams } from '@angular/common/http'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   Inject,
   OnInit,
   TemplateRef,
   ViewChild,
   computed,
-  inject
+  inject,
+  model,
+  signal
 } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { MatDividerModule } from '@angular/material/divider'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
@@ -25,13 +24,12 @@ import { MatRadioModule } from '@angular/material/radio'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatSnackBar } from '@angular/material/snack-bar'
-import { MatTabsModule } from '@angular/material/tabs'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
 import { AccessEnum, ISemanticModel, Visibility } from '@metad/contracts'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NX_STORY_STORE, NxStoryService, NxStoryStore, StoryPoint, StoryWidget } from '@metad/story/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { firstValueFrom } from 'rxjs'
 
 @Component({
@@ -41,13 +39,11 @@ import { firstValueFrom } from 'rxjs'
     FormsModule,
     DragDropModule,
 
-    MatTabsModule,
     MatRadioModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule,
     MatTooltipModule,
     MatSlideToggleModule,
     MatSliderModule,
@@ -64,17 +60,32 @@ export class StorySharesComponent implements OnInit {
   Visibility = Visibility
   AccessEnum = AccessEnum
 
-  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _snackBar = inject(MatSnackBar)
 
-  visibilities = [Visibility.Public, Visibility.Private]
+  readonly visibilities = [Visibility.Public, Visibility.Private]
   _applicationBaseUrl = window.location.origin
-  applicationUrl = ''
-  visibility: Visibility = Visibility.Private
+  readonly baseUrl = signal<string>(null)
+  readonly visibility = model(Visibility.Private)
   visibilityDisabled = false
-  secret = false
-  expires: number = null
-  pageKey: string = null
+  readonly isSecret = model(false)
+  readonly expires = model(60 * 10)
+  readonly pageKey = model<string>(null)
+  readonly secret = signal<string>(null)
+
+  readonly applicationUrl = computed(() => {
+    if (!this.baseUrl()) return
+
+    const queryParams = {}
+
+    if (this.pageKey()) {
+      queryParams['pageKey'] = this.pageKey()
+    }
+    if (this.isSecret() && this.secret()) {
+      queryParams['token'] = this.secret()
+    }
+    const query = new HttpParams({ fromObject: queryParams }).toString()
+    return this.baseUrl() + (query ? `?${query}` : '')
+  })
 
   _embedBaseUrl = window.location.origin + '/public/'
   _embedUrl = ''
@@ -132,9 +143,9 @@ export class StorySharesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.visibility = this.data.visibility
+    this.visibility.set(this.data.visibility)
 
-    if (this.visibilityDisabled && (!this.visibility || this.visibility === Visibility.Public)) {
+    if (this.visibilityDisabled && (!this.visibility() || this.visibility() === Visibility.Public)) {
       this.generate()
     }
   }
@@ -142,14 +153,14 @@ export class StorySharesComponent implements OnInit {
   togglePreview() {
     this.showPreview = !this.showPreview
     if (this.showPreview) {
-      this.embedUrl = this._sanitizer.bypassSecurityTrustResourceUrl(this.applicationUrl)
+      this.embedUrl = this._sanitizer.bypassSecurityTrustResourceUrl(this.applicationUrl())
     }
   }
 
   async generate() {
-    if (this.visibility !== this.data.visibility) {
+    if (this.visibility() !== this.data.visibility) {
       // Check semantic model visibility first
-      if (this.visibility === Visibility.Public && this.data.models.some((m) => m.visibility !== Visibility.Public)) {
+      if (this.visibility() === Visibility.Public && this.data.models.some((m) => m.visibility !== Visibility.Public)) {
         this._snackBar.open(
           this.getTranslation('Story.Shares.SemanticModelPublicFirst', {
             Default: 'Change semantic model to public visibility first!'
@@ -163,45 +174,37 @@ export class StorySharesComponent implements OnInit {
       }
       await firstValueFrom(
         this.storyStore.putStory(this.data.id, {
-          visibility: this.visibility
+          visibility: this.visibility()
         })
       )
       const changedText = this.getTranslation('Story.Shares.VisibilityChanged', { Default: 'Visibility changed' })
       this._snackBar.open(changedText + '!', '', { duration: 2000 })
       this.storyService.updateStory({
-        visibility: this.visibility
+        visibility: this.visibility()
       })
     }
 
-    this.applicationUrl = this.generateUrl()
-    const queryParams = {}
-
-    if (this.pageKey) {
-      queryParams['pageKey'] = this.pageKey
-    }
-    if (this.secret) {
+    this.baseUrl.set(this.generateUrl())
+    if (this.isSecret()) {
       const token = await firstValueFrom(
         this.storyStore.shareToken(
           this.data.id,
-          this.expires > 0
+          this.expires() > 0
             ? {
-                minutes: this.expires
+                minutes: this.expires()
               }
             : null
         )
       )
-      queryParams['token'] = token
+      this.secret.set(token)
     }
-
-    this.applicationUrl = this.applicationUrl + '?' + new HttpParams({ fromObject: queryParams }).toString()
-
-    this._cdr.markForCheck()
-    this._cdr.detectChanges()
   }
 
   generateUrl() {
-    const baseUrl = !this.visibility ||
-      this.visibility === Visibility.Public ? this._applicationBaseUrl + '/public' : this._applicationBaseUrl
+    const baseUrl =
+      !this.visibility() || this.visibility() === Visibility.Public
+        ? this._applicationBaseUrl + '/public'
+        : this._applicationBaseUrl
     if (this.data.widget) {
       return baseUrl + '/story/widget/' + this.data.widget.id
     } else if (this.data.point) {

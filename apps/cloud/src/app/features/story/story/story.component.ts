@@ -1,7 +1,6 @@
 import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import {
-  afterNextRender,
   Component,
   computed,
   effect,
@@ -12,8 +11,8 @@ import {
   Input,
   model,
   OnInit,
-  runInInjectionContext,
   signal,
+  viewChild,
   ViewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -49,7 +48,7 @@ import { firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { _effectStoryTheme } from '../../../@theme'
+import { effectStoryTheme } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
@@ -106,7 +105,8 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   editable = true
 
   @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent
-  @ViewChild('storyContainer') storyContainer: ElementRef<any>
+  // @ViewChild('storyContainer') storyContainer: ElementRef<any>
+  readonly storyContainer = viewChild('storyContainer', { read: ElementRef})
   @ViewChild(NxStoryComponent) storyComponent: NxStoryComponent
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
@@ -243,11 +243,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
       })
     })
 
-    afterNextRender(() => {
-      runInInjectionContext(this.#injector, () => {
-        _effectStoryTheme(this.storyContainer)
-      })
-    })
+    effectStoryTheme(this.storyContainer)
   }
 
   ngOnInit(): void {

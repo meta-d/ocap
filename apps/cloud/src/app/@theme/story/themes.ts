@@ -63,10 +63,3 @@ export function effectStoryTheme(elementRef: Signal<ElementRef<unknown>> | Eleme
     }
   })
 }
-
-/**
- * @deprecated use effectStoryTheme
- */
-export function _effectStoryTheme(elementRef: ElementRef) {
-  return effectStoryTheme(elementRef)
-}

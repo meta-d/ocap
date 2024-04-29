@@ -427,17 +427,22 @@ export class NxStoryService {
 
   /**
    * Init story state
+   * 
+   * @param story 
+   * @param fetched Widgets fetched
    */
-  setStory(story: Story) {
-    this.logger?.debug(`[StoryService] new story`, story)
+  setStory(story: Story, options = { fetched: false }) {
+    this.logger?.debug(`[Story] [StoryService] init story`, story)
 
+    const { fetched } = options
     this.store.update((state) => ({
       ...state,
       story: cloneDeep(story),
       points: story.points.map((item) => ({
         id: item.id,
         key: item.key,
-        storyPoint: cloneDeep(item)
+        fetched
+        // storyPoint: cloneDeep(item)
       }))
     }))
     this.pristineStore.update(() => ({

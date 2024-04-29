@@ -197,7 +197,8 @@ export class NxStoryPointService {
 
   async fetchStoryPoint() {
     const storyPoint = this.storyPoint
-    const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id))
+    const token = this.#storyService.store.query((state) => state.token)
+    const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id, { token }))
     this.initWidgets(point.widgets)
 
     this.stateStore.update((state) => ({
