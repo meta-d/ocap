@@ -30,7 +30,7 @@ export const EChartsOptions = z
 
 export const ChartSchema = z.object({
   chartType: z.object({
-    type: z.enum(ChartTypes as z.EnumValues).describe('The chart type'),
+    type: z.enum(ChartTypes as unknown as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
   dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),

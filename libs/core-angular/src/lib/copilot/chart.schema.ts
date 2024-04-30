@@ -26,7 +26,7 @@ export function makeChartSchema() {
     .object({
       cube: z.string().describe('The cube name used by the chart'),
       chartType: z.object({
-        type: z.enum(makeChartEnum() as z.EnumValues).describe('The chart type'),
+        type: z.enum(makeChartEnum() as unknown as z.EnumValues).describe('The chart type'),
         chartOptions: z
           .object({
             seriesStyle: z.any().describe('The series options of ECharts library'),
