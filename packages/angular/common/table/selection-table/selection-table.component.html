@@ -31,9 +31,9 @@
                 @default {
                   <div class="whitespace-nowrap">
                     @if (column.cellTemplate) {
-                        <ng-container *ngTemplateOutlet="column.cellTemplate; context: _context(element, column)"></ng-container>
+                      <ng-container *ngTemplateOutlet="column.cellTemplate; context: _context(element, column)"></ng-container>
                     } @else {
-                        {{element[column.value]}}
+                      {{get(element, column.value)}}
                     }
                   </div>
                 }

@@ -54,6 +54,8 @@ export type SelectionTableColumn = {
   ]
 })
 export class NgmSelectionTableComponent implements OnInit, OnChanges, ControlValueAccessor {
+  get = get
+  
   @Input() displayDensity: DisplayDensity | string = DisplayDensity.comfortable
   @Input() data: Array<any>
 
