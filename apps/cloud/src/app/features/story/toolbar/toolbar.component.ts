@@ -30,7 +30,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
-import { DeepPartial, IsNilPipe } from '@metad/core'
+import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
 import {
   ParametersComponent,
   PreferencesComponent,
@@ -58,7 +58,6 @@ import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
-import { CHARTS } from '@metad/story/widgets/analytical-card'
 
 
 @Component({
@@ -519,11 +518,10 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
-  async openShare() {
+  openShare() {
     const story = this.story()
-    const isAuthenticated = await firstValueFrom(this.storyService.isAuthenticated$)
-    const result = await firstValueFrom(
-      this._dialog
+    const isAuthenticated = this.storyService.isAuthenticated()
+    this._dialog
         .open(StorySharesComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
@@ -535,7 +533,7 @@ export class StoryToolbarComponent implements OnInit {
           }
         })
         .afterClosed()
-    )
+        .subscribe()
   }
 
   async createStoryPage(input: Partial<StoryPoint>) {
@@ -666,46 +664,46 @@ export class StoryToolbarComponent implements OnInit {
     this.storyService.patchState({ isPanMode: false })
   }
 
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
-    if (event.metaKey || event.ctrlKey) {
-      if (event.shiftKey) {
-        if (event.key === 'z' || event.key === 'Z') {
-          this.storyService.redo()
-          event.preventDefault()
-        }
-      } else {
-        if (event.key === 's' || event.key === 'S') {
-          this.storyService.saveStory()
-          event.preventDefault()
-        } else if (event.key === 'z' || event.key === 'Z') {
-          this.storyService.undo()
-          event.preventDefault()
-        }
-      }
-    } else if (event.altKey) {
-      switch (event.code) {
-        case 'Minus':
-        case 'NumpadSubtract':
-          this.zoomOut()
-          break
-        case 'Equal':
-        case 'NumpadAdd':
-          this.zoomIn()
-          break
-        case 'Digit0':
-        case 'Numpad0':
-          this.resetZoom()
-          break
-        case 'Escape':
-          this.resetScalePan.emit()
-          break
-      }
-    }
+  // @HostListener('document:keydown', ['$event'])
+  // onKeyDown(event: KeyboardEvent) {
+  //   if (event.metaKey || event.ctrlKey) {
+  //     if (event.shiftKey) {
+  //       if (event.key === 'z' || event.key === 'Z') {
+  //         this.storyService.redo()
+  //         event.preventDefault()
+  //       }
+  //     } else {
+  //       if (event.key === 's' || event.key === 'S') {
+  //         this.storyService.saveStory()
+  //         event.preventDefault()
+  //       } else if (event.key === 'z' || event.key === 'Z') {
+  //         this.storyService.undo()
+  //         event.preventDefault()
+  //       }
+  //     }
+  //   } else if (event.altKey) {
+  //     switch (event.code) {
+  //       case 'Minus':
+  //       case 'NumpadSubtract':
+  //         this.zoomOut()
+  //         break
+  //       case 'Equal':
+  //       case 'NumpadAdd':
+  //         this.zoomIn()
+  //         break
+  //       case 'Digit0':
+  //       case 'Numpad0':
+  //         this.resetZoom()
+  //         break
+  //       case 'Escape':
+  //         this.resetScalePan.emit()
+  //         break
+  //     }
+  //   }
 
-    // 在其他地方点 Delete 也会删除 Widget, 除非给 Widget 加上 Focus
-    // if (event.key === 'Delete') {
-    //   this.storyService.removeCurrentWidget()
-    // }
-  }
+  //   // 在其他地方点 Delete 也会删除 Widget, 除非给 Widget 加上 Focus
+  //   // if (event.key === 'Delete') {
+  //   //   this.storyService.removeCurrentWidget()
+  //   // }
+  // }
 }

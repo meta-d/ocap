@@ -1,10 +1,10 @@
-import { DimensionSchema, MeasureSchema } from '@metad/core'
-import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, flatten, omit } from '@metad/ocap-core'
-import { CHARTS, ChartMainTypeEnum, getChartType } from '@metad/story/widgets/analytical-card'
+import { DeepPartial, DimensionSchema, MeasureSchema, getChartType, makeChartEnum } from '@metad/core'
+import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
+import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
-import { fixDimension } from '../types'
+import { tryFixDimension } from '../types'
 
-const ChartTypes = flatten(CHARTS.map((g) => g.charts.map((c) => c.label))) as any
+const ChartTypes = makeChartEnum()
 
 export const EChartsOptions = z
   .object({
@@ -30,11 +30,11 @@ export const EChartsOptions = z
 
 export const ChartSchema = z.object({
   chartType: z.object({
-    type: z.enum(ChartTypes).describe('The chart type'),
+    type: z.enum(ChartTypes as z.EnumValues).describe('The chart type'),
     chartOptions: EChartsOptions.optional()
   }),
-  dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
-  measures: z.array(MeasureSchema).describe('The measures used by the chart'),
+  dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
+  measures: z.array(MeasureSchema).optional().describe('The measures used by the chart'),
 
   slicers: z
     .array(
@@ -58,17 +58,18 @@ export const ChartSchema = z.object({
           .describe('The members in the slicer')
       })
     )
+    .optional()
     .describe('The slicers used by the chart')
 })
 
 export const ChartWidgetSchema = z.object({
-  title: z.string().describe(`Title of the widget`),
+  title: z.string().optional().describe(`Title of the widget`),
   position: z.object({
     x: z.number().describe(`Position x of the widget in the page layout`),
     y: z.number().describe(`Position y of the widget in the page layout`),
     cols: z.number().describe('Width of the widget in page layout'),
     rows: z.number().describe('Height of the widget in page layout')
-  }),
+  }).optional(),
   dataSettings: z
     .object({
       limit: z.number().optional().describe('The limit of the records')
@@ -85,7 +86,11 @@ export const ChartWidgetSchema = z.object({
  * @param entityType
  * @returns
  */
-export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityType: EntityType, schema?: any): ChartAnnotation {
+export function chartAnnotationCheck(
+  chartAnnotation: DeepPartial<ChartAnnotation>,
+  entityType: EntityType,
+  schema?: any
+): DeepPartial<ChartAnnotation> {
   if (!chartAnnotation) {
     return chartAnnotation
   }
@@ -110,19 +115,21 @@ export function chartAnnotationCheck(chartAnnotation: ChartAnnotation, entityTyp
   return {
     ...chartAnnotation,
     chartType,
-    dimensions: (chartAnnotation.dimensions ?? schema.dimensions)?.map((item) => fixDimension(item, entityType)),
-    measures: chartAnnotation.measures ?? schema.measures
+    dimensions: (chartAnnotation.dimensions ?? schema?.dimensions)?.map((item) => tryFixDimension(entityType, item)),
+    measures: chartAnnotation.measures ?? schema?.measures
   }
 }
 
-export function completeChartAnnotation(chart: ChartAnnotation) {
-  return chart && {
-    ...chart,
-    measures: chart.measures?.map((item) => ({
-      ...item,
-      formatting: {
-        shortNumber: true
-      }
-    }))
-  }
+export function completeChartAnnotation(chart: DeepPartial<ChartAnnotation>): DeepPartial<ChartAnnotation> {
+  return (
+    chart && {
+      ...chart,
+      measures: chart.measures?.map((item) => ({
+        ...item,
+        formatting: {
+          shortNumber: true
+        }
+      }))
+    }
+  )
 }

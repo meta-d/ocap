@@ -176,7 +176,12 @@
       "Agent": "代理",
       "Progress": "进度",
       "Complete": "完成",
-      "Request": "请求"
+      "Request": "请求",
+      "Length": "长度",
+      "PrimaryKey": "主键",
+      "TableName": "表名",
+      "DataAgent": "数据代理",
+      "ServerAgent": "服务器代理"
     },
     "MENU": {
       "Certification": "认证",
@@ -694,6 +699,7 @@
         "CUBE_TABLE": "立方体的表",
         "Field": "字段",
         "Measure": "度量",
+        "Dimension": "维度",
         "AssociatedDimension": "关联维度",
         "PrimaryKey": "主键",
         "Visible": "可见",
@@ -1077,6 +1083,7 @@
       }
     },
     "Story": {
+      "StoryToolbar": "故事工具栏",
       "EditStory": "编辑故事",
       "DuplicateStory": "复印故事",
       "DownloadStory": "下载故事",
@@ -1196,7 +1203,8 @@
         "encoding": "编码",
         "storageProvider": "存储提供商",
         "createdByUser": "创建人"
-      }
+      },
+      "ProjectNavigations": "项目导航栏"
     },
     "Certification": {
       "Certification": "认证",
@@ -1256,7 +1264,8 @@
           "2023年某产品的访问量走势"
         ],
         "SuggestCommandDescription": "为数据集提供提问建议",
-        "ChartCommandDescription": "用图表洞察数据"
+        "ChartCommandDescription": "用图表洞察数据",
+        "SelectCubeFirstly": "请先选择一个多维数据集"
       }
     },
     "ApprovalPolicy": {
@@ -2645,7 +2654,8 @@
       "Order_ASC": "正序",
       "Order_DESC": "倒序",
       "Dimension": "维度",
-      "AvailableMembers": "可用成员"
+      "AvailableMembers": "可用成员",
+      "DimensionNotFound": "在数据集‘{{cube}}’中未找到维度‘{{dimension}}’"
     },
     "CALCULATION": {
       "TITLE": "计算编辑器",

@@ -15,7 +15,7 @@
  * isNil(NaN)
  * // => false
  */
-export function isNil(value) {
+export function isNil(value: unknown) {
   return value == null
 }
 

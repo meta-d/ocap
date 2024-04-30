@@ -114,6 +114,7 @@ export class ClickHouseRunner extends BaseSQLQueryRunner<ClickHouseAdapterOption
             name: table,
             columns: columns.map((item: any) => ({
               name: item.name,
+              dataType: item.type,
               type: typeMap(item.type),
             })),
           }
@@ -137,6 +138,10 @@ export class ClickHouseRunner extends BaseSQLQueryRunner<ClickHouseAdapterOption
 
     statement = `${statement} LIMIT 1`
     return this.runQuery(statement, { catalog })
+  }
+
+  override async createCatalog(catalog: string, options?: {}) {
+    await this.runQuery(`CREATE DATABASE IF NOT EXISTS ${catalog}`)
   }
 
   async teardown() {

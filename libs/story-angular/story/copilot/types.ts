@@ -51,17 +51,11 @@ export function tryFixDimension(entityType: EntityType, dimension: Dimension) {
   }
 }
 
-export function tryFixAnalyticsAnnotation(entityType: EntityType, analytics: AnalyticsAnnotation) {
-  return (
-    analytics && {
-      ...analytics,
-      rows: analytics.rows?.map((d: any) => tryFixDimension(entityType, d)),
-      columns: analytics.columns?.map((d: any) => tryFixDimension(entityType, d))
-    }
-  )
-}
 
 
+/**
+ * @deprecated use tryFixDimension
+ */
 export function fixDimension(item: Dimension, entityType: EntityType) {
   if ((<Measure>item).measure) {
     return fixMeasure(item, entityType)

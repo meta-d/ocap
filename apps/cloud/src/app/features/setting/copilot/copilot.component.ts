@@ -1,5 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { Component, computed, effect, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
@@ -64,14 +64,19 @@ export class CopilotComponent extends TranslationBaseComponent {
       }
     })
 
-  private copilotSub = this.copilotService.copilot$.pipe(takeUntilDestroyed()).subscribe((copilot) => {
-    if (copilot?.enabled) {
-      this.formGroup.patchValue(copilot)
-    } else {
-      this.formGroup.reset()
-    }
-    this.formGroup.markAsPristine()
-  })
+  constructor() {
+    super()
+
+    effect(() => {
+      const copilot = this.copilotService.copilotConfig()
+      if (copilot?.enabled) {
+        this.formGroup.patchValue(copilot)
+      } else {
+        this.formGroup.reset()
+      }
+      this.formGroup.markAsPristine()
+    })
+  }
 
   /**
   |--------------------------------------------------------------------------
@@ -82,10 +87,13 @@ export class CopilotComponent extends TranslationBaseComponent {
     try {
       this.saving.set(true)
       const { apiKey, ...rest } = this.formGroup.value
-      await this.copilotService.upsertOne(this.formGroup.get('apiKey').dirty ? {
-          ...rest,
-          apiKey: apiKey.trim()
-        } : rest
+      await this.copilotService.upsertOne(
+        this.formGroup.get('apiKey').dirty
+          ? {
+              ...rest,
+              apiKey: apiKey.trim()
+            }
+          : rest
       )
       this.formGroup.markAsPristine()
       this._toastrService.success('PAC.ACTIONS.Save', { Default: 'Save' })

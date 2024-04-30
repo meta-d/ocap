@@ -61,6 +61,10 @@ $prefix: (ngm, story-designer);
     .ngm-story__device {
       max-height: calc(100% - 1.5rem);
       @apply px-2;
+
+      .ngm-story__device-content {
+        @apply mb-4;
+      }
     }
   }
 

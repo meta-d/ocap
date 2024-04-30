@@ -4,7 +4,7 @@ import { isNil } from './isNil'
 import { isPlainObject } from './isPlainObject'
 import { isString } from './isString'
 
-export function isBlank(value) {
+export function isBlank(value: unknown) {
   return isNil(value) || (isString(value) && !value.trim())
 }
 
@@ -17,7 +17,8 @@ export function mergeOptions(obj1: object, ...objs: unknown[]) {
  * * Plain Object
  * * Array
  * * Other
- *
+ * @deprecated 不应该产生新对象结果，应该直接修改 source 对象
+ * 
  * @param source
  * @param target
  * @param dpth The depth of merge
@@ -49,7 +50,7 @@ export function assignDeepOmitBlank(source: object, target: object, dpth = 1) {
   }
 }
 
-export function omitBlank(obj) {
+export function omitBlank(obj: Array<unknown> | object | unknown) {
   if (Array.isArray(obj)) {
     return obj.map((value) => omitBlank(value))
   } else if (isPlainObject(obj)) {

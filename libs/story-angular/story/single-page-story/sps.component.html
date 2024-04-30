@@ -1,0 +1,17 @@
+<div #storyContainer class="page-container block w-full h-full"
+  [ngStyle]="storySizeStyles()"
+  ngmTransformScale
+>
+  @if (pointKey()) {
+    <ngm-story-point #storyPoint class="w-full h-full"
+      ngmTransformScale
+      [ngStyle]="storySizeStyles()"
+      [key]="pointKey()"
+      
+      cdkDrag
+      [cdkDragDisabled]="disablePan()"
+      [class.cursor-grab.select-none]="isPanMode()"
+      >
+    </ngm-story-point>
+  }
+</div>

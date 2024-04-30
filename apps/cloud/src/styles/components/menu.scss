@@ -60,7 +60,7 @@
   justify-content: space-between;
 }
 
-.mat-mdc-menu-panel {
+.mat-mdc-menu-panel .mat-mdc-menu-content {
 
   .mat-mdc-menu-item.active {
     color: var(--ngm-color-primary);
@@ -70,14 +70,9 @@
     .mat-icon {
       @apply shrink-0;
     }
-  }
 
-  // 未完成
-  &.ngm-density__compact {
-    .mat-mdc-menu-item {
-      .mat-icon {
-
-      }
+    .mat-mdc-menu-item-text {
+      @apply overflow-hidden whitespace-nowrap text-ellipsis;
     }
   }
 }

@@ -24,6 +24,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 
 	async execute(query: ModelOlapQuery) {
 		const { id, modelId, body, forceRefresh, acceptLanguage } = query.input
+		const user = query.user
 
 		this.logger.debug(`Executing OLAP query [${id}] for model: ${modelId}`)
 
@@ -33,7 +34,9 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 		})
 
 		// Access controls
-		const currentUserId = RequestContext.currentUserId()
+		// const currentUserId = RequestContext.currentUserId()
+		const currentUserId = user.id
+		const tenantId = user.tenantId
 		const roleNames = model.roles
 			.filter((role) => role.users.find((user) => user.id === currentUserId))
 			.map((role) => role.name)
@@ -46,7 +49,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 			const md5 = new Md5()
 			md5.appendStr(body)
 			key = md5.end() as string
-			cache = await this.cacheService.findOneOrFail({ where: { modelId, key, language } })
+			cache = await this.cacheService.findOneOrFail({ where: { tenantId, modelId, key, language } })
 			if (cache.success && !forceRefresh) {
 				// TODO 时区有差异
 				const period = (new Date().getTime() - cache.record.createdAt.getTime()) / 1000 - 60 * 60 * 8 // seconds
@@ -94,6 +97,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 				// 判断 Xmla Response 是否包含错误信息
 				if (!queryData.includes('SOAP-ENV:Fault')) {
 					await this.cacheService.create({
+						tenantId,
 						key,
 						language,
 						modelId,

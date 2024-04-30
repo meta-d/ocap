@@ -1,10 +1,11 @@
-import { EntityType } from '@metad/ocap-core'
-import { StoryPoint, WidgetComponentType } from '@metad/story/core'
+import { WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
-import { tryFixAnalyticsAnnotation } from '../types'
-import { ChartSchema, chartAnnotationCheck, completeChartAnnotation } from './chart.schema'
+import { ChartSchema } from './chart.schema'
 import { AnalyticsAnnotationSchema } from './grid.schema'
 
+/**
+ * @deprecated use createWidgetSchema instead
+ */
 export const StoryWidgetSchema = z.object({
   title: z.string().describe(`Title of the widget`),
   position: z.object({
@@ -27,19 +28,22 @@ export const StoryWidgetSchema = z.object({
   })
 })
 
-export function schemaToWidget(schema: any, dataSource: string, entityType: EntityType): StoryPoint {
-  return {
-    name: schema.title,
-    ...schema,
-    position: schema.position,
-    dataSettings: {
-      dataSource,
-      entitySet: entityType.name,
-      chartAnnotation: completeChartAnnotation(chartAnnotationCheck(schema.chartAnnotation, entityType, schema)),
-      analytics: tryFixAnalyticsAnnotation(entityType, schema.analytics)
-    },
-    options: {
-      gridSettings: schema.gridSettings
-    }
-  }
+export function createWidgetSchema<T>(component: T) {
+  return z.object({
+    title: z.string().describe(`Title of the widget`),
+    position: z.object({
+      x: z.number().describe(`Position x of the widget in the page layout`),
+      y: z.number().describe(`Position y of the widget in the page layout`),
+      cols: z.number().describe('Width of the widget in page layout'),
+      rows: z.number().describe('Height of the widget in page layout')
+    }),
+
+    ...component
+  })
+}
+
+export function createWidgetStyleSchema() {
+  return z.object({
+    backgroundColor: z.string().optional().describe('Background color of the widget'),
+  })
 }

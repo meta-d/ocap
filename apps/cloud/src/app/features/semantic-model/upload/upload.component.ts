@@ -2,7 +2,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop'
 import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule } from '@angular/common'
 import { HttpErrorResponse } from '@angular/common/http'
-import { Component, inject } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
@@ -15,6 +15,7 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { CreationTable, getErrorMessage } from '../../../@core'
 import { MaterialModule, UploadComponent, createTimer } from '../../../@shared'
 import { UploadSheetType, convertExcelDate2ISO, readExcelJson } from '../types'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -28,6 +29,7 @@ import { UploadSheetType, convertExcelDate2ISO, readExcelJson } from '../types'
     MaterialModule,
     TranslateModule,
     NgmDialogComponent,
+    NgmInputComponent,
     OcapCoreModule,
     UploadComponent
   ]
@@ -38,9 +40,9 @@ export class ModelUploadComponent {
 
   fileList = []
   // 加载文件中
-  isLoading = false
+  readonly isLoading = signal(false)
   // 上传中
-  uploading = false
+  readonly uploading = signal(false)
   // 加载进度
   progress = 0
   mergeType: CreationTable['mergeType'] = 'DELETE'
@@ -70,6 +72,12 @@ export class ModelUploadComponent {
     this.error = null
   }
 
+  removeFiles(files: File[]) {
+    for (const file of files) {
+      this.removeFile(this.fileList.indexOf(file))
+    }
+  }
+
   remove(sheet: UploadSheetType) {
     const index = this.sheets.indexOf(sheet)
     if (index > -1) {
@@ -90,21 +98,15 @@ export class ModelUploadComponent {
 
   async onFileListChange(files: FileList) {
     this.error = null
-    this.isLoading = true
+    this.isLoading.set(true)
     // 暂时只支持单文件上传
-    this.fileList = [files[files.length - 1]]
+    this.fileList = Array.from(files)
     this.sheets$.next([])
     try {
-      const sheets = await readExcelWorkSheets(this.fileList[0])
-      const value = this.sheets$.value.concat(
-        ...sheets.map((item) => ({
-          ...item,
-          displayedColumns: compact(item.columns.map((column) => column.name)),
-          file: this.fileList[0]
-        }))
-      )
-      this.sheets$.next(value)
-      this.isLoading = false
+      for (let i = 0; i < this.fileList.length; i++) {
+        await this.appendFile(this.fileList[i])
+      }
+      this.isLoading.set(false)
 
       if (this.sheets$.value.length > 0) {
         this.activeSheet(this.sheets$.value[0])
@@ -114,6 +116,18 @@ export class ModelUploadComponent {
         this.error = err.message
       }
     }
+  }
+
+  async appendFile(file: File) {
+    // Multiple sheets for excel file
+    const sheets = await readExcelWorkSheets(file)
+    this.sheets$.next(this.sheets$.value.concat(
+      ...sheets.map((item) => ({
+        ...item,
+        displayedColumns: compact(item.columns.map((column) => column.name)),
+        file
+      }))
+    ))
   }
 
   async updateColumnType(sheet: UploadSheetType, header: UploadSheetType['columns'][0], event: TableColumnType) {
@@ -174,7 +188,7 @@ export class ModelUploadComponent {
       console.error(`ModelUploadComponent 内部错误: 没有提供数据源服务`)
     }
 
-    this.uploading = true
+    this.uploading.set(true)
     const files = groupBy(this.sheets, 'fileName')
     for (const fileName in files) {
       const tables = files[fileName]
@@ -211,7 +225,7 @@ export class ModelUploadComponent {
         })
       }
     }
-    this.uploading = false
+    this.uploading.set(false)
   }
 }
 

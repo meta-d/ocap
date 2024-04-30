@@ -261,7 +261,7 @@ export class NxStoryService {
   public readonly currentPage$ = combineLatest([this.currentPageKey$, this.pageStates$]).pipe(
     map(([currentPageKey, pageStates]) => pageStates.find((pageState) => pageState.key === currentPageKey))
   )
-  readonly currentStoryPoint = computed(() => this.storyPoints().find((point) => point.key === this.currentPageKey()))
+  readonly currentStoryPoint = computed(() => this.storyPoints()?.find((point) => point.key === this.currentPageKey()))
   readonly currentPageWidgets = computed(() => this.currentStoryPoint()?.widgets)
 
   readonly currentWidget = toSignal(this.select((state) => state.currentWidget))
@@ -297,12 +297,17 @@ export class NxStoryService {
   public readonly creatingWidget$ = this.select((state) => state.creatingWidget)
   public save$ = new Subject<void>()
 
-  public readonly storySizeStyles$ = combineLatest([
+  /**
+   * Story page size: emulated device size when in desktop device,
+   * but not emulated when in mobile device or editing mode (that provided by actual device size).
+   */
+  readonly storySizeStyles$ = combineLatest([
     this.editable$,
+    this.isMobile$,
     this.storyOptions$.pipe(map((options) => options?.emulatedDevice))
   ]).pipe(
-    map(([editable, emulatedDevice]) => {
-      if (editable) {
+    map(([editable, isMobile, emulatedDevice]) => {
+      if (editable || isMobile) {
         return {
           width: null,
           height: null
@@ -422,17 +427,22 @@ export class NxStoryService {
 
   /**
    * Init story state
+   * 
+   * @param story 
+   * @param fetched Widgets fetched
    */
-  setStory(story: Story) {
-    this.logger?.debug(`[StoryService] new story`, story)
+  setStory(story: Story, options = { fetched: false }) {
+    this.logger?.debug(`[Story] [StoryService] init story`, story)
 
+    const { fetched } = options
     this.store.update((state) => ({
       ...state,
       story: cloneDeep(story),
       points: story.points.map((item) => ({
         id: item.id,
         key: item.key,
-        storyPoint: cloneDeep(item)
+        fetched
+        // storyPoint: cloneDeep(item)
       }))
     }))
     this.pristineStore.update(() => ({
@@ -526,7 +536,11 @@ export class NxStoryService {
     }
   }
 
-  // ================================== Selectors ================================== //
+  /**
+  |--------------------------------------------------------------------------
+  | Selectors
+  |--------------------------------------------------------------------------
+  */
   get<R>(fn?: Query<StoryState, R>) {
     return this.store.query(fn ?? ((state) => state as R))
   }
@@ -560,6 +574,34 @@ export class NxStoryService {
       .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType))))
   }
 
+  /**
+   * Select entity type for widget by widget key
+   * 
+   * @param widgetKey 
+   * @returns 
+   */
+  selectWidgetEntityType(widgetKey: string) {
+    const widget = this.store.query((state) => {
+      let widget: StoryWidget = null
+      for (const point of state.story.points) {
+        widget = point.widgets?.find((widget) => widget.key === widgetKey)
+        if (widget) {
+          return widget
+        }
+      }
+      return null
+    })
+
+    if (!widget) {
+      throw new Error(`Widget '${widgetKey}' not found`)
+    }
+    const { dataSource, entitySet } = widget.dataSettings ?? {}
+    if (!dataSource || !entitySet) {
+      throw new Error(`Widget '${widgetKey}' data settings not found`)
+    }
+    return this.selectEntityType({ dataSource, entitySet })
+  }
+
   selectWidget(pointId: ID, widgetId: ID) {
     return this.story$.pipe(
       select((story) => story.points?.find((item) => item.id === pointId)),
@@ -579,7 +621,11 @@ export class NxStoryService {
     return this.coreService.onIntent()
   }
 
-  // ================================== Actions ================================== //
+  /**
+  |--------------------------------------------------------------------------
+  | Actions
+  |--------------------------------------------------------------------------
+  */
   setCurrentIndex(index: number) {
     const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)
@@ -719,15 +765,19 @@ export class NxStoryService {
    * Udpate story widget by pageKey and widgetId
    */
   readonly updateWidget = this.updater(
-    (state, { pageKey, widgetKey, widget }: { pageKey: string; widgetKey: string; widget: StoryWidget }) => {
-      const _widget = state.story.points
-        .find((item) => item.key === pageKey)
-        .widgets.find((item) => item.key === widgetKey)
-      if (_widget) {
-        assign(_widget, widget)
-      }
+    (state, { pageKey, widgetKey, widget }: { pageKey?: string; widgetKey: string; widget: DeepPartial<StoryWidget>}) => {
+    const pointKey = pageKey ?? state.currentPageKey
+    const currentPage = state.story.points.find((item) => item.key === pointKey)
+    const index = currentPage.widgets.findIndex((item) => item.key === widgetKey)
+    if (index > -1) {
+      this.logger.debug(`[StoryService] update widget before:`, cloneDeep(currentPage.widgets[index]))
+      this.logger.debug(`[StoryService] update widget value:`, cloneDeep(widget))
+      currentPage.widgets[index] = assignDeepOmitBlank(currentPage.widgets[index], widget, 10)
+      this.logger.debug(`[StoryService] update widget after:`, cloneDeep(currentPage.widgets[index]))
+    } else {
+      throw new Error(this.getTranslation('Story.Story.WidgetNotExistInPage', `Widget '${widgetKey}' does not exist in page '${pointKey}'`))
     }
-  )
+  })
 
   createStoryWidget(event: DeepPartial<StoryWidget>) {
     const currentPageKey = this.currentPageKey()
@@ -736,12 +786,17 @@ export class NxStoryService {
       throw new Error(this.getTranslation('Story.Story.CurrentPageNotExist', `Current page does not exist`))
     }
 
+    const { dataSource, entitySet } = this.getDefaultDataSource()
     this._storyEvent$.next({
       key: currentPageKey,
       type: StoryEventType.CREATE_WIDGET,
       data: {
-        dataSettings: this.getDefaultDataSource(),
-        ...event
+        ...event,
+        dataSettings: {
+          dataSource,
+          entitySet,
+          ...(event.dataSettings ?? {})
+        }
       }
     })
   }

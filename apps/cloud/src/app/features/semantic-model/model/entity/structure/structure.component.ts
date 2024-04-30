@@ -2,10 +2,10 @@ import { CdkDrag, CdkDragDrop, CdkDragRelease, moveItemInArray, transferArrayIte
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
   HostBinding,
+  Injector,
   computed,
   effect,
   inject,
@@ -42,11 +42,12 @@ import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
+import { ERComponent } from '../er'
 import { newDimensionFromColumn } from '../types'
 
 @Component({
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Default,
   selector: 'pac-model-structure',
   templateUrl: './structure.component.html',
   styleUrls: ['./structure.component.scss'],
@@ -57,7 +58,9 @@ import { newDimensionFromColumn } from '../types'
     MaterialModule,
     NxEditorModule,
     NgmCommonModule,
-    NgmEntityPropertyComponent
+    NgmEntityPropertyComponent,
+
+    ERComponent
   ]
 })
 export class ModelEntityStructureComponent extends TranslationBaseComponent {
@@ -68,9 +71,9 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   public modelService = inject(SemanticModelService)
   public entityService = inject(ModelEntityService)
   private readonly _toastrService = inject(ToastrService)
-  private readonly _cdr = inject(ChangeDetectorRef)
   private readonly _destroyRef = inject(DestroyRef)
   readonly #logger = inject(NGXLogger)
+  readonly injector = inject(Injector)
 
   /**
   |--------------------------------------------------------------------------
@@ -114,7 +117,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     map(([wordWrap, { name }]) => ({
       wordWrap,
       theme: name === 'default' ? 'vs' : `vs-${name}`
-    })),
+    }))
   )
 
   public readonly expression = toSignal(this.entityService.cube$.pipe(map((cube) => cube?.expression)))
@@ -146,8 +149,8 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     effect(
       () => {
         const properties = this.fectTableFields()
-        const dimensions = this.entityService.dimensions()
-        const measures = this.entityService.measures()
+        const dimensions = this.entityService.tableDimensions()
+        const measures = this.entityService.tableMeasures()
 
         if (isEmpty(dimensions) && isEmpty(measures) && properties) {
           this.dimensions.set(
@@ -266,12 +269,13 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       measures
     })
     // Save current meta from data source
-    this.entityService.dimensions.set(this.dimensions())
-    this.entityService.measures.set(this.measures())
+    this.entityService.tableDimensions.set(this.dimensions())
+    this.entityService.tableMeasures.set(this.measures())
   }
 
   async createDimension() {
     const levels = this.dimensions().filter((item) => item.visible)
+    // Add new dimension using fields as levels
     this.entityService.addDimension({
       __id__: uuid(),
       name: '',
@@ -289,8 +293,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
         }
       ]
     })
-
+    // Deselect all fields
     this.toggleVisibleAll(false)
+    // Emit dimension created event
+    this.entityService.event$.next({ type: 'dimension-created' })
   }
 
   /**
@@ -335,9 +341,12 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       dimensions,
       measures
     })
+    // Emit dimension created event
+    this.entityService.event$.next({ type: 'dimension-created' })
+    
     // Save current meta from data source: @todo Why???
-    this.entityService.dimensions.set(this.dimensions())
-    this.entityService.measures.set(this.measures())
+    this.entityService.tableDimensions.set(this.dimensions())
+    this.entityService.tableMeasures.set(this.measures())
   }
 
   toggleVisibleAll(visible: boolean) {

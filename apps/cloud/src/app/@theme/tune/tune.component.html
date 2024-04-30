@@ -13,7 +13,7 @@
   </button>
   <button mat-menu-item [matMenuTriggerFor]="agentMenu">
     <mat-icon fontSet="material-icons-round">assistant_direction</mat-icon>
-    {{ 'PAC.MENU.LOCAL_AGENT' | translate: {Default: 'Local Agent'} }}
+    {{ 'PAC.KEY_WORDS.DataAgent' | translate: {Default: 'Data Agent'} }}
   </button>
   <button mat-menu-item [matMenuTriggerFor]="wasmMenu">
     <mat-icon fontSet="material-icons-round"
@@ -21,12 +21,6 @@
     {{ 'WASM' }}
   </button>
 </mat-menu>
-
-<mat-menu #vertebrates="matMenu">
-  <button mat-menu-item>Birds</button>
-  <button mat-menu-item>Mammals</button>
-</mat-menu>
-
 
 <mat-menu #cacheMenu="matMenu" class="ngm-menu-card">
   <div class="w-80 px-4 flex flex-col justify-start items-stretch overflow-hidden" (click)="$event.stopPropagation()">
@@ -55,6 +49,20 @@
 <mat-menu #agentMenu="matMenu" class="ngm-menu-card">
   <div class="pac-status-bar__local-agent h-60" (click)="$event.stopPropagation()">
     <mat-tab-group mat-stretch-tabs fitInkBarToContent class="h-full">
+
+      <mat-tab class="p-4" [label]=" 'PAC.KEY_WORDS.ServerAgent' | translate: {Default: 'Server Agent'} ">
+        <div class="flex justify-between items-center">
+          <span></span>
+          <span>{{'PAC.KEY_WORDS.Progress' | translate: {Default: 'Progress'} }}: {{progress()}}%</span>
+        </div>
+        <mat-progress-bar class="w-full" [color]="progress() > 90 ? 'primary' : 'accent'" mode="buffer"
+          [bufferValue]="90" [value]="progress()" />
+        <div class="flex justify-between items-center">
+          <span><span>{{'PAC.KEY_WORDS.Complete' | translate: {Default: 'Complete'} }}:</span> {{serverAgent.completeSize()}}</span>
+          <span><span>{{'PAC.KEY_WORDS.Request' | translate: {Default: 'Request'} }}:</span>{{serverAgent.bufferSize()}}</span>
+        </div>
+      </mat-tab>
+
       @if (enableLocalAgent) {
         <mat-tab class="p-4" [label]=" 'PAC.MENU.LOCAL_AGENT' | translate: {Default: 'Local Agent'} ">
           <div>
@@ -76,19 +84,6 @@
           </div>
         </mat-tab>
       }
-
-      <mat-tab class="p-4" [label]=" 'PAC.KEY_WORDS.Agent' | translate: {Default: 'Agent'} ">
-        <div class="flex justify-between items-center">
-          <span></span>
-          <span>{{'PAC.KEY_WORDS.Progress' | translate: {Default: 'Progress'} }}: {{progress()}}%</span>
-        </div>
-        <mat-progress-bar class="w-full" [color]="progress() > 90 ? 'primary' : 'accent'" mode="buffer"
-          [bufferValue]="90" [value]="progress()" />
-        <div class="flex justify-between items-center">
-          <span><span>{{'PAC.KEY_WORDS.Complete' | translate: {Default: 'Complete'} }}:</span> {{serverAgent.completeSize()}}</span>
-          <span><span>{{'PAC.KEY_WORDS.Request' | translate: {Default: 'Request'} }}:</span>{{serverAgent.bufferSize()}}</span>
-        </div>
-      </mat-tab>
 
       <mat-tab [label]=" 'PAC.MENU.Authentication' | translate: {Default: 'Authentication'} ">
         <mat-list role="list">

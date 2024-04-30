@@ -81,3 +81,10 @@
 .ngm-story__global-filter {
   @apply absolute top-0 left-0;
 }
+
+.ngm-story__story-container.editable {
+  .ngm-story-point {
+    @apply border border-solid;
+    border-color: var(--ngm-color-outline-variant);
+  }
+}

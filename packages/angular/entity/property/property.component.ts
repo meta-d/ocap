@@ -1,6 +1,5 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, booleanAttribute, effect, input, signal } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
@@ -9,24 +8,18 @@ import {
   CalculationType,
   DisplayBehaviour,
   EntityProperty,
+  PropertyAttributes,
+  Semantics,
   isCalculationProperty,
   isIndicatorMeasureProperty,
   isMeasureControlProperty,
   isParameterProperty,
-  isSemanticCalendar,
-  PropertyAttributes,
-  Semantics
+  isSemanticCalendar
 } from '@metad/ocap-core'
-
 
 @Component({
   standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    DensityDirective,
-    NgmCommonModule,
-  ],
+  imports: [CommonModule, MatIconModule, DensityDirective, NgmCommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngm-entity-property',
   templateUrl: './property.component.html',
@@ -35,29 +28,35 @@ import {
     class: 'ngm-entity-property'
   }
 })
-export class NgmEntityPropertyComponent implements OnChanges {
+export class NgmEntityPropertyComponent {
   AGGREGATION_ROLE = AggregationRole
 
-  @Input() property: PropertyAttributes
-  @Input() displayBehaviour: DisplayBehaviour | string
-  @Input() displayDensity: DisplayDensity
-  @Input() get hiddenIcon() {
-    return this._hiddenIcon
-  }
-  set hiddenIcon(value: string | boolean) {
-    this._hiddenIcon = coerceBooleanProperty(value)
-  }
-  private _hiddenIcon: boolean = null
+  /**
+   * Inputs
+   */
+  readonly property = input<PropertyAttributes>(null)
+  readonly displayBehaviour = input<DisplayBehaviour | string>(null)
+  readonly displayDensity = input<DisplayDensity>(null)
+  readonly hiddenIcon = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  readonly highlight = input<string>(null)
+  // readonly calculationType = input<CalculationType>(null)
+  readonly role = input<AggregationRole>(null)
 
-  @Input() highlight: string
+  readonly icon = signal<string | null>(null)
 
-  @Input() calculationType: CalculationType
-
-  icon: string
-  ngOnChanges({ property }: SimpleChanges) {
-    if (property?.currentValue) {
-      this.icon = propertyIcon(property.currentValue).icon
-    }
+  constructor() {
+    effect(() => {
+      const property = this.property()
+      const role = this.role()
+      this.icon.set(property
+        ? propertyIcon({
+            ...property,
+            role: role ?? property.role
+          }).icon
+        : null)
+    }, { allowSignalWrites: true })
   }
 }
 
@@ -94,7 +93,7 @@ export function propertyIcon(property: EntityProperty) {
         if (isMeasureControlProperty(property)) {
           icon = 'alternate_email'
           label = 'Measure Control'
-        } else if(isIndicatorMeasureProperty(property)) {
+        } else if (isIndicatorMeasureProperty(property)) {
           icon = 'trending_up'
           label = 'Indicator'
         } else {
@@ -112,5 +111,5 @@ export function propertyIcon(property: EntityProperty) {
         label = 'Parameter'
       }
   }
-  return {icon, label}
+  return { icon, label }
 }

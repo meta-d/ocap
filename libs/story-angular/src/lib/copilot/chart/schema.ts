@@ -37,7 +37,7 @@ export const ChartSchema = z.object({
   }),
   dimensions: z.array(DimensionSchema).describe('The dimensions used by the chart'),
   measures: z.array(MeasureSchema).describe('The measures used by the chart'),
-  
+
   slicers: z
     .array(
       z.object({
@@ -71,9 +71,12 @@ export const ChartWidgetSchema = z.object({
     cols: z.number().describe('Width of the widget in page layout'),
     rows: z.number().describe('Height of the widget in page layout')
   }),
-  dataSettings: z.object({
-    limit: z.number().optional().describe('The limit of the records'),
-  }).optional().describe('The data settings of the widget'),
+  dataSettings: z
+    .object({
+      limit: z.number().optional().describe('The limit of the records')
+    })
+    .optional()
+    .describe('The data settings of the widget'),
   chartAnnotation: ChartSchema.optional().describe('Chart settings when component type of widget is AnalyticalCard')
 })
 

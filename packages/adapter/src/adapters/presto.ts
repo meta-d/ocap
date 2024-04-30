@@ -155,6 +155,15 @@ export class PrestoQueryRunner extends BaseSQLQueryRunner<PrestoAdapterOptions> 
     return this.runQuery(statement)
   }
 
+  /**
+   * @todo Implement
+   * @param catalog 
+   * @param options 
+   */
+  override async createCatalog(catalog: string, options?: {}) {
+    throw new Error('Method not implemented.')
+  }
+
   async teardown() {
     return null
   }

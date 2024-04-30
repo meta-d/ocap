@@ -1,36 +1,56 @@
-import { nanoid } from 'ai'
-import { BehaviorSubject, Observable, filter, map } from 'rxjs'
-import {
-  CopilotChatConversation,
-  CopilotChatMessage,
-  CopilotChatMessageRoleEnum,
-  CopilotDefaultOptions,
-  getFunctionCall,
-  nonNullable
-} from './types/types'
+import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
+import { AgentExecutor } from 'langchain/agents'
+import { BehaviorSubject, filter, map } from 'rxjs'
+import { CopilotChatMessage, nonNullable } from './types/types'
 
 /**
  * Copilot command, which can execute multiple actions.
  */
 export interface CopilotCommand<Inputs extends any[] = any[]> {
+  /**
+   * Full name of the command
+   */
   name: string
+  /**
+   * Alias (short name) of the command
+   */
+  alias?: string
+  /**
+   * Description of the command
+   */
   description: string
+  /**
+   * Examples of the command usage
+   */
   examples?: string[]
+  /**
+   * Get system prompt message
+   * 
+   * @returns System prompt message
+   */
   systemPrompt?: () => string
   /**
-   * @deprecated use implementation
-   *
-   * @param copilot
-   * @returns
+   * 
+   * @param args 
+   * @returns 
    */
-  processor?: <T extends CopilotChatConversation = CopilotChatConversation>(copilot: T) => Observable<T>
-
   implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
-
   /**
-   * Action ids to execute.
+   * @deprecated use `tools` instead
    */
   actions?: string[]
+  /**
+   * Tools for agent (langchain)
+   */
+  tools?: Array<DynamicStructuredTool | DynamicTool>
+  /**
+   * Prompt template for Agent executor
+   */
+  prompt?: any
+  /**
+   * Agent executor for command
+   */
+  agentExecutor?: AgentExecutor
 }
 
 export const CopilotCommands$ = new BehaviorSubject<Record<string, Record<string, CopilotCommand>>>({})
@@ -73,77 +93,3 @@ export function getCommand(area: string, name: string) {
 export const SystemCommandClear = 'clear'
 export const SystemCommandFree = 'free'
 export const SystemCommands = [`/${SystemCommandClear}`]
-
-export function logResult<T extends CopilotChatConversation = CopilotChatConversation>(copilot: T): void {
-  const { logger, prompt } = copilot
-  logger?.debug(`The result of prompt '${prompt}':`, copilot.response)
-}
-
-export function freePrompt(copilot: CopilotChatConversation, commands: CopilotCommand[]) {
-  const { copilotService, prompt } = copilot
-  const systemPrompt = `请将提示语分配相应的 command。Commands are ${JSON.stringify([
-    ...commands.map((item) => ({
-      name: item.name,
-      description: item.description
-    })),
-    {
-      name: SystemCommandFree,
-      description: 'Free prompt'
-    }
-  ])}`
-  return copilotService
-    .chatCompletions(
-      [
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: systemPrompt
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: prompt
-        }
-      ],
-      {
-        ...CopilotDefaultOptions,
-        ...copilot.options,
-        functions: [],
-        function_call: { name: 'assign-command' }
-      }
-    )
-    .pipe(
-      map(({ choices }) => {
-        try {
-          copilot.response = getFunctionCall(choices[0].message)
-        } catch (err) {
-          copilot.error = err as Error
-        }
-        return copilot
-      })
-    )
-}
-
-export function freeChat(copilot: CopilotChatConversation) {
-  const { copilotService, prompt } = copilot
-
-  return copilotService
-    .chatCompletions(
-      [
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: prompt
-        }
-      ],
-      {
-        ...CopilotDefaultOptions,
-        ...copilot.options
-      }
-    )
-    .pipe(
-      map(({ choices }) => {
-        return choices[0].message.content
-      })
-    )
-}

@@ -30,6 +30,7 @@ export async function processChatStream({
   conversationId: string;
 }): Promise<CopilotChatMessage | void> {
   
+  let retry = 0
   while (true) {
     // TODO-STREAMDATA: This should be {  const { messages: streamedResponseMessages, data } =
     // await getStreamedResponse(} once Stream Data is not experimental
@@ -170,6 +171,10 @@ export async function processChatStream({
             content: functionCallResponse // `✅ Function '${functionCall.name}' call successful!`
           }
         }
+        if (retry > 3) {
+          break
+        }
+        retry += 1
         // Type check
         if (functionCallResponse) {
           // A function call response was returned.

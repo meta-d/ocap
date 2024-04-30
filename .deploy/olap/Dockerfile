@@ -11,6 +11,8 @@ WORKDIR /app
 
 COPY .deploy/olap/settings.xml /usr/share/maven/ref/
 COPY packages/olap/pom.xml ./pom.xml
+COPY packages/olap/artifactory/ ./artifactory/
+RUN mvn install:install-file -Dfile=./artifactory/mondrian-9.4.0.0-343/mondrian-9.4.0.0-343.jar -DgroupId=pentaho -DartifactId=mondrian -Dversion=9.4.0.0-343 -Dpackaging=jar
 RUN mvn -B -s /usr/share/maven/ref/settings.xml dependency:resolve
 
 COPY packages/olap/src ./src

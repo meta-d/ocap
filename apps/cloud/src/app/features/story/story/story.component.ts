@@ -1,22 +1,18 @@
 import { CdkDragEnd } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import {
-  afterNextRender,
-  afterRender,
-  ChangeDetectorRef,
   Component,
   computed,
   effect,
   ElementRef,
   HostBinding,
-  HostListener,
   inject,
   Injector,
   Input,
+  model,
   OnInit,
-  Renderer2,
-  runInInjectionContext,
   signal,
+  viewChild,
   ViewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
@@ -36,7 +32,15 @@ import {
   WidgetComponentType
 } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
-import { injectStoryPageCommand, injectStoryStyleCommand, NxStoryComponent, NxStoryModule } from '@metad/story/story'
+import {
+  injectMathCommand,
+  injectStoryPageCommand,
+  injectStoryStyleCommand,
+  injectStoryWidgetCommand,
+  injectWidgetStyleCommand,
+  NxStoryComponent,
+  NxStoryModule
+} from '@metad/story/story'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
@@ -48,12 +52,7 @@ import { effectStoryTheme } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
-
-type ResponsiveBreakpointType = {
-  name: string
-  width: number
-  margin: number
-}
+import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
 
 @Component({
   standalone: true,
@@ -74,7 +73,7 @@ type ResponsiveBreakpointType = {
     StoryToolbarComponent,
     StoryExplorerModule
   ],
-  selector: 'pac-story',
+  selector: 'pac-story-designer',
   templateUrl: './story.component.html',
   styleUrls: ['./story.component.scss'],
   host: {
@@ -82,7 +81,7 @@ type ResponsiveBreakpointType = {
   },
   providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService]
 })
-export class StoryComponent extends TranslationBaseComponent implements OnInit, IsDirty {
+export class StoryDesignerComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
@@ -97,7 +96,6 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   private _router = inject(Router)
   private logger = inject(NGXLogger)
   // private renderer = inject(Renderer2)
-  private _cdr = inject(ChangeDetectorRef)
   readonly #injector = inject(Injector)
 
   @Input() storyId: string
@@ -107,7 +105,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   editable = true
 
   @ViewChild('toolbar', { static: true }) toolbarComponent: StoryToolbarComponent
-  @ViewChild('storyContainer') storyContainer: ElementRef<any>
+  // @ViewChild('storyContainer') storyContainer: ElementRef<any>
+  readonly storyContainer = viewChild('storyContainer', { read: ElementRef})
   @ViewChild(NxStoryComponent) storyComponent: NxStoryComponent
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
@@ -119,49 +118,24 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
 
   readonly pinToolbar = this.#store.pinStoryToolbar
 
-  error: string
-  emulatedDevice: EmulatedDevice = null
-  deviceZoom = null
-  designerOpened = false
-  hoverSize = null
+  readonly error = signal<string>(null)
+  readonly emulatedDevice = signal<EmulatedDevice>(null)
+  readonly deviceZoom = signal<{ value: number }>(null)
+  readonly emulatedDeviceSizeStyle = computed(() => {
+    const emulatedDevice = this.emulatedDevice()
+    return emulatedDevice
+      ? {
+          width: emulatedDevice.width + 'px',
+          minWidth: emulatedDevice.width + 'px',
+          height: emulatedDevice.height + 'px',
+          minHeight: emulatedDevice.height + 'px'
+        }
+      : {}
+  })
+  readonly designerOpened = model(false)
+  readonly hoverSize = signal<ResponsiveBreakpointType>(null)
   // Layout
-  ResponsiveBreakpoints: ResponsiveBreakpointType[] = [
-    {
-      name: 'Mobile S',
-      width: 320,
-      margin: 320
-    },
-    {
-      name: 'Mobile M',
-      width: 375,
-      margin: 55 / 2
-    },
-    {
-      name: 'Mobile L',
-      width: 425,
-      margin: 55 / 2
-    },
-    {
-      name: 'Tablet',
-      width: 768,
-      margin: 343 / 2
-    },
-    {
-      name: 'Laptop',
-      width: 1024,
-      margin: 256 / 2
-    },
-    {
-      name: 'Laptop L',
-      width: 1440,
-      margin: 416 / 2
-    },
-    {
-      name: 'Large Screen',
-      width: 2440,
-      margin: 1000 / 2
-    }
-  ]
+  readonly ResponsiveBreakpoints = ResponsiveBreakpoints
 
   readonly watermark$ = this.#store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark = toSignal(this.appService.isDark$)
@@ -171,8 +145,8 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   readonly widgetKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey'])))
 
   // Story explorer
-  showExplorer = signal(false)
-  explore = signal(null)
+  readonly showExplorer = signal(false)
+  readonly explore = signal(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -181,6 +155,9 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   */
   #styleCommand = injectStoryStyleCommand(this.storyService)
   #pageCommand = injectStoryPageCommand(this.storyService)
+  #widgetCommand = injectStoryWidgetCommand(this.storyService)
+  #mathCommand = injectMathCommand(this.storyService)
+  #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
 
   /**
   |--------------------------------------------------------------------------
@@ -232,7 +209,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
       takeUntilDestroyed()
     )
     .subscribe((emulatedDevice) => {
-      this.emulatedDevice = emulatedDevice
+      this.emulatedDevice.set(emulatedDevice)
     })
 
   private echartsThemeSub = this.storyService.echartsTheme$
@@ -250,9 +227,12 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
   constructor() {
     super()
 
-    effect(() => {
-      this.storyService.setAuthenticated(this.appService.isAuthenticated())
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        this.storyService.setAuthenticated(this.appService.isAuthenticated())
+      },
+      { allowSignalWrites: true }
+    )
 
     effect(() => {
       const models = this.models()
@@ -263,17 +243,13 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
       })
     })
 
-    afterNextRender(() => {
-      runInInjectionContext(this.#injector, () => {
-        effectStoryTheme(this.storyContainer)
-      })
-    })
+    effectStoryTheme(this.storyContainer)
   }
 
   ngOnInit(): void {
     const story = this.route.snapshot.data['story']
     if (typeof story === 'string') {
-      this.error = story
+      this.error.set(story)
     } else {
       this.story.set(story)
       if (this.story()) {
@@ -306,20 +282,23 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
     }
   }
 
-  onEmulatedDevice(event) {
-    this.emulatedDevice = event
+  onEmulatedDevice(event: EmulatedDevice) {
+    this.emulatedDevice.set(event)
     this.storyService.updateStoryOptions({ emulatedDevice: event })
     if (!event) {
-      this.deviceZoom = { value: 1 }
+      this.deviceZoom.set({ value: 1 })
     }
-    this._cdr.detectChanges()
+  }
+
+  onDeviceZoom(event: { value: number }) {
+    this.deviceZoom.set(event)
   }
 
   mouseEnter(size: ResponsiveBreakpointType) {
-    this.hoverSize = size
+    this.hoverSize.set(size)
   }
   mouseLeave(size: ResponsiveBreakpointType) {
-    this.hoverSize = null
+    this.hoverSize.set(null)
   }
   selectSize(size: ResponsiveBreakpointType) {
     this.updateEmulatedDevice({
@@ -333,7 +312,7 @@ export class StoryComponent extends TranslationBaseComponent implements OnInit, 
 
   updateEmulatedDevice(emulatedDevice: Partial<EmulatedDevice>) {
     this.storyService.updateStoryOptions({
-      emulatedDevice: { ...(this.emulatedDevice ?? ({} as EmulatedDevice)), ...emulatedDevice, name: 'Custom' }
+      emulatedDevice: { ...(this.emulatedDevice() ?? ({} as EmulatedDevice)), ...emulatedDevice, name: 'Custom' }
     })
   }
   onEmulatedDeviceWidthChange(width: number) {

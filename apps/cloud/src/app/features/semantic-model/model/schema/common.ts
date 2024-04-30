@@ -170,7 +170,7 @@ export function Semantic(COMMON?) {
 
 export function CalendarFormatter(COMMON?) {
   return {
-    hideExpression: `model === null || !model.semantic?.startsWith('Calendar')`,
+    hideExpression: `!model || !model.semantic?.startsWith('Calendar')`,
     key: 'formatter',
     type: 'input',
     className: FORMLY_W_1_2,

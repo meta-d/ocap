@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, OnDestroy, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { CopilotChatMessage } from '@metad/copilot'
+import { CopilotChatConversation, CopilotChatMessage } from '@metad/copilot'
 import { cloneDeep, isEqual } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { ConfirmUniqueComponent } from '@metad/components/confirm'
@@ -143,7 +143,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   })
 
   readonly setConversations = this.updater(
-    (state, { key, conversations }: { key: string; conversations: Array<CopilotChatMessage[]> }) => {
+    (state, { key, conversations }: { key: string; conversations: Array<CopilotChatConversation> }) => {
       const query = state.queries[key].query
       query.conversations = conversations
     }

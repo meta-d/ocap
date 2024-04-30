@@ -283,6 +283,8 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     shareReplay(1)
   )
 
+  readonly entityProperties = toSignal(this.entityProperties$)
+
   readonly parameters$ = this.entityType$.pipe(
     map(entityType => Object.values(entityType?.parameters || {}))
   )
@@ -478,6 +480,7 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   get dimensionControl() {
     return this.formGroup.get('dimension')
   }
+  readonly dimension = toSignal(this.dimensionControl.valueChanges.pipe(startWith(null)))
 
   get hierarchyControl() {
     return this.formGroup.get('hierarchy')
@@ -614,13 +617,36 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   private onChange: any
   private onTouched: any
 
-  private propertySub = combineLatest([
-      this.entityProperties$,
-      this.dimensionControl.valueChanges
-    ]).pipe(
-      map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
-      takeUntilDestroyed(),
-    ).subscribe(this.property$)
+  readonly dimensionError = signal<string>('')
+
+  readonly error = computed(() => {
+    return this.dimensionError() || this.entityTypeError()
+  })
+
+  readonly #dimensionEffect = effect(() => {
+    const dimension = this.dimension()
+    const properties = this.entityProperties()
+    if (dimension && properties) {
+      const property = properties.find((prop) => prop.name === dimension)
+      if (property) {
+        this.property$.next(property)
+      } else {
+        this.dimensionError.set(this.getTranslation('COMPONENTS.PROPERTY.DimensionNotFound', {
+          dimension,
+          cube: this.#entityType()?.name,
+          Default: `Dimension '${dimension}' not found in cube '${this.#entityType()?.name}'`
+        }))
+      }
+    }
+  }, { allowSignalWrites: true })
+
+  // private propertySub = combineLatest([
+  //     this.entityProperties$,
+  //     this.dimensionControl.valueChanges
+  //   ]).pipe(
+  //     map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
+  //     takeUntilDestroyed(),
+  //   ).subscribe(this.property$)
     
   /**
    * When dimension changed

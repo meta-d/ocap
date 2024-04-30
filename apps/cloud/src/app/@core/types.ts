@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http'
 import { IProject, IUser } from '@metad/contracts'
+import { TableColumnType } from '@metad/ocap-core'
 import { enUS, zhCN } from 'date-fns/locale'
 import ShortUniqueId from 'short-unique-id'
 export * from '@metad/contracts'
@@ -148,7 +149,7 @@ export interface ColumnDef {
   /**
    * Object value type, convert to db type
    */
-  type: string
+  type: TableColumnType
   /**
    * Is primary key column
    */

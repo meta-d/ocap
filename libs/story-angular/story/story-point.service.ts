@@ -197,7 +197,8 @@ export class NxStoryPointService {
 
   async fetchStoryPoint() {
     const storyPoint = this.storyPoint
-    const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id))
+    const token = this.#storyService.store.query((state) => state.token)
+    const point = await firstValueFrom(this.storyStore.getStoryPoint(storyPoint.storyId, storyPoint.id, { token }))
     this.initWidgets(point.widgets)
 
     this.stateStore.update((state) => ({
@@ -360,9 +361,10 @@ export class NxStoryPointService {
   readonly createWidget = this.updater2((state, input: Partial<StoryWidget>) => {
     const untitledTitle = this.getTranslation('Story.Common.Untitled', 'Untitled')
     const states = this.stateStore.getValue()
+    const key = input.key ?? uuid()
     const widget = {
       ...input,
-      key: uuid(),
+      key,
       storyId: state.storyId,
       pointId: state.id,
       title: input.title || untitledTitle

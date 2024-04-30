@@ -7,8 +7,17 @@ import { omit } from 'lodash-es'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, filter, switchMap } from 'rxjs/operators'
 import { registerWasmAgentModel } from '../../../@core'
+import { CommonModule } from '@angular/common'
+import { TranslateModule } from '@ngx-translate/core'
+import { EmbedWidgetComponent } from '@metad/story/story'
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    EmbedWidgetComponent
+  ],
   selector: 'pac-story-widget-feed',
   templateUrl: 'story-widget.component.html',
   styleUrls: ['story-widget.component.scss'],

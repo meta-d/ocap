@@ -11,6 +11,12 @@ export type CopilotChatOptions = {
   conversationId?: string
 }
 
+export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMessage> = {
+  id: string
+  messages: T[]
+  type: 'free' | 'command'
+}
+
 /**
  * Copilot engine
  */
@@ -42,7 +48,7 @@ export interface CopilotEngine {
   /**
    * Conversations
    */
-  conversations(): Array<CopilotChatMessage[]>
+  conversations(): Array<CopilotChatConversation>
 
   messages(): CopilotChatMessage[]
 
@@ -91,10 +97,19 @@ export interface CopilotEngine {
    *
    * @param fn
    */
-  updateConversations?(fn: (conversations: Array<CopilotChatMessage[]>) => Array<CopilotChatMessage[]>): void
+  updateConversations?(fn: (conversations: Array<CopilotChatConversation>) => Array<CopilotChatConversation>): void
+
+  /**
+   * Update conversation by id
+   * 
+   * @param id conversation id
+   * @param fn update function
+   */
+  updateConversation?(id: string, fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
+  
   /**
    * Update the last conversation messages
    * @param fn
    */
-  updateLastConversation?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void
+  updateLastConversation?(fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
 }

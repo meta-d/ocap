@@ -1,36 +1,59 @@
+import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
-import { ClipboardModule, Clipboard } from '@angular/cdk/clipboard'
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  computed,
-  effect,
   ElementRef,
   EventEmitter,
-  inject,
   Input,
   Output,
+  ViewChild,
+  computed,
+  effect,
+  inject,
+  model,
   signal,
-  ViewChild
+  viewChild
 } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
+import {
+  MatAutocomplete,
+  MatAutocompleteActivatedEvent,
+  MatAutocompleteModule,
+  MatAutocompleteTrigger
+} from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { AIOptions, AI_PROVIDERS, AiModelType, CopilotChatMessage, CopilotChatMessageRoleEnum, CopilotEngine, CopilotService } from '@metad/copilot'
-import { NgmHighlightDirective, NgmSearchComponent, NgmTableComponent, NgmScrollBackComponent } from '@metad/ocap-angular/common'
+import {
+  AIOptions,
+  AI_PROVIDERS,
+  AiModelType,
+  CopilotChatConversation,
+  CopilotChatMessage,
+  CopilotChatMessageRoleEnum,
+  CopilotCommand,
+  CopilotEngine,
+  CopilotService
+} from '@metad/copilot'
+import {
+  NgmHighlightDirective,
+  NgmScrollBackComponent,
+  NgmSearchComponent,
+  NgmTableComponent
+} from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { nanoid } from 'nanoid'
 import { MarkdownModule } from 'ngx-markdown'
 import {
   NgxPopperjsContentComponent,
@@ -39,15 +62,13 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { BehaviorSubject, delay, startWith, throttleTime } from 'rxjs'
+import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
+import { injectCopilotCommand } from '../hooks'
 import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
-import { UserAvatarComponent } from '../avatar/avatar.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
-import { nanoid } from 'nanoid'
-import { injectCopilotCommand } from '../hooks'
 import { PlaceholderMessages } from './types'
-
 
 @Component({
   standalone: true,
@@ -73,7 +94,7 @@ import { PlaceholderMessages } from './types'
     TranslateModule,
     NgxPopperjsModule,
     MarkdownModule,
-    
+
     DensityDirective,
     NgmSearchComponent,
     NgmTableComponent,
@@ -125,11 +146,19 @@ export class NgmCopilotChatComponent {
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
+  readonly autocompleteTrigger = viewChild('userInput', { read: MatAutocompleteTrigger })
+
   get _placeholder() {
     return this.copilotEngine?.placeholder ?? this.placeholder
   }
 
-  _mockConversations: Array<NgmCopilotChatMessage[]> = [PlaceholderMessages]
+  readonly _mockConversations: Array<CopilotChatConversation<NgmCopilotChatMessage>> = [
+    {
+      id: '',
+      messages: PlaceholderMessages,
+      type: 'free'
+    }
+  ]
 
   // Copilot
   private openaiOptions = {
@@ -151,7 +180,7 @@ export class NgmCopilotChatComponent {
     }
   }
 
-  selectedModel = [this.aiOptions.model]
+  readonly selectedModel = model([this.aiOptions.model])
 
   get temperature() {
     return this.aiOptions.temperature
@@ -186,16 +215,32 @@ export class NgmCopilotChatComponent {
   readonly #predefinedModels = computed(() => AI_PROVIDERS[this.copilot()?.provider]?.models)
   readonly canListModels = computed(() => !!AI_PROVIDERS[this.copilot()?.provider]?.modelsUrl)
   readonly latestModels = signal<AiModelType[]>([])
-  readonly conversations = computed<Array<NgmCopilotChatMessage[]>>(() => this.copilotEngine?.conversations())
+  readonly conversations = computed<Array<CopilotChatConversation<NgmCopilotChatMessage>>>(() =>
+    this.copilotEngine?.conversations()
+  )
   readonly isTools = toSignal(this.copilotService.isTools$)
 
   /**
    * 当前 Asking prompt
    */
   public promptControl = new FormControl<string>('')
-  readonly prompt = toSignal(this.promptControl.valueChanges, {initialValue: ''})
+  readonly prompt = toSignal(this.promptControl.valueChanges, { initialValue: '' })
 
   #activatedPrompt = signal('')
+
+  readonly command = computed(() => {
+    const prompt = this.prompt()
+    if (prompt && prompt.startsWith('/')) {
+      return prompt.split(' ')[0]
+    }
+    return ''
+  })
+
+  readonly commandTitle = computed(() => {
+    const commands = this.commands()
+    const command = this.command()?.slice(1)
+    return commands.find((item) => item.name === command)?.description ?? `Can't find command: ${command}`
+  })
 
   readonly answering = signal(false)
 
@@ -203,17 +248,18 @@ export class NgmCopilotChatComponent {
   private readonly historyIndex = signal(-1)
 
   #abortController: AbortController
-  
+
   // Available models
   searchModel = new FormControl<string>('')
   readonly searchText = toSignal(this.searchModel.valueChanges.pipe(startWith('')), { initialValue: '' })
+  readonly triggerCharacter = signal('')
   readonly models = computed(() => {
     const text = this.searchText()?.toLowerCase()
     const models = this.latestModels()?.length ? this.latestModels() : this.#predefinedModels()
     return text ? models?.filter((item) => item.name.toLowerCase().includes(text)) : models
   })
 
-  readonly commands = computed(() => {
+  readonly commands = computed<Array<CopilotCommand & {example: string}>>(() => {
     if (this.copilotEngine?.commands && this.isTools()) {
       const commands = []
       this.copilotEngine.commands().forEach((command) => {
@@ -237,17 +283,22 @@ export class NgmCopilotChatComponent {
     return []
   })
 
-  readonly filteredCommands = computed(() => {
-    const text = this.prompt()
-    if (text) {
-      return this.commands()?.filter((item) => item.prompt.includes(text)) ?? []
+  readonly filteredCommands = computed<Array<CopilotCommand & {example: string}>>(() => {
+    const text = this.prompt()?.toLowerCase()
+
+    if (this.triggerCharacter() === '@') {
+      return this.commands()
     }
+
+    if (text) {
+      return this.commands()?.filter((item) => item.prompt.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)) ?? []
+    }
+
     return []
   })
 
-  public readonly suggestionsOpened$ = new BehaviorSubject(false)
-  #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
-
+  readonly suggestionsOpened$ = new BehaviorSubject(false)
+  readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
   readonly messageCopied = signal<string[]>([])
 
   /**
@@ -257,7 +308,7 @@ export class NgmCopilotChatComponent {
   */
   #clearCommand = injectCopilotCommand({
     name: 'clear',
-    description: this.translateService.instant('Ngm.Copilot.ClearConversation', {Default: 'Clear conversation'}),
+    description: this.translateService.instant('Ngm.Copilot.ClearConversation', { Default: 'Clear conversation' }),
     implementation: async () => {
       this.copilotEngine.clear()
     }
@@ -268,23 +319,26 @@ export class NgmCopilotChatComponent {
   | Subscribers
   |--------------------------------------------------------------------------
   */
-  private scrollSub = toObservable(this.conversations).pipe(throttleTime(300)).subscribe((conversations) => {
-    if (conversations.length && !this.scrollBack.visible()) {
-      this.scrollBottom()
-    }
-  })
+  private scrollSub = toObservable(this.conversations)
+    .pipe(throttleTime(300))
+    .subscribe((conversations) => {
+      if (conversations.length && !this.scrollBack.visible()) {
+        this.scrollBottom()
+      }
+    })
 
   constructor() {
-    effect(() => {
+    effect(
+      () => {
         this.answering() ? this.promptControl.disable() : this.promptControl.enable()
       },
       { allowSignalWrites: true }
     )
 
     effect(() => {
-      this.selectedModel = [this.#defaultModel()]
+      this.selectedModel.set([this.#defaultModel()])
       this.model = this.#defaultModel()
-    })
+    }, { allowSignalWrites: true })
   }
 
   refreshModels() {
@@ -297,7 +351,10 @@ export class NgmCopilotChatComponent {
     this.model = values[0]
   }
 
-  async askCopilotStream(prompt: string, options: {command?: string; newConversation?: boolean; assistantMessageId?: string;} = {}) {
+  async askCopilotStream(
+    prompt: string,
+    options: { command?: string; newConversation?: boolean; assistantMessageId?: string } = {}
+  ) {
     const { command, newConversation, assistantMessageId } = options ?? {}
     // Reset history index
     this.historyIndex.set(-1)
@@ -320,7 +377,7 @@ export class NgmCopilotChatComponent {
           abortController: this.#abortController,
           assistantMessageId
         })
-            
+
         if (typeof message === 'string') {
           this.copilotEngine.upsertMessage({
             id: nanoid(),
@@ -331,11 +388,9 @@ export class NgmCopilotChatComponent {
           this.copilotEngine.upsertMessage(message)
         }
 
-        this._cdr.detectChanges()
         this.scrollBottom()
       } catch (err) {
         this.conversationsChange.emit(this.conversations)
-        // this._cdr.detectChanges()
       } finally {
         this.answering.set(false)
       }
@@ -386,8 +441,9 @@ export class NgmCopilotChatComponent {
     this.conversationsChange.emit(this.conversations)
   }
 
-  async resubmitMessage(message: CopilotChatMessage, content: string) {
-    this.copilotEngine.updateLastConversation((messages) => {
+  async resubmitMessage(id: string, message: CopilotChatMessage, content: string) {
+    this.copilotEngine.updateConversation(id, (conversation) => {
+      const messages = conversation.messages
       const index = messages.findIndex((item) => item.id === message.id)
       if (index > -1) {
         // 删除答案
@@ -396,11 +452,17 @@ export class NgmCopilotChatComponent {
         }
         // 删除提问
         messages.splice(index, 1)
-        return [...messages]
+        if (!messages.filter((message) => message.role === CopilotChatMessageRoleEnum.User).length) {
+          return null
+        }
+        return {
+          ...conversation,
+          messages: [...messages]
+        }
       }
-      return messages
+      return conversation
     })
-    await this.askCopilotStream(content, {command: message.command})
+    await this.askCopilotStream(content, { command: message.command })
   }
 
   onMessageFocus() {
@@ -411,10 +473,11 @@ export class NgmCopilotChatComponent {
    * @deprecated regenerate method should in copilot engine service
    */
   async regenerate(message: CopilotChatMessage) {
-    this.copilotEngine.updateLastConversation((conversations) => {
-      const index = conversations.findIndex((item) => item.id === message.id)
-      conversations.splice(index)
-      return [...conversations]
+    this.copilotEngine.updateLastConversation((conversation) => {
+      const messages = conversation.messages
+      const index = messages.findIndex((item) => item.id === message.id)
+      messages.splice(index)
+      return { ...conversation, messages: [...messages] }
     })
     await this.askCopilotStream(null, { assistantMessageId: message.id })
   }
@@ -430,6 +493,8 @@ export class NgmCopilotChatComponent {
     if (!this.#suggestionsOpened() && event.key === 'Enter') {
       this.askCopilotStream(this.prompt())
     }
+
+    this.triggerCharacter.set('')
 
     // Tab 键补全提示语
     if (event.key === 'Tab') {
@@ -455,6 +520,11 @@ export class NgmCopilotChatComponent {
 
         this.promptControl.setValue(historyQuestions[this.historyIndex()] ?? '')
       }
+    }
+
+    if (event.key === '@') {
+      this.triggerCharacter.set('@')
+      this.autocompleteTrigger().openPanel()
     }
   }
 
@@ -483,27 +553,4 @@ export class NgmCopilotChatComponent {
       this.copilotEngine.dropCopilot(event)
     }
   }
-}
-
-
-export function defaultSystemMessage(contextString: string): string {
-  return `
-Please act as an efficient, competent, conscientious, and industrious professional assistant.
-
-Help the user achieve their goals, and you do so in a way that is as efficient as possible, without unnecessary fluff, but also without sacrificing professionalism.
-Always be polite and respectful, and prefer brevity over verbosity.
-
-The user has provided you with the following context:
-\`\`\`
-${contextString}
-\`\`\`
-
-They have also provided you with functions you can call to initiate actions on their behalf, or functions you can call to receive more information.
-
-Please assist them as best you can.
-
-You can ask them for clarifying questions if needed, but don't be annoying about it. If you can reasonably 'fill in the blanks' yourself, do so.
-
-If you would like to call a function, call it without saying anything else.
-`;
 }

@@ -1,13 +1,13 @@
-@if (!hiddenIcon) {
-  <mat-icon mat-list-icon class="shrink-0 mr-1">{{ icon }}</mat-icon>
+@if (!hiddenIcon() && icon()) {
+  <mat-icon mat-list-icon class="shrink-0 mr-1">{{ icon() }}</mat-icon>
 }
 
 <ngm-display-behaviour class="flex-1 overflow-hidden"
-  [displayBehaviour]="displayBehaviour"
+  [displayBehaviour]="displayBehaviour()"
   [option]="{
-    value: property.name,
-    caption: property.caption
+    key: property().name,
+    caption: property().caption
   }"
-  [highlight]="highlight"
+  [highlight]="highlight()"
 >
 </ngm-display-behaviour>

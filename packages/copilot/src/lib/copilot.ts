@@ -1,10 +1,11 @@
+import { ChatOpenAI } from '@langchain/openai'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
-import { ChatRequest, ChatRequestOptions, JSONValue, Message, RequestOptions, UseChatOptions as AiUseChatOptions, nanoid } from 'ai'
-import { BehaviorSubject, Observable, catchError, map, of, switchMap, throwError } from 'rxjs'
+import { UseChatOptions as AiUseChatOptions, ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
+import { BehaviorSubject, Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
+import { callChatApi as callDashScopeChatApi } from './dashscope/'
 import { callChatApi } from './shared/call-chat-api'
 import { AI_PROVIDERS, AiProvider, CopilotChatMessage, DefaultModel, ICopilot } from './types'
-import { callChatApi as callDashScopeChatApi } from './dashscope/'
 
 function chatCompletionsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -25,9 +26,9 @@ function modelsUrl(copilot: ICopilot) {
 }
 
 export type UseChatOptions = AiUseChatOptions & {
-  appendMessage?: (message: Message) => void;
-  abortController?: AbortController | null;
-  model: string;
+  appendMessage?: (message: Message) => void
+  abortController?: AbortController | null
+  model: string
 }
 
 /**
@@ -39,10 +40,14 @@ export class CopilotService {
     return this.#copilot$.value
   }
   set copilot(value: Partial<ICopilot> | null) {
-    this.#copilot$.next(value ? {
-      ...this.#copilot$.value,
-      ...value
-    } : null)
+    this.#copilot$.next(
+      value
+        ? {
+            ...this.#copilot$.value,
+            ...value
+          }
+        : null
+    )
   }
 
   readonly copilot$ = this.#copilot$.asObservable()
@@ -52,6 +57,27 @@ export class CopilotService {
    */
   readonly isTools$ = this.copilot$.pipe(map((copilot) => copilot?.provider && AI_PROVIDERS[copilot.provider]?.isTools))
 
+  readonly llm$ = this.copilot$.pipe(
+    map((copilot) => {
+      switch (copilot.provider) {
+        case AiProvider.OpenAI:
+          return new ChatOpenAI({
+            apiKey: copilot.apiKey,
+            configuration: {
+              baseURL: copilot.apiHost || null,
+              defaultHeaders: {
+                ...(this.requestOptions().headers ?? {})
+              }
+            },
+            temperature: 0
+          })
+        default:
+          return null
+      }
+    }),
+    shareReplay(1)
+  )
+
   constructor(copilot?: ICopilot) {
     if (copilot) {
       this.copilot = copilot
@@ -60,20 +86,22 @@ export class CopilotService {
 
   /**
    * Custom request options, headers (Auth, others) and body
-   * 
-   * @returns 
+   *
+   * @returns
    */
-  requestOptions(): RequestOptions {
+  requestOptions(): any {
     return {}
   }
 
   /**
-   * 
-   * @param messages 
-   * @param options 
-   * @returns 
+   *
+   * @param messages
+   * @param options
+   * @returns
    */
-  async createChat(messages: CopilotChatMessage[], options?: {
+  async createChat(
+    messages: CopilotChatMessage[],
+    options?: {
       request?: any
       signal?: AbortSignal
     }
@@ -83,14 +111,14 @@ export class CopilotService {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
       },
       signal,
       body: JSON.stringify({
         model: DefaultModel,
         messages: messages.map((message) => ({
           role: message.role,
-          content: message.content,
+          content: message.content
         })),
         ...(request ?? {})
       })
@@ -109,14 +137,14 @@ export class CopilotService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
         // Authorization: `Bearer ${this.copilot.apiKey}`
       },
       body: JSON.stringify({
         model: DefaultModel,
         messages: messages.map((message) => ({
           role: message.role,
-          content: message.content,
+          content: message.content
         })),
         ...(request ?? {})
       })
@@ -141,14 +169,14 @@ export class CopilotService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+          ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
           // Authorization: `Bearer ${this.copilot.apiKey}`
         },
         body: JSON.stringify({
           model: DefaultModel,
           messages: messages.map((message) => ({
             role: message.role,
-            content: message.content,
+            content: message.content
           })),
           ...(request ?? {}),
           stream: true
@@ -201,7 +229,7 @@ export class CopilotService {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.requestOptions()?.headers ?? {}) as Record<string, string>,
+        ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
         // Authorization: `Bearer ${this.copilot.apiKey}`
       }
     }).pipe(
@@ -240,9 +268,9 @@ export class CopilotService {
       model: DefaultModel
     },
     chatRequest: ChatRequest,
-    { options, data }: ChatRequestOptions = {},
+    { options, data }: ChatRequestOptions = {}
   ): Promise<Message | { messages: Message[]; data: JSONValue[] }> {
-    const callChatApiFuc = this.copilot.provider === AiProvider.DashScope ?  callDashScopeChatApi : callChatApi
+    const callChatApiFuc = this.copilot.provider === AiProvider.DashScope ? callDashScopeChatApi : callChatApi
     return await callChatApiFuc({
       api: chatCompletionsUrl(this.copilot),
       model,
@@ -260,7 +288,7 @@ export class CopilotService {
       body: {
         data: chatRequest.data,
         ...body,
-        ...(options?.body ?? {}),
+        ...(options?.body ?? {})
       },
       headers: {
         ...(this.requestOptions()?.headers ?? {}),

@@ -9,11 +9,14 @@ import { C_API_STORY_POINT } from './constants'
 export class StoryPointsService {
   constructor(private httpClient: HttpClient) {}
 
-  getOne(id: string, relations?: string[]) {
+  getOne(id: string, relations?: string[], token?: string) {
     let params = new HttpParams()
     if (relations) {
       const query = JSON.stringify({ relations })
       params = params.append('$query', query)
+    }
+    if (token) {
+      params = params.append('token', token)
     }
     return this.httpClient.get<IStoryPoint>(`${C_API_STORY_POINT}/${id}`, { params })
   }

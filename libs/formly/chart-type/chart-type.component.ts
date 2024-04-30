@@ -12,23 +12,33 @@ import {
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
+import { EditorThemeMap } from '@metad/components/editor'
 import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
 import { NxChartType, ThemeService } from '@metad/core'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
-import { isEqual, isNil, isString, omit } from '@metad/ocap-core'
+import { NgmFormlyArrayComponent } from '@metad/formly/array'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import {
+  BarVariant,
+  HeatmapVariant,
+  isEqual,
+  isNil,
+  isString,
+  omit,
+  PieVariant,
+  ScatterVariant,
+  TreeVariant,
+  WaterfallVariant
+} from '@metad/ocap-core'
 import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { FieldType } from '@ngx-formly/core'
+import { TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
+import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
-import { TranslateService } from '@ngx-translate/core'
-import { NGXLogger } from 'ngx-logger'
-import { EditorThemeMap } from '@metad/components/editor'
-import { NgmFormlyArrayComponent } from '@metad/formly/array'
-
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,37 +97,37 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   }
   VARIANTS = {
     Bar: [
-      { value: null, label: 'None' },
-      { value: 'polar', label: 'Polar' },
-      { value: 'stacked', label: 'Stacked' }
+      { value: BarVariant.None, label: 'None' },
+      { value: BarVariant.Polar, label: 'Polar' },
+      { value: BarVariant.Stacked, label: 'Stacked' }
     ],
     Waterfall: [
       {
-        value: null,
+        value: WaterfallVariant.None,
         label: 'None'
       },
       {
-        value: 'polar',
+        value: WaterfallVariant.Polar,
         label: 'Polar'
       }
     ],
     Pie: [
-      { value: null, label: 'Pie' },
-      { value: 'Doughnut', label: 'Doughnut' },
-      { value: 'Nightingale', label: 'Nightingale' }
+      { value: PieVariant.None, label: 'Pie' },
+      { value: PieVariant.Doughnut, label: 'Doughnut' },
+      { value: PieVariant.Nightingale, label: 'Nightingale' }
     ],
     Scatter: [
-      { value: null, label: 'None' },
-      { value: 'polar', label: 'Polar' }
+      { value: ScatterVariant.None, label: 'None' },
+      { value: ScatterVariant.Polar, label: 'Polar' }
     ],
     Tree: [
-      { value: null, label: 'None' },
-      { value: 'reverse', label: 'Reverse' },
-      { value: 'radial', label: 'Radial' }
+      { value: TreeVariant.None, label: 'None' },
+      { value: TreeVariant.Reverse, label: 'Reverse' },
+      { value: TreeVariant.Radial, label: 'Radial' }
     ],
     [NxChartType.Heatmap]: [
-      { value: null, label: 'None' },
-      { value: 'calendar', label: 'Calendar' }
+      { value: HeatmapVariant.None, label: 'None' },
+      { value: HeatmapVariant.Calendar, label: 'Calendar' }
     ]
   }
 
@@ -199,7 +209,7 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   answering = false
   systemPrompt = `假设你一名程序员，请根据注释需求补全代码，要求：编写一个函数用于绘制 ECharts 图形，只要编写函数体内部代码，函数只返回 ECharts options，输入参数有 data chartAnnotation chartOptions chartSettings
 data 数据类型为 {data: <实际数据对象（包含measure对应的属性）>[]} chartAnnotation 类型为 {measures: {measure: string}[]}`
-  
+
   public editor$ = new BehaviorSubject(null)
   readonly editorOptions = computed(() => {
     return {
@@ -219,7 +229,8 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     description: this.#translate.instant('PAC.MODEL.Copilot.Examples.CreateNewRole', {
       Default: 'Describe the chart you want to create'
     }),
-    systemPrompt: () => `根据提示编写一个 Javascript 函数来创建自定义图形，其目标是绘制自定义逻辑的 ECharts 图形。函数应该接受以下参数：
+    systemPrompt:
+      () => `根据提示编写一个 Javascript 函数来创建自定义图形，其目标是绘制自定义逻辑的 ECharts 图形。函数应该接受以下参数：
 1. 'queryResult': The type of queryResult is
 \`\`\`
 {

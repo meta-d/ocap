@@ -119,6 +119,49 @@ export enum DeviceOrientation {
   landscape
 }
 
+export type ResponsiveBreakpointType = {
+  name: string
+  width: number
+  margin: number
+}
+export const ResponsiveBreakpoints: ResponsiveBreakpointType[] = [
+  {
+    name: 'Mobile S',
+    width: 320,
+    margin: 320
+  },
+  {
+    name: 'Mobile M',
+    width: 375,
+    margin: 55 / 2
+  },
+  {
+    name: 'Mobile L',
+    width: 425,
+    margin: 55 / 2
+  },
+  {
+    name: 'Tablet',
+    width: 768,
+    margin: 343 / 2
+  },
+  {
+    name: 'Laptop',
+    width: 1024,
+    margin: 256 / 2
+  },
+  {
+    name: 'Laptop L',
+    width: 1440,
+    margin: 416 / 2
+  },
+  {
+    name: 'Large Screen',
+    width: 2440,
+    margin: 1000 / 2
+  }
+]
+
 /**
  * Download story file
  *

@@ -39,12 +39,12 @@
         position="end"
         ngmResizer [resizerWidth]="380"
         [mode]="isMobile() ? 'over' : 'side'"
-        [opened]="detailsOpen"
+        [(opened)]="detailsOpen"
         (openedChange)="onDesignerDrawerChange($event)"
     >
         <ngm-settings-panel class="pac-model__settings-container" displayDensity="compact"
             liveMode
-            (opened)="detailsOpen=true"
+            (opened)="detailsOpen()"
         >
         </ngm-settings-panel>
         <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
@@ -56,9 +56,7 @@
         <mat-drawer-container class="flex-1 h-full" autosize>
             <mat-drawer #drawer mode="side" [(opened)]="drawerOpened" ngmResizer [resizerWidth]="230">
                 <pac-model-cube-structure class="pac-model-entity__cube flex-1 h-full"
-                    [modelType]="modelType$ | async"
-                    [editable]="true"
-                    (selectedChange)="propertySelectedChange($event)"
+                    [modelType]="modelType$ | async" editable
                     (editChange)="onPropertyEdit($event)"
                 ></pac-model-cube-structure>
 

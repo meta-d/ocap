@@ -3,22 +3,22 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatSelectModule } from '@angular/material/select'
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { NgmSchemaFormComponent } from '@metad/story/designer'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { PACFormlyChartTypeComponent } from './chart-type.component'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
-import { MatTooltipModule } from '@angular/material/tooltip'
-import { NgmDesignerFormComponent } from '@metad/story/designer'
-import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { NgxPopperjsModule } from 'ngx-popperjs'
+import { PACFormlyChartTypeComponent } from './chart-type.component'
 
 @NgModule({
   declarations: [PACFormlyChartTypeComponent],
@@ -43,8 +43,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle'
     NgmCommonModule,
     ResizerModule,
     NgxPopperjsModule,
-    NgmDesignerFormComponent,
-    
+    NgmSchemaFormComponent,
+
     FormlyModule.forChild({
       types: [
         {

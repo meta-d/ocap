@@ -2,7 +2,7 @@ import { CdkDrag, CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
 import { ENTER } from '@angular/cdk/keycodes'
 import { CdkTreeModule } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
+import { Component, ElementRef, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -13,6 +13,14 @@ import { Router, RouterModule } from '@angular/router'
 import { NgmSemanticModel } from '@metad/cloud/state'
 import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { FunctionCallHandlerOptions, zodToAnnotations } from '@metad/copilot'
+import {
+  calcEntityTypePrompt,
+  makeChartDimensionSchema,
+  makeChartMeasureSchema,
+  makeChartSchema,
+  makeCubeRulesPrompt,
+  zodToProperties
+} from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import {
@@ -35,18 +43,17 @@ import {
 } from '@metad/ocap-core'
 import { StoryExplorerModule } from '@metad/story'
 import { WidgetComponentType, uuid } from '@metad/story/core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isPlainObject } from 'lodash-es'
+import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule, StorySelectorComponent } from '../../../@shared'
-import { InsightService } from './insight.service'
-import { ChartSchema, QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
-import { nanoid } from 'nanoid'
-import { calcEntityTypePrompt, zodToProperties } from '@metad/core'
 import { AppService } from '../../../app.service'
+import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
+import { InsightService } from './insight.service'
 
 @Component({
   standalone: true,
@@ -82,7 +89,6 @@ export class InsightComponent {
   separatorKeysCodes: number[] = [ENTER]
   SlicersCapacity = SlicersCapacity
 
-  private _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private router = inject(Router)
   private readonly _title = inject(Title)
@@ -96,9 +102,6 @@ export class InsightComponent {
 
   get model(): NgmSemanticModel {
     return this.insightService.model
-  }
-  get cube() {
-    return this.insightService.cube$()
   }
 
   promptControl = new FormControl()
@@ -116,10 +119,15 @@ export class InsightComponent {
   readonly copilotEnabled = this.insightService.copilotEnabled
   readonly models$ = this.insightService.models$
   readonly hasCube$ = this.insightService.hasCube$
-  readonly cubes$ = this.insightService.cubes$
 
   readonly entityType = this.insightService.entityType
 
+  readonly cube = this.insightService.cube
+  readonly cubes = this.insightService.cubes
+  readonly cubeSelectOptions = computed(() => {
+    const cubes = this.insightService.cubes()
+    return cubes.map((item) => ({ key: item.name, caption: item.caption, value: item }))
+  })
   readonly dimensions = computed(() => {
     if (this.entityType()) {
       return getEntityDimensions(this.entityType())
@@ -154,12 +162,15 @@ export class InsightComponent {
   /**
    * Themed answers
    */
-  readonly answers = computed(() => this.#answers().map((item) => ({ ...item,
-    chartSettings: {
-      ...(item.chartSettings ?? {}),
-      theme: this.primaryTheme()
-    }
-  })))
+  readonly answers = computed(() =>
+    this.#answers().map((item) => ({
+      ...item,
+      chartSettings: {
+        ...(item.chartSettings ?? {}),
+        theme: this.primaryTheme()
+      }
+    }))
+  )
 
   /**
   |--------------------------------------------------------------------------
@@ -168,10 +179,17 @@ export class InsightComponent {
   */
   readonly #chartCommand = injectCopilotCommand({
     name: 'chart',
-    description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', { Default: 'Use charts to gain insights into data' }),
+    description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', {
+      Default: 'Use charts to gain insights into data'
+    }),
     systemPrompt: () => {
       const entityType = this.insightService.entityType()
-      return `你是一名 BI 多维模型数据分析专家, Please design and create a specific graphic accurately based on the following detailed instructions. Please call the function tool.
+      if (!entityType) {
+        throw new Error(this.#translate.instant('PAC.Home.Insight.SelectCubeFirstly', { Default: 'please select a cube firstly!' }))
+      }
+      return `You are a BI multidimensional model data analysis expert, please design and create a specific graphic accurately based on the following detailed instructions.
+${makeCubeRulesPrompt()}
+Please call the function tool. Also call function tool when fixed function call error.
 The cube is:
 \`\`\`
 ${calcEntityTypePrompt(entityType)}
@@ -187,25 +205,47 @@ ${calcEntityTypePrompt(entityType)}
             name: 'chart',
             description: 'Chart configuration',
             type: 'object',
-            properties: zodToAnnotations(ChartSchema),
+            properties: zodToAnnotations(makeChartSchema()),
+            required: true
+          },
+          {
+            name: 'dimension',
+            description: 'dimension configuration for chart',
+            type: 'object',
+            properties: zodToAnnotations(makeChartDimensionSchema()),
+            required: true
+          },
+          {
+            name: 'measure',
+            description: 'measure configuration for chart',
+            type: 'object',
+            properties: zodToAnnotations(makeChartMeasureSchema()),
             required: true
           }
         ],
-        implementation: async (answer: any, options: FunctionCallHandlerOptions) => {
-          this.#logger.debug('New chart by copilot command with:', answer, options)
-          const userMessage = options.messages.find((item) => item.role === 'user')
+        implementation: async (chart: any, dimension, measure, options: FunctionCallHandlerOptions) => {
+          this.#logger.debug('New chart by copilot command with:', chart, dimension, measure, options)
+          const userMessage = options.messages.reverse().find((item) => item.role === 'user')
           const dataSourceName = this.insightService.dataSourceName()
           const cubes = this.insightService.allCubes()
 
           try {
-            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(answer, this.entityType())
+            chart.cube ??= this.entityType().name
+            const { chartAnnotation, slicers, limit, chartOptions } = transformCopilotChart(
+              {
+                ...chart,
+                dimension,
+                measure
+              },
+              this.entityType()
+            )
             const answerMessage: Partial<QuestionAnswer> = {
               key: options.conversationId,
               title: userMessage?.content,
-              message: JSON.stringify(answer, null, 2),
+              message: JSON.stringify(chart, null, 2),
               dataSettings: {
                 dataSource: dataSourceName,
-                entitySet: answer.cube,
+                entitySet: chart.cube,
                 chartAnnotation,
                 presentationVariant: {
                   maxItems: limit,
@@ -218,15 +258,15 @@ ${calcEntityTypePrompt(entityType)}
               } as DataSettings,
               slicers,
               chartOptions,
-              isCube: cubes.find((item) => item.name === answer.cube),
+              isCube: cubes.find((item) => item.name === chart.cube),
               answering: false,
               expanded: true
             }
-  
+
             this.#logger.debug('New chart by copilot command is:', answerMessage)
             this.updateAnswer(answerMessage)
             return `✅`
-          } catch(err: any) {
+          } catch (err: any) {
             return {
               id: nanoid(),
               role: 'function',
@@ -240,19 +280,23 @@ ${calcEntityTypePrompt(entityType)}
 
   readonly #suggestCommand = injectCopilotCommand({
     name: 'suggest',
-    description: this.#translate.instant('PAC.Home.Insight.SuggestCommandDescription', { Default: 'Suggest prompts for cube' }),
+    description: this.#translate.instant('PAC.Home.Insight.SuggestCommandDescription', {
+      Default: 'Suggest prompts for cube'
+    }),
     systemPrompt: () => {
       const entityType = this.insightService.entityType()
       return `你是一名 BI 多维模型数据分析专家，请根据 Cube 维度和度量等信息提供用户可提问的提示语建议，这些提示语用于创建图形来分析展示数据集的数据。
 例如提示语：
 \`\`\`
-${this.#translate.instant('PAC.Home.Insight.PromptExamplesForVisit', {
-  Default: [
-    'the trend of visit, line is smooth and width 5',
-    'visits by product category, show legend',
-    'visit trend of some product in 2023 year'
-  ]
-}).join('\n;')}
+${this.#translate
+  .instant('PAC.Home.Insight.PromptExamplesForVisit', {
+    Default: [
+      'the trend of visit, line is smooth and width 5',
+      'visits by product category, show legend',
+      'visit trend of some product in 2023 year'
+    ]
+  })
+  .join('\n;')}
 \`\`\`
 The Cube is:
 \`\`\`
@@ -273,7 +317,7 @@ ${calcEntityTypePrompt(entityType)}
             properties: zodToProperties(SuggestsSchema)
           }
         ],
-        implementation: async (param: {suggests: string[]}, options: FunctionCallHandlerOptions) => {
+        implementation: async (param: { suggests: string[] }, options: FunctionCallHandlerOptions) => {
           this.#logger.debug('Suggest prompts by copilot command with:', param, options)
           if (param?.suggests) {
             this.insightService.updateSuggests(param.suggests)
@@ -291,7 +335,7 @@ ${calcEntityTypePrompt(entityType)}
   */
   private promptControlSub = this.promptControl.valueChanges
     .pipe(takeUntilDestroyed())
-    .subscribe(() => (this.insightService.clearError()))
+    .subscribe(() => this.insightService.clearError())
 
   private pageTitleSub = this.#translate
     .stream('PAC.Home.Insight.Title', { Default: '💡Smart Insights' })
@@ -322,7 +366,7 @@ ${calcEntityTypePrompt(entityType)}
 
   async onModelChange(value: NgmSemanticModel) {
     await this.insightService.setModel(value)
-    this._cdr.detectChanges()
+    // this._cdr.detectChanges()
   }
 
   async onCubeChange(cube: Cube) {

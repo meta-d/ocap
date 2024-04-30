@@ -132,11 +132,14 @@ export class StoryStoreService extends ComponentStore<{ entities?: Array<Story> 
       .pipe(map(convertStoryResult))
   }
 
-  getStoryPoint(storyId: ID, pointId: ID): Observable<StoryPoint> {
+  getStoryPoint(storyId: ID, pointId: ID, options?: { token: string }): Observable<StoryPoint> {
+    const { token } = options ?? {}
+    let params = new HttpParams().append('$query', JSON.stringify({ relations: ['widgets'] }))
+    if (token) {
+      params = params.append('token', token)
+    }
     return this.httpClient
-      .get(`${C_API_STORY_POINT}/${pointId}`, {
-        params: new HttpParams().append('$query', JSON.stringify({ relations: ['widgets'] }))
-      })
+      .get(`${C_API_STORY_POINT}/${pointId}`, { params })
       .pipe(map(convertStoryPointResult))
   }
 

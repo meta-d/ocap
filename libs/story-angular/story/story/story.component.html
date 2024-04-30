@@ -1,4 +1,5 @@
-<div  class="ngm-story__story-container flex w-full h-full"
+<div class="ngm-story__story-container flex w-full h-full"
+    [class.editable]="editable()"
     [ngStyle]="storySizeStyles()"
     ngmTransformScale
     [ngmTransformDisabled]="editable()"

@@ -2,7 +2,7 @@ import { AgentType } from '../agent'
 import { Syntax } from '../types'
 import { Schema } from './sdl'
 
-export type TableColumnType = 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Datetime' | 'Date'
+export type TableColumnType = 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Datetime' | 'Date' | 'Time'
 
 export interface TableEntity {
   name: string

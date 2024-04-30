@@ -22,6 +22,7 @@ import {
   effect,
   inject,
   input,
+  signal,
   viewChildren
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
@@ -52,6 +53,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { isEqual, startsWith } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsModule, NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
+import { injectQueryParams } from 'ngxtension/inject-query-params'
 import { BehaviorSubject, EMPTY, Observable, firstValueFrom, interval, merge } from 'rxjs'
 import {
   combineLatestWith,
@@ -161,11 +163,15 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   readonly storyPointComponents = viewChildren('story_point', { read: NxStoryPointComponent })
   readonly cdkDrags = viewChildren('story_point', { read: CdkDrag })
 
+  readonly queryParams = injectQueryParams()
+
   @HostBinding('class.ngm-story--fullscreen')
   _fullscreen: boolean
 
   private style: any
   private _nghost: string
+
+  readonly isFocused = signal(false)
 
   readonly preferences = toSignal(this.storyService.preferences$)
 
@@ -408,6 +414,13 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      const token = this.queryParams()['token']
+      if (token) {
+        this.storyService.patchState({ token })
+      }
+    }, { allowSignalWrites: true })
   }
 
   ngOnChanges({ pageKey, filterBarOpened }: SimpleChanges): void {
@@ -614,6 +627,10 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (!this.isFocused()) {
+      return
+    }
+
     // Alt + ArrowLeft
     // Alt + ArrowRight
     if (event.altKey) {
@@ -622,6 +639,69 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       } else if (event.key === 'ArrowRight') {
         this.slideNext()
       }
+
+      switch (event.code) {
+        case 'Minus':
+        case 'NumpadSubtract':
+          this.storyService.zoomOut()
+          break
+        case 'Equal':
+        case 'NumpadAdd':
+          this.storyService.zoomIn()
+          break
+        case 'Digit0':
+        case 'Numpad0':
+          this.storyService.resetZoom()
+          break
+        case 'Escape':
+          this.resetScalePanState()
+          break
+      }
     }
+
+    if (this.editable()) {
+      if (event.metaKey || event.ctrlKey) {
+        if (event.shiftKey) {
+          if (event.key === 'z' || event.key === 'Z') {
+            this.storyService.redo()
+            event.preventDefault()
+          }
+        } else {
+          if (event.key === 's' || event.key === 'S') {
+            this.storyService.saveStory()
+            event.preventDefault()
+          } else if (event.key === 'z' || event.key === 'Z') {
+            this.storyService.undo()
+            event.preventDefault()
+          }
+        }
+      }
+    }
+  }
+
+  @HostListener('wheel', ['$event'])
+  onWheel(event: WheelEvent) {
+    if (!this.isFocused()) return
+
+    event.preventDefault() // Prevent default scrolling behavior
+
+    // Increase or decrease the scale based on the direction of the scroll
+    if (event.altKey) {
+      if (event.deltaY > 0) {
+        this.storyService.zoomOut()
+      } else {
+        this.storyService.zoomIn()
+      }
+    }
+  }
+
+  @HostListener('focus')
+  onFocus() {
+    this.isFocused.set(true)
+  }
+
+  @HostListener('blur')
+  onBlur() {
+    this.isFocused.set(false)
   }
 }

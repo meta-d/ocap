@@ -3,13 +3,47 @@ import { Component, Inject, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
-import { Cube, Property } from '@metad/ocap-core'
 import { nonNullable } from '@metad/core'
+import { AggregationRole, Cube, DBTable, Property } from '@metad/ocap-core'
 import { of } from 'rxjs'
 import { debounceTime, distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { SemanticModelService } from '../model.service'
 import { MODEL_TYPE, SemanticModelEntityType } from '../types'
 
+export type CreateEntityColumnType = {
+  name: string
+  caption: string
+  visible: boolean
+  role: AggregationRole
+  dataType?: string
+  isMeasure?: boolean
+  aggregator?: string
+  isDimension?: boolean
+  dimension?: Property
+}
+
+export type CreateEntityDialogDataType = {
+  model: {
+    name?: string
+    expression?: string
+    table?: string
+    caption?: string
+  }
+  entitySets?: DBTable[]
+  modelType?: MODEL_TYPE
+}
+
+export type CreateEntityDialogRetType = {
+  type: SemanticModelEntityType
+  name: string
+  caption: string
+  table: string
+
+  expression: string
+  primaryKey: string
+  columns: CreateEntityColumnType[]
+  cubes: Cube[]
+}
 
 @Component({
   selector: 'pac-model-create-entity',
@@ -26,14 +60,7 @@ export class ModelCreateEntityComponent {
   hiddenTable = false
 
   primaryKey: string
-  columns: {
-    name: string
-    caption: string
-    visible: boolean
-    dataType?: string
-    measure?: boolean
-    dimension?: Property
-  }[] = []
+  columns: CreateEntityColumnType[] = []
   cubes: Cube[] = []
   table = new FormControl(null)
   type = new FormControl<SemanticModelEntityType>(null, [Validators.required])
@@ -80,7 +107,10 @@ export class ModelCreateEntityComponent {
   private readonly entityType = toSignal(this.type.valueChanges)
   public readonly sharedDimensions = toSignal(this.modelService.sharedDimensions$)
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data, public dialogRef: MatDialogRef<ModelCreateEntityComponent>) {
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: CreateEntityDialogDataType,
+    public dialogRef: MatDialogRef<ModelCreateEntityComponent, CreateEntityDialogRetType>
+  ) {
     this.expression = this.data.model?.expression
     this.modelType = this.data.modelType
     const initValue = {
@@ -111,7 +141,7 @@ export class ModelCreateEntityComponent {
         // 自动判断实体类型
         if (!nonNullable(type) && this.columns.length > 0) {
           this.type.setValue(
-            this.columns.find((item) => item.dataType === 'number')
+            this.columns.find((item) => item.role === AggregationRole.measure)
               ? SemanticModelEntityType.CUBE
               : SemanticModelEntityType.DIMENSION
           )
@@ -125,15 +155,15 @@ export class ModelCreateEntityComponent {
               )
               if (dimension) {
                 item.dimension = dimension
-              } else if (item.dataType === 'number') {
-                item.measure = true
+              } else if (item.role === AggregationRole.measure) {
+                item.isMeasure = true
               }
             })
           } else if (type) {
             this.columns = this.columns.map((item) => ({
               ...item,
               dimension: null,
-              measure: null
+              isMeasure: null
             }))
           }
         }
@@ -166,6 +196,18 @@ export class ModelCreateEntityComponent {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex)
   }
 
+  toggleDimension(value: boolean, column: CreateEntityColumnType) {
+    if (value) {
+      column.isMeasure = false
+    }
+  }
+
+  toggleMeasure(value: boolean, column: CreateEntityColumnType) {
+    if (value) {
+      column.isDimension = false
+    }
+  }
+
   onSubmit(event) {
     if (this.formGroup.valid) {
       this.apply()
@@ -177,7 +219,7 @@ export class ModelCreateEntityComponent {
       ...this.formGroup.getRawValue(),
       expression: this.expression,
       primaryKey: this.primaryKey,
-      columns: this.columns.filter((item) => item.visible || item.measure || item.dimension),
+      columns: this.columns.filter((item) => item.visible || item.isMeasure || item.isDimension || item.dimension),
       cubes: this.cubes
     })
   }

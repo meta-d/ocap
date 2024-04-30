@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx'
 
-export declare type TableColumnType = 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Datetime' | 'Date'
+// The same as import { TableColumnType } from '@metad/ocap-core'
+export declare type TableColumnType = 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Datetime' | 'Date' | 'Time'
 export interface UploadSheetType {
   file: File
   fileName: string

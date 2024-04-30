@@ -12,7 +12,7 @@
     }
   </mat-toolbar>
 
-  <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div cdkDropList id="list-dimensions" class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     [cdkDropListEnterPredicate]="dropDimensionPredicate"
     (cdkDropListDropped)="dropDimension($event)"
     >
@@ -23,7 +23,6 @@
           [dimension]="item.dimension"
           [usage]="item.usage"
           [readonly]="true"
-          [checklistSelection]="checklistSelection"
           (delete)="onDelete($event)"
           (toDimension)="toDimensionUsage(item.usage)"
         >
@@ -35,7 +34,6 @@
           displayDensity="compact"
           [dimension]="dim"
           [readonly]="modelType === MODEL_TYPE.XMLA"
-          [checklistSelection]="checklistSelection"
           (newItem)="addNewItem($event)"
           (delete)="onDelete($event)"
         >
@@ -51,7 +49,7 @@
       {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
     </span>
 
-    @if (modelType !== MODEL_TYPE.XMLA && editable) {
+    @if (modelType !== MODEL_TYPE.XMLA && editable()) {
       <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
         [matTooltip]=" 'PAC.MODEL.ENTITY.NewMeasure' | translate: {Default: 'New Measure'} "
         (click)="$event.stopPropagation();$event.preventDefault();onAddMeasure($event)">
@@ -60,7 +58,7 @@
     }
   </mat-toolbar>
         
-  <div class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     id="list-measures"
     cdkDropList
     [cdkDropListData]="measures$()"
@@ -70,7 +68,7 @@
     <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
       <mat-list-item *ngFor="let member of measures$()" cdkDragBoundary=".pac-model-entity" cdkDrag [cdkDragData]="member"
         class="ngm-list-item"
-        [ngClass]="checklistSelection.isSelected(ModelDesignerType.measure + '#' + member.__id__)?'selected':''"
+        [class.selected]="isSelected(ModelDesignerType.measure, member.__id__)"
         (click)="onSelect(ModelDesignerType.measure, member)"
         (mouseenter)="actionStrip.show()"
         (mouseleave)="actionStrip.hide()"
@@ -106,7 +104,7 @@
     </button>
   </mat-toolbar>
         
-  <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col"
+  <div id="list-calculated-members" class="pac-cdk-drop__list flex-1 flex flex-col min-h-[60px]"
     cdkDropList
     [cdkDropListData]="calculatedMembers()"
     [cdkDropListEnterPredicate]="calculatedEnterPredicate"
@@ -114,7 +112,7 @@
     <mat-list disableRipple displayDensity="compact" class="ngm-list-base flex-1 flex flex-col overflow-auto">
       <mat-list-item *ngFor="let member of calculatedMembers()" class="ngm-list-item"
         [class.bg-orange-100]="!member.name"
-        [ngClass]="isSelected(ModelDesignerType.calculatedMember + '#' + member.__id__)?'selected':''"
+        [class.selected]="isSelected(ModelDesignerType.calculatedMember, member.__id__)"
         (click)="onSelect(ModelDesignerType.calculatedMember, member)"
         (mouseenter)="actionStrip.show()"
         (mouseleave)="actionStrip.hide()"

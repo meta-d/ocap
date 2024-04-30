@@ -40,6 +40,7 @@ import {
   TooltipCapacity,
   VisualMapCapacity
 } from './schemas'
+import { toSignal } from '@angular/core/rxjs-interop'
 
 export interface AnalyticalCardSchemaState extends SchemaState {
   model: {
@@ -282,6 +283,9 @@ export class MeasureChartOptionsSchemaService implements DesignerSchema<ChartOpt
   }
   private readonly model$ = new BehaviorSubject<ChartOptions>(null)
 
+  readonly title$ = of(`Chart measure options`)
+  readonly title = toSignal(this.title$)
+
   get chartType() {
     return this.chartType$.value
   }
@@ -293,7 +297,7 @@ export class MeasureChartOptionsSchemaService implements DesignerSchema<ChartOpt
   public readonly storyDesigner$ = this.translate.stream('Story')
 
   getTitle(): Observable<string> {
-    return of(`Chart measure options`)
+    return this.title$
   }
 
   getSchema() {
@@ -351,8 +355,11 @@ export class DimensionChartOptionsSchemaService implements DesignerSchema<ChartO
   }
   private readonly model$ = new BehaviorSubject<ChartOptions>(null)
 
+  readonly title$ = of(`Chart dimension options`)
+  readonly title = toSignal(this.title$)
+
   getTitle(): Observable<string> {
-    return of(`Chart dimension options`)
+    return this.title$
   }
 
   public readonly role$ = this.model$.pipe(map((model) => model.role))
@@ -400,6 +407,9 @@ export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
   }
   private readonly model$ = new BehaviorSubject<ChartOptions>(null)
 
+  readonly title$ = of(`Chart options`)
+  readonly title = toSignal(this.title$)
+  
   get chartType() {
     return this.chartType$.value
   }
@@ -411,7 +421,7 @@ export class ChartOptionsSchemaService implements DesignerSchema<ChartOptions> {
   public readonly storyDesigner$ = this.translate.stream('Story')
 
   getTitle(): Observable<string> {
-    return of(`Chart options`)
+    return this.title$
   }
 
   getSchema() {

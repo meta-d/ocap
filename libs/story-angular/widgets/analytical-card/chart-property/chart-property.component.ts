@@ -3,6 +3,7 @@ import { Component, Input, computed, forwardRef, inject, signal } from '@angular
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
@@ -29,13 +30,12 @@ import {
   isEqual,
   pick
 } from '@metad/ocap-core'
-import { NgmDesignerFormComponent, NxDesignerModule, NxSettingsPanelService, STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
+import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { BehaviorSubject, distinctUntilChanged, from, map } from 'rxjs'
-import { DimensionChartOptionsSchemaService } from '../analytical-card.schema'
-import { NgmReferenceLineComponent } from './reference-line.component'
+import { NgmChartDimensionComponent } from './chart-dimension.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
-import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { NgmReferenceLineComponent } from './reference-line.component'
 
 @Component({
   standalone: true,
@@ -57,7 +57,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle'
     DensityDirective,
     AppearanceDirective,
     NgmColorsComponent,
-    NgmDesignerFormComponent,
+    NgmChartDimensionComponent,
     NgmReferenceLineComponent,
     NgmChartMeasureComponent
   ],
@@ -69,11 +69,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle'
       provide: NG_VALUE_ACCESSOR,
       multi: true,
       useExisting: forwardRef(() => NgmChartPropertyComponent)
-    },
-    {
-      provide: STORY_DESIGNER_SCHEMA,
-      useClass: DimensionChartOptionsSchemaService
-    },
+    }
   ]
 })
 export class NgmChartPropertyComponent implements ControlValueAccessor {
@@ -102,7 +98,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   private readonly _entityType = signal<EntityType>(null)
 
   @Input() chartType: ChartType
-
 
   public interpolateGroups: NgmChromaticInterpolateGroup[]
   public colorPalettes = ColorPalettes
@@ -342,11 +337,6 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
 
   onCalculationChange(property: CalculationProperty) {
-    // this.coreService.storyUpdateEvent$.next({
-    //   type: 'Calculation',
-    //   dataSettings: this.dataSettings,
-    //   property
-    // })
     this.dsCoreService.updateStory({
       type: 'Calculation',
       dataSettings: this.dataSettings,

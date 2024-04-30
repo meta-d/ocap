@@ -1,11 +1,11 @@
 import * as _axios from 'axios'
-import { CreationTable, IColumnDef, IDSSchema, IDSTable } from './types'
+import { AdapterBaseOptions, DBQueryRunner, DBQueryRunnerType, IColumnDef, IDSSchema, IDSTable, QueryOptions } from './types'
 
 const axios = _axios.default
 
 export const QUERY_RUNNERS: Record<
   string,
-  new (options?: AdapterBaseOptions, ...args: unknown[]) => DBQueryRunner
+  DBQueryRunnerType
 > = {}
 
 export interface QueryResult {
@@ -14,112 +14,6 @@ export interface QueryResult {
   columns?: Array<IColumnDef>
   stats?: any
   error?: string
-}
-
-/**
- * The base options for DB adapters
- */
-export interface AdapterBaseOptions {
-  /**
-   * Ref to debug in `createConnection` of `mysql`
-   */
-  debug?: boolean
-  /**
-   * Ref to trace in `createConnection` of `mysql`
-   */
-  trace?: boolean
-  host: string
-  port: number
-  username: string
-  password: string
-}
-
-/**
- * Options of single query
- */
-export interface QueryOptions {
-  catalog?: string
-  headers?: Record<string, string>
-}
-
-/**
- * Duties:
- * - Convert error messages into a unified format
- * - Connect different types of data sources
- */
-export interface DBQueryRunner {
-  type: string
-  name: string
-  syntax: string
-  protocol: string
-  host: string
-  port: number | string
-  jdbcDriver: string
-  configurationSchema: Record<string, unknown>
-
-  jdbcUrl(schema?: string): string
-  /**
-   * Execute a sql query
-   * 
-   * @param sql 
-   */
-  run(sql: string): Promise<any>
-  /**
-   * Execute a sql query with options
-   * 
-   * @param query 
-   * @param options 
-   */
-  runQuery(query: string, options?: QueryOptions): Promise<unknown>
-  /**
-   * Get catalog (schema or database) list in data source
-   */
-  getCatalogs(): Promise<IDSSchema[]>
-  /**
-   * Get schema of table in catalog (schema or database)
-   * 
-   * @param catalog 
-   * @param tableName 
-   */
-  getSchema(catalog?: string, tableName?: string): Promise<IDSTable[]>
-  /**
-   * Describe a sql query result schema
-   * 
-   * @param catalog 
-   * @param statement 
-   */
-  describe(catalog: string, statement: string): Promise<{columns?: IDSTable['columns']}>
-  /**
-   * Ping the db
-   */
-  ping(): Promise<void>
-  /**
-   * Create a new catalog (schema) in database
-   * 
-   * @param catalog 
-   */
-  createCatalog?(catalog: string): Promise<void>
-  /**
-   * Create or append table data
-   * 
-   * @param params 
-   * @param options 
-   */
-  import(params: CreationTable, options?: QueryOptions): Promise<any>
-  /**
-   * Drop a table
-   * 
-   * @param name Table name
-   * @param options 
-   */
-  dropTable(name: string, options?: QueryOptions): Promise<void>
-
-  /**
-   * Teardown all resources:
-   * - close connection
-   * 
-   */
-  teardown(): Promise<void>
 }
 
 export abstract class BaseQueryRunner<T extends AdapterBaseOptions = AdapterBaseOptions> implements DBQueryRunner {
@@ -234,6 +128,8 @@ export abstract class BaseSQLQueryRunner<T extends SQLAdapterOptions = SQLAdapte
     return null
   }
 
+  abstract createCatalog?(catalog: string): Promise<void>
+
   async ping(): Promise<void> {
     await this.runQuery(`SELECT 1`)
   }
@@ -245,14 +141,14 @@ export abstract class BaseSQLQueryRunner<T extends SQLAdapterOptions = SQLAdapte
  * @param type 
  * @param query_runner_class 
  */
-export function register(
+export function register<T extends AdapterBaseOptions = AdapterBaseOptions>(
   type: string,
-  query_runner_class: new (options?: AdapterBaseOptions, ...args: unknown[]) => DBQueryRunner
+  query_runner_class: new (options?: T, ...args: unknown[]) => DBQueryRunner
 ) {
   if (QUERY_RUNNERS[type]) {
-    throw new Error(`Type ${type} already existed!`)
+    throw new Error(`DB adapter type ${type} already existed!`)
   }
-  QUERY_RUNNERS[type] = query_runner_class
+  QUERY_RUNNERS[type] = query_runner_class as DBQueryRunnerType
 }
 
 /**

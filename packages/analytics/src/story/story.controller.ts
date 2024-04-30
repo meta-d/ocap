@@ -179,7 +179,7 @@ export class StoryController extends CrudController<Story> {
 		let story: Story
 		if (token) {
 			const secretToken: ISecretToken = await this.commandBus.execute(new SecretTokenGetCommand({ token }))
-			if (secretToken && !secretToken.expired) {
+			if (secretToken && !secretToken.expired && secretToken.entityId === id) {
 				story = await this.storyService.findOne(id, options)
 			} else {
 				throw new ForbiddenException('The token is invalid or expired')

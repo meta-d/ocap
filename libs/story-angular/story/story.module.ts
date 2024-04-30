@@ -18,6 +18,7 @@ import { StoryCommentsComponent } from './story-comments/story-comments.componen
 import { NxStoryPointComponent } from './story-point/story-point.component'
 import { NxStoryWidgetComponent } from './story-widget/story-widget.component'
 import { NxStoryComponent } from './story/story.component'
+import { SinglePageStoryComponent } from './single-page-story/sps.component'
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { NxStoryComponent } from './story/story.component'
     NxStoryPointComponent,
     NxStoryWidgetComponent,
     StoryCommentsComponent,
+    SinglePageStoryComponent
   ],
-  exports: [NxStoryComponent, NxStoryWidgetComponent, NxStoryPointComponent]
+  exports: [NxStoryComponent, NxStoryWidgetComponent, NxStoryPointComponent, SinglePageStoryComponent]
 })
 export class NxStoryModule {}

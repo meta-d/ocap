@@ -1,7 +1,7 @@
 import { Connection, Pool, createConnection } from 'mysql' // mysql2 package 的连不上 Doris
-import { BaseSQLQueryRunner, QueryOptions, SQLAdapterOptions, register } from '../../base'
+import { BaseSQLQueryRunner, SQLAdapterOptions, register } from '../../base'
 import { convertMySQLSchema, pick, typeToMySqlDB } from '../../helpers'
-import { IDSSchema } from '../../types'
+import { IDSSchema, QueryOptions } from '../../types'
 
 export const MYSQL_TYPE = 'mysql'
 export const RDS_TYPE = 'rds_mysql'

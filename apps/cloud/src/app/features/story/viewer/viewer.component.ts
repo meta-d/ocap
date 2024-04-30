@@ -1,4 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
+import { CdkMenuModule } from '@angular/cdk/menu'
 import { CommonModule, DOCUMENT } from '@angular/common'
 import {
   ChangeDetectionStrategy,
@@ -9,24 +10,27 @@ import {
   Inject,
   OnDestroy,
   OnInit,
-  ViewChild,
   ViewContainerRef,
   computed,
   effect,
   inject,
   model,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { AbilityModule } from '@casl/angular'
-import { NgmDSCoreService, OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
-import { AgentType } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmDSCoreService, OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
+import { AgentType } from '@metad/ocap-core'
+import { StoryExplorerModule } from '@metad/story'
 import { NxStoryService, Story } from '@metad/story/core'
 import { NxStoryComponent, NxStoryModule, StorySharesComponent } from '@metad/story/story'
+import { TranslateModule } from '@ngx-translate/core'
 import { EMPTY, Observable, firstValueFrom, interval } from 'rxjs'
 import { map, startWith, switchMap, tap } from 'rxjs/operators'
 import {
@@ -38,18 +42,12 @@ import {
   Store,
   StoryStatusEnum,
   ToastrService,
-  exitFullscreen,
-  isMobile,
-  requestFullscreen
+  isMobile
 } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
-import { AppService } from '../../../app.service'
 import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
-import { CdkMenuModule } from '@angular/cdk/menu'
+import { AppService } from '../../../app.service'
 import { StoryScales, downloadStory } from '../types'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { StoryExplorerModule } from '@metad/story'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -77,11 +75,12 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   AccessEnum = AccessEnum
   StoryStatusEnum = StoryStatusEnum
   StoryScales = StoryScales
-  
+
   private readonly _dialog: MatDialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
-  @ViewChild('storyComponent') storyComponent: NxStoryComponent
+  readonly storyComponent = viewChild('storyComponent', { read: NxStoryComponent })
+  readonly storyContainer = viewChild('storyContainer', { read: ElementRef })
 
   @HostBinding('class.fullscreen')
   get fullscreen() {
@@ -116,24 +115,28 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     return this.story?.points?.length > 1
   }
 
-  readonly pageKey = toSignal(this.route.queryParams.pipe(
-    startWith(this.route.snapshot.queryParams),
-    map((queryParams) => queryParams['pageKey'])
-  ))
-  readonly widgetKey = toSignal(this.route.queryParams.pipe(
-    startWith(this.route.snapshot.queryParams),
-    map((queryParams) => queryParams['widgetKey'])
-  ))
+  readonly pageKey = toSignal(
+    this.route.queryParams.pipe(
+      startWith(this.route.snapshot.queryParams),
+      map((queryParams) => queryParams['pageKey'])
+    )
+  )
+  readonly widgetKey = toSignal(
+    this.route.queryParams.pipe(
+      startWith(this.route.snapshot.queryParams),
+      map((queryParams) => queryParams['widgetKey'])
+    )
+  )
   readonly watermark$ = this.store.user$.pipe(map((user) => `${user.mobile ?? ''} ${user.email ?? ''}`))
   readonly isDark$ = this.appService.isDark$
-  public readonly isAuthenticated$ = this.storyService.isAuthenticated$
+  readonly isAuthenticated = this.storyService.isAuthenticated
   public readonly isPanMode$ = this.storyService.isPanMode$
 
   readonly scale = computed(() => this.storyService.currentPageState()?.scale ?? 100)
 
   // Story explorer
-  showExplorer = signal(false)
-  explore = signal(null)
+  readonly showExplorer = signal(false)
+  readonly explore = signal(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -141,7 +144,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   |--------------------------------------------------------------------------
   */
   private _echartsThemeSub = registerStoryThemes(this.storyService)
-  
+
   private queryParamsSub = this.route.queryParams.pipe(takeUntilDestroyed()).subscribe((params) => {
     this.showExplorer.set(!!params.explore)
     if (params.explore) {
@@ -149,8 +152,8 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     }
   })
 
-  readonly #effectRef = effectStoryTheme(this._elementRef)
-  
+  readonly #effectRef = effectStoryTheme(this.storyContainer)
+
   constructor(
     public appService: AppService,
     public storyService: NxStoryService,
@@ -161,7 +164,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     private route: ActivatedRoute,
     private _router: Router,
     @Inject(DOCUMENT) private document: any,
-    private _elementRef: ElementRef
   ) {
     super()
 
@@ -239,7 +241,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     return timer$.pipe(
       tap((t) => (this.dataTimer = t)),
       switchMap((t) => (t ? interval(t * 1000 * 60) : EMPTY)),
-      tap(() => this.storyComponent.refresh(true))
+      tap(() => this.storyComponent().refresh(true))
     )
   })
 
@@ -247,7 +249,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     return timer$.pipe(
       tap((t) => (this.pageTimer = t)),
       switchMap((t) => (t ? interval(t * 1000 * 60) : EMPTY)),
-      tap(() => this.storyComponent.slideNext(true))
+      tap(() => this.storyComponent().slideNext(true))
     )
   })
 
@@ -273,7 +275,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   async openShares(story: Story) {
-    const isAuthenticated = await firstValueFrom(this.isAuthenticated$)
+    const isAuthenticated = this.isAuthenticated()
 
     await firstValueFrom(
       this._dialog
@@ -289,7 +291,7 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
         .afterClosed()
     )
   }
-  
+
   async togglePanTool() {
     const isPanMode = await firstValueFrom(this.isPanMode$)
     this.storyService.patchState({ isPanMode: !isPanMode })
@@ -308,20 +310,22 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
   }
 
   resetScalePan() {
-    this.storyComponent.resetScalePanState()
+    this.storyComponent().resetScalePanState()
+  }
+
+  resetZoom() {
+    this.storyService.resetZoom()
   }
 
   closeExplorer(event) {
     this.showExplorer.set(false)
     this._router.navigate([], {
       relativeTo: this.route,
-      queryParams: {explore: null, widgetKey: null},
+      queryParams: { explore: null, widgetKey: null },
       queryParamsHandling: 'merge' // remove to replace all query params by provided
     })
 
     if (event) {
-      console.log(`Update story widget: ${this.pageKey()}`, event)
-
       this.storyService.updateWidget({
         pageKey: this.pageKey(),
         widgetKey: this.widgetKey(),
@@ -345,23 +349,6 @@ export class StoryViewerComponent extends TranslationBaseComponent implements On
     this.storyService.patchState({ isPanMode: false })
   }
 
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
-    if (event.altKey) {
-      switch (event.code) {
-        case 'Minus':
-          this.storyService.zoomOut()
-          break;
-        case 'Equal':
-          this.storyService.zoomIn()
-          break;
-        case 'Escape':
-          this.resetScalePan()
-          break;
-      }
-    }
-  }
-  
   @HostBinding('class.pac-story-viewer')
   @HostBinding('class.ngm-story-container')
   get _storyViewerComponent() {

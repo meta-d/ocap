@@ -1,4 +1,5 @@
 import {
+  PieVariant,
   getChartTrellis,
   getDimensionMemberCaption,
   getEntityHierarchy,
@@ -238,7 +239,7 @@ export function trellisCoordinates(
         } else if (coordinateType === 'pie') {
           const minRadius = Math.max(100 / trellisHorizontal, 100 / trellisVertical)
           const radius =
-            chartAnnotation.chartType.variant === 'Doughnut' || chartAnnotation.chartType.variant === 'Nightingale'
+            chartAnnotation.chartType.variant === PieVariant.Doughnut || chartAnnotation.chartType.variant === PieVariant.Nightingale
               ? [minRadius * 0.4 + '%', minRadius * 0.7 + '%']
               : minRadius * 0.7 + '%'
 

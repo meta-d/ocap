@@ -1,7 +1,7 @@
-import { IColumnDef, IDSSchema, IDSTable } from '../types'
+import { IColumnDef, IDSSchema, IDSTable, QueryOptions } from '../types'
 import { auth, connections, HiveClient, HiveUtils, thrift } from 'hive-driver'
 import { ColumnRequest, TablesRequest } from 'hive-driver/dist/contracts/IHiveSession'
-import { BaseSQLQueryRunner, QueryOptions, QueryResult, register, SQLAdapterOptions } from '../base'
+import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../base'
 import { groupBy } from '../helpers'
 
 const { TCLIService, TCLIService_types } = thrift
@@ -222,6 +222,7 @@ export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
               .filter((col) => col.TABLE_SCHEM === item.TABLE_SCHEM && col.TABLE_NAME === item.TABLE_NAME)
               .map((col) => ({
                 name: col.COLUMN_NAME,
+                dataType: col.TYPE_NAME.toLowerCase(),
                 type: typeMap(col.TYPE_NAME.toLowerCase()),
                 label: col.REMARKS,
                 nullable: col.NULLABLE === 1
@@ -239,6 +240,15 @@ export class HiveQueryRunner extends BaseSQLQueryRunner<HiveAdapterOptions> {
 
     statement = `${statement} LIMIT 1`
     return this.runQuery(statement, { catalog })
+  }
+
+  /**
+   * @todo Implement
+   * @param catalog 
+   * @param options 
+   */
+  override async createCatalog(catalog: string, options?: {}) {
+    throw new Error('Method not implemented.')
   }
 
   async teardown() {

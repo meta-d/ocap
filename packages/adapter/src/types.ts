@@ -1,4 +1,4 @@
-import { Readable } from "stream"
+import { Readable } from 'stream'
 
 export interface AdapterError {
   message: string
@@ -94,30 +94,138 @@ export interface CreationTable {
 
 export interface File {
   /** Name of the form field associated with this file. */
-  fieldname: string;
+  fieldname: string
   /** Name of the file on the uploader's computer. */
-  originalname: string;
+  originalname: string
   /**
    * Value of the `Content-Transfer-Encoding` header for this file.
    * @deprecated since July 2015
    * @see RFC 7578, Section 4.7
    */
-  encoding: string;
+  encoding: string
   /** Value of the `Content-Type` header for this file. */
-  mimetype: string;
+  mimetype: string
   /** Size of the file in bytes. */
-  size: number;
+  size: number
   /**
    * A readable stream of this file. Only available to the `_handleFile`
    * callback for custom `StorageEngine`s.
    */
-  stream: Readable;
+  stream: Readable
   /** `DiskStorage` only: Directory to which this file has been uploaded. */
-  destination: string;
+  destination: string
   /** `DiskStorage` only: Name of this file within `destination`. */
-  filename: string;
+  filename: string
   /** `DiskStorage` only: Full path to the uploaded file. */
-  path: string;
+  path: string
   /** `MemoryStorage` only: A Buffer containing the entire file. */
-  buffer: Buffer;
+  buffer: Buffer
 }
+
+/**
+ * The base options for DB adapters
+ */
+export interface AdapterBaseOptions {
+  /**
+   * Ref to debug in `createConnection` of `mysql`
+   */
+  debug?: boolean
+  /**
+   * Ref to trace in `createConnection` of `mysql`
+   */
+  trace?: boolean
+  host: string
+  port: number
+  username: string
+  password: string
+}
+
+/**
+ * Options of single query
+ */
+export interface QueryOptions {
+  catalog?: string
+  headers?: Record<string, string>
+}
+
+/**
+ * Duties:
+ * - Convert error messages into a unified format
+ * - Connect different types of data sources
+ */
+export interface DBQueryRunner {
+  type: string
+  name: string
+  syntax: string
+  protocol: string
+  host: string
+  port: number | string
+  jdbcDriver: string
+  configurationSchema: Record<string, unknown>
+
+  jdbcUrl(schema?: string): string
+  /**
+   * Execute a sql query
+   *
+   * @param sql
+   */
+  run(sql: string): Promise<any>
+  /**
+   * Execute a sql query with options
+   *
+   * @param query
+   * @param options
+   */
+  runQuery(query: string, options?: QueryOptions): Promise<unknown>
+  /**
+   * Get catalog (schema or database) list in data source
+   */
+  getCatalogs(): Promise<IDSSchema[]>
+  /**
+   * Get schema of table in catalog (schema or database)
+   *
+   * @param catalog
+   * @param tableName
+   */
+  getSchema(catalog?: string, tableName?: string): Promise<IDSTable[]>
+  /**
+   * Describe a sql query result schema
+   *
+   * @param catalog
+   * @param statement
+   */
+  describe(catalog: string, statement: string): Promise<{ columns?: IDSTable['columns'] }>
+  /**
+   * Ping the db
+   */
+  ping(): Promise<void>
+  /**
+   * Create a new catalog (schema) in database
+   *
+   * @param catalog
+   */
+  createCatalog?(catalog: string): Promise<void>
+  /**
+   * Create or append table data
+   *
+   * @param params
+   * @param options
+   */
+  import(params: CreationTable, options?: QueryOptions): Promise<any>
+  /**
+   * Drop a table
+   *
+   * @param name Table name
+   * @param options
+   */
+  dropTable(name: string, options?: QueryOptions): Promise<void>
+
+  /**
+   * Teardown all resources:
+   * - close connection
+   *
+   */
+  teardown(): Promise<void>
+}
+
+export type DBQueryRunnerType = new (options?: AdapterBaseOptions, ...args: unknown[]) => DBQueryRunner

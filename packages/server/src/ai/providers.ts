@@ -26,8 +26,8 @@ export type AiProviderType = {
 export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
   [AiProvider.OpenAI]: {
     apiHost: 'https://api.openai.com',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models',
+    chatCompletionsUrl: '/chat/completions',
+    modelsUrl: '/models',
     isTools: true,
     models: [
       {
@@ -50,8 +50,8 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
   },
   [AiProvider.Azure]: {
     apiHost: '',
-    chatCompletionsUrl: '/v1/chat/completions',
-    modelsUrl: '/v1/models',
+    chatCompletionsUrl: '/chat/completions',
+    modelsUrl: '/models',
     isTools: true,
     models: [
       {

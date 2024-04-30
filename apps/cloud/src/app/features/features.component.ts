@@ -1,14 +1,15 @@
 import { Location } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
+  HostListener,
   OnInit,
   Renderer2,
   ViewChild,
   effect,
   inject,
+  model,
   signal,
   viewChild
 } from '@angular/core'
@@ -26,6 +27,7 @@ import {
 } from '@angular/router'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
+import { CopilotEngine } from '@metad/copilot'
 import { isNotEmpty, nonNullable } from '@metad/core'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { TranslateService } from '@ngx-translate/core'
@@ -55,7 +57,6 @@ import { StoryCreationComponent } from '../@shared'
 import { AppService } from '../app.service'
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
-import { CopilotEngine } from '@metad/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,27 +78,27 @@ export class FeaturesComponent implements OnInit {
   readonly sidenav = viewChild('sidenav', { read: MatSidenav })
 
   copilotEngine: CopilotEngine | null = null
-  sidenavMode = 'over' as MatDrawerMode
-  sidenavOpened = false
+  readonly sidenavMode = signal<MatDrawerMode>('over')
+  readonly sidenavOpened = model(false)
   isEmployee: boolean
   organization: IOrganization
   user: IUser
 
-  links = [
-    {
-      link: 'home',
-      icon: 'home'
-    },
-    {
-      link: 'story',
-      icon: 'auto_stories'
-    },
-    {
-      link: 'models',
-      icon: 'apartment'
-    }
-  ]
-  activeLink = 'home'
+  // links = [
+  //   {
+  //     link: 'home',
+  //     icon: 'home'
+  //   },
+  //   {
+  //     link: 'story',
+  //     icon: 'auto_stories'
+  //   },
+  //   {
+  //     link: 'models',
+  //     icon: 'apartment'
+  //   }
+  // ]
+  // activeLink = 'home'
   readonly isMobile = this.appService.isMobile
   get isAuthenticated() {
     return !!this.store.user
@@ -144,11 +145,11 @@ export class FeaturesComponent implements OnInit {
   )
 
   get isCollapsed() {
-    return this.sidenavOpened && this.sidenavMode === 'side'
+    return this.sidenavOpened() && this.sidenavMode() === 'side'
   }
 
   assetsInit = false
-  copilotDrawerOpened = false
+  readonly copilotDrawerOpened = model(false)
   readonly loading = signal(false)
 
   readonly title = this.appService.title
@@ -190,26 +191,26 @@ export class FeaturesComponent implements OnInit {
     private router: Router,
     public dialog: MatDialog,
     private location: Location,
-    private logger: NGXLogger,
-    // private _cdr: ChangeDetectorRef
+    private logger: NGXLogger
   ) {
     this.router.events
       .pipe(filter((e: Event | RouterEvent): e is RouterEvent => e instanceof RouterEvent))
       .subscribe((e: RouterEvent) => {
         this.navigationInterceptor(e)
-        if (e instanceof NavigationEnd && this.sidenavMode === 'over') {
+        if (e instanceof NavigationEnd && this.sidenavMode() === 'over') {
           this.sidenav().close()
         }
       })
+
     effect(() => {
       if (this.store.fixedLayoutSider()) {
-        this.sidenavMode = 'side'
-        this.sidenavOpened = true
+        this.sidenavMode.set('side')
+        this.sidenavOpened.set(true)
       } else {
-        this.sidenavMode = 'over'
-        this.sidenavOpened = false
+        this.sidenavMode.set('over')
+        this.sidenavOpened.set(false)
       }
-    })
+    }, { allowSignalWrites: true })
   }
 
   async ngOnInit() {
@@ -274,7 +275,9 @@ export class FeaturesComponent implements OnInit {
   }
 
   refreshMenuItem(item, withOrganizationShortcuts) {
-    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, { Default: item.data.translationKey })
+    item.title = this.translateService.instant('PAC.MENU.' + item.data.translationKey, {
+      Default: item.data.translationKey
+    })
     if (item.data.permissionKeys || item.data.hide) {
       const anyPermission = item.data.permissionKeys
         ? item.data.permissionKeys.reduce((permission, key) => {
@@ -314,8 +317,8 @@ export class FeaturesComponent implements OnInit {
   }
 
   toggleSidenav(sidenav: MatSidenavContainer) {
-    if (this.sidenavMode === 'over') {
-      this.sidenavMode = 'side'
+    if (this.sidenavMode() === 'over') {
+      this.sidenavMode.set('side')
       setTimeout(() => {
         sidenav.ngDoCheck()
       }, 200)
@@ -328,10 +331,10 @@ export class FeaturesComponent implements OnInit {
     }
   }
 
-  onLink(item) {
-    this.activeLink = item.link
-    this.router.navigate([item.link])
-  }
+  // onLink(item) {
+  //   this.activeLink = item.link
+  //   this.router.navigate([item.link])
+  // }
 
   navigate(link: MenuCatalog) {
     switch (link) {
@@ -720,5 +723,19 @@ export class FeaturesComponent implements OnInit {
 
   toEnableCopilot() {
     this.router.navigate(['settings', 'copilot'])
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+
+      } else {
+        if (event.key === 'b' || event.key === 'B') {
+          this.copilotDrawerOpened.update((value) => !value)
+          event.preventDefault()
+        }
+      }
+    }
   }
 }

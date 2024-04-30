@@ -443,8 +443,10 @@ The query should be returned in plain text, not in JSON.
                   const columns = convertQueryResultColumns(schema)
 
                   if (isPlainObject(data)) {
-                    columns.push(...typeOfObj(data))
                     data = [data]
+                  }
+                  if (columns.length === 0 && data.length > 0) {
+                    columns.push(...typeOfObj(data[0]))
                   }
 
                   let preview = data

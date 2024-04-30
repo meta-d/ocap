@@ -1,5 +1,8 @@
-import { DimensionSchema } from '@metad/core'
+import { DeepPartial, DimensionSchema } from '@metad/core'
+import { AnalyticsAnnotation, EntityType } from '@metad/ocap-core'
+import { WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
+import { tryFixDimension } from '../types'
 
 export const AnalyticsAnnotationSchema = z
     .object({
@@ -17,28 +20,46 @@ export const GridWidgetSchema = z.object({
     rows: z.number().describe('Height of the widget in page layout')
   }),
 
-  analytics: AnalyticsAnnotationSchema.optional(),
-
-  /**
-   * Refer to {@link WidgetAnalyticalGridOptions }
-   */
-  options: z
-    .object({
-      showToolbar: z.boolean().default(true).optional().describe('Show toolbar'),
-      strip: z.boolean().optional().describe('Is strip'),
-      grid: z.boolean().optional().describe('Is grid'),
-      paging: z.boolean().default(true).optional().describe('Is paging'),
-      pageSize: z.number().optional().describe('Page size'),
-      sticky: z.boolean().optional().describe('Is sticky'),
-      hideDataDownload: z.boolean().optional().describe('Hide data download'),
-      initialRowLevel: z.number().optional().describe('Initial row level'),
-      initialColumnLevel: z.number().optional().describe('Initial column level'),
-      sortable: z.boolean().optional().describe('Is sortable'),
-      selectable: z.boolean().optional().describe('Is selectable'),
-      digitsInfo: z.string().optional().describe('Digits info'),
-      unit: z.string().optional().describe('Unit'),
-      currencyCode: z.string().optional().describe('Currency code')
-    })
-    .optional()
-    .describe('Grid options for AnalyticalGrid widget')
+  
 })
+
+export function createTableWidgetSchema() {
+  return {
+    component: z.enum([WidgetComponentType.AnalyticalGrid]),
+
+    analytics: AnalyticsAnnotationSchema.optional(),
+
+    /**
+     * Refer to {@link WidgetAnalyticalGridOptions }
+     */
+    options: z
+      .object({
+        showToolbar: z.boolean().default(true).optional().describe('Show toolbar'),
+        strip: z.boolean().optional().describe('Is strip'),
+        grid: z.boolean().optional().describe('Is grid'),
+        paging: z.boolean().default(true).optional().describe('Is paging'),
+        pageSize: z.number().optional().describe('Page size'),
+        sticky: z.boolean().optional().describe('Is sticky'),
+        hideDataDownload: z.boolean().optional().describe('Hide data download'),
+        initialRowLevel: z.number().optional().describe('Initial row level'),
+        initialColumnLevel: z.number().optional().describe('Initial column level'),
+        sortable: z.boolean().optional().describe('Is sortable'),
+        selectable: z.boolean().optional().describe('Is selectable'),
+        digitsInfo: z.string().optional().describe('Digits info'),
+        unit: z.string().optional().describe('Unit'),
+        currencyCode: z.string().optional().describe('Currency code')
+      })
+      .optional()
+      .describe('Grid options for AnalyticalGrid widget')
+  }
+}
+
+export function tryFixAnalyticsAnnotation(analytics: DeepPartial<AnalyticsAnnotation>, entityType: EntityType) {
+  return (
+    analytics && {
+      ...analytics,
+      rows: analytics.rows?.map((d: any) => tryFixDimension(entityType, d)),
+      columns: analytics.columns?.map((d: any) => tryFixDimension(entityType, d))
+    }
+  )
+}

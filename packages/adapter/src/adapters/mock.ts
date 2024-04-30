@@ -1,5 +1,6 @@
 export const TableTopSubscribed = {
   name: 'topSubscribed',
+  mergeType: 'DELETE',
   columns: [
     {
       name: 'Rank',

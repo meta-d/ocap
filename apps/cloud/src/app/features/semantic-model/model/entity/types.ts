@@ -5,6 +5,14 @@ import { uuid } from 'apps/cloud/src/app/@core'
 import { mapToTableColumnType } from '../../types'
 import { MODEL_TYPE } from '../types'
 
+export type CubeDimensionType = PropertyDimension & {
+  isUsage?: boolean
+}
+
+export type CubeEventType = {
+  type: 'dimension-created' | 'measure-created'
+}
+
 /**
  * Add a db table as inline dimension
  * 

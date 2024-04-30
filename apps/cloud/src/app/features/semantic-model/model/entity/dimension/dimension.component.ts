@@ -1,7 +1,6 @@
-import { SelectionModel } from '@angular/cdk/collections'
 import { FlatTreeControl } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core'
+import { Component, EventEmitter, Input, Output, effect, inject, input } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
 import { NxActionStripModule } from '@metad/components/action-strip'
@@ -11,6 +10,7 @@ import {
   DimensionUsage,
   DisplayBehaviour,
   EntityProperty,
+  PropertyAttributes,
   PropertyDimension,
   isVisible
 } from '@metad/ocap-core'
@@ -51,23 +51,23 @@ export class PropertyItemFlatNode {
   },
   imports: [CommonModule, FormsModule, MaterialModule, NgmEntityPropertyComponent, NxActionStripModule]
 })
-export class PropertyDimensionComponent implements OnChanges {
+export class PropertyDimensionComponent {
   AGGREGATION_ROLE = AggregationRole
   isVisible = isVisible
 
   public cubeState = inject(ModelEntityService)
 
-  @Input() dimension: PropertyDimension
+  readonly dimension = input<PropertyDimension>(null)
+
   @Input() usage: DimensionUsage
   @Input() readonly: boolean
-  @Input() checklistSelection: SelectionModel<string>
+  // @Input() checklistSelection: SelectionModel<string>
   @Input() displayBehaviour: DisplayBehaviour
 
   @Output() toDimension = new EventEmitter()
   @Output() newItem = new EventEmitter()
   @Output() delete = new EventEmitter()
 
-  
   /** The selection for checklist */
   flatNodeMap = new Map<PropertyItemFlatNode, PropertyItemNode>()
   nestedNodeMap = new Map<PropertyItemNode, PropertyItemFlatNode>()
@@ -97,17 +97,17 @@ export class PropertyDimensionComponent implements OnChanges {
   treeControl = new FlatTreeControl<PropertyItemFlatNode, string>(this.getLevel, this.isExpandable, {
     trackBy: (dataNode: PropertyItemFlatNode) => dataNode.id
   })
-  dataSource: MatTreeFlatDataSource<PropertyItemNode, PropertyItemFlatNode, string>
-    = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
+  dataSource: MatTreeFlatDataSource<PropertyItemNode, PropertyItemFlatNode, string> = new MatTreeFlatDataSource(
+    this.treeControl,
+    this.treeFlattener
+  )
 
   constructor() {
     this.dataSource.data = []
-  }
 
-  ngOnChanges({ dimension }: SimpleChanges) {
-    if (dimension?.currentValue) {
-      this.update(dimension.currentValue)
-    }
+    effect(() => {
+      this.update(this.dimension())
+    })
   }
 
   update(dimension: PropertyDimension) {
@@ -142,24 +142,28 @@ export class PropertyDimensionComponent implements OnChanges {
     ]
   }
 
-  isSelected(node) {
+  isSelected(node: PropertyAttributes) {
     if (this.usage) {
       if (node.role === AggregationRole.dimension) {
-        return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage + '#' + this.usage.__id__)
+        return this.cubeState.isSelectedProperty(ModelDesignerType.dimensionUsage, this.usage.__id__)
+        // return this.checklistSelection?.isSelected(ModelDesignerType.dimensionUsage + '#' + this.usage.__id__)
       }
     } else {
-      return this.checklistSelection?.isSelected(node.role + '#' + node.id)
+      return this.cubeState.isSelectedProperty(node.role, node.__id__)
+      // return this.checklistSelection?.isSelected(node.role + '#' + node.id)
     }
     return false
   }
 
-  onSelect(node) {
+  onSelect(node: PropertyAttributes) {
     if (this.usage) {
       if (node.role === AggregationRole.dimension) {
-        this.checklistSelection.toggle(`${ModelDesignerType.dimensionUsage}#${this.usage.__id__}`)
+        this.cubeState.setSelectedProperty(ModelDesignerType.dimensionUsage, this.usage.__id__)
+        // this.checklistSelection.toggle(`${}#${}`)
       }
     } else {
-      this.checklistSelection.toggle(`${node.role}#${node.__id__}`)
+      // this.checklistSelection.toggle(`${node.role}#${node.__id__}`)
+      this.cubeState.toggleSelectedProperty(node.role, node.__id__)
     }
   }
 

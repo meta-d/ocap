@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core'
+import { computed, inject, Injectable, model, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { convertNewSemanticModelResult, ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotService } from '@metad/copilot'
@@ -34,22 +34,21 @@ export class InsightService {
     this.#model.set(value)
   }
   readonly #model = signal<NgmSemanticModel>(null)
-  private model$ = toObservable(this.#model)
+  // private model$ = toObservable(this.#model)
 
   readonly dataSourceName = computed(() => getSemanticModelKey(this.#model()))
 
-  // cube: Cube
-  readonly cube$ = signal<Cube>(null)
+  readonly cube = model<Cube>(null)
 
   readonly _suggestedPrompts = signal<Record<string, string[]>>({})
 
   readonly suggestedPrompts = computed(() => {
-    return this._suggestedPrompts()[this.dataSourceName() + (this.cube$()?.name ?? '')]
+    return this._suggestedPrompts()[this.dataSourceName() + (this.cube()?.name ?? '')]
   })
   readonly suggesting = signal(false)
 
   readonly entityType = toSignal(
-    combineLatest([toObservable(this.dataSourceName), toObservable(this.cube$).pipe(map((cube) => cube?.name))]).pipe(
+    combineLatest([toObservable(this.dataSourceName), toObservable(this.cube).pipe(map((cube) => cube?.name))]).pipe(
       debounceTime(100),
       filter(([key, cube]) => !!key && !!cube),
       switchMap(([key, cube]) =>
@@ -73,7 +72,7 @@ export class InsightService {
       .pipe(switchMap((dataSource) => (this.#model()?.schema?.cubes?.length ? dataSource.discoverMDCubes() : of([]))))
   })
 
-  readonly #cubeSuggestsKey = computed(() => this.dataSourceName() + (this.cube$()?.name ?? ''))
+  readonly #cubeSuggestsKey = computed(() => this.dataSourceName() + (this.cube()?.name ?? ''))
 
   readonly error$ = signal('')
   readonly answers$ = signal([])
@@ -82,22 +81,17 @@ export class InsightService {
 
   readonly copilotEnabled = toSignal(this.#copilotService.enabled$)
   readonly models$ = this.#modelsService.getMy()
-  readonly hasCube$ = toSignal(this.model$.pipe(map((model) => !!model?.schema?.cubes?.length)))
 
   readonly cubes$ = toObservable(this.dataSourceName).pipe(
     filter(nonNullable),
     switchMap((name) => this.#dsCoreService.getDataSource(name)),
     switchMap((dataSource) => dataSource.discoverMDCubes())
   )
-
-  // #suggestEffectRef = effect(async () => {
-  //   if (this.entityType() && !this._suggestedPrompts()[this.#cubeSuggestsKey()]) {
-  //     await this.askSuggests()
-  //   }
-  // }, { allowSignalWrites: true })
+  readonly cubes = toSignal(this.cubes$)
+  readonly hasCube$ = computed(() => !!this.cubes()?.length)
 
   async setModel(model: NgmSemanticModel) {
-    this.error$.set(null)
+    this.setCube(null)
     model = convertNewSemanticModelResult(
       await firstValueFrom(
         this.#modelsService.getById(model.id, ['indicators', 'createdBy', 'updatedBy', 'dataSource', 'dataSource.type'])
@@ -114,7 +108,7 @@ export class InsightService {
 
   async setCube(cube: Cube) {
     this.error$.set(null)
-    this.cube$.set(cube)
+    this.cube.set(cube)
 
     // if (cube && !this._suggestedPrompts()[this.#cubeSuggestsKey()]) {
     //   await this.askSuggests()
@@ -165,57 +159,6 @@ export class InsightService {
     return entityTypes.map((cube) => calcEntityTypePrompt(cube))
   }
 
-  /**
-   * 获取数据源的实体信息，多维数据集或者源表结构
-   */
-  // async getRandomEntityTypes(total: number) {
-  //   const dataSourceName = this.dataSourceName()
-  //   const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
-  //   if (this.model.schema?.cubes?.length) {
-  //     const cubes = await firstValueFrom(dataSource.discoverMDCubes())
-  //     const randomCubes = []
-  //     //loop 10 times to select 10 items
-  //     for (let i = 0; i < Math.min(cubes.length, total); i++) {
-  //       let randomIndex = Math.floor(Math.random() * cubes.length) //generate random index
-  //       let selectedItem = cubes[randomIndex] //get the randomly selected item
-  //       randomCubes.push(selectedItem) //add the item to the array of random items
-  //       cubes.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
-  //     }
-
-  //     const entityTypes = await firstValueFrom(
-  //       combineLatest<Array<EntityType | Error>>(randomCubes.map((cube) => dataSource.selectEntityType(cube.name)))
-  //     )
-  //     return JSON.stringify(this.getCubesPromptInfo(entityTypes.filter(isEntityType)))
-  //   } else {
-  //     const tables = await firstValueFrom(dataSource.discoverDBTables())
-  //     const randomTables = []
-  //     //loop 10 times to select 10 items
-  //     for (let i = 0; i < Math.min(tables.length, total); i++) {
-  //       let randomIndex = Math.floor(Math.random() * tables.length) //generate random index
-  //       let selectedItem = tables[randomIndex] //get the randomly selected item
-  //       randomTables.push(selectedItem) //add the item to the array of random items
-  //       tables.splice(randomIndex, 1) //remove the selected item from the original array to prevent duplicates
-  //     }
-
-  //     const entityTypes = await firstValueFrom(
-  //       combineLatest<Array<EntityType | Error>>(randomTables.map((table) => dataSource.selectEntityType(table.name)))
-  //     )
-
-  //     return entityTypes
-  //       .filter(isEntityType)
-  //       .map(
-  //         (entityType) =>
-  //           `Table: ${entityType.name} caption: ${entityType.caption} columns: (${Object.keys(entityType.properties)
-  //             .map(
-  //               (name) =>
-  //                 `${name} ${entityType.properties[name].dataType ?? ''} ${entityType.properties[name].caption ?? ''}`
-  //             )
-  //             .join(', ')})`
-  //       )
-  //       .join(', ')
-  //   }
-  // }
-
   async getAllEntities() {
     const dataSourceName = this.dataSourceName()
     const dataSource = await firstValueFrom(this.#dsCoreService.getDataSource(dataSourceName))
@@ -253,83 +196,4 @@ export class InsightService {
     this.error$.set('')
   }
 
-  //   getChartTypePrompt() {
-  //     return `chartType 属性类型定义("type" is required, others is optional)为：
-  // ${JSON.stringify([
-  //   { type: 'Pie' },
-  //   { type: 'Pie', variant: 'Doughnut' },
-  //   { type: 'Pie', variant: 'Nightingale' },
-  //   { type: 'Bar', orient: 'horizontal', variant: 'polar' },
-  //   { type: 'Bar', orient: 'vertical', variant: 'polar' },
-  //   { type: 'Bar', orient: 'horizontal' },
-  //   { type: 'Bar', orient: 'vertical' },
-  //   { type: 'Bar' },
-  //   { type: 'Line' },
-  //   { type: 'Line', orient: 'horizontal' },
-  //   { type: 'Line', orient: 'vertical' },
-  //   { type: 'Sankey' },
-  //   { type: 'Sankey', orient: 'horizontal' },
-  //   { type: 'Sankey', orient: 'vertical' },
-  //   { type: 'Treemap' }
-  // ])}`
-  //   }
-
-  //   getSlicersPrompt() {
-  //     return `过滤器使用属性 slicers 类型定义为：
-  // {
-  //   "dimension": {
-  //     "dimension": // required 维度
-  //     "hierarchy": // 层次结构
-  //     "level": // 层级
-  //   },
-  //   "members": [
-  //     {
-  //       "value": // required 成员唯一键
-  //       "caption": //成员文本
-  //     }
-  //   ],
-  //   "exclude": true | false // 是否排除 members 中的成员
-  // }`
-  //   }
-
-  //   getDimensionPrompt() {
-  //     return `The json schema for Dimension object is:
-  // {
-  //   "dimension": // required Dimension name
-  //   "hierarchy": // Hierarchy name in the dimension
-  //   "level": // level name
-  //   "order": "DESC" | "ASC" // optional
-  //   "role": "Stacked" | "Group" | "Trellis" // optional
-  // }
-  //     `
-  //   }
-
-  //   getMeasurePrompt() {
-  //     return `The json schema for Measure object is:
-  // {
-  //   "dimension": "Measures", // Constant value for measure
-  //   "measure": // required the name of measure
-  //   "order": "DESC" | "ASC" // optional
-  //   "chartOptions": { // chartOptions is ECharts options (in json format) for the Measure
-  //     "seriesStyle": // ECharts series options (in json format) for the Measure
-  //     "axis": // ECharts axis options (in json format) for the measure
-  //     "dataZoom": // ECharts dataZoom options (in json format) for the measure
-  //   }
-  // }
-  //     `
-  //   }
-
-  //   getDataSettingsPrompt() {
-  //     return `The json schema for data settings is:
-  // {
-  //   "dimensions": [
-  //     one or more Dimension object array
-  //   ],
-  //   "measures": [
-  //     one or more Measure object array
-  //   ],
-  //   "limit": // Limit number of results
-  // }
-  // `
-  //   }
 }

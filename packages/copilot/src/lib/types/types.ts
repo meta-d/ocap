@@ -2,7 +2,6 @@ import { Message } from 'ai'
 import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
-import { CopilotService } from '../copilot'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
@@ -62,6 +61,8 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
   command?: string
 
   status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
+
+  
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -87,33 +88,21 @@ export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
   }
 }
 
+/**
+ * Split the prompt into command and prompt
+ * 
+ * @param prompt 
+ * @returns 
+ */
 export function getCommandPrompt(prompt: string) {
-  // a regex match `/command `
-  const match = prompt.match(/\/([a-zA-Z\-]*)\s*/i)
+  prompt = prompt.trim()
+  // a regex match `/command prompt`
+  const match = prompt.match(/^\/([a-zA-Z\-]*)\s*/i)
   const command = match?.[1]
 
   return {
     command,
-    prompt: prompt.replace(`/${command}`, '').trim()
-  }
-}
-
-export interface CopilotChatConversation {
-  command: string
-  prompt: string
-  options: any
-  response?: { arguments: any } | any
-  error?: string | Error
-
-  copilotService: CopilotService
-  logger?: {
-    trace(message?: any | (() => any), ...additional: any[]): void
-    debug(message?: any | (() => any), ...additional: any[]): void
-    info(message?: any | (() => any), ...additional: any[]): void
-    log(message?: any | (() => any), ...additional: any[]): void
-    warn(message?: any | (() => any), ...additional: any[]): void
-    error(message?: any | (() => any), ...additional: any[]): void
-    fatal(message?: any | (() => any), ...additional: any[]): void
+    prompt: command ? prompt.replace(`/${command}`, '').trim() : prompt
   }
 }
 

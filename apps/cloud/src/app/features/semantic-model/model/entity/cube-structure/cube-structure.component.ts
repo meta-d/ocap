@@ -1,29 +1,40 @@
-import { SelectionModel } from '@angular/cdk/collections'
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, InjectFlags, Input, Output, ViewChildren, inject } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChildren,
+  booleanAttribute,
+  inject,
+  input
+} from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
+import { NxActionStripModule } from '@metad/components/action-strip'
 import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
   CalculatedMember,
   CalculatedProperty,
   CalculationType,
   DimensionUsage,
-  isVisible,
-  PropertyMeasure
+  PropertyMeasure,
+  isVisible
 } from '@metad/ocap-core'
+import { TranslateModule } from '@ngx-translate/core'
+import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { NGXLogger } from 'ngx-logger'
 import { map, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
-import { ModelDesignerType, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType } from '../../types'
-import { ModelEntityService } from '../entity.service'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { TranslateModule } from '@ngx-translate/core'
+import { MODEL_TYPE, ModelDesignerType, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { PropertyDimensionComponent } from '../dimension/dimension.component'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
-import { NxActionStripModule } from '@metad/components/action-strip'
+import { ModelEntityService } from '../entity.service'
+import { CubeEventType } from '../types'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -64,8 +75,10 @@ export class ModelCubeStructureComponent {
   private readonly _logger = inject(NGXLogger)
 
   @Input() modelType: MODEL_TYPE
-  @Input() editable: boolean
-  @Output() selectedChange = new EventEmitter<string>()
+  readonly editable = input<boolean, boolean | string>(false, {
+    transform: booleanAttribute
+  })
+  // @Output() selectedChange = new EventEmitter<string>()
   @Output() editChange = new EventEmitter<any>()
 
   @ViewChildren(CdkDropList) cdkDropList: CdkDropList[]
@@ -88,27 +101,39 @@ export class ModelCubeStructureComponent {
     })
   )
 
-  public readonly calculatedMembers = toSignal(this.cubeState.calculatedMembers$.pipe(
-    map((members) => {
-      return members?.map((member) => ({
-        ...member,
-        role: AggregationRole.measure,
-        calculationType: CalculationType.Calculated
-      } as Partial<CalculatedMember>))
-    })
-  ))
+  public readonly calculatedMembers = toSignal(
+    this.cubeState.calculatedMembers$.pipe(
+      map((members) => {
+        return members?.map(
+          (member) =>
+            ({
+              ...member,
+              role: AggregationRole.measure,
+              calculationType: CalculationType.Calculated
+            } as Partial<CalculatedMember>)
+        )
+      })
+    )
+  )
 
-  /** The selection for checklist */
-  checklistSelection = new SelectionModel<string>()
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly measures$ = toSignal(this.cubeState.measures$.pipe(map((measures) => measures?.map((measure) => ({
-    ...measure,
-    role: AggregationRole.measure
-  } as PropertyMeasure)))))
+  readonly measures$ = toSignal(
+    this.cubeState.measures$.pipe(
+      map((measures) =>
+        measures?.map(
+          (measure) =>
+            ({
+              ...measure,
+              role: AggregationRole.measure
+            } as PropertyMeasure)
+        )
+      )
+    )
+  )
 
   readonly selectedProperty = this.cubeState.selectedProperty
 
@@ -117,14 +142,14 @@ export class ModelCubeStructureComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _selectedNodeSub = this.checklistSelection.changed.pipe(takeUntilDestroyed()).subscribe((selected) => {
-    const node: string = selected.added[0]
-    if (node) {
-      this.selectedChange.emit(node)
-    } else {
-      this.selectedChange.emit(null)
-    }
-  })
+  // private _selectedNodeSub = this.checklistSelection.changed.pipe(takeUntilDestroyed()).subscribe((selected) => {
+  //   const node: string = selected.added[0]
+  //   if (node) {
+  //     this.selectedChange.emit(node)
+  //   } else {
+  //     this.selectedChange.emit(null)
+  //   }
+  // })
   // 手动 Stop Receiving dropListRef, 因为官方的程序在跨页面 DropList 间似乎 detectChanges 时间先后有问题
   private _dragReleasedSub = this.modelService.dragReleased$.pipe(takeUntilDestroyed()).subscribe((_dropListRef) => {
     this.cdkDropList.forEach((list) => list._dropListRef._stopReceiving(_dropListRef))
@@ -135,8 +160,8 @@ export class ModelCubeStructureComponent {
     return el.name
   }
 
-  isSelected(key: string) {
-    return this.selectedProperty() === key
+  emitEvent(event: CubeEventType) {
+    this.cubeState.event$.next(event)
   }
 
   /** Select the category so we can insert the new item. */
@@ -156,10 +181,16 @@ export class ModelCubeStructureComponent {
     this.cubeState.deleteDimensionProperty(id)
   }
 
+  isSelected(type: ModelDesignerType, key: string) {
+    return this.cubeState.isSelectedProperty(type, key)
+  }
+
   onSelect(type: ModelDesignerType, node: Partial<CalculatedMember>) {
-    this.checklistSelection.toggle(`${type}#${node.__id__}`)
+    // this.checklistSelection.toggle(`${type}#${node.__id__}`)
     if (type === ModelDesignerType.calculatedMember) {
       this.onCalculatedMemberEdit(node as CalculatedProperty)
+    } else {
+      this.cubeState.toggleSelectedProperty(type, node.__id__)
     }
   }
 
@@ -174,7 +205,8 @@ export class ModelCubeStructureComponent {
   }
 
   onCalculatedMemberEdit(member: Partial<CalculatedMember>) {
-    this.checklistSelection.select(`${ModelDesignerType.calculatedMember}#${member.__id__}`)
+    this.cubeState.setSelectedProperty(ModelDesignerType.calculatedMember, member.__id__)
+    // this.checklistSelection.select(`${ModelDesignerType.calculatedMember}#${member.__id__}`)
     this.editChange.emit(member)
   }
 
@@ -198,21 +230,27 @@ export class ModelCubeStructureComponent {
 
   dropDimensionPredicate(item: CdkDrag<SemanticModelEntity>) {
     // Dimension usage
-    return item.data?.type === SemanticModelEntityType.DIMENSION ||
+    return (
+      item.data?.type === SemanticModelEntityType.DIMENSION ||
       // Dimension from source table columns
-      item.dropContainer.id === 'list-table-measures' || item.dropContainer.id === 'list-table-dimensions'
+      item.dropContainer.id === 'list-table-measures' ||
+      item.dropContainer.id === 'list-table-dimensions' ||
       // db tables
-      || item.dropContainer.id === 'pac-model-entitysets'
+      item.dropContainer.id === 'pac-model-entitysets'
+    )
   }
 
   measureEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
     return item.dropContainer.id === 'list-table-measures' || item.dropContainer.id === 'list-table-dimensions'
   }
-  
+
   calculatedEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
     return item.dropContainer.id === 'list-table-measures' || item.dropContainer.id === 'list-table-dimensions'
   }
 
+  /**
+   * When drop in the dimension list
+   */
   dropDimension(event: CdkDragDrop<any[]>) {
     const previousItem = event.item.data
     const index = event.currentIndex
@@ -221,7 +259,10 @@ export class ModelCubeStructureComponent {
     } else if (event.previousContainer.id === 'list-measures') {
       // 将 Measure 变成 Dimension
       // this.cubeState.moveFromMeasureToDim(previousItem)
-    } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
+    } else if (
+      event.previousContainer.id === 'list-table-measures' ||
+      event.previousContainer.id === 'list-table-dimensions'
+    ) {
       // Insert as a level in hierarchy if it above a level node
       if (event.container.getSortedItems()[event.currentIndex]?.data.role === AggregationRole.level) {
         for (let i = event.currentIndex - 1; i >= 0; i--) {
@@ -231,7 +272,7 @@ export class ModelCubeStructureComponent {
               index: index - i - 1,
               name: previousItem.name,
               column: previousItem.name,
-              caption: previousItem.caption,
+              caption: previousItem.caption
             })
             return
           }
@@ -242,6 +283,7 @@ export class ModelCubeStructureComponent {
           index,
           column: previousItem
         })
+        this.emitEvent({ type: 'dimension-created' })
       }
     }
 
@@ -260,6 +302,7 @@ export class ModelCubeStructureComponent {
           foreignKey: previousItem.dimension.foreignKey
         }
       })
+      this.emitEvent({ type: 'dimension-created' })
     }
 
     // Add db table as dimension
@@ -268,22 +311,29 @@ export class ModelCubeStructureComponent {
         index,
         table: previousItem
       })
+      this.emitEvent({ type: 'dimension-created' })
     }
   }
 
   async dropMeasure(event: CdkDragDrop<any[]>) {
     if (event.previousContainer === event.container) {
       this.cubeState.moveItemInMeasures(event)
-    } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
-      this.cubeState.newMeasure({index: event.currentIndex, column: event.item.data.name})
+    } else if (
+      event.previousContainer.id === 'list-table-measures' ||
+      event.previousContainer.id === 'list-table-dimensions'
+    ) {
+      this.cubeState.newMeasure({ index: event.currentIndex, column: event.item.data.name })
     }
   }
 
   async dropCalcMembers(event: CdkDragDrop<Partial<CalculatedMember>[]>) {
     if (event.previousContainer === event.container) {
       this.cubeState.moveItemInCalculatedMember(event)
-    } else if (event.previousContainer.id === 'list-table-measures' || event.previousContainer.id === 'list-table-dimensions') {
-      this.cubeState.newCalculatedMeasure({index: event.currentIndex, column: event.item.data.name})
+    } else if (
+      event.previousContainer.id === 'list-table-measures' ||
+      event.previousContainer.id === 'list-table-dimensions'
+    ) {
+      this.cubeState.newCalculatedMeasure({ index: event.currentIndex, column: event.item.data.name })
     }
   }
 }

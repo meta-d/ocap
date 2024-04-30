@@ -30,6 +30,7 @@ import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { sortBy, uniqBy } from 'lodash-es'
 import { nanoid } from 'nanoid'
+import { NGXLogger } from 'ngx-logger'
 import {
   BehaviorSubject,
   Subject,
@@ -52,13 +53,16 @@ import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
 import { CubeSchema, DimensionSchema, createCube, createDimension } from './copilot'
-import { ModelCreateEntityComponent } from './create-entity/create-entity.component'
+import {
+  CreateEntityDialogDataType,
+  CreateEntityDialogRetType,
+  ModelCreateEntityComponent
+} from './create-entity/create-entity.component'
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
-import { NGXLogger } from 'ngx-logger'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -101,12 +105,14 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     ],
     systemPrompt: () => {
       const sharedDimensionsPrompt = JSON.stringify(
-        this.dimensions().filter((dimension) => dimension.hierarchies?.length).map((dimension) => ({
-          name: dimension.name,
-          caption: dimension.caption,
-          table: dimension.hierarchies[0].tables[0]?.name,
-          primaryKey: dimension.hierarchies[0].primaryKey
-        }))
+        this.dimensions()
+          .filter((dimension) => dimension.hierarchies?.length)
+          .map((dimension) => ({
+            name: dimension.name,
+            caption: dimension.caption,
+            table: dimension.hierarchies[0].tables[0]?.name,
+            primaryKey: dimension.hierarchies[0].primaryKey
+          }))
       )
       return `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
 There is no need to create as dimension with those table fields that are already used in dimensionUsages.
@@ -184,13 +190,16 @@ ${sharedDimensionsPrompt}
         id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         data: {
-          columns: [{ name: 'name', caption: '名称' }, { name: 'caption', caption: '描述' }],
+          columns: [
+            { name: 'name', caption: '名称' },
+            { name: 'caption', caption: '描述' }
+          ],
           content: Object.values(entityType.properties) as any[]
         },
         content: stringifyTableType(entityType),
         templateRef: this.tableTemplate
       }
-    },
+    }
   })
   #queryResultDropAction = provideCopilotDropAction({
     id: 'pac-model__query-results',
@@ -287,7 +296,7 @@ ${sharedDimensionsPrompt}
       return entities
     })
   )
-  
+
   public readonly stories$ = this.modelService.stories$
   public readonly currentEntityType$ = this.modelService.currentEntityType$
 
@@ -311,7 +320,9 @@ ${sharedDimensionsPrompt}
   readonly isWasm$ = toSignal(this.modelService.isWasm$)
   readonly isOlap$ = toSignal(this.modelService.isOlap$)
   readonly modelType$ = toSignal(this.modelService.modelType$)
-  readonly writable$ = computed(() => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL))
+  readonly writable$ = computed(
+    () => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL)
+  )
   // readonly _isDirty = toSignal(this.modelService.dirty$)
   readonly tables = toSignal(this.selectDBTables$)
 
@@ -359,10 +370,13 @@ ${sharedDimensionsPrompt}
     if (modelType === MODEL_TYPE.XMLA) {
       const result = await firstValueFrom(
         this._dialog
-          .open(ModelCreateEntityComponent, {
-            viewContainerRef: this._viewContainerRef,
-            data: { model: { name: entity?.name, caption: entity?.caption }, entitySets, modelType }
-          })
+          .open<ModelCreateEntityComponent, CreateEntityDialogDataType, CreateEntityDialogRetType>(
+            ModelCreateEntityComponent,
+            {
+              viewContainerRef: this._viewContainerRef,
+              data: { model: { name: entity?.name, caption: entity?.caption }, entitySets, modelType }
+            }
+          )
           .afterClosed()
       )
       if (result) {
@@ -372,10 +386,13 @@ ${sharedDimensionsPrompt}
     } else {
       const result = await firstValueFrom(
         this._dialog
-          .open(ModelCreateEntityComponent, {
-            viewContainerRef: this._viewContainerRef,
-            data: { model: { table: entity?.name, caption: entity?.caption }, entitySets, modelType }
-          })
+          .open<ModelCreateEntityComponent, CreateEntityDialogDataType, CreateEntityDialogRetType>(
+            ModelCreateEntityComponent,
+            {
+              viewContainerRef: this._viewContainerRef,
+              data: { model: { table: entity?.name, caption: entity?.caption }, entitySets, modelType }
+            }
+          )
           .afterClosed()
       )
       let modelEntity: SemanticModelEntity
@@ -419,38 +436,47 @@ ${sharedDimensionsPrompt}
   }
 
   createStory() {
-    this._dialog.open(ConfirmUniqueComponent, {
-      data: {
-        title: this.getTranslation('PAC.KEY_WORDS.StoryName', {Default: 'Story Name'}),
-      }
-    }).afterClosed().pipe(
-      filter(nonBlank),
-      switchMap((name) =>
-        this.storyStore.createStory({
-          name: name,
-          models: [
-            {
-              id: this.model.id
-            } as StoryModel
-          ],
-          businessAreaId: this.model.businessAreaId
-        })
-      )
-    ).subscribe({
-      next: (story) => {
-        if (story) {
-          this.openStory(story.id)
+    this._dialog
+      .open(ConfirmUniqueComponent, {
+        data: {
+          title: this.getTranslation('PAC.KEY_WORDS.StoryName', { Default: 'Story Name' })
         }
-      },
-      error: (err) => {
-        this.toastrService.error(err, 'PAC.MODEL.MODEL.CreateStory')
-      }
-    })
+      })
+      .afterClosed()
+      .pipe(
+        filter(nonBlank),
+        switchMap((name) =>
+          this.storyStore.createStory({
+            name: name,
+            models: [
+              {
+                id: this.model.id
+              } as StoryModel
+            ],
+            businessAreaId: this.model.businessAreaId
+          })
+        )
+      )
+      .subscribe({
+        next: (story) => {
+          if (story) {
+            this.openStory(story.id)
+          }
+        },
+        error: (err) => {
+          this.toastrService.error(err, 'PAC.MODEL.MODEL.CreateStory')
+        }
+      })
   }
 
   async createByExpression(expression: string) {
     const result = await firstValueFrom(
-      this._dialog.open(ModelCreateEntityComponent, { data: { model: { expression } } }).afterClosed()
+      this._dialog
+        .open<ModelCreateEntityComponent, CreateEntityDialogDataType, CreateEntityDialogRetType>(
+          ModelCreateEntityComponent,
+          { data: { model: { expression } } }
+        )
+        .afterClosed()
     )
     let entity: SemanticModelEntity
     if (result?.type === SemanticModelEntityType.CUBE) {

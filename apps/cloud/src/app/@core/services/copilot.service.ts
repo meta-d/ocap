@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { inject, Injectable } from '@angular/core'
+import { inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { API_PREFIX } from '@metad/cloud/state'
 import { CopilotService, ICopilot } from '@metad/copilot'
@@ -12,11 +12,14 @@ import { environment } from 'apps/cloud/src/environments/environment'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = (baseUrl ?? '') + '/api/ai/chat'
+const API_AI_HOST = (baseUrl ?? '') + '/api/ai/proxy'
 
 @Injectable({ providedIn: 'root' })
 export class PACCopilotService extends CopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
+
+  readonly copilotConfig = signal<ICopilot>(null)
 
   // Init copilot config
   private _userSub = this.#store.user$
@@ -31,9 +34,12 @@ export class PACCopilotService extends CopilotService {
     )
     .subscribe((result) => {
       if (result.total > 0) {
+        this.copilotConfig.set(result.items[0])
         this.copilot = {
           ...result.items[0],
-          chatUrl: API_CHAT
+          chatUrl: API_CHAT,
+          apiHost: API_AI_HOST,
+          apiKey: this.#store.token
         }
       } else {
         this.copilot = {
@@ -58,11 +64,13 @@ export class PACCopilotService extends CopilotService {
 
   async upsertOne(input: Partial<IServerCopilot>) {
     const copilot = await firstValueFrom(
-      this.httpClient.post(API_PREFIX + '/copilot', input.id ? input : omit(input, 'id'))
+      this.httpClient.post<ICopilot>(API_PREFIX + '/copilot', input.id ? input : omit(input, 'id'))
     )
+    this.copilotConfig.set(copilot)
     this.copilot = {
       ...copilot,
-      chatUrl: API_CHAT
+      chatUrl: API_CHAT,
+      apiHost: API_AI_HOST
     }
   }
 }
