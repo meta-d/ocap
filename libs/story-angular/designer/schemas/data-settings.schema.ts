@@ -142,8 +142,8 @@ export abstract class DataSettingsSchemaService<
       return getEntityMeasures(entityType)
         .filter((property) => (property as CalculationProperty).calculationType !== CalculationType.Indicator)
         .map((item) => ({
-          value: item.name,
-          label: item.caption
+          key: item.name,
+          caption: item.caption
         }))
     }),
     shareReplay(1)

@@ -215,7 +215,7 @@ export function serializeColumn(field: DimensionField, dialect: string) {
 }
 
 export function concat(dialect: string, ...params) {
-  const useOperator = ['sqlite']
+  const useOperator = ['sqlite', 'hana']
 
   if (useOperator.includes(dialect)) {
     return `'[' || ` + params.join(` || '].[' || `) + ` || ']'`

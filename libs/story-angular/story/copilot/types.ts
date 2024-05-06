@@ -1,6 +1,5 @@
 import {
   AggregationRole,
-  AnalyticsAnnotation,
   C_MEASURES,
   Dimension,
   EntityType,
@@ -9,6 +8,7 @@ import {
   PropertyLevel,
   getEntityProperty,
   getEntityProperty2,
+  isDimension,
   wrapBrackets
 } from '@metad/ocap-core'
 
@@ -20,14 +20,18 @@ import {
  * @param dimension
  * @returns
  */
-export function tryFixDimension(entityType: EntityType, dimension: Dimension) {
+export function tryFixDimension(entityType: EntityType, dimension: Dimension | Measure) {
   let property = null
-  if (dimension.level) {
-    property = getEntityProperty2(entityType, dimension.level)
-  } else if (dimension.hierarchy) {
-    property = getEntityProperty2(entityType, dimension.hierarchy)
-  } else if (dimension.dimension) {
-    property = getEntityProperty2(entityType, dimension.dimension)
+  if (isDimension(dimension)) {
+    if (dimension.level) {
+      property = getEntityProperty2(entityType, dimension.level)
+    } else if (dimension.hierarchy) {
+      property = getEntityProperty2(entityType, dimension.hierarchy)
+    } else if (dimension.dimension) {
+      property = getEntityProperty2(entityType, dimension.dimension)
+    }
+  } else {
+    property = getEntityProperty2(entityType, dimension)
   }
 
   switch (property?.role) {
@@ -46,8 +50,13 @@ export function tryFixDimension(entityType: EntityType, dimension: Dimension) {
         hierarchy: property.hierarchy,
         level: property.name
       }
+    case AggregationRole.measure:
+      return {
+        dimension: C_MEASURES,
+        measure: property.name
+      }
     default:
-      throw new Error(`Can't find dimension for '${dimension.hierarchy || dimension.dimension}'`)
+      throw new Error(`Can't find dimension for '${dimension.dimension}'`)
   }
 }
 

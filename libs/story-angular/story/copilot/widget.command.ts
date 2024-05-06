@@ -9,29 +9,40 @@ import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { createStoryPickCubeTool } from './pick-cube-tool'
-import { ChartSchema, ChartWidgetSchema, chartAnnotationCheck, completeChartAnnotation, createTableWidgetSchema, createWidgetSchema, createWidgetStyleSchema, tryFixAnalyticsAnnotation } from './schema'
+import {
+  ChartSchema,
+  ChartWidgetSchema,
+  chartAnnotationCheck,
+  completeChartAnnotation,
+  createTableWidgetSchema,
+  createWidgetSchema,
+  createWidgetStyleSchema,
+  tryFixAnalyticsAnnotation
+} from './schema'
 
 function createUpdateChartTools(storyService: NxStoryService) {
-  return [new DynamicStructuredTool({
-    name: 'updateChartStyle',
-    description: 'Update sytle of chart widget in story page.',
-    schema: z.object({
-      key: z.string().describe('The key of the widget'),
-      chart: ChartSchema.describe('The chart config')
-    }),
-    func: async ({ key, chart }) => {
-      const entityType = await firstValueFrom(storyService.selectWidgetEntityType(key))
-      storyService.updateWidget({
-        widgetKey: key,
-        widget: {
-          dataSettings: {
-            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType))
+  return [
+    new DynamicStructuredTool({
+      name: 'updateChartStyle',
+      description: 'Update sytle of chart widget in story page.',
+      schema: z.object({
+        key: z.string().describe('The key of the widget'),
+        chart: ChartSchema.describe('The chart config')
+      }),
+      func: async ({ key, chart }) => {
+        const entityType = await firstValueFrom(storyService.selectWidgetEntityType(key))
+        storyService.updateWidget({
+          widgetKey: key,
+          widget: {
+            dataSettings: {
+              chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType))
+            }
           }
-        }
-      })
-      return `The styles of story chart widget updated!`
-    }
-  })]
+        })
+        return `The styles of story chart widget updated!`
+      }
+    })
+  ]
 }
 
 /**
@@ -50,7 +61,13 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     description: 'Create a new widget in story page.',
     schema: ChartWidgetSchema,
     func: async ({ title, position, dataSettings, chartAnnotation }) => {
-      logger.debug('[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:', title, position, dataSettings, chartAnnotation)
+      logger.debug(
+        '[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:',
+        title,
+        position,
+        dataSettings,
+        chartAnnotation
+      )
 
       const entityType = defaultCube()
       storyService.createStoryWidget({
@@ -71,14 +88,20 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     name: 'createTableWidget',
     description: 'Create a new table widget.',
     schema: createWidgetSchema(createTableWidgetSchema()),
-    func: async ({ title, component, position, analytics, options }) => {
-      logger.debug('[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:', title, position, analytics, options)
+    func: async ({ title, position, analytics, options }) => {
+      logger.debug(
+        '[Story] [AI Copilot] [Command tool] [createTableWidget] inputs:',
+        title,
+        position,
+        analytics,
+        options
+      )
 
       const entityType = defaultCube()
       const key = uuid()
       storyService.createStoryWidget({
         key,
-        component: component || WidgetComponentType.AnalyticalGrid,
+        component: WidgetComponentType.AnalyticalGrid,
         position: position,
         title: title,
         dataSettings: {
@@ -135,7 +158,14 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     }
   })
 
-  const tools = [tool, createTableTool, createChartTool, updateWidgetTool, updateWidgetStyleTool, ...createUpdateChartTools(storyService)]
+  const tools = [
+    tool,
+    createTableTool,
+    createChartTool,
+    updateWidgetTool,
+    updateWidgetStyleTool,
+    ...createUpdateChartTools(storyService)
+  ]
 
   return injectCopilotCommand({
     name: 'widget',
@@ -177,9 +207,9 @@ One dimension can only be used once. one hierarchy can't appears in more than on
 
 /**
  * Edit styles for chart widget
- * 
- * @param storyService 
- * @returns 
+ *
+ * @param storyService
+ * @returns
  */
 export function injectWidgetStyleCommand(storyService: NxStoryService) {
   const logger = inject(NGXLogger)

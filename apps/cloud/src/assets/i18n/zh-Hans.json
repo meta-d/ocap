@@ -46,6 +46,7 @@
       "Cube": "多维数据集",
       "Tags": "标签",
       "DATA": "数据",
+      "DataSource":"数据源",
       "DATA_SOURCE": "数据源",
       "DATA_SOURCES": "数据源",
       "DELETE": "删除",
@@ -681,7 +682,8 @@
           "将表创建为立方体",
           "将表创建为维度"
         ],
-        "CopilotName": "建模"
+        "CopilotName": "建模",
+        "ModelStructure": "模型结构"
       },
       "CREATE_ENTITY": {
         "CREATE_ENTITY": "创建模型实体",
@@ -744,7 +746,8 @@
         "ConfirmOverwriteCube": "数据集已存在配置，确认覆盖？",
         "PleaseSelectFields": "请选择字段！",
         "CubeNotFound": "多维数据集未找到！",
-        "CreateDimension": "创建维度"
+        "CreateDimension": "创建维度",
+        "CubeStructure": "立方体结构"
       },
       "DIMENSION": {
         "Levels": "层级",
@@ -1075,6 +1078,9 @@
         "ApiPort": "接口端口号",
         "Catalog": "目录",
         "Database": "数据库",
+        "Schema": "目录",
+        "Database/Tenant": "数据库/租户",
+        "Tenant": "租户",
         "Version": "版本",
         "Url": "主机链接",
         "Request Timeout": "请求超时时间",

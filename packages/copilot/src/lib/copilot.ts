@@ -61,6 +61,7 @@ export class CopilotService {
     map((copilot) => {
       switch (copilot.provider) {
         case AiProvider.OpenAI:
+        case AiProvider.Azure:
           return new ChatOpenAI({
             apiKey: copilot.apiKey,
             configuration: {

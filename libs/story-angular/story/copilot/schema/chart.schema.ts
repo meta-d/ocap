@@ -124,12 +124,13 @@ export function completeChartAnnotation(chart: DeepPartial<ChartAnnotation>): De
   return (
     chart && {
       ...chart,
+      dimensions: chart.dimensions ?? [],
       measures: chart.measures?.map((item) => ({
         ...item,
         formatting: {
           shortNumber: true
         }
-      }))
+      })) ?? []
     }
   )
 }

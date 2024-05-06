@@ -19,14 +19,14 @@
         <span mat-tab-link [routerLink]="['./query']" routerLinkActive #rlaQuery="routerLinkActive"
             [routerLinkActiveOptions]="{exact: true}"
             [active]="rlaQuery.isActive"
-            >{{ 'PAC.MENU.QL_LAB' | translate: {Default: "QL Lab"} }}</span>
+            >{{ 'PAC.MENU.QL_LAB' | translate: {Default: "Query Lab"} }}</span>
         
         <span mat-tab-link [matTooltip]="'PAC.ACTIONS.OpenAttributesPanel' | translate: {Default: 'Open attributes panel'}"
             matTooltipPosition="above"
-            [active]="detailsOpen"
+            [active]="detailsOpen()"
             (click)="designerDrawer.toggle()"
         >
-            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen?'accent':''">edit_attributes</mat-icon>
+            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen() ? 'accent' : ''">edit_attributes</mat-icon>
             @if (!isMobile()) {
               <span>{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
             }
@@ -70,7 +70,9 @@
                     </mat-tab-nav-panel>
                 </div>
 
-                <ngm-drawer-trigger class="absolute -left-2 top-1/2 z-40" [(opened)]="drawerOpened" ></ngm-drawer-trigger>
+                <ngm-drawer-trigger class="absolute -left-2 top-1/2 z-40" [(opened)]="drawerOpened"
+                    [matTooltip]="'PAC.MODEL.ENTITY.CubeStructure' | translate: {Default: 'Cube Structure'}"
+                    matTooltipPosition="after" />
             </mat-drawer-content>
         </mat-drawer-container>
     </mat-drawer-content>

@@ -151,15 +151,18 @@ export class HierarchySchemaService<T extends {hierarchy: PropertyHierarchy; dim
                 name: {
                   expression: (c: AbstractControl) => !this.otherHierarchies()?.find((item) => item.name === c.value),
                   message: (error: any, field: FormlyFieldConfig) => {
-                    return field.formControl.value
-                      ? translate('PAC.Messages.AlreadyExists', {
-                          Default: `Name already exists`,
-                          value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
-                        })
+                    if (error) {
+                      return field.formControl.value ? translate('PAC.Messages.AlreadyExists', {
+                        Default: `Name already exists`,
+                        value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                      })
                       : translate('PAC.Messages.IsRequired', {
-                          Default: `Name is required`,
-                          value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
-                        })
+                        Default: `Name is required`,
+                        value: translate('PAC.KEY_WORDS.Name', { Default: 'Name' })
+                      })
+                    } else {
+                      return null
+                    }
                   }
                 }
               }

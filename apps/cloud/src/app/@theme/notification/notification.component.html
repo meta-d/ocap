@@ -15,7 +15,7 @@
 
 
 <mat-menu #statusNotifMenu="matMenu" class="ngm-menu-card" xPosition="after" yPosition="above">
-  <div class="max-h-[70vh] flex flex-col justify-start items-stretch overflow-hidden" (click)="$event.stopPropagation()">
+  <div class="max-h-[70vh] min-w-[300px] flex flex-col justify-start items-stretch overflow-hidden" (click)="$event.stopPropagation()">
     <div class="flex justify-between items-center px-2">
       <h5 class="mb-2 text-lg font-bold tracking-tight">
         {{'PAC.KEY_WORDS.Notification' | translate: {Default: 'Notification'} }}
@@ -23,20 +23,21 @@
         <span>({{errors().length}})</span>
       </h5>
 
-      <button mat-icon-button [matTooltip]="'PAC.KEY_WORDS.ClearAll' | translate: {Default: 'Clear All'}"
+      <button mat-icon-button displayDensity="cosy" class="ml-6"
+        [matTooltip]="'PAC.KEY_WORDS.ClearAll' | translate: {Default: 'Clear All'}"
         (click)="clearErrors()">
         <mat-icon fontSet="material-icons-round">clear_all</mat-icon>
       </button>
     </div>
 
-    <div class="flex flex-col overflow-auto" >
+    <div class="flex flex-col overflow-auto" displayDensity="cosy">
       <mat-list class="ngm-list">
         @for (error of errors(); track error; let i = $index) {
           <mat-list-item class="group relative" [matTooltip]="error">
             <p>{{error}}</p>
 
             <div matListItemMeta>
-              <button mat-icon-button displayDensity="cosy" class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              <button mat-icon-button class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 color="warn" (click)="clearError(i)">
                 <mat-icon fontSet="material-icons-round">close</mat-icon>
               </button>

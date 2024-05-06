@@ -683,10 +683,9 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   onWheel(event: WheelEvent) {
     if (!this.isFocused()) return
 
-    event.preventDefault() // Prevent default scrolling behavior
-
     // Increase or decrease the scale based on the direction of the scroll
     if (event.altKey) {
+      event.preventDefault() // Prevent default scrolling behavior
       if (event.deltaY > 0) {
         this.storyService.zoomOut()
       } else {

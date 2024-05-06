@@ -244,7 +244,10 @@
       <div class="pac-model-content w-full flex-1 overflow-auto">
         <router-outlet #o="outlet"></router-outlet>
       </div>
-      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" ></ngm-drawer-trigger>
+
+      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened"
+        [matTooltip]="'PAC.MODEL.MODEL.ModelStructure' | translate: {Default: 'Model Structure'}"
+        matTooltipPosition="after" />
     </mat-drawer-content>
 </mat-drawer-container>
     

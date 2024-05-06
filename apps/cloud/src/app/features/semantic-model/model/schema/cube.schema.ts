@@ -23,20 +23,20 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
     map((cube) => {
       const measures = [
         {
-          value: null,
-          label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
+          key: null,
+          caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
         }
       ]
 
       if (cube.measures) {
         measures.push(
           ...cube.measures.map((measure) => ({
-            value: measure.name,
-            label: measure.caption
+            key: measure.name,
+            caption: measure.caption
           }))
         )
       }
-
+      
       return measures
     })
   )
@@ -169,7 +169,7 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
                 label: CUBE?.DefaultMeasure ?? 'Default Measure',
                 options: this.measures$,
                 searchable: true,
-                required: true
+                // required: true
               }
             },
             {

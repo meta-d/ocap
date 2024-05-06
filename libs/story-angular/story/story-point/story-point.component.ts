@@ -236,7 +236,7 @@ export class NxStoryPointComponent {
     mobileBreakpoint: 340,
     useBodyForBreakpoint: true,
     draggable: {
-      delayStart: 100,
+      delayStart: 200,
       enabled: true,
       // ignoreContentClass: 'gridster-item-content',
       // ignoreContent: true,

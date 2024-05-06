@@ -57,14 +57,14 @@
 <div mat-dialog-content class="pac-dialog-content w-[400px] max-h-full overflow-auto">
   <form [formGroup]="formGroup" class="flex flex-col items-stretch p-4 overflow-auto">
     <label class="text-lg">
-        {{ 'PAC.MODEL.DataSource' | translate: { Default: 'Data source' } }}
+        {{ 'PAC.MODEL.DataSource' | translate: { Default: 'Data Source' } }}
     </label>
     <ngm-selection-table
         appearance="outline"
         displayDensity="compact"
         grid
         [data]="connections$ | async"
-        [columns]="columns$ | async"
+        [columns]="dataSourceColumns()"
         formControlName="dataSource"
     >
     </ngm-selection-table>

@@ -602,7 +602,7 @@ The query should be returned in plain text, not in JSON.
   }
 
   entityDeletePredicate(item: CdkDrag<EntitySchemaNode>) {
-    return item.data.type === EntitySchemaType.Entity
+    return item.data?.type === EntitySchemaType.Entity
   }
 
   deleteEntity(event: CdkDragDrop<{ name: string }[]>) {
