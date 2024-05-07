@@ -118,7 +118,7 @@ export class StoryController extends CrudController<Story> {
 	async getCount(): Promise<number | void> {
 		return await this.storyService.countMy()
 	}
-	
+
 	@Public()
 	@UseInterceptors(ClassSerializerInterceptor)
 	@Get('public/trends')
@@ -127,9 +127,11 @@ export class StoryController extends CrudController<Story> {
 		@Query('skip') skip: number,
 		@Query('orderType') orderType: 'visits' | 'update',
 		@Query('relations') relations: string[],
-	  	@Query('searchText') searchText?: string
+		@Query('searchText') searchText?: string
 	) {
-		const {items, total} = await this.queryBus.execute(new StoryTrendsQuery(searchText, {take, skip, relations}, orderType))
+		const { items, total } = await this.queryBus.execute(
+			new StoryTrendsQuery(searchText, { take, skip, relations }, orderType)
+		)
 		return {
 			total,
 			items: items.map((item) => new StoryPublicDTO(item))
@@ -174,8 +176,6 @@ export class StoryController extends CrudController<Story> {
 		@Query('$query', ParseJsonPipe) options: FindOneOptions<Story>,
 		@Query('token') token: string
 	): Promise<Story> {
-		const me = RequestContext.currentUser()
-
 		let story: Story
 		if (token) {
 			const secretToken: ISecretToken = await this.commandBus.execute(new SecretTokenGetCommand({ token }))
@@ -188,12 +188,7 @@ export class StoryController extends CrudController<Story> {
 			story = await this.queryBus.execute(new StoryOneQuery(id, options))
 		}
 
-		let dto: StoryDTO
-		if (story.createdById === me.id || story.project?.members?.find((member) => member.id === me.id)) {
-			dto = new StoryDTO(story, AccessEnum.Write)
-		} else {
-			dto = new StoryDTO(story, AccessEnum.Read)
-		}
+		const dto = new StoryDTO(story, accessOfStory(story))
 
 		const bookmarks = await this.commandBus.execute(
 			new BookmarkGetCommand({
@@ -219,10 +214,8 @@ export class StoryController extends CrudController<Story> {
 	@Post('import')
 	async import(@Body() story: Partial<IStory>): Promise<Story> {
 		try {
-			return await this.commandBus.execute(
-				new StoryImportCommand(story)
-			)
-		}catch(err) {
+			return await this.commandBus.execute(new StoryImportCommand(story))
+		} catch (err) {
 			throw new BadRequestException(err.message)
 		}
 	}
@@ -242,11 +235,17 @@ export class StoryController extends CrudController<Story> {
 	}
 
 	@Post(':id/share/token')
-	async shareToken(@Param('id', UUIDValidationPipe) id: string, @Body() body: {validUntil: any}): Promise<string> {
+	async shareToken(@Param('id', UUIDValidationPipe) id: string, @Body() body: { validUntil: any }): Promise<string> {
 		// Check if the user has the permission to share the story
 		// todo
 
-		const token: ISecretToken = await this.commandBus.execute(new SecretTokenCreateCommand({ entityId: id, token: nanoid(), validUntil: add(new Date(), body.validUntil) }))
+		const token: ISecretToken = await this.commandBus.execute(
+			new SecretTokenCreateCommand({
+				entityId: id,
+				token: nanoid(),
+				validUntil: add(new Date(), body.validUntil)
+			})
+		)
 		return token.token
 	}
 
@@ -260,5 +259,25 @@ export class StoryController extends CrudController<Story> {
 	@Delete(':id/models/:modelId')
 	async deleteModel(@Param('id') id: string, @Param('modelId') modelId: string) {
 		await this.storyService.deleteModel(id, modelId)
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get(':id/access')
+	async accessById(
+		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$query', ParseJsonPipe) options: FindOneOptions<Story>
+	): Promise<{ access: AccessEnum }> {
+		const story = await this.queryBus.execute(new StoryOneQuery(id, options))
+		return { access: accessOfStory(story) }
+	}
+}
+
+function accessOfStory(story: IStory) {
+	const me = RequestContext.currentUser()
+
+	if (story.createdById === me.id || story.project?.members?.find((member) => member.id === me.id)) {
+		return AccessEnum.Write
+	} else {
+		return AccessEnum.Read
 	}
 }

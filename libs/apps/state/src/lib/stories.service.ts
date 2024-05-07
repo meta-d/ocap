@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { IPagination, IStory } from '@metad/contracts'
+import { AccessEnum, IPagination, IStory } from '@metad/contracts'
 import { Story } from '@metad/story/core'
 import { map, Observable } from 'rxjs'
 import { C_API_STORY } from './constants'
@@ -143,5 +143,9 @@ export class StoriesService extends OrganizationBaseService {
         ].join(',')
       }
     })
+  }
+
+  getAccess(id: string) {
+    return this.httpClient.get<{access: AccessEnum}>(`${C_API_STORY}/${id}/access`)
   }
 }

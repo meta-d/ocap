@@ -437,7 +437,8 @@
       "CreateDataSource": "创建数据源",
       "ConfirmExitDirtyData": "有未保存数据, 确认退出吗?",
       "Sure": "确定",
-      "UserAuthenticationFailure": "用户认证失败"
+      "UserAuthenticationFailure": "用户认证失败",
+      "NoEditAuthorization": "没有编辑权限"
     },
     "Messages": {
       "AlreadyExists": "{{value}}已存在",
