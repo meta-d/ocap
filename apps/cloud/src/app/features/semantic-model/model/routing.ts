@@ -1,10 +1,11 @@
 import { RouterModule, Routes } from '@angular/router'
 import { DirtyCheckGuard } from '../../../@core'
-import { ModelMembersComponent } from './members/members.component'
+import { ModelAdminComponent } from './admin/admin.component'
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
 import { semanticModelResolver } from './story-model.resolver'
 import { NgModule } from '@angular/core'
+import { ModelMembersComponent } from './members/members.component'
 
 export const routes: Routes = [
   {
@@ -24,10 +25,10 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'members',
-        component: ModelMembersComponent,
+        path: 'admin',
+        component: ModelAdminComponent,
         data: {
-          title: 'Model / Members'
+          title: 'Model / Admin'
         }
       },
       {
@@ -63,6 +64,13 @@ export const routes: Routes = [
         loadChildren: () => import('./access-control/access-control.module').then((m) => m.AccessControlModule),
         data: {
           title: 'Model / Access'
+        }
+      },
+      {
+        path: 'members',
+        component: ModelMembersComponent,
+        data: {
+          title: 'Model / Members'
         }
       }
     ]

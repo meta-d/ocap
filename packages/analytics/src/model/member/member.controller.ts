@@ -1,17 +1,8 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	HttpCode,
-	HttpStatus,
-	Post,
-	Query,
-} from '@nestjs/common'
+import { IPagination } from '@metad/contracts'
+import { CrudController, ParseJsonPipe, UUIDValidationPipe } from '@metad/server-core'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { IPagination } from '@metad/contracts'
-import { CrudController, ParseJsonPipe } from '@metad/server-core'
 import { DeepPartial, FindManyOptions } from 'typeorm'
 import { SemanticModelMember } from './member.entity'
 import { SemanticModelMemberService } from './member.service'
@@ -20,39 +11,34 @@ import { SemanticModelMemberService } from './member.service'
 @ApiBearerAuth()
 @Controller()
 export class ModelMemberController extends CrudController<SemanticModelMember> {
-	constructor(
-		private readonly memberService: SemanticModelMemberService,
-		private readonly commandBus: CommandBus
-	) {
+	constructor(private readonly memberService: SemanticModelMemberService, private readonly commandBus: CommandBus) {
 		super(memberService)
 	}
 
-	@Get()
-	async findAll(
+	@Get(':id')
+	async findAllMembers(
+		@Param('id', UUIDValidationPipe) id: string,
 		@Query('$query', ParseJsonPipe) query: FindManyOptions
 	): Promise<IPagination<SemanticModelMember>> {
 		const { relations, where } = query
 		return await this.memberService.findAll({
 			where,
-			relations,
+			relations
 		})
 	}
 
 	@HttpCode(HttpStatus.CREATED)
-	@Post()
-	async bulkCreate(
-		@Body() members: DeepPartial<SemanticModelMember[]>,
-		...options: any[]
-	) {
-		return this.memberService.bulkCreate(members)
+	@Post(':id')
+	async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() members: DeepPartial<SemanticModelMember[]>) {
+		return this.memberService.bulkCreate(id, members)
 	}
 
 	@HttpCode(HttpStatus.OK)
-	@Delete()
+	@Delete(':id')
 	async bulkDelete(
-		@Query('$query', ParseJsonPipe) query: FindManyOptions,
-		...options: any[]
+		@Param('id', UUIDValidationPipe) id: string,
+		@Query('$query', ParseJsonPipe) query: FindManyOptions
 	) {
-		return this.memberService.bulkDelete(query)
+		return this.memberService.bulkDelete(id, query)
 	}
 }

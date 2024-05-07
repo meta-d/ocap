@@ -182,7 +182,9 @@
       "PrimaryKey": "主键",
       "TableName": "表名",
       "DataAgent": "数据代理",
-      "ServerAgent": "服务器代理"
+      "ServerAgent": "服务器代理",
+      "Admin": "管理",
+      "Members": "成员"
     },
     "MENU": {
       "Certification": "认证",

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { IDataSource, ISemanticModel } from '@metad/contracts'
+import { IDataSource, ISemanticModel, ISemanticModelMember } from '@metad/contracts'
 import { hierarchize, Indicator, omit, pick, SemanticModel as OcapSemanticModel } from '@metad/ocap-core'
 import { StoryModel } from '@metad/story/core'
 import { zip } from 'rxjs'
 import { map, switchMap } from 'rxjs/operators'
 import { BusinessAreasService } from './business-area.service'
-import { C_URI_API_MODELS } from './constants'
+import { C_URI_API_MODELS, C_URI_API_MODEL_MEMBERS } from './constants'
 import { OrganizationBaseService } from './organization-base.service'
 import { Store } from './store.service'
 import { convertIndicatorResult, convertStoryModel } from './types'
@@ -183,6 +183,10 @@ export class ModelsService extends OrganizationBaseService {
 
   updateOwner(id: string, userId: string, params?) {
     return this.httpClient.put<ISemanticModel>(C_URI_API_MODELS + `/${id}`, {ownerId: userId}, { params })
+  }
+
+  uploadDimensionMembers(id: string, members: ISemanticModelMember[]) {
+    return this.httpClient.post(C_URI_API_MODEL_MEMBERS + `/${id}`, members)
   }
 }
 

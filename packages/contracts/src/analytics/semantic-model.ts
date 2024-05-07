@@ -1,14 +1,13 @@
 import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 import { ITag } from '../tag-entity.model'
+import { IUser } from '../user.model'
+import { Visibility } from '../visibility.model'
 import { IBusinessArea } from './business-area'
 import { IDataSource } from './data-source'
 import { IIndicator } from './indicator'
 import { IModelQuery } from './model-query'
-import { IStory } from './story'
-import { IUser } from '../user.model'
 import * as MDX from './schema'
-import { Visibility } from '../visibility.model'
-
+import { IStory } from './story'
 
 export enum AgentType {
   Local = 'local',
@@ -70,7 +69,7 @@ export interface ISemanticModel extends IBasePerTenantAndOrganizationEntityModel
 
 export enum ModelTypeEnum {
   XMLA = 'XMLA',
-  SQL = 'SQL',
+  SQL = 'SQL'
 }
 
 export interface IModelRole extends IBasePerTenantAndOrganizationEntityModel {
@@ -86,7 +85,7 @@ export interface IModelRole extends IBasePerTenantAndOrganizationEntityModel {
 
 export enum RoleTypeEnum {
   single = 'single',
-  union = 'union',
+  union = 'union'
 }
 
 export enum SemanticModelStatusEnum {
@@ -99,4 +98,30 @@ export enum SemanticModelStatusEnum {
    * 存档
    */
   Archived = 'Archived'
+}
+
+export interface ISemanticModelMember extends IBasePerTenantAndOrganizationEntityModel {
+  dimension: string
+
+  hierarchy: string
+
+  level: string
+
+  language: string
+
+  memberUniqueName: string
+
+  modelId?: string
+
+  memberName: string
+
+  memberCaption: string
+
+  memberOrdinal: number
+
+  memberType: number
+
+  levelNumber: number
+
+  parentUniqueName: string
 }

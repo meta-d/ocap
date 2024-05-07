@@ -48,25 +48,16 @@ services:
             - overlay
 
     redis:
-        container_name: redis
-        image: redis:6-alpine
-        mem_limit: 100m
+        image: redis/redis-stack:latest
         restart: unless-stopped
-        command: ["sh", "-c", "redis-server --requirepass $${REDIS_PASSWORD}"]
         ports:
-            - "6379:6379"
+            - 6379:6379
+            - 8001:8001
         environment:
-            REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+            REDIS_ARGS: "--requirepass ${REDIS_PASSWORD:-}"
         networks:
             - overlay
 
-    redisinsight:
-        container_name: redisinsight
-        image: redislabs/redisinsight:1.11.1
-        ports:
-            - "8001:8001"
-        networks:
-            - overlay
     # mysqldb:
     #     image: mysql:8
     #     command: --default-authentication-plugin=mysql_native_password

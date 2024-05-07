@@ -10,6 +10,9 @@
 	"dependencies": {
 		"@nestjs/common": "^8.0.0",
 		"@casl/ability": "^5.4.3",
+		"@langchain/community": "^0.0.51",
+    	"@langchain/openai": "^0.0.28",
+		"@langchain/redis": "^0.0.3",
 		"@nestjs/config": "^1.0.2",
 		"@nestjs/core": "^8.0.0",
 		"@nestjs/cqrs": "^8.0.0",
@@ -26,7 +29,7 @@
 		"decompress": "4.2.1",
 		"immer": "^9.0.6",
 		"nestjs-i18n": "^8.1.6",
-		"redis": "^4.0.4",
+		"redis": "^4.6.13",
 		"reflect-metadata": "^0.1.13",
 		"socket.io-redis": "6.1.1",
 		"typeorm": "^0.2.37",

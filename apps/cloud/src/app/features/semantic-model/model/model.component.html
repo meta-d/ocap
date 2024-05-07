@@ -410,14 +410,19 @@
             {{ 'PAC.MODEL.ModelOverview' | translate: {Default: "Model Overview"} }}
         </button>
     
-        <button cdkMenuItem [routerLink]="['./members']">
-            <mat-icon fontSet="material-icons-outlined">people</mat-icon>
-            {{ 'PAC.MODEL.Members' | translate: {Default: "Members"} }}
+        <button cdkMenuItem [routerLink]="['./admin']">
+            <mat-icon fontSet="material-icons-outlined">admin_panel_settings</mat-icon>
+            {{ 'PAC.KEY_WORDS.Admin' | translate: {Default: "Admin"} }}
         </button>
     
         <button cdkMenuItem *ngIf="isOlap$()" [routerLink]="['./access']">
             <mat-icon fontSet="material-icons-outlined">manage_accounts</mat-icon>
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
+        </button>
+
+        <button cdkMenuItem [routerLink]="['./members']">
+            <mat-icon fontSet="material-icons-outlined">tag</mat-icon>
+            {{ 'PAC.KEY_WORDS.Members' | translate: {Default: "Members"} }}
         </button>
     </div>
 </ng-template>
