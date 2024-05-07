@@ -142,7 +142,7 @@
     "ngx-permissions": "^13.0.1",
     "ngx-popperjs": "^15.0.4",
     "ngx-quill": "^16.1.2",
-    "ngxtension": "^2.0.0",
+    "ngxtension": "^3.1.2",
     "noto-serif-sc": "^8.0.0",
     "openai": "^4.6.0",
     "passport-dingtalk2": "^2.1.1",

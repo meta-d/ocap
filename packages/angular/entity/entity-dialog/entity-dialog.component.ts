@@ -81,6 +81,9 @@ export class NgmEntityDialogComponent {
       if (!this.entities().length && entities.length) {
         this.entities.set([entities[0].key])
       }
+      if (this.data.dataSources.length === 1 && entities.length === 1) {
+        this.onApply()
+      }
     }),
     combineLatestWith(this.search.valueChanges.pipe(startWith(''))),
     map(([entities, text]) =>
