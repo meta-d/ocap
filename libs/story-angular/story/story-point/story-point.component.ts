@@ -328,6 +328,7 @@ export class NxStoryPointComponent {
   )
 
   readonly scaleStyles$ = this.storyPointService.scaleStyles$
+  readonly isFullscreenSignal = toSignal(this.storyPointService.stateStore.pipe(map((state) => state.fullscreen)))
 
   // nativeElement.scrollTop
   private _scrollTop = 0
@@ -568,7 +569,7 @@ export class NxStoryPointComponent {
 
   @HostBinding('class.ngm-fullscreen')
   get isFullscreen() {
-    return this.storyPointService.storyPoint?.fullscreen
+    return this.isFullscreenSignal()
   }
 
   cloneDeep(item) {

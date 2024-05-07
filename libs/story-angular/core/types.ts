@@ -328,7 +328,10 @@ export interface StoryPoint extends Partial<StoryPointKey> {
    * @deprecated 是否还需要
    */
   filterBar?: Partial<StoryFilterBar>
-  // 是否全屏状态
+  /**
+   * 是否全屏状态
+   * @deprecated use fullscreen in StoryPointState
+   */
   fullscreen?: boolean
   // cssOptions?: any
   responsive?: FlexLayout
@@ -619,6 +622,11 @@ export interface StoryPointState {
     ```
    */
   scale?: number
+
+  /** 
+   * Is fullscreen
+   */
+  fullscreen?: boolean
 }
 
 /**
