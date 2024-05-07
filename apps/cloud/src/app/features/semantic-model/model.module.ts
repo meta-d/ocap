@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core'
-import { MetadFormlyExpansionModule } from '@metad/formly-mat/expansion'
-import { LoggerModule } from 'ngx-logger'
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { NgxPermissionsModule } from 'ngx-permissions'
 import { provideLogger } from '../../@core'
 import { MaterialModule, SharedModule } from '../../@shared'
@@ -14,11 +13,6 @@ import { SemanticModelRoutingModule } from './routing'
     SemanticModelRoutingModule,
 
     NgxPermissionsModule,
-
-    /**
-     * @deprecated use accordion
-     */
-    MetadFormlyExpansionModule,
 
     LoggerModule
   ],
