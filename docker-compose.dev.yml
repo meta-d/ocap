@@ -1,4 +1,3 @@
-version: '3'
 name: metad-ocap-dev
 
 volumes:
