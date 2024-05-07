@@ -5,7 +5,6 @@ import { produce } from 'immer'
 import { cloneDeep, isEqual, isObject, negate, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { Observable, Subscription, distinctUntilChanged, filter, map, startWith } from 'rxjs'
-import { nonNullable } from '../helpers'
 
 export function write<S>(updater: (state: S) => void): (state: S) => S {
   return function (state) {
@@ -27,6 +26,7 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
 
   #subscription: Subscription
   #upbackSubscription: Subscription
+  #initialized = false
 
   #context: ReducerContext = {
     config: this.getConfig(),
@@ -60,24 +60,8 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
       return this
     }
 
-    this.#subscription?.unsubscribe()
-    this.#subscription = this.subscribeParent(properties)
-      .pipe(filter(nonNullable), takeUntilDestroyed(this.#destroyRef))
-      .subscribe({
-        next: (value) => {
-          this.#logger?.trace(`SubStore [${this.name}] update state from parent:`, value)
-          this.update(() => value)
-        },
-        error: (err) => {
-          this.error()
-        },
-        complete: () => {
-          this.complete()
-        }
-      })
-
     this.#upbackSubscription?.unsubscribe()
-    this.#upbackSubscription = this.pipe(distinctUntilChanged(), takeUntilDestroyed(this.#destroyRef)).subscribe(
+    this.#upbackSubscription = this.pipe(distinctUntilChanged(), filter(() => this.#initialized), takeUntilDestroyed(this.#destroyRef)).subscribe(
       (newValue) => {
         this.#logger?.trace(`SubStore [${this.name}] update back to parent:`, newValue)
         this.parent.update(
@@ -102,6 +86,23 @@ export class SubStore<SDef extends StoreDef = any, State = SDef['state']> extend
         )
       }
     )
+
+    this.#subscription?.unsubscribe()
+    this.#subscription = this.subscribeParent(properties)
+      .pipe(takeUntilDestroyed(this.#destroyRef))
+      .subscribe({
+        next: (value) => {
+          this.#logger?.trace(`SubStore [${this.name}] update state from parent:`, value)
+          this.update(() => value ?? this.state)
+          this.#initialized = true
+        },
+        error: (err) => {
+          this.error()
+        },
+        complete: () => {
+          this.complete()
+        }
+      })
 
     return this
   }

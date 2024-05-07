@@ -3,7 +3,6 @@ import { Injectable, inject } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { IModelRole, IUser, MDX } from '@metad/contracts'
 import { Store, select, withProps } from '@ngneat/elf'
-import { stateHistory } from '@ngneat/elf-state-history'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import { userLabel } from 'apps/cloud/src/app/@shared'
 import { isEqual, negate } from 'lodash-es'
@@ -29,9 +28,7 @@ export class RoleStateService {
     { name: 'semantic_model_role_pristine', arrayKey: 'key' },
     withProps<IModelRole>(null)
   )
-  // readonly #stateHistory = stateHistory<Store, IModelRole>(this.store, {
-  //   comparatorFn: negate(isEqual)
-  // })
+
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
 
@@ -44,9 +41,8 @@ export class RoleStateService {
   constructor(public modelService: SemanticModelService) {}
 
   public init(key: string) {
-    // this.connect(this.modelService, { parent: ['model', 'roles', key], arrayKey: 'key' })
-    this.store.connect(['roles', key])
-    this.pristineStore.connect(['roles', key])
+    this.store.connect(['model', 'roles', key])
+    this.pristineStore.connect(['model', 'roles', key])
   }
 
   updater<ProvidedType = void, OriginType = ProvidedType>(
