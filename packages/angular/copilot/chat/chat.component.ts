@@ -178,6 +178,7 @@ export class NgmCopilotChatComponent {
     } else {
       this.openaiOptions.model = value
     }
+    this.copilotService.update({defaultModel: value})
   }
 
   readonly selectedModel = model([this.aiOptions.model])

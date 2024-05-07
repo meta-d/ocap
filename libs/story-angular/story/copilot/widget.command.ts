@@ -106,7 +106,8 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
         title: title,
         dataSettings: {
           analytics: tryFixAnalyticsAnnotation(analytics, entityType)
-        }
+        },
+        options
       })
 
       return `Story table widget '${key}' created!`
