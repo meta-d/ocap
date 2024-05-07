@@ -38,9 +38,20 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   placeholder?: string
 
-  aiOptions: AIOptions = {
+  aiOptions = {} as AIOptions
+
+  readonly #aiOptions = signal<AIOptions>({
     model: DefaultModel
-  } as AIOptions
+  } as AIOptions)
+
+  // get aiOptions() {
+  //   return this.#aiOptions()
+  // }
+  // set aiOptions(value: AIOptions) {
+  //   this.#aiOptions.update((state) => ({...state, ...value}))
+  // }
+
+  readonly verbose = computed(() => this.#aiOptions().verbose)
 
   readonly llm = toSignal(this.copilot.llm$)
 
@@ -149,7 +160,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
     effect(() => {
       const llm = this.llm()
       const commands = this.#commands()
+      const verbose = this.verbose()
+
       if (!llm) return
+      
       Object.values(commands).forEach((command) => {
         if (command.tools && (!command.llm || command.llm !== llm)) {
           createOpenAIToolsAgent({
@@ -161,9 +175,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
             command.agentExecutor = new AgentExecutor({
               agent,
               tools: command.tools as any[],
-              verbose: true
+              verbose
             })
           })
+        } else if (command.agentExecutor) {
+          command.agentExecutor.verbose = verbose
         }
       })
     })
@@ -173,6 +189,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
     //     console.log('last conversation:', this.lastConversation())
     //     console.log('last user messages:', this.lastUserMessages())
     //   })
+  }
+
+  updateAiOptions(options?: Partial<AIOptions>) {
+    this.#aiOptions.update((state) => ({ ...state, ...options }))
+    this.aiOptions = this.#aiOptions()
   }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {

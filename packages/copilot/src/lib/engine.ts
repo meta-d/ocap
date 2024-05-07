@@ -112,4 +112,6 @@ export interface CopilotEngine {
    * @param fn
    */
   updateLastConversation?(fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
+
+  updateAiOptions(options: Partial<AIOptions>): void
 }

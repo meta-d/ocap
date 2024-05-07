@@ -70,7 +70,7 @@ export interface CopilotChatResponseChoice {
   //
 }
 
-export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean }
+export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean; verbose?: boolean }
 
 // Helper function
 export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
