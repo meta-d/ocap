@@ -117,7 +117,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   #calculatedMeasureCommand = injectCopilotCommand({
     name: 'formula',
     description: 'Create or edit a calculated member',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `Create a new or edit (if there is a formula) MDX calculated measure for the cube based on the prompt.`
       if (this.entityType()) {
         prompt += `The cube is: 

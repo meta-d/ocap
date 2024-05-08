@@ -182,7 +182,7 @@ export class InsightComponent {
     description: this.#translate.instant('PAC.Home.Insight.ChartCommandDescription', {
       Default: 'Use charts to gain insights into data'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       const entityType = this.insightService.entityType()
       if (!entityType) {
         throw new Error(this.#translate.instant('PAC.Home.Insight.SelectCubeFirstly', { Default: 'please select a cube firstly!' }))
@@ -283,7 +283,7 @@ ${calcEntityTypePrompt(entityType)}
     description: this.#translate.instant('PAC.Home.Insight.SuggestCommandDescription', {
       Default: 'Suggest prompts for cube'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       const entityType = this.insightService.entityType()
       return `你是一名 BI 多维模型数据分析专家，请根据 Cube 维度和度量等信息提供用户可提问的提示语建议，这些提示语用于创建图形来分析展示数据集的数据。
 例如提示语：

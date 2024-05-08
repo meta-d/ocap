@@ -1,14 +1,14 @@
-import { inject } from '@angular/core'
+import { inject, signal } from '@angular/core'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { calcEntityTypePrompt } from '@metad/core'
+import { makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { EntityType } from '@metad/ocap-core'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
-import { createStoryPickCubeTool } from './pick-cube-tool'
 import {
   ChartSchema,
   ChartWidgetSchema,
@@ -19,6 +19,7 @@ import {
   createWidgetStyleSchema,
   tryFixAnalyticsAnnotation
 } from './schema'
+import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
 
 function createUpdateChartTools(storyService: NxStoryService) {
   return [
@@ -50,35 +51,55 @@ function createUpdateChartTools(storyService: NxStoryService) {
 export function injectStoryWidgetCommand(storyService: NxStoryService) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
+  const memberRetriever = inject(MEMBER_RETRIEVER_TOKEN)
 
   const currentWidget = storyService.currentWidget
   const currentStoryPoint = storyService.currentStoryPoint
 
-  const { defaultDataSource, defaultCube, tool } = createStoryPickCubeTool(storyService)
+  const defaultCube = signal<EntityType>(null)
+
+  // try {
+  //   ChartWidgetSchema.parse(JSON.parse("{\n  \"title\": \"Sales Amount by Customer Country\",\n  \"position\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"cols\": 6,\n    \"rows\": 6\n  },\n  \"dataSettings\": {\n    \"limit\": 100\n  },\n  \"chart\": {\n    \"chartType\": {\n      \"type\": \"Pie\",\n      \"chartOptions\": {\n        \"seriesStyle\": {},\n        \"legend\": {},\n        \"axis\": {},\n        \"dataZoom\": {},\n        \"tooltip\": {},\n        \"aria\": {\n          \"enabled\": true,\n          \"decal\": {\n            \"show\": true\n          }\n        }\n      }\n    },\n    \"dimensions\": [\n      {\n        \"dimension\": \"[Customer]\",\n        \"hierarchy\": \"[Customer.Geography]\",\n        \"level\": \"[Customer.Geography].[Country Region]\"\n      }\n    ],\n    \"measures\": [\n      {\n        \"dimension\": \"Measures\",\n        \"measure\": \"Sales Amount\",\n        \"order\": \"DESC\",\n        \"chartOptions\": {}\n      }\n    ]\n  },\n  \"slicers\": [\n    {\n      \"dimension\": {\n        \"dimension\": \"[Product]\",\n        \"hierarchy\": \"[Product.Products]\",\n        \"level\": \"[Product.Products].[Category]\"\n      },\n      \"members\": [\n        {\n          \"key\": \"[Product.Products].[Accessories]\",\n          \"caption\": \"Accessories\"\n        }\n      ]\n    }\n  ]\n}"))
+  // } catch (error) {
+  //   console.error('ChartWidgetSchema.parse error:', error)
+  // }
 
   const createChartTool = new DynamicStructuredTool({
     name: 'createChartWidget',
     description: 'Create a new widget in story page.',
     schema: ChartWidgetSchema,
-    func: async ({ title, position, dataSettings, chartAnnotation }) => {
+    func: async ({ title, position, dataSettings, chart, slicers }) => {
       logger.debug(
         '[Story] [AI Copilot] [Command tool] [createChartWidget] inputs:',
+        'title:',
         title,
+        'position:',
         position,
+        'dataSettings:',
         dataSettings,
-        chartAnnotation
+        'chartAnnotation:',
+        chart,
+        'slicers:',
+        slicers
       )
 
-      const entityType = defaultCube()
-      storyService.createStoryWidget({
-        component: WidgetComponentType.AnalyticalCard,
-        position: position,
-        title: title,
-        dataSettings: {
-          ...dataSettings,
-          chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chartAnnotation, entityType))
-        }
-      })
+      try {
+        const entityType = defaultCube()
+        storyService.createStoryWidget({
+          component: WidgetComponentType.AnalyticalCard,
+          position: position ?? { x: 0, y: 0, rows: 5, cols: 5 },
+          title: title,
+          dataSettings: {
+            ...(dataSettings ?? {}),
+            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType)),
+            selectionVariant: {
+              selectOptions: (slicers ?? (<any>chart).slicers as any[])?.map((slicer) => tryFixSlicer(slicer, entityType))
+            }
+          }
+        })
+      } catch (error) {
+        return `Error: ${error}`
+      }
 
       return `Story chart widget created!`
     }
@@ -118,8 +139,8 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     name: 'updateWidget',
     description: 'Update a widget in story page.',
     schema: ChartWidgetSchema,
-    func: async ({ title, position, dataSettings, chartAnnotation }) => {
-      console.log('updateWidget', title, position, dataSettings, chartAnnotation)
+    func: async ({ title, position, dataSettings, chart }) => {
+      console.log('updateWidget', title, position, dataSettings, chart)
 
       const { dataSource, entitySet } = currentWidget()?.dataSettings ?? {}
       const entityType = await firstValueFrom(storyService.selectEntityType({ dataSource, entitySet }))
@@ -130,7 +151,7 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
           title,
           position: position,
           dataSettings: {
-            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chartAnnotation, entityType))
+            chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType))
           }
         }
       })
@@ -159,51 +180,73 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     }
   })
 
-  const tools = [
-    tool,
-    createTableTool,
-    createChartTool,
-    updateWidgetTool,
-    updateWidgetStyleTool,
-    ...createUpdateChartTools(storyService)
-  ]
+  const defaultModel = signal<string>(null)
+  const defaultEntity = signal<string>(null)
+  return injectCopilotCommand(
+    'widget',
+    (async () => {
+      const memberRetrieverTool = await createDimensionMemberRetrieverTool(memberRetriever, defaultModel, defaultEntity)
 
-  return injectCopilotCommand({
-    name: 'widget',
-    alias: 'w',
-    description: 'Describe the widget you want',
-    systemPrompt: () => {
-      logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
-      return `The cube is:
+      const tools = [
+        // tool,
+        memberRetrieverTool,
+        createTableTool,
+        createChartTool
+        // updateWidgetTool,
+        // updateWidgetStyleTool,
+        // ...createUpdateChartTools(storyService),
+      ]
+      return {
+        alias: 'w',
+        description: 'Describe the widget you want',
+        systemPrompt: async () => {
+          logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
+          if (!defaultModel() || !defaultEntity()) {
+            const result = await storyService.openDefultDataSettings()
+
+            if (result?.dataSource && result?.entities[0]) {
+              defaultModel.set(result.modelId)
+              defaultEntity.set(result.entities[0])
+              const entityType = await firstValueFrom(
+                storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] })
+              )
+              defaultCube.set(entityType)
+            }
+          }
+          return `The cube is:
 \`\`\`
-${defaultCube() ? calcEntityTypePrompt(defaultCube()) : 'unknown'}
+${defaultCube() ? markdownEntityType(defaultCube()) : 'unknown'}
 \`\`\`
 
 Original widget is:
 \`\`\`
 ${JSON.stringify(currentWidget() ?? 'empty')}
 \`\`\`
+    `
+        },
+        tools,
+        prompt: ChatPromptTemplate.fromMessages([
+          [
+            'system',
+            `You are a BI analysis expert. Please use MDX technology to edit or create chart widget configurations based on Cube information.
+You must first call the 'dimensionMemberKeySearch' tool to obtain documentation related to dimension member keys (unique member name).
+A dimension can only be used once, and a hierarchy cannot appear on multiple independent axes.
 
-Don't need pick a default cube unless there is no cube provided or user want to change the cube.
-`
-    },
-    tools,
-    prompt: ChatPromptTemplate.fromMessages([
-      [
-        'system',
-        `You are a BI analysis expert, please edit or create the chart widget configuration based on the cube information and the question.
-One dimension can only be used once. one hierarchy can't appears in more than one independent axis.
+${makeCubeRulesPrompt()}
+
 {system_prompt}
 `
-      ],
-      new MessagesPlaceholder({
-        variableName: 'chat_history',
-        optional: true
-      }),
-      ['user', '{input}'],
-      new MessagesPlaceholder('agent_scratchpad')
-    ])
-  })
+          ],
+          new MessagesPlaceholder({
+            variableName: 'chat_history',
+            optional: true
+          }),
+          ['user', '{input}'],
+          new MessagesPlaceholder('agent_scratchpad')
+        ])
+      }
+    })()
+  )
 }
 
 /**
@@ -225,7 +268,7 @@ export function injectWidgetStyleCommand(storyService: NxStoryService) {
     name: 'chartStyle',
     alias: 'cs',
     description: 'How to style the chart widget you want',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       if (!currentWidget()) {
         throw new Error(
           translate.instant('Story.Copilot.PleaseSelectWidget', { Default: 'Please select a widget first.' })

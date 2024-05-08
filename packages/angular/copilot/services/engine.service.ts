@@ -211,11 +211,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
-  async registerCommand(name: string, command: CopilotCommand) {
+  async registerCommand(name: string, command: CopilotCommand | Promise<CopilotCommand>) {
+    let _command: CopilotCommand = null
+    if (command instanceof Promise) {
+      _command = await command
+    } else {
+      _command = command
+    }
     this.#commands.update((state) => ({
       ...state,
       [name]: {
-        ...command
+        ..._command,
+        name
       }
     }))
   }
@@ -294,7 +301,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           newMessages.push({
             id: nanoid(),
             role: CopilotChatMessageRoleEnum.System,
-            content: _command.systemPrompt()
+            content: await _command.systemPrompt()
           })
         }
         newMessages.push({
@@ -395,7 +402,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     let systemPrompt = ''
     try {
       if (command.systemPrompt) {
-        systemPrompt = command.systemPrompt()
+        systemPrompt = await command.systemPrompt()
       }
 
       messages.push({

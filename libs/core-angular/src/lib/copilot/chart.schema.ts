@@ -92,6 +92,7 @@ export interface ChartGroup {
   label: string
   charts: { label: string; icon: string; rotate?: boolean; width?: string; value: DeepPartial<ChartAnnotation> }[]
 }
+
 export const CHARTS: ChartGroup[] = [
   {
     label: 'Comparison',

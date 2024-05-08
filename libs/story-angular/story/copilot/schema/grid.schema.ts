@@ -1,8 +1,6 @@
-import { DeepPartial, DimensionSchema, MeasureSchema } from '@metad/core'
+import { DeepPartial, DimensionSchema, MeasureSchema, tryFixDimension } from '@metad/core'
 import { AnalyticsAnnotation, EntityType } from '@metad/ocap-core'
-import { WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
-import { tryFixDimension } from '../types'
 
 export const AnalyticsAnnotationSchema = z
   .object({
@@ -56,8 +54,8 @@ export function tryFixAnalyticsAnnotation(analytics: DeepPartial<AnalyticsAnnota
   return (
     analytics && {
       ...analytics,
-      rows: analytics.rows?.map((d: any) => tryFixDimension(entityType, d)) ?? [],
-      columns: analytics.columns?.map((d: any) => tryFixDimension(entityType, d)) ?? []
+      rows: analytics.rows?.map((d: any) => tryFixDimension(d, entityType)) ?? [],
+      columns: analytics.columns?.map((d: any) => tryFixDimension(d, entityType)) ?? []
     }
   )
 }

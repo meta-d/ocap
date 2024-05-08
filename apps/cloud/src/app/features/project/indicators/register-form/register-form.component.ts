@@ -246,7 +246,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   #formula = injectCopilotCommand({
     name: 'formula',
     description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateFormula', {Default: 'Create a formula for the indicator'}),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `你是一名 BI 指标体系管理的业务专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建指标公式。`
       if (this.entityType()) {
         prompt += `当前选择的 Cube 信息为:

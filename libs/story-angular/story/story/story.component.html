@@ -46,7 +46,7 @@
                 [key]="point.key"
                 [editable]="editable()"
                 [opened]="i === pageTabs.selectedIndex"
-                [focus]="pageKey && point.key === pageKey ? widgetKey : i === 0 ? widgetKey : null"
+                [focus]="pageKey() && point.key === pageKey() ? widgetKey : i === 0 ? widgetKey : null"
                 [isFirst]="isFirst"
                 [isLast]="isLast"
                 (navToPointIndex)="onSelectedIndex($event)"

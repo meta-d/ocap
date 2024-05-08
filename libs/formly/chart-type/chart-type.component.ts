@@ -230,7 +230,7 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
       Default: 'Describe the chart you want to create'
     }),
     systemPrompt:
-      () => `根据提示编写一个 Javascript 函数来创建自定义图形，其目标是绘制自定义逻辑的 ECharts 图形。函数应该接受以下参数：
+    async () => `根据提示编写一个 Javascript 函数来创建自定义图形，其目标是绘制自定义逻辑的 ECharts 图形。函数应该接受以下参数：
 1. 'queryResult': The type of queryResult is
 \`\`\`
 {

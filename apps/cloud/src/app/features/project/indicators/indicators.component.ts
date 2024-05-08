@@ -61,7 +61,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   #createIndicator = injectCopilotCommand({
     name: 'i',
     description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateIndicator', {Default: 'Create a new indicator'}),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `你是一名 BI 指标体系管理的业务专家，请根据指定的 Cube 信息和需求描述转成相应的参数调用 create_indicator 函数进行创建新指标。
 将未限定成员的可以自由选择的维度都加入到 dimensions 中，选择一个 calendar 维度加入到 calendar 中，将必要的限定成员加入到 filters 属性中。
 如果未提供 Cube 信息或者需要重新选择 Cube 时请调用 pick_default_cube 函数。

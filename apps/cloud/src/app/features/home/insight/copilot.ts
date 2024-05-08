@@ -1,4 +1,4 @@
-import { getChartType } from '@metad/core'
+import { getChartType, tryFixDimension } from '@metad/core'
 import {
   C_MEASURES,
   ChartAnnotation,
@@ -10,7 +10,6 @@ import {
   assignDeepOmitBlank,
   omit
 } from '@metad/ocap-core'
-import { tryFixDimension } from '@metad/story/story'
 import { cloneDeep, upperFirst } from 'lodash-es'
 import { z } from 'zod'
 
@@ -61,7 +60,7 @@ export function transformCopilotChart(answer: any, entityType: EntityType) {
     return {
       ...dimension,
       // Determine dimension attr by hierarchy
-      ...tryFixDimension(entityType, dimension),
+      ...tryFixDimension(dimension, entityType),
       zeroSuppression: true,
       chartOptions: {
         dataZoom: {

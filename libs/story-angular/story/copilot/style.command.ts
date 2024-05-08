@@ -13,7 +13,7 @@ export function injectStoryStyleCommand(storyService: NxStoryService) {
     description: storyService.translate('Story.Copilot.StoryStyleCommandDesc', {
       Default: 'Describe the style of story you want'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       const preferences = storyService.preferences()
       return `You are a BI analysis expert, please modify the theme and style of the story according to the prompts. Original story preferences is ${JSON.stringify(
         preferences

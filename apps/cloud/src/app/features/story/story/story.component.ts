@@ -156,7 +156,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #styleCommand = injectStoryStyleCommand(this.storyService)
   #pageCommand = injectStoryPageCommand(this.storyService)
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
-  #mathCommand = injectMathCommand(this.storyService)
+  // #mathCommand = injectMathCommand(this.storyService)
   #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
 
   /**

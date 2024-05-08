@@ -188,6 +188,10 @@ export class ModelsService extends OrganizationBaseService {
   uploadDimensionMembers(id: string, members: ISemanticModelMember[]) {
     return this.httpClient.post(C_URI_API_MODEL_MEMBERS + `/${id}`, members)
   }
+
+  getRelevantMembers(modelId: string, cube: string, query: string, k = 10) {
+    return this.httpClient.post<any[]>(C_URI_API_MODEL_MEMBERS + `/${modelId}/retrieve`, { cube, query, k })
+  }
 }
 
 /**

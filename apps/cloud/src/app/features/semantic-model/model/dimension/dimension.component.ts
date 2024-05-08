@@ -103,7 +103,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
     name: 'h',
     description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
     examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy， 名称不要与现有名称重复，并且名称要尽量简短。
 层次结构中的 Levels 顺序一般按照所使用字段在现实中的含义由上到下（或者叫由粗粒度到细粒度）排列，例如：年份、季度、月份、日期。
 当前维度信息为：

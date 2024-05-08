@@ -98,7 +98,7 @@ export class IndicatoryMarketComponent extends ComponentStore<{ id?: string }> {
   #analysis = injectCopilotCommand({
     name: 'analysis',
     description: 'Analysis the indicator data',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `你是一名 BI 指标数据分析专家，请根据给出的指标数据进行分析，得出结论。
 ${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
 `
