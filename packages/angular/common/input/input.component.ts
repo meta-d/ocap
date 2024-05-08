@@ -5,18 +5,19 @@ import {
   ContentChild,
   EventEmitter,
   Input,
-  OnInit,
   Output,
   TemplateRef,
   forwardRef,
+  input,
   signal
 } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatInputModule } from '@angular/material/input'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, map, startWith, switchMap } from 'rxjs'
+import { map, startWith, switchMap } from 'rxjs'
 import { NgmOptionContent } from './option-content'
 
 @Component({
@@ -34,15 +35,17 @@ import { NgmOptionContent } from './option-content'
     }
   ]
 })
-export class NgmInputComponent implements ControlValueAccessor, OnInit {
+export class NgmInputComponent implements ControlValueAccessor {
   @Input() label: string
   @Input() placeholder: string
   @Input() type: string
   @Input() defaultValue = null
   @Input() valueKey = 'value'
-  @Input() options: ISelectOption[]
 
-  @Input() disabled = false
+  readonly options = input<ISelectOption[]>()
+
+  readonly disabled = input(false)
+  readonly _disabled = signal(false)
 
   @Output() blur = new EventEmitter()
 
@@ -65,9 +68,7 @@ export class NgmInputComponent implements ControlValueAccessor, OnInit {
   private _onChange: (value) => void
   private _onTouched: (value) => void
 
-  private readonly _selectOptions$ = new BehaviorSubject<Array<any>>([])
-
-  readonly options$ = this._selectOptions$.pipe(
+  readonly options$ = toObservable(this.options).pipe(
     switchMap((options) =>
       this.searchControl.valueChanges.pipe(
         startWith(''),
@@ -86,12 +87,6 @@ export class NgmInputComponent implements ControlValueAccessor, OnInit {
     )
   )
 
-  ngOnInit(): void {
-    if (this.options) {
-      this._selectOptions$.next(this.options)
-    }
-  }
-
   writeValue(obj: any): void {
     this.value = obj ?? this.defaultValue
   }
@@ -102,7 +97,7 @@ export class NgmInputComponent implements ControlValueAccessor, OnInit {
     this._onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
+    this._disabled.set(isDisabled)
   }
 
   onChange(event) {

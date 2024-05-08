@@ -44,10 +44,10 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
     const DIMENSION = this.DIMENSION
     return {
       key: 'modeling',
-      wrappers: ['expansion'],
+      wrappers: ['panel'],
       props: {
         label: DIMENSION?.Modeling ?? 'Modeling',
-        expanded: true
+        padding: true
       },
       fieldGroup: [
         {

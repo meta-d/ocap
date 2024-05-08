@@ -266,9 +266,10 @@ export class ModelCubeStructureComponent {
       // Insert as a level in hierarchy if it above a level node
       if (event.container.getSortedItems()[event.currentIndex]?.data.role === AggregationRole.level) {
         for (let i = event.currentIndex - 1; i >= 0; i--) {
-          if (event.container.getSortedItems()[i]?.data.role === AggregationRole.hierarchy) {
+          const aboveItem = event.container.getSortedItems()[i]
+          if (aboveItem?.data.role === AggregationRole.hierarchy) {
             this.cubeState.newLevel({
-              id: event.container.getSortedItems()[i].data.__id__,
+              id: aboveItem.data.__id__,
               index: index - i - 1,
               name: previousItem.name,
               column: previousItem.name,

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core'
-import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { map } from 'rxjs'
-import { SQLExpression } from './common'
+import { MeasureExpressionAccordion, SQLExpression } from './common'
 import { CubeSchemaService } from './cube.schema'
 import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 
@@ -141,18 +140,7 @@ export class MeasureSchemaService extends CubeSchemaService {
               },
             ]
           },
-          {
-            key: 'measureExpression',
-            wrappers: ['expansion'],
-            defaultValue: C_FORMLY_INITIAL_VALUE,
-            props: {
-              toggleable: true,
-              label: MEASURE?.MeasureExpression ?? 'Measure Expression'
-            },
-            fieldGroup: [
-              SQLExpression(COMMON)
-            ]
-          }
+          MeasureExpressionAccordion(COMMON)
         ]
       }
     ]

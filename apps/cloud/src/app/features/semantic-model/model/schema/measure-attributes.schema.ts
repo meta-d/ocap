@@ -36,11 +36,11 @@ export class MeasureAttributesSchema extends CubeSchemaService {
     return [
       {
         key: 'modeling',
-        wrappers: ['expansion'],
+        wrappers: ['panel'],
         props: {
           label: COMMON?.Modeling ?? 'Modeling',
           // enableSelectFields: true,
-          expanded: true
+          padding: true
         },
         fieldGroup: [
           {

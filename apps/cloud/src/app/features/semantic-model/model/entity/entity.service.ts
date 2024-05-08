@@ -26,7 +26,7 @@ import {
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { select, withProps } from '@ngneat/elf'
 import { uuid } from 'apps/cloud/src/app/@core'
-import { assign, isEqual, negate, omit, omitBy } from 'lodash-es'
+import { assign, cloneDeep, isEqual, negate, omit, omitBy } from 'lodash-es'
 import {
   EMPTY,
   Observable,
@@ -406,7 +406,7 @@ export class ModelEntityService {
     ) => {
       const hierarchy = getHierarchyById(state, id)
       // 检查是否已经存在新建条目
-      if (!hierarchy.levels?.find((item) => item.name === name)) {
+      if (hierarchy && !hierarchy.levels?.find((item) => item.name === name)) {
         hierarchy.levels = hierarchy.levels ?? []
         hierarchy.levels.splice(index ?? hierarchy.levels.length, 0, {
           __id__: uuid(),

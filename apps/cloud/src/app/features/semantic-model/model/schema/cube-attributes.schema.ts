@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core'
 import { Cube } from '@metad/ocap-core'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { filter, map, switchMap } from 'rxjs'
 import { EntitySchemaService } from './entity-schema.service'
 import { CubeSchemaState } from './types'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 
 @Injectable()
 export class CubeAttributesSchema<T = Cube> extends EntitySchemaService<CubeSchemaState<T>> {
@@ -66,10 +66,10 @@ export class CubeAttributesSchema<T = Cube> extends EntitySchemaService<CubeSche
 
     return {
       key: 'modeling',
-      wrappers: ['expansion'],
+      wrappers: ['panel'],
       props: {
         label: CUBE?.Modeling ?? 'Modeling',
-        expanded: true
+        padding: true
       },
       fieldGroup: [
         {
