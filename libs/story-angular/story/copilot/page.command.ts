@@ -20,7 +20,7 @@ export function injectStoryPageCommand(storyService: NxStoryService) {
     description: storyService.translate('Story.Copilot.StoryPageCommandDesc', {
       Default: 'Describe the new page of story you want'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `You are a BI analysis expert. Please provide one analysis theme page that can be created based on the cube information and the question.
 Each page should have at least 4 widgets and one or more input control widgets and these widgets must fullfill the layout of page which is 10 rows and 10 columns.
 Widgets should be arranged in a staggered manner.

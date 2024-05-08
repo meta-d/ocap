@@ -9,6 +9,7 @@ import { NgmSelectModule } from '../select.module'
 import { NgmSelectComponent } from './select.component'
 
 const meta: Meta<NgmSelectComponent> = {
+  title: 'Common/Select',
   component: NgmSelectComponent,
   decorators: [
     applicationConfig({
@@ -78,8 +79,10 @@ export const SuffixSearchable = {
   render: (args) => ({
     props: args,
     template: `
-<ngm-select searchable [selectOptions]="selectOptions">
-<div ngmSuffix>suffix</div>
+<ngm-select searchable [selectOptions]="selectOptions" panelWidth="auto">
+<div ngmSuffix>
+  <mat-icon>search</mat-icon>
+</div>
 </ngm-select>    
     `
   }),

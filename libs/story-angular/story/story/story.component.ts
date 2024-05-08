@@ -11,11 +11,9 @@ import {
   HostListener,
   Inject,
   Input,
-  OnChanges,
   Optional,
   Output,
   Renderer2,
-  SimpleChanges,
   ViewContainerRef,
   booleanAttribute,
   computed,
@@ -102,7 +100,7 @@ import { NxStoryPointComponent } from '../story-point/story-point.component'
     NxStoryPointComponent
   ]
 })
-export class NxStoryComponent implements OnChanges, AfterViewInit {
+export class NxStoryComponent implements AfterViewInit {
   ComponentType = WidgetComponentType
   NgxPopperjsTriggers = NgxPopperjsTriggers
   NgxPopperjsPlacements = NgxPopperjsPlacements
@@ -128,7 +126,8 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   /**
    * 默认打开的 Page
    */
-  @Input() pageKey: string
+  readonly pageKey = input<string>()
+
   /**
    * 聚焦 Widget
    */
@@ -153,10 +152,10 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   }
   private options$ = new BehaviorSubject<StoryOptions>(null)
 
-  @Input() filterBarOpened = false
+  // @Input() filterBarOpened = false
 
   @Output() selectedStoryPointChange = new EventEmitter()
-  @Output() filterBarOpenedChange = new EventEmitter()
+  // @Output() filterBarOpenedChange = new EventEmitter()
   @Output() saved = new EventEmitter()
   @Output() dataExploration = new EventEmitter()
 
@@ -325,7 +324,7 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
     () => {
       const currentIndex = this.storyService.currentPageIndex()
       const pageKey = this.storyService.currentPageKey()
-      if ((currentIndex !== 0 && pageKey) || this.route.snapshot.queryParams['pageKey']) {
+      if ((currentIndex !== 0 && pageKey)) {
         const queryParams: Params = { pageKey }
         this.router.navigate([], {
           relativeTo: this.route,
@@ -345,8 +344,8 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
       tap((story) => {
         this.storyService.setStory(story)
         setTimeout(() => {
-          if (!isNil(this.pageKey)) {
-            this.storyService.setCurrentPageKey(this.pageKey)
+          if (!isNil(this.pageKey())) {
+            this.storyService.setCurrentPageKey(this.pageKey())
           } else {
             this.storyService.setCurrentIndex(0)
           }
@@ -423,21 +422,21 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
     }, { allowSignalWrites: true })
   }
 
-  ngOnChanges({ pageKey, filterBarOpened }: SimpleChanges): void {
-    if (pageKey) {
-      if (pageKey.currentValue) {
-        this.storyService.setCurrentPageKey(pageKey.currentValue)
-      } else {
-        this.storyService.setCurrentIndex(0)
-      }
-    }
+  // ngOnChanges({ filterBarOpened }: SimpleChanges): void {
+  //   if (pageKey) {
+  //     if (pageKey.currentValue) {
+  //       this.storyService.setCurrentPageKey(pageKey.currentValue)
+  //     } else {
+  //       this.storyService.setCurrentIndex(0)
+  //     }
+  //   }
 
-    if (filterBarOpened) {
-      this.storyService.updateStoryFilterBar({
-        opened: filterBarOpened.currentValue
-      })
-    }
-  }
+  //   if (filterBarOpened) {
+  //     this.storyService.updateStoryFilterBar({
+  //       opened: filterBarOpened.currentValue
+  //     })
+  //   }
+  // }
 
   ngAfterViewInit(): void {
     const attrs = this._elementRef.nativeElement.attributes
@@ -484,7 +483,7 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   }
 
   async onDrawerOpenedChange(opened: boolean) {
-    this.filterBarOpenedChange.emit(opened)
+    // this.filterBarOpenedChange.emit(opened)
   }
 
   /**
@@ -683,10 +682,9 @@ export class NxStoryComponent implements OnChanges, AfterViewInit {
   onWheel(event: WheelEvent) {
     if (!this.isFocused()) return
 
-    event.preventDefault() // Prevent default scrolling behavior
-
     // Increase or decrease the scale based on the direction of the scroll
     if (event.altKey) {
+      event.preventDefault() // Prevent default scrolling behavior
       if (event.deltaY > 0) {
         this.storyService.zoomOut()
       } else {

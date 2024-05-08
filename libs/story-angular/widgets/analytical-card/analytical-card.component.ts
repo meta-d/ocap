@@ -13,7 +13,10 @@ import {
   assignDeepOmitBlank,
   getEntityProperty,
   isAdvancedFilter,
-  isEqual
+  isBaseProperty,
+  isDimension,
+  isEqual,
+  isMeasure
 } from '@metad/ocap-core'
 import { SlicersCapacity } from '@metad/components/selection'
 import { AbstractStoryWidget, StoryWidgetState, WidgetMenu, WidgetMenuType } from '@metad/core'
@@ -137,8 +140,8 @@ export class WidgetAnalyticalCardComponent extends AbstractStoryWidget<
       chartAnnotation: {
         ...(dataSettings.chartAnnotation ?? {}),
         // 压缩未设置的空维度对象
-        dimensions: compact(dataSettings.chartAnnotation?.dimensions.filter((item) => !!item?.dimension)),
-        measures: compact(dataSettings.chartAnnotation?.measures.filter((item) => !!item?.measure))
+        dimensions: dataSettings.chartAnnotation?.dimensions.filter(isBaseProperty),
+        measures: dataSettings.chartAnnotation?.measures.filter(isMeasure)
       } as ChartAnnotation
     })),
     takeUntilDestroyed(),

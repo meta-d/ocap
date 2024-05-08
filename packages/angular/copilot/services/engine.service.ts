@@ -1,5 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
-import { Injectable, computed, inject, signal } from '@angular/core'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { ChatOpenAI, ChatOpenAICallOptions } from '@langchain/openai'
 import {
   AIOptions,
   AnnotatedFunction,
@@ -14,7 +16,6 @@ import {
   entryPointsToChatCompletionFunctions,
   entryPointsToFunctionCallHandler,
   getCommandPrompt,
-  nonNullable,
   processChatStream
 } from '@metad/copilot'
 import { compact } from '@metad/ocap-core'
@@ -22,7 +23,6 @@ import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { filter, firstValueFrom } from 'rxjs'
 import { DropAction } from '../types'
 
 let uniqueId = 0
@@ -38,9 +38,22 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   placeholder?: string
 
-  aiOptions: AIOptions = {
+  aiOptions = {} as AIOptions
+
+  readonly #aiOptions = signal<AIOptions>({
     model: DefaultModel
-  } as AIOptions
+  } as AIOptions)
+
+  // get aiOptions() {
+  //   return this.#aiOptions()
+  // }
+  // set aiOptions(value: AIOptions) {
+  //   this.#aiOptions.update((state) => ({...state, ...value}))
+  // }
+
+  readonly verbose = computed(() => this.#aiOptions().verbose)
+
+  readonly llm = toSignal(this.copilot.llm$)
 
   /**
    * One conversation including user and assistant messages
@@ -128,11 +141,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
     Record<
       string,
       CopilotCommand & {
+        llm?: ChatOpenAI<ChatOpenAICallOptions>
         agentExecutor?: AgentExecutor
       }
     >
   >({})
   readonly commands = computed(() => Object.values(this.#commands()))
+  readonly #commandAgents = computed(() => Object.values(this.#commands()).filter((command) => command.agentExecutor))
 
   readonly #dropActions = signal<Record<string, DropAction>>({})
 
@@ -141,13 +156,45 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly streamData = signal<JSONValue[] | undefined>(undefined)
   readonly isLoading = signal(false)
 
-  // constructor() {
-  //   effect(() => {
-  //     console.log('conversations:', this.conversations$())
-  //     console.log('last conversation:', this.lastConversation())
-  //     console.log('last user messages:', this.lastUserMessages())
-  //   })
-  // }
+  constructor() {
+    effect(() => {
+      const llm = this.llm()
+      const commands = this.#commands()
+      const verbose = this.verbose()
+
+      if (!llm) return
+      
+      Object.values(commands).forEach((command) => {
+        if (command.tools && (!command.llm || command.llm !== llm)) {
+          createOpenAIToolsAgent({
+            llm,
+            tools: command.tools,
+            prompt: command.prompt
+          }).then((agent) => {
+            command.llm = llm
+            command.agentExecutor = new AgentExecutor({
+              agent,
+              tools: command.tools as any[],
+              verbose
+            })
+          })
+        } else if (command.agentExecutor) {
+          command.agentExecutor.verbose = verbose
+        }
+      })
+    })
+
+    //   effect(() => {
+    //     console.log('conversations:', this.conversations$())
+    //     console.log('last conversation:', this.lastConversation())
+    //     console.log('last user messages:', this.lastUserMessages())
+    //   })
+  }
+
+  updateAiOptions(options?: Partial<AIOptions>) {
+    this.#aiOptions.update((state) => ({ ...state, ...options }))
+    this.aiOptions = this.#aiOptions()
+  }
 
   setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
     this.#entryPoints.update((state) => ({
@@ -164,33 +211,20 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
-  async registerCommand(name: string, command: CopilotCommand) {
-    if (command.tools) {
-      const llm = await firstValueFrom(this.copilot.llm$.pipe(filter(nonNullable)))
-      const agent = await createOpenAIToolsAgent({
-        llm,
-        tools: command.tools,
-        prompt: command.prompt
-      })
-      this.#commands.update((state) => ({
-        ...state,
-        [name]: {
-          ...command,
-          agentExecutor: new AgentExecutor({
-            agent,
-            tools: command.tools as any[],
-            verbose: true
-          })
-        }
-      }))
+  async registerCommand(name: string, command: CopilotCommand | Promise<CopilotCommand>) {
+    let _command: CopilotCommand = null
+    if (command instanceof Promise) {
+      _command = await command
     } else {
-      this.#commands.update((state) => ({
-        ...state,
-        [name]: {
-          ...command
-        }
-      }))
+      _command = command
     }
+    this.#commands.update((state) => ({
+      ...state,
+      [name]: {
+        ..._command,
+        name
+      }
+    }))
   }
 
   unregisterCommand(name: string) {
@@ -267,7 +301,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           newMessages.push({
             id: nanoid(),
             role: CopilotChatMessageRoleEnum.System,
-            content: _command.systemPrompt()
+            content: await _command.systemPrompt()
           })
         }
         newMessages.push({
@@ -368,7 +402,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     let systemPrompt = ''
     try {
       if (command.systemPrompt) {
-        systemPrompt = command.systemPrompt()
+        systemPrompt = await command.systemPrompt()
       }
 
       messages.push({

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, forwardRef, inject, signal } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
   FormControl,
@@ -17,7 +17,6 @@ import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad
 import { AgentType, Catalog, DataSource, isNil } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import {
-  BehaviorSubject,
   Observable,
   Subject,
   catchError,
@@ -29,8 +28,9 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { IDataSource, ToastrService, getErrorMessage } from '../../../@core'
+import { IDataSource, getErrorMessage } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   standalone: true,
@@ -94,27 +94,23 @@ export class ModelCreationComponent implements ControlValueAccessor {
     )
   }
 
-  // uploading = false
-
   public readonly dataSource$ = new Subject<DataSource>()
-  private _columns$ = new BehaviorSubject<SelectionTableColumn[]>([
+  readonly _columns = signal<SelectionTableColumn[]>([
     { value: 'name', label: 'Name', sticky: true },
     { value: 'type.type', label: 'Type' },
     { value: 'type.protocol', label: 'Protocol' },
     { value: 'useLocalAgent', label: 'UseLocalAgent', type: 'boolean' }
   ])
-  public readonly columns$ = this._columns$.pipe(
-    switchMap((columns) =>
-      this.translateService.stream('PAC.MENU.MODEL').pipe(
-        map((MODEL: any) => {
-          return columns.map((col) => ({
-            ...col,
-            label: MODEL?.SELECT_DATASOURCE_COLUMNS?.[col.label] ?? col.label
-          }))
-        })
-      )
-    )
-  )
+  readonly i18nMODEL = toSignal(this.translateService.stream('PAC.MENU.MODEL'))
+  readonly dataSourceColumns = computed(() => {
+    const enableLocalAgent = environment.enableLocalAgent
+    const i18nMODEL = this.i18nMODEL()
+    return this._columns().filter((col) => enableLocalAgent ? true : col.value !== 'useLocalAgent' ).map((col) => ({
+      ...col,
+      label: i18nMODEL?.SELECT_DATASOURCE_COLUMNS?.[col.label] ?? col.label
+    }))
+  })
+
   public readonly catalogColumns$ = of<SelectionTableColumn[]>([
     {
       value: 'name',

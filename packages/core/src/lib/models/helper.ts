@@ -236,6 +236,9 @@ export function _getPropertyCaption(property: Property) {
 }
 
 export function getDimensionMemberCaption(dimension: Dimension, entityType?: EntityType) {
+  if (isNil(dimension)) {
+    return null
+  }
   if (dimension.memberCaption) {
     if (IntrinsicMemberProperties[dimension.memberCaption]) {
       return `${getPropertyHierarchy(dimension)}.[${dimension.memberCaption}]`

@@ -5,6 +5,13 @@
   $config: mat.get-color-config($config-or-theme);
   $background: map.get($config, background);
   $foreground: map.get($config, foreground);
+
+  .mat-mdc-form-field:not(.mat-form-field-hide-placeholder) {
+    .mat-mdc-input-element::placeholder {
+      opacity: .3;
+      font-style: oblique;
+    }
+  }
 }
 
 @mixin typography($config-or-theme) {

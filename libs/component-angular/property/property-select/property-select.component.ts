@@ -32,6 +32,7 @@ import {
   PropertyDimension,
   IntrinsicMemberProperties,
   isEntitySet,
+  getEntityHierarchy,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
@@ -316,9 +317,9 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
 
   readonly hierarchy$ = combineLatest([
     this.hierarchies$,
-    this.hierarchyControl.valueChanges
+    this.hierarchyControl.valueChanges.pipe(startWith(null))
   ]).pipe(
-    map(([properties, hierarchy]) => properties?.find((prop) => prop.name === hierarchy)),
+    map(([properties, hierarchy]) => properties?.find((prop) => hierarchy ? prop.name === hierarchy : prop.name === prop.dimension)),
     shareReplay(1)
   )
 
@@ -651,17 +652,22 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
   /**
    * When dimension changed
    */
-  private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), filter(([prev, curr]) => !!prev), takeUntilDestroyed(this._destroyRef),)
+  private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed(this._destroyRef),)
     .subscribe(([,dimension]) => {
       const property = getEntityProperty<PropertyDimension>(this.entityType(), dimension)
+      const hierarchyName = property.defaultHierarchy || dimension
+      let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
+      if (!hierarchyProperty) {
+        hierarchyProperty = property.hierarchies[0]
+      }
       // Reset all fields and set default hierarchy
       this.formGroup.setValue({
         ...this._formValue,
         dimension,
-        hierarchy: property.defaultHierarchy
+        hierarchy: hierarchyProperty?.name
       } as any)
     })
-  private hierarchySub = this.hierarchyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef),)
+  private hierarchySub = this.hierarchyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
     .subscribe(() => {
       this.formGroup.patchValue({
         level: null,
@@ -702,9 +708,9 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
 
     // subscribe formGroup to export value
     this.formGroup.valueChanges.pipe(
+      debounceTime(100),
       // Update value when property is initialized
       filter(() => !!this.property$.value),
-      debounceTime(100),
       takeUntilDestroyed(this._destroyRef),
     ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {

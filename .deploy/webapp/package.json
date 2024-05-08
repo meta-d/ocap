@@ -1,6 +1,6 @@
 {
   "name": "ocap",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "",
   "license": "AGPL-3.0",
   "homepage": "https://mtda.cloud",
@@ -105,7 +105,7 @@
     "ngx-permissions": "^13.0.1",
     "ngx-popperjs": "^15.0.4",
     "ngx-quill": "^16.1.2",
-    "ngxtension": "^2.0.0",
+    "ngxtension": "^3.1.2",
     "noto-serif-sc": "^8.0.0",
     "openai": "^4.6.0",
     "prismjs": "^1.29.0",

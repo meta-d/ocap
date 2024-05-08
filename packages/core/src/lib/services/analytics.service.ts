@@ -1,11 +1,12 @@
 import { combineLatestWith, distinctUntilChanged, filter, map, Observable } from 'rxjs'
 import { AnalyticsAnnotation } from '../annotations'
 import { getEntityHierarchy, getEntityProperty, QueryReturn } from '../models'
-import { isMeasure, QueryOptions } from '../types'
-import { isEmpty, isNil, nonNullable } from '../utils'
+import { isBaseProperty, isMeasure, QueryOptions } from '../types'
+import { isEmpty, nonNullable } from '../utils'
 import { SmartBusinessService } from './smart-business.service'
 
 export class AnalyticsBusinessService<T> extends SmartBusinessService<T> {
+  
   public readonly analyticsAnnotation$ = this.dataSettings$.pipe(
     map((dataSettings) => dataSettings?.analytics),
     distinctUntilChanged()
@@ -23,38 +24,42 @@ export class AnalyticsBusinessService<T> extends SmartBusinessService<T> {
     combineLatestWith(this.selectEntityType()),
     map(([analyticsAnnotation, entityType]) => {
       return {
-        rows: analyticsAnnotation.rows?.filter(Boolean).map((item) => ({
+        rows: analyticsAnnotation.rows?.filter(isBaseProperty).map((item) => ({
           ...item,
           property: isMeasure(item) ? getEntityProperty(entityType, item) : getEntityHierarchy(entityType, item)
         })),
-        columns: analyticsAnnotation.columns?.filter(Boolean).map((item) => ({
+        columns: analyticsAnnotation.columns?.filter(isBaseProperty).map((item) => ({
           ...item,
           property: isMeasure(item) ? getEntityProperty(entityType, item) : getEntityHierarchy(entityType, item)
         }))
-      }
+      } as AnalyticsAnnotation
     })
   )
 
   override onInit(): Observable<any> {
-    return super.onInit()
-      .pipe(
-        map((dataSettings) => dataSettings.analytics),
-        filter((analytics) => this.isMeetRequired(analytics))
-      )
+    return super.onInit().pipe(
+      map((dataSettings) => dataSettings.analytics),
+      filter((analytics) => this.isMeetRequired(analytics))
+    )
   }
 
   override selectQuery(options?: QueryOptions<any>): Observable<QueryReturn<T>> {
-    if (!this.isMeetRequired(this.analyticsAnnotation)) {
+    const analyticsAnnotation = {
+      ...this.analyticsAnnotation,
+      rows: this.analyticsAnnotation?.rows?.filter(isBaseProperty),
+      columns: this.analyticsAnnotation?.columns?.filter(isBaseProperty)
+    }
+
+    if (!this.isMeetRequired(analyticsAnnotation)) {
       throw new Error(`Analytics rows or columns is required`)
     }
     options = options ?? {}
-    options.rows = this.analyticsAnnotation.rows?.filter((item) => !isNil(item))
-    options.columns = this.analyticsAnnotation.columns?.filter((item) => !isNil(item))
+    options.rows = analyticsAnnotation.rows
+    options.columns = analyticsAnnotation.columns
     return super.selectQuery(options)
   }
 
   protected isMeetRequired(analytics: AnalyticsAnnotation) {
-    return !isEmpty(analytics?.rows) || !isEmpty(analytics?.columns)
+    return !isEmpty(analytics?.rows?.filter(isBaseProperty)) || !isEmpty(analytics?.columns?.filter(isBaseProperty))
   }
-
 }

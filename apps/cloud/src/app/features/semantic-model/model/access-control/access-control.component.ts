@@ -104,7 +104,7 @@ export class AccessControlComponent extends TranslationBaseComponent {
     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateNewRole', {
       Default: 'Describe the role you want to create'
     }),
-    systemPrompt: () => `Create or edit a role. 如何未提供 cube 信息，请先选择一个 cube`,
+    systemPrompt: async () => `Create or edit a role. 如何未提供 cube 信息，请先选择一个 cube`,
     actions: [
       injectMakeCopilotActionable({
         name: 'select_cube',

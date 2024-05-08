@@ -63,6 +63,7 @@ import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -78,6 +79,7 @@ import { stringifyTableType } from './utils'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
+  production = environment.production
 
   readonly #store = inject(Store)
   public appService = inject(AppService)
@@ -103,7 +105,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     examples: [
       this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', { Default: 'Create cube by table info' })
     ],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       const sharedDimensionsPrompt = JSON.stringify(
         this.dimensions()
           .filter((dimension) => dimension.hierarchies?.length)
@@ -152,7 +154,7 @@ ${sharedDimensionsPrompt}
         Default: 'Create dimension by table info'
       })
     ],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
     },
     actions: [

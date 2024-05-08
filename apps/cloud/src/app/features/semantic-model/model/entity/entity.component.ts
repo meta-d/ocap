@@ -101,7 +101,7 @@ export class ModelEntityComponent implements OnInit {
     name: 'story',
     description: 'Create a new story from the cube',
     examples: [`Create a new story`],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `Create a new story by the cube based on the prompt.
 The cube is`
       return prompt
@@ -137,7 +137,7 @@ The cube is`
   #calculatedMeasureCommand = injectCopilotCommand({
     name: 'calc',
     description: 'Create a new calculated measure',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `Create a new MDX calculated measure for the cube based on the prompt.`
       if (this.entityType()) {
         prompt += `The cube is: 

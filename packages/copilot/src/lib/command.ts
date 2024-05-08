@@ -10,7 +10,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   /**
    * Full name of the command
    */
-  name: string
+  name?: string
   /**
    * Alias (short name) of the command
    */
@@ -28,7 +28,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * 
    * @returns System prompt message
    */
-  systemPrompt?: () => string
+  systemPrompt?: () => Promise<string>
   /**
    * 
    * @param args 

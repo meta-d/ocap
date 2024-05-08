@@ -276,7 +276,7 @@ ${calcEntityTypePrompt(entityType)}
     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.QueryDBDesc', {
       Default: 'Describe the data you want to query'
     }),
-    systemPrompt: () =>
+    systemPrompt: async () =>
       this.isMDX()
         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
 The cube information is:
@@ -325,7 +325,7 @@ The query should be returned in plain text, not in JSON.
     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.FixQueryDesc', {
       Default: 'Describe how to fix the statement'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `Fix the statement of db query:
 \`\`\`
 ${this.selectedStatement}
@@ -602,7 +602,7 @@ The query should be returned in plain text, not in JSON.
   }
 
   entityDeletePredicate(item: CdkDrag<EntitySchemaNode>) {
-    return item.data.type === EntitySchemaType.Entity
+    return item.data?.type === EntitySchemaType.Entity
   }
 
   deleteEntity(event: CdkDragDrop<{ name: string }[]>) {

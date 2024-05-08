@@ -11,8 +11,9 @@ import { Store } from './store.service'
 import { environment } from 'apps/cloud/src/environments/environment'
 
 const baseUrl = environment.API_BASE_URL
-const API_CHAT = (baseUrl ?? '') + '/api/ai/chat'
-const API_AI_HOST = (baseUrl ?? '') + '/api/ai/proxy'
+const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
+const API_AI_HOST = constructUrl(baseUrl) + '/api/ai/proxy'
+
 
 @Injectable({ providedIn: 'root' })
 export class PACCopilotService extends CopilotService {
@@ -73,4 +74,14 @@ export class PACCopilotService extends CopilotService {
       apiHost: API_AI_HOST
     }
   }
+}
+
+function constructUrl(url: string) {
+  const protocol = window.location.protocol
+
+  if (url?.startsWith('http')) {
+    return url
+  }
+
+  return url ? `${protocol}${url}` : ''
 }

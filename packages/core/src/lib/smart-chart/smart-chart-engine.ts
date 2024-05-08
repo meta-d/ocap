@@ -57,7 +57,6 @@ export abstract class SmartChartEngine<T extends SmartChartEngineState = SmartCh
     this.patchState({options: value} as Partial<T>)
   }
   readonly options$ = this.select(state => state.options)
-  
 
 
   selectChartOptions(items: any[]): Observable<any> {

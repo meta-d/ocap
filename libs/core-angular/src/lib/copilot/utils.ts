@@ -23,6 +23,26 @@ export function calcEntityTypePrompt(entityType: EntityType) {
   })
 }
 
+export function markdownEntityType(entityType: EntityType) {
+  return `name: "${entityType.name}" caption: "${entityType.caption}"
+dimensions:
+${getEntityDimensions(entityType)
+    .map((dimension) => `  - name: "${dimension.name}"
+    caption: "${dimension.caption}"
+    hierarchies:
+${dimension.hierarchies?.map((item) => `      - name: "${item.name}"
+        caption: "${item.caption}"
+        levels:
+${item.levels?.map((item) => `          - name: "${item.name}"
+            caption: "${item.caption}"`).join('\n')}
+`).join('\n')}
+`).join('\n')}
+measures:
+${getEntityMeasures(entityType).map((item) => `  - name: "${item.name}"
+    caption: "${item.caption}"`).join('\n')}
+`
+}
+
 export function makeCubePrompt(cube: Cube) {
   return JSON.stringify({
     name: cube.name,

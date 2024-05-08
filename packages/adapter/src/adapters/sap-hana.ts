@@ -27,8 +27,8 @@ export class HANAQueryRunner extends BaseSQLQueryRunner<HANAAdapterOptions> {
         username: { type: 'string' },
         password: { type: 'string' },
         host: { type: 'string' },
-        port: { type: 'number' },
-        database: { type: 'string', title: 'Tenant' },
+        port: { type: 'number', default: null },
+        database: { type: 'string', title: 'Database/Tenant' },
         catalog: { type: 'string', title: 'Schema' },
         // schema: { type: 'string', title: 'Schema' },
         encoding: { type: 'string' }
@@ -202,6 +202,8 @@ WHERE ${whereCondition} ORDER BY A.SCHEMA_NAME, A.TABLE_NAME, B.POSITION`
         const hanaType = typeToHANADB(type, isKey, length) as HANAType
         if (row[name] instanceof Date || isDateType(hanaType)) {
           return formatDateToHANA(row[name], hanaType)
+        } else if (type === 'String' || type === 'string') {
+          return row[name] == null ? null : `${row[name]}`
         } else {
           return row[name]
         }

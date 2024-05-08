@@ -45,7 +45,7 @@
 }
 
 <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" class="ngm-density__compact ngm-select__autocomplete-panel ngm-autocomplete-panel"
-  [panelWidth]="panelWidth() || 'auto'"
+  [panelWidth]="panelWidth() || null"
   [displayWith]="displayWith"
   (optionSelected)="onOptionSelected($event)"
 >
@@ -58,7 +58,7 @@
       </mat-option>
     </cdk-virtual-scroll-viewport>
   } @else {
-    @for (option of options$(); track option.value) {
+    @for (option of options$(); track option.key) {
       <mat-option [value]="option" class="text-sm">
         <ng-container *ngTemplateOutlet="optionTemplate; context: {$implicit: option}"></ng-container>
       </mat-option>

@@ -131,7 +131,7 @@ export class VirtualCubeComponent {
     description: this.#translate.instant('PAC.MODEL.Copilot.CreateCalculatedFormula', {
       Default: 'Create a formula for the measure'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `你是一名 BI 多维数据建模专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建计算公式度量。
 如果计算度量结果为比率类型，请将 unit 设置为 % 。 如果有当前计算度量请修改公式，如果未提供则新建。`
       if (this.showCalculatedMember()) {

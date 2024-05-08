@@ -238,12 +238,14 @@
         {{ 'COMPONENTS.PROPERTY.Default' | translate: {Default: "Default"} }}
       </mat-radio-button>
     </button>
-    <button mat-menu-item disableRipple *ngFor="let property of levels$ | async; trackBy: trackByName"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button [value]="property.name" class="ngm-radio-button__property">
-        <ngm-entity-property class="w-full" hiddenIcon [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto"></ngm-entity-property>
-      </mat-radio-button>
-    </button>
+    @for (property of levels$ | async; track property.name) {
+      <button mat-menu-item disableRipple
+        (click)="$event.stopPropagation();">
+        <mat-radio-button [value]="property.name" class="ngm-radio-button__property">
+          <ngm-entity-property class="w-full" hiddenIcon [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" />
+        </mat-radio-button>
+      </button>
+    }
   
     <mat-divider></mat-divider>
   

@@ -330,7 +330,9 @@
             <input matSliderThumb [(ngModel)]="n">
         </mat-slider>
 
-        <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages" (click)="clear()">
+        <mat-checkbox [(ngModel)]="verbose" color="accent" labelPosition="before">Verbose</mat-checkbox>
+
+        <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages mt-4" (click)="clear()">
             {{ 'Ngm.Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
         </button>
     </div>

@@ -1,6 +1,6 @@
 import { signal } from '@angular/core'
 import { DynamicTool } from '@langchain/core/tools'
-import { calcEntityTypePrompt } from '@metad/core'
+import { calcEntityTypePrompt, markdownEntityType } from '@metad/core'
 import { EntityType } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
@@ -23,7 +23,7 @@ export function createStoryPickCubeTool(storyService: NxStoryService) {
       }
       return `The cube is:
 \`\`\`
-${calcEntityTypePrompt(defaultCube())}
+${markdownEntityType(defaultCube())}
 \`\`\`
 `
     }

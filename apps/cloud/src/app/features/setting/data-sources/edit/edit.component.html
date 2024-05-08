@@ -1,16 +1,17 @@
 
 <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
     <h4 style="pointer-events: none;">
-        {{ 'PAC.KEY_WORDS.MODIFY' | translate: {Default: 'Modify'} }} {{ 'PAC.KEY_WORDS.DATA_SOURCES' | translate: {Default: 'Data Sources'} }}
+        {{ 'PAC.KEY_WORDS.MODIFY' | translate: {Default: 'Modify'} }} {{ 'PAC.KEY_WORDS.DataSource' | translate: {Default: 'Data Source'} }}
     </h4>
 </header>
 
 <div mat-dialog-content>
-    
-    <div *ngIf="dataSource?.type" class="flex justify-center items-center text-lg">
+  @if(dataSource?.type) {
+    <div class="flex justify-center items-center text-lg">
         <img src="assets/images/db-logos/{{dataSource.type.type}}.png" width="64" height="64">
         {{dataSource.type.name}}
     </div>
+  }
 
     <div class="pac-data-source-creation__stepper-content">
         <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch">
@@ -23,11 +24,11 @@
             </mat-form-field>
     
             <div class="flex justify-between items-center mx-2 mb-6">
-                @if (enableLocalAgent) {
+              @if (enableLocalAgent) {
                 <mat-slide-toggle formControlName="useLocalAgent" disableRipple labelPosition="before">
                     {{ 'PAC.MENU.DATA_SOURCES.USE_LOCAL_AGENT' | translate: {Default: 'Use Local Agent'} }}
                 </mat-slide-toggle>
-                }
+              }
     
                 <div class="flex justify-end items-center gap-2">
                     <mat-label>{{ 'PAC.MENU.DATA_SOURCES.AuthType' | translate: {Default: 'Auth Type'} }}</mat-label>
@@ -44,16 +45,15 @@
 
         </form>
     
-        @if (schema$()) {
-            <formly-form
-                [form]="options"
-                [fields]="schema$()"
-                [model]="model"
-                >
-            </formly-form>
-        } @else {
-            <list-content-loader></list-content-loader>
-        }
+      @if (schema$()) {
+        <formly-form
+            [form]="options"
+            [fields]="schema$()"
+            [model]="model"
+            />
+      } @else {
+        <list-content-loader></list-content-loader>
+      }
     </div>
     
 </div>

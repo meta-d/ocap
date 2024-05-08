@@ -38,7 +38,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
-import { DisplayBehaviour, nonNullable } from '@metad/ocap-core'
+import { DisplayBehaviour, isNil, nonNullable } from '@metad/ocap-core'
 import { distinctUntilChanged, filter } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
 import { NgmOptionContent } from '../../input/option-content'
@@ -104,26 +104,22 @@ export class NgmSelectComponent
 
   readonly validators = input<ValidatorFn | ValidatorFn[] | null>()
 
-  @Input() get multiple(): boolean {
-    return this._multiple
-  }
-  set multiple(value: boolean | string) {
-    this._multiple = coerceBooleanProperty(value)
-  }
-  private _multiple = false
+  readonly multiple = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   readonly selectOptions = input<Array<ISelectOption>>()
-  readonly panelWidth = input<string | number | null>('auto')
+  readonly panelWidth = input<string | number | null>(null)
 
   @ContentChild(NgmOptionContent, { read: TemplateRef, static: true })
   _explicitContent: TemplateRef<any> = undefined!
 
   formControl = new FormControl<string>(null)
-  value = toSignal(this.formControl.valueChanges, { initialValue: '' })
+  readonly value = toSignal(this.formControl.valueChanges, { initialValue: '' })
 
   selection = new SelectionModel<string>(true)
   searchControl = new FormControl<string>(null)
-  highlight = toSignal(this.searchControl.valueChanges, { initialValue: '' })
+  readonly highlight = toSignal(this.searchControl.valueChanges, { initialValue: '' })
 
   readonly options$ = computed(() => {
     const text = this.highlight()?.trim().toLowerCase()
@@ -141,14 +137,14 @@ export class NgmSelectComponent
     return this.selectOptions()?.find((option) => option[this.valueKey()] === this.value())
   })
 
-  autoInput = signal(null)
+  readonly autoInput = signal(null)
 
   onChange: (input: any) => void
   onTouched: () => void
 
   private valueSub = this.formControl.valueChanges
     .pipe(
-      filter(() => !this.multiple),
+      filter(() => !this.multiple()),
       distinctUntilChanged(),
       takeUntilDestroyed()
     )
@@ -158,7 +154,7 @@ export class NgmSelectComponent
 
   private selectionSub = this.selection.changed
     .pipe(
-      filter(() => this.multiple),
+      filter(() => this.multiple()),
       takeUntilDestroyed()
     )
     .subscribe(() => {
@@ -168,9 +164,13 @@ export class NgmSelectComponent
   constructor(_elementRef: ElementRef) {
     super(_elementRef)
     effect(() => {
-      const selectedOption = this.selectOptions()?.find((item) => item[this.valueKey()] === this.value())
-      if (nonNullable(selectedOption?.[this.valueKey()])) {
-        this.autoInput.set(selectedOption)
+      if (!isNil(this.value())) {
+        const selectedOption = this.selectOptions()?.find((item) => item[this.valueKey()] === this.value())
+        if (nonNullable(selectedOption?.[this.valueKey()])) {
+          this.autoInput.set(selectedOption)
+        } else {
+          this.autoInput.set(null)
+        }
       } else {
         this.autoInput.set(null)
       }
@@ -191,7 +191,7 @@ export class NgmSelectComponent
     isDisabled ? this.formControl.disable() : this.formControl.enable()
   }
   trackByValue(index: number, item) {
-    return item?.value
+    return item?.key
   }
 
   displayWith(option: any) {

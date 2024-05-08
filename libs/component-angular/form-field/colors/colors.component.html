@@ -1,20 +1,21 @@
 <div class="ngm-density__compact flex flex-col items-stretch">
-  <div class="flex justify-between items-center">
-    <label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{ label }}</label>
+  <div class="flex justify-between items-center mx-2">
+    <label class="p-1 shrink-0 text-sm text-ellipsis whitespace-nowrap overflow-hidden">{{ label }}</label>
 
     <span class="flex-1"></span>
 
     <button *ngIf="value" mat-icon-button displayDensity="compact" [disabled]="!value" (click)="swapColors($event)">
       <mat-icon class="m-0" style="margin: 0;">swap_horiz</mat-icon>
     </button>
-    <div class="flex justify-center items-center" [@listEnterAnimation]="value">
+
+    <div class="flex justify-center items-center overflow-hidden" [@listEnterAnimation]="value">
       <div *ngFor="let color of value" class="w-4 h-4"
           [style.background-color]="color"
       ></div>
     </div>
   </div>
 
-  <div class="w-full relative flex items-center">
+  <div class="relative flex items-center mx-1">
     <input
       matInput
       class="ngm-input-element ngm-w-full"

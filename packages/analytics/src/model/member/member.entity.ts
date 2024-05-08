@@ -1,15 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { ISemanticModel } from '@metad/contracts'
+import { ISemanticModelMember } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
+import { ApiProperty } from '@nestjs/swagger'
 import { IsNumber, IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { SemanticModel } from '../model.entity'
+import { Column, Entity } from 'typeorm'
 
 /**
  * 维度成员表
  */
 @Entity('semantic_model_member')
-export class SemanticModelMember extends TenantOrganizationBaseEntity {
+export class SemanticModelMember extends TenantOrganizationBaseEntity implements ISemanticModelMember {
 	@IsString()
 	@Column({ length: 40 })
 	entity: string
@@ -31,7 +30,7 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity {
 	language: string
 
 	@IsString()
-	@Column({ length: 100 })
+	@Column({ length: 1000 })
 	memberUniqueName: string
 	// /**
 	//  * Model
@@ -51,11 +50,11 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity {
 	modelId?: string
 
 	@IsString()
-	@Column({ length: 100 })
+	@Column({ length: 1000 })
 	memberName: string
 
 	@IsString()
-	@Column({ length: 100, nullable: true })
+	@Column({ length: 1000, nullable: true })
 	memberCaption: string
 
 	@IsNumber()
@@ -71,6 +70,6 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity {
 	levelNumber: number
 
 	@IsString()
-	@Column({ length: 100, nullable: true })
+	@Column({ length: 1000, nullable: true })
 	parentUniqueName: string
 }

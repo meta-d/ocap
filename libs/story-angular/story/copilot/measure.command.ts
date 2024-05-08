@@ -18,7 +18,7 @@ export function injectCalclatedMeasureCommand(
     description: storyService.translate('Story.Copilot.CalculatedMeasureCommandDesc', {
       Default: 'Describe the calculated measure you want'
     }),
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `Create a calculatation measure`
     },
     actions: [

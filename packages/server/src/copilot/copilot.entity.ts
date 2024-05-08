@@ -5,6 +5,7 @@ import { AfterLoad, Column, Entity } from 'typeorm'
 import { TenantOrganizationBaseEntity } from '../core/entities/internal'
 import { Exclude, Expose } from 'class-transformer'
 import { IsSecret, WrapSecrets } from '../core/decorators'
+import { AiProvider } from '../ai/providers'
 
 @Entity('copilot')
 export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
@@ -18,7 +19,7 @@ export class Copilot extends TenantOrganizationBaseEntity implements ICopilot {
 	@IsString()
 	@IsOptional()
 	@Column({ nullable: true, length: 10 })
-	provider?: string
+	provider?: AiProvider
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()

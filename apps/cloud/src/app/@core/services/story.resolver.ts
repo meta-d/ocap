@@ -1,10 +1,18 @@
 import { Injectable, inject } from '@angular/core'
-import { ActivatedRouteSnapshot, ResolveFn, Router, RouterStateSnapshot } from '@angular/router'
+import {
+  ActivatedRoute,
+  ActivatedRouteSnapshot,
+  CanActivateFn,
+  ResolveFn,
+  Router,
+  RouterStateSnapshot
+} from '@angular/router'
 import { StoriesService, StoryPointsService, convertStoryResult } from '@metad/cloud/state'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Story } from '@metad/story/core'
 import { EMPTY, Observable, catchError, map } from 'rxjs'
-import { IStoryPoint } from '../types'
+import { AccessEnum, IStoryPoint } from '../types'
+import { ToastrService } from './toastr.service'
 
 export const storyResolver: ResolveFn<Story> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const router = inject(Router)
@@ -55,6 +63,25 @@ export const storyPointResolver: ResolveFn<IStoryPoint> = (
         console.error(err)
         router.navigate(['/404'])
         return EMPTY
+      })
+    )
+}
+
+export const canActivateStoryEdit: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  const router = inject(Router)
+  const toastr = inject(ToastrService)
+
+  return inject(StoriesService)
+    .getAccess(route.paramMap.get('id')!)
+    .pipe(
+      map(({ access }) => {
+        if (access === AccessEnum.Write) {
+          return true
+        } else {
+          toastr.error('PAC.MESSAGE.NoEditAuthorization', '', { Default: 'No edit authorization' })
+          router.navigate(['../'])
+          return false
+        }
       })
     )
 }

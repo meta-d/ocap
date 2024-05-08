@@ -17,6 +17,7 @@ import { NGXLogger } from 'ngx-logger'
 import { combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
 
 export type EntitySelectResultType = {
+  modelId: string
   dataSource: string
   entities: string[]
 }
@@ -81,6 +82,9 @@ export class NgmEntityDialogComponent {
       if (!this.entities().length && entities.length) {
         this.entities.set([entities[0].key])
       }
+      if (this.data.dataSources.length === 1 && entities.length === 1) {
+        this.onApply()
+      }
     }),
     combineLatestWith(this.search.valueChanges.pipe(startWith(''))),
     map(([entities, text]) =>
@@ -99,6 +103,7 @@ export class NgmEntityDialogComponent {
 
   onApply() {
     this.dialogRef.close({
+      modelId: this.data.dataSources.find((item) => item.key === this.modelKey())?.value,
       dataSource: this.modelKey(),
       entities: this.entities()
     })

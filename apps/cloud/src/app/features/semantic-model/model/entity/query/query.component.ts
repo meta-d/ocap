@@ -90,7 +90,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
       `Create a statement to query the data`,
       `Edit current statement refer to the error message:`,
     ],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       let prompt = `Create a new or edit current MDX statement for user's query, the cube info is:
 \`\`\`
 ${calcEntityTypePrompt(this.entityType())}

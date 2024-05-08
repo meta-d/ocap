@@ -139,7 +139,7 @@ export class NgmTreeSelectComponent<T>
   @Input() label: string
   @Input() placeholder: string
   @Input() validators: ValidatorFn | ValidatorFn[] | null
-  readonly panelWidth = input<string | number | null>('auto')
+  readonly panelWidth = input<string | number | null>(null)
 
   @Input() get treeNodes(): TreeNodeInterface<T>[] {
     return this.treeNodes$.value

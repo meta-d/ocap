@@ -1,8 +1,7 @@
-import { DeepPartial, DimensionSchema, MeasureSchema, getChartType, makeChartEnum } from '@metad/core'
+import { DeepPartial, DimensionSchema, MeasureSchema, SlicerSchema, getChartType, makeChartEnum, tryFixDimension } from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
-import { tryFixDimension } from '../types'
 
 const ChartTypes = makeChartEnum()
 
@@ -36,31 +35,10 @@ export const ChartSchema = z.object({
   dimensions: z.array(DimensionSchema).optional().describe('The dimensions used by the chart'),
   measures: z.array(MeasureSchema).optional().describe('The measures used by the chart'),
 
-  slicers: z
-    .array(
-      z.object({
-        dimension: z
-          .array(
-            z.object({
-              dimension: z.string().describe('The name of the dimension'),
-              hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-              level: z.string().optional().describe('The name of the level in the hierarchy')
-            })
-          )
-          .describe('The dimension of the slicer'),
-        members: z
-          .array(
-            z.object({
-              value: z.string().describe('the key of the member'),
-              caption: z.string().describe('the caption of the member')
-            })
-          )
-          .describe('The members in the slicer')
-      })
-    )
-    .optional()
-    .describe('The slicers used by the chart')
+  slicers: z.any().optional().describe('The slicers used by the chart data')
 })
+
+
 
 export const ChartWidgetSchema = z.object({
   title: z.string().optional().describe(`Title of the widget`),
@@ -76,7 +54,13 @@ export const ChartWidgetSchema = z.object({
     })
     .optional()
     .describe('The data settings of the widget'),
-  chartAnnotation: ChartSchema.optional().describe('Chart settings when component type of widget is AnalyticalCard')
+  chart: ChartSchema.describe('Chart configuration'),
+  slicers: z
+    .array(
+      SlicerSchema
+    )
+    .optional()
+    .describe('The slicers used by the chart data')
 })
 
 /**
@@ -115,7 +99,7 @@ export function chartAnnotationCheck(
   return {
     ...chartAnnotation,
     chartType,
-    dimensions: (chartAnnotation.dimensions ?? schema?.dimensions)?.map((item) => tryFixDimension(entityType, item)),
+    dimensions: (chartAnnotation.dimensions ?? schema?.dimensions)?.map((item) => tryFixDimension(item, entityType)),
     measures: chartAnnotation.measures ?? schema?.measures
   }
 }
@@ -124,12 +108,13 @@ export function completeChartAnnotation(chart: DeepPartial<ChartAnnotation>): De
   return (
     chart && {
       ...chart,
+      dimensions: chart.dimensions ?? [],
       measures: chart.measures?.map((item) => ({
         ...item,
         formatting: {
           shortNumber: true
         }
-      }))
+      })) ?? []
     }
   )
 }

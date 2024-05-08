@@ -69,6 +69,7 @@ import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
+import { MatCheckboxModule } from '@angular/material/checkbox'
 
 @Component({
   standalone: true,
@@ -86,6 +87,7 @@ import { PlaceholderMessages } from './types'
     MatInputModule,
     MatIconModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatTooltipModule,
     MatAutocompleteModule,
     MatProgressBarModule,
@@ -165,6 +167,7 @@ export class NgmCopilotChatComponent {
     model: null,
     useSystemPrompt: true
   } as AIOptions
+
   get aiOptions() {
     return this.copilotEngine?.aiOptions ?? this.openaiOptions
   }
@@ -178,6 +181,7 @@ export class NgmCopilotChatComponent {
     } else {
       this.openaiOptions.model = value
     }
+    this.copilotService.update({defaultModel: value})
   }
 
   readonly selectedModel = model([this.aiOptions.model])
@@ -201,6 +205,14 @@ export class NgmCopilotChatComponent {
     } else {
       this.openaiOptions.n = value
     }
+  }
+
+  get verbose() {
+    return this.copilotEngine.aiOptions.verbose
+  }
+  set verbose(value) {
+    this.copilotEngine.aiOptions = { ...this.copilotEngine.aiOptions, verbose: value }
+    this.copilotEngine.updateAiOptions({ verbose: value })
   }
 
   /**

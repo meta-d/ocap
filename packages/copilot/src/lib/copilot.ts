@@ -61,6 +61,7 @@ export class CopilotService {
     map((copilot) => {
       switch (copilot.provider) {
         case AiProvider.OpenAI:
+        case AiProvider.Azure:
           return new ChatOpenAI({
             apiKey: copilot.apiKey,
             configuration: {
@@ -69,6 +70,7 @@ export class CopilotService {
                 ...(this.requestOptions().headers ?? {})
               }
             },
+            model: copilot.defaultModel,
             temperature: 0
           })
         default:
@@ -82,6 +84,10 @@ export class CopilotService {
     if (copilot) {
       this.copilot = copilot
     }
+  }
+
+  update(copilot: Partial<ICopilot>) {
+    this.copilot = copilot
   }
 
   /**

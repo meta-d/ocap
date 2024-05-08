@@ -1,15 +1,13 @@
-import { DeepPartial, DimensionSchema } from '@metad/core'
+import { DeepPartial, DimensionSchema, MeasureSchema, tryFixDimension } from '@metad/core'
 import { AnalyticsAnnotation, EntityType } from '@metad/ocap-core'
-import { WidgetComponentType } from '@metad/story/core'
 import { z } from 'zod'
-import { tryFixDimension } from '../types'
 
 export const AnalyticsAnnotationSchema = z
-    .object({
+  .object({
     rows: z.array(DimensionSchema),
-    columns: z.array(DimensionSchema)
-    })
-    .describe('Grid data settings for AnalyticalGrid widget')
+    columns: z.array(MeasureSchema),
+  })
+  .describe('Grid data settings for AnalyticalGrid widget')
 
 export const GridWidgetSchema = z.object({
   title: z.string().describe(`Title of the widget`),
@@ -18,14 +16,12 @@ export const GridWidgetSchema = z.object({
     y: z.number().describe(`Position y of the widget in the page layout`),
     cols: z.number().describe('Width of the widget in page layout'),
     rows: z.number().describe('Height of the widget in page layout')
-  }),
-
-  
+  })
 })
 
 export function createTableWidgetSchema() {
   return {
-    component: z.enum([WidgetComponentType.AnalyticalGrid]),
+    // component: z.enum([WidgetComponentType.AnalyticalGrid]),
 
     analytics: AnalyticsAnnotationSchema.optional(),
 
@@ -58,8 +54,8 @@ export function tryFixAnalyticsAnnotation(analytics: DeepPartial<AnalyticsAnnota
   return (
     analytics && {
       ...analytics,
-      rows: analytics.rows?.map((d: any) => tryFixDimension(entityType, d)),
-      columns: analytics.columns?.map((d: any) => tryFixDimension(entityType, d))
+      rows: analytics.rows?.map((d: any) => tryFixDimension(d, entityType)) ?? [],
+      columns: analytics.columns?.map((d: any) => tryFixDimension(d, entityType)) ?? []
     }
   )
 }

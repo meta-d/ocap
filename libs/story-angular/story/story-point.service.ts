@@ -594,7 +594,10 @@ export class NxStoryPointService {
   readonly toggleFullscreen = this.updater2((state, { key, fullscreen }: { key: ID; fullscreen: boolean }) => {
     const widget = state.widgets.find((item) => item.key === key)
     widget.fullscreen = fullscreen
-    state.fullscreen = fullscreen
+    this.stateStore.update((state) => ({
+      ...state,
+      fullscreen
+    }))
   })
 
   readonly removeFlexLayout = this.updater2((state, key: string) => {
