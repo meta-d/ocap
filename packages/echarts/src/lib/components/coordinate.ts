@@ -2,6 +2,7 @@ import { ChartMeasureRoleType, ChartOrient, getChartCategory, getChartCategory2,
 import { axisOrient, getCategoryAxis, getMeasureAxis, getValueAxis } from "./axis"
 import { AxisEnum, EChartsContext } from "../types"
 import { getAxisDataZooms } from "./data-zoom"
+import { instantiateI18n } from "../i18n"
 
 /**
  * @todo Coordinate system should use x y z identifying axis
@@ -15,6 +16,7 @@ import { getAxisDataZooms } from "./data-zoom"
  */
 export function getCoordinateSystem(context: EChartsContext, items: Array<unknown>, locale: string) {
   const { chartAnnotation, entityType, options: chartOptions } = context
+
   const measure = chartAnnotation.measures.find(
     (item) => !item.role || item.role === ChartMeasureRoleType.Axis1
   )?.measure
@@ -36,7 +38,7 @@ export function getCoordinateSystem(context: EChartsContext, items: Array<unknow
     }
   } else {
     if (!category) {
-      throw new Error(`Can't find category in chart`)
+      throw new Error(instantiateI18n(locale, 'Error.CantFoundPrimaryCategory', `Can't found primary category dimension`))
     }
 
     let valueAxis = null

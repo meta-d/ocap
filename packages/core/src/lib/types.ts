@@ -280,6 +280,8 @@ export interface QueryOptions<T = any> {
 }
 
 // type Guards
+export const isBaseProperty = (toBe): toBe is BaseProperty =>
+  !isNil((toBe as BaseProperty)?.dimension)
 export const isDimension = (toBe): toBe is Dimension =>
   !isNil((toBe as Dimension)?.dimension) && toBe.dimension !== C_MEASURES
 export const isMeasure = (toBe): toBe is Measure => toBe?.dimension === C_MEASURES

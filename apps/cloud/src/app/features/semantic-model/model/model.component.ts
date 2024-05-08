@@ -63,6 +63,7 @@ import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
 import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
+import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -78,6 +79,7 @@ import { stringifyTableType } from './utils'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
+  production = environment.production
 
   readonly #store = inject(Store)
   public appService = inject(AppService)

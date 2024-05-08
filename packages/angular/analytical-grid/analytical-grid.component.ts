@@ -369,7 +369,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   /**
    * VisualMap for measures
    */
-  visualMaps: Record<string, VisualMap> = {}
+  visualMaps: Record<string, Partial<VisualMap>> = {}
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -393,7 +393,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
   // Calc Visual Maps from measures
   private visualMapSub = this.analyticsService.analytics$.pipe(takeUntilDestroyed()).subscribe({
     next: (analytics) => {
-      this.visualMaps = [...(analytics.columns ?? []), ...(analytics.rows ?? [])].reduce((visualMaps, dimension) => {
+      this.visualMaps = [...(analytics.columns ?? []), ...(analytics.rows ?? [])].reduce<typeof this.visualMaps>((visualMaps, dimension) => {
         if (isMeasure(dimension) && (dimension.palette?.name || dimension.palette?.colors?.length)) {
           if (dimension.measure) {
             visualMaps[dimension.measure] = dimension

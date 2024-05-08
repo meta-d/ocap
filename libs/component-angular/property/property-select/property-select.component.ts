@@ -708,9 +708,9 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
 
     // subscribe formGroup to export value
     this.formGroup.valueChanges.pipe(
+      debounceTime(100),
       // Update value when property is initialized
       filter(() => !!this.property$.value),
-      debounceTime(100),
       takeUntilDestroyed(this._destroyRef),
     ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {

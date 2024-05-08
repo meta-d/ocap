@@ -52,7 +52,7 @@ export function cartesian(
     options,
     chartAnnotation,
     categoryAxis,
-    valueAxis
+    valueAxis,
   }
 
   const coordinateDatas = trellisCoordinates(context, type === 'pie' ? 'pie' : 'grid', cartesianCoordinate)

@@ -419,11 +419,13 @@
             <mat-icon fontSet="material-icons-outlined">manage_accounts</mat-icon>
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
         </button>
-
+    
+      @if (!production) {
         <button cdkMenuItem [routerLink]="['./members']">
             <mat-icon fontSet="material-icons-outlined">tag</mat-icon>
             {{ 'PAC.KEY_WORDS.Members' | translate: {Default: "Members"} }}
         </button>
+      }
     </div>
 </ng-template>
 

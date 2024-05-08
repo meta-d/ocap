@@ -11,7 +11,7 @@ export function bar(
   chartAnnotation: ChartAnnotation,
   entityType: EntityType,
   settings: ChartSettings,
-  options: EChartsOptions
+  options: EChartsOptions,
 ) {
   return cartesian(data, chartAnnotation, entityType, settings, options, 'bar')
 }
