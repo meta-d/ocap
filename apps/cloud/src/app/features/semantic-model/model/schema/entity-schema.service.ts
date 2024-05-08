@@ -79,7 +79,6 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
       },
       {
         key: 'preferences',
-        wrappers: ['expansion'],
         props: {
           label: 'Preferences'
         },

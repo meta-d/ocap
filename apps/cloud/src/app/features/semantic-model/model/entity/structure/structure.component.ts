@@ -136,10 +136,10 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     )
     .subscribe(([entityType, isXmla, dimensions, measures]) => {
       this.dimensions.set(
-        structuredClone(dimensions ?? getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
+        structuredClone(dimensions?.length ? dimensions : getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
       )
       this.measures.set(
-        structuredClone(measures ?? getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' })))
+        structuredClone(measures?.length ? measures : getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' })))
       )
     })
 

@@ -32,6 +32,10 @@ export class PACFormlyInputComponent extends FieldType implements OnInit {
     } else {
       this.selectOptions.set(this.props?.options ?? [])
     }
+
+    if (this.props?.readonly) {
+      this.formControl.disable()
+    }
   }
 
   get valueFormControl() {

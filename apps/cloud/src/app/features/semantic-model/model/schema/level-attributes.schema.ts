@@ -28,7 +28,7 @@ export class LevelAttributesSchema extends HierarchySchemaService {
                   // this.levelProperty,
                 ]
               },
-              this.dataDistribution as any
+              // this.dataDistribution as any
             ]
           }
         ]
@@ -40,12 +40,11 @@ export class LevelAttributesSchema extends HierarchySchemaService {
     const COMMON = this.SCHEMA.COMMON
     const LEVEL = this.LEVEL
     return {
-      key: 'modeling',
-      wrappers: ['expansion'],
+      // key: 'modeling',
+      wrappers: ['panel'],
       props: {
         label: LEVEL?.Modeling ?? 'Modeling',
-        // enableSelectFields: true,
-        expanded: true
+        padding: true
       },
       fieldGroup: [
         {

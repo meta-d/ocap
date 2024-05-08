@@ -1,4 +1,3 @@
-import { C_FORMLY_INITIAL_VALUE } from '@metad/formly-mat/expansion'
 import { AggregationRole, Semantics } from '@metad/ocap-core'
 import { AccordionWrappers, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
@@ -301,81 +300,11 @@ export function ParentExpressionAccordion(COMMON) {
   }
 }
 
-/**
- * @deprecated use KeyExpressionAccordion
- */
-export function KeyExpression(COMMON?) {
+export function MeasureExpressionAccordion(COMMON) {
   return {
-    key: 'keyExpression',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      icon: 'vpn_key',
-      label: COMMON?.KeyExpression ?? 'Key Expression',
-      toggleable: true
-    },
-    fieldGroup: [SQLExpression(COMMON)]
-  }
-}
-/**
- * @deprecated use NameExpressionAccordion
- */
-export function NameExpression(COMMON?) {
-  return {
-    key: 'nameExpression',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      label: COMMON?.NameExpression ?? 'Name Expression',
-      toggleable: true
-    },
-    fieldGroup: [SQLExpression(COMMON)]
-  }
-}
-/**
- * @deprecated use CaptionExpressionAccordion
- */
-export function CaptionExpression(COMMON?) {
-  return {
-    key: 'captionExpression',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      icon: 'vpn_key',
-      label: COMMON?.CaptionExpression ?? 'Caption Expression',
-      toggleable: true
-    },
-    fieldGroup: [SQLExpression(COMMON)]
-  }
-}
-/**
- * @deprecated use OrdinalExpressionAccordion
- */
-export function OrdinalExpression(COMMON?) {
-  return {
-    key: 'ordinalExpression',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      label: COMMON?.OrdinalExpression ?? 'Ordinal Expression',
-      toggleable: true
-    },
-    fieldGroup: [SQLExpression(COMMON)]
-  }
-}
-/**
- * @deprecated use ParentExpressionAccordion
- */
-export function ParentExpression(COMMON?) {
-  return {
-    key: 'parentExpression',
-    wrappers: ['expansion'],
-    defaultValue: C_FORMLY_INITIAL_VALUE,
-    props: {
-      icon: 'vpn_key',
-      label: COMMON?.ParentExpression ?? 'Parent Expression',
-      toggleable: true
-    },
+    key: 'measureExpression',
+    label: COMMON?.MeasureExpression ?? 'Measure Expression',
+    toggleable: true,
     fieldGroup: [SQLExpression(COMMON)]
   }
 }

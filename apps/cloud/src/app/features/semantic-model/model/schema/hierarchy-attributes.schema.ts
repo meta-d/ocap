@@ -24,6 +24,7 @@ export class HierarchyAttributesSchema extends HierarchySchemaService {
         dimensionModeling.key = 'dimension'
         return [
           {
+            key: 'modeling',
             type: 'tabs',
             fieldGroup: [
               {
@@ -33,13 +34,13 @@ export class HierarchyAttributesSchema extends HierarchySchemaService {
                 },
                 fieldGroup: [this.getModeling()]
               },
-              {
-                props: {
-                  label: SCHEMA?.DIMENSION?.TITLE ?? 'Dimension',
-                  icon: 'account_tree'
-                },
-                fieldGroup: [dimensionModeling]
-              }
+              // {
+              //   props: {
+              //     label: SCHEMA?.DIMENSION?.TITLE ?? 'Dimension',
+              //     icon: 'account_tree'
+              //   },
+              //   fieldGroup: [dimensionModeling]
+              // }
             ]
           }
         ] as any
@@ -51,11 +52,11 @@ export class HierarchyAttributesSchema extends HierarchySchemaService {
     const HIERARCHY = this.HIERARCHY
     const COMMON = this.SCHEMA?.COMMON
     return {
-      key: 'modeling',
-      wrappers: ['expansion'],
+      key: 'hierarchy',
+      wrappers: ['panel'],
       props: {
         label: HIERARCHY?.Modeling ?? 'Modeling',
-        expanded: true
+        padding: true
       },
       fieldGroup: [
         {

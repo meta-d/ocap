@@ -11,7 +11,7 @@
         [placeholder]="placeholder"
         [ngModel]="value"
         (ngModelChange)="onChange($event)"
-        [disabled]="disabled"
+        [disabled]="disabled() || _disabled()"
         [matAutocomplete]="auto"
         (blur)="blur.emit($event)"
     >
