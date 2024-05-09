@@ -219,7 +219,10 @@ export class ERComponent {
   }
 
   zoomOut() {
-    this.areaScale.update((state) => state - 0.1)
+    this.areaScale.update((state) => {
+      state = state - 0.1
+      return state <= 0 ? 0.1 : state
+    })
   }
 
   toggleHierarchy(key: string) {
@@ -245,7 +248,11 @@ export class ERComponent {
     event.preventDefault() // Prevent default scrolling behavior
 
     // Increase or decrease the scale based on the direction of the scroll
-    this.areaScale.update((state) => state + (event.deltaY > 0 ? -0.1 : 0.1))
+    if (event.deltaY > 0) {
+      this.zoomOut()
+    } else {
+      this.zoomIn()
+    }
   }
 
   @HostListener('focus')

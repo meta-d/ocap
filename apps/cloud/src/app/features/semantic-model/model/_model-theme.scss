@@ -155,8 +155,10 @@
     position: relative;
     .pac-model__sub-area-content {
       flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
+      &:hover {
+        overflow-y: auto;
+      }
     }
   }
 

@@ -127,7 +127,8 @@ export class SemanticModelService {
       }
       // todo 其他情况
       return MODEL_TYPE.SQL
-    })
+    }),
+    distinctUntilChanged()
   )
 
   public readonly isWasm$ = this.model$.pipe(map((model) => model?.agentType === AgentType.Wasm))

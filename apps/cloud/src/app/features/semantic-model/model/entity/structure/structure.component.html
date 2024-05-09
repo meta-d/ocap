@@ -100,12 +100,12 @@
                     </span>
                 </div>
             
-                <div id="list-table-dimensions" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-y-auto"
+                <div id="list-table-dimensions" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-hidden hover:overflow-y-auto"
                     cdkDropList
                     [cdkDropListData]="dimensions()"
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
-                    <mat-list class="overflow-y-auto" displayDensity="compact">
+                    <mat-list displayDensity="compact">
                       @for (property of dimensions(); track property.name) {
                         <mat-list-item class="flex justify-between"
                             cdkDrag
@@ -122,6 +122,11 @@
                         </mat-list-item>
                       }
                     </mat-list>
+                  @if (loading()) {
+                    <div class="absolute top-1/2 left-1/2 -ml-2 -mt-2 flex">
+                        <mat-progress-spinner color="accent" mode="indeterminate" [diameter]="23" [strokeWidth]="2" />
+                    </div>
+                  }
                 </div>
             </ngm-splitter-pane>
             <ngm-splitter-pane minSize="70px" size="50%" class="flex flex-col">
@@ -129,12 +134,12 @@
                     <span class="leading-tight text-sm">{{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}</span>
                 </div>
                 
-                <div id="list-table-measures" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-y-auto"
+                <div id="list-table-measures" class="pac-model__sub-area-content pac-cdk-drop__list flex-1 flex flex-col overflow-hidden hover:overflow-y-auto"
                     cdkDropList
                     [cdkDropListData]="measures()"
                     [cdkDropListEnterPredicate]="dropEnterPredicate"
                     (cdkDropListDropped)="dropProperty($event)">
-                    <mat-list class="overflow-y-auto" displayDensity="compact">
+                    <mat-list displayDensity="compact">
                       @for (property of measures(); track property.name) {
                         <mat-list-item class="flex justify-between"
                             cdkDrag
@@ -143,7 +148,7 @@
                             >
                             <div matLine>
                                 <div class="flex justify-between items-center gap-2">
-                                    <ngm-entity-property class="flex-1" [property]="property" hiddenIcon></ngm-entity-property>
+                                    <ngm-entity-property class="flex-1" [property]="property" hiddenIcon />
                                     <mat-checkbox [ngModel]="property.visible" (ngModelChange)="toggleMeasureVisible(property, $event)"/>
                                     <span class="pac-data-type-tag">{{property.dataType}}</span>
                                 </div>
@@ -151,6 +156,12 @@
                         </mat-list-item>
                       }
                     </mat-list>
+
+                  @if (loading()) {
+                    <div class="absolute top-1/2 left-1/2 -ml-2 -mt-2 flex">
+                        <mat-progress-spinner color="accent" mode="indeterminate" [diameter]="23" [strokeWidth]="2" />
+                    </div>
+                  }
                 </div>
             </ngm-splitter-pane>
         </ngm-splitter>

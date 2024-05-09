@@ -37,7 +37,7 @@ import { isEmpty, values } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
-import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
+import { filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE } from '../../types'
@@ -83,11 +83,17 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   readonly dimensions = signal<Property[]>([])
   readonly measures = signal<Property[]>([])
   readonly allVisible = signal(false)
+  readonly loading = signal(false)
   readonly fectTableFields = derivedAsync(() => {
     return this.factTable$.pipe(
       map((table) => table?.name),
       filter(nonBlank),
-      switchMap((tableName) => this.modelService.selectOriginalEntityProperties(tableName))
+      switchMap((tableName) => {
+        this.loading.set(true)
+        return this.modelService.selectOriginalEntityProperties(tableName).pipe(
+          tap(() => this.loading.set(false))
+        )
+      })
     )
   })
   readonly fectTableFieldOptions = computed(() =>
@@ -126,18 +132,21 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   private _tableTypes = {}
 
   // Subscribers
-  private _originEntityTypeSub$ = this.entityService.originalEntityType$
-    .pipe(
-      combineLatestWith(this.isXmla$), //, this.entityService.cubeDimensions$, this.entityService.measures$),
-      filter(([properties, isXmla]) => isXmla && isEmpty(this.dimensions()) && isEmpty(this.measures())),
-      takeUntilDestroyed()
-    )
-    .subscribe(([entityType, isXmla]) => {
-      this.dimensions.set(
-        structuredClone(getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
+  private _originEntityTypeSub$ = this.isXmla$.pipe(
+    switchMap(() => {
+      this.loading.set(true)
+      return this.entityService.originalEntityType$.pipe(
+        tap(() => this.loading.set(false)),
       )
-      this.measures.set(structuredClone(getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' }))))
-    })
+    }),
+    filter(() => isEmpty(this.dimensions()) && isEmpty(this.measures())),
+    takeUntilDestroyed()
+  ).subscribe((entityType) => {
+    this.dimensions.set(
+      structuredClone(getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'dimension' })))
+    )
+    this.measures.set(structuredClone(getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'measure' }))))
+  })
 
   constructor() {
     super()
