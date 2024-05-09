@@ -151,7 +151,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   )
 
   // Collections tree
-  public readonly collections$ = this.collectionStories$.pipe(
+  readonly collections = toSignal(this.collectionStories$.pipe(
     map(([collections]) =>
       hierarchize(collections, {
         parentNodeProperty: 'parentId',
@@ -159,9 +159,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         labelProperty: 'name'
       })
     ),
-    takeUntilDestroyed(),
-    shareReplay(1)
-  )
+  ))
 
   // Collections and stories tree
   public readonly collectionTree$ = this.collectionStories$.pipe(
@@ -293,7 +291,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   }
 
   async newStory(_collectionId?: string) {
-    const collections = await firstValueFrom(this.collections$)
+    const collections = this.collections
     const story = await firstValueFrom(
       this._dialog
         .open(StoryCreationComponent, {
@@ -301,7 +299,7 @@ export class ProjectComponent extends TranslationBaseComponent {
             story: {
               collectionId: _collectionId
             },
-            models: this.project.models,
+            models: this.projectSignal().models,
             collections
           }
         })
@@ -309,14 +307,16 @@ export class ProjectComponent extends TranslationBaseComponent {
     )
 
     if (!story) {
-      return
+      return await this.tryCreateStory(story)
     }
+  }
 
-    await tryHttp(this.storiesService.create(
+  async tryCreateStory(story: Story) {
+    return await tryHttp(this.storiesService.create(
       convertStory({
         ...story,
         collectionId: collectionId(story.collectionId),
-        projectId: this.project.id
+        projectId: this.projectSignal().id
       })
     ).pipe(
       switchMap((newStory) => this.storiesService.updateModels(newStory.id, story.models.map((model) => model.id)).pipe(
@@ -324,14 +324,14 @@ export class ProjectComponent extends TranslationBaseComponent {
           this.refresh$.next()
           this._toastrService.success('PAC.Project.CreateStory', { Default: 'Create story' })
           // Navigate to new story viewer
-          this._router.navigate(['/project', newStory.id])
+          this._router.navigate(['/story', newStory.id, 'edit'])
         })
       )),
     ))
   }
 
   async copy(story: Story) {
-    const collections = await firstValueFrom(this.collections$)
+    const collections = this.collections()
     const _story = await firstValueFrom(
       this._dialog
         .open(StoryCreationComponent, {
