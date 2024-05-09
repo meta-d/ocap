@@ -54,6 +54,10 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity implements
 	memberName: string
 
 	@IsString()
+	@Column({ length: 1000 })
+	memberKey: string
+
+	@IsString()
 	@Column({ length: 1000, nullable: true })
 	memberCaption: string
 

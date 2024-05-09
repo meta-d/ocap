@@ -3,7 +3,7 @@ import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
-import { EntityType } from '@metad/ocap-core'
+import { DataSettings, EntityType } from '@metad/ocap-core'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -56,6 +56,9 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
   const currentWidget = storyService.currentWidget
   const currentStoryPoint = storyService.currentStoryPoint
 
+  const defaultModel = signal<string>(null)
+  const defaultDataSettings = signal<DataSettings>(null)
+  const defaultEntity = signal<string>(null)
   const defaultCube = signal<EntityType>(null)
 
   // try {
@@ -91,6 +94,7 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
           title: title,
           dataSettings: {
             ...(dataSettings ?? {}),
+            ...(defaultDataSettings() ?? {}),
             chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType)),
             selectionVariant: {
               selectOptions: (slicers ?? (<any>chart).slicers as any[])?.map((slicer) => tryFixSlicer(slicer, entityType))
@@ -180,8 +184,7 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     }
   })
 
-  const defaultModel = signal<string>(null)
-  const defaultEntity = signal<string>(null)
+  
   return injectCopilotCommand(
     'widget',
     (async () => {
@@ -205,10 +208,11 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
             const result = await storyService.openDefultDataSettings()
 
             if (result?.dataSource && result?.entities[0]) {
+              defaultDataSettings.set({dataSource: result.dataSource, entitySet: result.entities[0]})
               defaultModel.set(result.modelId)
               defaultEntity.set(result.entities[0])
               const entityType = await firstValueFrom(
-                storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] })
+                storyService.selectEntityType(defaultDataSettings())
               )
               defaultCube.set(entityType)
             }

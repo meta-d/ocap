@@ -113,6 +113,8 @@ export interface ISemanticModelMember extends IBasePerTenantAndOrganizationEntit
 
   modelId?: string
 
+  memberKey?: string
+
   memberName: string
 
   memberCaption: string

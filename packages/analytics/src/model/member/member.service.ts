@@ -44,8 +44,8 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 				_members.slice(0, 10).map(
 					(member) =>
 						new Document({
-							metadata: { key: member.memberUniqueName },
-							pageContent: `dimension ${member.hierarchy} member key: ${member.memberUniqueName}; caption: ${member.memberCaption}`
+							metadata: { key: member.memberKey },
+							pageContent: `dimension: '${member.dimension}' hierarchy: '${member.hierarchy}' member key: ${member.memberKey}; caption: ${member.memberCaption}`
 						})
 				)
 			)
@@ -79,7 +79,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		const result = await this.copilotService.findAll()
 		const copilot = result.items[0]
 		if (copilot && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
-			id = id ?? 'default'
+			id = id ? `${id}${cube ? ':' + cube : ''}` : 'default'
 			if (!this.vectorStores.has(id)) {
 				this.vectorStores.set(
 					id,
