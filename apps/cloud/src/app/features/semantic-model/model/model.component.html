@@ -218,15 +218,20 @@
                                 </mat-list-item>
                             </mat-nav-list>
                         </cdk-virtual-scroll-viewport>
+                      @if (loadingTables()) {
+                        <div class="absolute top-1/2 left-1/2 -ml-2 -mt-2 flex">
+                            <mat-progress-spinner color="accent" mode="indeterminate" [diameter]="23" [strokeWidth]="2" />
+                        </div>
+                      }
                     } @else {
                         <bullet-list-content-loader class="dark:opacity-20"/>
                     }
 
-                    @if (dbTablesError) {
+                    @if (dbTablesError()) {
                         <div class="pac-result w-full h-full absolute top-0 left-0 text-sm">
                             <div class="bug font-notoColorEmoji">🐞</div>
                             <div class="description flex-1 basis-0">
-                                {{dbTablesError}}
+                                {{dbTablesError()}}
                             </div>
                         </div>
                     }

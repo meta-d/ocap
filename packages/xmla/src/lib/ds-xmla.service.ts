@@ -53,6 +53,7 @@ import {
   filter,
   map,
   shareReplay,
+  switchMap,
   takeUntil
 } from 'rxjs/operators'
 import { XmlaEntityService } from './entity.service'
@@ -149,9 +150,22 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       })
     )
   }
+
+  /**
+   * In xmla, db tables are cubes
+   * 
+   * @param refresh For refresh cache
+   * @returns 
+   */
   discoverDBTables(refresh?: boolean): Observable<DBTable[]> {
     return this.selectEntitySets(refresh) as unknown as Observable<DBTable[]>
   }
+  /**
+   * Observable of cubes in xmla source, then merge 'caption' from custom schema
+   * 
+   * @param refresh For refresh cache
+   * @returns 
+   */
   discoverMDCubes(refresh?: boolean): Observable<EntitySet[]> {
     return this.selectEntitySets(refresh).pipe(
       combineLatestWith(this.selectSchema()),
@@ -172,17 +186,19 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       })
     )
   }
+
   discoverMDMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
     return this.selectMembers(entity, dimension)
   }
 
   selectEntitySets(refresh?: boolean): Observable<EntitySet[]> {
-    const CATALOG_NAME = this.options.catalog
+    const catalogName = this.options.catalog
+    const language = this.options.settings?.language || ''
 
-    if (!this._catalogCubes[CATALOG_NAME] || refresh) {
-      this._catalogCubes[CATALOG_NAME] = from(
-        this.getCatalogEntities(this.options.name, CATALOG_NAME, this.options.settings?.language || '')
-      ).pipe(
+    if (!this._catalogCubes[catalogName] || refresh) {
+      // Clear cache first when force refresh
+      this._catalogCubes[catalogName] = from(refresh ? this.clearCache(`xmla-catalog::${this.options.key}:${catalogName}:${language}`) : [true]).pipe(
+        switchMap(() => this.getMDCubesWithCache(this.options.key, catalogName, language)),
         catchError((err) => {
           const message = simplifyErrorMessage((<Xmla.Request>err).exception?.message ?? getErrorMessage((<Xmla.Request>err).exception?.data) ?? (<Xmla.Exception>err).message)
           this.agent.error(message)
@@ -192,7 +208,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       )
     }
 
-    return this._catalogCubes[CATALOG_NAME]
+    return this._catalogCubes[catalogName]
   }
 
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]> {
@@ -263,8 +279,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     throw new Error(`@deprecated use discoverMDCubes`)
   }
 
-  @Cache('xmla-catalog:', { maxAge: 1000 * 60 * 60 * 24 * 30, level: 1 })
-  getCatalogEntities(modelName: string, CATALOG_NAME: string, language = ''): Promise<EntitySet[]> {
+  private async _discoverMDCubes(catalogName: string, language = '') {
     const headers: HttpHeaders = {}
     if (language) {
       headers['Accept-Language'] = language
@@ -273,7 +288,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       this.xmlaService
         .discoverMDCubes({
           restrictions: {
-            CATALOG_NAME
+            CATALOG_NAME: catalogName
           },
           headers
         })
@@ -282,7 +297,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           map((cubes: XmlaCube[]) => {
             return cubes.map((cube) => {
               return {
-                ...convertMDXProperty(cube),
+                ...convertMDXProperty<EntitySet>(cube),
                 name: cube.CUBE_NAME,
                 caption: cube.CUBE_CAPTION || cube.DESCRIPTION,
                 entityType: null
@@ -291,6 +306,11 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           })
         )
     )
+  }
+
+  @Cache('xmla-catalog:', { maxAge: 1000 * 60 * 60 * 24 * 30, level: 1 })
+  getMDCubesWithCache(modelName: string, CATALOG_NAME: string, language = ''): Promise<EntitySet[]> {
+    return this._discoverMDCubes(CATALOG_NAME, language)
   }
 
   @Cache('xmla-catalog:', { maxAge: 1000 * 60 * 60 * 24 * 30, level: 1 })
@@ -886,7 +906,11 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     return this.options.dialect
   }
 
-  override async clearCache(): Promise<void> {
+  override async clearCache(key = ''): Promise<void> {
+    if (key) {
+      return await this.cacheService.clear(key)
+    }
+
     const keys = await this.cacheService.keys()
     return await Promise.all(
       keys

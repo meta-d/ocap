@@ -15,7 +15,7 @@
 
 
 <mat-menu #statusNotifMenu="matMenu" class="ngm-menu-card" xPosition="after" yPosition="above">
-  <div class="max-h-[70vh] min-w-[300px] flex flex-col justify-start items-stretch overflow-hidden" (click)="$event.stopPropagation()">
+  <div class="max-h-[70vh] w-[300px] max-w-full flex flex-col justify-start items-stretch overflow-hidden" (click)="$event.stopPropagation()">
     <div class="flex justify-between items-center px-2">
       <h5 class="mb-2 text-lg font-bold tracking-tight">
         {{'PAC.KEY_WORDS.Notification' | translate: {Default: 'Notification'} }}
@@ -30,7 +30,7 @@
       </button>
     </div>
 
-    <div class="flex flex-col overflow-auto" displayDensity="cosy">
+    <div class="flex flex-col overflow-auto" displayDensity="compact">
       <mat-list class="ngm-list">
         @for (error of errors(); track error; let i = $index) {
           <mat-list-item class="group relative" [matTooltip]="error">

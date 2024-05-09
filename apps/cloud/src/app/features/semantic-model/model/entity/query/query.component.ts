@@ -57,7 +57,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   */
   readonly themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
   readonly entityType = this.entityService.entityType
-  readonly tables = toSignal(this.modelService.selectDBTables$)
+  readonly tables = toSignal(this.modelService.selectDBTables())
   readonly statement = this.entityService.statement$
 
   entities = []

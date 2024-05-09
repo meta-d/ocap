@@ -35,7 +35,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { isEmpty, values } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { computedAsync } from 'ngxtension/computed-async'
+import { derivedAsync } from 'ngxtension/derived-async'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
@@ -83,7 +83,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   readonly dimensions = signal<Property[]>([])
   readonly measures = signal<Property[]>([])
   readonly allVisible = signal(false)
-  readonly fectTableFields = computedAsync(() => {
+  readonly fectTableFields = derivedAsync(() => {
     return this.factTable$.pipe(
       map((table) => table?.name),
       filter(nonBlank),
@@ -128,19 +128,15 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   // Subscribers
   private _originEntityTypeSub$ = this.entityService.originalEntityType$
     .pipe(
-      combineLatestWith(this.isXmla$, this.entityService.cubeDimensions$, this.entityService.measures$),
-      filter(
-        ([properties, isXmla, dimensions, measures]) => isXmla && isEmpty(this.dimensions()) && isEmpty(this.measures())
-      ),
+      combineLatestWith(this.isXmla$), //, this.entityService.cubeDimensions$, this.entityService.measures$),
+      filter(([properties, isXmla]) => isXmla && isEmpty(this.dimensions()) && isEmpty(this.measures())),
       takeUntilDestroyed()
     )
-    .subscribe(([entityType, isXmla, dimensions, measures]) => {
+    .subscribe(([entityType, isXmla]) => {
       this.dimensions.set(
-        structuredClone(dimensions?.length ? dimensions : getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
+        structuredClone(getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
       )
-      this.measures.set(
-        structuredClone(measures?.length ? measures : getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' })))
-      )
+      this.measures.set(structuredClone(getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' }))))
     })
 
   constructor() {
@@ -343,7 +339,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     })
     // Emit dimension created event
     this.entityService.event$.next({ type: 'dimension-created' })
-    
+
     // Save current meta from data source: @todo Why???
     this.entityService.tableDimensions.set(this.dimensions())
     this.entityService.tableMeasures.set(this.measures())

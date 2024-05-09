@@ -105,7 +105,7 @@ export interface DataSource {
   /**
    * Discover tables from DataSource's Database
    */
-  discoverDBTables(): Observable<Array<DBTable>>
+  discoverDBTables(refresh?: boolean): Observable<Array<DBTable>>
 
   /**
    * Discover cubes from api or schema defination of DataSource
@@ -400,8 +400,8 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     )
   }
 
-  async clearCache(): Promise<void> {
-    return await this.cacheService.clear('')
+  async clearCache(key = ''): Promise<void> {
+    return await this.cacheService.clear(key)
   }
 
   onDestroy() {

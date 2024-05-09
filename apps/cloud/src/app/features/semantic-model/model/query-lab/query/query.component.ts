@@ -150,7 +150,7 @@ ${calcEntityTypePrompt(entityType)}
     this.onStatementChange(value)
   }
 
-  public readonly tables$ = this.modelService.selectDBTables$
+  public readonly tables$ = this.modelService.selectDBTables()
   public readonly conversations$ = this.query$.pipe(map((query) => query.conversations))
 
   // for results table

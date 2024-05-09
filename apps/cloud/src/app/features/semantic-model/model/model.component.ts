@@ -9,7 +9,8 @@ import {
   ViewChild,
   ViewContainerRef,
   computed,
-  inject
+  inject,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
@@ -37,6 +38,7 @@ import {
   catchError,
   combineLatest,
   combineLatestWith,
+  debounceTime,
   distinctUntilChanged,
   filter,
   firstValueFrom,
@@ -180,6 +182,7 @@ ${sharedDimensionsPrompt}
   })
 
   @ViewChild('tableTemplate') tableTemplate!: TemplateRef<any>
+  
   #entityDropAction = provideCopilotDropAction({
     id: 'pac-model-entitysets',
     implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
@@ -256,22 +259,27 @@ ${sharedDimensionsPrompt}
 
   public readonly entities$ = this.modelService.entities$
 
-  public dbTablesError = ''
-  private refreshDBTables$ = new BehaviorSubject<void>(null)
+  // For tables or cubes in data source
+  readonly loadingTables = signal(false)
+  readonly dbTablesError = signal('')
+  private refreshDBTables$ = new BehaviorSubject<boolean>(null)
+
+  // Refresh DB Tables
   public readonly selectDBTables$ = this.refreshDBTables$.pipe(
-    // Refresh DB Tables
-    // Reset fetch tables error
-    tap(() => (this.dbTablesError = null)),
-    switchMap(() =>
-      this.modelService.selectDBTables$.pipe(
+    switchMap((forceRefresh) => {
+      // Reset fetch tables error
+      this.dbTablesError.set(null)
+      // Loading status
+      this.loadingTables.set(true)
+      return this.modelService.selectDBTables(forceRefresh).pipe(
+        tap(() => this.loadingTables.set(false)),
         catchError((err) => {
           // When fetch tables error
-          this.dbTablesError = err.message
+          this.dbTablesError.set(err.message)
           return of([])
         })
-        // startWith([])
       )
-    ),
+    }),
     map((tables) => sortBy(tables, 'name')),
     takeUntilDestroyed(),
     shareReplay(1)
@@ -283,7 +291,7 @@ ${sharedDimensionsPrompt}
     // merge tables config and db tables, and sort by name
     map(([tables, dbTables]) => sortBy(uniqBy([...tables, ...dbTables], 'name'), 'name') as any[]),
     // Search tables
-    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null))),
+    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null), debounceTime(300))),
     map(([entities, text]) => {
       text = text?.toLowerCase()
       if (text) {
@@ -509,7 +517,7 @@ ${sharedDimensionsPrompt}
   }
 
   refreshSchema() {
-    this.refreshDBTables$.next()
+    this.refreshDBTables$.next(true)
   }
 
   deleteEntity(id: string) {
@@ -613,7 +621,7 @@ ${sharedDimensionsPrompt}
       try {
         await this.modelService.originalDataSource.dropEntity(tableName)
         this.toastrService.success('PAC.ACTIONS.Delete')
-        this.refreshDBTables$.next()
+        this.refreshDBTables$.next(true)
       } catch (err) {
         this.toastrService.error(err)
       }
