@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core'
+import { Injectable, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { PropertyCapacity } from '@metad/components/property'
 import { SlicersCapacity } from '@metad/components/selection'
@@ -17,14 +17,13 @@ import {
 import { NxStoryService } from '@metad/story/core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { isEqual, isNil, negate, pick, sortBy } from 'lodash-es'
-import { Observable, combineLatest, throwError } from 'rxjs'
+import { Observable, combineLatest, of } from 'rxjs'
 import {
   catchError,
   combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
-  pluck,
   shareReplay,
   switchMap,
   tap
@@ -69,10 +68,13 @@ export abstract class DataSettingsSchemaService<
   )
 
   protected readonly dataSource$: Observable<string> = this.dataSettings$.pipe(
-    pluck('dataSource'),
+    map((dataSettings) => dataSettings?.dataSource),
     distinctUntilChanged()
   )
-  protected readonly entity$: Observable<string> = this.dataSettings$.pipe(pluck('entitySet'), distinctUntilChanged())
+  protected readonly entity$: Observable<string> = this.dataSettings$.pipe(
+    map((dataSettings) => dataSettings?.entitySet),
+    distinctUntilChanged()
+  )
 
   public readonly _dataSource$ = this.dataSource$.pipe(
     switchMap((dataSource) => this.dsCoreService.getDataSource(dataSource))
@@ -250,7 +252,7 @@ export abstract class DataSettingsSchemaService<
               label: i18n?.SemanticModel ?? 'Semantic Model',
               required: true,
               options: dataSources$,
-              panelWidth: '300px',
+              panelWidth: '300px'
             }
           },
           {
@@ -259,9 +261,10 @@ export abstract class DataSettingsSchemaService<
             className: FORMLY_W_1_2,
             props: {
               label: i18n?.Entity ?? 'Entity',
+              valueKey: 'key',
               searchable: true,
               required: true,
-              panelWidth: '300px',
+              panelWidth: '300px'
             },
             expressions: {
               hide: `!model || !model.dataSource`
@@ -271,22 +274,30 @@ export abstract class DataSettingsSchemaService<
                 if (!(field.className && field.className.indexOf('formly-loader') > -1)) {
                   field.className = `${field.className} formly-loader`
                 }
+                field.props.error = signal('')
                 field.props.options = dataSource$.pipe(
                   tap(() => {
                     field.className = field.className.includes('formly-loader')
                       ? field.className
                       : `${field.className} formly-loader`
+                    field.props.error.set(null)
                   }),
                   switchMap((dataSource: DataSource) =>
                     combineLatest([
-                      dataSource.discoverMDCubes(), //.pipe(tap((options) => console.warn(options))),
-                      dataSource.selectSchema() //.pipe(tap((options) => console.warn(options)))
+                      dataSource.discoverMDCubes().pipe(
+                        catchError((err) => {
+                          field.props.error.set(err.message)
+                          return of([])
+                        })
+                      ),
+                      dataSource.selectSchema()
                     ])
                   ),
                   map(([cubes, schema]) => {
                     return cubes.map((cube: any) => ({
-                      value: cube.name,
-                      label: cube.caption,
+                      value: cube,
+                      key: cube.name,
+                      caption: cube.caption,
                       // @todo
                       icon: schema?.cubes?.find((item) => item.name === cube.name)
                         ? 'star_outline'
@@ -296,10 +307,10 @@ export abstract class DataSettingsSchemaService<
                       fontSet: 'material-icons-outlined'
                     }))
                   }),
-                  catchError((err) => {
-                    field.className = field.className.split('formly-loader').join('')
-                    return throwError(() => err)
-                  }),
+                  // catchError((err) => {
+                  //   field.className = field.className.split('formly-loader').join('')
+                  //   return throwError(() => err)
+                  // }),
                   tap(() => (field.className = field.className.split('formly-loader').join('')))
                 )
               }

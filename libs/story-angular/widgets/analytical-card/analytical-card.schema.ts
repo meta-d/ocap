@@ -103,9 +103,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
   getBuilderSchema(chartType: ChartType, i18nStory?) {
     const BUILDER = i18nStory?.Widgets?.Common
 
-    const dataSettings = this.generateDataSettingsSchema(
-      BUILDER,
-      {
+    const dataSettings = this.makeDataSettingsContent(BUILDER, {
         key: 'chartAnnotation',
         props: {
           label: 'Chart Annotation',
@@ -118,7 +116,6 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
       ...SelectionVariantExpansion(BUILDER, this.dataSettings$),
       ...PresentationVariantExpansion(BUILDER, this.dataSettings$, this.entityType$, this.properties$)
     )
-
     return [
       {
         wrappers: ['panel'],
@@ -142,7 +139,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
           label: i18nStory?.Widgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
           toggleable: false,
           expanded: true,
-          fieldGroup: dataSettings.fieldGroup[0].fieldGroup
+          fieldGroup: dataSettings
         },
         {
           key: 'options',
