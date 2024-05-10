@@ -1,3 +1,18 @@
 :host {
   @apply flex flex-col p-4;
 }
+
+.mat-expansion-panel-header-description {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.mat-mdc-list-item {
+  @apply rounded-md hover:bg-black/5 dark:hover:bg-white/10;
+}
+
+:host::ng-deep {
+  .mdc-list-item__primary-text {
+    @apply flex justify-between items-center;
+  }
+}

@@ -1,22 +1,29 @@
-<mat-accordion>
+<mat-accordion multi>
   @for (cube of allCubes(); track cube.name) {
-    <mat-expansion-panel hideToggle class="mat-elevation-z">
-        <mat-expansion-panel-header>
-        <mat-panel-title> {{cube.name}} </mat-panel-title>
-        <mat-panel-description>  </mat-panel-description>
-        </mat-expansion-panel-header>
+    <mat-expansion-panel class="mat-elevation-z">
+      <mat-expansion-panel-header>
+      <mat-panel-title> {{cube.name}} </mat-panel-title>
+      <mat-panel-description>
+        <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();syncMember(cube.name, cube.dimensions)">
+          <mat-icon [matTooltip]="'PAC.KEY_WORDS.SyncMembers' | translate: {Default: 'Sync Members'}">sync</mat-icon>
+        </button>
+
+        <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();uploadMembers(cube.name, cube.selectedDims)">
+          <mat-icon [matTooltip]="'PAC.KEY_WORDS.Upload' | translate: {Default: 'Upload'}">file_upload</mat-icon>
+        </button>
         
-        <mat-list role="list">
-          @for (dimension of cube.dimensions; track dimension.name) {
-            <mat-list-item role="listitem">
-                <div class="flex justify-between items-center">
-                    <span>{{dimension.caption || dimension.name}}</span>
-                    <button mat-raised-button color="primary" [disabled]="loading()" (click)="syncMember(cube, dimension)">Sync Member</button>
-                </div>
-            </mat-list-item>
-          }
-        </mat-list>
-        
+      </mat-panel-description>
+      </mat-expansion-panel-header>
+      
+      <mat-selection-list role="list" [disabled]="loading()" [(ngModel)]="cube.selectedDims">
+        @for (dimension of cube.dimensions; track dimension.name) {
+          <mat-list-option role="listitem" [value]="dimension.name">
+            <span>{{dimension.caption || dimension.name}}</span>
+
+            <span>({{members()[dimension.name]?.length}}) Members</span>
+          </mat-list-option>
+        }
+      </mat-selection-list>
     </mat-expansion-panel>
   }
 </mat-accordion>
