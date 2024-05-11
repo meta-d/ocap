@@ -306,7 +306,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         .afterClosed()
     )
 
-    if (!story) {
+    if (story) {
       return await this.tryCreateStory(story)
     }
   }
