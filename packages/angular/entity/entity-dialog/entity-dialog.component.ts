@@ -1,4 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
+import { ScrollingModule } from '@angular/cdk/scrolling'
 import { CommonModule } from '@angular/common'
 import { Component, inject, model, signal } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
@@ -9,9 +10,10 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmDisplayBehaviourComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, ISelectOption } from '@metad/ocap-angular/core'
-import { DSCoreService, nonNullable } from '@metad/ocap-core'
+import { DSCoreService, EntitySet, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
@@ -36,14 +38,16 @@ export type EntitySelectDataType = {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    DragDropModule,
+    TranslateModule,
+    ScrollingModule,
     MatButtonModule,
     MatDialogModule,
     MatIconModule,
     MatRadioModule,
     MatListModule,
     MatProgressSpinnerModule,
-    DragDropModule,
-    TranslateModule,
+    MatTooltipModule,
 
     NgmSearchComponent,
     ButtonGroupDirective,
@@ -58,7 +62,7 @@ export class NgmEntityDialogComponent {
 
   readonly modelKey = model<string>(null)
 
-  search = new FormControl('')
+  readonly search = new FormControl('')
   readonly loading = signal(false)
 
   public readonly entities$ = toObservable(this.modelKey).pipe(
@@ -70,9 +74,10 @@ export class NgmEntityDialogComponent {
       this.entities.set([])
     }),
     switchMap((dataSource) => this.data.dsCoreService.getDataSource(dataSource)),
-    switchMap((dataSource) => dataSource.selectEntitySets()),
+    switchMap((dataSource) => dataSource.discoverMDCubes()),
     map((entitySets) =>
       entitySets.map((item) => ({
+        value: item,
         key: item.name,
         caption: item.caption
       }))
@@ -86,9 +91,9 @@ export class NgmEntityDialogComponent {
         this.onApply()
       }
     }),
-    combineLatestWith(this.search.valueChanges.pipe(startWith(''))),
+    combineLatestWith(this.search.valueChanges.pipe(startWith(''), map((text) => text.trim().toLowerCase()))),
     map(([entities, text]) =>
-      text ? entities.filter((item) => item.caption.toLowerCase().includes(text.toLowerCase())) : entities
+      text ? entities.filter((item) => item.caption?.toLowerCase().includes(text) || item.key?.toLowerCase().includes(text)) : entities
     )
   )
 
@@ -107,5 +112,9 @@ export class NgmEntityDialogComponent {
       dataSource: this.modelKey(),
       entities: this.entities()
     })
+  }
+
+  trackByKey(index: number, item: ISelectOption<EntitySet>) {
+    return item.key
   }
 }

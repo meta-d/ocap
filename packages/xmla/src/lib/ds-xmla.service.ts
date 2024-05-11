@@ -42,7 +42,8 @@ import {
   PropertyMeasure,
   omitBy,
   omit,
-  CAPTION_FIELD_SUFFIX
+  CAPTION_FIELD_SUFFIX,
+  MDCube
 } from '@metad/ocap-core'
 import { cloneDeep, groupBy, isArray, isEmpty, isNil, merge, mergeWith, sortBy } from 'lodash-es'
 import { combineLatest, firstValueFrom, from, Observable, of, throwError } from 'rxjs'
@@ -166,17 +167,18 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
    * @param refresh For refresh cache
    * @returns 
    */
-  discoverMDCubes(refresh?: boolean): Observable<EntitySet[]> {
+  discoverMDCubes(refresh?: boolean): Observable<MDCube[]> {
     return this.selectEntitySets(refresh).pipe(
       combineLatestWith(this.selectSchema()),
       map(([_cubes, schema]) => {
         const cubes = [..._cubes]
-        const results = []
+        const results: EntitySet[] = []
         // 按 Schema 定义的 Cubes 顺序优先展示
         schema?.cubes?.forEach((item) => {
           const index = cubes.findIndex((cube) => item.name === cube.name)
           if (index > -1) {
             cubes[index].caption = item.caption
+            cubes[index].annotated = true
             results.push(...cubes.splice(index, 1))
           }
         })

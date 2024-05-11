@@ -127,6 +127,11 @@ export interface DataSource {
    * @param refresh 是否跳过缓存进行重新获取数据
    */
   getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
+  /**
+   * Observe entity sets from DataSource
+   * 
+   * @param refresh Force refresh cache in browser
+   */
   selectEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
 
   /**

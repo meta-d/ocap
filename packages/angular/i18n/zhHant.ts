@@ -1,5 +1,3 @@
-import { ZhHant as ECharts } from '@metad/ocap-echarts'
-
 export const ZhHant = {
   Ngm: {
     Common: {
@@ -52,7 +50,6 @@ export const ZhHant = {
       DrillDimension: '維度下鑽',
       LinkAnalysis: '聯動篩選',
       DataEmpty: '數據為空',
-      ECharts
     },
     AnalyticalGrid: {
       DataDownload: '下載數據',

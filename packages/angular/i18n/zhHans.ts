@@ -1,5 +1,3 @@
-import { ZhHans as ECharts } from '@metad/ocap-echarts'
-
 export const ZhHans = {
   Ngm: {
     Common: {
@@ -35,7 +33,6 @@ export const ZhHans = {
       DrillDimension: '维度下钻',
       LinkAnalysis: '联动筛选',
       DataEmpty: '数据为空',
-      ECharts
     },
     AnalyticalGrid: {
       DataDownload: '下载数据',
@@ -97,7 +94,10 @@ export const ZhHans = {
       Regenerate: '重新生成'
     },
     Entity: {
-      SelectEntities: '选择数据集'
+      SelectEntities: '选择数据集',
+      SemanticModel: '语义模型',
+      Cube: '多维数据集',
+      AnnotatedCube: '增强过的多维数据集',
     },
     EntitySchema: {
       Parameters: '参数',
