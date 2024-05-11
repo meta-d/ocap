@@ -144,6 +144,12 @@ export interface DataSource {
    * @param dimension 维度
    */
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
+  /**
+   * Observe members of dimension in entity (cube) from DataSource
+   * 
+   * @param entity Cube name
+   * @param dimension Dimension, include name and hierarchy
+   */
   selectMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
 
   /**

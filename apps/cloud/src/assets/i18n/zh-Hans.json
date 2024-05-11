@@ -480,7 +480,8 @@
         "ERROR": "错误"
       },
       "Updating": "{{value}}更新中。。。",
-      "UpdateDone": "{{value}}更新完成"
+      "UpdateDone": "{{value}}更新完成",
+      "SystemError": "系统错误"
     },
     "INDICATOR": {
       "REGISTER": {

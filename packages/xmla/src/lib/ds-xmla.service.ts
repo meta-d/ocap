@@ -84,7 +84,7 @@ import {
   XmlaProperty,
   XmlaSchemaCatalog
 } from './types/index'
-import { getErrorMessage, simplifyErrorMessage } from './utils'
+import { getErrorMessage, getExceptionMessage, simplifyErrorMessage } from './utils'
 import { NxXmlaService } from './xmla.service'
 import { fetchDataFromMultidimensionalTuple } from './xmla/multidimensional'
 import { Xmla } from './xmla'
@@ -703,7 +703,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     if (!this._members[uniqueName]) {
       this._members[uniqueName] = from(
         this._getMembers(
-          this.options.name,
+          this.options.key,
           CATALOG_NAME,
           CUBE_NAME,
           dimension.dimension,
@@ -732,10 +732,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           })
           return results
         }),
-        catchError((err, caught) => {
-          let error = err.exception?.message
-          error = simplifyErrorMessage(error)
-          return throwError(() => new Error(error))
+        catchError((error, caught) => {
+          return throwError(() => new Error(simplifyErrorMessage(error.exception ? getExceptionMessage(error.exception) ?? getErrorMessage(error) : getErrorMessage(error))))
         }),
         takeUntil(this.destroy$),
         shareReplay(1)
