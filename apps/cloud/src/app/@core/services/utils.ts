@@ -61,10 +61,21 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
 
       dsCoreService.registerModel({
         ...semanticModel,
-        catalog: modelKey, // Use model key as catalog for olap engine
+        /**
+         * Corresponding name of schema in olap engine:
+         * ```xml
+         * <root name="Semantic Model Name">
+         *    <Cube name="Sales">
+         * ...
+         * ```
+         */
+        catalog: model.name,
         settings: {
           ...(semanticModel.settings ?? {}),
-          dataSourceInfo: model.id // Must set dataSourceInfo to dataSourceId for olap engine
+          /**
+           * Corresponding id of XmlaConnection in olap engine:
+           */
+          dataSourceInfo: model.id
         } as any
       })
     } else {
