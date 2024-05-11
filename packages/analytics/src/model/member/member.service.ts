@@ -1,24 +1,30 @@
 import { Document } from '@langchain/core/documents'
+import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
-import { RedisVectorStore } from '@langchain/redis'
+import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
+import { ISemanticModel } from '@metad/contracts'
+import { EntityType, getEntityHierarchy, getEntityProperty } from '@metad/ocap-core'
 import { AiProvider, CopilotService, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { groupBy } from 'lodash'
 import { RedisClientType } from 'redis'
 import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'typeorm'
 import { REDIS_CLIENT } from '../../core'
-import { SemanticModelService } from '../model.service'
+import { SemanticModel } from '../model.entity'
 import { SemanticModelMember } from './member.entity'
 
 @Injectable()
 export class SemanticModelMemberService extends TenantOrganizationAwareCrudService<SemanticModelMember> {
-	private readonly vectorStores = new Map<string, RedisVectorStore>()
+	private readonly vectorStores = new Map<string, PGRedisVectorStore>()
 
 	constructor(
 		@InjectRepository(SemanticModelMember)
 		modelCacheRepository: Repository<SemanticModelMember>,
 
-		private modelsService: SemanticModelService,
+		@InjectRepository(SemanticModel)
+		private modelRepository: Repository<SemanticModel>,
+
 		private copilotService: CopilotService,
 
 		@Inject(REDIS_CLIENT)
@@ -27,30 +33,32 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		super(modelCacheRepository)
 	}
 
-	async bulkCreate(id: string, members: DeepPartial<SemanticModelMember[]>) {
-		const model = await this.modelsService.findOne(id)
-		const _members = await Promise.all(
-			members.map((member) => {
-				return this.create({
-					...member,
-					modelId: model.id
-				})
-			})
-		)
-
-		const vectorStore = await this.getVectorStore(model.id, members[0].entity)
-		if (vectorStore) {
-			await vectorStore.addDocuments(
-				_members.slice(0, 10).map(
-					(member) =>
-						new Document({
-							metadata: { key: member.memberKey },
-							pageContent: `dimension: '${member.dimension}' hierarchy: '${member.hierarchy}' member key: ${member.memberKey}; caption: ${member.memberCaption}`
-						})
-				)
-			)
+	async storeMembers(modelId: string, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
+		const model = await this.modelRepository.findOne(modelId)
+		if (!model) {
+			return
 		}
-		return _members
+
+		const vectorStore = await this.getVectorStore(model.id, entityType.name)
+		if (vectorStore) {
+			await vectorStore.clear()
+			return await vectorStore.storeMembers(members, entityType)
+		} else {
+			this.bulkCreate(modelId, members)
+		}
+	}
+
+	async bulkCreate(modelId: string, members: DeepPartial<SemanticModelMember[]>) {
+		// Remove previous members
+		try {
+			await this.bulkDelete(modelId, {})
+		} catch (err) {}
+
+		members = members.map((member) => ({
+			...member,
+			modelId
+		}))
+		return await Promise.all(members.map((member) => this.create(member)))
 	}
 
 	async bulkDelete(id: string, query: FindManyOptions<SemanticModelMember>) {
@@ -66,7 +74,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	}
 
 	async retrieveMembers(id: string | null, cube: string, query: string, k = 10) {
-		const vectorStore = await this.getVectorStore(id, cube)
+		const { vectorStore } = await this.getVectorStore(id, cube)
 		if (vectorStore) {
 			const documents = await vectorStore.similaritySearch(query, k)
 			return documents
@@ -75,35 +83,108 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		return null
 	}
 
-	async getVectorStore(id: string, cube: string) {
-		const result = await this.copilotService.findAll()
+	async getVectorStore(modelId: string, cube: string, organizationId: string = null) {
+		const where = {}
+		if (organizationId) {
+			where['organizationId'] = organizationId
+		}
+		const result = await this.copilotService.findAll({ where })
 		const copilot = result.items[0]
-		if (copilot && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
-			id = id ? `${id}${cube ? ':' + cube : ''}` : 'default'
+		if (copilot && copilot.enabled && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
+			const id = modelId ? `${modelId}${cube ? ':' + cube : ''}` : 'default'
 			if (!this.vectorStores.has(id)) {
+				const embeddings = new OpenAIEmbeddings({
+					verbose: true,
+					apiKey: copilot.apiKey,
+					configuration: {
+						baseURL: copilot.apiHost
+					}
+				})
 				this.vectorStores.set(
 					id,
-					new RedisVectorStore(
-						new OpenAIEmbeddings({
-							verbose: true,
-							apiKey: copilot.apiKey,
-							configuration: {
-								baseURL: copilot.apiHost
-							}
-						}),
-						{
-							redisClient: this.redisClient,
-							indexName: `dm:m-${id}`
-						}
-					)
+					new PGRedisVectorStore(this, modelId, embeddings, {
+						redisClient: this.redisClient,
+						indexName: `dm:${id}`
+					})
 				)
 			}
 
-			const vectorStore = this.vectorStores.get(id)
-
-			return vectorStore
+			return this.vectorStores.get(id)
 		}
 
 		return null
+	}
+
+	async seedVectorStore(models: ISemanticModel[]) {
+		for (const model of models) {
+			const { items: members } = await this.findAll({ where: { modelId: model.id } })
+			const cubes = groupBy(members, 'entity')
+			for (const [cube, members] of Object.entries(cubes)) {
+				const vectorStore = await this.getVectorStore(model.id, cube, model.organizationId)
+				if (vectorStore) {
+					await vectorStore.addMembers(members.filter((member) => member.vector))
+				}
+			}
+		}
+	}
+}
+
+class PGRedisVectorStore {
+	vectorStore: RedisVectorStore
+	constructor(
+		private memberService: SemanticModelMemberService,
+		private modelId: string,
+		private embeddings: EmbeddingsInterface,
+		private _dbConfig: RedisVectorStoreConfig
+	) {
+		this.vectorStore = new RedisVectorStore(embeddings, _dbConfig)
+	}
+
+	async storeMembers(members: DeepPartial<SemanticModelMember>[], entityType: EntityType) {
+		members = members.map((member) => {
+			const dimensionProperty = getEntityProperty(entityType, member.dimension)
+			const hierarchyProperty = getEntityHierarchy(entityType, member.hierarchy)
+			return {
+				...member,
+				content: `dimension (name: '${member.dimension}', caption: '${dimensionProperty.caption}') hierarchy (name: '${member.hierarchy}', caption: '${hierarchyProperty.caption}') member (key: '${member.memberKey}', caption: '${member.memberCaption}')`
+			}
+		})
+
+		const texts = members.map(({ content }) => content)
+		const vectors = await this.embeddings.embedDocuments(texts)
+
+		const _members = await this.memberService.bulkCreate(
+			this.modelId,
+			members.map((member, index) => ({
+				...member,
+				vector: vectors[index]
+			}))
+		)
+
+		return this.addMembers(_members)
+	}
+
+	async addMembers(members: SemanticModelMember[]) {
+		if (!members.length) return
+		
+		const vectors = members.map((member) => member.vector)
+		const documents = members.map(
+			(member) =>
+				new Document({
+					metadata: {
+						key: member.memberKey,
+						dimension: member.dimension,
+						hierarchy: member.hierarchy,
+						member: member.memberName
+					},
+					pageContent: member.content
+				})
+		)
+
+		return this.vectorStore.addVectors(vectors, documents)
+	}
+
+	async clear() {
+		return await this.vectorStore.delete({ deleteAll: true })
 	}
 }

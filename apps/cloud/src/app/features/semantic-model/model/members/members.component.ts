@@ -1,22 +1,15 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { Component, computed, inject, signal } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
-import { MatButtonModule } from '@angular/material/button'
-import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { MatIconModule } from '@angular/material/icon'
-import { MatListModule } from '@angular/material/list'
-import { MatTooltipModule } from '@angular/material/tooltip'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { ModelsService } from '@metad/cloud/state'
-import { ISemanticModelMember } from '@metad/contracts'
-import { PropertyDimension, getEntityDimensions } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ToastrService, tryHttp } from 'apps/cloud/src/app/@core'
-import { flatten } from 'lodash-es'
-import { derivedAsync } from 'ngxtension/derived-async'
-import { combineLatest, map } from 'rxjs'
+import { ToastrService } from 'apps/cloud/src/app/@core'
+import { catchError, combineLatest, delay, map, of, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../model.service'
+import { ModelMembersCubeComponent } from './cube/cube.component'
 
 @Component({
   standalone: true,
@@ -24,12 +17,9 @@ import { SemanticModelService } from '../model.service'
     CommonModule,
     FormsModule,
     TranslateModule,
-    MatIconModule,
     MatExpansionModule,
-    MatButtonModule,
-    MatListModule,
-    MatTooltipModule,
-    MatCheckboxModule
+    MatProgressSpinnerModule,
+    ModelMembersCubeComponent
   ],
   selector: 'pac-model-members',
   templateUrl: 'members.component.html',
@@ -43,64 +33,43 @@ export class ModelMembersComponent {
   readonly cubes = toSignal(this.modelService.cubes$)
   readonly virtualCubes = toSignal(this.modelService.virtualCubes$)
 
-  readonly allCubes = derivedAsync(() => {
+  readonly _cubes = computed(() => {
     const cubes = this.cubes() ?? []
     const virtualCubes = this.virtualCubes() ?? []
-    return combineLatest(
-      [...cubes, ...virtualCubes].map((cube) =>
-        this.modelService.selectEntityType(cube.name).pipe(
-          map((entityType) => ({
-            name: cube.name,
-            caption: cube.caption,
-            dimensions: getEntityDimensions(entityType),
-            selectedDims: []
-          }))
-        )
-      )
-    )
+    return [...cubes, ...virtualCubes].map((cube) => {
+      return {
+        name: cube.name,
+        caption: cube.caption
+      }
+    })
   })
 
-  readonly loading = signal(false)
+  readonly loading = signal(true)
 
-  readonly members = signal({})
-
-  async syncMember(cube: string, dimensions: PropertyDimension[]) {
-    this.loading.set(true)
-    const storeMembers = {}
-    for (const dimension of dimensions) {
-      storeMembers[dimension.name] = []
-      for (const hierarchy of dimension.hierarchies) {
-        const members = await tryHttp(
-          this.modelService.selectHierarchyMembers(cube, { dimension: dimension.name, hierarchy: hierarchy.name }),
-          this.toastrService
+  readonly allCubes = toSignal(
+    toObservable(this._cubes).pipe(
+      /**
+       * @todo
+       */
+      delay(1000),
+      switchMap((cubes) => {
+        this.loading.set(true)
+        return combineLatest(
+          cubes.map((cube) =>
+            this.modelService.selectEntityType(cube.name).pipe(
+              map((entityType) => ({
+                ...cube,
+                entityType
+              })),
+              catchError((err) => {
+                console.error(err)
+                return of(cube)
+              })
+            )
+          )
         )
-        if (members) {
-          storeMembers[dimension.name].push(...members)
-          console.log(members)
-        }
-      }
-    }
-
-    this.members.set(storeMembers)
-
-    this.loading.set(false)
-  }
-  
-  async uploadMembers(cube: string, dimensions: string[]) {
-    this.loading.set(true)
-    await tryHttp(
-      this.modelsService.uploadDimensionMembers(
-        this.modelService.modelSignal().id,
-        flatten(dimensions.map((dimension) => this.members()[dimension] ?? [])).map(
-          (member) =>
-            ({
-              ...member,
-              entity: cube
-            } as unknown as ISemanticModelMember)
-        )
-      ),
-      this.toastrService
+      }),
+      tap(() => this.loading.set(false))
     )
-    this.loading.set(false)
-  }
+  )
 }

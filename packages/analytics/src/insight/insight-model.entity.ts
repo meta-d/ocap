@@ -48,22 +48,22 @@ export class InsightModel extends TenantBaseEntity implements IInsightModel {
   })
   tags?: ITag[]
 
-  /**
-   * TODO Model
-   */
-  @ApiProperty({ type: () => SemanticModel })
-  @ManyToOne(() => SemanticModel, (d) => d.insights, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
-  model?: ISemanticModel
+  // /**
+  //  * TODO Model
+  //  */
+  // @ApiProperty({ type: () => SemanticModel })
+  // @ManyToOne(() => SemanticModel, (d) => d.insights, {
+  //   nullable: true,
+  //   onDelete: 'CASCADE',
+  // })
+  // @JoinColumn()
+  // model?: ISemanticModel
 
-  @ApiProperty({ type: () => String })
-  @RelationId((it: InsightModel) => it.model)
-  @IsString()
-  @Column({ nullable: true })
-  modelId?: string
+  // @ApiProperty({ type: () => String })
+  // @RelationId((it: InsightModel) => it.model)
+  // @IsString()
+  // @Column({ nullable: true })
+  // modelId?: string
 
   @ApiProperty({ type: () => String })
   @IsString()

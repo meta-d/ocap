@@ -1,29 +1,10 @@
 <mat-accordion multi>
   @for (cube of allCubes(); track cube.name) {
-    <mat-expansion-panel class="mat-elevation-z">
-      <mat-expansion-panel-header>
-      <mat-panel-title> {{cube.name}} </mat-panel-title>
-      <mat-panel-description>
-        <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();syncMember(cube.name, cube.dimensions)">
-          <mat-icon [matTooltip]="'PAC.KEY_WORDS.SyncMembers' | translate: {Default: 'Sync Members'}">sync</mat-icon>
-        </button>
-
-        <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();uploadMembers(cube.name, cube.selectedDims)">
-          <mat-icon [matTooltip]="'PAC.KEY_WORDS.Upload' | translate: {Default: 'Upload'}">file_upload</mat-icon>
-        </button>
-        
-      </mat-panel-description>
-      </mat-expansion-panel-header>
-      
-      <mat-selection-list role="list" [disabled]="loading()" [(ngModel)]="cube.selectedDims">
-        @for (dimension of cube.dimensions; track dimension.name) {
-          <mat-list-option role="listitem" [value]="dimension.name">
-            <span>{{dimension.caption || dimension.name}}</span>
-
-            <span>({{members()[dimension.name]?.length}}) Members</span>
-          </mat-list-option>
-        }
-      </mat-selection-list>
-    </mat-expansion-panel>
+    <pac-model-members-cube [cube]="cube" />
   }
 </mat-accordion>
+@if (loading()) {
+  <div class="absolute left-1/2 top-1/2 -ml-3 -mt-3">
+    <mat-progress-spinner mode="indeterminate" [diameter]="24" color="accent"></mat-progress-spinner>
+  </div>
+}

@@ -3,10 +3,10 @@ import {
 	IDataSource,
 	IFavorite,
 	IIndicator,
-	IInsightModel,
 	IModelQuery,
 	IModelRole,
 	ISemanticModel,
+	ISemanticModelMember,
 	ISemanticModelPreferences,
 	IStory,
 	ITag,
@@ -25,9 +25,9 @@ import {
 	DataSource,
 	Favorite,
 	Indicator,
-	InsightModel,
 	ModelQuery,
 	SemanticModelCache,
+	SemanticModelMember,
 	SemanticModelRole,
 	Story,
 	Visit
@@ -185,9 +185,9 @@ export class SemanticModel extends TenantOrganizationBaseEntity implements ISema
 	@OneToMany(() => Favorite, (m) => m.model)
 	favorites?: IFavorite[]
 
-	@ApiProperty({ type: () => InsightModel, isArray: true })
-	@OneToMany(() => InsightModel, (m) => m.model)
-	insights?: IInsightModel[]
+	// @ApiProperty({ type: () => InsightModel, isArray: true })
+	// @OneToMany(() => InsightModel, (m) => m.model)
+	// insights?: IInsightModel[]
 
 	/**
 	 * Indicators
@@ -213,4 +213,13 @@ export class SemanticModel extends TenantOrganizationBaseEntity implements ISema
 		cascade: true,
 	})
 	visits?: IVisit[]
+
+	/**
+	 * Dimension Members
+	 */
+	@OneToMany(() => SemanticModelMember, (m) => m.model, {
+		nullable: true,
+		cascade: true,
+	})
+	dimensionMembers?: ISemanticModelMember[]
 }

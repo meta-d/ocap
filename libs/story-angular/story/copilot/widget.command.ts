@@ -238,6 +238,11 @@ A dimension can only be used once, and a hierarchy cannot appear on multiple ind
 
 ${makeCubeRulesPrompt()}
 
+for examples
+
+qustion: 'sales amout by customer country filter by product bikes'
+think: call 'dimensionMemberKeySearch' tool with query param 'product bikes' to get member key of 'product bikes'
+
 {system_prompt}
 `
           ],

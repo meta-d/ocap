@@ -1,0 +1,29 @@
+<mat-expansion-panel class="mat-elevation-z">
+    <mat-expansion-panel-header>
+        <mat-panel-title> {{cube().name}} </mat-panel-title>
+        <mat-panel-description>
+            <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();syncMember()">
+                <mat-icon [matTooltip]="'PAC.KEY_WORDS.SyncMembers' | translate: {Default: 'Sync Members'}">sync</mat-icon>
+            </button>
+
+            <button mat-icon-button [disabled]="loading() || !loaded()" (click)="$event.stopPropagation();uploadMembers(selectedDims())">
+                <mat-icon [matTooltip]="'PAC.KEY_WORDS.Upload' | translate: {Default: 'Upload'}">file_upload</mat-icon>
+            </button>
+
+            <mat-checkbox [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                (change)="setAll($event.checked)"
+                (click)="$event.stopPropagation();"></mat-checkbox>
+        </mat-panel-description>
+    </mat-expansion-panel-header>
+    
+    <mat-selection-list #selection role="list" [disabled]="loading()" [(ngModel)]="selectedDims">
+      @for (dimension of dimensions(); track dimension.name) {
+        <mat-list-option role="listitem" [value]="dimension.name">
+          <span>{{dimension.caption || dimension.name}}</span>
+
+          <span>({{members()[dimension.name]?.length}}) Members</span>
+        </mat-list-option>
+      }
+    </mat-selection-list>
+</mat-expansion-panel>

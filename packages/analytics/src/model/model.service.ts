@@ -16,6 +16,7 @@ import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
 import { REDIS_CLIENT } from '../core/redis.module'
+import { SemanticModelMemberService } from './member/member.service'
 
 const axios = _axios.default
 
@@ -31,6 +32,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		protected readonly employeeRepository: Repository<Employee>,
 		private readonly dsService: DataSourceService,
 		private readonly cacheService: SemanticModelCacheService,
+		private readonly memberService: SemanticModelMemberService,
 		private readonly configService: ConfigService,
 		private readonly businessAreaService: BusinessAreaService,
 		readonly commandBus: CommandBus,
@@ -70,11 +72,12 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 
 	async seedIfEmpty() {
 		const { items } = await this.findAll()
+		
 		await Promise.all(
-			items.map((model) => {
-				return this.updateCatalogContent(model.id).catch((error) => console.error(error))
-			})
+			items.map((model) => this.updateCatalogContent(model.id).catch((error) => console.error(error)))
 		)
+
+		await this.memberService.seedVectorStore(items)
 	}
 
 	/**
