@@ -1,9 +1,12 @@
 import { DestroyRef, inject } from '@angular/core'
 import { CopilotCommand } from '@metad/copilot'
-import { NgmCopilotEngineService } from '../services'
+import { NgmCopilotContextToken } from '../services'
 
-export function injectCopilotCommand(name: string | CopilotCommand, command?: CopilotCommand | Promise<CopilotCommand>) {
-  const copilotEngine = inject(NgmCopilotEngineService)
+export function injectCopilotCommand(
+  name: string | CopilotCommand,
+  command?: CopilotCommand | Promise<CopilotCommand>
+) {
+  const copilotContext = inject(NgmCopilotContextToken)
 
   let commandName = ''
   if (typeof name === 'object') {
@@ -13,10 +16,10 @@ export function injectCopilotCommand(name: string | CopilotCommand, command?: Co
     commandName = name
   }
 
-  copilotEngine.registerCommand(commandName, command)
+  copilotContext.registerCommand(commandName, command)
 
   inject(DestroyRef).onDestroy(() => {
-    copilotEngine.unregisterCommand(commandName)
+    copilotContext.unregisterCommand(commandName)
   })
 
   return commandName

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, HostBinding, Input, computed, input } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
 import { ISelectOption, splitByHighlight } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
@@ -12,15 +12,16 @@ import { DisplayBehaviour } from '@metad/ocap-core'
   styleUrls: ['./display-behaviour.component.scss'],
   imports: [CommonModule, MatIconModule]
 })
-export class NgmDisplayBehaviourComponent implements OnInit, OnChanges {
+export class NgmDisplayBehaviourComponent {
   DISPLAY_BEHAVIOUR = DisplayBehaviour
 
   @Input() displayBehaviour: DisplayBehaviour | string
   @HostBinding('class.ngm-display-behaviour__exclude-selected')
   @Input()
   excludeSelected: boolean
-  @Input() option: ISelectOption
-  @Input() highlight: string
+
+  readonly option = input<ISelectOption<any>>({})
+  readonly highlight = input<string | string[]>()
 
   @HostBinding('class.ngm-display-behaviour') isDisplayBehaviour = true
 
@@ -46,26 +47,18 @@ export class NgmDisplayBehaviourComponent implements OnInit, OnChanges {
 
   @HostBinding('class.ngm-display-behaviour__no-label')
   get noLabel() {
-    return !(this.option?.caption || this.option?.label)
+    return !(this.option()?.caption || this.option()?.label)
   }
 
-  value: any = []
-  text: any = []
-  default: any = []
-  ngOnInit() {
-    this.value = splitByHighlight(this.option.key ?? this.option.value, this.highlight)
-    this.text = splitByHighlight(this.option.caption || this.option.label, this.highlight)
-    this.default = splitByHighlight(this.option.caption || this.option.label || this.option.value, this.highlight)
-  }
+  readonly value = computed(() => {
+    const highlight = this.highlight()
+    const option = this.option()
+    return splitByHighlight(option.key ?? option.value, highlight)
+  })
 
-  ngOnChanges({ highlight, option }: SimpleChanges): void {
-    if (highlight || option) {
-      this.value = splitByHighlight(this.option.key ?? this.option.value, this.highlight)
-      this.text = splitByHighlight(this.option.caption || this.option.label, this.highlight)
-      this.default = splitByHighlight(
-        this.option.caption || this.option.label || (this.option.key ?? this.option.value),
-        this.highlight
-      )
-    }
-  }
+  readonly text = computed(() => {
+    const highlight = this.highlight()
+    const option = this.option()
+    return splitByHighlight(option.caption || option.label, highlight)
+  })
 }

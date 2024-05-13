@@ -196,7 +196,7 @@
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
 
     <div class="relative flex flex-col p-2">
-        <textarea #userInput matInput
+        <textarea #userInput matInput class="z-10"
             id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
             [placeholder]="_placeholder || ('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'})"
             [formControl]="promptControl"
@@ -210,9 +210,12 @@
             >
         </textarea>
 
-      @if (command()) {
-        <span class="absolute top-2 left-2 bg-neutral-200 rounded-md"
-            [title]="commandTitle()">{{command()}}</span>
+      @if (commandWithContext()) {
+        <span class="absolute top-2 left-2 rounded-md bg-neutral-200 dark:bg-neutral-600"
+            [title]="commandTitle()">/{{commandWithContext().command.name}}</span>
+      }
+      @if (autoprompt()) {
+        <span class="absolute top-2 left-2 whitespace-pre opacity-30 z-0">{{promptControl.value}}<span class="italic">{{autoprompt()}}</span></span>
       }
 
         <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__compact"
@@ -221,6 +224,21 @@
             (opened)="suggestionsOpened$.next(true)"
             (closed)="suggestionsOpened$.next(false)"
         >
+
+          @if (loadingContext | async) {
+            <mat-progress-bar mode="query"
+                color="accent"
+                class="top-0 left-0 w-full"
+                style="position: absolute; height: 2px;"
+                />
+          } @else if (filteredContextItems()) {
+            @for (item of filteredContextItems(); track item.key) {
+                <mat-option [value]="beforeLastWord() + ' @' + item.uKey">
+                    <ngm-display-behaviour class="flex-1" [option]="item" [displayBehaviour]="DisplayBehaviour.descriptionAndId" [highlight]="contextSearchWords()" />
+                </mat-option>
+            }
+          }
+
           @for (command of filteredCommands();  track command.prompt) {
             <mat-option [value]="'/'+command.name+' '+(command.example || '')" [title]="command.description">
                 <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300"

@@ -565,12 +565,15 @@ export class NxStoryService {
     return this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.HandsetPortrait])
   }
 
+  selectDataSource(name: string) {
+    return this.dsCoreService.getDataSource(name)
+  }
+
   /**
    * 监听某个 Entity Type
    */
-  selectEntityType({ dataSource, entitySet }): Observable<EntityType> {
-    return this.dsCoreService
-      .getDataSource(dataSource)
+  selectEntityType({ dataSource, entitySet }: {dataSource: string; entitySet: string;}): Observable<EntityType> {
+    return this.selectDataSource(dataSource)
       .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType))))
   }
 

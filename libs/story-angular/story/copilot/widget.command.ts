@@ -20,6 +20,7 @@ import {
   tryFixAnalyticsAnnotation
 } from './schema'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
+import { CopilotAgentType } from '@metad/copilot'
 
 function createUpdateChartTools(storyService: NxStoryService) {
   return [
@@ -202,6 +203,9 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
       return {
         alias: 'w',
         description: 'Describe the widget you want',
+        agent: {
+          type: CopilotAgentType.Default
+        },
         systemPrompt: async () => {
           logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
           if (!defaultModel() || !defaultEntity()) {
@@ -242,6 +246,8 @@ for examples
 
 qustion: 'sales amout by customer country filter by product bikes'
 think: call 'dimensionMemberKeySearch' tool with query param 'product bikes' to get member key of 'product bikes'
+
+{context}
 
 {system_prompt}
 `

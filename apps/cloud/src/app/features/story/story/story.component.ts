@@ -17,7 +17,7 @@ import {
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { IsDirty, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { calcEntityTypePrompt, IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -44,8 +44,8 @@ import {
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
-import { firstValueFrom } from 'rxjs'
-import { distinctUntilChanged, filter, map } from 'rxjs/operators'
+import { combineLatest, firstValueFrom, from } from 'rxjs'
+import { distinctUntilChanged, filter, map, share, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { effectStoryTheme } from '../../../@theme'
@@ -53,6 +53,7 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
 
 @Component({
   standalone: true,
@@ -79,7 +80,12 @@ import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
   host: {
     class: 'ngm-story-designer'
   },
-  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService]
+  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService,
+    {
+      provide: NgmCopilotContextToken,
+      useClass: NgmCopilotContextService
+    }
+  ]
 })
 export class StoryDesignerComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
@@ -97,6 +103,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   private logger = inject(NGXLogger)
   // private renderer = inject(Renderer2)
   readonly #injector = inject(Injector)
+  readonly copilotContext = inject(NgmCopilotContextToken)
 
   @Input() storyId: string
 
@@ -256,6 +263,29 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
         this.appService.setNavigation({ catalog: MenuCatalog.Stories, id: this.story().id, label: this.story().name })
       }
     }
+
+    this.copilotContext.cubes.update(() => this.storyService.storyModelsOptions$.pipe(
+      tap(() => console.log(`loading cubes...`)),
+      switchMap((dataSources) => combineLatest(dataSources.map((option) => this.storyService.selectDataSource(option.key).pipe(
+        switchMap((dataSource) => dataSource.discoverMDCubes()),
+        
+      ))).pipe(
+        map((cubess) => {
+          const items = []
+          cubess.forEach((cubes, index) => {
+            items.push(...cubes.map((cube) => ({ value: {
+              dataSource: dataSources[index],
+              serizalize: async () => {
+                const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: dataSources[index].key, entitySet: cube.name}))
+                return markdownEntityType(entityType)
+              }
+            }, key: cube.name, caption: cube.caption })))
+          })
+          return items
+        })
+      )),
+      shareReplay(1)
+    ))
   }
 
   isDirty(): boolean {

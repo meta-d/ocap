@@ -330,9 +330,9 @@ export function includeIgnoreCase(text, target) {
  * @param highlight 
  * @returns 
  */
-export function splitByHighlight(text, highlight): Array<{value: string, match?: boolean}> {
+export function splitByHighlight(text: string, highlight: string | string[]): Array<{value: string, match?: boolean}> {
   if (highlight && text) {
-    const keywords: Array<string> = highlight.split(/\s+/g)
+    const keywords: Array<string> = Array.isArray(highlight) ? highlight : highlight.split(/\s+/g)
     const matchs = String(text).match(new RegExp(`(${keywords.join('|')})`, 'ig'))
     const results = String(text).split(new RegExp(`(${keywords.join('|')})`, 'i'))
     if (results?.length > 1) {

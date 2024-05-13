@@ -46,12 +46,13 @@ import {
   CopilotService
 } from '@metad/copilot'
 import {
+  NgmDisplayBehaviourComponent,
   NgmHighlightDirective,
   NgmScrollBackComponent,
   NgmSearchComponent,
   NgmTableComponent
 } from '@metad/ocap-angular/common'
-import { DensityDirective } from '@metad/ocap-angular/core'
+import { DensityDirective, ISelectOption } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
 import { MarkdownModule } from 'ngx-markdown'
@@ -61,7 +62,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, delay, startWith, throttleTime } from 'rxjs'
+import { BehaviorSubject, delay, map, startWith, tap, throttleTime } from 'rxjs'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCopilotCommand } from '../hooks'
@@ -70,6 +71,8 @@ import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
 import { MatCheckboxModule } from '@angular/material/checkbox'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { DisplayBehaviour } from '@metad/ocap-core'
 
 @Component({
   standalone: true,
@@ -101,6 +104,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox'
     NgmSearchComponent,
     NgmTableComponent,
     NgmHighlightDirective,
+    NgmDisplayBehaviourComponent,
 
     CopilotChatTokenComponent,
     NgmCopilotEnableComponent,
@@ -115,6 +119,7 @@ export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
+  DisplayBehaviour = DisplayBehaviour
 
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
@@ -237,21 +242,78 @@ export class NgmCopilotChatComponent {
    */
   public promptControl = new FormControl<string>('')
   readonly prompt = toSignal(this.promptControl.valueChanges, { initialValue: '' })
+  readonly autoprompt = signal<string>('更多提示语')
+  readonly lastWord = computed(() => {
+    const words = this.prompt()?.split(' ')
+    return words[words.length - 1]
+  })
+  readonly contextSearch = computed(() => {
+    const lastWord = this.lastWord()
+    if (lastWord && lastWord.startsWith('@')) {
+      return lastWord.slice(1)
+    }
+    return null
+  })
+  readonly isContextTrigger = computed(() => this.lastWord()?.startsWith('@'))
+  readonly beforeLastWord = computed(() => {
+    const words = this.prompt()?.split(' ')
+    return words.splice(0, words.length - 1).join(' ')
+  })
 
   #activatedPrompt = signal('')
 
-  readonly command = computed(() => {
+  readonly commandWithContext = computed(() => {
     const prompt = this.prompt()
     if (prompt && prompt.startsWith('/')) {
-      return prompt.split(' ')[0]
+      const name = prompt.split(' ')[0]
+      return this.copilotEngine.getCommandWithContext(name.slice(1))
     }
-    return ''
+    return null
   })
 
   readonly commandTitle = computed(() => {
-    const commands = this.commands()
-    const command = this.command()?.slice(1)
-    return commands.find((item) => item.name === command)?.description ?? `Can't find command: ${command}`
+    return this.commandWithContext()?.command.description
+  })
+
+  readonly commandContext = computed(() => this.commandWithContext()?.context)
+
+  // Only command in prompt
+  readonly onlyCommand = computed(() => {
+    const prompt = this.prompt()
+    if (prompt && prompt.startsWith('/')) {
+      const command = prompt.split(' ')[0]
+      if (command === prompt.trim()) {
+        return command
+      }
+    }
+    return null
+  })
+
+  readonly loadingContext = new BehaviorSubject(false)
+  readonly contextItems = derivedAsync(() => {
+    const context = this.commandContext()
+    const isContextTrigger = this.isContextTrigger()
+    if (isContextTrigger && context && context.items()) {
+      this.loadingContext.next(true)
+      return context.items().pipe(
+        tap(() => this.loadingContext.next(false)),
+      )
+    }
+    return null
+  })
+
+  readonly contextSearchWords = computed(() => this.contextSearch()?.toLowerCase().split('_'))
+
+  readonly filteredContextItems = computed(() => {
+    const contextSearch = this.contextSearch()
+    const items = this.contextItems()
+    if (contextSearch) {
+      const words = contextSearch.toLowerCase().split('_')
+      return items?.filter((item) => words.length ? words.every((word) => 
+        item.key.toLowerCase().includes(word) ||
+        item.caption?.toLowerCase().includes(word)) : true)
+    }
+    return items
   })
 
   readonly answering = signal(false)
@@ -264,7 +326,6 @@ export class NgmCopilotChatComponent {
   // Available models
   searchModel = new FormControl<string>('')
   readonly searchText = toSignal(this.searchModel.valueChanges.pipe(startWith('')), { initialValue: '' })
-  readonly triggerCharacter = signal('')
   readonly models = computed(() => {
     const text = this.searchText()?.toLowerCase()
     const models = this.latestModels()?.length ? this.latestModels() : this.#predefinedModels()
@@ -297,10 +358,6 @@ export class NgmCopilotChatComponent {
 
   readonly filteredCommands = computed<Array<CopilotCommand & {example: string}>>(() => {
     const text = this.prompt()?.toLowerCase()
-
-    if (this.triggerCharacter() === '@') {
-      return this.commands()
-    }
 
     if (text) {
       return this.commands()?.filter((item) => item.prompt.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)) ?? []
@@ -350,6 +407,19 @@ export class NgmCopilotChatComponent {
     effect(() => {
       this.selectedModel.set([this.#defaultModel()])
       this.model = this.#defaultModel()
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      const onlyCommand = this.onlyCommand()
+      if (onlyCommand) {
+        const commands = this.copilotEngine.commands()
+        const command = commands?.find((item) => item.name === onlyCommand.slice(1))
+        if (command) {
+          this.autoprompt.set(command.description)
+        }
+      } else {
+        this.autoprompt.set('')
+      }
     }, { allowSignalWrites: true })
   }
 
@@ -506,8 +576,6 @@ export class NgmCopilotChatComponent {
       this.askCopilotStream(this.prompt())
     }
 
-    this.triggerCharacter.set('')
-
     // Tab 键补全提示语
     if (event.key === 'Tab') {
       event.preventDefault()
@@ -532,11 +600,6 @@ export class NgmCopilotChatComponent {
 
         this.promptControl.setValue(historyQuestions[this.historyIndex()] ?? '')
       }
-    }
-
-    if (event.key === '@') {
-      this.triggerCharacter.set('@')
-      this.autocompleteTrigger().openPanel()
     }
   }
 
