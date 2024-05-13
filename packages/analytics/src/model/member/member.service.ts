@@ -119,10 +119,10 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		for (const model of models) {
 			const { items: members } = await this.findAll({ where: { modelId: model.id } })
 			const cubes = groupBy(members, 'entity')
-			for (const [cube, members] of Object.entries(cubes)) {
+			for (const [cube, items] of Object.entries<any>(cubes)) {
 				const vectorStore = await this.getVectorStore(model.id, cube, model.organizationId)
 				if (vectorStore) {
-					await vectorStore.addMembers(members.filter((member) => member.vector))
+					await vectorStore.addMembers(items.filter((member) => member.vector))
 				}
 			}
 		}
