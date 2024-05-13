@@ -73,6 +73,7 @@ import { PlaceholderMessages } from './types'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { DisplayBehaviour } from '@metad/ocap-core'
+import { ScrollingModule } from '@angular/cdk/scrolling'
 
 @Component({
   standalone: true,
@@ -99,6 +100,7 @@ import { DisplayBehaviour } from '@metad/ocap-core'
     TranslateModule,
     NgxPopperjsModule,
     MarkdownModule,
+    ScrollingModule,
 
     DensityDirective,
     NgmSearchComponent,
@@ -423,6 +425,10 @@ export class NgmCopilotChatComponent {
     }, { allowSignalWrites: true })
   }
 
+  trackByKey(index: number, item) {
+    return item?.key
+  }
+
   refreshModels() {
     this.copilotService.getModels().subscribe((res) => {
       this.latestModels.set(res.data.map((model) => ({ id: model.id, name: model.id })))
@@ -579,7 +585,7 @@ export class NgmCopilotChatComponent {
     // Tab 键补全提示语
     if (event.key === 'Tab') {
       event.preventDefault()
-      const activatedPrompt = this.#activatedPrompt() || this.filteredCommands()[0].examples[0]
+      const activatedPrompt = this.#activatedPrompt() || this.filteredCommands()[0]?.examples[0]
       if (activatedPrompt) {
         this.promptControl.setValue(activatedPrompt)
       }
