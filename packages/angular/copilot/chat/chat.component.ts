@@ -42,6 +42,7 @@ import {
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
   CopilotCommand,
+  CopilotContextItem,
   CopilotEngine,
   CopilotService
 } from '@metad/copilot'
@@ -52,7 +53,7 @@ import {
   NgmSearchComponent,
   NgmTableComponent
 } from '@metad/ocap-angular/common'
-import { DensityDirective, ISelectOption } from '@metad/ocap-angular/core'
+import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
 import { MarkdownModule } from 'ngx-markdown'
@@ -62,7 +63,7 @@ import {
   NgxPopperjsPlacements,
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
-import { BehaviorSubject, delay, map, startWith, tap, throttleTime } from 'rxjs'
+import { BehaviorSubject, delay, startWith, tap, throttleTime } from 'rxjs'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCopilotCommand } from '../hooks'
@@ -74,6 +75,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { ScrollingModule } from '@angular/cdk/scrolling'
+import { MatMenuModule } from '@angular/material/menu'
 
 @Component({
   standalone: true,
@@ -97,6 +99,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling'
     MatProgressBarModule,
     MatListModule,
     MatSliderModule,
+    MatMenuModule,
     TranslateModule,
     NgxPopperjsModule,
     MarkdownModule,
@@ -245,10 +248,8 @@ export class NgmCopilotChatComponent {
   public promptControl = new FormControl<string>('')
   readonly prompt = toSignal(this.promptControl.valueChanges, { initialValue: '' })
   readonly autoprompt = signal<string>('更多提示语')
-  readonly lastWord = computed(() => {
-    const words = this.prompt()?.split(' ')
-    return words[words.length - 1]
-  })
+  readonly #promptWords = computed(() => this.prompt()?.split(' '))
+  readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
   readonly contextSearch = computed(() => {
     const lastWord = this.lastWord()
     if (lastWord && lastWord.startsWith('@')) {
@@ -257,9 +258,27 @@ export class NgmCopilotChatComponent {
     return null
   })
   readonly isContextTrigger = computed(() => this.lastWord()?.startsWith('@'))
+  readonly hasContextTrigger = computed(() => this.prompt()?.includes('@'))
   readonly beforeLastWord = computed(() => {
     const words = this.prompt()?.split(' ')
     return words.splice(0, words.length - 1).join(' ')
+  })
+
+  readonly promptWords = computed(() => {
+    const lines = this.prompt()?.split('\n')
+    return lines.map((line) => {
+      const words = line.split(' ')
+      const commandWithContext = this.commandWithContext()
+      return words.map((word) => {
+        const type = word.startsWith('/') ? 'command' : word.startsWith('@') ? 'context' : 'text'
+        return {
+          text: word,
+          type,
+          description: type === 'command' ? Promise.resolve(commandWithContext?.command.description) : 
+            (type === 'context' && commandWithContext) ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption) : Promise.resolve('')
+        }
+      })
+    })
   })
 
   #activatedPrompt = signal('')
@@ -291,14 +310,14 @@ export class NgmCopilotChatComponent {
     return null
   })
 
-  readonly loadingContext = new BehaviorSubject(false)
+  readonly loadingContext$ = new BehaviorSubject(false)
   readonly contextItems = derivedAsync(() => {
     const context = this.commandContext()
-    const isContextTrigger = this.isContextTrigger()
-    if (isContextTrigger && context && context.items()) {
-      this.loadingContext.next(true)
+    const hasContextTrigger = this.hasContextTrigger()
+    if (hasContextTrigger && context && context.items()) {
+      this.loadingContext$.next(true)
       return context.items().pipe(
-        tap(() => this.loadingContext.next(false)),
+        tap(() => this.loadingContext$.next(false)),
       )
     }
     return null
@@ -307,10 +326,27 @@ export class NgmCopilotChatComponent {
   readonly contextSearchWords = computed(() => this.contextSearch()?.toLowerCase().split('_'))
 
   readonly filteredContextItems = computed(() => {
-    const contextSearch = this.contextSearch()
+    const isContextTrigger = this.isContextTrigger()
+    const text = this.contextSearch()
     const items = this.contextItems()
-    if (contextSearch) {
-      const words = contextSearch.toLowerCase().split('_')
+    if (isContextTrigger) {
+      if (text) {
+        const words = text.toLowerCase().split('_')
+        return items?.filter((item) => words.length ? words.every((word) => 
+          item.key.toLowerCase().includes(word) ||
+          item.caption?.toLowerCase().includes(word)) : true)
+      }
+      return items
+    }
+    return null
+  })
+
+  readonly contextMenuSearch = model<string>('')
+  readonly filteredContextMenuItems = computed(() => {
+    const text = this.contextMenuSearch()
+    const items = this.contextItems()
+    if (text) {
+      const words = text.toLowerCase().split(' ')
       return items?.filter((item) => words.length ? words.every((word) => 
         item.key.toLowerCase().includes(word) ||
         item.caption?.toLowerCase().includes(word)) : true)
@@ -437,6 +473,26 @@ export class NgmCopilotChatComponent {
 
   changeSelectedModel(values) {
     this.model = values[0]
+  }
+
+  setContextForWord(content: string, word) {
+    let prompt = ''
+    this.promptWords().forEach((line, i) => {
+      const index = line.findIndex((item) => item === word)
+      if (index > -1) {
+        line[index] = {
+          ...line[index],
+          text: content
+        }
+      }
+      prompt += line.map((item) => item.text).join(' ')
+      // not last
+      if (i < this.promptWords().length - 1) {
+        prompt += '\n'
+      }
+    })
+
+    this.promptControl.setValue(prompt)
   }
 
   async askCopilotStream(

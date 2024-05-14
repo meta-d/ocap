@@ -56,6 +56,9 @@
 
 .ngm-colpilot__active {
   @apply shadow-lg dark:shadow-neutral-800;
+  .ngm-colpilot__words {
+    @apply z-0;
+  }
 }
 
 .ngm-copilot-chat__message-content {
@@ -74,6 +77,13 @@
   stroke-width: 1.5;
   height: 18px;
   width: 18px;
+}
+
+.ngm-colpilot__input-wrapper {
+  
+}
+.ngm-colpilot__input {
+  max-height: unset !important;
 }
 
 :host::ng-deep {
@@ -165,6 +175,19 @@
   .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
     .mdc-list-item {
       @apply pl-2;
+    }
+  }
+
+  .ngm-menu__copilot-context-popper {
+    position: relative;
+    width: 300px;
+    max-width: 300px;
+    min-height: 200px;
+    .cdk-virtual-scroll-viewport {
+      overflow-x: hidden;
+    }
+    .cdk-virtual-scroll-content-wrapper {
+      max-width: 100%;
     }
   }
 }

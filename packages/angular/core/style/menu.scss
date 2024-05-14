@@ -12,3 +12,10 @@
     }
   }
 }
+
+.mat-mdc-menu-panel .mat-mdc-menu-content {
+  .mat-mdc-menu-item.active {
+    color: var(--ngm-color-primary);
+    @apply font-bold bg-black/5 dark:bg-white/10;
+  }
+}

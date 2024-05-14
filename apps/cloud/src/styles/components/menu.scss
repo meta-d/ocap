@@ -61,11 +61,6 @@
 }
 
 .mat-mdc-menu-panel .mat-mdc-menu-content {
-
-  .mat-mdc-menu-item.active {
-    color: var(--ngm-color-primary);
-  }
-
   .mat-mdc-menu-item {
     .mat-icon {
       @apply shrink-0;

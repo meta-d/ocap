@@ -9,7 +9,7 @@ import {
 } from '@metad/copilot'
 import { ISelectOption } from '@metad/ocap-angular/core'
 import { AgentExecutor } from 'langchain/agents'
-import { Observable, map } from 'rxjs'
+import { Observable, firstValueFrom, map } from 'rxjs'
 
 export const NgmCopilotContextToken = new InjectionToken<NgmCopilotContextService>('NgmCopilotContextToken')
 
@@ -160,5 +160,10 @@ export class NgmCopilotContextService implements CopilotContext {
     }
 
     return null
+  }
+
+  async getContextItem(uKey: string) {
+    const items = await firstValueFrom(this.items())
+    return items.find((item) => item.uKey === uKey)
   }
 }

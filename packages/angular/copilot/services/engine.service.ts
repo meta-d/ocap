@@ -417,7 +417,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
       }
     }
-    
 
     try {
       let agentExecutor = null

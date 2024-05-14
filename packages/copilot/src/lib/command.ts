@@ -64,6 +64,7 @@ export interface CopilotContext {
 
   getCommand(name: string): CopilotCommand | null
   getCommandWithContext(name: string): {command: CopilotCommand; context: CopilotContext} | null
+  getContextItem(key: string): Promise<CopilotContextItem | null>
 }
 
 export interface CopilotContextItem {
