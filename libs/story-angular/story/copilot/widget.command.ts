@@ -7,7 +7,8 @@ import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { firstValueFrom } from 'rxjs'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { firstValueFrom, of } from 'rxjs'
 import { z } from 'zod'
 import {
   ChartSchema,
@@ -20,7 +21,6 @@ import {
   tryFixAnalyticsAnnotation
 } from './schema'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
-import { derivedAsync } from 'ngxtension/derived-async'
 
 function createUpdateChartTools(storyService: NxStoryService) {
   return [
@@ -60,18 +60,19 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
   const defaultModel = signal<string>(null)
   const defaultDataSource = signal<string>(null)
   const defaultEntity = signal<string>(null)
-  const defaultCube = derivedAsync(() => {
-    const entitySet = defaultEntity()
-    const dataSource = defaultDataSource()
-    return storyService.selectEntityType({ dataSource, entitySet })
-  })
   const defaultDataSettings = computed(() => {
     const entitySet = defaultEntity()
     const dataSource = defaultDataSource()
-    return (dataSource && entitySet) ? {
-      dataSource,
-      entitySet
-    } : null
+    return dataSource && entitySet
+      ? {
+          dataSource,
+          entitySet
+        }
+      : null
+  })
+  const defaultCube = derivedAsync(() => {
+    const dataSettings = defaultDataSettings()
+    return dataSettings ? storyService.selectEntityType(dataSettings) : of(null)
   })
 
   // try {
@@ -223,10 +224,11 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
           logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
 
           let prompt = ''
-          if (params?.length) {
-            defaultModel.set(params[0].item.value.dataSourceId)
-            defaultDataSource.set(params[0].item.value.dataSource.key)
-            defaultEntity.set(params[0].item.key)
+          const cubeParams = params?.filter((param) => param.item)
+          if (cubeParams?.length) {
+            defaultModel.set(cubeParams[0].item.value.dataSourceId)
+            defaultDataSource.set(cubeParams[0].item.value.dataSource.key)
+            defaultEntity.set(cubeParams[0].item.key)
           } else {
             if (!defaultModel() || !defaultEntity()) {
               const result = await storyService.openDefultDataSettings()
@@ -299,10 +301,12 @@ export function injectWidgetStyleCommand(storyService: NxStoryService) {
 
   const tools = [...createUpdateChartTools(storyService)]
 
-  return injectCopilotCommand({
-    name: 'chartStyle',
+  return injectCopilotCommand('chartStyle', {
     alias: 'cs',
     description: 'How to style the chart widget you want',
+    agent: {
+      type: CopilotAgentType.Default
+    },
     systemPrompt: async () => {
       if (!currentWidget()) {
         throw new Error(

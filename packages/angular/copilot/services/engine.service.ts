@@ -350,7 +350,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
 
     try {
-      let agentExecutor = null
+      let agentExecutor: AgentExecutor = null
       const llm = this.llm()
       const verbose = this.verbose()
       if (llm) {
@@ -372,7 +372,22 @@ export class NgmCopilotEngineService implements CopilotEngine {
         throw new Error('LLM is not available')
       }
 
-      const result = await agentExecutor.invoke({ input: content, system_prompt: systemPrompt, context: contextContent })
+      const result = await agentExecutor.invoke({ input: content, system_prompt: systemPrompt, context: contextContent }, {
+        callbacks: [
+          {
+            handleLLMEnd: async (output) => {
+              const text = output.generations[0][0].text
+              if (text) {
+                this.upsertMessage({
+                  id: assistantId,
+                  role: CopilotChatMessageRoleEnum.Assistant,
+                  content: output.generations[0][0].text,
+                })
+              }
+            }
+          }
+        ]
+      })
 
       this.#logger?.debug(`Agent command '${command.name}' result:`, result)
 

@@ -185,7 +185,9 @@ export async function recognizeContext(prompt: string, context: CopilotContext) 
 
   let contextContent = ''
   for(const param of params) {
-    contextContent += await param.item.serizalize()
+    if (param.item) {
+      contextContent += await param.item.serizalize()
+    }
   }
   return contextContent
 }
