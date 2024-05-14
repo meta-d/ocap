@@ -372,16 +372,22 @@ export class NgmCopilotEngineService implements CopilotEngine {
         throw new Error('LLM is not available')
       }
 
+      let verboseContent = ''
       const result = await agentExecutor.invoke({ input: content, system_prompt: systemPrompt, context: contextContent }, {
         callbacks: [
           {
             handleLLMEnd: async (output) => {
               const text = output.generations[0][0].text
               if (text) {
+                if (verbose) {
+                  verboseContent += '\n\n👉 ' + text
+                } else {
+                  verboseContent = text
+                }
                 this.upsertMessage({
                   id: assistantId,
                   role: CopilotChatMessageRoleEnum.Assistant,
-                  content: output.generations[0][0].text,
+                  content: verboseContent,
                 })
               }
             }
@@ -394,7 +400,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.upsertMessage({
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,
-        content: result['output'],
+        content: verboseContent,
         status: 'done'
       })
       return null

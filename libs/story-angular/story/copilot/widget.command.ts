@@ -146,6 +146,7 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
         position: position,
         title: title,
         dataSettings: {
+          ...(defaultDataSettings() ?? {}),
           analytics: tryFixAnalyticsAnnotation(analytics, entityType)
         },
         options
