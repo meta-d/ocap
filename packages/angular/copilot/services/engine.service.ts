@@ -22,8 +22,7 @@ import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
-import { NgmCopilotContextToken } from './context.service'
-import { firstValueFrom } from 'rxjs'
+import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 
 let uniqueId = 0
 
@@ -44,13 +43,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly #aiOptions = signal<AIOptions>({
     model: DefaultModel
   } as AIOptions)
-
-  // get aiOptions() {
-  //   return this.#aiOptions()
-  // }
-  // set aiOptions(value: AIOptions) {
-  //   this.#aiOptions.update((state) => ({...state, ...value}))
-  // }
 
   readonly verbose = computed(() => this.#aiOptions().verbose)
 
@@ -121,34 +113,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return messages
   })
 
-  // Entry Points
-  // readonly #entryPoints = signal<Record<string, AnnotatedFunction<any[]>>>({})
-
-  // readonly getFunctionCallHandler = computed(() => {
-  //   return entryPointsToFunctionCallHandler(Object.values(this.#entryPoints()))
-  // })
-  // readonly getChatCompletionFunctionDescriptions = computed(() => {
-  //   return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
-  // })
-  // readonly getGlobalFunctionDescriptions = computed(() => {
-  //   const ids = Object.keys(this.#entryPoints()).filter(
-  //     (id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id))
-  //   )
-  //   return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
-  // })
-
-  // // Commands
-  // readonly #commands = signal<
-  //   Record<
-  //     string,
-  //     CopilotCommand & {
-  //       llm?: ChatOpenAI<ChatOpenAICallOptions>
-  //       agentExecutor?: AgentExecutor
-  //     }
-  //   >
-  // >({})
-  // readonly commands = computed(() => Object.values(this.#commands()))
-  // readonly #commandAgents = computed(() => Object.values(this.#commands()).filter((command) => command.agentExecutor))
   readonly commands = computed(() => this.copilotContext.commands())
 
   readonly #dropActions = signal<Record<string, DropAction>>({})
@@ -159,30 +123,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly isLoading = signal(false)
 
   constructor() {
-    // effect(() => {
-    //   const llm = this.llm()
-    //   const commands = this.#commands()
-    //   const verbose = this.verbose()
-    //   if (!llm) return
-    //   Object.values(commands).forEach((command) => {
-    //     if (command.tools && (!command.llm || command.llm !== llm)) {
-    //       createOpenAIToolsAgent({
-    //         llm,
-    //         tools: command.tools,
-    //         prompt: command.prompt
-    //       }).then((agent) => {
-    //         command.llm = llm
-    //         command.agentExecutor = new AgentExecutor({
-    //           agent,
-    //           tools: command.tools as any[],
-    //           verbose
-    //         })
-    //       })
-    //     } else if (command.agentExecutor) {
-    //       command.agentExecutor.verbose = verbose
-    //     }
-    //   })
-    // })
     //   effect(() => {
     //     console.log('conversations:', this.conversations$())
     //     console.log('last conversation:', this.lastConversation())
@@ -365,11 +305,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
     conversationId ??= nanoid()
     abortController ??= new AbortController()
 
+    // Context content
+    const contextContent = context ? await recognizeContext(content, context) : null
+    const params = await recognizeContextParams(content, context)
+
     const messages = []
     let systemPrompt = ''
     try {
+      // Get System prompt
       if (command.systemPrompt) {
-        systemPrompt = await command.systemPrompt()
+        systemPrompt = await command.systemPrompt({params})
       }
 
       messages.push({
@@ -403,20 +348,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.stopMessage(assistantId)
     }
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
-
-    let contextContent = ''
-    if (context) {
-      const words = content.split(' ')
-      for(const word of words) {
-        if (context && word.startsWith('@')) {
-          const contextItems = await firstValueFrom(context.items())
-          const contextItem = contextItems.find((item) => item.uKey === word.substring(1))
-          if (contextItem) {
-            contextContent += await contextItem.serizalize()
-          }
-        }
-      }
-    }
 
     try {
       let agentExecutor = null

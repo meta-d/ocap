@@ -24,7 +24,8 @@ export function calcEntityTypePrompt(entityType: EntityType) {
 }
 
 export function markdownEntityType(entityType: EntityType) {
-  return `name: "${entityType.name}" caption: "${entityType.caption}"
+  return `The cube definition for ${entityType.name} is as follows:
+name: "${entityType.name}" caption: "${entityType.caption}"
 dimensions:
 ${getEntityDimensions(entityType)
     .map((dimension) => `  - name: "${dimension.name}"

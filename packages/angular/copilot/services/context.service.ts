@@ -4,6 +4,7 @@ import {
   AnnotatedFunction,
   CopilotCommand,
   CopilotContext,
+  CopilotContextParam,
   entryPointsToChatCompletionFunctions,
   entryPointsToFunctionCallHandler
 } from '@metad/copilot'
@@ -57,15 +58,25 @@ export class NgmCopilotContextService implements CopilotContext {
   })
 
   // contexts
-  readonly cubes = signal<Observable<ISelectOption<{serizalize: () => Promise<string>}>[]>>(null)
-  readonly items = computed(() => this.cubes().pipe(
-    map((cubes) => cubes.map((cube) => ({
-      key: cube.key,
-      caption: cube.caption,
-      uKey: cube.key.split(' ').join('_'),
-      serizalize: cube.value.serizalize
-    }))
-  )))
+  readonly cubes = signal<Observable<ISelectOption<{
+    dataSource: string;
+    serizalize: () => Promise<string>
+  }>[]>>(null)
+  readonly items = computed(() =>
+    this.cubes().pipe(
+      map((cubes) =>
+        cubes.map((cube) => ({
+          key: cube.key,
+          caption: cube.caption,
+          uKey: cube.key.split(' ').join('_'),
+          serizalize: cube.value.serizalize,
+          value: {
+            ...cube.value,
+          }
+        }))
+      )
+    )
+  )
 
   constructor() {
     this.parentContext?.registerChild(this)
@@ -144,11 +155,11 @@ export class NgmCopilotContextService implements CopilotContext {
     const { command } = this.getCommandWithContext(name) ?? {}
     return command
   }
-  
+
   getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null {
     const command = this.#commands()[name] ?? Object.values(this.#commands()).find((command) => command.alias === name)
     if (command) {
-      return {command, context: this}
+      return { command, context: this }
     }
 
     const children = this.children()
@@ -166,4 +177,31 @@ export class NgmCopilotContextService implements CopilotContext {
     const items = await firstValueFrom(this.items())
     return items.find((item) => item.uKey === uKey)
   }
+}
+
+// 识别 prompt 中的 context 提示
+export async function recognizeContext(prompt: string, context: CopilotContext) {
+  const params = await recognizeContextParams(prompt, context)
+
+  let contextContent = ''
+  for(const param of params) {
+    contextContent += await param.item.serizalize()
+  }
+  return contextContent
+}
+
+export async function recognizeContextParams(prompt: string, context: CopilotContext) {
+  const params: CopilotContextParam[] = []
+  const words = prompt.split(' ')
+  for (const word of words) {
+    if (context && word.startsWith('@')) {
+      params.push({
+        content: word.slice(1),
+        context,
+        item: await context.getContextItem(word.slice(1))
+      })
+    }
+  }
+
+  return params
 }

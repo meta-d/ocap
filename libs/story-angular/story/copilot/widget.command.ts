@@ -1,9 +1,9 @@
-import { inject, signal } from '@angular/core'
+import { computed, inject, signal } from '@angular/core'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
+import { CopilotAgentType } from '@metad/copilot'
 import { makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
-import { DataSettings, EntityType } from '@metad/ocap-core'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -20,7 +20,7 @@ import {
   tryFixAnalyticsAnnotation
 } from './schema'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
-import { CopilotAgentType } from '@metad/copilot'
+import { derivedAsync } from 'ngxtension/derived-async'
 
 function createUpdateChartTools(storyService: NxStoryService) {
   return [
@@ -58,9 +58,21 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
   const currentStoryPoint = storyService.currentStoryPoint
 
   const defaultModel = signal<string>(null)
-  const defaultDataSettings = signal<DataSettings>(null)
+  const defaultDataSource = signal<string>(null)
   const defaultEntity = signal<string>(null)
-  const defaultCube = signal<EntityType>(null)
+  const defaultCube = derivedAsync(() => {
+    const entitySet = defaultEntity()
+    const dataSource = defaultDataSource()
+    return storyService.selectEntityType({ dataSource, entitySet })
+  })
+  const defaultDataSettings = computed(() => {
+    const entitySet = defaultEntity()
+    const dataSource = defaultDataSource()
+    return (dataSource && entitySet) ? {
+      dataSource,
+      entitySet
+    } : null
+  })
 
   // try {
   //   ChartWidgetSchema.parse(JSON.parse("{\n  \"title\": \"Sales Amount by Customer Country\",\n  \"position\": {\n    \"x\": 0,\n    \"y\": 0,\n    \"cols\": 6,\n    \"rows\": 6\n  },\n  \"dataSettings\": {\n    \"limit\": 100\n  },\n  \"chart\": {\n    \"chartType\": {\n      \"type\": \"Pie\",\n      \"chartOptions\": {\n        \"seriesStyle\": {},\n        \"legend\": {},\n        \"axis\": {},\n        \"dataZoom\": {},\n        \"tooltip\": {},\n        \"aria\": {\n          \"enabled\": true,\n          \"decal\": {\n            \"show\": true\n          }\n        }\n      }\n    },\n    \"dimensions\": [\n      {\n        \"dimension\": \"[Customer]\",\n        \"hierarchy\": \"[Customer.Geography]\",\n        \"level\": \"[Customer.Geography].[Country Region]\"\n      }\n    ],\n    \"measures\": [\n      {\n        \"dimension\": \"Measures\",\n        \"measure\": \"Sales Amount\",\n        \"order\": \"DESC\",\n        \"chartOptions\": {}\n      }\n    ]\n  },\n  \"slicers\": [\n    {\n      \"dimension\": {\n        \"dimension\": \"[Product]\",\n        \"hierarchy\": \"[Product.Products]\",\n        \"level\": \"[Product.Products].[Category]\"\n      },\n      \"members\": [\n        {\n          \"key\": \"[Product.Products].[Accessories]\",\n          \"caption\": \"Accessories\"\n        }\n      ]\n    }\n  ]\n}"))
@@ -98,7 +110,9 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
             ...(defaultDataSettings() ?? {}),
             chartAnnotation: completeChartAnnotation(chartAnnotationCheck(chart, entityType)),
             selectionVariant: {
-              selectOptions: (slicers ?? (<any>chart).slicers as any[])?.map((slicer) => tryFixSlicer(slicer, entityType))
+              selectOptions: (slicers ?? ((<any>chart).slicers as any[]))?.map((slicer) =>
+                tryFixSlicer(slicer, entityType)
+              )
             }
           }
         })
@@ -185,7 +199,6 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
     }
   })
 
-  
   return injectCopilotCommand(
     'widget',
     (async () => {
@@ -206,31 +219,38 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
         agent: {
           type: CopilotAgentType.Default
         },
-        systemPrompt: async () => {
+        systemPrompt: async ({ params }) => {
           logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
-          if (!defaultModel() || !defaultEntity()) {
-            const result = await storyService.openDefultDataSettings()
 
-            if (result?.dataSource && result?.entities[0]) {
-              defaultDataSettings.set({dataSource: result.dataSource, entitySet: result.entities[0]})
-              defaultModel.set(result.modelId)
-              defaultEntity.set(result.entities[0])
-              const entityType = await firstValueFrom(
-                storyService.selectEntityType(defaultDataSettings())
-              )
-              defaultCube.set(entityType)
+          let prompt = ''
+          if (params?.length) {
+            defaultModel.set(params[0].item.value.dataSourceId)
+            defaultDataSource.set(params[0].item.value.dataSource.key)
+            defaultEntity.set(params[0].item.key)
+          } else {
+            if (!defaultModel() || !defaultEntity()) {
+              const result = await storyService.openDefultDataSettings()
+
+              if (result?.dataSource && result?.entities[0]) {
+                defaultModel.set(result.modelId)
+                defaultDataSource.set(result.dataSource)
+                defaultEntity.set(result.entities[0])
+              }
             }
-          }
-          return `The cube is:
+
+            prompt += `The Cube structure is:
 \`\`\`
 ${defaultCube() ? markdownEntityType(defaultCube()) : 'unknown'}
 \`\`\`
+`
+          }
 
+          return `${prompt}
 Original widget is:
 \`\`\`
 ${JSON.stringify(currentWidget() ?? 'empty')}
 \`\`\`
-    `
+`
         },
         tools,
         prompt: ChatPromptTemplate.fromMessages([

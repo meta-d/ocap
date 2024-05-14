@@ -275,6 +275,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
           cubess.forEach((cubes, index) => {
             items.push(...cubes.map((cube) => ({ value: {
               dataSource: dataSources[index],
+              dataSourceId: dataSources[index].value,
               serizalize: async () => {
                 const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: dataSources[index].key, entitySet: cube.name}))
                 return markdownEntityType(entityType)

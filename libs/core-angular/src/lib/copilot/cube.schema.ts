@@ -66,6 +66,10 @@ export const SlicerSchema = z.object({
  * @returns
  */
 export function tryFixDimension(dimension: Dimension | Measure, entityType: EntityType) {
+  if (!entityType) {
+    return dimension
+  }
+  
   let property = null
   if (isDimension(dimension)) {
     if (dimension.level) {

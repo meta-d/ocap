@@ -122,7 +122,10 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 			for (const [cube, items] of Object.entries<any>(cubes)) {
 				const vectorStore = await this.getVectorStore(model.id, cube, model.organizationId)
 				if (vectorStore) {
-					await vectorStore.addMembers(items.filter((member) => member.vector))
+					const existed = await vectorStore?.checkIndexExists()
+					if (!existed) {
+						await vectorStore.addMembers(items.filter((member) => member.vector))
+					}
 				}
 			}
 		}
@@ -138,6 +141,10 @@ class PGRedisVectorStore {
 		private _dbConfig: RedisVectorStoreConfig
 	) {
 		this.vectorStore = new RedisVectorStore(embeddings, _dbConfig)
+	}
+
+	async checkIndexExists() {
+		return this.vectorStore.checkIndexExists()
 	}
 
 	async storeMembers(members: DeepPartial<SemanticModelMember>[], entityType: EntityType) {

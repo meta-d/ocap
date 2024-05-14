@@ -1,6 +1,6 @@
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
-import { CopilotChatMessage } from './types/types'
 import { Observable } from 'rxjs'
+import { CopilotChatMessage } from './types/types'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -27,7 +27,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    *
    * @returns System prompt message
    */
-  systemPrompt?: () => Promise<string>
+  systemPrompt?: (options?: { params?: CopilotContextParam[] }) => Promise<string>
   /**
    *
    * @param args
@@ -58,20 +58,26 @@ export enum CopilotAgentType {
 }
 
 export interface CopilotContext {
-
   items(): Observable<CopilotContextItem[]>
   commands(): Array<CopilotCommand>
 
   getCommand(name: string): CopilotCommand | null
-  getCommandWithContext(name: string): {command: CopilotCommand; context: CopilotContext} | null
+  getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
   getContextItem(key: string): Promise<CopilotContextItem | null>
 }
 
-export interface CopilotContextItem {
+export interface CopilotContextItem<T = any> {
   key: string
   caption: string
   uKey: string
   serizalize(): Promise<string>
+  value: T
+}
+
+export type CopilotContextParam = {
+  content: string
+  context: CopilotContext
+  item: CopilotContextItem
 }
 
 export const SystemCommandClear = 'clear'
