@@ -1,7 +1,7 @@
 import { MatCardModule } from '@angular/material/card'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { ResizerBarDirective } from './resizer.directive'
 import { ResizerModule } from './resizer.module'
 
@@ -12,52 +12,59 @@ export default {
     moduleMetadata({
       imports: [BrowserAnimationsModule, MatSidenavModule, MatCardModule, ResizerModule]
     })
-  ]
+  ],
+  render: (args: Partial<ResizerBarDirective>) => ({
+    props: {
+      ...args,
+    },
+    template: `<mat-drawer-container class="ngm-drawer-container" autosize>
+    <mat-drawer mode="side" [position]="drawerPosition" opened ngmResizer [resizerWidth]="200">Drawer content
+      <div ngmResizerBar [resizerBarPosition]="barPosition" cdkDrag></div>
+    </mat-drawer>
+    <mat-drawer-content>Main content</mat-drawer-content>
+  </mat-drawer-container>`,
+  styles: [`.mat-drawer-container {
+    height: 400px;
+      }`]
+  }),
 } as Meta<ResizerBarDirective>
 
-const Template: Story<any> = (args: any) => ({
-  props: args,
-  template: `
-<mat-drawer-container class="ngm-drawer-container" autosize>
-  <mat-drawer mode="side" [position]="drawerPosition" opened ngmResizer [resizerWidth]="200">Drawer content
-    <div ngmResizerBar [resizerBarPosition]="barPosition" cdkDrag></div>
-  </mat-drawer>
-  <mat-drawer-content>Main content</mat-drawer-content>
-</mat-drawer-container>
-  `,
-  styles: [`.mat-drawer-container {
-height: 400px;
-  }`]
-})
+type Story = StoryObj<ResizerBarDirective>
 
-export const Primary = Template.bind({})
-Primary.args = {
-  barPosition: 'right'
-}
+export const Primary: Story = {
+  args: {
+    position: 'right'
+  },
+};
 
-export const Left = Template.bind({})
-Left.args = {
-  drawerPosition: 'end',
-  barPosition: 'left'
-}
+export const Left: Story = {
+  args: {
+    position: 'left'
+  },
+};
 
-const CardTemplate: Story<any> = (args: any) => ({
-  props: args,
-  template: `
-<mat-card ngmResizer [resizerHeight]="200">
+export const Top: Story = {
+  args: {
+    position: 'top'
+  },
+  render: (args: any) => ({
+    template: `
+    <mat-card ngmResizer [resizerHeight]="200">
 Simple card
   <div ngmResizerBar [resizerBarPosition]="barPosition" cdkDrag></div>
-</mat-card>
-  `,
-  styles: [`.mat-card {margin: 5rem;}`]
-})
+</mat-card>`
+  })
+};
 
-export const Top = CardTemplate.bind({})
-Top.args = {
-  barPosition: 'top'
-}
-
-export const Bottom = CardTemplate.bind({})
-Bottom.args = {
-  barPosition: 'bottom'
-}
+export const Bottom: Story = {
+  args: {
+    position: 'bottom'
+  },
+  render: (args: any) => ({
+    template: `
+    <mat-card ngmResizer [resizerHeight]="200">
+Simple card
+  <div ngmResizerBar [resizerBarPosition]="barPosition" cdkDrag></div>
+</mat-card>`
+  })
+};

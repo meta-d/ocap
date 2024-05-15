@@ -9,7 +9,7 @@ import {
 } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, moduleMetadata } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { NgmMemberTableComponent } from './member-table.component'
@@ -83,46 +83,46 @@ export default {
   ]
 } as Meta<NgmMemberTableComponent<unknown>>
 
-const Template: Story<NgmMemberTableComponent<unknown>> = (args: NgmMemberTableComponent<unknown>) => ({
-  props: args
-})
+// const Template: Story<NgmMemberTableComponent<unknown>> = (args: NgmMemberTableComponent<unknown>) => ({
+//   props: args
+// })
 
-export const Primary = Template.bind({})
-Primary.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  }
-}
+// export const Primary = Template.bind({})
+// Primary.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   }
+// }
 
-export const SourceFrom = Template.bind({})
-SourceFrom.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION
-  }
-}
+// export const SourceFrom = Template.bind({})
+// SourceFrom.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   },
+//   options: {
+//     memberSource: MemberSource.DIMENSION
+//   }
+// }
 
-export const Searchable = Template.bind({})
-Searchable.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION,
-    searchable: true
-  }
-}
+// export const Searchable = Template.bind({})
+// Searchable.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   },
+//   options: {
+//     memberSource: MemberSource.DIMENSION,
+//     searchable: true
+//   }
+// }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { SplitButtonComponent } from './split-button.component'
 import { SplitButtonModule } from './split-button.module'
 
@@ -15,10 +15,9 @@ export default {
   ]
 } as Meta<SplitButtonComponent>
 
-const Template: Story<SplitButtonComponent> = (args: SplitButtonComponent) => ({
-  props: args,
-  styles: [``]
-})
+type Story = StoryObj<SplitButtonComponent>
 
-export const SplitButton = Template.bind({})
-SplitButton.args = {}
+export const SplitButton: Story = {
+  args: {
+  },
+};

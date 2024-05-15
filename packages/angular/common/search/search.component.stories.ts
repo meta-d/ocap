@@ -31,7 +31,7 @@ export const DensityCompact: Story = {
   args: {
     displayDensity: DisplayDensity.compact
   },
-  render: (args: NgmSearchComponent) => ({
+  render: (args: Partial<NgmSearchComponent>) => ({
     args,
     template: `<div class="ngm-density__compact">
     <ngm-search ${argsToTemplate(args)}></ngm-search>
@@ -41,7 +41,7 @@ export const DensityCompact: Story = {
 
 export const Focus: Story = {
   args: {},
-  render: (args: NgmSearchComponent) => ({
+  render: (args: Partial<NgmSearchComponent>) => ({
     args,
     template: `<ngm-search ${argsToTemplate(args)} cdkMonitorSubtreeFocus></ngm-search>`
   })

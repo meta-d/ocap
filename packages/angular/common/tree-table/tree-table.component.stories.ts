@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router'
 import { MatButtonModule } from '@angular/material/button'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { DisplayDensity, OcapCoreModule } from '@metad/ocap-angular/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { TreeTableComponent } from './tree-table.component'
 import { TreeTableModule } from './tree-table.module'
 
@@ -73,7 +73,6 @@ class TestCellTemplate implements AfterViewInit {
       }
     ]
   }
-
 }
 
 export default {
@@ -87,108 +86,110 @@ export default {
   ]
 } as Meta<TreeTableComponent<unknown>>
 
+type Story = StoryObj<TreeTableComponent<unknown>>
 
-const Template: Story<TreeTableComponent<unknown>> = (args: TreeTableComponent<unknown>) => ({
-  props: args,
-  styles: [``]
-})
-
-export const Primary = Template.bind({})
-Primary.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ]
-}
-
-export const DensityCompact = Template.bind({})
-DensityCompact.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ],
-  displayDensity: DisplayDensity.compact
-}
-
-export const Striped = Template.bind({})
-Striped.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ],
-  displayDensity: DisplayDensity.compact,
-  striped: true
-}
-
-export const Grid = Template.bind({})
-Grid.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ],
-  displayDensity: DisplayDensity.compact,
-  grid: true
-}
-
-export const Pipe = Template.bind({})
-Pipe.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型',
-      pipe: (value) => {
-        return `Type is ` + value
+export const Primary: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
       }
-    }
-  ],
-  displayDensity: DisplayDensity.compact,
-  striped: true
+    ]
+  },
+};
+
+export const DensityCompact: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
+      }
+    ],
+    displayDensity: DisplayDensity.compact
+  }
 }
 
-export const InitialLevel = Template.bind({})
-InitialLevel.args = {
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ],
-  initialLevel: Number.MAX_SAFE_INTEGER
+export const Striped: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
+      }
+    ],
+    displayDensity: DisplayDensity.compact,
+    striped: true
+  }
 }
 
-export const StickyHeaders = Template.bind({})
-StickyHeaders.args = {
-  nameLabel: '名称',
-  data: TREE_NODE_DATA,
-  columns: [
-    {
-      name: 'type',
-      caption: '类型'
-    }
-  ],
-  initialLevel: Number.MAX_SAFE_INTEGER,
-  stickyHeaders: true
+export const Grid: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
+      }
+    ],
+    displayDensity: DisplayDensity.compact,
+    grid: true
+  }
 }
 
-const TemplateTemplate: Story<TestCellTemplate> = (args: TestCellTemplate) => ({
-  props: args,
-  template: `<ngm-test-tree-table-cell-template></ngm-test-tree-table-cell-template>`
-})
+export const Pipe: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型',
+        pipe: (value) => {
+          return `Type is ` + value
+        }
+      }
+    ],
+    displayDensity: DisplayDensity.compact,
+    striped: true
+  }
+}
 
-export const CellTemplate = TemplateTemplate.bind({})
-CellTemplate.args = {
+export const InitialLevel: Story = {
+  args: {
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
+      }
+    ],
+    initialLevel: Number.MAX_SAFE_INTEGER
+  }
+}
+
+export const StickyHeaders: Story = {
+  args: {
+    nameLabel: '名称',
+    data: TREE_NODE_DATA,
+    columns: [
+      {
+        name: 'type',
+        caption: '类型'
+      }
+    ],
+    initialLevel: Number.MAX_SAFE_INTEGER,
+    stickyHeaders: true
+  }
+}
+
+export const CellTemplate: Story = {
+  args: {
+  },
+  render: (args: Partial<TestCellTemplate>) => ({
+    template: `<ngm-test-tree-table-cell-template></ngm-test-tree-table-cell-template>`
+  })
 }

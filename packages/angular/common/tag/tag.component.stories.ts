@@ -58,7 +58,7 @@ export const Density: Story = {
     tags,
     color: 'red'
   },
-  render: (args: NgmTagsComponent) => ({
+  render: (args: Partial<NgmTagsComponent>) => ({
     props: args,
     template: `<div class="flex flex-col gap-2">
 <div class="ngm-density__comfort">

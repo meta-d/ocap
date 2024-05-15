@@ -10,7 +10,7 @@ import {
 } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { NgmMemberTreeComponent } from './member-tree.component'
@@ -71,53 +71,55 @@ export default {
   ]
 } as Meta<NgmMemberTreeComponent>
 
-const Template: Story<NgmMemberTreeComponent> = (args: NgmMemberTreeComponent) => ({
-  props: args,
-  styles: [`.ngm-member-tree {height: 400px;}`]
-})
+type Story = StoryObj<NgmMemberTreeComponent>
 
-export const Primary = Template.bind({})
-Primary.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'product'
-  },
-  appearance: {
-    displayDensity: DisplayDensity.compact
-  }
-}
+// styles: [`.ngm-member-tree {height: 400px;}`]
 
-export const SourceFrom = Template.bind({})
-SourceFrom.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
+export const Primary: Story = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder3s'
+    },
+    dimension: {
+      dimension: 'product'
+    },
+    appearance: {
+      displayDensity: DisplayDensity.compact
+    }
   },
-  dimension: {
-    dimension: 'product'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION
-  }
-}
+};
 
-export const Appearance = Template.bind({})
-Appearance.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
+export const SourceFrom: Story = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder3s'
+    },
+    dimension: {
+      dimension: 'product'
+    },
+    options: {
+      memberSource: MemberSource.DIMENSION
+    }
   },
-  dimension: {
-    dimension: 'product'
+};
+
+export const Appearance: Story = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder3s'
+    },
+    dimension: {
+      dimension: 'product'
+    },
+    options: {
+      searchable: true
+    },
+    appearance: {
+      appearance: 'outline',
+      displayDensity: DisplayDensity.compact
+    }
   },
-  options: {
-    searchable: true
-  },
-  appearance: {
-    appearance: 'outline',
-    displayDensity: DisplayDensity.compact
-  }
-}
+};

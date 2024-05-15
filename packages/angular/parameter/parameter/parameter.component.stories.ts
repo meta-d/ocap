@@ -68,10 +68,10 @@ export default {
   ]
 } as Meta<NgmParameterComponent>
 
-const Template = (args: Partial<NgmParameterComponent>) => ({
-  props: args,
-  template: `<ngm-parameter [dataSettings]="dataSettings" [parameter]="parameter" [options]="options" [appearance]="appearance"></ngm-parameter>`
-})
+// const Template = (args: Partial<NgmParameterComponent>) => ({
+//   props: args,
+//   template: `<ngm-parameter [dataSettings]="dataSettings" [parameter]="parameter" [options]="options" [appearance]="appearance"></ngm-parameter>`
+// })
 
 const AVAILABLE_MEMBERS = [
   {
