@@ -1,7 +1,10 @@
-import { Component, DestroyRef, Inject, OnInit, Optional, computed, effect, inject, input, output, signal } from '@angular/core'
+import { Component, DestroyRef, OnInit, computed, effect, inject, input, output, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators } from '@angular/forms'
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
+import { uuid } from '@metad/components/core'
+import { NxCoreService } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   CalculatedProperty,
@@ -9,14 +12,11 @@ import {
   CalculationType,
   DataSettings,
   EntityType,
+  Syntax,
   isEntityType,
   nonNullable,
-  Syntax,
 } from '@metad/ocap-core'
-import { uuid } from '@metad/components/core'
-import { NxCoreService } from '@metad/core'
 import { EMPTY, filter, switchMap } from 'rxjs'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 
 export interface CalculationEditorData {
   dataSettings: DataSettings
@@ -46,7 +46,11 @@ export class CalculationEditorComponent implements OnInit {
   |--------------------------------------------------------------------------
   */
   readonly destroyRef = inject(DestroyRef)
+  readonly fb = inject(FormBuilder)
   public dsCoreService? = inject(NgmDSCoreService, {optional: true})
+  readonly dialogRef? = inject(MatDialogRef<CalculationEditorComponent>, {optional: true})
+  readonly data? = inject<CalculationEditorData>(MAT_DIALOG_DATA, {optional: true})
+
   /**
   |--------------------------------------------------------------------------
   | Inputs & Outputs
@@ -64,7 +68,7 @@ export class CalculationEditorComponent implements OnInit {
   |--------------------------------------------------------------------------
   */
   readonly #syntax = signal<Syntax>(null)
-  readonly #dataSettings = signal<DataSettings>(null)
+  readonly _dataSettings = signal<DataSettings>(null)
   readonly entityType = signal<EntityType>(null)
   readonly entitySyntax = computed(() => this.#syntax() ?? this.entityType()?.syntax)
 
@@ -84,13 +88,6 @@ export class CalculationEditorComponent implements OnInit {
   readonly name = this.formGroup.get('name') as FormControl
   readonly caption = this.formGroup.get('caption') as FormControl
   readonly unit = this.formGroup.get('formatting').get('unit') as FormControl
-  // public calculation: Partial<CalculationProperty> = {}
-  // get formula() {
-  //   return (<CalculatedProperty>this.calculation).formula
-  // }
-  // set formula(value) {
-  //   (<CalculatedProperty>this.calculation).formula = value
-  // }
 
   readonly calculation = new FormControl()
   readonly formula = new FormControl()
@@ -105,7 +102,7 @@ export class CalculationEditorComponent implements OnInit {
   | Subscriptions (effects)
   |--------------------------------------------------------------------------
   */
-  private entityTypeSub = toObservable(this.#dataSettings).pipe(
+  private entityTypeSub = toObservable(this._dataSettings).pipe(
     filter(nonNullable),
     switchMap((dataSettings) => this.dsCoreService?.getDataSource(dataSettings.dataSource).pipe(
       switchMap((dataSource) =>
@@ -115,18 +112,14 @@ export class CalculationEditorComponent implements OnInit {
     takeUntilDestroyed(this.destroyRef)
   ).subscribe((entityType) => (this.entityType.set(entityType)))
 
-  constructor(
-    private fb: FormBuilder,
-    @Optional() public dialogRef?: MatDialogRef<CalculationEditorComponent>,
-    @Optional() @Inject(MAT_DIALOG_DATA) public data?: CalculationEditorData
-  ) {
-    if (data?.dsCoreService) {
-      this.dsCoreService = data?.dsCoreService
+  constructor() {
+    if (this.data?.dsCoreService) {
+      this.dsCoreService = this.data?.dsCoreService
     }
 
     effect(() => {
       if (this.dataSettings()) {
-        this.#dataSettings.set(this.dataSettings())
+        this._dataSettings.set(this.dataSettings())
       }
     }, { allowSignalWrites: true })
 
@@ -139,7 +132,7 @@ export class CalculationEditorComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.data) {
-      this.#dataSettings.set(this.data.dataSettings)
+      this._dataSettings.set(this.data.dataSettings)
       this.#syntax.set(this.data.syntax)
       this.coreService = this.data.coreService
     }

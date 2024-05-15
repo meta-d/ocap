@@ -1,10 +1,8 @@
-<div class="text-base mb-4">
-  {{ 'COMPONENTS.CALCULATION.PROPERTIES' | translate: {Default: "Properties"} }}
-</div>
+<div class="text-lg font-medium mb-4"> {{ 'COMPONENTS.CALCULATION.ConditionalAggregation' | translate: {Default: "Conditional Aggregation"} }} </div>
 
 <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch" displayDensity="cosy">
   <div class="flex items-start gap-4">
-    <ngm-select class="ngm-calculation__form-field flex-1" [label]="'COMPONENTS.CALCULATION.OPERATION' | translate: {Default: 'Operation'}"
+    <ngm-select class="ngm-calculation__form-field" [label]="'COMPONENTS.CALCULATION.OPERATION' | translate: {Default: 'Operation'}"
       formControlName="operation"
       [selectOptions]="OPERATIONS"
     ></ngm-select>
@@ -27,9 +25,7 @@
 
   <ngm-measure-select class="pt-4" formControlName="measure" label="{{ 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} }}"
     [measures]="measures$()"
-  >
-
-  </ngm-measure-select>
+  />
 
   <div class="text-base my-4">{{ 'COMPONENTS.CALCULATION.AGGREGATION_DIMENSIONS' | translate: {Default: "Aggregation Dimensions"} }}</div>
   <ngm-property-array class="ngm-conditional-aggregation__dimensions"

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, ElementRef, forwardRef, inject, Input, signal, ViewContainerRef } from '@angular/core'
+import { Component, computed, ElementRef, forwardRef, inject, input, Input, signal, ViewContainerRef } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -16,7 +16,8 @@ import {
   getEntityProperty,
   isCalculationProperty,
   isEntitySet,
-  isIndicatorMeasureProperty
+  isIndicatorMeasureProperty,
+  PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { nonNullable, NxCoreService } from '@metad/core'
@@ -72,19 +73,15 @@ export class NgmMeasureSelectComponent
 
   @Input() label: string
   @Input() placeholder: string
-  @Input() get dataSettings(): DataSettings {
-    return this._dataSettings()
-  }
-  set dataSettings(value: DataSettings) {
-    this._dataSettings.set(value)
-  }
-  private readonly _dataSettings = signal<DataSettings>(null)
+
+  readonly dataSettings = input<DataSettings>(null)
+  readonly filter = input<(param: PropertyMeasure) => boolean>(null)
 
   formControl = new FormControl<string>(null)
 
   private readonly value = toSignal(this.formControl.valueChanges)
   private readonly entityType = toSignal(
-    toObservable(this._dataSettings).pipe(
+    toObservable(this.dataSettings).pipe(
       filter(nonNullable),
       switchMap(({ dataSource, entitySet }) => this.dsCoreService.selectEntitySet(dataSource, entitySet)),
       filter(isEntitySet),
@@ -96,6 +93,7 @@ export class NgmMeasureSelectComponent
     const measures = this.entityType()
       ? getEntityMeasures(this.entityType())
       : []
+    const filter = this.filter() ?? (() => true)
 
     return [
       {
@@ -105,7 +103,7 @@ export class NgmMeasureSelectComponent
       ...orderBy(measures.filter((measure) => !isCalculationProperty(measure)), ['name']),
       ...orderBy(measures.filter((measure) => isCalculationProperty(measure) && !isIndicatorMeasureProperty(measure)), ['calculationType', 'name']),
       ...orderBy(measures.filter((measure) => isIndicatorMeasureProperty(measure)), ['name'])
-    ].map((measure) => ({
+    ].filter(filter).map((measure) => ({
       key: measure.name,
       caption: measure.caption,
       value: measure
@@ -143,9 +141,9 @@ export class NgmMeasureSelectComponent
 
   async openCalculationMeasure() {
     const data = {
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       entityType: this.entityType(),
-      syntax: this.syntax,
+      syntax: this.syntax(),
       coreService: this.coreService,
       dsCoreService: this.dsCoreService,
       value: null
@@ -163,12 +161,12 @@ export class NgmMeasureSelectComponent
       // 发送给 DSCoreService 存储到元信息增强里
       // this.coreService.storyUpdateEvent$.next({
       //   type: 'Calculation',
-      //   dataSettings: this.dataSettings,
+      //   dataSettings: this.dataSettings(),
       //   property
       // })
       this.dsCoreService.updateStory({
         type: 'Calculation',
-        dataSettings: this.dataSettings,
+        dataSettings: this.dataSettings(),
         property
       })
       // 然后将新计算度量名称赋值给当前控件
@@ -178,9 +176,9 @@ export class NgmMeasureSelectComponent
 
   async editCalculationMeasure() {
     const data = {
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       entityType: this.entityType(),
-      syntax: this.syntax,
+      syntax: this.syntax(),
       coreService: this.coreService,
       dsCoreService: this.dsCoreService,
       value: this.property()
@@ -198,12 +196,12 @@ export class NgmMeasureSelectComponent
       // 发送给 DSCoreService 存储到元信息增强里
       // this.coreService.storyUpdateEvent$.next({
       //   type: 'Calculation',
-      //   dataSettings: this.dataSettings,
+      //   dataSettings: this.dataSettings(),
       //   property
       // })
       this.dsCoreService.updateStory({
         type: 'Calculation',
-        dataSettings: this.dataSettings,
+        dataSettings: this.dataSettings(),
         property
       })
       // 然后将新计算度量名称赋值给当前控件

@@ -5,9 +5,9 @@ import {
   FormsModule,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup
+  FormBuilder,
+  FormControl,
+  FormGroup
 } from '@angular/forms'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -19,7 +19,8 @@ import {
   EntityType,
   getEntityMeasures,
   isIndicatorMeasureProperty,
-  negate
+  negate,
+  PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxCoreService } from '@metad/core'
@@ -69,10 +70,10 @@ export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor 
   public readonly entityType$ = new BehaviorSubject<EntityType>(null)
   @Input() coreService: NxCoreService
 
-  formGroup: UntypedFormGroup
+  formGroup: FormGroup
 
   get measure() {
-    return this.formGroup.get('measure') as UntypedFormControl
+    return this.formGroup.get('measure') as FormControl
   }
 
   // 排除指标度量后的度量列表
@@ -82,11 +83,15 @@ export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor 
     map((measures) => sortBy(measures, 'calculationType').reverse())
   )
 
+  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => measure.name !== this.formGroup?.value?.name
+
   private _onChange: any
-  constructor(private formBuilder: UntypedFormBuilder) {}
+
+  constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit(): void {
     this.formGroup = this.formBuilder.group({
+      name: null,
       measure: null,
       dimensions: null,
       enableConstantSelection: null
