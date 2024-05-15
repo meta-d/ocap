@@ -1,8 +1,16 @@
 import { SelectionModel } from '@angular/cdk/collections'
+import { ScrollingModule } from '@angular/cdk/scrolling'
 import { FlatTreeControl } from '@angular/cdk/tree'
-import { ChangeDetectionStrategy, Component, EventEmitter, forwardRef, HostBinding, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, effect, EventEmitter, forwardRef, HostBinding, input, Output, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
+import { MatIconModule } from '@angular/material/icon'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DisplayDensity, NgmAppearance, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -10,35 +18,22 @@ import {
   DisplayBehaviour,
   FilterSelectionType,
   filterTreeNodes,
+  FlatTreeNode,
   hierarchize,
   IDimensionMember,
+  IMember,
+  ISlicer,
   PrimitiveType,
   TreeNodeInterface,
-  TreeSelectionMode,
-  FlatTreeNode,
-  ISlicer,
-  IMember
+  TreeSelectionMode
 } from '@metad/ocap-core'
-import { ComponentStore } from '@metad/store'
-import { BehaviorSubject, Observable } from 'rxjs'
-import { combineLatestWith, debounceTime, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
+import { BehaviorSubject } from 'rxjs'
+import { combineLatestWith, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators'
 import { NgmSmartFilterService } from '../smart-filter.service'
 import { TreeControlOptions } from '../types'
-import { CommonModule } from '@angular/common'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { MatIconModule } from '@angular/material/icon'
-import { ScrollingModule } from '@angular/cdk/scrolling'
-import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { MatButtonModule } from '@angular/material/button'
 
 export interface TreeItemFlatNode<T> extends FlatTreeNode<T> {
   checked?: boolean
-}
-
-export interface MemberTreeState {
-  options?: TreeControlOptions
 }
 
 @Component({
@@ -67,31 +62,33 @@ export interface MemberTreeState {
   ]
 })
 export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMember>
-  extends ComponentStore<MemberTreeState>
-  implements OnInit, OnChanges, ControlValueAccessor
+  implements ControlValueAccessor
 {
   @HostBinding('class.ngm-member-tree') _isMemberTreeComponent = true
-  // private dsCoreService? = inject(NgmDSCoreService, { optional: true })
-  
-  @Input() dataSettings: DataSettings
-  @Input() dimension: Dimension
-  @Input() get options() {
-    return this.get((state) => state.options)
-  }
-  set options(value) {
-    this.patchState({ options: value })
-  }
+
+  readonly dataSettings = input<DataSettings>()
+  readonly dimension = input<Dimension>()
+
+  readonly options = input<TreeControlOptions>()
+
   get displayBehaviour() {
-    return this.dimension?.displayBehaviour
+    return this.dimension()?.displayBehaviour
   }
   get treeSelectionMode() {
-    return this.options?.treeSelectionMode
+    return this.options()?.treeSelectionMode
   }
-  @Input() appearance: NgmAppearance
-  @Input() disabled: boolean
+
+  readonly appearance = input<NgmAppearance>()
+  readonly disabled = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
+
+  readonly _disabled = signal(false)
 
   @Output() loadingChanging = new EventEmitter<boolean>()
-  @Output() change = new EventEmitter<MatCheckboxChange>()
+  // @Output() change = new EventEmitter<MatCheckboxChange>()
+
+  onChange: (input: any) => void
 
   itemSize = 40
   treeNodePaddingIndent = 20
@@ -103,13 +100,14 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   treeControl: FlatTreeControl<TreeItemFlatNode<T>>
   treeFlattener: MatTreeFlattener<TreeNodeInterface<T>, TreeItemFlatNode<T>>
   dataSource: MatTreeFlatDataSource<TreeNodeInterface<T>, TreeItemFlatNode<T>>
+
   /** The selection for checklist */
   private selectionModel$ = new BehaviorSubject(new SelectionModel<PrimitiveType>(false, []))
   get selectionModel() {
     return this.selectionModel$.value
   }
 
-  public readonly options$ = this.select((state) => state.options)
+  public readonly options$ = toObservable(this.options)
   public readonly onlyLeaves$ = this.options$.pipe(map((options) => options?.onlyLeaves), distinctUntilChanged())
   public readonly loading$ = this.smartFilterService.loading$
 
@@ -117,13 +115,13 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     map(() => {
       const selected = this.selectionModel.selected
       let nodes = selected.map((value) => this.keyNodeMap.get(value)).filter(Boolean)
-      if (this.options?.treeSelectionMode === TreeSelectionMode.ChildrenOnly) {
+      if (this.options()?.treeSelectionMode === TreeSelectionMode.ChildrenOnly) {
         nodes = nodes.filter(
           (node) =>
             !this.treeControl.isExpandable(node) ||
             !(this.childrenPartiallySelected(node) || this.childrenAllSelected(node))
         )
-      } else if (this.options?.treeSelectionMode === TreeSelectionMode.DescendantsOnly) {
+      } else if (this.options()?.treeSelectionMode === TreeSelectionMode.DescendantsOnly) {
         nodes = nodes.filter(
           (node) =>
             !this.treeControl.isExpandable(node) ||
@@ -132,7 +130,7 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
       }
 
       const slicer: ISlicer = {
-        dimension: this.dimension,
+        dimension: this.dimension(),
         members: nodes.map((node) => ({
           value: node.key,
           key: node.key,
@@ -143,10 +141,7 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     }),
   ))
 
-  onChange: (input: any) => void
-
-  // Subscribers
-  private _membersSub = this.smartFilterService.membersWithSchema$
+  readonly treeNodes = toSignal(this.smartFilterService.membersWithSchema$
     .pipe(
       combineLatestWith(this.onlyLeaves$),
       map(([{ members, schema }, onlyLeaves]) => {
@@ -154,12 +149,34 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
           return hierarchize(members, schema?.recursiveHierarchy, {onlyLeaves})
         }
         return null
-      }),
-      tap((treeNodes) => {
-        if (treeNodes[0] && this.options?.autoActiveFirst && this.selectionModel.isEmpty()) {
-          this.selectionModel.select(treeNodes[0].key)
-        }
-      }),
+      })))
+  readonly autoActiveFirst = computed(() => this.options()?.autoActiveFirst)
+
+  // Effects
+  readonly autoActiveFirstEffect = effect(() => {
+    // Auto active first option when no selection
+    const treeNodes = this.treeNodes()
+    const firstNode = treeNodes?.[0]
+    if (this.autoActiveFirst() && firstNode && this.selectionModel.isEmpty()) {
+      this.selectionModel.select(firstNode.key)
+      
+      const slicer: ISlicer = {
+        dimension: this.dimension(),
+        members: [
+          {
+            value: firstNode.key,
+            key: firstNode.key,
+            caption: firstNode.caption
+          } as IMember
+        ]
+      }
+      this.onChange(slicer)
+    }
+  }, { allowSignalWrites: true })
+
+  // Subscribers
+  private _membersSub = toObservable(this.treeNodes)
+    .pipe(
       combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null), distinctUntilChanged())),
       map(([treeNodes, text]) => {
         text = text?.trim()
@@ -174,10 +191,10 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
       if (data) {
         this.dataSource.data = data as any
         // 初始化数据后展开初始层级深度
-        if (this.options?.initialLevel > 0 || !!this.searchControl.value) {
+        if (this.options()?.initialLevel > 0 || !!this.searchControl.value) {
           this.treeControl.dataNodes.forEach((node) => {
             const level = this.treeControl.getLevel(node)
-            if (level < this.options.initialLevel || (this.searchControl.value && node.childrenCardinality === 1)) {
+            if (level < this.options().initialLevel || (this.searchControl.value && node.childrenCardinality === 1)) {
               this.treeControl.expand(node)
             }
           })
@@ -196,62 +213,64 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   })
 
   constructor(private smartFilterService: NgmSmartFilterService) {
-    super({})
-
     this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel, this.isExpandable, this.getChildren)
     this.treeControl = new FlatTreeControl<TreeItemFlatNode<T>>(this.getLevel, this.isExpandable, {
       trackBy: (dataNode: TreeItemFlatNode<T>) => dataNode.key as any
     })
     this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener)
     this.dataSource.data = []
-  }
 
-  ngOnInit() {
-    // this.onSelectionChange(this.checklistSelection)
-  }
+    effect(() => {
+      const options = this.options()
+      if (options) {
+        this.smartFilterService.options = { ...options, dimension: this.dimension() }
 
-  ngOnChanges({ dataSettings, dimension, options, appearance }: SimpleChanges): void {
-    if (dataSettings?.currentValue) {
-      this.smartFilterService.dataSettings = dataSettings.currentValue
-    }
-    if (dimension?.currentValue) {
-      this.smartFilterService.options = { ...(this.options ?? {}), dimension: dimension.currentValue }
-    }
-    if (options?.currentValue) {
-      this.smartFilterService.options = { ...options.currentValue, dimension: this.dimension }
-
-      if (this.selectionModel.isMultipleSelection()) {
-        if (options.currentValue.selectionType !== FilterSelectionType.Multiple) {
-          // this.checklistSelection = new SelectionModel<PrimitiveType>(false, [])
-          // this.onSelectionChange(this.checklistSelection)
-          this.selectionModel$.next(new SelectionModel<PrimitiveType>(false, []))
+        if (this.selectionModel.isMultipleSelection()) {
+          if (options.selectionType !== FilterSelectionType.Multiple) {
+            this.selectionModel$.next(new SelectionModel<PrimitiveType>(false, []))
+          }
+        } else if (options.selectionType === FilterSelectionType.Multiple) {
+          this.selectionModel$.next(new SelectionModel<PrimitiveType>(true, []))
         }
-      } else if (options.currentValue.selectionType === FilterSelectionType.Multiple) {
-        // this.checklistSelection = new SelectionModel<PrimitiveType>(true, [])
-        // this.onSelectionChange(this.checklistSelection)
-        this.selectionModel$.next(new SelectionModel<PrimitiveType>(true, []))
-      }
 
-      if (options.currentValue.defaultMembers) {
-        this.selectionModel.select(...options.currentValue.defaultMembers.map((member) => member.value))
+        if (options.defaultMembers) {
+          this.selectionModel.select(...options.defaultMembers.map((member) => member.key))
+        }
       }
-    }
+    }, { allowSignalWrites: true })
 
-    if (appearance?.currentValue) {
-      switch(this.appearance.displayDensity) {
-        case DisplayDensity.compact:
-          this.itemSize = 24
-          this.treeNodePaddingIndent = 12
-          break
-        case DisplayDensity.cosy:
-          this.itemSize = 30
-          this.treeNodePaddingIndent = 15
-          break
-        default:
-          this.itemSize = 40
-          this.treeNodePaddingIndent = 20
+    effect(() => {
+      const appearance = this.appearance()
+      if (appearance) {
+        switch(appearance.displayDensity) {
+          case DisplayDensity.compact:
+            this.itemSize = 24
+            this.treeNodePaddingIndent = 12
+            break
+          case DisplayDensity.cosy:
+            this.itemSize = 30
+            this.treeNodePaddingIndent = 15
+            break
+          default:
+            this.itemSize = 40
+            this.treeNodePaddingIndent = 20
+        }
       }
-    }
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      const dataSettings = this.dataSettings()
+      if (dataSettings) {
+        this.smartFilterService.dataSettings = dataSettings
+      }
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      const dimension = this.dimension()
+      if (dimension) {
+        this.smartFilterService.options = { ...(this.options ?? {}), dimension }
+      }
+    }, { allowSignalWrites: true })
   }
 
   writeValue(obj: any): void {
@@ -268,10 +287,10 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
      * Emit default values
      * @todo Whether it is appropriate or not emit in here ？
      */
-    if (this.options?.defaultMembers?.length) {
+    if (this.options()?.defaultMembers?.length) {
       this.onChange({
-        dimension: this.dimension,
-        members: [...this.options.defaultMembers]
+        dimension: this.dimension(),
+        members: [...this.options().defaultMembers]
       })
     }
   }
@@ -279,7 +298,7 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     //
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
+    this._disabled.set(isDisabled)
   }
 
   refresh(force?: boolean) {
@@ -343,13 +362,13 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   }
 
   isPartiallySelected(node: TreeItemFlatNode<T>): boolean {
-    if (this.options?.treeSelectionMode === TreeSelectionMode.ChildrenOnly) {
+    if (this.options()?.treeSelectionMode === TreeSelectionMode.ChildrenOnly) {
       return this.childrenPartiallySelected(node)
-    } else if (this.options?.treeSelectionMode === TreeSelectionMode.SelfChildren) {
+    } else if (this.options()?.treeSelectionMode === TreeSelectionMode.SelfChildren) {
       return this.childrenPartiallySelected(node)
-    } else if (this.options?.treeSelectionMode === TreeSelectionMode.DescendantsOnly) {
+    } else if (this.options()?.treeSelectionMode === TreeSelectionMode.DescendantsOnly) {
       return this.descendantsPartiallySelected(node)
-    } else if (this.options?.treeSelectionMode === TreeSelectionMode.SelfDescendants) {
+    } else if (this.options()?.treeSelectionMode === TreeSelectionMode.SelfDescendants) {
       return this.descendantsPartiallySelected(node)
     }
     return false
@@ -365,8 +384,8 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
     const level = this.treeControl.getLevel(node)
 
     if (
-      this.options?.treeSelectionMode === TreeSelectionMode.ChildrenOnly ||
-      this.options?.treeSelectionMode === TreeSelectionMode.SelfChildren
+      this.options()?.treeSelectionMode === TreeSelectionMode.ChildrenOnly ||
+      this.options()?.treeSelectionMode === TreeSelectionMode.SelfChildren
     ) {
       const children = this.treeControl
         .getDescendants(node)
@@ -377,8 +396,8 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
         ? this.selectionModel.select(...children)
         : this.selectionModel.deselect(...children)
     } else if (
-      this.options?.treeSelectionMode === TreeSelectionMode.SelfDescendants ||
-      this.options?.treeSelectionMode === TreeSelectionMode.DescendantsOnly
+      this.options()?.treeSelectionMode === TreeSelectionMode.SelfDescendants ||
+      this.options()?.treeSelectionMode === TreeSelectionMode.DescendantsOnly
     ) {
       const descendants = this.treeControl
         .getDescendants(node)
@@ -393,42 +412,6 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
 
     this.onChange(this.slicer())
   }
-
-  // readonly onSelectionChange = this.effect((selection$: Observable<SelectionModel<PrimitiveType>>) => {
-  //   return selection$.pipe(
-  //     switchMap((selection) => selection.changed),
-  //     filter(() => !isEmpty(this.treeControl.dataNodes)),
-  //     // 防止连续 clear+select 导致的空 members
-  //     debounceTime(100),
-  //     map(() => this.selectionModel.selected),
-  //     tap((selected: Array<PrimitiveType>) => {
-  //       let nodes = selected.map((value) => this.keyNodeMap.get(value)).filter(Boolean)
-  //       if (this.options?.treeSelectionMode === TreeSelectionMode.ChildrenOnly) {
-  //         nodes = nodes.filter(
-  //           (node) =>
-  //             !this.treeControl.isExpandable(node) ||
-  //             !(this.childrenPartiallySelected(node) || this.childrenAllSelected(node))
-  //         )
-  //       } else if (this.options?.treeSelectionMode === TreeSelectionMode.DescendantsOnly) {
-  //         nodes = nodes.filter(
-  //           (node) =>
-  //             !this.treeControl.isExpandable(node) ||
-  //             !(this.descendantsPartiallySelected(node) || this.descendantsAllSelected(node))
-  //         )
-  //       }
-
-  //       const slicer: ISlicer = {
-  //         dimension: this.dimension,
-  //         members: nodes.map((node) => ({
-  //           value: node.key,
-  //           key: node.key,
-  //           caption: node.caption
-  //         } as IMember))
-  //       }
-  //       // this.onChange?.(slicer)
-  //     })
-  //   )
-  // })
 
   toggleExpand() {
     this.unfold = !this.unfold

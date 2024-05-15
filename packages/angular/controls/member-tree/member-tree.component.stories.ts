@@ -8,20 +8,23 @@ import {
   OCAP_MODEL_TOKEN,
   NgmDSCoreService
 } from '@metad/ocap-angular/core'
-import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
+import { AgentType, DataSource, FilterSelectionType, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
+import { Meta, StoryObj, argsToTemplate, moduleMetadata } from '@storybook/angular'
+import { action } from '@storybook/addon-actions'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { NgmMemberTreeComponent } from './member-tree.component'
+import { FormsModule } from '@angular/forms'
 
 export default {
-  title: 'NgmMemberTreeComponent',
+  title: 'Controls/MemberTreeComponent',
   component: NgmMemberTreeComponent,
   decorators: [
     moduleMetadata({
       imports: [
         BrowserAnimationsModule,
+        FormsModule,
         NgmControlsModule,
         OcapCoreModule,
         TranslateModule.forRoot({
@@ -68,12 +71,22 @@ export default {
         }
       ]
     })
-  ]
+  ],
+  render: (args) => ({
+    props: {
+      ...args,
+      loadingChanging: actionsData.loadingChanging
+    },
+    styles: [`.ngm-member-tree {height: 400px;}`]
+  })
 } as Meta<NgmMemberTreeComponent>
 
-type Story = StoryObj<NgmMemberTreeComponent>
+const actionsData = {
+  loadingChanging: action('loadingChanging'),
+};
 
-// styles: [`.ngm-member-tree {height: 400px;}`]
+
+type Story = StoryObj<NgmMemberTreeComponent>
 
 export const Primary: Story = {
   args: {
@@ -122,4 +135,38 @@ export const Appearance: Story = {
       displayDensity: DisplayDensity.compact
     }
   },
+};
+
+
+export const AutoActiveFirst: Story = {
+  args: {
+    dataSettings: {
+      dataSource: 'Sales',
+      entitySet: 'SalesOrder3s'
+    },
+    dimension: {
+      dimension: 'product'
+    },
+    options: {
+      searchable: true,
+      autoActiveFirst: true,
+      selectionType: FilterSelectionType.Multiple
+    },
+    appearance: {
+      appearance: 'outline',
+      displayDensity: DisplayDensity.compact
+    }
+  },
+  render: (args) => ({
+    props: {
+      ...args,
+      inputValue: '',
+    },
+    template: `<form>
+<label for="input">Custom Input:</label>
+  <ngm-member-tree id="input" [(ngModel)]="inputValue" name="customInput" ${argsToTemplate(args)}></ngm-member-tree>
+  <p>Value: {{ inputValue | json }}</p>
+</form>`,
+    styles: [`.ngm-member-tree {height: 400px;}`]
+  })
 };
