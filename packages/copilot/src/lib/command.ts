@@ -1,4 +1,5 @@
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
+import { ChatPromptTemplate } from "@langchain/core/prompts"
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
 
@@ -22,6 +23,14 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * Examples of the command usage
    */
   examples?: string[]
+  /**
+   * The ai tools for input suggestion generation
+   */
+  suggestionTools?: Array<DynamicStructuredTool | DynamicTool>
+  /**
+   * The prompt template for input suggestion
+   */
+  suggestionTemplate?: ChatPromptTemplate
   /**
    * Get system prompt message
    *

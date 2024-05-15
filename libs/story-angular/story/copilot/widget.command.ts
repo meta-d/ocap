@@ -1,7 +1,7 @@
 import { computed, inject, signal } from '@angular/core'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
 import { makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
@@ -21,6 +21,7 @@ import {
   tryFixAnalyticsAnnotation
 } from './schema'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
+
 
 function createUpdateChartTools(storyService: NxStoryService) {
   return [
@@ -221,9 +222,43 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
         agent: {
           type: CopilotAgentType.Default
         },
+        suggestionTemplate: ChatPromptTemplate.fromMessages([
+          ["system", `As a bot, your task is to provide prompt for possible follow-up completion based on the text entered by the user.
+The user's prompt is for creating a chart or table widget within a dashboard using the cube information provided in the context.
+Ensure that the completion is accurate and relevant to the data encapsulated by the cube. The suggestion should encompass a diverse range of ideas, encouraging creativity and originality in the design and functionality of the widget.
+Focus on different types of visualizations, configurations, and innovative uses of the data to maximize the effectiveness and insights provided by the widget.
+Consider including but not limited to, various chart types (e.g., bar, line, pie), table layouts, filtering options, interactive features, and customization settings.
+          
+Example completions might include:
+
+user: a bar chart
+ai: that compares sales figures across different regions
+
+user: a table
+ai: that lists the top 10 products by revenue, with additional columns for growth percentage and market share
+
+user: a line chart
+ai: that tracks the monthly performance of key performance indicators (KPIs)
+
+user: pie chart
+ai: that visualizes the market share distribution among competitors
+
+user: a heat map
+ai: that displays customer satisfaction ratings across various service centers
+
+Feel free to think outside the box and propose innovative ways to leverage the cube data in a chart or table widget.
+
+<context>
+{context}
+
+{system_prompt}
+</context>`],
+          HumanMessagePromptTemplate.fromTemplate("{input}"),
+        ]),
         systemPrompt: async ({ params }) => {
           logger.debug(`Original chart widget:`, currentWidget()?.title, ' on page:', currentStoryPoint()?.name)
 
+          let entityType = defaultCube()
           let prompt = ''
           const cubeParams = params?.filter((param) => param.item)
           if (cubeParams?.length) {
@@ -238,12 +273,14 @@ export function injectStoryWidgetCommand(storyService: NxStoryService) {
                 defaultModel.set(result.modelId)
                 defaultDataSource.set(result.dataSource)
                 defaultEntity.set(result.entities[0])
+
+                entityType = await firstValueFrom(storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] }))
               }
             }
 
             prompt += `The Cube structure is:
 \`\`\`
-${defaultCube() ? markdownEntityType(defaultCube()) : 'unknown'}
+${entityType ? markdownEntityType(entityType) : 'unknown'}
 \`\`\`
 `
           }
@@ -282,7 +319,7 @@ think: call 'dimensionMemberKeySearch' tool with query param 'product bikes' to 
           ['user', '{input}'],
           new MessagesPlaceholder('agent_scratchpad')
         ])
-      }
+      } as CopilotCommand
     })()
   )
 }

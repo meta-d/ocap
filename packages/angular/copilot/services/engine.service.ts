@@ -1,6 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { StringOutputParser } from '@langchain/core/output_parsers'
 import {
   AIOptions,
   CopilotAgentType,
@@ -9,6 +10,7 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotChatOptions,
   CopilotCommand,
+  CopilotContext,
   CopilotEngine,
   CopilotService,
   DefaultModel,
@@ -314,7 +316,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     try {
       // Get System prompt
       if (command.systemPrompt) {
-        systemPrompt = await command.systemPrompt({params})
+        systemPrompt = await command.systemPrompt({ params })
       }
 
       messages.push({
@@ -373,27 +375,30 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       let verboseContent = ''
-      const result = await agentExecutor.invoke({ input: content, system_prompt: systemPrompt, context: contextContent }, {
-        callbacks: [
-          {
-            handleLLMEnd: async (output) => {
-              const text = output.generations[0][0].text
-              if (text) {
-                if (verbose) {
-                  verboseContent += '\n\n👉 ' + text
-                } else {
-                  verboseContent = text
+      const result = await agentExecutor.invoke(
+        { input: content, system_prompt: systemPrompt, context: contextContent },
+        {
+          callbacks: [
+            {
+              handleLLMEnd: async (output) => {
+                const text = output.generations[0][0].text
+                if (text) {
+                  if (verbose) {
+                    verboseContent += '\n\n👉 ' + text
+                  } else {
+                    verboseContent = text
+                  }
+                  this.upsertMessage({
+                    id: assistantId,
+                    role: CopilotChatMessageRoleEnum.Assistant,
+                    content: verboseContent
+                  })
                 }
-                this.upsertMessage({
-                  id: assistantId,
-                  role: CopilotChatMessageRoleEnum.Assistant,
-                  content: verboseContent,
-                })
               }
             }
-          }
-        ]
-      })
+          ]
+        }
+      )
 
       this.#logger?.debug(`Agent command '${command.name}' result:`, result)
 
@@ -643,6 +648,36 @@ export class NgmCopilotEngineService implements CopilotEngine {
     if (dropActions[event.previousContainer.id]) {
       const message = await dropActions[event.previousContainer.id].implementation(event, this)
       this.upsertMessage(message)
+    }
+  }
+
+  async executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext; signal?: AbortSignal }): Promise<string> {
+    const { command, context, signal } = options
+    // Context content
+    const contextContent = context ? await recognizeContext(input, context) : null
+    const params = await recognizeContextParams(input, context)
+
+    let systemPrompt = ''
+    try {
+      // Get System prompt
+      if (command.systemPrompt) {
+        systemPrompt = await command.systemPrompt({ params })
+      }
+
+      const llm = this.llm()
+      const verbose = this.verbose()
+      if (llm) {
+        if (command.suggestionTemplate) {
+          const chain = command.suggestionTemplate.pipe(this.llm()).pipe(new StringOutputParser())
+          return await chain.invoke({ input, system_prompt: systemPrompt, context: contextContent, signal, verbose })
+        } else {
+          throw new Error('No completion template found')
+        }
+      } else {
+        throw new Error('LLM is not available')
+      }
+    }catch (err: any) {
+      throw new Error('Error: ' + err.message)
     }
   }
 }

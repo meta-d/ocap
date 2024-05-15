@@ -117,10 +117,19 @@ failed: ${error.message}`)
 					accept: headers.accept
 				},
 			})
-			
-			if (!resp.headersSent) {
-				await streamToResponse(response, resp, { status: response.status })
-			}
+
+			// if (body.stream) {
+				if (!resp.headersSent) {
+					await streamToResponse(response, resp, { status: response.status, headers: {
+						'content-type': response.headers.get('content-type') || 'application/json',
+					} })
+				}
+			// } else {
+			// 	const result = await response.json()
+				
+			// 	resp.write(JSON.stringify(result))
+			// 	resp.end()
+			// }
 		} catch (error) {
 			this.#logger.error(`Try to call ai api '${copilotUrl}' with body:
 \`\`\`
@@ -150,8 +159,7 @@ export async function streamToResponse(
 	init?: { headers?: Record<string, string>; status?: number },
   ) {
 	response.writeHead(init?.status || 200, {
-	  'Content-Type': 'text/plain; charset=utf-8',
-	  ...init?.headers,
+	  ...(init?.headers ?? {}),
 	});
   
 	const reader = res.body.getReader();

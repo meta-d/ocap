@@ -112,4 +112,12 @@ export interface CopilotEngine {
   updateLastConversation?(fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
 
   updateAiOptions(options: Partial<AIOptions>): void
+
+  /**
+   * Execute command suggestion completion request
+   * 
+   * @param input 
+   * @param options 
+   */
+  executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext}): Promise<string>
 }
