@@ -1,4 +1,4 @@
-import { Component, DestroyRef, Inject, Input, OnInit, Optional, inject } from '@angular/core'
+import { Component, DestroyRef, Inject, OnInit, Optional, computed, effect, inject, input, output, signal } from '@angular/core'
 import { AbstractControl, FormBuilder, FormControl, ValidatorFn, Validators } from '@angular/forms'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
@@ -10,12 +10,13 @@ import {
   DataSettings,
   EntityType,
   isEntityType,
+  nonNullable,
   Syntax,
 } from '@metad/ocap-core'
 import { uuid } from '@metad/components/core'
 import { NxCoreService } from '@metad/core'
-import { filter, switchMap } from 'rxjs'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { EMPTY, filter, switchMap } from 'rxjs'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 
 export interface CalculationEditorData {
   dataSettings: DataSettings
@@ -32,17 +33,40 @@ export interface CalculationEditorData {
   styleUrls: ['./calculation-editor.component.scss'],
 })
 export class CalculationEditorComponent implements OnInit {
+  /**
+  |--------------------------------------------------------------------------
+  | Types
+  |--------------------------------------------------------------------------
+  */
   CALCULATION_TYPE = CalculationType
   SYNTAX = Syntax
-
+  /**
+  |--------------------------------------------------------------------------
+  | Injectors
+  |--------------------------------------------------------------------------
+  */
   readonly destroyRef = inject(DestroyRef)
-
-  @Input() appearance: MatFormFieldAppearance = 'fill'
-  @Input() dataSettings: DataSettings
-  @Input() syntax: Syntax
-
   public dsCoreService? = inject(NgmDSCoreService, {optional: true})
-  public entityType: EntityType
+  /**
+  |--------------------------------------------------------------------------
+  | Inputs & Outputs
+  |--------------------------------------------------------------------------
+  */
+  readonly appearance = input<MatFormFieldAppearance>('fill')
+  readonly dataSettings = input<DataSettings>()
+  readonly value = input<CalculationProperty>()
+  
+  readonly apply = output<CalculationProperty>()
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly #syntax = signal<Syntax>(null)
+  readonly #dataSettings = signal<DataSettings>(null)
+  readonly entityType = signal<EntityType>(null)
+  readonly entitySyntax = computed(() => this.#syntax() ?? this.entityType()?.syntax)
 
   public coreService: NxCoreService
 
@@ -60,18 +84,37 @@ export class CalculationEditorComponent implements OnInit {
   readonly name = this.formGroup.get('name') as FormControl
   readonly caption = this.formGroup.get('caption') as FormControl
   readonly unit = this.formGroup.get('formatting').get('unit') as FormControl
-  public calculation: Partial<CalculationProperty> = {}
-  get formula() {
-    return (<CalculatedProperty>this.calculation).formula
-  }
-  set formula(value) {
-    (<CalculatedProperty>this.calculation).formula = value
-  }
+  // public calculation: Partial<CalculationProperty> = {}
+  // get formula() {
+  //   return (<CalculatedProperty>this.calculation).formula
+  // }
+  // set formula(value) {
+  //   (<CalculatedProperty>this.calculation).formula = value
+  // }
+
+  readonly calculation = new FormControl()
+  readonly formula = new FormControl()
 
   /**
    * 当作为修改状态时 disable calculationType 的选择 和 name 的输入
    */
   disableSelect: boolean
+
+  /**
+  |--------------------------------------------------------------------------
+  | Subscriptions (effects)
+  |--------------------------------------------------------------------------
+  */
+  private entityTypeSub = toObservable(this.#dataSettings).pipe(
+    filter(nonNullable),
+    switchMap((dataSettings) => this.dsCoreService?.getDataSource(dataSettings.dataSource).pipe(
+      switchMap((dataSource) =>
+        dataSource.selectEntityType(dataSettings.entitySet).pipe(filter(isEntityType))
+      )
+    ) ?? EMPTY),
+    takeUntilDestroyed(this.destroyRef)
+  ).subscribe((entityType) => (this.entityType.set(entityType)))
+
   constructor(
     private fb: FormBuilder,
     @Optional() public dialogRef?: MatDialogRef<CalculationEditorComponent>,
@@ -80,54 +123,71 @@ export class CalculationEditorComponent implements OnInit {
     if (data?.dsCoreService) {
       this.dsCoreService = data?.dsCoreService
     }
+
+    effect(() => {
+      if (this.dataSettings()) {
+        this.#dataSettings.set(this.dataSettings())
+      }
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      if (this.value()) {
+        this.initValue(this.value())
+      }
+    })
   }
 
   ngOnInit(): void {
     if (this.data) {
-      this.dataSettings = this.data.dataSettings
-      this.syntax = this.data.syntax
-
+      this.#dataSettings.set(this.data.dataSettings)
+      this.#syntax.set(this.data.syntax)
       this.coreService = this.data.coreService
-
-      this.dsCoreService?.getDataSource(this.dataSettings.dataSource)
-        .pipe(
-          switchMap((dataSource) =>
-            dataSource.selectEntityType(this.dataSettings.entitySet).pipe(filter(isEntityType))
-          ),
-          takeUntilDestroyed(this.destroyRef)
-        )
-        .subscribe((entityType) => (this.entityType = entityType))
     }
 
     if (this.data?.value) {
-      this.disableSelect = true
-      this.formGroup.get('calculationType').disable()
-      this.formGroup.patchValue(this.data.value)
-      this.calculation = {
-        ...this.data.value,
-      }
+      this.initValue(this.data.value)
     }
+  }
+
+  initValue(value: CalculationProperty) {
+    this.disableSelect = true
+    this.formGroup.get('calculationType').disable()
+    this.formGroup.get('name').disable()
+    this.formGroup.patchValue(value)
+    this.formGroup.markAsPristine()
+    this.calculation.setValue({
+      ...value,
+    })
+    this.calculation.markAsPristine()
+    this.formula.setValue((value as CalculatedProperty).formula)
+    this.formula.markAsPristine()
   }
 
   onApply() {
     const property = {
-      ...this.calculation,
+      ...this.calculation.value,
       ...this.formGroup.value,
       calculationType: this.calculationType.value,
-      formula: this.calculationType.value === CalculationType.Calculated ? this.formula : null,
+      formula: this.calculationType.value === CalculationType.Calculated ? this.formula.value : null,
       name: this.name.value,
       visible: true
-    }
+    } as CalculationProperty
 
     this.dialogRef?.close(property)
+    this.apply.emit(property)
+  }
+
+  onCancel() {
+    this.dialogRef?.close()
+    this.apply.emit(null)
   }
 
   forbiddenNameValidator(): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } | null => {
       const forbidden =
         !this.disableSelect &&
-        this.entityType?.properties &&
-        !!Object.values(this.entityType.properties).find((item) => item.name === control.value)
+        this.entityType()?.properties &&
+        !!Object.values(this.entityType().properties).find((item) => item.name === control.value)
       return forbidden ? { forbiddenName: { value: control.value } } : null
     }
   }

@@ -16,8 +16,8 @@ import {
   ViewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router } from '@angular/router'
-import { calcEntityTypePrompt, IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -41,6 +41,7 @@ import {
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
@@ -53,12 +54,12 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
-import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
 
 @Component({
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MaterialModule,
     TranslateModule,
 

@@ -46,7 +46,6 @@ import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ControlOptions, NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NgmEntityPropertyComponent, propertyIcon } from '@metad/ocap-angular/entity'
-import { CalculationEditorComponent } from '../calculation/index'
 import { CommonModule } from '@angular/common'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -62,6 +61,7 @@ import { MatBadgeModule } from '@angular/material/badge'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { CalculationEditorComponent } from '../calculation/index'
 
 
 export enum PropertyCapacity {

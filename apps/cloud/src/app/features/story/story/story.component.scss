@@ -28,7 +28,7 @@ $prefix: (ngm, story-designer);
 :host {
   @include token-utils.create-token-values($prefix, get-token-slots());
   --story-fullscreen-top: 0;
-  @apply relative flex-1 flex max-w-full;
+  @apply relative flex-1 flex max-w-full overflow-hidden;
 
   &.ngm-story--fullscreen:not(.editable) {
     .ngm-story__toolbar {
@@ -89,7 +89,7 @@ $prefix: (ngm, story-designer);
 }
 
 .toolbar-container.pin {
-  @apply w-14;
+  @apply w-16;
 }
 
 .ngm-story__toolbar {
@@ -177,6 +177,12 @@ $prefix: (ngm, story-designer);
     background-color: var(--ngm-color-surface-container-high);
     font-weight: 600;
     opacity: 1;
+  }
+}
+
+:host::ng-deep {
+  .pac-story-calculations {
+    @apply absolute top-0 left-0 w-full h-full z-10;
   }
 }
 

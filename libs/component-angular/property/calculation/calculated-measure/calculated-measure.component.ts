@@ -1,8 +1,8 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, Input, ViewChild, ViewContainerRef, effect, forwardRef, inject, input } from '@angular/core'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { Component, Input, ViewChild, ViewContainerRef, booleanAttribute, effect, forwardRef, inject, input, model } from '@angular/core'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
@@ -13,6 +13,7 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { BaseEditorDirective, NxEditorModule } from '@metad/components/editor'
 import { MDXReference } from '@metad/components/mdx'
 import { NxCoreService } from '@metad/core'
@@ -34,7 +35,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core'
 import { negate, sortBy } from 'lodash-es'
 import { MarkdownModule } from 'ngx-markdown'
-import { combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
+import { combineLatestWith, distinctUntilChanged, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
 
 
 @Component({
@@ -51,6 +52,7 @@ import { combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from
     MatButtonModule,
     MatListModule,
     MatToolbarModule,
+    MatTooltipModule,
     MatExpansionModule,
     TranslateModule,
     MarkdownModule,
@@ -91,18 +93,6 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   readonly coreService = input<NxCoreService>()
   readonly syntax = input<Syntax>()
 
-  // @Input()
-  // get entityType(): EntityType {
-  //   return this.entityType$.value
-  // }
-  // set entityType(value) {
-  //   this.entityType$.next(value)
-  // }
-  // private entityType$ = new BehaviorSubject<EntityType>(null)
-
-  // @Input() coreService: NxCoreService
-  // @Input() syntax: Syntax
-
   @Input() get story() {
     return this._story
   }
@@ -111,17 +101,17 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   }
   private _story = false
 
-  @Input() get disabled() {
-    return this._disabled
-  }
-  set disabled(value: boolean | string) {
-    this._disabled = coerceBooleanProperty(value)
-  }
-  private _disabled = false
+  readonly disabled = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() opened = false
+  readonly opened = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   @ViewChild('editor') editor!: BaseEditorDirective
+
+  readonly drawerOpened = model(false)
 
   calculatedMemberSearch = new FormControl<string>('')
   get calculatedMemberHighlight() {
@@ -132,14 +122,8 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
   get fnHighlight() {
     return this.fnSearchControl.value
   }
-  get statement(): string {
-    return this._statement
-  }
-  set statement(value) {
-    this._statement = value
-    this._onChange?.(this._statement)
-  }
-  private _statement = ''
+
+  readonly statement = new FormControl<string>(null)
 
   calculations = []
   private _onChange: any
@@ -172,21 +156,35 @@ export class CalculatedMeasureComponent implements ControlValueAccessor {
     )
   )
 
+  private statementSub = this.statement.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed()).subscribe((value) => {
+    this._onChange?.(value)
+  })
+
   constructor() {
     effect(() => {
-      console.log(this.dataSettings())
+      if (this.opened()) {
+        this.drawerOpened.set(this.opened())
+      }
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      this.disabled() ? this.statement.disable() : this.statement.enable()
     })
   }
 
   writeValue(obj: any): void {
-    this._statement = obj
+    this.statement.setValue(obj)
   }
   registerOnChange(fn: any): void {
     this._onChange = fn
   }
   registerOnTouched(fn: any): void {}
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
+    isDisabled ? this.statement.disable() : this.statement.enable()
+  }
+
+  toggleSideMenu() {
+    this.drawerOpened.update((v) => !v)
   }
 
   async openCreateParameter(parameter?: ParameterProperty) {

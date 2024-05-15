@@ -1,5 +1,4 @@
-<div class="toolbar-container" [class.pin]="pinToolbar()">
-</div>
+<div class="toolbar-container block shrink-0" [class.pin]="pinToolbar()"></div>
 
 <pac-story-toolbar #toolbar class="ngm-story__toolbar absolute shadow-xl overflow-hidden z-10
     backdrop-blur-sm hover:backdrop-blur-lg dark:shadow-neutral-800"
@@ -40,23 +39,24 @@
     </button>
 </pac-story-toolbar>
 
-<mat-drawer-container class="ngm-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
+<div class="relative overflow-hidden">
+  <mat-drawer-container class="ngm-story__container flex-1 h-full w-full" autosize [hasBackdrop]="false" cdkDropListGroup>
     <mat-drawer #drawer class="ngm-story__designer-drawer mat-elevation-z2"
-        [mode]="isMobile() ? 'over' : 'side'"
-        position="end" 
-        [(opened)]="designerOpened"
-        ngmResizer [resizerWidth]="400"
+      [mode]="isMobile() ? 'over' : 'side'"
+      position="end" 
+      [(opened)]="designerOpened"
+      ngmResizer [resizerWidth]="400"
     >
-        <ngm-settings-panel class="ngm-story__settings-container overflow-hidden"
-            liveMode
-            [(opened)]="designerOpened" 
-        >
-        </ngm-settings-panel>
+      <ngm-settings-panel class="ngm-story__settings-container overflow-hidden"
+        liveMode
+        [(opened)]="designerOpened" 
+      >
+      </ngm-settings-panel>
 
-        <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
-            cdkDrag
-            cdkDragLockAxis="x"
-        ></div>
+      <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
+        cdkDrag
+        cdkDragLockAxis="x"
+      ></div>
     </mat-drawer>
     <mat-drawer-content class="ngm-story__container-content" [ngClass]="{EmulatedDevice: emulatedDevice()}">
       @if (emulatedDevice(); as emulatedDevice) {
@@ -155,16 +155,19 @@
           matTooltipPosition="before"
         />
     </mat-drawer-content>
-</mat-drawer-container>
+  </mat-drawer-container>
+
+  @if (showExplorer()) {
+    <ngm-story-explorer class="absolute top-0 left-0 w-full h-full z-20"
+      cdkDropListGroup
+      [data]="explore()"
+      (closed)="closeExplorer($event)"
+    ></ngm-story-explorer>
+  }
+
+  <router-outlet #o="outlet"></router-outlet>
+</div>
 
 @if (error()) {
   <div class="pac-story__error">{{error()}}</div>
-}
-
-@if (showExplorer()) {
-  <ngm-story-explorer class="absolute top-0 left-0 w-full h-full z-20"
-    cdkDropListGroup
-    [data]="explore()"
-    (closed)="closeExplorer($event)"
-  ></ngm-story-explorer>
 }

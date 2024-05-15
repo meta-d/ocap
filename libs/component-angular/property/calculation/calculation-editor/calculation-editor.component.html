@@ -33,13 +33,13 @@
             <mat-radio-button [value]="CALCULATION_TYPE.Calculated" class="p-2 rounded-lg hover:bg-white/20">
                 {{ 'COMPONENTS.CALCULATION.CALCULATED_MEASURE' | translate: {Default: "Calculated Measure"} }}
             </mat-radio-button>
-            <mat-radio-button [value]="CALCULATION_TYPE.Restricted" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+            <mat-radio-button [value]="CALCULATION_TYPE.Restricted" [disabled]="entitySyntax()!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
                 {{ 'COMPONENTS.CALCULATION.RESTRICTED_MEASURE' | translate: {Default: "Restricted Measure"} }}
             </mat-radio-button>
-            <mat-radio-button [value]="CALCULATION_TYPE.Variance" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+            <mat-radio-button [value]="CALCULATION_TYPE.Variance" [disabled]="entitySyntax()!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
                 {{ 'COMPONENTS.CALCULATION.VARIANCE_MEASURE' | translate: {Default: "Variance Measure"} }}
             </mat-radio-button>
-            <mat-radio-button [value]="CALCULATION_TYPE.Aggregation" [disabled]="syntax!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
+            <mat-radio-button [value]="CALCULATION_TYPE.Aggregation" [disabled]="entitySyntax()!==SYNTAX.MDX" class="p-2 rounded-lg hover:bg-white/20">
                 {{ 'COMPONENTS.CALCULATION.ConditionalAggregation' | translate: {Default: "Conditional Aggregation"} }}
             </mat-radio-button>
             <mat-radio-button [value]="CALCULATION_TYPE.D2Measure" disabled class="p-2 rounded-lg hover:bg-white/20">
@@ -62,10 +62,14 @@
 
     <div class="flex justify-start">
         <div ngmButtonGroup>
-            <button mat-raised-button color="accent" cdkFocusInitial [disabled]="formGroup.invalid" (click)="onApply()">
+            <button mat-raised-button color="accent" cdkFocusInitial [disabled]="formGroup.invalid ||
+                calculation.invalid ||
+                (formGroup.pristine && formula.pristine && calculation.pristine)"
+                (click)="onApply()"
+            >
                 {{ 'COMPONENTS.COMMON.APPLY' | translate: {Default: 'Apply'} }}
             </button>
-            <button mat-button mat-dialog-close>
+            <button mat-button (click)="onCancel()">
                 {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
             </button>
         </div>
@@ -77,50 +81,50 @@
         @case (CALCULATION_TYPE.Calculated) {
             <!--
                 <ngm-calculation-sql *ngSwitchCase="SYNTAX.SQL"
-                [dataSettings]="dataSettings"
-                [entityType]="entityType"
+                [dataSettings]="dataSettings()"
+                [entityType]="entityType()"
                 [coreService]="coreService"
                 [(ngModel)]="calculation"
             >
             </ngm-calculation-sql> -->
-        <ngm-calculated-measure story class="max-w-full w-[1000px] h-full"
-            [dataSettings]="dataSettings"
-            [entityType]="entityType"
+        <ngm-calculated-measure story class="max-w-full w-full h-full"
+            [dataSettings]="dataSettings()"
+            [entityType]="entityType()"
             [coreService]="coreService"
-            [syntax]="syntax"
-            [(ngModel)]="formula"
+            [syntax]="entitySyntax()"
+            [formControl]="formula"
             >
         </ngm-calculated-measure>
         }
         @case (CALCULATION_TYPE.Restricted) {
             <ngm-restricted-measure class="sub-calculation"
                 [coreService]="coreService"
-                [dataSettings]="dataSettings"
-                [entityType]="entityType"
-                [(ngModel)]="calculation">
+                [dataSettings]="dataSettings()"
+                [entityType]="entityType()"
+                [formControl]="calculation">
             </ngm-restricted-measure>
         }
         @case (CALCULATION_TYPE.Aggregation) {
             <ngm-conditional-aggregation class="sub-calculation"
                 [coreService]="coreService"
                 [dsCoreService]="dsCoreService"
-                [dataSettings]="dataSettings"
-                [entityType]="entityType"
-                [(ngModel)]="calculation">
+                [dataSettings]="dataSettings()"
+                [entityType]="entityType()"
+                [formControl]="calculation">
             </ngm-conditional-aggregation>
         }
         @case (CALCULATION_TYPE.Variance) {
             <pac-calculation-variance class="sub-calculation"
                 [dsCoreService]="dsCoreService"
-                [dataSettings]="dataSettings"
-                [entityType]="entityType"
-                [(ngModel)]="calculation"
+                [dataSettings]="dataSettings()"
+                [entityType]="entityType()"
+                [formControl]="calculation"
             ></pac-calculation-variance>
         }
         @case (CALCULATION_TYPE.MeasureControl) {
             <ngm-measure-control class="sub-calculation"
-                [(ngModel)]="calculation"
-                [entityType]="entityType"
+                [entityType]="entityType()"
+                [formControl]="calculation"
                 >
             </ngm-measure-control>
         }

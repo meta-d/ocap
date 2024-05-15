@@ -616,6 +616,19 @@ export class NxStoryService {
     return this._storyEvent$.pipe(filter(({ key }) => key === pointKey))
   }
 
+  selectEntitySchemaProperty<T>(dataSource: string, entitySet: string, key: string) {
+    return this.schemas$.pipe(
+      map((schemas) => schemas?.[dataSource]),
+      map((schemas) => schemas?.[entitySet]),
+      map<EntityType, T>((schema) => Object.values(schema?.properties ?? {}).find((property) => property.__id__ === key) as T),
+    )
+  }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Actions
+  |--------------------------------------------------------------------------
+  */
   public sendIntent(intent: Intent) {
     this.coreService.sendIntent(intent)
   }
@@ -624,11 +637,6 @@ export class NxStoryService {
     return this.coreService.onIntent()
   }
 
-  /**
-  |--------------------------------------------------------------------------
-  | Actions
-  |--------------------------------------------------------------------------
-  */
   setCurrentIndex(index: number) {
     const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)
