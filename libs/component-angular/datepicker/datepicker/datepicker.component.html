@@ -1,7 +1,0 @@
-<input matInput class="ngm-input-element w-full"
-    [matDatepicker]="picker" [formControl]="date" (dateChange)="onDateChange($event)">
-<mat-datepicker #picker></mat-datepicker>
-<div class="absolute right-0 h-full flex items-center">
-    <mat-datepicker-toggle [for]="picker" displayDensity="compact"></mat-datepicker-toggle>
-    <ng-content select="[ngmSuffix]"></ng-content>
-</div>

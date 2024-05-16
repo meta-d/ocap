@@ -22,8 +22,8 @@ import {
 import { TranslateModule } from '@ngx-translate/core'
 import { orderBy } from 'lodash-es'
 import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
-import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
 import { NgmEntityPropertyComponent } from '../property/property.component'
+// import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
 
 @Component({
   standalone: true,
@@ -145,29 +145,29 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
       value: null
     }
 
-    const property = await firstValueFrom(
-      this._dialog
-        .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data
-        })
-        .afterClosed()
-    )
-    if (property) {
-      // 发送给 DSCoreService 存储到元信息增强里
-      // this.coreService.storyUpdateEvent$.next({
-      //   type: 'Calculation',
-      //   dataSettings: this.dataSettings(),
-      //   property
-      // })
-      this.ocapService.updateEntity({
-        type: 'Calculation',
-        dataSettings: this.dataSettings(),
-        property
-      })
-      // 然后将新计算度量名称赋值给当前控件
-      this.formControl.setValue(property.name)
-    }
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data
+    //     })
+    //     .afterClosed()
+    // )
+    // if (property) {
+    //   // 发送给 DSCoreService 存储到元信息增强里
+    //   // this.coreService.storyUpdateEvent$.next({
+    //   //   type: 'Calculation',
+    //   //   dataSettings: this.dataSettings(),
+    //   //   property
+    //   // })
+    //   this.ocapService.updateEntity({
+    //     type: 'Calculation',
+    //     dataSettings: this.dataSettings(),
+    //     property
+    //   })
+    //   // 然后将新计算度量名称赋值给当前控件
+    //   this.formControl.setValue(property.name)
+    // }
   }
 
   async editCalculationMeasure() {
@@ -180,28 +180,28 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
       value: this.property()
     }
 
-    const property = await firstValueFrom(
-      this._dialog
-        .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data
-        })
-        .afterClosed()
-    )
-    if (property) {
-      // 发送给 DSCoreService 存储到元信息增强里
-      // this.coreService.storyUpdateEvent$.next({
-      //   type: 'Calculation',
-      //   dataSettings: this.dataSettings(),
-      //   property
-      // })
-      this.ocapService.updateEntity({
-        type: 'Calculation',
-        dataSettings: this.dataSettings(),
-        property
-      })
-      // 然后将新计算度量名称赋值给当前控件
-      this.formControl.setValue(property.name)
-    }
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data
+    //     })
+    //     .afterClosed()
+    // )
+    // if (property) {
+    //   // 发送给 DSCoreService 存储到元信息增强里
+    //   // this.coreService.storyUpdateEvent$.next({
+    //   //   type: 'Calculation',
+    //   //   dataSettings: this.dataSettings(),
+    //   //   property
+    //   // })
+    //   this.ocapService.updateEntity({
+    //     type: 'Calculation',
+    //     dataSettings: this.dataSettings(),
+    //     property
+    //   })
+    //   // 然后将新计算度量名称赋值给当前控件
+    //   this.formControl.setValue(property.name)
+    // }
   }
 }

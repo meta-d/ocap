@@ -12,7 +12,6 @@ import {
 } from '@angular/forms'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { BusinessAreasService, NgmSemanticModel } from '@metad/cloud/state'
-import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { IsNilPipe, calcEntityTypePrompt, nonBlank, nonNullable } from '@metad/core'
 import { NgmMatSelectComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
@@ -47,6 +46,7 @@ import {
   switchMap,
   tap
 } from 'rxjs'
+import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { injectFetchModelDetails } from '../../types'
 
@@ -66,9 +66,9 @@ import { injectFetchModelDetails } from '../../types'
     NgmTreeSelectComponent,
     TagEditorComponent,
     NgmHierarchySelectComponent,
-    NxSelectionModule,
     IsNilPipe,
-    NgmCalculatedMeasureComponent
+    NgmCalculatedMeasureComponent,
+    NgmSelectionModule,
   ],
   providers: [
     {

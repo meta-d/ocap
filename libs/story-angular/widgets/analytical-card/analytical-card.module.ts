@@ -6,10 +6,10 @@ import { MatMenuModule } from '@angular/material/menu'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxSelectionModule } from '@metad/components/selection'
 import { PlaceholderAddComponent } from '@metad/story/story'
 import { WidgetAnalyticalCardComponent } from './analytical-card.component'
 import { AnalyticalChartPlaceholderComponent } from './chart-placeholder/chart-placeholder.component'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
 
 
 @NgModule({
@@ -20,11 +20,11 @@ import { AnalyticalChartPlaceholderComponent } from './chart-placeholder/chart-p
     MatButtonModule,
     MatIconModule,
     TranslateModule,
-    NxSelectionModule,
     OcapCoreModule,
-
+    NgmSelectionModule,
+    
     PlaceholderAddComponent,
-    AnalyticalChartPlaceholderComponent
+    AnalyticalChartPlaceholderComponent,
   ],
   declarations: [WidgetAnalyticalCardComponent],
   exports: [WidgetAnalyticalCardComponent]

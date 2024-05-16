@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatNativeDateModule } from '@angular/material/core'
 import { ToastrService } from '@metad/cloud/state'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxSelectionModule } from '@metad/components/selection'
 import { IsNilPipe, NxCoreModule } from '@metad/core'
 import { NgmCommonModule, ResizerModule, TreeTableModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
@@ -13,6 +12,7 @@ import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { InlineSearchComponent } from '../../@shared/form-fields'
 import { PACIndicatorRoutingModule } from './indicator-routing.module'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
 
 @NgModule({
   declarations: [],
@@ -25,7 +25,7 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     MatNativeDateModule,
 
     NxCoreModule,
-    NxSelectionModule,
+    NgmSelectionModule,
     ButtonGroupDirective,
     InlineSearchComponent,
     PACIndicatorRoutingModule,

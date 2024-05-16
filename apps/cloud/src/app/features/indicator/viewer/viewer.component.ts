@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { IndicatorsService } from '@metad/cloud/state'
-import { NxSelectionModule } from '@metad/components/selection'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { formatRelative } from 'date-fns'
 import { isNil, negate } from 'lodash-es'
@@ -12,6 +11,7 @@ import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/op
 import { AbilityActions, getDateLocale } from '../../../@core'
 import { CreatedByPipe, MaterialModule, TagViewerComponent } from '../../../@shared'
 import { IndicatorTypeComponent } from '../../../@shared/indicator'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
 
 @Component({
   standalone: true,
@@ -23,7 +23,7 @@ import { IndicatorTypeComponent } from '../../../@shared/indicator'
     TranslateModule,
 
     CreatedByPipe,
-    NxSelectionModule,
+    NgmSelectionModule,
     IndicatorTypeComponent,
     TagViewerComponent
   ],

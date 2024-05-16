@@ -1,15 +1,13 @@
 import { HttpClientModule } from '@angular/common/http'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { NxCoreModule } from '@metad/core'
 import { Meta, moduleMetadata } from '@storybook/angular'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { PropertyModule } from '../property.module'
-import { PropertyMemberSelectComponent } from './member-select.component'
+import { NgmCompareMemberSelectComponent } from './member-select.component'
 
 export default {
-  title: 'Components/Property/Member Select',
-  component: PropertyMemberSelectComponent,
+  title: 'Entity/CompareMemberSelect',
+  component: NgmCompareMemberSelectComponent,
   decorators: [
     moduleMetadata({
       declarations: [],
@@ -19,16 +17,14 @@ export default {
         LoggerModule.forRoot({
           level: NgxLoggerLevel.DEBUG
         }),
-        PropertyModule,
         MonacoEditorModule.forRoot(),
-        NxCoreModule.forRoot(),
       ]
     })
   ]
 } as Meta
 
 export const Primary = () => ({
-  component: PropertyMemberSelectComponent,
+  component: NgmCompareMemberSelectComponent,
   props: {
     label: 'Dimension',
     dimension: {
@@ -39,7 +35,7 @@ export const Primary = () => ({
 })
 
 export const Calendar = () => ({
-  component: PropertyMemberSelectComponent,
+  component: NgmCompareMemberSelectComponent,
   props: {
     label: 'Dimension',
     dimension: {

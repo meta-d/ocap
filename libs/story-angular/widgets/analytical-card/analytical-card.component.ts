@@ -18,12 +18,12 @@ import {
   isEqual,
   isMeasure
 } from '@metad/ocap-core'
-import { SlicersCapacity } from '@metad/components/selection'
 import { AbstractStoryWidget, StoryWidgetState, WidgetMenu, WidgetMenuType } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { compact, isArray, isEmpty, isNil, negate } from 'lodash-es'
 import { Observable, combineLatest, combineLatestWith, distinctUntilChanged, filter, map, shareReplay } from 'rxjs'
 import { WidgetOrderMenu } from './types'
+import { SlicersCapacity } from '@metad/ocap-angular/selection'
 
 export interface WidgetAnalyticalCardOptions extends AnalyticalCardOptions {
   showDownloadButton?: boolean

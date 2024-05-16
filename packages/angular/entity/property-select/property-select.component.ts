@@ -59,8 +59,8 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { PropertyCapacity } from '../types'
 import { NgmEntityPropertyComponent, propertyIcon } from '../property/property.component'
-import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
 import { NgmFormattingComponent } from '../formatting/formatting.component'
+// import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
 
 
 @Component({
@@ -246,7 +246,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     map((entityType: EntityType) => {
       const properties: Array<PropertyAttributes> = Object.values(entityType.properties)
       if (this.capacities()?.includes(PropertyCapacity.MeasureGroup)) {
-        const caption = this.getTranslation('COMPONENTS.PROPERTY.MeasureGroup', {Default: 'Measure Group'})
+        const caption = this.getTranslation('Ngm.Property.MeasureGroup', {Default: 'Measure Group'})
         properties.push({
           name: C_MEASURES,
           caption,
@@ -609,7 +609,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       if (property) {
         this.property$.next(property)
       } else {
-        this.dimensionError.set(this.getTranslation('COMPONENTS.PROPERTY.DimensionNotFound', {
+        this.dimensionError.set(this.getTranslation('Ngm.Property.DimensionNotFound', {
           dimension,
           cube: this.#entityType()?.name,
           Default: `Dimension '${dimension}' not found in cube '${this.#entityType()?.name}'`
@@ -805,40 +805,40 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       }
     }
 
-    const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
-      NgmCalculationEditorComponent,
-      {
-        viewContainerRef: this._viewContainerRef,
-        data
-      }).afterClosed()
-    )
-    if (property) {
-      this.patchCalculationProperty(property)
-      this.calculationChange.emit(property)
-    }
+    // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
+    //   NgmCalculationEditorComponent,
+    //   {
+    //     viewContainerRef: this._viewContainerRef,
+    //     data
+    //   }).afterClosed()
+    // )
+    // if (property) {
+    //   this.patchCalculationProperty(property)
+    //   this.calculationChange.emit(property)
+    // }
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
-    const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
-      NgmCalculationEditorComponent,
-      {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          // coreService: this.coreService(),
-          dsCoreService: this.dsCoreService(),
-          dataSettings: this.dataSettings(),
-          entityType: this.entityType(),
-          value: calculationProperty,
-          syntax: Syntax.MDX,
-        },
-      })
-      .afterClosed()
-    )
+    // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
+    //   NgmCalculationEditorComponent,
+    //   {
+    //     viewContainerRef: this._viewContainerRef,
+    //     data: {
+    //       // coreService: this.coreService(),
+    //       dsCoreService: this.dsCoreService(),
+    //       dataSettings: this.dataSettings(),
+    //       entityType: this.entityType(),
+    //       value: calculationProperty,
+    //       syntax: Syntax.MDX,
+    //     },
+    //   })
+    //   .afterClosed()
+    // )
     
-    if (property) {
-      this.patchCalculationProperty(property)
-      this.calculationChange.emit(property)
-    }
+    // if (property) {
+    //   this.patchCalculationProperty(property)
+    //   this.calculationChange.emit(property)
+    // }
   }
 
   async openFormatting(event) {

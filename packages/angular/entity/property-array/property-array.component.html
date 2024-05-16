@@ -3,7 +3,7 @@
   (cdkDropListDropped)="drop($event)">
 
   <button *ngIf="isEmpty" mat-button color="primary" (click)="add()">
-    {{ 'COMPONENTS.PROPERTY.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
+    {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
   </button>
   @for (item of formArray.controls; track i; let i = $index;) {
     <ngm-property-select class="group" cdkDragBoundary=".ngm-property-array__container" cdkDrag
@@ -25,5 +25,5 @@
 </div>
 
 <button *ngIf="!isEmpty" class="add" mat-button color="primary" ngmAppearance="dashed" (click)="add()">
-  {{ 'COMPONENTS.PROPERTY.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
+  {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
 </button>

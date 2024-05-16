@@ -4,7 +4,7 @@
         [(opened)]="drawerOpened"
         (openedChange)="$event?helper.realignInkBar():''">
         <mat-tab-group #helper class="ngm-calculated-measure__helpers" mat-stretch-tabs="false" >
-            <mat-tab [label]="'COMPONENTS.CALCULATION.DIMENSION_MEMBERS' | translate: {Default: 'Dimension Members'}"
+            <mat-tab [label]="'Ngm.Calculation.DIMENSION_MEMBERS' | translate: {Default: 'Dimension Members'}"
                 id="ngm-calculated-measure__entity-schema"
                 cdkDropList
                 [cdkDropListData]="[]"
@@ -19,7 +19,7 @@
                 </ngm-entity-schema>
             </mat-tab>
 
-            <mat-tab [label]="'COMPONENTS.CALCULATION.CALCULATED_MEMBERS' | translate: {Default: 'Calculated Members'}">
+            <mat-tab [label]="'Ngm.Calculation.CALCULATED_MEMBERS' | translate: {Default: 'Calculated Members'}">
                 <div class="max-w-full w-full flex flex-col justify-start items-stretch overflow-hidden">
                     <ngm-search class="m-1" [formControl]="calculatedMemberSearch"></ngm-search>
                     <mat-list role="list" class="flex-1 max-w-full w-full overflow-auto" displayDensity="cosy"
@@ -40,13 +40,13 @@
 
             </mat-tab>
 
-            <mat-tab *ngIf="story" [label]="'COMPONENTS.CALCULATION.PARAMETERS' | translate: {Default: 'Parameters'}">
+            <mat-tab *ngIf="story" [label]="'Ngm.Calculation.PARAMETERS' | translate: {Default: 'Parameters'}">
                 <ng-template matTabContent>
                     <div class="w-full flex flex-col justify-start items-stretch p-4">
                         <button mat-button displayDensity="cosy" ngmAppearance="dashed" (click)="openCreateParameter()">
                             <div class="flex justify-center items-center">
                                 <mat-icon fontSet="material-icons-round">add</mat-icon>
-                                {{ 'COMPONENTS.CALCULATION.PARAMETERS' | translate: {Default: 'Parameters'} }}
+                                {{ 'Ngm.Calculation.PARAMETERS' | translate: {Default: 'Parameters'} }}
                             </div>
                         </button>
     
@@ -74,7 +74,7 @@
                 </ng-template>
             </mat-tab>
 
-            <mat-tab [label]="'COMPONENTS.CALCULATION.Formulas' | translate: {Default: 'Formulas'}">
+            <mat-tab [label]="'Ngm.Calculation.Formulas' | translate: {Default: 'Formulas'}">
                 <ng-template matTabContent>
                     <div class="flex-1 flex flex-col justify-start items-stretch overflow-auto">
                         <ngm-search class="p-2" [formControl]="fnSearchControl"></ngm-search>
@@ -115,12 +115,12 @@
 
         <div class="py-1 px-2 flex justify-between items-center">
            <span class="text-lg font-medium">
-            {{ 'COMPONENTS.CALCULATION.EDIT_FORMULA' | translate: {Default: "Edit Formula"} }}
+            {{ 'Ngm.Calculation.EDIT_FORMULA' | translate: {Default: "Edit Formula"} }}
            </span>
 
            <div class="flex justify-around items-center gap-2" displayDensity="compact">
              <button mat-icon-button (click)="toggleSideMenu()"
-                [matTooltip]="'COMPONENTS.CALCULATION.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"
+                [matTooltip]="'Ngm.Calculation.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"
              >
                 <mat-icon fontSet="material-icons-outlined">view_sidebar</mat-icon>
              </button>
@@ -149,6 +149,6 @@
         }
 
         <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="drawerOpened" side="right"
-            [matTooltip]="'COMPONENTS.CALCULATION.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"/>
+            [matTooltip]="'Ngm.Calculation.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"/>
     </mat-drawer-content>
 </mat-drawer-container>

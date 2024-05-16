@@ -1,6 +1,7 @@
-import { ModuleWithProviders, NgModule } from '@angular/core'
+import { NgModule } from '@angular/core'
 import { NgmDSCoreService } from './core.service'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from './directives'
+import { NgmOcapCoreService } from './services'
 
 @NgModule({
   imports: [DensityDirective, AppearanceDirective, ButtonGroupDirective],
@@ -8,18 +9,8 @@ import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from './d
   declarations: [],
   providers: []
 })
-export class OcapCoreModule {
-  /**
-   * @deprecated use provideOcapCore()
-   */
-  static forRoot(): ModuleWithProviders<OcapCoreModule> {
-    return {
-      ngModule: OcapCoreModule,
-      providers: provideOcapCore()
-    }
-  }
-}
+export class OcapCoreModule {}
 
 export function provideOcapCore() {
-  return [NgmDSCoreService]
+  return [NgmDSCoreService, NgmOcapCoreService]
 }

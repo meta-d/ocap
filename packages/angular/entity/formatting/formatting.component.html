@@ -1,28 +1,28 @@
 <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
     <h4 style="pointer-events: none;">
-        {{ 'COMPONENTS.ENTITY.MeasureFormatting' | translate: {Default: "Measure Formatting"} }}
+        {{ 'Ngm.Entity.MeasureFormatting' | translate: {Default: "Measure Formatting"} }}
     </h4>
 </header>
 
 <mat-dialog-content class="mat-typography">
     <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch gap-2">
         <mat-slide-toggle formControlName="shortNumber">
-            {{ 'COMPONENTS.ENTITY.ShortNumber' | translate: {Default: "Short Number"} }}
+            {{ 'Ngm.Entity.ShortNumber' | translate: {Default: "Short Number"} }}
         </mat-slide-toggle>
 
-        <ngm-slider-input [label]="'COMPONENTS.ENTITY.Decimals' | translate: {Default: 'Decimals'}"
+        <ngm-slider-input [label]="'Ngm.Entity.Decimals' | translate: {Default: 'Decimals'}"
             formControlName="decimal"
             color="accent"
             [max]="10"
         >
         </ngm-slider-input>
-        <ngm-input [label]="'COMPONENTS.ENTITY.DigitsInfo' | translate: {Default: 'Digits Info'}"
+        <ngm-input [label]="'Ngm.Entity.DigitsInfo' | translate: {Default: 'Digits Info'}"
             formControlName="digitsInfo"
         ></ngm-input>
-        <ngm-input [label]="'COMPONENTS.ENTITY.Unit' | translate: {Default: 'Unit'}" formControlName="unit"></ngm-input>
+        <ngm-input [label]="'Ngm.Entity.Unit' | translate: {Default: 'Unit'}" formControlName="unit"></ngm-input>
 
         <!-- 暂不支持 <mat-checkbox formControlName="useUnderlyingUnit">
-            {{ 'COMPONENTS.ENTITY.UseUnderlyingUnit' | translate: {Default: "Use Underlying Unit"} }}
+            {{ 'Ngm.Entity.UseUnderlyingUnit' | translate: {Default: "Use Underlying Unit"} }}
         </mat-checkbox> -->
         
     </form>
@@ -31,10 +31,10 @@
 <mat-dialog-actions align="end">
     <div ngmButtonGroup>
         <button mat-button mat-dialog-close>
-            {{ 'COMPONENTS.COMMON.CANCEL' | translate: {Default: 'Cancel'} }}
+            {{ 'Ngm.Common.Cancel' | translate: {Default: 'Cancel'} }}
         </button>
         <button mat-raised-button color="accent" cdkFocusInitial (click)="onApply()">
-            {{ 'COMPONENTS.COMMON.APPLY' | translate: {Default: 'Apply'} }}
+            {{ 'Ngm.Common.Apply' | translate: {Default: 'Apply'} }}
         </button>
     </div>
 </mat-dialog-actions>

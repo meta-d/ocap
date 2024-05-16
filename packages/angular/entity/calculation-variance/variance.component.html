@@ -1,10 +1,10 @@
-<div class="text-lg font-medium mb-4"> {{ 'COMPONENTS.CALCULATION.VARIANCE_MEASURE' | translate: {Default: "Variance Measure"} }} </div>
+<div class="text-lg font-medium mb-4"> {{ 'Ngm.Calculation.VARIANCE_MEASURE' | translate: {Default: "Variance Measure"} }} </div>
 
 <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch">
 
     <div class="flex justify-between items-center gap-4">
         <ngm-property-select class="flex-1 w-5/12" displayDensity="compact"
-            [label]=" 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} "
+            [label]=" 'Ngm.Calculation.Measure' | translate: {Default: 'Measure'} "
             [dsCoreService]="dsCoreService"
             [dataSettings]="dataSettings"
             [entityType]="entityType"
@@ -15,7 +15,7 @@
         </ngm-property-select>
 
         <ngm-property-select class="flex-1 w-5/12" displayDensity="compact"
-            [label]=" 'COMPONENTS.CALCULATION.BaseDimension' | translate: {Default: 'Base Dimension'} "
+            [label]=" 'Ngm.Calculation.BaseDimension' | translate: {Default: 'Base Dimension'} "
             [dsCoreService]="dsCoreService"
             [dataSettings]="dataSettings"
             [entityType]="entityType"
@@ -28,14 +28,14 @@
 
     <div class="text-base my-2">{{expression}}</div>
 
-    <ngm-compare-member-select label="{{ 'COMPONENTS.CALCULATION.Compare' | translate: {Default: 'Compare'} }} (A)"
+    <ngm-compare-member-select label="{{ 'Ngm.Calculation.Compare' | translate: {Default: 'Compare'} }} (A)"
         [dataSettings]="dataSettings"
         [entityType]="entityType"
         [dimension]="baseDimension"
         formControlName="compareA"
     />
 
-    <ngm-compare-member-select label="{{ 'COMPONENTS.CALCULATION.To' | translate: {Default: 'To'} }} (B)"
+    <ngm-compare-member-select label="{{ 'Ngm.Calculation.To' | translate: {Default: 'To'} }} (B)"
         [dataSettings]="dataSettings"
         [entityType]="entityType"
         [dimension]="baseDimension"
@@ -43,28 +43,28 @@
     />
 
     <mat-checkbox formControlName="asZero" class="my-2">
-        {{ 'COMPONENTS.CALCULATION.SetNoDataasZero' | translate: {Default: "Set No Data as Zero"} }}
+        {{ 'Ngm.Calculation.SetNoDataasZero' | translate: {Default: "Set No Data as Zero"} }}
     </mat-checkbox>
 
     <mat-checkbox formControlName="asPercentage" class="my-2">
-        {{ 'COMPONENTS.CALCULATION.CalculateasPercentage' | translate: {Default: "Calculate as Percentage"} }}
+        {{ 'Ngm.Calculation.CalculateasPercentage' | translate: {Default: "Calculate as Percentage"} }}
     </mat-checkbox>
 
     <mat-checkbox formControlName="directDivide" class="my-2">
-        {{ 'COMPONENTS.CALCULATION.DirectDivide' | translate: {Default: "Direct Divide"} }}
+        {{ 'Ngm.Calculation.DirectDivide' | translate: {Default: "Direct Divide"} }}
     </mat-checkbox>
 
     <div *ngIf="asPercentage && !directDivide" class="flex justify-between items-center">
         <mat-checkbox formControlName="absBaseValue">
-            {{ 'COMPONENTS.CALCULATION.AbsoluteBaseValue' | translate: {Default: "Absolute Base Value"} }}
+            {{ 'Ngm.Calculation.AbsoluteBaseValue' | translate: {Default: "Absolute Base Value"} }}
         </mat-checkbox>
         <mat-form-field appearance="fill" class="w-5/12">
-            <mat-label>{{ 'COMPONENTS.CALCULATION.DivideBy' | translate: {Default: "Divide By"} }}</mat-label>
+            <mat-label>{{ 'Ngm.Calculation.DivideBy' | translate: {Default: "Divide By"} }}</mat-label>
             <mat-select formControlName="divideBy">
               <mat-option value="A">
-                {{ 'COMPONENTS.CALCULATION.CompareValueA' | translate: {Default: "Compare Value (A)"} }}
+                {{ 'Ngm.Calculation.CompareValueA' | translate: {Default: "Compare Value (A)"} }}
               </mat-option>
-              <mat-option value="B">{{ 'COMPONENTS.CALCULATION.ToValueB' | translate: {Default: "To Value (B)"} }}
+              <mat-option value="B">{{ 'Ngm.Calculation.ToValueB' | translate: {Default: "To Value (B)"} }}
               </mat-option>
             </mat-select>
         </mat-form-field>
