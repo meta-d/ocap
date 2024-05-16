@@ -9,7 +9,7 @@ import { debounceTime, distinctUntilChanged, filter, map, tap } from 'rxjs/opera
 import { EmailTemplateService, Store, ToastrService } from '../../../@core/services'
 import { TranslationBaseComponent } from '../../../@shared'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { EditorThemeMap } from '@metad/components/editor'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 
 
 @Component({

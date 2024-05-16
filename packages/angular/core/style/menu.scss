@@ -19,3 +19,11 @@
     @apply font-bold bg-black/5 dark:bg-white/10;
   }
 }
+
+.mat-mdc-menu-panel.ngm-density__compact {
+  --mat-menu-item-icon-size: 20px;
+  --mdc-radio-state-layer-size: 30px;
+  .mat-mdc-menu-content .mat-mdc-menu-item .mat-icon {
+    font-size: 20px;
+  }
+}

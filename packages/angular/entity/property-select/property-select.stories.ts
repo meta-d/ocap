@@ -1,6 +1,13 @@
 import { HttpClientModule } from '@angular/common/http'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { TranslateModule } from '@ngx-translate/core'
+import type { Meta, StoryObj } from '@storybook/angular'
+import { applicationConfig, argsToTemplate, componentWrapperDecorator, moduleMetadata } from '@storybook/angular'
+
+import { provideHttpClient } from '@angular/common/http'
+import { provideAnimations } from '@angular/platform-browser/animations'
+import { provideOcapMock, provideTranslate } from '@metad/ocap-angular/mock'
+import { action } from '@storybook/addon-actions'
 
 import {
   AggregationRole,
@@ -11,10 +18,11 @@ import {
   EntityType,
   Measure
 } from '@metad/ocap-core'
-import { Meta, moduleMetadata } from '@storybook/angular'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgmPropertySelectComponent } from '../property-select/property-select.component'
+import { FormsModule } from '@angular/forms'
+import { PropertyCapacity } from '../types'
 
 const ENTITY_TYPE: EntityType = {
   name: 'Sales',
@@ -80,44 +88,80 @@ const ENTITY_TYPE: EntityType = {
   }
 }
 
-export default {
-  title: 'Components/Property/Property Select',
+
+const meta: Meta<NgmPropertySelectComponent> = {
+  title: 'Entity/PropertySelect',
   component: NgmPropertySelectComponent,
-  argTypes: {
-    valueChange: { action: 'clicked' }
-  },
+  excludeStories: /.*Data$/,
+  tags: ['autodocs'],
   decorators: [
+    applicationConfig({
+      providers: [provideAnimations(), provideHttpClient(), provideOcapMock(), provideTranslate()]
+    }),
     moduleMetadata({
+      //👇 Imports both components to allow component composition with Storybook
       declarations: [],
       imports: [
-        BrowserAnimationsModule,
-        HttpClientModule,
-        LoggerModule.forRoot({
-          level: NgxLoggerLevel.DEBUG
-        }),
-        TranslateModule.forRoot(),
-        MonacoEditorModule.forRoot()
+        FormsModule,
+        NgmPropertySelectComponent
       ]
-    })
-  ]
-} as Meta
+    }),
+    //👇 Wraps our stories with a decorator
+    componentWrapperDecorator((story) => `<div style="margin: 3em">${story}</div>`)
+  ],
+  render: (args) => ({
+    props: {
+      ...args,
+    },
+    template: `<ngm-property-select [(ngModel)]="inputValue" ${argsToTemplate(args)}></ngm-property-select>`
+  })
+}
 
-// export const Primary = () => ({
-//   component: PropertySelectComponent,
-//   props: {
-//     entityType: ENTITY_TYPE
-//   }
-// })
+export default meta
 
-// export const DimensionWithHierarchy = Template.bind({})
-// DimensionWithHierarchy.args = {
-//   entityType: ENTITY_TYPE,
-//   value: {
-//     dimension: '[Customers]',
-//     hierarchy: '[Customers]',
-//     level: '[Customers].[Country]'
-//   }
-// }
+type Story = StoryObj<NgmPropertySelectComponent & { inputValue: Dimension | Measure }>
+
+export const Primary: Story = {
+  args: {
+    label: 'Property Select',
+    dataSettings: {
+      dataSource: 'key_sales',
+      entitySet: 'SalesOrder'
+    },
+    entityType: ENTITY_TYPE,
+    capacities: [
+      PropertyCapacity.Dimension,
+      PropertyCapacity.Measure,
+      PropertyCapacity.Parameter
+    ],
+    inputValue: {
+      dimension: 'A',
+      hierarchy: '[A]',
+    }
+  }
+}
+
+
+export const DimensionWithHierarchy: Story = {
+  args: {
+    label: 'Property Select',
+    dataSettings: {
+      dataSource: 'key_sales',
+      entitySet: 'SalesOrder'
+    },
+    entityType: ENTITY_TYPE,
+    capacities: [
+      PropertyCapacity.Dimension,
+      PropertyCapacity.Measure,
+      PropertyCapacity.Parameter
+    ],
+    inputValue: {
+      dimension: '[Customers]',
+      hierarchy: '[Customers]',
+      level: '[Customers].[Country]'
+    }
+  }
+}
 
 // export const DimensionWithoutHierarchy = Template.bind({})
 // DimensionWithoutHierarchy.args = {

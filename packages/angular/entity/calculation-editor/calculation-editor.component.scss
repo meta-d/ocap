@@ -4,6 +4,10 @@
   flex: 1;
   max-width: 100%;
   overflow: hidden;
+
+  .mat-mdc-radio-group {
+    --mdc-radio-state-layer-size: 28px;
+  }
 }
 
 .mat-mdc-nav-list .mat-mdc-list-item {

@@ -7,13 +7,12 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatSelectModule } from '@angular/material/select'
 import { Router } from '@angular/router'
 import { NgmSelectComponent } from '@metad/ocap-angular/common'
-import { DensityDirective } from '@metad/ocap-angular/core'
+import { DensityDirective, ThemesEnum } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { startWith } from 'rxjs'
 import { LANGUAGES, LanguagesMap, Store } from '../../../@core'
 import { UserPipe } from '../../../@shared'
-import { ThemesEnum } from '@metad/core'
 
 const THEMES = [
   {

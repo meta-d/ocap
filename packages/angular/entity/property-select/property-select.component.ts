@@ -39,7 +39,7 @@ import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from '
 import { distinctUntilChanged, filter, map, shareReplay, startWith, combineLatestWith, debounceTime, pairwise, switchMap } from 'rxjs/operators'
 import { MatSelect, MatSelectModule } from '@angular/material/select'
 import { getEntityMeasures, PropertyAttributes } from '@metad/ocap-core'
-import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { ControlOptions, NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { CommonModule } from '@angular/common'
@@ -109,6 +109,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   readonly _viewContainerRef = inject(ViewContainerRef, {skipSelf: true})
   readonly _destroyRef = inject(DestroyRef)
   readonly #translate = inject(TranslateService)
+  readonly coreService = inject(NgmOcapCoreService)
 
   readonly DISPLAY_BEHAVIOUR_LIST = [
     {
@@ -234,9 +235,8 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     }),
   ))
 
-  readonly entityType$ = combineLatest([toObservable(this.entityType), toObservable(this.#entityType)]).pipe(
-    map(([iEntityType, entityType]) => iEntityType ?? entityType)
-  )
+  readonly _entityType = computed(() => this.entityType() ?? this.#entityType())
+  readonly entityType$ = toObservable(this._entityType)
 
   /**
    * 包含 parameters 字段们
@@ -609,10 +609,11 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       if (property) {
         this.property$.next(property)
       } else {
+        const entityType = this._entityType()
         this.dimensionError.set(this.getTranslation('Ngm.Property.DimensionNotFound', {
           dimension,
-          cube: this.#entityType()?.name,
-          Default: `Dimension '${dimension}' not found in cube '${this.#entityType()?.name}'`
+          cube: entityType?.name,
+          Default: `Dimension '${dimension}' not found in cube '${entityType?.name}'`
         }))
       }
     }
@@ -805,6 +806,13 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       }
     }
 
+    this.coreService.openCalculation(data).subscribe((property) => {
+      if (property) {
+        this.patchCalculationProperty(property)
+        this.calculationChange.emit(property)
+      }
+    })
+
     // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
     //   NgmCalculationEditorComponent,
     //   {
@@ -812,13 +820,25 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     //     data
     //   }).afterClosed()
     // )
-    // if (property) {
-    //   this.patchCalculationProperty(property)
-    //   this.calculationChange.emit(property)
-    // }
+    // 
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
+    const data = {
+      // coreService: this.coreService(),
+      dsCoreService: this.dsCoreService(),
+      dataSettings: this.dataSettings(),
+      entityType: this.entityType(),
+      value: calculationProperty,
+      syntax: Syntax.MDX,
+    }
+    this.coreService.openCalculation(data).subscribe((property) => {
+      if (property) {
+        this.patchCalculationProperty(property)
+        this.calculationChange.emit(property)
+      }
+    })
+
     // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
     //   NgmCalculationEditorComponent,
     //   {

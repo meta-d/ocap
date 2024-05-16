@@ -12,15 +12,16 @@ import {
   OnInit,
   signal,
   viewChild,
-  ViewChild
+  ViewChild,
+  ViewContainerRef
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentType, isEqual } from '@metad/ocap-core'
+import { AgentType, CalculationProperty, isEqual } from '@metad/ocap-core'
 import { provideStoryDesigner, StoryExplorerModule } from '@metad/story'
 import {
   EmulatedDevice,
@@ -52,6 +53,8 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
+import { MatDialog } from '@angular/material/dialog'
 
 @Component({
   standalone: true,
@@ -103,6 +106,9 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   private _router = inject(Router)
   private logger = inject(NGXLogger)
   readonly copilotContext = inject(NgmCopilotContextToken)
+  readonly coreService = inject(NgmOcapCoreService)
+  readonly #dialog = inject(MatDialog)
+  readonly _viewContainerRef = inject(ViewContainerRef)
 
   @Input() storyId: string
 
@@ -250,6 +256,15 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
     })
 
     effectStoryTheme(this.storyContainer)
+
+    this.coreService.setCalculationHandler((params) => {
+      return this.#dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
+        NgmCalculationEditorComponent,
+        {
+          viewContainerRef: this._viewContainerRef,
+          data: params
+        }).afterClosed()
+    })
   }
 
   ngOnInit(): void {

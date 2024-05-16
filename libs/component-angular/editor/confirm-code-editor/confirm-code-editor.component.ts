@@ -2,8 +2,8 @@ import { Component, HostBinding, Inject, effect, inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { isBlank } from '@metad/ocap-core'
 import { BehaviorSubject } from 'rxjs'
-import { EditorThemeMap } from '../types'
 import { NgmThemeService } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 
 export interface ConfirmCodeEditorData {
   language?: string

@@ -4,8 +4,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { MatChipsModule } from '@angular/material/chips'
 import { MatIconModule } from '@angular/material/icon'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
-import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, moduleMetadata } from '@storybook/angular'
+import { OcapCoreModule } from '../core.module'
+import { ButtonGroupDirective } from './button-group.directive'
 
 export default {
   title: 'ButtonGroupDirective',

@@ -31,6 +31,7 @@ export function provideOcapMock() {
     {
       provide: OCAP_MODEL_TOKEN,
       useValue: {
+        key: 'key_sales',
         name: 'Sales',
         type: 'SQL',
         agentType: AgentType.Browser,

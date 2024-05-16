@@ -53,18 +53,6 @@
     }
   }
 
-  .ngm-property-select__parameter-menu {
-    .mat-mdc-menu-item {
-      display: flex;
-      align-items: center;
-
-      .mat-mdc-icon-button {
-        position: absolute;
-        right: 0;
-      }
-    }
-  }
-
   .ngm-property-modeling {
     .cdk-drop-list.ngm-property-modeling__empty {
       border: 1px dashed mat.get-color-from-palette($foreground, divider);

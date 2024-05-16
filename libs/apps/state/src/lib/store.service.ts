@@ -22,9 +22,9 @@ import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { combineLatest, merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
-import { ComponentEnum } from './constants';
-import { ThemesEnum, prefersColorScheme } from '@metad/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ComponentEnum } from './constants';
+import { ThemesEnum, prefersColorScheme } from '@metad/ocap-angular/core';
 
 
 export interface AppState {

@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core'
+import { Injectable, inject, signal } from '@angular/core'
 import { CalculationProperty, DataSettings, ParameterProperty } from '@metad/ocap-core'
-import { Subject } from 'rxjs'
+import { EMPTY, Observable, Subject, of, switchMap } from 'rxjs'
 import { NGM_DATE_VARIABLES } from '../models'
 
 export interface EntityUpdateEvent {
@@ -19,6 +19,7 @@ export class NgmOcapCoreService {
    * 暂时使用这种间接的方式
    */
   readonly #entityUpdateEvent$ = new Subject<EntityUpdateEvent>()
+  readonly #openCalculation = signal<(params: any) => Observable<CalculationProperty>>((params: any) => EMPTY)
 
   updateEntity(event: EntityUpdateEvent) {
     this.#entityUpdateEvent$.next(event)
@@ -45,7 +46,13 @@ export class NgmOcapCoreService {
     return dateVariable.useFactory(dateVariable.deps?.map((dep) => this.execDateVariables(dep)))
   }
 
-  openCalculation() {
-    
+  openCalculation(params) {
+    return of(params).pipe(
+      switchMap(this.#openCalculation())
+    )
+  }
+
+  setCalculationHandler(handler: (params: any) => Observable<CalculationProperty>) {
+    this.#openCalculation.set(handler)
   }
 }

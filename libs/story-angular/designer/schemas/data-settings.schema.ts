@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { NxCoreService, NxISelectOption, nonNullable } from '@metad/core'
+import { NxCoreService, nonNullable } from '@metad/core'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   CalculationProperty,
@@ -163,7 +163,7 @@ export abstract class DataSettingsSchemaService<
     shareReplay(1)
   )
 
-  readonly indicatorSelectOptions$: Observable<NxISelectOption[]> = this.indicators$.pipe(
+  readonly indicatorSelectOptions$: Observable<ISelectOption[]> = this.indicators$.pipe(
     map((indicators) => {
       return (
         indicators

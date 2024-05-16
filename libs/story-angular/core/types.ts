@@ -11,7 +11,7 @@ import {
   IStory,
   ISubscription
 } from '@metad/contracts'
-import { NgmAppearance } from '@metad/ocap-angular/core'
+import { NgmAppearance, ThemesEnum } from '@metad/ocap-angular/core'
 import {
   DataSettings,
   DataSourceOptions,
@@ -24,7 +24,7 @@ import {
   UUID
 } from '@metad/ocap-core'
 import { NxWatermarkOptions } from '@metad/components/trial-watermark'
-import { DefaultDataSettings, IStoryWidget, ThemesEnum } from '@metad/core'
+import { DefaultDataSettings, IStoryWidget } from '@metad/core'
 import { GridsterConfig, GridsterItem } from 'angular-gridster2'
 import ShortUniqueId from 'short-unique-id'
 

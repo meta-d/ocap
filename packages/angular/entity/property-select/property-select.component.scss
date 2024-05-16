@@ -42,6 +42,16 @@ $prefix-color: (#{$prefix}, color);
     }
   }
 }
+
 .mat-error {
   color: var(--mat-form-field-error-text-color);
+}
+
+::ng-deep {
+  .ngm-property-select__parameter-menu {
+    .mat-mdc-menu-item .mat-mdc-menu-item-text {
+      display: flex;
+      align-items: center;
+    }
+  }
 }

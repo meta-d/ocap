@@ -14,7 +14,7 @@ import {
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
 import { CopilotService } from '@metad/copilot'
-import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmDSCoreService, PERIODS } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
   calcRange,
@@ -52,7 +52,7 @@ import {
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, LanguagesEnum, nonNullable, PERIODS } from '@metad/core'
+import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'

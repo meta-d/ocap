@@ -12,7 +12,6 @@ import {
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
-import { EditorThemeMap } from '@metad/components/editor'
 import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
@@ -40,6 +39,7 @@ import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
 import { NgmThemeService } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

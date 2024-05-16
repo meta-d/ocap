@@ -5,9 +5,9 @@ import { MatChipsModule } from '@angular/material/chips'
 import { MatIconModule } from '@angular/material/icon'
 import { provideAnimations } from '@angular/platform-browser/animations'
 import { NgmSearchComponent } from '@metad/ocap-angular/common'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { provideTranslate } from '@metad/ocap-angular/mock'
 import { applicationConfig, moduleMetadata } from '@storybook/angular'
+import { OcapCoreModule } from '../core.module'
 
 export default {
   title: 'Display Density',

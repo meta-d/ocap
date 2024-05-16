@@ -1,4 +1,4 @@
-import { ColorPalettes, ThemesEnum } from '@metad/core'
+import { ColorPalettes } from '@metad/core'
 import {
   AccordionWrappers,
   Appearances,
@@ -11,6 +11,7 @@ import {
 } from '@metad/story/designer'
 import { PageHeaderLabelEnum } from '@metad/story/core'
 import { gridsterOptions } from '../schemas'
+import { ThemesEnum } from '@metad/ocap-angular/core'
 
 export function PreferencesSchema(Story: any) {
   const CSS = Story?.STYLING?.CSS

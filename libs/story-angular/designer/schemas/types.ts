@@ -1,5 +1,5 @@
-import { NxCoreService, TIME_GRANULARITY_SEQUENCES, TypeAheadType } from '@metad/core'
-import { DisplayDensity, ISelectOption } from '@metad/ocap-angular/core'
+import { NxCoreService, TypeAheadType } from '@metad/core'
+import { DisplayDensity, ISelectOption, TIME_GRANULARITY_SEQUENCES } from '@metad/ocap-angular/core'
 import { DataSource, FilterSelectionType, isNil } from '@metad/ocap-core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, throwError } from 'rxjs'

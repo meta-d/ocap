@@ -42,6 +42,7 @@ const meta: Meta<NgmMemberDatepickerComponent> = {
 }
 
 export default meta
+
 type Story = StoryObj<NgmMemberDatepickerComponent>
 
 export const Default: Story = {
