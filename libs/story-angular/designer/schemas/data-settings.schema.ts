@@ -1,6 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { PropertyCapacity } from '@metad/components/property'
 import { SlicersCapacity } from '@metad/components/selection'
 import { NxCoreService, NxISelectOption, nonNullable } from '@metad/core'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -30,6 +29,7 @@ import {
 } from 'rxjs/operators'
 import { BaseDesignerSchemaService, BaseSchemaState } from './base-designer-schema'
 import { AccordionWrappers, DataSettingsSchema, FORMLY_ROW, FORMLY_W_1_2 } from './types'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 export interface SchemaState extends BaseSchemaState {
   dataSettings: DataSettings

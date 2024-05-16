@@ -20,39 +20,25 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { ResizerModule, NgmSelectComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NxEditorModule } from '@metad/components/editor'
+import { NxEntityModule } from '@metad/components/entity'
+import { NgmSearchComponent, NgmSelectComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, DensityDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import {
-  NgmEntitySchemaComponent,
+  NgmEntityModule,
   NgmEntityPropertyComponent,
-  NgmHierarchySelectComponent,
+  NgmEntitySchemaComponent,
+  NgmHierarchySelectComponent
 } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxEditorModule } from '@metad/components/editor'
-import { NxEntityModule } from '@metad/components/entity'
-import {
-  CalculatedMeasureComponent,
-  CalculationEditorComponent,
-  CalculationSqlComponent,
-  CalculationVarianceComponent,
-  ConditionalAggregationComponent,
-  MeasureControlComponent,
-  RestrictedMeasureComponent,
-} from './calculation'
 import { PropertyMemberSelectComponent } from './member-select/member-select.component'
-import { PropertyArrayComponent } from './property-array/property-array.component'
-import { PropertySelectComponent } from './property-select/property-select.component'
 
-
+/**
+ * @deprecated use NgmEntityModule instead
+ */
 @NgModule({
-  declarations: [
-    PropertyMemberSelectComponent,
-    CalculationEditorComponent,
-    CalculationSqlComponent,
-    MeasureControlComponent,
-    CalculationVarianceComponent
-  ],
+  declarations: [PropertyMemberSelectComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -92,21 +78,9 @@ import { PropertySelectComponent } from './property-select/property-select.compo
     NgmSelectComponent,
     DensityDirective,
 
-    CalculatedMeasureComponent,
-    NgmSearchComponent,
-    ConditionalAggregationComponent,
-    PropertySelectComponent,
-    PropertyArrayComponent,
-    RestrictedMeasureComponent
+    NgmEntityModule,
+    NgmSearchComponent
   ],
-  exports: [
-    PropertySelectComponent,
-    PropertyMemberSelectComponent,
-    PropertyArrayComponent,
-    CalculationEditorComponent,
-    CalculationSqlComponent,
-    MeasureControlComponent,
-    CalculationVarianceComponent
-  ]
+  exports: [PropertyMemberSelectComponent]
 })
 export class PropertyModule {}

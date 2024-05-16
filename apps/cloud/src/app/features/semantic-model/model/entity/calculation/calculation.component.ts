@@ -5,10 +5,11 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { CalculatedMeasureComponent } from '@metad/components/property'
+import { zodToAnnotations } from '@metad/copilot'
 import { calcEntityTypePrompt, makeCubePrompt } from '@metad/core'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { DisplayDensity } from '@metad/ocap-angular/core'
+import { NgmCalculatedMeasureComponent } from '@metad/ocap-angular/entity'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { C_MEASURES, CalculatedMember, Syntax, stringifyProperty } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
@@ -28,7 +29,6 @@ import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, ModelDesignerType } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
-import { zodToAnnotations } from '@metad/copilot'
 
 @Component({
   standalone: true,
@@ -47,7 +47,7 @@ import { zodToAnnotations } from '@metad/copilot'
     ContentLoaderModule,
     NgmFormulaModule,
 
-    CalculatedMeasureComponent
+    NgmCalculatedMeasureComponent
   ]
 })
 export class ModelEntityCalculationComponent extends TranslationBaseComponent implements OnDestroy {

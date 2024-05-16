@@ -13,11 +13,13 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { CalculationProperty, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { CalculationEditorComponent } from '@metad/components/property'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
 
+/**
+ * @deprecated
+ */
 @Component({
   standalone: true,
   imports: [
@@ -119,56 +121,56 @@ export class ParametersComponent {
   }
 
   async openCreateCalculation() {
-    const dataSettings = {
-      dataSource: this.activeLink.dataSource,
-      entitySet: this.activeLink.entity
-    }
-    const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    const data = {
-      dataSettings,
-      entityType,
-      syntax: Syntax.MDX,
-      coreService: this.coreService,
-      value: null
-    }
+    // const dataSettings = {
+    //   dataSource: this.activeLink.dataSource,
+    //   entitySet: this.activeLink.entity
+    // }
+    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
+    // const data = {
+    //   dataSettings,
+    //   entityType,
+    //   syntax: Syntax.MDX,
+    //   coreService: this.coreService,
+    //   value: null
+    // }
 
-    const property = await firstValueFrom(
-      this._dialog
-        .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data
-        })
-        .afterClosed()
-    )
-    if (property) {
-      this.storyService.addCalculationMeasure({ dataSettings, calculation: property })
-    }
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data
+    //     })
+    //     .afterClosed()
+    // )
+    // if (property) {
+    //   this.storyService.addCalculationMeasure({ dataSettings, calculation: property })
+    // }
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
-    const dataSettings = {
-      dataSource: this.activeLink.dataSource,
-      entitySet: this.activeLink.entity
-    }
-    const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    const property = await firstValueFrom(
-      this._dialog
-        .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data: {
-            dataSettings: dataSettings,
-            entityType: entityType,
-            value: calculationProperty,
-            syntax: Syntax.MDX,
-            coreService: this.coreService
-          }
-        })
-        .afterClosed()
-    )
+    // const dataSettings = {
+    //   dataSource: this.activeLink.dataSource,
+    //   entitySet: this.activeLink.entity
+    // }
+    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data: {
+    //         dataSettings: dataSettings,
+    //         entityType: entityType,
+    //         value: calculationProperty,
+    //         syntax: Syntax.MDX,
+    //         coreService: this.coreService
+    //       }
+    //     })
+    //     .afterClosed()
+    // )
 
-    if (property) {
-      this.storyService.updateCalculationMeasure({ dataSettings, calculation: property })
-    }
+    // if (property) {
+    //   this.storyService.updateCalculationMeasure({ dataSettings, calculation: property })
+    // }
   }
 
   async removeCalculation(calculationProperty: CalculationProperty) {

@@ -17,11 +17,10 @@ import {
   NxCoreService,
   write
 } from '@metad/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
-  assign,
   assignDeepOmitBlank,
   C_MEASURES,
   CalculationProperty,
@@ -80,6 +79,7 @@ import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 @Injectable()
 export class NxStoryService {
   readonly #translate = inject(TranslateService)
+  readonly #ocapService? = inject(NgmOcapCoreService, { optional: true })
 
   /**
   |--------------------------------------------------------------------------
@@ -396,8 +396,7 @@ export class NxStoryService {
     }
   })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.dsCoreService
-    .onStoryUpdate()
+  private storyUpdateEventSub = this.#ocapService?.onEntityUpdate()
     .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
@@ -1016,7 +1015,7 @@ export class NxStoryService {
       }
 
       if (!key) {
-        this.createInputControlWidget({
+        this._createInputControlWidget(state, {
           ...dataSettings,
           dimension: {
             dimension: parameter.name
@@ -1039,7 +1038,11 @@ export class NxStoryService {
   /**
    * 创建 dimension 的 Input Control
    */
-  readonly createInputControlWidget = this.updater((state, { dataSource, entitySet, dimension }: DataSettings) => {
+  readonly createInputControlWidget = this.updater((state, dataSettings: DataSettings) => {
+    this._createInputControlWidget(state, dataSettings)
+  })
+
+  private _createInputControlWidget(state: StoryState, { dataSource, entitySet, dimension }: DataSettings) {
     const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
     storyPoint.widgets.push({
       key: uuid(),
@@ -1058,7 +1061,7 @@ export class NxStoryService {
         dimension
       }
     } as StoryWidget)
-  })
+  }
 
   getCurrentWidget(widgetKey?: string) {
     const state = this.get<StoryState>()

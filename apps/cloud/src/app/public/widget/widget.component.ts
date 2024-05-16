@@ -11,6 +11,7 @@ import { NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { effectStoryTheme, registerStoryThemes } from '../../@theme'
+import { provideStory } from '@metad/story'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +21,7 @@ import { effectStoryTheme, registerStoryThemes } from '../../@theme'
   host: {
     class: 'pac-public-widget'
   },
-  providers: [NxStoryService, NxStoryPointService, NgmSmartFilterBarService, NxCoreService]
+  providers: [provideStory(), NxStoryPointService, NgmSmartFilterBarService, NxCoreService]
 })
 export class PublicWidgetComponent {
   public storyService = inject(NxStoryService)

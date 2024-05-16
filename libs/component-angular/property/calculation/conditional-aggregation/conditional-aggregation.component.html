@@ -23,8 +23,9 @@
     [selectOptions]="measures$()"
   ></ngm-select> -->
 
-  <ngm-measure-select class="pt-4" formControlName="measure" label="{{ 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} }}"
-    [measures]="measures$()"
+  <ngm-measure-select1 class="pt-4" formControlName="measure" label="{{ 'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'} }}"
+    [dataSettings]="dataSettings"
+    [filter]="filterMeasure"
   />
 
   <div class="text-base my-4">{{ 'COMPONENTS.CALCULATION.AGGREGATION_DIMENSIONS' | translate: {Default: "Aggregation Dimensions"} }}</div>

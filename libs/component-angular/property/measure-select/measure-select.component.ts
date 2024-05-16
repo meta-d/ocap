@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, ElementRef, forwardRef, inject, input, Input, signal, ViewContainerRef } from '@angular/core'
+import { Component, computed, forwardRef, inject, input, Input, ViewContainerRef } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { CanColor, CanDisable, mixinColor, mixinDisabled, mixinDisableRipple } from '@angular/material/core'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { nonNullable, NxCoreService } from '@metad/core'
 import { NgmSelectModule } from '@metad/ocap-angular/common'
 import { DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NgmMeasureSelectComponent } from '@metad/ocap-angular/entity'
 import {
   CalculationProperty,
   DataSettings,
-  getEntityMeasures,
   getEntityProperty,
   isCalculationProperty,
   isEntitySet,
@@ -20,11 +20,7 @@ import {
   PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { nonNullable, NxCoreService } from '@metad/core'
 import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
-import { CalculationEditorComponent } from '../calculation'
-import { orderBy } from 'lodash-es'
-import { MatTooltipModule } from '@angular/material/tooltip'
 
 @Component({
   standalone: true,
@@ -36,10 +32,10 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     MatIconModule,
     MatTooltipModule,
     NgmSelectModule,
-    NgmEntityPropertyComponent,
-    DensityDirective
+    DensityDirective,
+    NgmMeasureSelectComponent
   ],
-  selector: 'ngm-measure-select',
+  selector: 'ngm-measure-select1',
   templateUrl: './measure-select.component.html',
   styles: [],
   inputs: ['color', 'disabled'],
@@ -50,22 +46,11 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => NgmMeasureSelectComponent)
+      useExisting: forwardRef(() => NgmMeasureSelect1Component)
     }
   ]
 })
-export class NgmMeasureSelectComponent
-  extends mixinColor(
-    mixinDisabled(
-      mixinDisableRipple(
-        class {
-          constructor(public _elementRef: ElementRef) {}
-        }
-      )
-    )
-  )
-  implements ControlValueAccessor, CanDisable, CanColor
-{
+export class NgmMeasureSelect1Component implements ControlValueAccessor {
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly coreService = inject(NxCoreService)
   private readonly _dialog = inject(MatDialog)
@@ -89,26 +74,6 @@ export class NgmMeasureSelectComponent
     )
   )
 
-  public readonly measureOptions = computed(() => {
-    const measures = this.entityType()
-      ? getEntityMeasures(this.entityType())
-      : []
-    const filter = this.filter() ?? (() => true)
-
-    return [
-      {
-        name: null,
-        caption: '',
-      },
-      ...orderBy(measures.filter((measure) => !isCalculationProperty(measure)), ['name']),
-      ...orderBy(measures.filter((measure) => isCalculationProperty(measure) && !isIndicatorMeasureProperty(measure)), ['calculationType', 'name']),
-      ...orderBy(measures.filter((measure) => isIndicatorMeasureProperty(measure)), ['name'])
-    ].filter(filter).map((measure) => ({
-      key: measure.name,
-      caption: measure.caption,
-      value: measure
-    }))
-  })
   private readonly syntax = computed(() => this.entityType()?.syntax)
 
   private readonly property = computed(() => {
@@ -135,7 +100,6 @@ export class NgmMeasureSelectComponent
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
     isDisabled ? this.formControl.disable() : this.formControl.enable()
   }
 

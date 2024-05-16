@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core'
-import { PropertyCapacity } from '@metad/components/property'
 import { Dimension, nonNullable } from '@metad/ocap-core'
 import {
   AccordionWrappers,
@@ -14,6 +13,7 @@ import { isEqual } from 'lodash-es'
 import { Observable, combineLatest } from 'rxjs'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { CascadingEffect } from './types'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Injectable()
 export class StoryFilterBarSchemaService<T extends SchemaState = SchemaState> extends DataSettingsSchemaService<T> {

@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core'
-import { PropertyCapacity } from '@metad/components/property'
 import { ControlType, NxCoreService } from '@metad/core'
 import {
   FilterSelectionType,
@@ -26,6 +25,7 @@ import {
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { combineLatest, distinctUntilChanged, map, startWith, withLatestFrom } from 'rxjs'
 import { determineControlType } from './types'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Injectable()
 export class InputControlSchemaService extends DataSettingsSchemaService {

@@ -31,6 +31,7 @@ import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 import { AppService } from '../../../app.service'
 import { StoryScales } from '../types'
+import { provideStory } from '@metad/story'
 
 @Component({
   standalone: true,
@@ -41,7 +42,7 @@ import { StoryScales } from '../types'
   host: {
     class: 'pac-story-point'
   },
-  providers: [NgmDSCoreService, NxCoreService, NxStoryService],
+  providers: [provideStory(), NxCoreService],
   imports: [
     CommonModule,
     NxStoryModule,

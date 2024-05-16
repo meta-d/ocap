@@ -37,7 +37,9 @@ import { negate, sortBy } from 'lodash-es'
 import { MarkdownModule } from 'ngx-markdown'
 import { combineLatestWith, distinctUntilChanged, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
 
-
+/**
+ * @deprecated use NgmCalculatedMeasureComponent
+ */
 @Component({
   standalone: true,
   imports: [
@@ -65,11 +67,11 @@ import { combineLatestWith, distinctUntilChanged, firstValueFrom, map, of, start
     NxEditorModule,
     NgmHighlightDirective
   ],
-  selector: 'ngm-calculated-measure',
+  selector: 'ngm-calculated-measure1',
   templateUrl: './calculated-measure.component.html',
   styleUrls: ['./calculated-measure.component.scss'],
   host: {
-    class: 'ngm-calculated-measure'
+    class: 'ngm-calculated-measure1'
   },
   providers: [
     {

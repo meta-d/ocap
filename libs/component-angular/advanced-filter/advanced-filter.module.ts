@@ -11,8 +11,8 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { PropertyModule } from '@metad/components/property'
 import { NxAdvancedFilterComponent } from './advanced-filter.component'
+import { NgmEntityModule } from '@metad/ocap-angular/entity'
 
 /**
  * "Advanced Filter" 同 "Combination Slicer" 
@@ -32,10 +32,11 @@ import { NxAdvancedFilterComponent } from './advanced-filter.component'
     MatChipsModule,
     TranslateModule,
 
-    PropertyModule,
     ButtonGroupDirective,
     DensityDirective,
-    AppearanceDirective
+    AppearanceDirective,
+
+    NgmEntityModule
   ],
   exports: [NxAdvancedFilterComponent]
 })

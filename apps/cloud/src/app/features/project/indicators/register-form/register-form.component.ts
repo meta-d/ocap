@@ -17,7 +17,7 @@ import { IsNilPipe, calcEntityTypePrompt, nonBlank, nonNullable } from '@metad/c
 import { NgmMatSelectComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
-import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
+import { NgmCalculatedMeasureComponent, NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   ISlicer,
@@ -47,7 +47,6 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { CalculatedMeasureComponent } from '@metad/components/property'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { injectFetchModelDetails } from '../../types'
 
@@ -69,7 +68,7 @@ import { injectFetchModelDetails } from '../../types'
     NgmHierarchySelectComponent,
     NxSelectionModule,
     IsNilPipe,
-    CalculatedMeasureComponent
+    NgmCalculatedMeasureComponent
   ],
   providers: [
     {

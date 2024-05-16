@@ -21,13 +21,15 @@ import {
   getEntityMeasures,
   isIndicatorMeasureProperty,
   negate,
-  Property
+  Property,
+  PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxCoreService } from '@metad/core'
 import { sortBy } from 'lodash-es'
 import { PropertyArrayComponent } from '../../property-array/property-array.component'
 import { PropertyCapacity } from '../../property-select/property-select.component'
+import { NgmMeasureSelect1Component } from '../../measure-select/measure-select.component'
 
 
 @Component({
@@ -51,7 +53,9 @@ import { PropertyCapacity } from '../../property-select/property-select.componen
     NgmCommonModule,
     PropertyArrayComponent,
     NgmParameterSelectComponent,
-    NgmEntityModule
+    NgmEntityModule,
+
+    NgmMeasureSelect1Component
   ]
 })
 export class ConditionalAggregationComponent implements ControlValueAccessor, OnInit {
@@ -122,6 +126,8 @@ export class ConditionalAggregationComponent implements ControlValueAccessor, On
 
   formGroup: FormGroup
 
+  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => measure.name !== this.formGroup?.value?.name
+  
   private _onChange: any
 
   // 排除指标度量后的度量列表
@@ -136,6 +142,7 @@ export class ConditionalAggregationComponent implements ControlValueAccessor, On
     this.measures = getEntityMeasures(this.entityType)
 
     this.formGroup = this.formBuilder.group({
+      name: null,
       operation: null,
       value: null,
       measure: null,

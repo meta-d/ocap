@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core'
-import { PropertyCapacity } from '@metad/components/property'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 import { NxStoryService } from '@metad/story/core'
 import { AccordionWrappers, DataSettingsSchemaService, FORMLY_W_1_2, IntentNavigation } from '@metad/story/designer'
 import { map } from 'rxjs/operators'

@@ -19,9 +19,9 @@ import {
   DataSettings,
   isNil,
 } from '@metad/ocap-core'
-import { PropertySelectComponent, PropertyCapacity } from '@metad/components/property'
 import { NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import { firstValueFrom } from 'rxjs'
+import { NgmPropertySelectComponent, PropertyCapacity } from '@metad/ocap-angular/entity'
 
 
 /**
@@ -142,8 +142,8 @@ export class NxAdvancedFilterComponent implements OnInit {
   /**
    * @hidden @internal
    */
-  @ViewChild('columnSelect', { read: PropertySelectComponent })
-  public columnSelect: PropertySelectComponent;
+  @ViewChild('columnSelect', { read: NgmPropertySelectComponent })
+  public columnSelect: NgmPropertySelectComponent;
 
   // /**
   //  * @hidden @internal

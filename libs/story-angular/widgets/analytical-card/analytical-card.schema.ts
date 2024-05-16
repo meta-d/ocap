@@ -1,5 +1,4 @@
 import { inject, Injectable } from '@angular/core'
-import { PropertyCapacity as FormlyPropertyCapacity, PropertyCapacity } from '@metad/components/property'
 import { ColorPalettes } from '@metad/core'
 import {
   ChartAnnotation,
@@ -41,6 +40,7 @@ import {
   VisualMapCapacity
 } from './schemas'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 export interface AnalyticalCardSchemaState extends SchemaState {
   model: {
@@ -233,13 +233,13 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
               PropertyCapacity.Measure,
               PropertyCapacity.MeasureAttributes,
               PropertyCapacity.Order,
-              FormlyPropertyCapacity.MeasureStyle,
-              FormlyPropertyCapacity.MeasureStyleRole,
-              FormlyPropertyCapacity.MeasureStyleShape,
-              FormlyPropertyCapacity.MeasureStylePalette,
-              FormlyPropertyCapacity.MeasureStylePalettePattern,
-              FormlyPropertyCapacity.MeasureStyleReferenceLine,
-              FormlyPropertyCapacity.MeasureStyleChartOptions
+              PropertyCapacity.MeasureStyle,
+              PropertyCapacity.MeasureStyleRole,
+              PropertyCapacity.MeasureStyleShape,
+              PropertyCapacity.MeasureStylePalette,
+              PropertyCapacity.MeasureStylePalettePattern,
+              PropertyCapacity.MeasureStyleReferenceLine,
+              PropertyCapacity.MeasureStyleChartOptions
             ],
             colors: [...ColorPalettes]
           }
@@ -261,7 +261,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
             dataSettings: this.dataSettings$,
             entityType: this.entityType$,
             restrictedDimensions: this.restrictedDimensions$,
-            capacities: [PropertyCapacity.Dimension, PropertyCapacity.Order, FormlyPropertyCapacity.DimensionChart]
+            capacities: [PropertyCapacity.Dimension, PropertyCapacity.Order, PropertyCapacity.DimensionChart]
           }
         }
       }

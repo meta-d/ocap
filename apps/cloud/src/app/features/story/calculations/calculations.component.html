@@ -42,7 +42,7 @@
     <mat-list class="divide-y ml-4 dark:divide-neutral-800" displayDensity="cosy">
       @for (parameter of parameters(); track parameter.name) {
         <mat-list-item>
-          <div class="flex item-center group">
+          <div class="flex items-center group">
             <ngm-display-behaviour class="flex-1" [option]="{key: parameter.name, caption: parameter.caption}" />
 
             <button mat-icon-button displayDensity="cosy" class="opacity-0 group-hover:opacity-90"

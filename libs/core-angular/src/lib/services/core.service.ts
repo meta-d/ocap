@@ -28,6 +28,9 @@ export interface NxCoreState {
   timeGranularity: TimeGranularity
 }
 
+/**
+ * @deprecated use NgmOcapCoreService instead
+ */
 @Injectable()
 export class NxCoreService extends ComponentStore<NxCoreState> {
   private _intent$ = new Subject<Intent>()

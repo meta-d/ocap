@@ -73,7 +73,7 @@ export class NgmInputComponent implements ControlValueAccessor {
       this.searchControl.valueChanges.pipe(
         startWith(''),
         map((text) => {
-          text = text?.trim().toLowerCase()
+          text = typeof text === 'string' ? text?.trim().toLowerCase() : text
           if (text) {
             const terms = text.split(' ').filter((t) => !!t)
             return options.filter((option) => {

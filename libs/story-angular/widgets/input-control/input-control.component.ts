@@ -21,7 +21,6 @@ import {
   isEmpty,
   Dimension
 } from '@metad/ocap-core'
-import { CalculationEditorComponent } from '@metad/components/property'
 import {
   AbstractStoryWidget,
   ControlType,
@@ -46,6 +45,7 @@ import {
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { determineControlType, InputControlOptions } from './types'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 
 
 export interface InputControlStyling extends StoryWidgetStyling {
@@ -392,7 +392,7 @@ export class NxInputControlComponent
     const property = await firstValueFrom(this.property$)
     const entityType = await firstValueFrom(this.entityType$)
     const result = await firstValueFrom(this._dialog
-      .open(CalculationEditorComponent, {
+      .open(NgmCalculationEditorComponent, {
         viewContainerRef: this._viewContainerRef,
         data: {
           dsCoreService: this.dsCoreService,

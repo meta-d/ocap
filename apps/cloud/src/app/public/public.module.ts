@@ -47,7 +47,7 @@ import { PublicWidgetComponent } from './widget/widget.component'
   exports: [],
   declarations: [PublicComponent, StoryViewerComponent, PublicPointComponent, PublicWidgetComponent, CreatedByPipe],
   providers: [
-    provideOcapCore(),
+    // provideOcapCore(),
     StoryPublicResolver,
     {
       provide: NX_STORY_STORE,

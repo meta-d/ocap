@@ -1,6 +1,29 @@
 <ngm-select class="flex-1" searchable valueKey="key"
-    [label]="label" [formControl]="formControl" [selectOptions]="measureOptions()">
+    [label]="label"
+    [placeholder]="placeholder"
+    [formControl]="formControl"
+    [selectOptions]="measureOptions()">
+    
     <ng-template ngmOptionContent let-property="value" let-highlight="highlight">
-        <ngm-entity-property class="flex-1" [property]="property" [highlight]="highlight"></ngm-entity-property>
+        <ngm-entity-property class="flex-1" [property]="property" [highlight]="highlight" />
     </ng-template>
+
+    <div ngmSuffix class="flex items-center">
+      <ng-content select="ngmSuffix"></ng-content>
+
+      @if (isCalculationProperty()) {
+        <button mat-icon-button
+            [matTooltip]="'COMPONENTS.MeasureSelect.EditCalculationMeasure' | translate: {Default: 'Edit calculation measure'}"
+            (click)="editCalculationMeasure()">
+            <mat-icon>functions</mat-icon>
+        </button>
+      }
+
+        <button mat-icon-button 
+            [matTooltip]="'COMPONENTS.MeasureSelect.NewCalculationMeasure' | translate: {Default: 'New calculation measure'}"
+            (click)="openCalculationMeasure()">
+            <mat-icon>add</mat-icon>
+        </button>
+    </div>
+
 </ngm-select>

@@ -12,6 +12,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { effectStoryTheme, registerStoryThemes } from '../../@theme'
 import { registerWasmAgentModel } from '../../@core'
+import { provideStory } from '@metad/story'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,7 +22,7 @@ import { registerWasmAgentModel } from '../../@core'
   host: {
     class: 'pac-public-point'
   },
-  providers: [NxStoryService, NxStoryPointService, NgmSmartFilterBarService, NxCoreService]
+  providers: [provideStory(), NxStoryPointService, NgmSmartFilterBarService, NxCoreService]
 })
 export class PublicPointComponent {
   public storyService = inject(NxStoryService)

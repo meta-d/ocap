@@ -7,7 +7,6 @@ import {
   ElementRef,
   HostBinding,
   inject,
-  Injector,
   Input,
   model,
   OnInit,
@@ -19,10 +18,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, isEqual } from '@metad/ocap-core'
-import { StoryExplorerModule } from '@metad/story'
+import { provideStoryDesigner, StoryExplorerModule } from '@metad/story'
 import {
   EmulatedDevice,
   NxStoryService,
@@ -33,7 +32,6 @@ import {
 } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import {
-  injectMathCommand,
   injectStoryPageCommand,
   injectStoryStyleCommand,
   injectStoryWidgetCommand,
@@ -81,7 +79,10 @@ import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
   host: {
     class: 'ngm-story-designer'
   },
-  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService,
+  providers: [
+    StoryToolbarService,
+    provideStoryDesigner(),
+    NxCoreService,
     {
       provide: NgmCopilotContextToken,
       useClass: NgmCopilotContextService
@@ -92,7 +93,6 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
-  // private coreService = inject(NxCoreService)
   public readonly toolbarService = inject(StoryToolbarService)
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
@@ -102,8 +102,6 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
-  // private renderer = inject(Renderer2)
-  readonly #injector = inject(Injector)
   readonly copilotContext = inject(NgmCopilotContextToken)
 
   @Input() storyId: string

@@ -28,7 +28,7 @@ import { sortBy } from 'lodash-es'
 import { BehaviorSubject, map } from 'rxjs'
 import { PropertyArrayComponent } from '../../property-array/property-array.component'
 import { PropertyCapacity } from '../../property-select/property-select.component'
-import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.component'
+import { NgmMeasureSelect1Component } from '../../measure-select/measure-select.component'
 
 @Component({
   standalone: true,
@@ -39,7 +39,7 @@ import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.c
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => RestrictedMeasureComponent)
+      useExisting: forwardRef(() => RestrictedMeasureComponent1)
     }
   ],
   imports: [
@@ -52,10 +52,10 @@ import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.c
     OcapCoreModule,
     NgmSelectModule,
     PropertyArrayComponent,
-    NgmMeasureSelectComponent
+    NgmMeasureSelect1Component
   ]
 })
-export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor {
+export class RestrictedMeasureComponent1 implements OnInit, ControlValueAccessor {
   DISPLAY_BEHAVIOUR = DisplayBehaviour
   PropertyCapacity = PropertyCapacity
 

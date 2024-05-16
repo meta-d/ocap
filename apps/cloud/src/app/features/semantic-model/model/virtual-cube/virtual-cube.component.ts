@@ -8,13 +8,12 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ActivatedRoute } from '@angular/router'
 import { NgmDialogComponent } from '@metad/components/dialog'
-import { CalculatedMeasureComponent } from '@metad/components/property'
 import { MDX } from '@metad/contracts'
 import { calcEntityTypePrompt, nonBlank } from '@metad/core'
 import { NgmCommonModule, ResizerModule } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { EntityCapacity, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { EntityCapacity, NgmCalculatedMeasureComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { AggregationRole, C_MEASURES, Syntax } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
@@ -43,7 +42,7 @@ import { VirtualCubeStateService } from './virtual-cube.service'
     NgmCommonModule,
 
     NgmDialogComponent,
-    CalculatedMeasureComponent
+    NgmCalculatedMeasureComponent
   ]
 })
 export class VirtualCubeComponent {

@@ -14,7 +14,6 @@ import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { CalculationProperty, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { CalculationEditorComponent } from '@metad/components/property'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
@@ -102,13 +101,9 @@ export class StoryCalculationsComponent {
   }
 
   async openCreateParameter(name?: string) {
-    const dataSettings = {
-      dataSource: this.activeLink().dataSource,
-      entitySet: this.activeLink().entity
-    }
+    const dataSettings = this.dataSettings()
     const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    const result = await firstValueFrom(
-      this._dialog
+    this._dialog
         .open(NgmParameterCreateComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
@@ -119,12 +114,12 @@ export class StoryCalculationsComponent {
           }
         })
         .afterClosed()
-    )
-
-    if (result) {
-      // 参数创建成功
-      console.log(result)
-    }
+        .subscribe((result) => {
+          if (result) {
+            // 参数创建成功
+            console.log(result)
+          }
+        })
   }
 
   removeParameter(parameter: string) {
@@ -140,30 +135,30 @@ export class StoryCalculationsComponent {
     this.router.navigate(['create'], { relativeTo: this.route })
     return
 
-    const dataSettings = {
-      dataSource: this.activeLink().dataSource,
-      entitySet: this.activeLink().entity
-    }
-    const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    const data = {
-      dataSettings,
-      entityType,
-      syntax: Syntax.MDX,
-      coreService: this.coreService,
-      value: null
-    }
+    // const dataSettings = {
+    //   dataSource: this.activeLink().dataSource,
+    //   entitySet: this.activeLink().entity
+    // }
+    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
+    // const data = {
+    //   dataSettings,
+    //   entityType,
+    //   syntax: Syntax.MDX,
+    //   coreService: this.coreService,
+    //   value: null
+    // }
 
-    const property = await firstValueFrom(
-      this._dialog
-        .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data
-        })
-        .afterClosed()
-    )
-    if (property) {
-      this.storyService.addCalculationMeasure({ dataSettings, calculation: property })
-    }
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data
+    //     })
+    //     .afterClosed()
+    // )
+    // if (property) {
+    //   this.storyService.addCalculationMeasure({ dataSettings, calculation: property })
+    // }
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
@@ -171,29 +166,29 @@ export class StoryCalculationsComponent {
     this.router.navigate([calculationProperty.__id__], { relativeTo: this.route, state: { value: calculationProperty } })
     return
 
-    const dataSettings = {
-      dataSource: this.activeLink().dataSource,
-      entitySet: this.activeLink().entity
-    }
-    const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    const property = await firstValueFrom(
-      this._dialog
-        .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-          viewContainerRef: this._viewContainerRef,
-          data: {
-            dataSettings: dataSettings,
-            entityType: entityType,
-            value: calculationProperty,
-            syntax: Syntax.MDX,
-            coreService: this.coreService
-          }
-        })
-        .afterClosed()
-    )
+    // const dataSettings = {
+    //   dataSource: this.activeLink().dataSource,
+    //   entitySet: this.activeLink().entity
+    // }
+    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
+    // const property = await firstValueFrom(
+    //   this._dialog
+    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       data: {
+    //         dataSettings: dataSettings,
+    //         entityType: entityType,
+    //         value: calculationProperty,
+    //         syntax: Syntax.MDX,
+    //         coreService: this.coreService
+    //       }
+    //     })
+    //     .afterClosed()
+    // )
 
-    if (property) {
-      this.storyService.updateCalculationMeasure({ dataSettings, calculation: property })
-    }
+    // if (property) {
+    //   this.storyService.updateCalculationMeasure({ dataSettings, calculation: property })
+    // }
   }
 
   async removeCalculation(calculationProperty: CalculationProperty) {

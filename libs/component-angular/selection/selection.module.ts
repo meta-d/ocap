@@ -15,10 +15,10 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NgmEntityModule, NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxEntityModule } from '@metad/components/entity'
-import { NgmMeasureSelectComponent, PropertyModule } from '@metad/components/property'
+import { PropertyModule } from '@metad/components/property'
 import { AdvancedSlicerComponent } from './advanced-slicer/advanced-slicer.component'
 import { SlicerBarComponent } from './slicer-bar/slicer-bar.component'
 import { SlicerComponent } from './slicer/slicer.component'
@@ -53,7 +53,7 @@ import { NgmParameterModule } from '@metad/ocap-angular/parameter'
     NgmEntityPropertyComponent,
     ButtonGroupDirective,
     NgmParameterModule,
-    NgmMeasureSelectComponent
+    NgmEntityModule
   ],
   exports: [SlicerComponent, SlicersComponent, SlicerBarComponent, AdvancedSlicerComponent]
 })

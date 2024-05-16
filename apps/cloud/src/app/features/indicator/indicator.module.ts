@@ -2,24 +2,20 @@ import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatNativeDateModule } from '@angular/material/core'
+import { ToastrService } from '@metad/cloud/state'
+import { NgmDialogComponent } from '@metad/components/dialog'
+import { NxSelectionModule } from '@metad/components/selection'
+import { IsNilPipe, NxCoreModule } from '@metad/core'
 import { NgmCommonModule, ResizerModule, TreeTableModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
-import { NgmFormulaModule } from '@metad/ocap-angular/formula'
-import { ToastrService } from '@metad/cloud/state'
-import { CalculatedMeasureComponent } from '@metad/components/property'
-import { NgmDialogComponent } from '@metad/components/dialog'
-import { NxSelectionModule } from '@metad/components/selection'
-import { IsNilPipe, NxCoreModule } from '@metad/core'
-import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { MaterialModule, SharedModule } from '../../@shared'
 import { InlineSearchComponent } from '../../@shared/form-fields'
 import { PACIndicatorRoutingModule } from './indicator-routing.module'
 
 @NgModule({
-  declarations: [
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -27,7 +23,6 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     SharedModule,
     MaterialModule,
     MatNativeDateModule,
-    MonacoEditorModule.forRoot(),
 
     NxCoreModule,
     NxSelectionModule,
@@ -36,7 +31,6 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     PACIndicatorRoutingModule,
 
     NgmDialogComponent,
-    CalculatedMeasureComponent,
     IsNilPipe,
 
     // OCAP Modules
@@ -44,13 +38,9 @@ import { PACIndicatorRoutingModule } from './indicator-routing.module'
     NgmCommonModule,
     NgmControlsModule,
     TreeTableModule,
-    NgmFormulaModule,
     ResizerModule,
-    NgmHierarchySelectComponent,
+    NgmHierarchySelectComponent
   ],
-  providers: [
-    provideOcapCore(),
-    ToastrService
-  ]
+  providers: [provideOcapCore(), ToastrService]
 })
 export class PACIndicatorModule {}

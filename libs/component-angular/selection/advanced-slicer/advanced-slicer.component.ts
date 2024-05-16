@@ -9,12 +9,12 @@ import {
   EntityType,
   nonNullable
 } from '@metad/ocap-core'
-import { PropertyCapacity } from '@metad/components/property'
 import { NxCoreService } from '@metad/core'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { filter, map, startWith, switchMap } from 'rxjs/operators'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { TranslateService } from '@ngx-translate/core'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 const ADVANCED_SLICER_OPERATORS = [
   {

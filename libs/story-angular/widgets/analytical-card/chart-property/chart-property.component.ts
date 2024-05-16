@@ -14,9 +14,8 @@ import {
   NxChromaticPreviewComponent,
   getScaleChromaticInterpolates
 } from '@metad/components/palette'
-import { PropertyCapacity, PropertyModule } from '@metad/components/property'
 import { ColorPalettes, NxCoreService } from '@metad/core'
-import { AppearanceDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { AppearanceDirective, DensityDirective, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
   CalculationProperty,
@@ -36,6 +35,7 @@ import { BehaviorSubject, distinctUntilChanged, from, map } from 'rxjs'
 import { NgmChartDimensionComponent } from './chart-dimension.component'
 import { NgmChartMeasureComponent } from './chart-measure.component'
 import { NgmReferenceLineComponent } from './reference-line.component'
+import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Component({
   standalone: true,
@@ -51,7 +51,6 @@ import { NgmReferenceLineComponent } from './reference-line.component'
     MatButtonToggleModule,
     TranslateModule,
 
-    PropertyModule,
     NxDesignerModule,
     NxChromaticPreviewComponent,
     DensityDirective,
@@ -59,7 +58,8 @@ import { NgmReferenceLineComponent } from './reference-line.component'
     NgmColorsComponent,
     NgmChartDimensionComponent,
     NgmReferenceLineComponent,
-    NgmChartMeasureComponent
+    NgmChartMeasureComponent,
+    NgmEntityModule
   ],
   selector: 'ngm-chart-property',
   templateUrl: 'chart-property.component.html',
@@ -75,6 +75,7 @@ import { NgmReferenceLineComponent } from './reference-line.component'
 export class NgmChartPropertyComponent implements ControlValueAccessor {
   public coreService = inject(NxCoreService)
   public dsCoreService = inject(NgmDSCoreService)
+  readonly ocapService = inject(NgmOcapCoreService)
   public settingsService? = inject(NxSettingsPanelService, { optional: true })
   public translateService = inject(TranslateService)
 
@@ -337,7 +338,7 @@ export class NgmChartPropertyComponent implements ControlValueAccessor {
   }
 
   onCalculationChange(property: CalculationProperty) {
-    this.dsCoreService.updateStory({
+    this.ocapService.updateEntity({
       type: 'Calculation',
       dataSettings: this.dataSettings,
       property

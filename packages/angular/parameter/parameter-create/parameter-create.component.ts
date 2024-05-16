@@ -22,7 +22,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatRadioModule } from '@angular/material/radio'
 import { NgmInputModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule, TreeControlOptions } from '@metad/ocap-angular/controls'
-import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import {
   DataSettings,
@@ -66,7 +66,7 @@ import { BehaviorSubject, filter, map } from 'rxjs'
 export class NgmParameterCreateComponent {
   ParameterControlEnum = ParameterControlEnum
 
-  readonly #dsCoreService = inject(NgmDSCoreService)
+  readonly #coreService = inject(NgmOcapCoreService)
 
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() label = 'Parameter'
@@ -175,7 +175,7 @@ export class NgmParameterCreateComponent {
   }
 
   onApply() {
-    this.#dsCoreService.updateStory({
+    this.#coreService.updateEntity({
       type: 'Parameter',
       dataSettings: this.dataSettings,
       parameter: {

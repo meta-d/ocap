@@ -1,11 +1,11 @@
 import { Injectable, signal } from '@angular/core'
-import { ThemesEnum } from '../models'
 import { toObservable } from '@angular/core/rxjs-interop'
+import { ThemesEnum } from '../models'
 
 @Injectable({
   providedIn: 'root'
 })
-export class ThemeService {
+export class NgmThemeService {
   readonly #themeClass$ = signal<string>('')
 
   readonly themeClass$ = toObservable(this.#themeClass$)
