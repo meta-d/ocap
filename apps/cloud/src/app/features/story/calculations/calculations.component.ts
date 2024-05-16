@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, ViewContainerRef, computed, effect, inject, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { Component, ViewContainerRef, computed, effect, inject, model, signal } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'
 import { MatDividerModule } from '@angular/material/divider'
@@ -9,20 +9,27 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { ISelectOption, NgmDSCacheService } from '@metad/ocap-angular/core'
+import { ISelectOption, NgmDSCacheService, filterSearch } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
-import { CalculationProperty, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
+import { CalculationProperty, DisplayBehaviour, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NxCoreService } from '@metad/core'
+import { NxCoreService, nonBlank } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
-import { firstValueFrom } from 'rxjs'
+import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, share, shareReplay, switchMap, tap } from 'rxjs'
+import { MatMenuModule } from '@angular/material/menu'
+import { FormsModule } from '@angular/forms'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { ScrollingModule } from '@angular/cdk/scrolling'
+import { ISemanticModel } from '../../../@core'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 
 @Component({
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     DragDropModule,
     RouterModule,
     MatDialogModule,
@@ -30,8 +37,12 @@ import { firstValueFrom } from 'rxjs'
     MatIconModule,
     MatListModule,
     MatDividerModule,
+    MatMenuModule,
+    MatProgressBarModule,
+    MatTooltipModule,
     TranslateModule,
-    NgmCommonModule
+    ScrollingModule,
+    NgmCommonModule,
   ],
   selector: 'pac-story-calculations',
   templateUrl: 'calculations.component.html',
@@ -41,11 +52,13 @@ import { firstValueFrom } from 'rxjs'
   }
 })
 export class StoryCalculationsComponent {
+  DisplayBehaviour = DisplayBehaviour
+  
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
   readonly dsCoreService = inject(NgmDSCacheService)
 
-  entities: ISelectOption<string>[] = []
+  // entities: ISelectOption<string>[] = []
   readonly activeLink = signal<{ dataSource: string; entity: string }>(null)
 
   readonly #entitySchema = computed(() => {
@@ -70,17 +83,52 @@ export class StoryCalculationsComponent {
       Object.keys(schemas).forEach((dataSource) => {
         Object.keys(schemas[dataSource]).forEach((entity) => {
           entities.push({
-            dataSource,
-            value: entity,
-            label: schemas[dataSource][entity].caption
+            value: {dataSource},
+            key: entity,
+            caption: schemas[dataSource][entity].caption
           })
         })
       })
       return entities
     }
 
-    return null
+    return []
   })
+
+  readonly newCubes = signal([])
+  readonly entities = computed(() => {
+    const items = [...this.entities$()]
+    this.newCubes().forEach((cube) => {
+      if (!items.find((item) => item.value.dataSource === cube.value.dataSource && item.key === cube.key)) {
+        items.push(cube)
+      }
+    })
+    return items
+  })
+
+  readonly entitySearch = model<string>('')
+  readonly loadingCubes$ = new BehaviorSubject(false)
+  readonly cubes$ = of(true).pipe(
+    tap(() => this.loadingCubes$.next(true)),
+    switchMap(() => this.storyService.modelCubes$.pipe(
+      map((models) => {
+        const items = []
+        models.forEach((model, index) => {
+          items.push(...model.cubes.map((cube) => ({ value: {
+            dataSource: model.key,
+            dataSourceId: model.value,
+          }, key: cube.name, caption: cube.caption })))
+        })
+        return items
+      }),
+    )),
+    tap(() => this.loadingCubes$.next(false)),
+    shareReplay(1),
+    combineLatestWith(toObservable(this.entities)),
+    map(([cubes, items]) => cubes.filter((cube) => !items.find((item) => item.value.dataSource === cube.value.dataSource && item.key === cube.key))),
+    combineLatestWith(toObservable(this.entitySearch)),
+    map(([cubes, text]) => filterSearch(cubes, text)),
+  )
 
   constructor(
     private storyService: NxStoryService,
@@ -91,13 +139,29 @@ export class StoryCalculationsComponent {
     effect(() => {
       const entities = this.entities$()
       if (!this.activeLink() && entities?.length > 0) {
-        this.activeEntity(entities[0].dataSource, entities[0].value)
+        this.activeEntity(entities[0].value.dataSource, entities[0].key)
       }
     }, { allowSignalWrites: true })
   }
 
   activeEntity(dataSource: string, entity: string) {
     this.activeLink.set({ dataSource, entity })
+  }
+
+  trackByKey(index: number, item) {
+    return item?.key
+  }
+
+  addCube(cube: ISelectOption<{dataSource: string}>) {
+    this.newCubes.update((cubes) => [...cubes, {
+      value: {
+        dataSource: cube.value.dataSource,
+      },
+      key: cube.key,
+      caption: cube.caption
+    }])
+
+    this.activeEntity(cube.value.dataSource, cube.key)
   }
 
   async openCreateParameter(name?: string) {

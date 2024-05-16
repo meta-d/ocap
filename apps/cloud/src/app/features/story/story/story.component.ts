@@ -263,27 +263,21 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
       }
     }
 
-    this.copilotContext.cubes.update(() => this.storyService.storyModelsOptions$.pipe(
-      tap(() => console.log(`loading cubes...`)),
-      switchMap((dataSources) => combineLatest(dataSources.map((option) => this.storyService.selectDataSource(option.key).pipe(
-        switchMap((dataSource) => dataSource.discoverMDCubes()),
-        
-      ))).pipe(
-        map((cubess) => {
+    this.copilotContext.cubes.update(() => this.storyService.modelCubes$.pipe(
+        map((models) => {
           const items = []
-          cubess.forEach((cubes, index) => {
-            items.push(...cubes.map((cube) => ({ value: {
-              dataSource: dataSources[index],
-              dataSourceId: dataSources[index].value,
+          models.forEach((model, index) => {
+            items.push(...model.cubes.map((cube) => ({ value: {
+              dataSource: model,
+              dataSourceId: model.value,
               serizalize: async () => {
-                const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: dataSources[index].key, entitySet: cube.name}))
+                const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: model.key, entitySet: cube.name}))
                 return markdownEntityType(entityType)
               }
             }, key: cube.name, caption: cube.caption })))
           })
           return items
-        })
-      )),
+        }),
       shareReplay(1)
     ))
   }
