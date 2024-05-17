@@ -1,6 +1,3 @@
-export * from './entity-select-menu/entity-select-menu.component'
-export * from './entity-select/entity-select.component'
 export * from './entity.module'
-export * from './formatting/formatting.component'
 export * from './hierarchy-select/hierarchy-select.component'
 export * from './indicator/indicator.component'

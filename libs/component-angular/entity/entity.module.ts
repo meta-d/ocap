@@ -19,22 +19,14 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTreeModule } from '@angular/material/tree'
+import { ConfirmModule } from '@metad/components/confirm'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
-import { ConfirmModule } from '@metad/components/confirm'
-import { EntitySelectMenuComponent } from './entity-select-menu/entity-select-menu.component'
-import { EntitySelectComponent } from './entity-select/entity-select.component'
-import { FormattingComponent } from './formatting/formatting.component'
 import { IndicatorComponent } from './indicator/indicator.component'
 
 @NgModule({
-  declarations: [
-    FormattingComponent,
-    EntitySelectComponent,
-    EntitySelectMenuComponent,
-    IndicatorComponent
-  ],
+  declarations: [IndicatorComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -63,12 +55,6 @@ import { IndicatorComponent } from './indicator/indicator.component'
     NgmCommonModule,
     NgmEntityPropertyComponent
   ],
-  exports: [
-    FormattingComponent,
-    EntitySelectComponent,
-    EntitySelectMenuComponent,
-    EntitySelectComponent,
-    IndicatorComponent
-  ]
+  exports: [IndicatorComponent]
 })
 export class NxEntityModule {}
