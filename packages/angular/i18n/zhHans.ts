@@ -331,7 +331,8 @@ export const ZhHans = {
       ConditionalAggregation: '条件聚合',
       Unit: '单位',
       Formulas: '公式',
-      MeasureSelectPlaceholder: '选择或新建一个度量'
+      MeasureSelectPlaceholder: '选择或新建一个度量',
+      MeasureIsRequired: '度量必选'
     },
     AdvancedFilter: {
       Title: '组合切片器',

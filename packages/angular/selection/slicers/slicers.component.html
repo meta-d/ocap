@@ -2,7 +2,7 @@
   <ngm-slicer [slicer]="slicer"
     [dataSettings]="dataSettings"
     [entityType]="entityType"
-    [editable]="editable"
+    [editable]="editable()"
     [disabled]="isDisabled"
     [limit]="limit"
     (slicerChange)="update($event, i)"
@@ -11,12 +11,12 @@
   <mat-divider></mat-divider>
 </ng-container>
 
-<button *ngIf="editable && !inline" mat-button [disabled]="isDisabled" color="primary" displayDensity="cosy" ngmAppearance="dashed"
+<button *ngIf="editable() && !inline()" mat-button [disabled]="isDisabled" color="primary" displayDensity="cosy" ngmAppearance="dashed"
   (click)="openSlicerBar($event)">
   <mat-icon>edit</mat-icon>{{ 'Ngm.Common.Add' | translate: {Default: "Add"} }}
 </button>
 
-<button *ngIf="editable && inline" mat-stroked-button [disabled]="isDisabled" displayDensity="cosy" ngmAppearance="dashed"
+<button *ngIf="editable() && inline()" mat-stroked-button [disabled]="isDisabled" displayDensity="cosy" ngmAppearance="dashed"
   [matMenuTriggerFor]="menu">
   <div class="flex items-center justify-center">
     <mat-icon>add</mat-icon>

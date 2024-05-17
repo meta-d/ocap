@@ -35,7 +35,8 @@
   <div *ngIf="activeLink" class="flex-1 flex flex-col justify-start items-stretch overflow-x-hidden overflow-y-auto">
     <div class="flex justify-between items-center">
       <label class="text-lg p-2"> {{ 'Story.Common.Parameters' | translate: { Default: 'Parameters' } }} </label>
-      <button mat-icon-button class="opacity-60" (click)="openCreateParameter()">
+      <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateParameter' | translate: { Default: 'Create Parameter' }" matTooltipPosition="above"
+        (click)="openCreateParameter()">
         <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
       </button>
     </div>
@@ -61,7 +62,8 @@
 
     <div class="flex justify-between items-center">
       <label class="text-lg p-2"> {{ 'Story.Common.Calculations' | translate: { Default: 'Calculations' } }} </label>
-      <button mat-icon-button class="opacity-60" (click)="openCreateCalculation()">
+      <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateCalculationMeasure' | translate: { Default: 'Create Calculation Measure' }" matTooltipPosition="above"
+        (click)="openCreateCalculation()">
         <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
       </button>
     </div>

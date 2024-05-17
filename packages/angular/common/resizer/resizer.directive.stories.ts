@@ -6,7 +6,7 @@ import { ResizerBarDirective } from './resizer.directive'
 import { ResizerModule } from './resizer.module'
 
 export default {
-  title: 'ResizerBarDirective',
+  title: 'Common/ResizerBarDirective',
   component: ResizerBarDirective,
   decorators: [
     moduleMetadata({

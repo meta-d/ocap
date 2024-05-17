@@ -9,7 +9,6 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmSelectModule } from '@metad/ocap-angular/common'
 import { DensityDirective, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import {
-  CalculationProperty,
   DataSettings,
   getEntityMeasures,
   getEntityProperty,
@@ -21,9 +20,8 @@ import {
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { orderBy } from 'lodash-es'
-import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
+import { distinctUntilChanged, filter, map, switchMap } from 'rxjs'
 import { NgmEntityPropertyComponent } from '../property/property.component'
-// import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
 
 @Component({
   standalone: true,
@@ -55,7 +53,7 @@ import { NgmEntityPropertyComponent } from '../property/property.component'
 })
 export class NgmMeasureSelectComponent implements ControlValueAccessor {
   private readonly dsCoreService = inject(NgmDSCoreService)
-  private readonly ocapService = inject(NgmOcapCoreService)
+  private readonly coreService = inject(NgmOcapCoreService)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
 
@@ -64,6 +62,7 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
 
   readonly dataSettings = input<DataSettings>(null)
   readonly filter = input<(param: PropertyMeasure) => boolean>(null)
+  readonly error = input<string>(null)
 
   formControl = new FormControl<string>(null)
 
@@ -145,6 +144,24 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
       value: null
     }
 
+    this.coreService.openCalculation(data).subscribe((property) => {
+      if (property) {
+        // 发送给 DSCoreService 存储到元信息增强里
+        // this.coreService.storyUpdateEvent$.next({
+        //   type: 'Calculation',
+        //   dataSettings: this.dataSettings(),
+        //   property
+        // })
+        this.coreService.updateEntity({
+          type: 'Calculation',
+          dataSettings: this.dataSettings(),
+          property
+        })
+        // 然后将新计算度量名称赋值给当前控件
+        this.formControl.setValue(property.name)
+      }
+    })
+
     // const property = await firstValueFrom(
     //   this._dialog
     //     .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
@@ -153,21 +170,6 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
     //     })
     //     .afterClosed()
     // )
-    // if (property) {
-    //   // 发送给 DSCoreService 存储到元信息增强里
-    //   // this.coreService.storyUpdateEvent$.next({
-    //   //   type: 'Calculation',
-    //   //   dataSettings: this.dataSettings(),
-    //   //   property
-    //   // })
-    //   this.ocapService.updateEntity({
-    //     type: 'Calculation',
-    //     dataSettings: this.dataSettings(),
-    //     property
-    //   })
-    //   // 然后将新计算度量名称赋值给当前控件
-    //   this.formControl.setValue(property.name)
-    // }
   }
 
   async editCalculationMeasure() {
@@ -180,6 +182,24 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
       value: this.property()
     }
 
+    this.coreService.openCalculation(data).subscribe((property) => {
+      if (property) {
+        // 发送给 DSCoreService 存储到元信息增强里
+        // this.coreService.storyUpdateEvent$.next({
+        //   type: 'Calculation',
+        //   dataSettings: this.dataSettings(),
+        //   property
+        // })
+        this.coreService.updateEntity({
+          type: 'Calculation',
+          dataSettings: this.dataSettings(),
+          property
+        })
+        // 然后将新计算度量名称赋值给当前控件
+        this.formControl.setValue(property.name)
+      }
+    })
+
     // const property = await firstValueFrom(
     //   this._dialog
     //     .open<NgmCalculationEditorComponent, unknown, CalculationProperty>(NgmCalculationEditorComponent, {
@@ -188,20 +208,5 @@ export class NgmMeasureSelectComponent implements ControlValueAccessor {
     //     })
     //     .afterClosed()
     // )
-    // if (property) {
-    //   // 发送给 DSCoreService 存储到元信息增强里
-    //   // this.coreService.storyUpdateEvent$.next({
-    //   //   type: 'Calculation',
-    //   //   dataSettings: this.dataSettings(),
-    //   //   property
-    //   // })
-    //   this.ocapService.updateEntity({
-    //     type: 'Calculation',
-    //     dataSettings: this.dataSettings(),
-    //     property
-    //   })
-    //   // 然后将新计算度量名称赋值给当前控件
-    //   this.formControl.setValue(property.name)
-    // }
   }
 }

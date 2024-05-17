@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostBinding, Inject, Input, OnInit, Output } from '@angular/core'
+import { Component, EventEmitter, HostBinding, Inject, Input, OnInit, Optional, Output } from '@angular/core'
 import { FormControl } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
 import {
@@ -34,6 +34,7 @@ export class SlicerBarComponent extends BaseSlicersComponent implements OnInit {
     this.slicers$.next(value)
   }
   public slicers$ = new BehaviorSubject<ISlicer[]>([])
+
   @Input() capacities: SlicersCapacity[]
 
   @Output() removed = new EventEmitter()
@@ -51,7 +52,7 @@ export class SlicerBarComponent extends BaseSlicersComponent implements OnInit {
     map(getEntityDimensions)
   )
 
-  public readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
+  override readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
 
   searchControl = new FormControl<string>('')
   get highlight() {
@@ -59,8 +60,9 @@ export class SlicerBarComponent extends BaseSlicersComponent implements OnInit {
   }
 
   constructor(
+    @Optional()
     @Inject(MAT_DIALOG_DATA)
-    public data: {
+    public data?: {
       dataSettings: DataSettings
       value: ISlicer[]
       entityType: EntityType

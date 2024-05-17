@@ -1,12 +1,15 @@
 <div class="ngm-theme-dark dark w-[300px] shrink-0 flex flex-col justify-start overflow-auto bg-bluegray-700 text-white p-4 group">
   <div class="w-full flex justify-start items-center mb-2" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
     <mat-icon displayDensity="cosy" class="-ml-2 opacity-0 group-hover:opacity-80">drag_indicator</mat-icon>
-    <span *ngIf="!edit" class="text-lg pointer-events-none">
-      {{ 'Ngm.Property.CREATE_PARAMETER' | translate: {Default: "Create Parameter"} }}
-    </span>
-    <span *ngIf="edit" class="text-lg pointer-events-none">
-      {{ 'Ngm.Property.EditParameter' | translate: {Default: "Edit Parameter"} }}
-    </span>
+    @if (edit()) {
+      <span class="text-lg pointer-events-none">
+        {{ 'Ngm.Property.EditParameter' | translate: {Default: "Edit Parameter"} }}
+      </span>
+    } @else {
+      <span class="text-lg pointer-events-none">
+        {{ 'Ngm.Property.CREATE_PARAMETER' | translate: {Default: "Create Parameter"} }}
+      </span>
+    }
   </div>
 
   <form [formGroup]="formGroup" class="flex-1">
@@ -108,7 +111,7 @@
       (ngModelChange)="onHierarchyChange($event)"
     ></ngm-hierarchy-select>
     <ngm-member-tree class="flex-1 w-full h-full"
-      [dataSettings]="dataSettings"
+      [dataSettings]="dataSettings()"
       [dimension]="dimension$ | async"
       [options]="memberTreeOptions"
       [(ngModel)]="slicer"

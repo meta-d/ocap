@@ -8,7 +8,7 @@ import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } fro
 import { NgmTagsComponent } from './tag.component'
 
 export default {
-  title: 'Tags',
+  title: 'Common/Tags',
   component: NgmTagsComponent,
   decorators: [
     applicationConfig({

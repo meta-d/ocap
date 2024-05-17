@@ -57,7 +57,7 @@ class TestTreeSelectComponent<T> {
 }
 
 export default {
-  title: 'NgmTreeSelectComponent',
+  title: 'Common/TreeSelect',
   decorators: [
     moduleMetadata({
       imports: [

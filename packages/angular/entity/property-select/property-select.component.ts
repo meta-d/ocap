@@ -159,7 +159,6 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   readonly restrictedDimensions = input<string[]>()
   readonly restrictedDimensions$ = toObservable(this.restrictedDimensions)
 
-  // readonly coreService = input<NxCoreService>()
   readonly dsCoreService = input<NgmDSCoreService>()
 
   readonly syntax = input<Syntax>()

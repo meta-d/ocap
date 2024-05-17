@@ -6,7 +6,7 @@ import { applicationConfig, moduleMetadata, type Meta, type StoryObj, argsToTemp
 import { NgmInputComponent } from './input.component'
 
 const meta: Meta<NgmInputComponent> = {
-  title: 'Input',
+  title: 'Common/Input',
   component: NgmInputComponent,
   decorators: [
     applicationConfig({

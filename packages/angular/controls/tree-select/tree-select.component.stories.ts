@@ -51,7 +51,7 @@ class TestMemberTreeSelectComponent<T> {
 }
 
 export default {
-  title: 'NgmMemberTreeSelectComponent',
+  title: 'Controls/MemberTreeSelect',
   component: NgmMemberTreeSelectComponent,
   decorators: [
     moduleMetadata({

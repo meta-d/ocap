@@ -1,4 +1,6 @@
 :host {
+  --mat-sidenav-content-background-color: var(--ngm-project-color-surface);
+
   @apply overflow-auto flex-1 w-full max-w-full flex flex-col;
 }
 

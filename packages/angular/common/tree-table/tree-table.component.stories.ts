@@ -76,7 +76,7 @@ class TestCellTemplate implements AfterViewInit {
 }
 
 export default {
-  title: 'TreeTableComponent',
+  title: 'Common/TreeTable',
   component: TreeTableComponent,
   decorators: [
     moduleMetadata({

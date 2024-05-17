@@ -16,7 +16,7 @@ import { NgmControlsModule } from '../controls.module'
 import { NgmValueHelpComponent } from './value-help.component'
 
 export default {
-  title: 'NgmValueHelpComponent',
+  title: 'Controls/ValueHelp',
   component: NgmValueHelpComponent,
   decorators: [
     moduleMetadata({

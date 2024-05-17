@@ -7,7 +7,12 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormControl,
-  FormGroup
+  FormGroup,
+  Validators,
+  NG_VALIDATORS,
+  Validator,
+  AbstractControl,
+  ValidationErrors
 } from '@angular/forms'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -18,6 +23,7 @@ import {
   EntityType,
   getEntityMeasures,
   isIndicatorMeasureProperty,
+  isNil,
   negate,
   PropertyMeasure
 } from '@metad/ocap-core'
@@ -38,6 +44,11 @@ import { NgmPropertyArrayComponent } from '../property-array/property-array.comp
       provide: NG_VALUE_ACCESSOR,
       multi: true,
       useExisting: forwardRef(() => NgmRestrictedMeasureComponent)
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: NgmRestrictedMeasureComponent,
+      multi: true
     }
   ],
   imports: [
@@ -52,7 +63,7 @@ import { NgmPropertyArrayComponent } from '../property-array/property-array.comp
     NgmPropertyArrayComponent
   ]
 })
-export class NgmRestrictedMeasureComponent implements OnInit, ControlValueAccessor {
+export class NgmRestrictedMeasureComponent implements OnInit, ControlValueAccessor, Validator {
   DISPLAY_BEHAVIOUR = DisplayBehaviour
   PropertyCapacity = PropertyCapacity
 
@@ -80,7 +91,8 @@ export class NgmRestrictedMeasureComponent implements OnInit, ControlValueAccess
     map((measures) => sortBy(measures, 'calculationType').reverse())
   )
 
-  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => measure.name !== this.formGroup?.value?.name
+  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => isNil(this.formGroup?.value?.name) ? true :
+    measure.name !== this.formGroup.value.name
 
   private _onChange: any
 
@@ -89,7 +101,7 @@ export class NgmRestrictedMeasureComponent implements OnInit, ControlValueAccess
   ngOnInit(): void {
     this.formGroup = this.formBuilder.group({
       name: null,
-      measure: null,
+      measure: this.formBuilder.control(null, [Validators.required]),
       dimensions: null,
       enableConstantSelection: null
     })
@@ -110,5 +122,16 @@ export class NgmRestrictedMeasureComponent implements OnInit, ControlValueAccess
   registerOnTouched(fn: any): void {}
   setDisabledState?(isDisabled: boolean): void {
     this.disabled = isDisabled
+  }
+
+  validate(control: AbstractControl<any, any>): ValidationErrors | null {
+    if (control.value && isNil(control.value.measure)) {
+      return { required: true }
+    }
+    return null
+  }
+
+  registerOnValidatorChange?(fn: () => void): void {
+    // Implement any necessary logic here
   }
 }

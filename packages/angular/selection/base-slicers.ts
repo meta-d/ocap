@@ -1,4 +1,4 @@
-import { Directive, Input, ViewContainerRef, inject } from '@angular/core'
+import { Directive, Input, ViewContainerRef, booleanAttribute, inject, input } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import {
@@ -48,6 +48,10 @@ export class BaseSlicersComponent {
     this.entityType$.next(value)
   }
   protected entityType$ = new BehaviorSubject<EntityType>(null)
+
+  readonly editable = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   public readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
  

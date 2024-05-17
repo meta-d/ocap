@@ -16,7 +16,7 @@ import { NgmControlsModule } from '../controls.module'
 import { NgmMemberListComponent } from './member-list.component'
 
 export default {
-  title: 'NgmMemberListComponent',
+  title: 'Controls/MemberList',
   component: NgmMemberListComponent,
   decorators: [
     moduleMetadata({

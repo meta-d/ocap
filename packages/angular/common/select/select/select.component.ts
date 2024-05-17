@@ -194,7 +194,7 @@ export class NgmSelectComponent
   }
 
   displayWith(option: any) {
-    return option?.caption || option?.label || option?.key || option?.value
+    return option?.caption || option?.label || option?.key
   }
 
   onAutoInput(event: any) {

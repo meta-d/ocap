@@ -6,7 +6,8 @@ import {
   FormGroup,
   FormsModule,
   NG_VALUE_ACCESSOR,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  Validators
 } from '@angular/forms'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -19,6 +20,7 @@ import {
   EntityType,
   getEntityMeasures,
   isIndicatorMeasureProperty,
+  isNil,
   negate,
   Property,
   PropertyMeasure
@@ -122,7 +124,8 @@ export class NgmConditionalAggregationComponent implements ControlValueAccessor,
 
   formGroup: FormGroup
 
-  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => measure.name !== this.formGroup?.value?.name
+  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => isNil(this.formGroup?.value?.name) ? true :
+    measure.name !== this.formGroup.value.name
   
   private _onChange: any
 
@@ -141,7 +144,7 @@ export class NgmConditionalAggregationComponent implements ControlValueAccessor,
       name: null,
       operation: null,
       value: null,
-      measure: null,
+      measure: this.formBuilder.control(null, [Validators.required]),
       aggregationDimensions: null, //this.formBuilder.array([ ]),
       useConditionalAggregation: null,
       conditionalDimensions: null,

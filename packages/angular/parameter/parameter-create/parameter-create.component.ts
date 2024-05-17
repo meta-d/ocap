@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, Inject, Input, inject } from '@angular/core'
+import { Component, Inject, Input, Optional, inject, input, model, signal, ɵINPUT_SIGNAL_BRAND_WRITE_TYPE } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import {
   AbstractControl,
   FormArray,
@@ -71,19 +72,13 @@ export class NgmParameterCreateComponent {
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() label = 'Parameter'
 
-  @Input() dataSettings: DataSettings
-  @Input() get entityType(): EntityType {
-    return this.entityType$.value
-  }
-  set entityType(value) {
-    this.entityType$.next(value)
-  }
-  private entityType$ = new BehaviorSubject<EntityType>(null)
+  readonly dataSettings = model<DataSettings>()
+  readonly entityType = model<EntityType>()
 
   /**
    * 编辑模式, 否则为创建模式
    */
-  public edit: boolean
+  readonly edit = signal(false)
 
   memberTreeOptions: TreeControlOptions = {
     selectionType: FilterSelectionType.Multiple,
@@ -137,7 +132,7 @@ export class NgmParameterCreateComponent {
   }
   private _slicer = { members: [] }
 
-  public readonly dimensions$ = this.entityType$.pipe(map((entityType) => getEntityDimensions(entityType)))
+  public readonly dimensions$ = toObservable(this.entityType).pipe(map((entityType) => getEntityDimensions(entityType)))
   public readonly dimension$ = this.formGroup.valueChanges.pipe(
     filter((value) => !isNil(value.dimension)),
     map((value) => ({
@@ -148,9 +143,11 @@ export class NgmParameterCreateComponent {
 
   constructor(
     private readonly _formBuilder: FormBuilder,
-    private readonly _dialogRef: MatDialogRef<NgmParameterCreateComponent>,
+    @Optional()
+    private readonly _dialogRef?: MatDialogRef<NgmParameterCreateComponent>,
+    @Optional()
     @Inject(MAT_DIALOG_DATA)
-    public data: {
+    public data?: {
       name: string
       dataSettings: DataSettings
       entityType: EntityType
@@ -158,15 +155,16 @@ export class NgmParameterCreateComponent {
     }
   ) {
     if (this.data) {
-      this.dataSettings = this.data.dataSettings
-      this.entityType = this.data.entityType
+      this.dataSettings.set(this.data.dataSettings)
+      this.entityType.set(this.data.entityType)
+
       if (this.data.name) {
-        this.edit = true
-        const property = this.entityType.parameters[this.data.name]
-        this.formGroup.patchValue(property)
+        this.edit.set(true)
+        const property = this.entityType()?.parameters?.[this.data.name]
+        this.formGroup.patchValue(property ?? {})
         this.slicer = {
           ...this.slicer,
-          members: [...property.availableMembers]
+          members: [...(property.availableMembers ?? [])]
         }
       } else {
         this.formGroup.patchValue(this.data.dimension)
@@ -177,7 +175,7 @@ export class NgmParameterCreateComponent {
   onApply() {
     this.#coreService.updateEntity({
       type: 'Parameter',
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       parameter: {
         ...this.formGroup.value,
         members: this.formGroup.value.availableMembers.filter((member) => member.isDefault)
@@ -216,15 +214,15 @@ export class NgmParameterCreateComponent {
     return (control: AbstractControl): { [key: string]: any } | null => {
       const forbidden =
         !this.edit &&
-        this.entityType?.parameters &&
-        !!Object.values(this.entityType.parameters).find((item) => item.name === control.value)
+        this.entityType()?.parameters &&
+        !!Object.values(this.entityType().parameters).find((item) => item.name === control.value)
       return forbidden ? { forbiddenName: { value: control.value } } : null
     }
   }
 
   onHierarchyChange(hierarchy: string) {
     this.formGroup.patchValue({
-      dimension: getEntityHierarchy(this.entityType, hierarchy)?.dimension,
+      dimension: getEntityHierarchy(this.entityType(), hierarchy)?.dimension,
       hierarchy: hierarchy
     })
   }

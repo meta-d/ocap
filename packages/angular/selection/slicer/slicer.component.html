@@ -1,12 +1,12 @@
 <div class="flex justify-start items-center">
-  <button type="button" mat-icon-button *ngIf="editable" [disabled]="disabled" displayDensity="cosy"
+  <button type="button" mat-icon-button *ngIf="editable()" [disabled]="disabled" displayDensity="cosy"
     (click)="editSlicer()">
     <mat-icon>edit</mat-icon>
   </button>
 
   <span *ngIf="title$ | async as title">{{title}}</span>
 
-  <button *ngIf="editable" mat-icon-button [disabled]="disabled" displayDensity="cosy" class="ngm-slicer__remove"
+  <button *ngIf="editable()" mat-icon-button [disabled]="disabled" displayDensity="cosy" class="ngm-slicer__remove"
     (click)="remove()">
     <mat-icon color="warn">remove_circle_outline</mat-icon>
   </button>
@@ -14,7 +14,7 @@
 
 <mat-chip-listbox *ngIf="slicer" [selectable]="false" >
   <mat-chip-option *ngFor="let member of members(); index as i" [value]="member"
-    [removable]="editable"
+    [removable]="editable()"
     [matTooltip]="(member.key || member.value) + ':\n' + (member.caption || member.label)"
     (removed)="removeMember(i)">
     <ngm-display-behaviour class="ngm-slicer__label" [class.ngm-slicer__exclude]="slicer.exclude"
@@ -22,7 +22,7 @@
       [option]="member"
     >
     </ngm-display-behaviour>
-    <mat-icon *ngIf="editable" matChipRemove>cancel</mat-icon>
+    <mat-icon *ngIf="editable()" matChipRemove>cancel</mat-icon>
   </mat-chip-option>
 
   <mat-chip-option *ngIf="more() > 0">

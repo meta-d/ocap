@@ -10,7 +10,7 @@ import { applicationConfig, moduleMetadata } from '@storybook/angular'
 import { OcapCoreModule } from '../core.module'
 
 export default {
-  title: 'Display Density',
+  title: 'Core/DisplayDensity',
   decorators: [
     applicationConfig({
       providers: [provideAnimations(), provideHttpClient(), provideTranslate()]

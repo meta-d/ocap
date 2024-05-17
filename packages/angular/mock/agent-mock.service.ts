@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core'
-import { Agent, AgentStatusEnum, AgentType, Cube, DataSourceOptions } from '@metad/ocap-core'
+import { Agent, AgentStatusEnum, AgentType, AggregationRole, Cube, DataSourceOptions, EntityType, ParameterControlEnum } from '@metad/ocap-core'
 import { randCompanyName, randFloat, randNumber, randProductAdjective, randProductCategory } from '@ngneat/falso'
 import { Observable, of, Subject } from 'rxjs'
 
@@ -54,8 +54,10 @@ const SalesOrder3s = {
   columns
 }
 
+export const CUBE_SALES_ORDER_NAME = 'SalesOrder'
+
 export const CUBE_SALES_ORDER: Cube = {
-  name: 'SalesOrder',
+  name: CUBE_SALES_ORDER_NAME,
   caption: '销售订单',
   visible: true,
   tables: [{ name: 'sales_order' }],
@@ -106,6 +108,36 @@ export const CUBE_SALES_ORDER: Cube = {
       caption: '成本'
     }
   ]
+}
+
+export const ENTITY_TYPE_SALES_ORDER: EntityType = {
+  name: CUBE_SALES_ORDER_NAME,
+  properties: {
+    '[Customer]': {
+      name: '[Customer]',
+      role: AggregationRole.dimension,
+      hierarchies: [
+        {
+          name: '[Customer]',
+          role: AggregationRole.hierarchy,
+          levels: [
+            {
+              name: '[Customer].[Country]',
+              role: AggregationRole.level,
+            }
+          ]
+        }
+      ]
+    }
+  },
+  parameters: {
+    'P01': {
+      name: 'P01',
+      caption: '参数01',
+      paramType: ParameterControlEnum.Input,
+      value: 5
+    }
+  }
 }
 
 @Injectable()

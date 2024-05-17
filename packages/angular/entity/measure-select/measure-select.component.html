@@ -2,7 +2,9 @@
     [label]="label"
     [placeholder]="placeholder"
     [formControl]="formControl"
-    [selectOptions]="measureOptions()">
+    [selectOptions]="measureOptions()"
+    [ngClass]="{'ngm-select-error': error()}"
+    >
     
     <ng-template ngmOptionContent let-property="value" let-highlight="highlight">
         <ngm-entity-property class="flex-1" [property]="property" [highlight]="highlight" />
@@ -26,4 +28,7 @@
         </button>
     </div>
 
+    <div ngmError>
+        {{error()}}
+    </div>
 </ngm-select>

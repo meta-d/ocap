@@ -79,7 +79,7 @@ class GridsComponent {
 }
 
 export default {
-  title: 'AnalyticalGridComponent',
+  title: 'Story/AnalyticalGrid',
   component: AnalyticalGridComponent,
   decorators: [
     applicationConfig({

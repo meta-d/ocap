@@ -32,15 +32,6 @@ export class SlicerComponent extends BaseSlicersComponent {
   }
   private slicer$ = new BehaviorSubject<ISlicer>(null)
 
-  @Input() get dataSettings(): DataSettings {
-    return this.dataSettings$.value
-  }
-  set dataSettings(value) {
-    this.dataSettings$.next(value)
-  }
-  public dataSettings$ = new BehaviorSubject<DataSettings>(null)
-
-  @Input() editable: boolean
   @Input() disabled: boolean
   @Input() limit: number
 

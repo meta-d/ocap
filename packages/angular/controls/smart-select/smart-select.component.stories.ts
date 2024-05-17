@@ -15,7 +15,7 @@ import { MockAgent } from '../../mock/agent-mock.service'
 import { NgmSmartSelectComponent } from './smart-select.component'
 
 export default {
-  title: 'NgmSmartSelectComponent',
+  title: 'Controls/SmartSelect',
   component: NgmSmartSelectComponent,
   decorators: [
     moduleMetadata({

@@ -1,5 +1,5 @@
 :host {
-  @apply relative flex flex-col items-stretch min-w-[100px] w-full;
+  @apply relative flex flex-col items-stretch min-w-[100px];// w-full;
 
   &.ngm-select-error {
     .mat-mdc-select.ngm-select-element {

@@ -8,6 +8,8 @@ import {
 } from '../core'
 import { CUBE_SALES_ORDER, MockAgent } from './agent-mock.service'
 
+export const MODEL_KEY = 'key_sales'
+
 export function provideOcapMock() {
   return [
     NgmOcapCoreService,
@@ -31,7 +33,7 @@ export function provideOcapMock() {
     {
       provide: OCAP_MODEL_TOKEN,
       useValue: {
-        key: 'key_sales',
+        key: MODEL_KEY,
         name: 'Sales',
         type: 'SQL',
         agentType: AgentType.Browser,

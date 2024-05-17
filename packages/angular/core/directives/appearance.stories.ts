@@ -9,7 +9,7 @@ import { OcapCoreModule } from '../core.module'
 import { ButtonGroupDirective } from './button-group.directive'
 
 export default {
-  title: 'ButtonGroupDirective',
+  title: 'Core/ButtonGroupDirective',
   decorators: [
     moduleMetadata({
       imports: [

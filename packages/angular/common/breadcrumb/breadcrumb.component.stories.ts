@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { OcapCoreModule } from "@metad/ocap-angular/core";
 
 export default {
-  title: 'NgmBreadcrumbBarComponent',
+  title: 'Common/BreadcrumbBar',
   component: NgmBreadcrumbBarComponent,
   decorators: [
     moduleMetadata({

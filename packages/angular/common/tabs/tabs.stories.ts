@@ -7,7 +7,7 @@ import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 
 export default {
-  title: 'MaterialTabs',
+  title: 'Common/MaterialTabs',
   component: MatTabGroup,
   decorators: [
     moduleMetadata({

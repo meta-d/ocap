@@ -8,7 +8,7 @@ import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } fro
 import { NgmSearchComponent } from './search.component'
 
 export default {
-  title: 'Search',
+  title: 'Common/Search',
   component: NgmSearchComponent,
   decorators: [
     applicationConfig({

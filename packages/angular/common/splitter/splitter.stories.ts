@@ -4,7 +4,7 @@ import { SplitterComponent, SplitterType } from './splitter.component'
 import { SplitterModule } from './splitter.module'
 
 export default {
-  title: 'Splitter',
+  title: 'Common/Splitter',
   component: SplitterComponent,
   decorators: [
     moduleMetadata({

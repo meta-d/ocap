@@ -5,6 +5,7 @@
     [placeholder]=" 'Ngm.Calculation.MeasureSelectPlaceholder' | translate: {Default: 'select or create a measure'} "
     [dataSettings]="dataSettings"
     [filter]="filterMeasure"
+    [error]="formGroup.get('measure').hasError('required') ? ('Ngm.Calculation.MeasureIsRequired' | translate: {Default: 'Measure is required'}) : null"
   >
   </ngm-measure-select>
 

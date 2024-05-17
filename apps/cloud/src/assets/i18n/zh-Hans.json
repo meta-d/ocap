@@ -1142,7 +1142,9 @@
       "Filter": "滤镜",
       "Opacity": "透明度",
       "StoryPointName": "故事点名称",
-      "AddCube": "添加数据集"
+      "AddCube": "添加数据集",
+      "CreateCalculationMeasure": "创建计算度量",
+      "CreateParameter": "创建参数"
     },
     "Project": {
       "Project": "项目",

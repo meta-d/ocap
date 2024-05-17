@@ -27,7 +27,7 @@ class CustomLoader implements TranslateLoader {
 }
 
 export default {
-  title: 'AnalyticalCardComponent',
+  title: 'Story/AnalyticalCard',
   component: AnalyticalCardComponent,
   decorators: [
     applicationConfig({

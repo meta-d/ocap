@@ -2,13 +2,15 @@
 
 <form [formGroup]="formGroup" class="flex flex-col justify-start items-stretch" displayDensity="cosy">
   <div class="flex items-start gap-4">
-    <ngm-select class="ngm-calculation__form-field" [label]="'Ngm.Calculation.OPERATION' | translate: {Default: 'Operation'}"
+    <ngm-select class="ngm-calculation__form-field flex-1" [label]="'Ngm.Calculation.OPERATION' | translate: {Default: 'Operation'}"
+      displayDensity="cosy"
       formControlName="operation"
       [selectOptions]="OPERATIONS"
     ></ngm-select>
 
     <ngm-parameter-select *ngIf="formGroup.value.operation === AggregationOperation.TOP_PERCENT || formGroup.value.operation === AggregationOperation.TOP_COUNT"
       class="flex-1"
+      displayDensity="cosy"
       [label]=" 'Ngm.Calculation.VALUE' | translate: {Default: 'Value'} "
       [dataSettings]="dataSettings"
       [entityType]="entityType"
@@ -26,6 +28,7 @@
   <ngm-measure-select class="pt-4" formControlName="measure" label="{{ 'Ngm.Calculation.Measure' | translate: {Default: 'Measure'} }}"
     [dataSettings]="dataSettings"
     [filter]="filterMeasure"
+    [error]="formGroup.get('measure').hasError('required') ? ('Ngm.Calculation.MeasureIsRequired' | translate: {Default: 'Measure is required'}) : null"
   />
 
   <div class="text-base my-4">{{ 'Ngm.Calculation.AGGREGATION_DIMENSIONS' | translate: {Default: "Aggregation Dimensions"} }}</div>

@@ -1,5 +1,5 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
-import { Component, EventEmitter, forwardRef, inject, Input, OnInit, Output } from '@angular/core'
+import { booleanAttribute, Component, EventEmitter, forwardRef, inject, input, Input, OnInit, Output } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
@@ -49,21 +49,9 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
   }
   public slicers$ = new BehaviorSubject<ISlicer[]>([])
 
-  @Input() get editable(): boolean {
-    return this._editable
-  }
-  set editable(value: boolean | string) {
-    this._editable = coerceBooleanProperty(value)
-  }
-  private _editable = false
-
-  @Input() get inline(): boolean {
-    return this._inline
-  }
-  set inline(value: boolean | string) {
-    this._inline = coerceBooleanProperty(value)
-  }
-  private _inline = false
+  readonly inline = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   @Input() limit: number
   @Input() capacities: SlicersCapacity[]

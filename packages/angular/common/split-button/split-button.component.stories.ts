@@ -5,7 +5,7 @@ import { SplitButtonComponent } from './split-button.component'
 import { SplitButtonModule } from './split-button.module'
 
 export default {
-  title: 'SplitButtonComponent',
+  title: 'Common/SplitButton',
   component: SplitButtonComponent,
   decorators: [
     moduleMetadata({

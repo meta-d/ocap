@@ -9,7 +9,7 @@
     <ngm-slicer [slicer]="slicer"
       [dataSettings]="dataSettings"
       [entityType]="entityType"
-      [editable]="true"
+      [editable]="editable()"
       (slicerChange)="update($event, i)"
       (removed)="remove(i)">
     </ngm-slicer>

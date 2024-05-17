@@ -15,7 +15,7 @@ import { NgmControlsModule } from '../controls.module'
 import { NgmMemberTableComponent } from './member-table.component'
 
 export default {
-  title: 'NgmMemberTableComponent',
+  title: 'Controls/MemberTable',
   component: NgmMemberTableComponent,
   decorators: [
     moduleMetadata({
