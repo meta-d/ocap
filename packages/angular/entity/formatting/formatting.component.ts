@@ -9,6 +9,7 @@ import { NgmCommonModule, NgmSelectModule } from '@metad/ocap-angular/common'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmEntityPropertyComponent } from '../property/property.component'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 
 @Component({
   standalone: true,
@@ -20,6 +21,7 @@ import { NgmEntityPropertyComponent } from '../property/property.component'
     MatIconModule,
     MatTooltipModule,
     MatDialogModule,
+    MatSlideToggleModule,
 
     NgmCommonModule,
     NgmSelectModule,

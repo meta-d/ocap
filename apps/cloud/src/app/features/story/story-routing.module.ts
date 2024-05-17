@@ -5,7 +5,7 @@ import { StoryPointComponent } from './point/point.component'
 import { StoryDesignerComponent } from './story/story.component'
 import { StoryViewerComponent } from './viewer/viewer.component'
 import { StoryWidgetComponent } from './widget/widget.component'
-import { StoryCalculationComponent } from './calculation/calculation.component'
+import { StoryCalculationComponent } from './calculations/calculation/calculation.component'
 import { StoryCalculationsComponent } from './calculations/calculations.component'
 
 

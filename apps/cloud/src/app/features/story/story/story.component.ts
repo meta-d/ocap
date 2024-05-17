@@ -44,7 +44,7 @@ import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-an
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
-import { combineLatest, firstValueFrom, from } from 'rxjs'
+import { firstValueFrom, from } from 'rxjs'
 import { distinctUntilChanged, filter, map, share, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'

@@ -110,36 +110,6 @@ export const CUBE_SALES_ORDER: Cube = {
   ]
 }
 
-export const ENTITY_TYPE_SALES_ORDER: EntityType = {
-  name: CUBE_SALES_ORDER_NAME,
-  properties: {
-    '[Customer]': {
-      name: '[Customer]',
-      role: AggregationRole.dimension,
-      hierarchies: [
-        {
-          name: '[Customer]',
-          role: AggregationRole.hierarchy,
-          levels: [
-            {
-              name: '[Customer].[Country]',
-              role: AggregationRole.level,
-            }
-          ]
-        }
-      ]
-    }
-  },
-  parameters: {
-    'P01': {
-      name: 'P01',
-      caption: '参数01',
-      paramType: ParameterControlEnum.Input,
-      value: 5
-    }
-  }
-}
-
 @Injectable()
 export class MockAgent implements Agent {
   type = AgentType.Browser

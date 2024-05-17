@@ -915,7 +915,8 @@ export class NxStoryService {
       properties[calculation.name] = {
         ...omit(calculation, 'options'),
         role: AggregationRole.measure,
-        dataType: 'number'
+        dataType: 'number',
+        visible: true,
       }
 
       const property = properties[calculation.name]

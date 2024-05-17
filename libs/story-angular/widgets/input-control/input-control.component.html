@@ -10,90 +10,97 @@
 </div>
 
 <div class="flex-1 relative flex flex-col justify-start items-center p-1 overflow-hidden">
-    <mat-error *ngIf="error()" class="whitespace-normal overflow-auto">
+  @if (error()) {
+    <mat-error class="whitespace-normal overflow-auto">
         {{error()}}
     </mat-error>
-
-    <ng-container *ngIf="!error()">
-        <ng-container [ngSwitch]="type()">
-            <ngm-member-datepicker *ngSwitchCase="INPUT_CONTROL_TYPE.Datepicker" class="w-full justify-self-start"
-                [label]="options?.label"
-                [placeholder]="options?.placeholder"
-                [appearance]="styling?.appearance?.appearance"
-                [displayDensity]="styling?.appearance?.displayDensity"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [selectionType]="options?.selectionType"
-                [granularity]="options?.granularity"
-                [granularitySequence]="options?.granularitySequence"
-                [formatter]="options?.formatter"
-                [defaultValue]="options?.defaultValue"
-                [(date)]="dates"
-                [ngModel]="slicer"
-                (ngModelChange)="onSlicerChange($event)"
-            >
-            </ngm-member-datepicker>
-        
-            <ngm-member-list *ngSwitchCase="INPUT_CONTROL_TYPE.Select" class="w-full flex-1"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="slicer"
-                (ngModelChange)="onSlicerChange($event)"
-            ></ngm-member-list>
-        
-            <ngm-member-tree *ngSwitchCase="INPUT_CONTROL_TYPE.TreeSelect" class="w-full flex-1"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="slicer"
-                (ngModelChange)="onSlicerChange($event)"
-            ></ngm-member-tree>
-        
-            <ngm-smart-select *ngSwitchCase="CONTROL_TYPE.dropDownList" class="w-full justify-self-start"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="slicer"
-                (ngModelChange)="onSlicerChange($event)"
-            ></ngm-smart-select>
-        
-            <ng-container *ngSwitchCase="INPUT_CONTROL_TYPE.MeasureControl">
-                <mat-chip-listbox aria-label="Measure selection" *ngIf="measureControlProperty() as property" class="w-full flex-1"
-                    aria-orientation="vertical"
-                    [aria-orientation]="options?.ariaOrientation"
-                    [hideSingleSelectionIndicator]="options?.hideSingleSelectionIndicator"
-                    [(ngModel)]="measure"
+  } @else {
+    @switch (type()) {
+      @case (INPUT_CONTROL_TYPE.Datepicker) {
+        <ngm-member-datepicker class="w-full justify-self-start"
+            [label]="options?.label"
+            [placeholder]="options?.placeholder"
+            [appearance]="styling?.appearance?.appearance"
+            [displayDensity]="styling?.appearance?.displayDensity"
+            [dataSettings]="_dataSettings()"
+            [dimension]="dimension()"
+            [selectionType]="options?.selectionType"
+            [granularity]="options?.granularity"
+            [granularitySequence]="options?.granularitySequence"
+            [formatter]="options?.formatter"
+            [defaultValue]="options?.defaultValue"
+            [(date)]="dates"
+            [ngModel]="slicer"
+            (ngModelChange)="onSlicerChange($event)"
+        >
+        </ngm-member-datepicker>
+      }
+      @case (INPUT_CONTROL_TYPE.Select) {
+        <ngm-member-list class="w-full flex-1"
+            [appearance]="styling?.appearance"
+            [dataSettings]="_dataSettings()"
+            [dimension]="dimension()"
+            [options]="__options$ | async"
+            [ngModel]="slicer"
+            (ngModelChange)="onSlicerChange($event)"
+        ></ngm-member-list>
+      }
+      @case (INPUT_CONTROL_TYPE.TreeSelect) {
+        <ngm-member-tree class="w-full flex-1"
+            [appearance]="styling?.appearance"
+            [dataSettings]="_dataSettings()"
+            [dimension]="dimension()"
+            [options]="__options$ | async"
+            [ngModel]="slicer"
+            (ngModelChange)="onSlicerChange($event)"
+        ></ngm-member-tree>
+      }
+      @case (CONTROL_TYPE.dropDownList) {
+        <ngm-smart-select class="w-full justify-self-start"
+            [appearance]="styling?.appearance"
+            [dataSettings]="_dataSettings()"
+            [dimension]="dimension()"
+            [options]="__options$ | async"
+            [ngModel]="slicer"
+            (ngModelChange)="onSlicerChange($event)"
+        ></ngm-smart-select>
+      }
+      @case (INPUT_CONTROL_TYPE.MeasureControl) {
+        @if (measureControlProperty(); as property) {
+            <mat-chip-listbox aria-label="Measure selection" class="w-full flex-1"
+                aria-orientation="vertical"
+                [aria-orientation]="options?.ariaOrientation"
+                [hideSingleSelectionIndicator]="options?.hideSingleSelectionIndicator"
+                [(ngModel)]="measure"
+                >
+                <mat-chip-option *ngFor="let measure of availableMeasures(); trackBy: trackByName" selectable [color]="options?.chipColor"
+                    [highlighted]="options?.highlighted"
+                    [value]="measure.name"
                     >
-                    <mat-chip-option *ngFor="let measure of availableMeasures(); trackBy: trackByName" selectable [color]="options?.chipColor"
-                        [highlighted]="options?.highlighted"
-                        [value]="measure.name"
-                        >
-                        <ngm-display-behaviour [option]="{value: measure.name, label: measure.caption}"
-                            [displayBehaviour]="property.displayBehaviour">
-                        </ngm-display-behaviour>
-                    </mat-chip-option>
-                </mat-chip-listbox>
-            </ng-container>
-        
-            <ngm-parameter *ngSwitchCase="INPUT_CONTROL_TYPE.Parameter" class="w-full flex-1"
-                [dataSettings]="_dataSettings()"
-                [options]="options"
-                [appearance]="styling?.appearance"
-                [displayBehaviour]="dimension()?.displayBehaviour"
-                [parameter]="parameter()"
-                (parameterChange)="updateParameterValue($event)"
-            >
-            </ngm-parameter>
-        
-            <div *ngSwitchDefault class="ngm-input-control__select-model w-full flex-1">
-
-            </div>
-        </ng-container>
-    </ng-container>
+                    <ngm-display-behaviour [option]="{value: measure.name, label: measure.caption}"
+                        [displayBehaviour]="property.displayBehaviour">
+                    </ngm-display-behaviour>
+                </mat-chip-option>
+            </mat-chip-listbox>
+        }
+      }
+      @case (INPUT_CONTROL_TYPE.Parameter) {
+        <ngm-parameter class="w-full flex-1"
+            [dataSettings]="_dataSettings()"
+            [options]="options"
+            [appearance]="styling?.appearance"
+            [displayBehaviour]="dimension()?.displayBehaviour"
+            [parameter]="parameter()"
+            (parameterChange)="updateParameterValue($event)"
+        >
+        </ngm-parameter>
+      }
+      @default {
+        <div class="ngm-input-control__select-model w-full flex-1">
+        </div>
+      }
+    }
+  }
 </div>
 
 <div *ngIf="editable && asPlaceholder()" class="ngm-story-widget__placeholder absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">

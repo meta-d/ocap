@@ -97,8 +97,8 @@ export class NgmMemberDatepickerComponent implements OnInit, OnChanges, ControlV
 
   private entityType$ = this.dataService.selectEntityType()
 
-  dateControl = new FormControl()
   fromDateControl = new FormControl()
+  dateControl = new FormControl()
 
   date1: Date
   date2: Date

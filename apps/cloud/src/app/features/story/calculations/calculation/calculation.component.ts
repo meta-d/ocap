@@ -1,19 +1,19 @@
 import { CommonModule } from '@angular/common'
-import { Component, Signal, effect, inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { CalculationProperty } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
-import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
-import { StoryCalculationsComponent } from '../calculations/calculations.component'
-import { injectCalculationCommand } from './commands'
+import { StoryCalculationsComponent } from '../calculations.component'
+import { injectCalculationCommand } from '../commands'
 
 @Component({
   standalone: true,
@@ -57,10 +57,6 @@ export class StoryCalculationComponent {
   )
 
   readonly calculatioCommand = injectCalculationCommand(this.storyService, this.property)
-
-  constructor() {
-    effect(() => console.log(this.property()))
-  }
 
   close() {
     this.router.navigate(['../'], { relativeTo: this.route })

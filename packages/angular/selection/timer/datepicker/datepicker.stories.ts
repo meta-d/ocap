@@ -5,7 +5,7 @@ import { applicationConfig, argsToTemplate, componentWrapperDecorator, moduleMet
 import { provideHttpClient } from '@angular/common/http'
 import { provideAnimations } from '@angular/platform-browser/animations'
 import { provideOcapMock, provideTranslate } from '@metad/ocap-angular/mock'
-import { TimeGranularity } from '@metad/ocap-core'
+import { FilterSelectionType, TimeGranularity } from '@metad/ocap-core'
 import { action } from '@storybook/addon-actions'
 import { NgmMemberDatepickerComponent } from './datepicker.component'
 import { NgmMemberDatepickerModule } from './datepicker.module'
@@ -83,5 +83,20 @@ export const Month: Story = {
 export const Day: Story = {
   args: {
     granularity: TimeGranularity.Day
+  }
+}
+
+export const DefaultValue: Story = {
+  args: {
+    granularity: TimeGranularity.Week,
+    defaultValue: '2021-01-01'
+  }
+}
+
+export const Year_to_Today: Story = {
+  args: {
+    selectionType: FilterSelectionType.SingleRange,
+    granularity: TimeGranularity.Month,
+    defaultValue: 'YEAR_TO_TODAY'
   }
 }
