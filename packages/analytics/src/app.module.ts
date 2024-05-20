@@ -1,6 +1,7 @@
 import { EmployeeModule, OrganizationModule, TenantModule } from '@metad/server-core'
-import { forwardRef, Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { BullModule } from '@nestjs/bull'
+import { Module, forwardRef } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { CqrsModule } from '@nestjs/cqrs'
 import { ScheduleModule } from '@nestjs/schedule'
 import { AgentModule } from './agent/index'
@@ -9,13 +10,16 @@ import { AnalyticsService } from './app.service'
 import { ApprovalPolicyModule } from './approval-policy/approval-policy.module'
 import { BusinessAreaUserModule } from './business-area-user/index'
 import { BusinessAreaModule } from './business-area/index'
+import { CertificationModule } from './certification'
 import { CollectionModule } from './collection/index'
 import { CommentModule } from './comment'
 import { CommandHandlers, EventHandlers } from './core/events/handlers'
+import { RedisModule } from './core/redis.module'
 import { DataSourceTypeModule } from './data-source-type/data-source-type.module'
 import { DataSourceModule } from './data-source/data-source.module'
 import { FavoriteModule } from './favorite/favorite.module'
 import { FeedModule } from './feed/feed.module'
+import { IndicatorAppModule } from './indicator-app/'
 import { IndicatorMarketModule } from './indicator-market/indicator-market.module'
 import { IndicatorModule } from './indicator/indicator.module'
 import { InsightModule } from './insight/insight.module'
@@ -25,22 +29,35 @@ import { PermissionApprovalUserModule } from './permission-approval-user/permiss
 import { PermissionApprovalModule } from './permission-approval/permission-approval.module'
 import { ProjectModule } from './project/index'
 import { ModelQueryModule } from './query/index'
+import { ScreenshotModule } from './screenshot/screenshot.module'
 import { StoryPointModule } from './story-point/story-point.module'
+import { StoryTemplateModule } from './story-template/index'
 import { StoryWidgetModule } from './story-widget/story-widget.module'
 import { StoryModule } from './story/story.module'
 import { SubscriptionModule } from './subscription/subscription.module'
 import { VisitModule } from './visit/visit.module'
-import { StoryTemplateModule } from './story-template/index'
-import { ScreenshotModule } from './screenshot/screenshot.module'
-import { CertificationModule } from './certification'
-import { RedisModule } from './core/redis.module'
-import { IndicatorAppModule } from './indicator-app/'
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true
 		}),
+		BullModule.forRootAsync({
+			imports: [ConfigModule],
+			useFactory: async (configService: ConfigService) => {
+				const host = configService.get('REDIS_HOST') || 'localhost'
+				const port = configService.get('REDIS_PORT') || 6379
+				const password = configService.get('REDIS_PASSWORD') || ''
+				return {
+					redis: {
+						host,
+						port,
+						password
+					},
+				}
+			},
+			inject: [ConfigService],
+		  }),
 		ScheduleModule.forRoot(),
 		CqrsModule,
 		RedisModule,

@@ -5,9 +5,10 @@ import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { ISemanticModel } from '@metad/contracts'
 import { EntityType, getEntityHierarchy, getEntityProperty } from '@metad/ocap-core'
 import { AiProvider, CopilotService, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { groupBy } from 'lodash'
+import { Queue } from 'bull'
 import { RedisClientType } from 'redis'
 import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'typeorm'
 import { REDIS_CLIENT } from '../../core'
@@ -28,7 +29,10 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		private copilotService: CopilotService,
 
 		@Inject(REDIS_CLIENT)
-		private readonly redisClient: RedisClientType
+		private readonly redisClient: RedisClientType,
+
+		@InjectQueue('member')
+		private readonly memberQueue: Queue
 	) {
 		super(modelCacheRepository)
 	}
@@ -117,17 +121,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 
 	async seedVectorStore(models: ISemanticModel[]) {
 		for (const model of models) {
-			const { items: members } = await this.findAll({ where: { modelId: model.id } })
-			const cubes = groupBy(members, 'entity')
-			for (const [cube, items] of Object.entries<any>(cubes)) {
-				const vectorStore = await this.getVectorStore(model.id, cube, model.organizationId)
-				if (vectorStore) {
-					const existed = await vectorStore?.checkIndexExists()
-					if (!existed) {
-						await vectorStore.addMembers(items.filter((member) => member.vector))
-					}
-				}
-			}
+			this.memberQueue.add('seedVectorStore', { modelId: model.id, organizationId: model.organizationId })
 		}
 	}
 }

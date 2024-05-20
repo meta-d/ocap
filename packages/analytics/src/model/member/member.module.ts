@@ -2,11 +2,13 @@ import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { EmployeeModule, SharedModule, TenantModule, CopilotModule } from '@metad/server-core'
+import { BullModule } from '@nestjs/bull'
 import { ModelMemberController } from './member.controller'
 import { SemanticModelMember } from './member.entity'
 import { SemanticModelMemberService } from './member.service'
 import { SemanticModelModule } from '../model.module'
 import { RedisModule } from '../../core'
+import { MemberProcessor } from './member.processor'
 
 @Module({
 	imports: [
@@ -17,10 +19,14 @@ import { RedisModule } from '../../core'
 		EmployeeModule,
 		forwardRef(() => SemanticModelModule),
 		forwardRef(() => CopilotModule),
-		RedisModule
+		RedisModule,
+
+		BullModule.registerQueue({
+			name: 'member',
+		  }),
 	],
 	controllers: [ModelMemberController],
-	providers: [SemanticModelMemberService],
+	providers: [SemanticModelMemberService, MemberProcessor],
 	exports: [SemanticModelMemberService],
 })
 export class SemanticModelMemberModule {}
