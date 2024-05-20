@@ -36,6 +36,7 @@ import { StoryWidgetModule } from './story-widget/story-widget.module'
 import { StoryModule } from './story/story.module'
 import { SubscriptionModule } from './subscription/subscription.module'
 import { VisitModule } from './visit/visit.module'
+import { ModelEntityModule } from './model-entity'
 
 @Module({
 	imports: [
@@ -71,6 +72,7 @@ import { VisitModule } from './visit/visit.module'
 		BusinessAreaModule,
 		BusinessAreaUserModule,
 		SemanticModelModule,
+		ModelEntityModule,
 		DataSourceModule,
 		DataSourceTypeModule,
 		StoryPointModule,

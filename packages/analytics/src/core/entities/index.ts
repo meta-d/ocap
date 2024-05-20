@@ -29,6 +29,7 @@ import { StoryTemplate } from '../../story-template/story-template.entity'
 import { Screenshot } from '../../screenshot/screenshot.entity'
 import { Certification } from '../../certification/certification.entity'
 import { IndicatorApp } from '../../indicator-app/indicator-app.entity'
+import { SemanticModelEntity } from '../../model-entity/entity.entity'
 
 
 export const ALL_ENTITIES = [
@@ -39,6 +40,7 @@ export const ALL_ENTITIES = [
 	SemanticModelCache,
 	SemanticModelMember,
 	SemanticModelRole,
+	SemanticModelEntity,
 	Story,
 	StoryPoint,
 	StoryWidget,

@@ -29,8 +29,6 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	constructor(
 		@InjectRepository(SemanticModel)
 		modelRepository: Repository<SemanticModel>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
 		private readonly dsService: DataSourceService,
 		private readonly cacheService: SemanticModelCacheService,
 		private readonly memberService: SemanticModelMemberService,
@@ -42,7 +40,7 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 
 		private readonly dsCoreService: NgmDSCoreService
 	) {
-		super(modelRepository, employeeRepository, commandBus)
+		super(modelRepository, commandBus)
 	}
 
 	/**
