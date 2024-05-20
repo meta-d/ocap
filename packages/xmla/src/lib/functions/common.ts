@@ -1,4 +1,4 @@
-import { uniq } from "lodash-es"
+import { uniq } from 'lodash'
 
 /**
  * Returns a number that is calculated by aggregating over the cells returned by the set expression.

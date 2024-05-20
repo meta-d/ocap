@@ -1,5 +1,5 @@
 import { Cellset, C_MEASURES, Dataset, Dimension, EntityType, getEntityHierarchy, getEntityProperty, isMeasure, Property, wrapBrackets, CAPTION_FIELD_SUFFIX } from '@metad/ocap-core'
-import { isNil, isEmpty, merge } from 'lodash-es'
+import { isNil, isEmpty, merge } from 'lodash'
 import { IntrinsicMemberProperties } from '../reference'
 import { Axis, convertHierarchyMemberValue, C_MDX_FIELD_NAME_REGEX, Dataset as XmlaDataset, _PivotColumn as PivotColumn } from '../types/index'
 import { Xmla } from './Xmla'

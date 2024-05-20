@@ -1,5 +1,5 @@
 import { Agent, AgentStatus, AgentType, DataSourceOptions } from '@metad/ocap-core'
-import { merge } from 'lodash-es'
+import { merge } from 'lodash'
 import { map, Observable } from 'rxjs'
 import { Dataset } from '../types'
 import { fetchDataFromMultidimensionalTuple } from './multidimensional'

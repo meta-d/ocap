@@ -185,13 +185,8 @@ export class ModelsService extends OrganizationBaseService {
     return this.httpClient.put<ISemanticModel>(C_URI_API_MODELS + `/${id}`, {ownerId: userId}, { params })
   }
 
-  uploadDimensionMembers(id: string, members: ISemanticModelMember[], entityType: EntityType) {
-    return this.httpClient.post(C_URI_API_MODEL_MEMBERS + `/${id}`, {
-      [entityType.name]: {
-        entityType,
-        members
-      }
-    })
+  uploadDimensionMembers(id: string, body: Record<string, string[]>) {
+    return this.httpClient.post(C_URI_API_MODEL_MEMBERS + `/${id}`, body)
   }
 
   getRelevantMembers(modelId: string, cube: string, query: string, k = 10) {

@@ -16,6 +16,7 @@ import { SemanticModelService } from './model.service'
 import { QueryHandlers } from './queries/handlers'
 import { SemanticModelRoleModule } from './role/role.module'
 import { RedisModule } from '../core/redis.module'
+import { OcapModule } from './ocap'
 
 
 @Module({
@@ -36,7 +37,8 @@ import { RedisModule } from '../core/redis.module'
 		SemanticModelMemberModule,
 		BusinessAreaUserModule,
 		BusinessAreaModule,
-		RedisModule
+		RedisModule,
+		OcapModule
 	],
 	controllers: [ModelController],
 	providers: [SemanticModelService, ...CommandHandlers, ...QueryHandlers, ...EventHandlers],

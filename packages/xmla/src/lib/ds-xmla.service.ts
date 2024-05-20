@@ -45,7 +45,7 @@ import {
   CAPTION_FIELD_SUFFIX,
   MDCube
 } from '@metad/ocap-core'
-import { cloneDeep, groupBy, isArray, isEmpty, isNil, merge, mergeWith, sortBy } from 'lodash-es'
+import { cloneDeep, groupBy, isArray, isEmpty, isNil, merge, mergeWith, sortBy } from 'lodash'
 import { combineLatest, firstValueFrom, from, Observable, of, throwError } from 'rxjs'
 import {
   catchError,
@@ -689,6 +689,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
         annotations
       }
     } catch (err: unknown) {
+      console.error(err)
       // 应该改成类型判断的方式
       let error = (<Xmla.Request>err).exception?.message ?? getErrorMessage((<Xmla.Request>err).exception?.data) ?? (<Xmla.Exception>err).message
       error = simplifyErrorMessage(error)

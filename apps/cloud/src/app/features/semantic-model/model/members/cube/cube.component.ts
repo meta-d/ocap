@@ -8,11 +8,10 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatListModule, MatSelectionList } from '@angular/material/list'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ModelsService } from '@metad/cloud/state'
-import { ISemanticModelMember } from '@metad/contracts'
-import { Cube, EntityType, IDimensionMember, PropertyDimension, getEntityDimensions } from '@metad/ocap-core'
+import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { Cube, EntityType, getEntityDimensions, getEntityHierarchy } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService, tryHttp } from 'apps/cloud/src/app/@core'
-import { flatten } from 'lodash-es'
 import { SemanticModelService } from '../../model.service'
 
 @Component({
@@ -26,7 +25,8 @@ import { SemanticModelService } from '../../model.service'
     MatButtonModule,
     MatListModule,
     MatTooltipModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    NgmEntityPropertyComponent
   ],
   selector: 'pac-model-members-cube',
   templateUrl: 'cube.component.html',
@@ -72,26 +72,34 @@ export class ModelMembersCubeComponent {
   async syncMember() {
     const cube = this.cube().name;
     const dimensions = this.dimensions()
-    this.loading.set(true)
-    const storeMembers: Record<string, IDimensionMember[]> = {}
-    for (const name of this.selectedDims()) {
-      storeMembers[name] = []
-      const dimension = dimensions.find((dim) => dim.name === name)
-      for (const hierarchy of dimension.hierarchies) {
-        const members = await tryHttp(
-          this.modelService.selectHierarchyMembers(cube, { dimension: dimension.name, hierarchy: hierarchy.name }),
-          this.toastrService
-        )
-        if (members) {
-          storeMembers[dimension.name] = storeMembers[dimension.name].concat(members)
-        }
+    // const storeMembers: Record<string, IDimensionMember[]> = {}
+    if (this.selectedDims()) {
+      this.loading.set(true)
+      for (const name of this.selectedDims()) {
+        // storeMembers[name] = []
+
+        let storeMembers = []
+        const hierarchy = getEntityHierarchy(this.cube().entityType, name)
+        // const dimension = dimensions.find((dim) => dim.name === name)
+        // for (const hierarchy of dimension.hierarchies) {
+          const members = await tryHttp(
+            this.modelService.selectHierarchyMembers(cube, { dimension: hierarchy.dimension, hierarchy: hierarchy.name }),
+            this.toastrService
+          )
+          if (members) {
+            storeMembers = storeMembers.concat(members)
+          }
+        // }
+
+        this.members.update((members) => ({
+          ...members,
+          [name]: storeMembers
+        }))
       }
+      
+      this.loading.set(false)
+      this.loaded.set(true)
     }
-
-    this.members.set(storeMembers)
-
-    this.loading.set(false)
-    this.loaded.set(true)
   }
 
   async uploadMembers(dimensions: string[]) {
@@ -100,14 +108,9 @@ export class ModelMembersCubeComponent {
     await tryHttp(
       this.modelsService.uploadDimensionMembers(
         this.modelService.modelSignal().id,
-        flatten(dimensions.map((dimension) => this.members()[dimension] ?? [])).map(
-          (member) =>
-            ({
-              ...member,
-              entity: cube
-            } as unknown as ISemanticModelMember)
-        ),
-        this.cube().entityType
+        {
+          [cube]: dimensions
+        }
       ),
       this.toastrService
     )

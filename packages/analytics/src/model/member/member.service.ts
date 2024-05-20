@@ -3,16 +3,18 @@ import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { ISemanticModel } from '@metad/contracts'
-import { EntityType, getEntityHierarchy, getEntityProperty } from '@metad/ocap-core'
+import { EntityType, compact, getEntityHierarchy, getEntityProperty, isEntityType } from '@metad/ocap-core'
 import { AiProvider, CopilotService, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Queue } from 'bull'
 import { RedisClientType } from 'redis'
+import { firstValueFrom } from 'rxjs'
 import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'typeorm'
 import { REDIS_CLIENT } from '../../core'
 import { SemanticModel } from '../model.entity'
+import { NgmDSCoreService, getSemanticModelKey } from '../ocap'
 import { SemanticModelMember } from './member.entity'
 
 @Injectable()
@@ -32,23 +34,46 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		private readonly redisClient: RedisClientType,
 
 		@InjectQueue('member')
-		private readonly memberQueue: Queue
+		private readonly memberQueue: Queue,
+
+		private readonly dsCoreService: NgmDSCoreService
 	) {
 		super(modelCacheRepository)
 	}
 
-	async storeMembers(modelId: string, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
-		const model = await this.modelRepository.findOne(modelId)
-		if (!model) {
-			return
-		}
+	async syncMembers(modelId: string, body: Record<string, string[]>) {
+		const model = await this.modelRepository.findOne(modelId, { relations: ['dataSource', 'dataSource.type', 'roles'] })
+		const modelKey = getSemanticModelKey(model)
+		const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
 
+		for(const cube of Object.keys(body)) {
+			const dimensions = compact(body[cube])
+
+			const entityType = await firstValueFrom(modelDataSource.selectEntityType(cube))
+			if (!isEntityType(entityType)) {
+				throw entityType
+			}
+
+			let members = []
+			for(const hierarchy of dimensions) {
+				const hierarchyProperty = getEntityHierarchy(entityType, hierarchy)
+				const _members = await firstValueFrom(modelDataSource.selectMembers(cube, {dimension: hierarchyProperty.dimension, hierarchy: hierarchyProperty.name}))
+				
+				members = members.concat(_members.map((item) => ({...item, entity: cube}))) // 
+			}
+			if (members.length) {
+				await this.storeMembers(model, members, entityType)
+			}
+		}
+	}
+
+	async storeMembers(model: SemanticModel, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
 		const vectorStore = await this.getVectorStore(model.id, entityType.name)
 		if (vectorStore) {
 			await vectorStore.clear()
 			return await vectorStore.storeMembers(members, entityType)
 		} else {
-			this.bulkCreate(modelId, members)
+			this.bulkCreate(model.id, members)
 		}
 	}
 

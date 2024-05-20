@@ -20,7 +20,7 @@ export class MemberProcessor {
     for (const [cube, items] of Object.entries<any>(cubes)) {
         const vectorStore = await this.memberService.getVectorStore(modelId, cube, organizationId)
         if (vectorStore) {
-            const existed = await vectorStore?.checkIndexExists()
+            const existed = await vectorStore.checkIndexExists()
             if (!existed) {
                 await vectorStore.addMembers(items.filter((member) => member.vector))
             }

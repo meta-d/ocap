@@ -165,13 +165,20 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   )
   readonly autoActiveFirst = computed(() => this.options()?.autoActiveFirst)
 
-  // Effects
+  /**
+  |--------------------------------------------------------------------------
+  | Effects
+  |--------------------------------------------------------------------------
+  */
+  readonly initial = signal(true)
+  readonly loadedTreeNodes = effect(() => this.initial.set(true), { allowSignalWrites: true })
   readonly autoActiveFirstEffect = effect(
     () => {
       // Auto active first option when no selection
       const treeNodes = this.treeNodes()
       const firstNode = treeNodes?.[0]
-      if (this.autoActiveFirst() && firstNode && isEmpty(this.memberKeys())) {
+      if (this.autoActiveFirst() && firstNode && this.initial() && isEmpty(this.memberKeys())) {
+        this.initial.set(false)
         this.memberKeys.set([firstNode.key])
 
         const slicer: ISlicer = {

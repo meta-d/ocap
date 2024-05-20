@@ -7,7 +7,7 @@ import {
   PrimitiveType,
   wrapHierarchyValue
 } from '@metad/ocap-core'
-import { isArray } from 'lodash-es'
+import { isArray } from 'lodash'
 import { MDXHierarchyFilter } from './filter'
 
 export enum VariableEntryType {

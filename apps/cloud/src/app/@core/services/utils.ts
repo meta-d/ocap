@@ -27,7 +27,8 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
   const catalog = agentType === AgentType.Wasm ? model.catalog || 'main' : model.catalog
   const semanticModel = {
     ...omit(model, 'indicators'),
-    name: modelKey,
+    key: modelKey,
+    // name: modelKey,
     catalog,
     dialect,
     agentType,
@@ -54,7 +55,7 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
     if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
       dsCoreService.registerModel({
         ...semanticModel,
-        name: getSQLSourceName(modelKey),
+        key: getSQLSourceName(modelKey),
         type: 'SQL',
         syntax: Syntax.SQL
       })
@@ -81,7 +82,7 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
     } else {
       dsCoreService.registerModel({
         ...semanticModel,
-        name: getXmlaSourceName(modelKey),
+        key: getXmlaSourceName(modelKey),
         settings: {
           ...semanticModel.settings,
           dataSourceInfo: model.dataSource?.options?.data_source_info

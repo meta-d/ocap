@@ -20,10 +20,22 @@
     <mat-selection-list #selection role="list" [disabled]="loading()" [(ngModel)]="selectedDims">
       @for (dimension of dimensions(); track dimension.name) {
         <mat-list-option role="listitem" [value]="dimension.name">
-          <span>{{dimension.caption || dimension.name}}</span>
+          <ngm-entity-property [property]="dimension" />
 
           <span>({{members()[dimension.name]?.length}}) Members</span>
         </mat-list-option>
+
+        @if (selectedDims()?.includes(dimension.name)) {
+          @for (hierarchy of dimension.hierarchies; track $index) {
+            <mat-list-option role="listitem" [value]="hierarchy.name">
+              <ngm-entity-property [property]="hierarchy" />
+    
+              <span>({{members()[hierarchy.name]?.length}}) Members</span>
+            </mat-list-option>
+          }
+        }
+
+        <mat-divider></mat-divider>
       }
     </mat-selection-list>
 </mat-expansion-panel>

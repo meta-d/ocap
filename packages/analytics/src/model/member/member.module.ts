@@ -9,6 +9,7 @@ import { SemanticModelMemberService } from './member.service'
 import { SemanticModelModule } from '../model.module'
 import { RedisModule } from '../../core'
 import { MemberProcessor } from './member.processor'
+import { OcapModule } from '../ocap'
 
 @Module({
 	imports: [
@@ -24,6 +25,7 @@ import { MemberProcessor } from './member.processor'
 		BullModule.registerQueue({
 			name: 'member',
 		  }),
+		OcapModule
 	],
 	controllers: [ModelMemberController],
 	providers: [SemanticModelMemberService, MemberProcessor],

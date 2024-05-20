@@ -2,10 +2,10 @@ import { type DocumentInterface } from '@langchain/core/documents'
 import { IPagination } from '@metad/contracts'
 import { CrudController, ParseJsonPipe, UUIDValidationPipe } from '@metad/server-core'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common'
-import { EntityType } from '@metad/ocap-core'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { DeepPartial, FindManyOptions } from 'typeorm'
+import { FindManyOptions } from 'typeorm'
+import { NgmDSCoreService } from '../ocap'
 import { SemanticModelMember } from './member.entity'
 import { SemanticModelMemberService } from './member.service'
 
@@ -13,7 +13,10 @@ import { SemanticModelMemberService } from './member.service'
 @ApiBearerAuth()
 @Controller()
 export class ModelMemberController extends CrudController<SemanticModelMember> {
-	constructor(private readonly memberService: SemanticModelMemberService, private readonly commandBus: CommandBus) {
+	constructor(
+		private readonly memberService: SemanticModelMemberService,
+		private readonly dsCoreService: NgmDSCoreService,
+		private readonly commandBus: CommandBus) {
 		super(memberService)
 	}
 
@@ -31,13 +34,8 @@ export class ModelMemberController extends CrudController<SemanticModelMember> {
 
 	@HttpCode(HttpStatus.CREATED)
 	@Post(':id')
-	async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() body: Record<string, {
-		members: DeepPartial<SemanticModelMember[]>;
-		entityType: EntityType
-	}>) {
-		for(const [entity, { members, entityType }] of Object.entries(body)) {
-			await this.memberService.storeMembers(id, members, entityType)
-		}
+	async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() body: Record<string, string[]>) {
+		await this.memberService.syncMembers(id, body)
 		return {}
 	}
 

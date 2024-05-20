@@ -53,7 +53,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     if (!this._dataSources.get(name)) {
       this._dataSources.set(
         name,
-        this.select((state) => state.dataSources?.find((item) => item.name === name)).pipe(
+        this.select((state) => state.dataSources?.find((item) => item.key === name || item.name === name)).pipe(
           filter((value) => !!value),
           switchMap(async (options) => {
             const provider = this.factories.find(({ type }) => type === options?.type)

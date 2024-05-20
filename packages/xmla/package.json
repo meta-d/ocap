@@ -3,5 +3,9 @@
   "version": "2.2.1",
   "scripts": {
     "docs": "yarn typedoc"
+  },
+  "peerDependencies": {
+    "@metad/ocap-core": "^2.2.1",
+    "xmldom": "^0.6.0"
   }
 }

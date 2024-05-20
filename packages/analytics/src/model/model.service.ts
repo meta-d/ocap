@@ -17,6 +17,7 @@ import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
 import { REDIS_CLIENT } from '../core/redis.module'
 import { SemanticModelMemberService } from './member/member.service'
+import { NgmDSCoreService, registerModel } from './ocap'
 
 const axios = _axios.default
 
@@ -37,7 +38,9 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		private readonly businessAreaService: BusinessAreaService,
 		readonly commandBus: CommandBus,
 		@Inject(REDIS_CLIENT)
-		private readonly redisClient: RedisClientType
+		private readonly redisClient: RedisClientType,
+
+		private readonly dsCoreService: NgmDSCoreService
 	) {
 		super(modelRepository, employeeRepository, commandBus)
 	}
@@ -71,11 +74,18 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	}
 
 	async seedIfEmpty() {
-		const { items } = await this.findAll()
+		const { items } = await this.findAll({
+			relations: ['dataSource', 'dataSource.type', 'roles']
+		})
 		
 		await Promise.all(
 			items.map((model) => this.updateCatalogContent(model.id).catch((error) => console.error(error)))
 		)
+
+		// Register semantic models
+		items.forEach((model) => {
+			registerModel(model, this.dsCoreService)
+		})
 
 		await this.memberService.seedVectorStore(items)
 	}
