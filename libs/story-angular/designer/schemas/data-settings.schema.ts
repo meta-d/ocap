@@ -1,7 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { NxCoreService, nonNullable } from '@metad/core'
-import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { nonNullable } from '@metad/core'
+import { ISelectOption, NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
+import { SlicersCapacity } from '@metad/ocap-angular/selection'
 import {
   CalculationProperty,
   CalculationType,
@@ -28,8 +30,6 @@ import {
 } from 'rxjs/operators'
 import { BaseDesignerSchemaService, BaseSchemaState } from './base-designer-schema'
 import { AccordionWrappers, DataSettingsSchema, FORMLY_ROW, FORMLY_W_1_2 } from './types'
-import { PropertyCapacity } from '@metad/ocap-angular/entity'
-import { SlicersCapacity } from '@metad/ocap-angular/selection'
 
 export interface SchemaState extends BaseSchemaState {
   dataSettings: DataSettings
@@ -40,7 +40,7 @@ export abstract class DataSettingsSchemaService<
   T extends SchemaState = SchemaState
 > extends BaseDesignerSchemaService<T> {
   protected dsCoreService = inject(NgmDSCoreService)
-  protected coreService? = inject(NxCoreService, { optional: true })
+  protected coreService? = inject(NgmOcapCoreService, { optional: true })
   protected storyService? = inject(NxStoryService, { optional: true })
 
   abstract getSchema()
@@ -95,8 +95,8 @@ export abstract class DataSettingsSchemaService<
         icon: schema?.cubes?.find((item) => item.name === cube.name)
           ? 'star_outline'
           : cube.cubeType === 'VIRTUAL CUBE'
-          ? 'dataset_linked'
-          : null,
+            ? 'dataset_linked'
+            : null,
         fontSet: 'material-icons-outlined'
       }))
     })
@@ -302,8 +302,8 @@ export abstract class DataSettingsSchemaService<
                       icon: schema?.cubes?.find((item) => item.name === cube.name)
                         ? 'star_outline'
                         : cube.cubeType === 'VIRTUAL CUBE'
-                        ? 'dataset_linked'
-                        : null,
+                          ? 'dataset_linked'
+                          : null,
                       fontSet: 'material-icons-outlined'
                     }))
                   }),

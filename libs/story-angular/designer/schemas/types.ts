@@ -1,5 +1,5 @@
-import { NxCoreService, TypeAheadType } from '@metad/core'
-import { DisplayDensity, ISelectOption, TIME_GRANULARITY_SEQUENCES } from '@metad/ocap-angular/core'
+import { TypeAheadType } from '@metad/core'
+import { DisplayDensity, ISelectOption, NgmOcapCoreService, TIME_GRANULARITY_SEQUENCES } from '@metad/ocap-angular/core'
 import { DataSource, FilterSelectionType, isNil } from '@metad/ocap-core'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, throwError } from 'rxjs'
@@ -105,7 +105,7 @@ export function DataSettingsSchema(
               {
                 key: 'dataSource',
                 type: 'semantic-model',
-                className: CLASS_NAME_COL6,
+                className: FORMLY_W_1_2,
                 props: {
                   label: BUILDER?.SemanticModel ?? 'Semantic Model',
                   required: true,
@@ -116,7 +116,7 @@ export function DataSettingsSchema(
               {
                 key: 'entitySet',
                 type: 'ngm-select',
-                className: CLASS_NAME_COL6,
+                className: FORMLY_W_1_2,
                 props: {
                   label: BUILDER?.Entity ?? 'Entity',
                   searchable: true,
@@ -204,7 +204,7 @@ export function filterAttributes(className: string, COMMON) {
 export function hierarchyAttributes(COMMON?) {
   return [
     {
-      className: CLASS_NAME_COL6,
+      className: FORMLY_W_1_2,
       key: 'initialLevel',
       type: 'slider',
       props: {
@@ -215,7 +215,7 @@ export function hierarchyAttributes(COMMON?) {
       }
     },
     {
-      className: CLASS_NAME_COL6,
+      className: FORMLY_W_1_2,
       key: 'showAllMember',
       type: 'checkbox',
       props: {
@@ -233,7 +233,7 @@ export function typeAhead(COMMON) {
     props: { label: '自动补全' },
     fieldGroup: [
       {
-        className: CLASS_NAME_COL6,
+        className: FORMLY_W_1_2,
         key: 'type',
         type: 'select',
         props: {
@@ -246,7 +246,7 @@ export function typeAhead(COMMON) {
         }
       },
       {
-        className: CLASS_NAME_COL6,
+        className: FORMLY_W_1_2,
         key: 'required',
         type: 'checkbox',
         props: { label: '必输' }
@@ -358,7 +358,7 @@ export function DataTable(className: string, I18N) {
   }
 }
 
-export function dateFilterOptions(coreService: NxCoreService, className: string, I18N, DateVariable) {
+export function dateFilterOptions(coreService: NgmOcapCoreService, className: string, I18N, DateVariable) {
   return [
     {
       className,

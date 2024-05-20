@@ -1,10 +1,9 @@
-import { Inject, Injectable, InjectionToken, inject } from '@angular/core'
+import { Inject, Injectable, InjectionToken } from '@angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { combineLatest, Observable, Subject } from 'rxjs'
 import { map, pairwise, shareReplay } from 'rxjs/operators'
 import { Intent, QuerySettings } from '../models/index'
-import { NgmOcapCoreService } from '@metad/ocap-angular/core'
 
 export const NX_THEME_DEFAULT = 'default'
 
@@ -35,7 +34,7 @@ export interface NxCoreState {
 @Injectable()
 export class NxCoreService extends ComponentStore<NxCoreState> {
 
-  readonly ocapCoreService = inject(NgmOcapCoreService)
+  // readonly ocapCoreService = inject(NgmOcapCoreService)
 
   private _intent$ = new Subject<Intent>()
 
@@ -119,12 +118,12 @@ export class NxCoreService extends ComponentStore<NxCoreState> {
     // return this.theme$.getValue()
   }
 
-  /**
-   * @deprecated use NgmOcapCoreService instead
-   */
-  getDateVariables() {
-    return this.ocapCoreService.getDateVariables()
-  }
+  // /**
+  //  * @deprecated use NgmOcapCoreService instead
+  //  */
+  // getDateVariables() {
+  //   return this.ocapCoreService.getDateVariables()
+  // }
 
   // execDateVariables(id: string): Date | [Date, Date] {
   //   const dateVariable = this.dateVariables.find((item) => item.id === id)
