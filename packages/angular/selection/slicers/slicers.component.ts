@@ -1,4 +1,3 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { booleanAttribute, Component, EventEmitter, forwardRef, inject, input, Input, OnInit, Output } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'

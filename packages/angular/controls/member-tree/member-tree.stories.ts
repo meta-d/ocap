@@ -18,7 +18,7 @@ import { NgmMemberTreeComponent } from './member-tree.component'
 import { FormsModule } from '@angular/forms'
 
 export default {
-  title: 'Controls/MemberTreeComponent',
+  title: 'Controls/MemberTree',
   component: NgmMemberTreeComponent,
   decorators: [
     moduleMetadata({

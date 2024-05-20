@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, DestroyRef, effect, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -13,7 +13,6 @@ import { injectParams } from 'ngxtension/inject-params'
 import { of } from 'rxjs'
 import { switchMap } from 'rxjs/operators'
 import { StoryCalculationsComponent } from '../calculations.component'
-import { injectCalculationCommand } from '../commands'
 
 @Component({
   standalone: true,
@@ -38,6 +37,7 @@ export class StoryCalculationComponent {
   readonly storyService = inject(NxStoryService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
+  readonly destroyRef = inject(DestroyRef)
   readonly calculationsComponent = inject(StoryCalculationsComponent)
   readonly paramKey = injectParams('key')
 
@@ -56,7 +56,18 @@ export class StoryCalculationComponent {
     )
   )
 
-  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.property)
+  constructor() {
+    effect(
+      () => {
+        this.calculationsComponent.property.set(this.property())
+      },
+      { allowSignalWrites: true }
+    )
+
+    this.destroyRef.onDestroy(() => {
+      this.calculationsComponent.property.set(null)
+    })
+  }
 
   close() {
     this.router.navigate(['../'], { relativeTo: this.route })

@@ -1,10 +1,15 @@
 <div class="ngm-property-array__container flex flex-col justify-start items-stretch"
   cdkDropList
-  (cdkDropListDropped)="drop($event)">
+  (cdkDropListDropped)="drop($event)"
+>
 
-  <button *ngIf="isEmpty" mat-button color="primary" (click)="add()">
-    {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
-  </button>
+  @if (isEmpty) {
+    <button mat-button color="primary" ngmAppearance="dashed" (click)="add()">
+      <mat-icon fontSet="material-icons-round">playlist_add</mat-icon>
+      {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
+    </button>
+  }
+
   @for (item of formArray.controls; track i; let i = $index;) {
     <ngm-property-select class="group" cdkDragBoundary=".ngm-property-array__container" cdkDrag
       [formControl]="$any(item)"
@@ -24,6 +29,9 @@
   }
 </div>
 
-<button *ngIf="!isEmpty" class="add" mat-button color="primary" ngmAppearance="dashed" (click)="add()">
-  {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
-</button>
+@if (!isEmpty) {
+  <button class="add" mat-button color="primary" ngmAppearance="dashed" (click)="add()">
+    <mat-icon fontSet="material-icons-round">playlist_add</mat-icon>
+    {{ 'Ngm.Property.ADD_DIMENSION' | translate: {Default: 'Add Dimension'} }}
+  </button>
+}

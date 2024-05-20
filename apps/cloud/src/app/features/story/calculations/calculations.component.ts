@@ -17,11 +17,11 @@ import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCacheService, filterSearch } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
-import { CalculationProperty, DisplayBehaviour, ParameterProperty, getEntityCalculations } from '@metad/ocap-core'
+import { CalculationProperty, DataSettings, DisplayBehaviour, ParameterProperty, getEntityCalculations } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationCommand } from './commands'
+import { injectCalculationCommand } from './copilot/commands'
 
 @Component({
   standalone: true,
@@ -145,7 +145,13 @@ export class StoryCalculationsComponent {
   )
 
   readonly property = signal<CalculationProperty>(null)
-  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.property)
+
+  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.property, (dataSettings: DataSettings, key: string) => {
+    this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+    this.router.navigate(['./', key], { relativeTo: this.route })
+    setTimeout(() => {
+    }, 1000)
+  })
 
   constructor(
     private storyService: NxStoryService,
@@ -195,7 +201,6 @@ export class StoryCalculationsComponent {
         data: {
           dataSettings: dataSettings,
           entityType: entityType,
-          // coreService: this.coreService,
           name: name
         }
       })
@@ -216,80 +221,34 @@ export class StoryCalculationsComponent {
     })
   }
 
-  async openCreateCalculation() {
+  openCreateCalculation() {
     this.router.navigate(['create'], { relativeTo: this.route })
-    return
-
-    // const dataSettings = {
-    //   dataSource: this.activeLink().dataSource,
-    //   entitySet: this.activeLink().entity
-    // }
-    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    // const data = {
-    //   dataSettings,
-    //   entityType,
-    //   syntax: Syntax.MDX,
-    //   coreService: this.coreService,
-    //   value: null
-    // }
-
-    // const property = await firstValueFrom(
-    //   this._dialog
-    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-    //       viewContainerRef: this._viewContainerRef,
-    //       data
-    //     })
-    //     .afterClosed()
-    // )
-    // if (property) {
-    //   this.storyService.addCalculationMeasure({ dataSettings, calculation: property })
-    // }
   }
 
-  async openEditCalculation(calculationProperty: CalculationProperty) {
+  openEditCalculation(calculationProperty: CalculationProperty) {
     this.router.navigate([calculationProperty.__id__], {
       relativeTo: this.route,
       state: { value: calculationProperty }
     })
-    return
-
-    // const dataSettings = {
-    //   dataSource: this.activeLink().dataSource,
-    //   entitySet: this.activeLink().entity
-    // }
-    // const entityType = await firstValueFrom(this.storyService.selectEntityType(dataSettings))
-    // const property = await firstValueFrom(
-    //   this._dialog
-    //     .open<unknown, unknown, CalculationProperty>(CalculationEditorComponent, {
-    //       viewContainerRef: this._viewContainerRef,
-    //       data: {
-    //         dataSettings: dataSettings,
-    //         entityType: entityType,
-    //         value: calculationProperty,
-    //         syntax: Syntax.MDX,
-    //         coreService: this.coreService
-    //       }
-    //     })
-    //     .afterClosed()
-    // )
-
-    // if (property) {
-    //   this.storyService.updateCalculationMeasure({ dataSettings, calculation: property })
-    // }
   }
 
-  async removeCalculation(calculationProperty: CalculationProperty) {
-    const confirm = await firstValueFrom(
-      this._dialog
-        .open(ConfirmDeleteComponent, { data: { value: calculationProperty.caption || calculationProperty.name } })
-        .afterClosed()
-    )
-    if (confirm) {
-      this.storyService.removeCalculation({
-        dataSettings: { dataSource: this.activeLink().dataSource, entitySet: this.activeLink().entity },
-        name: calculationProperty.name
+  removeCalculation(calculationProperty: CalculationProperty) {
+    this._dialog
+      .open(ConfirmDeleteComponent, {
+        data: {
+          value: calculationProperty.caption || calculationProperty.name,
+          information: ''
+        }
       })
-    }
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (confirm) {
+          this.storyService.removeCalculation({
+            dataSettings: { dataSource: this.activeLink().dataSource, entitySet: this.activeLink().entity },
+            name: calculationProperty.name
+          })
+        }
+      })
   }
 
   close() {

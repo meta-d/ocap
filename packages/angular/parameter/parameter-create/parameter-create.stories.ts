@@ -4,9 +4,10 @@ import { applicationConfig, argsToTemplate, componentWrapperDecorator, moduleMet
 
 import { provideHttpClient } from '@angular/common/http'
 import { provideAnimations } from '@angular/platform-browser/animations'
-import { CUBE_SALES_ORDER_NAME, ENTITY_TYPE_SALES_ORDER, MODEL_KEY, provideOcapMock, provideTranslate } from '@metad/ocap-angular/mock'
+import { CUBE_SALES_ORDER_NAME, MODEL_KEY, provideOcapMock, provideTranslate } from '@metad/ocap-angular/mock'
 import { action } from '@storybook/addon-actions'
 import { NgmParameterCreateComponent } from './parameter-create.component'
+import { ENTITY_TYPE_SALESORDER } from '@metad/ocap-sql'
 
 export const actionsData = {
   onPinTask: action('onPinTask'),
@@ -47,6 +48,6 @@ export const Default: Story = {
       dataSource: MODEL_KEY,
       entitySet: CUBE_SALES_ORDER_NAME
     },
-    entityType: ENTITY_TYPE_SALES_ORDER
+    entityType: ENTITY_TYPE_SALESORDER
   }
 }

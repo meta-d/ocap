@@ -1,4 +1,13 @@
-import { C_MEASURES, Dimension, DisplayBehaviour, IMember, ISlicer, Measure, PrimitiveType, PropertyName } from '../types'
+import {
+  C_MEASURES,
+  Dimension,
+  DisplayBehaviour,
+  IMember,
+  ISlicer,
+  Measure,
+  PrimitiveType,
+  PropertyName
+} from '../types'
 import { isNil } from '../utils/index'
 import { EntityProperty } from './property'
 import { ParameterProperty, Property, PropertyMeasure } from './sdl'
@@ -62,10 +71,11 @@ export interface CalculationProperty extends EntityProperty {
   aggregator?: string
 }
 
-export interface CalculatedProperty extends CalculationProperty, CalculatedMember {
+export interface CalculatedProperty extends CalculationProperty, CalculatedMember {}
 
-}
-
+/**
+ * Restricted measure property ( a sub type calculation property )
+ */
 export interface RestrictedMeasureProperty extends CalculationProperty {
   /**
    * The measure name
@@ -222,7 +232,8 @@ export function indicatorFormatter(name: string) {
 }
 
 export const isCalculatedMember = (toBe): toBe is CalculatedMember =>
-  (!isNil((toBe as CalculatedMember)?.dimension) || !isNil((toBe as CalculatedMember)?.hierarchy)) && !isNil((toBe as CalculatedMember)?.formula)
+  (!isNil((toBe as CalculatedMember)?.dimension) || !isNil((toBe as CalculatedMember)?.hierarchy)) &&
+  !isNil((toBe as CalculatedMember)?.formula)
 
 export function formatCalculatedMemberName(member: CalculatedMember) {
   if (member.dimension === C_MEASURES) {

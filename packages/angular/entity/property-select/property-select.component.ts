@@ -33,6 +33,9 @@ import {
   IntrinsicMemberProperties,
   isEntitySet,
   getEntityHierarchy,
+  isPropertyMeasure,
+  isPropertyDimension,
+  PropertyMeasure,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
@@ -60,7 +63,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { PropertyCapacity } from '../types'
 import { NgmEntityPropertyComponent, propertyIcon } from '../property/property.component'
 import { NgmFormattingComponent } from '../formatting/formatting.component'
-// import { NgmCalculationEditorComponent } from '../calculation-editor/calculation-editor.component'
+
 
 
 @Component({
@@ -435,7 +438,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       }
 
       if (members?.length) {
-        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].caption || members[0].value}`
+        property.caption = `${property.caption}:${exclude?' - ':''}${isString(members[0]) ? members[0] : members[0].caption || members[0].key}`
         if (members.length > 1) {
           property.caption += `(+${members.length - 1})`  
         }
@@ -607,6 +610,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       const property = properties.find((prop) => prop.name === dimension)
       if (property) {
         this.property$.next(property)
+        this.dimensionError.set('')
       } else {
         const entityType = this._entityType()
         this.dimensionError.set(this.getTranslation('Ngm.Property.DimensionNotFound', {
@@ -617,32 +621,31 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       }
     }
   }, { allowSignalWrites: true })
-
-  // private propertySub = combineLatest([
-  //     this.entityProperties$,
-  //     this.dimensionControl.valueChanges
-  //   ]).pipe(
-  //     map(([properties, dimension]) => properties?.find((prop) => prop.name === dimension) as Property),
-  //     takeUntilDestroyed(),
-  //   ).subscribe(this.property$)
     
   /**
    * When dimension changed
    */
-  private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed(this._destroyRef),)
+  private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed())
     .subscribe(([,dimension]) => {
-      const property = getEntityProperty<PropertyDimension>(this.entityType(), dimension)
-      const hierarchyName = property.defaultHierarchy || dimension
-      let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
-      if (!hierarchyProperty) {
-        hierarchyProperty = property.hierarchies[0]
+      const property = getEntityProperty<PropertyDimension | PropertyMeasure>(this.entityType(), dimension)
+      if (isPropertyMeasure(property)) {
+        this.formGroup.setValue({
+          ...this._formValue,
+          dimension,
+        } as any)
+      } else if(isPropertyDimension(property)) {
+        const hierarchyName = property.defaultHierarchy || dimension
+        let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
+        if (!hierarchyProperty) {
+          hierarchyProperty = property.hierarchies[0]
+        }
+        // Reset all fields and set default hierarchy
+        this.formGroup.setValue({
+          ...this._formValue,
+          dimension,
+          hierarchy: hierarchyProperty?.name
+        } as any)
       }
-      // Reset all fields and set default hierarchy
-      this.formGroup.setValue({
-        ...this._formValue,
-        dimension,
-        hierarchy: hierarchyProperty?.name
-      } as any)
     })
   private hierarchySub = this.hierarchyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed(this._destroyRef))
     .subscribe(() => {
@@ -794,7 +797,6 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       dataSettings: this.dataSettings(),
       entityType: this.entityType(),
       syntax: this.syntax(),
-      // coreService: this.coreService(),
       dsCoreService: this.dsCoreService(),
       value: null
     }
@@ -811,20 +813,10 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         this.calculationChange.emit(property)
       }
     })
-
-    // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
-    //   NgmCalculationEditorComponent,
-    //   {
-    //     viewContainerRef: this._viewContainerRef,
-    //     data
-    //   }).afterClosed()
-    // )
-    // 
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
     const data = {
-      // coreService: this.coreService(),
       dsCoreService: this.dsCoreService(),
       dataSettings: this.dataSettings(),
       entityType: this.entityType(),
@@ -837,27 +829,6 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         this.calculationChange.emit(property)
       }
     })
-
-    // const property = await firstValueFrom(this._dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
-    //   NgmCalculationEditorComponent,
-    //   {
-    //     viewContainerRef: this._viewContainerRef,
-    //     data: {
-    //       // coreService: this.coreService(),
-    //       dsCoreService: this.dsCoreService(),
-    //       dataSettings: this.dataSettings(),
-    //       entityType: this.entityType(),
-    //       value: calculationProperty,
-    //       syntax: Syntax.MDX,
-    //     },
-    //   })
-    //   .afterClosed()
-    // )
-    
-    // if (property) {
-    //   this.patchCalculationProperty(property)
-    //   this.calculationChange.emit(property)
-    // }
   }
 
   async openFormatting(event) {

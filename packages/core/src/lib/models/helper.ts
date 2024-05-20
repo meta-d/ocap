@@ -696,7 +696,9 @@ export function wrapHierarchyValue(hierarchy: string, value: string) {
 // Type Guards
 export const isDimensionUsage = (toBe): toBe is DimensionUsage => !isNil((toBe as DimensionUsage)?.source)
 
+export const isPropertyDimension = (toBe: unknown): toBe is PropertyDimension =>
+  (toBe as EntityProperty)?.role === AggregationRole.dimension
 export const isPropertyMeasure = (toBe): toBe is PropertyMeasure =>
-  (toBe as PropertyMeasure)?.role === AggregationRole.measure
+  (toBe as EntityProperty)?.role === AggregationRole.measure
 export const isEntityType = (toBe): toBe is EntityType => !(toBe instanceof Error) && !isNil((toBe as EntityType)?.name)
 export const isEntitySet = (toBe): toBe is EntitySet => !(toBe instanceof Error) && !isNil((toBe as EntitySet)?.name)

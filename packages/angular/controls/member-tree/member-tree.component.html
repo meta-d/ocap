@@ -27,7 +27,7 @@
         (change)="itemSelectionToggle(node, $event)"
       >
         <ngm-display-behaviour [displayBehaviour]="displayBehaviour"
-          [option]="{value: node.key, caption: node.caption}"
+          [option]="{key: node.key, caption: node.caption}"
           [highlight]="searchControl.value"
         ></ngm-display-behaviour>
       </mat-checkbox>

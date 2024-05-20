@@ -898,7 +898,7 @@ export class NxStoryService {
         entityCaption
       }: { dataSettings: DataSettings; calculation: CalculationProperty & { options?: any }; entityCaption?: string }
     ) => {
-      // const schema = (state.story.schema = state.story.schema || { name: null, entitySets: {} })
+
       const properties = getOrInitEntityType(
         state,
         dataSettings.dataSource,

@@ -201,7 +201,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       if (_command.agent) {
         return await this.triggerCommandAgent(prompt, _command, {
           conversationId: assistantMessageId,
-          context: commandWithContext.context
+          context: commandWithContext.context,
+          abortController
         })
       }
 

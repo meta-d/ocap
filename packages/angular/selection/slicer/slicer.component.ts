@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output, computed, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import {
-  DataSettings,
   ISlicer,
   advancedSlicerAsString,
   getEntityProperty,
