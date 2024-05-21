@@ -628,7 +628,13 @@
       "DescriptionPlaceholder": "可选，语义模型的详细描述",
       "UploadModel": "上载模型",
       "SaveAsDefaultCube": "保存为默认数据集",
-      
+      "SyncDimensionMembers": "维度成员同步",
+      "UploadDimensionMembers": "上传维度成员",
+      "CreatedSuccessfully": "创建成功",
+      "DeletedSuccessfully": "删除成功",
+      "DeleteDimensionMembers": "删除维度成员",
+      "SureDeleteDimensionMembers": "确定删除此多维数据集同步的维度成员吗？",
+
       "QUERY": {
         "TITLE": "查询",
         "SaveAsModel": "另存为模型",

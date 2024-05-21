@@ -1,5 +1,5 @@
 import { BusinessAreaRole, IUser } from '@metad/contracts'
-import { Employee, ITryRequest, RequestContext, User } from '@metad/server-core'
+import { ITryRequest, RequestContext, User } from '@metad/server-core'
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -16,7 +16,7 @@ import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
 import { REDIS_CLIENT } from '../core/redis.module'
-import { SemanticModelMemberService } from './member/member.service'
+import { SemanticModelMemberService } from '../model-member/member.service'
 import { NgmDSCoreService, registerModel } from './ocap'
 
 const axios = _axios.default

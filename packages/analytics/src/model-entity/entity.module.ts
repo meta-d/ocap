@@ -6,21 +6,24 @@ import { RouterModule } from 'nest-router'
 import { ModelEntityController } from './entity.controller'
 import { SemanticModelEntity } from './entity.entity'
 import { SemanticModelEntityService } from './entity.service'
+import { SemanticModelMemberModule } from '../model-member'
 
 
 @Module({
 	imports: [
 		RouterModule.forRoutes([
-			{ path: '/semantic-model-entity', module: ModelEntityModule },
+			{ path: '/semantic-model-entity', module: SemanticModelEntityModule },
 		]),
 		forwardRef(() => TypeOrmModule.forFeature([ SemanticModelEntity ])),
 		TenantModule,
 		SharedModule,
 		CqrsModule,
 		UserModule,
+
+		SemanticModelMemberModule
 	],
 	controllers: [ModelEntityController],
 	providers: [SemanticModelEntityService,],
 	exports: [TypeOrmModule, SemanticModelEntityService]
 })
-export class ModelEntityModule {}
+export class SemanticModelEntityModule {}

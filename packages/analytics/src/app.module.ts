@@ -36,7 +36,8 @@ import { StoryWidgetModule } from './story-widget/story-widget.module'
 import { StoryModule } from './story/story.module'
 import { SubscriptionModule } from './subscription/subscription.module'
 import { VisitModule } from './visit/visit.module'
-import { ModelEntityModule } from './model-entity'
+import { SemanticModelEntityModule } from './model-entity'
+import { SemanticModelMemberModule } from './model-member'
 
 @Module({
 	imports: [
@@ -72,7 +73,8 @@ import { ModelEntityModule } from './model-entity'
 		BusinessAreaModule,
 		BusinessAreaUserModule,
 		SemanticModelModule,
-		ModelEntityModule,
+		SemanticModelEntityModule,
+		SemanticModelMemberModule,
 		DataSourceModule,
 		DataSourceTypeModule,
 		StoryPointModule,

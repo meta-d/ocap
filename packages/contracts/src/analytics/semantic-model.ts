@@ -99,31 +99,3 @@ export enum SemanticModelStatusEnum {
    */
   Archived = 'Archived'
 }
-
-export interface ISemanticModelMember extends IBasePerTenantAndOrganizationEntityModel {
-  dimension: string
-
-  hierarchy: string
-
-  level: string
-
-  language: string
-
-  memberUniqueName: string
-
-  modelId?: string
-
-  memberKey?: string
-
-  memberName: string
-
-  memberCaption: string
-
-  memberOrdinal: number
-
-  memberType: number
-
-  levelNumber: number
-
-  parentUniqueName: string
-}

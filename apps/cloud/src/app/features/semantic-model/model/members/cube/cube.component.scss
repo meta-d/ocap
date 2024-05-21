@@ -15,3 +15,7 @@
     @apply flex justify-between items-center;
   }
 }
+
+.mat-mdc-list-item.hierarchy {
+  @apply pl-8;
+}

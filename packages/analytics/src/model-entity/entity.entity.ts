@@ -1,14 +1,15 @@
 import {
 	ISemanticModel,
 	ISemanticModelEntity,
+	ISemanticModelMember,
 	ModelEntityType,
 	SemanticModelEntityOptions
 } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEnum, IsJSON, IsOptional, IsString } from 'class-validator'
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { SemanticModel } from '../core/entities/internal'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from 'typeorm'
+import { SemanticModel, SemanticModelMember } from '../core/entities/internal'
 
 /**
  * 语义模型
@@ -55,4 +56,14 @@ export class SemanticModelEntity extends TenantOrganizationBaseEntity implements
 	@IsString()
 	@Column({ nullable: true })
 	modelId?: string
+
+
+	/**
+	 * Dimension Members
+	 */
+	@OneToMany(() => SemanticModelMember, (m) => m.entity, {
+		nullable: true,
+		cascade: true,
+	})
+	dimensionMembers?: ISemanticModelMember[]
 }

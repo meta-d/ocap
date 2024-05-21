@@ -6,7 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { ModelsService } from '@metad/cloud/state'
 import { TranslateModule } from '@ngx-translate/core'
-import { ToastrService } from 'apps/cloud/src/app/@core'
+import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@core'
 import { catchError, combineLatest, delay, map, of, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelMembersCubeComponent } from './cube/cube.component'
@@ -27,6 +27,7 @@ import { ModelMembersCubeComponent } from './cube/cube.component'
 })
 export class ModelMembersComponent {
   readonly modelService = inject(SemanticModelService)
+  readonly modelEntityService = inject(SemanticModelEntityService)
   readonly modelsService = inject(ModelsService)
   readonly toastrService = inject(ToastrService)
 
@@ -54,19 +55,32 @@ export class ModelMembersComponent {
       delay(1000),
       switchMap((cubes) => {
         this.loading.set(true)
-        return combineLatest(
-          cubes.map((cube) =>
-            this.modelService.selectEntityType(cube.name).pipe(
-              map((entityType) => ({
-                ...cube,
-                entityType
-              })),
-              catchError((err) => {
-                console.error(err)
-                return of(cube)
-              })
+        return combineLatest([
+          this.modelEntityService.getAll(this.modelService.modelSignal().id),
+          combineLatest(
+            cubes.map((cube) =>
+              this.modelService.selectEntityType(cube.name).pipe(
+                map((entityType) => ({
+                  ...cube,
+                  entityType
+                })),
+                catchError((err) => {
+                  console.error(err)
+                  return of(cube)
+                })
+              )
             )
           )
+        ]).pipe(
+          map(([entities, cubes]) => {
+            return cubes.map((cube) => {
+              return {
+                ...cube,
+                id: entities.items.find((entity) => entity.name === cube.name)?.id,
+                options: entities.items.find((entity) => entity.name === cube.name)?.options
+              }
+            })
+          })
         )
       }),
       tap(() => this.loading.set(false))

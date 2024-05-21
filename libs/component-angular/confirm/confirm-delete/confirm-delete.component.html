@@ -1,10 +1,13 @@
 <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
     <h4 style="pointer-events: none;">
-        {{ 'COMPONENTS.CONFIRM.DELETE' | translate: {Default: 'Confirm Delete'} }} {{data?.value}}
+        {{ 'COMPONENTS.CONFIRM.DELETE' | translate: {Default: 'Confirm Delete'} }}
+      @if (data?.value) {
+        [<span class="font-bold">{{data.value}}</span>]
+      }
     </h4>
 </header>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content class="mat-typography min-h-[100px]">
     <div>{{data?.information}}</div>
 </mat-dialog-content>
 

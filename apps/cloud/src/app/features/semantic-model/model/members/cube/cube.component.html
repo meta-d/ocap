@@ -1,13 +1,27 @@
-<mat-expansion-panel class="mat-elevation-z">
+<mat-expansion-panel class="mat-elevation-z" displayDensity="cosy">
     <mat-expansion-panel-header>
-        <mat-panel-title> {{cube().name}} </mat-panel-title>
+        <mat-panel-title> {{cube().caption}} <span class="text-sm italic ml-2">({{cube().name}})</span> </mat-panel-title>
         <mat-panel-description>
-            <button mat-icon-button [disabled]="loading()" (click)="$event.stopPropagation();syncMember()">
-                <mat-icon [matTooltip]="'PAC.KEY_WORDS.SyncMembers' | translate: {Default: 'Sync Members'}">sync</mat-icon>
+          @if (cube().id) {
+            <button mat-icon-button [disabled]="loading()" ngmAppearance="danger"
+              [matTooltip]="'PAC.MODEL.DeleteDimensionMembers' | translate: {Default: 'Delete Dimension Members'}"
+              (click)="$event.stopPropagation();deleteMembers(cube().id)"
+            >
+              <mat-icon class="material-icons-outlined" >delete_outline</mat-icon>
+            </button>
+          }
+            <button mat-icon-button [disabled]="loading()"
+              [matTooltip]="'PAC.MODEL.SyncDimensionMembers' | translate: {Default: 'Sync Dimension Members'}"
+              (click)="$event.stopPropagation();syncMember()"
+            >
+                <mat-icon class="material-icons-outlined" >sync</mat-icon>
             </button>
 
-            <button mat-icon-button [disabled]="loading() || !loaded()" (click)="$event.stopPropagation();uploadMembers(selectedDims())">
-                <mat-icon [matTooltip]="'PAC.KEY_WORDS.Upload' | translate: {Default: 'Upload'}">file_upload</mat-icon>
+            <button mat-icon-button [disabled]="loading() || !loaded()"
+              [matTooltip]="'PAC.MODEL.UploadDimensionMembers' | translate: {Default: 'Upload Dimension Members'}"
+              (click)="$event.stopPropagation();uploadMembers(selectedDims())"
+            >
+                <mat-icon class="material-icons-outlined" >file_upload</mat-icon>
             </button>
 
             <mat-checkbox [checked]="allSelected()"
@@ -21,16 +35,19 @@
       @for (dimension of dimensions(); track dimension.name) {
         <mat-list-option role="listitem" [value]="dimension.name">
           <ngm-entity-property [property]="dimension" />
-
-          <span>({{members()[dimension.name]?.length}}) Members</span>
         </mat-list-option>
 
         @if (selectedDims()?.includes(dimension.name)) {
           @for (hierarchy of dimension.hierarchies; track $index) {
-            <mat-list-option role="listitem" [value]="hierarchy.name">
+            <mat-list-option role="listitem" class="hierarchy" [value]="hierarchy.name">
               <ngm-entity-property [property]="hierarchy" />
     
-              <span>({{members()[hierarchy.name]?.length}}) Members</span>
+              <span>
+                @if (members()[hierarchy.name]) {
+                  ({{members()[hierarchy.name].length}})
+                }
+                {{ 'PAC.MODEL.Members' | translate: { Default: 'Members' } }}
+              </span>
             </mat-list-option>
           }
         }

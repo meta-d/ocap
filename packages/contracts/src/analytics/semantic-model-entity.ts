@@ -3,7 +3,7 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 export type SemanticModelEntityOptions = {
   vector: {
     hierarchies: string[];
-    jobId: string;
+    jobId?: number | string;
   }
 }
 

@@ -1,3 +1,7 @@
+<h2 class="text-lg m-2">
+  {{ 'PAC.MODEL.SyncDimensionMembers' | translate: {Default: 'Sync Dimension Members'} }}
+</h2>
+
 <mat-accordion multi>
   @for (cube of allCubes(); track cube.name) {
     <pac-model-members-cube [cube]="cube" />

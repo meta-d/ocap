@@ -1,18 +1,19 @@
-import { ISemanticModel, ISemanticModelMember } from '@metad/contracts'
+import { ISemanticModel, ISemanticModelEntity, ISemanticModelMember } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNumber, IsString } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
-import { SemanticModel } from '../../core/entities/internal'
+import { SemanticModel, SemanticModelEntity } from '../core/entities/internal'
 
 /**
  * 维度成员表
  */
 @Entity('semantic_model_member')
 export class SemanticModelMember extends TenantOrganizationBaseEntity implements ISemanticModelMember {
+
 	@IsString()
 	@Column({ length: 40 })
-	entity: string
+	cube: string
 
 	@IsString()
 	@Column({ length: 100 })
@@ -33,11 +34,12 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity implements
 	@IsString()
 	@Column({ length: 1000 })
 	memberUniqueName: string
+
 	/**
 	 * Model
 	 */
 	@ApiProperty({ type: () => SemanticModel })
-	@ManyToOne(() => SemanticModel, (d) => d.members, {
+	@ManyToOne(() => SemanticModel, (d) => d.dimensionMembers, {
 		nullable: true,
 		onDelete: 'CASCADE',
 	})
@@ -49,6 +51,23 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity implements
 	@IsString()
 	@Column({ nullable: true })
 	modelId?: string
+
+	/**
+	 * Entity
+	 */
+	@ApiProperty({ type: () => SemanticModelEntity })
+	@ManyToOne(() => SemanticModelEntity, (d) => d.dimensionMembers, {
+		nullable: true,
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn()
+	entity?: ISemanticModelEntity
+	
+	@ApiProperty({ type: () => String })
+	@RelationId((it: SemanticModelMember) => it.entity)
+	@IsString()
+	@Column({ nullable: true })
+	entityId?: string
 
 	@IsString()
 	@Column({ length: 1000 })

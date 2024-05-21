@@ -5,7 +5,6 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { FindManyOptions } from 'typeorm'
-import { NgmDSCoreService } from '../ocap'
 import { SemanticModelMember } from './member.entity'
 import { SemanticModelMemberService } from './member.service'
 
@@ -15,8 +14,8 @@ import { SemanticModelMemberService } from './member.service'
 export class ModelMemberController extends CrudController<SemanticModelMember> {
 	constructor(
 		private readonly memberService: SemanticModelMemberService,
-		private readonly dsCoreService: NgmDSCoreService,
-		private readonly commandBus: CommandBus) {
+		private readonly commandBus: CommandBus
+	) {
 		super(memberService)
 	}
 
@@ -32,12 +31,12 @@ export class ModelMemberController extends CrudController<SemanticModelMember> {
 		})
 	}
 
-	@HttpCode(HttpStatus.CREATED)
-	@Post(':id')
-	async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() body: Record<string, string[]>) {
-		await this.memberService.syncMembers(id, body)
-		return {}
-	}
+	// @HttpCode(HttpStatus.CREATED)
+	// @Post(':id')
+	// async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() body: Record<string, string[]>) {
+	// 	await this.memberService.syncMembers(id, body)
+	// 	return {}
+	// }
 
 	@HttpCode(HttpStatus.OK)
 	@Delete(':id')

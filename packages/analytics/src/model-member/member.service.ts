@@ -3,22 +3,24 @@ import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { ISemanticModel } from '@metad/contracts'
-import { EntityType, compact, getEntityHierarchy, getEntityProperty, isEntityType } from '@metad/ocap-core'
+import { EntityType, getEntityHierarchy, getEntityProperty, isEntityType } from '@metad/ocap-core'
 import { AiProvider, CopilotService, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { InjectQueue } from '@nestjs/bull'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Queue } from 'bull'
 import { RedisClientType } from 'redis'
 import { firstValueFrom } from 'rxjs'
 import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'typeorm'
-import { REDIS_CLIENT } from '../../core'
-import { SemanticModel } from '../model.entity'
-import { NgmDSCoreService, getSemanticModelKey } from '../ocap'
+import { REDIS_CLIENT } from '../core'
+import { SemanticModel } from '../model/model.entity'
+import { NgmDSCoreService, getSemanticModelKey } from '../model/ocap'
 import { SemanticModelMember } from './member.entity'
 
 @Injectable()
 export class SemanticModelMemberService extends TenantOrganizationAwareCrudService<SemanticModelMember> {
+	private readonly logger = new Logger(SemanticModelMemberService.name)
+
 	private readonly vectorStores = new Map<string, PGRedisVectorStore>()
 
 	constructor(
@@ -41,26 +43,37 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		super(modelCacheRepository)
 	}
 
-	async syncMembers(modelId: string, body: Record<string, string[]>) {
+	async syncMembers(modelId: string, body: Record<string, {entityId: string; hierarchies: string[]}>) {
 		const model = await this.modelRepository.findOne(modelId, { relations: ['dataSource', 'dataSource.type', 'roles'] })
 		const modelKey = getSemanticModelKey(model)
 		const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
 
 		for(const cube of Object.keys(body)) {
-			const dimensions = compact(body[cube])
+			const {hierarchies, entityId} = body[cube]
+
+			this.logger.debug(`Sync members for dimensions: ${hierarchies} in cube: ${cube} of model: ${modelId} ...`)
 
 			const entityType = await firstValueFrom(modelDataSource.selectEntityType(cube))
 			if (!isEntityType(entityType)) {
 				throw entityType
 			}
 
+			this.logger.debug(`Got entity type: ${entityType.name}`)
+
 			let members = []
-			for(const hierarchy of dimensions) {
+			for(const hierarchy of hierarchies) {
 				const hierarchyProperty = getEntityHierarchy(entityType, hierarchy)
 				const _members = await firstValueFrom(modelDataSource.selectMembers(cube, {dimension: hierarchyProperty.dimension, hierarchy: hierarchyProperty.name}))
 				
-				members = members.concat(_members.map((item) => ({...item, entity: cube}))) // 
+				members = members.concat(_members.map((item) => ({...item,
+					modelId,
+					entityId,
+					cube
+				})))
 			}
+
+			this.logger.debug(`Got entity members: ${members.length}`)
+
 			if (members.length) {
 				await this.storeMembers(model, members, entityType)
 			}
@@ -68,7 +81,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	}
 
 	async storeMembers(model: SemanticModel, members: DeepPartial<SemanticModelMember[]>, entityType: EntityType) {
-		const vectorStore = await this.getVectorStore(model.id, entityType.name)
+		const vectorStore = await this.getVectorStore(model.id, entityType.name, model.organizationId)
 		if (vectorStore) {
 			await vectorStore.clear()
 			return await vectorStore.storeMembers(members, entityType)
