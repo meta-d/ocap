@@ -10,9 +10,9 @@
 	"dependencies": {
 		"@nestjs/common": "^8.0.0",
 		"@casl/ability": "^5.4.3",
-		"@langchain/community": "^0.0.51",
-    	"@langchain/openai": "^0.0.28",
-		"@langchain/redis": "^0.0.3",
+		"@langchain/community": "^0.2.1",
+    	"@langchain/openai": "^0.0.33",
+		"@langchain/redis": "^0.0.5",
 		"@nestjs/bull": "^10.0.0",
 		"@nestjs/config": "^1.0.2",
 		"@nestjs/core": "^8.0.0",
