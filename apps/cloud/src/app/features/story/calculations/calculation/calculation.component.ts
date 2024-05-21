@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, DestroyRef, effect, inject } from '@angular/core'
+import { Component, DestroyRef, computed, effect, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -39,9 +39,22 @@ export class StoryCalculationComponent {
   readonly route = inject(ActivatedRoute)
   readonly destroyRef = inject(DestroyRef)
   readonly calculationsComponent = inject(StoryCalculationsComponent)
+  readonly cubeName = injectParams('cube')
   readonly paramKey = injectParams('key')
 
-  readonly dataSettings = this.calculationsComponent.dataSettings
+  readonly dataSettings = computed(() => {
+    const entities = this.calculationsComponent.entities$()
+    const cubeName = decodeURIComponent(this.cubeName())
+    const entity = entities.find((e) => e.key === cubeName)
+    if (entity) {
+      return {
+        dataSource: entity.value.dataSource,
+        entitySet: entity.key
+      }
+    }
+
+    return null
+  })
 
   readonly property = derivedFrom(
     [this.paramKey, this.dataSettings],
@@ -64,13 +77,19 @@ export class StoryCalculationComponent {
       { allowSignalWrites: true }
     )
 
+    effect(() => {
+      if (this.dataSettings()) {
+        this.calculationsComponent.activeEntity(this.dataSettings().dataSource, this.dataSettings().entitySet)
+      }
+    }, { allowSignalWrites: true })
+
     this.destroyRef.onDestroy(() => {
       this.calculationsComponent.property.set(null)
     })
   }
 
   close() {
-    this.router.navigate(['../'], { relativeTo: this.route })
+    this.router.navigate(['../../'], { relativeTo: this.route })
   }
 
   onApply(event: CalculationProperty) {

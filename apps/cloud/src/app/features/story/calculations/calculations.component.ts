@@ -77,7 +77,7 @@ export class StoryCalculationsComponent {
   )
   private schemas$ = toSignal(this.storyService.schemas$, { initialValue: null })
 
-  public entities$ = computed(() => {
+  public entities$ = computed<ISelectOption<{ dataSource: string; }>[]>(() => {
     const schemas = this.schemas$()
     if (schemas) {
       const entities = []
@@ -146,11 +146,9 @@ export class StoryCalculationsComponent {
 
   readonly property = signal<CalculationProperty>(null)
 
-  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.property, (dataSettings: DataSettings, key: string) => {
+  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.dataSettings, this.property, (dataSettings: DataSettings, key: string) => {
     this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
-    this.router.navigate(['./', key], { relativeTo: this.route })
-    setTimeout(() => {
-    }, 1000)
+    this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
   })
 
   constructor(
@@ -226,7 +224,8 @@ export class StoryCalculationsComponent {
   }
 
   openEditCalculation(calculationProperty: CalculationProperty) {
-    this.router.navigate([calculationProperty.__id__], {
+    const cubeName = this.dataSettings().entitySet
+    this.router.navigate([encodeURIComponent(cubeName), calculationProperty.__id__], {
       relativeTo: this.route,
       state: { value: calculationProperty }
     })

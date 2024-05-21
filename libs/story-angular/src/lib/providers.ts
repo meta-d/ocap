@@ -3,7 +3,7 @@ import { NxStoryService } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 
 export function provideStory() {
-  return [NgmDSCoreService, NxStoryService]
+  return [NgmDSCoreService, NgmOcapCoreService, NxStoryService]
 }
 
 export function provideStoryDesigner() {

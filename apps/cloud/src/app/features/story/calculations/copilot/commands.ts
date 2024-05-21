@@ -23,6 +23,7 @@ import { CalculationExamples, CalculationSchema, RestrictedMeasureSchema } from 
 
 export function injectCalculationCommand(
   storyService: NxStoryService,
+  dataSettings: Signal<DataSettings>,
   property: Signal<CalculationProperty | null>,
   callback: (dataSettings: DataSettings, key: string) => void
 ) {
@@ -113,7 +114,13 @@ export function injectCalculationCommand(
         defaultDataSource.set(cubeParams[0].item.value.dataSource.key)
         defaultEntity.set(cubeParams[0].item.key)
       } else {
-        if (!defaultModel() || !defaultEntity()) {
+        if (property() && dataSettings()) {
+          defaultDataSource.set(dataSettings().dataSource)
+          defaultEntity.set(dataSettings().entitySet)
+          entityType = await firstValueFrom(storyService.selectEntityType(dataSettings()))
+        }
+
+        if (!defaultEntity() || !defaultEntity()) {
           const result = await storyService.openDefultDataSettings()
 
           if (result?.dataSource && result?.entities[0]) {

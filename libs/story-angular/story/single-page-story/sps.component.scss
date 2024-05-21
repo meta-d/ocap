@@ -1,5 +1,5 @@
 :host {
   background-color: var(--ngm-color-surface);
   display: flex;
-  @apply overflow-hidden hover:overflow-auto;
+  @apply overflow-auto;
 }
