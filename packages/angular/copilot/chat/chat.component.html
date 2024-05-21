@@ -260,12 +260,13 @@
                 class="top-0 left-0 w-full"
                 style="position: absolute; height: 2px;"
                 />
+            <mat-option [value]="null"></mat-option>
           } @else if (filteredContextItems()) {
             <cdk-virtual-scroll-viewport class="nx-formly__virtual-scroll-viewport" minBufferPx="200" maxBufferPx="400"
                 [style.height.px]="240" [itemSize]="30"
             >
               <mat-option *cdkVirtualFor="let item of filteredContextItems(); trackBy: trackByKey"
-                [value]="beforeLastWord() + ' @' + item.uKey">
+                [value]="beforeLastWord() + ' @' + item.uKey + ' '">
                 <ngm-display-behaviour class="flex-1" [option]="item" [displayBehaviour]="DisplayBehaviour.descriptionAndId" [highlight]="contextSearchWords()" />
               </mat-option>
             </cdk-virtual-scroll-viewport>

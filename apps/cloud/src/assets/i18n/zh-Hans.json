@@ -184,7 +184,8 @@
       "DataAgent": "数据代理",
       "ServerAgent": "服务器代理",
       "Admin": "管理",
-      "Members": "成员"
+      "Members": "成员",
+      "SettingsNavigation": "设置导航栏"
     },
     "MENU": {
       "Certification": "认证",
