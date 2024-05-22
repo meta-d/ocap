@@ -408,7 +408,7 @@ export class NgmCopilotChatComponent {
     if (text) {
       return (
         this.commands()?.filter(
-          (item) => item.prompt.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)
+          (item) => item.example?.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)
         ) ?? []
       )
     }

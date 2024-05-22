@@ -17,7 +17,7 @@ import {
 } from '@metad/contracts'
 import { pick } from '@metad/server-common'
 import { ConfigService, getConnectionOptions } from '@metad/server-config'
-import { Organization, OrganizationDemoCommand, RequestContext } from '@metad/server-core'
+import { Organization, OrganizationDemoCommand, REDIS_CLIENT, RequestContext } from '@metad/server-core'
 import { Inject, Logger } from '@nestjs/common'
 import { ConfigService as NestConfigService } from '@nestjs/config'
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs'
@@ -43,7 +43,6 @@ import {
 	StoryWidget
 } from '../../entities/internal'
 import { readYamlFile } from '../../helper'
-import { REDIS_CLIENT } from '../../redis.module'
 
 type OrganizationDemoOptionsType = {
 	source: OrganizationDemoNetworkEnum

@@ -17,6 +17,7 @@ import {
 import { ConfigService } from '@metad/server-config'
 import {
 	Organization,
+	REDIS_CLIENT,
 	RequestContext,
 	SeedDataService as SeedServerDataService,
 	Tenant,
@@ -44,7 +45,6 @@ import {
 	StoryWidget
 } from '../entities/internal'
 import { readYamlFile } from '../helper'
-import { REDIS_CLIENT } from '../redis.module'
 
 @Injectable()
 export class SeedDataService extends SeedServerDataService {

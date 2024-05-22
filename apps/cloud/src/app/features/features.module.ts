@@ -19,7 +19,7 @@ import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core
 import { MarkdownModule } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
-import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent } from '../@core/index'
+import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent, provideLogger } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import { MaterialModule, SharedModule } from '../@shared/index'
 import { NotificationComponent, TuneComponent } from '../@theme'
@@ -62,6 +62,7 @@ registerEChartsThemes()
     DirtyCheckGuard,
     NgmAgentService,
     NgmDSCacheService,
+    provideLogger(),
     provideFormly(),
     {
       provide: NGM_WASM_AGENT_WORKER,

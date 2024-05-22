@@ -50,20 +50,28 @@ export const RestrictedMeasureBikes = {
   // ]
 }
 
-export const CalculationExamples = `The cube info is:
-
-${markdownEntityType(ENTITY_TYPE_SALESORDER)}
-
-qustion: 'Sales amount of product category bikes'
-think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
+export const CalculationExamples = [
+  {
+    input: 'Sales amount of product category bikes',
+    ai: `think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
 ai: create a restricted measure with params ${JSON.stringify(RestrictedMeasureBikes).replace(/\{/g, '{{').replace(/\}/g, '}}')} named 'Sales of Bikes'
-
-
-qustion: 'Sales amount YoY of product category bikes'
-think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
+`
+  },
+  {
+    input: `YoY of Sales amount of the product category 'bikes'`,
+    ai: `think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
 ai: create a formula like 'IIF(
   NOT [Date].[Year].CurrentMember.PrevMember IS NULL,
   ([Measures].[Sales] - ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales])) 
     / ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales]),
   NULL
 )' named 'Sales YoY of Bikes'`
+  }
+]
+
+export const CalcExamples = `The cube info is:
+
+${markdownEntityType(ENTITY_TYPE_SALESORDER)}
+
+${CalculationExamples.map(({ input, ai }) => `qustion: '${input}\n${ai}`).join('\n\n')}
+`

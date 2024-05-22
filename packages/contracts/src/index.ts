@@ -1,3 +1,4 @@
+export * from './ai.model'
 export * from './types'
 export * from './contact.model'
 export * from './core.model'
@@ -44,6 +45,7 @@ export * from './user.model'
 
 export * from './analytics/index'
 export * from './copilot.model'
+export * from './copilot-example.model'
 export * from './custom-smtp.model'
 export * from './date-picker.model'
 export * from './integration.model'

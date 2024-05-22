@@ -39,6 +39,8 @@ import { LanguageModule } from './language/language.module'
 import { CopilotModule } from './copilot'
 import { StorageFileModule } from './storage-file/storage-file.module'
 import { AIModule } from './ai/ai.module'
+import { CopilotExampleModule } from './copilot-example'
+import { RedisModule } from './core/redis.module'
 
 @Module({
   imports: [
@@ -67,6 +69,7 @@ import { AIModule } from './ai/ai.module'
       },
       resolvers: [new HeaderResolver(['language'])],
     }),
+    RedisModule,
     CoreModule,
     AuthModule,
     UserModule,
@@ -91,6 +94,7 @@ import { AIModule } from './ai/ai.module'
     CustomSmtpModule,
     LanguageModule,
     CopilotModule,
+    CopilotExampleModule,
     StorageFileModule,
     AIModule
   ],

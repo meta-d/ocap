@@ -1,5 +1,5 @@
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
-import { ChatPromptTemplate } from "@langchain/core/prompts"
+import { ChatPromptTemplate, BaseStringPromptTemplate } from "@langchain/core/prompts"
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
 
@@ -54,8 +54,12 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   /**
    * Prompt template for Agent executor
    */
-  prompt?: any
-
+  prompt?: ChatPromptTemplate
+  /**
+   * The few shot prompt template to add examples for user input
+   */
+  fewShotPrompt?: BaseStringPromptTemplate
+  
   agent?: {
     type: CopilotAgentType
   }

@@ -35,4 +35,9 @@ export interface ISemanticModelMember extends IBasePerTenantAndOrganizationEntit
   levelNumber: number
 
   parentUniqueName: string
+
+  // Vector
+  content?: string
+
+  vector?: number[]
 }

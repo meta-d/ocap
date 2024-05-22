@@ -375,6 +375,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
         throw new Error('LLM is not available')
       }
 
+      // For few shot
+      if (command.fewShotPrompt) {
+        this.#logger?.debug(`[Command] [${command.name}] user input: ${content}`)
+        // console.log(`[Command] [${command.name}] user input: ${content}`)
+        content = await command.fewShotPrompt.format({ input: content })
+        this.#logger?.debug(`[Command] [${command.name}] few shot input: ${content}`)
+        // console.log(`[Command] [${command.name}] few shot input: ${content}`)
+      }
+
       let verboseContent = ''
       const result = await agentExecutor.invoke(
         { input: content, system_prompt: systemPrompt, context: contextContent },

@@ -1,8 +1,9 @@
+import { AiProvider } from "./ai.model"
 import { IBasePerTenantAndOrganizationEntityModel } from "./base-entity.model"
 
 export interface ICopilot extends IBasePerTenantAndOrganizationEntityModel {
   enabled?: boolean
-  provider?: string
+  provider?: AiProvider
   apiKey?: string
   apiHost?: string
   defaultModel?: string

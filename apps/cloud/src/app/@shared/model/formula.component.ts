@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, Inject, Input, inject } from '@angu
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { CalculatedMeasureComponent } from '@metad/components/property'
 import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
@@ -13,6 +12,9 @@ import { Store } from '../../@core'
 import { MaterialModule } from '../material.module'
 import { NGXLogger } from 'ngx-logger'
 
+/**
+ * @deprecated 应该没有在用了
+ */
 @Component({
   standalone: true,
   imports: [
@@ -22,7 +24,6 @@ import { NGXLogger } from 'ngx-logger'
     TranslateModule,
     MaterialModule,
     NgmFormulaModule,
-    CalculatedMeasureComponent,
     ButtonGroupDirective,
     NgmCopilotChatComponent
   ],
@@ -76,7 +77,7 @@ export class ModelFormulaComponent {
   #formatFormula = injectCopilotCommand({
     name: 'format',
     description: '',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `Format the MDX formula:
 \`\`\`
 ${this.formula}

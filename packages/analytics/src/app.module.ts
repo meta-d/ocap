@@ -1,4 +1,4 @@
-import { EmployeeModule, OrganizationModule, TenantModule } from '@metad/server-core'
+import { EmployeeModule, OrganizationModule, RedisModule, TenantModule } from '@metad/server-core'
 import { BullModule } from '@nestjs/bull'
 import { Module, forwardRef } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
@@ -14,7 +14,6 @@ import { CertificationModule } from './certification'
 import { CollectionModule } from './collection/index'
 import { CommentModule } from './comment'
 import { CommandHandlers, EventHandlers } from './core/events/handlers'
-import { RedisModule } from './core/redis.module'
 import { DataSourceTypeModule } from './data-source-type/data-source-type.module'
 import { DataSourceModule } from './data-source/data-source.module'
 import { FavoriteModule } from './favorite/favorite.module'
@@ -62,7 +61,6 @@ import { SemanticModelMemberModule } from './model-member'
 		  }),
 		ScheduleModule.forRoot(),
 		CqrsModule,
-		RedisModule,
 		forwardRef(() => TenantModule),
 		forwardRef(() => EmployeeModule),
 		forwardRef(() => OrganizationModule),
@@ -95,7 +93,8 @@ import { SemanticModelMemberModule } from './model-member'
 		PermissionApprovalUserModule,
 		CommentModule,
 		ScreenshotModule,
-		CertificationModule
+		CertificationModule,
+		RedisModule
 	],
 	controllers: [AppController],
 	providers: [AnalyticsService, ...EventHandlers, ...CommandHandlers]

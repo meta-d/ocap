@@ -1,10 +1,9 @@
-import { TenantOrganizationAwareCrudService } from '@metad/server-core'
+import { REDIS_CLIENT, TenantOrganizationAwareCrudService } from '@metad/server-core'
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RedisClientType } from 'redis'
 import { Repository } from 'typeorm'
-import { REDIS_CLIENT } from '../core/redis.module'
 import { createNotificationDestination } from './base-destination'
 import { NotificationDestination } from './notification-destination.entity'
 
