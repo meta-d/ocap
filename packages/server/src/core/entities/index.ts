@@ -27,6 +27,7 @@ import {
 	Language,
 	Copilot,
 	CopilotExample,
+	CopilotRole,
 	StorageFile,
 	SecretToken,
 } from './internal';
@@ -60,6 +61,7 @@ export const coreEntities = [
 	CustomSmtp,
 	Copilot,
 	CopilotExample,
+	CopilotRole,
 	StorageFile,
 	SecretToken
 ];

@@ -38,7 +38,11 @@ export default [
             loadComponent: () => import('./example/example.component').then((m) => m.CopilotExampleComponent)
           }
         ]
-      }
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./roles/roles.component').then((m) => m.CopilotRolesComponent)
+      },
     ]
   }
 ] as Routes

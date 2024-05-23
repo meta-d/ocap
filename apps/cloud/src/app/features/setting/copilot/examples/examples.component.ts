@@ -1,13 +1,14 @@
-import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core'
+import { Component, TemplateRef, inject, model, signal, viewChild } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { NgmCommonModule, TableColumn } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, switchMap } from 'rxjs'
-import { AiBusinessRole, CopilotExampleService, ToastrService } from '../../../../@core'
+import { BehaviorSubject, map, pipe, switchMap } from 'rxjs'
+import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ToastrService } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
+import { derivedFrom } from 'ngxtension/derived-from'
 
 @Component({
   standalone: true,
@@ -21,6 +22,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
 
   readonly exampleService = inject(CopilotExampleService)
+  readonly roleService = inject(CopilotRoleService)
   readonly _toastrService = inject(ToastrService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
@@ -56,25 +58,31 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     },
   ])
 
+  readonly roleFilter = model<AiBusinessRole | string>(null)
+  readonly commandFilter = model<string>(null)
   readonly refresh$ = new BehaviorSubject<void>(null)
-  readonly items = toSignal(this.refresh$.pipe(
-    switchMap(() => this.exampleService.getAll())
-  ))
+  readonly items = derivedFrom([this.refresh$, this.roleFilter, this.commandFilter], pipe(
+    switchMap(([, role, command]) => this.exampleService.getAll({
+      filter: {
+        role,
+        command
+      }
+    }))
+  ), {initialValue: []})
 
-  readonly roles = signal([
-    {
-      key: null,
-      caption: 'Default'
-    },
-    {
-      key: AiBusinessRole.FinanceBP,
-      caption: 'Finance Business Partner'
-    },
-    {
-      key: AiBusinessRole.SupplyChainExpert,
-      caption: 'Supply Chain Expert'
-    }
-  ])
+  readonly roles = toSignal(this.roleService.getAll().pipe(
+    map((roles) => [
+      {
+        key: null,
+        caption: 'Default'
+      },
+      ...roles.map((role) => ({
+        value: role,
+        key: role.name,
+        caption: role.title
+      }))
+    ])
+  ))
 
   readonly commands = signal([
     {

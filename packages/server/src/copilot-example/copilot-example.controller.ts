@@ -1,9 +1,11 @@
-import { Body, Controller, Logger, Post, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { CrudController, TransformInterceptor } from '../core'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { CrudController, PaginationParams, TransformInterceptor } from '../core'
 import { CopilotExample } from './copilot-example.entity'
 import { CopilotExampleService } from './copilot-example.service'
+import { ParseJsonPipe, UseValidationPipe } from '../shared/pipes'
+import { IPagination } from '@metad/contracts'
 
 @ApiTags('CopilotExample')
 @ApiBearerAuth()
@@ -13,6 +15,30 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
     readonly #logger = new Logger(CopilotExampleController.name)
     constructor(private readonly service: CopilotExampleService, private readonly commandBus: CommandBus) {
         super(service)
+    }
+
+    /**
+     * GET copilot examples
+     *
+     * @param params
+     * @returns
+     */
+    @ApiOperation({
+      summary: 'Find all copilot examples.'
+    })
+    @ApiResponse({
+      status: HttpStatus.OK,
+      description: 'Found copilot examples',
+      type: CopilotExample
+    })
+    @ApiResponse({
+      status: HttpStatus.NOT_FOUND,
+      description: 'Record not found'
+    })
+    @Get()
+    @UseValidationPipe()
+    async getAll(@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where']): Promise<IPagination<CopilotExample>> {
+      return await this.service.findAll({where});
     }
 
     @Post('similarity-search')

@@ -42,3 +42,10 @@ export async function tryHttp<T>(request: Observable<T>, toastrService?: ToastrS
     toastrService?.error(getErrorMessage(err))
   }
 }
+
+export function omitSystemProperty<T>(obj: T) {
+  return Object.keys(obj).filter((key) => !(key.startsWith('__') && key.endsWith('__'))).reduce((acc, key) => {
+    acc[key] = obj[key]
+    return acc
+  }, {} as T)
+}

@@ -42,6 +42,7 @@ import { AIModule } from './ai/ai.module'
 import { CopilotExampleModule } from './copilot-example'
 import { RedisModule } from './core/redis.module'
 import { CqrsModule } from '@nestjs/cqrs'
+import { CopilotRoleModule } from './copilot-role/copilot-role.module'
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { CqrsModule } from '@nestjs/cqrs'
     LanguageModule,
     CopilotModule,
     CopilotExampleModule,
+    CopilotRoleModule,
     StorageFileModule,
     AIModule
   ],

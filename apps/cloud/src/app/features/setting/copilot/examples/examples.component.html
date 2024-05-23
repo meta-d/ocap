@@ -1,10 +1,12 @@
 <div class="filter-bar m-2 flex items-center gap-4">
     <ngm-select class="filter-bar__item" [label]="'Business Role'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="roles()"
+        [(ngModel)]="roleFilter"
     />
 
     <ngm-select class="filter-bar__item" [label]="'Command'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="commands()"
+        [(ngModel)]="commandFilter"
     />
 
     <span class="flex-1"></span>
