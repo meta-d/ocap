@@ -8,6 +8,8 @@ export interface ICopilotExample extends IBasePerTenantEntityModel {
   provider?: AiProvider
   role?: AiBusinessRole | string
   command?: string
+  input?: string
+  output?: string
   /**
    * Meta data for the copilot example
    */

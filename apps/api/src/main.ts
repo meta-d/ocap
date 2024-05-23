@@ -2,7 +2,7 @@ import { Logger, LogLevel } from '@nestjs/common'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AnalyticsModule, AnalyticsService, prepare, seedModule } from '@metad/analytics'
-import { AuthGuard, seedDefault } from '@metad/server-core'
+import { AuthGuard, seedDefault, ServerAppModule, AppService } from '@metad/server-core'
 import { json, urlencoded, text } from 'express'
 import yargs from 'yargs'
 import { AppModule } from './app/app.module'
@@ -42,11 +42,15 @@ async function bootstrap() {
   app.setGlobalPrefix(globalPrefix)
 
   // Seed default values
-  const service = app.select(AnalyticsModule).get(AnalyticsService)
-  await service.seedDBIfEmpty()
+  setTimeout(async () => {
+    const serverService = app.select(ServerAppModule).get(AppService)
+    await serverService.seedDBIfEmpty()
+    const analyticsService = app.select(AnalyticsModule).get(AnalyticsService)
+    await analyticsService.seedDBIfEmpty()
 
-  // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
-  // subscriptionService.setupJobs()
+    // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
+    // subscriptionService.setupJobs()
+  }, 2000);
 
   // Setup Swagger Module
   const options = new DocumentBuilder().setTitle('Metad Cloud API').setVersion('1.0').addBearerAuth().build()

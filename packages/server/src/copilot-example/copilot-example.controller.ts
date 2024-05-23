@@ -7,7 +7,7 @@ import { CopilotExampleService } from './copilot-example.service'
 
 @ApiTags('CopilotExample')
 @ApiBearerAuth()
-// @UseInterceptors(TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 @Controller()
 export class CopilotExampleController extends CrudController<CopilotExample> {
     readonly #logger = new Logger(CopilotExampleController.name)
@@ -53,16 +53,6 @@ export const RestrictedMeasureBikes = {
       }
     ],
     enableConstantSelection: true
-    // slicers: [
-    //   {
-    //     dimension: { dimension: '[Product]' },
-    //     members: [
-    //       {
-    //         key: '[Product].[Bikes]'
-    //       }
-    //     ]
-    //   }
-    // ]
   }
   
   export const CalculationExamples = [

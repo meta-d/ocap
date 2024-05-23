@@ -1,0 +1,41 @@
+<div class="flex-1 overflow-auto">
+    <form class="flex flex-wrap gap-4 p-4" [formGroup]="formGroup">
+        <ngm-select class="flex-1" [label]="'Business Role'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+            formControlName="role"
+            [selectOptions]="roles()"
+        />
+    
+        <ngm-select class="flex-1" [label]="'Command'" valueKey="key"
+            formControlName="command"
+            [selectOptions]="commands()"
+        />
+    
+        <div class="flex-1 min-w-full flex flex-col">
+            <label class="ngm-input-label shrink-0">Input</label>
+            <textarea class="ngm-input-element" matInput formControlName="input"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="1"
+                cdkAutosizeMaxRows="5">
+            </textarea>
+        </div>
+
+        <div class="flex-1 min-w-full flex flex-col">
+            <label class="ngm-input-label shrink-0">Output</label>
+            <textarea class="ngm-input-element" matInput formControlName="output"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="2"
+                cdkAutosizeMaxRows="8"
+            ></textarea>
+        </div>
+    </form>
+</div>
+
+<div class="flex justify-between items-center p-4">
+    <div></div>
+    <div ngmButtonGroup>
+        <button mat-button (click)="close()">Cancel</button>
+        <button mat-raised-button color="primary" [disabled]="formGroup.invalid || formGroup.pristine"
+            (click)="upsert()"
+        >Save</button>
+    </div>
+</div>

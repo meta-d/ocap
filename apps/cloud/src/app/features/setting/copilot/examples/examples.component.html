@@ -1,0 +1,35 @@
+<div class="filter-bar m-2 flex items-center gap-4">
+    <ngm-select class="filter-bar__item" [label]="'Business Role'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+        [selectOptions]="roles()"
+    />
+
+    <ngm-select class="filter-bar__item" [label]="'Command'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+        [selectOptions]="commands()"
+    />
+
+    <span class="flex-1"></span>
+
+    <button mat-icon-button [matTooltip]="'Add new example'"
+        (click)="addExample()">
+        <mat-icon>add</mat-icon>
+    </button>
+</div>
+
+<ngm-table class="flex-1" [columns]="columns()" [data]="items()" displayDensity="cosy" />
+
+<ng-template #actionTemplate let-id="id">
+    <div class="flex items-center">
+        <button mat-icon-button [matTooltip]="'Edit example'"
+            (click)="editExample(id)"
+        >
+            <mat-icon fontSet="material-icons-round">edit</mat-icon>
+        </button>
+        <button mat-icon-button ngmAppearance="danger" [matTooltip]="'Delete example'"
+            (click)="deleteExample(id)"
+        >
+            <mat-icon fontSet="material-icons-round">delete</mat-icon>
+        </button>
+    </div>
+</ng-template>
+
+<router-outlet #o="outlet"></router-outlet>

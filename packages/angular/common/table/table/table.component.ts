@@ -11,6 +11,7 @@ import {
   effect,
   inject,
   input,
+  isSignal,
   output,
   runInInjectionContext,
   signal,
@@ -124,6 +125,8 @@ export class MyCustomPaginatorIntl implements MatPaginatorIntl {
 })
 export class NgmTableComponent {
   readonly #injector = inject(Injector)
+
+  isSignal = isSignal
 
   /**
   |--------------------------------------------------------------------------

@@ -41,6 +41,7 @@ import { StorageFileModule } from './storage-file/storage-file.module'
 import { AIModule } from './ai/ai.module'
 import { CopilotExampleModule } from './copilot-example'
 import { RedisModule } from './core/redis.module'
+import { CqrsModule } from '@nestjs/cqrs'
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { RedisModule } from './core/redis.module'
       },
       resolvers: [new HeaderResolver(['language'])],
     }),
+    CqrsModule,
     RedisModule,
     CoreModule,
     AuthModule,

@@ -271,10 +271,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   constructor() {
     super()
-
-    effect(() => {
-      console.log(this.dataSettings())
-    })
   }
 
   isDirty(): boolean {

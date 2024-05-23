@@ -47,7 +47,9 @@
             </div>
           </th>
           <td mat-cell *matCellDef="let data" >
-            @if (column.cellTemplate) {
+            @if (isSignal(column.cellTemplate)) {
+              <ng-container *ngTemplateOutlet="column.cellTemplate(); context: _context(data, column)"></ng-container>
+            } @else if(column.cellTemplate) {
               <ng-container *ngTemplateOutlet="column.cellTemplate; context: _context(data, column)"></ng-container>
             } @else {
               {{ column.pipe ? column.pipe(getValue(data, column.name)) : getValue(data, column.name) }}

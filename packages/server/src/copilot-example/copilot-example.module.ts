@@ -7,7 +7,7 @@ import { UserModule } from '../user'
 import { CopilotExample } from './copilot-example.entity'
 import { CopilotExampleService } from './copilot-example.service'
 import { CopilotExampleController } from './copilot-example.controller'
-import { RedisModule } from '../core'
+import { RedisModule } from '../core/redis.module'
 import { CopilotModule } from '../copilot/copilot.module'
 import { CommandHandlers } from './commands/handlers'
 

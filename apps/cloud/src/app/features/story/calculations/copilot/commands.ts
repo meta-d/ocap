@@ -23,19 +23,8 @@ import { CalculationSchema, RestrictedMeasureSchema } from './schema'
 import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot';
 import { CopilotExampleService } from 'apps/cloud/src/app/@core/services';
 
-// const OPENAI_API_KEY = 'sk-OTG2FFMOCbc6c9eeb566T3BLBkFJ0097282389434e229Dac'
-// const OPENAI_BASE_URL = 'https://aigptx.top/v1/'
-
-// const examplePrompt = ChatPromptTemplate.fromMessages([
-//   ["human", "{question}"],
-//   ["ai", "{answer}"],
-// ]);
-
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
 Answer: {ai}`)
-// const examplePrompt = ChatPromptTemplate.fromTemplate(`Question: {question}
-// Answer: {answer}`);
-
 
 export function injectCalculationCommand(
   storyService: NxStoryService,
@@ -117,24 +106,6 @@ export function injectCalculationCommand(
   const memberRetrieverTool = createDimensionMemberRetrieverTool(memberRetriever, defaultModel, defaultEntity)
   const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool]
   return injectCopilotCommand('calculation', (async () => {
-
-    // const exampleSelector = await SemanticSimilarityExampleSelector.fromExamples(
-    //   // This is the list of examples available to select from.
-    //   CalculationExamples,
-    //   // This is the embedding class used to produce embeddings which are used to measure semantic similarity.
-    //   new OpenAIEmbeddings({
-    //     apiKey: OPENAI_API_KEY,
-    //     configuration: {
-    //       baseURL: OPENAI_BASE_URL
-    //     }
-    //   }),
-    //   // This is the VectorStore class that is used to store the embeddings and do a similarity search over.
-    //   MemoryVectorStore,
-    //   {
-        
-    //   }
-    // );
-
     return {
       alias: 'cc',
       description: 'Describe the widget you want',

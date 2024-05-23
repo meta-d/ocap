@@ -10,7 +10,7 @@ import { CopilotService } from './copilot.service'
 
 @ApiTags('Copilot')
 @ApiBearerAuth()
-// @UseInterceptors(TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 @Controller()
 export class CopilotController extends CrudController<Copilot> {
 	constructor(private readonly service: CopilotService, private readonly commandBus: CommandBus) {

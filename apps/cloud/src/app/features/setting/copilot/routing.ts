@@ -15,6 +15,30 @@ export default [
         redirectTo: '/settings'
       }
     },
-    children: []
+    children: [
+      {
+        path: '',
+        redirectTo: 'basic',
+        pathMatch: 'full'
+      },
+      {
+        path: 'basic',
+        loadComponent: () => import('./basic/basic.component').then((m) => m.CopilotBasicComponent)
+      },
+      {
+        path: 'examples',
+        loadComponent: () => import('./examples/examples.component').then((m) => m.CopilotExamplesComponent),
+        children: [
+          {
+            path: 'create',
+            loadComponent: () => import('./example/example.component').then((m) => m.CopilotExampleComponent)
+          },
+          {
+            path: ':id',
+            loadComponent: () => import('./example/example.component').then((m) => m.CopilotExampleComponent)
+          }
+        ]
+      }
+    ]
   }
 ] as Routes
