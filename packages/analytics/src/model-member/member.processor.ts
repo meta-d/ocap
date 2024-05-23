@@ -13,7 +13,7 @@ export class MemberProcessor {
   @Process('seedVectorStore')
   async handleSeedVectorStore(job: Job<{ modelId: string; organizationId: string }>) {
     const { modelId, organizationId } = job.data
-    this.logger.debug(`Start seed vector store for model '${modelId}' ...`);
+    this.logger.debug(`[Job '${job.id}'] Start seed vector store for model '${modelId}' ...`);
 
     const { items: members } = await this.memberService.findAll({ where: { modelId } })
     const cubes = groupBy(members, 'entity')

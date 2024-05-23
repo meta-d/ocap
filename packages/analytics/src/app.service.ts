@@ -2,8 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as chalk from 'chalk';
 import { DataSourceTypeService } from './data-source-type/data-source-type.service';
 import { SemanticModelService } from './model/model.service';
-import { CommandBus } from '@nestjs/cqrs';
-import { CopilotExampleService, CopilotExampleVectorSeedCommand } from '@metad/server-core';
 
 @Injectable()
 export class AnalyticsService {
@@ -20,9 +18,6 @@ export class AnalyticsService {
 		// await this.dsTypeService.seed()
 		// }
 		await this.modelService.seedIfEmpty()
-
-		// await this.commandBus.execute(new CopilotExampleVectorSeedCommand({}))
-		// await this.exampleService.seedRedisIfEmpty()
 	}
 
 	constructor(
@@ -33,9 +28,6 @@ export class AnalyticsService {
 
 		@Inject(forwardRef(() => SemanticModelService))
 		private readonly modelService: SemanticModelService,
-
-		// @Inject(forwardRef(() => CopilotExampleService))
-		// private readonly exampleService: CopilotExampleService
 	) {}
 
 	getHello(): string {

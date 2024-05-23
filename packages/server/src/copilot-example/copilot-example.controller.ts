@@ -32,11 +32,9 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
     ) {
         this.#logger.debug(`[CopilotExampleController] Retrieving documents for mmr query: ${query} with k = ${options?.k} and filter = ${options?.filter}`)
 
-        return CalculationExamples.map((item) => ({
-          pageContent: item.input + '\n' + item.ai,
-          metadata: item
-        }))
+        return this.service.maxMarginalRelevanceSearch(query, options)
     }
+
 }
 
 export const RestrictedMeasureBikes = {

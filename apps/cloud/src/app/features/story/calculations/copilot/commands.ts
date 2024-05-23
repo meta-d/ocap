@@ -24,7 +24,7 @@ import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot';
 import { CopilotExampleService } from 'apps/cloud/src/app/@core/services';
 
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
-Answer: {ai}`)
+Answer: {output}`)
 
 export function injectCalculationCommand(
   storyService: NxStoryService,
@@ -158,7 +158,7 @@ export function injectCalculationCommand(
       tools,
       fewShotPrompt: new FewShotPromptTemplate({
         exampleSelector: new SemanticSimilarityExampleSelector({
-          vectorStoreRetriever: new VectorStoreRetriever({vectorStore: null}, copilotExampleService),
+          vectorStoreRetriever: new VectorStoreRetriever({vectorStore: null, command: 'calculation'}, copilotExampleService),
           inputKeys: ["input"],
         }),
         examplePrompt,

@@ -4,7 +4,7 @@ import { ConfigService } from '@metad/server-config';
 import { UserService } from './user/user.service';
 import * as chalk from 'chalk';
 import { CommandBus } from '@nestjs/cqrs';
-import { CopilotExampleVectorSeedCommand } from './copilot-example/commands';
+import { CopilotExampleService } from './copilot-example/copilot-example.service';
 
 @Injectable()
 export class AppService {
@@ -21,9 +21,7 @@ export class AppService {
 			// await this.seedDataService.runDefaultSeed(true);
 		}
 
-		await this.commandBus.execute(new CopilotExampleVectorSeedCommand({
-			
-		}))
+		await this.exampleService.seedRedisIfEmpty()
 	}
 
 	constructor(
@@ -37,6 +35,10 @@ export class AppService {
 
 		@Inject(forwardRef(() => ConfigService))
 		private readonly configService: ConfigService,
+
+
+		@Inject(forwardRef(() => CopilotExampleService))
+		private readonly exampleService: CopilotExampleService
 	) {}
 
 	/*

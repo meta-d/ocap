@@ -38,11 +38,13 @@ export class VectorStoreRetriever<
 
   filter?: V["FilterType"];
 
+  command: string;
+
   _vectorstoreType(): string {
     return this.vectorStore._vectorstoreType();
   }
 
-  constructor(fields: VectorStoreRetrieverInput<V>, private readonly service: CopilotExampleService) {
+  constructor(fields: VectorStoreRetrieverInput<V> & {command: string}, private readonly service: CopilotExampleService) {
     super(fields);
     this.vectorStore = fields.vectorStore;
     this.k = fields.k ?? this.k;
@@ -51,15 +53,13 @@ export class VectorStoreRetriever<
     if (fields.searchType === "mmr") {
       this.searchKwargs = fields.searchKwargs;
     }
+    this.command = fields.command;
   }
 
   async _getRelevantDocuments(
     query: string,
     runManager?: CallbackManagerForRetrieverRun
   ): Promise<DocumentInterface[]> {
-    
-    console.log(`[Examples vector retriever] Retrieving documents for query: ${query}`)
-
     if (this.searchType === "mmr") {
       if (typeof this.vectorStore.maxMarginalRelevanceSearch !== "function") {
         throw new Error(
@@ -79,8 +79,11 @@ export class VectorStoreRetriever<
 
     return this.service.similaritySearch(
       query,
-      this.k,
-      this.filter
+      {
+        command: this.command,
+        k: this.k,
+        filter: this.filter,
+      }
     )
   }
 
