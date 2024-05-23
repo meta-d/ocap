@@ -5,9 +5,9 @@
             [selectOptions]="roles()"
         />
     
-        <ngm-select class="flex-1" [label]="'Command'" valueKey="key"
+        <ngm-input class="flex-1" [label]="'Command'" valueKey="key"
             formControlName="command"
-            [selectOptions]="commands()"
+            [options]="commands()"
         />
     
         <div class="flex-1 min-w-full flex flex-col">

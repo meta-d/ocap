@@ -28,8 +28,14 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   readonly route = inject(ActivatedRoute)
 
   readonly actionTemplate = viewChild('actionTemplate', { read: TemplateRef })
+  readonly vector = viewChild('vector', { read: TemplateRef })
 
   readonly columns = signal<TableColumn[]>([
+    {
+      name: 'vector',
+      caption: 'Vector',
+      cellTemplate: this.vector,
+    },
     {
       name: 'role',
       caption: 'Business Role',

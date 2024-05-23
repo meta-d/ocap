@@ -19,6 +19,12 @@
 
 <ngm-table class="flex-1" [columns]="columns()" [data]="items()" displayDensity="cosy" />
 
+<ng-template #vector let-vector>
+  @if (vector) {
+    <mat-icon fontSet="material-icons-round">text_rotation_angleup</mat-icon>
+  }
+</ng-template>
+
 <ng-template #actionTemplate let-id="id">
     <div class="flex items-center">
         <button mat-icon-button [matTooltip]="'Edit example'"
