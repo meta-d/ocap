@@ -1,5 +1,5 @@
 import { TextFieldModule } from '@angular/cdk/text-field'
-import { Component, effect, inject } from '@angular/core'
+import { Component, effect, inject, signal } from '@angular/core'
 import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -8,7 +8,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { EMPTY, pipe, switchMap } from 'rxjs'
-import { AiBusinessRole, AiProvider, CopilotExampleService, ToastrService } from '../../../../@core'
+import { AiBusinessRole, AiProvider, CopilotExampleService, ToastrService, getErrorMessage } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 import { CopilotExamplesComponent } from '../examples/examples.component'
 
@@ -48,6 +48,8 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
     initialValue: null
   })
 
+  readonly loading = signal(true)
+
   constructor() {
     super()
 
@@ -58,6 +60,7 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
         this.formGroup.reset()
       }
       this.formGroup.markAsPristine()
+      this.loading.set(false)
     }, { allowSignalWrites: true })
   }
 
@@ -78,11 +81,11 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
     if (this.formGroup.valid) {
       this.exampleService.create(this.formGroup.value).subscribe({
         next: () => {
-          this._toastrService.success('Saved successfully')
+          this._toastrService.success('PAC.Messages.SavedSuccessfully', {Default: 'Saved successfully'})
           this.close(true)
         },
         error: (error) => {
-          this._toastrService.error('Failed to save')
+          this._toastrService.error(getErrorMessage(error))
         }
       })
     }
@@ -91,11 +94,11 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
   update() {
     this.exampleService.update(this.paramId(), this.formGroup.value).subscribe({
       next: () => {
-        this._toastrService.success('Updated successfully')
+        this._toastrService.success('PAC.Messages.UpdatedSuccessfully', {Default: 'Updated successfully'})
         this.close(true)
       },
       error: (error) => {
-        this._toastrService.error('Failed to update')
+        this._toastrService.error(getErrorMessage(error))
       }
     })
   }

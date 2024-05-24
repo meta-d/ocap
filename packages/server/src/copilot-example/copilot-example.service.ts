@@ -7,7 +7,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RedisClientType } from 'redis'
-import { DeleteResult, FindManyOptions, FindOneOptions, Repository, UpdateResult } from 'typeorm'
+import { DeleteResult, FindManyOptions, FindOneOptions, In, Repository, UpdateResult } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { CopilotService } from '../copilot/copilot.service'
 import { RequestContext } from '../core'
@@ -16,6 +16,7 @@ import { REDIS_CLIENT } from '../core/redis.module'
 import { TenantService } from '../tenant/tenant.service'
 import { CopilotExampleVectorSeedCommand } from './commands'
 import { CopilotExample } from './copilot-example.entity'
+import { compact, uniq } from 'lodash'
 
 
 @Injectable()
@@ -183,11 +184,22 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
     }
 
     async getCommands(options?: FindManyOptions<CopilotExample>) {
-        return this.repository.createQueryBuilder("example").distinctOn(["example.command"]).where(options?.where).getMany()
+        return this.repository.createQueryBuilder("example")
+            .select("example.command")
+            .distinctOn(["example.command"])
+            .where(options?.where)
+            .getMany()
     }
 
-    async createBulk(entities: ICopilotExample[]) {
+    async createBulk(entities: ICopilotExample[], options: {clearRole: boolean}) {
+        const { clearRole } = options || {}
         const examples = await this.embedExamples(entities)
+        if (clearRole) {
+            const roles = compact(uniq(examples.map((example) => example.role)))
+            const { items } = await this.findAll({ where: { role: In(roles) } })
+            console.log(items.length)
+            this.repository.remove(items)
+        }
         const results = await Promise.all(examples.map((entity) => super.create(entity)))
         await this.commandBus.execute(new CopilotExampleVectorSeedCommand({ tenantId: RequestContext.currentTenantId(), refresh: true }))
         return results

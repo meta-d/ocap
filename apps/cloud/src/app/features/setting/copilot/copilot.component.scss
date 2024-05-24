@@ -4,6 +4,6 @@
 
 :host::ng-deep {
   pac-settings-copilot-basic, pac-settings-copilot-examples, pac-settings-copilot-roles {
-    @apply w-full;
+    @apply w-full overflow-hidden;
   }
 }

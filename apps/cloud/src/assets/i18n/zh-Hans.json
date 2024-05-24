@@ -185,7 +185,10 @@
       "ServerAgent": "服务器代理",
       "Admin": "管理",
       "Members": "成员",
-      "SettingsNavigation": "设置导航栏"
+      "SettingsNavigation": "设置导航栏",
+      "Examples": "示例",
+      "Basic": "基础",
+      "Delete": "删除"
     },
     "MENU": {
       "Certification": "认证",
@@ -445,7 +448,13 @@
     },
     "Messages": {
       "AlreadyExists": "{{value}}已存在",
-      "IsRequired": "{{value}}未输入"
+      "IsRequired": "{{value}}未输入",
+      "DeletedSuccessfully": "删除成功",
+      "CreatedSuccessfully": "创建成功",
+      "SavedSuccessfully": "保存成功",
+      "UpdatedSuccessfully": "更新成功",
+      "UploadSuccessfully": "上传成功",
+      "NoRecordsFoundinFile": "文件中未找到记录"
     },
     "NOTES": {
       "ORGANIZATIONS": {
@@ -1268,6 +1277,31 @@
         "Chart series add average mark line": "图形系列添加平均标记线",
         "Chart category axis line width 2, show axis tick": "图形分类轴线宽度 2，显示轴线刻度",
         "Data analysis": "分析数据"
+      },
+      "Examples": {
+        "Vectorized": "向量化",
+        "Vector": "向量",
+        "BusinessRole": "业务角色",
+        "CopilotCommand": "副驾驶命令",
+        "Input": "输入",
+        "Output": "输出",
+        "Metadata": "元数据",
+        "Actions": "操作",
+        "Command": "命令",
+        "UploadExamples": "上传示例",
+        "AddExample": "添加示例",
+        "EditExample": "编辑示例",
+        "DeleteExample": "删除示例",
+        "ClearRole": "清空角色已有示例",
+        "ConfirmOptionsForUploadExample": "请确认上传示例的选项"
+      },
+      "Roles": {
+        "Name": "名称",
+        "Title": "标题",
+        "TitleCN": "中文标题",
+        "Description": "描述",
+        "Actions": "操作",
+        "AddRole": "添加新角色"
       }
     },
     "Home": {

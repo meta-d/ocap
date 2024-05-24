@@ -58,7 +58,7 @@ export class CopilotExampleService {
     )
   }
 
-  createBulk(entities: ICopilotExample[]) {
-    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, entities)
+  createBulk(entities: ICopilotExample[], options: {clearRole: boolean}) {
+    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {examples: entities, options})
   }
 }

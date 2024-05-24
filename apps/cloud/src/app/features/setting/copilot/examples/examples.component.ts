@@ -1,15 +1,18 @@
-import { Component, TemplateRef, inject, model, signal, viewChild } from '@angular/core'
+import { Component, TemplateRef, effect, inject, model, signal, viewChild } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { NgmCommonModule, TableColumn } from '@metad/ocap-angular/common'
+import { ConfirmDeleteComponent, NgmCommonModule, NgmConfirmOptionsComponent, TableColumn } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, map, pipe, switchMap } from 'rxjs'
-import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ICopilotExample, ToastrService } from '../../../../@core'
+import { BehaviorSubject, EMPTY, combineLatestWith, map, pipe, switchMap } from 'rxjs'
+import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ICopilotExample, ToastrService, getErrorMessage } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { uploadYamlFile } from '@metad/core'
+import { MatDialog } from '@angular/material/dialog'
+import { FORMLY_W_1_2 } from '@metad/formly'
+
 
 @Component({
   standalone: true,
@@ -27,53 +30,57 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   readonly _toastrService = inject(ToastrService)
   readonly router = inject(Router)
   readonly route = inject(ActivatedRoute)
+  readonly dialog = inject(MatDialog)
 
   readonly actionTemplate = viewChild('actionTemplate', { read: TemplateRef })
   readonly vector = viewChild('vector', { read: TemplateRef })
 
-  readonly columns = signal<TableColumn[]>([
-    {
-      name: 'vector',
-      caption: 'Vector',
-      cellTemplate: this.vector,
-    },
-    {
-      name: 'role',
-      caption: 'Business Role',
-    },
-    {
-      name: 'command',
-      caption: 'Copilot Command',
-    },
-    {
-      name: 'input',
-      caption: 'Input',
-      width: '400px'
-    },
-    {
-      name: 'output',
-      caption: 'Output',
-      width: '400px'
-    },
-    {
-      name: 'metadata',
-      caption: 'Metadata',
-      pipe: (value) => JSON.stringify(value),
-      width: '400px'
-    },
-    {
-      name: 'actions',
-      caption: 'Actions',
-      cellTemplate: this.actionTemplate,
-      stickyEnd: true
-    },
-  ])
+  readonly columns = toSignal<TableColumn[]>(this.translateService.stream('PAC.Copilot.Examples').pipe(
+    map((i18n) => [
+      {
+        name: 'vector',
+        caption: i18n?.Vectorized || 'Vectorized',
+        cellTemplate: this.vector,
+      },
+      {
+        name: 'role',
+        caption: i18n?.BusinessRole || 'Business Role',
+      },
+      {
+        name: 'command',
+        caption: i18n?.CopilotCommand || 'Copilot Command',
+      },
+      {
+        name: 'input',
+        caption: i18n?.Input || 'Input',
+        width: '400px'
+      },
+      {
+        name: 'output',
+        caption: i18n?.Output || 'Output',
+        width: '400px'
+      },
+      {
+        name: 'metadata',
+        caption: i18n?.Metadata || 'Metadata',
+        pipe: (value) => JSON.stringify(value),
+        width: '400px'
+      },
+      {
+        name: 'actions',
+        caption: i18n?.Actions || 'Actions',
+        cellTemplate: this.actionTemplate,
+        stickyEnd: true
+      },
+    ])
+  ))
 
   readonly roleFilter = model<AiBusinessRole | string>(null)
   readonly commandFilter = model<string>(null)
   readonly refresh$ = new BehaviorSubject<void>(null)
-  readonly items = derivedFrom([this.refresh$, this.roleFilter, this.commandFilter], pipe(
-    switchMap(([, role, command]) => this.exampleService.getAll({
+  readonly items = derivedFrom([this.roleFilter, this.commandFilter], pipe(
+    combineLatestWith(this.refresh$),
+    switchMap(([[role, command]]) => this.exampleService.getAll({
       filter: {
         role,
         command
@@ -103,6 +110,18 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     }))
   )), {initialValue: []})
 
+  readonly loading = signal(false)
+
+  constructor() {
+    super()
+
+    effect(() => {
+      if (this.items()) {
+        this.loading.set(false)
+      }
+    }, { allowSignalWrites: true })
+  }
+
   refresh() {
     this.refresh$.next()
   }
@@ -115,13 +134,32 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     this.router.navigate([id], { relativeTo: this.route })
   }
 
-  deleteExample(id: string) {
-    this.exampleService.delete(id).subscribe({
+  deleteExample(id: string, input: string) {
+    this.dialog.open(ConfirmDeleteComponent, {
+      data: {
+        value: id,
+        information: `Input: ${input}`
+      }
+    })
+    .afterClosed()
+    .pipe(
+      switchMap((confirm) => {
+        if (confirm) {
+          this.loading.set(true)
+          return this.exampleService.delete(id)
+        } else {
+          return EMPTY
+        }
+      })
+    )
+    .subscribe({
       next: () => {
-        this._toastrService.success('Deleted successfully')
+        this._toastrService.success('PAC.Messages.DeletedSuccessfully', {Default: 'Deleted successfully'})
+        return this.refresh()
       },
       error: (error) => {
-        this._toastrService.error('Failed to delete')
+        this._toastrService.error(getErrorMessage(error))
+        this.loading.set(false)
       }
     })
   }
@@ -129,20 +167,42 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   async handleUploadChange(event) {
     const examples = await uploadYamlFile<ICopilotExample[]>(event.target.files[0])
 
-    console.log(examples)
-
     if (!examples.length) {
-      this._toastrService.error('No examples found in the file')
+      this._toastrService.error('', 'PAC.Messages.NoRecordsFoundinFile', {Default: 'No records found in the file'})
       return
     }
 
-    this.exampleService.createBulk(examples).subscribe({
+    this.dialog.open(NgmConfirmOptionsComponent, {
+      data: {
+        information: this.translateService.instant('PAC.Copilot.Examples.ConfirmOptionsForUploadExample', {Default: 'Please confirm the options for upload copilot examples'}),
+        formFields: [
+          {
+            className: FORMLY_W_1_2,
+            key: 'clearRole',
+            type: 'checkbox',
+            props: {
+              label: this.translateService.instant('PAC.Copilot.Examples.ClearRole', {Default: 'Clear all existed examples for roles'}),
+            }
+          }
+        ]
+      }
+    }).afterClosed().pipe(
+      switchMap((options) => {
+        if (options) {
+          this.loading.set(true)
+          return this.exampleService.createBulk(examples, options).pipe()
+        } else {
+          return EMPTY
+        }
+      })
+    ).subscribe({
       next: () => {
-        this._toastrService.success('Examples created successfully')
+        this._toastrService.success('PAC.Messages.UploadSuccessfully', {Default: 'Upload successfully'})
         this.refresh()
       },
       error: (error) => {
-        this._toastrService.error('Failed to create examples')
+        this._toastrService.error(getErrorMessage(error))
+        this.loading.set(false)
       }
     })
   }

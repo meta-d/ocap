@@ -67,8 +67,8 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
     }
 
     @Post('bulk')
-    async createBulk(@Body() entities: CopilotExample[]) {
-      return this.service.createBulk(entities)
+    async createBulk(@Body('examples') entities: CopilotExample[], @Body('options') options: {clearRole: boolean}) {
+      return this.service.createBulk(entities, options)
     }
 }
 

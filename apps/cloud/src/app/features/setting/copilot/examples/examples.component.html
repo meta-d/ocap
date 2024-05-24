@@ -1,10 +1,10 @@
-<div class="filter-bar m-2 flex items-center gap-4">
-    <ngm-select class="filter-bar__item" [label]="'Business Role'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+<div class="filter-bar shrink-0 p-2 flex items-center gap-4 overflow-hidden max-w-full">
+    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="roles()"
         [(ngModel)]="roleFilter"
     />
 
-    <ngm-select class="filter-bar__item" [label]="'Command'" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
+    <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.Command' | translate: {Default: 'Command'} " valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="commands()"
         [(ngModel)]="commandFilter"
     />
@@ -14,11 +14,11 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
     <div ngmButtonGroup >
-        <button mat-icon-button [matTooltip]="'Upload examples'" (click)="fileUpload.click()">
+        <button mat-icon-button [disabled]="loading()" [matTooltip]=" 'PAC.Copilot.Examples.UploadExamples' | translate: {Default: 'Upload examples'} " (click)="fileUpload.click()">
             <mat-icon>upload</mat-icon>
         </button>
 
-        <button mat-mini-fab [matTooltip]="'Add new example'"
+        <button mat-mini-fab [disabled]="loading()" [matTooltip]=" 'PAC.Copilot.Examples.AddExample' | translate: {Default: 'Add example'} "
             (click)="addExample()">
             <mat-icon>add</mat-icon>
         </button>
@@ -26,7 +26,13 @@
     
 </div>
 
-<ngm-table class="flex-1" [columns]="columns()" [data]="items()" displayDensity="cosy" />
+<ngm-table class="flex-1 overflow-hidden" [columns]="columns()" [data]="items()" displayDensity="cosy" paging />
+
+@if (loading()) {
+    <div class="absolute w-full h-full flex justify-center items-center">
+        <mat-progress-spinner mode="indeterminate" diameter="26" strokeWidth="2" />
+    </div>
+}
 
 <ng-template #vector let-vector>
   @if (vector) {
@@ -34,17 +40,18 @@
   }
 </ng-template>
 
-<ng-template #actionTemplate let-id="id">
+<ng-template #actionTemplate let-id="id" let-input="input">
     <div class="flex items-center">
-        <button mat-icon-button [matTooltip]="'Edit example'"
+        <button mat-icon-button [matTooltip]="'PAC.Copilot.Examples.EditExample' | translate: {Default: 'Edit example'}"
             (click)="editExample(id)"
         >
-            <mat-icon fontSet="material-icons-round">edit</mat-icon>
+            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
         </button>
-        <button mat-icon-button ngmAppearance="danger" [matTooltip]="'Delete example'"
-            (click)="deleteExample(id)"
+        <mat-divider vertical style="height: 20px;"></mat-divider>
+        <button mat-icon-button ngmAppearance="danger" [matTooltip]="'PAC.Copilot.Examples.DeleteExample' | translate: {Default: 'Delete example'}"
+            (click)="deleteExample(id, input)"
         >
-            <mat-icon fontSet="material-icons-round">delete</mat-icon>
+            <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
         </button>
     </div>
 </ng-template>
