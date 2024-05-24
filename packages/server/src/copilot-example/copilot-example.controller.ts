@@ -46,9 +46,9 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
         @Body('query') query: string,
         @Body('options') options?: { k: number; filter: any },
     ) {
-        this.#logger.debug(`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} and filter = ${options?.filter}`)
+      this.#logger.debug(`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} and filter = ${options?.filter}`)
 
-        return this.service.similaritySearch(query, options)
+      return this.service.similaritySearch(query, options)
     }
 
     @Post('mmr-search')

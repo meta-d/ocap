@@ -170,9 +170,11 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
                 )
                 return this.vectorStores.get(id)
             }
+
+            return null
         }
 
-        return null
+        return this.vectorStores.get(id)
     }
 
     override async delete(criteria: string,

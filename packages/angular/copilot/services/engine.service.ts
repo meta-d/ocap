@@ -12,7 +12,6 @@ import {
   CopilotCommand,
   CopilotContext,
   CopilotEngine,
-  CopilotService,
   DefaultModel,
   entryPointsToChatCompletionFunctions,
   getCommandPrompt,
@@ -25,13 +24,14 @@ import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
+import { NgmCopilotService } from './copilot.service'
 
 let uniqueId = 0
 
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
   readonly #logger? = inject(NGXLogger, { optional: true })
-  readonly copilot = inject(CopilotService)
+  readonly copilot = inject(NgmCopilotService)
   readonly copilotContext = inject(NgmCopilotContextToken)
 
   private api = signal('/api/chat')
@@ -377,11 +377,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       // For few shot
       if (command.fewShotPrompt) {
-        this.#logger?.debug(`[Command] [${command.name}] user input: ${content}`)
-        // console.log(`[Command] [${command.name}] user input: ${content}`)
         content = await command.fewShotPrompt.format({ input: content })
         this.#logger?.debug(`[Command] [${command.name}] few shot input: ${content}`)
-        // console.log(`[Command] [${command.name}] few shot input: ${content}`)
       }
 
       let verboseContent = ''
@@ -420,6 +417,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       })
       return null
     } catch (err: any) {
+      console.error(err.message)
       this.upsertMessage({
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,

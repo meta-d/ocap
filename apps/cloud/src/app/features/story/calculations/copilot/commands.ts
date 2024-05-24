@@ -4,7 +4,7 @@ import { SemanticSimilarityExampleSelector } from "@langchain/core/example_selec
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
 import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
-import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import {
   CalculatedProperty,
   CalculationProperty,
@@ -35,6 +35,7 @@ export function injectCalculationCommand(
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const copilotExampleService = inject(CopilotExampleService)
+  const copilotService = inject(NgmCopilotService)
   const memberRetriever = inject(MEMBER_RETRIEVER_TOKEN)
 
   const defaultModel = signal<string>(null)
@@ -158,7 +159,9 @@ export function injectCalculationCommand(
       tools,
       fewShotPrompt: new FewShotPromptTemplate({
         exampleSelector: new SemanticSimilarityExampleSelector({
-          vectorStoreRetriever: new VectorStoreRetriever({vectorStore: null, command: 'calculation'}, copilotExampleService),
+          vectorStoreRetriever: new VectorStoreRetriever({
+            vectorStore: null, command: 'calculation',
+            role: copilotService.role }, copilotExampleService),
           inputKeys: ["input"],
         }),
         examplePrompt,

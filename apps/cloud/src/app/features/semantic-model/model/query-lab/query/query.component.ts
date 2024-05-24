@@ -17,7 +17,7 @@ import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
 import { calcEntityTypePrompt, convertQueryResultColumns } from '@metad/core'
-import { NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { NgmCopilotEngineService, NgmCopilotService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { effectAction } from '@metad/ocap-angular/core'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { uniqBy } from '@metad/ocap-core'
@@ -56,7 +56,7 @@ export class QueryComponent extends TranslationBaseComponent {
   private readonly modelComponent = inject(ModelComponent)
   public readonly modelService = inject(SemanticModelService)
   public readonly queryLabService = inject(QueryLabService)
-  readonly copilotService = inject(CopilotService)
+  readonly copilotService = inject(NgmCopilotService)
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly route = inject(ActivatedRoute)
   private readonly _toastrService = inject(ToastrService)

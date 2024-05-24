@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
-import { CopilotService } from '@metad/copilot'
 import { NgmFormlyModule, provideFormly } from '@metad/formly'
 import { registerEChartsThemes } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { NgmCopilotContextService, NgmCopilotChatComponent, NgmCopilotContextToken, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotContextService, NgmCopilotChatComponent, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -126,7 +125,7 @@ registerEChartsThemes()
       useClass: StoryFeedService
     },
     {
-      provide: CopilotService,
+      provide: NgmCopilotService,
       useExisting: PACCopilotService
     },
     NgmCopilotEngineService,

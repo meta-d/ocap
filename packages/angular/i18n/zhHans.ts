@@ -97,7 +97,9 @@ export const ZhHans = {
       ClearConversation: '清空会话',
       Ask: '提问',
       Copy: '复制',
-      Regenerate: '重新生成'
+      Regenerate: '重新生成',
+      Common: '通用',
+      PleaseSelectBusinessRole: '请选择业务角色',
     },
     Entity: {
       SelectEntities: '选择数据集',

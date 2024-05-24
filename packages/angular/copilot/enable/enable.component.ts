@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { RouterModule } from '@angular/router'
-import { CopilotService } from '@metad/copilot'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
+import { NgmCopilotService } from '../services'
 
 @Component({
   standalone: true,
@@ -19,7 +19,7 @@ import { TranslateModule } from '@ngx-translate/core'
   }
 })
 export class NgmCopilotEnableComponent {
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(NgmCopilotService)
 
   @Input() title: string
   @Input() subTitle: string

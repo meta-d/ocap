@@ -13,7 +13,6 @@ import {
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
-import { CopilotService } from '@metad/copilot'
 import { DisplayDensity, NgmDSCoreService, PERIODS } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
@@ -75,6 +74,7 @@ import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -98,7 +98,7 @@ export class IndicatorDetailComponent {
   private _bottomSheetRef? = inject<MatBottomSheetRef<IndicatorDetailComponent>>(MatBottomSheetRef, { optional: true })
   private _cdr = inject(ChangeDetectorRef)
   private toastrService = inject(ToastrService)
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(NgmCopilotService)
   private dsCoreService = inject(NgmDSCoreService)
   private commentsService = inject(CommentsService)
   readonly #translate = inject(TranslateService)

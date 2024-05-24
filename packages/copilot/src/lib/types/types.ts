@@ -114,3 +114,9 @@ export const CopilotDefaultOptions = {
 export function nonNullable<T>(value: T): value is NonNullable<T> {
   return value != null
 }
+
+export type BusinessRoleType = {
+  name: string;
+  title: string;
+  description: string;
+}

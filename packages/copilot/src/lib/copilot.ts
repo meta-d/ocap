@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable, catchError, map, of, shareReplay, switchMa
 import { fromFetch } from 'rxjs/fetch'
 import { callChatApi as callDashScopeChatApi } from './dashscope/'
 import { callChatApi } from './shared/call-chat-api'
-import { AI_PROVIDERS, AiProvider, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import { AI_PROVIDERS, AiProvider, BusinessRoleType, CopilotChatMessage, DefaultModel, ICopilot } from './types'
 
 function chatCompletionsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -34,7 +34,7 @@ export type UseChatOptions = AiUseChatOptions & {
 /**
  * Copilot Service
  */
-export class CopilotService {
+export abstract class CopilotService {
   readonly #copilot$ = new BehaviorSubject<ICopilot | null>({} as ICopilot)
   get copilot(): ICopilot {
     return this.#copilot$.value
@@ -90,6 +90,10 @@ export class CopilotService {
     this.copilot = copilot
   }
 
+  abstract roles(): BusinessRoleType[]
+  abstract role(): string
+  abstract setRole(role: string): void
+
   /**
    * Custom request options, headers (Auth, others) and body
    *
@@ -100,10 +104,7 @@ export class CopilotService {
   }
 
   /**
-   *
-   * @param messages
-   * @param options
-   * @returns
+   * @deprecated use langchain/openai instead
    */
   async createChat(
     messages: CopilotChatMessage[],
@@ -138,6 +139,9 @@ export class CopilotService {
     throw new Error((await response.json()).error?.message)
   }
 
+  /**
+   * @deprecated use langchain/openai instead
+   */
   chatCompletions(messages: CopilotChatMessage[], request?: any): Observable<any> {
     return fromFetch(chatCompletionsUrl(this.copilot), {
       method: 'POST',
@@ -168,6 +172,9 @@ export class CopilotService {
     )
   }
 
+  /**
+   * @deprecated use langchain/openai instead
+   */
   chatStream(messages: CopilotChatMessage[], request?: any) {
     return new Observable<any[]>((subscriber) => {
       const ctrl = new AbortController()
@@ -256,7 +263,9 @@ export class CopilotService {
     )
   }
 
-  // ai
+  /**
+   * @deprecated use langchain/openai instead
+   */
   async chat(
     {
       sendExtraMessageFields,

@@ -3,6 +3,7 @@ import { BaseRetriever } from '@langchain/core/retrievers';
 import { CallbackManagerForRetrieverRun } from '@langchain/core/callbacks/manager';
 import { DocumentInterface } from '@langchain/core/documents';
 import { CopilotExampleService } from '../services/';
+import { Signal } from '@angular/core';
 
 /**
  * Type for options when adding a document to the VectorStore.
@@ -39,12 +40,12 @@ export class VectorStoreRetriever<
   filter?: V["FilterType"];
 
   command: string;
-
+  role: Signal<string>;
   _vectorstoreType(): string {
     return this.vectorStore._vectorstoreType();
   }
 
-  constructor(fields: VectorStoreRetrieverInput<V> & {command: string}, private readonly service: CopilotExampleService) {
+  constructor(fields: VectorStoreRetrieverInput<V> & {command: string; role: Signal<string>}, private readonly service: CopilotExampleService) {
     super(fields);
     this.vectorStore = fields.vectorStore;
     this.k = fields.k ?? this.k;
@@ -54,6 +55,7 @@ export class VectorStoreRetriever<
       this.searchKwargs = fields.searchKwargs;
     }
     this.command = fields.command;
+    this.role = fields.role;
   }
 
   async _getRelevantDocuments(
@@ -61,19 +63,20 @@ export class VectorStoreRetriever<
     runManager?: CallbackManagerForRetrieverRun
   ): Promise<DocumentInterface[]> {
     if (this.searchType === "mmr") {
-      if (typeof this.vectorStore.maxMarginalRelevanceSearch !== "function") {
+      if (typeof this.service.maxMarginalRelevanceSearch !== "function") {
         throw new Error(
           `The vector store backing this retriever, ${this._vectorstoreType()} does not support max marginal relevance search.`
         );
       }
-      return this.vectorStore.maxMarginalRelevanceSearch(
+      return this.service.maxMarginalRelevanceSearch(
         query,
         {
           k: this.k,
           filter: this.filter,
+          command: this.command,
+          role: this.role(),
           ...this.searchKwargs,
         },
-        runManager?.getChild("vectorstore")
       );
     }
 
@@ -83,6 +86,7 @@ export class VectorStoreRetriever<
         command: this.command,
         k: this.k,
         filter: this.filter,
+        role: this.role(),
       }
     )
   }

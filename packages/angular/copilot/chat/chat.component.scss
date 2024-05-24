@@ -47,7 +47,7 @@
 }
 
 .ngm-copilot__resubmit {
-  @apply my-2 rounded-full;
+  @apply rounded-full;
 }
 
 .mat-mdc-input-element {
@@ -188,6 +188,12 @@
     }
     .cdk-virtual-scroll-content-wrapper {
       max-width: 100%;
+    }
+  }
+
+  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
+    .mdc-evolution-chip-set__chips {
+      @apply justify-center;
     }
   }
 }

@@ -13,11 +13,13 @@ export class CopilotExampleService {
   readonly #logger = inject(NGXLogger)
   readonly httpClient = inject(HttpClient)
 
-  async similaritySearch(query: string, options: {k?: number, filter?: VectorStoreInterface["FilterType"]; command: string;}): Promise<DocumentInterface[]> {
+  async similaritySearch(query: string, options: {k?: number, filter?: VectorStoreInterface["FilterType"]; command: string; role: string}): Promise<DocumentInterface[]> {
     return await firstValueFrom(this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_EXAMPLE}/similarity-search`, { query, options }))
   }
 
-  async maxMarginalRelevanceSearch(query: string, options: MaxMarginalRelevanceSearchOptions<VectorStoreInterface["FilterType"]>,): Promise<DocumentInterface[]> {
+  async maxMarginalRelevanceSearch(query: string, options: MaxMarginalRelevanceSearchOptions<VectorStoreInterface["FilterType"]> & {
+    command: string; role: string
+  }): Promise<DocumentInterface[]> {
     return await firstValueFrom(this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_EXAMPLE}/mmr-search`, { query, options }))
   }
 

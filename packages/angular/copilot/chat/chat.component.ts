@@ -46,7 +46,6 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotEngine,
-  CopilotService
 } from '@metad/copilot'
 import {
   NgmDisplayBehaviourComponent,
@@ -71,10 +70,11 @@ import { BehaviorSubject, catchError, debounceTime, delay, filter, of, startWith
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCopilotCommand } from '../hooks'
-import { NgmCopilotEngineService } from '../services/'
+import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
+import { MatChipsModule } from '@angular/material/chips'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
 export const AUTO_SUGGESTION_STOP = ["\n", ".", ",", "@", "#"]
@@ -102,6 +102,7 @@ export const AUTO_SUGGESTION_STOP = ["\n", ".", ",", "@", "#"]
     MatListModule,
     MatSliderModule,
     MatMenuModule,
+    MatChipsModule,
     TranslateModule,
     NgxPopperjsModule,
     MarkdownModule,
@@ -130,7 +131,7 @@ export class NgmCopilotChatComponent {
 
   private translateService = inject(TranslateService)
   private _cdr = inject(ChangeDetectorRef)
-  private copilotService = inject(CopilotService)
+  private copilotService = inject(NgmCopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
   readonly copilotEngine$ = signal<CopilotEngine>(this.#copilotEngine)
@@ -143,6 +144,9 @@ export class NgmCopilotChatComponent {
   @Input() thinkingAvatar: string
   @Input() assistantAvatar: string
 
+  /**
+   * @deprecated use CopilotRole and Agent instead
+   */
   @Input() get copilotEngine(): CopilotEngine {
     return this.copilotEngine$()
   }
@@ -243,6 +247,9 @@ export class NgmCopilotChatComponent {
     this.copilotEngine?.conversations()
   )
   readonly isTools = toSignal(this.copilotService.isTools$)
+  readonly roles = this.copilotService.roles
+  readonly role = this.copilotService.role
+  readonly roleTitle = computed(() => this.roles()?.find((role) => role.name === this.role())?.title)
 
   /**
    * 当前 Asking prompt
