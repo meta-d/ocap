@@ -23,22 +23,35 @@ export class CopilotExampleVectorSeedHandler implements ICommandHandler<CopilotE
 			const roles = groupBy(examples.items, 'role')
 			for (const role in roles) {
 				const roleExamples = roles[role]
-				const commands = groupBy(roleExamples, 'command')
-				for (const command in commands) {
-					const commandExamples = commands[command].filter((example) => example.vector)
-					const vectorStore = await this.exampleService.getVectorStore(tenantId, role === 'null' ? null : role, command === 'null' ? null : command)
-					if (commandExamples.length && vectorStore) {
-						console.log(vectorStore.vectorStore.indexName)
-						if (vectorStore.checkIndexExists()) {
-							if (refresh) {
-								await vectorStore.clear()
-								await vectorStore.addExamples(commandExamples)
-							}
-						} else {
-							await vectorStore.addExamples(commandExamples)
+				const vectorStore = await this.exampleService.getVectorStore(tenantId, role === 'null' ? null : role)
+				if (roleExamples.length && vectorStore) {
+					console.log(vectorStore.vectorStore.indexName)
+					if (vectorStore.checkIndexExists()) {
+						if (refresh) {
+							await vectorStore.clear()
+							await vectorStore.addExamples(roleExamples)
 						}
+					} else {
+						await vectorStore.addExamples(roleExamples)
 					}
 				}
+
+				// const commands = groupBy(roleExamples, 'command')
+				// for (const command in commands) {
+				// 	const commandExamples = commands[command].filter((example) => example.vector)
+				// 	const vectorStore = await this.exampleService.getVectorStore(tenantId, role === 'null' ? null : role, command === 'null' ? null : command)
+				// 	if (commandExamples.length && vectorStore) {
+				// 		console.log(vectorStore.vectorStore.indexName)
+				// 		if (vectorStore.checkIndexExists()) {
+				// 			if (refresh) {
+				// 				await vectorStore.clear()
+				// 				await vectorStore.addExamples(commandExamples)
+				// 			}
+				// 		} else {
+				// 			await vectorStore.addExamples(commandExamples)
+				// 		}
+				// 	}
+				// }
 			}
 		}
 	}

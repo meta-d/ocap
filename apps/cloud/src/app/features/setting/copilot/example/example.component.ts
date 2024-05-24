@@ -76,7 +76,7 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
 
   save() {
     if (this.formGroup.valid) {
-      this.exampleService.save(this.formGroup.value).subscribe({
+      this.exampleService.create(this.formGroup.value).subscribe({
         next: () => {
           this._toastrService.success('Saved successfully')
           this.close(true)

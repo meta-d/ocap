@@ -61,6 +61,15 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
         return this.service.maxMarginalRelevanceSearch(query, options)
     }
 
+    @Get('commands')
+    async getCommands(@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where']) {
+      return this.service.getCommands({where})
+    }
+
+    @Post('bulk')
+    async createBulk(@Body() entities: CopilotExample[]) {
+      return this.service.createBulk(entities)
+    }
 }
 
 export const RestrictedMeasureBikes = {

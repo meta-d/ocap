@@ -7,7 +7,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { RedisClientType } from 'redis'
-import { DeleteResult, FindOneOptions, Repository, UpdateResult } from 'typeorm'
+import { DeleteResult, FindManyOptions, FindOneOptions, Repository, UpdateResult } from 'typeorm'
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity'
 import { CopilotService } from '../copilot/copilot.service'
 import { RequestContext } from '../core'
@@ -16,6 +16,7 @@ import { REDIS_CLIENT } from '../core/redis.module'
 import { TenantService } from '../tenant/tenant.service'
 import { CopilotExampleVectorSeedCommand } from './commands'
 import { CopilotExample } from './copilot-example.entity'
+
 
 @Injectable()
 export class CopilotExampleService extends TenantAwareCrudService<CopilotExample> {
@@ -49,9 +50,9 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         const { role, command, k, filter } = options ?? {}
 
         const tenantId = RequestContext.currentTenantId()
-        const vectorStore = await this.getVectorStore(tenantId, role, command)
+        const vectorStore = await this.getVectorStore(tenantId, role)
         if (vectorStore) {
-            return await vectorStore.vectorStore.similaritySearch(query, k, filter) 
+            return await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
         }
 
         return null
@@ -83,7 +84,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         let entity = partialEntity as ICopilotExample
         const vectorStore = await this.getVectorStore(tenantId, entity.role, entity.command)
         if (vectorStore && !entity.vector) {
-            const examples = await this.embedExamples(vectorStore, [entity])
+            const examples = await this.embedExamples([entity])
             entity = examples[0]
         }
         const result = await super.update(id, entity)
@@ -98,7 +99,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         const tenantId = RequestContext.currentTenantId()
         const vectorStore = await this.getVectorStore(tenantId, entity.role, entity.command)
         if (vectorStore && !entity.vector) {
-            const examples = await this.embedExamples(vectorStore, [entity])
+            const examples = await this.embedExamples([entity])
             entity = examples[0]
         }
         if (vectorStore) {
@@ -107,23 +108,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         return entity
     }
 
-    private async embedExamples(vectorStore: PGRedisVectorStore, examples: Partial<ICopilotExample>[]) {
-        examples.forEach((example) => {
-            example.content ??= example.input
-            example.metadata = {
-                role: example.role,
-                command: example.command,
-                input: example.input,
-                output: example.output,
-            }
-        })
-        const texts = examples.map(({ content }) => content)
-        const vectors = await vectorStore.embeddings.embedDocuments(texts)
-        examples.forEach((example, index) => (example.vector = vectors[index]))
-        return examples
-    }
-
-    async getVectorStore(tenantId: string, role: AiBusinessRole | string, command: string, organizationId: string = null) {
+    private async getEmbeddings(tenantId: string, organizationId: string = null) {
         const where = {}
         if (tenantId) {
             where['tenantId'] = tenantId
@@ -134,15 +119,47 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         const result = await this.copilotService.findAll({ where })
         const copilot = result.items[0]
         if (copilot && copilot.enabled && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
-            const id = tenantId + `:${role || 'default'}${command ? ':' + command : ''}`
-            if (!this.vectorStores.has(id)) {
-                const embeddings = new OpenAIEmbeddings({
-                    verbose: true,
-                    apiKey: copilot.apiKey,
-                    configuration: {
-                        baseURL: copilot.apiHost
-                    }
-                })
+            const embeddings = new OpenAIEmbeddings({
+                verbose: true,
+                apiKey: copilot.apiKey,
+                configuration: {
+                    baseURL: copilot.apiHost
+                }
+            })
+
+            return embeddings
+        }
+
+        return null
+    }
+
+    private async embedExamples(examples: Partial<ICopilotExample>[]) {
+        
+        examples.forEach((example) => {
+            example.content ??= example.input
+            example.metadata = {
+                role: example.role,
+                command: example.command,
+                input: example.input,
+                output: example.output,
+            }
+        })
+        const texts = examples.map(({ content }) => content)
+
+        const embeddings = await this.getEmbeddings(RequestContext.currentTenantId())
+        if (embeddings) {
+            const vectors = await embeddings.embedDocuments(texts)
+            examples.forEach((example, index) => (example.vector = vectors[index]))
+        }
+        
+        return examples
+    }
+
+    async getVectorStore(tenantId: string, role: AiBusinessRole | string, command: string = null, organizationId: string = null) {
+        const id = tenantId + `:${role || 'default'}${command ? ':' + command : ''}`
+        if (!this.vectorStores.has(id)) {
+            const embeddings = await this.getEmbeddings(tenantId, organizationId)
+            if (embeddings) {
                 this.vectorStores.set(
                     id,
                     new PGRedisVectorStore(embeddings, {
@@ -150,9 +167,8 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
                         indexName: `copilot-examples:${id}`
                     })
                 )
+                return this.vectorStores.get(id)
             }
-
-            return this.vectorStores.get(id)
         }
 
         return null
@@ -164,6 +180,17 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         const result = await super.delete(criteria, options)
         await this.commandBus.execute(new CopilotExampleVectorSeedCommand({ tenantId: RequestContext.currentTenantId(), refresh: true }))
         return result
+    }
+
+    async getCommands(options?: FindManyOptions<CopilotExample>) {
+        return this.repository.createQueryBuilder("example").distinctOn(["example.command"]).where(options?.where).getMany()
+    }
+
+    async createBulk(entities: ICopilotExample[]) {
+        const examples = await this.embedExamples(entities)
+        const results = await Promise.all(examples.map((entity) => super.create(entity)))
+        await this.commandBus.execute(new CopilotExampleVectorSeedCommand({ tenantId: RequestContext.currentTenantId(), refresh: true }))
+        return results
     }
 }
 
@@ -193,8 +220,6 @@ class PGRedisVectorStore {
                     pageContent: item.content
                 })
         )
-
-        console.log(vectors, documents)
 
         return this.vectorStore.addVectors(vectors, documents)
     }

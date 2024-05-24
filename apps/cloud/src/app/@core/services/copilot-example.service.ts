@@ -36,7 +36,7 @@ export class CopilotExampleService {
     return this.httpClient.get<ICopilotExample>(`${API_COPILOT_EXAMPLE}/${id}`)
   }
 
-  save(entity: Partial<ICopilotExample>) {
+  create(entity: Partial<ICopilotExample>) {
     return this.httpClient.post<ICopilotExample>(`${API_COPILOT_EXAMPLE}`, entity)
   }
 
@@ -48,4 +48,17 @@ export class CopilotExampleService {
     return this.httpClient.delete(`${API_COPILOT_EXAMPLE}/${id}`)
   }
   
+  getCommands(filter: {role: string}) {
+    return this.httpClient.get<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/commands`, {
+      params: {
+        $fitler: JSON.stringify(filter)
+      }
+    }).pipe(
+      map((items) => items.map(({command}) => command))
+    )
+  }
+
+  createBulk(entities: ICopilotExample[]) {
+    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, entities)
+  }
 }

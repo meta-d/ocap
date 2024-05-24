@@ -102,27 +102,33 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
   }
 
   deleteRole(item: CopilotRoleRowType) {
-    this.dialog.open(ConfirmDeleteComponent, {
+    if (item.id) {
+      this.dialog.open(ConfirmDeleteComponent, {
         data: {
             value: item.title,
             information: 'Are you sure you want to delete this role?'
         }
-    }).afterClosed().pipe(
-        switchMap((result) => {
-            if (result) {
-                return this.roleService.delete(item.id).pipe(
-                    tap(() => {
-                        this._toastrService.success('Role deleted successfully')
-                        this.refresh$.next()
-                    }),
-                    catchError((err) => {
-                        this._toastrService.error(getErrorMessage(err))
-                        return EMPTY
-                    })
-                )
-            }
-            return EMPTY
-        })
-    ).subscribe()
+      })
+      .afterClosed()
+      .pipe(
+          switchMap((result) => {
+              if (result) {
+                  return this.roleService.delete(item.id).pipe(
+                      tap(() => {
+                          this._toastrService.success('Role deleted successfully')
+                          this.refresh$.next()
+                      }),
+                      catchError((err) => {
+                          this._toastrService.error(getErrorMessage(err))
+                          return EMPTY
+                      })
+                  )
+              }
+              return EMPTY
+          })
+      ).subscribe()
+    } else {
+      this.dataSource.update((items) => items.filter((x) => x !== item))
+    }
   }
 }

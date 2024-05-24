@@ -6,9 +6,10 @@ import { NgmCommonModule, TableColumn } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, map, pipe, switchMap } from 'rxjs'
-import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ToastrService } from '../../../../@core'
+import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ICopilotExample, ToastrService } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 import { derivedFrom } from 'ngxtension/derived-from'
+import { uploadYamlFile } from '@metad/core'
 
 @Component({
   standalone: true,
@@ -47,14 +48,18 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     {
       name: 'input',
       caption: 'Input',
+      width: '400px'
     },
     {
       name: 'output',
       caption: 'Output',
+      width: '400px'
     },
     {
       name: 'metadata',
       caption: 'Metadata',
+      pipe: (value) => JSON.stringify(value),
+      width: '400px'
     },
     {
       name: 'actions',
@@ -90,12 +95,13 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     ])
   ))
 
-  readonly commands = signal([
-    {
-      key: 'calculation',
-      caption: 'Create or Edit Calculation Measure'
-    },
-  ])
+  readonly commands = derivedFrom([this.roleFilter], pipe(
+    switchMap(([role]) => this.exampleService.getCommands({role})),
+    map((commands) => commands.map((command) => ({
+      key: command,
+      caption: command
+    }))
+  )), {initialValue: []})
 
   refresh() {
     this.refresh$.next()
@@ -116,6 +122,27 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       },
       error: (error) => {
         this._toastrService.error('Failed to delete')
+      }
+    })
+  }
+
+  async handleUploadChange(event) {
+    const examples = await uploadYamlFile<ICopilotExample[]>(event.target.files[0])
+
+    console.log(examples)
+
+    if (!examples.length) {
+      this._toastrService.error('No examples found in the file')
+      return
+    }
+
+    this.exampleService.createBulk(examples).subscribe({
+      next: () => {
+        this._toastrService.success('Examples created successfully')
+        this.refresh()
+      },
+      error: (error) => {
+        this._toastrService.error('Failed to create examples')
       }
     })
   }
