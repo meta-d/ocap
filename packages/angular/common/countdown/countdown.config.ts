@@ -3,9 +3,6 @@ import { Injectable, Inject, LOCALE_ID } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { CountdownFormatFn, CountdownConfig } from './interfaces';
 
-/**
- * @deprecated use `@metad/ocap-angular/common`
- */
 @Injectable({ providedIn: 'root' })
 export class CountdownGlobalConfig implements CountdownConfig {
   constructor(@Inject(LOCALE_ID) private locale: string) {}

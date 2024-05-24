@@ -8,16 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { CountdownModule } from '@metad/components/countdown'
-import { ConfirmDeleteComponent } from './confirm-delete/confirm-delete.component'
-import { ConfirmSnackBar } from './confirm-snackbar/confirm-snack-bar.component'
-import { CountdownConfirmationComponent } from './countdown/countdown.component'
+import { NgmConfirmDeleteComponent } from './confirm-delete/confirm-delete.component'
+import { NgmConfirmSnackBar } from './confirm-snackbar/confirm-snack-bar.component'
+import { NgmCountdownConfirmationComponent } from './countdown/countdown.component'
+import { NgmCountdownModule } from '../countdown'
+import { NgmConfirmOptionsComponent } from './confirm-options/confirm-options.component'
 
-/**
- * @deprecated use `@metad/ocap-angular/common`
- */
 @NgModule({
-  declarations: [ ConfirmDeleteComponent, CountdownConfirmationComponent, ConfirmSnackBar],
+  declarations: [ NgmConfirmDeleteComponent, NgmCountdownConfirmationComponent, NgmConfirmSnackBar ],
   imports: [
     CommonModule,
     FormsModule,
@@ -26,11 +24,12 @@ import { CountdownConfirmationComponent } from './countdown/countdown.component'
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    CountdownModule,
+    NgmCountdownModule,
     TranslateModule,
 
-    ButtonGroupDirective
+    ButtonGroupDirective,
+    NgmConfirmOptionsComponent
   ],
-  exports: [ ConfirmDeleteComponent, CountdownConfirmationComponent, ConfirmSnackBar]
+  exports: [ NgmConfirmDeleteComponent, NgmCountdownConfirmationComponent, NgmConfirmSnackBar, NgmConfirmOptionsComponent ]
 })
-export class ConfirmModule {}
+export class NgmConfirmModule {}

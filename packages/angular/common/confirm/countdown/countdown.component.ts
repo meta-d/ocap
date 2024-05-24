@@ -1,10 +1,7 @@
 import { Component, HostBinding, inject } from '@angular/core'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
-import { CountdownConfig, CountdownEvent, CountdownTimer } from '@metad/components/countdown'
+import { CountdownConfig, CountdownEvent, CountdownTimer } from '../../countdown'
 
-/**
- * @deprecated use `@metad/ocap-angular/common`
- */
 @Component({
   selector: 'ngm-countdown-confirmation',
   templateUrl: 'countdown.component.html',
@@ -18,10 +15,10 @@ import { CountdownConfig, CountdownEvent, CountdownTimer } from '@metad/componen
   ],
   providers: [CountdownTimer]
 })
-export class CountdownConfirmationComponent {
+export class NgmCountdownConfirmationComponent {
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
-  protected dialogRef: MatDialogRef<CountdownConfirmationComponent> = inject(MatDialogRef)
+  protected dialogRef: MatDialogRef<NgmCountdownConfirmationComponent> = inject(MatDialogRef)
   private data = inject(MAT_DIALOG_DATA)
 
   recordType: string

@@ -11,9 +11,6 @@ import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { isString } from 'lodash-es'
 
-/**
- * @deprecated use `@metad/ocap-angular/common`
- */
 @Component({
   standalone: true,
   imports: [
@@ -33,11 +30,11 @@ import { isString } from 'lodash-es'
   templateUrl: './confirm-unique.component.html',
   styleUrls: ['./confirm-unique.component.scss']
 })
-export class ConfirmUniqueComponent implements OnInit {
+export class NgmConfirmUniqueComponent implements OnInit {
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public data = inject<string | { title: string; value: string }>(MAT_DIALOG_DATA)
-  private _dialogRef = inject(MatDialogRef<ConfirmUniqueComponent>)
+  private _dialogRef = inject(MatDialogRef<NgmConfirmUniqueComponent>)
 
   value: string
   title: string

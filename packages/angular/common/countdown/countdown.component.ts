@@ -21,11 +21,8 @@ import { CountdownConfig, CountdownStatus, CountdownEvent, CountdownEventAction,
 import { CountdownTimer } from './countdown.timer';
 import { CountdownGlobalConfig } from './countdown.config';
 
-/**
- * @deprecated use `@metad/ocap-angular/common`
- */
 @Component({
-  selector: 'countdown',
+  selector: 'ngm-countdown',
   template: `
     <ng-container *ngIf="!render">
       <span [innerHTML]="i.text"></span>
@@ -36,7 +33,7 @@ import { CountdownGlobalConfig } from './countdown.config';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CountdownComponent implements OnInit, OnChanges, OnDestroy {
+export class NgmCountdownComponent implements OnInit, OnChanges, OnDestroy {
   private frequency = 1000;
   private _notify: { [key: number]: boolean } = {};
   private status: CountdownStatus = CountdownStatus.ing;

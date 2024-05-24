@@ -2,7 +2,7 @@ import { Component, TemplateRef, effect, inject, model, signal, viewChild } from
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { ConfirmDeleteComponent, NgmCommonModule, NgmConfirmOptionsComponent, TableColumn } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmCommonModule, NgmConfirmOptionsComponent, TableColumn } from '@metad/ocap-angular/common'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, combineLatestWith, map, pipe, switchMap } from 'rxjs'
@@ -135,7 +135,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
   }
 
   deleteExample(id: string, input: string) {
-    this.dialog.open(ConfirmDeleteComponent, {
+    this.dialog.open(NgmConfirmDeleteComponent, {
       data: {
         value: id,
         information: `Input: ${input}`
