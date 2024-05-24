@@ -1,4 +1,4 @@
-<div class="w-full flex justify-between items-center px-4">
+<div class="w-full flex justify-between items-center px-4 py-2">
   <div class="pac-page-title">{{ 'PAC.KEY_WORDS.BUSINESS_AREA' | translate: {Default: "Business Area"} }}</div>
   <div ngmButtonGroup >
     <button mat-raised-button color="primary" (click)="createBusinessArea(null)">
@@ -9,16 +9,14 @@
     </button>
   </div>
 </div>
+<mat-divider />
 
-<mat-drawer-container class="w-full h-full" [hasBackdrop]="isMobile()" [autosize]="true">
-  <mat-drawer #drawer class="ngm-sidenav-container-bg-transparent" [mode]="isMobile() ? 'over' : 'side'"
-    [(opened)]="sideMenuOpened"
-  >
+<ngm-splitter [type]="SplitterType.Horizontal" class="flex-1">
+  <ngm-splitter-pane minSize="300px" size="30%" >
     <pac-business-areas class="w-96"></pac-business-areas>
-  </mat-drawer>
+  </ngm-splitter-pane>
 
-  <mat-drawer-content>
+  <ngm-splitter-pane class="flex-1 flex flex-col">
     <router-outlet #o="outlet"></router-outlet>
-    <ngm-drawer-trigger class="absolute -left-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened" />
-  </mat-drawer-content>
-</mat-drawer-container>
+  </ngm-splitter-pane>
+</ngm-splitter>

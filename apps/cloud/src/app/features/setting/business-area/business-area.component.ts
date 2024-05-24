@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { BusinessAreasService } from '@metad/cloud/state'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, SplitterType } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { Subject, firstValueFrom } from 'rxjs'
 import { IBusinessArea, ToastrService, routeAnimations } from '../../../@core'
@@ -31,6 +31,8 @@ import { BusinessAreasComponent } from './business-areas/areas.component'
   ]
 })
 export class BusinessAreaComponent extends ManageEntityBaseComponent<IBusinessArea> {
+  SplitterType = SplitterType
+  
   readonly _dialog = inject(MatDialog)
   readonly appService = inject(AppService)
   readonly businessAreasStore = inject(BusinessAreasService)
