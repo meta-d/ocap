@@ -16,7 +16,7 @@
   </span>
   <div class="mt-2">
     {{ 'COMPONENTS.COUNTDOWN_CONFIRMATION.WAIT_UNTIL_RELOAD' | translate: {Default: 'Waiting until reload'} }}
-    <countdown #cd [config]="countDownConfig" (event)="handleActionEvent($event)"></countdown>
+    <ngm-countdown #cd [config]="countDownConfig" (event)="handleActionEvent($event)" />
   </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
