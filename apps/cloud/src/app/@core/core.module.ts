@@ -15,7 +15,8 @@ import {
 import { PACStateModule } from '@metad/cloud/state'
 import { AuthModule } from './auth/auth.module'
 import { throwIfAlreadyLoaded } from './module-import-guard'
-import { HttpLoaderFactory, MyMissingTranslationHandler } from './theme'
+import { HttpLoaderFactory } from './theme'
+import { NgmMissingTranslationHandler } from '@metad/ocap-angular/core'
 
 
 @NgModule({
@@ -29,7 +30,7 @@ import { HttpLoaderFactory, MyMissingTranslationHandler } from './theme'
     TranslateModule.forRoot({
       missingTranslationHandler: {
         provide: MissingTranslationHandler,
-        useClass: MyMissingTranslationHandler
+        useClass: NgmMissingTranslationHandler
       },
       loader: {
         provide: TranslateLoader,

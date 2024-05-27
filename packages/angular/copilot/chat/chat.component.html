@@ -1,13 +1,20 @@
 <div class="text-base font-semibold p-2 flex justify-between items-center">
-  <span>{{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
+  <div class="flex items-start gap-1">
+    <span>{{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
 
-  @if (copilotEngine?.name) {
-    <span>:</span><span>{{copilotEngine.name}}</span>
-  }
+    @if (copilotEngine?.name) {
+      <span>:</span><span>{{copilotEngine.name}}</span>
+    }
+
+    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">Beta</span>
+  </div>
 
   @if (role()) {
-    <span class="bg-purple-100 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-purple-900 dark:text-purple-300">
-      {{roleTitle()}}
+    <span class="cursor-pointer bg-purple-100 text-purple-800 text-sm font-medium me-2 px-2 py-0.5 rounded-xl dark:bg-purple-900 dark:text-purple-300"
+      [matTooltip]="roleDetail()?.description"
+      (click)="switchRole()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="h-4 w-4 inline-block align-text-bottom"><path fill="currentColor" fill-rule="evenodd" d="M12 7.42a22 22 0 0 0-2.453 2.127A22 22 0 0 0 7.42 12a22 22 0 0 0 2.127 2.453c.807.808 1.636 1.52 2.453 2.128a22 22 0 0 0 2.453-2.128A22 22 0 0 0 16.58 12a22 22 0 0 0-2.127-2.453A22 22 0 0 0 12 7.42m1.751-1.154a25 25 0 0 1 2.104 1.88 25 25 0 0 1 1.88 2.103c.316-.55.576-1.085.779-1.59.35-.878.507-1.625.503-2.206-.003-.574-.16-.913-.358-1.111-.199-.199-.537-.356-1.112-.36-.58-.003-1.328.153-2.205.504-.506.203-1.04.464-1.59.78Zm3.983 7.485a25 25 0 0 1-1.88 2.104 25 25 0 0 1-2.103 1.88 13 13 0 0 0 1.59.779c.878.35 1.625.507 2.206.503.574-.003.913-.16 1.111-.358.199-.199.356-.538.36-1.112.003-.58-.154-1.328-.504-2.205a13 13 0 0 0-.78-1.59ZM12 18.99c.89.57 1.768 1.03 2.605 1.364 1.026.41 2.036.652 2.955.646.925-.006 1.828-.267 2.5-.94.673-.672.934-1.575.94-2.5.006-.919-.236-1.929-.646-2.954A15.7 15.7 0 0 0 18.99 12a15.6 15.6 0 0 0 1.364-2.606c.41-1.025.652-2.035.646-2.954-.006-.925-.267-1.828-.94-2.5-.672-.673-1.575-.934-2.5-.94-.919-.006-1.929.235-2.954.646-.838.335-1.716.795-2.606 1.364a15.7 15.7 0 0 0-2.606-1.364C8.37 3.236 7.36 2.994 6.44 3c-.925.006-1.828.267-2.5.94-.673.672-.934 1.575-.94 2.5-.006.919.235 1.929.646 2.955A15.7 15.7 0 0 0 5.01 12c-.57.89-1.03 1.768-1.364 2.605-.41 1.026-.652 2.036-.646 2.955.006.925.267 1.828.94 2.5.672.673 1.575.934 2.5.94.92.006 1.93-.235 2.955-.646A15.7 15.7 0 0 0 12 18.99m-1.751-1.255a25 25 0 0 1-2.104-1.88 25 25 0 0 1-1.88-2.104c-.315.55-.576 1.085-.779 1.59-.35.878-.507 1.625-.503 2.206.003.574.16.913.359 1.111.198.199.537.356 1.111.36.58.003 1.328-.153 2.205-.504.506-.203 1.04-.463 1.59-.78Zm-3.983-7.486a25 25 0 0 1 1.88-2.104 25 25 0 0 1 2.103-1.88 13 13 0 0 0-1.59-.779c-.878-.35-1.625-.507-2.206-.503-.574.003-.913.16-1.111.359-.199.198-.356.537-.36 1.111-.003.58.153 1.328.504 2.205.203.506.464 1.04.78 1.59Z" clip-rule="evenodd"></path></svg>
+      {{roleDetail()?.title}}
     </span>
   }
 </div>
@@ -130,7 +137,7 @@
                                       </div>
                                       <div class="ngm-copilot-chat__message-content ngm-copilot__user-message flex flex-col items-end">
                                           <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
-                                          focus-visible:bg-white dark:focus-visible:bg-black"
+                                            focus-visible:bg-white dark:focus-visible:bg-black"
                                               [attr.contenteditable]="true"
                                               (focus)="onMessageFocus()"
                                           >{{ message.content }}</div>
@@ -186,27 +193,22 @@
 
       <div class="flex-1 flex flex-col justify-center items-center gap-1">
         @if (!conversations()?.length) {
+          <div class="text-lg drop-shadow-md">
+            <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+          </div>
+
           @if (roles()) {
-            <label>{{'Ngm.Copilot.PleaseSelectBusinessRole' | translate: {Default: 'please select business role'} }}</label>
+            <label>{{'Ngm.Copilot.PleaseSelectBusinessRole' | translate: {Default: 'Please select a business role'} }}</label>
             <mat-chip-listbox class="ngm-copilot-chat__roles mb-4" [(ngModel)]="role">
-              <mat-chip-option [selected]="role() === 'default'" [value]="'default'">{{'Ngm.Copilot.Common' | translate: {Default: 'Common'} }}</mat-chip-option>
               @for (item of roles(); track $index) {
-                <mat-chip-option [selected]="role() === item.name" [value]="item.name">{{item.title}}</mat-chip-option>
+                <mat-chip-option [selected]="role() === item.name" [value]="item.name"
+                  [matTooltip]="item.description"
+                  matTooltipPosition="above"
+                  >{{item.title}}</mat-chip-option>
               }
             </mat-chip-listbox>
           }
-
-          <div class="text-lg drop-shadow-md">
-              <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
-          </div>
-          <div class="text-sm font-light opacity-50">
-              <span class="font-bold">/Command</span> + {{ 'Ngm.Copilot.Prompt' | translate: {Default: 'prompt'} }}
-          </div>
-          <div class="text-sm font-light opacity-50">
-              <span class="font-bold">Enter</span> {{ 'Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'} }}
-          </div>
         }
-        
       </div>
     </div>
 
@@ -224,7 +226,7 @@
         <div class="ngm-colpilot__input-wrapper relative flex max-h-[144px] min-h-[50px] overflow-y-auto">
             <textarea #userInput matInput class="ngm-colpilot__input w-full absolute top-0 left-0 right-0 z-10"
                 id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-                [placeholder]="_placeholder || ('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'})"
+                [placeholder]="_placeholder || (('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'}))"
                 [formControl]="promptControl"
                 cdkTextareaAutosize
                 cdkAutosizeMinRows="1"
@@ -326,6 +328,7 @@
                 [popperHideOnScroll]="true"
                 [popperHideOnMouseLeave]="false"
                 [popperPlacement]="NgxPopperjsPlacements.TOPEND"
+                (click)="$event.stopPropagation()"
             >
                 <mat-icon fontSet="material-icons-round">tune</mat-icon>
             </button>

@@ -5,6 +5,7 @@ import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completion
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
+export const DefaultBusinessRole = 'default'
 
 export interface ICopilot {
   enabled: boolean
@@ -118,5 +119,6 @@ export function nonNullable<T>(value: T): value is NonNullable<T> {
 export type BusinessRoleType = {
   name: string;
   title: string;
+  titleCN: string;
   description: string;
 }

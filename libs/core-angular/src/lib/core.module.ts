@@ -9,7 +9,9 @@ import {
 } from './pipes/index'
 import { NxCoreService } from './services'
 
-
+/**
+ * @deprecated Migrate to `@metad/ocap-angular/core`
+ */
 @NgModule({
   declarations: [
     ShortNumberPipe,

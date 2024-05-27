@@ -61,14 +61,13 @@ export class PACCopilotService extends NgmCopilotService {
     super()
 
     effect(() => {
-      if (this.#store.copilotRole() !== undefined) {
+      if (this.#store.copilotRole()) {
         this.role.set(this.#store.copilotRole())
       }
     }, { allowSignalWrites: true })
 
     effect(() => {
       this.#store.setCopilotRole(this.role())
-      console.log('role', this.role())
     }, { allowSignalWrites: true })
   }
 

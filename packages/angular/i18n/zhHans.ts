@@ -84,6 +84,7 @@ export const ZhHans = {
       ClearMessages: '清空消息',
       CharacterLength: '字数',
       Resubmit: '重新提交',
+      Cancel: '取消',
       Model: '模型',
       Options: '选项',
       UseSystemPrompt: '使用系统提示',
@@ -99,7 +100,11 @@ export const ZhHans = {
       Copy: '复制',
       Regenerate: '重新生成',
       Common: '通用',
-      PleaseSelectBusinessRole: '请选择业务角色',
+      PleaseSelectBusinessRole: '请选择一个业务角色',
+      DefaultBusinessRole: {
+        title: '通用',
+        description: '通用业务角色'
+      }
     },
     Entity: {
       SelectEntities: '选择数据集',

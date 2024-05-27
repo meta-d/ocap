@@ -51,12 +51,33 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         const { role, command, k, filter } = options ?? {}
 
         const tenantId = RequestContext.currentTenantId()
-        const vectorStore = await this.getVectorStore(tenantId, role)
+        let vectorStore = await this.getVectorStore(tenantId, role)
         if (vectorStore) {
-            return await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
+            let results = []
+            try {
+                results = await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
+            } catch (error) {
+                results = []
+            }
+
+            // If no results found (index not exist for role or examples for command not exist in the role)
+            // try to search in default examples
+            if (!results.length) {
+                if (role) {
+                    this.#logger.debug(`Examples does not exist for role: ${role}. use examples in default default instead`)
+                    vectorStore = await this.getVectorStore(tenantId)
+                    try {
+                        results = await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
+                    } catch (error) {
+                        results = []
+                    }
+                }
+            }
+
+            return results
         }
 
-        return null
+        return []
     }
 
     async maxMarginalRelevanceSearch(query: string, options?: { role?: AiBusinessRole; command?: string; k: number; filter: any }) {
@@ -156,7 +177,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
         return examples
     }
 
-    async getVectorStore(tenantId: string, role: AiBusinessRole | string, command: string = null, organizationId: string = null) {
+    async getVectorStore(tenantId: string, role?: AiBusinessRole | string, command: string = null, organizationId: string = null) {
         const id = tenantId + `:${role || 'default'}${command ? ':' + command : ''}`
         if (!this.vectorStores.has(id)) {
             const embeddings = await this.getEmbeddings(tenantId, organizationId)

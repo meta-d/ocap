@@ -247,9 +247,9 @@ export class NgmCopilotChatComponent {
     this.copilotEngine?.conversations()
   )
   readonly isTools = toSignal(this.copilotService.isTools$)
-  readonly roles = this.copilotService.roles
+  readonly roles = this.copilotService.allRoles
   readonly role = this.copilotService.role
-  readonly roleTitle = computed(() => this.roles()?.find((role) => role.name === this.role())?.title)
+  readonly roleDetail = computed(() => this.roles()?.find((role) => role.name === this.role()))
 
   /**
    * 当前 Asking prompt
@@ -724,5 +724,12 @@ export class NgmCopilotChatComponent {
     if (this.copilotEngine) {
       this.copilotEngine.dropCopilot(event)
     }
+  }
+
+  switchRole() {
+    const roles = this.roles()
+    const index = roles.findIndex((role) => role.name === this.role())
+    const nextIndex = (index + 1) % roles.length
+    this.copilotService.setRole(roles[nextIndex].name)
   }
 }
