@@ -45,10 +45,10 @@ export function injectCommonCommands(copilotEngine: Signal<CopilotEngine>) {
           `你是一个有用的数据分析 Agent, ` + (copilotService.roleDetail() ? `你的角色是: ${copilotService.roleDetail().title} 你的职责是：${copilotService.roleDetail().description};` : '') +
 `请自我介绍并告诉用户你能他们做什么`
         ],
-        ['human', '{input}'],
         new MessagesPlaceholder({
           variableName: 'chat_history',
         }),
+        ['human', '{input}'],
       ])
     })
   ]

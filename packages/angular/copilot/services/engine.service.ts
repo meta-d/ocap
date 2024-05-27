@@ -63,7 +63,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly messages = computed(() => flatten(this.conversations$().map((c) => c.messages)))
 
   readonly lastConversation = computed(() => {
-    const conversation = this.conversations$()[this.conversations$().length - 1] ?? { messages: [] }
+    const conversation = this.conversations$()[this.conversations$().length - 1] ?? { messages: [], command: null } as CopilotChatConversation
 
     // Get last conversation messages
     const lastMessages = []
@@ -118,6 +118,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   readonly currentConversation = this.lastConversation
+  readonly currentCommand = computed(() => {
+    const command = this.currentConversation()?.command
+    const commands = this.commands()
+    return commands.find((c) => c.name === command)
+  })
   readonly chatHistoryMessages = computed(() => {
     const conversation =
       this.conversations$()[this.conversations$().length - 1] ?? ({ messages: [] } as CopilotChatConversation)
@@ -195,10 +200,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
       prompt = `/${command} ${prompt}`
       this.#logger?.warn(`Copilot command '${command}' is not found`)
     }
+
     if (command && commandWithContext?.command) {
-      this.upsertConversation(commandWithContext.command.agent?.conversation ? 'free' : 'command')
-      // Last user messages before add new messages
-      const lastUserMessages = this.lastUserMessages()
+      this.upsertConversation('command', command)
+
       const _command = commandWithContext.command
 
       // Exec command implementation
@@ -223,72 +228,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
         return
       }
 
-      // For agent command
-      if (_command.agent) {
-        return await this.triggerCommandAgent(prompt, _command, {
-          conversationId: assistantMessageId,
-          context: commandWithContext.context,
-          abortController
-        })
-      }
-
-      try {
-        if (_command.systemPrompt) {
-          newMessages.push({
-            id: nanoid(),
-            role: CopilotChatMessageRoleEnum.System,
-            content: await _command.systemPrompt()
-          })
-        }
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: prompt,
-          command
-        })
-      } catch (err: any) {
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: prompt,
-          command,
-          error: err.message
-        })
-        return
-      } finally {
-        // Append new messages to conversation
-        this.upsertMessage(...newMessages)
-      }
-
-      const functions = _command.actions
-        ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.copilotContext.getEntryPoint(id)))
-        : this.copilotContext.getChatCompletionFunctionDescriptions()
-
-      const body = {
-        ...this.aiOptions
-      }
-      if (functions.length) {
-        ;(body.functions = functions), (body.stream = false)
-      }
-
-      await this.triggerRequest(
-        [...lastUserMessages, ...newMessages],
-        {
-          options: {
-            body
-          }
-        },
-        {
-          abortController,
-          assistantMessageId,
-          conversationId: conversationId ?? this.#conversationId()
-        }
-      )
+      await this.callCommand(_command, prompt, options)
 
       // // New conversation after command completion
       // this.newConversation()
     } else {
-      this.upsertConversation('free')
+      if (this.currentCommand()?.agent.conversation) {
+        const _command = this.currentCommand()
+
+        return await this.callCommand(_command, prompt, options)
+      }
+
+      this.upsertConversation('free', null)
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
       // Allow empty prompt
@@ -329,6 +280,76 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
+  async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
+    const { abortController, conversationId, assistantMessageId, context } = options ?? {}
+
+    // Last user messages before add new messages
+    const lastUserMessages = this.lastUserMessages()
+
+    // For agent command
+    if (_command.agent) {
+      return await this.triggerCommandAgent(prompt, _command, {
+        conversationId: assistantMessageId,
+        context: context,
+        abortController
+      })
+    }
+
+    const newMessages = []
+    try {
+      if (_command.systemPrompt) {
+        newMessages.push({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.System,
+          content: await _command.systemPrompt()
+        })
+      }
+      newMessages.push({
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        content: prompt,
+        command: _command.name
+      })
+    } catch (err: any) {
+      newMessages.push({
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        content: prompt,
+        command: _command.name,
+        error: err.message
+      })
+      return
+    } finally {
+      // Append new messages to conversation
+      this.upsertMessage(...newMessages)
+    }
+
+    const functions = _command.actions
+      ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.copilotContext.getEntryPoint(id)))
+      : this.copilotContext.getChatCompletionFunctionDescriptions()
+
+    const body = {
+      ...this.aiOptions
+    }
+    if (functions.length) {
+      ;(body.functions = functions), (body.stream = false)
+    }
+
+    await this.triggerRequest(
+      [...lastUserMessages, ...newMessages],
+      {
+        options: {
+          body
+        }
+      },
+      {
+        abortController,
+        assistantMessageId,
+        conversationId: conversationId ?? this.#conversationId()
+      }
+    )
+  }
+
   async triggerCommandAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
     let { conversationId, abortController, context } = options ?? {}
     conversationId ??= nanoid()
@@ -336,6 +357,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     // Get chat history messages
     const chatHistoryMessages = this.chatHistoryMessages()
+
+    console.log(chatHistoryMessages)
 
     // Context content
     const contextContent = context ? await recognizeContext(content, context) : null
@@ -596,31 +619,32 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return nanoid()
   }
 
-  newConversation(type: CopilotChatConversation['type']) {
-    const conversation = this.#newConversation(type)
+  newConversation(type: CopilotChatConversation['type'], command: string) {
+    const conversation = this.#newConversation(type, command)
     this.#conversationId.set(conversation.id)
     this.conversations$.update((conversations) => [...conversations, conversation])
   }
 
-  #newConversation(type: CopilotChatConversation['type']): CopilotChatConversation {
+  #newConversation(type: CopilotChatConversation['type'], command: string): CopilotChatConversation {
     return {
       id: nanoid(),
       messages: [],
-      type
+      type,
+      command
     }
   }
 
-  upsertConversation(type: CopilotChatConversation['type']) {
+  upsertConversation(type: CopilotChatConversation['type'], command: string) {
     const conversations = this.conversations$()
     const lastConversation = conversations[conversations.length - 1]
     if (lastConversation?.type) {
       // Don't create new conversation only if two types are the same 'free'
       if (!(type === 'free' && lastConversation.type === 'free')) {
-        this.newConversation(type)
+        this.newConversation(type, command)
       }
     } else {
       this.updateLastConversation((conversation) => ({
-        ...(conversation ?? this.#newConversation(type)),
+        ...(conversation ?? this.#newConversation(type, command)),
         type
       }))
     }

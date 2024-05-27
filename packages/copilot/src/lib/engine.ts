@@ -12,10 +12,17 @@ export type CopilotChatOptions = {
   context?: CopilotContext
 }
 
+/**
+ * Chat conversation
+ */
 export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMessage> = {
   id: string
   messages: T[]
   type: 'free' | 'command'
+  /**
+   * Command of this conversation
+   */
+  command: string
 }
 
 /**

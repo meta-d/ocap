@@ -186,7 +186,8 @@ export class NgmCopilotChatComponent {
     {
       id: '',
       messages: PlaceholderMessages,
-      type: 'free'
+      type: 'free',
+      command: ''
     }
   ]
 
@@ -422,14 +423,13 @@ export class NgmCopilotChatComponent {
   })
 
   readonly filteredCommands = computed<Array<CopilotCommand & { example: string }>>(() => {
-    const text = this.prompt()?.toLowerCase()
+    const prompt = this.prompt()?.toLowerCase()
 
-    if (text) {
-      return (
-        this.commands()?.filter(
-          (item) => item.example?.toLowerCase().includes(text) || `/${item.alias?.toLowerCase() ?? ''}`.includes(text)
+    if (prompt?.startsWith('/')) {
+      const text = prompt.slice(1)
+      return this.commands()?.filter(
+          (item) => item.name?.toLowerCase().includes(text) || item.alias?.toLowerCase()?.includes(text)
         ) ?? []
-      )
     }
 
     return []
