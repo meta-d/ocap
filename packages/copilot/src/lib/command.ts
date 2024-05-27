@@ -61,7 +61,8 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   fewShotPrompt?: BaseStringPromptTemplate
   
   agent?: {
-    type: CopilotAgentType
+    type: CopilotAgentType;
+    conversation?: boolean;
   }
 }
 export enum CopilotAgentType {

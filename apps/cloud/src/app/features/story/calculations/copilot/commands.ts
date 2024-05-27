@@ -1,6 +1,6 @@
 import { Signal, computed, inject, signal } from '@angular/core'
-import { PromptTemplate, HumanMessagePromptTemplate, FewShotPromptTemplate, FewShotChatMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { SemanticSimilarityExampleSelector } from "@langchain/core/example_selectors";
+import { SemanticSimilarityExampleSelector } from '@langchain/core/example_selectors'
+import { ChatPromptTemplate, FewShotPromptTemplate, MessagesPlaceholder, PromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
 import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
@@ -15,13 +15,13 @@ import {
 import { NxStoryService } from '@metad/story/core'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from '@metad/story/story'
 import { TranslateService } from '@ngx-translate/core'
+import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot'
+import { CopilotExampleService } from 'apps/cloud/src/app/@core/services'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { firstValueFrom, of } from 'rxjs'
 import { CalculationSchema, RestrictedMeasureSchema } from './schema'
-import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot';
-import { CopilotExampleService } from 'apps/cloud/src/app/@core/services';
 
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
 Answer: {output}`)
@@ -92,7 +92,7 @@ export function injectCalculationCommand(
         calculation: {
           ...property,
           __id__: key,
-          calculationType: CalculationType.Restricted,
+          calculationType: CalculationType.Restricted
         } as RestrictedMeasureProperty
       })
 
@@ -106,73 +106,81 @@ export function injectCalculationCommand(
 
   const memberRetrieverTool = createDimensionMemberRetrieverTool(memberRetriever, defaultModel, defaultEntity)
   const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool]
-  return injectCopilotCommand('calculation', (async () => {
-    return {
-      alias: 'cc',
-      description: 'Describe the widget you want',
-      agent: {
-        type: CopilotAgentType.Default
-      },
-      systemPrompt: async ({ params }) => {
-        let entityType = defaultCube()
-        let prompt = ''
-        const cubeParams = params?.filter((param) => param.item)
-        if (cubeParams?.length) {
-          defaultModel.set(cubeParams[0].item.value.dataSourceId)
-          defaultDataSource.set(cubeParams[0].item.value.dataSource.key)
-          defaultEntity.set(cubeParams[0].item.key)
-        } else {
-          if (property() && dataSettings()) {
-            defaultDataSource.set(dataSettings().dataSource)
-            defaultEntity.set(dataSettings().entitySet)
-            entityType = await firstValueFrom(storyService.selectEntityType(dataSettings()))
-          }
-  
-          if (!defaultEntity() || !defaultEntity()) {
-            const result = await storyService.openDefultDataSettings()
-  
-            if (result?.dataSource && result?.entities[0]) {
-              defaultModel.set(result.modelId)
-              defaultDataSource.set(result.dataSource)
-              defaultEntity.set(result.entities[0])
-  
-              entityType = await firstValueFrom(
-                storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] })
-              )
+  return injectCopilotCommand(
+    'calculation',
+    (async () => {
+      return {
+        alias: 'cc',
+        description: 'Describe the widget you want',
+        agent: {
+          type: CopilotAgentType.Default
+        },
+        systemPrompt: async ({ params }) => {
+          let entityType = defaultCube()
+          let prompt = ''
+          const cubeParams = params?.filter((param) => param.item)
+          if (cubeParams?.length) {
+            defaultModel.set(cubeParams[0].item.value.dataSourceId)
+            defaultDataSource.set(cubeParams[0].item.value.dataSource.key)
+            defaultEntity.set(cubeParams[0].item.key)
+          } else {
+            if (property() && dataSettings()) {
+              defaultDataSource.set(dataSettings().dataSource)
+              defaultEntity.set(dataSettings().entitySet)
+              entityType = await firstValueFrom(storyService.selectEntityType(dataSettings()))
             }
-          }
-  
-          prompt += `The Cube structure is:
+
+            if (!defaultEntity() || !defaultEntity()) {
+              const result = await storyService.openDefultDataSettings()
+
+              if (result?.dataSource && result?.entities[0]) {
+                defaultModel.set(result.modelId)
+                defaultDataSource.set(result.dataSource)
+                defaultEntity.set(result.entities[0])
+
+                entityType = await firstValueFrom(
+                  storyService.selectEntityType({ dataSource: result.dataSource, entitySet: result.entities[0] })
+                )
+              }
+            }
+
+            prompt += `The Cube structure is:
   \`\`\`
   ${entityType ? markdownEntityType(entityType) : 'unknown'}
   \`\`\`
   `
-        }
-  
-        return `${prompt}
+          }
+
+          return `${prompt}
   Original calculation measure is:
   \`\`\`
   ${property() ? JSON.stringify(property(), null, 2) : 'No calculation property selected'}
   \`\`\`
   `
-      },
-      tools,
-      fewShotPrompt: new FewShotPromptTemplate({
-        exampleSelector: new SemanticSimilarityExampleSelector({
-          vectorStoreRetriever: new VectorStoreRetriever({
-            vectorStore: null, command: 'calculation',
-            role: copilotService.role }, copilotExampleService),
-          inputKeys: ["input"],
+        },
+        tools,
+        fewShotPrompt: new FewShotPromptTemplate({
+          exampleSelector: new SemanticSimilarityExampleSelector({
+            vectorStoreRetriever: new VectorStoreRetriever(
+              {
+                vectorStore: null,
+                command: 'calculation',
+                role: copilotService.role
+              },
+              copilotExampleService
+            ),
+            inputKeys: ['input']
+          }),
+          examplePrompt,
+          prefix: `Refer to the examples below to provide solutions to the problem.`,
+          suffix: 'Question: {input}\nAnswer: ',
+          inputVariables: ['input']
         }),
-        examplePrompt,
-        prefix: `Refer to the examples below to provide solutions to the problem.`,
-        suffix: "Question: {input}\nAnswer: ",
-        inputVariables: ["input"],
-      }),
-      prompt: ChatPromptTemplate.fromMessages([
-        [
-          'system',
-          `你是一个有用的数据分析 Agent，请使用 MDX technology to edit (if original calculation measure is provided) or create (if original calculation measure is not provided) calculation measure based on the Cube information.
+        prompt: ChatPromptTemplate.fromMessages([
+          [
+            'system',
+            `你是一个有用的数据分析 Agent, 
+请使用 MDX technology to edit (if original calculation measure is provided) or create (if original calculation measure is not provided) calculation measure based on the Cube information.
 请选择一种合适的 tool 来创建 calculation measure.
 A dimension can only be used once, and a hierarchy cannot appear on multiple independent axes.
 The name of new calculation measure should be unique with existing measures.
@@ -183,14 +191,15 @@ ${makeCubeRulesPrompt()}
 
 {system_prompt}
 `
-        ],
-        ['human', '{input}'],
-        new MessagesPlaceholder({
-          variableName: 'chat_history',
-          optional: true
-        }),
-        new MessagesPlaceholder('agent_scratchpad')
-      ])
-    } as CopilotCommand
-  })())
+          ],
+          ['human', '{input}'],
+          new MessagesPlaceholder({
+            variableName: 'chat_history',
+            optional: true
+          }),
+          new MessagesPlaceholder('agent_scratchpad')
+        ])
+      } as CopilotCommand
+    })()
+  )
 }

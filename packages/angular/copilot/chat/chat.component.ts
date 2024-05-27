@@ -29,6 +29,7 @@ import {
 } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatChipsModule } from '@angular/material/chips'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
@@ -45,7 +46,7 @@ import {
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
   CopilotCommand,
-  CopilotEngine,
+  CopilotEngine
 } from '@metad/copilot'
 import {
   NgmDisplayBehaviourComponent,
@@ -54,7 +55,7 @@ import {
   NgmSearchComponent,
   NgmTableComponent
 } from '@metad/ocap-angular/common'
-import { DensityDirective } from '@metad/ocap-angular/core'
+import { DensityDirective, fadeAnimation } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
@@ -66,18 +67,28 @@ import {
   NgxPopperjsTriggers
 } from 'ngx-popperjs'
 import { derivedAsync } from 'ngxtension/derived-async'
-import { BehaviorSubject, catchError, debounceTime, delay, filter, of, startWith, switchMap, tap, throttleTime } from 'rxjs'
+import {
+  BehaviorSubject,
+  catchError,
+  debounceTime,
+  delay,
+  filter,
+  of,
+  startWith,
+  switchMap,
+  tap,
+  throttleTime
+} from 'rxjs'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
-import { injectCopilotCommand } from '../hooks'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
-import { MatChipsModule } from '@angular/material/chips'
+import { injectCommonCommands } from '../hooks/common'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
-export const AUTO_SUGGESTION_STOP = ["\n", ".", ",", "@", "#"]
+export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
 
 @Component({
   standalone: true,
@@ -121,7 +132,8 @@ export const AUTO_SUGGESTION_STOP = ["\n", ".", ",", "@", "#"]
   ],
   host: {
     class: 'ngm-copilot-chat'
-  }
+  },
+  animations: [ fadeAnimation ]
 })
 export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
@@ -249,7 +261,7 @@ export class NgmCopilotChatComponent {
   readonly isTools = toSignal(this.copilotService.isTools$)
   readonly roles = this.copilotService.allRoles
   readonly role = this.copilotService.role
-  readonly roleDetail = computed(() => this.roles()?.find((role) => role.name === this.role()))
+  readonly roleDetail = this.copilotService.roleDetail
 
   /**
    * 当前 Asking prompt
@@ -287,8 +299,8 @@ export class NgmCopilotChatComponent {
             type === 'command'
               ? Promise.resolve(commandWithContext?.command.description)
               : type === 'context' && commandWithContext
-              ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption)
-              : Promise.resolve('')
+                ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption)
+                : Promise.resolve('')
         }
       })
     })
@@ -432,13 +444,14 @@ export class NgmCopilotChatComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #clearCommand = injectCopilotCommand({
-    name: 'clear',
-    description: this.translateService.instant('Ngm.Copilot.ClearConversation', { Default: 'Clear conversation' }),
-    implementation: async () => {
-      this.copilotEngine.clear()
-    }
-  })
+  // #clearCommand = injectCopilotCommand({
+  //   name: 'clear',
+  //   description: this.translateService.instant('Ngm.Copilot.ClearConversation', { Default: 'Clear conversation' }),
+  //   implementation: async () => {
+  //     this.copilotEngine.clear()
+  //   }
+  // })
+  #clearCommands = injectCommonCommands(this.copilotEngine$)
 
   /**
   |--------------------------------------------------------------------------
@@ -453,21 +466,23 @@ export class NgmCopilotChatComponent {
       }
     })
 
-  private autocompleteSub = this.promptControl.valueChanges.pipe(
-    debounceTime(AUTO_SUGGESTION_DEBOUNCE_TIME),
-    filter((text) => !AUTO_SUGGESTION_STOP.includes(text.slice(-1))),
-    switchMap((prompt) => {
-      const onlyCommand = this.onlyCommand()
-      const command = this.command()
-      const commandWithContext = this.commandWithContext()
-      return onlyCommand
-        ? of(command?.description)
-        : command?.suggestionTemplate
-        ? this.copilotEngine.executeCommandSuggestion(prompt, {...commandWithContext, })
-        : of(null)
-    }),
-    catchError(() => of(null))
-  ).subscribe((text) => this.promptCompletion.set(text))
+  private autocompleteSub = this.promptControl.valueChanges
+    .pipe(
+      debounceTime(AUTO_SUGGESTION_DEBOUNCE_TIME),
+      filter((text) => !AUTO_SUGGESTION_STOP.includes(text.slice(-1))),
+      switchMap((prompt) => {
+        const onlyCommand = this.onlyCommand()
+        const command = this.command()
+        const commandWithContext = this.commandWithContext()
+        return onlyCommand
+          ? of(command?.description)
+          : command?.suggestionTemplate
+            ? this.copilotEngine.executeCommandSuggestion(prompt, { ...commandWithContext })
+            : of(null)
+      }),
+      catchError(() => of(null))
+    )
+    .subscribe((text) => this.promptCompletion.set(text))
 
   constructor() {
     effect(
@@ -518,6 +533,10 @@ export class NgmCopilotChatComponent {
     })
 
     this.promptControl.setValue(prompt)
+  }
+
+  newChat() {
+    this.clear()
   }
 
   async askCopilotStream(
@@ -672,7 +691,9 @@ export class NgmCopilotChatComponent {
         const activatedPrompt =
           this.#activatedPrompt() ||
           this.filteredCommands()[0]?.examples?.[0] ||
-          (this.filteredContextItems()[0] ? this.beforeLastWord() + ' @' + this.filteredContextItems()[0].uKey + ' ' : null)
+          (this.filteredContextItems()[0]
+            ? this.beforeLastWord() + ' @' + this.filteredContextItems()[0].uKey + ' '
+            : null)
         if (activatedPrompt) {
           this.promptControl.setValue(activatedPrompt)
         }

@@ -1,4 +1,5 @@
 import { Message } from 'ai'
+import { BaseMessage } from '@langchain/core/messages'
 import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
@@ -52,6 +53,9 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
+/**
+ * @deprecated remove Message from `ai` package
+ */
 export interface CopilotChatMessage extends Omit<Message, 'role'> {
   error?: string
 
@@ -63,7 +67,7 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
 
   status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
 
-  
+  lcMessage?: BaseMessage
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -71,9 +75,15 @@ export interface CopilotChatResponseChoice {
   //
 }
 
+/**
+ * @deprecated use LangChain
+ */
 export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean; verbose?: boolean }
 
 // Helper function
+/**
+ * @deprecated use LangChain
+ */
 export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
   if (message.role !== CopilotChatMessageRoleEnum.Assistant) {
     throw new Error('Only assistant messages can be used to generate function calls')

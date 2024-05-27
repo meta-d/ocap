@@ -9,6 +9,8 @@
     <span class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">Beta</span>
   </div>
 
+  <span class="flex-1"></span>
+
   @if (role()) {
     <span class="cursor-pointer bg-purple-100 text-purple-800 text-sm font-medium me-2 px-2 py-0.5 rounded-xl dark:bg-purple-900 dark:text-purple-300"
       [matTooltip]="roleDetail()?.description"
@@ -16,6 +18,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="h-4 w-4 inline-block align-text-bottom"><path fill="currentColor" fill-rule="evenodd" d="M12 7.42a22 22 0 0 0-2.453 2.127A22 22 0 0 0 7.42 12a22 22 0 0 0 2.127 2.453c.807.808 1.636 1.52 2.453 2.128a22 22 0 0 0 2.453-2.128A22 22 0 0 0 16.58 12a22 22 0 0 0-2.127-2.453A22 22 0 0 0 12 7.42m1.751-1.154a25 25 0 0 1 2.104 1.88 25 25 0 0 1 1.88 2.103c.316-.55.576-1.085.779-1.59.35-.878.507-1.625.503-2.206-.003-.574-.16-.913-.358-1.111-.199-.199-.537-.356-1.112-.36-.58-.003-1.328.153-2.205.504-.506.203-1.04.464-1.59.78Zm3.983 7.485a25 25 0 0 1-1.88 2.104 25 25 0 0 1-2.103 1.88 13 13 0 0 0 1.59.779c.878.35 1.625.507 2.206.503.574-.003.913-.16 1.111-.358.199-.199.356-.538.36-1.112.003-.58-.154-1.328-.504-2.205a13 13 0 0 0-.78-1.59ZM12 18.99c.89.57 1.768 1.03 2.605 1.364 1.026.41 2.036.652 2.955.646.925-.006 1.828-.267 2.5-.94.673-.672.934-1.575.94-2.5.006-.919-.236-1.929-.646-2.954A15.7 15.7 0 0 0 18.99 12a15.6 15.6 0 0 0 1.364-2.606c.41-1.025.652-2.035.646-2.954-.006-.925-.267-1.828-.94-2.5-.672-.673-1.575-.934-2.5-.94-.919-.006-1.929.235-2.954.646-.838.335-1.716.795-2.606 1.364a15.7 15.7 0 0 0-2.606-1.364C8.37 3.236 7.36 2.994 6.44 3c-.925.006-1.828.267-2.5.94-.673.672-.934 1.575-.94 2.5-.006.919.235 1.929.646 2.955A15.7 15.7 0 0 0 5.01 12c-.57.89-1.03 1.768-1.364 2.605-.41 1.026-.652 2.036-.646 2.955.006.925.267 1.828.94 2.5.672.673 1.575.934 2.5.94.92.006 1.93-.235 2.955-.646A15.7 15.7 0 0 0 12 18.99m-1.751-1.255a25 25 0 0 1-2.104-1.88 25 25 0 0 1-1.88-2.104c-.315.55-.576 1.085-.779 1.59-.35.878-.507 1.625-.503 2.206.003.574.16.913.359 1.111.198.199.537.356 1.111.36.58.003 1.328-.153 2.205-.504.506-.203 1.04-.463 1.59-.78Zm-3.983-7.486a25 25 0 0 1 1.88-2.104 25 25 0 0 1 2.103-1.88 13 13 0 0 0-1.59-.779c-.878-.35-1.625-.507-2.206-.503-.574.003-.913.16-1.111.359-.199.198-.356.537-.36 1.111-.003.58.153 1.328.504 2.205.203.506.464 1.04.78 1.59Z" clip-rule="evenodd"></path></svg>
       {{roleDetail()?.title}}
     </span>
+  }
+
+  @if (conversations()) {
+    <button class="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10" [matTooltip]="'Ngm.Copilot.NewChat' | translate: {Default: 'New chat'}"
+      (click)="newChat()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="icon-xl-heavy"><path d="M15.673 3.913a3.121 3.121 0 1 1 4.414 4.414l-5.937 5.937a5 5 0 0 1-2.828 1.415l-2.18.31a1 1 0 0 1-1.132-1.13l.311-2.18A5 5 0 0 1 9.736 9.85zm3 1.414a1.12 1.12 0 0 0-1.586 0l-5.937 5.937a3 3 0 0 0-.849 1.697l-.123.86.86-.122a3 3 0 0 0 1.698-.849l5.937-5.937a1.12 1.12 0 0 0 0-1.586M11 4A1 1 0 0 1 10 5c-.998 0-1.702.008-2.253.06-.54.052-.862.141-1.109.267a3 3 0 0 0-1.311 1.311c-.134.263-.226.611-.276 1.216C5.001 8.471 5 9.264 5 10.4v3.2c0 1.137 0 1.929.051 2.546.05.605.142.953.276 1.216a3 3 0 0 0 1.311 1.311c.263.134.611.226 1.216.276.617.05 1.41.051 2.546.051h3.2c1.137 0 1.929 0 2.546-.051.605-.05.953-.142 1.216-.276a3 3 0 0 0 1.311-1.311c.126-.247.215-.569.266-1.108.053-.552.06-1.256.06-2.255a1 1 0 1 1 2 .002c0 .978-.006 1.78-.069 2.442-.064.673-.192 1.27-.475 1.827a5 5 0 0 1-2.185 2.185c-.592.302-1.232.428-1.961.487C15.6 21 14.727 21 13.643 21h-3.286c-1.084 0-1.958 0-2.666-.058-.728-.06-1.369-.185-1.96-.487a5 5 0 0 1-2.186-2.185c-.302-.592-.428-1.233-.487-1.961C3 15.6 3 14.727 3 13.643v-3.286c0-1.084 0-1.958.058-2.666.06-.729.185-1.369.487-1.961A5 5 0 0 1 5.73 3.545c.556-.284 1.154-.411 1.827-.475C8.22 3.007 9.021 3 10 3A1 1 0 0 1 11 4"></path></svg>
+    </button>
   }
 </div>
 
@@ -25,7 +34,7 @@
         @for (message of conversation.messages; track message.id) {
             @switch (message.role) {
                 @case (CopilotChatMessageRoleEnum.Assistant) {
-                <div class="pl-2 pr-4 flex">
+                <div @fadeAnimation class="pl-2 pr-4 flex">
                     <div class="flex-1 flex items-start overflow-auto">
                         <div class="relative flex flex-col items-center shrink-0">
                             @if (assistantAvatar) {
@@ -113,7 +122,7 @@
                 </div>
                 }
                 @case (CopilotChatMessageRoleEnum.User) {
-                    <div class="pl-4 flex">
+                    <div @fadeAnimation class="pl-4 flex">
                         <div class="flex-1 flex items-start justify-end overflow-auto">
                             <div class="flex flex-col justify-start items-end overflow-auto relative p-[10px] group">
                                 @if (message.templateRef) {
@@ -175,7 +184,7 @@
                     </div>
                 }
                 @case (CopilotChatMessageRoleEnum.Info) {
-                <div class="pl-4 flex">
+                <div @fadeAnimation class="pl-4 flex">
                     <div class="flex-1 flex items-start justify-end overflow-auto">
                         <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
                             {{ message.content }}
@@ -193,15 +202,15 @@
 
       <div class="flex-1 flex flex-col justify-center items-center gap-1">
         @if (!conversations()?.length) {
-          <div class="text-lg drop-shadow-md">
+          <div @fadeAnimation class="text-xl drop-shadow-md mb-4">
             <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
           </div>
 
           @if (roles()) {
-            <label>{{'Ngm.Copilot.PleaseSelectBusinessRole' | translate: {Default: 'Please select a business role'} }}</label>
+            <label @fadeAnimation>{{'Ngm.Copilot.PleaseSelectBusinessRole' | translate: {Default: 'Please select a business role'} }}</label>
             <mat-chip-listbox class="ngm-copilot-chat__roles mb-4" [(ngModel)]="role">
               @for (item of roles(); track $index) {
-                <mat-chip-option [selected]="role() === item.name" [value]="item.name"
+                <mat-chip-option @fadeAnimation [selected]="role() === item.name" [value]="item.name"
                   [matTooltip]="item.description"
                   matTooltipPosition="above"
                   >{{item.title}}</mat-chip-option>
@@ -216,7 +225,7 @@
         [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
 </div>
 
-<div class="relative m-3 border rounded-lg shadow-sm overflow-hidden border-neutral-200 dark:border-neutral-800"
+<div class="relative m-3 border rounded-2xl shadow-sm overflow-hidden border-neutral-100 dark:border-neutral-800"
     [class.ngm-colpilot__active]="isFoucs(userInput)"
     (click)="userInput.focus()"
 >
@@ -330,29 +339,28 @@
                 [popperPlacement]="NgxPopperjsPlacements.TOPEND"
                 (click)="$event.stopPropagation()"
             >
-                <mat-icon fontSet="material-icons-round">tune</mat-icon>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="h-5 w-5 shrink-0"><path fill="currentColor" fill-rule="evenodd" d="M11.568 3.5a1 1 0 0 0-.863.494l-.811 1.381A3 3 0 0 1 7.33 6.856l-1.596.013a1 1 0 0 0-.858.501l-.44.761a1 1 0 0 0-.003.992l.792 1.4a3 3 0 0 1 0 2.954l-.792 1.4a1 1 0 0 0 .004.992l.439.76a1 1 0 0 0 .858.502l1.596.013a3 3 0 0 1 2.564 1.48l.811 1.382a1 1 0 0 0 .863.494h.87a1 1 0 0 0 .862-.494l.812-1.381a3 3 0 0 1 2.563-1.481l1.596-.013a1 1 0 0 0 .859-.501l.439-.761a1 1 0 0 0 .004-.992l-.793-1.4a3 3 0 0 1 0-2.953l.793-1.401a1 1 0 0 0-.004-.992l-.439-.76a1 1 0 0 0-.859-.502l-1.596-.013a3 3 0 0 1-2.563-1.48L13.3 3.993a1 1 0 0 0-.862-.494zM8.98 2.981A3 3 0 0 1 11.568 1.5h.87a3 3 0 0 1 2.588 1.481l.81 1.382a1 1 0 0 0 .855.494l1.597.013a3 3 0 0 1 2.575 1.502l.44.76a3 3 0 0 1 .011 2.975l-.792 1.4a1 1 0 0 0 0 .985l.792 1.401a3 3 0 0 1-.012 2.974l-.439.761a3 3 0 0 1-2.575 1.503l-1.597.012a1 1 0 0 0-.854.494l-.811 1.382a3 3 0 0 1-2.588 1.481h-.87a3 3 0 0 1-2.588-1.481l-.811-1.382a1 1 0 0 0-.855-.494l-1.596-.012a3 3 0 0 1-2.576-1.503l-.439-.76a3 3 0 0 1-.012-2.975l.793-1.4a1 1 0 0 0 0-.985l-.793-1.4a3 3 0 0 1 .012-2.975l.44-.761A3 3 0 0 1 5.717 4.87l1.596-.013a1 1 0 0 0 .855-.494z" clip-rule="evenodd"></path><path fill="currentColor" fill-rule="evenodd" d="M12.003 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M8.502 12a3.5 3.5 0 1 1 7 .001 3.5 3.5 0 0 1-7-.001" clip-rule="evenodd"></path></svg>
             </button>
 
             <span class="flex-1"></span>
             
             @if (answering()) {
-                <button type="button" class="rounded-full m-1 border-solid border-2 border-gray-950 p-1 dark:border-gray-200" aria-label="停止生成"
-                    (click)="stopGenerating()">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-2 w-2 text-token-text-primary" height="16" width="16">
-                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2z" stroke-width="0"></path>
-                    </svg>
-                </button>
+              <button type="button" class="rounded-full md:bottom-3 md:right-3 right-2 border-solid p-1 hover:opacity-60 text-white bg-black dark:bg-white dark:text-black" aria-label="停止生成"
+                (click)="stopGenerating()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-lg"><rect width="10" height="10" x="7" y="7" fill="currentColor" rx="1.25"></rect></svg>
+              </button>
             } @else {
-                <button class="rounded-full bg-black md:bottom-3 md:right-3 dark:hover:bg-white right-2 disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white p-0.5 border border-solid border-black dark:border-white dark:bg-white bottom-1.5 transition-colors" data-testid="send-button"
-                    [disabled]="!prompt()"
-                    (click)="askCopilotStream(promptControl.value)"
-                >
-                    <span class="" data-state="closed">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-white dark:text-black">
-                            <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
-                    </span>
-                </button>
+              <button type="button" class="rounded-full md:bottom-3 md:right-3 right-2 border-solid p-1 bg-black disabled:opacity-10 disabled:text-gray-400 enabled:bg-black text-white dark:border-white dark:bg-white bottom-1.5 transition-colors
+                hover:opacity-60" data-testid="send-button"
+                [disabled]="!prompt()"
+                (click)="askCopilotStream(promptControl.value)"
+              >
+                <span class="" data-state="closed">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-white dark:text-black">
+                    <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+              </button>
             }
         </div>
     </div>

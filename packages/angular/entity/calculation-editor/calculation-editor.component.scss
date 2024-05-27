@@ -22,3 +22,11 @@
   min-width: 400px;
   @apply p-4;
 }
+
+::ng-deep {
+  .mdc-dialog__container {
+    .ngm-calculated-measure {
+      min-width: 600px;
+    }
+  }
+}

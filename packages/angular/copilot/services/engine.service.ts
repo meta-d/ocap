@@ -1,7 +1,9 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { Runnable } from '@langchain/core/runnables'
 import {
   AIOptions,
   CopilotAgentType,
@@ -115,6 +117,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return messages
   })
 
+  readonly currentConversation = this.lastConversation
+  readonly chatHistoryMessages = computed(() => {
+    const conversation =
+      this.conversations$()[this.conversations$().length - 1] ?? ({ messages: [] } as CopilotChatConversation)
+    return conversation.messages.map(({ lcMessage }) => lcMessage).filter((m) => !!m)
+  })
+
   readonly commands = computed(() => this.copilotContext.commands())
 
   readonly #dropActions = signal<Record<string, DropAction>>({})
@@ -187,14 +196,31 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.#logger?.warn(`Copilot command '${command}' is not found`)
     }
     if (command && commandWithContext?.command) {
-      this.upsertConversation('command')
+      this.upsertConversation(commandWithContext.command.agent?.conversation ? 'free' : 'command')
       // Last user messages before add new messages
       const lastUserMessages = this.lastUserMessages()
       const _command = commandWithContext.command
 
       // Exec command implementation
       if (_command.implementation) {
-        return await _command.implementation()
+        this.upsertMessage({
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          content: prompt,
+          command,
+          lcMessage: new HumanMessage({ content: prompt })
+        })
+        const result = await _command.implementation()
+        if (typeof result === 'string') {
+          this.upsertMessage({
+            id: nanoid(),
+            role: CopilotChatMessageRoleEnum.Assistant,
+            content: result,
+            status: 'done',
+            lcMessage: new AIMessage({ content: result })
+          })
+        }
+        return
       }
 
       // For agent command
@@ -308,6 +334,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     conversationId ??= nanoid()
     abortController ??= new AbortController()
 
+    // Get chat history messages
+    const chatHistoryMessages = this.chatHistoryMessages()
+
     // Context content
     const contextContent = context ? await recognizeContext(content, context) : null
     const params = await recognizeContextParams(content, context)
@@ -324,7 +353,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         id: nanoid(),
         role: CopilotChatMessageRoleEnum.User,
         content: content,
-        command: command.name
+        command: command.name,
+        lcMessage: new HumanMessage({ content })
       })
     } catch (err: any) {
       messages.push({
@@ -353,23 +383,34 @@ export class NgmCopilotEngineService implements CopilotEngine {
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
 
     try {
-      let agentExecutor: AgentExecutor = null
+      let chain: Runnable = null
       const llm = this.llm()
       const verbose = this.verbose()
       if (llm) {
-        if (command.agent.type === CopilotAgentType.Default) {
-          const agent = await createOpenAIToolsAgent({
-            llm,
-            tools: command.tools,
-            prompt: command.prompt
-          })
-          agentExecutor = new AgentExecutor({
-            agent,
-            tools: command.tools as any[],
-            verbose
-          })
-        } else {
-          throw new Error(`Agent type '${command.agent.type}' is not supported`)
+        switch (command.agent.type) {
+          case CopilotAgentType.Default: {
+            const agent = await createOpenAIToolsAgent({
+              llm,
+              tools: command.tools,
+              prompt: command.prompt
+            })
+            chain = new AgentExecutor({
+              agent,
+              tools: command.tools as any[],
+              verbose
+            })
+            break
+          }
+          case CopilotAgentType.LangChain: {
+            if (command.prompt) {
+              chain = command.prompt.pipe(this.llm()).pipe(new StringOutputParser())
+            } else {
+              throw new Error(`Agent type '${command.agent.type}' need prompt template`)
+            }
+            break
+          }
+          default:
+            throw new Error(`Agent type '${command.agent.type}' is not supported`)
         }
       } else {
         throw new Error('LLM is not available')
@@ -382,8 +423,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
 
       let verboseContent = ''
-      const result = await agentExecutor.invoke(
-        { input: content, system_prompt: systemPrompt, context: contextContent },
+      const result = await chain.invoke(
+        { input: content, system_prompt: systemPrompt, context: contextContent, chat_history: chatHistoryMessages },
         {
           callbacks: [
             {
@@ -413,7 +454,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,
         content: verboseContent,
-        status: 'done'
+        status: 'done',
+        lcMessage: new AIMessage({ content: verboseContent })
       })
       return null
     } catch (err: any) {
@@ -431,7 +473,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  // useChat
+  /**
+   * @deprecated use `triggerCommandAgent` instead
+   */
   async triggerRequest(
     messagesSnapshot: CopilotChatMessage[],
     { options, data }: ChatRequestOptions = {},
@@ -659,7 +703,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  async executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext; signal?: AbortSignal }): Promise<string> {
+  async executeCommandSuggestion(
+    input: string,
+    options: { command: CopilotCommand; context: CopilotContext; signal?: AbortSignal }
+  ): Promise<string> {
     const { command, context, signal } = options
     // Context content
     const contextContent = context ? await recognizeContext(input, context) : null
@@ -684,7 +731,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       } else {
         throw new Error('LLM is not available')
       }
-    }catch (err: any) {
+    } catch (err: any) {
       throw new Error('Error: ' + err.message)
     }
   }

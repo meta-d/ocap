@@ -42,14 +42,26 @@ export class NgmCopilotContextService implements CopilotContext {
   })
 
   // Entry Points
+  /**
+   * @deprecated use tools instead
+   */
   readonly #entryPoints = signal<Record<string, AnnotatedFunction<any[]>>>({})
 
+  /**
+   * @deprecated use tools instead
+   */
   readonly getFunctionCallHandler = computed(() => {
     return entryPointsToFunctionCallHandler(Object.values(this.#entryPoints()))
   })
+  /**
+   * @deprecated use tools instead
+   */
   readonly getChatCompletionFunctionDescriptions = computed(() => {
     return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
   })
+  /**
+   * @deprecated use tools instead
+   */
   readonly getGlobalFunctionDescriptions = computed(() => {
     const ids = Object.keys(this.#entryPoints()).filter(
       (id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id))

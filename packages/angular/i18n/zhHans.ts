@@ -104,7 +104,9 @@ export const ZhHans = {
       DefaultBusinessRole: {
         title: '通用',
         description: '通用业务角色'
-      }
+      },
+      Help: '帮助',
+      NewChat: '新聊天'
     },
     Entity: {
       SelectEntities: '选择数据集',

@@ -82,7 +82,7 @@
         </div>
     </div>
 
-    <div class="mat-typography flex-1 flex flex-col justify-start items-stretch overflow-auto" cdkDropListGroup>
+    <div class="mat-typography flex-1 flex flex-col justify-start items-stretch overflow-hidden" cdkDropListGroup>
         @switch (calculationType.value) {
             @case (CALCULATION_TYPE.Calculated) {
                 <!--
@@ -93,7 +93,7 @@
                     [(ngModel)]="calculation"
                 >
                 </ngm-calculation-sql> -->
-                <ngm-calculated-measure story class="max-w-full w-full h-full min-w-[600px]"
+                <ngm-calculated-measure story class="max-w-full h-full"
                     [dataSettings]="_dataSettings()"
                     [entityType]="entityType()"
                     [syntax]="entitySyntax()"
