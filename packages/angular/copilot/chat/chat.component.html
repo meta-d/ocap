@@ -229,62 +229,75 @@
         [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
 </div>
 
-<div class="relative m-3 border rounded-2xl shadow-sm overflow-hidden border-neutral-100 dark:border-neutral-800"
+<div class="relative m-3 border rounded-2xl shadow-sm overflow-hidden border-neutral-100 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
     [class.ngm-colpilot__active]="isFoucs(userInput)"
     (click)="userInput.focus()"
 >
     <mat-progress-bar mode="buffer" [class.opacity-100]="answering()" class="opacity-0 top-0 left-0 w-full transition duration-300" style="position: absolute; z-index: 1;"></mat-progress-bar>
 
-    <div class="relative flex flex-col m-2">
-        <div class="ngm-colpilot__input-wrapper relative flex max-h-[144px] min-h-[50px] overflow-y-auto">
-            <textarea #userInput matInput class="ngm-colpilot__input w-full absolute top-0 left-0 right-0 z-10"
-                id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-                [placeholder]="_placeholder || (('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'}))"
-                [formControl]="promptControl"
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="1"
-                cdkAutosizeMaxRows="8"
-                (keydown)="triggerFun($event, autoPrompts)"
+    <div class="relative flex flex-col m-1">
 
-                [matAutocomplete]="autoPrompts"
-                matAutocompletePosition="above"
-                >
-            </textarea>
+      @if (command()) {
+        <div class="flex flex-col divide-y overflow-hidden rounded-b-md rounded-t-xl bg-white dark:bg-black">
+          <div class="flex items-center py-2 gap-2 pl-3 pr-1.5 text-sm whitespace-nowrap">
+            <span class="font-bold">{{command().name}}</span>
+            @if (context()) {
+              <span class="flex items-center px-1 py-0.5 rounded-full bg-neutral-50 dark:bg-neutral-900 cursor-pointer"
+                [matTooltip]="context().caption"
+                [matMenuTriggerFor]="contextMenu"
+                [matMenuTriggerData]="{word: {text: context().uKey }}"
+                (click)="$event.stopPropagation()">{{context().caption}}<button class="flex-shrink-0 hover:text-red-500" (click)="removeContext()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-lg"><path fill="currentColor" fill-rule="evenodd" d="M7.293 7.293a1 1 0 0 1 1.414 0L12 10.586l3.293-3.293a1 1 0 1 1 1.414 1.414L13.414 12l3.293 3.293a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L10.586 12 7.293 8.707a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg></button></span>
+            }
+            <span class="overflow-hidden text-ellipsis">{{command().description}}</span>
+          </div>
+        </div>
+      }
 
-            <div class="ngm-colpilot__words block z-20 whitespace-pre-wrap">
-                @for (line of promptWords(); track $index; let last = $last) {
-                    @for (word of line; track $index) {
-                        @switch (word.type) {
-                          @case('command') {
-                              <span class="rounded-md cursor-pointer bg-neutral-200 dark:bg-neutral-600" [matTooltip]="word.description | async">{{word.text}}</span>
-                          }
-                          @case('context') {
-                            <span class="rounded-md cursor-pointer bg-neutral-200 dark:bg-neutral-600"
-                                [matTooltip]="word.description | async"
-                                [matMenuTriggerFor]="contextMenu"
-                                [matMenuTriggerData]="{word: word, index: $index}"
-                                (click)="$event.stopPropagation()"
-                                >{{word.text}}</span>
-                          }
-                          @default {
-                              <span class="opacity-0">{{word.text}}</span>
-                          }
-                        }
-                          <span>{{' '}}</span>
-                    }
-                  @if (!last) {
-                    <br>
+      <div class="ngm-colpilot__input-wrapper mt-2 relative flex">
+        <textarea #userInput matInput class="ngm-colpilot__input w-full h-full px-1.5 z-10 resize-none overflow-visible"
+          id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
+          [placeholder]="_placeholder || (('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'}))"
+          [formControl]="promptControl"
+          (keydown)="triggerFun($event, autoPrompts)"
+
+          [matAutocomplete]="autoPrompts"
+          matAutocompletePosition="above"
+        >
+        </textarea>
+
+          <!-- <div class="ngm-colpilot__words absolute top-0 block z-20 whitespace-pre-wrap">
+            @for (line of promptWords(); track $index; let last = $last) {
+              @for (word of line; track $index) {
+                @switch (word.type) {
+                  @case('command') {
+                    <span class="rounded-md cursor-pointer bg-neutral-200 dark:bg-neutral-600" [matTooltip]="word.description | async">{{word.text}}</span>
+                  }
+                  @case('context') {
+                    <span class="rounded-md cursor-pointer bg-neutral-200 dark:bg-neutral-600"
+                        [matTooltip]="word.description | async"
+                        [matMenuTriggerFor]="contextMenu"
+                        [matMenuTriggerData]="{word: word, index: $index}"
+                        (click)="$event.stopPropagation()"
+                        >{{word.text}}</span>
+                  }
+                  @default {
+                    <span class="opacity-0">{{word.text}}</span>
                   }
                 }
-                
-            </div>
-        
-          @if (promptCompletion()) {
-            <div class="absolute top-0 left-0 whitespace-pre-wrap">
-                <span class="opacity-30 z-0">{{prompt()}}<span class="italic">{{promptCompletion()}}</span></span>
-            </div>
-          }
-        </div>
+                <span>{{' '}}</span>
+              }
+              @if (!last) {
+                <br>
+              }
+            }
+          </div> -->
+          
+        @if (promptCompletion()) {
+          <div class="absolute top-0 left-0 whitespace-pre-wrap">
+              <span class="opacity-30 z-0">{{prompt()}}<span class="italic">{{promptCompletion()}}</span></span>
+          </div>
+        }
+      </div>
 
         <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__compact"
             autoActiveFirstOption hideSingleSelectionIndicator
@@ -305,7 +318,8 @@
                 [style.height.px]="240" [itemSize]="30"
             >
               <mat-option *cdkVirtualFor="let item of filteredContextItems(); trackBy: trackByKey"
-                [value]="beforeLastWord() + ' @' + item.uKey + ' '">
+                [value]="beforeLastWord() + ' @' + item.uKey + ' '"
+                (click)="setContext(item)">
                 <ngm-display-behaviour class="flex-1" [option]="item" [displayBehaviour]="DisplayBehaviour.descriptionAndId" [highlight]="contextSearchWords()" />
               </mat-option>
             </cdk-virtual-scroll-viewport>
@@ -459,8 +473,8 @@
             [style.height.px]="240" [itemSize]="30"
         >
             <button mat-menu-item *cdkVirtualFor="let item of filteredContextMenuItems(); trackBy: trackByKey"
-                [ngClass]="{active: ('@'+item.uKey) === word.text}"
-                (click)="setContextForWord('@' + item.uKey, word)"
+              [ngClass]="{active: item.uKey === word.text}"
+              (click)="repleaceContext(word.text, item)"
             >
                 <ngm-display-behaviour class="flex-1" [option]="item" [displayBehaviour]="DisplayBehaviour.descriptionAndId"
                     [highlight]="contextMenuSearch()" />

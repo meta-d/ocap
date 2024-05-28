@@ -5,7 +5,6 @@ import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -46,6 +45,7 @@ import {
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
   CopilotCommand,
+  CopilotContextItem,
   CopilotEngine
 } from '@metad/copilot'
 import {
@@ -57,7 +57,7 @@ import {
 } from '@metad/ocap-angular/common'
 import { DensityDirective, fadeAnimation } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
-import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
 import { MarkdownModule } from 'ngx-markdown'
 import {
@@ -141,8 +141,7 @@ export class NgmCopilotChatComponent {
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
   DisplayBehaviour = DisplayBehaviour
 
-  private translateService = inject(TranslateService)
-  // private _cdr = inject(ChangeDetectorRef)
+  // private translateService = inject(TranslateService)
   private copilotService = inject(NgmCopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
@@ -263,6 +262,7 @@ export class NgmCopilotChatComponent {
   readonly roles = this.copilotService.allRoles
   readonly role = this.copilotService.role
   readonly roleDetail = this.copilotService.roleDetail
+  #activatedPrompt = signal('')
 
   /**
    * 当前 Asking prompt
@@ -272,6 +272,7 @@ export class NgmCopilotChatComponent {
 
   readonly #promptWords = computed(() => this.prompt()?.split(' '))
   readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
+  readonly #contextWord = computed(() => this.#promptWords().find((word) => word.startsWith('@'))?.slice(1))
   readonly contextSearch = computed(() => {
     const lastWord = this.lastWord()
     if (lastWord && lastWord.startsWith('@')) {
@@ -286,28 +287,26 @@ export class NgmCopilotChatComponent {
     return words.splice(0, words.length - 1).join(' ')
   })
 
-  readonly promptWords = computed(() => {
-    const lines = this.prompt()?.split('\n')
-    return lines.map((line) => {
-      const words = line.split(' ')
-      const commandWithContext = this.commandWithContext()
-      return words.map((word) => {
-        const type = word.startsWith('/') ? 'command' : word.startsWith('@') ? 'context' : 'text'
-        return {
-          text: word,
-          type,
-          description:
-            type === 'command'
-              ? Promise.resolve(commandWithContext?.command.description)
-              : type === 'context' && commandWithContext
-                ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption)
-                : Promise.resolve('')
-        }
-      })
-    })
-  })
-
-  #activatedPrompt = signal('')
+  // readonly promptWords = computed(() => {
+  //   const lines = this.prompt()?.split('\n')
+  //   return lines.map((line) => {
+  //     const words = line.split(' ')
+  //     const commandWithContext = this.commandWithContext()
+  //     return words.map((word) => {
+  //       const type = word.startsWith('/') ? 'command' : word.startsWith('@') ? 'context' : 'text'
+  //       return {
+  //         text: word,
+  //         type,
+  //         description:
+  //           type === 'command'
+  //             ? Promise.resolve(commandWithContext?.command.description)
+  //             : type === 'context' && commandWithContext
+  //               ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption)
+  //               : Promise.resolve('')
+  //       }
+  //     })
+  //   })
+  // })
 
   readonly commandWithContext = computed(() => {
     const prompt = this.prompt()
@@ -321,6 +320,7 @@ export class NgmCopilotChatComponent {
   readonly command = computed(() => this.commandWithContext()?.command)
   readonly commandTitle = computed(() => this.command().description)
   readonly commandContext = computed(() => this.commandWithContext()?.context)
+  readonly context = signal<CopilotContextItem>(null)
 
   // Only command in prompt
   readonly onlyCommand = computed(() => {
@@ -445,13 +445,6 @@ export class NgmCopilotChatComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  // #clearCommand = injectCopilotCommand({
-  //   name: 'clear',
-  //   description: this.translateService.instant('Ngm.Copilot.ClearConversation', { Default: 'Clear conversation' }),
-  //   implementation: async () => {
-  //     this.copilotEngine.clear()
-  //   }
-  // })
   #clearCommands = injectCommonCommands(this.copilotEngine$)
 
   /**
@@ -500,6 +493,15 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(async () => {
+      if (this.#contextWord()) {
+        const item = await this.commandContext().getContextItem(this.#contextWord())
+        this.context.set(item)
+      } else {
+        this.context.set(null)
+      }
+    }, { allowSignalWrites: true })
   }
 
   trackByKey(index: number, item) {
@@ -514,26 +516,6 @@ export class NgmCopilotChatComponent {
 
   changeSelectedModel(values) {
     this.model = values[0]
-  }
-
-  setContextForWord(content: string, word) {
-    let prompt = ''
-    this.promptWords().forEach((line, i) => {
-      const index = line.findIndex((item) => item === word)
-      if (index > -1) {
-        line[index] = {
-          ...line[index],
-          text: content
-        }
-      }
-      prompt += line.map((item) => item.text).join(' ')
-      // not last
-      if (i < this.promptWords().length - 1) {
-        prompt += '\n'
-      }
-    })
-
-    this.promptControl.setValue(prompt)
   }
 
   newChat() {
@@ -689,6 +671,12 @@ export class NgmCopilotChatComponent {
       event.preventDefault()
       if (this.promptCompletion()) {
         this.promptControl.setValue(this.promptControl.value + this.promptCompletion())
+      } else if (this.isContextTrigger()) {
+        const item = this.filteredContextItems()[0]
+        if (item) {
+          this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
+          this.context.set(item)
+        }
       } else {
         const activatedPrompt =
           this.#activatedPrompt() ||
@@ -766,5 +754,43 @@ export class NgmCopilotChatComponent {
     this.editingMessageId.set(null)
     element.blur()
     element.attributes.removeNamedItem('contenteditable')
+  }
+
+  setContext(item: CopilotContextItem) {
+    this.context.set(item)
+  }
+  repleaceContext(orginal: string, target: CopilotContextItem) {
+    const prompt = this.prompt()
+    this.promptControl.setValue(prompt.split(`@${orginal} `).join(`@${target.uKey} `))
+    this.context.set(target)
+  }
+
+  // setContextForWord(content: string, word) {
+  //   let prompt = ''
+  //   this.promptWords().forEach((line, i) => {
+  //     const index = line.findIndex((item) => item === word)
+  //     if (index > -1) {
+  //       line[index] = {
+  //         ...line[index],
+  //         text: content
+  //       }
+  //     }
+  //     prompt += line.map((item) => item.text).join(' ')
+  //     // not last
+  //     if (i < this.promptWords().length - 1) {
+  //       prompt += '\n'
+  //     }
+  //   })
+
+  //   this.promptControl.setValue(prompt)
+  // }
+
+  removeContext() {
+    const context = this.context()
+    if (context) {
+      const prompt = this.prompt()
+      this.promptControl.setValue(prompt.replace(`@${context.uKey}`, ''))
+      this.context.set(null)
+    }
   }
 }

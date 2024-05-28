@@ -228,15 +228,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
         return
       }
 
-      await this.callCommand(_command, prompt, options)
+      await this.callCommand(_command, prompt, {...(options ?? {}), context: commandWithContext.context})
 
       // // New conversation after command completion
       // this.newConversation()
     } else {
       if (this.currentCommand()?.agent.conversation) {
         const _command = this.currentCommand()
+        const commandWithContext = this.getCommandWithContext(_command.name)
 
-        return await this.callCommand(_command, prompt, options)
+        return await this.callCommand(_command, prompt, {...(options ?? {}), context: commandWithContext.context})
       }
 
       this.upsertConversation('free', null)

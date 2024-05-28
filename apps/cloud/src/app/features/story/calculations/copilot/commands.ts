@@ -111,7 +111,7 @@ export function injectCalculationCommand(
     (async () => {
       return {
         alias: 'cc',
-        description: 'Describe the widget you want',
+        description: 'Describe logic of the calculation you want',
         agent: {
           type: CopilotAgentType.Default
         },
