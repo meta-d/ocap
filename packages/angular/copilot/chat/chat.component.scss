@@ -64,6 +64,15 @@
 .ngm-copilot-chat__message-content {
   @apply rounded-lg max-w-full py-2 px-4;
 }
+.ngm-copilot-chat__message-editing {
+  .ngm-copilot-chat__message-content {
+    @apply self-stretch;
+  }
+  .message-edit-button {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
 
 .ngm-copilot__user-message {
   @apply rounded-xl rounded-tr-sm bg-gray-200/50 dark:bg-neutral-700/30;

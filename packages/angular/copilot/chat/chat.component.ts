@@ -142,7 +142,7 @@ export class NgmCopilotChatComponent {
   DisplayBehaviour = DisplayBehaviour
 
   private translateService = inject(TranslateService)
-  private _cdr = inject(ChangeDetectorRef)
+  // private _cdr = inject(ChangeDetectorRef)
   private copilotService = inject(NgmCopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
@@ -438,6 +438,7 @@ export class NgmCopilotChatComponent {
   readonly suggestionsOpened$ = new BehaviorSubject(false)
   readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
   readonly messageCopied = signal<string[]>([])
+  readonly editingMessageId = signal<string>(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -629,7 +630,10 @@ export class NgmCopilotChatComponent {
     this.conversationsChange.emit(this.conversations)
   }
 
-  async resubmitMessage(id: string, message: CopilotChatMessage, content: string) {
+  async resubmitMessage(element: HTMLDivElement, id: string, message: CopilotChatMessage, content: string) {
+    // Cancel the edit status of element
+    this.cancelMessageContent(element)
+    // Update messages in conversation
     this.copilotEngine.updateConversation(id, (conversation) => {
       const messages = conversation.messages
       const index = messages.findIndex((item) => item.id === message.id)
@@ -650,11 +654,9 @@ export class NgmCopilotChatComponent {
       }
       return conversation
     })
-    await this.askCopilotStream(content, { command: message.command })
-  }
 
-  onMessageFocus() {
-    this._cdr.detectChanges()
+    // Send new message
+    await this.askCopilotStream(content, { command: message.command })
   }
 
   /**
@@ -752,5 +754,17 @@ export class NgmCopilotChatComponent {
     const index = roles.findIndex((role) => role.name === this.role())
     const nextIndex = (index + 1) % roles.length
     this.copilotService.setRole(roles[nextIndex].name)
+  }
+
+  editMessageContent(id: string, element: HTMLDivElement) {
+    this.editingMessageId.set(id)
+    element.attributes.setNamedItem(document.createAttribute('contenteditable'))
+    element.focus()
+  }
+
+  cancelMessageContent(element: HTMLDivElement) {
+    this.editingMessageId.set(null)
+    element.blur()
+    element.attributes.removeNamedItem('contenteditable')
   }
 }
