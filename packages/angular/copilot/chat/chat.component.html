@@ -204,8 +204,8 @@
         }
       }
 
-      <div class="absolute top-0 bottom-0 w-full flex flex-col justify-center items-center gap-1">
-        @if (!conversations()?.length) {
+      @if (!conversations()?.length) {
+        <div class="absolute top-0 bottom-0 w-full flex flex-col justify-center items-center gap-1">
           <div @fadeAnimation class="text-xl drop-shadow-md mb-4">
             <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
           </div>
@@ -221,8 +221,8 @@
               }
             </mat-chip-listbox>
           }
-        }
-      </div>
+        </div>
+      }
     </div>
 
     <ngm-scroll-back #scrollBack class="block absolute bottom-0 left-1/2" [class.animate-bounce]="answering()"

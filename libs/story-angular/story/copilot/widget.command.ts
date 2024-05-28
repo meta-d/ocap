@@ -2,7 +2,7 @@ import { computed, inject, signal } from '@angular/core'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
-import { makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
+import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool, makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
 import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
@@ -20,7 +20,6 @@ import {
   createWidgetStyleSchema,
   tryFixAnalyticsAnnotation
 } from './schema'
-import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from './types'
 
 
 function createUpdateChartTools(storyService: NxStoryService) {

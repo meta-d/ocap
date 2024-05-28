@@ -9,9 +9,7 @@ import { CopilotExampleVectorSeedCommand } from '../vector.seed.command'
 export class CopilotExampleVectorSeedHandler implements ICommandHandler<CopilotExampleVectorSeedCommand> {
 	readonly #logger = new Logger(CopilotExampleVectorSeedHandler.name)
 
-	constructor(
-		private readonly exampleService: CopilotExampleService,
-	) { }
+	constructor(private readonly exampleService: CopilotExampleService) {}
 
 	public async execute(command: CopilotExampleVectorSeedCommand): Promise<void> {
 		const input = command.input
@@ -25,8 +23,8 @@ export class CopilotExampleVectorSeedHandler implements ICommandHandler<CopilotE
 				const roleExamples = roles[role]
 				const vectorStore = await this.exampleService.getVectorStore(tenantId, role === 'null' ? null : role)
 				if (roleExamples.length && vectorStore) {
-					console.log(vectorStore.vectorStore.indexName)
-					if (vectorStore.checkIndexExists()) {
+					// console.log(vectorStore.vectorStore.indexName, `examples count: ${roleExamples.length}`)
+					if (await vectorStore.checkIndexExists()) {
 						if (refresh) {
 							await vectorStore.clear()
 							await vectorStore.addExamples(roleExamples)
@@ -35,23 +33,6 @@ export class CopilotExampleVectorSeedHandler implements ICommandHandler<CopilotE
 						await vectorStore.addExamples(roleExamples)
 					}
 				}
-
-				// const commands = groupBy(roleExamples, 'command')
-				// for (const command in commands) {
-				// 	const commandExamples = commands[command].filter((example) => example.vector)
-				// 	const vectorStore = await this.exampleService.getVectorStore(tenantId, role === 'null' ? null : role, command === 'null' ? null : command)
-				// 	if (commandExamples.length && vectorStore) {
-				// 		console.log(vectorStore.vectorStore.indexName)
-				// 		if (vectorStore.checkIndexExists()) {
-				// 			if (refresh) {
-				// 				await vectorStore.clear()
-				// 				await vectorStore.addExamples(commandExamples)
-				// 			}
-				// 		} else {
-				// 			await vectorStore.addExamples(commandExamples)
-				// 		}
-				// 	}
-				// }
 			}
 		}
 	}

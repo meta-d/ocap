@@ -3,7 +3,7 @@ import type { CallbackManagerForRetrieverRun } from '@langchain/core/callbacks/m
 import { Document } from '@langchain/core/documents'
 import { BaseRetriever, type BaseRetrieverInput } from '@langchain/core/retrievers'
 import { ModelsService } from '@metad/cloud/state'
-import { BaseDimensionMemberRetriever, MEMBER_RETRIEVER_TOKEN } from '@metad/story/story'
+import { BaseDimensionMemberRetriever, MEMBER_RETRIEVER_TOKEN } from '@metad/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 

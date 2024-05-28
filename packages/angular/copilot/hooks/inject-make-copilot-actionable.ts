@@ -3,6 +3,9 @@ import { AnnotatedFunction } from '@metad/copilot'
 import { nanoid } from 'nanoid'
 import { NgmCopilotContextToken } from '../services/'
 
+/**
+ * @deprecated use tools in LangChain instead
+ */
 export function injectMakeCopilotActionable<ActionInput extends any[]>(
   annotatedFunction: AnnotatedFunction<ActionInput>
 ) {

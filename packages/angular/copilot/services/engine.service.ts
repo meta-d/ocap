@@ -411,7 +411,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
       const llm = this.llm()
       const verbose = this.verbose()
       if (llm) {
+        if (!command.prompt) {
+          throw new Error(`Prompt should be provided for agent command '${command.name}'`)
+        }
+
         switch (command.agent.type) {
+          
           case CopilotAgentType.Default: {
             const agent = await createOpenAIToolsAgent({
               llm,
@@ -426,11 +431,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
             break
           }
           case CopilotAgentType.LangChain: {
-            if (command.prompt) {
-              chain = command.prompt.pipe(this.llm()).pipe(new StringOutputParser())
-            } else {
-              throw new Error(`Agent type '${command.agent.type}' need prompt template`)
-            }
+            chain = command.prompt.pipe(this.llm()).pipe(new StringOutputParser())
             break
           }
           default:

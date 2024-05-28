@@ -659,11 +659,7 @@ export class NgmCopilotChatComponent {
         }
       } else {
         const activatedPrompt =
-          this.#activatedPrompt() ||
-          this.filteredCommands()[0]?.examples?.[0] ||
-          (this.filteredContextItems()?.[0]
-            ? this.beforeLastWord() + ' @' + this.filteredContextItems()[0].uKey + ' '
-            : null)
+          this.#activatedPrompt() || (this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         if (activatedPrompt) {
           this.promptControl.setValue(activatedPrompt)
         }

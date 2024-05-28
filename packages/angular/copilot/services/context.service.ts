@@ -74,8 +74,9 @@ export class NgmCopilotContextService implements CopilotContext {
     dataSource: string;
     serizalize: () => Promise<string>
   }>[]>>(null)
+
   readonly items = computed(() =>
-    this.cubes().pipe(
+    this.cubes()?.pipe(
       map((cubes) =>
         cubes.map((cube) => ({
           key: cube.key,

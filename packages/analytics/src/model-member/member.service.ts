@@ -117,11 +117,14 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	async retrieveMembers(id: string | null, cube: string, query: string, k = 10) {
 		const { vectorStore } = await this.getVectorStore(id, cube)
 		if (vectorStore) {
-			const documents = await vectorStore.similaritySearch(query, k)
-			return documents
+			try {
+				return await vectorStore.similaritySearch(query, k)
+			} catch (error) {
+				return []
+			}
 		}
 
-		return null
+		return []
 	}
 
 	async getVectorStore(modelId: string, cube: string, organizationId: string = null) {

@@ -27,6 +27,7 @@ import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
+import { provideDimensionMemberRetriever } from '../@core/copilot'
 
 registerEChartsThemes()
 
@@ -133,7 +134,8 @@ registerEChartsThemes()
     {
       provide: NgmCopilotContextToken,
       useClass: NgmCopilotContextService
-    }
+    },
+    provideDimensionMemberRetriever()
   ]
 })
 export class FeaturesModule {}

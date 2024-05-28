@@ -3,7 +3,7 @@ import { SemanticSimilarityExampleSelector } from '@langchain/core/example_selec
 import { ChatPromptTemplate, FewShotPromptTemplate, MessagesPlaceholder, PromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
-import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
+import { CalculationSchema, injectDimensionMemberRetrieverTool, makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import {
   CalculatedProperty,
@@ -13,15 +13,13 @@ import {
   RestrictedMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
-import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool } from '@metad/story/story'
-import { TranslateService } from '@ngx-translate/core'
 import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot'
 import { CopilotExampleService } from 'apps/cloud/src/app/@core/services'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { firstValueFrom, of } from 'rxjs'
-import { CalculationSchema, RestrictedMeasureSchema } from './schema'
+import { RestrictedMeasureSchema } from './schema'
 
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
 Answer: {output}`)
@@ -33,14 +31,14 @@ export function injectCalculationCommand(
   callback: (dataSettings: DataSettings, key: string) => void
 ) {
   const logger = inject(NGXLogger)
-  const translate = inject(TranslateService)
+  // const translate = inject(TranslateService)
   const copilotExampleService = inject(CopilotExampleService)
   const copilotService = inject(NgmCopilotService)
-  const memberRetriever = inject(MEMBER_RETRIEVER_TOKEN)
 
   const defaultModel = signal<string>(null)
   const defaultDataSource = signal<string>(null)
   const defaultEntity = signal<string>(null)
+  const memberRetrieverTool = injectDimensionMemberRetrieverTool(defaultModel, defaultEntity)
 
   const defaultDataSettings = computed(() =>
     defaultEntity()
@@ -104,7 +102,6 @@ export function injectCalculationCommand(
     }
   })
 
-  const memberRetrieverTool = createDimensionMemberRetrieverTool(memberRetriever, defaultModel, defaultEntity)
   const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool]
   return injectCopilotCommand(
     'calculation',
@@ -116,8 +113,11 @@ export function injectCalculationCommand(
           type: CopilotAgentType.Default
         },
         systemPrompt: async ({ params }) => {
+          // Add responsibility of business role
+          const role = copilotService.roleDetail()
+          let prompt = role ? `Your role is '${role.title}', and your responsibility is ${role.description};` : ''
+          // Add context of cube
           let entityType = defaultCube()
-          let prompt = ''
           const cubeParams = params?.filter((param) => param.item)
           if (cubeParams?.length) {
             defaultModel.set(cubeParams[0].item.value.dataSourceId)
@@ -152,10 +152,10 @@ export function injectCalculationCommand(
           }
 
           return `${prompt}
-  Original calculation measure is:
-  \`\`\`
-  ${property() ? JSON.stringify(property(), null, 2) : 'No calculation property selected'}
-  \`\`\`
+Original calculation measure is:
+\`\`\`
+${property() ? JSON.stringify(property(), null, 2) : 'No calculation property selected'}
+\`\`\`
   `
         },
         tools,
@@ -179,9 +179,8 @@ export function injectCalculationCommand(
         prompt: ChatPromptTemplate.fromMessages([
           [
             'system',
-            `你是一个有用的数据分析 Agent, 
-请使用 MDX technology to edit (if original calculation measure is provided) or create (if original calculation measure is not provided) calculation measure based on the Cube information.
-请选择一种合适的 tool 来创建 calculation measure.
+            `You are a useful data analysis agent. Please use MDX technology to edit (if the original calculation measure is provided) or create (if the original calculation measure is not provided) a calculation measure based on the cube information.
+Please select an appropriate tool to create the calculation measure.
 A dimension can only be used once, and a hierarchy cannot appear on multiple independent axes.
 The name of new calculation measure should be unique with existing measures.
 
@@ -192,11 +191,11 @@ ${makeCubeRulesPrompt()}
 {system_prompt}
 `
           ],
-          ['human', '{input}'],
           new MessagesPlaceholder({
             variableName: 'chat_history',
             optional: true
           }),
+          ['human', '{input}'],
           new MessagesPlaceholder('agent_scratchpad')
         ])
       } as CopilotCommand

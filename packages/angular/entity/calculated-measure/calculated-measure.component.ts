@@ -38,12 +38,13 @@ import {
   getEntityCalculations,
   getEntityParameters,
   isIndicatorMeasureProperty,
-  isPropertyMeasure
+  isPropertyMeasure,
+  nonNullable
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { negate, sortBy } from 'lodash-es'
 import { MarkdownModule } from 'ngx-markdown'
-import { combineLatestWith, distinctUntilChanged, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
+import { combineLatestWith, distinctUntilChanged, filter, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
 import { NgmEntitySchemaComponent } from '../entity-schema/entity-schema.component'
 import { EntityCapacity } from '../entity-schema/types'
 import { NgmEntityPropertyComponent } from '../property/property.component'
@@ -166,7 +167,7 @@ export class NgmCalculatedMeasureComponent implements ControlValueAccessor {
   )
 
   private statementSub = this.statement.valueChanges
-    .pipe(distinctUntilChanged(), takeUntilDestroyed())
+    .pipe(distinctUntilChanged(), filter(nonNullable), takeUntilDestroyed())
     .subscribe((value) => {
       this._onChange?.(value)
     })

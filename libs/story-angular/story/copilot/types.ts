@@ -1,5 +1,4 @@
-import { InjectionToken, Signal } from '@angular/core'
-import { BaseRetriever } from '@langchain/core/retrievers'
+
 import {
   C_MEASURES,
   Dimension,
@@ -11,28 +10,7 @@ import {
   getEntityProperty2,
   wrapBrackets
 } from '@metad/ocap-core'
-import { createRetrieverTool } from 'langchain/tools/retriever'
 
-export abstract class BaseDimensionMemberRetriever extends BaseRetriever {
-  model: Signal<string>
-  cube: Signal<string>
-}
-
-export const MEMBER_RETRIEVER_TOKEN = new InjectionToken<BaseDimensionMemberRetriever>('DimensionMemberRetriever')
-
-export function createDimensionMemberRetrieverTool(
-  retriever: BaseDimensionMemberRetriever,
-  model: Signal<string>,
-  cube: Signal<string>
-) {
-  retriever.model = model
-  retriever.cube = cube
-  return createRetrieverTool(retriever, {
-    name: 'dimensionMemberKeySearch',
-    description:
-      'Search for dimension member key information about filter conditions. For any needs about filtering data, you must use this tool!'
-  })
-}
 
 /**
  * @deprecated use tryFixDimension

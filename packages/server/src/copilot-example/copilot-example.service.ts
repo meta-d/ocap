@@ -42,22 +42,22 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 	async seedRedisIfEmpty() {
 		const { items: tenants } = await this.tenantService.findAll()
 		for (const tenant of tenants) {
-			await this.commandBus.execute(new CopilotExampleVectorSeedCommand({ tenantId: tenant.id }))
+			await this.commandBus.execute(new CopilotExampleVectorSeedCommand({ tenantId: tenant.id, refresh: true}))
 		}
 	}
 
 	async similaritySearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command?: string; k: number; filter: any }
+		options?: { role?: AiBusinessRole; command?: string; k: number; filter: any; score?: number }
 	) {
-		const { role, command, k, filter } = options ?? {}
+		const { role, command, k, score } = options ?? {}
 
 		const tenantId = RequestContext.currentTenantId()
 		let vectorStore = await this.getVectorStore(tenantId, role)
 		if (vectorStore) {
 			let results = []
 			try {
-				results = await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
+				results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, `*${command}*`)
 			} catch (error) {
 				results = []
 			}
@@ -67,18 +67,25 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 			if (!results.length) {
 				if (role) {
 					this.#logger.debug(
-						`Examples does not exist for role: ${role}. use examples in default default instead`
+						`Examples does not exist for role: ${role} in indexName '${vectorStore.indexName}'. use examples in default instead`
 					)
 					vectorStore = await this.getVectorStore(tenantId)
 					try {
-						results = await vectorStore.vectorStore.similaritySearch(query, k, `*\\"${command}\\"*`)
+						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, `*${command}*`)
+
+						if (!results.length) {
+							this.#logger.debug(
+								`Search '${query}' examples for command '${command}' does not exist in default indexName '${vectorStore.indexName}'.`
+							)
+						}
 					} catch (error) {
+						console.error(error)
 						results = []
 					}
 				}
 			}
 
-			return results
+			return results.filter(([, _score]) => _score > (score ?? 0.5)).map(([doc]) => doc)
 		}
 
 		return []
@@ -246,6 +253,10 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 class PGRedisVectorStore {
 	vectorStore: RedisVectorStore
 
+	get indexName() {
+		return this.vectorStore.indexName
+	}
+
 	constructor(
 		public embeddings: EmbeddingsInterface,
 		private _dbConfig: RedisVectorStoreConfig
@@ -268,8 +279,9 @@ class PGRedisVectorStore {
 					pageContent: item.content
 				})
 		)
+		// const keys = examples.map((item) => this.vectorStore.indexName + ':' + item.id)
 
-		return this.vectorStore.addVectors(vectors, documents)
+		return await this.vectorStore.addVectors(vectors, documents)
 	}
 
 	async clear() {
