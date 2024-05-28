@@ -74,8 +74,9 @@ export class FeaturesComponent implements OnInit {
   readonly #destroyRef = inject(DestroyRef)
 
   // @ViewChild('sidenav') sidenav: MatSidenav
-  @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
+  // @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
   readonly sidenav = viewChild('sidenav', { read: MatSidenav })
+  readonly copilotChat = viewChild('copilotChat', { read: NgmCopilotChatComponent })
 
   copilotEngine: CopilotEngine | null = null
   readonly sidenavMode = signal<MatDrawerMode>('over')
@@ -731,9 +732,19 @@ export class FeaturesComponent implements OnInit {
       if (event.shiftKey) {
 
       } else {
-        if (event.key === 'b' || event.key === 'B') {
-          this.copilotDrawerOpened.update((value) => !value)
-          event.preventDefault()
+        switch (event.key) {
+          case 'b':
+          case 'B':
+            this.copilotDrawerOpened.update((value) => !value)
+            event.preventDefault()
+            break
+          case '/':
+            this.copilotDrawerOpened.set(true)
+            event.preventDefault()
+            setTimeout(() => {
+              this.copilotChat().focus('/')
+            }, 500)
+            break
         }
       }
     }

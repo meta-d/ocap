@@ -9,7 +9,7 @@
   --subtle-purple: color-mix(in srgb, var(--bright-blue) 5%, white 10%);
   --full-contrast: white;
   --bright-blue: color-mix(in srgb, oklch(51.01% 0.274 263.83), var(--full-contrast) 60%);
-  @apply flex flex-col relative text-sm;
+  @apply flex flex-col relative;
 }
 
 .copilot-code-container {
@@ -171,6 +171,36 @@
       max-width: max-content;
       width: 100%;
       display: inline-block;
+    }
+
+    h1:first-child {
+      margin-top: 0;
+    }
+    h1 {
+      font-size: 2.25em;
+    }
+
+    h2 {
+      font-weight: 600;
+      font-size: 1.5em;
+    }
+
+    h3 {
+      font-weight: 600;
+      font-size: 1.2em;
+    }
+
+    h4 {
+      font-weight: 600;
+    }
+
+    ol, ul, menu {
+      list-style: auto;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 1.625em;
     }
   }
 

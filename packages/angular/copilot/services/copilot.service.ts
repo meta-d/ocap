@@ -28,7 +28,7 @@ export class NgmCopilotService extends CopilotService {
         ]
     })
     readonly role = signal<string>(DefaultBusinessRole)
-    readonly roleDetail = computed(() => this.roles()?.find((role) => role.name === this.role()))
+    readonly roleDetail = computed(() => this.allRoles()?.find((role) => role.name === this.role()))
     
     constructor() {
         super()

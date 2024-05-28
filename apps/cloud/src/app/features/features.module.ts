@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { NgModule } from '@angular/core'
+import { NgModule, importProvidersFrom } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { NgmFormlyModule, provideFormly } from '@metad/formly'
 import { registerEChartsThemes } from '@metad/material-theme'
@@ -15,7 +15,7 @@ import {
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
-import { MarkdownModule } from 'ngx-markdown'
+import { provideMarkdown } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
 import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent, provideLogger } from '../@core/index'
@@ -55,7 +55,7 @@ registerEChartsThemes()
     NotificationComponent,
     TuneComponent,
 
-    MarkdownModule.forRoot()
+    // MarkdownModule.forRoot()
   ],
   providers: [
     DirtyCheckGuard,
@@ -63,6 +63,7 @@ registerEChartsThemes()
     NgmDSCacheService,
     provideLogger(),
     provideFormly(),
+    provideMarkdown({}),
     {
       provide: NGM_WASM_AGENT_WORKER,
       useValue: '/assets/ocap-agent-data-init.worker.js'

@@ -26,18 +26,14 @@ export function injectCommonCommands(copilotEngine: Signal<CopilotEngine>) {
         conversation: true
       },
       implementation: async () => {
+        const commands = copilotEngine().commands()
         return `You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:
-- [@workspace](#calc) - Ask about your workspace
-  - /explain - Explain how the code in your active editor works
-  - /tests - Generate unit tests for the selected code
-  - /fix - Propose a fix for the problems in the selected code
-        /new - Scaffold code for a new workspace
-        /newNotebook - Create a new Jupyter Notebook
-- @vscode - Ask questions about VS Code
-        /search - Generate query parameters for workspace search
-        /api - Ask about VS Code extension development
-- @terminal - Ask how to do something in the terminal
-        /explain - Explain something in the terminal`
+- use \`/commandName\` to run a command.
+- use \`@cubeName\` to select a metadata context.
+
+**Commands**:
+${commands.map((command) => `- \`/${command.name}\` ${command.alias ? 'or `/'+command.alias + '`' : '' }: ${command.description}`).join('\n')}
+`
       },
       prompt: ChatPromptTemplate.fromMessages([
         [

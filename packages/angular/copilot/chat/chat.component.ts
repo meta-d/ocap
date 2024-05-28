@@ -176,6 +176,7 @@ export class NgmCopilotChatComponent {
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
 
   readonly autocompleteTrigger = viewChild('userInput', { read: MatAutocompleteTrigger })
+  readonly userInput = viewChild('userInput', { read: ElementRef })
 
   get _placeholder() {
     return this.copilotEngine?.placeholder ?? this.placeholder
@@ -286,27 +287,6 @@ export class NgmCopilotChatComponent {
     const words = this.prompt()?.split(' ')
     return words.splice(0, words.length - 1).join(' ')
   })
-
-  // readonly promptWords = computed(() => {
-  //   const lines = this.prompt()?.split('\n')
-  //   return lines.map((line) => {
-  //     const words = line.split(' ')
-  //     const commandWithContext = this.commandWithContext()
-  //     return words.map((word) => {
-  //       const type = word.startsWith('/') ? 'command' : word.startsWith('@') ? 'context' : 'text'
-  //       return {
-  //         text: word,
-  //         type,
-  //         description:
-  //           type === 'command'
-  //             ? Promise.resolve(commandWithContext?.command.description)
-  //             : type === 'context' && commandWithContext
-  //               ? commandWithContext.context.getContextItem(word.slice(1)).then((item) => item?.caption)
-  //               : Promise.resolve('')
-  //       }
-  //     })
-  //   })
-  // })
 
   readonly commandWithContext = computed(() => {
     const prompt = this.prompt()
@@ -681,7 +661,7 @@ export class NgmCopilotChatComponent {
         const activatedPrompt =
           this.#activatedPrompt() ||
           this.filteredCommands()[0]?.examples?.[0] ||
-          (this.filteredContextItems()[0]
+          (this.filteredContextItems()?.[0]
             ? this.beforeLastWord() + ' @' + this.filteredContextItems()[0].uKey + ' '
             : null)
         if (activatedPrompt) {
@@ -765,32 +745,22 @@ export class NgmCopilotChatComponent {
     this.context.set(target)
   }
 
-  // setContextForWord(content: string, word) {
-  //   let prompt = ''
-  //   this.promptWords().forEach((line, i) => {
-  //     const index = line.findIndex((item) => item === word)
-  //     if (index > -1) {
-  //       line[index] = {
-  //         ...line[index],
-  //         text: content
-  //       }
-  //     }
-  //     prompt += line.map((item) => item.text).join(' ')
-  //     // not last
-  //     if (i < this.promptWords().length - 1) {
-  //       prompt += '\n'
-  //     }
-  //   })
-
-  //   this.promptControl.setValue(prompt)
-  // }
-
   removeContext() {
     const context = this.context()
     if (context) {
       const prompt = this.prompt()
       this.promptControl.setValue(prompt.replace(`@${context.uKey}`, ''))
       this.context.set(null)
+    }
+  }
+
+  focus(value?: string) {
+    this.userInput().nativeElement.focus()
+    if (!this.prompt()) {
+      this.promptControl.setValue(value)
+    }
+    if (value) {
+      this.autocompleteTrigger().openPanel()
     }
   }
 }
