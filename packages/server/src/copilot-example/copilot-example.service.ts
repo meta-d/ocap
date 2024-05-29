@@ -18,6 +18,7 @@ import { REDIS_CLIENT } from '../core/redis.module'
 import { TenantService } from '../tenant/tenant.service'
 import { CopilotExampleVectorSeedCommand } from './commands'
 import { CopilotExample } from './copilot-example.entity'
+import { CopilotRoleCreateCommand } from '../copilot-role/commands/'
 
 @Injectable()
 export class CopilotExampleService extends TenantAwareCrudService<CopilotExample> {
@@ -239,14 +240,20 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 			.getMany()
 	}
 
-	async createBulk(entities: ICopilotExample[], options: { clearRole: boolean }) {
-		const { clearRole } = options || {}
+	async createBulk(entities: ICopilotExample[], options: { createRole: boolean; clearRole: boolean }) {
+		const { createRole, clearRole } = options || {}
 		const examples = await this.embedExamples(entities)
+		const roles = compact(uniq(examples.map((example) => example.role)))
 		if (clearRole) {
-			const roles = compact(uniq(examples.map((example) => example.role)))
 			const { items } = await this.findAll({ where: { role: In(roles) } })
-			console.log(items.length)
-			this.repository.remove(items)
+			await this.repository.remove(items)
+		}
+		if (createRole) {
+			for await (const role of roles) {
+				try {
+					await this.commandBus.execute(new CopilotRoleCreateCommand({ name: role }))
+				} catch (error) {}
+			}
 		}
 		const results = await Promise.all(examples.map((entity) => super.create(entity)))
 		await this.commandBus.execute(

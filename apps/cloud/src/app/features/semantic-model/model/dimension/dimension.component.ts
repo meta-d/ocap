@@ -1,26 +1,23 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, model } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { makeTablePrompt, nonBlank } from '@metad/core'
+import { nonBlank } from '@metad/core'
 import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
 import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
-import { PropertyHierarchy } from '@metad/ocap-core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateService } from '@ngx-translate/core'
 import { MaterialModule, SharedModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isEqual, uniq } from 'lodash-es'
-import { computedAsync } from 'ngxtension/computed-async'
-import { Observable, combineLatest } from 'rxjs'
+import { derivedFrom } from 'ngxtension/derived-from'
+import { Observable, combineLatest, pipe } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
-import zodToJsonSchema from 'zod-to-json-schema'
 import { ToastrService, routeAnimations } from '../../../../@core'
 import { AppService } from '../../../../app.service'
 import { TablesJoinModule } from '../../tables-join'
-import { HierarchySchema } from '../copilot'
+import { injectHierarchyCommand } from '../copilot'
 import { ModelComponent } from '../model.component'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType, TOOLBAR_ACTION_CATEGORY } from '../types'
@@ -64,15 +61,15 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   readonly #destroyRef = inject(DestroyRef)
   readonly #translate = inject(TranslateService)
 
-  detailsOpen = false
-
+  
   public readonly dimension$ = this.dimensionService.dimension$
-
+  
   /**
-  |--------------------------------------------------------------------------
-  | Signals
-  |--------------------------------------------------------------------------
-  */
+   |--------------------------------------------------------------------------
+   | Signals
+   |--------------------------------------------------------------------------
+   */
+  readonly detailsOpen = model(false)
   public readonly hierarchies = toSignal(this.dimensionService.hierarchies$)
   public readonly dimension = toSignal(this.dimensionService.dimension$)
   readonly isMobile = this.appService.isMobile
@@ -89,55 +86,49 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
       ),
     { equal: isEqual }
   )
-  readonly tableTypes = computedAsync(() => {
-    const tables = this.tables()
-    return combineLatest(tables.map((table) => this.modelService.selectOriginalEntityType(table)))
-  })
+  readonly tableTypes = derivedFrom(
+    [this.tables],
+    pipe(
+      switchMap(([tables]) => combineLatest(tables.map((table) => this.modelService.selectOriginalEntityType(table))))
+    ),
+    { initialValue: [] }
+  )
 
   /**
   |--------------------------------------------------------------------------
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #createHierarchyCommand = injectCopilotCommand({
-    name: 'h',
-    description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
-    examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
-    systemPrompt: async () => {
-      return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy， 名称不要与现有名称重复，并且名称要尽量简短。
-层次结构中的 Levels 顺序一般按照所使用字段在现实中的含义由上到下（或者叫由粗粒度到细粒度）排列，例如：年份、季度、月份、日期。
-当前维度信息为：
-\`\`\`
-${JSON.stringify(this.dimension())}
-\`\`\`
-当前维度已使用到的表信息：
-\`\`\`
-${this.tableTypes()
-  .map((tableType) => makeTablePrompt(tableType))
-  .join('\n')}
-\`\`\`
-`
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create-model-hierarchy',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'hierarchy',
-            type: 'object', // Add or change types according to your needs.
-            description: 'The defination of hierarchy',
-            required: true,
-            properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
-          }
-        ],
-        implementation: async (h: PropertyHierarchy) => {
-          this.dimensionService.newHierarchy(h)
-          return `✅`
-        }
-      })
-    ]
-  })
+  #createHierarchyCommand = injectHierarchyCommand(this.dimensionService, this.tableTypes)
+  //   h = injectCopilotCommand({
+  //     name: 'h',
+  //     description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
+  //     examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
+  //     systemPrompt: async () => {
+  //       return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy，
+
+  // `
+  //     },
+  //     actions: [
+  //       injectMakeCopilotActionable({
+  //         name: 'create-model-hierarchy',
+  //         description: 'Should always be used to properly format output',
+  //         argumentAnnotations: [
+  //           {
+  //             name: 'hierarchy',
+  //             type: 'object', // Add or change types according to your needs.
+  //             description: 'The defination of hierarchy',
+  //             required: true,
+  //             properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
+  //           }
+  //         ],
+  //         implementation: async (h: PropertyHierarchy) => {
+  //           this.dimensionService.newHierarchy(h)
+  //           return `✅`
+  //         }
+  //       })
+  //     ]
+  //   })
 
   /**
   |--------------------------------------------------------------------------
@@ -193,7 +184,7 @@ ${this.tableTypes()
   }
 
   openDesignerPanel() {
-    this.detailsOpen = true
+    this.detailsOpen.set(true)
   }
 
   readonly openDesigner = effectAction((origin$: Observable<void>) => {

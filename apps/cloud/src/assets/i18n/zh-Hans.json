@@ -1294,6 +1294,7 @@
         "EditExample": "编辑示例",
         "DeleteExample": "删除示例",
         "ClearRole": "清空角色已有示例",
+        "CreateRole": "自动创建不存在的角色",
         "ConfirmOptionsForUploadExample": "请确认上传示例的选项"
       },
       "Roles": {

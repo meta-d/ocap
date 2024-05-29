@@ -39,7 +39,7 @@
         </div>
 
         @if (useMDX()) {
-            <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+            <ngm-mdx-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
                 [entityType]="entityType()"
                 [ngModel]="statement()"
@@ -50,10 +50,9 @@
                 cdkDropList
                 [cdkDropListData]="entities"
                 (cdkDropListDropped)="drop($event)"
-                >
-            </ngm-editor-mdx>
+            />
         } @else {
-            <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+            <ngm-sql-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                 [theme]="themeName()"    
                 [entityType]="entityType()"
                 [entitySets]="tables()"
@@ -65,14 +64,13 @@
                 cdkDropList
                 [cdkDropListData]="entities"
                 (cdkDropListDropped)="drop($event)"
-                >
-            </ngm-editor-sql>
+            />
         }
     </ngm-splitter-pane>
     <ngm-splitter-pane size='15rem' class="relative flex flex-col justify-start items-stretch"
         [collapsed]="!showQueryResult()"
     >
-        <ngm-table *ngIf="!error; else errorResult" class="pac-model-ql-lab__result pac-cdk-drop__list pac-cdk-drop__area striped flex-1 h-full"
+        <ngm-table *ngIf="!_error(); else errorResult" class="pac-model-ql-lab__result pac-cdk-drop__list pac-cdk-drop__area striped flex-1 h-full"
             [columns]="columns"
             [data]="data"
             [paging]="true"
@@ -85,7 +83,7 @@
             <div class="pac-result h-full w-full absolute top-0 left-0">
                 <div class="bug font-notoColorEmoji">🐞</div>
                 <div class="description">
-                    {{error}}
+                    {{_error()}}
                 </div>
             </div>
         </ng-template>

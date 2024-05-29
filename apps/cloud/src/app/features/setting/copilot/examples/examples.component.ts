@@ -88,7 +88,9 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
     }))
   ), {initialValue: []})
 
-  readonly roles = toSignal(this.roleService.getAll().pipe(
+  readonly refreshFilter$ = new BehaviorSubject<void>(null)
+  readonly roles = toSignal(this.refreshFilter$.pipe(
+    switchMap(() => this.roleService.getAll()),
     map((roles) => [
       {
         key: null,
@@ -97,13 +99,15 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       ...roles.map((role) => ({
         value: role,
         key: role.name,
-        caption: role.title
+        caption: role.title || role.name
       }))
     ])
   ))
 
   readonly commands = derivedFrom([this.roleFilter], pipe(
-    switchMap(([role]) => this.exampleService.getCommands({role})),
+    switchMap(([role]) => this.refreshFilter$.pipe(
+      switchMap(() => this.exampleService.getCommands({role}))
+    )),
     map((commands) => commands.map((command) => ({
       key: command,
       caption: command
@@ -178,6 +182,14 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
         formFields: [
           {
             className: FORMLY_W_1_2,
+            key: 'createRole',
+            type: 'checkbox',
+            props: {
+              label: this.translateService.instant('PAC.Copilot.Examples.CreateRole', {Default: 'Auto create role if not existed'}),
+            }
+          },
+          {
+            className: FORMLY_W_1_2,
             key: 'clearRole',
             type: 'checkbox',
             props: {
@@ -190,7 +202,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       switchMap((options) => {
         if (options) {
           this.loading.set(true)
-          return this.exampleService.createBulk(examples, options).pipe()
+          return this.exampleService.createBulk(examples, options)
         } else {
           return EMPTY
         }
@@ -199,6 +211,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       next: () => {
         this._toastrService.success('PAC.Messages.UploadSuccessfully', {Default: 'Upload successfully'})
         this.refresh()
+        this.refreshFilter$.next()
       },
       error: (error) => {
         this._toastrService.error(getErrorMessage(error))

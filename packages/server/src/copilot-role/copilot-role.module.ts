@@ -6,6 +6,7 @@ import { TenantModule } from '../tenant'
 import { CopilotRoleController } from './copilot-role.controller'
 import { CopilotRole } from './copilot-role.entity'
 import { CopilotRoleService } from './copilot-role.service'
+import { CommandHandlers } from './commands/handlers/index'
 
 @Module({
     imports: [
@@ -15,7 +16,7 @@ import { CopilotRoleService } from './copilot-role.service'
         CqrsModule,
     ],
     controllers: [CopilotRoleController],
-    providers: [CopilotRoleService],
+    providers: [CopilotRoleService, ...CommandHandlers],
     exports: [CopilotRoleService]
 })
 export class CopilotRoleModule { }

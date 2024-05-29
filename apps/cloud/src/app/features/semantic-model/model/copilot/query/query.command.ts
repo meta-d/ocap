@@ -112,10 +112,11 @@ The cube information is:
 ${dbTablesPrompt()}
 
 Please provide the corresponding MDX statement for the given question.
-Current statement: 
+${statement ? `Current statement: 
 \`\`\`mdx
 ${statement()}
 \`\`\`
+` : ''}
 `
         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
 The table information is:

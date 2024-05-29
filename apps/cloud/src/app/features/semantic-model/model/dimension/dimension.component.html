@@ -35,13 +35,13 @@
     </nav>
 
     <div class="flex justify-around items-center">
-        <button mat-button displayDensity="cosy" [color]="detailsOpen?'accent':''"
+        <button mat-button displayDensity="cosy" [color]="detailsOpen()?'accent':''"
           [matTooltip]="'PAC.ACTIONS.OpenAttributesPanel' | translate: {Default: 'Open attributes panel'}"
           matTooltipPosition="above"
           (click)="drawer.toggle()"
         >
           <div class="flex justify-start items-center">
-            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen?'accent':''">edit_attributes</mat-icon>
+            <mat-icon fontSet="material-icons-outlined" [color]="detailsOpen()?'accent':''">edit_attributes</mat-icon>
             @if (!isMobile()) {
               <span >{{ 'PAC.MENU.Attributes' | translate: {Default: "Attributes"} }}</span>
             }    
@@ -58,7 +58,7 @@
         ngmResizer [resizerWidth]="380"
     >
         <ngm-settings-panel class="pac-model__settings-container m-2 rounded-lg shadow-lg overflow-hidden"
-            liveMode (opened)="detailsOpen=true">
+            liveMode (opened)="detailsOpen.set(true)">
         </ngm-settings-panel>
 
         <div ngmResizerBar resizerBarPosition="left" style="z-index: 1;"
