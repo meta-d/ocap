@@ -16,8 +16,8 @@ import { C_MEASURES, Cube, EntityType } from '@metad/ocap-core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
-import { ModelEntityService } from '../entity/entity.service'
-import { SemanticModelService } from '../model.service'
+import { ModelEntityService } from '../../entity/entity.service'
+import { SemanticModelService } from '../../model.service'
 
 export function injectCalculationCommand(cube: Signal<Cube>, entityType: Signal<EntityType>) {
   const logger = inject(NGXLogger)
@@ -43,8 +43,8 @@ export function injectCalculationCommand(cube: Signal<Cube>, entityType: Signal<
         formula,
         dimension: C_MEASURES,
         visible: true,
-        __id__: key
-        // formatting
+        formatting,
+        __id__: key,
       })
 
       setTimeout(() => {
@@ -70,7 +70,9 @@ ${makeCubeRulesPrompt()}
 
 ${createAgentStepsInstructions(
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
-  `根据用户输入的逻辑，调用 "createCalcalatedMeasure" 工具来创建一个新的计算度量。`
+  `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 公式。`,
+  `考虑此公式的格式化方式：如果是比率或者百分比，需要设置属性 formatting unit 为 %`,
+  `最终调用 "createCalcalatedMeasure" 工具来创建一个新的计算度量。`
 )}
 
 {context}

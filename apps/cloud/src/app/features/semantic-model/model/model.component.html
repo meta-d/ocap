@@ -111,7 +111,9 @@
 
                             <button mat-icon-button displayDensity="compact" class="pac-model__nav-action"
                                 [matMenuTriggerFor]="entityMenu"
-                                [matMenuTriggerData]="{entity: entity}">
+                                [matMenuTriggerData]="{entity: entity}"
+                                [class.active]="!entityMenu.closed"
+                                (click)="$event.stopPropagation();$event.preventDefault()">
                                 <mat-icon>more_vert</mat-icon>
                             </button>
                         </a>
@@ -250,7 +252,8 @@
         <router-outlet #o="outlet"></router-outlet>
       </div>
 
-      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40" [(opened)]="sideMenuOpened"
+      <ngm-drawer-trigger class="absolute -left-1 top-1/2 -translate-y-1/2 z-40"
+        [(opened)]="sideMenuOpened"
         [matTooltip]="'PAC.MODEL.MODEL.ModelStructure' | translate: {Default: 'Model Structure'}"
         matTooltipPosition="after" />
     </mat-drawer-content>

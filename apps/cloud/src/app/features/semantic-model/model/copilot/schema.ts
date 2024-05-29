@@ -46,6 +46,7 @@ export const DimensionSchema = z.object({
 export const CubeSchema = z.object({
   name: z.string().optional().describe('The name of the cube'),
   caption: z.string().optional().describe('The caption of the cube'),
+  description: z.string().optional().describe('The description of the cube'),
   tables: z.array(
     z.object({
       name: z.string().describe('The name of the cube fact table')
@@ -81,7 +82,9 @@ export const CubeSchema = z.object({
       })
     )
     .optional()
-    .describe('An array of shared dimensions ref used in this cube')
+    .describe('An array of shared dimensions ref used in this cube'),
+    
+  calculatedMembers: z.array(CalculatedMeasureSchema).optional().describe('An array of calculated measures in this cube')
 })
 
 

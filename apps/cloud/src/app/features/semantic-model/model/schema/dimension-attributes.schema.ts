@@ -77,6 +77,7 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
               type: 'ngm-select',
               props: {
                 label: DIMENSION?.DefaultHierarchy ?? 'Default Hierarchy',
+                valueKey: 'key',
                 options: this.hierarchies$.pipe(
                   map(
                     (hierarchies) =>

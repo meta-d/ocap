@@ -101,7 +101,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   entities = [] as any
   get dataSourceName() {
-    return this.modelService.originalDataSource?.options.name
+    return this.modelService.originalDataSource?.options.key
   }
 
   tablesJoinCollapsed = true

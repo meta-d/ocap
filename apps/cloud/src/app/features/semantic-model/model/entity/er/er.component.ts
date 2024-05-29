@@ -19,7 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
-import { AggregationRole, CalculationType } from '@metad/ocap-core'
+import { AggregationRole, CalculationType, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import ELK from 'elkjs'
 import { debounceTime } from 'rxjs'
@@ -63,7 +63,7 @@ export class ERComponent {
   readonly cubeElement = viewChild('cubeRef', { read: ElementRef })
 
   readonly cube = this.cubeService.cube
-  readonly dimensions = this.cubeService.cubeDimensions
+  readonly dimensions = computed(() => this.cubeService.cubeDimensions()?.filter(nonNullable))
   readonly measures = this.cubeService.measures
   readonly calculatedMembers = computed(() => {
     const members = this.cubeService.calculatedMembers()

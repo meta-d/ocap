@@ -16,25 +16,26 @@ export function SQLExpression(COMMON) {
         props: {
           label: COMMON?.SQLExpression?.Dialect ?? 'Dialect',
           searchable: true,
+          valueKey: 'key',
           options: [
-            { value: null, label: COMMON?.None ?? 'None' },
-            { value: 'generic', label: 'generic' },
-            { value: 'access', label: 'access' },
-            { value: 'db2', label: 'db2' },
-            { value: 'derby', label: 'derby' },
-            { value: 'firebird', label: 'firebird' },
-            { value: 'hsqldb', label: 'hsqldb' },
-            { value: 'mssql', label: 'mssql' },
-            { value: 'mysql', label: 'mysql' },
-            { value: 'oracle', label: 'oracle' },
-            { value: 'postgres', label: 'postgres' },
-            { value: 'sybase', label: 'sybase' },
-            { value: 'teradata', label: 'teradata' },
-            { value: 'ingres', label: 'ingres' },
-            { value: 'infobright', label: 'infobright' },
-            { value: 'luciddb', label: 'luciddb' },
-            { value: 'vertica', label: 'vertica' },
-            { value: 'neoview', label: 'neoview' }
+            { value: null, caption: COMMON?.None ?? 'None' },
+            { value: 'generic', caption: 'generic' },
+            { value: 'access', caption: 'access' },
+            { value: 'db2', caption: 'db2' },
+            { value: 'derby', caption: 'derby' },
+            { value: 'firebird', caption: 'firebird' },
+            { value: 'hsqldb', caption: 'hsqldb' },
+            { value: 'mssql', caption: 'mssql' },
+            { value: 'mysql', caption: 'mysql' },
+            { value: 'oracle', caption: 'oracle' },
+            { value: 'postgres', caption: 'postgres' },
+            { value: 'sybase', caption: 'sybase' },
+            { value: 'teradata', caption: 'teradata' },
+            { value: 'ingres', caption: 'ingres' },
+            { value: 'infobright', caption: 'infobright' },
+            { value: 'luciddb', caption: 'luciddb' },
+            { value: 'vertica', caption: 'vertica' },
+            { value: 'neoview', caption: 'neoview' }
           ]
         }
       },
@@ -62,23 +63,23 @@ export function Role(I18N?) {
       options: [
         {
           value: null,
-          label: 'None'
+          caption: 'None'
         },
         {
           value: AggregationRole.dimension,
-          label: 'Dimension'
+          caption: 'Dimension'
         },
         {
           value: AggregationRole.measure,
-          label: 'Measure'
+          caption: 'Measure'
         },
         {
           value: AggregationRole.hierarchy,
-          label: 'Hierarchy'
+          caption: 'Hierarchy'
         },
         {
           value: AggregationRole.level,
-          label: 'Hierarchy Level'
+          caption: 'Hierarchy Level'
         }
       ]
     }
@@ -95,72 +96,72 @@ export function Semantic(COMMON?) {
       label: COMMON?.Semantic ?? 'Semantic',
       searchable: true,
       options: [
-        { value: null, label: COMMON?.None ?? 'None' },
-        { value: Semantics.Geography, label: 'Geography' },
+        { value: null, caption: COMMON?.None ?? 'None' },
+        { value: Semantics.Geography, caption: 'Geography' },
         {
           value: Semantics['GeoLocation.Latitude'],
-          label: 'GeoLocation Latitude'
+          caption: 'GeoLocation Latitude'
         },
         {
           value: Semantics['GeoLocation.Longitude'],
-          label: 'GeoLocation Longitude'
+          caption: 'GeoLocation Longitude'
         },
         {
           value: Semantics.Calendar,
-          label: 'Calendar'
+          caption: 'Calendar'
         },
-        { value: Semantics['Calendar.Year'], label: 'Calendar Year' },
-        { value: Semantics['Calendar.Quarter'], label: 'Calendar Quarter' },
-        { value: Semantics['Calendar.Month'], label: 'Calendar Month' },
-        { value: Semantics['Calendar.Week'], label: 'Calendar Week' },
-        { value: Semantics['Calendar.Day'], label: 'Calendar Day' },
+        { value: Semantics['Calendar.Year'], caption: 'Calendar Year' },
+        { value: Semantics['Calendar.Quarter'], caption: 'Calendar Quarter' },
+        { value: Semantics['Calendar.Month'], caption: 'Calendar Month' },
+        { value: Semantics['Calendar.Week'], caption: 'Calendar Week' },
+        { value: Semantics['Calendar.Day'], caption: 'Calendar Day' },
         {
           value: Semantics['Amount.CurrencyCode'],
-          label: 'Amount CurrencyCode'
+          caption: 'Amount CurrencyCode'
         },
         {
           value: Semantics['Quantity.UnitOfMeasure'],
-          label: 'Quantity UnitOfMeasure'
+          caption: 'Quantity UnitOfMeasure'
         },
         {
           value: Semantics.CurrencyCode,
-          label: 'Currency Code'
+          caption: 'Currency Code'
         },
         {
           value: Semantics.UnitOfMeasure,
-          label: 'Unit of Measure'
+          caption: 'Unit of Measure'
         },
         {
           value: Semantics.Language,
-          label: 'Language'
+          caption: 'Language'
         },
         {
           value: Semantics['Address.Region'],
-          label: 'Address Region'
+          caption: 'Address Region'
         },
         {
           value: Semantics['Address.SubRegion'],
-          label: 'Address SubRegion'
+          caption: 'Address SubRegion'
         },
         {
           value: Semantics['Address.Country'],
-          label: 'Address Country'
+          caption: 'Address Country'
         },
         {
           value: Semantics['Address.City'],
-          label: 'Address City'
+          caption: 'Address City'
         },
         {
           value: Semantics['Address.ZipCode'],
-          label: 'Address ZipCode'
+          caption: 'Address ZipCode'
         },
         {
           value: Semantics['Address.PostBox'],
-          label: 'Address PostBox'
+          caption: 'Address PostBox'
         },
         {
           value: Semantics['Address.Street'],
-          label: 'Address Street'
+          caption: 'Address Street'
         }
       ]
     }
@@ -184,52 +185,52 @@ export function CalendarFormatter(COMMON?) {
           {
             semantic: Semantics['Calendar.Day'],
             value: 'yyyyMMdd',
-            label: format(new Date(), 'yyyyMMdd')
+            caption: format(new Date(), 'yyyyMMdd')
           },
           {
             semantic: Semantics['Calendar.Day'],
             value: 'yyyy.MM.dd',
-            label: format(new Date(), 'yyyy.MM.dd')
+            caption: format(new Date(), 'yyyy.MM.dd')
           },
           {
             semantic: Semantics['Calendar.Day'],
             value: 'yyyy-MM-dd',
-            label: format(new Date(), 'yyyy-MM-dd')
+            caption: format(new Date(), 'yyyy-MM-dd')
           },
           {
             semantic: Semantics['Calendar.Month'],
             value: `yyyyMM`,
-            label: format(new Date(), `yyyyMM`)
+            caption: format(new Date(), `yyyyMM`)
           },
           {
             semantic: Semantics['Calendar.Month'],
             value: `yyyy.MM`,
-            label: format(new Date(), `yyyy.MM`)
+            caption: format(new Date(), `yyyy.MM`)
           },
           {
             semantic: Semantics['Calendar.Month'],
             value: `yyyy-MM`,
-            label: format(new Date(), `yyyy-MM`)
+            caption: format(new Date(), `yyyy-MM`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
             value: `yyyy'Q'Q`,
-            label: format(new Date(), `yyyy'Q'Q`)
+            caption: format(new Date(), `yyyy'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
             value: `yyyy.'Q'Q`,
-            label: format(new Date(), `yyyy.'Q'Q`)
+            caption: format(new Date(), `yyyy.'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
             value: `yyyy-'Q'Q`,
-            label: format(new Date(), `yyyy-'Q'Q`)
+            caption: format(new Date(), `yyyy-'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Year'],
             value: `yyyy`,
-            label: format(new Date(), `yyyy`)
+            caption: format(new Date(), `yyyy`)
           }
         ]
 

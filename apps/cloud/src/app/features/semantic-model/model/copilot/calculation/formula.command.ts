@@ -16,9 +16,9 @@ import { CalculatedMember, Cube, EntityType } from '@metad/ocap-core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
-import { ModelEntityService } from '../entity/entity.service'
-import { SemanticModelService } from '../model.service'
-import { ModelDesignerType } from '../types'
+import { ModelEntityService } from '../../entity/entity.service'
+import { SemanticModelService } from '../../model.service'
+import { ModelDesignerType } from '../../types'
 
 export function injectFormulaCommand(
   calculatedMember: Signal<CalculatedMember>,

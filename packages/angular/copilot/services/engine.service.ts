@@ -284,9 +284,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
   async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
     const { abortController, conversationId, assistantMessageId, context } = options ?? {}
 
-    // Last user messages before add new messages
-    const lastUserMessages = this.lastUserMessages()
-
     // For agent command
     if (_command.agent) {
       return await this.triggerCommandAgent(prompt, _command, {
@@ -296,6 +293,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       })
     }
 
+    // Last user messages before add new messages
+    const lastUserMessages = this.lastUserMessages()
     const newMessages = []
     try {
       if (_command.systemPrompt) {
@@ -731,7 +730,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       if (!(currentConversation.type === 'free' || currentCommand?.agent?.conversation)) {
         this.newConversation(null, null)
       }
-      this.upsertMessage(message)
+      this.upsertMessage({...message, lcMessage: new HumanMessage({ content: message.content })})
     }
   }
 

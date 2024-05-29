@@ -69,7 +69,7 @@ export const CalculationSchema = z.object({
   formula: FormulaSchema,
   formatting: z.object({
     unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
-    decimal: z.string().optional().describe('The decimal of value when formatting the measure')
+    decimal: z.number().optional().describe('The decimal of value when formatting the measure')
   }).optional().describe('The formatting config of this measure')
 })
 

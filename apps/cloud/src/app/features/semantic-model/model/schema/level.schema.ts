@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { DimensionType, getLevelsHierarchy, PropertyLevel } from '@metad/ocap-core'
 import { AccordionWrappers, FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
-import { combineLatest } from 'rxjs'
+import { combineLatest, Observable } from 'rxjs'
 import { combineLatestWith, filter, map, shareReplay, startWith, switchMap } from 'rxjs/operators'
 import {
   CaptionExpressionAccordion,
@@ -14,6 +14,7 @@ import {
   SemanticsAccordionWrapper
 } from './common'
 import { CubeSchemaService } from './cube.schema'
+import { ISelectOption } from '@metad/ocap-angular/core'
 
 @Injectable()
 export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
@@ -58,13 +59,18 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
     this.factName$
   ]).pipe(map(([lTable, hTable, fact]) => lTable ?? hTable ?? fact))
 
-  readonly columnOptions$ = this.table$.pipe(
+  readonly columnOptions$: Observable<ISelectOption[]> = this.table$.pipe(
     filter((table) => !!table),
     switchMap((table) => this.modelService.selectOriginalEntityProperties(table)),
     map((properties) => {
-      const options = [{ value: null, label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }) }]
+      const options = [
+        {
+          key: null,
+          value: null,
+          caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
+        }]
       properties?.forEach((property) => {
-        options.push({ value: property.name, label: property.caption })
+        options.push({ key: property.name, value: property.name, caption: property.caption })
       })
       return options
     }),
@@ -168,7 +174,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
                 label: LEVEL?.Column ?? 'Column',
                 required: true,
                 searchable: true,
-                options: this.columnOptions$
+                options: this.columnOptions$,
+                valueKey: 'key'
               }
             },
             {
@@ -199,7 +206,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
               props: {
                 label: LEVEL?.NameColumn ?? 'Name Column',
                 searchable: true,
-                options: this.columnOptions$
+                options: this.columnOptions$,
+                valueKey: 'key'
               }
             },
             {
@@ -209,7 +217,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
               props: {
                 label: LEVEL?.CaptionColumn ?? 'Caption Column',
                 searchable: true,
-                options: this.columnOptions$
+                options: this.columnOptions$,
+                valueKey: 'key'
               }
             },
             {
@@ -219,7 +228,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
               props: {
                 label: LEVEL?.OrdinalColumn ?? 'Ordinal Column',
                 searchable: true,
-                options: this.columnOptions$
+                options: this.columnOptions$,
+                valueKey: 'key'
               }
             },
             {
@@ -229,7 +239,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
               props: {
                 label: LEVEL?.ParentColumn ?? 'Parent Column',
                 searchable: true,
-                options: this.columnOptions$
+                options: this.columnOptions$,
+                valueKey: 'key'
               }
             },
             {
@@ -391,7 +402,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
                 props: {
                   label: LEVEL?.Column ?? 'Column',
                   searchable: true,
-                  options: this.columnOptions$
+                  options: this.columnOptions$,
+                  valueKey: 'key'
                 }
               }
             ]

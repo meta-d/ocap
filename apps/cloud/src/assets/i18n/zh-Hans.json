@@ -828,6 +828,7 @@
           "CaptionExpression": "说明表达式",
           "OrdinalExpression": "顺序表达式",
           "ParentExpression": "父字段表达式",
+          "MeasureExpression": "度量表达式",
           "Enabled": "启用",
           "Cache": "缓存",
           "Caption": "标签",

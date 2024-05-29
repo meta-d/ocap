@@ -61,13 +61,15 @@
                     [cdkDropListEnterPredicate]="tablesPredicate"
                 >
                   <div class="overflow-y-auto max-h-full h-full">
-                    <ngm-entity-schema *ngFor="let table of tables$ | async; trackBy: trackByName"
+                    @for (table of tables$ | async; track table.name) {
+                      <ngm-entity-schema
                         [dataSettings]="{dataSource: dataSourceName, entitySet: table.name}"
                         [capacities]="[
                             EntityCapacity.Dimension,
                             EntityCapacity.Measure,
                         ]"
-                    ></ngm-entity-schema>
+                        />
+                    }
                   </div>
                 </div>
             </ngm-splitter-pane>

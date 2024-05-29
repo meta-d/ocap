@@ -53,6 +53,11 @@ export interface CalculatedMember {
     name: string
     value: string
   }>
+
+  formatting?: {
+    unit?: string;
+    decimal?: number;
+  }
 }
 
 export interface NamedSet {
