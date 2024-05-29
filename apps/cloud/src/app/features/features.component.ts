@@ -6,7 +6,6 @@ import {
   HostListener,
   OnInit,
   Renderer2,
-  ViewChild,
   effect,
   inject,
   model,
@@ -58,6 +57,7 @@ import { AppService } from '../app.service'
 import { ModelCreationComponent } from './semantic-model/creation/creation.component'
 import { QueryCreationDialogComponent } from './semantic-model/query-creation.component'
 
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-features',
@@ -73,8 +73,6 @@ export class FeaturesComponent implements OnInit {
 
   readonly #destroyRef = inject(DestroyRef)
 
-  // @ViewChild('sidenav') sidenav: MatSidenav
-  // @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
   readonly sidenav = viewChild('sidenav', { read: MatSidenav })
   readonly copilotChat = viewChild('copilotChat', { read: NgmCopilotChatComponent })
 
@@ -85,21 +83,6 @@ export class FeaturesComponent implements OnInit {
   organization: IOrganization
   user: IUser
 
-  // links = [
-  //   {
-  //     link: 'home',
-  //     icon: 'home'
-  //   },
-  //   {
-  //     link: 'story',
-  //     icon: 'auto_stories'
-  //   },
-  //   {
-  //     link: 'models',
-  //     icon: 'apartment'
-  //   }
-  // ]
-  // activeLink = 'home'
   readonly isMobile = this.appService.isMobile
   get isAuthenticated() {
     return !!this.store.user
@@ -331,11 +314,6 @@ export class FeaturesComponent implements OnInit {
       }, 1000)
     }
   }
-
-  // onLink(item) {
-  //   this.activeLink = item.link
-  //   this.router.navigate([item.link])
-  // }
 
   navigate(link: MenuCatalog) {
     switch (link) {
@@ -580,6 +558,16 @@ export class FeaturesComponent implements OnInit {
             }
           },
           {
+            title: 'AI Copilot',
+            matIcon: 'assistant',
+            link: '/settings/copilot',
+            data: {
+              translationKey: 'AI Copilot',
+              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
+              featureKey: FeatureEnum.FEATURE_COPILOT
+            }
+          },
+          {
             title: 'User',
             matIcon: 'people',
             link: '/settings/users',
@@ -610,7 +598,6 @@ export class FeaturesComponent implements OnInit {
               permissionKeys: [AnalyticsPermissionsEnum.BUSINESS_AREA_EDIT]
             }
           },
-
           {
             title: 'Certification',
             matIcon: 'verified_user',
@@ -624,7 +611,6 @@ export class FeaturesComponent implements OnInit {
               // permissionKeys: [AnalyticsPermissionsEnum.CERTIFICATION_EDIT]
             }
           },
-
           {
             title: 'Email Templates',
             matIcon: 'email',
@@ -645,18 +631,6 @@ export class FeaturesComponent implements OnInit {
               featureKey: FeatureEnum.FEATURE_SMTP
             }
           },
-
-          {
-            title: 'AI Copilot',
-            matIcon: 'assistant',
-            link: '/settings/copilot',
-            data: {
-              translationKey: 'AI Copilot',
-              permissionKeys: [PermissionsEnum.ORG_COPILOT_EDIT],
-              featureKey: FeatureEnum.FEATURE_COPILOT
-            }
-          },
-
           {
             title: 'Features',
             matIcon: 'widgets',
@@ -677,7 +651,6 @@ export class FeaturesComponent implements OnInit {
           },
           {
             title: 'Tenant',
-            // icon: 'cluster',
             matIcon: 'storage',
             link: '/settings/tenant',
             data: {

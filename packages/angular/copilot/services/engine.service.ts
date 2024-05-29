@@ -725,6 +725,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const dropActions = this.#dropActions()
     if (dropActions[event.previousContainer.id]) {
       const message = await dropActions[event.previousContainer.id].implementation(event, this)
+
+      const currentConversation = this.currentConversation()
+      const currentCommand = this.currentCommand()
+      if (!(currentConversation.type === 'free' || currentCommand?.agent?.conversation)) {
+        this.newConversation(null, null)
+      }
       this.upsertMessage(message)
     }
   }
