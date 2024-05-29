@@ -1,4 +1,6 @@
+import { NgmSemanticModel } from '@metad/cloud/state'
 import { IModelQuery, IStory } from '@metad/contracts'
+import { AIOptions, CopilotChatConversation } from '@metad/copilot'
 import {
   Cube,
   Dimension,
@@ -9,11 +11,9 @@ import {
   PropertyDimension,
   PropertyHierarchy,
   Schema,
-  SemanticModel,
+  SemanticModel
 } from '@metad/ocap-core'
-import { NgmSemanticModel } from '@metad/cloud/state'
 import { uuid } from '../../../@core'
-import { AIOptions, CopilotChatConversation, CopilotChatMessage } from '@metad/copilot'
 
 export enum MODEL_TYPE {
   /**
@@ -73,7 +73,7 @@ export interface QueryResult {
   preview?: any[]
   error?: string
   stats?: {
-      numberOfEntries: number
+    numberOfEntries: number
   }
 }
 
@@ -140,8 +140,8 @@ export interface SemanticModelEntity {
 }
 
 export interface EntityPreview {
-  rows: Array<Dimension | Measure>;
-  columns: Array<Dimension | Measure>;
+  rows: Array<Dimension | Measure>
+  columns: Array<Dimension | Measure>
   slicers: Array<ISlicer>
 }
 
@@ -154,7 +154,7 @@ export interface ModelCubeState extends SemanticModelEntity {
    */
   entityType?: EntityType
   /**
-   * MDX Cube in schema 
+   * MDX Cube in schema
    */
   cube: Cube
 
@@ -256,7 +256,12 @@ export interface RuntimeProperty extends Property {
 
 export type ModelSchemaValueTypes = {
   [ModelDesignerType.hierarchy]: {
-    hierarchy: PropertyHierarchy;
-    dimension: PropertyDimension;
+    hierarchy: PropertyHierarchy
+    dimension: PropertyDimension
   }
+}
+
+export enum CdkDragDropContainers {
+  Tables = 'pac-model-entitysets',
+  Entities = 'pac-model-entities'
 }

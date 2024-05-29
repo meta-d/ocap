@@ -34,7 +34,7 @@ import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, 
 import { FeaturesComponent } from '../../../../features.component'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE, QueryResult } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE, QueryResult } from '../../types'
 import { quoteLiteral } from '../../utils'
 import { QueryLabService } from '../query-lab.service'
 import { QueryService } from './query.service'
@@ -184,6 +184,9 @@ ${calcEntityTypePrompt(entityType)}
   */
   // 当前使用 MDX 查询
   readonly modelType = toSignal(this.modelService.modelType$)
+  /**
+   * The source is Xmla service, so must use MDX statement to query
+   */
   readonly isMDX = computed(() => this.modelType() === MODEL_TYPE.XMLA)
   readonly useSaveAsSQL = computed(() => this.modelType() === MODEL_TYPE.SQL)
   readonly isWasm = toSignal(this.modelService.isWasm$)
@@ -194,9 +197,12 @@ ${calcEntityTypePrompt(entityType)}
       switchMap((entities) =>
         combineLatest(entities.map((entity) => this.modelService.selectOriginalEntityType(entity)))
       )
-    )
+    ),
+    { initialValue: [] }
   )
   readonly queryKey = toSignal(this.queryId$)
+
+  readonly entityType = computed(() => this.entityTypes()[0])
 
   readonly dbTablesPrompt = computed(() =>
     this.isMDX()
@@ -506,7 +512,6 @@ ${calcEntityTypePrompt(entityType)}
           })
 
           this.loading$.next(false)
-          // this._cdr.detectChanges()
         } catch (err) {
           console.error(err)
         }
@@ -518,91 +523,12 @@ ${calcEntityTypePrompt(entityType)}
           error
         })
         this.loading$.next(false)
-        // this._cdr.detectChanges()
         return of({
           error: error
         })
       }),
     )
   }
-
-  // query = effectAction((origin$: Observable<string>) => {
-  //   return origin$.pipe(
-  //     tap((statement) => {
-  //       if (statement) {
-  //         this.error = null
-  //         this.loading$.next(true)
-  //       } else {
-  //         this.error = null
-  //         this.loading$.next(false)
-  //       }
-  //     }),
-  //     switchMap((statement) =>
-  //       statement
-  //         ? this.modelService.originalDataSource.query({ statement, forceRefresh: true }).pipe(
-  //             catchError((error) => {
-  //               this.error = error
-  //               this.appendResult({
-  //                 statement,
-  //                 error
-  //               })
-  //               this.loading$.next(false)
-  //               this._cdr.detectChanges()
-  //               return EMPTY
-  //             }),
-  //             tap((result) => {
-  //               const { status, error, schema } = result
-  //               let { data } = result
-
-  //               if (status === 'ERROR' || error) {
-  //                 console.error(error)
-  //                 this.error = error || status
-
-  //                 this.appendResult({
-  //                   statement,
-  //                   error
-  //                 })
-
-  //                 this._cdr.detectChanges()
-  //                 return
-  //               }
-
-  //               try {
-  //                 const columns = convertQueryResultColumns(schema)
-
-  //                 if (isPlainObject(data)) {
-  //                   data = [data]
-  //                 }
-  //                 if (columns.length === 0 && data.length > 0) {
-  //                   columns.push(...typeOfObj(data[0]))
-  //                 }
-
-  //                 let preview = data
-  //                 if (data?.length > 1000) {
-  //                   preview = data.slice(0, 1000)
-  //                 }
-
-  //                 this.appendResult({
-  //                   statement,
-  //                   data,
-  //                   columns: uniqBy(columns, 'name'),
-  //                   preview,
-  //                   stats: {
-  //                     numberOfEntries: data?.length ?? 0
-  //                   }
-  //                 })
-
-  //                 this.loading$.next(false)
-  //                 this._cdr.detectChanges()
-  //               } catch (err) {
-  //                 console.error(err)
-  //               }
-  //             })
-  //           )
-  //         : EMPTY
-  //     )
-  //   )
-  // })
 
   cancelQuery() {
     this.executeQuery('')
@@ -644,16 +570,51 @@ ${calcEntityTypePrompt(entityType)}
   }
 
   dropEntity(event: CdkDragDrop<{ name: string }[]>) {
-    if (event.previousContainer.id === 'pac-model-entitysets') {
-      if (event.item.data?.name) {
-        this.queryLabService.addEntity({
-          key: this.queryKey(),
-          entity: event.item.data?.name,
-          currentIndex: event.currentIndex
-        })
-      }
-    } else if (event.container === event.previousContainer) {
+    if (event.container === event.previousContainer) {
       this.queryLabService.moveEntityInQuery({ key: this.queryKey(), event })
+    } else {
+      switch(event.previousContainer.id) {
+        case CdkDragDropContainers.Tables: {
+          if (event.item.data?.name) {
+            this.queryLabService.addEntity({
+              key: this.queryKey(),
+              entity: event.item.data?.name,
+              currentIndex: event.currentIndex
+            })
+          }
+          break
+        }
+        case CdkDragDropContainers.Entities: {
+          if (this.isMDX()) {
+            // Add original cube name into list
+            this.queryLabService.addEntity({
+              key: this.queryKey(),
+              entity: event.item.data?.cube?.name,
+              currentIndex: event.currentIndex
+            })
+          } else {
+            // Add the fact tables in cube or dimension tables into list
+            event.item.data?.cube?.tables.forEach((item, index) => {
+              this.queryLabService.addEntity({
+                key: this.queryKey(),
+                entity: item.name,
+                currentIndex: event.currentIndex + index
+              })
+            })
+
+            event.item.data?.dimension?.hierarchies?.forEach((hierarchy) => {
+              hierarchy.tables?.forEach((item, index) => {
+                this.queryLabService.addEntity({
+                  key: this.queryKey(),
+                  entity: item.name,
+                  currentIndex: event.currentIndex + index
+                })
+              })
+            })
+          }
+          break
+        }
+      }
     }
   }
 

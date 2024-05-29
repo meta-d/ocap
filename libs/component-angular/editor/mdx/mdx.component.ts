@@ -18,6 +18,9 @@ import {
   language
 } from '../providers/index'
 
+/**
+ * @deprecated use NgmMDXEditorComponent in @metad/ocap-angular/mdx
+ */
 @Component({
   selector: 'ngm-editor-mdx',
   templateUrl: './mdx.component.html',

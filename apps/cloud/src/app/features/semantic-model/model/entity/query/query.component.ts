@@ -15,7 +15,7 @@ import { BehaviorSubject, EMPTY, Observable, firstValueFrom } from 'rxjs'
 import { catchError, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE } from '../../types'
 import { serializePropertyUniqueName } from '../../utils'
 import { ModelEntityService } from '../entity.service'
 import { CommonModule } from '@angular/common'
@@ -239,7 +239,7 @@ ${this.statement()}
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : measureFormatter(property.name))
     } else if (event.previousContainer.id === 'list-dimensions') {
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : serializePropertyUniqueName(property, dialect))
-    } else if (event.previousContainer.id === 'pac-model-entities') {
+    } else if (event.previousContainer.id === CdkDragDropContainers.Entities) {
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : serializeUniqueName(property.name))
     } else {
       console.log(event.previousContainer.id)

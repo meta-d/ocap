@@ -1,3 +1,4 @@
+import { MaxMarginalRelevanceSearchOptions } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
@@ -48,16 +49,17 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 	async similaritySearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command?: string; k: number; filter: any; score?: number }
+		options?: { role?: AiBusinessRole; command: string; k: number; filter: string[]; score?: number }
 	) {
-		const { role, command, k, score } = options ?? {}
+		const { role, command, k, score, filter } = options ?? {}
+		const commandFilter = `*\\\\"command\\\\"\\\\:\\\\"${command}\\\\"*`
 
 		const tenantId = RequestContext.currentTenantId()
 		let vectorStore = await this.getVectorStore(tenantId, role)
 		if (vectorStore) {
 			let results = []
 			try {
-				results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, `*${command}*`)
+				results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, [commandFilter, ...(filter ?? [])])
 			} catch (error) {
 				results = []
 			}
@@ -71,7 +73,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 					)
 					vectorStore = await this.getVectorStore(tenantId)
 					try {
-						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, `*${command}*`)
+						results = await vectorStore.vectorStore.similaritySearchWithScore(query, k, [commandFilter, ...(filter ?? [])])
 
 						if (!results.length) {
 							this.#logger.debug(
@@ -79,13 +81,13 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 							)
 						}
 					} catch (error) {
-						console.error(error)
+						this.#logger.error(error)
 						results = []
 					}
 				}
 			}
 
-			return results.filter(([, _score]) => _score > (score ?? 0.5)).map(([doc]) => doc)
+			return results.filter(([, _score]) => _score > (score ?? 0.2)).map(([doc]) => doc)
 		}
 
 		return []
@@ -93,15 +95,19 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 	async maxMarginalRelevanceSearch(
 		query: string,
-		options?: { role?: AiBusinessRole; command?: string; k: number; filter: any }
+		options?: { role?: AiBusinessRole; command?: string; k: number; filter: string[] }
 	) {
 		const { role, command, k, filter } = options ?? {}
+		const commandFilter = `*\\\\"command\\\\"\\\\:\\\\"${command}\\\\"*`
 
 		const tenantId = RequestContext.currentTenantId()
-		const vectorStore = await this.getVectorStore(tenantId, role, command)
+		const vectorStore = await this.getVectorStore(tenantId, role)
 
 		if (vectorStore) {
-			return await vectorStore.vectorStore.maxMarginalRelevanceSearch(query, options, undefined)
+			return await vectorStore.vectorStore.maxMarginalRelevanceSearch(query, {
+				...(options ?? {}),
+				filter: [`*${command}*`, ...(filter ?? [])]
+			} as MaxMarginalRelevanceSearchOptions<string[]>, undefined)
 		}
 		return null
 	}
@@ -118,7 +124,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 	): Promise<UpdateResult | CopilotExample> {
 		const tenantId = RequestContext.currentTenantId()
 		let entity = partialEntity as ICopilotExample
-		const vectorStore = await this.getVectorStore(tenantId, entity.role, entity.command)
+		const vectorStore = await this.getVectorStore(tenantId, entity.role)
 		if (vectorStore && !entity.vector) {
 			const examples = await this.embedExamples([entity])
 			entity = examples[0]
@@ -133,7 +139,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 	private async tryEmbedExample(entity: ICopilotExample) {
 		const tenantId = RequestContext.currentTenantId()
-		const vectorStore = await this.getVectorStore(tenantId, entity.role, entity.command)
+		const vectorStore = await this.getVectorStore(tenantId, entity.role)
 		if (vectorStore && !entity.vector) {
 			const examples = await this.embedExamples([entity])
 			entity = examples[0]

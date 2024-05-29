@@ -40,7 +40,7 @@ import { Observable, combineLatest, firstValueFrom } from 'rxjs'
 import { filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { ERComponent } from '../er'
 import { newDimensionFromColumn } from '../types'
@@ -397,7 +397,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       tap(([event, tables]) => {
         if (event.previousContainer === event.container) {
           moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
-        } else if (event.previousContainer.id === 'pac-model-entitysets') {
+        } else if (event.previousContainer.id === CdkDragDropContainers.Tables) {
           const name = event.item.data.name
           this.entityService.addCubeTable(
             isEmpty(tables)

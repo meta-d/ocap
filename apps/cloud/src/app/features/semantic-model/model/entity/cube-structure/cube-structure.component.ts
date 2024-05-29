@@ -31,7 +31,7 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { NGXLogger } from 'ngx-logger'
 import { map, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE, ModelDesignerType, SemanticModelEntity, SemanticModelEntityType } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE, ModelDesignerType, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { PropertyDimensionComponent } from '../dimension/dimension.component'
 import { ModelEntityService } from '../entity.service'
 import { CubeEventType } from '../types'
@@ -236,7 +236,7 @@ export class ModelCubeStructureComponent {
       item.dropContainer.id === 'list-table-measures' ||
       item.dropContainer.id === 'list-table-dimensions' ||
       // db tables
-      item.dropContainer.id === 'pac-model-entitysets'
+      item.dropContainer.id === CdkDragDropContainers.Tables
     )
   }
 
@@ -290,7 +290,7 @@ export class ModelCubeStructureComponent {
 
     // Add shared dimension into this cube
     if (
-      event.previousContainer.id === 'pac-model-entities' &&
+      event.previousContainer.id === CdkDragDropContainers.Entities &&
       previousItem.type === SemanticModelEntityType.DIMENSION &&
       event.container.id === 'list-dimensions'
     ) {
@@ -307,7 +307,7 @@ export class ModelCubeStructureComponent {
     }
 
     // Add db table as dimension
-    if (event.previousContainer.id === 'pac-model-entitysets') {
+    if (event.previousContainer.id === CdkDragDropContainers.Tables) {
       this.cubeState.newDimension({
         index,
         table: previousItem

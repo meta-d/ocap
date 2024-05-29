@@ -142,8 +142,9 @@
                 </mat-toolbar>
 
                 @if (isMDX()) {
-                    <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-mdx-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
+                        [entityType]="entityType()"
                         [(ngModel)]="statement"
                         (selectionChange)="onSelectionChange($event)"
                         (keyDown)="onEditorKeyDown($event)"
@@ -151,10 +152,9 @@
                         cdkDropList
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
-                        >
-                    </ngm-editor-mdx>
+                        />
                 } @else {
-                    <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-sql-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
                         [actions]="sqlEditorActions"
@@ -166,8 +166,7 @@
                         cdkDropList
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
-                        >
-                    </ngm-editor-sql>
+                    />
                 }
             </ngm-splitter-pane>
             <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">

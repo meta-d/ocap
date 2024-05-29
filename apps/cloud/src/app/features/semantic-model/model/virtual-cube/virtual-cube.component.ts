@@ -21,7 +21,7 @@ import { NgmNotificationComponent } from 'apps/cloud/src/app/@theme'
 import { NGXLogger } from 'ngx-logger'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { SemanticModelService } from '../model.service'
-import { SemanticModelEntityType } from '../types'
+import { CdkDragDropContainers, SemanticModelEntityType } from '../types'
 import { VirtualCubeStateService } from './virtual-cube.service'
 
 
@@ -213,7 +213,7 @@ ${calcEntityTypePrompt(this.entityType())}
   dropCube(event: CdkDragDrop<{ name: string }[]>) {
     if (event.container === event.previousContainer) {
       this.virtualCubeState.moveItemInCubes(event)
-    } else if (event.previousContainer.id === 'pac-model-entities') {
+    } else if (event.previousContainer.id === CdkDragDropContainers.Entities) {
       if (event.item.data.type === SemanticModelEntityType.CUBE) {
         this.virtualCubeState.addCube({ index: event.currentIndex, cubeName: event.item.data.name })
       }

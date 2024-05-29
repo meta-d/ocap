@@ -1,12 +1,13 @@
 import { Signal, WritableSignal, computed, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
-import { markdownEntityType } from '@metad/core'
+import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
 import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { getErrorMessage } from '@metad/ocap-angular/core'
 import { EntityType } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { TranslateService } from '@ngx-translate/core'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
 
@@ -27,7 +28,7 @@ export function injectQueryCommand(
     const { isMDX, entityTypes } = context()
     return entityTypes?.map((entityType) => {
       return `${isMDX ? 'Cube' : 'Table'} name: "${entityType.name}",
-  caption: "${entityType.caption}",
+  caption: "${entityType.caption || ''}",
   ${isMDX ? 'dimensions and measures' : 'columns'} : [${Object.keys(entityType.properties)
     .map(
       (key) =>
@@ -40,10 +41,8 @@ export function injectQueryCommand(
   const promptCubes = computed(() => {
     const { entityTypes } = context()
     return entityTypes?.map((entityType) => {
-      return `Cube name: [${entityType.name}],
-Cube info is:
-
-${markdownEntityType(entityType)}
+      return `- Cube [${entityType.name}]
+  ${markdownEntityType(entityType)}
 `
     })
   })
@@ -53,8 +52,8 @@ ${markdownEntityType(entityType)}
     const _promptCubes = promptCubes()
 
     return isMDX
-      ? `The source dialect is ${entityTypes[0]?.dialect}, the cubes information are ${_promptTables?.join('\n')}`
-      : `The database dialect is ${entityTypes[0]?.dialect}, the tables information are ${_promptTables?.join('\n')}`
+      ? `The source dialect is '${entityTypes[0]?.dialect}', the cubes information are \n${_promptCubes?.join('\n\n')}`
+      : `The database dialect is '${entityTypes[0]?.dialect}', the tables information are \n${_promptTables?.join('\n\n')}`
   })
 
   const createQueryTool = new DynamicStructuredTool({
@@ -95,27 +94,34 @@ And the total number of rows returned is ${result.data.length}.`
       type: CopilotAgentType.Default
     },
     tools: [createQueryTool],
+    fewShotPrompt: injectAgentFewShotTemplate(commandName),
     prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a query statement to query data!
 
 {context}
-    
+
 {system_prompt}`),
     systemPrompt: async () => {
       const { dialect, isMDX, entityTypes } = context()
 
       return isMDX
         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
+${makeCubeRulesPrompt()}
+
 The cube information is:
-\`\`\`
+
 ${dbTablesPrompt()}
-\`\`\`
+
 Please provide the corresponding MDX statement for the given question.
+Current statement: 
+\`\`\`mdx
+${statement()}
+\`\`\`
 `
         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
 The table information is:
-\`\`\`
+
 ${dbTablesPrompt()}
-\`\`\`
+
 Please provide the corresponding SQL statement for the given question.
 Note: Table fields are case-sensitive and should be enclosed in double quotation marks.
 

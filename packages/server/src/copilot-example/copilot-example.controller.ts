@@ -44,7 +44,7 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
     @Post('similarity-search')
     async similaritySearch(
         @Body('query') query: string,
-        @Body('options') options?: { k: number; filter: any; score?: number },
+        @Body('options') options?: { k: number; filter: any; score?: number; command: string },
     ) {
       this.#logger.debug(`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} and filter = ${options?.filter}`)
 

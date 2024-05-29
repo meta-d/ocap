@@ -60,7 +60,7 @@ import {
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
-import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
+import { CdkDragDropContainers, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
 import { stringifyTableType } from './utils'
 
 @Component({
@@ -290,7 +290,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   #cubeCommand = injectCubeCommand(this.dimensions)
   #dimensionCommand = injectDimensionCommand()
   #entityDropAction = provideCopilotDropAction({
-    id: 'pac-model-entitysets',
+    id: CdkDragDropContainers.Tables,
     implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
       this.#logger.debug(`Drop table to copilot chat:`, event)
       const data = event.item.data
@@ -349,11 +349,11 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   }
 
   entityPredicate(event: CdkDrag<PropertyAttributes>) {
-    return event.dropContainer.id === 'pac-model-entitysets'
+    return event.dropContainer.id === CdkDragDropContainers.Tables
   }
 
   drop(event: CdkDragDrop<Array<SemanticModelEntity>>) {
-    if (event.previousContainer.id === 'pac-model-entitysets' && event.container.id === 'pac-model-entities') {
+    if (event.previousContainer.id === CdkDragDropContainers.Tables && event.container.id === CdkDragDropContainers.Entities) {
       this.createEntity(event.item.data)
     }
     // Move items in array
@@ -608,7 +608,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   }
 
   tableRemovePredicate(item: CdkDrag<DBTable>) {
-    return item.dropContainer.id === 'pac-model-entitysets'
+    return item.dropContainer.id === CdkDragDropContainers.Tables
   }
 
   async dropTable(event: CdkDragDrop<DBTable[]>) {
@@ -690,7 +690,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   // async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
   //   const data = event.item.data
 
-  //   if (event.previousContainer.id === 'pac-model-entitysets') {
+  //   if (event.previousContainer.id === CdkDragDropContainers.Tables) {
   //     // 源表结构或源多维数据集结构
   //     const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
   //     this.copilotChat.addMessage({
