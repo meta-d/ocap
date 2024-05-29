@@ -20,7 +20,7 @@ export function injectCubeCommand(dimensions: Signal<Property[]>) {
     description: 'Create or edit cube',
     schema: CubeSchema,
     func: async (cube) => {
-      logger.debug(`Execute copilot action 'create-model-cube':`, cube)
+      logger.debug(`Execute copilot action 'createCube':`, cube)
       createCube(modelService, cube as any)
       return translate.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
     }

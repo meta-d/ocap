@@ -15,36 +15,38 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
-import { calcEntityTypePrompt, convertQueryResultColumns } from '@metad/core'
-import { NgmCopilotEngineService, NgmCopilotService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
-import { effectAction } from '@metad/ocap-angular/core'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from '@metad/core'
+import {
+  NgmCopilotService,
+} from '@metad/ocap-angular/copilot'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
-import { uniqBy } from '@metad/ocap-core'
+import { nonNullable, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
-import { Store, ToastrService } from 'apps/cloud/src/app/@core'
+import { Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, EMPTY, Observable, combineLatest, firstValueFrom } from 'rxjs'
+import { BehaviorSubject, EMPTY, Observable, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { FeaturesComponent } from '../../../../features.component'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, QueryResult } from '../../types'
 import { quoteLiteral } from '../../utils'
 import { QueryLabService } from '../query-lab.service'
 import { QueryService } from './query.service'
-import { FeaturesComponent } from '../../../../features.component'
-
+import { QueryCopilotEngineService } from './copilot.service'
+import { injectQueryCommand } from '../../copilot'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-model-query',
   templateUrl: 'query.component.html',
   styleUrls: ['query.component.scss'],
-  providers: [QueryService, NgmCopilotEngineService]
+  providers: [QueryService, QueryCopilotEngineService]
 })
 export class QueryComponent extends TranslationBaseComponent {
   MODEL_TYPE = MODEL_TYPE
@@ -59,11 +61,11 @@ export class QueryComponent extends TranslationBaseComponent {
   readonly copilotService = inject(NgmCopilotService)
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly route = inject(ActivatedRoute)
-  private readonly _toastrService = inject(ToastrService)
+  // private readonly _toastrService = inject(ToastrService)
   private readonly store = inject(Store)
   readonly #logger = inject(NGXLogger)
   readonly featuresComponent = inject(FeaturesComponent)
-  readonly #copilotEngine = inject(NgmCopilotEngineService)
+  readonly #copilotEngine = inject(QueryCopilotEngineService)
   readonly #destroyRef = inject(DestroyRef)
 
   @ViewChild('editor') editor!: BaseEditorDirective
@@ -71,7 +73,7 @@ export class QueryComponent extends TranslationBaseComponent {
   themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
   get dataSourceName() {
-    return this.modelService.originalDataSource?.options.name
+    return this.modelService.originalDataSource?.options.key
   }
 
   get dbInitialization() {
@@ -96,6 +98,9 @@ export class QueryComponent extends TranslationBaseComponent {
   prompt = new FormControl<string>(null)
   answering = signal(false)
   // private entityTypes: EntityType[]
+  /**
+   * @deprecated tranform to copilot command
+   */
   private get promptTables() {
     return this.entityTypes()?.map((entityType) => {
       return `${this.isMDX() ? 'Cube' : 'Table'} name: "${entityType.name}",
@@ -109,6 +114,9 @@ ${this.isMDX() ? 'dimensions and measures' : 'columns'} : [${Object.keys(entityT
         .join(', ')}]`
     })
   }
+  /**
+   * @deprecated tranform to copilot command
+   */
   get #promptCubes() {
     return this.entityTypes()?.map((entityType) => {
       return `Cube name: [${entityType.name}],
@@ -119,6 +127,14 @@ ${calcEntityTypePrompt(entityType)}
 `
     })
   }
+
+  readonly copilotContext = computed(() => {
+    return {
+      dialect: this.entityTypes()[0]?.dialect,
+      isMDX: this.isMDX(),
+      entityTypes: this.entityTypes()
+    }
+  })
 
   public readonly queryId$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
@@ -142,7 +158,8 @@ ${calcEntityTypePrompt(entityType)}
     shareReplay(1)
   )
 
-  private readonly _statement = toSignal(this.query$.pipe(map((query) => query.statement)))
+  readonly statementSignal = toSignal(this.query$.pipe(map((query) => query.statement)))
+  readonly _statement = signal('')
   get statement() {
     return this._statement()
   }
@@ -155,7 +172,10 @@ ${calcEntityTypePrompt(entityType)}
 
   // for results table
   public readonly loading$ = new BehaviorSubject<boolean>(false)
-  error: string
+  // error: string
+
+  readonly _error = signal('')
+  readonly querySubscription = signal<Subscription>(null)
 
   /**
   |--------------------------------------------------------------------------
@@ -271,91 +291,94 @@ ${calcEntityTypePrompt(entityType)}
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #queryCommand = injectCopilotCommand({
-    name: 'query',
-    description: this.translateService.instant('PAC.MODEL.Copilot.Examples.QueryDBDesc', {
-      Default: 'Describe the data you want to query'
-    }),
-    systemPrompt: async () =>
-      this.isMDX()
-        ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
-The cube information is:
-\`\`\`
-${this.dbTablesPrompt()}
-\`\`\`
-Please provide the corresponding MDX statement for the given question.
-`
-        : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
-The table information is:
-\`\`\`
-${this.dbTablesPrompt()}
-\`\`\`
-Please provide the corresponding SQL statement for the given question.
-Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`,
-    // `假设你是数据库 SQL 编程专家, 如果 system 未提供 database tables information 请给出提示, ${this.dbTablesPrompt()}, 请给出问题对应的 sql 语句 (注意：表字段区分大小写，需要用双引号括起来)。 `
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'query-db',
-        description: 'query db using statement',
-        argumentAnnotations: [
-          {
-            name: 'query',
-            type: 'string',
-            description: `query extracting info to answer the user's question.
-statement should be written using this database schema.
-The query should be returned in plain text, not in JSON.
-`,
-            required: true
-          }
-        ],
-        implementation: async (query: string) => {
-          // Set into editor
-          this.statement = query
-          // Run query on db
-          this.query(query)
-          // Return to message content
-          return query
-        }
-      })
-    ]
+  #queryCommand = injectQueryCommand(this._statement, this.copilotContext, async (statement: string) => {
+    return await firstValueFrom(this._query(statement))
   })
+  //   d = injectCopilotCommand({
+  //     name: 'query',
+  //     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.QueryDBDesc', {
+  //       Default: 'Describe the data you want to query'
+  //     }),
+  //     systemPrompt: async () =>
+  //       this.isMDX()
+  //         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
+  // The cube information is:
+  // \`\`\`
+  // ${this.dbTablesPrompt()}
+  // \`\`\`
+  // Please provide the corresponding MDX statement for the given question.
+  // `
+  //         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
+  // The table information is:
+  // \`\`\`
+  // ${this.dbTablesPrompt()}
+  // \`\`\`
+  // Please provide the corresponding SQL statement for the given question.
+  // Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`,
+  //     // `假设你是数据库 SQL 编程专家, 如果 system 未提供 database tables information 请给出提示, ${this.dbTablesPrompt()}, 请给出问题对应的 sql 语句 (注意：表字段区分大小写，需要用双引号括起来)。 `
+  //     actions: [
+  //       injectMakeCopilotActionable({
+  //         name: 'query-db',
+  //         description: 'query db using statement',
+  //         argumentAnnotations: [
+  //           {
+  //             name: 'query',
+  //             type: 'string',
+  //             description: `query extracting info to answer the user's question.
+  // statement should be written using this database schema.
+  // The query should be returned in plain text, not in JSON.
+  // `,
+  //             required: true
+  //           }
+  //         ],
+  //         implementation: async (query: string) => {
+  //           // Set into editor
+  //           this.statement = query
+  //           // Run query on db
+  //           this.query(query)
+  //           // Return to message content
+  //           return query
+  //         }
+  //       })
+  //     ]
+  //   })
 
-  #fixCommand = injectCopilotCommand({
-    name: 'fix',
-    description: this.translateService.instant('PAC.MODEL.Copilot.Examples.FixQueryDesc', {
-      Default: 'Describe how to fix the statement'
-    }),
-    systemPrompt: async () => {
-      return `Fix the statement of db query:
-\`\`\`
-${this.selectedStatement}
-\`\`\`
-`
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'fix_query',
-        description: 'Fix the statement of db query',
-        argumentAnnotations: [
-          {
-            name: 'statement',
-            type: 'string',
-            description: `
-statement should be written using this database schema.
-The query should be returned in plain text, not in JSON.
-`,
-            required: true
-          }
-        ],
-        implementation: async (statement: string) => {
-          this.#logger.debug(`Copilot_Action:fix_query('${statement}')`)
-          this.statement = this.statement.replace(this.selectedStatement, statement)
-          // Return to message content
-          return statement
-        }
-      })
-    ]
-  })
+//   #fixCommand = injectCopilotCommand({
+//     name: 'fix',
+//     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.FixQueryDesc', {
+//       Default: 'Describe how to fix the statement'
+//     }),
+//     systemPrompt: async () => {
+//       return `Fix the statement of db query:
+// \`\`\`
+// ${this.selectedStatement}
+// \`\`\`
+// `
+//     },
+//     actions: [
+//       injectMakeCopilotActionable({
+//         name: 'fix_query',
+//         description: 'Fix the statement of db query',
+//         argumentAnnotations: [
+//           {
+//             name: 'statement',
+//             type: 'string',
+//             description: `
+// statement should be written using this database schema.
+// The query should be returned in plain text, not in JSON.
+// `,
+//             required: true
+//           }
+//         ],
+//         implementation: async (statement: string) => {
+//           this.#logger.debug(`Copilot_Action:fix_query('${statement}')`)
+//           this.statement = this.statement.replace(this.selectedStatement, statement)
+//           // Return to message content
+//           return statement
+//         }
+//       })
+//     ]
+//   })
 
   /**
   |--------------------------------------------------------------------------
@@ -366,7 +389,8 @@ The query should be returned in plain text, not in JSON.
     this.dirty = !isEqual(state.origin, state.query)
   })
   #conversationSub = this.#queryService
-    .select((state) => state.query?.conversations ?? []).pipe(takeUntilDestroyed())
+    .select((state) => state.query?.conversations ?? [])
+    .pipe(takeUntilDestroyed())
     .subscribe((conversations) => {
       this.#copilotEngine.conversations$.set(cloneDeep(conversations))
     })
@@ -374,19 +398,41 @@ The query should be returned in plain text, not in JSON.
   constructor() {
     super()
 
-    effect(() => {
-      if (this.#queryService.initialized()) {
-        if (!isEqual(this.#queryService.conversations(), this.#copilotEngine.conversations())) {
-          this.#queryService.setConversations(this.#copilotEngine.conversations())
+    effect(
+      () => {
+        if (this.#queryService.initialized()) {
+          if (!isEqual(this.#queryService.conversations(), this.#copilotEngine.conversations())) {
+            this.#queryService.setConversations(this.#copilotEngine.conversations())
+          }
         }
-      }
-    }, {allowSignalWrites: true})
-    
+      },
+      { allowSignalWrites: true }
+    )
+
     // Set individual engine to global copilot chat
     this.featuresComponent.copilotEngine = this.#copilotEngine
     this.#destroyRef.onDestroy(() => {
       this.featuresComponent.copilotEngine = null
     })
+
+    // Sync statement in local and store
+    effect(
+      () => {
+        if (nonNullable(this.statementSignal())) {
+          this._statement.set(this.statementSignal())
+        }
+      },
+      { allowSignalWrites: true }
+    )
+
+    effect(
+      () => {
+        if (nonNullable(this._statement())) {
+          this.queryLabService.setStatement({ key: this.queryKey(), statement: this._statement() })
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   onSelectionChange(event) {
@@ -398,86 +444,168 @@ The query should be returned in plain text, not in JSON.
     return !['pac-model__query-results'].includes(event.dropContainer.id)
   }
 
-  query = effectAction((origin$: Observable<string>) => {
-    return origin$.pipe(
-      tap((statement) => {
-        if (statement) {
-          this.error = null
-          this.loading$.next(true)
-        } else {
-          this.error = null
+  executeQuery(statement: string) {
+    this._error.set(null)
+    if (statement) {
+      this.loading$.next(true)
+    } else {
+      this.loading$.next(false)
+    }
+
+    this.querySubscription()?.unsubscribe()
+    if (statement) {
+      const subscription = this._query(statement).subscribe()
+      this.querySubscription.set(subscription)
+    } else {
+      this.querySubscription.set(null)
+    }
+  }
+
+  _query(statement: string) {
+    return this.modelService.originalDataSource.query({ statement, forceRefresh: true }).pipe(
+      tap((result) => {
+        const { status, error, schema } = result
+        let { data } = result
+
+        if (status === 'ERROR' || error) {
+          // console.error(error)
+          this._error.set(error || status)
+
+          this.appendResult({
+            statement,
+            error
+          })
+
+          this._cdr.detectChanges()
+          return
+        }
+
+        try {
+          const columns = convertQueryResultColumns(schema)
+
+          if (isPlainObject(data)) {
+            data = [data]
+          }
+          if (columns.length === 0 && data.length > 0) {
+            columns.push(...typeOfObj(data[0]))
+          }
+
+          let preview = data
+          if (data?.length > 1000) {
+            preview = data.slice(0, 1000)
+          }
+
+          this.appendResult({
+            statement,
+            data,
+            columns: uniqBy(columns, 'name'),
+            preview,
+            stats: {
+              numberOfEntries: data?.length ?? 0
+            }
+          })
+
           this.loading$.next(false)
+          // this._cdr.detectChanges()
+        } catch (err) {
+          console.error(err)
         }
       }),
-      switchMap((statement) =>
-        statement
-          ? this.modelService.originalDataSource.query({ statement, forceRefresh: true }).pipe(
-              catchError((error) => {
-                this.error = error
-                this.appendResult({
-                  statement,
-                  error
-                })
-                this.loading$.next(false)
-                this._cdr.detectChanges()
-                return EMPTY
-              }),
-              tap((result) => {
-                const { status, error, schema } = result
-                let { data } = result
-
-                if (status === 'ERROR' || error) {
-                  console.error(error)
-                  this.error = error || status
-
-                  this.appendResult({
-                    statement,
-                    error
-                  })
-
-                  this._cdr.detectChanges()
-                  return
-                }
-
-                try {
-                  const columns = convertQueryResultColumns(schema)
-
-                  if (isPlainObject(data)) {
-                    data = [data]
-                  }
-                  if (columns.length === 0 && data.length > 0) {
-                    columns.push(...typeOfObj(data[0]))
-                  }
-
-                  let preview = data
-                  if (data?.length > 1000) {
-                    preview = data.slice(0, 1000)
-                  }
-
-                  this.appendResult({
-                    statement,
-                    data,
-                    columns: uniqBy(columns, 'name'),
-                    preview,
-                    stats: {
-                      numberOfEntries: data?.length ?? 0
-                    }
-                  })
-
-                  this.loading$.next(false)
-                  this._cdr.detectChanges()
-                } catch (err) {
-                  console.error(err)
-                }
-              })
-            )
-          : EMPTY
-      )
+      catchError((error) => {
+        this._error.set(getErrorMessage(error))
+        this.appendResult({
+          statement,
+          error
+        })
+        this.loading$.next(false)
+        // this._cdr.detectChanges()
+        return of({
+          error: error
+        })
+      }),
     )
-  })
+  }
+
+  // query = effectAction((origin$: Observable<string>) => {
+  //   return origin$.pipe(
+  //     tap((statement) => {
+  //       if (statement) {
+  //         this.error = null
+  //         this.loading$.next(true)
+  //       } else {
+  //         this.error = null
+  //         this.loading$.next(false)
+  //       }
+  //     }),
+  //     switchMap((statement) =>
+  //       statement
+  //         ? this.modelService.originalDataSource.query({ statement, forceRefresh: true }).pipe(
+  //             catchError((error) => {
+  //               this.error = error
+  //               this.appendResult({
+  //                 statement,
+  //                 error
+  //               })
+  //               this.loading$.next(false)
+  //               this._cdr.detectChanges()
+  //               return EMPTY
+  //             }),
+  //             tap((result) => {
+  //               const { status, error, schema } = result
+  //               let { data } = result
+
+  //               if (status === 'ERROR' || error) {
+  //                 console.error(error)
+  //                 this.error = error || status
+
+  //                 this.appendResult({
+  //                   statement,
+  //                   error
+  //                 })
+
+  //                 this._cdr.detectChanges()
+  //                 return
+  //               }
+
+  //               try {
+  //                 const columns = convertQueryResultColumns(schema)
+
+  //                 if (isPlainObject(data)) {
+  //                   data = [data]
+  //                 }
+  //                 if (columns.length === 0 && data.length > 0) {
+  //                   columns.push(...typeOfObj(data[0]))
+  //                 }
+
+  //                 let preview = data
+  //                 if (data?.length > 1000) {
+  //                   preview = data.slice(0, 1000)
+  //                 }
+
+  //                 this.appendResult({
+  //                   statement,
+  //                   data,
+  //                   columns: uniqBy(columns, 'name'),
+  //                   preview,
+  //                   stats: {
+  //                     numberOfEntries: data?.length ?? 0
+  //                   }
+  //                 })
+
+  //                 this.loading$.next(false)
+  //                 this._cdr.detectChanges()
+  //               } catch (err) {
+  //                 console.error(err)
+  //               }
+  //             })
+  //           )
+  //         : EMPTY
+  //     )
+  //   )
+  // })
 
   cancelQuery() {
-    this.query('')
+    this.executeQuery('')
   }
 
   appendResult(result: QueryResult) {
@@ -488,7 +616,7 @@ The query should be returned in plain text, not in JSON.
 
   async run() {
     const statement: string = this.editor.getSelectText()?.trim() || this.statement
-    this.query(statement)
+    this.executeQuery(statement)
   }
 
   async onEditorKeyDown(event) {
@@ -574,7 +702,7 @@ The query should be returned in plain text, not in JSON.
     }
 
     if (statement) {
-      this.query(statement)
+      this.executeQuery(statement)
     }
   }
 
@@ -680,36 +808,6 @@ The query should be returned in plain text, not in JSON.
   //         `\n` +
   //         data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n')
   //     })
-  //   }
-  // }
-
-  // askCopilot(prompt: string, askPopper: NgxPopperjsContentComponent) {
-  //   this.prompt.setValue(null)
-  //   this.answering.set(true)
-  //   askPopper.hide()
-  //   this.copilotEngine
-  //     .ask(prompt)
-  //     .pipe(
-  //       tap(() => this.answering.set(false)),
-  //       delay(200) // 等待 Editor 从 read-only 切换到 editable 状态
-  //     )
-  //     .subscribe({
-  //       next: (result) => {
-  //         const selection = this.editor.editor.getSelection()
-  //         this.editor.insert(result, {
-  //           column: selection.endColumn,
-  //           lineNumber: selection.endLineNumber
-  //         })
-  //       },
-  //       error: () => {
-  //         this.answering.set(false)
-  //       }
-  //     })
-  // }
-
-  // triggerAsk(event, askPopper: NgxPopperjsContentComponent) {
-  //   if (event.ctrlKey && event.key === 'Enter') {
-  //     this.askCopilot(this.prompt.value, askPopper)
   //   }
   // }
 

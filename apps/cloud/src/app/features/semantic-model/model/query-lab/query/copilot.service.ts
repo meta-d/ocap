@@ -9,7 +9,7 @@ import { Observable, map } from 'rxjs'
 import { QueryService } from './query.service'
 
 /**
- * @deprecated
+ * Copilot Engine for query
  */
 @Injectable()
 export class QueryCopilotEngineService extends NgmCopilotEngineService {

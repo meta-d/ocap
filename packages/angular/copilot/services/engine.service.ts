@@ -673,14 +673,28 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
+  /**
+   * Remove message from conversation, then remove the conversation if it has been empty
+   * 
+   * @param message Message or message id
+   */
   deleteMessage(message: CopilotChatMessage | string) {
     const messageId = typeof message === 'string' ? message : message.id
-    this.conversations$.update((conversations) =>
-      conversations.map((conversation) => ({
-        ...conversation,
-        messages: conversation.messages.filter((item) => item.id !== messageId)
-      }))
-    )
+    this.conversations$.update((conversations) => {
+      const _conversations = []
+      conversations.forEach((conversation) => {
+        const index = conversation.messages.findIndex((item) => item.id === messageId)
+        if (index > -1) {
+          const messages = conversation.messages.filter((item) => item.id !== messageId)
+          if (messages.length) {
+            _conversations.push({ ...conversation, messages })
+          }
+        } else {
+          _conversations.push(conversation)
+        }
+      })
+      return _conversations
+    })
   }
 
   clear() {

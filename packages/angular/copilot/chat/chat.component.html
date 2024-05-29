@@ -226,7 +226,7 @@
     </div>
 
     <ngm-scroll-back #scrollBack class="block absolute bottom-0 left-1/2" [class.animate-bounce]="answering()"
-        [ngmTarget]="chatsContent" direction="bottom"></ngm-scroll-back>
+      [ngmTarget]="chatsContent" direction="bottom" />
 </div>
 
 <div class="relative m-3 border rounded-2xl shadow-sm overflow-hidden border-neutral-100 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800"
@@ -262,6 +262,10 @@
 
           [matAutocomplete]="autoPrompts"
           matAutocompletePosition="above"
+
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="2"
+          cdkAutosizeMaxRows="5"
         >
         </textarea>
 

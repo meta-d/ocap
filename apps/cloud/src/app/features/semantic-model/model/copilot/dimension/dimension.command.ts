@@ -18,7 +18,7 @@ export function injectDimensionCommand() {
     description: 'Create or edit shared dimension for cube.',
     schema: DimensionSchema,
     func: async (d) => {
-      logger.debug(`Execute copilot action 'create-model-dimension':`, d)
+      logger.debug(`Execute copilot action 'createDimension':`, d)
       createDimension(modelService, d as any)
       return translate.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
     }

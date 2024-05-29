@@ -24,13 +24,15 @@
                 [cdkDropListEnterPredicate]="editorDropPredicate"
                 (cdkDropListDropped)="dropEntity($event)"
             >
-                <ngm-entity-schema *ngFor="let entity of entities()"
+              @for (entity of entities(); track entity) {
+                <ngm-entity-schema
                     [dataSettings]="{dataSource: dataSourceName, entitySet: entity}"
                     [capacities]="[
                         EntityCapacity.Dimension,
                         EntityCapacity.Measure,
                     ]"
-                ></ngm-entity-schema>
+                />
+              }
             </div>
         </div>
 
@@ -259,7 +261,7 @@
                     <div class="pac-result w-full h-full absolute top-0 left-0">
                         <div class="bug font-notoColorEmoji">🐞</div>
                         <div class="description">
-                            {{error}}
+                            {{_error()}}
                         </div>
                     </div>
                 </ng-template>
