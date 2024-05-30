@@ -4,7 +4,7 @@ import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { AiBusinessRole, AiProvider, ICopilotExample } from '@metad/contracts'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { HttpException, Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { compact, uniq } from 'lodash'
@@ -107,7 +107,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		if (vectorStore) {
 			return await vectorStore.vectorStore.maxMarginalRelevanceSearch(query, {
 				...(options ?? {}),
-				filter: [`*${command}*`, ...(filter ?? [])]
+				filter: [commandFilter, ...(filter ?? [])]
 			} as MaxMarginalRelevanceSearchOptions<string[]>, undefined)
 		}
 		return null
@@ -190,8 +190,12 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 		const embeddings = await this.getEmbeddings(RequestContext.currentTenantId())
 		if (embeddings) {
-			const vectors = await embeddings.embedDocuments(texts)
-			examples.forEach((example, index) => (example.vector = vectors[index]))
+			try {
+				const vectors = await embeddings.embedDocuments(texts)
+				examples.forEach((example, index) => (example.vector = vectors[index]))
+			} catch (error) {
+				throw new HttpException(`Cannot embed examples: ${error.message}`, 500)
+			}
 		}
 
 		return examples

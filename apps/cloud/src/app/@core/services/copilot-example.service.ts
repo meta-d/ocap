@@ -23,11 +23,12 @@ export class CopilotExampleService {
     return await firstValueFrom(this.httpClient.post<DocumentInterface[]>(`${API_COPILOT_EXAMPLE}/mmr-search`, { query, options }))
   }
 
-  getAll(options?: {limit?: number, offset?: number; filter?: Record<string, any>}) {
-    const { limit, offset, filter } = options || {}
+  getAll(options?: {relations: string[]; filter?: Record<string, any>}) {
+    const { relations, filter } = options || {}
     return this.httpClient.get<{items: ICopilotExample[]}>(`${API_COPILOT_EXAMPLE}`, {
       params: {
-        $fitler: JSON.stringify(filter)
+        $fitler: JSON.stringify(filter),
+        $relations: JSON.stringify(relations),
       }
     }).pipe(
       map(({items}) => items)

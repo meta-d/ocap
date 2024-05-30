@@ -1303,7 +1303,8 @@
         "TitleCN": "中文标题",
         "Description": "描述",
         "Actions": "操作",
-        "AddRole": "添加新角色"
+        "AddRole": "添加新角色",
+        "SureDeleteRole": "确定删除此角色吗？"
       }
     },
     "Home": {

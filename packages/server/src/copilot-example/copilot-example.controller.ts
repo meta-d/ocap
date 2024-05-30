@@ -41,9 +41,10 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 	@Get()
 	@UseValidationPipe()
 	async getAll(
-		@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where']
+		@Query('$fitler', ParseJsonPipe) where: PaginationParams<CopilotExample>['where'],
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<CopilotExample>['relations']
 	): Promise<IPagination<CopilotExample>> {
-		return await this.service.findAll({ where })
+		return await this.service.findAll({ where, relations })
 	}
 
 	@Post('similarity-search')

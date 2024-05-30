@@ -7,7 +7,7 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, EMPTY, combineLatestWith, map, pipe, switchMap } from 'rxjs'
 import { AiBusinessRole, CopilotExampleService, CopilotRoleService, ICopilotExample, ToastrService, getErrorMessage } from '../../../../@core'
-import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
+import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { uploadYamlFile } from '@metad/core'
 import { MatDialog } from '@angular/material/dialog'
@@ -51,14 +51,23 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
         caption: i18n?.CopilotCommand || 'Copilot Command',
       },
       {
+        name: 'updatedBy',
+        caption: i18n?.UpdatedBy || 'Updated By',
+        pipe: userLabel
+      },
+      {
+        name: 'updatedAt',
+        caption: i18n?.UpdatedAt || 'Updated At',
+      },
+      {
         name: 'input',
         caption: i18n?.Input || 'Input',
-        width: '400px'
+        width: '1000px'
       },
       {
         name: 'output',
         caption: i18n?.Output || 'Output',
-        width: '400px'
+        width: '1000px'
       },
       {
         name: 'metadata',
@@ -84,7 +93,8 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       filter: {
         role,
         command
-      }
+      },
+      relations: ['updatedBy']
     }))
   ), {initialValue: []})
 

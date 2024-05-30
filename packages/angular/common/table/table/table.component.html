@@ -27,7 +27,7 @@
         <!-- Columns -->
       @for (column of columns(); track column.name) {
         <ng-container [matColumnDef]="column.name" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header [width]="column.width">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             <div class="ngm-header-cell flex-1 flex justify-between items-center whitespace-nowrap">
               <span>
               {{column.caption || column.name}}
@@ -46,7 +46,7 @@
               
             </div>
           </th>
-          <td mat-cell *matCellDef="let data" >
+          <td mat-cell *matCellDef="let data" [style.max-width]="column.width">
             @if (isSignal(column.cellTemplate)) {
               <ng-container *ngTemplateOutlet="column.cellTemplate(); context: _context(data, column)"></ng-container>
             } @else if(column.cellTemplate) {
