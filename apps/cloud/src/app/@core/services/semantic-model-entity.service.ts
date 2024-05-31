@@ -12,7 +12,18 @@ export class SemanticModelEntityService {
   private readonly httpClient = inject(HttpClient)
 
   getAll(modelId: string) {
-    return this.httpClient.get<{items: ISemanticModelEntity[], total: number}>(C_API_SEMANTIC_MODEL_ENTITY + `/${modelId}`)
+
+    return this.httpClient.get<{items: ISemanticModelEntity[], total: number}>(C_API_SEMANTIC_MODEL_ENTITY, {
+      params: {
+        $filter: JSON.stringify({
+          modelId
+        })
+      }
+    })
+  }
+
+  getOne(id: string) {
+    return this.httpClient.get<ISemanticModelEntity>(`${C_API_SEMANTIC_MODEL_ENTITY}/${id}`)
   }
 
   create(modelId: string, input: Partial<ISemanticModelEntity>) {

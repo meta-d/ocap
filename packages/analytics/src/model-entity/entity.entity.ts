@@ -3,7 +3,8 @@ import {
 	ISemanticModelEntity,
 	ISemanticModelMember,
 	ModelEntityType,
-	SemanticModelEntityOptions
+	SemanticModelEntityOptions,
+	SemanticModelEntityJob
 } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
@@ -39,6 +40,12 @@ export class SemanticModelEntity extends TenantOrganizationBaseEntity implements
 	@IsOptional()
 	@Column({ type: 'json', nullable: true })
 	options?: SemanticModelEntityOptions
+
+	@ApiPropertyOptional({ type: () => Object })
+	@IsJSON()
+	@IsOptional()
+	@Column({ type: 'json', nullable: true })
+	job?: SemanticModelEntityJob
 
 	/**
 	 * Model

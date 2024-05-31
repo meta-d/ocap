@@ -76,8 +76,9 @@ export class ModelMembersComponent {
             return cubes.map((cube) => {
               return {
                 ...cube,
-                id: entities.items.find((entity) => entity.name === cube.name)?.id,
-                options: entities.items.find((entity) => entity.name === cube.name)?.options
+                __entity__: entities.items.find((entity) => entity.name === cube.name),
+                // id: entities.items.find((entity) => entity.name === cube.name)?.id,
+                // options: entities.items.find((entity) => entity.name === cube.name)?.options
               }
             })
           })

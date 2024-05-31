@@ -3,8 +3,15 @@ import { IBasePerTenantAndOrganizationEntityModel } from '../base-entity.model'
 export type SemanticModelEntityOptions = {
   vector: {
     hierarchies: string[];
-    jobId?: number | string;
-  }
+  };
+
+  members?: Record<string, number>;
+}
+
+export type SemanticModelEntityJob = {
+  id: string | number
+  status?: 'completed' | 'failed' | 'processing'
+  error?: string
 }
 
 export interface ISemanticModelEntity extends IBasePerTenantAndOrganizationEntityModel {
@@ -16,6 +23,8 @@ export interface ISemanticModelEntity extends IBasePerTenantAndOrganizationEntit
 
   // 存放语义元数据
   options?: SemanticModelEntityOptions
+
+  job?: SemanticModelEntityJob
 }
 
 export enum ModelEntityType {

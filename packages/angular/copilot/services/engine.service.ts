@@ -440,7 +440,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       // For few shot
       if (command.fewShotPrompt) {
-        content = await command.fewShotPrompt.format({ input: content })
+        content = await command.fewShotPrompt.format({ input: content, context: contextContent })
         this.#logger?.debug(`[Command] [${command.name}] few shot input: ${content}`)
       }
 

@@ -2,6 +2,7 @@ import { IPagination } from '@metad/contracts'
 import {
 	CrudController,
 	PaginationParams,
+	ParseJsonPipe,
 	RequestContext,
 	UUIDValidationPipe
 } from '@metad/server-core'
@@ -10,10 +11,12 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpStatus,
 	Param,
-	Post
+	Post,
+	Query
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Queue } from 'bull'
 import { SemanticModelEntity } from './entity.entity'
 import { SemanticModelEntityService } from './entity.service'
@@ -24,19 +27,23 @@ import { SemanticModelEntityService } from './entity.service'
 export class ModelEntityController extends CrudController<SemanticModelEntity> {
 	constructor(
 		private readonly entityService: SemanticModelEntityService,
-		@InjectQueue('member')
-		private readonly memberQueue: Queue
+		@InjectQueue('entity')
+		private readonly entityQueue: Queue
 	) {
 		super(entityService)
 	}
 
-	@Get(':id')
-	getAllByModel(
-		@Param('id') id: string,
-		filter?: PaginationParams<SemanticModelEntity>,
-		...options: any[]
+	@ApiOperation({ summary: 'find all' })
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Found records' /* type: IPagination<T> */
+	})
+	@Get()
+	async findAlls(
+		@Query('$fitler', ParseJsonPipe) where: PaginationParams<SemanticModelEntity>['where'],
+		@Query('$relations', ParseJsonPipe) relations: PaginationParams<SemanticModelEntity>['relations']
 	): Promise<IPagination<SemanticModelEntity>> {
-		return this.entityService.findAll({ where: { modelId: id } })
+		return this.entityService.findAll({ where, relations })
 	}
 
 	@Post(':id')
@@ -50,7 +57,7 @@ export class ModelEntityController extends CrudController<SemanticModelEntity> {
 		const organizationId = RequestContext.getOrganizationId()
 
 		if (entity.options?.vector?.hierarchies?.length) {
-			const job = await this.memberQueue.add('syncMembers', {
+			const job = await this.entityQueue.add('syncMembers', {
 				modelId: id,
 				organizationId: organizationId,
 				entityId: result.id,
@@ -58,7 +65,11 @@ export class ModelEntityController extends CrudController<SemanticModelEntity> {
 				hierarchies: entity.options?.vector.hierarchies
 			})
 
-			entity.options.vector.jobId = job.id
+			entity.job = {
+				id: job.id
+			}
+
+			await this.entityService.update(result.id, entity)
 		}
 
 		return result

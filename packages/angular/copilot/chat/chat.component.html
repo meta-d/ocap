@@ -155,7 +155,7 @@
                                         focus-visible:bg-white dark:focus-visible:bg-black"
                                       >{{ message.content }}</div>
 
-                                      @if (isFoucs(msgContent)) {
+                                      @if (editingMessageId() === message.id) {
                                         <div class="flex items-center gap-1 mt-2">
                                           <button mat-stroked-button class="ngm-copilot__resubmit" displayDensity="compact"
                                             (click)="cancelMessageContent(msgContent)">

@@ -13,7 +13,7 @@ import {
   RestrictedMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
-import { VectorStoreRetriever } from 'apps/cloud/src/app/@core/copilot'
+import { VectorStoreRetriever, injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { CopilotExampleService } from 'apps/cloud/src/app/@core/services'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
@@ -103,8 +103,8 @@ export function injectCalculationCommand(
   })
 
   const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool]
-  return injectCopilotCommand(
-    'calculation',
+  const commandName = 'calculation'
+  return injectCopilotCommand(commandName,
     (async () => {
       return {
         alias: 'cc',
@@ -159,23 +159,24 @@ ${property() ? JSON.stringify(property(), null, 2) : 'No calculation property se
   `
         },
         tools,
-        fewShotPrompt: new FewShotPromptTemplate({
-          exampleSelector: new SemanticSimilarityExampleSelector({
-            vectorStoreRetriever: new VectorStoreRetriever(
-              {
-                vectorStore: null,
-                command: 'calculation',
-                role: copilotService.role
-              },
-              copilotExampleService
-            ),
-            inputKeys: ['input']
-          }),
-          examplePrompt,
-          prefix: `Refer to the examples below to provide solutions to the problem.`,
-          suffix: 'Question: {input}\nAnswer: ',
-          inputVariables: ['input']
-        }),
+        fewShotPrompt: injectAgentFewShotTemplate(commandName, {vectorStore: null, score: 0.1}),
+        // new FewShotPromptTemplate({
+        //   exampleSelector: new SemanticSimilarityExampleSelector({
+        //     vectorStoreRetriever: new VectorStoreRetriever(
+        //       {
+        //         vectorStore: null,
+        //         command: 'calculation',
+        //         role: copilotService.role
+        //       },
+        //       copilotExampleService
+        //     ),
+        //     inputKeys: ['input']
+        //   }),
+        //   examplePrompt,
+        //   prefix: `Refer to the examples below to provide solutions to the problem.`,
+        //   suffix: 'Question: {input}\nAnswer: ',
+        //   inputVariables: ['input']
+        // }),
         prompt: ChatPromptTemplate.fromMessages([
           [
             'system',
@@ -185,8 +186,6 @@ A dimension can only be used once, and a hierarchy cannot appear on multiple ind
 The name of new calculation measure should be unique with existing measures.
 
 ${makeCubeRulesPrompt()}
-
-{context}
 
 {system_prompt}
 `

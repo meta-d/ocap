@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@metad/server-common'
 import { Process, Processor } from '@nestjs/bull'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bull'
@@ -16,41 +17,23 @@ export class MemberProcessor {
 		const { items: members } = await this.memberService.findAll({ where: { modelId } })
 		if (members.length) {
 			this.logger.debug(`[Job '${job.id}'] Start seed vector store for model '${modelId}' ...`)
-			const cubes = groupBy(members, 'entity')
-			for (const [cube, items] of Object.entries<any>(cubes)) {
-				const vectorStore = await this.memberService.getVectorStore(modelId, cube, organizationId)
-				if (vectorStore) {
-					const existed = await vectorStore.checkIndexExists()
-					if (!existed) {
-						await vectorStore.addMembers(items.filter((member) => member.vector))
+			try {
+				const cubes = groupBy(members, 'cube')
+				for (const [cube, items] of Object.entries<any>(cubes)) {
+					const vectorStore = await this.memberService.getVectorStore(modelId, cube, organizationId)
+					if (vectorStore) {
+						const existed = await vectorStore.checkIndexExists()
+						if (!existed) {
+							await vectorStore.addMembers(items.filter((member) => member.vector))
+						}
 					}
 				}
-			}
 
-			this.logger.debug(`Seed vector store completed!`)
+				this.logger.debug(`[Job '${job.id}'] Seed model vector store completed!`)
+			} catch (err) {
+				await job.moveToFailed(err)
+				this.logger.debug(`[Job '${job.id}'] Error!`, getErrorMessage(err))
+			}
 		}
-	}
-
-	@Process('syncMembers')
-	async handleSyncMembers(
-		job: Job<{
-			modelId: string
-			organizationId: string
-			entityId: string
-			cube: string
-			hierarchies: string[]
-		}>
-	) {
-		const { modelId, entityId, cube, hierarchies } = job.data
-		this.logger.debug(`[Job '${job.id}'] Start sync dimension memebrs for model '${modelId}' ...`)
-
-		await this.memberService.syncMembers(modelId, {
-			[cube]: {
-				entityId,
-				hierarchies
-			}
-		})
-
-		this.logger.debug(`[Job '${job.id}'] End!`)
 	}
 }

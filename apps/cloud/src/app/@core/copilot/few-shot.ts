@@ -6,18 +6,22 @@ import { NgmCopilotService } from '@metad/ocap-angular/copilot'
 import { CopilotExampleService } from '../services/copilot-example.service'
 import { VectorStoreRetriever } from './example-vector-retriever'
 
-export function injectAgentFewShotTemplate(command: string, fields?: VectorStoreRetrieverInput<VectorStoreInterface>) {
+export function injectAgentFewShotTemplate(command: string, fields?: VectorStoreRetrieverInput<VectorStoreInterface> & {score?: number}) {
   const copilotService = inject(NgmCopilotService)
   const copilotExampleService = inject(CopilotExampleService)
 
-  const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
-Answer: {output}`)
+  const examplePrompt = PromptTemplate.fromTemplate(`Question: {{input}}
+Answer: {{output}}`,
+    {
+      templateFormat: 'mustache',
+    }
+  )
 
   return new FewShotPromptTemplate({
     exampleSelector: new SemanticSimilarityExampleSelector({
       vectorStoreRetriever: new VectorStoreRetriever(
         {
-          ...(fields ?? {}),
+          ...(fields ?? {vectorStore: null}),
           vectorStore: null,
           command,
           role: copilotService.role,
@@ -28,7 +32,7 @@ Answer: {output}`)
     }),
     examplePrompt,
     prefix: `Refer to the examples below to provide solutions to the problem.`,
-    suffix: 'Question: {{input}}\nAnswer: ',
+    suffix: 'Question: {{context}}\n\n{{input}}\n\nAnswer: ',
     inputVariables: ['input'],
     templateFormat: "mustache",
   })

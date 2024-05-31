@@ -7,8 +7,10 @@ import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
+import { MatInputModule } from '@angular/material/input'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatSelectModule } from '@angular/material/select'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
   CalculatedProperty,
@@ -19,21 +21,18 @@ import {
   Syntax,
   isEntityType,
   nonNullable,
-  uuid,
+  uuid
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { EMPTY, filter, switchMap } from 'rxjs'
+import { EMPTY, filter, switchMap, tap } from 'rxjs'
 import { NgmCalculatedMeasureComponent } from '../calculated-measure/calculated-measure.component'
 import { NgmCalculationVarianceComponent } from '../calculation-variance/variance.component'
 import { NgmConditionalAggregationComponent } from '../conditional-aggregation/conditional-aggregation.component'
-import { NgmRestrictedMeasureComponent } from '../restricted-measure/restricted-measure.component'
 import { NgmMeasureControlComponent } from '../measure-control/measure-control.component'
-import { MatInputModule } from '@angular/material/input'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmRestrictedMeasureComponent } from '../restricted-measure/restricted-measure.component'
 
 export interface CalculationEditorData {
   dataSettings: DataSettings
-  // coreService: NxCoreService
   dsCoreService: NgmDSCoreService
   entityType: EntityType
   syntax: Syntax
@@ -63,7 +62,7 @@ export interface CalculationEditorData {
   ],
   selector: 'ngm-calculation-editor',
   templateUrl: './calculation-editor.component.html',
-  styleUrls: ['./calculation-editor.component.scss'],
+  styleUrls: ['./calculation-editor.component.scss']
 })
 export class NgmCalculationEditorComponent implements OnInit {
   /**
@@ -80,9 +79,9 @@ export class NgmCalculationEditorComponent implements OnInit {
   */
   readonly destroyRef = inject(DestroyRef)
   readonly fb = inject(FormBuilder)
-  public dsCoreService? = inject(NgmDSCoreService, {optional: true})
-  readonly dialogRef? = inject(MatDialogRef<NgmCalculationEditorComponent>, {optional: true})
-  readonly data? = inject<CalculationEditorData>(MAT_DIALOG_DATA, {optional: true})
+  public dsCoreService? = inject(NgmDSCoreService, { optional: true })
+  readonly dialogRef? = inject(MatDialogRef<NgmCalculationEditorComponent>, { optional: true })
+  readonly data? = inject<CalculationEditorData>(MAT_DIALOG_DATA, { optional: true })
 
   /**
   |--------------------------------------------------------------------------
@@ -92,9 +91,9 @@ export class NgmCalculationEditorComponent implements OnInit {
   readonly appearance = input<MatFormFieldAppearance>('fill')
   readonly dataSettings = input<DataSettings>()
   readonly value = input<CalculationProperty>()
-  
+
   readonly apply = output<CalculationProperty>()
-  
+
   /**
   |--------------------------------------------------------------------------
   | Signals
@@ -105,8 +104,6 @@ export class NgmCalculationEditorComponent implements OnInit {
   readonly entityType = signal<EntityType>(null)
   readonly entitySyntax = computed(() => this.#syntax() ?? this.entityType()?.syntax)
 
-  // public coreService: NxCoreService
-
   readonly formGroup = this.fb.group({
     __id__: uuid(),
     calculationType: [CalculationType.Calculated, Validators.required],
@@ -114,7 +111,7 @@ export class NgmCalculationEditorComponent implements OnInit {
     caption: [''],
     formatting: this.fb.group({
       unit: [null],
-      decimal: [null],
+      decimal: [null]
     })
   })
   readonly calculationType = this.formGroup.get('calculationType') as FormControl
@@ -135,26 +132,35 @@ export class NgmCalculationEditorComponent implements OnInit {
   | Subscriptions (effects)
   |--------------------------------------------------------------------------
   */
-  private entityTypeSub = toObservable(this._dataSettings).pipe(
-    filter(nonNullable),
-    switchMap((dataSettings) => this.dsCoreService?.getDataSource(dataSettings.dataSource).pipe(
-      switchMap((dataSource) =>
-        dataSource.selectEntityType(dataSettings.entitySet).pipe(filter(isEntityType))
-      )
-    ) ?? EMPTY),
-    takeUntilDestroyed(this.destroyRef)
-  ).subscribe((entityType) => (this.entityType.set(entityType)))
+  private entityTypeSub = toObservable(this._dataSettings)
+    .pipe(
+      filter(nonNullable),
+      switchMap(
+        (dataSettings) =>
+          this.dsCoreService
+            ?.getDataSource(dataSettings.dataSource)
+            .pipe(
+              switchMap((dataSource) => dataSource.selectEntityType(dataSettings.entitySet).pipe(filter(isEntityType)))
+            ) ?? EMPTY
+      ),
+      tap((entityType) => console.log(entityType)),
+      takeUntilDestroyed()
+    )
+    .subscribe((entityType) => this.entityType.set(entityType))
 
   constructor() {
     if (this.data?.dsCoreService) {
       this.dsCoreService = this.data?.dsCoreService
     }
 
-    effect(() => {
-      if (this.dataSettings()) {
-        this._dataSettings.set(this.dataSettings())
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.dataSettings()) {
+          this._dataSettings.set(this.dataSettings())
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
     effect(() => {
       if (this.value()) {
@@ -167,7 +173,6 @@ export class NgmCalculationEditorComponent implements OnInit {
     if (this.data) {
       this._dataSettings.set(this.data.dataSettings)
       this.#syntax.set(this.data.syntax)
-      // this.coreService = this.data.coreService
     }
 
     if (this.data?.value) {
@@ -182,7 +187,7 @@ export class NgmCalculationEditorComponent implements OnInit {
     this.formGroup.patchValue(value)
     this.formGroup.markAsPristine()
     this.calculation.setValue({
-      ...value,
+      ...value
     })
     this.calculation.markAsPristine()
     this.formula.setValue((value as CalculatedProperty).formula)

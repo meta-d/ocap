@@ -31,13 +31,6 @@ export class ModelMemberController extends CrudController<SemanticModelMember> {
 		})
 	}
 
-	// @HttpCode(HttpStatus.CREATED)
-	// @Post(':id')
-	// async bulkCreate(@Param('id', UUIDValidationPipe) id: string, @Body() body: Record<string, string[]>) {
-	// 	await this.memberService.syncMembers(id, body)
-	// 	return {}
-	// }
-
 	@HttpCode(HttpStatus.OK)
 	@Delete(':id')
 	async bulkDelete(

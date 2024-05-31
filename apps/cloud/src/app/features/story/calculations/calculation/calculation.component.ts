@@ -8,6 +8,7 @@ import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { CalculationProperty } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
+import { isEqual } from 'lodash-es'
 import { derivedFrom } from 'ngxtension/derived-from'
 import { injectParams } from 'ngxtension/inject-params'
 import { of } from 'rxjs'
@@ -42,19 +43,23 @@ export class StoryCalculationComponent {
   readonly cubeName = injectParams('cube')
   readonly paramKey = injectParams('key')
 
-  readonly dataSettings = computed(() => {
-    const entities = this.calculationsComponent.entities$()
-    const cubeName = decodeURIComponent(this.cubeName())
-    const entity = entities.find((e) => e.key === cubeName)
-    if (entity) {
-      return {
-        dataSource: entity.value.dataSource,
-        entitySet: entity.key
+  readonly dataSettings = computed(
+    () => {
+      const cubeName = decodeURIComponent(this.cubeName())
+      if (cubeName) {
+        const entities = this.calculationsComponent.entities$()
+        const entity = entities.find((e) => e.key === cubeName)
+        if (entity) {
+          return {
+            dataSource: entity.value.dataSource,
+            entitySet: entity.key
+          }
+        }
       }
-    }
-
-    return null
-  })
+      return this.calculationsComponent.dataSettings()
+    },
+    { equal: isEqual }
+  )
 
   readonly property = derivedFrom(
     [this.paramKey, this.dataSettings],
@@ -77,11 +82,14 @@ export class StoryCalculationComponent {
       { allowSignalWrites: true }
     )
 
-    effect(() => {
-      if (this.dataSettings()) {
-        this.calculationsComponent.activeEntity(this.dataSettings().dataSource, this.dataSettings().entitySet)
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.dataSettings()) {
+          this.calculationsComponent.activeEntity(this.dataSettings().dataSource, this.dataSettings().entitySet)
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
     this.destroyRef.onDestroy(() => {
       this.calculationsComponent.property.set(null)
@@ -89,7 +97,7 @@ export class StoryCalculationComponent {
   }
 
   close() {
-    this.router.navigate(['../../'], { relativeTo: this.route })
+    this.router.navigate(['../'], { relativeTo: this.route })
   }
 
   onApply(event: CalculationProperty) {

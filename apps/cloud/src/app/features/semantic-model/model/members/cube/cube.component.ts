@@ -9,15 +9,15 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatListModule, MatSelectionList } from '@angular/material/list'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ModelsService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { Cube, EntityType, getEntityDimensions, getEntityHierarchy } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { ModelEntityType, SemanticModelEntityOptions, SemanticModelEntityService, ToastrService, getErrorMessage, tryHttp } from 'apps/cloud/src/app/@core'
+import { ISemanticModelEntity, ModelEntityType, SemanticModelEntityService, ToastrService, getErrorMessage, tryHttp } from 'apps/cloud/src/app/@core'
 import { uniq } from 'lodash-es'
-import { EMPTY, catchError, switchMap, tap } from 'rxjs'
+import { EMPTY, catchError, firstValueFrom, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
+import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -47,7 +47,10 @@ export class ModelMembersCubeComponent {
   readonly dialog = inject(MatDialog)
   readonly translate = inject(TranslateService)
 
-  readonly cube = model<Cube & { id: string; entityType?: EntityType; options: SemanticModelEntityOptions }>(null)
+  readonly cube = model<Cube & {
+    entityType?: EntityType;
+    __entity__: ISemanticModelEntity;
+  }>(null)
   readonly selectionList = viewChild('selection', { read: MatSelectionList })
 
   readonly dimensions = computed(() => this.cube() ? getEntityDimensions(this.cube().entityType) : [])
@@ -69,10 +72,13 @@ export class ModelMembersCubeComponent {
     return dimensions.some((dim) => selectedDims?.includes(dim.name)) && !this.allSelected()
   })
 
+  readonly entity = computed(() => this.cube()?.__entity__)
+  readonly syncMembers = computed(() => this.entity()?.options?.members ?? {})
+
   constructor() {
     effect(() => {
-      if (this.cube() && !this.selectedDims()) {
-        this.selectedDims.set(this.cube().options?.vector?.hierarchies ?? [])
+      if (this.entity() && !this.selectedDims()) {
+        this.selectedDims.set(this.entity().options?.vector?.hierarchies ?? [])
       }
     }, { allowSignalWrites: true })
   }
@@ -87,12 +93,17 @@ export class ModelMembersCubeComponent {
     this.allSelected() ? this.selectionList().selectAll() : this.selectionList().deselectAll()
   }
 
-  async syncMember() {
+  async refresh() {
     const cube = this.cube().name;
-    const dimensions = this.dimensions()
-    // const storeMembers: Record<string, IDimensionMember[]> = {}
+    // const dimensions = this.dimensions()
+
+    this.loading.set(true)
+    if (this.entity().id) {
+      const entity = await firstValueFrom(this.modelEntityService.getOne(this.entity().id))
+      this.cube.update((cube) => ({...cube, __entity__: entity}))
+    }
+
     if (this.selectedDims()) {
-      this.loading.set(true)
       for (const name of this.selectedDims()) {
         // storeMembers[name] = []
 
@@ -114,10 +125,11 @@ export class ModelMembersCubeComponent {
           [name]: storeMembers
         }))
       }
-
-      this.loading.set(false)
+      
       this.loaded.set(true)
     }
+
+    this.loading.set(false)
   }
 
   async uploadMembers(dimensions: string[]) {
@@ -138,7 +150,7 @@ export class ModelMembersCubeComponent {
       }
     ).subscribe({
       next: (entity) => {
-        this.cube.update((cube) => ({...cube, id: entity.id}))
+        this.cube.update((cube) => ({...cube, __entity__: entity}))
         this.toastrService.success('PAC.MODEL.CreatedSuccessfully', { Default: 'Created Successfully!' })
       },
       error: (err) => {
@@ -152,7 +164,7 @@ export class ModelMembersCubeComponent {
   }
 
   deleteMembers(id: string) {
-    this.dialog.open(ConfirmDeleteComponent, {
+    this.dialog.open(NgmConfirmDeleteComponent, {
       data: {
         value: this.cube().caption,
         information: this.translate.instant('PAC.MODEL.SureDeleteDimensionMembers', {Default: 'Are you sure to delete the synced dimension members in this cube?'}), 

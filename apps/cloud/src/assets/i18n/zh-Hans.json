@@ -646,6 +646,9 @@
       "DeletedSuccessfully": "删除成功",
       "DeleteDimensionMembers": "删除维度成员",
       "SureDeleteDimensionMembers": "确定删除此多维数据集同步的维度成员吗？",
+      "Synchronized": "已同步",
+      "SyncMembersJobFinished": "同步成员任务已完成",
+      "SyncMembersJobRunning": "同步成员任务正在运行",
 
       "QUERY": {
         "TITLE": "查询",
