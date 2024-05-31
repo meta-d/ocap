@@ -1,4 +1,4 @@
-import { IPagination } from '@metad/contracts'
+import { ICopilotRole, IPagination } from '@metad/contracts'
 import { Body, Controller, Get, HttpStatus, Logger, Post, Query, UseInterceptors } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -79,8 +79,9 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 	@Post('bulk')
 	async createBulk(
 		@Body('examples') entities: CopilotExample[],
+		@Body('roles') roles: ICopilotRole[],
 		@Body('options') options: { createRole: boolean; clearRole: boolean }
 	) {
-		return this.service.createBulk(entities, options)
+		return this.service.createBulk(entities, roles, options)
 	}
 }

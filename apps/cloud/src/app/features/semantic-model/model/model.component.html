@@ -112,7 +112,8 @@
                             <button mat-icon-button displayDensity="compact" class="pac-model__nav-action"
                                 [matMenuTriggerFor]="entityMenu"
                                 [matMenuTriggerData]="{entity: entity}"
-                                [class.active]="!entityMenu.closed"
+                                #mt="matMenuTrigger"
+                                [class.active]="mt.menuOpen"
                                 (click)="$event.stopPropagation();$event.preventDefault()">
                                 <mat-icon>more_vert</mat-icon>
                             </button>

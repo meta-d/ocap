@@ -2,7 +2,6 @@
 @use '@angular/material' as mat;
 @use './style/table-theme' as table;
 @use './style/card-theme' as card;
-@use './style/menu-theme' as menu;
 @use './style/mat-list-theme' as mat-list;
 @use './style/mat-form-field-theme' as mat-formfield;
 @use './style/mat-button-theme' as mat-button;
@@ -21,7 +20,6 @@
 
   @include table.color($config-or-theme);
   @include card.color($config-or-theme);
-  @include menu.color($config-or-theme);
   @include mat-list.color($config-or-theme);
   @include mat-formfield.color($config-or-theme);
   @include mat-button.color($config-or-theme);
@@ -39,7 +37,6 @@
 @mixin density($config-or-theme) {
   @include table.density($config-or-theme);
   @include card.density($config-or-theme);
-  @include menu.density($config-or-theme);
   @include mat-list.density($config-or-theme);
   @include mat-formfield.density($config-or-theme);
   @include mat-button.density($config-or-theme);

@@ -50,6 +50,7 @@
       "DATA_SOURCE": "数据源",
       "DATA_SOURCES": "数据源",
       "DELETE": "删除",
+      "Default": "默认",
       "DIMENSIONS": "维度",
       "DIMENSION": "维度",
       "EDIT": "编辑",
@@ -1291,12 +1292,15 @@
         "Actions": "操作",
         "Command": "命令",
         "UploadExamples": "上传示例",
+        "DownloadTemplate": "下载模板",
         "AddExample": "添加示例",
         "EditExample": "编辑示例",
         "DeleteExample": "删除示例",
         "ClearRole": "清空角色已有示例",
         "CreateRole": "自动创建不存在的角色",
-        "ConfirmOptionsForUploadExample": "请确认上传示例的选项"
+        "ConfirmOptionsForUploadExample": "请确认上传示例的选项",
+        "UpdatedBy": "更新人",
+        "UpdatedAt": "更新时间"
       },
       "Roles": {
         "Name": "名称",

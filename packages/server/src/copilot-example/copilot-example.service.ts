@@ -3,7 +3,7 @@ import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
-import { AiBusinessRole, AiProvider, ICopilotExample } from '@metad/contracts'
+import { AiBusinessRole, AiProvider, ICopilotExample, ICopilotRole } from '@metad/contracts'
 import { HttpException, Inject, Injectable, Logger } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -244,16 +244,23 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 			.getMany()
 	}
 
-	async createBulk(entities: ICopilotExample[], options: { createRole: boolean; clearRole: boolean }) {
+	async createBulk(entities: ICopilotExample[], roles: ICopilotRole[], options: { createRole: boolean; clearRole: boolean }) {
 		const { createRole, clearRole } = options || {}
 		const examples = await this.embedExamples(entities)
-		const roles = compact(uniq(examples.map((example) => example.role)))
+		const roleNames = compact(uniq(examples.map((example) => example.role)))
 		if (clearRole) {
-			const { items } = await this.findAll({ where: { role: In(roles) } })
+			const { items } = await this.findAll({ where: { role: In(roleNames) } })
 			await this.repository.remove(items)
 		}
+		for await (const role of roles) {
+			try {
+				await this.commandBus.execute(new CopilotRoleCreateCommand(role))
+			} catch (error) {}
+		}
+
+		// Auto create role if not existed
 		if (createRole) {
-			for await (const role of roles) {
+			for await (const role of roleNames.filter((role) => !roles.find((r) => r.name === role))) {
 				try {
 					await this.commandBus.execute(new CopilotRoleCreateCommand({ name: role }))
 				} catch (error) {}

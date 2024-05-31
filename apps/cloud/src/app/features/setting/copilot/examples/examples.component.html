@@ -2,11 +2,13 @@
     <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.BusinessRole' | translate: {Default: 'Business Role'}" valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="roles()"
         [(ngModel)]="roleFilter"
+        [disabled]="loading()"
     />
 
     <ngm-select class="filter-bar__item" [label]="'PAC.Copilot.Examples.Command' | translate: {Default: 'Command'} " valueKey="key" [displayBehaviour]="DisplayBehaviour.descriptionOnly"
         [selectOptions]="commands()"
         [(ngModel)]="commandFilter"
+        [disabled]="loading()"
     />
 
     <span class="flex-1"></span>
@@ -14,13 +16,18 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
     <div ngmButtonGroup >
+        <button mat-icon-button [disabled]="loading()" [matTooltip]=" 'PAC.Copilot.Examples.DownloadTemplate' | translate: {Default: 'Download template'} "
+            (click)="downloadTemplate()">
+            <mat-icon fontSet="material-icons-round">system_update_alt</mat-icon>
+        </button>
+
         <button mat-icon-button [disabled]="loading()" [matTooltip]=" 'PAC.Copilot.Examples.UploadExamples' | translate: {Default: 'Upload examples'} " (click)="fileUpload.click()">
-            <mat-icon>upload</mat-icon>
+            <mat-icon fontSet="material-icons-round">upload</mat-icon>
         </button>
 
         <button mat-mini-fab [disabled]="loading()" [matTooltip]=" 'PAC.Copilot.Examples.AddExample' | translate: {Default: 'Add example'} "
             (click)="addExample()">
-            <mat-icon>add</mat-icon>
+            <mat-icon fontSet="material-icons-round">add</mat-icon>
         </button>
     </div>
     

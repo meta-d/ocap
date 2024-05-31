@@ -1,45 +1,49 @@
-import { HttpClientModule } from '@angular/common/http'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { Meta, moduleMetadata } from '@storybook/angular'
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { provideHttpClient } from '@angular/common/http'
+import { importProvidersFrom } from '@angular/core'
+import { provideAnimations } from '@angular/platform-browser/animations'
+import { provideLogger, provideTranslate } from '@metad/ocap-angular/mock'
+import { Meta, StoryObj, applicationConfig, moduleMetadata } from '@storybook/angular'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { NgmCompareMemberSelectComponent } from './member-select.component'
 
-export default {
+const meta = {
   title: 'Entity/CompareMemberSelect',
   component: NgmCompareMemberSelectComponent,
   decorators: [
+    applicationConfig({
+      providers: [
+        provideAnimations(),
+        provideHttpClient(),
+        provideTranslate(),
+        provideLogger(),
+        importProvidersFrom(MonacoEditorModule.forRoot())
+      ]
+    }),
     moduleMetadata({
       declarations: [],
-      imports: [
-        BrowserAnimationsModule,
-        HttpClientModule,
-        LoggerModule.forRoot({
-          level: NgxLoggerLevel.DEBUG
-        }),
-        MonacoEditorModule.forRoot(),
-      ]
+      imports: [MonacoEditorModule]
     })
   ]
 } as Meta
 
-export const Primary = () => ({
-  component: NgmCompareMemberSelectComponent,
-  props: {
+export default meta
+
+type Story = StoryObj<NgmCompareMemberSelectComponent>
+
+export const Primary: Story = {
+  args: {
     label: 'Dimension',
     dimension: {
       dimension: '[Department]'
-    },
-    
+    }
   }
-})
+}
 
-export const Calendar = () => ({
-  component: NgmCompareMemberSelectComponent,
-  props: {
+export const Calendar: Story = {
+  args: {
     label: 'Dimension',
     dimension: {
       dimension: '[ZCALMONTH]'
     }
   }
-})
+}

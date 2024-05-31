@@ -5,7 +5,7 @@ import { MaxMarginalRelevanceSearchOptions, VectorStoreInterface } from '@langch
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom, map } from 'rxjs'
 import { API_COPILOT_EXAMPLE } from '../constants/app.constants'
-import { ICopilotExample } from '../types'
+import { ICopilotExample, ICopilotRole } from '../types'
 
 
 @Injectable({ providedIn: 'root' })
@@ -61,7 +61,7 @@ export class CopilotExampleService {
     )
   }
 
-  createBulk(entities: ICopilotExample[], options: {clearRole: boolean}) {
-    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {examples: entities, options})
+  createBulk(entities: ICopilotExample[], roles: ICopilotRole[], options: {clearRole: boolean}) {
+    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {examples: entities, roles, options})
   }
 }

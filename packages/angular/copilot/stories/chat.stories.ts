@@ -22,8 +22,8 @@ import { provideMarkdown } from 'ngx-markdown'
 import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
 import { injectCopilotCommand } from '../hooks/'
-import { NgmClientCopilotService, NgmCopilotEngineService } from '../services'
-import { NgmSBCopilotService } from './copilot.service'
+import { NgmCopilotEngineService, NgmCopilotService } from '../services'
+import { NgmStoryBookCopilotService } from './copilot.service'
 
 @Injectable()
 class StorybookCopilotEngine extends NgmCopilotEngineService {}
@@ -90,21 +90,12 @@ export default {
       imports: [CommonModule, NgmCopilotChatComponent, NgmSBCopilotUserComponent],
       providers: [
         {
-          provide: CopilotService,
-          useClass: NgmSBCopilotService
+          provide: NgmCopilotService,
+          useClass: NgmStoryBookCopilotService
         },
         {
           provide: NgmCopilotEngineService,
           useClass: StorybookCopilotEngine
-        },
-        {
-          provide: NgmClientCopilotService.CopilotConfigFactoryToken,
-          useFactory: () => () => {
-            return Promise.resolve({
-              enabled: true,
-              apiKey: 'st-xxxxxx'
-            })
-          }
         }
       ]
     })

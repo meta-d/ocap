@@ -1,4 +1,5 @@
 import { Component, TemplateRef, inject, signal, viewChild } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
@@ -58,11 +59,16 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
 
   readonly dataSource = signal<CopilotRoleRowType[]>([])
 
-  displayedColumns = ['name', 'title', 'titleCN', 'description', 'actions']
+  readonly displayedColumns = ['name', 'title', 'titleCN', 'description', 'actions']
 
-  private itemsSub = this.refresh$.pipe(switchMap(() => this.roleService.getAll())).subscribe((items) => {
-    this.dataSource.set(items)
-  })
+  private itemsSub = this.refresh$
+    .pipe(
+      switchMap(() => this.roleService.getAll()),
+      takeUntilDestroyed()
+    )
+    .subscribe((items) => {
+      this.dataSource.set(items)
+    })
 
   addRole() {
     this.dataSource.update((items) => [...items, { __edit__: true }])
@@ -76,8 +82,13 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
     if (item.id) {
       this.roleService.update(item.id, omitSystemProperty(item)).subscribe({
         next: () => {
-          this._toastrService.success('Role updated successfully')
-          this.refresh$.next()
+          this._toastrService.success('PAC.Messages.UpdatedSuccessfully' , { Default: 'Updated successfully' })
+          this.dataSource.update((items) => {
+            const index = items.indexOf(item)
+            items[index] = { ...item, __edit__: false}
+            return [...items]
+          })
+          // this.refresh$.next()
         },
         error: (err) => {
           this._toastrService.error(getErrorMessage(err))
@@ -85,9 +96,14 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
       })
     } else {
       this.roleService.create(omitSystemProperty(item)).subscribe({
-        next: () => {
-          this._toastrService.success('Role created successfully')
-          this.refresh$.next()
+        next: (result) => {
+          this._toastrService.success('PAC.Messages.CreatedSuccessfully', { Default: 'Created successfully' })
+          this.dataSource.update((items) => {
+            const index = items.indexOf(item)
+            items[index] = { ...item, __edit__: false, id: result.id }
+            return [...items]
+          })
+          // this.refresh$.next()
         },
         error: (err) => {
           this._toastrService.error(getErrorMessage(err))
@@ -102,7 +118,9 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
         .open(NgmConfirmDeleteComponent, {
           data: {
             value: item.title,
-            information: this.getTranslation('PAC.Copilot.Roles.SureDeleteRole', {Default: 'Are you sure you want to delete this role?'})
+            information: this.getTranslation('PAC.Copilot.Roles.SureDeleteRole', {
+              Default: 'Are you sure you want to delete this role?'
+            })
           }
         })
         .afterClosed()
@@ -111,8 +129,9 @@ export class CopilotRolesComponent extends TranslationBaseComponent {
             if (result) {
               return this.roleService.delete(item.id).pipe(
                 tap(() => {
-                  this._toastrService.success('PAC.Messages.DeletedSuccessfully', {Default: 'Deleted successfully'})
-                  this.refresh$.next()
+                  this._toastrService.success('PAC.Messages.DeletedSuccessfully', { Default: 'Deleted successfully' })
+                  this.dataSource.update((items) => items.filter((x) => x !== item))
+                  // this.refresh$.next()
                 }),
                 catchError((err) => {
                   this._toastrService.error(getErrorMessage(err))
