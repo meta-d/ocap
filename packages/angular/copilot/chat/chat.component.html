@@ -113,10 +113,10 @@
                             }
                         }
         
-                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                            <!-- <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                 (click)="deleteMessage(message)">
                                 <mat-icon>close</mat-icon>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
@@ -163,7 +163,7 @@
                                           </button>
                                           <button mat-flat-button class="ngm-copilot__resubmit" color="primary" displayDensity="compact"
                                               (click)="resubmitMessage(msgContent, conversation.id, message, msgContent.textContent)">
-                                              {{ 'Ngm.Copilot.Resubmit' | translate: {Default: 'Resubmit'} }}
+                                              {{ 'Ngm.Copilot.Update' | translate: {Default: 'Update'} }}
                                           </button>
                                         </div>
                                       }
@@ -177,10 +177,10 @@
                             </div>
                           }
         
-                            <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
+                            <!-- <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                 (click)="deleteMessage(message)">
                                 <mat-icon>close</mat-icon>
-                            </button>
+                            </button> -->
                         </div>
                         
                         <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>

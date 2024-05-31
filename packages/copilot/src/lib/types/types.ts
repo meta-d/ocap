@@ -59,7 +59,7 @@ export enum CopilotChatMessageRoleEnum {
 export interface CopilotChatMessage extends Omit<Message, 'role'> {
   error?: string
 
-  role: Message['role'] | 'info'
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
   /**
    * Command name
    */
@@ -131,4 +131,10 @@ export type BusinessRoleType = {
   title: string;
   titleCN: string;
   description: string;
+}
+
+export type Headers = Record<string, string | null | undefined>;
+export type RequestOptions = {
+  headers?: Record<string, string> | Headers;
+  body?: object;
 }

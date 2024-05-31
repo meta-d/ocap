@@ -69,10 +69,9 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
 
     effect(() => {
       const copilot = this.copilotService.copilotConfig()
+      this.formGroup.reset()
       if (copilot?.enabled) {
         this.formGroup.patchValue(copilot)
-      } else {
-        this.formGroup.reset()
       }
       this.formGroup.markAsPristine()
     })

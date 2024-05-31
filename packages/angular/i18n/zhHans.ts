@@ -106,7 +106,8 @@ export const ZhHans = {
         description: '通用业务角色'
       },
       Help: '帮助',
-      NewChat: '新聊天'
+      NewChat: '新聊天',
+      Update: '更新'
     },
     Entity: {
       SelectEntities: '选择数据集',

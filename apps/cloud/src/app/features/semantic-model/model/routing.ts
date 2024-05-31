@@ -1,11 +1,11 @@
+import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { DirtyCheckGuard } from '../../../@core'
 import { ModelAdminComponent } from './admin/admin.component'
+import { ModelMembersComponent } from './members/members.component'
 import { ModelComponent } from './model.component'
 import { ModelOverviewComponent } from './overview/overview.component'
 import { semanticModelResolver } from './story-model.resolver'
-import { NgModule } from '@angular/core'
-import { ModelMembersComponent } from './members/members.component'
 
 export const routes: Routes = [
   {
@@ -67,10 +67,10 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'members',
+        path: 'member-retriever',
         component: ModelMembersComponent,
         data: {
-          title: 'Model / Members'
+          title: 'Model / Member Retriever'
         }
       }
     ]

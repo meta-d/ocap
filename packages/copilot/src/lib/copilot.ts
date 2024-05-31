@@ -5,7 +5,15 @@ import { BehaviorSubject, Observable, catchError, map, of, shareReplay, switchMa
 import { fromFetch } from 'rxjs/fetch'
 import { callChatApi as callDashScopeChatApi } from './dashscope/'
 import { callChatApi } from './shared/call-chat-api'
-import { AI_PROVIDERS, AiProvider, BusinessRoleType, CopilotChatMessage, DefaultModel, ICopilot } from './types'
+import {
+  AI_PROVIDERS,
+  AiProvider,
+  BusinessRoleType,
+  CopilotChatMessage,
+  DefaultModel,
+  ICopilot,
+  RequestOptions
+} from './types'
 
 function chatCompletionsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -99,7 +107,7 @@ export abstract class CopilotService {
    *
    * @returns
    */
-  requestOptions(): any {
+  requestOptions(): RequestOptions {
     return {}
   }
 

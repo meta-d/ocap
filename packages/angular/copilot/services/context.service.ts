@@ -101,12 +101,10 @@ export class NgmCopilotContextService implements CopilotContext {
   }
 
   registerChild(child: NgmCopilotContextService) {
-    console.log('child registered')
     this.children.update((children) => new Set(children.add(child)))
   }
 
   unregisterChild(child: NgmCopilotContextService) {
-    console.log('child unregistered')
     this.children.update((children) => {
       const newChildren = new Set(children)
       newChildren.delete(child)

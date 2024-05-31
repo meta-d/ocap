@@ -358,8 +358,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // Get chat history messages
     const chatHistoryMessages = this.chatHistoryMessages()
 
-    console.log(chatHistoryMessages)
-
     // Context content
     const contextContent = context ? await recognizeContext(content, context) : null
     const params = await recognizeContextParams(content, context)

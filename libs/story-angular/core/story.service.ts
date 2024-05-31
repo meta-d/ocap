@@ -322,7 +322,7 @@ export class NxStoryService {
   )
 
   readonly modelCubes$ = this.storyModelsOptions$.pipe(
-    tap(() => console.log(`loading cubes...`)),
+    // tap(() => console.log(`loading cubes...`)),
     switchMap((dataSources) => combineLatest(dataSources.map((option) => this.selectDataSource(option.key).pipe(
       switchMap((dataSource) => dataSource.discoverMDCubes()),
     ))).pipe(
