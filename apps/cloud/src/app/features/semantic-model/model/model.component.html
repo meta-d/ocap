@@ -388,30 +388,6 @@
     </div>
 </ng-template>
 
-<mat-menu #dimMenu="matMenu" class="ngm-density__compact">
-
-    <button mat-menu-item (click)="doAction({category: TOOLBAR_ACTION_CATEGORY.DIMENSION, action: 'NewHierarchy'})">
-        <mat-icon fontSet="material-icons-outlined">queue</mat-icon>
-        {{ 'PAC.ACTIONS.NEW_HIERARCHY' | translate: {Default: "New Hierarchy"} }}
-    </button>
-
-    <button mat-menu-item ngmAppearance="danger"
-        (click)="doAction({category: TOOLBAR_ACTION_CATEGORY.DIMENSION, action: 'RemoveHierarchy'})">
-        <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
-        {{ 'PAC.ACTIONS.REMOVE_CURRENT_HIERARCHY' | translate: {Default: "Remove Current Hierarchy"} }}
-    </button>
-
-    <mat-divider></mat-divider>
-    
-    <button mat-menu-item ngmAppearance="danger"
-        (click)="doAction({category: TOOLBAR_ACTION_CATEGORY.HIERARCHY, action: 'RemoveLevel'})">
-        <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
-        {{ 'PAC.ACTIONS.REMOVE_CURRENT_LEVEL' | translate: {Default: "Remove Current Level"} }}
-    </button>
-    
-</mat-menu>
-
-
 <ng-template #manageMenu>
     <div cdkMenu>
         <button cdkMenuItem [routerLink]="['.']">
@@ -429,12 +405,10 @@
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
         </button>
     
-      @if (!production) {
         <button cdkMenuItem [routerLink]="['./member-retriever']">
             <mat-icon fontSet="material-icons-outlined">tag</mat-icon>
             {{ 'PAC.KEY_WORDS.MemberRetriever' | translate: {Default: "Member Retriever"} }}
         </button>
-      }
     </div>
 </ng-template>
 

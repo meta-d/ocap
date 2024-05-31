@@ -17,7 +17,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
+import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
@@ -25,7 +25,6 @@ import { NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/ocap-a
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
-import { environment } from 'apps/cloud/src/environments/environment'
 import { sortBy, uniqBy } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
@@ -60,7 +59,13 @@ import {
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
-import { CdkDragDropContainers, MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
+import {
+  CdkDragDropContainers,
+  MODEL_TYPE,
+  SemanticModelEntity,
+  SemanticModelEntityType,
+  TOOLBAR_ACTION_CATEGORY
+} from './types'
 import { stringifyTableType } from './utils'
 
 @Component({
@@ -77,9 +82,7 @@ import { stringifyTableType } from './utils'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
-  production = environment.production
 
-  readonly #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private modelsService = inject(ModelsService)
@@ -102,84 +105,6 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   @HostBinding('class.pac-fullscreen')
   public isFullscreen = false
-
-  //   d = injectCopilotCommand({
-  //     name: 'c',
-  //     description: 'New or edit cube',
-  //     examples: [
-  //       this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', { Default: 'Create cube by table info' })
-  //     ],
-  //     systemPrompt: async () => {
-  //       const sharedDimensionsPrompt = JSON.stringify(
-  //         this.dimensions()
-  //           .filter((dimension) => dimension.hierarchies?.length)
-  //           .map((dimension) => ({
-  //             name: dimension.name,
-  //             caption: dimension.caption,
-  //             table: dimension.hierarchies[0].tables[0]?.name,
-  //             primaryKey: dimension.hierarchies[0].primaryKey
-  //           }))
-  //       )
-  //       return `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-  // There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-  // The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
-  // \`\`\`
-  // ${sharedDimensionsPrompt}
-  // \`\`\`
-  // `
-  //     },
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'create-model-cube',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'cube',
-  //             type: 'object', // Add or change types according to your needs.
-  //             description: 'The defination of cube',
-  //             required: true,
-  //             properties: zodToAnnotations(CubeSchema)
-  //           }
-  //         ],
-  //         implementation: async (cube: any) => {
-
-  //         }
-  //       })
-  //     ]
-  //   })
-
-  // injectCopilotCommand({
-  //   name: 'd',
-  //   description: 'New or edit dimension',
-  //   examples: [
-  //     this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateDimensionByTableInfo', {
-  //       Default: 'Create dimension by table info'
-  //     })
-  //   ],
-  //   systemPrompt: async () => {
-  //     return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
-  //   },
-  //   actions: [
-  //     injectMakeCopilotActionable({
-  //       name: 'create-model-dimension',
-  //       description: 'Should always be used to properly format output',
-  //       argumentAnnotations: [
-  //         {
-  //           name: 'dimension',
-  //           type: 'object', // Add or change types according to your needs.
-  //           description: 'The defination of dimension',
-  //           required: true,
-  //           properties: zodToAnnotations(DimensionSchema)
-  //         }
-  //       ],
-  //       implementation: async (d: any) => {
-  //         this.#logger.debug(`Execute copilot action 'create-model-dimension':`, d)
-  //         createDimension(this.modelService, d)
-  //         return this.translateService.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
-  //       }
-  //     })
-  //   ]
-  // })
 
   // Model
   searchControl = new FormControl()
@@ -353,7 +278,10 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   }
 
   drop(event: CdkDragDrop<Array<SemanticModelEntity>>) {
-    if (event.previousContainer.id === CdkDragDropContainers.Tables && event.container.id === CdkDragDropContainers.Entities) {
+    if (
+      event.previousContainer.id === CdkDragDropContainers.Tables &&
+      event.container.id === CdkDragDropContainers.Entities
+    ) {
       this.createEntity(event.item.data)
     }
     // Move items in array
@@ -678,51 +606,4 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       this.appService.exitFullscreen(5)
     }
   }
-
-  // /**
-  //  * Drop data on copilot chat:
-  //  * 1. table schema
-  //  * 2. table data
-  //  * 3. name of data
-  //  *
-  //  * @param event
-  //  */
-  // async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
-  //   const data = event.item.data
-
-  //   if (event.previousContainer.id === CdkDragDropContainers.Tables) {
-  //     // 源表结构或源多维数据集结构
-  //     const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       data: {
-  //         columns: [{ name: 'name' }, { name: 'caption' }],
-  //         content: Object.values(entityType.properties) as any[]
-  //       },
-  //       content: stringifyTableType(entityType)
-  //     })
-  //   } else if (event.previousContainer.id === 'pac-model__query-results') {
-  //     // 自定义查询结果数据
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       data: {
-  //         columns: data.columns,
-  //         content: data.preview
-  //       },
-  //       content:
-  //         data.columns.map((column) => column.name).join(',') +
-  //         `\n` +
-  //         data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n')
-  //     })
-  //   } else {
-  //     // 其他数据 name
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       content: data.name
-  //     })
-  //   }
-  // }
 }
