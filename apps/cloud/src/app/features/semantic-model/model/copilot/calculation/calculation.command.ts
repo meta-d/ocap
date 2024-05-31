@@ -11,7 +11,7 @@ import {
   makeCubeRulesPrompt,
   markdownEntityType
 } from '@metad/core'
-import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { C_MEASURES, Cube, EntityType } from '@metad/ocap-core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { nanoid } from 'nanoid'
@@ -23,6 +23,8 @@ export function injectCalculationCommand(cube: Signal<Cube>, entityType: Signal<
   const logger = inject(NGXLogger)
   const modelService = inject(SemanticModelService)
   const entityService = inject(ModelEntityService)
+  const copilotService = inject(NgmCopilotService)
+  
   const defaultModel = toSignal(modelService.modelId$)
   const defaultEntity = toSignal(entityService.entityName$)
   const memberRetrieverTool = injectDimensionMemberRetrieverTool(defaultModel, defaultEntity)
@@ -79,7 +81,7 @@ ${createAgentStepsInstructions(
     
 {system_prompt}`),
     systemPrompt: async () => {
-      let prompt = ''
+      let prompt = `${copilotService.rolePrompt()}`
       if (entityType()) {
         prompt += `The cube structure is: 
 \`\`\`

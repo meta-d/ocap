@@ -5,23 +5,25 @@ import { ModelDimensionState, SemanticModelEntityType } from '../../types'
 
 export function createDimension(modelService: SemanticModelService, dimension: PropertyDimension) {
   const key = uuid()
-  const dimension2 = {
+  const _dimension = {
     ...dimension,
     __id__: key,
-    hierarchies: dimension.hierarchies?.map((hierarchy) => ({
+    hierarchies: dimension.hierarchies?.map((hierarchy, index) => ({
       ...hierarchy,
+      name: index ? hierarchy.name : '',
       __id__: uuid(),
       levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
     }))
   } as PropertyDimension
+  
   const dimensionState: ModelDimensionState = {
     type: SemanticModelEntityType.DIMENSION,
     id: key,
     name: dimension.name,
     caption: dimension.caption,
-    dimension: dimension2
+    dimension: _dimension
   }
 
-  modelService.newDimension(dimension2)
+  modelService.newDimension(_dimension)
   modelService.activeEntity(dimensionState)
 }

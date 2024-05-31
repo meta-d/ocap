@@ -114,8 +114,7 @@ export function injectCalculationCommand(
         },
         systemPrompt: async ({ params }) => {
           // Add responsibility of business role
-          const role = copilotService.roleDetail()
-          let prompt = role ? `Your role is '${role.title}', and your responsibility is ${role.description};` : ''
+          let prompt = copilotService.rolePrompt()
           // Add context of cube
           let entityType = defaultCube()
           const cubeParams = params?.filter((param) => param.item)

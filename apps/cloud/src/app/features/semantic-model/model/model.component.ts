@@ -288,7 +288,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   |--------------------------------------------------------------------------
   */
   #cubeCommand = injectCubeCommand(this.dimensions)
-  #dimensionCommand = injectDimensionCommand()
+  #dimensionCommand = injectDimensionCommand(this.dimensions)
   #entityDropAction = provideCopilotDropAction({
     id: CdkDragDropContainers.Tables,
     implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {

@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
 import { makeTablePrompt } from '@metad/core'
-import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { EntityType, PropertyHierarchy } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -13,6 +13,7 @@ import { HierarchySchema } from '../schema'
 export function injectHierarchyCommand(dimensionService: ModelDimensionService, tableTypes: Signal<EntityType[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
+  const copilotService = inject(NgmCopilotService)
 
   const dimension = toSignal(dimensionService.dimension$)
 
@@ -44,7 +45,8 @@ export function injectHierarchyCommand(dimensionService: ModelDimensionService, 
     
 {system_prompt}`),
     systemPrompt: async () => {
-      return `当前维度信息为：
+      return `${copilotService.rolePrompt()}
+当前维度信息为：
 \`\`\`
 ${JSON.stringify(dimension())}
 \`\`\`

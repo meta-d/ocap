@@ -2,7 +2,7 @@ import { Signal, WritableSignal, computed, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
 import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
-import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { getErrorMessage } from '@metad/ocap-angular/core'
 import { EntityType } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
@@ -22,6 +22,7 @@ export function injectQueryCommand(
 ) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
+  const copilotService = inject(NgmCopilotService)
 
   // Table info
   const promptTables = computed(() => {
@@ -103,7 +104,9 @@ And the total number of rows returned is ${result.data.length}.`
     systemPrompt: async () => {
       const { dialect, isMDX, entityTypes } = context()
 
-      return isMDX
+      let prompt = `${copilotService.rolePrompt()}`
+
+      prompt += isMDX
         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
 ${makeCubeRulesPrompt()}
 
@@ -131,6 +134,7 @@ Current statement:
 ${statement()}
 \`\`\`
 `
+      return prompt
     }
   })
 }
