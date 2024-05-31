@@ -31,15 +31,19 @@ English | [中文](./README_zh.md)
 
 ## 💡 What's New
 
-🎉🎉 Introducing the launch of Metad Analytics Platform version 2.0, bringing along a host of new features and improvements, including:
+🎉🎉 New version brings several exciting new features, particularly a comprehensive upgrade to [Copilot Command](https://www.mtda.cloud/en/docs/server/copilot/#commands) and [Business Roles](https://www.mtda.cloud/en/docs/server/copilot/#business-roles).
 
-- **Themes and Layouts** The website has undergone a complete overhaul, now fully supporting dark mode themes for enhanced comfort during nighttime work.
-- **AI Copilot** Upgraded to execute AI operations in the form of custom commands, with a rich set of built-in commands available. For more details, please refer to [AI Copilot](https://www.mtda.cloud/en/docs/server/copilot/).
-- **Indicator Application** The indicator application page has been optimized and upgraded, making it more convenient to view and analyze indicators across different devices.
+- **Copilot Command Agents**
+  - _Dimension Members Retriever_: This feature dynamically retrieves and acquires key information of dimension members, helping users better understand data dimensions.
+  - _Few Shot_: By retrieving similar examples, it provides more precise templates, making data analysis more aligned with actual needs.
+  - _Suggestion_: Provides dynamic prompt completion functionality, helping users quickly generate high-quality analysis commands.
+- **Business Roles** The new version also adds the Business Roles feature to the AI Copilot. Users can switch business roles during use, allowing for more precise business analysis in different scenarios. Each business role has corresponding examples. When the Copilot executes an Agent, it selects the examples most relevant to the current task to send to the LLM, ensuring more accurate results. 
+
+[More details](https://www.mtda.cloud/en/blog/releases-2-3-copilot-agents-roles)
 
 ## 🎯 Mission
 
-__"One Table, One Model, An Indicator System"__
+__"One Table, One Model, One Indicator System"__
 
 Simple, efficient, integrated. Users can conduct analysis by simply dealing with one fact table. Through the multi-dimensional modeling function provided by the platform, a comprehensive set of indicators can be quickly obtained within the unified semantic model.
 
