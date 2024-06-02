@@ -2,7 +2,7 @@
     <mat-expansion-panel-header>
         <mat-panel-title> {{cube().caption}} <span class="text-sm italic ml-2">({{cube().name}})</span> </mat-panel-title>
         <mat-panel-description>
-          @if (entity().id) {
+          @if (entity()?.id) {
             <button mat-icon-button [disabled]="loading()" ngmAppearance="danger"
               [matTooltip]="'PAC.MODEL.DeleteDimensionMembers' | translate: {Default: 'Delete Dimension Members'}"
               (click)="$event.stopPropagation();deleteMembers(entity().id)"
@@ -11,7 +11,7 @@
             </button>
           }
 
-          @if (entity().job) {
+          @if (entity()?.job) {
             @if (entity().job?.error) {
               <mat-icon fontSet="material-icons-outlined" class="text-red-500"
                 [matTooltip]="entity().job.error"

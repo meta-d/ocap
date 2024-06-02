@@ -78,7 +78,7 @@ export class ModelMembersCubeComponent {
   constructor() {
     effect(() => {
       if (this.entity() && !this.selectedDims()) {
-        this.selectedDims.set(this.entity().options?.vector?.hierarchies ?? [])
+        this.selectedDims.set(this.entity()?.options?.vector?.hierarchies ?? [])
       }
     }, { allowSignalWrites: true })
   }
@@ -98,7 +98,7 @@ export class ModelMembersCubeComponent {
     // const dimensions = this.dimensions()
 
     this.loading.set(true)
-    if (this.entity().id) {
+    if (this.entity()?.id) {
       const entity = await firstValueFrom(this.modelEntityService.getOne(this.entity().id))
       this.cube.update((cube) => ({...cube, __entity__: entity}))
     }

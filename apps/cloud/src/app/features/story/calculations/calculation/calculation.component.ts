@@ -97,7 +97,7 @@ export class StoryCalculationComponent {
   }
 
   close() {
-    this.router.navigate(['../'], { relativeTo: this.route })
+    this.router.navigate(this.cubeName() ? ['../../'] : ['../'], { relativeTo: this.route })
   }
 
   onApply(event: CalculationProperty) {
