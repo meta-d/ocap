@@ -41,6 +41,8 @@ English | [中文](./README_zh.md)
 
 [More details](https://www.mtda.cloud/en/blog/releases-2-3-copilot-agents-roles)
 
+![copilot architecture](https://raw.githubusercontent.com/meta-d/meta-d/main/img/v2.3/copilot-architecture.png)
+
 ## 🎯 Mission
 
 __"One Table, One Model, One Indicator System"__

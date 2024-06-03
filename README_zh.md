@@ -22,6 +22,8 @@
 
 [更多详情](https://www.mtda.cloud/blog/releases-2-3-copilot-agents-roles)
 
+![copilot architecture](https://raw.githubusercontent.com/meta-d/meta-d/main/img/v2.3/copilot-architecture.png)
+
 ## 🎯 宗旨
 
 __“一张表，一个模型，一套指标体系”__
