@@ -12,12 +12,11 @@ import {
 } from '@angular/forms'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
 import { BusinessAreasService, NgmSemanticModel } from '@metad/cloud/state'
-import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { IsNilPipe, calcEntityTypePrompt, nonBlank, nonNullable } from '@metad/core'
 import { NgmMatSelectComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
-import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
+import { NgmCalculatedMeasureComponent, NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   ISlicer,
@@ -47,7 +46,7 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { CalculatedMeasureComponent } from '@metad/components/property'
+import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { injectFetchModelDetails } from '../../types'
 
@@ -67,9 +66,9 @@ import { injectFetchModelDetails } from '../../types'
     NgmTreeSelectComponent,
     TagEditorComponent,
     NgmHierarchySelectComponent,
-    NxSelectionModule,
     IsNilPipe,
-    CalculatedMeasureComponent
+    NgmCalculatedMeasureComponent,
+    NgmSelectionModule,
   ],
   providers: [
     {

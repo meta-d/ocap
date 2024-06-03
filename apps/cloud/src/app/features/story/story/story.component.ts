@@ -7,22 +7,22 @@ import {
   ElementRef,
   HostBinding,
   inject,
-  Injector,
   Input,
   model,
   OnInit,
   signal,
   viewChild,
-  ViewChild
+  ViewChild,
+  ViewContainerRef
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { ActivatedRoute, Router } from '@angular/router'
-import { IsDirty, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentType, isEqual } from '@metad/ocap-core'
-import { StoryExplorerModule } from '@metad/story'
+import { AgentType, CalculationProperty, isEqual } from '@metad/ocap-core'
+import { provideStoryDesigner, StoryExplorerModule } from '@metad/story'
 import {
   EmulatedDevice,
   NxStoryService,
@@ -33,7 +33,6 @@ import {
 } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import {
-  injectMathCommand,
   injectStoryPageCommand,
   injectStoryStyleCommand,
   injectStoryWidgetCommand,
@@ -41,11 +40,12 @@ import {
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
-import { firstValueFrom } from 'rxjs'
-import { distinctUntilChanged, filter, map } from 'rxjs/operators'
+import { firstValueFrom, from } from 'rxjs'
+import { distinctUntilChanged, filter, map, share, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { MenuCatalog, registerWasmAgentModel, Store } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 import { effectStoryTheme } from '../../../@theme'
@@ -53,11 +53,14 @@ import { AppService } from '../../../app.service'
 import { StoryToolbarComponent } from '../toolbar/toolbar.component'
 import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
+import { MatDialog } from '@angular/material/dialog'
 
 @Component({
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MaterialModule,
     TranslateModule,
 
@@ -79,13 +82,20 @@ import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
   host: {
     class: 'ngm-story-designer'
   },
-  providers: [StoryToolbarService, NgmDSCoreService, NxCoreService, NxStoryService, NxSettingsPanelService]
+  providers: [
+    StoryToolbarService,
+    provideStoryDesigner(),
+    NxCoreService,
+    {
+      provide: NgmCopilotContextToken,
+      useClass: NgmCopilotContextService
+    }
+  ]
 })
 export class StoryDesignerComponent extends TranslationBaseComponent implements OnInit, IsDirty {
   ComponentType = WidgetComponentType
   STORY_POINT_TYPE = StoryPointType
 
-  // private coreService = inject(NxCoreService)
   public readonly toolbarService = inject(StoryToolbarService)
   public readonly settingsPanelService = inject(NxSettingsPanelService)
   private readonly wasmAgent = inject(WasmAgentService)
@@ -95,8 +105,10 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   private route = inject(ActivatedRoute)
   private _router = inject(Router)
   private logger = inject(NGXLogger)
-  // private renderer = inject(Renderer2)
-  readonly #injector = inject(Injector)
+  readonly copilotContext = inject(NgmCopilotContextToken)
+  readonly coreService = inject(NgmOcapCoreService)
+  readonly #dialog = inject(MatDialog)
+  readonly _viewContainerRef = inject(ViewContainerRef)
 
   @Input() storyId: string
 
@@ -244,6 +256,15 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
     })
 
     effectStoryTheme(this.storyContainer)
+
+    this.coreService.setCalculationHandler((params) => {
+      return this.#dialog.open<NgmCalculationEditorComponent, unknown, CalculationProperty>(
+        NgmCalculationEditorComponent,
+        {
+          viewContainerRef: this._viewContainerRef,
+          data: params
+        }).afterClosed()
+    })
   }
 
   ngOnInit(): void {
@@ -256,6 +277,24 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
         this.appService.setNavigation({ catalog: MenuCatalog.Stories, id: this.story().id, label: this.story().name })
       }
     }
+
+    this.copilotContext.cubes.update(() => this.storyService.modelCubes$.pipe(
+        map((models) => {
+          const items = []
+          models.forEach((model, index) => {
+            items.push(...model.cubes.map((cube) => ({ value: {
+              dataSource: model,
+              dataSourceId: model.value,
+              serizalize: async () => {
+                const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: model.key, entitySet: cube.name}))
+                return markdownEntityType(entityType)
+              }
+            }, key: cube.name, caption: cube.caption })))
+          })
+          return items
+        }),
+      shareReplay(1)
+    ))
   }
 
   isDirty(): boolean {

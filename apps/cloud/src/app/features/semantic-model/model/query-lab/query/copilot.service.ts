@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
-import { NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { nanoid } from 'nanoid'
@@ -9,11 +9,11 @@ import { Observable, map } from 'rxjs'
 import { QueryService } from './query.service'
 
 /**
- * @deprecated
+ * Copilot Engine for query
  */
 @Injectable()
 export class QueryCopilotEngineService extends NgmCopilotEngineService {
-  private readonly copilotService = inject(CopilotService)
+  private readonly copilotService = inject(NgmCopilotService)
   private readonly translateService = inject(TranslateService)
   readonly #queryService = inject(QueryService)
 

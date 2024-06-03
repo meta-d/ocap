@@ -1,7 +1,7 @@
-<mat-drawer-container class="flex flex-1" [hasBackdrop]="false" autosize >
+<mat-drawer-container class="flex flex-1" [hasBackdrop]="false" autosize>
     <mat-drawer #drawer class="ngm-calculated-measure__drawer"
         mode="side" position="end" ngmResizer [resizerWidth]="330"
-        [(opened)]="opened"
+        [(opened)]="drawerOpened"
         (openedChange)="$event?helper.realignInkBar():''">
         <mat-tab-group #helper class="ngm-calculated-measure__helpers" mat-stretch-tabs="false" >
             <mat-tab [label]="'COMPONENTS.CALCULATION.DIMENSION_MEMBERS' | translate: {Default: 'Dimension Members'}"
@@ -110,14 +110,20 @@
             cdkDragLockAxis="x"
         ></div>
     </mat-drawer>
+
     <mat-drawer-content class="flex flex-col justify-between items-stretch">
 
         <div class="py-1 px-2 flex justify-between items-center">
-           <span>
+           <span class="text-lg font-medium">
             {{ 'COMPONENTS.CALCULATION.EDIT_FORMULA' | translate: {Default: "Edit Formula"} }}
            </span>
 
-           <div class="flex justify-around items-center gap-2">
+           <div class="flex justify-around items-center gap-2" displayDensity="compact">
+             <button mat-icon-button (click)="toggleSideMenu()"
+                [matTooltip]="'COMPONENTS.CALCULATION.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"
+             >
+                <mat-icon fontSet="material-icons-outlined">view_sidebar</mat-icon>
+             </button>
            </div>
         </div>
 
@@ -128,8 +134,7 @@
                 [cdkDropListData]="calculations"
                 (cdkDropListDropped)="drop($event)"
                 [entityType]="entityType()"
-                [disabled]="disabled"
-                [(ngModel)]="statement"
+                [formControl]="statement"
                 >
             </ngm-editor-mdx-member>
         } @else if (syntax()===Syntax.SQL) {
@@ -139,12 +144,12 @@
                 [cdkDropListData]="calculations"
                 (cdkDropListDropped)="drop($event)"
                 [entityType]="entityType()"
-                [disabled]="disabled"
-                [(ngModel)]="statement"
+                [formControl]="statement"
             >
             </ngm-editor-sql>
         }
 
-        <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="opened" side="right"></ngm-drawer-trigger>
+        <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="drawerOpened" side="right"
+            [matTooltip]="'COMPONENTS.CALCULATION.ToggleSidebar' | translate: {Default: 'Toggle Sidebar'}"/>
     </mat-drawer-content>
 </mat-drawer-container>

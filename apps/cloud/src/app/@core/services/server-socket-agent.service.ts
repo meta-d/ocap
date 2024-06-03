@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Inject, Injectable, computed, inject, signal } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { API_DATA_SOURCE, DataSourceService } from '@metad/cloud/state'
 import { AuthenticationEnum, IDataSource, IDataSourceAuthentication, ISemanticModel } from '@metad/contracts'
@@ -39,6 +39,13 @@ export class ServerSocketAgent extends AbstractAgent implements Agent {
 
   readonly bufferSize = computed(() => Object.keys(this.queuePool()).length)
   readonly completeSize = computed(() => Object.values(this.queuePool()).filter((x) => x.complete).length)
+
+  readonly unclosedRequests = computed(() => {
+    const queue = this.queuePool()
+    return Object.keys(queue).filter((key) => !queue[key].complete)
+  })
+
+  readonly connected = toSignal(this.#agentService.connected$)
 
   constructor(
     @Inject(PAC_SERVER_AGENT_DEFAULT_OPTIONS)

@@ -46,7 +46,6 @@ import { DisplayDensity, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { ControlOptions, NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NgmEntityPropertyComponent, propertyIcon } from '@metad/ocap-angular/entity'
-import { CalculationEditorComponent } from '../calculation/index'
 import { CommonModule } from '@angular/common'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -62,7 +61,6 @@ import { MatBadgeModule } from '@angular/material/badge'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-
 
 export enum PropertyCapacity {
   Dimension = 'Dimension',
@@ -86,6 +84,9 @@ export enum PropertyCapacity {
   DimensionChart = 'DimensionChart'
 }
 
+/**
+ * @deprecated use NgmEntityModule instead
+ */
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -813,55 +814,55 @@ export class PropertySelectComponent implements ControlValueAccessor, AfterViewI
     event.preventDefault()
     event.stopPropagation()
 
-    const data = {
-      dataSettings: this.dataSettings(),
-      entityType: this.entityType(),
-      syntax: this.syntax(),
-      coreService: this.coreService(),
-      dsCoreService: this.dsCoreService(),
-      value: null
-    }
+    // const data = {
+    //   dataSettings: this.dataSettings(),
+    //   entityType: this.entityType(),
+    //   syntax: this.syntax(),
+    //   coreService: this.coreService(),
+    //   dsCoreService: this.dsCoreService(),
+    //   value: null
+    // }
 
-    if (calculationType) {
-      data.value = {
-        calculationType
-      }
-    }
+    // if (calculationType) {
+    //   data.value = {
+    //     calculationType
+    //   }
+    // }
 
-    const property = await firstValueFrom(this._dialog.open<CalculationEditorComponent, unknown, CalculationProperty>(
-      CalculationEditorComponent,
-      {
-        viewContainerRef: this._viewContainerRef,
-        data
-      }).afterClosed()
-    )
-    if (property) {
-      this.patchCalculationProperty(property)
-      this.calculationChange.emit(property)
-    }
+    // const property = await firstValueFrom(this._dialog.open<CalculationEditorComponent, unknown, CalculationProperty>(
+    //   CalculationEditorComponent,
+    //   {
+    //     viewContainerRef: this._viewContainerRef,
+    //     data
+    //   }).afterClosed()
+    // )
+    // if (property) {
+    //   this.patchCalculationProperty(property)
+    //   this.calculationChange.emit(property)
+    // }
   }
 
   async openEditCalculation(calculationProperty: CalculationProperty) {
-    const property = await firstValueFrom(this._dialog.open<CalculationEditorComponent, unknown, CalculationProperty>(
-      CalculationEditorComponent,
-      {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          coreService: this.coreService(),
-          dsCoreService: this.dsCoreService(),
-          dataSettings: this.dataSettings(),
-          entityType: this.entityType(),
-          value: calculationProperty,
-          syntax: Syntax.MDX,
-        },
-      })
-      .afterClosed()
-    )
+    // const property = await firstValueFrom(this._dialog.open<CalculationEditorComponent, unknown, CalculationProperty>(
+    //   CalculationEditorComponent,
+    //   {
+    //     viewContainerRef: this._viewContainerRef,
+    //     data: {
+    //       coreService: this.coreService(),
+    //       dsCoreService: this.dsCoreService(),
+    //       dataSettings: this.dataSettings(),
+    //       entityType: this.entityType(),
+    //       value: calculationProperty,
+    //       syntax: Syntax.MDX,
+    //     },
+    //   })
+    //   .afterClosed()
+    // )
     
-    if (property) {
-      this.patchCalculationProperty(property)
-      this.calculationChange.emit(property)
-    }
+    // if (property) {
+    //   this.patchCalculationProperty(property)
+    //   this.calculationChange.emit(property)
+    // }
   }
 
   async openFormatting(event) {

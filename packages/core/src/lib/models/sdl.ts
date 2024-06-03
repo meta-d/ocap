@@ -3,12 +3,17 @@ import { CalculatedMember, ParameterControlEnum } from './calculated'
 import { Indicator } from './indicator'
 import { EntityProperty, PropertyAttributes } from './property'
 
-
+/**
+ * Base type for all entity types
+ */
 export interface Entity {
   /**
    * Catalog of entity
    */
   catalog?: string
+  /**
+   * Name of entity
+   */
   name: string
   /**
    * Caption for entity
@@ -81,7 +86,7 @@ export interface JoinField {
 }
 
 export interface SQL {
-  dialect?: string,
+  dialect?: string
   content?: string
 }
 
@@ -147,9 +152,9 @@ export interface EntityType extends Entity {
   dialect?: any // string
 
   syntax?: Syntax
-  
+
   /**
-   * 
+   *
    */
   semantics?: EntitySemantics
 
@@ -238,7 +243,7 @@ export interface PropertyHierarchy extends EntityProperty {
   defaultMember?: string
   /**
    * 根成员, 代表所有值的汇总
-   * 
+   *
    * @deprecated should calculate from `hasAll` `allMemberName`
    */
   allMember?: string
@@ -254,7 +259,7 @@ export interface PropertyLevel extends EntityProperty {
   parentColumn?: string
   nullParentValue?: number
   uniqueMembers?: boolean
-  type?: "String" | "Integer" | "Numeric" | "Boolean" | "Date" | "Time" | "Timestamp"
+  type?: 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Date' | 'Time' | 'Timestamp'
   table?: string
   closure?: Closure
 
@@ -284,39 +289,35 @@ export interface ParameterProperty extends EntityProperty {
   // 候选成员
   availableMembers?: Array<IMember>
 
-  
   // sap variables
   referenceDimension?: string
 }
 
 /**
- * 
+ *
  * Entity 的 Meta 信息集合
  */
 export interface EntitySet extends Entity {
   __id__?: string
+
   /**
    * Entity Type 定义
    */
-  entityType: EntityType
+  entityType?: EntityType
 
   annotations?: Array<Annotation>
 
   indicators?: Array<Indicator>
+
+  /**
+   * Is annotated cube
+   */
+  annotated?: boolean
 }
 
-export interface MDCube extends Entity {
-  __id__?: string
+export interface MDCube extends EntitySet {
   cubeType?: string
   cubeCaption?: string
-  /**
-   * Entity Type 定义
-   */
-  entityType: EntityType
-
-  annotations?: Array<Annotation>
-
-  indicators?: Array<Indicator>
 }
 
 export interface Catalog {

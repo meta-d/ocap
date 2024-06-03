@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router'
 import { NxCoreService } from '@metad/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { NxStoryService, Story } from '@metad/story/core'
+import { provideStory } from '@metad/story'
 import { map } from 'rxjs/operators'
 import { AgentType, registerWasmAgentModel } from '../../@core'
 import { effectStoryTheme, registerStoryThemes } from '../../@theme'
@@ -13,7 +14,7 @@ import { AppService } from '../../app.service'
   selector: 'pac-story-viewer',
   templateUrl: 'story.component.html',
   styleUrls: ['story.component.scss'],
-  providers: [NxCoreService, NxStoryService]
+  providers: [NxCoreService, provideStory()]
 })
 export class StoryViewerComponent implements OnInit {
   private renderer = inject(Renderer2)

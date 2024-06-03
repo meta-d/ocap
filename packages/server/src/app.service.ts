@@ -3,6 +3,8 @@ import { ConfigService } from '@metad/server-config';
 // import { SeedDataService } from './core/seeds/seed-data.service';
 import { UserService } from './user/user.service';
 import * as chalk from 'chalk';
+import { CommandBus } from '@nestjs/cqrs';
+import { CopilotExampleService } from './copilot-example/copilot-example.service';
 
 @Injectable()
 export class AppService {
@@ -18,9 +20,13 @@ export class AppService {
 		if (this.count === 0) {
 			// await this.seedDataService.runDefaultSeed(true);
 		}
+
+		await this.exampleService.seedRedisIfEmpty()
 	}
 
 	constructor(
+		private readonly commandBus: CommandBus,
+		
 		// @Inject(forwardRef(() => SeedDataService))
 		// private readonly seedDataService: SeedDataService,
 
@@ -28,7 +34,11 @@ export class AppService {
 		private readonly userService: UserService,
 
 		@Inject(forwardRef(() => ConfigService))
-		private readonly configService: ConfigService
+		private readonly configService: ConfigService,
+
+
+		@Inject(forwardRef(() => CopilotExampleService))
+		private readonly exampleService: CopilotExampleService
 	) {}
 
 	/*

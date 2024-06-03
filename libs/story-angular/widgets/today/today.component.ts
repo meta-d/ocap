@@ -4,9 +4,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { DensityDirective, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NxTimeFilterModule } from '@metad/components/time-filter'
 import { AbstractStoryWidget } from '@metad/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgmTimeFilterModule } from '@metad/ocap-angular/selection'
 
 export interface TodayWidgetOptions {
   granularity: TimeGranularity
@@ -16,7 +16,7 @@ export interface TodayWidgetOptions {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, TranslateModule, ReactiveFormsModule, DensityDirective, NxTimeFilterModule],
+  imports: [CommonModule, TranslateModule, ReactiveFormsModule, DensityDirective, NgmTimeFilterModule],
   selector: 'ngm-story-widget-today',
   templateUrl: './today.component.html',
   styleUrls: ['./today.component.scss']

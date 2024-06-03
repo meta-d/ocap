@@ -39,6 +39,10 @@ import { LanguageModule } from './language/language.module'
 import { CopilotModule } from './copilot'
 import { StorageFileModule } from './storage-file/storage-file.module'
 import { AIModule } from './ai/ai.module'
+import { CopilotExampleModule } from './copilot-example'
+import { RedisModule } from './core/redis.module'
+import { CqrsModule } from '@nestjs/cqrs'
+import { CopilotRoleModule } from './copilot-role/copilot-role.module'
 
 @Module({
   imports: [
@@ -67,6 +71,8 @@ import { AIModule } from './ai/ai.module'
       },
       resolvers: [new HeaderResolver(['language'])],
     }),
+    CqrsModule,
+    RedisModule,
     CoreModule,
     AuthModule,
     UserModule,
@@ -91,6 +97,8 @@ import { AIModule } from './ai/ai.module'
     CustomSmtpModule,
     LanguageModule,
     CopilotModule,
+    CopilotExampleModule,
+    CopilotRoleModule,
     StorageFileModule,
     AIModule
   ],

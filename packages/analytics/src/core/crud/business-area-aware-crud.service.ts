@@ -22,7 +22,7 @@ export abstract class BusinessAreaAwareCrudService<
 > extends TenantOrganizationAwareCrudService<T> {
 	protected constructor(
 		protected readonly repository: Repository<T>,
-		protected readonly employeeRepository: Repository<Employee>,
+		// protected readonly employeeRepository: Repository<Employee>,
 		protected readonly commandBus: CommandBus,
 	) {
 		super(repository)

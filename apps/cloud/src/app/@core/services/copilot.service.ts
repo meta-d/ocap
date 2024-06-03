@@ -1,24 +1,25 @@
 import { HttpClient } from '@angular/common/http'
-import { inject, Injectable, signal } from '@angular/core'
+import { effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { API_PREFIX } from '@metad/cloud/state'
-import { CopilotService, ICopilot } from '@metad/copilot'
-import { RequestOptions } from 'ai'
+import { BusinessRoleType, ICopilot, RequestOptions } from '@metad/copilot'
+import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
 import { distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
+import { CopilotRoleService } from './copilot-role.service'
 import { Store } from './store.service'
-import { environment } from 'apps/cloud/src/environments/environment'
 
 const baseUrl = environment.API_BASE_URL
 const API_CHAT = constructUrl(baseUrl) + '/api/ai/chat'
 const API_AI_HOST = constructUrl(baseUrl) + '/api/ai/proxy'
 
-
 @Injectable({ providedIn: 'root' })
-export class PACCopilotService extends CopilotService {
+export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
+  readonly roleService = inject(CopilotRoleService)
 
   readonly copilotConfig = signal<ICopilot>(null)
 
@@ -43,18 +44,41 @@ export class PACCopilotService extends CopilotService {
           apiKey: this.#store.token
         }
       } else {
+        this.copilotConfig.set(null)
         this.copilot = {
           enabled: false
         }
       }
-      
+    })
+
+  private roleSub = this.roleService
+    .getAll()
+    .pipe(takeUntilDestroyed())
+    .subscribe((roles) => {
+      this.roles.set(roles as BusinessRoleType[])
     })
 
   constructor() {
     super()
+
+    effect(
+      () => {
+        if (this.#store.copilotRole()) {
+          this.role.set(this.#store.copilotRole())
+        }
+      },
+      { allowSignalWrites: true }
+    )
+
+    effect(
+      () => {
+        this.#store.setCopilotRole(this.role())
+      },
+      { allowSignalWrites: true }
+    )
   }
 
-  requestOptions(): RequestOptions {
+  override requestOptions(): RequestOptions {
     return {
       headers: {
         'Organization-Id': `${this.#store.selectedOrganization?.id}`,

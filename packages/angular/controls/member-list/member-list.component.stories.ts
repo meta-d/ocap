@@ -10,13 +10,13 @@ import {
 } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, moduleMetadata } from '@storybook/angular'
 import { MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { NgmMemberListComponent } from './member-list.component'
 
 export default {
-  title: 'NgmMemberListComponent',
+  title: 'Controls/MemberList',
   component: NgmMemberListComponent,
   decorators: [
     moduleMetadata({
@@ -84,50 +84,50 @@ export default {
   ]
 } as Meta<NgmMemberListComponent>
 
-const Template: Story<NgmMemberListComponent> = (args: NgmMemberListComponent) => ({
-  props: args,
-  styles: [`.ngm-member-list {height: 200px;}`]
-})
+// const Template: Story<NgmMemberListComponent> = (args: NgmMemberListComponent) => ({
+//   props: args,
+//   styles: [`.ngm-member-list {height: 200px;}`]
+// })
 
-export const Primary = Template.bind({})
-Primary.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  }
-}
+// export const Primary = Template.bind({})
+// Primary.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   }
+// }
 
-export const SourceFrom = Template.bind({})
-SourceFrom.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION
-  }
-}
+// export const SourceFrom = Template.bind({})
+// SourceFrom.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   },
+//   options: {
+//     memberSource: MemberSource.DIMENSION
+//   }
+// }
 
-export const Appearance = Template.bind({})
-Appearance.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'Department'
-  },
-  options: {
-    searchable: true
-  },
-  appearance: {
-    appearance: 'outline',
-    displayDensity: DisplayDensity.compact
-  }
-}
+// export const Appearance = Template.bind({})
+// Appearance.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'Department'
+//   },
+//   options: {
+//     searchable: true
+//   },
+//   appearance: {
+//     appearance: 'outline',
+//     displayDensity: DisplayDensity.compact
+//   }
+// }

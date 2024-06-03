@@ -1,3 +1,5 @@
 :host {
   background-color: var(--ngm-color-surface);
+  display: flex;
+  @apply overflow-auto;
 }

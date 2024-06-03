@@ -12,6 +12,7 @@ import { getSemanticModelKey } from '@metad/story/core'
 
 
 export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreService, wasmAgent: WasmAgentService) {
+  const modelKey = getSemanticModelKey(model)
   const agentType = isNil(model.dataSource)
     ? AgentType.Wasm
     : model.dataSource.useLocalAgent
@@ -26,7 +27,8 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
   const catalog = agentType === AgentType.Wasm ? model.catalog || 'main' : model.catalog
   const semanticModel = {
     ...omit(model, 'indicators'),
-    name: getSemanticModelKey(model),
+    key: modelKey,
+    // name: modelKey,
     catalog,
     dialect,
     agentType,
@@ -53,24 +55,44 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
     if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
       dsCoreService.registerModel({
         ...semanticModel,
-        name: getSQLSourceName(model.key ?? model.name),
+        key: getSQLSourceName(modelKey),
         type: 'SQL',
         syntax: Syntax.SQL
       })
 
       dsCoreService.registerModel({
         ...semanticModel,
+        /**
+         * Corresponding name of schema in olap engine:
+         * ```xml
+         * <root name="Semantic Model Name">
+         *    <Cube name="Sales">
+         * ...
+         * ```
+         */
         catalog: model.name,
-        syntax: Syntax.MDX,
         settings: {
           ...(semanticModel.settings ?? {}),
+          /**
+           * Corresponding id of XmlaConnection in olap engine:
+           */
           dataSourceInfo: model.id
         } as any
       })
     } else {
       dsCoreService.registerModel({
         ...semanticModel,
-        syntax: Syntax.MDX,
+        key: getXmlaSourceName(modelKey),
+        settings: {
+          ...semanticModel.settings,
+          dataSourceInfo: model.dataSource?.options?.data_source_info
+        } as any,
+        // Don't use schema for source XMLA system
+        schema: null
+      })
+
+      dsCoreService.registerModel({
+        ...semanticModel,
         settings: {
           ...semanticModel.settings,
           dataSourceInfo: model.dataSource?.options?.data_source_info
@@ -100,6 +122,9 @@ export function registerModel(model: NgmSemanticModel, dsCoreService: NgmDSCoreS
 
 export function getSQLSourceName(key: string) {
   return key + '_SQL_SOURCE'
+}
+export function getXmlaSourceName(key: string) {
+  return key + '_XMLA_SOURCE'
 }
 
 export function registerWasmAgentModel(wasmAgent: WasmAgentService, model: NgmSemanticModel) {

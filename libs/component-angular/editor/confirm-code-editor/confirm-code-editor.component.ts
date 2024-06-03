@@ -1,9 +1,9 @@
 import { Component, HostBinding, Inject, effect, inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { ThemeService } from '@metad/core'
 import { isBlank } from '@metad/ocap-core'
 import { BehaviorSubject } from 'rxjs'
-import { EditorThemeMap } from '../types'
+import { NgmThemeService } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 
 export interface ConfirmCodeEditorData {
   language?: string
@@ -17,7 +17,7 @@ export interface ConfirmCodeEditorData {
   styleUrls: ['./confirm-code-editor.component.scss']
 })
 export class ConfirmCodeEditorComponent {
-  readonly themeService = inject(ThemeService)
+  readonly themeService = inject(NgmThemeService)
 
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
@@ -28,7 +28,8 @@ export class ConfirmCodeEditorComponent {
     automaticLayout: true
   }
 
-  statement: string = ''
+  statement = ''
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ConfirmCodeEditorData,
     public dialogRef?: MatDialogRef<ConfirmCodeEditorComponent>

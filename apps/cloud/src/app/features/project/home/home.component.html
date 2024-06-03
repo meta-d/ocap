@@ -49,10 +49,10 @@
     <div class="text-xl my-4">
         {{ 'PAC.Project.RecentUpdates' | translate: {Default: 'Recent Updates'} }}
     </div>
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <pac-story-card *ngFor="let story of stories$ | async" [story]="story"
-            storyLink="/project"
-        ></pac-story-card>
+    <div class="flex flex-wrap gap-4">
+      @for (story of stories$ | async; track story.id) {
+        <pac-story-card class="flex-1 min-w-[360px] max-w-[720px]" [story]="story" storyLink="/project" />
+      }
     </div>
 
 </div>

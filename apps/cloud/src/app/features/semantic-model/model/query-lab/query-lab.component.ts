@@ -27,16 +27,22 @@ export class QueryLabComponent extends TranslationBaseComponent implements IsDir
   public readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
   private readonly modelId = toSignal(this.modelService.modelId$)
-  private readonly modelQueries = toSignal(this.modelService.model$.pipe(map((model) => model.queries.map((query) => {
-    query = convertModelQueryResult(query)
-    return {
-      key: query.key,
-      origin: cloneDeep(query),
-      query: query,
-      dirty: false,
-      results: []
-    } as ModelQueryState
-  }))))
+  private readonly modelQueries = toSignal(
+    this.modelService.model$.pipe(
+      map((model) =>
+        model.queries.map((query) => {
+          query = convertModelQueryResult(query)
+          return {
+            key: query.key,
+            origin: cloneDeep(query),
+            query: query,
+            dirty: false,
+            results: []
+          } as ModelQueryState
+        })
+      )
+    )
+  )
 
   constructor(
     public modelService: SemanticModelService,

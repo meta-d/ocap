@@ -156,12 +156,13 @@
                               [chartType]="chartType()"
                             />
 
-                          <ngm-chart-type-form class="text-sm" displayDensity="compact" [(ngModel)]="chartTypeChartOptions" [chartType]="chartType()"></ngm-chart-type-form>
+                          <ngm-chart-type-form class="text-sm" displayDensity="compact" [(ngModel)]="chartTypeChartOptions"
+                            [chartType]="chartType()" />
                         }
                         @case (ComponentType.AnalyticalGrid) {
-                            <ngm-grid-settings class="w-full text-sm" displayDensity="compact"
-                              [(ngModel)]="gridSettings"
-                            />
+                          <ngm-grid-settings class="w-full text-sm" displayDensity="compact"
+                            [(ngModel)]="gridSettings"
+                          />
                         }
                       }
                     </mat-tab>
@@ -270,14 +271,14 @@
 </div>
 
 <ng-template #addDimensionsTempl>
-    <div class="flex flex-col">
+    <div class="flex flex-col overflow-hidden">
       <header mat-dialog-title cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
         <h4 style="pointer-events: none;" class="mb-0">
           {{ 'Story.Explorer.AddDimensions' | translate: { Default: 'Add dimensions' } }}
         </h4>
       </header>
     
-      <div mat-dialog-content class="mat-dialog-content mat-typography w-96">
+      <div mat-dialog-content class="mat-dialog-content mat-typography w-96 overflow-auto">
         <mat-selection-list [ngModel]="_dimensionsCache()" (ngModelChange)="addDimensionToCache($event)"
             cdkDropList
             [cdkDropListData]="[]"

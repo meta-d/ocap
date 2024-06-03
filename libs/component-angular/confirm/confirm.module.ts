@@ -13,6 +13,9 @@ import { ConfirmDeleteComponent } from './confirm-delete/confirm-delete.componen
 import { ConfirmSnackBar } from './confirm-snackbar/confirm-snack-bar.component'
 import { CountdownConfirmationComponent } from './countdown/countdown.component'
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @NgModule({
   declarations: [ ConfirmDeleteComponent, CountdownConfirmationComponent, ConfirmSnackBar],
   imports: [

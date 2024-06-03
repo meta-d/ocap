@@ -24,6 +24,10 @@
         width: 20px;
         height: 20px;
       }
+
+      &.mdc-list-item--with-trailing-meta .mdc-list-item__end {
+        margin-right: 0;
+      }
     }
   }
   .mat-mdc-list-base.ngm-density__compact, .ngm-density__compact .mat-mdc-list-base {
@@ -42,6 +46,10 @@
         line-height: 18px;
         width: 18px;
         height: 18px;
+      }
+
+      &.mdc-list-item--with-trailing-meta .mdc-list-item__end {
+        margin-right: 0;
       }
     }
   }

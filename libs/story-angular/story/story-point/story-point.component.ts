@@ -713,7 +713,8 @@ export class NxStoryPointComponent {
 
   onFocus(widgetKey: string) {
     this.focus = widgetKey
-    const queryParams: Params = { widgetKey }
+    const focusPage = this.point.key
+    const queryParams: Params = { widgetKey, focusPage }
 
     this.router.navigate([], {
       relativeTo: this.route,

@@ -4,13 +4,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ActivatedRoute } from '@angular/router'
 import { WidgetsService, convertStoryResult, convertStoryWidgetResult } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
-import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
+import { NgmSmartFilterBarService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { AgentType, omit } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { NxStoryModule, NxStoryPointService } from '@metad/story/story'
 import { BehaviorSubject, EMPTY } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
+import { provideStory } from '@metad/story'
 import { registerWasmAgentModel } from '../../../@core'
 import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
 
@@ -23,7 +24,7 @@ import { effectStoryTheme, registerStoryThemes } from '../../../@theme'
   host: {
     class: 'pac-story-widget'
   },
-  providers: [NgmDSCoreService, NxStoryService, NxStoryPointService, NgmSmartFilterBarService, NxCoreService],
+  providers: [provideStory(), NxStoryPointService, NgmSmartFilterBarService, NxCoreService],
   imports: [CommonModule, NxStoryModule]
 })
 export class StoryWidgetComponent {

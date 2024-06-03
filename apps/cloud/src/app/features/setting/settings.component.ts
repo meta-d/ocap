@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { AnalyticsPermissionsEnum, FeatureEnum, PermissionsEnum, RolesEnum, Store, routeAnimations } from '../../@core'
+import { AppService } from '../../app.service'
 
 @Component({
   selector: 'pac-settings',
@@ -14,6 +15,10 @@ export class PACSettingComponent {
   private readonly rolesService = inject(NgxRolesService)
   private readonly permissionsService = inject(NgxPermissionsService)
   private readonly store = inject(Store)
+  readonly appService = inject(AppService)
+
+  readonly isMobile = this.appService.isMobile
+  readonly sideMenuOpened = model(!this.isMobile())
 
   public readonly menus$ = this.permissionsService.permissions$.pipe(
     distinctUntilChanged(),

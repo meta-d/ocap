@@ -11,7 +11,7 @@ import { IndicatorMarket } from '../../indicator-market/indicator-market.entity'
 import { Indicator } from '../../indicator/indicator.entity'
 import { InsightModel } from '../../insight/insight-model.entity'
 import { SemanticModelCache } from '../../model/cache/cache.entity'
-import { SemanticModelMember } from '../../model/member/member.entity'
+import { SemanticModelMember } from '../../model-member/member.entity'
 import { SemanticModel } from '../../model/model.entity'
 import { SemanticModelRole } from '../../model/role/role.entity'
 import { NotificationDestination } from '../../notification-destination/notification-destination.entity'
@@ -29,6 +29,7 @@ import { StoryTemplate } from '../../story-template/story-template.entity'
 import { Screenshot } from '../../screenshot/screenshot.entity'
 import { Certification } from '../../certification/certification.entity'
 import { IndicatorApp } from '../../indicator-app/indicator-app.entity'
+import { SemanticModelEntity } from '../../model-entity/entity.entity'
 
 
 export const ALL_ENTITIES = [
@@ -39,6 +40,7 @@ export const ALL_ENTITIES = [
 	SemanticModelCache,
 	SemanticModelMember,
 	SemanticModelRole,
+	SemanticModelEntity,
 	Story,
 	StoryPoint,
 	StoryWidget,

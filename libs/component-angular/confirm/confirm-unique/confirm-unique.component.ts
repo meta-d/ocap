@@ -11,6 +11,9 @@ import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { isString } from 'lodash-es'
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @Component({
   standalone: true,
   imports: [

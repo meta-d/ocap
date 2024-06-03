@@ -2,6 +2,8 @@ export interface ISelectOption<T = unknown> {
   key?: string
   /**
    * @deprecated use key
+   * 
+   * The value object of the option
    */
   value?: T
   /**

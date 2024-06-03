@@ -21,6 +21,9 @@ import { CountdownConfig, CountdownStatus, CountdownEvent, CountdownEventAction,
 import { CountdownTimer } from './countdown.timer';
 import { CountdownGlobalConfig } from './countdown.config';
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @Component({
   selector: 'countdown',
   template: `

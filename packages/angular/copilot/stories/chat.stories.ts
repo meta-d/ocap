@@ -6,11 +6,12 @@ import { provideAnimations } from '@angular/platform-browser/animations'
 import {
   AIOptions,
   AnnotatedFunction,
+  CopilotChatConversation,
   CopilotChatMessage,
   CopilotChatMessageRoleEnum,
   CopilotChatOptions,
-  CopilotChatResponseChoice,
   CopilotCommand,
+  CopilotContext,
   CopilotEngine,
   CopilotService
 } from '@metad/copilot'
@@ -18,12 +19,11 @@ import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { Meta, StoryObj, applicationConfig, argsToTemplate, moduleMetadata } from '@storybook/angular'
 import { nanoid } from 'nanoid'
 import { provideMarkdown } from 'ngx-markdown'
-import { Observable, of } from 'rxjs'
 import { provideLogger, provideTranslate, zhHansLanguage } from '../../mock/'
 import { NgmCopilotChatComponent } from '../chat/chat.component'
 import { injectCopilotCommand } from '../hooks/'
-import { NgmClientCopilotService, NgmCopilotEngineService } from '../services'
-import { NgmSBCopilotService } from './copilot.service'
+import { NgmCopilotEngineService, NgmCopilotService } from '../services'
+import { NgmStoryBookCopilotService } from './copilot.service'
 
 @Injectable()
 class StorybookCopilotEngine extends NgmCopilotEngineService {}
@@ -41,7 +41,7 @@ export class NgmSBCopilotUserComponent {
     name: 'c',
     description: 'Create a user',
     examples: [`Create a user name Tiven, age 18`],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `Create a user by prompt`
     },
     implementation: async (args) => {
@@ -58,17 +58,17 @@ export class NgmSBCopilotUserComponent {
     name: 's',
     description: 'Save the user',
     examples: [`Save a user name Tiven, age 18`],
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `Save a user by prompt`
-    },
+    }
   })
 
   #noExampleCommand = injectCopilotCommand({
     name: 'n',
     description: 'New a user',
-    systemPrompt: () => {
+    systemPrompt: async () => {
       return `New a user by prompt`
-    },
+    }
   })
 }
 
@@ -90,21 +90,12 @@ export default {
       imports: [CommonModule, NgmCopilotChatComponent, NgmSBCopilotUserComponent],
       providers: [
         {
-          provide: CopilotService,
-          useClass: NgmSBCopilotService
+          provide: NgmCopilotService,
+          useClass: NgmStoryBookCopilotService
         },
         {
           provide: NgmCopilotEngineService,
           useClass: StorybookCopilotEngine
-        },
-        {
-          provide: NgmClientCopilotService.CopilotConfigFactoryToken,
-          useFactory: () => () => {
-            return Promise.resolve({
-              enabled: true,
-              apiKey: 'st-xxxxxx'
-            })
-          }
         }
       ]
     })
@@ -152,13 +143,38 @@ export const CustomNgmCopilotEngine: Story = {
 }
 
 class StorybookCustomCopilotEngine implements CopilotEngine {
+  conversations(): CopilotChatConversation<CopilotChatMessage>[] {
+    throw new Error('Method not implemented.')
+  }
+  getCommandWithContext(name: string): { command: CopilotCommand<any[]>; context: CopilotContext } {
+    throw new Error('Method not implemented.')
+  }
+  updateConversations?(
+    fn: (conversations: CopilotChatConversation<CopilotChatMessage>[]) => CopilotChatConversation<CopilotChatMessage>[]
+  ): void {
+    throw new Error('Method not implemented.')
+  }
+  updateConversation?(
+    id: string,
+    fn: (conversation: CopilotChatConversation<CopilotChatMessage>) => CopilotChatConversation<CopilotChatMessage>
+  ): void {
+    throw new Error('Method not implemented.')
+  }
+  updateLastConversation?(
+    fn: (conversation: CopilotChatConversation<CopilotChatMessage>) => CopilotChatConversation<CopilotChatMessage>
+  ): void {
+    throw new Error('Method not implemented.')
+  }
+  updateAiOptions(options: Partial<AIOptions>): void {
+    throw new Error('Method not implemented.')
+  }
+  executeCommandSuggestion(
+    input: string,
+    options: { command: CopilotCommand<any[]>; context: CopilotContext }
+  ): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
   chat(prompt: string, options?: CopilotChatOptions): Promise<string | void | CopilotChatMessage> {
-    throw new Error('Method not implemented.')
-  }
-  updateConversations?(fn: (conversations: CopilotChatMessage[][]) => CopilotChatMessage[][]): void {
-    throw new Error('Method not implemented.')
-  }
-  updateLastConversation?(fn: (conversations: CopilotChatMessage[]) => CopilotChatMessage[]): void {
     throw new Error('Method not implemented.')
   }
   messages(): CopilotChatMessage[] {
@@ -188,13 +204,8 @@ class StorybookCustomCopilotEngine implements CopilotEngine {
   // conversations: Array<CopilotChatMessage[]> = []
   placeholder?: string
 
-  conversations(): Array<CopilotChatMessage[]> {
-    return []
-  }
-
   upsertMessage(message: CopilotChatMessage): void {}
-  clear() {
-  }
+  clear() {}
 }
 
 export const CustomEngine: Story = {

@@ -22,9 +22,10 @@ import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { combineLatest, merge, Subject } from 'rxjs';
 import { uniqBy } from 'lodash-es';
-import { ComponentEnum } from './constants';
-import { ThemesEnum, prefersColorScheme } from '@metad/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ComponentEnum } from './constants';
+import { ThemesEnum, prefersColorScheme } from '@metad/ocap-angular/core';
+import { BusinessRoleType } from '@metad/copilot';
 
 
 export interface AppState {
@@ -73,6 +74,10 @@ export interface PersistState {
 	 * Pin the story toolbar on the left side of designer
 	 */
 	pinStoryToolbar?: boolean
+	/**
+	 * Business Role of the copilot
+	 */
+	copilotRole?: string
 }
 
 export function createInitialAppState(): AppState {
@@ -187,8 +192,9 @@ export class Store {
 	subject = new Subject<ComponentEnum>();
 
 	// Signals
-	fixedLayoutSider = toSignal(this.persistQuery.select((state) => state.fixedLayoutSider))
+	readonly fixedLayoutSider = toSignal(this.persistQuery.select((state) => state.fixedLayoutSider))
 	readonly pinStoryToolbar = toSignal(this.persistQuery.select((state) => state.pinStoryToolbar))
+	readonly copilotRole = toSignal(this.persistQuery.select((state) => state.copilotRole))
 
 	/**
 	 * Observe any change to the component layout.
@@ -524,6 +530,12 @@ export class Store {
 	setPinStoryToolbar(value: boolean) {
 		this.persistStore.update({
 			pinStoryToolbar: value
+		})
+	}
+
+	setCopilotRole(role: string) {
+		this.persistStore.update({
+			copilotRole: role
 		})
 	}
 

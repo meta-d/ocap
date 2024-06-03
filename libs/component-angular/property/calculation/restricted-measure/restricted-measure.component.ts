@@ -5,9 +5,9 @@ import {
   FormsModule,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup
+  FormBuilder,
+  FormControl,
+  FormGroup
 } from '@angular/forms'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -19,7 +19,8 @@ import {
   EntityType,
   getEntityMeasures,
   isIndicatorMeasureProperty,
-  negate
+  negate,
+  PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NxCoreService } from '@metad/core'
@@ -27,7 +28,7 @@ import { sortBy } from 'lodash-es'
 import { BehaviorSubject, map } from 'rxjs'
 import { PropertyArrayComponent } from '../../property-array/property-array.component'
 import { PropertyCapacity } from '../../property-select/property-select.component'
-import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.component'
+import { NgmMeasureSelect1Component } from '../../measure-select/measure-select.component'
 
 @Component({
   standalone: true,
@@ -38,7 +39,7 @@ import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.c
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => RestrictedMeasureComponent)
+      useExisting: forwardRef(() => RestrictedMeasureComponent1)
     }
   ],
   imports: [
@@ -51,10 +52,10 @@ import { NgmMeasureSelectComponent } from '../../measure-select/measure-select.c
     OcapCoreModule,
     NgmSelectModule,
     PropertyArrayComponent,
-    NgmMeasureSelectComponent
+    NgmMeasureSelect1Component
   ]
 })
-export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor {
+export class RestrictedMeasureComponent1 implements OnInit, ControlValueAccessor {
   DISPLAY_BEHAVIOUR = DisplayBehaviour
   PropertyCapacity = PropertyCapacity
 
@@ -69,10 +70,10 @@ export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor 
   public readonly entityType$ = new BehaviorSubject<EntityType>(null)
   @Input() coreService: NxCoreService
 
-  formGroup: UntypedFormGroup
+  formGroup: FormGroup
 
   get measure() {
-    return this.formGroup.get('measure') as UntypedFormControl
+    return this.formGroup.get('measure') as FormControl
   }
 
   // 排除指标度量后的度量列表
@@ -82,11 +83,15 @@ export class RestrictedMeasureComponent implements OnInit, ControlValueAccessor 
     map((measures) => sortBy(measures, 'calculationType').reverse())
   )
 
+  filterMeasure: (measure: PropertyMeasure) => boolean = (measure) => measure.name !== this.formGroup?.value?.name
+
   private _onChange: any
-  constructor(private formBuilder: UntypedFormBuilder) {}
+
+  constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit(): void {
     this.formGroup = this.formBuilder.group({
+      name: null,
       measure: null,
       dimensions: null,
       enableConstantSelection: null

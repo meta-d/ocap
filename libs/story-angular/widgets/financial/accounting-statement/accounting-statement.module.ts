@@ -8,12 +8,12 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatTableModule } from '@angular/material/table'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { TranslateModule } from '@ngx-translate/core'
 import { ComponentCoreModule } from '@metad/components/core'
-import { NxSelectionModule } from '@metad/components/selection'
-import { PlaceholderAddComponent } from '@metad/story/story'
-import { AccountingStatementComponent } from './accounting-statement.component'
 import { DensityDirective } from '@metad/ocap-angular/core'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
+import { PlaceholderAddComponent } from '@metad/story/story'
+import { TranslateModule } from '@ngx-translate/core'
+import { AccountingStatementComponent } from './accounting-statement.component'
 
 @NgModule({
   imports: [
@@ -30,7 +30,7 @@ import { DensityDirective } from '@metad/ocap-angular/core'
 
     TranslateModule,
 
-    NxSelectionModule,
+    NgmSelectionModule,
     ComponentCoreModule,
     PlaceholderAddComponent,
     DensityDirective
@@ -39,5 +39,4 @@ import { DensityDirective } from '@metad/ocap-angular/core'
   declarations: [AccountingStatementComponent],
   providers: []
 })
-export class AccountingStatementModule {
-}
+export class AccountingStatementModule {}

@@ -1,5 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @Injectable()
 export class CountdownTimer {
   private fns: Array<((count: number) => number | void) | number> = [];

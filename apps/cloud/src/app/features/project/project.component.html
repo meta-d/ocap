@@ -337,7 +337,7 @@
       <ngm-tree-select appearance="fill" floatLabel="always" formControlName="parentId"
         label="{{ 'PAC.Project.ParentCollection' | translate: { Default: 'Parent Collection' } }}"
         displayBehaviour="descriptionOnly"
-        [treeNodes]="collections$ | async"
+        [treeNodes]="collections()"
       ></ngm-tree-select>
 
       <button [disabled]="form.invalid"></button>
@@ -374,7 +374,7 @@
 
     <div mat-dialog-content class="mat-dialog-content mat-typography w-96">
       <ngm-tree-select appearance="fill" floatLabel="always"
-          [treeNodes]="collections$ | async"
+          [treeNodes]="collections()"
           [label]="'PAC.Project.Collection' | translate: {Default: 'Collection'}"
           searchable
           placeholder="{{ 'PAC.Project.CollectionPlaceholder' | translate: {Default: 'Which collection should this go in'} }}?"

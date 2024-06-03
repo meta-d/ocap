@@ -407,8 +407,11 @@ export function buildDimensionContext(
   context.dimension = row
 
   const _hierarchy = property.hierarchies?.find((item) =>
-    row.hierarchy ? item.name === (row.hierarchy ?? '') : item.name === row.dimension
+    row.hierarchy ? item.name === row.hierarchy : item.name === row.dimension
   )
+  if (!_hierarchy) {
+    throw new Error(`未找到层级结构'${row.hierarchy || row.dimension}'`)
+  }
   if (context.hierarchy && context.hierarchy.name !== _hierarchy.name) {
     throw new Error(`不能同时查询不同层级结构`)
   }

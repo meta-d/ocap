@@ -15,7 +15,7 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
   public readonly id$ = this.select((state) => state.id)
   public readonly modeling$ = this.select((state) => state.modeling)
 
-  public readonly tables$ = this.modelService.selectDBTables$.pipe(
+  public readonly tables$ = this.modelService.selectDBTables().pipe(
     map((dbTables) => {
       const tables = dbTables
         .sort((a, b) => a.name.localeCompare(b.name))

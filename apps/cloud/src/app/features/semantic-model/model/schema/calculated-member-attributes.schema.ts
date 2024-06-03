@@ -11,20 +11,23 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
   
   readonly memberDimension$ = this.calculatedMember$.pipe(map((calculatedMember) => calculatedMember?.dimension))
 
-  public readonly runtimeDimension$ = this.entityService?.originalEntityType$.pipe(
+  readonly runtimeDimension$ = this.entityService?.originalEntityType$.pipe(
     map((entityType) => {
       return [
         {
+          key: null,
           value: null,
-          label: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
+          caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
         },
         {
+          key: C_MEASURES,
           value: C_MEASURES,
-          label: this.getTranslation('PAC.KEY_WORDS.Measures', { Default: 'Measures' })
+          caption: this.getTranslation('PAC.KEY_WORDS.Measures', { Default: 'Measures' })
         },
         ...getEntityDimensions(entityType).map((item) => ({
+          key: item.name,
           value: item.name,
-          label: item.caption
+          caption: item.caption
         }))
       ]
     })
@@ -36,16 +39,18 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
       if (dimension === C_MEASURES) {
         return [
           {
+            key: C_MEASURES,
             value: C_MEASURES,
-            label: await firstValueFrom(this.translate.get('PAC.KEY_WORDS.Measures', { Default: 'Measures' }))
+            caption: await firstValueFrom(this.translate.get('PAC.KEY_WORDS.Measures', { Default: 'Measures' }))
           }
         ]
       }
 
       const dimensions = getEntityDimensions(entityType).filter((item) => item.name === dimension)
       return compact(flatten(dimensions.map((dim) => dim.hierarchies))).map((property) => ({
+        key: property.name,
         value: property.name,
-        label: property.caption
+        caption: property.caption
       }))
     }),
     shareReplay(1)
@@ -132,6 +137,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                 className,
                 props: {
                   label: COMMON?.Dimension ?? 'Dimension',
+                  valueKey: 'key',
                   options: this.runtimeDimension$,
                   searchable: true,
                   appearance: 'standard'
@@ -149,6 +155,7 @@ export class CalculatedMemberAttributesSchema extends CubeSchemaService<Calculat
                 className,
                 props: {
                   label: COMMON?.Hierarchy ?? 'Hierarchy',
+                  valueKey: 'key',
                   options: this.rtHierarchies$,
                   searchable: true,
                   appearance: 'standard'

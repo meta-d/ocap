@@ -27,7 +27,7 @@ import {
   QueryOptions,
   Semantics
 } from '@metad/ocap-core'
-import { findIndex, flatten, groupBy, isEmpty, merge, negate, omit, padStart, uniq } from 'lodash-es'
+import { findIndex, flatten, groupBy, isEmpty, merge, negate, omit, padStart, uniq } from 'lodash'
 import { WithMemberType } from './calculation'
 import { flattenAdvancedFilter, mapMDXFilterToStatement, MDXHierarchyFilter, MDXProperty } from './filter'
 import { Ascendants, Descendants, DescendantsFlag, Distinct, Except, Members, MemberSet } from './functions'

@@ -59,7 +59,7 @@ class DragComponent {
 }
 
 const meta: Meta<NgmEntitySchemaComponent> = {
-  title: 'EntitySchema',
+  title: 'Entity/EntitySchema',
   component: NgmEntitySchemaComponent,
   decorators: [
     applicationConfig({

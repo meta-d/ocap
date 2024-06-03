@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
-import { PropertyCapacity } from '@metad/components/property'
-import { ControlType, NxCoreService } from '@metad/core'
+import { ControlType } from '@metad/core'
+import { NgmOcapCoreService } from '@metad/ocap-angular/core'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 import {
   FilterSelectionType,
   getEntityProperty,
@@ -193,27 +194,30 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
           }
         ]
       },
-      ...AccordionWrappers([
-        {
-          key: 'dataSettings',
-          label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
-          toggleable: false,
-          expanded: true,
-          fieldGroup: dataSettings.fieldGroup[0].fieldGroup
-        },
-        {
-          key: 'options',
-          label: i18nStoryWidgets?.InputControl?.Options ?? 'Options',
-          toggleable: false,
-          expanded: true,
-          fieldGroup: [
-            {
-              fieldGroupClassName: FORMLY_ROW,
-              fieldGroup: [...optionsFieldGroup]
-            }
-          ]
-        }
-      ], {expandedMulti: true})
+      ...AccordionWrappers(
+        [
+          {
+            key: 'dataSettings',
+            label: i18nStoryWidgets?.Common?.DATA_SETTINGS ?? 'Data Settings',
+            toggleable: false,
+            expanded: true,
+            fieldGroup: dataSettings.fieldGroup[0].fieldGroup
+          },
+          {
+            key: 'options',
+            label: i18nStoryWidgets?.InputControl?.Options ?? 'Options',
+            toggleable: false,
+            expanded: true,
+            fieldGroup: [
+              {
+                fieldGroupClassName: FORMLY_ROW,
+                fieldGroup: [...optionsFieldGroup]
+              }
+            ]
+          }
+        ],
+        { expandedMulti: true }
+      )
     ]
   }
 }
@@ -331,7 +335,7 @@ function ParameterSchema(property: ParameterProperty, className: string, I18N) {
   return fieldGroup
 }
 
-function dateSchema(coreService: NxCoreService, className: string, I18N, DateVariable) {
+function dateSchema(coreService: NgmOcapCoreService, className: string, I18N, DateVariable) {
   return [
     {
       className: FORMLY_W_1_2,

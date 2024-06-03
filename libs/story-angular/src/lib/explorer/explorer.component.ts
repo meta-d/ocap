@@ -25,13 +25,12 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatTabsModule } from '@angular/material/tabs'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
-import { PropertyCapacity, PropertyModule } from '@metad/components/property'
-import { CHARTS, NxChartType, ThemeService, getChartType, nonBlank } from '@metad/core'
+import { CHARTS, NxChartType, getChartType, nonBlank } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
-import { DisplayDensity, NgmDSCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { DisplayDensity, NgmDSCoreService, NgmThemeService, OcapCoreModule } from '@metad/ocap-angular/core'
+import { EntityCapacity, NgmEntityPropertyComponent, NgmEntitySchemaComponent, PropertyCapacity } from '@metad/ocap-angular/entity'
 import { NgmChartPropertyComponent, NgmChartSettingsComponent, NgmSchemaChartTypeComponent } from '@metad/story/widgets/analytical-card'
 import { NgmGridSettingsComponent } from '@metad/story/widgets/analytical-grid'
 import {
@@ -89,7 +88,6 @@ import { ExplainComponent, injectCalclatedMeasureCommand } from '@metad/story/st
     NgmMemberTreeComponent,
     AnalyticalCardModule,
     AnalyticalGridModule,
-    PropertyModule,
     ResizerModule,
     NgmEntityPropertyComponent,
     NgmSearchComponent,
@@ -115,7 +113,7 @@ export class StoryExplorerComponent {
   private readonly _dialog = inject(MatDialog)
   private readonly translateService = inject(TranslateService)
   readonly #storyService? = inject(NxStoryService, { optional: true })
-  readonly themeService = inject(ThemeService)
+  readonly themeService = inject(NgmThemeService)
 
   @Input()
   get data() {

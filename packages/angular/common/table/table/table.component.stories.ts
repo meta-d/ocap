@@ -8,7 +8,7 @@ import { applicationConfig, moduleMetadata, type Meta, type StoryObj } from '@st
 import { NgmTableComponent } from './table.component'
 
 const meta: Meta<NgmTableComponent> = {
-  title: 'Table',
+  title: 'Common/Table',
   component: NgmTableComponent,
   decorators: [
     applicationConfig({

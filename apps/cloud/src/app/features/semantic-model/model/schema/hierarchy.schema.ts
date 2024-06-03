@@ -283,13 +283,20 @@ export class HierarchySchemaService<T extends {hierarchy: PropertyHierarchy; dim
                 icon: 'view_column',
                 label: HIERARCHY?.PrimaryKey ?? 'Primary Key',
                 searchable: true,
+                valueKey: 'key',
                 options: this.table$.pipe(
                   switchMap((table) => this.modelService.selectOriginalEntityProperties(table)),
                   map((properties) => {
                     const columns = [
-                      { value: null, caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' }) }
+                      {
+                        key: null,
+                        caption: this.getTranslation('PAC.KEY_WORDS.None', { Default: 'None' })
+                      }
                     ]
-                    properties?.forEach((property) => columns.push({ value: property.name, caption: property.caption }))
+                    properties?.forEach((property) => columns.push({
+                      key: property.name,
+                      caption: property.caption
+                    }))
                     return columns
                   })
                 )

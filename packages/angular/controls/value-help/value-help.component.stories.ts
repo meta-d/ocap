@@ -10,13 +10,13 @@ import {
 } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, MemberSource, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, moduleMetadata } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { NgmValueHelpComponent } from './value-help.component'
 
 export default {
-  title: 'NgmValueHelpComponent',
+  title: 'Controls/ValueHelp',
   component: NgmValueHelpComponent,
   decorators: [
     moduleMetadata({
@@ -71,38 +71,38 @@ export default {
   ]
 } as Meta<NgmValueHelpComponent>
 
-const Template: Story<NgmValueHelpComponent> = (args: NgmValueHelpComponent) => ({
-  props: args
-})
+// const Template: Story<NgmValueHelpComponent> = (args: NgmValueHelpComponent) => ({
+//   props: args
+// })
 
-export const Primary = Template.bind({})
-Primary.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder'
-  },
-  dimension: {
-    dimension: '[Product]'
-  },
-  options: {
-    searchable: true
-  },
-}
+// export const Primary = Template.bind({})
+// Primary.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder'
+//   },
+//   dimension: {
+//     dimension: '[Product]'
+//   },
+//   options: {
+//     searchable: true
+//   },
+// }
 
-export const MemberSourceFromDimension = Template.bind({})
-MemberSourceFromDimension.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder'
-  },
-  dimension: {
-    dimension: '[Product]'
-  },
-  options: {
-    memberSource: MemberSource.DIMENSION,
-    searchable: true
-  },
-  appearance: {
-    displayDensity: DisplayDensity.cosy
-  }
-}
+// export const MemberSourceFromDimension = Template.bind({})
+// MemberSourceFromDimension.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder'
+//   },
+//   dimension: {
+//     dimension: '[Product]'
+//   },
+//   options: {
+//     memberSource: MemberSource.DIMENSION,
+//     searchable: true
+//   },
+//   appearance: {
+//     displayDensity: DisplayDensity.cosy
+//   }
+// }

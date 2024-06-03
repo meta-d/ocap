@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject, isSignal, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -11,6 +11,7 @@ import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { FieldType, FormlyModule } from '@ngx-formly/core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { isString } from 'lodash-es'
 import { EMPTY, Observable, catchError, startWith } from 'rxjs'
 
 /**
@@ -55,7 +56,10 @@ export class PACFormlySelectComponent extends FieldType implements OnInit {
 
   #validatorEffectRef = effect(
     () => {
-      if (nonNullable(this.value()) && nonNullable(this.selectOptions()) && !this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
+      const error = isSignal(this.props.error) ? this.props.error() : null
+      if (isString(error)) {
+        this.error.set(error)
+      } else if (nonNullable(this.value()) && nonNullable(this.selectOptions()) && !this.selectOptions().find((option) => option[this.props?.valueKey ?? 'value'] === this.value())) {
         this.error.set(
           this.#translate.instant('FORMLY.COMMON.NotFoundValue', { Default: 'Not found value: ' }) + this.value()
         )

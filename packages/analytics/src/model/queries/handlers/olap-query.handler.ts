@@ -35,8 +35,8 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 
 		// Access controls
 		// const currentUserId = RequestContext.currentUserId()
-		const currentUserId = user.id
-		const tenantId = user.tenantId
+		const currentUserId = user?.id
+		const tenantId = user?.tenantId
 		const roleNames = model.roles
 			.filter((role) => role.users.find((user) => user.id === currentUserId))
 			.map((role) => role.name)

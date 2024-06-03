@@ -18,7 +18,7 @@ import {
   CalculatedMember,
   pick,
 } from '@metad/ocap-core'
-import { flatten, includes, isArray, isNil } from 'lodash-es'
+import { flatten, includes, isArray, isNil } from 'lodash'
 import { WithMemberType } from './calculation'
 import {
   AND,

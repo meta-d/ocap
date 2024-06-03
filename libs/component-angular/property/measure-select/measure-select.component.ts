@@ -1,29 +1,26 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, ElementRef, forwardRef, inject, Input, signal, ViewContainerRef } from '@angular/core'
+import { Component, computed, forwardRef, inject, input, Input, ViewContainerRef } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { CanColor, CanDisable, mixinColor, mixinDisabled, mixinDisableRipple } from '@angular/material/core'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { nonNullable, NxCoreService } from '@metad/core'
 import { NgmSelectModule } from '@metad/ocap-angular/common'
 import { DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
+import { NgmMeasureSelectComponent } from '@metad/ocap-angular/entity'
 import {
   CalculationProperty,
   DataSettings,
-  getEntityMeasures,
   getEntityProperty,
   isCalculationProperty,
   isEntitySet,
-  isIndicatorMeasureProperty
+  isIndicatorMeasureProperty,
+  PropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { nonNullable, NxCoreService } from '@metad/core'
 import { distinctUntilChanged, filter, firstValueFrom, map, switchMap } from 'rxjs'
-import { CalculationEditorComponent } from '../calculation'
-import { orderBy } from 'lodash-es'
-import { MatTooltipModule } from '@angular/material/tooltip'
 
 @Component({
   standalone: true,
@@ -35,10 +32,10 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     MatIconModule,
     MatTooltipModule,
     NgmSelectModule,
-    NgmEntityPropertyComponent,
-    DensityDirective
+    DensityDirective,
+    NgmMeasureSelectComponent
   ],
-  selector: 'ngm-measure-select',
+  selector: 'ngm-measure-select1',
   templateUrl: './measure-select.component.html',
   styles: [],
   inputs: ['color', 'disabled'],
@@ -49,22 +46,11 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => NgmMeasureSelectComponent)
+      useExisting: forwardRef(() => NgmMeasureSelect1Component)
     }
   ]
 })
-export class NgmMeasureSelectComponent
-  extends mixinColor(
-    mixinDisabled(
-      mixinDisableRipple(
-        class {
-          constructor(public _elementRef: ElementRef) {}
-        }
-      )
-    )
-  )
-  implements ControlValueAccessor, CanDisable, CanColor
-{
+export class NgmMeasureSelect1Component implements ControlValueAccessor {
   private readonly dsCoreService = inject(NgmDSCoreService)
   private readonly coreService = inject(NxCoreService)
   private readonly _dialog = inject(MatDialog)
@@ -72,19 +58,15 @@ export class NgmMeasureSelectComponent
 
   @Input() label: string
   @Input() placeholder: string
-  @Input() get dataSettings(): DataSettings {
-    return this._dataSettings()
-  }
-  set dataSettings(value: DataSettings) {
-    this._dataSettings.set(value)
-  }
-  private readonly _dataSettings = signal<DataSettings>(null)
+
+  readonly dataSettings = input<DataSettings>(null)
+  readonly filter = input<(param: PropertyMeasure) => boolean>(null)
 
   formControl = new FormControl<string>(null)
 
   private readonly value = toSignal(this.formControl.valueChanges)
   private readonly entityType = toSignal(
-    toObservable(this._dataSettings).pipe(
+    toObservable(this.dataSettings).pipe(
       filter(nonNullable),
       switchMap(({ dataSource, entitySet }) => this.dsCoreService.selectEntitySet(dataSource, entitySet)),
       filter(isEntitySet),
@@ -92,25 +74,6 @@ export class NgmMeasureSelectComponent
     )
   )
 
-  public readonly measureOptions = computed(() => {
-    const measures = this.entityType()
-      ? getEntityMeasures(this.entityType())
-      : []
-
-    return [
-      {
-        name: null,
-        caption: '',
-      },
-      ...orderBy(measures.filter((measure) => !isCalculationProperty(measure)), ['name']),
-      ...orderBy(measures.filter((measure) => isCalculationProperty(measure) && !isIndicatorMeasureProperty(measure)), ['calculationType', 'name']),
-      ...orderBy(measures.filter((measure) => isIndicatorMeasureProperty(measure)), ['name'])
-    ].map((measure) => ({
-      key: measure.name,
-      caption: measure.caption,
-      value: measure
-    }))
-  })
   private readonly syntax = computed(() => this.entityType()?.syntax)
 
   private readonly property = computed(() => {
@@ -137,15 +100,14 @@ export class NgmMeasureSelectComponent
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
     isDisabled ? this.formControl.disable() : this.formControl.enable()
   }
 
   async openCalculationMeasure() {
     const data = {
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       entityType: this.entityType(),
-      syntax: this.syntax,
+      syntax: this.syntax(),
       coreService: this.coreService,
       dsCoreService: this.dsCoreService,
       value: null
@@ -163,12 +125,12 @@ export class NgmMeasureSelectComponent
       // 发送给 DSCoreService 存储到元信息增强里
       // this.coreService.storyUpdateEvent$.next({
       //   type: 'Calculation',
-      //   dataSettings: this.dataSettings,
+      //   dataSettings: this.dataSettings(),
       //   property
       // })
       this.dsCoreService.updateStory({
         type: 'Calculation',
-        dataSettings: this.dataSettings,
+        dataSettings: this.dataSettings(),
         property
       })
       // 然后将新计算度量名称赋值给当前控件
@@ -178,9 +140,9 @@ export class NgmMeasureSelectComponent
 
   async editCalculationMeasure() {
     const data = {
-      dataSettings: this.dataSettings,
+      dataSettings: this.dataSettings(),
       entityType: this.entityType(),
-      syntax: this.syntax,
+      syntax: this.syntax(),
       coreService: this.coreService,
       dsCoreService: this.dsCoreService,
       value: this.property()
@@ -198,12 +160,12 @@ export class NgmMeasureSelectComponent
       // 发送给 DSCoreService 存储到元信息增强里
       // this.coreService.storyUpdateEvent$.next({
       //   type: 'Calculation',
-      //   dataSettings: this.dataSettings,
+      //   dataSettings: this.dataSettings(),
       //   property
       // })
       this.dsCoreService.updateStory({
         type: 'Calculation',
-        dataSettings: this.dataSettings,
+        dataSettings: this.dataSettings(),
         property
       })
       // 然后将新计算度量名称赋值给当前控件

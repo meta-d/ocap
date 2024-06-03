@@ -5,7 +5,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { DensityDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import {
   AggregationRole,
-  CalculationType,
   DisplayBehaviour,
   EntityProperty,
   PropertyAttributes,

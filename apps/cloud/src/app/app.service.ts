@@ -6,9 +6,8 @@ import { combineLatest } from 'rxjs'
 import { map, shareReplay, startWith } from 'rxjs/operators'
 import { MenuCatalog, Store } from './@core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { prefersColorScheme, ThemesEnum } from '@metad/core'
-import { screenfull } from './@core/theme/'
 import { TranslateService } from '@ngx-translate/core'
+import { prefersColorScheme, ThemesEnum } from '@metad/ocap-angular/core'
 
 export interface PACAppState {
   insight: boolean

@@ -4,10 +4,10 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 
 export default {
-  title: 'MaterialTabs',
+  title: 'Common/MaterialTabs',
   component: MatTabGroup,
   decorators: [
     moduleMetadata({
@@ -16,22 +16,13 @@ export default {
   ]
 } as Meta<MatTabGroup>
 
-const Template: Story<any> = (args: any) => ({
-  props: args,
-  template: `
-<mat-tab-group class="ngm-tab-group-desktop">
-  <mat-tab label="First"> Content 1 </mat-tab>
-  <mat-tab label="Second"> Content 2 </mat-tab>
-  <mat-tab label="Third"> Content 3 </mat-tab>
-</mat-tab-group>
-  `,
-  styles: [``]
-})
 
-export const Primary = Template.bind({})
-Primary.args = {
-  barPosition: 'right'
-}
+type Story = StoryObj<MatTabGroup>
+
+export const Primary: Story = {
+  args: {
+  },
+};
 
 export const CloseButton = ((args: any) => ({
   props: args,

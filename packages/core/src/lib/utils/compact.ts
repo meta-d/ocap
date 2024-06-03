@@ -1,3 +1,3 @@
-export function compact(arr: any[]) {
+export function compact<T>(arr: T[]) {
   return arr?.filter(Boolean)
 }

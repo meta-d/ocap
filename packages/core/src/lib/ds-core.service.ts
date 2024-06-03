@@ -1,22 +1,14 @@
 import { ComponentStore } from '@metad/store'
-import { combineLatest, filter, map, Observable, shareReplay, Subject, switchMap } from 'rxjs'
+import { combineLatest, filter, map, Observable, shareReplay, switchMap } from 'rxjs'
 import { Agent, AgentType, DSCacheService } from './agent'
-import { DataSettings } from './data-settings'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
+import { EntitySet, isEntitySet } from './models'
 import { TimeGranularity } from './models/index'
-import { CalculationProperty, EntitySet, isEntitySet, ParameterProperty } from './models'
 
 export interface DSState {
   dataSources: DataSourceOptions[]
   today?: Date
   timeGranularity?: TimeGranularity
-}
-
-export interface StoryUpdateEvent {
-  type: 'Parameter' | 'Calculation'
-  dataSettings: DataSettings
-  parameter?: ParameterProperty
-  property?: CalculationProperty
 }
 
 export class DSCoreService extends ComponentStore<DSState> {
@@ -26,12 +18,6 @@ export class DSCoreService extends ComponentStore<DSState> {
   )
 
   private _dataSources = new Map<string, Observable<DataSource>>()
-
-  /**
-   * 接收各组件创建修改计算字段的事件, 发给如 Story 组件进行实际更新
-   * 暂时使用这种间接的方式
-   */
-  readonly #storyUpdateEvent$ = new Subject<StoryUpdateEvent>()
 
   constructor(
     public agents: Array<Agent>,
@@ -67,7 +53,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     if (!this._dataSources.get(name)) {
       this._dataSources.set(
         name,
-        this.select((state) => state.dataSources?.find((item) => item.name === name)).pipe(
+        this.select((state) => state.dataSources?.find((item) => item.key === name || item.name === name)).pipe(
           filter((value) => !!value),
           switchMap(async (options) => {
             const provider = this.factories.find(({ type }) => type === options?.type)
@@ -117,13 +103,5 @@ export class DSCoreService extends ComponentStore<DSState> {
 
   getToday() {
     return this.get((state) => ({ today: state.today, timeGranularity: state.timeGranularity }))
-  }
-
-  updateStory(event: StoryUpdateEvent) {
-    this.#storyUpdateEvent$.next(event)
-  }
-
-  onStoryUpdate() {
-    return this.#storyUpdateEvent$.asObservable()
   }
 }

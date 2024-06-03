@@ -26,9 +26,9 @@ import { Store, createStore, select, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
-import { ISemanticModel, MDX, ToastrService, getSQLSourceName, registerModel, uid10, uuid } from '../../../@core'
+import { ISemanticModel, MDX, ToastrService, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
 import { dirtyCheckWith, write } from '../store'
 import {
   MODEL_TYPE,
@@ -127,7 +127,8 @@ export class SemanticModelService {
       }
       // todo 其他情况
       return MODEL_TYPE.SQL
-    })
+    }),
+    distinctUntilChanged()
   )
 
   public readonly isWasm$ = this.model$.pipe(map((model) => model?.agentType === AgentType.Wasm))
@@ -185,10 +186,10 @@ export class SemanticModelService {
     shareReplay(1)
   )
 
-  public readonly selectDBTables$: Observable<DBTable[]> = this.originalDataSource$.pipe(
-    filter(nonNullable),
-    switchMap((dataSource) => dataSource.discoverDBTables())
-  )
+  // public readonly selectDBTables$: Observable<DBTable[]> = this.originalDataSource$.pipe(
+  //   filter(nonNullable),
+  //   switchMap((dataSource) => dataSource.discoverDBTables())
+  // )
 
   // private _saved$ = new Subject<void>()
   // public readonly saved$ = this._saved$.asObservable()
@@ -222,7 +223,7 @@ export class SemanticModelService {
         filter(nonNullable),
         switchMap((key) => this.dsCoreService.getDataSource(key)),
         // 先清 DataSource 缓存再进行后续
-        switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
+        // switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.dataSource$)
@@ -233,13 +234,18 @@ export class SemanticModelService {
         filter((model) => nonNullable(model.key)),
         distinctUntilChanged((a, b) => a.key === b.key),
         switchMap((model) => {
-          if (model.type === 'XMLA' && model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
-            return this.dsCoreService.getDataSource(getSQLSourceName(getSemanticModelKey(model)))
+          const modelKey = getSemanticModelKey(model)
+          if (model.type === 'XMLA') {
+            if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
+              return this.dsCoreService.getDataSource(getSQLSourceName(modelKey))
+            } else {
+              return this.dsCoreService.getDataSource(getXmlaSourceName(modelKey))
+            }
           }
-          return this.dsCoreService.getDataSource(getSemanticModelKey(model))
+          return this.dsCoreService.getDataSource(modelKey)
         }),
         // 先清 DataSource 缓存再进行后续
-        switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
+        // switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.originalDataSource$)
@@ -249,9 +255,9 @@ export class SemanticModelService {
       this.registerModel()
     })
 
-    this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
-      dataSource?.clearCache()
-    })
+    // this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
+    //   dataSource?.clearCache()
+    // })
   }
 
   initModel(model: ISemanticModel) {
@@ -619,6 +625,14 @@ export class SemanticModelService {
   | Selectors
   |--------------------------------------------------------------------------
   */
+
+  selectDBTables(refresh = false) {
+    return this.originalDataSource$.pipe(
+      filter(nonNullable),
+      switchMap((dataSource) => dataSource.discoverDBTables(refresh))
+    )
+  }
+
   selectEntitySet(cubeName: string) {
     return this.dataSource$.pipe(
       filter(nonNullable),

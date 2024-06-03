@@ -3,6 +3,7 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import { matchValidator } from '@metad/cloud/auth'
 import { AuthService } from '@metad/cloud/state'
 import { ITag, IUser } from '@metad/contracts'
+import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/formly'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { firstValueFrom, map } from 'rxjs'
 import { LANGUAGES, RoleService, Store } from '../../../../@core'
@@ -56,44 +57,44 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
   registerOnChange(fn: any): void {
     this.onChange = fn
   }
-  registerOnTouched(fn: any): void {}
-  setDisabledState?(isDisabled: boolean): void {}
+  registerOnTouched(fn: any): void { }
+  setDisabledState?(isDisabled: boolean): void { }
 
   ngOnInit() {
     const TRANSLATES = this.getTranslation('PAC.SHARED.USER_BASIC')
 
     const password = this.password
       ? [
-          {
-            className: 'ngm-formly__col ngm-formly__col-6',
-            key: 'password',
-            type: 'input',
-            props: {
-              label: TRANSLATES?.Passwrod ?? 'Passwrod',
-              placeholder: '',
-              type: 'password',
-              appearance: 'fill'
-            }
-          },
-          {
-            className: 'ngm-formly__col ngm-formly__col-6',
-            key: 'confirmPassword',
-            type: 'input',
-            props: {
-              label: TRANSLATES?.RepeatPasswrod ?? 'Repeat Passwrod',
-              placeholder: '',
-              type: 'password',
-              appearance: 'fill'
-            }
+        {
+          className: FORMLY_W_1_2,
+          key: 'password',
+          type: 'input',
+          props: {
+            label: TRANSLATES?.Passwrod ?? 'Passwrod',
+            placeholder: '',
+            type: 'password',
+            appearance: 'fill'
           }
-        ]
+        },
+        {
+          className: FORMLY_W_1_2,
+          key: 'confirmPassword',
+          type: 'input',
+          props: {
+            label: TRANSLATES?.RepeatPasswrod ?? 'Repeat Passwrod',
+            placeholder: '',
+            type: 'password',
+            appearance: 'fill'
+          }
+        }
+      ]
       : []
     this.fields = [
       {
-        fieldGroupClassName: 'ngm-formly__row',
+        fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'firstName',
             type: 'input',
             props: {
@@ -103,7 +104,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'lastName',
             type: 'input',
             props: {
@@ -114,7 +115,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           },
 
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'username',
             type: 'input',
             props: {
@@ -124,7 +125,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'email',
             type: 'input',
             props: {
@@ -136,7 +137,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
           },
           ...password,
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'roleId',
             type: 'select',
             props: {
@@ -151,7 +152,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
             }
           },
           {
-            className: 'ngm-formly__col ngm-formly__col-6',
+            className: FORMLY_W_1_2,
             key: 'preferredLanguage',
             type: 'select',
             props: {
@@ -167,7 +168,7 @@ export class BasicInfoFormComponent extends TranslationBaseComponent implements 
         }
       },
       {
-        className: 'ngm-formly__col ngm-formly__col-6',
+        className: FORMLY_W_1_2,
         key: 'imageUrl',
         type: 'input',
         props: {

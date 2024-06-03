@@ -17,10 +17,10 @@ import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { convertIndicatorResult, Indicator, IndicatorsService, Store } from '@metad/cloud/state'
 import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { IsDirty, IsNilPipe, nonBlank, nonNullable, PERIODS, saveAsYaml } from '@metad/core'
+import { IsDirty, IsNilPipe, nonBlank, nonNullable, saveAsYaml } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
+import { AppearanceDirective, ButtonGroupDirective, DensityDirective, PERIODS } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
   calcRange,
@@ -271,10 +271,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   constructor() {
     super()
-
-    effect(() => {
-      console.log(this.dataSettings())
-    })
   }
 
   isDirty(): boolean {

@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
-import { NxEditorModule } from '@metad/components/editor'
 import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
+import { NgmMDXEditorComponent } from '@metad/ocap-angular/mdx'
+import { NgmSQLEditorComponent } from '@metad/ocap-angular/sql'
 import { MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { QueryLabRoutingModule } from './query-lab-routing.module'
@@ -17,7 +18,6 @@ import { QueryComponent } from './query/query.component'
     MaterialModule,
     ReactiveFormsModule,
 
-    NxEditorModule,
     NgmTableComponent,
     OcapCoreModule,
     ResizerModule,
@@ -26,6 +26,8 @@ import { QueryComponent } from './query/query.component'
     NgxPopperjsModule,
     NgmCopilotChatComponent,
     NgmCommonModule,
+    NgmMDXEditorComponent,
+    NgmSQLEditorComponent,
 
     QueryLabRoutingModule
   ],

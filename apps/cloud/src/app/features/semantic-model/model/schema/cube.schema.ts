@@ -167,6 +167,7 @@ export class CubeSchemaService<T = Cube> extends EntitySchemaService<CubeSchemaS
               type: 'ngm-select',
               props: {
                 label: CUBE?.DefaultMeasure ?? 'Default Measure',
+                valueKey: 'key',
                 options: this.measures$,
                 searchable: true,
                 // required: true
@@ -249,6 +250,7 @@ export function Tables(COMMON, tables$: Observable<ISelectOption[]>) {
           props: {
             label: COMMON?.Table ?? 'Table',
             searchable: true,
+            valueKey: 'key',
             options: tables$
           }
         }

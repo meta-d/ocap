@@ -5,10 +5,9 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from '@angular/router'
 import { zodToAnnotations } from '@metad/copilot'
-import { calcEntityTypePrompt, makeCubePrompt, nonBlank, routeAnimations } from '@metad/core'
+import { nonBlank, routeAnimations } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
-import { C_MEASURES, CalculatedMember } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { TranslateModule } from '@ngx-translate/core'
@@ -21,7 +20,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { z } from 'zod'
 import { AppService } from '../../../../app.service'
-import { CalculatedMeasureSchema } from '../copilot'
+import { injectCalculationCommand } from '../copilot'
 import { ModelComponent } from '../model.component'
 import { SemanticModelService } from '../model.service'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
@@ -134,57 +133,7 @@ The cube is`
     ]
   })
 
-  #calculatedMeasureCommand = injectCopilotCommand({
-    name: 'calc',
-    description: 'Create a new calculated measure',
-    systemPrompt: async () => {
-      let prompt = `Create a new MDX calculated measure for the cube based on the prompt.`
-      if (this.entityType()) {
-        prompt += `The cube is: 
-\`\`\`
-${calcEntityTypePrompt(this.entityType())}
-\`\`\`
-`
-      } else {
-        prompt += `The cube is:
-\`\`\`
-${makeCubePrompt(this.cube())}
-\`\`\`
-`
-      }
-
-      return prompt
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create-calculated-measure',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'measure',
-            type: 'object', // Add or change types according to your needs.
-            description: 'The defination of calculated measure',
-            required: true,
-            properties: zodToAnnotations(CalculatedMeasureSchema)
-          }
-        ],
-        implementation: async (cm: CalculatedMember) => {
-          this.#logger.debug(`Create a new calculated measure '${cm.name}' with formula '${cm.formula}'`)
-          const key = cm.__id__ ?? nanoid()
-          this.entityService.addCalculatedMeasure({
-            ...cm,
-            dimension: C_MEASURES,
-            visible: true,
-            __id__: key
-          })
-
-          this.entityService.navigateCalculation(key)
-
-          return `✅`
-        }
-      })
-    ]
-  })
+  #calculatedMeasureCommand = injectCalculationCommand(this.cube, this.entityType)
 
   /**
   |--------------------------------------------------------------------------
@@ -199,14 +148,16 @@ ${makeCubePrompt(this.cube())}
   /**
    * When selected property first time to open the attributes panel
    */
-  readonly #selectedPropertySub = toObservable(this.entityService.selectedProperty).pipe(
-    map((selected) => !!selected),
-    distinctUntilChanged(),
-    filter(Boolean),
-    takeUntilDestroyed()
-  ).subscribe((selected) => {
-    this.detailsOpen.set(true)
-  })
+  readonly #selectedPropertySub = toObservable(this.entityService.selectedProperty)
+    .pipe(
+      map((selected) => !!selected),
+      distinctUntilChanged(),
+      filter(Boolean),
+      takeUntilDestroyed()
+    )
+    .subscribe((selected) => {
+      this.detailsOpen.set(true)
+    })
 
   /**
    * 监听当前实体类型变化, 将错误信息打印出来;

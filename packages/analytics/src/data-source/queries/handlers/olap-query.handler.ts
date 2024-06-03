@@ -40,7 +40,7 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 		}
 
 		// Determine the user authentication
-		dataSource = prepareDataSource(dataSource, user.id)
+		dataSource = prepareDataSource(dataSource, user?.id)
 		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
 		try {
 			const result: AxiosResponse<any> = (await runner.runQuery(body, {

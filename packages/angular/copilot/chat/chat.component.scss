@@ -9,7 +9,7 @@
   --subtle-purple: color-mix(in srgb, var(--bright-blue) 5%, white 10%);
   --full-contrast: white;
   --bright-blue: color-mix(in srgb, oklch(51.01% 0.274 263.83), var(--full-contrast) 60%);
-  @apply flex flex-col relative text-sm;
+  @apply flex flex-col relative;
 }
 
 .copilot-code-container {
@@ -47,7 +47,7 @@
 }
 
 .ngm-copilot__resubmit {
-  @apply my-2 rounded-full;
+  @apply rounded-full;
 }
 
 .mat-mdc-input-element {
@@ -56,10 +56,22 @@
 
 .ngm-colpilot__active {
   @apply shadow-lg dark:shadow-neutral-800;
+  .ngm-colpilot__words {
+    @apply z-0;
+  }
 }
 
 .ngm-copilot-chat__message-content {
-  @apply rounded-lg max-w-full py-2 px-4 overflow-auto;
+  @apply rounded-lg max-w-full py-2 px-4;
+}
+.ngm-copilot-chat__message-editing {
+  .ngm-copilot-chat__message-content {
+    @apply self-stretch;
+  }
+  .message-edit-button {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
 .ngm-copilot__user-message {
@@ -74,6 +86,10 @@
   stroke-width: 1.5;
   height: 18px;
   width: 18px;
+}
+
+.ngm-colpilot__input-wrapper {
+  
 }
 
 :host::ng-deep {
@@ -153,6 +169,37 @@
       width: 100%;
       display: inline-block;
     }
+
+    h1:first-child {
+      margin-top: 0;
+    }
+    h1 {
+      font-size: 2.25em;
+    }
+
+    h2 {
+      font-weight: 600;
+      font-size: 1.5em;
+    }
+
+    h3 {
+      font-weight: 600;
+      font-size: 1.2em;
+    }
+
+    h4 {
+      font-weight: 600;
+    }
+
+    ol, ul, menu {
+      list-style: auto;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 1.625em;
+      line-height: 1;
+    }
   }
 
   // popper
@@ -165,6 +212,25 @@
   .ngm-copilot-chat__autocomplete-panel.ngm-density__compact {
     .mdc-list-item {
       @apply pl-2;
+    }
+  }
+
+  .ngm-menu__copilot-context-popper {
+    position: relative;
+    width: 300px;
+    max-width: 300px;
+    min-height: 200px;
+    .cdk-virtual-scroll-viewport {
+      overflow-x: hidden;
+    }
+    .cdk-virtual-scroll-content-wrapper {
+      max-width: 100%;
+    }
+  }
+
+  .ngm-copilot-chat__roles.mdc-evolution-chip-set {
+    .mdc-evolution-chip-set__chips {
+      @apply justify-center;
     }
   }
 }

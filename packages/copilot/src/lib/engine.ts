@@ -1,6 +1,6 @@
-import { CopilotCommand } from './command'
+import { CopilotCommand, CopilotContext } from './command'
 import { CopilotService } from './copilot'
-import { AIOptions, AnnotatedFunction, CopilotChatMessage } from './types'
+import { AIOptions, CopilotChatMessage } from './types'
 
 export type CopilotChatOptions = {
   command?: string
@@ -9,12 +9,20 @@ export type CopilotChatOptions = {
   abortController?: AbortController
   assistantMessageId?: string
   conversationId?: string
+  context?: CopilotContext
 }
 
+/**
+ * Chat conversation
+ */
 export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMessage> = {
   id: string
   messages: T[]
   type: 'free' | 'command'
+  /**
+   * Command of this conversation
+   */
+  command: string
 }
 
 /**
@@ -36,7 +44,7 @@ export interface CopilotEngine {
    */
   aiOptions: AIOptions
   /**
-   * System prompt
+   * @deprecated use system prompt of command instead
    */
   systemPrompt?: string
   /**
@@ -61,17 +69,14 @@ export interface CopilotEngine {
    */
   dropCopilot?: (event) => void
 
-  setEntryPoint?: (id: string, entryPoint: AnnotatedFunction<any[]>) => void
-  removeEntryPoint?: (id: string) => void
-  registerCommand?(area: string, command: CopilotCommand): void
-  unregisterCommand?(area: string, name: string): void
-
   /**
    * Get all commands in this copilot engine
    *
    * @returns CopilotCommand[]
    */
   commands?: () => CopilotCommand[]
+
+  getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
 
   /**
    * Update or insert the message into conversations
@@ -101,12 +106,12 @@ export interface CopilotEngine {
 
   /**
    * Update conversation by id
-   * 
+   *
    * @param id conversation id
    * @param fn update function
    */
   updateConversation?(id: string, fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
-  
+
   /**
    * Update the last conversation messages
    * @param fn
@@ -114,4 +119,12 @@ export interface CopilotEngine {
   updateLastConversation?(fn: (conversation: CopilotChatConversation) => CopilotChatConversation): void
 
   updateAiOptions(options: Partial<AIOptions>): void
+
+  /**
+   * Execute command suggestion completion request
+   * 
+   * @param input 
+   * @param options 
+   */
+  executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext}): Promise<string>
 }

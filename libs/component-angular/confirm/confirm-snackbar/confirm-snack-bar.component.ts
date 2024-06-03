@@ -11,7 +11,9 @@ import { MatSnackBarRef, MAT_SNACK_BAR_DATA } from '@angular/material/snack-bar'
     hasAction: boolean;
   }
 
-  
+ /**
+ * @deprecated use `@metad/ocap-angular/common`
+ */ 
 @Component({
     selector: 'ngm-confirm-snackbar',
     template: `<span class="flex-1 flex">{{data.message}}</span>

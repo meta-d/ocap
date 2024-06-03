@@ -58,6 +58,7 @@ import { StoryDetailsComponent } from '../story-details/story-details.component'
 import { DeviceOrientation, DeviceZooms, EmulatedDevices, StoryScales, downloadStory } from '../types'
 import { StoryToolbarService } from './toolbar.service'
 import { COMPONENTS, PAGES } from './types'
+import { ActivatedRoute, Router } from '@angular/router'
 
 
 @Component({
@@ -127,6 +128,8 @@ export class StoryToolbarComponent implements OnInit {
   private readonly _elRef = inject(ElementRef)
   public toolbarService = inject(StoryToolbarService)
   readonly #translate = inject(TranslateService)
+  readonly router = inject(Router)
+  readonly route = inject(ActivatedRoute)
   private _dialog = inject(MatDialog)
   private _viewContainerRef = inject(ViewContainerRef)
   private _widgetComponents?: Array<StoryWidgetComponentProvider> = inject(STORY_WIDGET_COMPONENT, { optional: true })
@@ -178,8 +181,6 @@ export class StoryToolbarComponent implements OnInit {
 
   public readonly isMobile$ = this.storyService.isMobile$
 
-  // public readonly storyOptions = toSignal(this.storyService.storyOptions$)
-  // public readonly scale = computed(() => this.storyOptions()?.scale ?? 100)
   readonly currentPage = this.storyService.currentPageState
   readonly scale = computed(() => this.currentPage()?.scale ?? 100)
 
@@ -416,15 +417,17 @@ export class StoryToolbarComponent implements OnInit {
     }
   }
 
-  async openCalculations() {
-    const result = await firstValueFrom(
-      this._dialog
-        .open(ParametersComponent, {
-          viewContainerRef: this._viewContainerRef,
-          panelClass: 'medium',
-        })
-        .afterClosed()
-    )
+  openCalculations() {
+    // const result = await firstValueFrom(
+    //   this._dialog
+    //     .open(ParametersComponent, {
+    //       viewContainerRef: this._viewContainerRef,
+    //       panelClass: 'medium',
+    //     })
+    //     .afterClosed()
+    // )
+
+    this.router.navigate(['calculations'], { relativeTo: this.route })
   }
 
   async saveAsTemplate() {

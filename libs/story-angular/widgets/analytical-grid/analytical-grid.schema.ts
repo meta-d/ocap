@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core'
 import { DataSettings, EntityType } from '@metad/ocap-core'
-import { PropertyCapacity } from '@metad/components/property'
 import { ColorPalettes } from '@metad/core'
-import { PropertyCapacity as FormlyPropertyCapacity } from '@metad/components/property'
 import {
   AccordionWrappers,
   DataSettingsSchemaService,
@@ -15,6 +13,7 @@ import {
 } from '@metad/story/designer'
 import { Observable } from 'rxjs'
 import { map, tap } from 'rxjs/operators'
+import { PropertyCapacity } from '@metad/ocap-angular/entity'
 
 
 @Injectable()
@@ -244,8 +243,8 @@ export function AnalyticsAnnotationSchema(Widgets, dataSettings$: Observable<Dat
               PropertyCapacity.Measure,
               PropertyCapacity.MeasureAttributes,
               PropertyCapacity.Order,
-              FormlyPropertyCapacity.MeasureStyle,
-              FormlyPropertyCapacity.MeasureStylePalette,
+              PropertyCapacity.MeasureStyle,
+              PropertyCapacity.MeasureStylePalette,
             ],
             colors: ColorPalettes
           }
@@ -272,9 +271,9 @@ export function AnalyticsAnnotationSchema(Widgets, dataSettings$: Observable<Dat
               PropertyCapacity.Measure,
               PropertyCapacity.MeasureAttributes,
               PropertyCapacity.Order,
-              FormlyPropertyCapacity.MeasureStyle,
-              FormlyPropertyCapacity.MeasureStylePalette,
-              FormlyPropertyCapacity.MeasureStyleGridBar,
+              PropertyCapacity.MeasureStyle,
+              PropertyCapacity.MeasureStylePalette,
+              PropertyCapacity.MeasureStyleGridBar,
             ],
             colors: ColorPalettes
           }

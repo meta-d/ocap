@@ -1,4 +1,3 @@
-import { Employee } from '@metad/server-core'
 import { Injectable } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -13,11 +12,9 @@ export class IndicatorService extends BusinessAreaAwareCrudService<Indicator> {
 	constructor(
 		@InjectRepository(Indicator)
 		indicatorRepository: Repository<Indicator>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
 		readonly commandBus: CommandBus
 	) {
-		super(indicatorRepository, employeeRepository, commandBus)
+		super(indicatorRepository, commandBus)
 	}
 
 	public async search(text: string) {

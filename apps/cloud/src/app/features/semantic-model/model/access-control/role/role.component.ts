@@ -8,7 +8,7 @@ import { SplitterType } from '@metad/ocap-angular/common'
 import { EntityCapacity } from '@metad/ocap-angular/entity'
 import { combineLatestWith, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { SemanticModelService } from '../../model.service'
-import { SemanticModelEntity, SemanticModelEntityType } from '../../types'
+import { CdkDragDropContainers, SemanticModelEntity, SemanticModelEntityType } from '../../types'
 import { AccessControlStateService } from '../access-control.service'
 import { RoleStateService } from './role.service'
 
@@ -106,7 +106,7 @@ export class RoleComponent {
 
   dropCubeEnterPredicate(item: CdkDrag<SemanticModelEntity>) {
     return (
-      item.dropContainer.id === 'pac-model-entities' &&
+      item.dropContainer.id === CdkDragDropContainers.Entities &&
       (item.data.type === SemanticModelEntityType.CUBE || item.data.type === SemanticModelEntityType.VirtualCube)
     )
   }
@@ -114,7 +114,7 @@ export class RoleComponent {
   dropCube(event: CdkDragDrop<{ name: string }[]>) {
     if (event.previousContainer === event.container) {
       this.roleState.moveItemInCubes(event)
-    } else if (event.previousContainer.id === 'pac-model-entities') {
+    } else if (event.previousContainer.id === CdkDragDropContainers.Entities) {
       if (
         event.item.data.type === SemanticModelEntityType.CUBE ||
         event.item.data.type === SemanticModelEntityType.VirtualCube

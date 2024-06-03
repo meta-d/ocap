@@ -18,7 +18,7 @@ export class CustomTranslateLoader implements TranslateLoader {
   }
 }
 
-export function provideTranslate(defaultLanguage?: string): EnvironmentProviders {
+export function provideTranslate(defaultLanguage = zhHansLanguage): EnvironmentProviders {
   return importProvidersFrom(
     TranslateModule.forRoot({
       missingTranslationHandler: {

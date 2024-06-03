@@ -1,7 +1,8 @@
 // @ts-nocheck
 
 import axios from 'axios'
-import { merge } from 'lodash-es'
+import { merge } from 'lodash'
+import { DOMParser } from 'xmldom'
 import { Axis } from '../types/dataset'
 import { EMPTY, catchError, tap } from 'rxjs'
 

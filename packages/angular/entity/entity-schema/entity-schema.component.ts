@@ -7,10 +7,10 @@ import {
   Component,
   HostBinding,
   Input,
-  OnChanges,
   OnInit,
-  SimpleChanges,
-  inject
+  effect,
+  inject,
+  input
 } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -56,14 +56,13 @@ import { A11yModule } from '@angular/cdk/a11y'
   templateUrl: 'entity-schema.component.html',
   styleUrls: ['entity-schema.component.scss']
 })
-export class NgmEntitySchemaComponent implements OnInit, OnChanges {
+export class NgmEntitySchemaComponent implements OnInit {
   EntitySchemaType = EntitySchemaType
   @HostBinding('class.ngm-entity-schema') _isEntitySchemaComponent = true
   private translateService = inject(TranslateService)
   private _dsCoreService? = inject(NgmDSCoreService, {optional: true})
 
   @Input() dsCoreService: NgmDSCoreService
-  @Input() dataSettings: DataSettings
   @Input() appearance: NgmAppearance
   @Input() selectedHierarchy: string
   @Input() capacities: EntityCapacity[] = [
@@ -71,8 +70,31 @@ export class NgmEntitySchemaComponent implements OnInit, OnChanges {
     EntityCapacity.Measure,
   ]
 
+  readonly dataSettings = input<DataSettings>()
+
   get searchControl() {
     return this.dataSource.searchControl
+  }
+
+  constructor() {
+    effect(() => {
+      const dataSettings = this.dataSettings()
+      if (dataSettings?.entitySet) {
+        this.dataSource.dataSourceName = dataSettings.dataSource
+        const rootNode = new EntitySchemaFlatNode(
+          {
+            type: EntitySchemaType.Entity,
+            name: dataSettings.entitySet,
+            // caption: dataSettings.entitySet,
+          },
+          0,
+          true
+        )
+        this.dataSource.data = [
+          rootNode
+        ]
+      }
+    })
   }
 
   ngOnInit() {
@@ -83,28 +105,6 @@ export class NgmEntitySchemaComponent implements OnInit, OnChanges {
     this.dataSource = new EntitySchemaDataSource(this.treeControl, this._dsCoreService, this.translateService, this.capacities)
 
     this.dataSource.data = []
-
-    if (this.dataSettings.entitySet) {
-      this.dataSource.dataSourceName = this.dataSettings.dataSource
-      const rootNode = new EntitySchemaFlatNode(
-        {
-          type: EntitySchemaType.Entity,
-          name: this.dataSettings.entitySet,
-          caption: this.dataSettings.entitySet,
-        },
-        0,
-        true
-      )
-      this.dataSource.data = [
-        rootNode
-      ]
-    }
-  }
-
-  ngOnChanges({ dataSettings }: SimpleChanges): void {
-    if (dataSettings?.currentValue?.entitySet && this.dataSource) {
-      this.dataSource.dataSourceName = dataSettings.currentValue.dataSource
-    }
   }
 
   treeControl: FlatTreeControl<EntitySchemaFlatNode>

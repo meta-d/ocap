@@ -1,27 +1,30 @@
 import { CdkDrag, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild, inject, signal } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { ChangeDetectionStrategy, Component, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
 import { Store } from '@metad/cloud/state'
-import { BaseEditorDirective, NxEditorModule } from '@metad/components/editor'
-import { calcEntityTypePrompt, convertQueryResultColumns, nonBlank } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
-import { effectAction } from '@metad/ocap-angular/core'
+import { BaseEditorDirective } from '@metad/components/editor'
+import { convertQueryResultColumns } from '@metad/core'
+import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { getErrorMessage } from '@metad/ocap-angular/core'
 import { EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
-import { QueryReturn, measureFormatter, serializeUniqueName } from '@metad/ocap-core'
+import { NgmMDXEditorComponent } from '@metad/ocap-angular/mdx'
+import { NgmSQLEditorComponent } from '@metad/ocap-angular/sql'
+import { QueryReturn, measureFormatter, nonNullable, serializeUniqueName } from '@metad/ocap-core'
+import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule, TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, EMPTY, Observable, firstValueFrom } from 'rxjs'
-import { catchError, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
+import { connect } from 'ngxtension/connect'
+import { BehaviorSubject, Subscription, firstValueFrom, of } from 'rxjs'
+import { catchError, finalize, map, tap } from 'rxjs/operators'
+import { injectQueryCommand } from '../../copilot'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE } from '../../types'
 import { serializePropertyUniqueName } from '../../utils'
 import { ModelEntityService } from '../entity.service'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -35,7 +38,8 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule,
     MaterialModule,
     NgmCommonModule,
-    NxEditorModule
+    NgmMDXEditorComponent,
+    NgmSQLEditorComponent
   ]
 })
 export class EntityQueryComponent extends TranslationBaseComponent {
@@ -44,7 +48,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   readonly modelService = inject(SemanticModelService)
   readonly modelComponent = inject(ModelComponent)
   readonly entityService = inject(ModelEntityService)
-  readonly _cdr = inject(ChangeDetectorRef)
+  // readonly _cdr = inject(ChangeDetectorRef)
   readonly store = inject(Store)
   readonly #logger = inject(NGXLogger)
 
@@ -57,157 +61,132 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   */
   readonly themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
   readonly entityType = this.entityService.entityType
-  readonly tables = toSignal(this.modelService.selectDBTables$)
-  readonly statement = this.entityService.statement$
+  readonly tables = toSignal(this.modelService.selectDBTables())
+  // readonly statement = this.entityService.statement$
+  readonly statement = signal<string>(null)
 
   entities = []
 
-  readonly textSelection = signal<{range: any; text: string;}>(null)
+  readonly textSelection = signal<{ range: any; text: string }>(null)
 
   // 当前使用 MDX 查询
-  public readonly useMDX = toSignal(this.modelService.modelType$.pipe(
-    map((modelType) => modelType === MODEL_TYPE.XMLA || modelType === MODEL_TYPE.OLAP)
-  ))
+  public readonly useMDX = toSignal(
+    this.modelService.modelType$.pipe(
+      map((modelType) => modelType === MODEL_TYPE.XMLA || modelType === MODEL_TYPE.OLAP)
+    )
+  )
   public readonly modelType$ = this.modelService.modelType$
 
   // for results table
   public readonly loading$ = new BehaviorSubject<boolean>(null)
   columns: any[]
   data: any[]
-  error: string
+  // error: string
+
+  readonly _error = signal('')
+  readonly querySubscription = signal<Subscription>(null)
 
   readonly showQueryResult = signal(false)
+
+  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly queryContext = computed(() => {
+    return {
+      dialect: this.dialect(),
+      isMDX: this.useMDX(),
+      entityTypes: [this.entityType()]
+    }
+  })
 
   /**
   |--------------------------------------------------------------------------
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #queryCommand = injectCopilotCommand({
-    name: 'query',
-    description: 'Create a query statement',
-    examples: [
-      `Create a statement to query the data`,
-      `Edit current statement refer to the error message:`,
-    ],
-    systemPrompt: async () => {
-      let prompt = `Create a new or edit current MDX statement for user's query, the cube info is:
-\`\`\`
-${calcEntityTypePrompt(this.entityType())}
-\`\`\``
-      if (this.statement()) {
-        prompt +=
-`
-Current statement is:
-\`\`\`
-${this.statement()}
-\`\`\`
-`
-      }
-      return prompt
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create-query-statement',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'statement',
-            type: 'string',
-            description: 'The defination of query statement',
-            required: true
-          }
-        ],
-        implementation: async (statement: string) => {
-          this.#logger.debug(`Create a new query statement '${statement}'`)
-          this.entityService.statement = statement
-          this.run()
-          return `✅`
-        }
-      }),
-      injectMakeCopilotActionable({
-        name: 'edit-query-statement',
-        description: 'Edit the query statement',
-        argumentAnnotations: [
-          {
-            name: 'statement',
-            type: 'string',
-            description: 'The defination of query statement',
-            required: true
-          }
-        ],
-        implementation: async (statement: string) => {
-          this.#logger.debug(`Edit the query statement '' into '${statement}'`)
-          this.entityService.statement = statement
-          this.run()
-          return `✅`
-        }
-      })
-    ]
+  #queryCommand = injectQueryCommand(this.statement, this.queryContext, async (query: string) => {
+    return await firstValueFrom(this._query(query))
   })
 
-  readonly query = effectAction((origin$: Observable<string>) => {
-    return origin$.pipe(
-      tap((statement) => {
-        if (statement) {
-          this.error = null
-          this.loading$.next(true)
-        } else {
-          this.error = null
-          this.loading$.next(false)
+  constructor() {
+    super()
+
+    connect(this.statement, this.entityService.statement$)
+    effect(
+      () => {
+        if (nonNullable(this.statement())) {
+          this.entityService.statement = this.statement()
         }
+      },
+      { allowSignalWrites: true }
+    )
+  }
+
+  executeQuery(statement: string) {
+    this._error.set(null)
+    if (statement) {
+      this.loading$.next(true)
+    } else {
+      this.loading$.next(false)
+    }
+
+    this.querySubscription()?.unsubscribe()
+    if (statement) {
+      const subscription = this._query(statement).subscribe()
+      this.querySubscription.set(subscription)
+    } else {
+      this.querySubscription.set(null)
+    }
+  }
+
+  _query(statement: string) {
+    // Show query result or progress status
+    this.showQueryResult.set(true)
+
+    // Query data
+    return this.modelService.dataSource$.value.query({ statement, forceRefresh: true }).pipe(
+      catchError((error) => {
+        console.error(error)
+        return of({
+          error: getErrorMessage(error)
+        })
       }),
-      filter(nonBlank),
-      switchMap((statement) => {
-        // Show query result or progress status
-        this.showQueryResult.set(true)
-        // Query data
-        return this.modelService.dataSource$.value.query({ statement, forceRefresh: true }).pipe(
-          catchError((error) => {
-            console.error(error)
-            this.error = error
-            return EMPTY
-          }),
-          tap(({ status, error, schema, data }: QueryReturn<unknown>) => {
-            if (error) {
-              console.error(error)
-              this.error = error
-              this._cdr.detectChanges()
-              return
-            }
+      tap(({ status, error, schema, data }: QueryReturn<unknown>) => {
+        if (error) {
+          console.error(error)
+          this._error.set(error)
+          // this._cdr.detectChanges()
+          return
+        }
 
-            const columns = convertQueryResultColumns(schema)
+        const columns = convertQueryResultColumns(schema)
 
-            if (isPlainObject(data)) {
-              columns.push(...typeOfObj(data))
-              data = [data]
-            }
+        if (isPlainObject(data)) {
+          columns.push(...typeOfObj(data))
+          data = [data]
+        }
 
-            this.data = data
-            this.columns = columns
+        this.data = data
+        this.columns = columns
 
-            console.group(`sql results`)
-            console.debug(`statement`, statement)
-            console.debug(`data`, data)
-            console.debug(`columns`, columns)
-            console.groupEnd()
-          }),
-          finalize(() => {
-            this.loading$.next(false)
-            this._cdr.detectChanges()
-          })
-        )
+        console.group(`sql results`)
+        console.debug(`statement`, statement)
+        console.debug(`data`, data)
+        console.debug(`columns`, columns)
+        console.groupEnd()
+      }),
+      finalize(() => {
+        this.loading$.next(false)
+        // this._cdr.detectChanges()
       })
     )
-  })
+  }
 
   run() {
     const statement: string = this.editor.getSelectText()?.trim() || this.statement()
-    this.query(statement)
+    this.executeQuery(statement)
   }
 
   cancelQuery() {
-    this.query('')
+    this.executeQuery('')
   }
 
   async onEditorKeyDown(event) {
@@ -216,7 +195,7 @@ ${this.statement()}
     }
   }
 
-  onSelectionChange(event: {range: any; text: string;}) {
+  onSelectionChange(event: { range: any; text: string }) {
     this.textSelection.set(event)
   }
 
@@ -239,7 +218,7 @@ ${this.statement()}
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : measureFormatter(property.name))
     } else if (event.previousContainer.id === 'list-dimensions') {
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : serializePropertyUniqueName(property, dialect))
-    } else if (event.previousContainer.id === 'pac-model-entities') {
+    } else if (event.previousContainer.id === CdkDragDropContainers.Entities) {
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : serializeUniqueName(property.name))
     } else {
       console.log(event.previousContainer.id)
@@ -249,7 +228,7 @@ ${this.statement()}
   dropTable(event: CdkDragDrop<{ name: string }[]>) {
     const text = event.item.data?.name
     if (text) {
-      this.query(`SELECT * FROM ${text}`)
+      this.executeQuery(`SELECT * FROM ${text}`)
     }
   }
 

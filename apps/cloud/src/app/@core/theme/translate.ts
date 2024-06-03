@@ -1,3 +1,4 @@
+import { registerLocaleData } from '@angular/common'
 import { HttpClient } from '@angular/common/http'
 import en from '@angular/common/locales/en'
 import localeZhExtra from '@angular/common/locales/extra/zh-Hans'
@@ -5,16 +6,13 @@ import zh from '@angular/common/locales/zh'
 import localeZh from '@angular/common/locales/zh-Hans'
 import { ZhHans as AuthZhHans, ZhHant as AuthZhHant } from '@metad/cloud/auth'
 import { ZhHans as IAppZhHans, ZhHant as IAppZhHant } from '@metad/cloud/indicator-market/i18n'
-import { registerLocaleData as nxRegisterLocaleData, zhHans as CoreZhHans, zhHant as CoreZhHant } from '@metad/core'
+import { zhHans as CoreZhHans, zhHant as CoreZhHant, registerLocaleData as nxRegisterLocaleData } from '@metad/core'
 import { ZhHans, ZhHant } from '@metad/ocap-angular/i18n'
 import { ZhHans as StoryZhHans, ZhHant as StoryZhHant } from '@metad/story/i18n'
-import { MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core'
 import { TranslateHttpLoader } from '@ngx-translate/http-loader'
-import { } from '@metad/core'
+import { enUS, zhCN, zhHK } from 'date-fns/locale'
 import { Observable, map } from 'rxjs'
 import { LanguagesEnum } from '../types'
-import { registerLocaleData } from '@angular/common'
-import { enUS, zhCN, zhHK } from 'date-fns/locale'
 
 
 export const LOCALE_DEFAULT = LanguagesEnum.SimplifiedChinese
@@ -60,15 +58,6 @@ class CustomTranslateHttpLoader extends TranslateHttpLoader {
 
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new CustomTranslateHttpLoader(http, `./assets/i18n/`, '.json')
-}
-
-export class MyMissingTranslationHandler implements MissingTranslationHandler {
-  handle(params: MissingTranslationHandlerParams) {
-    if (params.interpolateParams) {
-      return params.interpolateParams['Default'] || params.key
-    }
-    return params.key
-  }
 }
 
 export function mapDateLocale(locale: string) {

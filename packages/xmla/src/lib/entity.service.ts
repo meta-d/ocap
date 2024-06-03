@@ -195,7 +195,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
 
             return of({
               status: 'ERROR' as QueryReturn<T>['status'],
-              error: simplifyErrorMessage(getExceptionMessage(error.exception) ?? getErrorMessage(error)),
+              error: simplifyErrorMessage(error.exception ? getExceptionMessage(error.exception) ?? getErrorMessage(error) : getErrorMessage(error)),
               stats: {
                 statements: [
                   mdx

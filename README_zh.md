@@ -12,11 +12,17 @@
 
 ## 💡 新功能
 
-🎉🎉 重磅发布元数分析平台 2.0 版本，带来了全新的功能和改进，包括：
+🎉🎉 新版本带来了一些令人兴奋的新功能，特别是对 [Copilot Command](https://www.mtda.cloud/docs/server/copilot/#命令) 和 [Business Roles](https://www.mtda.cloud/docs/server/copilot/#业务角色) 的全面升级。
 
-- **主题与布局** 网站全新改版，全面支持暗色主题，让您在夜间工作时更加舒适。
-- **AI 副驾驶** 升级使用自定义命令的形式执行 AI 操作，内置丰富的命令可用，详情请查看 [AI 副驾驶](https://www.mtda.cloud/docs/server/copilot/)。
-- **指标应用** 优化和升级了指标应用页面，更加方便不通设备上查看和分析指标。
+- **副驾驶命令智能体**
+  - _维度成员检索器_：此功能动态检索和获取维度成员的关键信息，帮助用户更好地理解数据维度。
+  - _少量样本_：通过检索类似的示例，提供更精确的模板，使数据分析更符合实际需求。
+  - _建议_：提供动态提示完成功能，帮助用户快速生成高质量的分析命令。
+- **业务角色** 新版本还向 AI Copilot 添加了业务角色功能。用户可以在使用过程中切换业务角色，以便在不同场景下进行更精确的业务分析。每个业务角色都有相应的示例。当 Copilot 执行 Agent 时，它会选择与当前任务最相关的示例发送到 LLM，以确保更准确的结果。
+
+[更多详情](https://www.mtda.cloud/blog/releases-2-3-copilot-agents-roles)
+
+![copilot architecture](https://raw.githubusercontent.com/meta-d/meta-d/main/img/v2.3/copilot-architecture.png)
 
 ## 🎯 宗旨
 

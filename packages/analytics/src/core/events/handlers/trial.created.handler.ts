@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Employee, TrialUserCreatedEvent } from '@metad/server-core'
 import { Repository } from 'typeorm'
 import { DataSourceTypeService } from '../../../data-source-type/index'
-import { SemanticModelService } from '../../../model/index'
 import {
 	BusinessArea,
 	BusinessAreaUser,
@@ -15,7 +14,6 @@ import {
 	StoryPoint,
 	StoryWidget,
 } from '../../entities/internal'
-import { seedTenantDefaultData } from './seeds'
 import { createLocalAgentDataSource } from './seeds/data-sources/local-agent'
 
 @EventsHandler(TrialUserCreatedEvent)
@@ -42,7 +40,6 @@ export class TrialUserCreatedHandler
 		@InjectRepository(Indicator)
 		private readonly indicatorRepository: Repository<Indicator>,
 		private readonly dstService: DataSourceTypeService,
-		private readonly modelService: SemanticModelService,
 		private readonly commandBus: CommandBus
 	) {}
 

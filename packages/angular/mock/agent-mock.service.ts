@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Agent, AgentStatusEnum, AgentType, Cube, DataSourceOptions } from '@metad/ocap-core'
 import { randCompanyName, randFloat, randNumber, randProductAdjective, randProductCategory } from '@ngneat/falso'
-import { Observable, of, Subject } from 'rxjs'
+import { Observable, Subject, of } from 'rxjs'
 
 const columns = [
   {
@@ -54,8 +54,10 @@ const SalesOrder3s = {
   columns
 }
 
+export const CUBE_SALES_ORDER_NAME = 'SalesOrder'
+
 export const CUBE_SALES_ORDER: Cube = {
-  name: 'SalesOrder',
+  name: CUBE_SALES_ORDER_NAME,
   caption: '销售订单',
   visible: true,
   tables: [{ name: 'sales_order' }],
@@ -219,21 +221,25 @@ export class MockAgent implements Agent {
           if (options.body?.statement?.includes('AS `memberKey`')) {
             const data = []
             randProductAdjective({ length: 3 }).forEach((product) => {
-              data.push({memberKey: product, memberCaption: product}),
-              randProductAdjective({ length: 3 }).filter((product2) => !data.find((item) => item.memberKey === product2)).forEach((product2) => {
-                data.push({
-                  memberKey: product2,
-                  memberCaption: product2,
-                  parentKey: product
-                })
-                randProductAdjective({ length: 5 }).filter((product) => !data.find((item) => item.memberKey === product)).forEach((product3) => {
-                  data.push({
-                    memberKey: product3,
-                    memberCaption: product3,
-                    parentKey: product2
+              data.push({ memberKey: product, memberCaption: product }),
+                randProductAdjective({ length: 3 })
+                  .filter((product2) => !data.find((item) => item.memberKey === product2))
+                  .forEach((product2) => {
+                    data.push({
+                      memberKey: product2,
+                      memberCaption: product2,
+                      parentKey: product
+                    })
+                    randProductAdjective({ length: 5 })
+                      .filter((product) => !data.find((item) => item.memberKey === product))
+                      .forEach((product3) => {
+                        data.push({
+                          memberKey: product3,
+                          memberCaption: product3,
+                          parentKey: product2
+                        })
+                      })
                   })
-                })
-              })
             })
             return resolve({
               data,

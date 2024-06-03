@@ -25,9 +25,9 @@ import { AbilityModule } from '@casl/angular'
 import { FavoritesService, StoriesService } from '@metad/cloud/state'
 import { NxCoreService } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { NgmDSCoreService, OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
+import { OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
 import { AgentType } from '@metad/ocap-core'
-import { StoryExplorerModule } from '@metad/story'
+import { StoryExplorerModule, provideStory } from '@metad/story'
 import { NxStoryService, Story } from '@metad/story/core'
 import { NxStoryComponent, NxStoryModule, StorySharesComponent } from '@metad/story/story'
 import { TranslateModule } from '@ngx-translate/core'
@@ -68,7 +68,7 @@ import { StoryScales, downloadStory } from '../types'
   selector: 'pac-story-viewer',
   templateUrl: 'viewer.component.html',
   styleUrls: ['viewer.component.scss'],
-  providers: [NgmDSCoreService, NxCoreService, NxStoryService]
+  providers: [provideStory(), NxCoreService]
 })
 export class StoryViewerComponent extends TranslationBaseComponent implements OnInit, OnDestroy {
   AbilityActions = AbilityActions

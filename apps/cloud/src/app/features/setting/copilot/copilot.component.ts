@@ -1,10 +1,11 @@
 import { Component, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { RouterModule } from '@angular/router'
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged, startWith } from 'rxjs'
-import { PACCopilotService, ToastrService, getErrorMessage } from '../../../@core'
+import { PACCopilotService, ToastrService, getErrorMessage, routeAnimations } from '../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
 
 @Component({
@@ -12,7 +13,8 @@ import { MaterialModule, TranslationBaseComponent } from '../../../@shared'
   selector: 'pac-settings-copilot',
   templateUrl: './copilot.component.html',
   styleUrls: ['./copilot.component.scss'],
-  imports: [TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
+  imports: [RouterModule, TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  animations: [routeAnimations],
 })
 export class CopilotComponent extends TranslationBaseComponent {
   readonly copilotService = inject(PACCopilotService)
@@ -90,9 +92,9 @@ export class CopilotComponent extends TranslationBaseComponent {
       await this.copilotService.upsertOne(
         this.formGroup.get('apiKey').dirty
           ? {
-              ...rest,
-              apiKey: apiKey.trim()
-            }
+            ...rest,
+            apiKey: apiKey.trim()
+          }
           : rest
       )
       this.formGroup.markAsPristine()

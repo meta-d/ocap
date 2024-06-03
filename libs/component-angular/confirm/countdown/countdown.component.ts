@@ -2,6 +2,9 @@ import { Component, HostBinding, inject } from '@angular/core'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { CountdownConfig, CountdownEvent, CountdownTimer } from '@metad/components/countdown'
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @Component({
   selector: 'ngm-countdown-confirmation',
   templateUrl: 'countdown.component.html',

@@ -84,7 +84,8 @@ export class DimensionUsageSchemaService extends CubeSchemaService<DimensionUsag
                   required: true,
                   searchable: true,
                   label: COMMON?.ForeignKey ?? 'Foreign Key',
-                  options: this.factFields$
+                  options: this.factFields$,
+                  valueKey: 'key',
                 }
               }
             ]

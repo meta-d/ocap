@@ -1,4 +1,4 @@
-import { merge } from 'lodash-es'
+import { merge } from 'lodash'
 import { Observable, Subscription } from 'rxjs'
 import { MDOptions } from './types'
 import { Xmla } from './xmla/Xmla'

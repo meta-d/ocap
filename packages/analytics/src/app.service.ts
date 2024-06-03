@@ -21,11 +21,13 @@ export class AnalyticsService {
 	}
 
 	constructor(
+		// private readonly commandBus: CommandBus,
+		
 		@Inject(forwardRef(() => DataSourceTypeService))
 		private readonly dsTypeService: DataSourceTypeService,
 
 		@Inject(forwardRef(() => SemanticModelService))
-		private readonly modelService: SemanticModelService
+		private readonly modelService: SemanticModelService,
 	) {}
 
 	getHello(): string {

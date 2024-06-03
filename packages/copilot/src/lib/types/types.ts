@@ -1,10 +1,12 @@
 import { Message } from 'ai'
+import { BaseMessage } from '@langchain/core/messages'
 import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
 import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
+export const DefaultBusinessRole = 'default'
 
 export interface ICopilot {
   enabled: boolean
@@ -51,10 +53,13 @@ export enum CopilotChatMessageRoleEnum {
   Info = 'info'
 }
 
+/**
+ * @deprecated remove Message from `ai` package
+ */
 export interface CopilotChatMessage extends Omit<Message, 'role'> {
   error?: string
 
-  role: Message['role'] | 'info'
+  role: 'system' | 'user' | 'assistant' | 'function' | 'data' | 'tool' | 'info'
   /**
    * Command name
    */
@@ -62,7 +67,7 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
 
   status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
 
-  
+  lcMessage?: BaseMessage
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -70,9 +75,15 @@ export interface CopilotChatResponseChoice {
   //
 }
 
+/**
+ * @deprecated use LangChain
+ */
 export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean; verbose?: boolean }
 
 // Helper function
+/**
+ * @deprecated use LangChain
+ */
 export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
   if (message.role !== CopilotChatMessageRoleEnum.Assistant) {
     throw new Error('Only assistant messages can be used to generate function calls')
@@ -113,4 +124,17 @@ export const CopilotDefaultOptions = {
 
 export function nonNullable<T>(value: T): value is NonNullable<T> {
   return value != null
+}
+
+export type BusinessRoleType = {
+  name: string;
+  title: string;
+  titleCN: string;
+  description: string;
+}
+
+export type Headers = Record<string, string | null | undefined>;
+export type RequestOptions = {
+  headers?: Record<string, string> | Headers;
+  body?: object;
 }

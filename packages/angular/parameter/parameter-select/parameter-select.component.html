@@ -1,3 +1,25 @@
+<ngm-select searchable [label]="label" [placeholder]="placeholder"
+  [selectOptions]="selectOptions$ | async"
+  valueKey="key"
+  [(ngModel)]="value"
+>
+  <div ngmSuffix class="ngm-input__suffix flex items-center">
+    <button mat-icon-button displayDensity="compact" [matMenuTriggerFor]="paramMenu"
+      (click)="$event.stopPropagation(); $event.preventDefault()">
+      <mat-icon>alternate_email</mat-icon>
+    </button>
+
+    <ng-content select="[ngmSuffix]"></ng-content>
+  </div>
+
+  <ng-template ngmOptionContent let-option>
+    
+    <button mat-icon-button displayDensity="cosy" (click)="openEditParameter(option.name)">
+      <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+    </button>
+  </ng-template>
+</ngm-select>
+
 <label class="ngm-input-label">
   {{ label }}
 </label>
@@ -35,18 +57,25 @@
 
 <mat-radio-group [(ngModel)]="value">
   <mat-menu #paramMenu="matMenu" class="ngm-density__compact">
-    <button mat-menu-item disableRipple *ngFor="let parameter of parameters$ | async"
-      (click)="$event.stopPropagation();">
-      <mat-radio-button [value]="parameter.value">
-        {{parameter.label}}
-      </mat-radio-button>
-    </button>
+    @for (parameter of parameters$ | async; track $index) {
+      <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
+        <div class="flex justify-between items-center">
+          <mat-radio-button [value]="parameter.key">
+            <ngm-display-behaviour [option]="parameter" />
+          </mat-radio-button>
+  
+          <button mat-icon-button displayDensity="cosy" (click)="openEditParameter(parameter.value.name)">
+            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+          </button>
+        </div>
+      </button>
+    }
 
     <mat-divider></mat-divider>
 
     <button mat-menu-item ngmAppearance="dashed"
       (click)="$event.stopPropagation();openCreate()">
-      {{ 'COMPONENTS.PROPERTY.CreateParameter' | translate: {Default: "Create Parameter"} }}
+      {{ 'Ngm.Property.CreateParameter' | translate: {Default: "Create Parameter"} }}
     </button>
   </mat-menu>
 </mat-radio-group>

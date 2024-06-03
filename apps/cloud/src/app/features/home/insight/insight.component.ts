@@ -11,7 +11,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { Title } from '@angular/platform-browser'
 import { Router, RouterModule } from '@angular/router'
 import { NgmSemanticModel } from '@metad/cloud/state'
-import { NxSelectionModule, SlicersCapacity } from '@metad/components/selection'
 import { FunctionCallHandlerOptions, zodToAnnotations } from '@metad/copilot'
 import {
   calcEntityTypePrompt,
@@ -54,6 +53,7 @@ import { MaterialModule, StorySelectorComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { QuestionAnswer, SuggestsSchema, transformCopilotChart } from './copilot'
 import { InsightService } from './insight.service'
+import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 
 @Component({
   standalone: true,
@@ -71,7 +71,7 @@ import { InsightService } from './insight.service'
     NgmCommonModule,
     AppearanceDirective,
     AnalyticalCardModule,
-    NxSelectionModule,
+    NgmSelectionModule,
     NgmEntityPropertyComponent,
 
     StoryExplorerModule,

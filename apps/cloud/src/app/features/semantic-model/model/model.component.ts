@@ -9,22 +9,19 @@ import {
   ViewChild,
   ViewContainerRef,
   computed,
-  inject
+  inject,
+  model,
+  signal
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { ModelsService, NgmSemanticModel, Store } from '@metad/cloud/state'
+import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
-import { CopilotChatMessageRoleEnum, CopilotEngine, zodToAnnotations } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
-import {
-  NgmCopilotChatComponent,
-  injectCopilotCommand,
-  injectMakeCopilotActionable,
-  provideCopilotDropAction
-} from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -37,6 +34,7 @@ import {
   catchError,
   combineLatest,
   combineLatestWith,
+  debounceTime,
   distinctUntilChanged,
   filter,
   firstValueFrom,
@@ -52,7 +50,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { CubeSchema, DimensionSchema, createCube, createDimension } from './copilot'
+import { injectCubeCommand, injectDimensionCommand } from './copilot'
 import {
   CreateEntityDialogDataType,
   CreateEntityDialogRetType,
@@ -61,9 +59,14 @@ import {
 import { ModelCreateTableComponent } from './create-table/create-table.component'
 import { SemanticModelService } from './model.service'
 import { ModelPreferencesComponent } from './preferences/preferences.component'
-import { MODEL_TYPE, SemanticModelEntity, SemanticModelEntityType, TOOLBAR_ACTION_CATEGORY } from './types'
+import {
+  CdkDragDropContainers,
+  MODEL_TYPE,
+  SemanticModelEntity,
+  SemanticModelEntityType,
+  TOOLBAR_ACTION_CATEGORY
+} from './types'
 import { stringifyTableType } from './utils'
-import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -79,9 +82,7 @@ import { environment } from 'apps/cloud/src/environments/environment'
 export class ModelComponent extends TranslationBaseComponent implements IsDirty {
   SemanticModelEntityType = SemanticModelEntityType
   TOOLBAR_ACTION_CATEGORY = TOOLBAR_ACTION_CATEGORY
-  production = environment.production
 
-  readonly #store = inject(Store)
   public appService = inject(AppService)
   private modelService = inject(SemanticModelService)
   private modelsService = inject(ModelsService)
@@ -96,135 +97,10 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   /**
   |--------------------------------------------------------------------------
-  | Copilot
+  | Inputs & Outputs & ViewChild
   |--------------------------------------------------------------------------
   */
-  #cubeCommand = injectCopilotCommand({
-    name: 'c',
-    description: 'New or edit cube',
-    examples: [
-      this.getTranslation('PAC.MODEL.Copilot.Examples.CreateCubeByTableInfo', { Default: 'Create cube by table info' })
-    ],
-    systemPrompt: async () => {
-      const sharedDimensionsPrompt = JSON.stringify(
-        this.dimensions()
-          .filter((dimension) => dimension.hierarchies?.length)
-          .map((dimension) => ({
-            name: dimension.name,
-            caption: dimension.caption,
-            table: dimension.hierarchies[0].tables[0]?.name,
-            primaryKey: dimension.hierarchies[0].primaryKey
-          }))
-      )
-      return `Generate cube metadata for MDX. The cube name can't be the same as the table name. Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
-\`\`\`
-${sharedDimensionsPrompt}
-\`\`\`
-`
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create-model-cube',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'cube',
-            type: 'object', // Add or change types according to your needs.
-            description: 'The defination of cube',
-            required: true,
-            properties: zodToAnnotations(CubeSchema)
-          }
-        ],
-        implementation: async (cube: any) => {
-          this.#logger.debug(`Execute copilot action 'create-model-cube':`, cube)
-          createCube(this.modelService, cube)
-          return this.translateService.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
-        }
-      })
-    ]
-  })
-
-  #dimensionCommand = injectCopilotCommand({
-    name: 'd',
-    description: 'New or edit dimension',
-    examples: [
-      this.translateService.instant('PAC.MODEL.Copilot.Examples.CreateDimensionByTableInfo', {
-        Default: 'Create dimension by table info'
-      })
-    ],
-    systemPrompt: async () => {
-      return `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create-model-dimension',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'dimension',
-            type: 'object', // Add or change types according to your needs.
-            description: 'The defination of dimension',
-            required: true,
-            properties: zodToAnnotations(DimensionSchema)
-          }
-        ],
-        implementation: async (d: any) => {
-          this.#logger.debug(`Execute copilot action 'create-model-dimension':`, d)
-          createDimension(this.modelService, d)
-          return this.translateService.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
-        }
-      })
-    ]
-  })
-
   @ViewChild('tableTemplate') tableTemplate!: TemplateRef<any>
-  #entityDropAction = provideCopilotDropAction({
-    id: 'pac-model-entitysets',
-    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
-      this.#logger.debug(`Drop table to copilot chat:`, event)
-      const data = event.item.data
-      // 获取源表或源多维数据集结构
-      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
-
-      return {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: [
-            { name: 'name', caption: '名称' },
-            { name: 'caption', caption: '描述' }
-          ],
-          content: Object.values(entityType.properties) as any[]
-        },
-        content: stringifyTableType(entityType),
-        templateRef: this.tableTemplate
-      }
-    }
-  })
-  #queryResultDropAction = provideCopilotDropAction({
-    id: 'pac-model__query-results',
-    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
-      this.#logger.debug(`Drop query result to copilot chat:`, event)
-      const data = event.item.data
-      // 自定义查询结果数据
-      return {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: data.columns,
-          content: data.preview
-        },
-        content:
-          data.columns.map((column) => column.name).join(',') +
-          `\n` +
-          data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n'),
-        templateRef: this.tableTemplate
-      }
-    }
-  })
-
   @ViewChild('copilotChat') copilotChat!: NgmCopilotChatComponent
 
   @HostBinding('class.pac-fullscreen')
@@ -240,9 +116,7 @@ ${sharedDimensionsPrompt}
     return this.modelService.modelSignal()?.dbInitialization
   }
   // Left side menu drawer open state
-  sideMenuOpened = true
-  // Copilot chat drawer open state
-  copilotDrawerOpened = false
+  readonly sideMenuOpened = model(true)
 
   public id$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
@@ -256,22 +130,27 @@ ${sharedDimensionsPrompt}
 
   public readonly entities$ = this.modelService.entities$
 
-  public dbTablesError = ''
-  private refreshDBTables$ = new BehaviorSubject<void>(null)
+  // For tables or cubes in data source
+  readonly loadingTables = signal(false)
+  readonly dbTablesError = signal('')
+  private refreshDBTables$ = new BehaviorSubject<boolean>(null)
+
+  // Refresh DB Tables
   public readonly selectDBTables$ = this.refreshDBTables$.pipe(
-    // Refresh DB Tables
-    // Reset fetch tables error
-    tap(() => (this.dbTablesError = null)),
-    switchMap(() =>
-      this.modelService.selectDBTables$.pipe(
+    switchMap((forceRefresh) => {
+      // Reset fetch tables error
+      this.dbTablesError.set(null)
+      // Loading status
+      this.loadingTables.set(true)
+      return this.modelService.selectDBTables(forceRefresh).pipe(
+        tap(() => this.loadingTables.set(false)),
         catchError((err) => {
           // When fetch tables error
-          this.dbTablesError = err.message
+          this.dbTablesError.set(err.message)
           return of([])
         })
-        // startWith([])
       )
-    ),
+    }),
     map((tables) => sortBy(tables, 'name')),
     takeUntilDestroyed(),
     shareReplay(1)
@@ -283,7 +162,7 @@ ${sharedDimensionsPrompt}
     // merge tables config and db tables, and sort by name
     map(([tables, dbTables]) => sortBy(uniqBy([...tables, ...dbTables], 'name'), 'name') as any[]),
     // Search tables
-    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null))),
+    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(null), debounceTime(300))),
     map(([entities, text]) => {
       text = text?.toLowerCase()
       if (text) {
@@ -328,6 +207,58 @@ ${sharedDimensionsPrompt}
   // readonly _isDirty = toSignal(this.modelService.dirty$)
   readonly tables = toSignal(this.selectDBTables$)
 
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  #cubeCommand = injectCubeCommand(this.dimensions)
+  #dimensionCommand = injectDimensionCommand(this.dimensions)
+  #entityDropAction = provideCopilotDropAction({
+    id: CdkDragDropContainers.Tables,
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop table to copilot chat:`, event)
+      const data = event.item.data
+      // 获取源表或源多维数据集结构
+      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
+
+      return {
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        data: {
+          columns: [
+            { name: 'name', caption: '名称' },
+            { name: 'caption', caption: '描述' }
+          ],
+          content: Object.values(entityType.properties) as any[]
+        },
+        content: stringifyTableType(entityType),
+        templateRef: this.tableTemplate
+      }
+    }
+  })
+  #queryResultDropAction = provideCopilotDropAction({
+    id: 'pac-model__query-results',
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop query result to copilot chat:`, event)
+      const data = event.item.data
+      // 自定义查询结果数据
+      return {
+        id: nanoid(),
+        role: CopilotChatMessageRoleEnum.User,
+        data: {
+          columns: data.columns,
+          content: data.preview
+        },
+        content:
+          data.columns.map((column) => column.name).join(',') +
+          `\n` +
+          data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n'),
+        templateRef: this.tableTemplate
+      }
+    }
+  })
+
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
     this.appService.setNavigation({ catalog: MenuCatalog.Models, id: this.model.id, label: this.model.name })
@@ -343,11 +274,14 @@ ${sharedDimensionsPrompt}
   }
 
   entityPredicate(event: CdkDrag<PropertyAttributes>) {
-    return event.dropContainer.id === 'pac-model-entitysets'
+    return event.dropContainer.id === CdkDragDropContainers.Tables
   }
 
   drop(event: CdkDragDrop<Array<SemanticModelEntity>>) {
-    if (event.previousContainer.id === 'pac-model-entitysets' && event.container.id === 'pac-model-entities') {
+    if (
+      event.previousContainer.id === CdkDragDropContainers.Tables &&
+      event.container.id === CdkDragDropContainers.Entities
+    ) {
       this.createEntity(event.item.data)
     }
     // Move items in array
@@ -474,10 +408,11 @@ ${sharedDimensionsPrompt}
   async createByExpression(expression: string) {
     const result = await firstValueFrom(
       this._dialog
-        .open<ModelCreateEntityComponent, CreateEntityDialogDataType, CreateEntityDialogRetType>(
+        .open<
           ModelCreateEntityComponent,
-          { data: { model: { expression } } }
-        )
+          CreateEntityDialogDataType,
+          CreateEntityDialogRetType
+        >(ModelCreateEntityComponent, { data: { model: { expression } } })
         .afterClosed()
     )
     let entity: SemanticModelEntity
@@ -509,7 +444,7 @@ ${sharedDimensionsPrompt}
   }
 
   refreshSchema() {
-    this.refreshDBTables$.next()
+    this.refreshDBTables$.next(true)
   }
 
   deleteEntity(id: string) {
@@ -601,7 +536,7 @@ ${sharedDimensionsPrompt}
   }
 
   tableRemovePredicate(item: CdkDrag<DBTable>) {
-    return item.dropContainer.id === 'pac-model-entitysets'
+    return item.dropContainer.id === CdkDragDropContainers.Tables
   }
 
   async dropTable(event: CdkDragDrop<DBTable[]>) {
@@ -613,7 +548,7 @@ ${sharedDimensionsPrompt}
       try {
         await this.modelService.originalDataSource.dropEntity(tableName)
         this.toastrService.success('PAC.ACTIONS.Delete')
-        this.refreshDBTables$.next()
+        this.refreshDBTables$.next(true)
       } catch (err) {
         this.toastrService.error(err)
       }
@@ -671,51 +606,4 @@ ${sharedDimensionsPrompt}
       this.appService.exitFullscreen(5)
     }
   }
-
-  // /**
-  //  * Drop data on copilot chat:
-  //  * 1. table schema
-  //  * 2. table data
-  //  * 3. name of data
-  //  *
-  //  * @param event
-  //  */
-  // async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
-  //   const data = event.item.data
-
-  //   if (event.previousContainer.id === 'pac-model-entitysets') {
-  //     // 源表结构或源多维数据集结构
-  //     const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       data: {
-  //         columns: [{ name: 'name' }, { name: 'caption' }],
-  //         content: Object.values(entityType.properties) as any[]
-  //       },
-  //       content: stringifyTableType(entityType)
-  //     })
-  //   } else if (event.previousContainer.id === 'pac-model__query-results') {
-  //     // 自定义查询结果数据
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       data: {
-  //         columns: data.columns,
-  //         content: data.preview
-  //       },
-  //       content:
-  //         data.columns.map((column) => column.name).join(',') +
-  //         `\n` +
-  //         data.preview.map((row) => data.columns.map((column) => row[column.name]).join(',')).join('\n')
-  //     })
-  //   } else {
-  //     // 其他数据 name
-  //     this.copilotChat.addMessage({
-  //       id: nanoid(),
-  //       role: CopilotChatMessageRoleEnum.User,
-  //       content: data.name
-  //     })
-  //   }
-  // }
 }

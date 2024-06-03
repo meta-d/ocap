@@ -14,7 +14,6 @@ import { STORY_WIDGET_COMPONENTS } from '../../widgets'
 import { provideFormlyStory } from './designer'
 import { StoryRoutingModule } from './story-routing.module'
 import { STORY_DESIGNER_COMPONENTS } from './widgets'
-import { provideDimensionMemberRetriever } from '../../@core/copilot'
 
 @NgModule({
   declarations: [],
@@ -48,7 +47,6 @@ import { provideDimensionMemberRetriever } from '../../@core/copilot'
     provideStorySettings(),
     provideFormlyStory(),
     provideLogger(),
-    provideDimensionMemberRetriever()
   ]
 })
 export class PACStoryModule {}

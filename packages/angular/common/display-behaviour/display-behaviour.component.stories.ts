@@ -3,7 +3,7 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { NgmDisplayBehaviourComponent } from './display-behaviour.component';
 
 export default {
-  title: 'NgmDisplayBehaviourComponent',
+  title: 'Common/DisplayBehaviour',
   component: NgmDisplayBehaviourComponent,
   decorators: [
     moduleMetadata({

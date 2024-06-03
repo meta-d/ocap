@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core'
+import { AccordionWrappers, FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { map } from 'rxjs'
-import { MeasureExpressionAccordion, SQLExpression } from './common'
+import { MeasureExpressionAccordion } from './common'
 import { CubeSchemaService } from './cube.schema'
-import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 
 @Injectable()
 export class MeasureSchemaService extends CubeSchemaService {
-
   getSchema() {
     return this.translate.stream('PAC.MODEL.SCHEMA').pipe(
       map((SCHEMA) => {
@@ -70,7 +69,7 @@ export class MeasureSchemaService extends CubeSchemaService {
                 props: {
                   label: COMMON?.Description ?? 'Description',
                   rows: 1,
-                  autosize: true,
+                  autosize: true
                 }
               },
               {
@@ -80,11 +79,12 @@ export class MeasureSchemaService extends CubeSchemaService {
                 props: {
                   label: COMMON?.Column ?? 'Column',
                   options: this.factFields$,
-                  searchable: true,
+                  searchable: true
                 },
                 expressionProperties: {
-                  'props.required': '!(model.measureExpression && model.measureExpression.sql && model.measureExpression.sql.content)',
-                },
+                  'props.required':
+                    '!(model.measureExpression && model.measureExpression.sql && model.measureExpression.sql.content)'
+                }
               },
               {
                 key: 'aggregator',
@@ -112,7 +112,7 @@ export class MeasureSchemaService extends CubeSchemaService {
                   options: [
                     { value: 'String', label: 'String' },
                     { value: 'Integer', label: 'Integer' },
-                    { value: 'Numeric', label: 'Numeric' },
+                    { value: 'Numeric', label: 'Numeric' }
                     // { value: 'Boolean', label: 'Boolean' },
                     // { value: 'Date', label: 'Date' },
                     // { value: 'Time', label: 'Time' },
@@ -126,7 +126,7 @@ export class MeasureSchemaService extends CubeSchemaService {
                 type: 'checkbox',
                 defaultValue: true,
                 props: {
-                  label: COMMON?.Visible ?? 'Visible',
+                  label: COMMON?.Visible ?? 'Visible'
                 }
               },
               {
@@ -137,10 +137,11 @@ export class MeasureSchemaService extends CubeSchemaService {
                   label: MEASURE?.FormatString ?? 'Format String',
                   icon: 'text_format'
                 }
-              },
+              }
             ]
           },
-          MeasureExpressionAccordion(COMMON)
+
+          ...AccordionWrappers([MeasureExpressionAccordion(COMMON)])
         ]
       }
     ]

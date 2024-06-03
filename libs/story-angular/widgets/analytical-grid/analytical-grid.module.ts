@@ -5,10 +5,9 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatMenuModule } from '@angular/material/menu'
 import { AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { TranslateModule } from '@ngx-translate/core'
-import { NxSelectionModule } from '@metad/components/selection'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
 import { PlaceholderAddComponent } from '@metad/story/story'
-
+import { TranslateModule } from '@ngx-translate/core'
 import { WidgetAnalyticalGridComponent } from './analytical-grid.component'
 
 @NgModule({
@@ -18,11 +17,11 @@ import { WidgetAnalyticalGridComponent } from './analytical-grid.component'
     MatButtonModule,
     MatIconModule,
     TranslateModule,
-    NxSelectionModule,
-
+    
     OcapCoreModule,
     AnalyticalGridModule,
-    PlaceholderAddComponent
+    PlaceholderAddComponent,
+    NgmSelectionModule,
   ],
   exports: [WidgetAnalyticalGridComponent],
   declarations: [WidgetAnalyticalGridComponent],

@@ -105,7 +105,7 @@ export interface DataSource {
   /**
    * Discover tables from DataSource's Database
    */
-  discoverDBTables(): Observable<Array<DBTable>>
+  discoverDBTables(refresh?: boolean): Observable<Array<DBTable>>
 
   /**
    * Discover cubes from api or schema defination of DataSource
@@ -127,6 +127,11 @@ export interface DataSource {
    * @param refresh 是否跳过缓存进行重新获取数据
    */
   getEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
+  /**
+   * Observe entity sets from DataSource
+   * 
+   * @param refresh Force refresh cache in browser
+   */
   selectEntitySets(refresh?: boolean): Observable<Array<EntitySet>>
 
   /**
@@ -144,6 +149,12 @@ export interface DataSource {
    * @param dimension 维度
    */
   getMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
+  /**
+   * Observe members of dimension in entity (cube) from DataSource
+   * 
+   * @param entity Cube name
+   * @param dimension Dimension, include name and hierarchy
+   */
   selectMembers(entity: string, dimension: Dimension): Observable<IDimensionMember[]>
 
   /**
@@ -400,8 +411,8 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
     )
   }
 
-  async clearCache(): Promise<void> {
-    return await this.cacheService.clear('')
+  async clearCache(key = ''): Promise<void> {
+    return await this.cacheService.clear(key)
   }
 
   onDestroy() {

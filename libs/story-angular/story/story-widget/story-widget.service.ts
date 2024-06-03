@@ -1,7 +1,7 @@
 import { computed, inject, Inject, Injectable, Optional } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ID } from '@metad/contracts'
-import { createSubStore, dirtyCheckWith, NgmCopilotService, WidgetService, write } from '@metad/core'
+import { createSubStore, dirtyCheckWith, WidgetService, write } from '@metad/core'
 import { DataSettings } from '@metad/ocap-core'
 import {
   LinkedAnalysisSettings,
@@ -22,7 +22,7 @@ import { effectAction } from '@metad/ocap-angular/core'
 export class NxStoryWidgetService {
   readonly #storyPointService = inject(NxStoryPointService)
   private widgetService = inject(WidgetService)
-  readonly copilot? = inject(NgmCopilotService, { optional: true })
+  // readonly copilot? = inject(NgmCopilotService, { optional: true })
 
   /**
   |--------------------------------------------------------------------------

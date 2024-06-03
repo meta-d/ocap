@@ -4,6 +4,9 @@ import { NgModule } from '@angular/core';
 import { CountdownComponent } from './countdown.component';
 import { CountdownTimer } from './countdown.timer';
 
+/**
+ * @deprecated use `@metad/ocap-angular/common`
+ */
 @NgModule({
   imports: [CommonModule],
   providers: [CountdownTimer],

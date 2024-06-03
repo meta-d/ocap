@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
-import { PropertyCapacity, PropertySelectComponent } from '@metad/components/property'
 import { nonNullable } from '@metad/core'
 import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
@@ -18,6 +17,7 @@ import { BehaviorSubject, combineLatest, filter, from, map, of, switchMap } from
 import { SemanticModelService } from '../../model.service'
 import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
+import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Component({
   standalone: true,
@@ -36,9 +36,9 @@ import { getDropProperty } from '../types'
     ContentLoaderModule,
 
     NgmCommonModule,
-    PropertySelectComponent,
     AnalyticalGridModule,
-    NgmControlsModule
+    NgmControlsModule,
+    NgmEntityModule
   ]
 })
 export class ModelEntityPreviewComponent {

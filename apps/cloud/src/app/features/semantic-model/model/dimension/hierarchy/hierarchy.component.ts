@@ -49,7 +49,7 @@ import {
 import { TablesJoinModule } from '../../../tables-join'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
-import { HierarchyColumnType, TOOLBAR_ACTION_CATEGORY } from '../../types'
+import { CdkDragDropContainers, HierarchyColumnType, TOOLBAR_ACTION_CATEGORY } from '../../types'
 import { ModelDimensionComponent } from '../dimension.component'
 import { ModelDimensionService } from '../dimension.service'
 import { HierarchyTableComponent } from '../hierarchy-table/hierarchy-table.component'
@@ -101,7 +101,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   entities = [] as any
   get dataSourceName() {
-    return this.modelService.originalDataSource?.options.name
+    return this.modelService.originalDataSource?.options.key
   }
 
   tablesJoinCollapsed = true
@@ -353,7 +353,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   tablesPredicate(event: CdkDrag<EntitySchemaNode>) {
     return (
-      event.dropContainer.id === 'pac-model-entitysets' ||
+      event.dropContainer.id === CdkDragDropContainers.Tables ||
       event.dropContainer.id === 'pac-model-dimension__hierarchy-levels'
     )
   }
@@ -362,7 +362,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
    * 往 Tables 区域添加 table
    */
   dropTable(event: CdkDragDrop<{ name: string }[]>) {
-    if (event.previousContainer.id === 'pac-model-entitysets' && event.item.data.name) {
+    if (event.previousContainer.id === CdkDragDropContainers.Tables && event.item.data.name) {
       this.hierarchyService.appendTable(event.item.data.name)
     } else if (event.previousContainer.id === 'pac-model-dimension__hierarchy-levels') {
       this.hierarchyService.removeLevel(event.item.data.__id__)

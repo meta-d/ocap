@@ -1,6 +1,6 @@
 {
 	"name": "@metad/analytics",
-	"version": "2.2.1",
+	"version": "2.3.0",
 	"type": "commonjs",
 	"license": "MIT",
 	"scripts": {
@@ -10,9 +10,10 @@
 	"dependencies": {
 		"@nestjs/common": "^8.0.0",
 		"@casl/ability": "^5.4.3",
-		"@langchain/community": "^0.0.51",
-    	"@langchain/openai": "^0.0.28",
-		"@langchain/redis": "^0.0.3",
+		"@langchain/community": "^0.2.1",
+    	"@langchain/openai": "^0.0.33",
+		"@langchain/redis": "^0.0.5",
+		"@nestjs/bull": "^10.0.0",
 		"@nestjs/config": "^1.0.2",
 		"@nestjs/core": "^8.0.0",
 		"@nestjs/cqrs": "^8.0.0",
@@ -24,6 +25,7 @@
 		"@nestjs/typeorm": "^8.0.3",
 		"@nestjs/websockets": "^8.1.2",
 		"axios": "^0.24.0",
+		"bull": "^4.12.6",
 		"cron": "1.8.2",
 		"date-fns": "2.28.0",
 		"decompress": "4.2.1",

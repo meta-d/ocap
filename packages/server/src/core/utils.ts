@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { getConfig } from '@metad/server-config';
+import * as chalk from 'chalk';
 
 namespace Utils {
 	export function generatedLogoColor() {
@@ -186,4 +187,8 @@ export function getDateRangeFormat(
 		start,
 		end
 	};
+}
+
+export function vectorColor(value: string) {
+	return chalk.cyan(value)
 }

@@ -1,11 +1,4 @@
-/**
- * Keep consistent with {@link packages/copilot/src/providers.ts}
- */
-export enum AiProvider {
-  OpenAI = 'openai',
-  Azure = 'azure',
-  DashScope = 'dashscope'
-}
+import { AiProvider } from "@metad/contracts"
 
 export type AiModelType = {
   id: string

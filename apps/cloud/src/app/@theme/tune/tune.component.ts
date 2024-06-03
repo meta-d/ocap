@@ -92,10 +92,12 @@ export class TuneComponent {
   })
 
   readonly progress = computed(() =>
-    this.serverAgent.bufferSize() > 0
+    this.serverAgent?.bufferSize() > 0
       ? Math.floor((this.serverAgent.completeSize() / this.serverAgent.bufferSize()) * 100)
       : 100
   )
+
+  readonly unclosedRequests = this.serverAgent?.unclosedRequests
 
   constructor() {
     if (this.store.cacheLevel !== null && this.cacheService.getCacheLevel() !== this.store.cacheLevel) {

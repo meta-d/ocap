@@ -5,8 +5,8 @@ import { ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { FormlyModule } from '@ngx-formly/core'
-import { NxSelectionModule } from '@metad/components/selection'
 import { PACFormlySlicersComponent } from './slicers.type'
+import { NgmSelectionModule } from '@metad/ocap-angular/selection'
 
 @NgModule({
   declarations: [PACFormlySlicersComponent],
@@ -16,7 +16,7 @@ import { PACFormlySlicersComponent } from './slicers.type'
     DragDropModule,
     MatIconModule,
     MatButtonModule,
-    NxSelectionModule,
+    NgmSelectionModule,
     FormlyModule.forChild({
       types: [
         {

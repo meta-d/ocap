@@ -12,12 +12,11 @@ import {
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
-import { EditorThemeMap } from '@metad/components/editor'
-import { CopilotChatMessageRoleEnum, CopilotService } from '@metad/copilot'
-import { NxChartType, ThemeService } from '@metad/core'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
+import { NxChartType } from '@metad/core'
 import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable, NgmCopilotService } from '@metad/ocap-angular/copilot'
 import {
   BarVariant,
   HeatmapVariant,
@@ -39,6 +38,8 @@ import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
+import { NgmThemeService } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,10 +76,10 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   readonly formlyArray? = inject(MetadFormlyArrayComponent, { optional: true })
   readonly formlyArray2? = inject(NgmFormlyArrayComponent, { optional: true })
   readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
-  readonly #copilotService = inject(CopilotService)
+  readonly #copilotService = inject(NgmCopilotService)
   readonly #translate = inject(TranslateService)
   readonly #logger = inject(NGXLogger)
-  readonly #themeService = inject(ThemeService)
+  readonly #themeService = inject(NgmThemeService)
 
   @ViewChild('mapTemp') mapTemplate: TemplateRef<unknown>
 

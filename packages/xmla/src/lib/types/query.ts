@@ -7,7 +7,7 @@ import {
   NamedSet,
   PropertyName
 } from '@metad/ocap-core'
-import { startsWith } from 'lodash-es'
+import { startsWith } from 'lodash'
 import { WithMemberType } from '../calculation'
 import { MDXHierarchyFilter, MDXProperty } from '../filter'
 

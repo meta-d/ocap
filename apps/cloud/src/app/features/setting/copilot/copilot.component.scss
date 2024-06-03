@@ -1,3 +1,9 @@
 :host {
-  @apply w-full;
+  @apply w-full flex flex-col;
+}
+
+:host::ng-deep {
+  pac-settings-copilot-basic, pac-settings-copilot-examples, pac-settings-copilot-roles {
+    @apply w-full overflow-hidden;
+  }
 }

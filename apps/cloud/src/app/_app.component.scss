@@ -12,7 +12,7 @@
   @apply text-base font-light;
 }
 .pac-page-body {
-  @apply overflow-auto relative ;
+  @apply overflow-x-hidden overflow-y-auto relative;
 }
 .pac-page-body-toolbar {
   @apply flex justify-between items-center;

@@ -41,6 +41,7 @@ $prefix: (ngm, model);
     top: 0px;
     left: 0px;
     width: 100%;
+    z-index: 100;
   }
 }
 
@@ -108,13 +109,14 @@ $prefix: (ngm, model);
   height: 100%;
 
   .pac-model__nav-item:not(.selected) {
-    .pac-model__nav-action {
+    .pac-model__nav-action:not(.active) {
       @apply hidden;
     }
-  }
-  .pac-model__nav-item:hover {
-    .pac-model__nav-action {
-      @apply flex;
+
+    &:hover {
+      .pac-model__nav-action {
+        @apply flex;
+      }
     }
   }
 }

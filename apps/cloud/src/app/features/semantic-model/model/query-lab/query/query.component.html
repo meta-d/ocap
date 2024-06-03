@@ -24,13 +24,15 @@
                 [cdkDropListEnterPredicate]="editorDropPredicate"
                 (cdkDropListDropped)="dropEntity($event)"
             >
-                <ngm-entity-schema *ngFor="let entity of entities()"
+              @for (entity of entities(); track entity) {
+                <ngm-entity-schema
                     [dataSettings]="{dataSource: dataSourceName, entitySet: entity}"
                     [capacities]="[
                         EntityCapacity.Dimension,
                         EntityCapacity.Measure,
                     ]"
-                ></ngm-entity-schema>
+                />
+              }
             </div>
         </div>
 
@@ -140,8 +142,9 @@
                 </mat-toolbar>
 
                 @if (isMDX()) {
-                    <ngm-editor-mdx #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-mdx-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
+                        [entityType]="entityType()"
                         [(ngModel)]="statement"
                         (selectionChange)="onSelectionChange($event)"
                         (keyDown)="onEditorKeyDown($event)"
@@ -149,10 +152,9 @@
                         cdkDropList
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
-                        >
-                    </ngm-editor-mdx>
+                        />
                 } @else {
-                    <ngm-editor-sql #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
+                    <ngm-sql-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
                         [actions]="sqlEditorActions"
@@ -164,8 +166,7 @@
                         cdkDropList
                         [cdkDropListEnterPredicate]="editorDropPredicate"
                         (cdkDropListDropped)="drop($event)"
-                        >
-                    </ngm-editor-sql>
+                    />
                 }
             </ngm-splitter-pane>
             <ngm-splitter-pane class="relative flex flex-col justify-start items-stretch">
@@ -259,7 +260,7 @@
                     <div class="pac-result w-full h-full absolute top-0 left-0">
                         <div class="bug font-notoColorEmoji">🐞</div>
                         <div class="description">
-                            {{error}}
+                            {{_error()}}
                         </div>
                     </div>
                 </ng-template>

@@ -12,11 +12,11 @@ import { PropertyCapacity } from '../../property-select/property-select.componen
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => CalculationVarianceComponent)
+      useExisting: forwardRef(() => CalculationVariance1Component)
     }
   ]
 })
-export class CalculationVarianceComponent implements ControlValueAccessor {
+export class CalculationVariance1Component implements ControlValueAccessor {
   PropertyCapacity = PropertyCapacity
   COMPARE_TO_ENUM = CompareToEnum
 

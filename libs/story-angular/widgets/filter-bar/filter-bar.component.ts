@@ -28,7 +28,6 @@ import {
   Syntax,
   TimeGranularity,
 } from '@metad/ocap-core'
-import { NxAdvancedFilterComponent } from '@metad/components/advanced-filter'
 import {
   AbstractStoryWidget,
   ControlType,
@@ -49,6 +48,7 @@ import {
 } from 'rxjs/operators'
 import { CascadingEffect, FilterBarFieldOptions, ISmartFilterBarOptions } from './types'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgmAdvancedFilterComponent } from '@metad/ocap-angular/selection'
 
 export interface NxFilterControl {
   required?: boolean
@@ -299,7 +299,7 @@ export class NxSmartFilterBarComponent
   async openCombinationSlicer() {
     const entityType = await firstValueFrom(this.entityType$)
     const combinationSlicer = await firstValueFrom(this._dialog
-      .open(NxAdvancedFilterComponent, {
+      .open(NgmAdvancedFilterComponent, {
         viewContainerRef: this._viewContainerRef,
         data: {
           dataSettings: pick(this.dataSettings, 'dataSource', 'entitySet'),

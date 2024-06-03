@@ -1,0 +1,17 @@
+import { Controller, Logger, UseInterceptors } from '@nestjs/common'
+import { CommandBus } from '@nestjs/cqrs'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { CrudController, TransformInterceptor } from '../core'
+import { CopilotRole } from './copilot-role.entity'
+import { CopilotRoleService } from './copilot-role.service'
+
+@ApiTags('CopilotRole')
+@ApiBearerAuth()
+@UseInterceptors(TransformInterceptor)
+@Controller()
+export class CopilotRoleController extends CrudController<CopilotRole> {
+    readonly #logger = new Logger(CopilotRoleController.name)
+    constructor(private readonly service: CopilotRoleService, private readonly commandBus: CommandBus) {
+        super(service)
+    }
+}

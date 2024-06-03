@@ -1,6 +1,0 @@
-export * from './selection.module'
-export * from './types'
-export * from './advanced-slicer/advanced-slicer.component'
-export * from './slicer/slicer.component'
-export * from './slicer-bar/slicer-bar.component'
-export * from './slicers/slicers.component'

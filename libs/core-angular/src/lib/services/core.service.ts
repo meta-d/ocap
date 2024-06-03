@@ -1,9 +1,9 @@
 import { Inject, Injectable, InjectionToken } from '@angular/core'
-import { CalculationProperty, DataSettings, ParameterProperty, TimeGranularity } from '@metad/ocap-core'
+import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { combineLatest, Observable, Subject } from 'rxjs'
 import { map, pairwise, shareReplay } from 'rxjs/operators'
-import { DateVariable, Intent, NX_DATE_VARIABLES, QuerySettings } from '../models/index'
+import { Intent, QuerySettings } from '../models/index'
 
 export const NX_THEME_DEFAULT = 'default'
 
@@ -28,8 +28,14 @@ export interface NxCoreState {
   timeGranularity: TimeGranularity
 }
 
+/**
+ * @deprecated use NgmOcapCoreService instead
+ */
 @Injectable()
 export class NxCoreService extends ComponentStore<NxCoreState> {
+
+  // readonly ocapCoreService = inject(NgmOcapCoreService)
+
   private _intent$ = new Subject<Intent>()
 
   /**
@@ -73,7 +79,7 @@ export class NxCoreService extends ComponentStore<NxCoreState> {
   )
   constructor(
     @Inject(NX_THEME_OPTIONS) protected options: NxThemeOptions,
-    @Inject(NX_DATE_VARIABLES) protected dateVariables: DateVariable[]
+    // @Inject(NX_DATE_VARIABLES) protected dateVariables: DateVariable[]
   ) // @Optional() @Inject(NX_COLOR_CHROMATIC) private chromatics?: Array<ColorScheme>,
   // @Optional()
   // private _logger?: NGXLogger
@@ -112,21 +118,24 @@ export class NxCoreService extends ComponentStore<NxCoreState> {
     // return this.theme$.getValue()
   }
 
-  getDateVariables() {
-    return this.dateVariables
-  }
+  // /**
+  //  * @deprecated use NgmOcapCoreService instead
+  //  */
+  // getDateVariables() {
+  //   return this.ocapCoreService.getDateVariables()
+  // }
 
-  execDateVariables(id: string): Date | [Date, Date] {
-    const dateVariable = this.dateVariables.find((item) => item.id === id)
-    if (!dateVariable) {
-      try {
-        return new Date(id)
-      } catch (err) {
-        throw new Error(`Can't found date variable or date '${id}'`)
-      }
-    }
+  // execDateVariables(id: string): Date | [Date, Date] {
+  //   const dateVariable = this.dateVariables.find((item) => item.id === id)
+  //   if (!dateVariable) {
+  //     try {
+  //       return new Date(id)
+  //     } catch (err) {
+  //       throw new Error(`Can't found date variable or date '${id}'`)
+  //     }
+  //   }
 
-    return dateVariable.useFactory(dateVariable.deps?.map((dep) => this.execDateVariables(dep)))
-  }
+  //   return dateVariable.useFactory(dateVariable.deps?.map((dep) => this.execDateVariables(dep)))
+  // }
   
 }

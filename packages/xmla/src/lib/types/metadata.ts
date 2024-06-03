@@ -1,5 +1,5 @@
 import { IDimensionMember, Property, PropertyHierarchy, PropertyLevel } from '@metad/ocap-core'
-import { lowerCase, lowerFirst, upperFirst } from 'lodash-es'
+import { lowerCase, lowerFirst, upperFirst } from 'lodash'
 import { DIMENSION_TYPE, XmlaMember } from './rowset'
 
 /**

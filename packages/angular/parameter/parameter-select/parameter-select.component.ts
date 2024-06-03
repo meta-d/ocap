@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, forwardRef, inject, Input, ViewContainerRef } from '@angular/core'
+import { Component, forwardRef, inject, input, Input, ViewContainerRef } from '@angular/core'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
@@ -11,10 +12,11 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatRadioModule } from '@angular/material/radio'
-import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { DataSettings, EntityType, ParameterControlEnum, parameterFormatter } from '@metad/ocap-core'
+import { NgmDisplayBehaviourComponent, NgmSelectComponent } from '@metad/ocap-angular/common'
+import { DisplayDensity, filterSearch, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
+import { DataSettings, EntityType, ParameterControlEnum, parameterFormatter, ParameterProperty } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatest, firstValueFrom, map, startWith } from 'rxjs'
+import { combineLatest, firstValueFrom, map, startWith } from 'rxjs'
 import { NgmParameterCreateComponent } from '../parameter-create/parameter-create.component'
 
 @Component({
@@ -42,44 +44,41 @@ import { NgmParameterCreateComponent } from '../parameter-create/parameter-creat
     MatDividerModule,
     MatAutocompleteModule,
     TranslateModule,
-    OcapCoreModule
+
+    OcapCoreModule,
+    NgmSelectComponent,
+    NgmDisplayBehaviourComponent
   ]
 })
 export class NgmParameterSelectComponent implements ControlValueAccessor {
   ParameterControlEnum = ParameterControlEnum
 
   private readonly _dialog = inject(MatDialog)
-  public readonly viewContainerRef = inject(ViewContainerRef)
+  readonly #viewContainerRef = inject(ViewContainerRef)
 
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() label = 'Parameter'
   @Input() placeholder = '@'
 
-  @Input() dataSettings: DataSettings
-  @Input() get entityType(): EntityType {
-    return this.entityType$.value
-  }
-  set entityType(value) {
-    this.entityType$.next(value)
-  }
-  private entityType$ = new BehaviorSubject<EntityType>(null)
+  readonly dataSettings = input<DataSettings>()
+  readonly entityType = input<EntityType>()
 
   @Input() disabled: boolean
+  @Input() displayDensity: DisplayDensity | string
 
   formControl = new FormControl()
 
-  public readonly parameters$ = this.entityType$.pipe(
-    map((entityType) => {
+  readonly parameters$ = toObservable(this.entityType).pipe(
+    map<EntityType, ISelectOption<ParameterProperty>[]>((entityType) => {
       return Object.keys(entityType?.parameters ?? {}).map((key) => ({
-        value: parameterFormatter(key),
-        label: entityType.parameters[key].caption || key
+        key: parameterFormatter(key),
+        caption: entityType.parameters[key].caption || key,
+        value: entityType.parameters[key]
       }))
     })
   )
   public selectOptions$ = combineLatest([this.parameters$, this.formControl.valueChanges.pipe(startWith(null))]).pipe(
-    map(([parameters, value]) =>
-      parameters.filter((p) => (value ? p.value.toLowerCase().includes(value.toLowerCase()) : true))
-    )
+    map(([parameters, value]) => filterSearch(parameters, value))
   )
 
   get value() {
@@ -114,7 +113,7 @@ export class NgmParameterSelectComponent implements ControlValueAccessor {
     await firstValueFrom(
       this._dialog
         .open(NgmParameterCreateComponent, {
-          viewContainerRef: this.viewContainerRef,
+          viewContainerRef: this.#viewContainerRef,
           data: {
             dataSettings: this.dataSettings,
             entityType: this.entityType
@@ -122,5 +121,23 @@ export class NgmParameterSelectComponent implements ControlValueAccessor {
         })
         .afterClosed()
     )
+  }
+
+  openEditParameter(key: string) {
+    this._dialog
+      .open(NgmParameterCreateComponent, {
+        viewContainerRef: this.#viewContainerRef,
+        data: {
+          dataSettings: this.dataSettings(),
+          entityType: this.entityType(),
+          name: key
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          console.log(result)
+        }
+      })
   }
 }

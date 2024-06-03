@@ -1,0 +1,83 @@
+<mat-expansion-panel class="mat-elevation-z" displayDensity="cosy">
+    <mat-expansion-panel-header>
+        <mat-panel-title> {{cube().caption}} <span class="text-sm italic ml-2">({{cube().name}})</span> </mat-panel-title>
+        <mat-panel-description>
+          @if (entity()?.id) {
+            <button mat-icon-button [disabled]="loading()" ngmAppearance="danger"
+              [matTooltip]="'PAC.MODEL.DeleteDimensionMembers' | translate: {Default: 'Delete Dimension Members'}"
+              (click)="$event.stopPropagation();deleteMembers(entity().id)"
+            >
+              <mat-icon class="material-icons-outlined" >delete_outline</mat-icon>
+            </button>
+          }
+
+          @if (entity()?.job) {
+            @if (entity().job?.error) {
+              <mat-icon fontSet="material-icons-outlined" class="text-red-500"
+                [matTooltip]="entity().job.error"
+              >error</mat-icon>
+            } @else if(entity().job.status === 'completed') {
+              <mat-icon fontSet="material-icons-outlined" class="text-green-500"
+                [matTooltip]="'PAC.MODEL.SyncMembersJobFinished' | translate: {Default: 'Sync Members Job Finished'}"
+              >check_circle</mat-icon>
+            } @else {
+              <mat-icon fontSet="material-icons-outlined"
+                [matTooltip]="'PAC.MODEL.SyncMembersJobRunning' | translate: {Default: 'Sync Members Job Running'}"
+              >downloading</mat-icon>
+            }
+          }
+            <button mat-icon-button [disabled]="loading()"
+              [matTooltip]="'PAC.KEY_WORDS.Refresh' | translate: {Default: 'Refresh'}"
+              (click)="$event.stopPropagation();refresh()"
+            >
+                <mat-icon class="material-icons-outlined" >sync</mat-icon>
+            </button>
+
+            <button mat-icon-button [disabled]="loading() || !loaded()"
+              [matTooltip]="'PAC.MODEL.UploadDimensionMembers' | translate: {Default: 'Upload Dimension Members'}"
+              (click)="$event.stopPropagation();uploadMembers(selectedDims())"
+            >
+                <mat-icon class="material-icons-outlined" >file_upload</mat-icon>
+            </button>
+
+            <mat-checkbox [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                (change)="setAll($event.checked)"
+                (click)="$event.stopPropagation();"></mat-checkbox>
+        </mat-panel-description>
+    </mat-expansion-panel-header>
+    
+    <mat-selection-list #selection role="list" [disabled]="loading()" [(ngModel)]="selectedDims">
+      @for (dimension of dimensions(); track dimension.name) {
+        <mat-list-option role="listitem" [value]="dimension.name">
+          <ngm-entity-property [property]="dimension" />
+        </mat-list-option>
+
+        @if (selectedDims()?.includes(dimension.name)) {
+          @for (hierarchy of dimension.hierarchies; track $index) {
+            <mat-list-option role="listitem" class="hierarchy" [value]="hierarchy.name">
+              <ngm-entity-property [property]="hierarchy" />
+    
+              <span>
+                <span>
+                  @if (members()[hierarchy.name]) {
+                    ({{members()[hierarchy.name].length}})
+                  }
+                  {{ 'PAC.MODEL.Members' | translate: { Default: 'Members' } }};
+                </span>
+
+                <span>
+                  <span>
+                    {{ 'PAC.MODEL.Synchronized' | translate: { Default: 'Synchronized' } }}:
+                  </span>
+                  <span class="w-16 italic text-sm overflow-hidden text-ellipsis">{{ syncMembers()[hierarchy.name] }}</span>
+                </span>
+              </span>
+            </mat-list-option>
+          }
+        }
+
+        <mat-divider></mat-divider>
+      }
+    </mat-selection-list>
+</mat-expansion-panel>

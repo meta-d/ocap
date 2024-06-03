@@ -35,12 +35,12 @@ import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService, uuid } from 'apps/cloud/src/app/@core'
 import { isEmpty, values } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { computedAsync } from 'ngxtension/computed-async'
+import { derivedAsync } from 'ngxtension/derived-async'
 import { Observable, combineLatest, firstValueFrom } from 'rxjs'
-import { combineLatestWith, filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
+import { filter, map, shareReplay, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { MaterialModule, TranslationBaseComponent } from '../../../../../@shared'
 import { SemanticModelService } from '../../model.service'
-import { MODEL_TYPE } from '../../types'
+import { CdkDragDropContainers, MODEL_TYPE } from '../../types'
 import { ModelEntityService } from '../entity.service'
 import { ERComponent } from '../er'
 import { newDimensionFromColumn } from '../types'
@@ -83,11 +83,17 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   readonly dimensions = signal<Property[]>([])
   readonly measures = signal<Property[]>([])
   readonly allVisible = signal(false)
-  readonly fectTableFields = computedAsync(() => {
+  readonly loading = signal(false)
+  readonly fectTableFields = derivedAsync(() => {
     return this.factTable$.pipe(
       map((table) => table?.name),
       filter(nonBlank),
-      switchMap((tableName) => this.modelService.selectOriginalEntityProperties(tableName))
+      switchMap((tableName) => {
+        this.loading.set(true)
+        return this.modelService.selectOriginalEntityProperties(tableName).pipe(
+          tap(() => this.loading.set(false))
+        )
+      })
     )
   })
   readonly fectTableFieldOptions = computed(() =>
@@ -126,22 +132,21 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
   private _tableTypes = {}
 
   // Subscribers
-  private _originEntityTypeSub$ = this.entityService.originalEntityType$
-    .pipe(
-      combineLatestWith(this.isXmla$, this.entityService.cubeDimensions$, this.entityService.measures$),
-      filter(
-        ([properties, isXmla, dimensions, measures]) => isXmla && isEmpty(this.dimensions()) && isEmpty(this.measures())
-      ),
-      takeUntilDestroyed()
+  private _originEntityTypeSub$ = this.isXmla$.pipe(
+    switchMap(() => {
+      this.loading.set(true)
+      return this.entityService.originalEntityType$.pipe(
+        tap(() => this.loading.set(false)),
+      )
+    }),
+    filter(() => isEmpty(this.dimensions()) && isEmpty(this.measures())),
+    takeUntilDestroyed()
+  ).subscribe((entityType) => {
+    this.dimensions.set(
+      structuredClone(getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'dimension' })))
     )
-    .subscribe(([entityType, isXmla, dimensions, measures]) => {
-      this.dimensions.set(
-        structuredClone(dimensions?.length ? dimensions : getEntityDimensions(entityType).map((item) => ({ ...item, dataType: 'string' })))
-      )
-      this.measures.set(
-        structuredClone(measures?.length ? measures : getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'number' })))
-      )
-    })
+    this.measures.set(structuredClone(getEntityMeasures(entityType).map((item) => ({ ...item, dataType: 'measure' }))))
+  })
 
   constructor() {
     super()
@@ -343,7 +348,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
     })
     // Emit dimension created event
     this.entityService.event$.next({ type: 'dimension-created' })
-    
+
     // Save current meta from data source: @todo Why???
     this.entityService.tableDimensions.set(this.dimensions())
     this.entityService.tableMeasures.set(this.measures())
@@ -392,7 +397,7 @@ export class ModelEntityStructureComponent extends TranslationBaseComponent {
       tap(([event, tables]) => {
         if (event.previousContainer === event.container) {
           moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
-        } else if (event.previousContainer.id === 'pac-model-entitysets') {
+        } else if (event.previousContainer.id === CdkDragDropContainers.Tables) {
           const name = event.item.data.name
           this.entityService.addCubeTable(
             isEmpty(tables)

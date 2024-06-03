@@ -1,12 +1,13 @@
 import { ElementRef, Renderer2, Signal, effect, inject, isSignal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
-import { NxCoreService, ThemesEnum } from '@metad/core'
+import { NxCoreService } from '@metad/core'
 import { isEqual } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { registerTheme } from 'echarts/core'
 import { firstValueFrom } from 'rxjs'
 import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 import { AppService } from '../../app.service'
+import { ThemesEnum } from '@metad/ocap-angular/core'
 
 export function registerStoryThemes(storyService: NxStoryService) {
   return storyService.echartsTheme$

@@ -20,7 +20,7 @@ import { NgmSmartFilterComponent } from './smart-filter.component'
 import { FormsModule } from '@angular/forms'
 
 export default {
-  title: 'SmartFilter',
+  title: 'Controls/SmartFilter',
   component: NgmSmartFilterComponent,
   tags: ['autodocs'],
   decorators: [

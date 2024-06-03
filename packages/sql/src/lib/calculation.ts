@@ -55,11 +55,13 @@ export function serializeRestrictedMeasure(
       throw new Error(`Can't find measure for '${indicator.measure}'`)
     }
 
-    const conditions = compact(indicator.slicers?.map((slicer) => compileSlicer(slicer, cubeContext, dialect)) ??
+    const conditions = compact(
+      indicator.slicers?.map((slicer) => compileSlicer(slicer, cubeContext, dialect)) ??
       indicator.dimensions?.map((dimension) => {
-      const memberString = compileSlicer(convertDimensionToSlicer(dimension), cubeContext, dialect)
-      return memberString
-    }) ?? [])
+        return compileSlicer(convertDimensionToSlicer(dimension), cubeContext, dialect)
+      }) ?? 
+      []
+    )
 
     let column = ''
     let statement = ''

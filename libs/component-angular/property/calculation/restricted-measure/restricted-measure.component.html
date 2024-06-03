@@ -1,11 +1,12 @@
 <form [formGroup]="formGroup" class="w-full flex flex-col justify-start items-stretch" displayDensity="cosy">
 
   <div class="text-lg font-medium mb-4"> {{ 'COMPONENTS.CALCULATION.RESTRICTED_MEASURE' | translate: {Default: "Restricted Measure"} }} </div>
-  <ngm-measure-select searchable formControlName="measure" class="self-stretch" [label]="'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'}"
+  <ngm-measure-select1 searchable formControlName="measure" class="self-stretch" [label]="'COMPONENTS.CALCULATION.Measure' | translate: {Default: 'Measure'}"
     [placeholder]=" 'COMPONENTS.CALCULATION.MeasureSelectPlaceholder' | translate: {Default: 'select or create a measure'} "
     [dataSettings]="dataSettings"
+    [filter]="filterMeasure"
   >
-  </ngm-measure-select>
+  </ngm-measure-select1>
 
   <div class="text-base font-medium my-4"> {{ 'COMPONENTS.CALCULATION.RestrictiveConditions' | translate: {Default: "Restrictive Conditions"} }} </div>
   <ngm-property-array class="ngm-calculation__dimensions"

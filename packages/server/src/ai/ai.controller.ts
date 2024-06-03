@@ -1,9 +1,10 @@
 import { ICopilot } from '@metad/contracts'
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
 import { CopilotService } from '../copilot'
 import { AI_PROVIDERS } from './providers'
+import { AiService } from './ai.service'
 
 function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 	const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -17,7 +18,9 @@ function chatCompletionsUrl(copilot: ICopilot, path?: string) {
 export class AIController {
 	readonly #logger = new Logger(AIController.name)
 
-	constructor(private readonly copilotService: CopilotService) {}
+	constructor(
+		private readonly aiService: AiService,
+		private readonly copilotService: CopilotService) {}
 
 	@ApiOperation({ summary: 'Chat with AI provider apis' })
 	@ApiResponse({
@@ -63,16 +66,47 @@ failed: ${error.message}`)
 		}
 	}
 
-	@Post('proxy/:m/:f')
-	async proxy(@Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
-		console.log('path:', m +'/'+ f)
-
-		const result = await this.copilotService.findAll()
-		if (result.total === 0) {
-			throw new Error('No copilot found')
+	@Get('proxy/:m')
+	async proxyGetModule(@Param('m') m: string, @Headers() headers) {
+		const path = '/' + m
+		const copilot = await this.getCopilot()
+		const copilotUrl = chatCompletionsUrl(copilot, path)
+		try {
+			const response = await fetch(copilotUrl, {
+				method: 'GET',
+				headers: {
+					'content-type': 'application/json',
+					authorization: `Bearer ${copilot.apiKey}`,
+					accept: headers.accept
+				},
+			})
+			// return response
+			return await response.json()
+		} catch (error) {
+			this.#logger.error(`Try to call ai api '${copilotUrl}'
+failed: ${error.message}`)
+			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
-		const copilot = result.items[0]
-		const copilotUrl = chatCompletionsUrl(copilot, '/' + m +'/'+ f)
+	}
+	@Post('proxy/:m')
+	async proxyModule(@Param('m') m: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+		const path = '/' + m
+		return await this.proxy(path, headers, body, resp)
+	}
+	@Post('proxy/:m/:f')
+	async proxyModuleFun(@Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+		const path = '/' + m + (f ? '/'+ f : '')
+
+		// const stream = await this.aiService.proxyChatCompletionStream(path, body, headers);
+		// resp.setHeader('Content-Type', 'application/json');
+		// stream.pipe(resp);
+
+		return await this.proxy(path, headers, body, resp)
+	}
+
+	async proxy(path: string, headers: any, body: any, resp: ServerResponse) {
+		const copilot = await this.getCopilot()
+		const copilotUrl = chatCompletionsUrl(copilot, path)
 		try {
 			const response = await fetch(copilotUrl, {
 				method: 'POST',
@@ -83,10 +117,19 @@ failed: ${error.message}`)
 					accept: headers.accept
 				},
 			})
-			
-			if (!resp.headersSent) {
-				await streamToResponse(response, resp, { status: response.status })
-			}
+
+			// if (body.stream) {
+				if (!resp.headersSent) {
+					await streamToResponse(response, resp, { status: response.status, headers: {
+						'content-type': response.headers.get('content-type') || 'application/json',
+					} })
+				}
+			// } else {
+			// 	const result = await response.json()
+				
+			// 	resp.write(JSON.stringify(result))
+			// 	resp.end()
+			// }
 		} catch (error) {
 			this.#logger.error(`Try to call ai api '${copilotUrl}' with body:
 \`\`\`
@@ -95,6 +138,14 @@ ${JSON.stringify(body)}
 failed: ${error.message}`)
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
+	}
+
+	async getCopilot() {
+		const result = await this.copilotService.findAll()
+		if (result.total === 0) {
+			throw new Error('No copilot found')
+		}
+		return result.items[0]
 	}
 }
 
@@ -108,8 +159,7 @@ export async function streamToResponse(
 	init?: { headers?: Record<string, string>; status?: number },
   ) {
 	response.writeHead(init?.status || 200, {
-	  'Content-Type': 'text/plain; charset=utf-8',
-	  ...init?.headers,
+	  ...(init?.headers ?? {}),
 	});
   
 	const reader = res.body.getReader();
@@ -119,7 +169,9 @@ export async function streamToResponse(
 		response.end();
 		return;
 	  }
-	  response.write(value);
+	  if (value) {
+		response.write(value);
+	  }
 	  await read();
 	}
 	await read();

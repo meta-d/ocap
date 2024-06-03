@@ -14,7 +14,7 @@ import {
 } from '@metad/ocap-angular/core'
 import { AgentType, DataSettings, DataSource, Dimension, DisplayBehaviour, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata, Story } from '@storybook/angular'
+import { Meta, moduleMetadata } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { MemberTreeSelectOptions, NgmMemberTreeSelectComponent } from './tree-select.component'
@@ -51,7 +51,7 @@ class TestMemberTreeSelectComponent<T> {
 }
 
 export default {
-  title: 'NgmMemberTreeSelectComponent',
+  title: 'Controls/MemberTreeSelect',
   component: NgmMemberTreeSelectComponent,
   decorators: [
     moduleMetadata({
@@ -109,94 +109,94 @@ export default {
 } as Meta<NgmMemberTreeSelectComponent>
 
 
-const Template: Story<NgmMemberTreeSelectComponent> = (args: NgmMemberTreeSelectComponent) => ({
-  props: args,
-  template: `<test-member-tree-select [label]="label"
-    [dataSettings]="dataSettings"  
-    [dimension]="dimension"
-    [appearance]="appearance"
-    [data]="data"
-    [options]="options"
-  ></test-member-tree-select>`
-})
+// const Template: Story<NgmMemberTreeSelectComponent> = (args: NgmMemberTreeSelectComponent) => ({
+//   props: args,
+//   template: `<test-member-tree-select [label]="label"
+//     [dataSettings]="dataSettings"  
+//     [dimension]="dimension"
+//     [appearance]="appearance"
+//     [data]="data"
+//     [options]="options"
+//   ></test-member-tree-select>`
+// })
 
-export const Primary = Template.bind({})
-Primary.args = {
-  dimension: {
-    dimension: 'product'
-  },
-  appearance: {
-    displayDensity: DisplayDensity.compact
-  },
-  data: TREE_NODE_DATA
-}
+// export const Primary = Template.bind({})
+// Primary.args = {
+//   dimension: {
+//     dimension: 'product'
+//   },
+//   appearance: {
+//     displayDensity: DisplayDensity.compact
+//   },
+//   data: TREE_NODE_DATA
+// }
 
-export const FromDataSource = Template.bind({})
-FromDataSource.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder'
-  },
-  dimension: {
-    dimension: '[Product]',
-    displayBehaviour: DisplayBehaviour.auto
-  },
-  appearance: {
-    displayDensity: DisplayDensity.compact,
-  },
-}
+// export const FromDataSource = Template.bind({})
+// FromDataSource.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder'
+//   },
+//   dimension: {
+//     dimension: '[Product]',
+//     displayBehaviour: DisplayBehaviour.auto
+//   },
+//   appearance: {
+//     displayDensity: DisplayDensity.compact,
+//   },
+// }
 
-export const DefaultMembers = Template.bind({})
-DefaultMembers.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder'
-  },
-  dimension: {
-    dimension: '[Product]',
-    displayBehaviour: DisplayBehaviour.auto
-  },
-  appearance: {
-    displayDensity: DisplayDensity.compact,
-  },
-  options: {
-    defaultMembers: [
-      { value: '[Fantastic]' }
-    ]
-  }
-}
+// export const DefaultMembers = Template.bind({})
+// DefaultMembers.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder'
+//   },
+//   dimension: {
+//     dimension: '[Product]',
+//     displayBehaviour: DisplayBehaviour.auto
+//   },
+//   appearance: {
+//     displayDensity: DisplayDensity.compact,
+//   },
+//   options: {
+//     defaultMembers: [
+//       { value: '[Fantastic]' }
+//     ]
+//   }
+// }
 
-const TemplateWidth: Story<NgmMemberTreeSelectComponent> = (args: NgmMemberTreeSelectComponent) => ({
-  props: args,
-  styles: [
-    `.ngm-member-tree-select {
-      width: 100px;
-    }`
-  ]
-})
+// const TemplateWidth: Story<NgmMemberTreeSelectComponent> = (args: NgmMemberTreeSelectComponent) => ({
+//   props: args,
+//   styles: [
+//     `.ngm-member-tree-select {
+//       width: 100px;
+//     }`
+//   ]
+// })
 
-export const Width = TemplateWidth.bind({})
-Width.args = {
-  dataSettings: {
-    dataSource: 'Sales',
-    entitySet: 'SalesOrder3s'
-  },
-  dimension: {
-    dimension: 'product'
-  },
-  appearance: {
-    displayDensity: DisplayDensity.compact
-  },
-  options: {
-    searchable: true,
-    virtualScroll: true,
-    multiple: true
-  },
-  data: [
-    ...TREE_NODE_DATA,
-    {
-      key: 'FruitLong',
-      label: '水果水果水果水果水果水果水果水果水果水果水果水果水果水果',
-    }
-  ]
-}
+// export const Width = TemplateWidth.bind({})
+// Width.args = {
+//   dataSettings: {
+//     dataSource: 'Sales',
+//     entitySet: 'SalesOrder3s'
+//   },
+//   dimension: {
+//     dimension: 'product'
+//   },
+//   appearance: {
+//     displayDensity: DisplayDensity.compact
+//   },
+//   options: {
+//     searchable: true,
+//     virtualScroll: true,
+//     multiple: true
+//   },
+//   data: [
+//     ...TREE_NODE_DATA,
+//     {
+//       key: 'FruitLong',
+//       label: '水果水果水果水果水果水果水果水果水果水果水果水果水果水果',
+//     }
+//   ]
+// }

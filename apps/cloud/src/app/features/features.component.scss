@@ -82,7 +82,7 @@ $prefix: (ngm, shell);
 .mat-drawer-container.pac-fullscreen {
   z-index: 2;
   & > .mat-drawer-content {
-    z-index: 2;
+    z-index: 3;
   }
 }
 

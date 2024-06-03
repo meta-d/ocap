@@ -110,6 +110,7 @@ export class NxStoryComponent implements AfterViewInit {
   private _renderer = inject(Renderer2)
   private readonly _dialog = inject(MatDialog)
   private readonly _viewContainerRef = inject(ViewContainerRef)
+  readonly focusPage = injectQueryParams('focusPage')
 
   /**
   |--------------------------------------------------------------------------

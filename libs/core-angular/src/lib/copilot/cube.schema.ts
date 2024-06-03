@@ -18,7 +18,7 @@ Hierarchy name pattern: [Hierarchy Name];
 Level name pattern: [Hierarchy Name].[Level Name];`
 }
 
-export const DimensionSchema = z.object({
+const baseDimensionSchema = {
   dimension: z.string().describe('The name of the dimension using pattern `[Dimension Name]`'),
   hierarchy: z
     .string()
@@ -28,13 +28,20 @@ export const DimensionSchema = z.object({
     .string()
     .optional()
     .describe('The name of the level in the hierarchy using pattern `[Hierarchy Name].[Level Name]`')
-})
+}
+
+export const DimensionSchema = z.object(baseDimensionSchema)
 
 export const MeasureSchema = z.object({
   dimension: z.enum([C_MEASURES]),
   measure: z.string().describe('The name of the measure'),
   order: z.enum([OrderDirection.ASC, OrderDirection.DESC]).optional().describe('The order of the measure'),
   chartOptions: z.any().optional().describe('The chart options of ECharts library')
+})
+
+export const MemberSchema = z.object({
+  key: z.string().describe('the UniqueName of dimension member, for example: `[MemberKey]`'),
+  caption: z.string().optional().describe('the caption of dimension member')
 })
 
 export const SlicerSchema = z.object({
@@ -45,16 +52,25 @@ export const SlicerSchema = z.object({
       level: z.string().optional().describe('The name of the level in the hierarchy')
     })
     .describe('dimension of the slicer'),
-  members: z
-    .array(
-      z.object({
-        key: z
-          .string()
-          .describe('the UniqueName of dimension member, for example: `[MemberKey]`'),
-        caption: z.string().describe('the caption of dimension member')
-      })
-    )
-    .describe('Members in the slicer')
+  members: z.array(MemberSchema).describe('Members in the slicer')
+})
+
+export const DimensionMemberSchema = z.object({
+  ...baseDimensionSchema,
+  members: z.array(MemberSchema).describe('Members in the dimension')
+})
+export const FormulaSchema = z.string().describe('MDX expression for the calculated measure in cube')
+
+export const CalculationSchema = z.object({
+  __id__: z.string().optional().describe(`Key of the calculation measure`),
+  name: z.string().optional().describe(`Name of the calculation measure, should be unique`),
+  caption: z.string().optional().describe('Caption (short description)'),
+  description: z.string().optional().describe('Long description'),
+  formula: FormulaSchema,
+  formatting: z.object({
+    unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
+    decimal: z.number().optional().describe('The decimal of value when formatting the measure')
+  }).optional().describe('The formatting config of this measure')
 })
 
 /**
@@ -66,6 +82,10 @@ export const SlicerSchema = z.object({
  * @returns
  */
 export function tryFixDimension(dimension: Dimension | Measure, entityType: EntityType) {
+  if (!entityType) {
+    return dimension
+  }
+
   let property = null
   if (isDimension(dimension)) {
     if (dimension.level) {

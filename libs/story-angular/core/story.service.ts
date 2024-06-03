@@ -17,11 +17,10 @@ import {
   NxCoreService,
   write
 } from '@metad/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import {
   AggregationRole,
-  assign,
   assignDeepOmitBlank,
   C_MEASURES,
   CalculationProperty,
@@ -80,6 +79,7 @@ import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
 @Injectable()
 export class NxStoryService {
   readonly #translate = inject(TranslateService)
+  readonly #ocapService? = inject(NgmOcapCoreService, { optional: true })
 
   /**
   |--------------------------------------------------------------------------
@@ -321,6 +321,16 @@ export class NxStoryService {
     })
   )
 
+  readonly modelCubes$ = this.storyModelsOptions$.pipe(
+    // tap(() => console.log(`loading cubes...`)),
+    switchMap((dataSources) => combineLatest(dataSources.map((option) => this.selectDataSource(option.key).pipe(
+      switchMap((dataSource) => dataSource.discoverMDCubes()),
+    ))).pipe(
+      map((cubess) => cubess.map((cubes, index) => ({ ...dataSources[index], cubes })))
+    )),
+    shareReplay(1)
+  )
+
   /**
   |--------------------------------------------------------------------------
   | Signals
@@ -396,8 +406,7 @@ export class NxStoryService {
     }
   })
   // 是否迁移回 storyService 中来, 不通过 core service
-  private storyUpdateEventSub = this.dsCoreService
-    .onStoryUpdate()
+  private storyUpdateEventSub = this.#ocapService?.onEntityUpdate()
     .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
       this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
@@ -565,12 +574,15 @@ export class NxStoryService {
     return this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.HandsetPortrait])
   }
 
+  selectDataSource(name: string) {
+    return this.dsCoreService.getDataSource(name)
+  }
+
   /**
    * 监听某个 Entity Type
    */
-  selectEntityType({ dataSource, entitySet }): Observable<EntityType> {
-    return this.dsCoreService
-      .getDataSource(dataSource)
+  selectEntityType({ dataSource, entitySet }: {dataSource: string; entitySet: string;}): Observable<EntityType> {
+    return this.selectDataSource(dataSource)
       .pipe(switchMap((dataSource) => dataSource.selectEntityType(entitySet).pipe(filter(isEntityType))))
   }
 
@@ -613,6 +625,19 @@ export class NxStoryService {
     return this._storyEvent$.pipe(filter(({ key }) => key === pointKey))
   }
 
+  selectEntitySchemaProperty<T>(dataSource: string, entitySet: string, key: string) {
+    return this.schemas$.pipe(
+      map((schemas) => schemas?.[dataSource]),
+      map((schemas) => schemas?.[entitySet]),
+      map<EntityType, T>((schema) => Object.values(schema?.properties ?? {}).find((property) => property.__id__ === key) as T),
+    )
+  }
+
+  /**
+  |--------------------------------------------------------------------------
+  | Actions
+  |--------------------------------------------------------------------------
+  */
   public sendIntent(intent: Intent) {
     this.coreService.sendIntent(intent)
   }
@@ -621,11 +646,6 @@ export class NxStoryService {
     return this.coreService.onIntent()
   }
 
-  /**
-  |--------------------------------------------------------------------------
-  | Actions
-  |--------------------------------------------------------------------------
-  */
   setCurrentIndex(index: number) {
     const displayPoints = this.displayPoints()
     this.setCurrentPageKey(displayPoints[index]?.key)
@@ -878,7 +898,7 @@ export class NxStoryService {
         entityCaption
       }: { dataSettings: DataSettings; calculation: CalculationProperty & { options?: any }; entityCaption?: string }
     ) => {
-      // const schema = (state.story.schema = state.story.schema || { name: null, entitySets: {} })
+
       const properties = getOrInitEntityType(
         state,
         dataSettings.dataSource,
@@ -895,7 +915,8 @@ export class NxStoryService {
       properties[calculation.name] = {
         ...omit(calculation, 'options'),
         role: AggregationRole.measure,
-        dataType: 'number'
+        dataType: 'number',
+        visible: true,
       }
 
       const property = properties[calculation.name]
@@ -1005,7 +1026,7 @@ export class NxStoryService {
       }
 
       if (!key) {
-        this.createInputControlWidget({
+        this._createInputControlWidget(state, {
           ...dataSettings,
           dimension: {
             dimension: parameter.name
@@ -1028,7 +1049,11 @@ export class NxStoryService {
   /**
    * 创建 dimension 的 Input Control
    */
-  readonly createInputControlWidget = this.updater((state, { dataSource, entitySet, dimension }: DataSettings) => {
+  readonly createInputControlWidget = this.updater((state, dataSettings: DataSettings) => {
+    this._createInputControlWidget(state, dataSettings)
+  })
+
+  private _createInputControlWidget(state: StoryState, { dataSource, entitySet, dimension }: DataSettings) {
     const storyPoint = state.story.points.find((item) => item.key === state.currentPageKey)
     storyPoint.widgets.push({
       key: uuid(),
@@ -1047,7 +1072,7 @@ export class NxStoryService {
         dimension
       }
     } as StoryWidget)
-  })
+  }
 
   getCurrentWidget(widgetKey?: string) {
     const state = this.get<StoryState>()

@@ -42,7 +42,7 @@ export class PACIndicatorService extends ComponentStore<IndicatorState> {
     this.dataSource$,
     (entitySet, dataSource) => {
       return {
-        dataSource: dataSource.options.name,
+        dataSource: dataSource.options.key,
         entitySet
       }
     }

@@ -6,9 +6,8 @@ import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
-import { EditorThemeMap } from '@metad/components/editor'
-import { ThemeService, ThemesEnum } from '@metad/core'
-import { ButtonGroupDirective } from '@metad/ocap-angular/core'
+import { ButtonGroupDirective, NgmThemeService, ThemesEnum } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 
@@ -34,7 +33,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor'
 export class ThemeBuilderComponent {
 
   public readonly data = inject(MAT_DIALOG_DATA)
-  readonly themeService = inject(ThemeService)
+  readonly themeService = inject(NgmThemeService)
 
   c_light = ThemesEnum.light
   c_dark = ThemesEnum.dark

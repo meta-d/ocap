@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { DebugElement } from '@angular/core'
 import { isNil, negate, isEqual, isEmpty, merge, isString, includes } from 'lodash-es'
 import { filter } from 'rxjs/operators'
+import { ISelectOption } from './models'
 
 export const isNotNil = negate(isNil)
 export const filterNil = filter(negate(isNil))
@@ -10,6 +11,10 @@ export const isNotEmpty = negate(isEmpty)
 
 export function isBlank(value) {
   return isNil(value) || isString(value) && !value.trim()
+}
+
+export function nonBlank<T>(value: T): value is NonNullable<T> {
+  return !isBlank(value)
 }
 
 /**
@@ -330,9 +335,9 @@ export function includeIgnoreCase(text, target) {
  * @param highlight 
  * @returns 
  */
-export function splitByHighlight(text, highlight): Array<{value: string, match?: boolean}> {
+export function splitByHighlight(text: string, highlight: string | string[]): Array<{value: string, match?: boolean}> {
   if (highlight && text) {
-    const keywords: Array<string> = highlight.split(/\s+/g)
+    const keywords: Array<string> = Array.isArray(highlight) ? highlight : highlight.split(/\s+/g)
     const matchs = String(text).match(new RegExp(`(${keywords.join('|')})`, 'ig'))
     const results = String(text).split(new RegExp(`(${keywords.join('|')})`, 'i'))
     if (results?.length > 1) {
@@ -415,4 +420,10 @@ export function getErrorMessage(err: any): string {
   }
 
   return error
+}
+
+export function filterSearch(items: ISelectOption[], text: string | null | undefined) {
+  const words = text?.split(' ').filter(nonBlank).map((word) => word.toLowerCase())
+  return words?.length ? items.filter((item) => words.every((word) => 
+    item.caption?.toLowerCase().includes(word) || item.key.toLowerCase().includes(word))) : items
 }

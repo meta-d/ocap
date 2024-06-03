@@ -7,7 +7,8 @@
     "inlineSources": true,
     "types": [],
     "target": "ES2022",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "noUnusedLocals": true
   },
   "exclude": [
     "src/**/*.spec.ts",

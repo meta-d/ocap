@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common'
-import { NgModule } from '@angular/core'
+import { NgModule, importProvidersFrom } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
-import { CopilotService } from '@metad/copilot'
 import { NgmFormlyModule, provideFormly } from '@metad/formly'
+import { registerEChartsThemes } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotContextService, NgmCopilotChatComponent, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
 import {
   DensityDirective,
   NgmAgentService,
@@ -15,19 +15,19 @@ import {
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
-import { registerEChartsThemes } from '@metad/material-theme'
+import { provideMarkdown } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { environment } from '../../environments/environment'
-import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent } from '../@core/index'
+import { DirtyCheckGuard, LocalAgent, PACCopilotService, ServerAgent, ServerSocketAgent, provideLogger } from '../@core/index'
 import { AssetsComponent } from '../@shared/assets/assets.component'
 import { MaterialModule, SharedModule } from '../@shared/index'
+import { NotificationComponent, TuneComponent } from '../@theme'
 import { HeaderSettingsComponent, ProjectSelectorComponent } from '../@theme/header'
 import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
-import { NotificationComponent, TuneComponent } from '../@theme'
-import { MarkdownModule } from 'ngx-markdown'
+import { provideDimensionMemberRetriever } from '../@core/copilot'
 
 registerEChartsThemes()
 
@@ -56,13 +56,15 @@ registerEChartsThemes()
     NotificationComponent,
     TuneComponent,
 
-    MarkdownModule.forRoot()
+    // MarkdownModule.forRoot()
   ],
   providers: [
     DirtyCheckGuard,
     NgmAgentService,
     NgmDSCacheService,
+    provideLogger(),
     provideFormly(),
+    provideMarkdown({}),
     {
       provide: NGM_WASM_AGENT_WORKER,
       useValue: '/assets/ocap-agent-data-init.worker.js'
@@ -125,10 +127,15 @@ registerEChartsThemes()
       useClass: StoryFeedService
     },
     {
-      provide: CopilotService,
+      provide: NgmCopilotService,
       useExisting: PACCopilotService
     },
-    NgmCopilotEngineService
+    NgmCopilotEngineService,
+    {
+      provide: NgmCopilotContextToken,
+      useClass: NgmCopilotContextService
+    },
+    provideDimensionMemberRetriever()
   ]
 })
 export class FeaturesModule {}

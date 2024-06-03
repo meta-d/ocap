@@ -1,7 +1,6 @@
-import { DatabaseProviderModule, TenantModule } from '@metad/server-core'
+import { DatabaseProviderModule, RedisModule, TenantModule } from '@metad/server-core'
 import { DynamicModule, Module, forwardRef } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { RedisModule } from '../redis.module'
 import { SeedDataService } from './seed-data.service'
 
 /**

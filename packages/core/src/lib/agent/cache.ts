@@ -48,36 +48,38 @@ export function Cache(key: string, {maxAge, level}: CacheOptions) {
     const method = descriptor.value
 
     descriptor.value = function (...args) {
-      const options = typeof args[args.length - 1] === 'object' ? args[args.length - 1] : null
-      const cacheKey = options ? serializeArgs(key, ...args.slice(0, args.length - 1)) : serializeArgs(key, ...args)
+      if (isBrowser()) {
+        const options = typeof args[args.length - 1] === 'object' ? args[args.length - 1] : null
+        const cacheKey = options ? serializeArgs(key, ...args.slice(0, args.length - 1)) : serializeArgs(key, ...args)
+        
+        if (cacheOptions.level <= CACHE_OPTIONS.level) {
+          if (!options?.skip) {
+            return get(cacheKey, cacheOptions).then((data) => {
+              if (data) {
+                return data
+              }
       
-      if (cacheOptions.level <= CACHE_OPTIONS.level) {
-        if (!options?.skip) {
-          return get(cacheKey, cacheOptions).then((data) => {
-            if (data) {
-              return data
-            }
-    
+              return method.apply(this, args).then(
+                (result: unknown) => {
+                  if (result) {
+                    set(cacheKey, result, cacheOptions)
+                  }
+                  return result
+                }
+              )
+            })
+          } else {
             return method.apply(this, args).then(
               (result: unknown) => {
                 if (result) {
                   set(cacheKey, result, cacheOptions)
                 }
                 return result
-              }
-            )
-          })
-        } else {
-          return method.apply(this, args).then(
-            (result: unknown) => {
-              if (result) {
-                set(cacheKey, result, cacheOptions)
-              }
-              return result
-          })
+            })
+          }
         }
       }
-      
+
       return method.apply(this, args)
     }
   }
@@ -110,4 +112,8 @@ export class DSCacheService {
   async clear(key: IDBValidKey, customStore?: UseStore): Promise<void> {
     return del(key, customStore)
   }
+}
+
+export function isBrowser() {
+  return typeof window !== 'undefined' && typeof window.document !== 'undefined'
 }

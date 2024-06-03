@@ -1,35 +1,37 @@
 import { Component, Signal, ViewChild, ViewContainerRef, computed, effect, inject, signal } from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
-import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
-import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
-import {
-  EntityType,
-  getEntityDimensions,
-  getEntityMeasures,
-  getEntityProperty,
-  isCalculationProperty,
-  ISlicer,
-  isMeasureControlProperty,
-  MeasureControlProperty,
-  isEntityType,
-  DataSettings,
-  isParameterProperty,
-  ParameterProperty,
-  IMember,
-  PropertyMeasure,
-  isEmpty,
-  Dimension
-} from '@metad/ocap-core'
-import { CalculationEditorComponent } from '@metad/components/property'
 import {
   AbstractStoryWidget,
   ControlType,
   StoryWidgetState,
   StoryWidgetStyling,
   WidgetMenuType,
-  nonBlank,
+  nonBlank
 } from '@metad/core'
+import { NgmMemberTreeComponent } from '@metad/ocap-angular/controls'
+import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/core'
+import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
+import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
+import {
+  DataSettings,
+  Dimension,
+  EntityType,
+  IMember,
+  ISlicer,
+  MeasureControlProperty,
+  ParameterProperty,
+  PropertyMeasure,
+  getEntityDimensions,
+  getEntityMeasures,
+  getEntityProperty,
+  isCalculationProperty,
+  isEmpty,
+  isEntityType,
+  isMeasureControlProperty,
+  isParameterProperty
+} from '@metad/ocap-core'
 import { FilterControlType, NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, combineLatest, firstValueFrom, timer } from 'rxjs'
@@ -43,10 +45,7 @@ import {
   switchMap,
   withLatestFrom
 } from 'rxjs/operators'
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
-import { determineControlType, InputControlOptions } from './types'
-
+import { InputControlOptions, determineControlType } from './types'
 
 export interface InputControlStyling extends StoryWidgetStyling {
   widget: unknown
@@ -56,7 +55,6 @@ export interface InputControlState extends StoryWidgetState<InputControlOptions>
   entityType: EntityType
 }
 
-
 @Component({
   selector: 'pac-input-control',
   templateUrl: './input-control.component.html',
@@ -65,9 +63,11 @@ export interface InputControlState extends StoryWidgetState<InputControlOptions>
     class: 'pac-input-control'
   }
 })
-export class NxInputControlComponent
-  extends AbstractStoryWidget<InputControlOptions, InputControlState, InputControlStyling>
-{
+export class NxInputControlComponent extends AbstractStoryWidget<
+  InputControlOptions,
+  InputControlState,
+  InputControlStyling
+> {
   CONTROL_TYPE = ControlType
   INPUT_CONTROL_TYPE = FilterControlType
 
@@ -76,7 +76,7 @@ export class NxInputControlComponent
   private readonly _dialog = inject(MatDialog)
   private readonly filterBarService = inject(NgmSmartFilterBarService)
   private readonly _viewContainerRef = inject(ViewContainerRef)
-  private readonly logger? = inject(NGXLogger, {optional: true})
+  private readonly logger? = inject(NGXLogger, { optional: true })
 
   @ViewChild(NgmMemberTreeComponent) memberTree!: NgmMemberTreeComponent
 
@@ -125,9 +125,7 @@ export class NxInputControlComponent
   public readonly entityType$ = this.entitySet$.pipe(
     filter(nonBlank),
     switchMap((entity) =>
-      this.dataSource$.pipe(
-        switchMap((dataSource) => dataSource.selectEntityType(entity).pipe(filter(isEntityType))),
-      )
+      this.dataSource$.pipe(switchMap((dataSource) => dataSource.selectEntityType(entity).pipe(filter(isEntityType))))
     ),
     takeUntilDestroyed(),
     shareReplay(1)
@@ -153,7 +151,7 @@ export class NxInputControlComponent
     return null
   })
 
-  public readonly type = computed(() => {
+  public readonly type = computed<ControlType | FilterControlType>(() => {
     if (this.asPlaceholder()) {
       return null
     }
@@ -172,9 +170,11 @@ export class NxInputControlComponent
     }
   })
   public availableMeasures = computed(() => {
-    return this.measureControlProperty()?.availableMembers?.map(({ value: measure }) =>
-      getEntityProperty<PropertyMeasure>(this.entityType(), measure as string)
-    ).filter(Boolean)
+    return this.measureControlProperty()
+      ?.availableMembers?.map(({ value: measure }) =>
+        getEntityProperty<PropertyMeasure>(this.entityType(), measure as string)
+      )
+      .filter(Boolean)
   })
 
   public readonly cascadingEffect$ = this.options$.pipe(map((options) => options?.cascadingEffect))
@@ -184,21 +184,25 @@ export class NxInputControlComponent
     this.selectionVariant$.pipe(
       withLatestFrom(this.cascadingEffect$),
       filter(([, cascadingEffect]) => cascadingEffect),
-      startWith([null]),
+      startWith([null])
     ),
-    this.presentationVariant$]
+    this.presentationVariant$
+  ]).pipe(
+    map(([dataSettings, [selectionVariant], presentationVariant]) => {
+      return {
+        ...(dataSettings ?? {}),
+        selectionVariant,
+        presentationVariant
+      } as DataSettings & { dimension?: Dimension }
+    })
   )
-    .pipe(
-      map(([dataSettings, [selectionVariant], presentationVariant]) => {
-        return {
-          ...(dataSettings ?? {}),
-          selectionVariant,
-          presentationVariant
-        } as DataSettings & {dimension?: Dimension}
-      }),
-    )
   public readonly _dataSettings = toSignal(this.dataSettings$)
-  public members = toSignal(this.slicer$.pipe(map((slicer) => slicer?.members ?? []), startWith([])))
+  public members = toSignal(
+    this.slicer$.pipe(
+      map((slicer) => slicer?.members ?? []),
+      startWith([])
+    )
+  )
 
   public readonly displayMembers = computed(() => {
     const members = [...this.members(), ...(<IMember[]>this.parameter()?.members ?? [])]
@@ -214,7 +218,9 @@ export class NxInputControlComponent
     return text
   })
 
-  public readonly asPlaceholder = computed(() => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet))
+  public readonly asPlaceholder = computed(
+    () => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet)
+  )
 
   // Inner states
   readonly storyPoints = this.storyService.storyPoints
@@ -228,108 +234,137 @@ export class NxInputControlComponent
     this.entityType.set(entityType)
   })
 
-  private _menuClickSub = this.widgetService.onMenuClick().pipe(takeUntilDestroyed()).subscribe(async (menu) => {
-    switch(menu.key) {
-      case 'clearDefaultMembers':
-        this.updateOptions({
-          defaultMembers: [],
-          dates: []
-        })
-        break;
-      case 'saveAsDefaultMembers':
-        this.updateOptions({
-          defaultMembers: [...this.slicer.members],
-          dates: this.dates.map((d) => d.toISOString())
-        })
-        break;
-      case 'editInputControl':
-        await this.openEditInputControl()
-        break
-    }
-  })
+  private _menuClickSub = this.widgetService
+    .onMenuClick()
+    .pipe(takeUntilDestroyed())
+    .subscribe(async (menu) => {
+      switch (menu.key) {
+        case 'clearDefaultMembers':
+          this.updateOptions({
+            defaultMembers: [],
+            dates: []
+          })
+          break
+        case 'saveAsDefaultMembers':
+          console.log('saveAsDefaultMembers', this.slicer, this.dates)
+          this.updateOptions({
+            defaultMembers: [...this.slicer.members],
+            dates: this.dates.map((d) => d.toISOString()),
+            defaultValue: ''
+          })
+          break
+        case 'editInputControl':
+          await this.openEditInputControl()
+          break
+      }
+    })
 
-  private datesSub = this.options$.pipe(
-    map((options) => options?.dates),
-    distinctUntilChanged(),
-    takeUntilDestroyed()
-  ).subscribe((dates) => {
-    this.dates = dates?.map((d) => new Date(d)) ?? []
-  })
+  private datesSub = this.options$
+    .pipe(
+      map((options) => options?.dates),
+      distinctUntilChanged(),
+      takeUntilDestroyed()
+    )
+    .subscribe((dates) => {
+      this.dates = dates?.map((d) => new Date(d)) ?? []
+    })
 
   constructor() {
     super()
-    effect(() => {
-      if (this.measureControlProperty()?.value && !this.measureControl()) {
-        this.measureControl.set(this.measureControlProperty()?.value as string)
-      }
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        if (this.measureControlProperty()?.value && !this.measureControl()) {
+          this.measureControl.set(this.measureControlProperty()?.value as string)
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
-    effect(() => {
-      if (this.measureControl()) {
-        this.onMeasureSelectChange(this.measureControl())
-      }
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        if (this.measureControl()) {
+          this.onMeasureSelectChange(this.measureControl())
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
-    effect(() => {
-      if (this.parameter() && this.storyPoints().some((point) => point.widgets?.some((widget) => widget.key !== this.key && widget.dataSettings?.dimension?.dimension === this.parameter().name))) {
-        this.error.set(this.getTranslation('Story.Widgets.InputControl.SamePropertyAlreadyExists', 'A component with the same property already exists'))
-      } else {
-        this.error.set(null)
-      }
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        if (
+          this.parameter() &&
+          this.storyPoints().some((point) =>
+            point.widgets?.some(
+              (widget) => widget.key !== this.key && widget.dataSettings?.dimension?.dimension === this.parameter().name
+            )
+          )
+        ) {
+          this.error.set(
+            this.getTranslation(
+              'Story.Widgets.InputControl.SamePropertyAlreadyExists',
+              'A component with the same property already exists'
+            )
+          )
+        } else {
+          this.error.set(null)
+        }
+      },
+      { allowSignalWrites: true }
+    )
 
-    effect(() => {
-      const defaultMembers = this.optionsSignal()?.defaultMembers
-      const property = this.property()
+    effect(
+      () => {
+        const defaultMembers = this.optionsSignal()?.defaultMembers
+        const property = this.property()
 
-      const editProperty = isParameterProperty(property) || isCalculationProperty(property)
-      const i18n = this.getTranslation('Story.Widgets.InputControl', {})
-      const menus = []
-      if (editProperty) {
-        menus.push(
-          {
+        const editProperty = isParameterProperty(property) || isCalculationProperty(property)
+        const i18n = this.getTranslation('Story.Widgets.InputControl', {})
+        const menus = []
+        if (editProperty) {
+          menus.push({
             icon: 'filter_vintage',
             key: 'editInputControl',
             name: i18n?.EditInputControl ?? 'Edit Input Control',
             editable: editProperty,
             type: WidgetMenuType.Action
-          }
-        )
-      }
-      if (defaultMembers?.length) {
-        menus.push({
-          icon: 'bookmark_remove',
-          key: 'clearDefaultMembers',
-          name: i18n?.ClearDefaultMembers ?? 'Clear Default Members',
-          editable: true,
-          type: WidgetMenuType.Action
-        })
-      }
-      this.widgetService.setMenus([
-        ...menus,
-        {
-          icon: 'bookmark_add',
-          key: 'saveAsDefaultMembers',
-          name: i18n?.SaveAsDefaultMembers ?? 'Save as Default Members',
-          editable: !isEmpty(this.members()),
-          type: WidgetMenuType.Action
+          })
         }
-      ])
-    }, {allowSignalWrites: true})
+        if (defaultMembers?.length) {
+          menus.push({
+            icon: 'bookmark_remove',
+            key: 'clearDefaultMembers',
+            name: i18n?.ClearDefaultMembers ?? 'Clear Default Members',
+            editable: true,
+            type: WidgetMenuType.Action
+          })
+        }
+        this.widgetService.setMenus([
+          ...menus,
+          {
+            icon: 'bookmark_add',
+            key: 'saveAsDefaultMembers',
+            name: i18n?.SaveAsDefaultMembers ?? 'Save as Default Members',
+            editable: !isEmpty(this.members()),
+            type: WidgetMenuType.Action
+          }
+        ])
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   refresh() {
     this.memberTree?.refresh(true)
   }
 
-  trackByName(index: number, item: {name: string}) {
+  trackByName(index: number, item: { name: string }) {
     return item.name
   }
 
   async clearSelectedMembers() {
     const parameter = this.parameter()
     if (parameter) {
-      this.updateParameterValue({members: []})
+      this.updateParameterValue({ members: [] })
     } else {
       const _slicer = {
         ...this.slicer,
@@ -391,17 +426,19 @@ export class NxInputControlComponent
     const dataSettings = this._dataSettings()
     const property = await firstValueFrom(this.property$)
     const entityType = await firstValueFrom(this.entityType$)
-    const result = await firstValueFrom(this._dialog
-      .open(CalculationEditorComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          dsCoreService: this.dsCoreService,
-          dataSettings,
-          entityType,
-          value: property
-        }
-      })
-      .afterClosed())
+    const result = await firstValueFrom(
+      this._dialog
+        .open(NgmCalculationEditorComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            dsCoreService: this.dsCoreService,
+            dataSettings,
+            entityType,
+            value: property
+          }
+        })
+        .afterClosed()
+    )
     if (result) {
       this.storyService.updateCalculationMeasure({ dataSettings, calculation: result })
     }
@@ -412,19 +449,19 @@ export class NxInputControlComponent
     const property = await firstValueFrom(this.property$)
     const entityType = await firstValueFrom(this.entityType$)
 
-    await firstValueFrom(this._dialog
-      .open(NgmParameterCreateComponent, {
-        viewContainerRef: this._viewContainerRef,
-        data: {
-          dataSettings,
-          entityType,
-          coreService: this.coreService,
-          name: property.name
-        }
-      })
-      .afterClosed()
+    await firstValueFrom(
+      this._dialog
+        .open(NgmParameterCreateComponent, {
+          viewContainerRef: this._viewContainerRef,
+          data: {
+            dataSettings,
+            entityType,
+            coreService: this.coreService,
+            name: property.name
+          }
+        })
+        .afterClosed()
     )
-    
   }
 
   async openEditInputControl() {
@@ -438,8 +475,8 @@ export class NxInputControlComponent
 
   /**
    * 响应子组件改变后的 Slicer, 不能再改变其对象引用, 否则就会造成死循环
-   * 
-   * @param slicer 
+   *
+   * @param slicer
    */
   onSlicerChange(slicer: ISlicer) {
     if (slicer) {

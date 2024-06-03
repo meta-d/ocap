@@ -1,4 +1,3 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { SelectionModel } from '@angular/cdk/collections'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { CommonModule } from '@angular/common'
@@ -195,7 +194,7 @@ export class NgmSelectComponent
   }
 
   displayWith(option: any) {
-    return option?.caption || option?.label || option?.key || option?.value
+    return option?.caption || option?.label || option?.key
   }
 
   onAutoInput(event: any) {

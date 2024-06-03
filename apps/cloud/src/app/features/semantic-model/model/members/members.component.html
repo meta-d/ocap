@@ -1,22 +1,14 @@
-<mat-accordion>
+<h2 class="text-lg m-2">
+  {{ 'PAC.MODEL.SyncDimensionMembers' | translate: {Default: 'Sync Dimension Members'} }}
+</h2>
+
+<mat-accordion multi>
   @for (cube of allCubes(); track cube.name) {
-    <mat-expansion-panel hideToggle >
-        <mat-expansion-panel-header>
-        <mat-panel-title> {{cube.name}} </mat-panel-title>
-        <mat-panel-description>  </mat-panel-description>
-        </mat-expansion-panel-header>
-        
-        <mat-list role="list">
-          @for (dimension of cube.dimensions; track dimension.name) {
-            <mat-list-item role="listitem">
-                <div class="flex justify-between items-center">
-                    <span>{{dimension.caption || dimension.name}}</span>
-                    <button mat-raised-button color="primary" [disabled]="loading()" (click)="syncMember(cube, dimension)">Sync Member</button>
-                </div>
-            </mat-list-item>
-          }
-        </mat-list>
-        
-    </mat-expansion-panel>
+    <pac-model-members-cube [cube]="cube" />
   }
 </mat-accordion>
+@if (loading()) {
+  <div class="absolute left-1/2 top-1/2 -ml-3 -mt-3">
+    <mat-progress-spinner mode="indeterminate" [diameter]="24" color="accent"></mat-progress-spinner>
+  </div>
+}

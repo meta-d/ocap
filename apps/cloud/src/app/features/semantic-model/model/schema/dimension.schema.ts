@@ -177,6 +177,7 @@ export function DimensionModeling(
                   className,
                   props: {
                     label: DIMENSION?.ForeignKey ?? 'Foreign Key',
+                    valueKey: 'key',
                     options: factColumns$,
                     // required: isCube,
                     searchable: true,

@@ -1,5 +1,5 @@
 import { BusinessAreaRole, IUser } from '@metad/contracts'
-import { Employee, ITryRequest, RequestContext, User } from '@metad/server-core'
+import { ITryRequest, REDIS_CLIENT, RequestContext, User } from '@metad/server-core'
 import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -15,7 +15,8 @@ import { CommandBus } from '@nestjs/cqrs'
 import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
-import { REDIS_CLIENT } from '../core/redis.module'
+import { SemanticModelMemberService } from '../model-member/member.service'
+import { NgmDSCoreService, registerModel } from './ocap'
 
 const axios = _axios.default
 
@@ -27,17 +28,18 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	constructor(
 		@InjectRepository(SemanticModel)
 		modelRepository: Repository<SemanticModel>,
-		@InjectRepository(Employee)
-		protected readonly employeeRepository: Repository<Employee>,
 		private readonly dsService: DataSourceService,
 		private readonly cacheService: SemanticModelCacheService,
+		private readonly memberService: SemanticModelMemberService,
 		private readonly configService: ConfigService,
 		private readonly businessAreaService: BusinessAreaService,
 		readonly commandBus: CommandBus,
 		@Inject(REDIS_CLIENT)
-		private readonly redisClient: RedisClientType
+		private readonly redisClient: RedisClientType,
+
+		private readonly dsCoreService: NgmDSCoreService
 	) {
-		super(modelRepository, employeeRepository, commandBus)
+		super(modelRepository, commandBus)
 	}
 
 	/**
@@ -69,12 +71,20 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 	}
 
 	async seedIfEmpty() {
-		const { items } = await this.findAll()
+		const { items } = await this.findAll({
+			relations: ['dataSource', 'dataSource.type', 'roles']
+		})
+		
 		await Promise.all(
-			items.map((model) => {
-				return this.updateCatalogContent(model.id).catch((error) => console.error(error))
-			})
+			items.map((model) => this.updateCatalogContent(model.id).catch((error) => console.error(error)))
 		)
+
+		// Register semantic models
+		items.forEach((model) => {
+			registerModel(model, this.dsCoreService)
+		})
+
+		await this.memberService.seedVectorStore(items)
 	}
 
 	/**

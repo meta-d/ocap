@@ -13,6 +13,7 @@ import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { FormulaEditorComponent } from './editor/editor.component'
+import { NgmBaseEditorDirective } from './editor.directive'
 
 @NgModule({
   imports: [
@@ -32,8 +33,8 @@ import { FormulaEditorComponent } from './editor/editor.component'
     ResizerModule,
     NgmEntitySchemaComponent
   ],
-  exports: [FormulaEditorComponent],
-  declarations: [FormulaEditorComponent],
+  exports: [FormulaEditorComponent, NgmBaseEditorDirective],
+  declarations: [FormulaEditorComponent, NgmBaseEditorDirective],
   providers: []
 })
 export class NgmFormulaModule {}

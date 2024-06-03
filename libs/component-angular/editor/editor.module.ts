@@ -15,6 +15,9 @@ import { SchemaEditorComponent } from './schema/schema.component'
 import { SqlMemberComponent } from './sql-member/sql-member.component'
 import { SQLEditorComponent } from './sql/sql.component'
 
+/**
+ * @deprecated use @metad/ocap-angular/editor
+ */
 @NgModule({
   declarations: [
     SchemaEditorComponent,

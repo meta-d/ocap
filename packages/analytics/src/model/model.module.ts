@@ -1,5 +1,5 @@
-import { EmployeeModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
-import { forwardRef, Module } from '@nestjs/common'
+import { EmployeeModule, RedisModule, SharedModule, TenantModule, UserModule } from '@metad/server-core'
+import { Module, forwardRef } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RouterModule } from 'nest-router'
@@ -9,20 +9,19 @@ import { DataSourceModule } from '../data-source/data-source.module'
 import { SemanticModelCacheModule } from './cache/cache.module'
 import { CommandHandlers } from './commands/handlers'
 import { EventHandlers } from './events/handlers'
-import { SemanticModelMemberModule } from './member/member.module'
 import { ModelController } from './model.controller'
 import { SemanticModel } from './model.entity'
 import { SemanticModelService } from './model.service'
+import { OcapModule } from './ocap'
 import { QueryHandlers } from './queries/handlers'
 import { SemanticModelRoleModule } from './role/role.module'
-import { RedisModule } from '../core/redis.module'
+import { SemanticModelMemberModule } from '../model-member/member.module'
 
 
 @Module({
 	imports: [
 		RouterModule.forRoutes([
 			{ path: '/semantic-model', module: SemanticModelModule },
-			{ path: '/semantic-model-member', module: SemanticModelMemberModule }
 		]),
 		forwardRef(() => TypeOrmModule.forFeature([SemanticModel])),
 		TenantModule,
@@ -36,7 +35,8 @@ import { RedisModule } from '../core/redis.module'
 		SemanticModelMemberModule,
 		BusinessAreaUserModule,
 		BusinessAreaModule,
-		RedisModule
+		RedisModule,
+		OcapModule
 	],
 	controllers: [ModelController],
 	providers: [SemanticModelService, ...CommandHandlers, ...QueryHandlers, ...EventHandlers],

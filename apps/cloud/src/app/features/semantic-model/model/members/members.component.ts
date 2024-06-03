@@ -1,70 +1,90 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, signal } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { MatButtonModule } from '@angular/material/button'
+import { Component, computed, inject, signal } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { FormsModule } from '@angular/forms'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { MatIconModule } from '@angular/material/icon'
-import { MatListModule } from '@angular/material/list'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { ModelsService } from '@metad/cloud/state'
-import { ISemanticModelMember } from '@metad/contracts'
-import { PropertyDimension, getEntityDimensions } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { derivedAsync } from 'ngxtension/derived-async'
-import { combineLatest, firstValueFrom, map } from 'rxjs'
+import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@core'
+import { catchError, combineLatest, delay, map, of, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../model.service'
+import { ModelMembersCubeComponent } from './cube/cube.component'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, TranslateModule, MatIconModule, MatExpansionModule, MatButtonModule, MatListModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    ModelMembersCubeComponent
+  ],
   selector: 'pac-model-members',
   templateUrl: 'members.component.html',
   styleUrl: 'members.component.scss'
 })
 export class ModelMembersComponent {
   readonly modelService = inject(SemanticModelService)
+  readonly modelEntityService = inject(SemanticModelEntityService)
   readonly modelsService = inject(ModelsService)
+  readonly toastrService = inject(ToastrService)
 
   readonly cubes = toSignal(this.modelService.cubes$)
   readonly virtualCubes = toSignal(this.modelService.virtualCubes$)
 
-  readonly allCubes = derivedAsync(() => {
+  readonly _cubes = computed(() => {
     const cubes = this.cubes() ?? []
     const virtualCubes = this.virtualCubes() ?? []
-    return combineLatest(
-      [...cubes, ...virtualCubes].map((cube) =>
-        this.modelService.selectEntityType(cube.name).pipe(
-          map((entityType) => ({
-            name: cube.name,
-            caption: cube.caption,
-            dimensions: getEntityDimensions(entityType)
-          }))
-        )
-      )
-    )
+    return [...cubes, ...virtualCubes].map((cube) => {
+      return {
+        name: cube.name,
+        caption: cube.caption
+      }
+    })
   })
 
-  readonly loading = signal(false)
+  readonly loading = signal(true)
 
-  async syncMember(cube, dimension: PropertyDimension) {
-    this.loading.set(true)
-    for (const hierarchy of dimension.hierarchies) {
-      const members = await firstValueFrom(
-        this.modelService.selectHierarchyMembers(cube.name, { dimension: dimension.name, hierarchy: hierarchy.name })
-      )
-
-      console.log(members)
-
-      await firstValueFrom(
-        this.modelsService.uploadDimensionMembers(
-          this.modelService.modelSignal().id,
-          members.map((member) => ({
-            ...member,
-            entity: cube.name
-          }) as unknown as ISemanticModelMember)
+  readonly allCubes = toSignal(
+    toObservable(this._cubes).pipe(
+      /**
+       * @todo
+       */
+      delay(1000),
+      switchMap((cubes) => {
+        this.loading.set(true)
+        return combineLatest([
+          this.modelEntityService.getAll(this.modelService.modelSignal().id),
+          combineLatest(
+            cubes.map((cube) =>
+              this.modelService.selectEntityType(cube.name).pipe(
+                map((entityType) => ({
+                  ...cube,
+                  entityType
+                })),
+                catchError((err) => {
+                  console.error(err)
+                  return of(cube)
+                })
+              )
+            )
+          )
+        ]).pipe(
+          map(([entities, cubes]) => {
+            return cubes.map((cube) => {
+              return {
+                ...cube,
+                __entity__: entities.items.find((entity) => entity.name === cube.name),
+                // id: entities.items.find((entity) => entity.name === cube.name)?.id,
+                // options: entities.items.find((entity) => entity.name === cube.name)?.options
+              }
+            })
+          })
         )
-      )
-    }
-
-    this.loading.set(false)
-  }
+      }),
+      tap(() => this.loading.set(false))
+    )
+  )
 }
