@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, Inject, Input, Optional, inject, input, model, signal, ɵINPUT_SIGNAL_BRAND_WRITE_TYPE } from '@angular/core'
+import { Component, Inject, Input, Optional, inject, model, signal } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
 import {
   AbstractControl,
@@ -21,10 +21,9 @@ import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/fo
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatRadioModule } from '@angular/material/radio'
-import { NgmInputModule } from '@metad/ocap-angular/common'
+import { NgmInputModule, NgmHierarchySelectComponent } from '@metad/ocap-angular/common'
 import { NgmControlsModule, TreeControlOptions } from '@metad/ocap-angular/controls'
 import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
-import { NgmHierarchySelectComponent } from '@metad/ocap-angular/entity'
 import {
   DataSettings,
   Dimension,
@@ -37,7 +36,7 @@ import {
   uuid
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, filter, map } from 'rxjs'
+import { filter, map } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -60,8 +59,8 @@ import { BehaviorSubject, filter, map } from 'rxjs'
     TranslateModule,
     OcapCoreModule,
     NgmControlsModule,
-    NgmHierarchySelectComponent,
-    NgmInputModule
+    NgmInputModule,
+    NgmHierarchySelectComponent
   ]
 })
 export class NgmParameterCreateComponent {

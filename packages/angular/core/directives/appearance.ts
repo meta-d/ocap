@@ -1,10 +1,19 @@
-import { FocusableOption, FocusMonitor } from '@angular/cdk/a11y'
+import { FocusableOption } from '@angular/cdk/a11y'
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { Directive, ElementRef, HostBinding, Input } from '@angular/core'
 import { CanColor, mixinColor } from '@angular/material/core'
 import { Subject } from 'rxjs'
 
-export type ngmAppearance = 'filled' | 'outline' | 'ghost' | 'hero' | 'acrylic' | 'opacity' | 'color' | 'dashed' | 'danger'
+export type ngmAppearance =
+  | 'filled'
+  | 'outline'
+  | 'ghost'
+  | 'hero'
+  | 'acrylic'
+  | 'opacity'
+  | 'color'
+  | 'dashed'
+  | 'danger'
 
 const _NgmAppearanceBase = mixinColor(
   class {
@@ -93,22 +102,22 @@ export class AppearanceDirective extends _NgmAppearanceBase implements CanColor,
   }
 
   /** Emits when the chip is focused. */
-  readonly _onFocus = new Subject<any>();
+  readonly _onFocus = new Subject<any>()
 
   disabled?: boolean
   /** Whether the chip has focus. */
-  _hasFocus = false;
-  constructor(elementRef: ElementRef, private _focusMonitor: FocusMonitor) {
+  _hasFocus = false
+  constructor(elementRef: ElementRef) {
     super(elementRef)
   }
-  
+
   /** Allows for programmatic focusing of the chip. */
   focus(): void {
     if (!this._hasFocus) {
-      this._elementRef.nativeElement.focus();
-      this._onFocus.next({chip: this});
+      this._elementRef.nativeElement.focus()
+      this._onFocus.next({ chip: this })
     }
-    this._hasFocus = true;
+    this._hasFocus = true
   }
 
   getLabel?(): string {

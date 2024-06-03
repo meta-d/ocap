@@ -9,10 +9,8 @@ import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ResizerModule } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { FormulaEditorComponent } from './editor/editor.component'
 import { NgmBaseEditorDirective } from './editor.directive'
 
 @NgModule({
@@ -31,10 +29,9 @@ import { NgmBaseEditorDirective } from './editor.directive'
 
     OcapCoreModule,
     ResizerModule,
-    NgmEntitySchemaComponent
   ],
-  exports: [FormulaEditorComponent, NgmBaseEditorDirective],
-  declarations: [FormulaEditorComponent, NgmBaseEditorDirective],
+  exports: [NgmBaseEditorDirective],
+  declarations: [NgmBaseEditorDirective],
   providers: []
 })
 export class NgmFormulaModule {}

@@ -5,10 +5,10 @@ import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModu
 import { CanColor, CanDisable, mixinColor, mixinDisabled, mixinDisableRipple } from '@angular/material/core'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectModule } from '@angular/material/select'
-import { NgmDisplayBehaviourComponent } from '@metad/ocap-angular/common'
 import { PropertyDimension } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged } from 'rxjs'
+import { NgmDisplayBehaviourComponent } from '../display-behaviour'
 
 
 @Component({

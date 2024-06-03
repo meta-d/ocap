@@ -23,7 +23,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmAppearance, OcapCoreModule } from '@metad/ocap-angular/core'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {
   DataSettings,
   Dimension,
@@ -72,7 +71,6 @@ export interface MemberTreeSelectOptions extends TreeControlOptions {
 
     NgmCommonModule,
     OcapCoreModule,
-    NgmEntityPropertyComponent
   ]
 })
 export class NgmMemberTreeSelectComponent implements ControlValueAccessor {

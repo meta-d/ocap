@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { DisplayDensity } from '@metad/ocap-angular/core'
-import { NgmCalculatedMeasureComponent } from '@metad/ocap-angular/entity'
+import { NgmCalculatedMeasureComponent, NgmFormulaEditorComponent } from '@metad/ocap-angular/entity'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { Syntax, stringifyProperty } from '@metad/ocap-core'
 import { getSemanticModelKey } from '@metad/story/core'
@@ -43,6 +43,7 @@ import { getDropProperty } from '../types'
     TranslateModule,
     ContentLoaderModule,
     NgmFormulaModule,
+    NgmFormulaEditorComponent,
 
     NgmCalculatedMeasureComponent
   ]
