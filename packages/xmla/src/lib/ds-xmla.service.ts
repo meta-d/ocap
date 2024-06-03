@@ -363,9 +363,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
   getCubeEntityType(cube: string): Observable<EntitySet> {
     if (!this._cubeEntityTypies[cube]) {
-      this._cubeEntityTypies[cube] = from(
-        this._getCubeEntityType(this.options.name, cube, this.options.settings?.language || '')
-      )
+      this._cubeEntityTypies[cube] = from(this._getCubeEntityType(this.options.name, cube, this.options.settings?.language || ''))
     }
 
     return this._cubeEntityTypies[cube]

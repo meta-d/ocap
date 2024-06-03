@@ -78,9 +78,9 @@ export function Cache(key: string, {maxAge, level}: CacheOptions) {
             })
           }
         }
-      } else {
-        return method.apply(this, args)
       }
+
+      return method.apply(this, args)
     }
   }
 }
