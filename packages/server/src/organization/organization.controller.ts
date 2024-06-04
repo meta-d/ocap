@@ -1,4 +1,4 @@
-import { IOrganization, IOrganizationCreateInput, IPagination, PermissionsEnum, RolesEnum } from '@metad/contracts'
+import { IOrganization, IOrganizationCreateInput, IPagination, OrgGenerateDemoOptions, PermissionsEnum, RolesEnum } from '@metad/contracts'
 import { isNotEmpty } from '@metad/server-common'
 import { Body, Controller, Get, HttpCode, HttpStatus, InternalServerErrorException, Param, Post, Put, Query, UseGuards } from '@nestjs/common'
 import { CommandBus } from '@nestjs/cqrs'
@@ -128,7 +128,7 @@ export class OrganizationController extends CrudController<Organization> {
 		summary: 'Generate demo for organization',
 		security: [
 			{
-				role: [RolesEnum.SUPER_ADMIN]
+				role: [RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN]
 			}
 		]
 	})
@@ -140,7 +140,7 @@ export class OrganizationController extends CrudController<Organization> {
 	@UseGuards(RoleGuard, TenantPermissionGuard)
 	@Roles(RolesEnum.SUPER_ADMIN, RolesEnum.ADMIN, RolesEnum.TRIAL)
 	@Post(':id/demo')
-	async generateDemo(@Param('id', UUIDValidationPipe) id: string, @Body() body: any) {
+	async generateDemo(@Param('id', UUIDValidationPipe) id: string, @Body() body: OrgGenerateDemoOptions) {
 		try {
 			return await this.organizationService.generateDemo(id, body)
 		} catch(err) {

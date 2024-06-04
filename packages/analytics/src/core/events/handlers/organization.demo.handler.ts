@@ -10,6 +10,7 @@ import {
 	IStoryWidget,
 	ITenant,
 	IUser,
+	OrgGenerateDemoOptions,
 	OrganizationDemoNetworkEnum,
 	ProjectStatusEnum,
 	StoryStatusEnum,
@@ -44,9 +45,6 @@ import {
 } from '../../entities/internal'
 import { readYamlFile } from '../../helper'
 
-type OrganizationDemoOptionsType = {
-	source: OrganizationDemoNetworkEnum
-}
 
 export enum InstallationModeEnum {
 	Standalone = 'standalone',
@@ -98,7 +96,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 	) {}
 
 	public async execute(command: OrganizationDemoCommand): Promise<void> {
-		const { id, options } = command.input as { id: string; options: OrganizationDemoOptionsType}
+		const { id, options } = command.input as { id: string; options: OrgGenerateDemoOptions}
 		const userId = RequestContext.currentUserId()
 		const organization = await this.orgRepository.findOne(id, { relations: ['tenant'] })
 		this.organization = organization
@@ -201,7 +199,7 @@ export class OrganizationDemoHandler implements ICommandHandler<OrganizationDemo
 					}))
 				}
 
-				if (!isDemo && dataset) {
+				if (options.importData && !isDemo && dataset) {
 					if (!Array.isArray(dataset)) {
 						throw new Error(`'dataset' must be an array`)
 					}

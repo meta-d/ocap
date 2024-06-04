@@ -254,15 +254,20 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     return item.id
   }
 
+  /**
+   * Generate demo data for the organization
+   */
   async createOrgDemo() {
     if (this.creatingDemo()) {
       return
     }
-    this.creatingDemo.set(true)
+    
     try {
+      this.creatingDemo.set(true)
       await firstValueFrom(
         this.organizationsService.demo(this.store.organizationId, {
-          source: OrganizationDemoNetworkEnum.aliyun
+          source: OrganizationDemoNetworkEnum.aliyun,
+          importData: false
         })
       )
       this.toastrService.success('PAC.MENU.HOME.GenerateSamples', { Default: 'Generate samples' })
@@ -280,7 +285,6 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       this.toastrService.error(getErrorMessage(err))
     } finally {
       this.creatingDemo.set(false)
-      // this._cdr.detectChanges()
     }
   }
 

@@ -40,7 +40,10 @@ export class OrganizationDemoComponent extends TranslationBaseComponent {
    */
   generate() {
     this.loading.set(true)
-    this.#genSub = this.orgsService.demo(this.organization$().id, { source: this.source.value ?? this.fileUrl.value }).subscribe({
+    this.#genSub = this.orgsService.demo(this.organization$().id, {
+      source: this.source.value ?? this.fileUrl.value,
+      importData: true
+    }).subscribe({
       next: () => {
         this._toastrService.success('PAC.NOTES.ORGANIZATIONS.DEMO_GENERATED', { Default: 'Demo generated' })
         this.loading.set(false)
