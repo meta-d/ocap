@@ -46,9 +46,9 @@
     "@types/ws": "7.4.7",
     "@nestjs/schematics": "^7.1.2",
     "@nestjs/testing": "^7.4.4",
-    "nodemon": "^2.0.7",
-    "pm2": "^4.5.1",
+    "nodemon": "^3.1.0",
+    "pm2": "^5.3.1",
     "dotenv": "^8.2.0",
-    "ts-node": "^9.1.1"
+    "ts-node": "^10.9.2"
   }
 }
