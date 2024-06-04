@@ -83,7 +83,7 @@ export class AuthService extends SocialAuthService {
 		request: any,
 		languageCode: LanguagesEnum,
 		originUrl?: string
-	): Promise<{ token: string } | null> {
+	): Promise<boolean | BadRequestException> {
 
 		try {
 			const user = await this.userService.findOneByConditions(request, {
@@ -116,9 +116,9 @@ export class AuthService extends SocialAuthService {
 						organizationId,
 						originUrl
 					);
-					return {
-						token
-					};
+					
+					// Return success status
+					return true;
 				}
 			} catch (error) {
 				console.log(error);

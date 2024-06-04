@@ -1,4 +1,5 @@
 import {
+	EmailTemplateEnum,
 	IEmailTemplate,
 	IInviteUserModel,
 	IJoinEmployeeModel,
@@ -433,7 +434,7 @@ export class EmailService extends TenantAwareCrudService<IEmail> {
 		}
 		const tenantId = (organization) ? organization.tenantId : RequestContext.currentTenantId();
 		const sendOptions = {
-			template: 'password',
+			template: EmailTemplateEnum.PASSWORD_RESET,
 			message: {
 				to: `${user.email}`,
 				subject: 'Forgotten Password'

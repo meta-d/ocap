@@ -40,6 +40,24 @@ export enum EmailTemplateNameEnum {
 	EMAIL_VERIFICATION = 'email-verification'
 }
 
+
+export enum EmailTemplateEnum {
+	PASSWORD_RESET = 'password',
+	MULTI_TENANT_PASSWORD_RESET = 'multi-tenant-password',
+	PASSWORD_LESS_AUTHENTICATION = 'password-less-authentication',
+	TASK_UPDATE = 'task-update',
+	WELCOME_USER = 'welcome-user',
+	EMAIL_VERIFICATION = 'email-verification',
+	INVITE_ORGANIZATION_CLIENT = 'invite-organization-client',
+	INVITE_EMPLOYEE = 'invite-employee',
+	INVITE_USER = 'invite-user',
+	EMAIL_INVOICE = 'email-invoice',
+	EMAIL_ESTIMATE = 'email-estimate',
+	EMPLOYEE_JOIN = "employee-join",
+	EMAIL_RESET = "email-reset",
+	ORGANIZATION_TEAM_JOIN_REQUEST = 'organization-team-join-request'
+}
+
 export interface ICustomizeEmailTemplateFindInput
 	extends IBasePerTenantAndOrganizationEntityModel {
 	name: EmailTemplateNameEnum;
