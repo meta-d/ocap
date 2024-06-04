@@ -11,7 +11,10 @@ export const C_API_STORAGEFILE = API_PREFIX + '/storage-file'
 export class StorageFileService {
   private readonly httpClient = inject(HttpClient)
 
-  create(input: FormData, options?) {
+  create(input: FormData, options?: {
+    observe: 'events',
+    reportProgress: true
+  }) {
     return this.httpClient.post<IStorageFile>(C_API_STORAGEFILE, input, options)
   }
 

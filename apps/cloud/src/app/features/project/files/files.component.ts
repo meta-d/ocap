@@ -70,8 +70,15 @@ export class ProjectFilesComponent {
 
   readonly files = signal([])
 
-  columnsToDisplay = ['originalName', 'mimetype', 'size', 'encoding', 'createdAt', 'createdByUser']
-  columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand']
+  readonly columnsToDisplay = [
+    { name: 'originalName', label: 'Original Name' },
+    { name: 'mimetype', label: 'Mimetype' },
+    { name: 'size', label: 'Size' },
+    { name: 'encoding', label: 'Encoding' },
+    { name: 'createdAt', label: 'Created At' },
+    { name: 'createdByUser', label: 'Created by User' }
+  ]
+  readonly columnsToDisplayWithExpand = [...this.columnsToDisplay.map(({name}) => name), 'expand']
   expandedElement: IStorageFile[] | null
 
   #projectFilesSub = this.refresh$
