@@ -19,7 +19,6 @@ import { TenantFeatureOrganizationCreateCommand } from './commands/tenant-featur
 import { ImportRecordUpdateOrCreateCommand } from './../export-import/import-record';
 import { User } from './../core/entities/internal';
 import { TenantSettingSaveCommand } from './tenant-setting/commands';
-import { TenantCreatedEvent } from './events';
 import { OrganizationCreateCommand } from '../organization/commands';
 
 
@@ -114,20 +113,20 @@ export class TenantService extends CrudService<Tenant> {
 
 		//8. Apply tenant created event
 		const _tenant = this.publisher.mergeObjectContext(tenant)
-		_tenant.apply(new TenantCreatedEvent(tenant.id))
+		_tenant.afterCreated()
 		_tenant.commit()
 
 		return tenant;
 	}
 
-	public async generateDemo(id: string): Promise<Tenant> {
-		const tenant = this.publisher.mergeObjectContext(await this.findOne(id))
+	// public async generateDemo(id: string): Promise<Tenant> {
+	// 	const tenant = this.publisher.mergeObjectContext(await this.findOne(id))
 
-		tenant.apply(new TenantCreatedEvent(tenant.id))
-		tenant.commit()
+	// 	tenant.apply(new TenantCreatedEvent(tenant.id))
+	// 	tenant.commit()
 
-		return tenant
-	}
+	// 	return tenant
+	// }
 
 	public async getDefaultTenant() {
 		return await this.findOne({
