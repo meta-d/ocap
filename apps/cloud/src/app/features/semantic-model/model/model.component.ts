@@ -147,6 +147,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
         catchError((err) => {
           // When fetch tables error
           this.dbTablesError.set(err.message)
+          this.loadingTables.set(false)
           return of([])
         })
       )
