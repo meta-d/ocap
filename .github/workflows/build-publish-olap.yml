@@ -25,7 +25,6 @@ jobs:
         with:
           context: .
           file: ./.deploy/olap/Dockerfile
-          load: true
           platforms: ${{ matrix.IMAGE.platform }}
           tags: |
             ghcr.io/meta-d/${{ matrix.IMAGE.name }}:latest
