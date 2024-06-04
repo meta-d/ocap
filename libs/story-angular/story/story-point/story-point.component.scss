@@ -157,6 +157,9 @@ gridster {
 }
 
 .ngm-story-point__page {
+  /**
+   * @todo Why use inline-block ???
+   */
   @apply inline-block;
       
   /* page size styling */

@@ -4,6 +4,7 @@ import {
   IOrganization,
   IOrganizationCreateInput,
   IOrganizationFindInput,
+  OrgGenerateDemoOptions,
   OrganizationSelectInput
 } from '@metad/contracts'
 import { API_PREFIX } from '@metad/cloud/state'
@@ -52,7 +53,7 @@ export class OrganizationsService {
     )
   }
 
-  demo(id: string, body?: any) {
+  demo(id: string, body?: OrgGenerateDemoOptions) {
     return this.http.post(`${API_PREFIX}/organization/${id}/demo`, body)
   }
 }

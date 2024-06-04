@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { NgModule, importProvidersFrom } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
-import { NgmFormlyModule, provideFormly } from '@metad/formly'
+import { NgmFormlyModule, provideFormly, provideFormlyMaterial } from '@metad/formly'
 import { registerEChartsThemes } from '@metad/material-theme'
 import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmCopilotContextService, NgmCopilotChatComponent, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
@@ -55,8 +55,6 @@ registerEChartsThemes()
     NgmTableComponent,
     NotificationComponent,
     TuneComponent,
-
-    // MarkdownModule.forRoot()
   ],
   providers: [
     DirtyCheckGuard,
@@ -64,6 +62,7 @@ registerEChartsThemes()
     NgmDSCacheService,
     provideLogger(),
     provideFormly(),
+    provideFormlyMaterial(),
     provideMarkdown({}),
     {
       provide: NGM_WASM_AGENT_WORKER,

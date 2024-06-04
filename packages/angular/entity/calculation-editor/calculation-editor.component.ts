@@ -24,7 +24,7 @@ import {
   uuid
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { EMPTY, filter, switchMap, tap } from 'rxjs'
+import { EMPTY, filter, switchMap } from 'rxjs'
 import { NgmCalculatedMeasureComponent } from '../calculated-measure/calculated-measure.component'
 import { NgmCalculationVarianceComponent } from '../calculation-variance/variance.component'
 import { NgmConditionalAggregationComponent } from '../conditional-aggregation/conditional-aggregation.component'
@@ -143,7 +143,6 @@ export class NgmCalculationEditorComponent implements OnInit {
               switchMap((dataSource) => dataSource.selectEntityType(dataSettings.entitySet).pipe(filter(isEntityType)))
             ) ?? EMPTY
       ),
-      tap((entityType) => console.log(entityType)),
       takeUntilDestroyed()
     )
     .subscribe((entityType) => this.entityType.set(entityType))

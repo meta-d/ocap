@@ -1,11 +1,36 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop'
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop'
+import { CommonModule } from '@angular/common'
 import { Component, forwardRef, Input } from '@angular/core'
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
-import { EntityCapacity } from '@metad/ocap-angular/entity'
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { EntityCapacity, OcapCoreModule } from '@metad/ocap-angular/core'
 import { C_MEASURES, DataSettings, isPropertyMeasure, Syntax } from '@metad/ocap-core'
 import { BehaviorSubject, Subject } from 'rxjs'
+import { MatSidenavModule } from '@angular/material/sidenav'
+import { NgmEntitySchemaComponent } from '../entity-schema/entity-schema.component'
+import { ResizerModule } from '@metad/ocap-angular/common'
+import { TranslateModule } from '@ngx-translate/core'
+import { MatIconModule } from '@angular/material/icon'
+import { MonacoEditorModule } from 'ngx-monaco-editor'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { MatButtonModule } from '@angular/material/button'
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    DragDropModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatButtonModule,
+    MonacoEditorModule,
+
+    NgmEntitySchemaComponent,
+    ResizerModule,
+    OcapCoreModule,
+  ],
   selector: 'ngm-formula-editor',
   templateUrl: 'editor.component.html',
   styleUrls: ['editor.component.scss'],
@@ -13,11 +38,11 @@ import { BehaviorSubject, Subject } from 'rxjs'
     {
       provide: NG_VALUE_ACCESSOR,
       multi: true,
-      useExisting: forwardRef(() => FormulaEditorComponent)
+      useExisting: forwardRef(() => NgmFormulaEditorComponent)
     }
   ]
 })
-export class FormulaEditorComponent implements ControlValueAccessor {
+export class NgmFormulaEditorComponent implements ControlValueAccessor {
   Syntax = Syntax
   EntityCapacity = EntityCapacity
 

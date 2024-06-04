@@ -101,7 +101,7 @@
     <button mat-menu-item disableRipple *ngFor="let property of hierarchies(); trackBy: trackByName"
       (click)="$event.stopPropagation();">
       <mat-radio-button class="ngm-radio-button__property flex-1" [value]="property.name">
-        <ngm-entity-property class="flex-1" hiddenIcon [property]="property"></ngm-entity-property>
+        <ngm-property class="flex-1" hiddenIcon [property]="property" />
       </mat-radio-button>
     </button>
   </mat-menu>

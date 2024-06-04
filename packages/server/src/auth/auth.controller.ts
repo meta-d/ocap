@@ -10,6 +10,7 @@ import {
 	UseGuards,
 	UsePipes,
 	ValidationPipe,
+	BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
@@ -141,7 +142,7 @@ export class AuthController {
 		@Body() body: ResetPasswordRequestDTO,
 		@Req() request: Request,
 		@I18nLang() languageCode: LanguagesEnum
-	): Promise<{ token: string } | null> {
+	): Promise<boolean | BadRequestException> {
 		return await this.authService.requestPassword(
 			body,
 			languageCode,

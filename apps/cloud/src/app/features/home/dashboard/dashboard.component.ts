@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common'
 import { Component, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
+import { MatDialog } from '@angular/material/dialog'
 import { IndicatorsService, ModelsService, Store, StoriesService } from '@metad/cloud/state'
 import { getErrorMessage } from '@metad/core'
+import { NgmConfirmOptionsComponent } from '@metad/ocap-angular/common'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { NxStoryModule } from '@metad/story/story'
@@ -84,6 +86,7 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
   private organizationsService = inject(OrganizationsService)
   private dsCoreService = inject(NgmDSCoreService)
   private toastrService = inject(ToastrService)
+  readonly _dialog = inject(MatDialog)
 
   @ViewChild(GridsterComponent) gridster: GridsterComponent
 
@@ -254,15 +257,55 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
     return item.id
   }
 
+  /**
+   * Generate demo data for the organization
+   */
   async createOrgDemo() {
     if (this.creatingDemo()) {
       return
     }
-    this.creatingDemo.set(true)
+
+    const confirm = await firstValueFrom(
+      this._dialog
+        .open(NgmConfirmOptionsComponent, {
+          data: {
+            information: this.quickGuides().sample.complete ? this.getTranslation('PAC.MENU.HOME.RegenerateSamples', { Default: 'Regenerate Samples' }):
+              this.getTranslation('PAC.MENU.HOME.GenerateSamples', {Default: 'Generate Samples'}),
+            formFields: [
+              {
+                key: 'source',
+                type: 'radio',
+                defaultValue: OrganizationDemoNetworkEnum.aliyun,
+                props: {
+                  label: this.getTranslation('PAC.ORGANIZATIONS_PAGE.Organization.SelectDataNetwork', {Default: 'Select Data Network'}),
+                  options: [
+                    {
+                      value: OrganizationDemoNetworkEnum.aliyun,
+                      label: `Aliyun oss`
+                    },
+                    {
+                      value: OrganizationDemoNetworkEnum.github,
+                      label: `GitHub`
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        })
+        .afterClosed()
+    )
+
+    if (!confirm) {
+      return
+    }
+
     try {
+      this.creatingDemo.set(true)
       await firstValueFrom(
         this.organizationsService.demo(this.store.organizationId, {
-          source: OrganizationDemoNetworkEnum.aliyun
+          source: confirm.source ?? OrganizationDemoNetworkEnum.aliyun,
+          importData: false
         })
       )
       this.toastrService.success('PAC.MENU.HOME.GenerateSamples', { Default: 'Generate samples' })
@@ -280,7 +323,6 @@ export class DashboardComponent extends TranslationBaseComponent implements OnIn
       this.toastrService.error(getErrorMessage(err))
     } finally {
       this.creatingDemo.set(false)
-      // this._cdr.detectChanges()
     }
   }
 

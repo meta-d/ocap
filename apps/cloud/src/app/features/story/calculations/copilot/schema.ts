@@ -1,13 +1,5 @@
-import { DimensionMemberSchema, markdownEntityType } from '@metad/core'
-import { ENTITY_TYPE_SALESORDER } from '@metad/ocap-sql'
+import { DimensionMemberSchema } from '@metad/core'
 import { z } from 'zod'
-
-// export const CalculationSchema = z.object({
-//   __id__: z.string().optional().describe(`Key of the calculation measure`),
-//   name: z.string().optional().describe(`Name of the calculation measure`),
-//   caption: z.string().optional().describe(`Caption of the calculation measure`),
-//   formula: z.string().optional().describe(`MDX Formula of the calculated measure`)
-// })
 
 /**
  * For {@link RestrictedMeasureProperty | restricted measure property}
@@ -62,7 +54,7 @@ export const RestrictedMeasureBikes = {
 //     ai: `think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
 // ai: create a formula like 'IIF(
 //   NOT [Date].[Year].CurrentMember.PrevMember IS NULL,
-//   ([Measures].[Sales] - ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales])) 
+//   ([Measures].[Sales] - ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales]))
 //     / ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales]),
 //   NULL
 // )' named 'Sales YoY of Bikes'`

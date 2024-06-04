@@ -1,4 +1,4 @@
-import { Directive, ElementRef } from '@angular/core'
+import { Directive } from '@angular/core'
 
 @Directive({
   standalone: true,
@@ -7,6 +7,4 @@ import { Directive, ElementRef } from '@angular/core'
     class: 'ngm-button-group'
   }
 })
-export class ButtonGroupDirective {
-  constructor(private elementRef: ElementRef) {}
-}
+export class ButtonGroupDirective {}

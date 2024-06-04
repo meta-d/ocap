@@ -259,3 +259,8 @@ export enum OrganizationDemoNetworkEnum {
 	github = 'github',
 	aliyun = 'aliyun'
 }
+
+export type OrgGenerateDemoOptions = {
+	source: OrganizationDemoNetworkEnum | string;
+	importData: boolean
+}

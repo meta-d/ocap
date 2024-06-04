@@ -5,17 +5,17 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { Component, inject, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
+import { DataSourceService } from '@metad/cloud/state'
+import { NgmDialogComponent } from '@metad/components/dialog'
+import { NgmInputComponent } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { AgentType, DataSource, TableColumnType, compact } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { DataSourceService } from '@metad/cloud/state'
-import { NgmDialogComponent } from '@metad/components/dialog'
 import { groupBy } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { CreationTable, getErrorMessage } from '../../../@core'
 import { MaterialModule, UploadComponent, createTimer } from '../../../@shared'
 import { UploadSheetType, convertExcelDate2ISO, readExcelJson } from '../types'
-import { NgmInputComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -192,6 +192,7 @@ export class ModelUploadComponent {
     const files = groupBy(this.sheets, 'fileName')
     for (const fileName in files) {
       const tables = files[fileName]
+      const file = tables[0].file
       for (let index = 0; index < tables.length; index++) {
         const element = tables[index]
         if (!element.status || element.status === 'error') {
@@ -211,7 +212,7 @@ export class ModelUploadComponent {
                 catalog: this.data.dataSource.options.catalog,
                 mergeType: this.mergeType
               })),
-              tables[0].file
+              file
             )
           )
           tables.forEach((element) => {

@@ -223,7 +223,8 @@ export class TenantDetailsComponent {
       this.loading.set(true)
       await firstValueFrom(
         this.organizationsService.demo(this.defaultOrganization().id, {
-          source: this.demoFormGroup.get('source').value
+          source: this.demoFormGroup.get('source').value,
+          importData: true
         })
       )
 

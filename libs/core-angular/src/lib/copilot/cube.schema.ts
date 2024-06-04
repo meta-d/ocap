@@ -15,7 +15,9 @@ export function makeCubeRulesPrompt() {
   return `The dimensions consist of three attributes: dimension, hierarchy, and level, each of which is taken from the name of dimension, hierarchy, and level in the cube, respectively.
 Dimension name pattern: [Dimension Name];
 Hierarchy name pattern: [Hierarchy Name];
-Level name pattern: [Hierarchy Name].[Level Name];`
+Level name pattern: [Hierarchy Name].[Level Name];
+Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Name] in member key field).
+`
 }
 
 const baseDimensionSchema = {
@@ -131,3 +133,13 @@ export function tryFixSlicer(slicer: ISlicer, entityType: EntityType) {
     dimension: tryFixDimension(slicer.dimension, entityType)
   }
 }
+
+// export function tryFixMembers(dimension: Dimension, entityType: EntityType) {
+//   return dimension ? {
+//     ...dimension,
+//     members: dimension.members?.map((member: any) => ({
+//       ...member,
+//       key: member.key.startsWith(dimension.hierarchy)
+//     }),
+//   } : dimension
+// }

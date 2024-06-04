@@ -61,6 +61,6 @@ export class Tenant extends BaseEntity implements ITenant {
 
 	afterCreated() {
 		// logic
-		this.apply(new TenantCreatedEvent(this.id))
+		this.apply(new TenantCreatedEvent(this.id, this.name))
 	}
 }

@@ -8,6 +8,7 @@ import { EmailTemplateController } from './email-template.controller';
 import { QueryHandlers } from './queries/handlers';
 import { CommandHandlers } from './commands/handlers';
 import { TenantModule } from '../tenant/tenant.module';
+import { EventHandlers } from './events/handlers';
 
 @Module({
 	imports: [
@@ -22,7 +23,8 @@ import { TenantModule } from '../tenant/tenant.module';
 	providers: [
 		EmailTemplateService,
 		...QueryHandlers,
-		...CommandHandlers
+		...CommandHandlers,
+		...EventHandlers
 	],
 	exports: [
 		TypeOrmModule,

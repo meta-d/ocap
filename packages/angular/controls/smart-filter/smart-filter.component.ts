@@ -61,7 +61,6 @@ import { NgmSmartFilterService } from '../smart-filter.service'
 import { ControlOptions } from '../types'
 import { NgmValueHelpComponent } from '../value-help/value-help.component'
 import { MatRadioModule } from '@angular/material/radio'
-import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 
 export interface SmartFilterOptions extends ControlOptions {
   maxTagCount?: number
@@ -107,7 +106,6 @@ export interface SmartFilterState {
     ScrollingModule,
     OcapCoreModule,
     NgmCommonModule,
-    NgmEntityPropertyComponent
   ]
 })
 export class NgmSmartFilterComponent implements ControlValueAccessor {
