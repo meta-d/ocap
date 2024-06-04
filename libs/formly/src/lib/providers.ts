@@ -1,6 +1,8 @@
+import { importProvidersFrom } from '@angular/core'
 import { PacFormlyColorsComponent } from '@metad/formly/colors'
 import { NgmFormlyToggleComponent } from '@metad/formly/mat-toggle'
 import { FORMLY_CONFIG, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core'
+import { FormlyMatRadioModule } from '@ngx-formly/material/radio'
 import { TranslateService } from '@ngx-translate/core'
 
 export function provideFormly() {
@@ -64,6 +66,7 @@ export function formlyValidationConfig(translate: TranslateService) {
 
 export function provideFormlyMaterial() {
   return [
+    importProvidersFrom(FormlyMatRadioModule),
     ...FormlyModule.forChild({
       types: [
         {
