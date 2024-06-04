@@ -1,17 +1,33 @@
+import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { AiProvider, ISemanticModel } from '@metad/contracts'
-import { EntityType, PropertyDimension, PropertyHierarchy, PropertyLevel, getEntityHierarchy, getEntityLevel, getEntityProperty, isEntityType } from '@metad/ocap-core'
-import { CopilotService, REDIS_CLIENT, TenantOrganizationAwareCrudService } from '@metad/server-core'
+import {
+	EntityType,
+	PropertyDimension,
+	PropertyHierarchy,
+	PropertyLevel,
+	getEntityHierarchy,
+	getEntityLevel,
+	getEntityProperty,
+	isEntityType
+} from '@metad/ocap-core'
+import {
+	CopilotService,
+	DATABASE_POOL_TOKEN,
+	REDIS_CLIENT,
+	TenantOrganizationAwareCrudService
+} from '@metad/server-core'
 import { InjectQueue } from '@nestjs/bull'
 import { Inject, Injectable, Logger } from '@nestjs/common'
+import { CommandBus } from '@nestjs/cqrs'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Queue } from 'bull'
+import { Pool } from 'pg'
 import { RedisClientType } from 'redis'
 import { firstValueFrom } from 'rxjs'
-import { CommandBus } from '@nestjs/cqrs'
 import { DeepPartial, FindConditions, FindManyOptions, In, Repository } from 'typeorm'
 import { SemanticModel } from '../model/model.entity'
 import { NgmDSCoreService, getSemanticModelKey } from '../model/ocap'
@@ -21,7 +37,7 @@ import { SemanticModelMember } from './member.entity'
 export class SemanticModelMemberService extends TenantOrganizationAwareCrudService<SemanticModelMember> {
 	private readonly logger = new Logger(SemanticModelMemberService.name)
 
-	private readonly vectorStores = new Map<string, PGRedisVectorStore>()
+	private readonly vectorStores = new Map<string, PGMemberVectorStore>()
 
 	constructor(
 		@InjectRepository(SemanticModelMember)
@@ -40,15 +56,17 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 
 		private readonly dsCoreService: NgmDSCoreService,
 
-		private readonly commandBus: CommandBus
+		private readonly commandBus: CommandBus,
+
+		@Inject(DATABASE_POOL_TOKEN) private pgPool: Pool
 	) {
 		super(modelCacheRepository)
 	}
 
 	/**
 	 * Sync dimension members from model source into members table, and into vector store
-	 * 
-	 * @param modelId 
+	 *
+	 * @param modelId
 	 * @param body Cube name and it's hierarchies
 	 */
 	async syncMembers(modelId: string, body: Record<string, { entityId: string; hierarchies: string[] }>) {
@@ -154,7 +172,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		const result = await this.copilotService.findAll({ where })
 		const copilot = result.items[0]
 		if (copilot && copilot.enabled && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
-			const id = modelId ? `${modelId}${cube ? ':' + cube : ''}` : 'default'
+			const id = 'default'
 			if (!this.vectorStores.has(id)) {
 				const embeddings = new OpenAIEmbeddings({
 					verbose: true,
@@ -165,9 +183,17 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 				})
 				this.vectorStores.set(
 					id,
-					new PGRedisVectorStore(this, modelId, embeddings, {
-						redisClient: this.redisClient,
-						indexName: `dm:${id}`
+					new PGMemberVectorStore(this, modelId, embeddings, {
+						pool: this.pgPool,
+						tableName: 'model_member',
+						collectionTableName: 'model_member_collections',
+						collectionName: 'model_members_collection',
+						columns: {
+							idColumnName: 'id',
+							vectorColumnName: 'vector',
+							contentColumnName: 'content',
+							metadataColumnName: 'metadata'
+						}
 					})
 				)
 			}
@@ -185,6 +211,9 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	}
 }
 
+/**
+ * @deprecated use PGMemberVectorStore
+ */
 class PGRedisVectorStore {
 	vectorStore: RedisVectorStore
 	constructor(
@@ -270,4 +299,69 @@ member:
 	key: '${member.memberKey}'
 	caption: '${member.memberCaption || ''}'
 `
+}
+
+class PGMemberVectorStore {
+	vectorStore: PGVectorStore
+
+	constructor(
+		private memberService: SemanticModelMemberService,
+		private modelId: string,
+		private embeddings: EmbeddingsInterface,
+		private _dbConfig: PGVectorStoreArgs
+	) {
+		this.vectorStore = new PGVectorStore(embeddings, _dbConfig)
+	}
+
+	async storeMembers(members: DeepPartial<SemanticModelMember>[], entityType: EntityType) {
+		members = members.map((member) => {
+			const dimensionProperty = getEntityProperty(entityType, member.dimension)
+			const hierarchyProperty = getEntityHierarchy(entityType, member.hierarchy)
+			const levelProperty = getEntityLevel(entityType, member)
+			return {
+				...member,
+				content: formatMemberContent(member, dimensionProperty, hierarchyProperty, levelProperty)
+			}
+		})
+
+		const texts = members.map(({ content }) => content)
+		const vectors = await this.embeddings.embedDocuments(texts)
+
+		const _members = await this.memberService.bulkCreate(
+			this.modelId,
+			members.map((member, index) => ({
+				...member,
+				vector: vectors[index]
+			}))
+		)
+
+		return this.addMembers(_members)
+	}
+
+	async addMembers(members: SemanticModelMember[]) {
+		if (!members.length) return
+
+		const vectors = members.map((member) => member.vector)
+		const documents = members.map(
+			(member) =>
+				new Document({
+					metadata: {
+						key: member.memberKey,
+						dimension: member.dimension,
+						hierarchy: member.hierarchy,
+						level: member.level,
+						member: member.memberName
+					},
+					pageContent: member.content
+				})
+		)
+
+		return this.vectorStore.addVectors(vectors, documents)
+	}
+
+	similaritySearch(query: string, k: number) {
+		return this.vectorStore.similaritySearch(query, k)
+	}
+
+	clear() {}
 }

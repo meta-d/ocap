@@ -1,7 +1,6 @@
 export * from './context'
 export * from './core.module'
 export * from './crud'
-export * from './database-provider.module'
 export * from './entities'
 export * from './entities/internal'
 export * from './seeds'

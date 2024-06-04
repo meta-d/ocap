@@ -1,4 +1,4 @@
-import { CopilotModule, RedisModule, SharedModule, TenantModule } from '@metad/server-core'
+import { CopilotModule, DatabaseModule, RedisModule, SharedModule, TenantModule } from '@metad/server-core'
 import { BullModule } from '@nestjs/bull'
 import { forwardRef, Module } from '@nestjs/common'
 import { CqrsModule } from '@nestjs/cqrs'
@@ -23,11 +23,12 @@ import { SemanticModelMemberService } from './member.service'
 		forwardRef(() => SemanticModelModule),
 		forwardRef(() => CopilotModule),
 		RedisModule,
+		DatabaseModule,
 
 		BullModule.registerQueue({
 			name: 'member',
 		}),
-		OcapModule
+		OcapModule,
 	],
 	controllers: [ModelMemberController],
 	providers: [SemanticModelMemberService, MemberProcessor],

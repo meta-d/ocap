@@ -1,7 +1,7 @@
 import { DynamicModule, forwardRef, Module } from '@nestjs/common';
 import { TenantModule } from '../../tenant/tenant.module'
 import { SeedDataService } from './seed-data.service';
-import { DatabaseProviderModule } from '../database-provider.module';
+import { DatabaseModule } from '../../database';
 
 /**
  * Import and provide seeder classes.
@@ -22,7 +22,7 @@ export class SeederModule {
 			providers: [],
 			imports: [
 				// ...getDynamicPluginsModules(),
-				DatabaseProviderModule
+				DatabaseModule
 			],
 			exports: []
 		} as DynamicModule;
