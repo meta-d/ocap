@@ -172,7 +172,7 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 		const result = await this.copilotService.findAll({ where })
 		const copilot = result.items[0]
 		if (copilot && copilot.enabled && [AiProvider.OpenAI, AiProvider.Azure].includes(copilot.provider)) {
-			const id = 'default'
+			const id = modelId ? `${modelId}${cube ? '/' + cube : ''}` : 'default'
 			if (!this.vectorStores.has(id)) {
 				const embeddings = new OpenAIEmbeddings({
 					verbose: true,
@@ -181,21 +181,24 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 						baseURL: copilot.apiHost
 					}
 				})
-				this.vectorStores.set(
-					id,
-					new PGMemberVectorStore(this, modelId, embeddings, {
-						pool: this.pgPool,
-						tableName: 'model_member',
-						collectionTableName: 'model_member_collections',
-						collectionName: 'model_members_collection',
-						columns: {
-							idColumnName: 'id',
-							vectorColumnName: 'vector',
-							contentColumnName: 'content',
-							metadataColumnName: 'metadata'
-						}
-					})
-				)
+
+				const vectorStore = new PGMemberVectorStore(this, modelId, embeddings, {
+					pool: this.pgPool,
+					tableName: 'model_member',
+					collectionTableName: 'model_member_collections',
+					collectionName: id,
+					columns: {
+						idColumnName: 'id',
+						vectorColumnName: 'vector',
+						contentColumnName: 'content',
+						metadataColumnName: 'metadata'
+					}
+				})
+
+				await vectorStore.vectorStore.ensureTableInDatabase()
+				await vectorStore.vectorStore.ensureCollectionTableInDatabase()
+				
+				this.vectorStores.set(id, vectorStore)
 			}
 
 			return this.vectorStores.get(id)
@@ -205,9 +208,9 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	}
 
 	async seedVectorStore(models: ISemanticModel[]) {
-		for (const model of models) {
-			this.memberQueue.add('seedVectorStore', { modelId: model.id, organizationId: model.organizationId })
-		}
+		// for (const model of models) {
+		// 	this.memberQueue.add('seedVectorStore', { modelId: model.id, organizationId: model.organizationId })
+		// }
 	}
 }
 
@@ -363,5 +366,7 @@ class PGMemberVectorStore {
 		return this.vectorStore.similaritySearch(query, k)
 	}
 
-	clear() {}
+	async clear() {
+		await this.vectorStore.delete({filter: {}})
+	}
 }

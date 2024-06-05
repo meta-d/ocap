@@ -28,7 +28,7 @@ export class EntityMemberProcessor {
 	) {
 		const { modelId, entityId, cube, hierarchies } = job.data
 		this.logger.debug(
-			`[Job '${job.id}'] Start sync dimension memebrs for model '${modelId}' and cube '${cube}' ...`
+			`[Job: entity '${job.id}'] Start sync dimension memebrs for model '${modelId}' and cube '${cube}' ...`
 		)
 
 		try {
@@ -56,7 +56,7 @@ export class EntityMemberProcessor {
 				})
 			)
 
-			this.logger.debug(`[Job '${job.id}'] End!`)
+			this.logger.debug(`[Job: entity '${job.id}'] End!`)
 		} catch (err) {
 			this.entityService.update(entityId, {
 				job: {
@@ -66,7 +66,7 @@ export class EntityMemberProcessor {
 				}
 			})
 			await job.moveToFailed(err)
-			this.logger.debug(`[Job '${job.id}'] Error!`)
+			this.logger.debug(`[Job: entity '${job.id}'] Error!`)
 		}
 	}
 }

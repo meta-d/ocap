@@ -13,8 +13,13 @@ const databasePoolFactory = async (configService: ConfigService) => {
 		console.warn('Database pool (for vector store) is only available for PostgreSQL')
 		return null
 	}
+
 	return new Pool({
-		...dbConnectionOptions
+		host: dbConnectionOptions.host,
+		port: dbConnectionOptions.port,
+		database: dbConnectionOptions.database,
+		user: dbConnectionOptions.username,
+		password: dbConnectionOptions.password
 	})
 }
 
