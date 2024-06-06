@@ -1,5 +1,5 @@
 import { uuid } from '@metad/components/core'
-import { PropertyDimension } from '@metad/ocap-core'
+import { DimensionType, PropertyDimension, Semantics } from '@metad/ocap-core'
 import { SemanticModelService } from '../../model.service'
 import { ModelDimensionState, SemanticModelEntityType } from '../../types'
 
@@ -15,7 +15,13 @@ export function createDimension(modelService: SemanticModelService, dimension: P
       levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
     }))
   } as PropertyDimension
-  
+
+  if (dimension.type === DimensionType.TimeDimension) {
+    _dimension.semantics = {
+      semantic: Semantics.Calendar
+    }
+  }
+
   const dimensionState: ModelDimensionState = {
     type: SemanticModelEntityType.DIMENSION,
     id: key,
