@@ -427,10 +427,13 @@
 </mat-menu>
 
 <ng-template #tableTemplate let-message="message">
-  <ngm-table class="max-w-full rounded-lg border overflow-hidden"
-    [columns]="message.data['columns']"
-    [data]="message.data['content']"
-    paging
-    [pageSizeOptions]="[10, 20, 50, 100]"
-  ></ngm-table>
+  @if (message.data['header']) {
+    <div >{{message.data['header']}}</div>
+  }
+    <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+        [columns]="message.data['columns']"
+        [data]="message.data['content']"
+        paging
+        [pageSizeOptions]="[10, 20, 50, 100]"
+    ></ngm-table>
 </ng-template>

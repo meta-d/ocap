@@ -104,3 +104,10 @@ export function stringifyEntityType(entityType: EntityType) {
 export function stringifyTableType(entityType: EntityType) {
   return `Table "${entityType.name}" (${Object.values(entityType.properties).map((property) => `${property.name} ${property.dataType ?? ''} ${property.caption ?? ''}`).join(', ')})`
 }
+
+export function markdownTableData({data, columns}: {data: any[], columns: PivotColumn[]}) {
+  const header = columns.map((column) => column.name).join(' | ')
+  const divider = columns.map(() => '---').join(' | ')
+  const rows = data.map((row) => columns.map((column) => row[column.name]).join(' | ')).join('\n')
+  return `${header}\n${divider}\n${rows}`
+}

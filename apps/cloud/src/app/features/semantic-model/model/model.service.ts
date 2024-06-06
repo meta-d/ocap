@@ -742,6 +742,13 @@ export class SemanticModelService {
     )
   }
 
+  selectTableSamples(table: string, k: number = 10) {
+    return this.originalDataSource$.pipe(
+      filter(nonNullable),
+      switchMap((dataSource) => dataSource.query({ statement: `SELECT * FROM ${table} LIMIT ${k}`, forceRefresh: true }))
+    )
+  }
+
   navigateDimension(name: string) {
     const dimensions = this.dimensions()
     const dimension = dimensions.find((item) => item.name === name)

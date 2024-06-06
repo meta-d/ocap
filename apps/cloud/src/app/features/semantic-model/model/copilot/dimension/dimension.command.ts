@@ -35,6 +35,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
     },
     tools: [createDimensionTool],
     prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a shared dimension for cube!
+${timeLevelFormatter()}
 
 {context}
     
@@ -47,4 +48,27 @@ The dimension name cannot be any of the share dimension names in the array.: [${
 The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`
     }
   })
+}
+
+function timeLevelFormatter() {
+  return `If you are creating a time dimension, the semantic formatter in time level is date-fns format string to format date to the time dimension member key.
+For examples: 
+if the time dimension table field value of every levels:
+  - year: '2024'
+  - quarter: 'Q1'
+  - month: '2024-01'
+then the dimension member key of month level is [2024].[Q1].[2024-01]
+so the formmater of quarter level: "[yyyy].['Q'Q]"
+month level is "[yyyy].['Q'Q].[yyyy-MM]".
+
+if the time dimension table field value of every levels:
+  - year: '2024'
+  - quarter: 'FY2024 Q1'
+  - month: '202401'
+then the dimension member key of month level is [2024].[FY2024 Q1].[202401]
+so the formmater of quarter level: "[yyyy].['FY'yyyy 'Q'Q]"
+month level is "[yyyy].['FY'yyyy 'Q'Q].[yyyyMM]".
+
+The value of the specific time level can refer to the level keyColumn field name and the given table records.
+`
 }

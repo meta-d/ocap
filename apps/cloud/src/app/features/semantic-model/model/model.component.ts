@@ -66,7 +66,7 @@ import {
   SemanticModelEntityType,
   TOOLBAR_ACTION_CATEGORY
 } from './types'
-import { stringifyTableType } from './utils'
+import { markdownTableData, stringifyTableType } from './utils'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -223,19 +223,39 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       // 获取源表或源多维数据集结构
       const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
 
-      return {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: [
-            { name: 'name', caption: '名称' },
-            { name: 'caption', caption: '描述' }
-          ],
-          content: Object.values(entityType.properties) as any[]
+      const topCount = 10
+      const samples = await firstValueFrom(this.modelService.selectTableSamples(data.name, topCount))
+
+      const tableHeader = `The structure of table "${data.name}" is as follows:`
+      const dataHeader = `The first ${topCount} rows of the table "${data.name}" are as follows:`
+
+      return [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: [
+              { name: 'name', caption: 'Name' },
+              { name: 'caption', caption: 'Description' }
+            ],
+            content: Object.values(entityType.properties) as any[],
+            header: tableHeader
+          },
+          content: tableHeader + '\n' + stringifyTableType(entityType),
+          templateRef: this.tableTemplate
         },
-        content: stringifyTableType(entityType),
-        templateRef: this.tableTemplate
-      }
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: samples.columns,
+            content: samples.data,
+            header: dataHeader
+          },
+          content: dataHeader + '\n' + markdownTableData(samples),
+          templateRef: this.tableTemplate
+        }
+      ]
     }
   })
   #queryResultDropAction = provideCopilotDropAction({

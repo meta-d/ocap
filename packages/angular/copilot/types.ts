@@ -9,7 +9,10 @@ export type IUser = {
 
 export interface DropAction {
   id: string
-  implementation: (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => Promise<CopilotChatMessage>
+  implementation: (
+    event: CdkDragDrop<any[], any[], any>,
+    copilotEngine: CopilotEngine
+  ) => Promise<CopilotChatMessage | CopilotChatMessage[]>
   templateRef?: TemplateRef<unknown>
 }
 
