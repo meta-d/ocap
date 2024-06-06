@@ -81,7 +81,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 				}
 			}
 
-			return results.filter(([, _score]) => _score > (score ?? 0.2)).map(([doc]) => doc)
+			return results.filter(([, _score]) => (1 - _score) > (score ?? 0.8)).map(([doc]) => doc)
 		}
 
 		return []
@@ -253,7 +253,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 		// Add examples to vector store
 		const tenantId = RequestContext.currentTenantId()
-		for (const role of roleNames) {
+		for (const role of [null, ...roleNames]) {
 			const vectorStore = await this.getVectorStore(tenantId, role === 'null' ? null : role)
 			if (clearRole) {
 				const { items } = await this.findAll({ where: { role: role } })
@@ -261,7 +261,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 				await this.repository.remove(items)
 			}
 
-			const examples = entities.filter((item) => item.role === role)
+			const examples = entities.filter((item) => role ? item.role === role : !item.role)
 			const roleExamples = await Promise.all(examples.map((entity) => super.create(entity)))
 			results.push(...roleExamples)
 			if (roleExamples.length && vectorStore) {

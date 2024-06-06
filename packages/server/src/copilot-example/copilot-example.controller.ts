@@ -53,7 +53,7 @@ export class CopilotExampleController extends CrudController<CopilotExample> {
 		@Body('options') options?: { k: number; filter: any; score?: number; command: string }
 	) {
 		this.#logger.debug(
-			`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} and filter = ${options?.filter}`
+			`[CopilotExampleController] Retrieving documents for query: ${query} with k = ${options?.k} score = ${options?.score} and filter = ${options?.filter}`
 		)
 
 		return this.service.similaritySearch(query, options)
