@@ -27,7 +27,7 @@ import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs'
-import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
+import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
 import { ISemanticModel, MDX, ToastrService, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
 import { dirtyCheckWith, write } from '../store'
 import {
@@ -629,6 +629,7 @@ export class SemanticModelService {
   selectDBTables(refresh = false) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
+      take(1),
       switchMap((dataSource) => dataSource.discoverDBTables(refresh))
     )
   }
@@ -676,6 +677,7 @@ export class SemanticModelService {
   selectOriginalEntityError(entity: string) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
+      take(1),
       switchMap((dataSource) => dataSource.selectEntitySet(entity)),
       map((error) => (isEntitySet(error) ? null : error))
     )
@@ -684,6 +686,7 @@ export class SemanticModelService {
   selectOriginalEntityService(entityName: string) {
     return this.originalDataSource$.pipe(
       filter((dataSource) => !!dataSource),
+      take(1),
       map((dataSource) => dataSource.createEntityService(entityName))
     )
   }
@@ -701,6 +704,7 @@ export class SemanticModelService {
         entity,
         this.originalDataSource$.pipe(
           filter(nonNullable),
+          take(1),
           switchMap((dataSource) => dataSource.selectEntityType(entity).pipe(filter(isEntityType))),
           takeUntilDestroyed(this.destroyRef),
           shareReplay(1)
@@ -731,6 +735,7 @@ export class SemanticModelService {
   selectOriginalMembers(entity: string, dimension: Dimension) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
+      take(1),
       switchMap((dataSource) => dataSource.selectMembers(entity, dimension)),
       map((members) =>
         members.map((member) => ({
@@ -745,6 +750,7 @@ export class SemanticModelService {
   selectTableSamples(table: string, k: number = 10) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
+      take(1),
       switchMap((dataSource) => dataSource.query({ statement: `SELECT * FROM ${table} LIMIT ${k}`, forceRefresh: true }))
     )
   }
