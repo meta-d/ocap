@@ -7,9 +7,9 @@ import { UserModule } from '../user'
 import { CopilotExample } from './copilot-example.entity'
 import { CopilotExampleService } from './copilot-example.service'
 import { CopilotExampleController } from './copilot-example.controller'
-import { RedisModule } from '../core/redis.module'
 import { CopilotModule } from '../copilot/copilot.module'
 import { CommandHandlers } from './commands/handlers'
+import { DatabaseModule } from '../database/database.module'
 
 @Module({
 	imports: [
@@ -19,7 +19,7 @@ import { CommandHandlers } from './commands/handlers'
 		CqrsModule,
 		UserModule,
 		CopilotModule,
-		RedisModule
+		DatabaseModule
 	],
 	controllers: [CopilotExampleController],
 	providers: [CopilotExampleService, ...CommandHandlers],

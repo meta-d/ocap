@@ -439,7 +439,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   createIndicator() {
     this.router.navigate(['/project/indicators/new'], {
       queryParams: {
-        modelId: this.model.id
+        modelId: this.model.id,
       }
     })
   }

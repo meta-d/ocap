@@ -3,7 +3,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common'
 // import { SeedDataService } from './core/seeds/seed-data.service';
 import { CommandBus } from '@nestjs/cqrs'
 import * as chalk from 'chalk'
-import { CopilotExampleService } from './copilot-example/copilot-example.service'
 import { UserService } from './user/user.service'
 
 @Injectable()
@@ -20,10 +19,6 @@ export class AppService {
 		if (this.count === 0) {
 			// await this.seedDataService.runDefaultSeed(true);
 		}
-
-		setTimeout(async () => {
-			await this.exampleService.seedRedisIfEmpty()
-		}, 3000)
 	}
 
 	constructor(
@@ -36,10 +31,7 @@ export class AppService {
 		private readonly userService: UserService,
 
 		@Inject(forwardRef(() => ConfigService))
-		private readonly configService: ConfigService,
-
-		@Inject(forwardRef(() => CopilotExampleService))
-		private readonly exampleService: CopilotExampleService
+		private readonly configService: ConfigService
 	) {}
 
 	/*

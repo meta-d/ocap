@@ -5,6 +5,7 @@ import { Job } from 'bull'
 import { SemanticModelMemberService } from '../model-member/member.service'
 import { ModelEntityUpdateCommand } from './commands'
 import { SemanticModelEntityService } from './entity.service'
+import { SemanticModelService } from '../model/model.service'
 
 @Processor('entity')
 export class EntityMemberProcessor {
@@ -13,31 +14,35 @@ export class EntityMemberProcessor {
 	constructor(
 		private readonly entityService: SemanticModelEntityService,
 		private readonly memberService: SemanticModelMemberService,
+		private readonly modelService: SemanticModelService,
 		private readonly commandBus: CommandBus
 	) {}
 
 	@Process('syncMembers')
 	async handleSyncMembers(
 		job: Job<{
-			modelId: string
-			organizationId: string
-			entityId: string
-			cube: string
-			hierarchies: string[]
+			tenantId: string;
+			organizationId: string;
+			createdById: string;
+			modelId: string;
+			entityId: string;
+			cube: string;
+			hierarchies: string[];
 		}>
 	) {
-		const { modelId, entityId, cube, hierarchies } = job.data
+		const { tenantId, organizationId, createdById, modelId, entityId, cube, hierarchies } = job.data
 		this.logger.debug(
 			`[Job: entity '${job.id}'] Start sync dimension memebrs for model '${modelId}' and cube '${cube}' ...`
 		)
 
 		try {
-			const cubeMembers = await this.memberService.syncMembers(modelId, {
+			const model = await this.modelService.findOne(modelId, { where: {tenantId, organizationId} })
+			const cubeMembers = await this.memberService.syncMembers(model.id, {
 				[cube]: {
 					entityId,
 					hierarchies
-				}
-			})
+				},
+			}, {createdById})
 
 			// Update job status and sync status of model entity
 			await this.commandBus.execute(

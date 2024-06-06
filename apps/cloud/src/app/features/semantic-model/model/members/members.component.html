@@ -1,4 +1,4 @@
-<h2 class="text-lg m-2">
+<h2 class="text-xl">
   {{ 'PAC.MODEL.SyncDimensionMembers' | translate: {Default: 'Sync Dimension Members'} }}
 </h2>
 
@@ -7,6 +7,7 @@
     <pac-model-members-cube [cube]="cube" />
   }
 </mat-accordion>
+
 @if (loading()) {
   <div class="absolute left-1/2 top-1/2 -ml-3 -mt-3">
     <mat-progress-spinner mode="indeterminate" [diameter]="24" color="accent"></mat-progress-spinner>

@@ -132,7 +132,7 @@ export class ModelMembersCubeComponent {
     this.loading.set(false)
   }
 
-  async uploadMembers(dimensions: string[]) {
+  async createModelEntity(dimensions: string[]) {
     const cube = this.cube().name;
     this.loading.set(true)
 

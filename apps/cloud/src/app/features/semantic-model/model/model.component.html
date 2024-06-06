@@ -369,6 +369,11 @@
             <mat-icon fontSet="material-icons-outlined">clear_all</mat-icon>
             {{ 'PAC.MODEL.ClearServerCache' | translate: {Default: "Clear Server Cache"} }}
         </button>
+
+        <button cdkMenuItem [routerLink]="['./member-retriever']">
+            <mat-icon fontSet="material-icons-outlined">tag</mat-icon>
+            {{ 'PAC.KEY_WORDS.MemberRetriever' | translate: {Default: "Member Retriever"} }}
+        </button>
     </div>
 </ng-template>
 
@@ -403,11 +408,6 @@
         <button cdkMenuItem *ngIf="isOlap$()" [routerLink]="['./access']">
             <mat-icon fontSet="material-icons-outlined">manage_accounts</mat-icon>
             {{ 'PAC.MODEL.AccessControl.Title' | translate: {Default: "Access Control"} }}
-        </button>
-    
-        <button cdkMenuItem [routerLink]="['./member-retriever']">
-            <mat-icon fontSet="material-icons-outlined">tag</mat-icon>
-            {{ 'PAC.KEY_WORDS.MemberRetriever' | translate: {Default: "Member Retriever"} }}
         </button>
     </div>
 </ng-template>

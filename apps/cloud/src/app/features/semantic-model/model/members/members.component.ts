@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { ModelsService } from '@metad/cloud/state'
+import { isEntitySet } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@core'
 import { catchError, combineLatest, delay, map, of, switchMap, tap } from 'rxjs'
@@ -59,10 +60,10 @@ export class ModelMembersComponent {
           this.modelEntityService.getAll(this.modelService.modelSignal().id),
           combineLatest(
             cubes.map((cube) =>
-              this.modelService.selectEntityType(cube.name).pipe(
-                map((entityType) => ({
+              this.modelService.selectEntitySet(cube.name).pipe(
+                map((entitySet) => ({
                   ...cube,
-                  entityType
+                  entityType: isEntitySet(entitySet) ? entitySet.entityType : null
                 })),
                 catchError((err) => {
                   console.error(err)
@@ -76,7 +77,7 @@ export class ModelMembersComponent {
             return cubes.map((cube) => {
               return {
                 ...cube,
-                __entity__: entities.items.find((entity) => entity.name === cube.name),
+                __entity__: entities.items.find((entity) => entity.name === cube.name)
                 // id: entities.items.find((entity) => entity.name === cube.name)?.id,
                 // options: entities.items.find((entity) => entity.name === cube.name)?.options
               }

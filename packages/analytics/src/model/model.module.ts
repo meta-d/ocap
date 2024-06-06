@@ -15,8 +15,6 @@ import { SemanticModelService } from './model.service'
 import { OcapModule } from './ocap'
 import { QueryHandlers } from './queries/handlers'
 import { SemanticModelRoleModule } from './role/role.module'
-import { SemanticModelMemberModule } from '../model-member/member.module'
-
 
 @Module({
 	imports: [
@@ -32,7 +30,6 @@ import { SemanticModelMemberModule } from '../model-member/member.module'
 		DataSourceModule,
 		SemanticModelRoleModule,
 		SemanticModelCacheModule,
-		SemanticModelMemberModule,
 		BusinessAreaUserModule,
 		BusinessAreaModule,
 		RedisModule,

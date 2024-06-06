@@ -188,7 +188,7 @@ export class CopilotExamplesComponent extends TranslationBaseComponent {
       .open(NgmConfirmDeleteComponent, {
         data: {
           value: id,
-          information: `Input: ${input}`
+          information: `${this.getTranslation('PAC.Copilot.Examples.Input', {Default: 'Input'})}: ${input}`
         }
       })
       .afterClosed()
