@@ -66,8 +66,9 @@ export function AccordionWrappers(
             expressions: {}
           } as any
           if (isNil(toggleable) || toggleable) {
-            expansion.expressions.hide = `!field.parent.model || !field.parent.model.${showKey}`
-            expansion.hideExpression = `!field.parent.model || !field.parent.model.${showKey}`
+            const expression = `!field.parent.model || (field.parent.model.${showKey} == null ? !field.parent.model.${key} : !field.parent.model.${showKey})`
+            expansion.expressions.hide = expression
+            expansion.hideExpression = expression
           }
           return expansion
         })
@@ -75,6 +76,7 @@ export function AccordionWrappers(
     }
   ]
 }
+
 
 /**
  * @deprecated use `makeDataSettingsContent` instead

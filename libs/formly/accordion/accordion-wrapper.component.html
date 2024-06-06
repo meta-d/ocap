@@ -1,9 +1,10 @@
 <mat-accordion class="ngm-accordion" [displayMode]="props.displayMode" [hideToggle]="props.hideToggle"
   [multi]="props.expandedMulti"
   [togglePosition]="props.togglePosition ?? 'before'">
-    <mat-expansion-panel #expansionPanel *ngFor="let item of field.fieldGroup" [class.mat-elevation-z]="props.elevationZ"
+  @for (item of field.fieldGroup; track item.key) {
+    <mat-expansion-panel #expansionPanel [class.mat-elevation-z]="props.elevationZ"
       [expanded]="!item.props.disabled && item.props.expanded"
-      [disabled]="(item.hideExpression || item.props.toggleable) && !model?.[item.props.keyShow]"
+      [disabled]="(item.hideExpression || item.props.toggleable) && !isShow(item)"
       >
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -11,7 +12,7 @@
         </mat-panel-title>
         <mat-panel-description class="flex-1">
           <mat-slide-toggle *ngIf="item.hideExpression || item.props.toggleable" labelPosition="before"
-            [checked]="model?.[item.props.keyShow]"
+            [checked]="isShow(item)"
             (change)="onToggle($event, item, expansionPanel)"
             (click)="$event.stopPropagation();">
           </mat-slide-toggle>
@@ -22,4 +23,5 @@
       <formly-field [field]="item"></formly-field>
       
     </mat-expansion-panel>
+  }
 </mat-accordion>
