@@ -651,17 +651,17 @@ export class NgmCopilotChatComponent {
       event.preventDefault()
       if (this.promptCompletion()) {
         this.promptControl.setValue(this.promptControl.value + this.promptCompletion())
-      } else if (this.isContextTrigger()) {
-        const item = this.filteredContextItems()[0]
-        if (item) {
-          this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
-          this.context.set(item)
-        }
       } else {
-        const activatedPrompt =
-          this.#activatedPrompt() || (this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
-        if (activatedPrompt) {
-          this.promptControl.setValue(activatedPrompt)
+        if (this.#activatedPrompt()) {
+          this.promptControl.setValue(this.#activatedPrompt())
+        } else if (this.isContextTrigger()) {
+          const item = this.filteredContextItems()[0]
+          if (item) {
+            this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
+            this.context.set(item)
+          }
+        } else if(this.filteredCommands()?.length) {
+          this.promptControl.setValue(this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         }
       }
     }
