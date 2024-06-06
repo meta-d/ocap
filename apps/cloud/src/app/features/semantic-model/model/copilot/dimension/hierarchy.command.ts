@@ -7,13 +7,18 @@ import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } fr
 import { EntityType, PropertyHierarchy } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
+import { firstValueFrom } from 'rxjs'
 import { ModelDimensionService } from '../../dimension/dimension.service'
+import { SemanticModelService } from '../../model.service'
+import { markdownTableData } from '../../utils'
 import { HierarchySchema } from '../schema'
+import { timeLevelFormatter } from './types'
 
 export function injectHierarchyCommand(dimensionService: ModelDimensionService, tableTypes: Signal<EntityType[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const copilotService = inject(NgmCopilotService)
+  const modelService = inject(SemanticModelService)
 
   const dimension = toSignal(dimensionService.dimension$)
 
@@ -38,22 +43,35 @@ export function injectHierarchyCommand(dimensionService: ModelDimensionService, 
     tools: [createHierarchyTool],
     prompt:
       createAgentPromptTemplate(`You are a cube modeling expert. Let's create a hierarchy in the dimension for cube!
-名称不要与现有名称重复，并且名称要尽量简短。
-层次结构中的 Levels 顺序一般按照所使用字段在现实中的含义由上到下（或者叫由粗粒度到细粒度）排列，例如：年份、季度、月份、日期。
+Name should not duplicate name of existing hierarchies, and it should be as short as possible.
+Select appropriate table fields to create levels of the hierarchy.
+The order of levels in the hierarchy is generally arranged from top to bottom (or from coarse to fine granularity) based on the real-world meaning of the fields used, such as: Year, Quarter, Month, Date.
+
+${timeLevelFormatter()}
 
 {context}
     
 {system_prompt}`),
     systemPrompt: async () => {
+      const tablesData = await Promise.all(
+        tableTypes().map((tableType) => firstValueFrom(modelService.selectTableSamples(tableType.name, 10)))
+      )
+
       return `${copilotService.rolePrompt()}
-当前维度信息为：
+Current dimension is:
 \`\`\`
 ${JSON.stringify(dimension())}
 \`\`\`
-当前维度已使用到的表信息：
+
+The tables used in the current dimension are:
 \`\`\`
 ${tableTypes()
-  .map((tableType) => makeTablePrompt(tableType))
+  .map(
+    (tableType, index) =>
+      makeTablePrompt(tableType) +
+      `\nThe top 10 rows of table "${tableType.name}" as follows:\n` +
+      markdownTableData(tablesData[index])
+  )
   .join('\n')}
 \`\`\`
 `

@@ -52,7 +52,7 @@ export const HierarchySchema = z.object({
           formatter: z.string().optional().describe(`The formatter of the member key of the time level;
 for examples: 'yyyy' for year, '[yyyy].[MM]' for month, '[yyyy].[yyyyMM].[yyyyMMDD]' for day
           `)
-        })
+        }).optional()
       })
     )
     .describe('An array of levels in this hierarchy')
@@ -140,7 +140,3 @@ export const RoleSchema = z.object({
     })
   })
 })
-
-function enumToArray(enumObj: any): string[] {
-  return Object.values(enumObj);
-}
