@@ -3,8 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NgmSearchComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmSearchComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { Subscription, firstValueFrom, of, startWith, switchMap, tap } from 'rxjs'
@@ -98,7 +97,7 @@ export class ProjectFilesDialogComponent {
   async deleteFile(event, file: IStorageFile) {
     event.stopPropagation()
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: file.originalName } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: file.originalName } }).afterClosed()
     )
 
     if (!confirm) return

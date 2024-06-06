@@ -2,10 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar'
 import { TranslateService } from '@ngx-translate/core'
-import { ConfirmSnackBar } from '@metad/components/confirm'
 import { catchError, EMPTY, map, merge, Observable, take, takeUntil, tap } from 'rxjs'
 import { SnackProcessingComponent } from '../../@theme/snack/processing'
 import { getErrorMessage } from '../types'
+import { NgmConfirmSnackBar } from '@metad/ocap-angular/common'
 
 @Injectable({
   providedIn: 'root'
@@ -108,7 +108,7 @@ export class ToastrService {
     const { duration, verticalPosition, horizontalPosition } = config ?? {}
     const message = this.getTranslation(code, params)
     const confirm = this.getTranslation('PAC.KEY_WORDS.Confirm', {Default: 'Confirm'})
-    const _snackBarRef = this._snackBar.openFromComponent(ConfirmSnackBar, {
+    const _snackBarRef = this._snackBar.openFromComponent(NgmConfirmSnackBar, {
       verticalPosition: verticalPosition ?? 'bottom',
       horizontalPosition: horizontalPosition ?? 'center',
       duration: duration ?? 3000,

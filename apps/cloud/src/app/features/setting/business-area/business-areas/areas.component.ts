@@ -5,8 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BusinessAreasService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { TreeTableModule } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, TreeTableModule } from '@metad/ocap-angular/common'
 import { DisplayDensity, OcapCoreModule } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { InlineSearchComponent, MaterialModule, SharedModule } from 'apps/cloud/src/app/@shared'
@@ -71,7 +70,7 @@ export class BusinessAreasComponent {
 
   async deleteBusinessArea(item: IBusinessArea) {
     const cofirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: item.name } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: item.name } }).afterClosed()
     )
     if (!cofirm) {
       return

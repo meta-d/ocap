@@ -2,13 +2,13 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute } from '@angular/router'
-import { CountdownConfirmationComponent } from '@metad/components/confirm'
 import { IFeature, IFeatureOrganization, IFeatureToggle } from '@metad/contracts'
 import { combineLatest, firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, map, shareReplay, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators'
 import { environment } from '../../../environments/environment'
 import { FeatureService, FeatureStoreService, Store } from '../../@core/services'
 import { TranslationBaseComponent } from '../language/translation-base.component'
+import { NgmCountdownConfirmationComponent } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -93,7 +93,7 @@ export class FeatureToggleComponent extends TranslationBaseComponent implements 
   async featureChanged(isEnabled: boolean, feature: IFeature) {
     const result = await firstValueFrom(
       this._matDialog
-        .open(CountdownConfirmationComponent, {
+        .open(NgmCountdownConfirmationComponent, {
           data: {
           	recordType: feature.description,
           	isEnabled: isEnabled

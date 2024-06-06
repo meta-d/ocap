@@ -2,12 +2,12 @@ import { Component, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { DataSourceService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { switchMap, tap } from 'rxjs/operators'
 import { IDataSource, ROUTE_ANIMATIONS_ELEMENTS } from '../../../@core/index'
 import { PACDataSourceCreationComponent } from './creation/creation.component'
 import { PACDataSourceEditComponent } from './edit/edit.component'
+import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 
 @Component({
   selector: 'pac-data-sources',
@@ -64,7 +64,7 @@ export class PACDataSourcesComponent {
 
   async remove(data: IDataSource) {
     const result = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: data.name } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: data.name } }).afterClosed()
     )
 
     if (result) {

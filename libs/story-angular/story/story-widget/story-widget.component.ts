@@ -31,7 +31,6 @@ import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { assignDeepOmitBlank, DataFieldWithIntentBasedNavigation, DataSettings, mergeOptions, omit, OrderDirection } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { ConfirmDeleteComponent, ConfirmModule } from '@metad/components/confirm'
 import { Intent, IStoryWidget, nonBlank, nonNullable, NxCoreModule, saveAsYaml, WidgetMenu, WidgetMenuType, WidgetService } from '@metad/core'
 import {
   LinkedInteractionApplyTo,
@@ -75,7 +74,7 @@ import { CdkMenuModule } from '@angular/cdk/menu'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { NgxPopperjsModule } from 'ngx-popperjs'
 import { StoryCommentsComponent } from '../story-comments/story-comments.component'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { ActivatedRoute, Params, Router } from '@angular/router'
 import { select } from '@ngneat/elf'
 import { effectAction } from '@metad/ocap-angular/core'
@@ -94,7 +93,6 @@ import { effectAction } from '@metad/ocap-angular/core'
     NxStorySharedModule,
     OverlayModule,
     CdkMenuModule,
-    ConfirmModule,
     TranslateModule,
     ContentLoaderModule,
     NgxPopperjsModule,
@@ -500,7 +498,7 @@ export class NxStoryWidgetComponent implements OnInit, OnChanges, AfterViewInit 
   async removeWidget() {
     const information = await firstValueFrom(this.translateService.get('Story.Common.ConfirmDeleteInfo', {Default: 'It is not deleted from the server until it is actually saved'}) )
     const confirm = await firstValueFrom(this._dialog
-      .open(ConfirmDeleteComponent, {
+      .open(NgmConfirmDeleteComponent, {
         data: { value: this.widget().name, information }
       })
       .afterClosed())

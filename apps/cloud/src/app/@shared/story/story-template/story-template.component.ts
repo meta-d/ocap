@@ -2,14 +2,12 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog'
-import { NgmTagsComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmHighlightDirective, NgmTagsComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { find, sortBy, values } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { debounceTime, map, startWith, switchMap } from 'rxjs/operators'
-import { HighlightDirective } from '@metad/components/core'
 import { listAnimation, StoryTemplateType, StoryTemplateService, ToastrService, IStoryTemplate, ITag, getErrorMessage } from '../../../@core'
 import { InlineSearchComponent } from '../../form-fields'
 import { MaterialModule } from '../../material.module'
@@ -35,7 +33,7 @@ import { TagViewerComponent } from '../../tag'
     TagViewerComponent,
     NgmTagsComponent,
     InlineSearchComponent,
-    HighlightDirective
+    NgmHighlightDirective
   ],
   animations: [listAnimation]
 })
@@ -181,7 +179,7 @@ export class StoryTemplateComponent implements OnInit {
   async deleteTemplate(template: IStoryTemplate) {
     const confirm = await firstValueFrom(
       this._dialog
-        .open(ConfirmDeleteComponent, {
+        .open(NgmConfirmDeleteComponent, {
           data: {
             value: template.name
           }

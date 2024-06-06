@@ -4,9 +4,8 @@ import { toObservable } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { BusinessAreaUserService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BusinessAreaRole, IBusinessAreaUser, IUser } from '@metad/contracts'
-import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import {
@@ -92,7 +91,7 @@ export class BusinessAreaUsersComponent extends TranslationBaseComponent {
 
   async removeUser(id: string, user: IUser) {
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(user) } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: userLabel(user) } }).afterClosed()
     )
     if (confirm) {
       try {

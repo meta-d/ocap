@@ -13,8 +13,7 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCacheService, filterSearch } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import { CalculationProperty, DataSettings, DisplayBehaviour, ParameterProperty, getEntityCalculations } from '@metad/ocap-core'
@@ -233,7 +232,7 @@ export class StoryCalculationsComponent {
 
   removeCalculation(calculationProperty: CalculationProperty) {
     this._dialog
-      .open(ConfirmDeleteComponent, {
+      .open(NgmConfirmDeleteComponent, {
         data: {
           value: calculationProperty.caption || calculationProperty.name,
           information: ''

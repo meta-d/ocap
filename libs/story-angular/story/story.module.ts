@@ -6,7 +6,6 @@ import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
-import { ConfirmModule } from '@metad/components/confirm'
 import { IsNilPipe, NgMapPipeModule, NxCoreModule } from '@metad/core'
 import { NxStoryResponsiveModule } from '@metad/story/responsive'
 import { GridsterModule } from 'angular-gridster2'
@@ -30,7 +29,6 @@ import { SinglePageStoryComponent } from './single-page-story/sps.component'
     GridsterModule,
     QuillModule,
     HammerModule,
-    ConfirmModule,
     TranslateModule,
     IsNilPipe,
     NgMapPipeModule,
