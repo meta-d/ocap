@@ -33,11 +33,11 @@ import { isString } from 'lodash-es'
   templateUrl: './confirm-unique.component.html',
   styleUrls: ['./confirm-unique.component.scss']
 })
-export class ConfirmUniqueComponent implements OnInit {
+export class DepConfirmUniqueComponent implements OnInit {
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 
   public data = inject<string | { title: string; value: string }>(MAT_DIALOG_DATA)
-  private _dialogRef = inject(MatDialogRef<ConfirmUniqueComponent>)
+  private _dialogRef = inject(MatDialogRef<DepConfirmUniqueComponent>)
 
   value: string
   title: string

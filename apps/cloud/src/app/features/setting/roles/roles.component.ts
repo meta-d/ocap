@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angul
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { isNil } from '@metad/ocap-core'
-import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs'
 import { debounceTime, filter, map, shareReplay, switchMap, tap } from 'rxjs/operators'
 import { environment } from '../../../../environments/environment'
@@ -20,6 +19,7 @@ import {
 } from '../../../@core'
 import { TranslationBaseComponent } from '../../../@shared'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 
 @Component({
   selector: 'pac-roles',
@@ -188,7 +188,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
   }
 
   async create() {
-    const result = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const result = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent).afterClosed())
     if (result) {
       const newRole = await firstValueFrom(this.rolesService.create({ name: result, rolePermissions: [] }))
       if (newRole) {
@@ -200,7 +200,7 @@ export class RolesComponent extends TranslationBaseComponent implements OnInit {
   }
 
   async remove(role: IRole) {
-    const confirm = await firstValueFrom(this._dialog.open(ConfirmDeleteComponent, {
+    const confirm = await firstValueFrom(this._dialog.open(NgmConfirmDeleteComponent, {
       data: {
         value: role.name
       }

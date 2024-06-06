@@ -5,10 +5,9 @@ import { FormControl, FormGroup } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { Router } from '@angular/router'
 import { DataSourceService, ModelsService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { uploadYamlFile } from '@metad/core'
-import { NgmTreeSelectComponent, TreeTableColumn, TreeTableModule } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent, NgmTreeSelectComponent, TreeTableColumn, TreeTableModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { ButtonGroupDirective, DisplayDensity } from '@metad/ocap-angular/core'
 import { AgentType, Property, Syntax } from '@metad/ocap-core'
@@ -157,7 +156,7 @@ export class ModelsComponent extends TranslationBaseComponent implements AfterVi
     })
     const result = await firstValueFrom(
       this._dialog
-        .open(ConfirmDeleteComponent, {
+        .open(NgmConfirmDeleteComponent, {
           data: {
             value: model.name,
             information: information + '?'
@@ -176,7 +175,7 @@ export class ModelsComponent extends TranslationBaseComponent implements AfterVi
   }
 
   async createStory(model: StoryModel) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {}).afterClosed())
+    const name = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent, {}).afterClosed())
 
     if (name) {
       try {
@@ -199,7 +198,7 @@ export class ModelsComponent extends TranslationBaseComponent implements AfterVi
   }
 
   async onNewWASMModel() {
-    const result = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const result = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent).afterClosed())
     if (result) {
       try {
         await firstValueFrom(

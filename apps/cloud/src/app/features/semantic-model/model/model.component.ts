@@ -18,9 +18,9 @@ import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
+import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
@@ -374,7 +374,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   createStory() {
     this._dialog
-      .open(ConfirmUniqueComponent, {
+      .open(NgmConfirmUniqueComponent, {
         data: {
           title: this.getTranslation('PAC.KEY_WORDS.StoryName', { Default: 'Story Name' })
         }
@@ -439,7 +439,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   createIndicator() {
     this.router.navigate(['/project/indicators/new'], {
       queryParams: {
-        modelId: this.model.id,
+        modelId: this.model.id
       }
     })
   }
@@ -543,7 +543,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   async dropTable(event: CdkDragDrop<DBTable[]>) {
     const tableName = event.item.data.name
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: tableName } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: tableName } }).afterClosed()
     )
     if (confirm) {
       try {

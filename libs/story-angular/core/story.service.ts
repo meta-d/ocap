@@ -3,7 +3,6 @@ import { computed, inject, Inject, Injectable, Injector, Optional, signal } from
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { MatSnackBar } from '@angular/material/snack-bar'
-import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ID, IStoryTemplate, StoryTemplateType } from '@metad/contracts'
 import {
   createSubStore,
@@ -75,6 +74,7 @@ import {
   WidgetComponentType
 } from './types'
 import { convertStoryModel2DataSource, getSemanticModelKey } from './utils'
+import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 
 @Injectable()
 export class NxStoryService {
@@ -668,7 +668,7 @@ export class NxStoryService {
       page.name ||
       (await firstValueFrom(
         this._dialog
-          .open(ConfirmUniqueComponent, {
+          .open(NgmConfirmUniqueComponent, {
             data: {
               title: this.getTranslation('Story.Story.NewPageName', 'New Page Name')
             }

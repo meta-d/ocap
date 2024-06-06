@@ -27,10 +27,9 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { MatDialog } from '@angular/material/dialog'
 import { HammerModule } from '@angular/platform-browser'
 import { ActivatedRoute, Params, Router } from '@angular/router'
-import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { TrialWatermarkComponent } from '@metad/components/trial-watermark'
 import { NgmTransformScaleDirective, NxCoreModule, camelCaseObject } from '@metad/core'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { NgmSmartFilterBarService, OcapCoreModule, effectAction, isNotEmpty } from '@metad/ocap-angular/core'
 import { isNil, omitBlank } from '@metad/ocap-core'
 import {
@@ -466,7 +465,7 @@ export class NxStoryComponent implements AfterViewInit {
   }
 
   openDialog() {
-    const dialogRef = this._dialog.open(ConfirmUniqueComponent)
+    const dialogRef = this._dialog.open(NgmConfirmUniqueComponent)
     return dialogRef.afterClosed()
   }
 
@@ -557,7 +556,7 @@ export class NxStoryComponent implements AfterViewInit {
     )
     const confirm = await firstValueFrom(
       this._dialog
-        .open(ConfirmDeleteComponent, {
+        .open(NgmConfirmDeleteComponent, {
           data: { value: event.name, information }
         })
         .afterClosed()

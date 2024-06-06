@@ -5,11 +5,11 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatConversation, CopilotChatMessage } from '@metad/copilot'
 import { cloneDeep, isEqual } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ModelQueryService, convertModelQueryResult, uuid } from 'apps/cloud/src/app/@core'
 import { firstValueFrom } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelQuery, ModelQueryState, QueryResult } from '../types'
+import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 
 export interface QueryLabState {
   modelId: string
@@ -152,7 +152,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   async renameQuery(key: string) {
     const queries = this.get((state) => state.queries)
     const query = queries[key]?.query
-    const result = await firstValueFrom(this.dialog.open(ConfirmUniqueComponent, { data: query.name }).afterClosed())
+    const result = await firstValueFrom(this.dialog.open(NgmConfirmUniqueComponent, { data: query.name }).afterClosed())
     if (result) {
       this.updater((state, name: string) => {
         state.queries[key].query.name = name
