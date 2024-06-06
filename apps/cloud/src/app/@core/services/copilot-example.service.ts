@@ -3,14 +3,16 @@ import { inject, Injectable } from '@angular/core'
 import { DocumentInterface } from '@langchain/core/documents'
 import { MaxMarginalRelevanceSearchOptions, VectorStoreInterface } from '@langchain/core/vectorstores'
 import { NGXLogger } from 'ngx-logger'
-import { map } from 'rxjs'
+import { map, tap } from 'rxjs'
 import { API_COPILOT_EXAMPLE } from '../constants/app.constants'
 import { ICopilotExample, ICopilotRole } from '../types'
+import { CopilotRoleService } from './copilot-role.service'
 
 @Injectable({ providedIn: 'root' })
 export class CopilotExampleService {
   readonly #logger = inject(NGXLogger)
   readonly httpClient = inject(HttpClient)
+  readonly roleService = inject(CopilotRoleService)
 
   similaritySearch(
     query: string,
@@ -68,10 +70,12 @@ export class CopilotExampleService {
   }
 
   createBulk(entities: ICopilotExample[], roles: ICopilotRole[], options: { clearRole: boolean }) {
-    return this.httpClient.post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {
-      examples: entities,
-      roles,
-      options
-    })
+    return this.httpClient
+      .post<ICopilotExample[]>(`${API_COPILOT_EXAMPLE}/bulk`, {
+        examples: entities,
+        roles,
+        options
+      })
+      .pipe(tap(() => this.roleService.refresh()))
   }
 }
