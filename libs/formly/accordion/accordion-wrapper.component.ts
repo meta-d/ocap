@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { MatExpansionPanel } from '@angular/material/expansion';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { FieldWrapper, FormlyFieldConfig } from '@ngx-formly/core';
+import { isNil } from 'lodash-es';
 
 @Component({
   selector: 'ngm-formly-accordion',
@@ -28,5 +29,9 @@ export class NgmFormlyAccordionComponent<
     } else {
       expansionPanel?.close();
     }
+  }
+
+  isShow(item: FormlyFieldConfig) {
+    return isNil(this.model?.[item.props.keyShow]) && !!this.model?.[item.key as string] || this.model?.[item.props.keyShow]
   }
 }

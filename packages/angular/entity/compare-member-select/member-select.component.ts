@@ -2,13 +2,23 @@ import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   forwardRef,
   inject,
+  input,
   Input,
   ViewContainerRef
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { ControlValueAccessor, FormControl, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms'
+import {
+  ControlValueAccessor,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -26,7 +36,7 @@ import {
   isSemanticCalendar
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, firstValueFrom, map } from 'rxjs'
+import { distinctUntilChanged, filter, firstValueFrom, startWith } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -64,45 +74,17 @@ export class NgmCompareMemberSelectComponent implements ControlValueAccessor {
 
   @Input() appearance: MatFormFieldAppearance = 'fill'
   @Input() label: string
-  @Input() get dataSettings() {
-    return this.dataSettings$.value
-  }
-  set dataSettings(value) {
-    this.dataSettings$.next(value)
-  }
-  private readonly dataSettings$ = new BehaviorSubject<DataSettings>(null)
-  @Input() entityType: EntityType
-  @Input() get dimension(): Dimension {
-    return this.dimension$.value
-  }
-  set dimension(value) {
-    this.dimension$.next(value)
-  }
-  private dimension$ = new BehaviorSubject<Dimension>(null)
+
+  readonly dataSettings = input<DataSettings>()
+  readonly entityType = input<EntityType>()
+  readonly dimension = input<Dimension>()
 
   @Input() disabled: boolean
-
-  public readonly property$ = this.dimension$.pipe(map((dimension) => getEntityProperty(this.entityType, dimension)))
 
   readonly formGroup: FormGroup = new FormGroup({
     type: new FormControl(null, Validators.required),
     value: new FormControl(null)
   })
-
-  public readonly trigger$ = combineLatest([this.property$, this.formGroup.valueChanges]).pipe(
-    map(([property, model]) => {
-      if (!property) {
-        return 'No Base dimension'
-      }
-      if (model.type === CompareToEnum.SelectedMember) {
-        return property.caption + ': ' + model.value
-      } else if (model.type) {
-        return property.caption + `: ${model.type}`
-      }
-
-      return property.caption
-    })
-  )
 
   get type() {
     return this.formGroup.value.type
@@ -123,7 +105,28 @@ export class NgmCompareMemberSelectComponent implements ControlValueAccessor {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly isCalendar$ = toSignal(this.property$.pipe(map((property) => isSemanticCalendar(property))))
+  readonly property = computed(() =>
+    this.entityType() ? getEntityProperty(this.entityType(), this.dimension()) : null
+  )
+
+  readonly formGroupSignal = toSignal(this.formGroup.valueChanges.pipe(startWith(this.formGroup.value)))
+
+  readonly triggerLabel = computed(() => {
+    const property = this.property()
+    const model = this.formGroupSignal()
+    if (!property) {
+      return 'No Base dimension'
+    }
+    if (model.type === CompareToEnum.SelectedMember) {
+      return property.caption + ': ' + model.value
+    } else if (model.type) {
+      return property.caption + `: ${model.type}`
+    }
+
+    return property.caption
+  })
+
+  readonly isCalendar = computed(() => isSemanticCalendar(this.property()))
 
   /**
   |--------------------------------------------------------------------------
@@ -165,11 +168,11 @@ export class NgmCompareMemberSelectComponent implements ControlValueAccessor {
         .open(NgmValueHelpComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
-            dimension: this.dimension,
+            dimension: this.dimension(),
             slicer: {
               members: this.type === CompareToEnum.SelectedMember && this.value ? [{ value: this.value }] : []
             },
-            dataSettings: this.dataSettings,
+            dataSettings: this.dataSettings(),
             options: {
               selectionType: FilterSelectionType.Single,
               searchable: true,

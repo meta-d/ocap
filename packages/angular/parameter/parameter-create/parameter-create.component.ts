@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
 import { Component, Inject, Input, Optional, inject, model, signal } from '@angular/core'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   AbstractControl,
   FormArray,
@@ -36,7 +36,7 @@ import {
   uuid
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { filter, map } from 'rxjs'
+import { filter, map, startWith } from 'rxjs'
 
 @Component({
   standalone: true,
@@ -91,7 +91,7 @@ export class NgmParameterCreateComponent {
     caption: null,
     dimension: null,
     hierarchy: null,
-    paramType: null,
+    paramType: [ParameterControlEnum.Input, Validators.required],
     value: null,
     dataType: null,
     members: [],
@@ -139,6 +139,11 @@ export class NgmParameterCreateComponent {
       hierarchy: value.hierarchy
     }))
   )
+
+  readonly inputType = toSignal(this.dataType.valueChanges.pipe(
+    startWith(this.dataType.value),
+    map((type) => type === 'string' ? 'text' : type)
+  ))
 
   constructor(
     private readonly _formBuilder: FormBuilder,

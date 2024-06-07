@@ -31,14 +31,14 @@ export class ModelMemberController extends CrudController<SemanticModelMember> {
 		})
 	}
 
-	@HttpCode(HttpStatus.OK)
-	@Delete(':id')
-	async bulkDelete(
-		@Param('id', UUIDValidationPipe) id: string,
-		@Query('$query', ParseJsonPipe) query: FindManyOptions
-	) {
-		return this.memberService.bulkDelete(id, query)
-	}
+	// @HttpCode(HttpStatus.OK)
+	// @Delete(':id')
+	// async bulkDelete(
+	// 	@Param('id', UUIDValidationPipe) id: string,
+	// 	@Query('$query', ParseJsonPipe) query: FindManyOptions
+	// ) {
+	// 	return this.memberService.bulkDelete(id, query)
+	// }
 
 	@Post(':id/retrieve')
 	async retrieveMembers(

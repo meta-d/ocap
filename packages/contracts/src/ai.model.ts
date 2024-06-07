@@ -14,3 +14,5 @@ export enum AiBusinessRole {
     FinanceBP = 'finance_bp',
     SupplyChainExpert = 'supply_chain_expert',
 }
+
+export const AIEmbeddings = [AiProvider.OpenAI, AiProvider.Azure]

@@ -4,8 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { IndicatorsService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
@@ -44,7 +43,7 @@ export class AllIndicatorComponent implements OnDestroy {
 
   async onDelete(indicator: IIndicator) {
     const cofirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: indicator.name } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: indicator.name } }).afterClosed()
     )
     if (!cofirm) {
       return

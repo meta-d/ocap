@@ -63,7 +63,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly messages = computed(() => flatten(this.conversations$().map((c) => c.messages)))
 
   readonly lastConversation = computed(() => {
-    const conversation = this.conversations$()[this.conversations$().length - 1] ?? { messages: [], command: null } as CopilotChatConversation
+    const conversation =
+      this.conversations$()[this.conversations$().length - 1] ??
+      ({ messages: [], command: null } as CopilotChatConversation)
 
     // Get last conversation messages
     const lastMessages = []
@@ -228,7 +230,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         return
       }
 
-      await this.callCommand(_command, prompt, {...(options ?? {}), context: commandWithContext.context})
+      await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
 
       // // New conversation after command completion
       // this.newConversation()
@@ -237,7 +239,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         const _command = this.currentCommand()
         const commandWithContext = this.getCommandWithContext(_command.name)
 
-        return await this.callCommand(_command, prompt, {...(options ?? {}), context: commandWithContext.context})
+        return await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
 
       this.upsertConversation('free', null)
@@ -332,7 +334,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       ...this.aiOptions
     }
     if (functions.length) {
-      ;(body.functions = functions), (body.stream = false)
+      body.functions = functions
+      body.stream = false
     }
 
     await this.triggerRequest(
@@ -413,9 +416,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
 
         switch (command.agent.type) {
-          
           case CopilotAgentType.Default: {
-            const agent = await createOpenAIToolsAgent({
+            const agent: any = await createOpenAIToolsAgent({
               llm,
               tools: command.tools,
               prompt: command.prompt
@@ -673,7 +675,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   /**
    * Remove message from conversation, then remove the conversation if it has been empty
-   * 
+   *
    * @param message Message or message id
    */
   deleteMessage(message: CopilotChatMessage | string) {
@@ -735,14 +737,18 @@ export class NgmCopilotEngineService implements CopilotEngine {
   async dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     const dropActions = this.#dropActions()
     if (dropActions[event.previousContainer.id]) {
-      const message = await dropActions[event.previousContainer.id].implementation(event, this)
+      const dropMessage = await dropActions[event.previousContainer.id].implementation(event, this)
+      const messages = Array.isArray(dropMessage) ? dropMessage : [dropMessage]
 
       const currentConversation = this.currentConversation()
       const currentCommand = this.currentCommand()
       if (!(currentConversation.type === 'free' || currentCommand?.agent?.conversation)) {
         this.newConversation(null, null)
       }
-      this.upsertMessage({...message, lcMessage: new HumanMessage({ content: message.content })})
+
+      this.upsertMessage(
+        ...messages.map((message) => ({ ...message, lcMessage: new HumanMessage({ content: message.content }) }))
+      )
     }
   }
 

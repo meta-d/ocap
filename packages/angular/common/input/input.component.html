@@ -6,7 +6,7 @@
 
 <div class="relative">
     <input matInput class="ngm-input-element ngm-w-full"
-        [type]="type || 'text'"
+        [type]="type() || 'text'"
         [value]="defaultValue"
         [placeholder]="placeholder"
         [ngModel]="value"

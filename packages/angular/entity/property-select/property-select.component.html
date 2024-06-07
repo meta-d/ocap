@@ -65,10 +65,12 @@
       </mat-optgroup>
 
       <mat-optgroup *ngIf="showMeasure" [label]=" 'Ngm.Property.CALCULATIONS' | translate: {Default: 'Calculations'} ">
-        <mat-option *ngFor="let property of calculations$ | async" [value]="property.name">
-          <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
-        </mat-option>
-        <mat-option *ngIf="editable()" class="ngm-property-select__action" [value]="null"
+        @for (property of calculations(); track property.name) {
+          <mat-option [value]="property.name">
+            <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
+          </mat-option>
+        }
+        <mat-option *ngIf="editable()" class="ngm-property-select__action mt-2" [value]="null"
           (click)="$event.stopPropagation();$event.preventDefault();">
           <button mat-button color="primary" ngmAppearance="dashed" class="ngm-property-select__create-calculation w-full"
             (click)="$event.stopPropagation();onCreateCalculation($event)">
@@ -81,12 +83,14 @@
       </mat-optgroup>
 
       <mat-optgroup *ngIf="showMeasureControl" [label]=" 'Ngm.Property.MEASURE_CONTROLS' | translate: {Default: 'Measure Controls'} ">
-        <mat-option *ngFor="let property of measureControls$ | async" [value]="property.name">
-          <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
-        </mat-option>
+        @for (property of measureControls(); track property.name) {
+          <mat-option [value]="property.name">
+            <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
+          </mat-option>
+        }
 
-        <mat-option *ngIf="editable()">
-          <button mat-button color="primary" ngmAppearance="dashed" (click)="onCreateCalculation($event, CalculationType.MeasureControl)">
+        <mat-option *ngIf="editable()" class="mt-2">
+          <button mat-button class="flex-1" color="primary" ngmAppearance="dashed" (click)="onCreateCalculation($event, CalculationType.MeasureControl)">
             <mat-icon>add</mat-icon>
             {{ 'Ngm.Property.CREATE_MEASURE_CONTROL' | translate: {Default: 'Create Measure Control'} }}
           </button>

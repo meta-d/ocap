@@ -15,7 +15,6 @@ import { CommandBus } from '@nestjs/cqrs'
 import { BusinessArea, BusinessAreaService } from '../business-area'
 import { SemanticModelQueryDTO } from './dto'
 import { updateXmlaCatalogContent } from './helper'
-import { SemanticModelMemberService } from '../model-member/member.service'
 import { NgmDSCoreService, registerModel } from './ocap'
 
 const axios = _axios.default
@@ -30,7 +29,6 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		modelRepository: Repository<SemanticModel>,
 		private readonly dsService: DataSourceService,
 		private readonly cacheService: SemanticModelCacheService,
-		private readonly memberService: SemanticModelMemberService,
 		private readonly configService: ConfigService,
 		private readonly businessAreaService: BusinessAreaService,
 		readonly commandBus: CommandBus,
@@ -83,8 +81,6 @@ export class SemanticModelService extends BusinessAreaAwareCrudService<SemanticM
 		items.forEach((model) => {
 			registerModel(model, this.dsCoreService)
 		})
-
-		await this.memberService.seedVectorStore(items)
 	}
 
 	/**

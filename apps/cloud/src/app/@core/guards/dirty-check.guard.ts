@@ -2,10 +2,10 @@ import { Injectable, inject } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { ActivatedRouteSnapshot } from '@angular/router'
 import { TranslateService } from '@ngx-translate/core'
-import { ConfirmSnackBar } from '@metad/components/confirm'
 import { Observable, defer, isObservable, merge, of } from 'rxjs'
 import { map, switchMap, take } from 'rxjs/operators'
 import { IsDirty } from '@metad/core'
+import { NgmConfirmSnackBar } from '@metad/ocap-angular/common'
 
 
 @Injectable()
@@ -35,7 +35,7 @@ export class DirtyCheckGuard  {
   }
 
   confirmChanges(currentRoute: ActivatedRouteSnapshot): Observable<boolean> | boolean {
-    const confirm = this._snackBar.openFromComponent(ConfirmSnackBar, {
+    const confirm = this._snackBar.openFromComponent(NgmConfirmSnackBar, {
       verticalPosition: 'top',
       horizontalPosition: 'center',
       duration: 3* 1000,

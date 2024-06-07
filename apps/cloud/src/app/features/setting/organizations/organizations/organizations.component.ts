@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common'
 import { Component, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { Router, RouterModule } from '@angular/router'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
-import { NgmTableComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
@@ -82,7 +81,7 @@ export class AllOrganizationsComponent extends TranslationBaseComponent {
     )
     const confirm = await firstValueFrom(
       this._dialog
-        .open(ConfirmDeleteComponent, {
+        .open(NgmConfirmDeleteComponent, {
           data: {
             value: organization?.name,
             information

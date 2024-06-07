@@ -1,14 +1,14 @@
 import { ISemanticModel, ISemanticModelEntity, ISemanticModelMember } from '@metad/contracts'
 import { TenantOrganizationBaseEntity } from '@metad/server-core'
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsString } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsBoolean, IsOptional, IsString, IsNumber } from 'class-validator'
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm'
 import { SemanticModel, SemanticModelEntity } from '../core/entities/internal'
 
 /**
  * 维度成员表
  */
-@Entity('semantic_model_member')
+@Entity('model_member')
 export class SemanticModelMember extends TenantOrganizationBaseEntity implements ISemanticModelMember {
 
 	@IsString()
@@ -98,10 +98,9 @@ export class SemanticModelMember extends TenantOrganizationBaseEntity implements
 	parentUniqueName: string
 
 	// For vector store
-	@IsString()
-	@Column({ length: 1000, nullable: true })
-	content: string
-
-	@Column({ type: 'numeric', precision: 11, scale: 4, array: true, nullable: true })
-	vector: number[]
+	@ApiPropertyOptional({ type: () => Boolean })
+	@IsBoolean()
+	@IsOptional()
+	@Column({ default: false })
+	vector?: boolean
 }

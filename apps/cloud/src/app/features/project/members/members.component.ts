@@ -20,8 +20,7 @@ import { InlineSearchComponent } from '../../../@shared/form-fields'
 import { ProjectComponent } from '../project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { NgmTableComponent } from '@metad/ocap-angular/common'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
+import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 
 
 @Component({
@@ -157,7 +156,7 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
     if (this.project?.id) {
       const member = this.members.find((item) => item.id === id)
       const confirm = await firstValueFrom(
-        this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(member.user) } }).afterClosed()
+        this._dialog.open(NgmConfirmDeleteComponent, { data: { value: userLabel(member.user) } }).afterClosed()
       )
       if (confirm) {
         member.loading = true
@@ -207,7 +206,7 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
 
   async deleteProject() {
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: this.project.name } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: this.project.name } }).afterClosed()
     )
     if (!confirm) {
       return

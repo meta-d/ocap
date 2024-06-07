@@ -1,4 +1,4 @@
-import { DatabaseProviderModule, RedisModule, TenantModule } from '@metad/server-core'
+import { DatabaseModule, RedisModule, TenantModule } from '@metad/server-core'
 import { DynamicModule, Module, forwardRef } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { SeedDataService } from './seed-data.service'
@@ -24,7 +24,7 @@ export class SeederModule {
 		return {
 			module: SeederModule,
 			providers: [],
-			imports: [DatabaseProviderModule],
+			imports: [ DatabaseModule ],
 			exports: []
 		} as DynamicModule
 	}

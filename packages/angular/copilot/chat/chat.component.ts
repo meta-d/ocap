@@ -55,7 +55,7 @@ import {
   NgmSearchComponent,
   NgmTableComponent
 } from '@metad/ocap-angular/common'
-import { DensityDirective, fadeAnimation } from '@metad/ocap-angular/core'
+import { DensityDirective, provideFadeAnimation } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
@@ -133,7 +133,7 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
   host: {
     class: 'ngm-copilot-chat'
   },
-  animations: [ fadeAnimation ]
+  animations: [ provideFadeAnimation('100ms') ]
 })
 export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
@@ -651,17 +651,17 @@ export class NgmCopilotChatComponent {
       event.preventDefault()
       if (this.promptCompletion()) {
         this.promptControl.setValue(this.promptControl.value + this.promptCompletion())
-      } else if (this.isContextTrigger()) {
-        const item = this.filteredContextItems()[0]
-        if (item) {
-          this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
-          this.context.set(item)
-        }
       } else {
-        const activatedPrompt =
-          this.#activatedPrompt() || (this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
-        if (activatedPrompt) {
-          this.promptControl.setValue(activatedPrompt)
+        if (this.#activatedPrompt()) {
+          this.promptControl.setValue(this.#activatedPrompt())
+        } else if (this.isContextTrigger()) {
+          const item = this.filteredContextItems()[0]
+          if (item) {
+            this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
+            this.context.set(item)
+          }
+        } else if(this.filteredCommands()?.length) {
+          this.promptControl.setValue(this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         }
       }
     }

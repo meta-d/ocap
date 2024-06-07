@@ -205,7 +205,7 @@
       }
 
       @if (!conversations()?.length) {
-        <div class="absolute top-0 bottom-0 w-full flex flex-col justify-center items-center gap-1">
+        <div class="absolute top-0 bottom-0 w-full p-4 flex flex-col justify-center items-center gap-1">
           <div @fadeAnimation class="text-xl drop-shadow-md mb-4">
             <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
           </div>

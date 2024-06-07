@@ -23,12 +23,11 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { CopilotChatMessage } from '@metad/copilot'
-import { NgmInputComponent } from '@metad/ocap-angular/common'
+import { NgmConfirmUniqueComponent, NgmInputComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep, omit } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { StoriesService, convertNewSemanticModelResult } from '@metad/cloud/state'
-import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ConfirmCodeEditorComponent } from '@metad/components/editor'
 import { CHARTS, DeepPartial, IsNilPipe } from '@metad/core'
 import {
@@ -503,7 +502,7 @@ export class StoryToolbarComponent implements OnInit {
    * 把当前选中的widget复制到选中的point中
    */
   async onCopyTo(pointKey: string) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const name = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent).afterClosed())
     if (name) {
       this.storyService.copyWidgetTo({ name, pointKey })
     }
@@ -514,7 +513,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async pasteWidget() {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent).afterClosed())
+    const name = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent).afterClosed())
 
     if (name) {
       this.storyService.pasteWidget({ name })
@@ -540,7 +539,7 @@ export class StoryToolbarComponent implements OnInit {
   }
 
   async createStoryPage(input: Partial<StoryPoint>) {
-    const name = await firstValueFrom(this._dialog.open(ConfirmUniqueComponent, {
+    const name = await firstValueFrom(this._dialog.open(NgmConfirmUniqueComponent, {
       data: {
         title: this.#translate.instant('PAC.Story.StoryPointName', {Default: 'Story Point Name'}),
       }}).afterClosed())

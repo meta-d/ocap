@@ -2,14 +2,15 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { Injectable, OnDestroy, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
-import { CopilotChatConversation, CopilotChatMessage } from '@metad/copilot'
+import { CopilotChatConversation } from '@metad/copilot'
+import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { cloneDeep, isEqual } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { ConfirmUniqueComponent } from '@metad/components/confirm'
 import { ModelQueryService, convertModelQueryResult, uuid } from 'apps/cloud/src/app/@core'
 import { firstValueFrom } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelQuery, ModelQueryState, QueryResult } from '../types'
+import { initModelQueryState } from './types'
 
 export interface QueryLabState {
   modelId: string
@@ -78,18 +79,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   newQuery(statement?: string) {
     const key = uuid()
     this.updater((state) => {
-      state.queries[key] = {
-        key,
-        query: {
-          key,
-          name: 'Untitled_1',
-          entities: [],
-          modelId: state.modelId,
-          statement
-        },
-        dirty: true,
-        results: []
-      }
+      state.queries[key] = initModelQueryState(state.modelId, key, statement)
     })()
 
     return key
@@ -133,8 +123,10 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   )
 
   readonly setStatement = this.updater((state, { key, statement }: { key: string; statement: string }) => {
-    const query = state.queries[key].query
-    query.statement = statement
+    if (state.queries[key]) {
+      const query = state.queries[key].query
+      query.statement = statement
+    }
   })
 
   readonly addResult = this.updater((state, { key, result }: { key: string; result: QueryResult }) => {
@@ -152,7 +144,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   async renameQuery(key: string) {
     const queries = this.get((state) => state.queries)
     const query = queries[key]?.query
-    const result = await firstValueFrom(this.dialog.open(ConfirmUniqueComponent, { data: query.name }).afterClosed())
+    const result = await firstValueFrom(this.dialog.open(NgmConfirmUniqueComponent, { data: query.name }).afterClosed())
     if (result) {
       this.updater((state, name: string) => {
         state.queries[key].query.name = name

@@ -15,6 +15,7 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { NgmParameterSelectComponent } from '@metad/ocap-angular/parameter'
 import {
   AggregationOperation,
+  AggregationOperations,
   DataSettings,
   DisplayBehaviour,
   EntityType,
@@ -63,48 +64,8 @@ export class NgmConditionalAggregationComponent implements ControlValueAccessor,
 
   private formBuilder = inject(FormBuilder)
 
-  OPERATIONS = [
-    {
-      value: AggregationOperation.SUM,
-      label: 'Sum'
-    },
-    {
-      value: AggregationOperation.COUNT,
-      label: 'Count'
-    },
-    {
-      value: AggregationOperation.MIN,
-      label: 'Min'
-    },
-    {
-      value: AggregationOperation.MAX,
-      label: 'Max'
-    },
-    {
-      value: AggregationOperation.AVERAGE,
-      label: 'Average'
-    },
-    {
-      value: AggregationOperation.STDEV,
-      label: 'Standard Deviation'
-    },
-    {
-      value: AggregationOperation.STDEVP,
-      label: 'Population Standard Deviation'
-    },
-    {
-      value: AggregationOperation.MEDIAN,
-      label: 'Median'
-    },
-    {
-      value: AggregationOperation.TOP_PERCENT,
-      label: 'Top Percent'
-    },
-    {
-      value: AggregationOperation.TOP_COUNT,
-      label: 'Top Count'
-    }
-  ]
+  OPERATIONS = AggregationOperations
+  HAS_VALUE_OPERATIONS = [AggregationOperation.TOP_COUNT, AggregationOperation.TOP_PERCENT, AggregationOperation.TOP_SUM]
 
   @Input() dataSettings: DataSettings
   @Input()

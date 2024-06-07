@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ToastrService, UsersService } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { IUser, RolesEnum } from '@metad/contracts'
 import { ButtonGroupDirective, OcapCoreModule } from '@metad/ocap-angular/core'
 import { MtxCheckboxGroupModule } from '@ng-matero/extensions/checkbox-group'
@@ -16,6 +15,7 @@ import {
 import { includes } from 'lodash-es'
 import { BehaviorSubject, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { PACUsersComponent } from '../users.component'
+import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 
 @Component({
   standalone: true,
@@ -93,7 +93,7 @@ export class ManageUserComponent extends TranslationBaseComponent {
    */
   async remove(user: IUser) {
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: userLabel(user) } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: userLabel(user) } }).afterClosed()
     )
     if (confirm) {
       try {

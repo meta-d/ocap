@@ -1,4 +1,5 @@
 import { MDX, RoleTypeEnum } from '@metad/contracts'
+import { DimensionType, Semantics, TimeLevelType } from '@metad/ocap-core'
 import { z } from 'zod'
 
 export const CalculatedMeasureSchema = z.object({
@@ -30,7 +31,28 @@ export const HierarchySchema = z.object({
         __id__: z.string().optional().describe('The id of the level'),
         name: z.string().describe('The name of the level'),
         caption: z.string().describe('The caption of the level'),
-        column: z.string().describe('The column of the level')
+        column: z.string().describe('The column of the level'),
+
+        levelType: z.enum([
+          TimeLevelType.TimeYears, 
+          TimeLevelType.TimeQuarters,
+          TimeLevelType.TimeMonths,
+          TimeLevelType.TimeWeeks,
+          TimeLevelType.TimeDays,
+        ]).optional().describe(`The type of level, such as 'TimeYears', 'TimeMonths', 'TimeDays' if dimension is a time dimension`),
+
+        semantics: z.object({
+          semantic: z.enum([
+            Semantics['Calendar.Year'], 
+            Semantics['Calendar.Quarter'],
+            Semantics['Calendar.Month'],
+            Semantics['Calendar.Week'],
+            Semantics['Calendar.Day'],
+          ]).optional().describe(`The semantic of the time level`),
+          formatter: z.string().optional().describe(`The formatter of the member key of the time level;
+for examples: 'yyyy' for year, '[yyyy].[MM]' for month, '[yyyy].[yyyyMM].[yyyyMMDD]' for day
+          `)
+        }).optional()
       })
     )
     .describe('An array of levels in this hierarchy')
@@ -40,6 +62,9 @@ export const DimensionSchema = z.object({
   __id__: z.string().optional().describe('The id of the dimension'),
   name: z.string().describe('The name of the dimension'),
   caption: z.string().describe('The caption of the dimension'),
+  type: z.enum([DimensionType.StandardDimension, DimensionType.TimeDimension])
+    .optional()
+    .describe('The type of the dimension'),
   hierarchies: z.array(HierarchySchema).describe('An array of hierarchies in this dimension')
 })
 

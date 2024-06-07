@@ -14,11 +14,11 @@ const routes: Routes = [
     component: PACSettingComponent,
     data: { title: 'pac.menu.settings' },
     children: [
-      // {
-      //   path: '',
-      //   redirectTo: 'general',
-      //   pathMatch: 'full'
-      // },
+      {
+        path: '',
+        redirectTo: 'account',
+        pathMatch: 'full'
+      },
       {
         path: 'account',
         component: PACAccountComponent,

@@ -1,14 +1,6 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  HostBinding,
-  Input,
-  forwardRef,
-  inject
-} from '@angular/core'
+import { ChangeDetectionStrategy, Component, HostBinding, Input, forwardRef, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import {
   AbstractControl,
@@ -24,12 +16,12 @@ import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { DataSettings, Dimension, EntityType, Measure, isEmpty } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { filter } from 'rxjs/operators'
-import { PropertyCapacity } from '../types'
 import { NgmPropertySelectComponent } from '../property-select/property-select.component'
+import { PropertyCapacity } from '../types'
 
 /**
  * The component `PropertySelect` array.
- * 
+ *
  */
 @Component({
   standalone: true,
@@ -58,11 +50,9 @@ import { NgmPropertySelectComponent } from '../property-select/property-select.c
 })
 export class NgmPropertyArrayComponent implements ControlValueAccessor {
   private readonly formBuilder = inject(FormBuilder)
-  private readonly _cdr = inject(ChangeDetectorRef)
 
   @Input() dataSettings: DataSettings
   @Input() entityType: EntityType
-  // @Input() coreService: NxCoreService
   @Input() dsCoreService: NgmDSCoreService
   @Input() capacities: PropertyCapacity[]
 
@@ -116,12 +106,10 @@ export class NgmPropertyArrayComponent implements ControlValueAccessor {
   }
 
   setValue(dimensions: Array<Dimension | Measure>) {
-    this.formArray.reset()
+    this.formArray.clear()
     dimensions?.forEach((dimension) => {
       this.formArray.push(this.create(dimension))
     })
-
-    this._cdr.detectChanges()
   }
 
   drop(event: CdkDragDrop<AbstractControl[]>) {

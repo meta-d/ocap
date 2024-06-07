@@ -18,9 +18,9 @@ import { FormControl } from '@angular/forms'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
-import { ConfirmDeleteComponent, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
+import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/ocap-angular/copilot'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
@@ -66,7 +66,7 @@ import {
   SemanticModelEntityType,
   TOOLBAR_ACTION_CATEGORY
 } from './types'
-import { stringifyTableType } from './utils'
+import { markdownTableData, stringifyTableType } from './utils'
 
 @Component({
   selector: 'ngm-semanctic-model',
@@ -223,19 +223,39 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       // 获取源表或源多维数据集结构
       const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
 
-      return {
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        data: {
-          columns: [
-            { name: 'name', caption: '名称' },
-            { name: 'caption', caption: '描述' }
-          ],
-          content: Object.values(entityType.properties) as any[]
+      const topCount = 10
+      const samples = await firstValueFrom(this.modelService.selectTableSamples(data.name, topCount))
+
+      const tableHeader = `The structure of table "${data.name}" is as follows:`
+      const dataHeader = `The first ${topCount} rows of the table "${data.name}" are as follows:`
+
+      return [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: [
+              { name: 'name', caption: 'Name' },
+              { name: 'caption', caption: 'Description' }
+            ],
+            content: Object.values(entityType.properties) as any[],
+            header: tableHeader
+          },
+          content: tableHeader + '\n' + stringifyTableType(entityType),
+          templateRef: this.tableTemplate
         },
-        content: stringifyTableType(entityType),
-        templateRef: this.tableTemplate
-      }
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: samples.columns,
+            content: samples.data,
+            header: dataHeader
+          },
+          content: dataHeader + '\n' + markdownTableData(samples),
+          templateRef: this.tableTemplate
+        }
+      ]
     }
   })
   #queryResultDropAction = provideCopilotDropAction({
@@ -374,7 +394,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
 
   createStory() {
     this._dialog
-      .open(ConfirmUniqueComponent, {
+      .open(NgmConfirmUniqueComponent, {
         data: {
           title: this.getTranslation('PAC.KEY_WORDS.StoryName', { Default: 'Story Name' })
         }
@@ -543,7 +563,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   async dropTable(event: CdkDragDrop<DBTable[]>) {
     const tableName = event.item.data.name
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: tableName } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: tableName } }).afterClosed()
     )
     if (confirm) {
       try {

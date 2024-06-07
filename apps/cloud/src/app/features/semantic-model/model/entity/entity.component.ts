@@ -20,7 +20,7 @@ import { firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
 import { z } from 'zod'
 import { AppService } from '../../../../app.service'
-import { injectCalculationCommand } from '../copilot'
+import { injectCalculatedCommand } from '../copilot'
 import { ModelComponent } from '../model.component'
 import { SemanticModelService } from '../model.service'
 import { ModelCubeStructureComponent } from './cube-structure/cube-structure.component'
@@ -133,7 +133,7 @@ The cube is`
     ]
   })
 
-  #calculatedMeasureCommand = injectCalculationCommand(this.cube, this.entityType)
+  #calculatedMeasureCommand = injectCalculatedCommand(this.cube, this.entityType)
 
   /**
   |--------------------------------------------------------------------------

@@ -42,21 +42,21 @@ async function bootstrap() {
   app.setGlobalPrefix(globalPrefix)
 
   // Seed default values
-  setTimeout(async () => {
-    const serverService = app.select(ServerAppModule).get(AppService)
-    await serverService.seedDBIfEmpty()
-    const analyticsService = app.select(AnalyticsModule).get(AnalyticsService)
-    await analyticsService.seedDBIfEmpty()
+  const serverService = app.select(ServerAppModule).get(AppService)
+  await serverService.seedDBIfEmpty()
+  const analyticsService = app.select(AnalyticsModule).get(AnalyticsService)
+  await analyticsService.seedDBIfEmpty()
 
-    // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
-    // subscriptionService.setupJobs()
-  }, 2000);
+  // const subscriptionService = app.select(ServerAppModule).get(SubscriptionService)
+  // subscriptionService.setupJobs()
 
   // Setup Swagger Module
   const options = new DocumentBuilder().setTitle('Metad Cloud API').setVersion('1.0').addBearerAuth().build()
 
   const document = SwaggerModule.createDocument(app, options)
   SwaggerModule.setup('swg', app, document)
+
+  app.enableShutdownHooks();
 
   // Listen App
   const port = process.env.PORT || 3000

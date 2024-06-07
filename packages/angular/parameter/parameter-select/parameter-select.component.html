@@ -1,7 +1,7 @@
-<ngm-select searchable [label]="label" [placeholder]="placeholder"
-  [selectOptions]="selectOptions$ | async"
+<ngm-input searchable [label]="label" [placeholder]="placeholder"
+  [options]="parameters$ | async"
   valueKey="key"
-  [(ngModel)]="value"
+  [(ngModel)]="model"
 >
   <div ngmSuffix class="ngm-input__suffix flex items-center">
     <button mat-icon-button displayDensity="compact" [matMenuTriggerFor]="paramMenu"
@@ -18,8 +18,8 @@
       <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
     </button>
   </ng-template>
-</ngm-select>
-
+</ngm-input>
+<!-- 
 <label class="ngm-input-label">
   {{ label }}
 </label>
@@ -52,10 +52,10 @@
   (optionSelected)="onOptionSelected($event)"
 >
     <mat-option *ngFor="let parameter of selectOptions$ | async" [value]="parameter.value">{{parameter.label || parameter.value}}</mat-option>
-</mat-autocomplete>
+</mat-autocomplete> -->
 
 
-<mat-radio-group [(ngModel)]="value">
+<mat-radio-group [(ngModel)]="model">
   <mat-menu #paramMenu="matMenu" class="ngm-density__compact">
     @for (parameter of parameters$ | async; track $index) {
       <button mat-menu-item disableRipple (click)="$event.stopPropagation();">

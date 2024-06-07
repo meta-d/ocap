@@ -56,6 +56,7 @@ import {
   Sum,
   TopCount,
   TopPercent,
+  TopSum,
   Tuple
 } from './functions'
 import { serializeDimension, serializeSlicer } from './slicer'
@@ -340,8 +341,10 @@ export function serializeAggregationProperty(property: AggregationProperty) {
       return Aggregate(TopPercent(CrossjoinOperator(...aggregationDimensions), property.value, measure))
     case AggregationOperation.TOP_COUNT:
       return Aggregate(TopCount(CrossjoinOperator(...aggregationDimensions), property.value, measure))
+    case AggregationOperation.TOP_SUM:
+        return Aggregate(TopSum(CrossjoinOperator(...aggregationDimensions), property.value, measure))
     default:
-      throw new Error(`Not Implemented!`)
+      throw new Error(`The operation '${property.operation}' for conditional aggregation is not implemented!`)
   }
 }
 

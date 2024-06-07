@@ -8,9 +8,13 @@ import { MatIconModule } from '@angular/material/icon'
   standalone: true,
   imports: [CommonModule, ClipboardModule, MatIconModule, MatButtonModule],
   selector: 'ngm-prism-highlight',
-  template: `<pre class="m-0"><code [innerHTML]="highlightedCode()" class="m-0"></code></pre>
+  template: `<pre class="m-0 overflow-auto"><code [innerHTML]="highlightedCode()" class="m-0"></code></pre>
 <button mat-icon-button (click)="copy()" [cdkCopyToClipboard]="code()">
-  <mat-icon>content_copy</mat-icon>
+  @if (copied()) {
+    <mat-icon fontSet="material-icons-outlined">done</mat-icon>
+  } @else {
+    <mat-icon fontSet="material-icons-outlined">content_copy</mat-icon>
+  }
 </button>
 `,
   styles: [
@@ -38,6 +42,7 @@ export class NgmPrismHighlightComponent {
   })
 
   readonly highlightedCode = signal('')
+  readonly copied = signal(false)
 
   #effRef = effect(
     async () => {
@@ -65,6 +70,9 @@ export class NgmPrismHighlightComponent {
   )
 
   copy() {
-    
+    this.copied.set(true)
+    setTimeout(() => {
+      this.copied.set(false)
+    }, 3000)
   }
 }

@@ -6,6 +6,7 @@ import {
   effect,
   ElementRef,
   HostBinding,
+  HostListener,
   inject,
   Input,
   model,
@@ -80,7 +81,8 @@ import { MatDialog } from '@angular/material/dialog'
   templateUrl: './story.component.html',
   styleUrls: ['./story.component.scss'],
   host: {
-    class: 'ngm-story-designer'
+    class: 'ngm-story-designer',
+    '[attr.tabindex]': '0'
   },
   providers: [
     StoryToolbarService,
@@ -155,6 +157,8 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   readonly isMobile = toSignal(this.storyService.isMobile$)
   readonly pageKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['pageKey'])))
   readonly widgetKey = toSignal(this.route.queryParams.pipe(map((queryParams) => queryParams['widgetKey'])))
+
+  readonly #isFocused = signal(false)
 
   // Story explorer
   readonly showExplorer = signal(false)
@@ -388,5 +392,32 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
         widget: event
       })
     }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (!this.#isFocused()) {
+      return
+    }
+
+    if (event.metaKey || event.ctrlKey) {
+      if (event.shiftKey) {
+      } else {
+        if (event.key === 's' || event.key === 'S') {
+          this.storyService.saveStory()
+          event.preventDefault()
+        }
+      }
+    }
+  }
+
+  @HostListener('focus')
+  onFocus() {
+    this.#isFocused.set(true)
+  }
+
+  @HostListener('blur')
+  onBlur() {
+    this.#isFocused.set(false)
   }
 }

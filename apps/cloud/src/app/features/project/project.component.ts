@@ -6,12 +6,11 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
 import { Router, RouterModule } from '@angular/router'
-import { NgmCommonModule, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, FlatTreeNode, TreeNodeInterface, hierarchize } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { FavoritesService, StoriesService, convertStory } from '@metad/cloud/state'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { Story } from '@metad/story/core'
 import { uniq } from 'lodash-es'
 import {
@@ -283,7 +282,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   }
 
   async deleteCollection(id: string) {
-    const confirm = await firstValueFrom(this._dialog.open(ConfirmDeleteComponent, { data: {} }).afterClosed())
+    const confirm = await firstValueFrom(this._dialog.open(NgmConfirmDeleteComponent, { data: {} }).afterClosed())
     if (confirm) {
       await firstValueFrom(this.collectionService.delete(id))
       this.refresh$.next()
@@ -405,7 +404,7 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   async deleteStory(story: Story) {
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmDeleteComponent, { data: { value: story.name } }).afterClosed()
+      this._dialog.open(NgmConfirmDeleteComponent, { data: { value: story.name } }).afterClosed()
     )
     if (!confirm) {
       return
@@ -451,7 +450,7 @@ export class ProjectComponent extends TranslationBaseComponent {
     const project = this.project
     if (project?.id) {
       const confirm = await firstValueFrom(
-        this._dialog.open(ConfirmDeleteComponent, { data: { value: model.name } }).afterClosed()
+        this._dialog.open(NgmConfirmDeleteComponent, { data: { value: model.name } }).afterClosed()
       )
       if (confirm) {
         await firstValueFrom(this.projectService.deleteModel(project.id, model.id))

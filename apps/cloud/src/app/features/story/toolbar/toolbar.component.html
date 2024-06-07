@@ -262,7 +262,7 @@
     </div>
 </div>
 
-<div *ngIf="showDetails() === 'newPages'" @inOut class="pac-story-bar__detail-card relative w-96 h-full flex flex-col p-2 overflow-auto" >
+<div *ngIf="showDetails() === 'newPages'" @inOut class="pac-story-bar__detail-card relative w-96 h-full flex flex-col p-2" >
 
     <button mat-icon-button style="position: absolute;" class="absolute right-1 top-1" (click)="showDetails.set(null)">
         <mat-icon>close</mat-icon>
@@ -285,7 +285,7 @@
     </div>
 </div>
 
-<div *ngIf="showDetails() === 'widgets'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
+<div *ngIf="showDetails() === 'widgets'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2">
     <div class="text-base text-center my-4">
         {{ 'Story.Toolbar.Charts' | translate: {Default: "Charts"} }}
     </div>
@@ -366,7 +366,7 @@
 
 <pac-story-designer *ngIf="showDetails() === 'storyDesigner'" @inOut class="pac-story-bar__detail-card w-96 h-full"></pac-story-designer>
 
-<div *ngIf="showDetails() === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2 overflow-auto">
+<div *ngIf="showDetails() === 'devices'" @inOut class="pac-story-bar__detail-card w-80 h-full flex flex-col p-2">
 
     <div class="text-base text-center my-2">
         {{ 'Story.Toolbar.Devices' | translate: {Default: 'Devices'} }}

@@ -1,20 +1,19 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectorRef, Component } from '@angular/core'
-import { FormsModule, ReactiveFormsModule, FormGroup } from '@angular/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
+import { UsersService } from '@metad/cloud/state'
 import { ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { UsersService } from '@metad/cloud/state'
 import { firstValueFrom } from 'rxjs'
 import { IUserUpdateInput, LanguagesEnum, Store, ToastrService, User } from '../../../@core'
 import { CreatedByPipe } from '../../../@shared'
 import { UserFormsModule } from '../../../@shared/user/forms'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-
 
 @Component({
   standalone: true,
@@ -28,7 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     ReactiveFormsModule,
     UserFormsModule,
     TranslateModule,
-    
+
     ButtonGroupDirective,
     DensityDirective
   ],

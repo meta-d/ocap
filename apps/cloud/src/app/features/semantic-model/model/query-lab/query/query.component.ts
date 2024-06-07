@@ -552,7 +552,7 @@ ${calcEntityTypePrompt(entityType)}
   }
 
   onStatementChange(event: string) {
-    if (this.queryKey()) {
+    if (this.queryKey() && nonNullable(event)) {
       this.queryLabService.setStatement({ key: this.queryKey(), statement: event })
     }
   }

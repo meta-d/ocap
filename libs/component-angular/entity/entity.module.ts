@@ -19,7 +19,6 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTreeModule } from '@angular/material/tree'
-import { ConfirmModule } from '@metad/components/confirm'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
@@ -51,7 +50,6 @@ import { IndicatorComponent } from './indicator/indicator.component'
     ScrollingModule,
     TranslateModule,
 
-    ConfirmModule,
     NgmCommonModule,
     NgmEntityPropertyComponent
   ],

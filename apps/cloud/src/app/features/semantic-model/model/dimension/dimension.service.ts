@@ -7,7 +7,7 @@ import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { NxSettingsPanelService } from '@metad/story/designer'
 import { select, withProps } from '@ngneat/elf'
 import { uuid } from 'apps/cloud/src/app/@core'
-import { assign, cloneDeep, isEqual, negate } from 'lodash-es'
+import { assign, cloneDeep, isEqual, negate, omit } from 'lodash-es'
 import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, tap, timer, withLatestFrom } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
@@ -213,18 +213,18 @@ export class ModelDimensionService {
       switchMap(([id, dimension]) => {
         const hierarchy = dimension.hierarchies?.find((item) => item.__id__ === id)
         return this.settingsService
-          .openDesigner<{ modeling: PropertyHierarchy; dimension: PropertyDimension }>(
+          .openDesigner<{ modeling: {hierarchy: PropertyHierarchy; dimension: PropertyDimension } }>(
             ModelDesignerType.hierarchy,
-            { modeling: hierarchy, dimension },
+            { modeling: { hierarchy, dimension: omit(dimension, 'hierarchies')}},
             id
           )
           .pipe(
-            tap(({ modeling, dimension }) => {
+            tap(({ modeling }) => {
               this.updateHierarchy({
-                ...modeling,
+                ...modeling.hierarchy,
                 __id__: id
               })
-              this.update(dimension)
+              this.update(modeling.dimension)
             })
           )
       })

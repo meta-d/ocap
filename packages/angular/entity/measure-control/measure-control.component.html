@@ -33,6 +33,6 @@
   (selectionChange)="onSelectionChange($event)">
     <mat-list-option *ngFor="let measure of measures$ | async" [value]="measure.name"
       cdkDrag cdkDragBoundary=".ngm-cdk__drag-list">
-      <ngm-entity-property [property]="measure" [displayBehaviour]="displayBehaviour.value"></ngm-entity-property>
+      <ngm-property [property]="measure" [displayBehaviour]="displayBehaviour.value" />
     </mat-list-option>
 </mat-selection-list>

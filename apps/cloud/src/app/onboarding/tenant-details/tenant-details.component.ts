@@ -7,12 +7,14 @@ import { MatDividerModule } from '@angular/material/divider'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { MatListModule } from '@angular/material/list'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatStepper, MatStepperModule } from '@angular/material/stepper'
 import { Router } from '@angular/router'
+import { matchWithValidator } from '@metad/cloud/auth'
 import { DataSourceService, DataSourceTypesService, Store } from '@metad/cloud/state'
-import { matchValidator } from '@metad/cloud/auth'
+import { nonNullable } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { omit } from '@metad/ocap-core'
 import { FormlyModule } from '@ngx-formly/core'
@@ -35,9 +37,6 @@ import {
   convertConfigurationSchema,
   getErrorMessage
 } from '../../@core'
-import { nonNullable } from '@metad/core'
-import { MatProgressBarModule } from '@angular/material/progress-bar'
-
 
 @Component({
   standalone: true,
@@ -64,7 +63,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 })
 export class TenantDetailsComponent {
   OrganizationDemoNetworkEnum = OrganizationDemoNetworkEnum
-  
+
   readonly #store = inject(Store)
   private readonly tenantService = inject(TenantService)
   private readonly typesService = inject(DataSourceTypesService)
@@ -81,22 +80,18 @@ export class TenantDetailsComponent {
 
   Languages = Object.values(LanguagesEnum)
 
-  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({ preferredLanguage: [
-    [this.translateService.currentLang], [Validators.required]
-  ] })
-  userFormGroup: FormGroup = this._formBuilder.group(
-    {
-      firstName: [''],
-      lastName: [''],
-      email: ['', [Validators.required, Validators.email]],
-      organizationName: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required, Validators.minLength(8)]]
-    },
-    {
-      validators: [matchValidator('password', 'confirmPassword')]
-    }
-  )
+  preferredLanguageFormGroup: FormGroup = this._formBuilder.group({
+    preferredLanguage: [[this.translateService.currentLang], [Validators.required]]
+  })
+  readonly password = this._formBuilder.control('', [Validators.required, Validators.minLength(8)])
+  userFormGroup: FormGroup = this._formBuilder.group({
+    firstName: [''],
+    lastName: [''],
+    email: ['', [Validators.required, Validators.email]],
+    organizationName: ['', [Validators.required]],
+    password: this.password,
+    confirmPassword: ['', [Validators.required, Validators.minLength(8), matchWithValidator(this.password)]]
+  })
   demoFormGroup: FormGroup = this._formBuilder.group({
     source: [OrganizationDemoNetworkEnum.github, Validators.required]
   })
@@ -136,8 +131,13 @@ export class TenantDetailsComponent {
 
   model = {}
 
-  private preferredLanguageSub = this.preferredLanguageFormGroup.get('preferredLanguage').valueChanges
-    .pipe(map((languages) => languages?.[0]), filter(nonNullable), takeUntilDestroyed())
+  private preferredLanguageSub = this.preferredLanguageFormGroup
+    .get('preferredLanguage')
+    .valueChanges.pipe(
+      map((languages) => languages?.[0]),
+      filter(nonNullable),
+      takeUntilDestroyed()
+    )
     .subscribe((language) => {
       this.translateService.use(language)
     })
@@ -182,7 +182,7 @@ export class TenantDetailsComponent {
       })
 
       this.tenantCompleted.set(true)
-      
+
       this.defaultOrganization.set(tenant.organizations[0])
     } catch (error) {
       console.error(error)
@@ -201,7 +201,7 @@ export class TenantDetailsComponent {
     this.loading.set(false)
     this.stepper.next()
   }
-  
+
   async afterOnboard() {
     await firstValueFrom(
       this.authStrategy.login({

@@ -23,9 +23,8 @@ import {
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Params, Router } from '@angular/router'
-import { ConfirmModule, ConfirmUniqueComponent } from '@metad/components/confirm'
 import { NxCoreModule, nonNullable, uploadYamlFile } from '@metad/core'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { NgmSmartFilterBarService, effectAction } from '@metad/ocap-angular/core'
 import { assignDeepOmitBlank, omit, omitBlank } from '@metad/ocap-core'
 import {
@@ -87,7 +86,6 @@ import { WIDGET_DEFAULT_SIZE, WIDGET_DEFAULT_SIZES } from '../types'
     NxStorySharedModule,
     OverlayModule,
     CdkMenuModule,
-    ConfirmModule,
     TranslateModule,
     ContentLoaderModule,
     NgxPopperjsModule,
@@ -725,7 +723,7 @@ export class NxStoryPointComponent {
 
   async rename() {
     const confirm = await firstValueFrom(
-      this._dialog.open(ConfirmUniqueComponent, { data: this.point.name }).afterClosed()
+      this._dialog.open(NgmConfirmUniqueComponent, { data: this.point.name }).afterClosed()
     )
 
     if (confirm) {

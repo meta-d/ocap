@@ -400,5 +400,53 @@ This function returns the smallest subset of a set whose cumulative total is at 
     insertText: 'IsSibling()',
     documentation:
       'Returns true if the specified members are siblings (share the same parent); otherwise, returns false.'
+  },
+  {
+    label: 'Siblings',
+    expression: '<Member>.Siblings',
+    insertText: '.Siblings',
+    documentation:
+      'Returns the siblings of a specified member, including the member itself.'
+  },
+  {
+    label: 'Trim',
+    expression: 'Trim(String_Expression)',
+    insertText: 'Trim()',
+    documentation:
+      'Returns a Variant (String) containing a copy of a specified string without leading and trailing spaces.'
+  },
+
+  {
+    label: 'Ytd',
+    expression: 'Ytd( [ Member_Expression ] )',
+    insertText: 'Ytd()',
+    documentation:
+      `Returns a set of sibling members from the same level as a given member, starting with the first sibling and ending with the given member, as constrained by the *Year* level in the *Time dimension*.
+A shortcut function for the \`PeriodsToDate\` function that specifies the level to be *Year*.`
+  },
+  {
+    label: 'Qtd',
+    expression: 'Qtd( [ Member_Expression ] )',
+    insertText: 'Qtd()',
+    documentation:
+      `Returns a set of sibling members from the same level as a given member, starting with the first sibling and ending with the given member, as constrained by the *Quarter* level in the *Time dimension*.
+A shortcut function for the \`PeriodsToDate\` function that specifies the level to be *Quarter*.`
+  },
+  {
+    label: 'Mtd',
+    expression: 'Mtd( [ Member_Expression ] )',
+    insertText: 'Mtd()',
+    documentation:
+      `Returns a set of sibling members from the same level as a given member, starting with the first sibling and ending with the given member, as constrained by the *Year* level in the *Time dimension*.
+A shortcut function for the \`PeriodsToDate\` function that specifies the level to be *Month*.`
+  },
+  {
+    label: 'Wtd',
+    expression: 'Wtd( [ Member_Expression ] )',
+    insertText: 'Wtd()',
+    documentation:
+      `Returns a set of sibling members from the same level as a given member, starting with the first sibling and ending with the given member, as constrained by the *Week* level in the *Time dimension*.
+A shortcut function for the \`PeriodsToDate\` function that specifies the level to be *Week*.`
+
   }
 ]

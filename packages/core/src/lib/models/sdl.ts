@@ -265,7 +265,10 @@ export interface PropertyLevel extends EntityProperty {
 
   levelNumber?: number
   levelCardinality?: number
-  levelType?: number | string
+  /**
+   * The type of level, such as 'TimeYears', 'TimeMonths', 'TimeDays' if dimension is a time dimension
+   */
+  levelType?: TimeLevelType | number | string
   properties?: Array<LevelProperty>
   // hierarchyLevelFor?: PropertyName
   parentChild?: boolean
@@ -275,6 +278,14 @@ export interface PropertyLevel extends EntityProperty {
   captionExpression?: CaptionExpression
   ordinalExpression?: SQLExpression
   parentExpression?: SQLExpression
+}
+
+export enum TimeLevelType {
+  TimeYears = 'TimeYears',
+  TimeQuarters = 'TimeQuarters',
+  TimeMonths = 'TimeMonths',
+  TimeWeeks = 'TimeWeeks',
+  TimeDays = 'TimeDays'
 }
 
 export interface LevelProperty extends PropertyAttributes {

@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { Component } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { BehaviorSubject, firstValueFrom, map, shareReplay, switchMap } from 'rxjs'
 import { IOrganization, OrganizationsService, ToastrService, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent } from '../../../@shared'

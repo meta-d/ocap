@@ -8,6 +8,7 @@ import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { DimensionSchema } from '../schema'
 import { createDimension } from './chat'
+import { timeLevelFormatter } from './types'
 
 export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -35,6 +36,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
     },
     tools: [createDimensionTool],
     prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a shared dimension for cube!
+${timeLevelFormatter()}
 
 {context}
     

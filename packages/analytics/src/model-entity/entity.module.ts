@@ -10,6 +10,7 @@ import { ModelEntityController } from './entity.controller'
 import { SemanticModelEntity } from './entity.entity'
 import { SemanticModelEntityService } from './entity.service'
 import { EntityMemberProcessor } from './entity-job.processor'
+import { SemanticModelModule } from '../model/model.module'
 
 @Module({
 	imports: [
@@ -19,8 +20,8 @@ import { EntityMemberProcessor } from './entity-job.processor'
 		SharedModule,
 		CqrsModule,
 		UserModule,
-
-		SemanticModelMemberModule,
+		SemanticModelModule,
+		forwardRef(() => SemanticModelMemberModule),
 
 		BullModule.registerQueue({
 			name: 'entity'

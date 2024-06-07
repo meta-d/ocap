@@ -58,3 +58,5 @@ export enum Semantics {
 
   // ... more
 }
+
+export const CalendarSemantics = Object.values(Semantics).filter((value) => value.startsWith('Calendar'))

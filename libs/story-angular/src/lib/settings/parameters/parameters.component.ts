@@ -7,12 +7,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog'
 import { MatDividerModule } from '@angular/material/divider'
 import { MatIconModule } from '@angular/material/icon'
 import { MatListModule } from '@angular/material/list'
-import { NgmCommonModule } from '@metad/ocap-angular/common'
+import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCacheService } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
-import { CalculationProperty, EntityType, ParameterProperty, Syntax, getEntityCalculations } from '@metad/ocap-core'
+import { CalculationProperty, EntityType, ParameterProperty, getEntityCalculations } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { ConfirmDeleteComponent } from '@metad/components/confirm'
 import { NxCoreService } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { firstValueFrom } from 'rxjs'
@@ -176,7 +175,7 @@ export class ParametersComponent {
   async removeCalculation(calculationProperty: CalculationProperty) {
     const confirm = await firstValueFrom(
       this._dialog
-        .open(ConfirmDeleteComponent, { data: { value: calculationProperty.caption || calculationProperty.name } })
+        .open(NgmConfirmDeleteComponent, { data: { value: calculationProperty.caption || calculationProperty.name } })
         .afterClosed()
     )
     if (confirm) {

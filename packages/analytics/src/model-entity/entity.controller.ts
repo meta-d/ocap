@@ -48,28 +48,35 @@ export class ModelEntityController extends CrudController<SemanticModelEntity> {
 
 	@Post(':id')
 	async createByModel(
-		@Param('id', UUIDValidationPipe) id: string,
+		@Param('id', UUIDValidationPipe) modelId: string,
 		@Body() entity: SemanticModelEntity
 	): Promise<SemanticModelEntity> {
-		entity.modelId = id
+		entity.modelId = modelId
 		const result = await this.entityService.create(entity)
 
+		const tenantId = RequestContext.currentTenantId()
 		const organizationId = RequestContext.getOrganizationId()
+		const userId = RequestContext.currentUserId()
 
 		if (entity.options?.vector?.hierarchies?.length) {
 			const job = await this.entityQueue.add('syncMembers', {
-				modelId: id,
-				organizationId: organizationId,
+				tenantId,
+				organizationId,
+				createdById: userId,
+				modelId,
 				entityId: result.id,
 				cube: entity.name,
-				hierarchies: entity.options?.vector.hierarchies
+				hierarchies: entity.options?.vector.hierarchies,
 			})
 
-			entity.job = {
-				id: job.id
-			}
+			await this.entityService.update(result.id, {
+				job: {
+					id: job.id,
+					status: 'processing'
+				}
+			})
 
-			await this.entityService.update(result.id, entity)
+			return await this.entityService.findOne(result.id)
 		}
 
 		return result

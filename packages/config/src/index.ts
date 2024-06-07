@@ -7,3 +7,4 @@ export * from './config.service';
 
 export { environment, pacToggleFeatures } from './environments/environment';
 export * from './environments/ienvironment';
+export * from './database-helpers'
