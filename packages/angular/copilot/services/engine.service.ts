@@ -334,7 +334,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       ...this.aiOptions
     }
     if (functions.length) {
-      ;(body.functions = functions), (body.stream = false)
+      body.functions = functions
+      body.stream = false
     }
 
     await this.triggerRequest(
@@ -416,7 +417,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
         switch (command.agent.type) {
           case CopilotAgentType.Default: {
-            const agent = await createOpenAIToolsAgent({
+            const agent: any = await createOpenAIToolsAgent({
               llm,
               tools: command.tools,
               prompt: command.prompt
