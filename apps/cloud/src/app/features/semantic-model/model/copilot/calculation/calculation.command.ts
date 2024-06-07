@@ -19,7 +19,7 @@ import { NGXLogger } from 'ngx-logger'
 import { ModelEntityService } from '../../entity/entity.service'
 import { SemanticModelService } from '../../model.service'
 
-export function injectCalculationCommand(cube: Signal<Cube>, entityType: Signal<EntityType>) {
+export function injectCalculatedCommand(cube: Signal<Cube>, entityType: Signal<EntityType>) {
   const logger = inject(NGXLogger)
   const modelService = inject(SemanticModelService)
   const entityService = inject(ModelEntityService)
@@ -57,7 +57,7 @@ export function injectCalculationCommand(cube: Signal<Cube>, entityType: Signal<
     }
   })
 
-  const commandName = 'calculation'
+  const commandName = 'calculated'
   return injectCopilotCommand(commandName, {
     alias: 'calc',
     description: 'Create a new calculated measure',
