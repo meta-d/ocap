@@ -1,11 +1,16 @@
 import { Signal, computed, inject, signal } from '@angular/core'
-import { SemanticSimilarityExampleSelector } from '@langchain/core/example_selectors'
-import { ChatPromptTemplate, FewShotPromptTemplate, MessagesPlaceholder, PromptTemplate } from '@langchain/core/prompts'
+import { ChatPromptTemplate, MessagesPlaceholder, PromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
-import { CalculationSchema, injectDimensionMemberRetrieverTool, makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
+import {
+  CalculationSchema,
+  injectDimensionMemberRetrieverTool,
+  makeCubeRulesPrompt,
+  markdownEntityType
+} from '@metad/core'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import {
+  AggregationProperty,
   CalculatedProperty,
   CalculationProperty,
   CalculationType,
@@ -13,13 +18,13 @@ import {
   RestrictedMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
-import { VectorStoreRetriever, injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { CopilotExampleService } from 'apps/cloud/src/app/@core/services'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { firstValueFrom, of } from 'rxjs'
-import { RestrictedMeasureSchema } from './schema'
+import { ConditionalAggregationSchema, RestrictedMeasureSchema } from './schema'
 
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
 Answer: {output}`)
@@ -74,7 +79,7 @@ export function injectCalculationCommand(
 
       callback(dataSettings, key)
 
-      return `Calculation measure created!`
+      return `Formula calculation measure created!`
     }
   })
 
@@ -94,17 +99,43 @@ export function injectCalculationCommand(
         } as RestrictedMeasureProperty
       })
 
-      logger.debug(`Calculation measure created: `, dataSettings, property)
+      logger.debug(`Restricted calculation measure created: `, dataSettings, property)
 
       callback(dataSettings, key)
 
-      return `Calculation measure created!`
+      return `Restricted calculation measure created!`
     }
   })
 
-  const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool]
+  const createConditionalAggregationTool = new DynamicStructuredTool({
+    name: 'createConditionalAggregation',
+    description: 'Create conditional aggregation measure for cube.',
+    schema: ConditionalAggregationSchema,
+    func: async (property) => {
+
+      const key = property.__id__ || nanoid()
+      const dataSettings = defaultDataSettings()
+      storyService.addCalculationMeasure({
+        dataSettings,
+        calculation: {
+          ...property,
+          __id__: key,
+          calculationType: CalculationType.Aggregation
+        } as AggregationProperty
+      })
+
+      logger.debug(`Conditional aggregation calculation measure created: `, dataSettings, property)
+
+      callback(dataSettings, key)
+
+      return `Conditional aggregation calculation measure created!`
+    }
+  })
+
+  const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool, createConditionalAggregationTool]
   const commandName = 'calculation'
-  return injectCopilotCommand(commandName,
+  return injectCopilotCommand(
+    commandName,
     (async () => {
       return {
         alias: 'cc',
@@ -158,24 +189,7 @@ ${property() ? JSON.stringify(property(), null, 2) : 'No calculation property se
   `
         },
         tools,
-        fewShotPrompt: injectAgentFewShotTemplate(commandName, {vectorStore: null, score: 0.1}),
-        // new FewShotPromptTemplate({
-        //   exampleSelector: new SemanticSimilarityExampleSelector({
-        //     vectorStoreRetriever: new VectorStoreRetriever(
-        //       {
-        //         vectorStore: null,
-        //         command: 'calculation',
-        //         role: copilotService.role
-        //       },
-        //       copilotExampleService
-        //     ),
-        //     inputKeys: ['input']
-        //   }),
-        //   examplePrompt,
-        //   prefix: `Refer to the examples below to provide solutions to the problem.`,
-        //   suffix: 'Question: {input}\nAnswer: ',
-        //   inputVariables: ['input']
-        // }),
+        fewShotPrompt: injectAgentFewShotTemplate(commandName, { vectorStore: null, score: 0.7, k: 5 }),
         prompt: ChatPromptTemplate.fromMessages([
           [
             'system',

@@ -139,7 +139,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   |--------------------------------------------------------------------------
   */
   readonly label = input<string>()
-  readonly value = signal<Dimension | Measure>(null)
+  // readonly value = signal<Dimension | Measure>(null)
   readonly capacities = input<PropertyCapacity[]>()
 
   readonly required = input<boolean, string | boolean>(false, {
@@ -203,6 +203,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     return this.searchControl.value
   }
   readonly _disabled = signal(false)
+  #value: Dimension | Measure = null
 
   readonly #dataSettings = computed(() => ({
     dataSource: this.dataSettings()?.dataSource,
@@ -663,10 +664,10 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   }
 
   writeValue(obj: any): void {
-    this.value.set(obj ?? {})
+    this.#value = obj ?? {}
     // 避免双向绑定的循环更新
-    if (obj && !isEqual(this.value(), this.formGroup.value)) {
-      this.patchValue(this.value())
+    if (obj && !isEqual(this.#value, this.formGroup.value)) {
+      this.patchValue(this.#value)
     }
   }
   registerOnChange(fn: any): void {
@@ -684,7 +685,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
      * ngOnInit 后 template 完成各订阅后再发送初始值, 不记得什么情况下会报 "ExpressionChangedAfterItHasBeenCheckedError" 的错误
      * writeValue 双向绑定初始值是在 template 订阅之前, 所以初始值要放在 ngAfterViewInit
      */
-    this.patchValue(this.value())
+    this.patchValue(this.#value)
 
     // subscribe formGroup to export value
     this.formGroup.valueChanges.pipe(

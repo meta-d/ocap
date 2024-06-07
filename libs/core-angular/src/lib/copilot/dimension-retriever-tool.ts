@@ -26,14 +26,19 @@ export function createDimensionMemberRetrieverTool(
       'Search for dimension member key information about filter conditions. For any needs about filtering data, you must use this tool!',
     schema: z.object({
       dimension: z.string().describe('The dimension to look up in the retriever'),
+      hierarchy: z.string().optional().describe('The hierarchy to look up in the retriever'),
+      level: z.string().optional().describe('The level to look up in the retriever'),
       member: z.string().describe('The member to look up in the retriever')
     }),
-    func: async ({ dimension, member }, runManager?: CallbackManagerForToolRun) => {
+    func: async ({ dimension, hierarchy, level, member }, runManager?: CallbackManagerForToolRun) => {
       try {
-        const docs = await retriever.getRelevantDocuments(`${dimension || ''} ${member}`, runManager?.getChild('retriever'))
+        const docs = await retriever.getRelevantDocuments(
+          `${dimension || ''} ${hierarchy ? `hierarchy: ${hierarchy}` : ''} ${level ? `level: ${level}` : ''} ${member}`,
+          runManager?.getChild('retriever')
+        )
         console.log(docs)
         return formatDocumentsAsString(docs)
-      }catch(e){
+      } catch (e) {
         console.error(e)
         return ''
       }

@@ -409,7 +409,7 @@ export class NxStoryService {
   private storyUpdateEventSub = this.#ocapService?.onEntityUpdate()
     .pipe(takeUntilDestroyed())
     .subscribe(({ type, dataSettings, parameter, property }) => {
-      this.logger?.debug(`[StoryService] add calculation | parameter property`, type, dataSettings, property)
+      this.logger?.debug(`[StoryService] add calculation | type: '${type}'`, dataSettings, parameter, property)
       if (type === 'Parameter') {
         this.upsertParamter({ dataSettings, parameter })
       } else {

@@ -423,6 +423,7 @@ export function getErrorMessage(err: any): string {
 }
 
 export function filterSearch(items: ISelectOption[], text: string | null | undefined) {
+  if (typeof text !== 'string') return items
   const words = text?.split(' ').filter(nonBlank).map((word) => word.toLowerCase())
   return words?.length ? items.filter((item) => words.every((word) => 
     item.caption?.toLowerCase().includes(word) || item.key.toLowerCase().includes(word))) : items

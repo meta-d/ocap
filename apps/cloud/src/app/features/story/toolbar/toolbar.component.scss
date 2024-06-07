@@ -8,6 +8,7 @@
 
 .pac-story-bar__detail-card {
   background-color: var(--mdc-elevated-card-container-color);
+  @apply overflow-x-hidden overflow-y-auto;
 }
 
 .mat-divider {

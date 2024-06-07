@@ -1,4 +1,5 @@
 import { DimensionMemberSchema } from '@metad/core'
+import { AggregationOperations } from '@metad/ocap-core'
 import { z } from 'zod'
 
 /**
@@ -14,6 +15,20 @@ export const RestrictedMeasureSchema = z.object({
 
   // slicers: z.array(SlicerSchema).optional().describe(`The slicers to restrict the calculation measure`),
   enableConstantSelection: z.boolean().optional().describe(`Enable constant selection of restricted measure`)
+})
+
+export const ConditionalAggregationSchema = z.object({
+  __id__: z.string().optional().describe(`Key of the calculation measure`),
+  name: z.string().describe(`Name of the calculation measure`),
+  caption: z.string().optional().describe(`Caption of the calculation measure`),
+
+  operation: z.enum([null, ...AggregationOperations.map(({value}) => value as string)]).describe(`The operation of conditional aggregation`),
+  value: z.number().optional().describe(`The value of aggregation operation, only used for some operations: TopSum(memberSet, value), TopPercent(memberSet, value), TopCount(memberSet, value)`),
+  measure: z.string().describe(`The name of measure that aggregation by the dimension members`),
+  aggregationDimensions: z.array(DimensionMemberSchema).describe(`The dimensions to aggregation by`),
+  useConditionalAggregation: z.boolean().optional().describe(`Use conditional aggregation`),
+  conditionalDimensions: z.array(DimensionMemberSchema).optional().describe(`The restricted dimensions for measure`),
+  excludeConditions: z.boolean().optional().describe(`Exclude the restricted conditions for measure`)
 })
 
 export const RestrictedMeasureBikes = {
@@ -41,29 +56,3 @@ export const RestrictedMeasureBikes = {
   //   }
   // ]
 }
-
-// export const CalculationExamples = [
-//   {
-//     input: 'Sales amount of product category bikes',
-//     ai: `think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
-// ai: create a restricted measure with params ${JSON.stringify(RestrictedMeasureBikes).replace(/\{/g, '{{').replace(/\}/g, '}}')} named 'Sales of Bikes'
-// `
-//   },
-//   {
-//     input: `YoY of Sales amount of the product category 'bikes'`,
-//     ai: `think: call 'dimensionMemberKeySearch' tool query with param 'product category bikes' to get member key of 'product category bikes' in dimension 'product category'
-// ai: create a formula like 'IIF(
-//   NOT [Date].[Year].CurrentMember.PrevMember IS NULL,
-//   ([Measures].[Sales] - ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales]))
-//     / ([Date].[Year].CurrentMember.PrevMember, [Measures].[Sales]),
-//   NULL
-// )' named 'Sales YoY of Bikes'`
-//   }
-// ]
-
-// export const CalcExamples = `The cube info is:
-
-// ${markdownEntityType(ENTITY_TYPE_SALESORDER)}
-
-// ${CalculationExamples.map(({ input, ai }) => `qustion: '${input}\n${ai}`).join('\n\n')}
-// `

@@ -38,7 +38,7 @@ import { NgmOptionContent } from './option-content'
 export class NgmInputComponent implements ControlValueAccessor {
   @Input() label: string
   @Input() placeholder: string
-  @Input() type: string
+  readonly type = input<string>(null)
   @Input() defaultValue = null
   @Input() valueKey = 'value'
 

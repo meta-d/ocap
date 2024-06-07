@@ -36,7 +36,8 @@ export enum AggregationOperation {
   STDEVP = 'STDEVP',
   MEDIAN = 'MEDIAN',
   TOP_PERCENT = 'TOP_PERCENT',
-  TOP_COUNT = 'TOP_COUNT'
+  TOP_COUNT = 'TOP_COUNT',
+  TOP_SUM = 'TOP_SUM',
 }
 
 export interface CalculatedMember {
@@ -246,3 +247,50 @@ export function formatCalculatedMemberName(member: CalculatedMember) {
   }
   return `${member.hierarchy || member.dimension}.[${member.name}]`
 }
+
+export const AggregationOperations = [
+  {
+    value: AggregationOperation.SUM,
+    label: 'Sum'
+  },
+  {
+    value: AggregationOperation.COUNT,
+    label: 'Count'
+  },
+  {
+    value: AggregationOperation.MIN,
+    label: 'Min'
+  },
+  {
+    value: AggregationOperation.MAX,
+    label: 'Max'
+  },
+  {
+    value: AggregationOperation.AVERAGE,
+    label: 'Average'
+  },
+  {
+    value: AggregationOperation.STDEV,
+    label: 'Standard Deviation'
+  },
+  {
+    value: AggregationOperation.STDEVP,
+    label: 'Population Standard Deviation'
+  },
+  {
+    value: AggregationOperation.MEDIAN,
+    label: 'Median'
+  },
+  {
+    value: AggregationOperation.TOP_PERCENT,
+    label: 'Top Percent'
+  },
+  {
+    value: AggregationOperation.TOP_COUNT,
+    label: 'Top Count'
+  },
+  {
+    value: AggregationOperation.TOP_SUM,
+    label: 'Top Sum'
+  }
+]
