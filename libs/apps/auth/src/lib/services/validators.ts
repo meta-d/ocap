@@ -35,3 +35,21 @@ export function matchValidator(controlName: string, matchingControlName: string)
     }
   }
 }
+
+/**
+ * Must match validator
+ * 
+ * @param matchingControl
+ * @returns `mismatch` error if the two controls don't match
+ */
+export function matchWithValidator(matchingControl: AbstractControl);
+export function matchWithValidator(formGroup: AbstractControl, controlName?: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const matchingControl = controlName ? formGroup.get(controlName) : formGroup
+    if (!control || !matchingControl || control.value === matchingControl.value) {
+      return null
+    } else {
+      return { mismatch: true }
+    }
+  }
+}
