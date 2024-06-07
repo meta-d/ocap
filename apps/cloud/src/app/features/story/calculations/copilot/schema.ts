@@ -1,5 +1,5 @@
 import { DimensionMemberSchema, DimensionSchema } from '@metad/core'
-import { AggregationOperations, CompareToEnum } from '@metad/ocap-core'
+import { AggregationOperations, CompareToEnum, DisplayBehaviour } from '@metad/ocap-core'
 import { z } from 'zod'
 
 /**
@@ -51,6 +51,19 @@ export const VarianceMeasureSchema = z.object({
   absBaseValue: z.boolean().optional().describe(`Use absolute value of base value: (A - B) / abs(B)`),
 })
 
+export const MeasureControlSchema = z.object({
+  __id__: z.string().optional().describe(`Key of the calculation measure`),
+  name: z.string().describe(`Name of the calculation measure`),
+  caption: z.string().optional().describe(`Caption of the calculation measure`),
+
+  value: z.string().describe(`The name of the measure`),
+  allMeasures: z.boolean().optional().describe(`Show all measures`),
+  availableMembers: z.array(z.object({
+    key: z.string().describe(`The name of the measure option`),
+    caption: z.string().optional().describe(`The caption of the measure option`)
+  })).describe(`The available measure options if not show all measures`),
+  displayBehaviour: z.enum([DisplayBehaviour.descriptionAndId, DisplayBehaviour.descriptionOnly, DisplayBehaviour.idOnly]).optional().describe(`The display behaviour of measure options`),
+})
 
 export const RestrictedMeasureBikes = {
   measure: 'Sales',

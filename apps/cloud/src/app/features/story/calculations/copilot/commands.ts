@@ -1,5 +1,5 @@
 import { Signal, computed, inject, signal } from '@angular/core'
-import { ChatPromptTemplate, MessagesPlaceholder, PromptTemplate } from '@langchain/core/prompts'
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
 import {
@@ -17,6 +17,7 @@ import {
   CalculationType,
   CompareToEnum,
   DataSettings,
+  MeasureControlProperty,
   RestrictedMeasureProperty,
   VarianceMeasureProperty
 } from '@metad/ocap-core'
@@ -27,10 +28,12 @@ import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { firstValueFrom, of } from 'rxjs'
-import { ConditionalAggregationSchema, RestrictedMeasureSchema, VarianceMeasureSchema } from './schema'
-
-const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
-Answer: {output}`)
+import {
+  ConditionalAggregationSchema,
+  MeasureControlSchema,
+  RestrictedMeasureSchema,
+  VarianceMeasureSchema
+} from './schema'
 
 export function injectCalculationCommand(
   storyService: NxStoryService,
@@ -165,12 +168,38 @@ export function injectCalculationCommand(
     }
   })
 
+  const createMeasureControlTool = new DynamicStructuredTool({
+    name: 'createMeasureControl',
+    description: 'Create measures control to select actual measure in runtime',
+    schema: MeasureControlSchema,
+    func: async (property) => {
+      const key = property.__id__ || nanoid()
+      const dataSettings = defaultDataSettings()
+
+      storyService.addCalculationMeasure({
+        dataSettings,
+        calculation: {
+          ...property,
+          __id__: key,
+          calculationType: CalculationType.MeasureControl
+        } as MeasureControlProperty
+      })
+
+      logger.debug(`Measure control calculation measure created: `, dataSettings, property)
+
+      callback(dataSettings, key)
+
+      return `Measure control calculation created!`
+    }
+  })
+
   const tools = [
     memberRetrieverTool,
     createFormulaTool,
     createRestrictedMeasureTool,
     createConditionalAggregationTool,
-    createVarianceMeasureTool
+    createVarianceMeasureTool,
+    createMeasureControlTool
   ]
   const commandName = 'calculation'
   return injectCopilotCommand(

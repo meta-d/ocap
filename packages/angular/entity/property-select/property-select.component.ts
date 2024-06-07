@@ -334,7 +334,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   
   readonly measures$ = this.entityType$.pipe(
     filter(negate(isNil)), map(getEntityMeasures),
-    map((measures) => measures.filter((property) => property.visible)),
+    map((measures) => measures.filter((property) => isNil(property.visible) || property.visible)),
     combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''))),
     map(([measures, text]) => filterProperty(measures, text)),
   )
@@ -342,8 +342,9 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   /**
    * Calculation measures exclude indicator measure
    */
-  readonly calculations$ = this.measures$.pipe(map((measures) => measures.filter((property => isCalculationProperty(property) && negate(isIndicatorMeasureProperty)(property)))))
-  readonly measureControls$ = this.calculations$.pipe(map((measures) => measures.filter(isMeasureControlProperty)))
+  readonly measures = toSignal(this.measures$, { initialValue: [] })
+  readonly calculations = computed(() => this.measures().filter((property => isCalculationProperty(property) && negate(isIndicatorMeasureProperty)(property))))
+  readonly measureControls = computed(() => this.calculations().filter(isMeasureControlProperty))
   readonly isMeasure$ = this.property$.pipe(map((property) => property?.role === AggregationRole.measure || property?.name === C_MEASURES))
   readonly isMeasure = computed(() => this.property()?.role === AggregationRole.measure || this.property()?.name === C_MEASURES)
   /**
@@ -616,7 +617,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         const entityType = this._entityType()
         this.dimensionError.set(this.getTranslation('Ngm.Property.DimensionNotFound', {
           dimension,
-          cube: entityType?.name,
+          cube: entityType?.name || 'unknown',
           Default: `Dimension '${dimension}' not found in cube '${entityType?.name}'`
         }))
       }
@@ -661,6 +662,8 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
         this._disabled.set(this.disabled())
       }
     }, { allowSignalWrites: true })
+
+    effect(() => console.log(this._entityType(), this.measures()))
   }
 
   writeValue(obj: any): void {

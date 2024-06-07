@@ -698,6 +698,10 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
   override selectMembers(CUBE_NAME: string, dimension: Dimension): Observable<MDXMember[]> {
     const HIERARCHY_UNIQUE_NAME = getPropertyHierarchy(dimension)
+    if (!HIERARCHY_UNIQUE_NAME) {
+      throw new Error(`Must specify a hierarchy or dimension for cube '${CUBE_NAME}' when selecting members`)
+    }
+    
     const CATALOG_NAME = this.options.catalog
     // 如果有 Level 则要区分不同的 Level 下的成员缓存
     const uniqueName = `${CUBE_NAME}.${dimension.level || HIERARCHY_UNIQUE_NAME}`

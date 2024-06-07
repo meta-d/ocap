@@ -171,7 +171,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
   })
   public availableMeasures = computed(() => {
     return this.measureControlProperty()
-      ?.availableMembers?.map(({ value: measure }) =>
+      ?.availableMembers?.map(({ key: measure }) =>
         getEntityProperty<PropertyMeasure>(this.entityType(), measure as string)
       )
       .filter(Boolean)

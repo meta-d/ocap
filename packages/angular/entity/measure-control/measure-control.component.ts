@@ -1,23 +1,32 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { Component, forwardRef, Input } from '@angular/core'
-import { ControlValueAccessor, FormBuilder, FormControl, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
+import { Component, Input, forwardRef } from '@angular/core'
+import {
+  ControlValueAccessor,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule
+} from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatListModule, MatSelectionListChange } from '@angular/material/list'
 import { MatSelectModule } from '@angular/material/select'
+import { NgmPropertyComponent } from '@metad/ocap-angular/common'
 import {
   CalculationProperty,
   CalculationType,
   DisplayBehaviour,
   EntityType,
+  MeasureControlProperty,
+  Property,
   getEntityMeasures,
-  isMeasureControlProperty,
-  Property
+  isMeasureControlProperty
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { NgmEntityPropertyComponent } from '../property/property.component'
 
 @Component({
   standalone: true,
@@ -31,23 +40,11 @@ import { NgmEntityPropertyComponent } from '../property/property.component'
     MatSelectModule,
     MatListModule,
 
-    NgmEntityPropertyComponent
+    NgmPropertyComponent
   ],
   selector: 'ngm-measure-control',
   templateUrl: './measure-control.component.html',
-  styles: [
-    `
-      .mat-selection-list {
-        max-height: 100%;
-        overflow-y: auto;
-      }
-      .ngm-cdk__drag-list {
-        &.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
-          transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-        }
-      }
-    `
-  ],
+  styleUrl: './measure-control.component.scss',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -85,24 +82,24 @@ export class NgmMeasureControlComponent implements ControlValueAccessor {
   selectedMeasures: string[] = []
 
   private _onChange: any
+  private onTouched = () => {}
   constructor(private formBuilder: FormBuilder) {
     this.entityType$
       .pipe(
-        map(
-          (entityType) =>
-            getEntityMeasures(entityType)
-              .filter((property) => !isMeasureControlProperty(property))
-              .sort((a, b) => {
-                // 让 calculationType is Indicator 的往最后排
-                if ((b as CalculationProperty).calculationType === CalculationType.Indicator) {
-                  return -1
-                }
-                if ((a as CalculationProperty).calculationType === CalculationType.Indicator) {
-                  return 1
-                }
-                return (a as CalculationProperty).calculationType > (b as CalculationProperty).calculationType ? 1 : -1
-              })
-        ),
+        map((entityType) =>
+          getEntityMeasures(entityType)
+            .filter((property) => !isMeasureControlProperty(property))
+            .sort((a, b) => {
+              // 让 calculationType is Indicator 的往最后排
+              if ((b as CalculationProperty).calculationType === CalculationType.Indicator) {
+                return -1
+              }
+              if ((a as CalculationProperty).calculationType === CalculationType.Indicator) {
+                return 1
+              }
+              return (a as CalculationProperty).calculationType > (b as CalculationProperty).calculationType ? 1 : -1
+            })
+        )
       )
       .subscribe(this.measures$)
 
@@ -111,17 +108,25 @@ export class NgmMeasureControlComponent implements ControlValueAccessor {
     })
   }
 
-  writeValue(obj: any): void {
+  writeValue(obj: MeasureControlProperty): void {
     if (obj) {
       this.formGroup.patchValue(obj)
-      this.selectedMeasures = obj.availableMembers?.map((member) => member.value)
+      this.selectedMeasures = obj.availableMembers?.map((member) => member.key)
     }
   }
   registerOnChange(fn: any): void {
     this._onChange = fn
   }
-  registerOnTouched(fn: any): void {}
-  setDisabledState?(isDisabled: boolean): void {}
+  registerOnTouched(fn: any): void {
+    this.onTouched = fn
+  }
+  setDisabledState?(isDisabled: boolean): void {
+    if (isDisabled) {
+      this.formGroup.disable()
+    } else {
+      this.formGroup.enable()
+    }
+  }
 
   drop(event: CdkDragDrop<Property[]>) {
     moveItemInArray(this.measures$.value, event.previousIndex, event.currentIndex)
@@ -134,8 +139,8 @@ export class NgmMeasureControlComponent implements ControlValueAccessor {
       this.measures$.value
         .filter((property) => this.selectedMeasures.includes(property.name))
         .map((property) => ({
-          value: property.name,
-          label: property.caption
+          key: property.name,
+          caption: property.caption
         }))
     )
   }
