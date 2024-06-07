@@ -1,5 +1,5 @@
-import { DimensionMemberSchema } from '@metad/core'
-import { AggregationOperations } from '@metad/ocap-core'
+import { DimensionMemberSchema, DimensionSchema } from '@metad/core'
+import { AggregationOperations, CompareToEnum } from '@metad/ocap-core'
 import { z } from 'zod'
 
 /**
@@ -30,6 +30,27 @@ export const ConditionalAggregationSchema = z.object({
   conditionalDimensions: z.array(DimensionMemberSchema).optional().describe(`The restricted dimensions for measure`),
   excludeConditions: z.boolean().optional().describe(`Exclude the restricted conditions for measure`)
 })
+
+export const VarianceMeasureSchema = z.object({
+  __id__: z.string().optional().describe(`Key of the calculation measure`),
+  name: z.string().describe(`Name of the calculation measure`),
+  caption: z.string().optional().describe(`Caption of the calculation measure`),
+
+  measure: z.object({
+    measure: z.string().describe(`The name of the measure`),
+  }),
+  baseDimension: DimensionSchema.describe(`The base dimension for variance measure, for example: time dimension or version dimension`),
+  toB: z.object({
+    type: z.enum([CompareToEnum.Lag, CompareToEnum.Lead, CompareToEnum.Parallel, CompareToEnum.Ancestor]).describe(`The type of compare to`),
+    value: z.number().optional().describe(`The value of compare to type`)
+  }),
+
+  asZero: z.boolean().optional().describe(`As zero if the value is null`),
+  asPercentage: z.boolean().optional().describe(`calculate as percentage`),
+  directDivide: z.boolean().optional().describe(`Direct divide the value A / B, otherwise (A - B) / B`),
+  absBaseValue: z.boolean().optional().describe(`Use absolute value of base value: (A - B) / abs(B)`),
+})
+
 
 export const RestrictedMeasureBikes = {
   measure: 'Sales',

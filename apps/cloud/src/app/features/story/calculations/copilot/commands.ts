@@ -11,11 +11,14 @@ import {
 import { NgmCopilotService, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import {
   AggregationProperty,
+  C_MEASURES,
   CalculatedProperty,
   CalculationProperty,
   CalculationType,
+  CompareToEnum,
   DataSettings,
-  RestrictedMeasureProperty
+  RestrictedMeasureProperty,
+  VarianceMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
@@ -24,7 +27,7 @@ import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { firstValueFrom, of } from 'rxjs'
-import { ConditionalAggregationSchema, RestrictedMeasureSchema } from './schema'
+import { ConditionalAggregationSchema, RestrictedMeasureSchema, VarianceMeasureSchema } from './schema'
 
 const examplePrompt = PromptTemplate.fromTemplate(`Question: {input}
 Answer: {output}`)
@@ -112,7 +115,6 @@ export function injectCalculationCommand(
     description: 'Create conditional aggregation measure for cube.',
     schema: ConditionalAggregationSchema,
     func: async (property) => {
-
       const key = property.__id__ || nanoid()
       const dataSettings = defaultDataSettings()
       storyService.addCalculationMeasure({
@@ -132,7 +134,44 @@ export function injectCalculationCommand(
     }
   })
 
-  const tools = [memberRetrieverTool, createFormulaTool, createRestrictedMeasureTool, createConditionalAggregationTool]
+  const createVarianceMeasureTool = new DynamicStructuredTool({
+    name: 'createVarianceMeasure',
+    description: 'Create variance measure for cube.',
+    schema: VarianceMeasureSchema,
+    func: async (property) => {
+      const key = property.__id__ || nanoid()
+      const dataSettings = defaultDataSettings()
+      storyService.addCalculationMeasure({
+        dataSettings,
+        calculation: {
+          ...property,
+          measure: {
+            ...property.measure,
+            dimension: C_MEASURES
+          },
+          compareA: {
+            type: CompareToEnum.CurrentMember
+          },
+          __id__: key,
+          calculationType: CalculationType.Variance
+        } as VarianceMeasureProperty
+      })
+
+      logger.debug(`Variance calculation measure created: `, dataSettings, property)
+
+      callback(dataSettings, key)
+
+      return `Variance calculation measure created!`
+    }
+  })
+
+  const tools = [
+    memberRetrieverTool,
+    createFormulaTool,
+    createRestrictedMeasureTool,
+    createConditionalAggregationTool,
+    createVarianceMeasureTool
+  ]
   const commandName = 'calculation'
   return injectCopilotCommand(
     commandName,

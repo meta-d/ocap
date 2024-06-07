@@ -1,11 +1,11 @@
-<mat-form-field [appearance]="appearance">
+<mat-form-field class="flex-1" [appearance]="appearance">
   <mat-label>
     <span>{{ label }}</span>
   </mat-label>
 
   <mat-select [(ngModel)]="type" [disabled]="disabled" panelClass="ngm-property-select__panel">
     <mat-select-trigger>
-      <span>{{ trigger$ | async }}</span>
+      <span>{{ triggerLabel() }}</span>
     </mat-select-trigger>
     
     <!-- <ng-container *ngIf="isCalendar">
@@ -42,7 +42,11 @@
 
 </mat-form-field>
 
-<mat-form-field *ngIf="type !== COMPARE_TO_ENUM.CurrentMember && type !== COMPARE_TO_ENUM.Ancestor && type !== COMPARE_TO_ENUM.SelectedMember" [appearance]="appearance">
-  <mat-label>{{ 'Ngm.Property.NthMember' | translate: {Default: "Value / N'th Member"} }}</mat-label>
-  <input matInput [(ngModel)]="value">
-</mat-form-field>
+<div class="flex-1">
+  @if (type !== COMPARE_TO_ENUM.CurrentMember && type !== COMPARE_TO_ENUM.Ancestor && type !== COMPARE_TO_ENUM.SelectedMember) {
+    <mat-form-field class="w-full" [appearance]="appearance">
+      <mat-label>{{ 'Ngm.Property.NthMember' | translate: {Default: "Value / N'th Member"} }}</mat-label>
+      <input matInput [(ngModel)]="value">
+    </mat-form-field>
+  }
+</div>
