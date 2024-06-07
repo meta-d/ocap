@@ -1,7 +1,10 @@
 <mat-toolbar class="pac-nav-toolbar pac-model__shell-bar flex items-center" displayDensity="compact">
     <div class="flex items-center px-4">
       @if (cube()) {
-        <a class="cursor-pointer" (click)="openCubeDesigner()"><span>{{ cube().caption || cube().name}}</span></a>
+        <span class="text-lg">{{ cube().caption || cube().name}}</span>
+        <button mat-icon-button (click)="openCubeDesigner()">
+            <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
+        </button>
       }
     </div>
 

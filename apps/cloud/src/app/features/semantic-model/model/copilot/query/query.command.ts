@@ -1,7 +1,14 @@
 import { Signal, WritableSignal, computed, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
-import { makeCubeRulesPrompt, markdownEntityType } from '@metad/core'
+import {
+  PROMPT_RETRIEVE_DIMENSION_MEMBER,
+  createAgentStepsInstructions,
+  injectDimensionMemberRetrieverTool,
+  makeCubeRulesPrompt,
+  markdownEntityType
+} from '@metad/core'
 import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { getErrorMessage } from '@metad/ocap-angular/core'
 import { EntityType } from '@metad/ocap-core'
@@ -10,6 +17,8 @@ import { TranslateService } from '@ngx-translate/core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
+import { ModelEntityService } from '../../entity/entity.service'
+import { SemanticModelService } from '../../model.service'
 
 export function injectQueryCommand(
   statement: WritableSignal<string>,
@@ -23,7 +32,18 @@ export function injectQueryCommand(
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const copilotService = inject(NgmCopilotService)
+  const modelService = inject(SemanticModelService)
+  const entityService = inject(ModelEntityService, {optional: true})
 
+  let memberRetrieverTool: DynamicStructuredTool = null
+  if (entityService) {
+    const defaultModel = toSignal(modelService.modelId$)
+    const defaultEntity = toSignal(entityService.entityName$)
+    memberRetrieverTool = injectDimensionMemberRetrieverTool(defaultModel, defaultEntity)
+  }
+
+  const isMDX = computed(() => context().isMDX)
+ 
   // Table info
   const promptTables = computed(() => {
     const { isMDX, entityTypes } = context()
@@ -94,9 +114,15 @@ And the total number of rows returned is ${result.data.length}.`
     agent: {
       type: CopilotAgentType.Default
     },
-    tools: [createQueryTool],
+    tools: memberRetrieverTool ? [memberRetrieverTool, createQueryTool] : [createQueryTool],
     fewShotPrompt: injectAgentFewShotTemplate(commandName),
     prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a query statement to query data!
+${isMDX() ? createAgentStepsInstructions(
+  PROMPT_RETRIEVE_DIMENSION_MEMBER,
+  `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 查询语句。`,
+  `最终调用 "createQuery" 工具来执行查询语句。`,
+  `得到查询结果后如果有错误则重新修正查询语句，直到得到正确的查询结果。`
+) : ''}
 
 {context}
 
@@ -115,11 +141,15 @@ The cube information is:
 ${dbTablesPrompt()}
 
 Please provide the corresponding MDX statement for the given question.
-${statement ? `Current statement: 
+${
+  statement()
+    ? `Current statement: 
 \`\`\`mdx
 ${statement()}
 \`\`\`
-` : ''}
+`
+    : ''
+}
 `
         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
 The table information is:
@@ -129,10 +159,12 @@ ${dbTablesPrompt()}
 Please provide the corresponding SQL statement for the given question.
 Note: Table fields are case-sensitive and should be enclosed in double quotation marks.
 
-Current statement: 
+${statement() ? `Current statement:
 \`\`\`sql
 ${statement()}
 \`\`\`
+` : ''
+}
 `
       return prompt
     }

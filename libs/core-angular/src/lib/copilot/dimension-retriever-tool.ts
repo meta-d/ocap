@@ -1,6 +1,9 @@
 import { InjectionToken, Signal, inject } from '@angular/core'
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { BaseRetriever } from '@langchain/core/retrievers'
-import { createRetrieverTool } from 'langchain/tools/retriever'
+import { DynamicStructuredTool } from '@langchain/core/tools'
+import { formatDocumentsAsString } from 'langchain/util/document'
+import { z } from 'zod'
 
 export abstract class BaseDimensionMemberRetriever extends BaseRetriever {
   model: Signal<string>
@@ -17,10 +20,24 @@ export function createDimensionMemberRetrieverTool(
 ) {
   retriever.model = model
   retriever.cube = cube
-  return createRetrieverTool(retriever, {
+  return new DynamicStructuredTool({
     name: MEMBER_RETRIEVER_TOOL_NAME,
     description:
-      'Search for dimension member key information about filter conditions. For any needs about filtering data, you must use this tool!'
+      'Search for dimension member key information about filter conditions. For any needs about filtering data, you must use this tool!',
+    schema: z.object({
+      dimension: z.string().describe('The dimension to look up in the retriever'),
+      member: z.string().describe('The member to look up in the retriever')
+    }),
+    func: async ({ dimension, member }, runManager?: CallbackManagerForToolRun) => {
+      try {
+        const docs = await retriever.getRelevantDocuments(`${dimension || ''} ${member}`, runManager?.getChild('retriever'))
+        console.log(docs)
+        return formatDocumentsAsString(docs)
+      }catch(e){
+        console.error(e)
+        return ''
+      }
+    }
   })
 }
 

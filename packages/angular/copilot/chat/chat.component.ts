@@ -55,7 +55,7 @@ import {
   NgmSearchComponent,
   NgmTableComponent
 } from '@metad/ocap-angular/common'
-import { DensityDirective, fadeAnimation } from '@metad/ocap-angular/core'
+import { DensityDirective, provideFadeAnimation } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
@@ -133,7 +133,7 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
   host: {
     class: 'ngm-copilot-chat'
   },
-  animations: [ fadeAnimation ]
+  animations: [ provideFadeAnimation('100ms') ]
 })
 export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements

@@ -25,17 +25,29 @@ export function calcEntityTypePrompt(entityType: EntityType) {
 
 export function markdownEntityType(entityType: EntityType) {
   return `The cube definition for ${entityType.name} is as follows:
-name: "${entityType.name}" caption: "${entityType.caption || ''}"
+name: "${entityType.name}"
+caption: "${entityType.caption || ''}"
 dimensions:
 ${getEntityDimensions(entityType)
-    .map((dimension) => `  - name: "${dimension.name}"
+    .map((dimension) =>
+`  - name: "${dimension.name}"
     caption: "${dimension.caption || ''}"
     hierarchies:
-${dimension.hierarchies?.map((item) => `      - name: "${item.name}"
+${dimension.hierarchies?.map((item) =>
+`      - name: "${item.name}"
         caption: "${item.caption || ''}"
         levels:
-${item.levels?.map((item) => `          - name: "${item.name}"
-            caption: "${item.caption || ''}"`).join('\n')}
+${item.levels?.map((item) => {
+
+  let result = 
+`          - name: "${item.name}"
+            caption: "${item.caption || ''}"`
+  if (item.semantics?.formatter) {
+    result += `\n            time_formatter: "${item.semantics.formatter}"`
+  }
+  return result
+}
+).join('\n')}
 `).join('\n')}
 `).join('\n')}
 measures:

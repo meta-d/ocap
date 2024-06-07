@@ -81,7 +81,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 				}
 			}
 
-			return results.filter(([, _score]) => (1 - _score) > (score ?? 0.8)).map(([doc]) => doc)
+			return results.filter(([, _score]) => (1 - _score) > (score ?? 0.7)).map(([doc]) => doc)
 		}
 
 		return []

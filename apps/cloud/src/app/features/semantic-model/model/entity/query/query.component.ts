@@ -48,7 +48,6 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   readonly modelService = inject(SemanticModelService)
   readonly modelComponent = inject(ModelComponent)
   readonly entityService = inject(ModelEntityService)
-  // readonly _cdr = inject(ChangeDetectorRef)
   readonly store = inject(Store)
   readonly #logger = inject(NGXLogger)
 
@@ -62,7 +61,6 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   readonly themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
   readonly entityType = this.entityService.entityType
   readonly tables = toSignal(this.modelService.selectDBTables())
-  // readonly statement = this.entityService.statement$
   readonly statement = signal<string>(null)
 
   entities = []
@@ -81,7 +79,6 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(null)
   columns: any[]
   data: any[]
-  // error: string
 
   readonly _error = signal('')
   readonly querySubscription = signal<Subscription>(null)
@@ -103,6 +100,8 @@ export class EntityQueryComponent extends TranslationBaseComponent {
   |--------------------------------------------------------------------------
   */
   #queryCommand = injectQueryCommand(this.statement, this.queryContext, async (query: string) => {
+    this._error.set(null)
+    this.loading$.next(true)
     return await firstValueFrom(this._query(query))
   })
 
