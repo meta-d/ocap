@@ -1,11 +1,11 @@
 {
   "name": "@metad/ocap-xmla",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "scripts": {
     "docs": "yarn typedoc"
   },
   "peerDependencies": {
-    "@metad/ocap-core": "^2.2.1",
+    "@metad/ocap-core": "^2.3.1",
     "xmldom": "^0.6.0"
   }
 }
