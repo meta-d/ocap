@@ -62,7 +62,8 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:10
+          image: registry.cn-hangzhou.aliyuncs.com/metad/pgvector:pg12
+          imagePullPolicy: Always
           ports:
             - containerPort: 5432
           env:
@@ -92,7 +93,7 @@ spec:
       volumes:
         - name: postgredb
           persistentVolumeClaim:
-            claimName: postgresql-pvc
+            claimName: db-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
