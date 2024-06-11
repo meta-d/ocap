@@ -14,8 +14,6 @@ jobs:
         IMAGE:
           - name: ocap-olap-arm64
             platform: linux/arm64
-          - name: ocap-olap
-            platform: linux/amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
