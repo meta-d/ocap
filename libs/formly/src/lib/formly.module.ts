@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
-import { MetadFormlyPanelModule } from '@metad/formly-mat/panel'
-import { MetadFormlyMatTabGroupModule } from '@metad/formly-mat/tab-group'
 import { NgmFormlyAccordionModule } from '@metad/formly/accordion'
 import { NgmFormlyArrayModule } from '@metad/formly/array'
 import { PACFormlyButtonToggleModule } from '@metad/formly/button-toggle'
@@ -13,6 +11,7 @@ import { PACFormlyDesignerModule } from '@metad/formly/designer'
 import { PACFormlyEmptyModule } from '@metad/formly/empty'
 import { PACFormlyEntityTypeModule } from '@metad/formly/entity-type'
 import { PACFormlyInputModule } from '@metad/formly/input'
+import { FormlyMatTabGroupModule } from '@metad/formly/tab-group'
 import { PACFormlyJsonModule } from '@metad/formly/json'
 import { PACFormlyTableModule } from '@metad/formly/mat-table'
 import { NgmFormlyMatToggleModule } from '@metad/formly/mat-toggle'
@@ -22,6 +21,7 @@ import { PACFormlyMatSlicersModule } from '@metad/formly/slicers'
 import { FormlyMatSliderModule } from '@metad/formly/slider'
 import { PACFormlySortModule } from '@metad/formly/sort'
 import { PACFormlyTextAreaModule } from '@metad/formly/textarea'
+import { MetadFormlyPanelModule } from '@metad/formly/panel'
 
 @NgModule({
   declarations: [],
@@ -45,8 +45,8 @@ import { PACFormlyTextAreaModule } from '@metad/formly/textarea'
     PACFormlySortModule,
     PACFormlyColorPickerModule,
     PACFormlyEntityTypeModule,
+    FormlyMatTabGroupModule,
     MetadFormlyPanelModule,
-    MetadFormlyMatTabGroupModule,
 
     NgmFormlyArrayModule,
     NgmFormlyAccordionModule
