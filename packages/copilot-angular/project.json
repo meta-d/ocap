@@ -10,7 +10,8 @@
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "options": {
-        "project": "packages/copilot-angular/ng-package.json"
+        "project": "packages/copilot-angular/ng-package.json",
+        "tailwindConfig": "packages/copilot-angular/tailwind.config.js"
       },
       "configurations": {
         "production": {
