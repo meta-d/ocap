@@ -15,7 +15,7 @@ import { FormArray, FormControl, FormGroup } from '@angular/forms'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import {
   BarVariant,
   HeatmapVariant,

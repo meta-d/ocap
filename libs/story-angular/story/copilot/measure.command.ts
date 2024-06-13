@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { zodToProperties } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { CalculationMeasureSchema } from './schema/story.schema'

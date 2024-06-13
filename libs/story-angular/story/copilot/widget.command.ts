@@ -3,7 +3,7 @@ import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } f
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType, CopilotCommand } from '@metad/copilot'
 import { MEMBER_RETRIEVER_TOKEN, createDimensionMemberRetrieverTool, makeCubeRulesPrompt, markdownEntityType, tryFixSlicer } from '@metad/core'
-import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { NxStoryService, WidgetComponentType, uuid } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'

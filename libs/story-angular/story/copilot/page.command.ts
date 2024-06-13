@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { calcEntityTypePrompt, zodToProperties } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { EntityType } from '@metad/ocap-core'
 import { NxStoryService, StoryPointType } from '@metad/story/core'
 import { nanoid } from 'nanoid'

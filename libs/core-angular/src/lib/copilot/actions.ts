@@ -1,5 +1,5 @@
 import { inject } from '@angular/core'
-import { injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { EntityType } from '@metad/ocap-core'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
