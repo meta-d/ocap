@@ -11,7 +11,7 @@ import {
   uploadYamlFile,
   zodToProperties
 } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'

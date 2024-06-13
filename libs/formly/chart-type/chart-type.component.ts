@@ -15,7 +15,7 @@ import { FormArray, FormControl, FormGroup } from '@angular/forms'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
-import { injectCopilotCommand, injectMakeCopilotActionable, NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
 import {
   BarVariant,
   HeatmapVariant,
@@ -39,6 +39,7 @@ import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
 import { NgmThemeService } from '@metad/ocap-angular/core'
 import { EditorThemeMap } from '@metad/ocap-angular/formula'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

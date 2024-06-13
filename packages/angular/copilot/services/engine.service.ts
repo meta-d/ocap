@@ -26,7 +26,7 @@ import { flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
-import { NgmCopilotService } from './copilot.service'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 let uniqueId = 0
 

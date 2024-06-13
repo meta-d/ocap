@@ -27,6 +27,7 @@
       "@metad/components/*": ["libs/component-angular/*"],
       "@metad/contracts": ["packages/contracts/src/index.ts"],
       "@metad/copilot": ["packages/copilot/src/index.ts"],
+      "@metad/copilot-angular": ["packages/copilot-angular/src/index.ts"],
       "@metad/core": ["libs/core-angular/src/index.ts"],
       "@metad/formly": ["libs/formly/src/index.ts"],
       "@metad/formly/*": ["libs/formly/*"],

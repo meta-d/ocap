@@ -81,15 +81,19 @@ import {
 } from 'rxjs'
 import { UserAvatarComponent } from '../avatar/avatar.component'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
-import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
+import { NgmCopilotEngineService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
 import { injectCommonCommands } from '../hooks/common'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
 export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
 
+/**
+ * @deprecated 
+ */
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

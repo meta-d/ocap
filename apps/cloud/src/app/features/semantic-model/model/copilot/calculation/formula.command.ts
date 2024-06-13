@@ -11,7 +11,7 @@ import {
   makeCubeRulesPrompt,
   markdownEntityType
 } from '@metad/core'
-import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import { CalculatedMember, Cube, EntityType } from '@metad/ocap-core'
 import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'

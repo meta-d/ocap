@@ -3,7 +3,7 @@ import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts
 import { CopilotAgentType, CopilotEngine } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
 import { injectCopilotCommand } from './inject-copilot-command'
-import { NgmCopilotService } from '../services'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 export function injectCommonCommands(copilotEngine: Signal<CopilotEngine>) {
   const translate = inject(TranslateService)

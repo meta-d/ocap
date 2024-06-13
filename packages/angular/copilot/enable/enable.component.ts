@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { RouterModule } from '@angular/router'
 import { DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { NgmCopilotService } from '../services'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 @Component({
   standalone: true,

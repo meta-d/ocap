@@ -41,7 +41,7 @@ import {
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
-import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/copilot-angular'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'

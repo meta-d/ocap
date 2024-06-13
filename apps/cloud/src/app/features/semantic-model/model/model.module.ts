@@ -12,7 +12,7 @@ import {
   ResizerModule,
   SplitterModule
 } from '@metad/ocap-angular/common'
-import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent } from '@metad/copilot-angular'
 import { OcapCoreModule, provideOcapCore } from '@metad/ocap-angular/core'
 import { NgmDesignerFormComponent, NxDesignerModule, STORY_DESIGNER_COMPONENT } from '@metad/story/designer'
 import { ContentLoaderModule } from '@ngneat/content-loader'

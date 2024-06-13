@@ -17,9 +17,7 @@ import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from '@metad/core'
-import {
-  NgmCopilotService,
-} from '@metad/ocap-angular/copilot'
+import { NgmCopilotService } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { nonNullable, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'

@@ -8,7 +8,8 @@ import {
   makeCubeRulesPrompt,
   markdownEntityType
 } from '@metad/core'
-import { NgmCopilotService, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand } from '@metad/copilot-angular'
+import { NgmCopilotService } from '@metad/copilot-angular'
 import {
   AggregationProperty,
   C_MEASURES,

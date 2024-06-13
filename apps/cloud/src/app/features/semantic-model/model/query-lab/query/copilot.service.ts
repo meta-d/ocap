@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
-import { NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, NgmCopilotEngineService } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { nanoid } from 'nanoid'

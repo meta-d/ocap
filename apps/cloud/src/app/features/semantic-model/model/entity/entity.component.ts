@@ -7,7 +7,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from 
 import { zodToAnnotations } from '@metad/copilot'
 import { nonBlank, routeAnimations } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { TranslateModule } from '@ngx-translate/core'

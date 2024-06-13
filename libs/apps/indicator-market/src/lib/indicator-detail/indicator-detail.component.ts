@@ -74,7 +74,7 @@ import { IndicatoryMarketComponent } from '../indicator-market.component'
 import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

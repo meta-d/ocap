@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Inject, Input, inject } from '@angu
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MAT_DIALOG_DATA } from '@angular/material/dialog'
-import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent, NgmCopilotEngineService, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { ButtonGroupDirective } from '@metad/ocap-angular/core'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
 import { DataSettings, EntityType, PropertyMeasure, Syntax } from '@metad/ocap-core'

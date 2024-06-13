@@ -9,7 +9,7 @@ import {
   makeCubeRulesPrompt,
   markdownEntityType
 } from '@metad/core'
-import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import { getErrorMessage } from '@metad/ocap-angular/core'
 import { EntityType } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'

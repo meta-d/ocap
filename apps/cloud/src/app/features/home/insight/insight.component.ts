@@ -27,7 +27,7 @@ import {
   NgmCopilotInputComponent,
   injectCopilotCommand,
   injectMakeCopilotActionable
-} from '@metad/ocap-angular/copilot'
+} from '@metad/copilot-angular'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import {

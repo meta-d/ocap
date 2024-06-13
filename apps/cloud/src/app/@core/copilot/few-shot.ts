@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { SemanticSimilarityExampleSelector } from '@langchain/core/example_selectors'
 import { VectorStoreRetrieverInput, VectorStoreInterface } from '@langchain/core/vectorstores'
 import { FewShotPromptTemplate, PromptTemplate } from '@langchain/core/prompts'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService } from '@metad/copilot-angular'
 import { CopilotExampleService } from '../services/copilot-example.service'
 import { VectorStoreRetriever } from './example-vector-retriever'
 

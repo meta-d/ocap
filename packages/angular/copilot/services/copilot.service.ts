@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { map, startWith } from 'rxjs'
 
 @Injectable()
-export class NgmCopilotService extends CopilotService {
+export class NgmCopilot1Service extends CopilotService {
   readonly translate = inject(TranslateService)
 
   readonly lang = toSignal(
