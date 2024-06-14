@@ -7,7 +7,7 @@ import { createCommandAgent } from '../langgraph-helper-utilities'
 import { systemPrompt } from './dimension.command'
 import { injectCreateDimensionTool } from './tools'
 
-export const DimensionModelerName = 'DimensionModeler'
+export const DIMENSION_MODELER_NAME = 'DimensionModeler'
 
 export function injectDimensionModeler() {
   const copilotService = inject(NgmCopilotService)

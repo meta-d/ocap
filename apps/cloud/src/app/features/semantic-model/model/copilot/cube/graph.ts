@@ -2,7 +2,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { createCommandAgent } from '../langgraph-helper-utilities'
 import { injectCreateCubeTool } from './tools'
 
-export const CubeModelerName = 'CubeModeler'
+export const CUBE_MODELER_NAME = 'CubeModeler'
 
 export function injectCubeModeler() {
   const createCubeTool = injectCreateCubeTool()
