@@ -241,7 +241,11 @@ export class ModelEntityService {
   }
 
   public init(entity: string) {
-    this.store.connect(['model', 'schema', 'cubes', entity])
+    const state = this.store.connect(['model', 'schema', 'cubes', entity]).getValue()
+    if (!state.__id__) {
+      this.#router.navigate(['../404'], { relativeTo: this.#route })
+      return
+    }
     this.pristineStore.connect(['model', 'schema', 'cubes', entity])
   }
 

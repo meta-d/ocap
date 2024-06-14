@@ -4,8 +4,13 @@ import { ModelEntityComponent } from './entity.component'
 import { ModelEntityPreviewComponent } from './preview/preview.component'
 import { EntityQueryComponent } from './query/query.component'
 import { ModelEntityStructureComponent } from './structure/structure.component'
+import { NotFoundComponent } from 'apps/cloud/src/app/@shared'
 
 export const routes: Routes = [
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
   {
     path: ':id',
     component: ModelEntityComponent,
