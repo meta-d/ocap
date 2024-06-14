@@ -181,6 +181,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
   }
 
+  /**
+   * Chat with prompt, split it to command and free chat
+   * 
+   * @param prompt 
+   * @param options 
+   * @returns 
+   */
   async chat(prompt: string, options?: CopilotChatOptions) {
     this.#logger?.debug(`process copilot ask: ${prompt}`)
 
@@ -227,9 +234,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
           })
         }
         return
+      } else {
+        await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
-
-      await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
 
       // // New conversation after command completion
       // this.newConversation()
@@ -282,6 +289,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
+  /**
+   * Execute command prompt
+   * 
+   * @param _command 
+   * @param prompt 
+   * @param options 
+   * @returns 
+   */
   async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
     const { abortController, conversationId, assistantMessageId, context } = options ?? {}
 
@@ -294,6 +309,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
       })
     }
 
+    /**
+     * @deprecated the ortherwise use agent command instead
+     */
     // Last user messages before add new messages
     const lastUserMessages = this.lastUserMessages()
     const newMessages = []
@@ -352,8 +370,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
     )
   }
 
+  /**
+   * Execute agent command
+   * 
+   * @param content 
+   * @param command 
+   * @param options 
+   * @returns 
+   */
   async triggerCommandAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
-    let { conversationId, abortController, context } = options ?? {}
+    switch(command.agent.type) {
+      case CopilotAgentType.Default:
+        return await this.triggerDefaultAgent(content, command, options)
+      case CopilotAgentType.Graph:
+        return await this.triggerGraphAgent(content, command, options)
+    }
+  }
+
+  async triggerDefaultAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
+    let { conversationId, abortController } = options ?? {}
+    const { context } = options ?? {}
     conversationId ??= nanoid()
     abortController ??= new AbortController()
 
@@ -493,6 +529,30 @@ export class NgmCopilotEngineService implements CopilotEngine {
       return
     } finally {
       abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
+    }
+  }
+
+  async triggerGraphAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
+    console.log(content, command, options)
+
+    const graph = await command.createGraph(this.llm())
+
+    const streamResults = graph.stream(
+      {
+        messages: [
+          new HumanMessage({
+            content: content,
+          }),
+        ],
+      },
+      { recursionLimit: 20 },
+    )
+
+    for await (const output of await streamResults) {
+      if (!output?.__end__) {
+        console.log(output);
+        console.log("----");
+      }
     }
   }
 

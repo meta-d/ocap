@@ -50,7 +50,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { injectCubeCommand, injectDimensionCommand } from './copilot'
+import { injectCubeCommand, injectDimensionCommand, injectModelerCommand } from './copilot'
 import {
   CreateEntityDialogDataType,
   CreateEntityDialogRetType,
@@ -279,6 +279,8 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       }
     }
   })
+
+  #modelerCommand = injectModelerCommand()
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']

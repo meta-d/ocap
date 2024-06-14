@@ -2,6 +2,8 @@ import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { ChatPromptTemplate, BaseStringPromptTemplate } from "@langchain/core/prompts"
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
+import { Runnable } from '@langchain/core/runnables'
+import { ChatOpenAI } from '@langchain/openai'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -63,10 +65,23 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   agent?: {
     type: CopilotAgentType;
     conversation?: boolean;
-  }
+  };
+
+  createGraph?: (llm: ChatOpenAI) => Promise<Runnable>
 }
+
+/**
+ * The type of agent for copilot command
+ */
 export enum CopilotAgentType {
+  /**
+   * Default use single agent
+   */
   Default = 'Default',
+  /**
+   * Graph use multiple agents (LangGraph)
+   */
+  Graph = 'Graph',
   OpenAI = 'OpenAI',
   LangChain = 'LangChain'
 }
