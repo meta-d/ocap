@@ -111,6 +111,8 @@ export class PACCopilotService extends NgmCopilotService {
               return response
             }
           }
+
+          return response
         } catch (error) {
           console.error(error)
           return null;
