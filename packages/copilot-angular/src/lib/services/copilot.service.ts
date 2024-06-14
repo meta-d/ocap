@@ -51,4 +51,8 @@ export class NgmCopilotService extends CopilotService {
   setRole(role: string): void {
     this.role.set(role)
   }
+
+  getClientOptions() {
+    return null
+  }
 }
