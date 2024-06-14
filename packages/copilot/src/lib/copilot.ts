@@ -1,4 +1,4 @@
-import { ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 import { UseChatOptions as AiUseChatOptions, ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { BehaviorSubject, Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs'
@@ -76,10 +76,11 @@ export abstract class CopilotService {
               baseURL: copilot.apiHost || null,
               defaultHeaders: {
                 ...(this.requestOptions().headers ?? {})
-              }
+              },
+              ...(this.getClientOptions() ?? {})
             },
             model: copilot.defaultModel,
-            temperature: 0
+            temperature: 0,
           })
         default:
           return null
@@ -101,11 +102,10 @@ export abstract class CopilotService {
   abstract roles(): BusinessRoleType[]
   abstract role(): string
   abstract setRole(role: string): void
+  abstract getClientOptions(): ClientOptions
 
   /**
-   * Custom request options, headers (Auth, others) and body
-   *
-   * @returns
+   * @deprecated use getClientOptions
    */
   requestOptions(): RequestOptions {
     return {}
