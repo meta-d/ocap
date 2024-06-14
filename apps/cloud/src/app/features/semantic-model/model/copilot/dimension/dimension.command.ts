@@ -1,14 +1,16 @@
 import { Signal, inject } from '@angular/core'
-import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
 import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import { Property } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
-import { DimensionSchema } from '../schema'
-import { createDimension } from './chat'
 import { timeLevelFormatter } from './types'
+import { injectCreateDimensionTool } from './tools'
+
+export const systemPrompt = `You are a cube modeling expert. Let's create a shared dimension for cube!` +
+                              timeLevelFormatter() +
+                              `{system_prompt}`
 
 export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -16,16 +18,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const modelService = inject(SemanticModelService)
   const copilotService = inject(NgmCopilotService)
 
-  const createDimensionTool = new DynamicStructuredTool({
-    name: 'createDimension',
-    description: 'Create or edit shared dimension for cube.',
-    schema: DimensionSchema,
-    func: async (d) => {
-      logger.debug(`Execute copilot action 'createDimension':`, d)
-      createDimension(modelService, d as any)
-      return translate.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
-    }
-  })
+  const createDimensionTool = injectCreateDimensionTool()
 
   const commandName = 'dimension'
   return injectCopilotCommand(commandName, {

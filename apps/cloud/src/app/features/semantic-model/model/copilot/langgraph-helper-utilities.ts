@@ -10,6 +10,42 @@ import { StructuredTool } from "@langchain/core/tools";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatOpenAI } from "@langchain/openai";
 
+
+export async function createCommandAgent(
+  llm: BaseChatModel,
+  tools: StructuredTool[],
+  systemPrompt: string,
+  systemContext?: () => Promise<string>,
+): Promise<AgentExecutor> {
+  const combinedPrompt = systemPrompt +
+    "\nWork autonomously according to your specialty, using the tools available to you." +
+    " Do not ask for clarification." +
+    " Your other team members (and other teams) will collaborate with you with their own specialties."
+  const toolNames = tools.map((t) => t.name).join(", ");
+  let prompt = ChatPromptTemplate.fromMessages([
+    ["system", combinedPrompt],
+    new MessagesPlaceholder("messages"),
+    new MessagesPlaceholder("agent_scratchpad"),
+    [
+      "system",
+      [
+        "Supervisor instructions: {instructions}\n" +
+        `Remember, you individually can only use these tools: ${toolNames}` +
+        "\n\nEnd if you have already completed the requested task. Communicate the work completed.",
+      ].join("\n"),
+    ],
+  ])
+
+  if (systemContext) {
+    prompt = await prompt.partial({
+      system_prompt: systemContext,
+    })
+  }
+
+  const agent = await createOpenAIToolsAgent({ llm, tools, prompt });
+  return new AgentExecutor({ agent, tools });
+}
+
 export async function createAgent(
   llm: BaseChatModel,
   tools: StructuredTool[],
@@ -21,7 +57,7 @@ export async function createAgent(
     " Your other team members (and other teams) will collaborate with you with their own specialties." +
     " You are chosen for a reason! You are one of the following team members: {team_members}.";
   const toolNames = tools.map((t) => t.name).join(", ");
-  const prompt = await ChatPromptTemplate.fromMessages([
+  const prompt = ChatPromptTemplate.fromMessages([
     ["system", combinedPrompt],
     new MessagesPlaceholder("messages"),
     new MessagesPlaceholder("agent_scratchpad"),
@@ -88,7 +124,7 @@ export async function createTeamSupervisor(
     type: "function" as const,
     function: functionDef,
   };
-  let prompt = await ChatPromptTemplate.fromMessages([
+  let prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
     new MessagesPlaceholder("messages"),
     [
@@ -112,6 +148,10 @@ export async function createTeamSupervisor(
       )
     )
     .pipe(new JsonOutputToolsParser())
+    .pipe((x) => {
+      console.log(x)
+      return x
+    })
     // select the first one
     .pipe((x) => ({
       next: x[0].args.next,

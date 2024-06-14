@@ -7,12 +7,16 @@ import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { createModelerGraph } from './graph'
+import { injectDimensionModeler } from '../dimension/graph'
+import { injectCubeModeler } from '../cube/graph'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
   const copilotService = inject(NgmCopilotService)
+  const dimensionModeler = injectDimensionModeler()
+  const cubeModeler = injectCubeModeler()
 
   const commandName = 'modeler'
 
@@ -23,7 +27,9 @@ export function injectModelerCommand() {
       type: CopilotAgentType.Graph
     },
     createGraph: async (llm: ChatOpenAI) => {
-      return (await createModelerGraph(llm)) as unknown as Runnable
+      const dimensionModelerAgent = await dimensionModeler(llm)
+      const cubeModelerAgent = await cubeModeler(llm)
+      return (await createModelerGraph(llm, dimensionModelerAgent, cubeModelerAgent)) as unknown as Runnable
     }
   })
 }

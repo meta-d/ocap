@@ -63,6 +63,9 @@
 
 .ngm-copilot-chat__message-content {
   @apply rounded-lg max-w-full py-2 px-4;
+  &.thinking {
+    @apply border border-dashed rounded-lg border-neutral-200 dark:border-neutral-800;
+  }
 }
 .ngm-copilot-chat__message-editing {
   .ngm-copilot-chat__message-content {
@@ -100,6 +103,8 @@
 
     ol {
       list-style-type: decimal;
+      padding-left: 1.625em;
+      line-height: 1;
     }
 
     :not(pre) > code[class*='language-'],

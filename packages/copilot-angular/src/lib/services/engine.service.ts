@@ -26,6 +26,7 @@ import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
+import { firstValueFrom, timer } from 'rxjs'
 
 let uniqueId = 0
 
@@ -387,19 +388,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  async triggerDefaultAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
-    let { conversationId, abortController } = options ?? {}
-    const { context } = options ?? {}
-    conversationId ??= nanoid()
-    abortController ??= new AbortController()
-
-    // Get chat history messages
-    const chatHistoryMessages = this.chatHistoryMessages()
-
-    // Context content
-    const contextContent = context ? await recognizeContext(content, context) : null
-    const params = await recognizeContextParams(content, context)
-
+  private async upsertUserInputMessage(command, params, content) {
     const messages = []
     let systemPrompt = ''
     try {
@@ -415,6 +404,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
         command: command.name,
         lcMessage: new HumanMessage({ content })
       })
+
+      return systemPrompt
     } catch (err: any) {
       messages.push({
         id: nanoid(),
@@ -423,23 +414,44 @@ export class NgmCopilotEngineService implements CopilotEngine {
         command: command.name,
         error: err.message
       })
-      return
+      return systemPrompt
     } finally {
       this.upsertMessage(...messages)
     }
+  }
+
+  async triggerDefaultAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
+    // ------------------------- 重复，需重构
+    let { conversationId, abortController } = options ?? {}
+    const { context } = options ?? {}
+    conversationId ??= nanoid()
+    abortController ??= new AbortController()
+
+    // Get chat history messages
+    const chatHistoryMessages = this.chatHistoryMessages()
+
+    // Context content
+    const contextContent = context ? await recognizeContext(content, context) : null
+    const params = await recognizeContextParams(content, context)
+
+    const systemPrompt = await this.upsertUserInputMessage(command, params, content)
 
     const assistantId = conversationId ?? nanoid()
+
     this.upsertMessage({
       id: assistantId,
       role: CopilotChatMessageRoleEnum.Assistant,
       content: '',
       status: 'thinking'
     })
+
     // Remove thinking message when abort
     const removeMessageWhenAbort = () => {
       this.stopMessage(assistantId)
     }
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
+    // ------------------------- 重
+
 
     try {
       let chain: Runnable = null
@@ -533,26 +545,104 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   async triggerGraphAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
-    console.log(content, command, options)
+    // ------------------------- 重复，需重构
+    let { conversationId, abortController } = options ?? {}
+    const { context } = options ?? {}
+    conversationId ??= nanoid()
+    abortController ??= new AbortController()
 
-    const graph = await command.createGraph(this.llm())
+    // Get chat history messages
+    const chatHistoryMessages = this.chatHistoryMessages()
 
-    const streamResults = graph.stream(
-      {
-        messages: [
-          new HumanMessage({
-            content: content,
-          }),
-        ],
-      },
-      { recursionLimit: 20 },
-    )
+    // Context content
+    const contextContent = context ? await recognizeContext(content, context) : null
+    const params = await recognizeContextParams(content, context)
 
-    for await (const output of await streamResults) {
-      if (!output?.__end__) {
-        console.log(output);
-        console.log("----");
+    const systemPrompt = await this.upsertUserInputMessage(command, params, content)
+
+    const assistantId = conversationId ?? nanoid()
+
+    this.upsertMessage({
+      id: assistantId,
+      role: CopilotChatMessageRoleEnum.Assistant,
+      content: '',
+      status: 'thinking'
+    })
+
+    // Remove thinking message when abort
+    const removeMessageWhenAbort = () => {
+      this.stopMessage(assistantId)
+    }
+    abortController.signal.addEventListener('abort', removeMessageWhenAbort)
+    // --------------------------
+    
+    const verbose = this.verbose()
+    try {
+      const graph = await command.createGraph(this.llm())
+
+      let verboseContent = ''
+      const streamResults = await graph.stream(
+        {
+          messages: [
+            new HumanMessage({
+              content: content,
+            }),
+          ],
+          context: contextContent,
+        },
+        { recursionLimit: 20 },
+      )
+
+      for await (const output of streamResults) {
+        if (!output?.__end__) {
+          console.log(output);
+          console.log("----");
+
+          let content = ''
+          Object.entries(output).forEach(([key, value]: [string, {messages?: HumanMessage[]; next?: string; instructions?: string;}]) => {
+            content += content ? '\n' : ''
+            if (value.messages) {
+              content += `<b>${key}</b>: ${value.messages[0]?.content}`
+            } else {
+              content += `<b>${key}</b>: call ${value.next} with: ${value.instructions}`
+            }
+          })
+
+          if (verbose) {
+            verboseContent += '\n\n👉 ' + content
+          } else {
+            verboseContent = content
+          }
+
+          this.upsertMessage({
+            id: assistantId,
+            role: CopilotChatMessageRoleEnum.Assistant,
+            content: verboseContent,
+            status: 'thinking',
+          })
+        }
       }
+
+      this.upsertMessage({
+        id: assistantId,
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: verboseContent,
+        status: 'done',
+      })
+
+      return null
+    } catch (err: any) {
+      console.error(err.message)
+      this.upsertMessage({
+        id: assistantId,
+        role: CopilotChatMessageRoleEnum.Assistant,
+        content: '',
+        status: 'error',
+        error: err.message
+      })
+      return
+    } finally {
+      abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
     }
   }
 
@@ -717,7 +807,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       messages.forEach((message) => {
         const index = lastMessages.findIndex((item) => item.id === message.id)
         if (index > -1) {
-          lastMessages[index] = { ...message }
+          lastMessages[index] = { ...lastMessages[index], ...message }
         } else {
           lastMessages.push(message)
         }

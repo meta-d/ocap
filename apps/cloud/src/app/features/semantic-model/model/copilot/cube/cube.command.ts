@@ -1,5 +1,4 @@
 import { Signal, inject } from '@angular/core'
-import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
 import { createAgentStepsInstructions } from '@metad/core'
 import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
@@ -7,25 +6,16 @@ import { Property } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
-import { CubeSchema } from '../schema'
-import { createCube } from './chat'
+import { injectCreateCubeTool } from './tools'
+
 
 export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
   const copilotService = inject(NgmCopilotService)
-
-  const createCubeTool = new DynamicStructuredTool({
-    name: 'createCube',
-    description: 'Create or edit cube',
-    schema: CubeSchema,
-    func: async (cube) => {
-      logger.debug(`Execute copilot action 'createCube':`, cube)
-      createCube(modelService, cube as any)
-      return translate.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
-    }
-  })
+  // tools
+  const createCubeTool = injectCreateCubeTool()
 
   const commandName = 'cube'
   return injectCopilotCommand(commandName, {
