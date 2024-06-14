@@ -100,35 +100,6 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   |--------------------------------------------------------------------------
   */
   #createHierarchyCommand = injectHierarchyCommand(this.dimensionService, this.tableTypes)
-  //   h = injectCopilotCommand({
-  //     name: 'h',
-  //     description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
-  //     examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
-  //     systemPrompt: async () => {
-  //       return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy，
-
-  // `
-  //     },
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'create-model-hierarchy',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'hierarchy',
-  //             type: 'object', // Add or change types according to your needs.
-  //             description: 'The defination of hierarchy',
-  //             required: true,
-  //             properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
-  //           }
-  //         ],
-  //         implementation: async (h: PropertyHierarchy) => {
-  //           this.dimensionService.newHierarchy(h)
-  //           return `✅`
-  //         }
-  //       })
-  //     ]
-  //   })
 
   /**
   |--------------------------------------------------------------------------

@@ -1,0 +1,5 @@
+:host {
+  background-color: var(--ngm-color-surface);
+  border-top-left-radius: var(--ngm-primary-container-rounded);
+  @apply block w-full;
+}

@@ -1,8 +1,9 @@
 <mat-toolbar class="pac-nav-toolbar pac-model__shell-bar flex items-center pl-2" displayDensity="compact">
-    <button mat-icon-button displayDensity="cosy"
+    <button mat-icon-button displayDensity="cosy" [color]="mt.menuOpen?'accent':''"
         [matMenuTriggerFor]="menu"
+        #mt="matMenuTrigger"
         >
-        <mat-icon>more_vert</mat-icon>
+        <mat-icon [color]="mt.menuOpen?'accent':''">more_vert</mat-icon>
     </button>
     <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="accent" disableRipple class="flex-1" mat-stretch-tabs="false" mat-align-tabs="start">
       @for (tab of hierarchies(); track tab.__id__; let i = $index) {
@@ -22,6 +23,8 @@
             <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
                 [matMenuTriggerFor]="hMenu"
                 [matMenuTriggerData]="{key: tab.__id__}"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
                 >
                 <mat-icon>more_vert</mat-icon>
             </button>

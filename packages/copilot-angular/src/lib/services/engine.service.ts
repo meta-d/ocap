@@ -584,6 +584,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       const streamResults = await graph.stream(
         {
           messages: [
+            ...chatHistoryMessages,
             new HumanMessage({
               content: content,
             }),

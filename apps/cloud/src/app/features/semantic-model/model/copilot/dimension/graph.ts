@@ -17,10 +17,9 @@ export function injectDimensionModeler() {
   const dimensions = toSignal(modelService.dimensions$)
 
   const systemContext = async () => {
-    console.log(`systemContext for dimension`)
     return (
       copilotService.rolePrompt() +
-      `The dimension name cannot be any of the share dimension names in the array.: [${dimensions()
+      `The dimension name cannot be any of the share dimension names in the list: [${dimensions()
         .map((d) => d.name)
         .join(', ')}].` +
       `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].`

@@ -107,7 +107,11 @@ export class ModelDimensionService {
   }
 
   public init(id: string) {
-    this.store.connect(['model', 'schema', 'dimensions', id])
+    const state = this.store.connect(['model', 'schema', 'dimensions', id]).getValue()
+    if (!state.__id__) {
+      this.router.navigate(['../404'], { relativeTo: this.route })
+      return
+    }
     this.pristineStore.connect(['model', 'schema', 'dimensions', id])
 
     timer(0).subscribe(() => {

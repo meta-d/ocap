@@ -205,6 +205,9 @@ $sidebar-collapsed-width: 40px;
       .pac-nav-tab__close:hover {
         opacity: 1;
       }
+      .pac-nav-tab__close.active {
+        opacity: 1;
+      }
     }
 
     .mat-mdc-tab-links {

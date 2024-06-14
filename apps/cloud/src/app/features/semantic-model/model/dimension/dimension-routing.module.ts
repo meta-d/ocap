@@ -2,9 +2,14 @@ import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 import { ModelDimensionComponent } from './dimension.component'
 import { ModelHierarchyComponent } from './hierarchy/hierarchy.component'
+import { NotFoundComponent } from 'apps/cloud/src/app/@shared'
 
 
 const routes: Routes = [
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
   {
     path: ':id',
     component: ModelDimensionComponent,
@@ -21,8 +26,11 @@ const routes: Routes = [
           title: 'Model / Dimension / Hierarchy',
           reuseComponent: false
         }
+      },
+      {
+        path: '404',
+        component: NotFoundComponent
       }
-
     ]
   }
 ]

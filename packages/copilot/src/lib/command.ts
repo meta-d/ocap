@@ -34,9 +34,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    */
   suggestionTemplate?: ChatPromptTemplate
   /**
-   * Get system prompt message
-   *
-   * @returns System prompt message
+   * @deprecated use prompt only
    */
   systemPrompt?: (options?: { params?: CopilotContextParam[] }) => Promise<string>
   /**
