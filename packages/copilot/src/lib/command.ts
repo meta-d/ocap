@@ -1,9 +1,9 @@
+import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
-import { ChatPromptTemplate, BaseStringPromptTemplate } from "@langchain/core/prompts"
+import { StateGraph } from '@langchain/langgraph/web'
+import { ChatOpenAI } from '@langchain/openai'
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
-import { Runnable } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
 
 /**
  * Copilot command, which can execute multiple actions.
@@ -59,13 +59,13 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * The few shot prompt template to add examples for user input
    */
   fewShotPrompt?: BaseStringPromptTemplate
-  
-  agent?: {
-    type: CopilotAgentType;
-    conversation?: boolean;
-  };
 
-  createGraph?: (llm: ChatOpenAI) => Promise<Runnable>
+  agent?: {
+    type: CopilotAgentType
+    conversation?: boolean
+  }
+
+  createGraph?: (llm: ChatOpenAI) => Promise<StateGraph<unknown>>
 }
 
 /**

@@ -2,6 +2,13 @@ import { DestroyRef, inject } from '@angular/core'
 import { CopilotCommand } from '@metad/copilot'
 import { NgmCopilotContextToken } from '../services'
 
+/**
+ * Inject a new copilot command
+ * 
+ * @param name 
+ * @param command 
+ * @returns 
+ */
 export function injectCopilotCommand(
   name: string | CopilotCommand,
   command?: CopilotCommand | Promise<CopilotCommand>

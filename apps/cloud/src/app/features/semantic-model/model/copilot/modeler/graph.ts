@@ -74,7 +74,6 @@ export async function createModelerGraph(llm: ChatOpenAI, dimensionModeler: Runn
   })
 
   superGraph.addEdge(START, SUPERVISOR_NAME)
-  const compiledSuperGraph = superGraph.compile()
 
-  return compiledSuperGraph
+  return superGraph
 }

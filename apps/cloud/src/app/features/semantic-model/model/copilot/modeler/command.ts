@@ -9,6 +9,7 @@ import { SemanticModelService } from '../../model.service'
 import { createModelerGraph } from './graph'
 import { injectDimensionModeler } from '../dimension/graph'
 import { injectCubeModeler } from '../cube/graph'
+import { StateGraph } from '@langchain/langgraph/web'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -24,12 +25,13 @@ export function injectModelerCommand() {
     alias: 'm',
     description: 'Modeling command for semantic model',
     agent: {
-      type: CopilotAgentType.Graph
+      type: CopilotAgentType.Graph,
+      conversation: true
     },
     createGraph: async (llm: ChatOpenAI) => {
       const dimensionModelerAgent = await dimensionModeler(llm)
       const cubeModelerAgent = await cubeModeler(llm)
-      return (await createModelerGraph(llm, dimensionModelerAgent, cubeModelerAgent)) as unknown as Runnable
+      return (await createModelerGraph(llm, dimensionModelerAgent, cubeModelerAgent)) as unknown as StateGraph<unknown>
     }
   })
 }

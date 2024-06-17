@@ -4,6 +4,7 @@ import { StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { NgmCopilotService } from '@metad/copilot-angular'
 import { SemanticModelService } from '../../model.service'
+import { markdownSharedDimensions } from '../dimension/types'
 import { createCommandAgent } from '../langgraph-helper-utilities'
 import { SYSTEM_PROMPT } from './cube.command'
 import { injectCreateCubeTool } from './tools'
@@ -28,25 +29,19 @@ export function injectCubeModeler() {
   const createCubeTool = injectCreateCubeTool()
 
   const dimensions = modelService.dimensions
+  const cubes = modelService.cubes
 
   const systemContext = async () => {
-    const sharedDimensionsPrompt = JSON.stringify(
-      dimensions()
-        .filter((dimension) => dimension.hierarchies?.length)
-        .map((dimension) => ({
-          name: dimension.name,
-          caption: dimension.caption,
-          table: dimension.hierarchies[0].tables[0]?.name,
-          primaryKey: dimension.hierarchies[0].primaryKey
-        }))
-    )
-    return `${copilotService.rolePrompt()}
-There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
+    const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
+    return copilotService.rolePrompt() + 
+      ` The cube name can't be the same as the fact table name.` + 
+      (cubes().length ? ` The cube name cannot be any of the following existing cubes [${cubes().map(({name}) => name).join(', ')}]` : '') + 
+` There is no need to create as dimension with those table fields that are already used in 'dimensionUsages'.` +
+(sharedDimensions.length ? ` The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
 \`\`\`
-${sharedDimensionsPrompt}
+${markdownSharedDimensions(sharedDimensions)}
 \`\`\`
-`
+` : '')
   }
 
   return async (llm: ChatOpenAI) => {
@@ -55,6 +50,8 @@ ${sharedDimensionsPrompt}
     //   .addNode(PLANNER_NAME, runPlanner)
 
     const agent = await createCommandAgent(llm, [createCubeTool], SYSTEM_PROMPT, systemContext)
+
+    
     return agent
   }
 }

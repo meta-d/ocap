@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { CubeSchema } from '../schema'
-import { createCube } from './chat'
+import { createOrEditCube } from './chat'
 
 export function injectCreateCubeTool() {
   const logger = inject(NGXLogger)
@@ -17,7 +17,7 @@ export function injectCreateCubeTool() {
     schema: CubeSchema,
     func: async (cube) => {
       logger.debug(`Execute copilot action 'createCube':`, cube)
-      createCube(modelService, cube as any)
+      createOrEditCube(modelService, cube as any)
       return translate.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
     }
   })

@@ -75,6 +75,7 @@ export class SemanticModelService {
   readonly dimensionStates$ = this.model$.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
   readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions ?? [])
+  readonly cubes = computed(() => this.modelSignal()?.schema?.cubes ?? [])
 
   readonly schema$ = this.model$.pipe(
     select((state) => state?.schema),
@@ -601,6 +602,30 @@ export class SemanticModelService {
     }
   })
 
+  readonly updateCube = this.updater((state, cube: Partial<Cube>) => {
+    const index = state.schema.cubes.findIndex((item) => item.__id__ === cube.__id__)
+    if (index > -1) {
+      const _cube = state.schema.cubes[index]
+      if (cube.dimensions) {
+        _cube.dimensions = cube.dimensions.reduce((acc, dimension) => upsertItem(acc, dimension), _cube.dimensions ?? [])
+      }
+      if (cube.measures) {
+        _cube.measures = cube.measures.reduce((acc, measure) => upsertItem(acc, measure), _cube.measures ?? [])
+      }
+      if (cube.calculatedMembers) {
+        _cube.calculatedMembers = cube.calculatedMembers.reduce((acc, calculatedMember) => upsertItem(acc, calculatedMember), _cube.calculatedMembers ?? [])
+      }
+      if (cube.dimensionUsages) {
+        _cube.dimensionUsages = cube.dimensionUsages.reduce((acc, dimensionUsage) => upsertItem(acc, dimensionUsage), _cube.dimensionUsages ?? [])
+      }
+      state.schema.cubes[index] = {
+        ..._cube,
+      }
+    } else {
+      throw new Error(`Cube key '${cube.__id__}' not found!`)
+    }
+  })
+
   /**
    * Update cube of schema in {@link DataSource}
    *
@@ -787,7 +812,7 @@ export class SemanticModelService {
    *
    * @param entity
    */
-  activeEntity(entity: SemanticModelEntity) {
+  activeEntity(entity: Partial<SemanticModelEntity>) {
     if (entity.type === SemanticModelEntityType.CUBE) {
       this.router.navigate([`entity/${entity.id}`], { relativeTo: this.route })
     } else {
@@ -814,4 +839,18 @@ export class SemanticModelService {
       [id]: dirty
     }))
   }
+}
+
+function upsertItem<T extends {__id__?: string}>(items: Array<T>, item: T) {
+  const index = items.findIndex((i) => i.__id__ === item.__id__)
+  if (index > -1) {
+    items.splice(index, 1, {
+      ...items[index],
+      ...item
+    })
+  } else {
+    items.push(item)
+  }
+
+  return items
 }

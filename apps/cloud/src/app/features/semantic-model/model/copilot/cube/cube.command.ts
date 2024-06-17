@@ -9,7 +9,7 @@ import { SemanticModelService } from '../../model.service'
 import { injectCreateCubeTool } from './tools'
 
 export const SYSTEM_PROMPT = `You are a cube modeling expert. Let's create a cube!
-Generate cube metadata for MDX. The cube name can't be the same as the table name.
+Generate cube metadata for MDX.
 Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
 
 ${createAgentStepsInstructions(

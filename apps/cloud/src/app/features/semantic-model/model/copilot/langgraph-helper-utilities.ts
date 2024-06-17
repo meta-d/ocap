@@ -43,6 +43,7 @@ export async function createCommandAgent(
   }
 
   const agent = await createOpenAIToolsAgent({ llm, tools, prompt });
+  // createReactAgent()
   return new AgentExecutor({ agent, tools });
 }
 

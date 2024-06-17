@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { StringOutputParser } from '@langchain/core/output_parsers'
 import { Runnable } from '@langchain/core/runnables'
 import {
@@ -19,6 +19,7 @@ import {
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
+import { MemorySaver } from '@langchain/langgraph/web'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { compact, flatten, pick } from 'lodash-es'
@@ -26,7 +27,7 @@ import { NGXLogger } from 'ngx-logger'
 import { DropAction } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
-import { firstValueFrom, timer } from 'rxjs'
+
 
 let uniqueId = 0
 
@@ -100,18 +101,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   readonly lastUserMessages = computed(() => {
     const conversation = this.conversations$()[this.conversations$().length - 1]
-    const messages = []
+    const messages: BaseMessage[] = []
     if (!conversation) {
       return messages
     }
     for (let i = conversation.messages.length - 1; i >= 0; i--) {
       const message = conversation.messages[i]
       if (message.role === CopilotChatMessageRoleEnum.User && !message.command) {
-        messages.push({
-          id: message.id,
-          role: message.role,
-          content: message.content
-        })
+        messages.push(message.lcMessage)
       } else {
         break
       }
@@ -125,6 +122,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const commands = this.commands()
     return commands.find((c) => c.name === command)
   })
+  readonly currentConversationId = computed(() => this.currentConversation()?.id)
+
   readonly chatHistoryMessages = computed(() => {
     const conversation =
       this.conversations$()[this.conversations$().length - 1] ?? ({ messages: [] } as CopilotChatConversation)
@@ -139,6 +138,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly error = signal<undefined | Error>(undefined)
   readonly streamData = signal<JSONValue[] | undefined>(undefined)
   readonly isLoading = signal(false)
+
+  readonly agentMemory = new MemorySaver()
 
   constructor() {
     //   effect(() => {
@@ -548,11 +549,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // ------------------------- 重复，需重构
     let { conversationId, abortController } = options ?? {}
     const { context } = options ?? {}
-    conversationId ??= nanoid()
+    
     abortController ??= new AbortController()
 
     // Get chat history messages
-    const chatHistoryMessages = this.chatHistoryMessages()
+    // const chatHistoryMessages = this.chatHistoryMessages()
+    const lastUserMessages = this.lastUserMessages()
 
     // Context content
     const contextContent = context ? await recognizeContext(content, context) : null
@@ -560,7 +562,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     const systemPrompt = await this.upsertUserInputMessage(command, params, content)
 
-    const assistantId = conversationId ?? nanoid()
+    conversationId ??= this.currentConversationId()
+    const assistantId = nanoid()
 
     this.upsertMessage({
       id: assistantId,
@@ -578,20 +581,25 @@ export class NgmCopilotEngineService implements CopilotEngine {
     
     const verbose = this.verbose()
     try {
-      const graph = await command.createGraph(this.llm())
+      const graph = (await command.createGraph(this.llm())).compile({ checkpointer: this.agentMemory })
 
       let verboseContent = ''
       const streamResults = await graph.stream(
         {
           messages: [
-            ...chatHistoryMessages,
+            ...lastUserMessages,
             new HumanMessage({
               content: content,
             }),
           ],
           context: contextContent,
         },
-        { recursionLimit: 10 },
+        {
+          configurable: {
+            thread_id: conversationId
+          },
+          recursionLimit: 20
+        },
       )
 
       for await (const output of streamResults) {
@@ -604,26 +612,28 @@ export class NgmCopilotEngineService implements CopilotEngine {
             content += content ? '\n' : ''
             if (value.messages) {
               content += `<b>${key}</b>: ${value.messages[0]?.content}`
-            } else {
+            } else if(value.next && value.next !== 'FINISH') {
               content += `<b>${key}</b>: call ${value.next} with: ${value.instructions}`
             }
           })
 
-          if (verbose) {
-            verboseContent += '\n\n👉 ' + content
-          } else {
-            verboseContent = content
-          }
+          if (content) {
+            if (verbose) {
+              verboseContent += '\n\n👉 ' + content
+            } else {
+              verboseContent = content
+            }
 
-          this.upsertMessage({
-            id: assistantId,
-            role: CopilotChatMessageRoleEnum.Assistant,
-            content: verboseContent,
-            status: 'thinking',
-          })
+            this.upsertMessage({
+              id: assistantId,
+              role: CopilotChatMessageRoleEnum.Assistant,
+              content: verboseContent,
+              status: 'thinking',
+            })
+          }
         }
       }
-
+      
       this.upsertMessage({
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,
@@ -796,7 +806,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
     } else {
       this.updateLastConversation((conversation) => ({
         ...(conversation ?? this.#newConversation(type, command)),
-        type
+        type,
+        command
       }))
     }
   }
