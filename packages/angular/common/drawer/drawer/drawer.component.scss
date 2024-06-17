@@ -1,0 +1,22 @@
+:host {
+  @apply flex transition-all;
+
+  &.opened {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  &:not(.opened) {
+    width: 0 !important;
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  // &.over {
+  //   @apply absolute top-0 left-0 right-0 bottom-0;
+
+  //   .ngm-drawer-backdrop {
+  //     @apply flex-1;
+  //   }
+  // }
+}

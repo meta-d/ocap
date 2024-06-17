@@ -3,7 +3,7 @@ import { NgModule, importProvidersFrom } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { NgmFormlyModule, provideFormly, provideFormlyMaterial } from '@metad/formly'
 import { registerEChartsThemes } from '@metad/material-theme'
-import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmDrawerContentComponent, NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmCopilotContextService, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/copilot-angular'
 import {
   DensityDirective,
@@ -29,6 +29,7 @@ import { StoryFeedService, StoryModelService, StoryStoreService } from '../servi
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
 import { provideDimensionMemberRetriever } from '../@core/copilot'
+import { NgmDrawerComponent, NgmDrawerContainerComponent } from '@metad/ocap-angular/common'
 
 registerEChartsThemes()
 
@@ -52,6 +53,10 @@ registerEChartsThemes()
 
     NgmCopilotChatComponent,
     NgmDrawerTriggerComponent,
+    NgmDrawerContainerComponent,
+    NgmDrawerComponent,
+    NgmDrawerContentComponent,
+    NgmDrawerContainerComponent,
     ResizerModule,
     NgmTableComponent,
     NotificationComponent,
