@@ -119,7 +119,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return messages
   })
 
-  readonly currentConversation = this.lastConversation
+  readonly currentConversation = computed(() => this.conversations$()[this.conversations$().length - 1])
   readonly currentCommand = computed(() => {
     const command = this.currentConversation()?.command
     const commands = this.commands()
@@ -591,7 +591,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           ],
           context: contextContent,
         },
-        { recursionLimit: 20 },
+        { recursionLimit: 10 },
       )
 
       for await (const output of streamResults) {
@@ -892,7 +892,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       const currentConversation = this.currentConversation()
       const currentCommand = this.currentCommand()
-      if (!(currentConversation.type === 'free' || currentCommand?.agent?.conversation)) {
+      if (!currentConversation || currentConversation.type === 'command' && !currentCommand?.agent?.conversation) {
         this.newConversation(null, null)
       }
 

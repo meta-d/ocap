@@ -702,6 +702,10 @@ export class NgmCopilotChatComponent {
     if (this.copilotEngine) {
       this.copilotEngine.dropCopilot(event)
     }
+
+    setTimeout(() => {
+      this.scrollBottom()
+    }, 300)
   }
 
   switchRole() {
@@ -726,6 +730,7 @@ export class NgmCopilotChatComponent {
   setContext(item: CopilotContextItem) {
     this.context.set(item)
   }
+  
   repleaceContext(orginal: string, target: CopilotContextItem) {
     const prompt = this.prompt()
     this.promptControl.setValue(prompt.split(`@${orginal} `).join(`@${target.uKey} `))

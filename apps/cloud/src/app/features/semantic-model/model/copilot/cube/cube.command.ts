@@ -8,6 +8,19 @@ import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectCreateCubeTool } from './tools'
 
+export const SYSTEM_PROMPT = `You are a cube modeling expert. Let's create a cube!
+Generate cube metadata for MDX. The cube name can't be the same as the table name.
+Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
+
+${createAgentStepsInstructions(
+  `根据用户输入信息思考创建 Cube 需要哪些 dimensions 和 measures`,
+  `针对每一个 dimension 首先考虑从 shared dimensions 中选择已有的 dimensions 添加至 dimensionUsages 属性中，然后再考虑创建新的 dimensions 至 dimensions 属性中`,
+  `针对每一个 measure 首先考虑从表字段中选择合适的 measure 字段添加至 measures 属性中，然后再考虑创建 calculated measures 至 calculatedMembers 属性中`,
+  `综合以上结果创建完整的 cube`
+)}
+
+{system_prompt}`
+
 
 export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -25,20 +38,7 @@ export function injectCubeCommand(dimensions: Signal<Property[]>) {
       type: CopilotAgentType.Default
     },
     tools: [createCubeTool],
-    prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a cube!
-Generate cube metadata for MDX. The cube name can't be the same as the table name.
-Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-
-${createAgentStepsInstructions(
-  `根据用户输入信息思考创建 Cube 需要哪些 dimensions 和 measures`,
-  `针对每一个 dimension 首先考虑从 shared dimensions 中选择已有的 dimensions 添加至 dimensionUsages 属性中，然后再考虑创建新的 dimensions 至 dimensions 属性中`,
-  `针对每一个 measure 首先考虑从表字段中选择合适的 measure 字段添加至 measures 属性中，然后再考虑创建 calculated measures 至 calculatedMembers 属性中`,
-  `综合以上结果创建完整的 cube`
-)}
-
-{context}
-    
-{system_prompt}`),
+    prompt: createAgentPromptTemplate(SYSTEM_PROMPT + `\n{context}`),
     systemPrompt: async () => {
       const sharedDimensionsPrompt = JSON.stringify(
         dimensions()

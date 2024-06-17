@@ -74,7 +74,7 @@ export class SemanticModelService {
   readonly cubeStates$ = this.model$.pipe(map(initEntitySubState))
   readonly dimensionStates$ = this.model$.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
-  readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions)
+  readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions ?? [])
 
   readonly schema$ = this.model$.pipe(
     select((state) => state?.schema),

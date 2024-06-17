@@ -74,8 +74,8 @@ export async function createAgent(
   return new AgentExecutor({ agent, tools });
 }
 
-export async function runAgentNode(params: {
-  state: any;
+export async function runAgentNode<T>(params: {
+  state: T;
   agent: Runnable;
   name: string;
   config?: RunnableConfig & {

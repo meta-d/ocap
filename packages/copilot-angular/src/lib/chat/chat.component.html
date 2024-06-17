@@ -34,7 +34,7 @@
         @for (message of conversation.messages; track message.id) {
             @switch (message.role) {
               @case (CopilotChatMessageRoleEnum.Assistant) {
-                <div @fadeAnimation class="pl-2 pr-4 flex">
+                <div class="pl-2 pr-4 flex">
                     <div class="flex-1 flex items-start overflow-auto">
                         <div class="relative flex flex-col items-center shrink-0">
                             @if (assistantAvatar) {

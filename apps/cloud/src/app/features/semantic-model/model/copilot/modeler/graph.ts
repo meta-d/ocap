@@ -52,16 +52,14 @@ export async function createModelerGraph(llm: ChatOpenAI, dimensionModeler: Runn
     return { plan: plan.steps }
   }
 
-  const superGraph = new StateGraph({
-    channels: superState
-  })
+  const superGraph = new StateGraph({ channels: superState })
     // Add steps nodes
     .addNode(PLANNER_NAME, runPlanner)
     .addNode(DIMENSION_MODELER_NAME, (state: State, options) => {
-      return runAgentNode({ state, agent: dimensionModeler, name: DIMENSION_MODELER_NAME, config: options.config })
+      return runAgentNode<State>({ state, agent: dimensionModeler, name: DIMENSION_MODELER_NAME, config: options.config })
     })
     .addNode(CUBE_MODELER_NAME, (state: State, options) => {
-      return runAgentNode({ state, agent: cubeModeler, name: CUBE_MODELER_NAME, config: options.config })
+      return runAgentNode<State>({ state, agent: cubeModeler, name: CUBE_MODELER_NAME, config: options.config })
     })
     .addNode(SUPERVISOR_NAME, supervisorNode as unknown)
 
