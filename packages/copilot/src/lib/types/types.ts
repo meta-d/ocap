@@ -68,6 +68,8 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
   status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
 
   lcMessage?: BaseMessage
+
+  historyCursor?: number
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

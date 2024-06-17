@@ -16,7 +16,7 @@ export class NgmCopilotService extends CopilotService {
     )
   )
   readonly defaultRoleI18n = toSignal(
-    this.translate.stream('Ngm.Copilot.DefaultBusinessRole', {
+    this.translate.stream('Copilot.DefaultBusinessRole', {
       Default: { title: 'Common', description: 'Common business role' }
     })
   )

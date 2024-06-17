@@ -6,6 +6,7 @@ import zh from '@angular/common/locales/zh'
 import localeZh from '@angular/common/locales/zh-Hans'
 import { ZhHans as AuthZhHans, ZhHant as AuthZhHant } from '@metad/cloud/auth'
 import { ZhHans as IAppZhHans, ZhHant as IAppZhHant } from '@metad/cloud/indicator-market/i18n'
+import { ZhHans as CopilotZhHans, ZhHant as CopilotZhHant } from '@metad/copilot-angular'
 import { zhHans as CoreZhHans, zhHant as CoreZhHant, registerLocaleData as nxRegisterLocaleData } from '@metad/core'
 import { ZhHans, ZhHant } from '@metad/ocap-angular/i18n'
 import { ZhHans as StoryZhHans, ZhHant as StoryZhHant } from '@metad/story/i18n'
@@ -13,7 +14,6 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader'
 import { enUS, zhCN, zhHK } from 'date-fns/locale'
 import { Observable, map } from 'rxjs'
 import { LanguagesEnum } from '../types'
-
 
 export const LOCALE_DEFAULT = LanguagesEnum.SimplifiedChinese
 registerLocaleData(localeZh, LOCALE_DEFAULT, localeZhExtra)
@@ -33,7 +33,8 @@ class CustomTranslateHttpLoader extends TranslateHttpLoader {
           ...CoreZhHans,
           ...StoryZhHans,
           ...AuthZhHans,
-          ...IAppZhHans
+          ...IAppZhHans,
+          ...CopilotZhHans
         }
         break
       case LanguagesEnum.TraditionalChinese:
@@ -42,7 +43,8 @@ class CustomTranslateHttpLoader extends TranslateHttpLoader {
           ...CoreZhHant,
           ...StoryZhHant,
           ...AuthZhHant,
-          ...IAppZhHant
+          ...IAppZhHant,
+          ...CopilotZhHant
         }
         break
       default:

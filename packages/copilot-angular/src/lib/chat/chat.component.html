@@ -1,6 +1,6 @@
 <div class="text-base font-semibold p-2 flex justify-between items-center">
   <div class="flex items-start gap-1">
-    <span>{{ 'Ngm.Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
+    <span>{{ 'Copilot.Copilot' | translate: {Default: 'Copilot'} }}</span>
 
     @if (copilotEngine?.name) {
       <span>:</span><span>{{copilotEngine.name}}</span>
@@ -21,7 +21,7 @@
   }
 
   @if (conversations()) {
-    <button class="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10" [matTooltip]="'Ngm.Copilot.NewChat' | translate: {Default: 'New chat'}"
+    <button class="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10" [matTooltip]="'Copilot.NewChat' | translate: {Default: 'New chat'}"
       (click)="newChat()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24" class="icon-xl-heavy"><path d="M15.673 3.913a3.121 3.121 0 1 1 4.414 4.414l-5.937 5.937a5 5 0 0 1-2.828 1.415l-2.18.31a1 1 0 0 1-1.132-1.13l.311-2.18A5 5 0 0 1 9.736 9.85zm3 1.414a1.12 1.12 0 0 0-1.586 0l-5.937 5.937a3 3 0 0 0-.849 1.697l-.123.86.86-.122a3 3 0 0 0 1.698-.849l5.937-5.937a1.12 1.12 0 0 0 0-1.586M11 4A1 1 0 0 1 10 5c-.998 0-1.702.008-2.253.06-.54.052-.862.141-1.109.267a3 3 0 0 0-1.311 1.311c-.134.263-.226.611-.276 1.216C5.001 8.471 5 9.264 5 10.4v3.2c0 1.137 0 1.929.051 2.546.05.605.142.953.276 1.216a3 3 0 0 0 1.311 1.311c.263.134.611.226 1.216.276.617.05 1.41.051 2.546.051h3.2c1.137 0 1.929 0 2.546-.051.605-.05.953-.142 1.216-.276a3 3 0 0 0 1.311-1.311c.126-.247.215-.569.266-1.108.053-.552.06-1.256.06-2.255a1 1 0 1 1 2 .002c0 .978-.006 1.78-.069 2.442-.064.673-.192 1.27-.475 1.827a5 5 0 0 1-2.185 2.185c-.592.302-1.232.428-1.961.487C15.6 21 14.727 21 13.643 21h-3.286c-1.084 0-1.958 0-2.666-.058-.728-.06-1.369-.185-1.96-.487a5 5 0 0 1-2.186-2.185c-.302-.592-.428-1.233-.487-1.961C3 15.6 3 14.727 3 13.643v-3.286c0-1.084 0-1.958.058-2.666.06-.729.185-1.369.487-1.961A5 5 0 0 1 5.73 3.545c.556-.284 1.154-.411 1.827-.475C8.22 3.007 9.021 3 10 3A1 1 0 0 1 11 4"></path></svg>
     </button>
@@ -30,6 +30,7 @@
 
 <div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
+
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
         @for (message of conversation.messages; track message.id) {
             @switch (message.role) {
@@ -66,41 +67,52 @@
 
                               @if (message.status === 'done') {
                                 <div class="flex self-end lg:self-center justify-center lg:justify-start mt-0 -ml-1 visible">
-                                    <span class="" data-state="closed">
-                                        @if (messageCopied().includes(message.id)) {
-                                            <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                                transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
-                                            >
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg" class="icon-md">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                        d="M18.0633 5.67375C18.5196 5.98487 18.6374 6.607 18.3262 7.06331L10.8262 18.0633C10.6585 18.3093 10.3898 18.4678 10.0934 18.4956C9.79688 18.5234 9.50345 18.4176 9.29289 18.2071L4.79289 13.7071C4.40237 13.3166 4.40237 12.6834 4.79289 12.2929C5.18342 11.9023 5.81658 11.9023 6.20711 12.2929L9.85368 15.9394L16.6738 5.93664C16.9849 5.48033 17.607 5.36263 18.0633 5.67375Z"
-                                                        fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        } @else {
-                                            <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                                transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
-                                                [matTooltip]="'Ngm.Copilot.Copy' | translate: {Default: 'Copy'}"
-                                                (click)="copyMessage(message)">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C10.8954 4 10 4.89543 10 6H14C14 4.89543 13.1046 4 12 4ZM8.53513 4C9.22675 2.8044 10.5194 2 12 2C13.4806 2 14.7733 2.8044 15.4649 4H17C18.6569 4 20 5.34315 20 7V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V7C4 5.34315 5.34315 4 7 4H8.53513ZM8 6H7C6.44772 6 6 6.44772 6 7V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7C18 6.44772 17.5523 6 17 6H16C16 7.10457 15.1046 8 14 8H10C8.89543 8 8 7.10457 8 6Z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        }
-                                    </span>
+                                  @if (messageCopied().includes(message.id)) {
+                                    <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                        transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
+                                    >
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" class="icon-md">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                          d="M18.0633 5.67375C18.5196 5.98487 18.6374 6.607 18.3262 7.06331L10.8262 18.0633C10.6585 18.3093 10.3898 18.4678 10.0934 18.4956C9.79688 18.5234 9.50345 18.4176 9.29289 18.2071L4.79289 13.7071C4.40237 13.3166 4.40237 12.6834 4.79289 12.2929C5.18342 11.9023 5.81658 11.9023 6.20711 12.2929L9.85368 15.9394L16.6738 5.93664C16.9849 5.48033 17.607 5.36263 18.0633 5.67375Z"
+                                          fill="currentColor">
+                                        </path>
+                                      </svg>
+                                    </button>
+                                  } @else {
+                                    <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                      transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
+                                      [matTooltip]="'Copilot.Copy' | translate: {Default: 'Copy'}"
+                                      (click)="copyMessage(message)">
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4C10.8954 4 10 4.89543 10 6H14C14 4.89543 13.1046 4 12 4ZM8.53513 4C9.22675 2.8044 10.5194 2 12 2C13.4806 2 14.7733 2.8044 15.4649 4H17C18.6569 4 20 5.34315 20 7V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V7C4 5.34315 5.34315 4 7 4H8.53513ZM8 6H7C6.44772 6 6 6.44772 6 7V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7C18 6.44772 17.5523 6 17 6H16C16 7.10457 15.1046 8 14 8H10C8.89543 8 8 7.10457 8 6Z" fill="currentColor"></path>
+                                      </svg>
+                                    </button>
+                                  }
+
+                                @if (conversation.command?.revert) {
+                                  <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                    transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
+                                    [matTooltip]="'Copilot.Revert' | translate: {Default: 'Revert'}"
+                                    (click)="conversation.command.revert(message.historyCursor)">
+                                    <svg width="24" height="24" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" class="icon-md">
+                                      <defs></defs>
+                                      <path fill="currentColor" d="M 454.773 346.315 C 442.015 227.344 354.517 135.227 248.471 135.227 C 197.384 135.27 148.054 156.727 109.563 195.654 L 109.563 162.034 C 109.563 141.437 90.318 128.503 74.908 138.824 C 67.772 143.622 63.33 152.486 63.33 162.034 L 63.33 269.227 C 63.33 284.047 73.685 296.037 86.445 296.037 L 179.161 296.037 C 196.936 296.037 208.027 273.725 199.139 255.823 C 195.019 247.559 187.397 242.463 179.161 242.463 L 133.944 242.463 C 164.687 208.072 205.742 188.887 248.471 188.844 C 329.973 188.844 398.756 259.163 408.946 352.954 C 410.744 373.509 431.006 384.088 445.44 372.012 C 452.449 366.142 456.079 356.25 454.773 346.315 M 62.188 376.634" style=""></path>
+                                    </svg>
+                                  </button>
+                                }
                                     
-                                    <!-- <span class="" data-state="closed">
-                                        <button class="p-1 rounded-md text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
-                                        text-neutral-400 hover:text-neutral-900 transition-colors duration-100 dark:hover:text-neutral-300"
-                                        [matTooltip]="'Ngm.Copilot.Regenerate' | translate: {Default: 'Regenerate'}"
-                                        (click)="regenerate(message)"
-                                        >
-                                            <div class="flex items-center gap-1.5 text-xs">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 2.5C5.05228 2.5 5.5 2.94772 5.5 3.5V5.07196C7.19872 3.47759 9.48483 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C7.1307 21.5 3.11828 17.8375 2.565 13.1164C2.50071 12.5679 2.89327 12.0711 3.4418 12.0068C3.99033 11.9425 4.48712 12.3351 4.5514 12.8836C4.98798 16.6089 8.15708 19.5 12 19.5C16.1421 19.5 19.5 16.1421 19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C9.7796 4.5 7.7836 5.46469 6.40954 7H9C9.55228 7 10 7.44772 10 8C10 8.55228 9.55228 9 9 9H4.5C3.96064 9 3.52101 8.57299 3.50073 8.03859C3.49983 8.01771 3.49958 7.99677 3.5 7.9758V3.5C3.5 2.94772 3.94771 2.5 4.5 2.5Z" fill="currentColor"></path></svg>
-                                            </div>
-                                        </button>
-                                    </span> -->
+                              <!-- <span class="" data-state="closed">
+                                  <button class="p-1 rounded-md text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
+                                  text-neutral-400 hover:text-neutral-900 transition-colors duration-100 dark:hover:text-neutral-300"
+                                  [matTooltip]="'Copilot.Regenerate' | translate: {Default: 'Regenerate'}"
+                                  (click)="regenerate(message)"
+                                  >
+                                      <div class="flex items-center gap-1.5 text-xs">
+                                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 2.5C5.05228 2.5 5.5 2.94772 5.5 3.5V5.07196C7.19872 3.47759 9.48483 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C7.1307 21.5 3.11828 17.8375 2.565 13.1164C2.50071 12.5679 2.89327 12.0711 3.4418 12.0068C3.99033 11.9425 4.48712 12.3351 4.5514 12.8836C4.98798 16.6089 8.15708 19.5 12 19.5C16.1421 19.5 19.5 16.1421 19.5 12C19.5 7.85786 16.1421 4.5 12 4.5C9.7796 4.5 7.7836 5.46469 6.40954 7H9C9.55228 7 10 7.44772 10 8C10 8.55228 9.55228 9 9 9H4.5C3.96064 9 3.52101 8.57299 3.50073 8.03859C3.49983 8.01771 3.49958 7.99677 3.5 7.9758V3.5C3.5 2.94772 3.94771 2.5 4.5 2.5Z" fill="currentColor"></path></svg>
+                                      </div>
+                                  </button>
+                              </span> -->
                                 </div>
                               }
                             </div>
@@ -159,11 +171,11 @@
                                         <div class="flex items-center gap-1 mt-2">
                                           <button mat-stroked-button class="ngm-copilot__resubmit" displayDensity="compact"
                                             (click)="cancelMessageContent(msgContent)">
-                                            {{ 'Ngm.Copilot.Cancel' | translate: {Default: 'Cancel'} }}
+                                            {{ 'Copilot.Cancel' | translate: {Default: 'Cancel'} }}
                                           </button>
                                           <button mat-flat-button class="ngm-copilot__resubmit" color="primary" displayDensity="compact"
                                               (click)="resubmitMessage(msgContent, conversation.id, message, msgContent.textContent)">
-                                              {{ 'Ngm.Copilot.Update' | translate: {Default: 'Update'} }}
+                                              {{ 'Copilot.Update' | translate: {Default: 'Update'} }}
                                           </button>
                                         </div>
                                       }
@@ -207,11 +219,11 @@
       @if (!conversations()?.length) {
         <div class="absolute top-0 bottom-0 w-full p-4 flex flex-col justify-center items-center gap-1">
           <div @fadeAnimation class="text-xl drop-shadow-md mb-4">
-            <span class="text-xl">💡</span>{{ 'Ngm.Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
+            <span class="text-xl">💡</span>{{ 'Copilot.AskAICopilot' | translate: {Default: 'Ask AI Copilot Questions'} }}
           </div>
 
           @if (roles()) {
-            <label @fadeAnimation>{{'Ngm.Copilot.PleaseSelectBusinessRole' | translate: {Default: 'Please select a business role'} }}</label>
+            <label @fadeAnimation>{{'Copilot.PleaseSelectBusinessRole' | translate: {Default: 'Please select a business role'} }}</label>
             <mat-chip-listbox class="ngm-copilot-chat__roles mb-4" [(ngModel)]="role">
               @for (item of roles(); track $index) {
                 <mat-chip-option @fadeAnimation [selected]="role() === item.name" [value]="item.name"
@@ -256,7 +268,7 @@
       <div class="ngm-colpilot__input-wrapper mt-2 relative flex">
         <textarea #userInput matInput class="ngm-colpilot__input w-full h-full px-1.5 z-10 resize-none overflow-visible"
           id="userInput" onInput="this.parentNode.dataset.replicatedValue = this.value"
-          [placeholder]="_placeholder || (('Ngm.Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Ngm.Copilot.SendPrompt' | translate: {Default: 'send prompt'}))"
+          [placeholder]="_placeholder || (('Copilot.Placeholder' | translate: {Default: 'Ask Copilot or type / for commands'}) + '\nEnter ' + ('Copilot.SendPrompt' | translate: {Default: 'send prompt'}))"
           [formControl]="promptControl"
           (keydown)="triggerFun($event, autoPrompts)"
 
@@ -394,7 +406,7 @@
 @if (!copilotEnabled()) {
   <ngm-copilot-enable class="z-[101]"
     [title]="welcomeTitle || 'Metad Copilot'"
-    [subTitle]="welcomeSubTitle || ('Ngm.Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
+    [subTitle]="welcomeSubTitle || ('Copilot.YourAIPairProgrammer' | translate: {Default: 'Your AI pair programmer'})"
     (toConfig)="onEnableCopilot()"/>
 }
 
@@ -403,12 +415,12 @@
         dark:bg-gray-800/20 dark:border-gray-700 bg-white/60 backdrop-blur-lg"
         displayDensity="compact">
         <div class="text-base mb-2">
-            {{ 'Ngm.Copilot.Options' | translate: {Default: 'Options'} }}
+            {{ 'Copilot.Options' | translate: {Default: 'Options'} }}
         </div>
 
         <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
             <label class="shrink-0">
-                {{ 'Ngm.Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
+                {{ 'Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
             </label>
 
             <ngm-search class="flex-1" [formControl]="searchModel"/>
@@ -444,7 +456,7 @@
         <mat-checkbox [(ngModel)]="verbose" color="accent" labelPosition="before">Verbose</mat-checkbox>
 
         <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages mt-4" (click)="clear()">
-            {{ 'Ngm.Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
+            {{ 'Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
         </button>
     </div>
 </popper-content>

@@ -12,7 +12,7 @@ export function injectCommonCommands(copilotEngine: Signal<CopilotEngine>) {
   return [
     injectCopilotCommand({
       name: 'clear',
-      description: translate.instant('Ngm.Copilot.ClearConversation', { Default: 'Clear conversation' }),
+      description: translate.instant('Copilot.ClearConversation', { Default: 'Clear conversation' }),
       implementation: async () => {
         copilotEngine().clear()
       }
@@ -20,7 +20,7 @@ export function injectCommonCommands(copilotEngine: Signal<CopilotEngine>) {
 
     injectCopilotCommand('help', {
       alias: '?',
-      description: translate.instant('Ngm.Copilot.Help', { Default: 'Help' }),
+      description: translate.instant('Copilot.Help', { Default: 'Help' }),
       agent: {
         type: CopilotAgentType.LangChain,
         conversation: true

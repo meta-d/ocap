@@ -9,13 +9,13 @@
     
     @if (copilotConfig?.enabled && !copilotConfig?.apiKey) {
     <div class="text-red-400">
-        {{ 'Ngm.Copilot.ProvideOpenaiApiKey' | translate: {Default: 'Please provide openai api key!'} }}
+        {{ 'Copilot.ProvideOpenaiApiKey' | translate: {Default: 'Please provide openai api key!'} }}
     </div>
     }
     
     <button mat-stroked-button (click)="navigateToConfig()">
         <div class="flex items-center">
-            {{ 'Ngm.Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
+            {{ 'Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
             <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">arrow_forward</mat-icon>
         </div>
     </button>

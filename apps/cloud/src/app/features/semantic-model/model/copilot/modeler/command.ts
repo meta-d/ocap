@@ -1,5 +1,4 @@
-import { inject } from '@angular/core'
-import { Runnable } from '@langchain/core/runnables'
+import { inject, signal } from '@angular/core'
 import { ChatOpenAI } from '@langchain/openai'
 import { CopilotAgentType } from '@metad/copilot'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
@@ -27,6 +26,12 @@ export function injectModelerCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true
+    },
+    historyCursor: () => {
+      return modelService.getHistoryCursor()
+    },
+    revert: async (index: number) => {
+      modelService.gotoHistoryCursor(index)
     },
     createGraph: async (llm: ChatOpenAI) => {
       const dimensionModelerAgent = await dimensionModeler(llm)

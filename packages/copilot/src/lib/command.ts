@@ -66,6 +66,10 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
   }
 
   createGraph?: (llm: ChatOpenAI) => Promise<StateGraph<unknown>>
+
+  // For history management
+  historyCursor?: () => number
+  revert?: (index: number) => Promise<void>
 }
 
 /**

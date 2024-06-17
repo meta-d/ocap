@@ -117,11 +117,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   })
 
   readonly currentConversation = computed(() => this.conversations$()[this.conversations$().length - 1])
-  readonly currentCommand = computed(() => {
-    const command = this.currentConversation()?.command
-    const commands = this.commands()
-    return commands.find((c) => c.name === command)
-  })
+  readonly currentCommand = computed(() => this.currentConversation()?.command)
   readonly currentConversationId = computed(() => this.currentConversation()?.id)
 
   readonly chatHistoryMessages = computed(() => {
@@ -212,7 +208,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
 
     if (command && commandWithContext?.command) {
-      this.upsertConversation('command', command)
+      this.upsertConversation('command', commandWithContext.command)
 
       const _command = commandWithContext.command
 
@@ -569,7 +565,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       id: assistantId,
       role: CopilotChatMessageRoleEnum.Assistant,
       content: '',
-      status: 'thinking'
+      status: 'thinking',
+      historyCursor: command.historyCursor?.()
     })
 
     // Remove thinking message when abort
@@ -780,13 +777,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
     return nanoid()
   }
 
-  newConversation(type: CopilotChatConversation['type'], command: string) {
+  newConversation(type: CopilotChatConversation['type'], command: CopilotCommand) {
     const conversation = this.#newConversation(type, command)
     this.#conversationId.set(conversation.id)
     this.conversations$.update((conversations) => [...conversations, conversation])
   }
 
-  #newConversation(type: CopilotChatConversation['type'], command: string): CopilotChatConversation {
+  #newConversation(type: CopilotChatConversation['type'], command: CopilotCommand): CopilotChatConversation {
     return {
       id: nanoid(),
       messages: [],
@@ -795,7 +792,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  upsertConversation(type: CopilotChatConversation['type'], command: string) {
+  upsertConversation(type: CopilotChatConversation['type'], command: CopilotCommand) {
     const conversations = this.conversations$()
     const lastConversation = conversations[conversations.length - 1]
     if (lastConversation?.type) {

@@ -271,6 +271,14 @@ export class SemanticModelService {
     // this.#stateHistory.resume()
   }
 
+  getHistoryCursor() {
+    return this.#stateHistory.getPast().length
+  }
+
+  gotoHistoryCursor(index: number) {
+    this.#stateHistory.jumpToPast(index)
+  }
+
   undo() {
     this.#stateHistory.undo()
   }
@@ -321,6 +329,7 @@ export class SemanticModelService {
               // this.updateModel({roles: sortBy(model.roles, 'index')})
               // this._saved$.next()
               this.resetPristine()
+              this.clearDirty()
               this.dataSource$.value?.clearCache()
               // Register model after saved to refresh metadata of entity
               this.registerModel()
@@ -375,11 +384,6 @@ export class SemanticModelService {
   setCrrentEntity(id: string) {
     this.currentEntity.set(id)
   }
-
-  // private readonly _resetDirty = this.updater((state) => {
-  //   state.dimensions.forEach((dimension) => (dimension.dirty = false))
-  //   state.cubes.forEach((cube) => (cube.dirty = false))
-  // })
 
   /**
    * 激活(打开) Entity
@@ -838,6 +842,10 @@ export class SemanticModelService {
       ...state,
       [id]: dirty
     }))
+  }
+
+  clearDirty() {
+    this.dirty.set({})
   }
 }
 

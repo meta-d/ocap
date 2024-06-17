@@ -178,7 +178,7 @@ export class NgmCopilotChatComponent {
       id: '',
       messages: PlaceholderMessages,
       type: 'free',
-      command: ''
+      command: null
     }
   ]
 

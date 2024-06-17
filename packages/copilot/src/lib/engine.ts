@@ -22,7 +22,7 @@ export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMe
   /**
    * Command of this conversation
    */
-  command: string
+  command: CopilotCommand
 }
 
 /**
