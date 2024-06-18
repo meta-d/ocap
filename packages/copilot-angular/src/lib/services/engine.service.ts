@@ -462,16 +462,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
         switch (command.agent.type) {
           case CopilotAgentType.Default: {
-            const agent: any = await createOpenAIToolsAgent({
+            const agent = await createOpenAIToolsAgent({
               llm,
               tools: command.tools,
               prompt: command.prompt
             })
             chain = new AgentExecutor({
               agent,
-              tools: command.tools as any[],
+              tools: command.tools,
               verbose
-            })
+            }) as unknown as Runnable
             break
           }
           case CopilotAgentType.LangChain: {
