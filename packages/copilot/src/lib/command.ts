@@ -10,6 +10,10 @@ import { CopilotChatMessage } from './types/types'
  */
 export interface CopilotCommand<Inputs extends any[] = any[]> {
   /**
+   * Hidden for debug
+   */
+  hidden?: boolean
+  /**
    * Full name of the command
    */
   name?: string

@@ -48,16 +48,18 @@ export async function createModelerGraph({
   dimensionModeler,
   cubeModeler,
   selectTablesTool,
+  queryTablesTool,
   dimensions
 }: {
   llm: ChatOpenAI
   dimensionModeler: Runnable
   cubeModeler: Runnable
   selectTablesTool: DynamicStructuredTool
+  queryTablesTool: DynamicStructuredTool
   dimensions: Signal<PropertyDimension[]>
 }) {
   const supervisorNode = await createSupervisor(llm, [PLANNER_NAME, DIMENSION_MODELER_NAME, CUBE_MODELER_NAME])
-  const planner = await createModelerPlanner({ llm, selectTablesTool, dimensions })
+  const planner = (await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions })).compile()
 
   async function runPlanner(state: State): Promise<any> {
     const plan = await planner.invoke({ objective: state.messages.map((m) => m.content).join('\n') })

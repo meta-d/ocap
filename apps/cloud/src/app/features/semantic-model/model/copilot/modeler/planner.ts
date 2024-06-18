@@ -3,7 +3,7 @@ import { AIMessage, BaseMessage, isAIMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool, StructuredTool } from '@langchain/core/tools'
-import { ToolNode } from '@langchain/langgraph/prebuilt'
+import { ToolNode, createReactAgent } from '@langchain/langgraph/prebuilt'
 import { CompiledStateGraph, END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { PropertyDimension } from '@metad/ocap-core'
@@ -20,30 +20,35 @@ const plan = zodToJsonSchema(
 export async function createModelerPlanner({
   llm,
   selectTablesTool,
+  queryTablesTool,
   dimensions
 }: {
   llm: ChatOpenAI
   selectTablesTool: DynamicStructuredTool
+  queryTablesTool: DynamicStructuredTool
   dimensions: Signal<PropertyDimension[]>
 }) {
-  const tools = [selectTablesTool as any]
+  const tools = [selectTablesTool as any, queryTablesTool as any]
 
   const plannerPrompt = await ChatPromptTemplate.fromMessages([
     ['system', `You are a cube modeler for data analysis, now you need create a plan for the final goal.` +
-      ` For the given tables if use provided, think about which of them are tables used to create shared dimensions and fact tables used for cubes.` +
+      ` If user-provided tables, consider which of them are used to create shared dimensions and which are used to create cubes.` +
       ` Or use the 'selectTables' tool to get all tables then select the required physical tables from them.` +
       ` If the dimension required for modeling is in the following existing shared dimensions, please do not put it in the plan, just use it directly in the cube creation task` +
       ` Each step of the plan corresponds to one of the tasks 'Create a shared dimension' and 'Create a cube'. ` +
       ' This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps.' +
       ' The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.\n\n' +
       `Objective is: {objective}`],
-    ['user', `Existing shared dimensions: \n{dimensions}\n`]
+    ['user', `{dimensions}`]
   ]).partial({
-    dimensions: () =>
-      dimensions()
+    dimensions: () => dimensions().length ? 
+      `Existing shared dimensions:\n` + dimensions()
         .map((d) => `- name: ${d.name}\n  caption: ${d.caption || ''}`)
         .join('\n')
+        : `There are no existing shared dimensions.`
   })
+
+  // return createReactAgent({ llm: llm as any, tools, messageModifier: plannerPrompt})
 
   return createPlannerReactAgent({ llm, tools, systemMessage: plannerPrompt })
 }
@@ -52,7 +57,7 @@ export function createPlannerReactAgent(props: {
   llm: ChatOpenAI
   tools: StructuredTool[]
   systemMessage: ChatPromptTemplate
-}): CompiledStateGraph<IPlanState, Partial<IPlanState>, typeof START | 'agent' | 'tools'> {
+}) {
   const { llm, tools, systemMessage } = props
 
   const schema: StateGraphArgs<IPlanState>['channels'] = {
@@ -134,7 +139,7 @@ export function createPlannerReactAgent(props: {
   // meaning you can use it as you would any other runnable
   const app = workflow.compile()
 
-  return app
+  return workflow
 }
 
 export function getPlanFromState(state: IPlanState) {
@@ -145,78 +150,3 @@ export function getPlanFromState(state: IPlanState) {
 
   throw new Error('No plan found in last message.')
 }
-
-// export async function createPlannerAgent({
-//   llm,
-//   selectTablesTool
-// }: {
-//   llm: ChatOpenAI
-//   selectTablesTool: DynamicStructuredTool
-// }) {
-//   const tools = [selectTablesTool as any]
-
-//   return createReactAgent({
-//     llm: llm as any,
-//     tools,
-//     systemMessage: new SystemMessage(
-//       )
-//   })
-// }
-
-// export function createReactAgent({ llm, tools, systemMessage }) {
-//   const schema: StateGraphArgs<IGraphState>['channels'] = {
-//     messages: {
-//       value: (left: BaseMessage[], right: BaseMessage[]) => left.concat(right),
-//       default: () => []
-//     }
-//   }
-
-//   const modelWithTools = llm.bindTools(tools)
-
-//   const modelRunnable = _createModelWrapper(modelWithTools, {
-//     systemMessage
-//   })
-
-//   const shouldContinue = (state: IGraphState) => {
-//     const { messages } = state
-//     const lastMessage = messages[messages.length - 1]
-//     if (isAIMessage(lastMessage) && (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0)) {
-//       return END
-//     } else {
-//       return 'continue'
-//     }
-//   }
-
-//   const callModel = async (state: IGraphState) => {
-//     const { messages } = state
-//     // TODO: Auto-promote streaming.
-//     return { messages: [await modelRunnable.invoke(messages)] }
-//   }
-
-//   const workflow = new StateGraph<IGraphState>({
-//     channels: schema
-//   })
-//     .addNode('agent', new RunnableLambda({ func: callModel }).withConfig({ runName: 'agent' }) as any)
-//     .addNode('tools', new ToolNode<IGraphState>(tools).pipe((state) => state))
-//     .addEdge(START, 'agent')
-//     .addConditionalEdges('agent', shouldContinue, {
-//       continue: 'tools',
-//       [END]: END
-//     })
-//     .addEdge('tools', 'agent')
-
-//   return workflow.compile({})
-// }
-
-// function _createModelWrapper(
-//   modelWithTools: RunnableInterface<BaseLanguageModelInput, BaseMessageChunk, BaseLanguageModelCallOptions>,
-//   { systemMessage }
-// ) {
-//   const endict = new RunnableLambda({
-//     func: (messages: BaseMessage[]) => ({ messages })
-//   })
-
-//   const prompt = ChatPromptTemplate.fromMessages([systemMessage, ['placeholder', '{messages}']])
-
-//   return endict.pipe(prompt).pipe(modelWithTools)
-// }

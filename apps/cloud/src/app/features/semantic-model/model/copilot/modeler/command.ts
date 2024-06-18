@@ -9,7 +9,8 @@ import { SemanticModelService } from '../../model.service'
 import { injectCubeModeler } from '../cube/graph'
 import { injectDimensionModeler } from '../dimension/graph'
 import { createModelerGraph } from './graph'
-import { injectSelectTablesTool } from './tools'
+import { injectQueryTablesTool, injectSelectTablesTool } from './tools'
+import { createModelerPlanner } from './planner'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -19,11 +20,24 @@ export function injectModelerCommand() {
   const createDimensionModeler = injectDimensionModeler()
   const createCubeModeler = injectCubeModeler()
   const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
 
   const dimensions = modelService.dimensions
 
-  const commandName = 'modeler'
+  injectCopilotCommand('plan', {
+    hidden: true,
+    alias: 'p',
+    description: 'Plan command for semantic model',
+    agent: {
+      type: CopilotAgentType.Graph,
+      conversation: true
+    },
+    createGraph: async (llm: ChatOpenAI) => {
+      return await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions }) as unknown as StateGraph<unknown>
+    }
+  })
 
+  const commandName = 'modeler'
   return injectCopilotCommand(commandName, {
     alias: 'm',
     description: 'Modeling command for semantic model',
@@ -45,6 +59,7 @@ export function injectModelerCommand() {
         dimensionModeler,
         cubeModeler,
         selectTablesTool,
+        queryTablesTool,
         dimensions
       })) as unknown as StateGraph<unknown>
     }

@@ -663,7 +663,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       }
     }, { allowSignalWrites: true })
 
-    effect(() => console.log(this._entityType(), this.measures()))
+    // effect(() => console.log(this._entityType(), this.measures()))
   }
 
   writeValue(obj: any): void {

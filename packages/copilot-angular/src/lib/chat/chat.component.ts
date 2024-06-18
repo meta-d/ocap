@@ -372,7 +372,7 @@ export class NgmCopilotChatComponent {
   readonly commands = computed<Array<CopilotCommand & { example: string }>>(() => {
     if (this.copilotEngine?.commands && this.isTools()) {
       const commands = []
-      this.copilotEngine.commands().forEach((command) => {
+      this.copilotEngine.commands().filter((c) => !c.hidden).forEach((command) => {
         if (command.examples?.length) {
           command.examples.forEach((example) => {
             commands.push({
