@@ -11,8 +11,8 @@ import { injectSelectTablesTool, injectQueryTablesTool } from '../tools'
 
 export const CreateDimensionSystemPrompt =
   `You are a cube modeling expert. Let's create a shared dimension for cube!` + 
-  ` If the user does not provide a dimension table, use selectTablesTool to get the table, and then select a table related to the requirement to create a dimension.` + 
-  ` If the user does not provide the table field information, use the queryTables tool to obtain the table field structure.` + 
+  ` If the user does not provide a dimension table, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a dimension.` + 
+  ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` + 
   '\n' + timeLevelFormatter() + 
   `\n{system_prompt}`
 

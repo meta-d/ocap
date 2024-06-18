@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, OnDestroy, inject } from '@angular/core'
+import { Injectable, OnDestroy, inject, signal } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatConversation } from '@metad/copilot'
@@ -39,6 +39,8 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
     return Object.values(this.dirty).some((value) => value)
   }
 
+  readonly currentQuery = signal<string>(null)
+
   public readonly queries$ = this.select((state) =>
     Object.values(state.queries)
       .filter(Boolean)
@@ -50,6 +52,7 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   }
 
   selectQuery(key: string) {
+    this.currentQuery.set(key)
     return this.select((state) => state.queries[key])
   }
 
@@ -99,7 +102,8 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
   }
 
   readonly addEntity = this.updater(
-    (state, { key, entity, currentIndex }: { key: string; entity: string; currentIndex?: number }) => {
+    (state, { key, entity, currentIndex }: { key?: string; entity: string; currentIndex?: number }) => {
+      key ??= this.currentQuery()
       const query = state.queries[key].query
       query.entities = query.entities ?? []
       if (entity && query.entities.indexOf(entity) === -1) {

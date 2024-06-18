@@ -157,7 +157,6 @@
                     <ngm-sql-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
-                        [actions]="sqlEditorActions"
                         [(ngModel)]="statement"
                         [disabled]="answering()"
                         (selectionChange)="onSelectionChange($event)"
