@@ -570,8 +570,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
     })
 
     // Remove thinking message when abort
+    const abort = signal(false)
     const removeMessageWhenAbort = () => {
       this.stopMessage(assistantId)
+      abort.set(true)
     }
     abortController.signal.addEventListener('abort', removeMessageWhenAbort)
     // --------------------------
@@ -627,6 +629,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
               content: verboseContent,
               status: 'thinking',
             })
+          }
+          if (abort()) {
+            break
           }
         }
       }

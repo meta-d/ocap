@@ -641,7 +641,7 @@ export class NgmCopilotChatComponent {
     if (event.key === 'Tab') {
       event.preventDefault()
       if (this.promptCompletion()) {
-        this.promptControl.setValue(this.promptControl.value + this.promptCompletion())
+        this.promptControl.setValue(this.promptControl.value.trimEnd() + ' ' + this.promptCompletion())
       } else {
         if (this.#activatedPrompt()) {
           this.promptControl.setValue(this.#activatedPrompt())

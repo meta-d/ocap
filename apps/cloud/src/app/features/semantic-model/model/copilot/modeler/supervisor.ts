@@ -1,9 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { CUBE_MODELER_NAME } from '../cube/graph'
-import { DIMENSION_MODELER_NAME } from '../dimension/graph'
 import { createTeamSupervisor } from '../langgraph-helper-utilities'
 import { PLANNER_NAME } from './types'
-
 
 export async function createSupervisor(llm: ChatOpenAI, tools: string[]) {
   const supervisorNode = await createTeamSupervisor(
@@ -16,9 +13,8 @@ export async function createSupervisor(llm: ChatOpenAI, tools: string[]) {
       ' step task and respond with their results and status. When finished,' +
       ' respond with FINISH.\n\n' +
       'Current plan is {plan}.\n\n' +
-      ' Select strategically to minimize the number of steps taken.'
-      
-      ,
+      ' Select strategically to minimize the number of steps taken.',
+
     tools
   )
 

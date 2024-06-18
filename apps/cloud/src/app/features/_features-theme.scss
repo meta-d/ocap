@@ -77,29 +77,29 @@ $sidebar-collapsed-width: 40px;
     box-shadow: 0 0.3px 0.9px #0000001c, 0 1.6px 3.6px #0002;
   }
 
-  .pac-app__page-outlet.mat-drawer-content {
-    display: flex;
-    flex: 1;
-    // height: calc(100vh - #{$shell-bar-height} - #{$status-bar-height});
-    position: relative;
-    // overflow: auto;
-    overflow: hidden;
+  // .pac-app__page-outlet.mat-drawer-content {
+  //   display: flex;
+  //   flex: 1;
+  //   // height: calc(100vh - #{$shell-bar-height} - #{$status-bar-height});
+  //   position: relative;
+  //   // overflow: auto;
+  //   overflow: hidden;
 
-    /* 所有的 toolbar 都不设置高度 */
-    .mat-toolbar-row, .pac__toolbar.mat-toolbar-single-row {
-      height: unset;
-      font-size: 1rem;
-      min-height: var(--header-toolbar-height);
-    }
+  //   /* 所有的 toolbar 都不设置高度 */
+  //   .mat-toolbar-row, .pac__toolbar.mat-toolbar-single-row {
+  //     height: unset;
+  //     font-size: 1rem;
+  //     min-height: var(--header-toolbar-height);
+  //   }
 
-    .pac-app__spinner {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-  }
+  //   .pac-app__spinner {
+  //     position: absolute;
+  //     top: 0;
+  //     left: 0;
+  //     width: 100%;
+  //     height: 100%;
+  //   }
+  // }
 
   .cdk-overlay-container .ant-menu-submenu-popup > .ant-menu {
     background-color: mat.get-color-from-palette($primary, 900);
