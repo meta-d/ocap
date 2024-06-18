@@ -12,17 +12,17 @@ import { MatIconModule } from '@angular/material/icon'
 })
 export class NgmDrawerComponent {
   readonly opened = model<boolean>()
-  readonly mode = input<'over' | 'push' | 'side'>('side')
+  // readonly mode = input<'over' | 'push' | 'side'>('side')
 
   @HostBinding('class.opened')
   get _opened() {
     return this.opened()
   }
 
-  @HostBinding('class.over')
-  get _over() {
-    return this.mode() === 'over'
-  }
+  // @HostBinding('class.over')
+  // get _over() {
+  //   return this.mode() === 'over'
+  // }
 
   toggle() {
     this.opened.update((opened) => !opened)
