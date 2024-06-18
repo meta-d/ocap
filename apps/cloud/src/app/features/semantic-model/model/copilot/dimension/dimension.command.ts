@@ -7,9 +7,14 @@ import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectCreateDimensionTool } from './tools'
 import { timeLevelFormatter } from './types'
+import { injectSelectTablesTool, injectQueryTablesTool } from '../tools'
 
-export const systemPrompt =
-  `You are a cube modeling expert. Let's create a shared dimension for cube!\n` + timeLevelFormatter() + `\n{system_prompt}`
+export const CreateDimensionSystemPrompt =
+  `You are a cube modeling expert. Let's create a shared dimension for cube!` + 
+  ` If the user does not provide a dimension table, use selectTablesTool to get the table, and then select a table related to the requirement to create a dimension.` + 
+  ` If the user does not provide the table field information, use the queryTables tool to obtain the table field structure.` + 
+  '\n' + timeLevelFormatter() + 
+  `\n{system_prompt}`
 
 export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -17,6 +22,8 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const modelService = inject(SemanticModelService)
   const copilotService = inject(NgmCopilotService)
 
+  const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
   const createDimensionTool = injectCreateDimensionTool()
 
   const systemContext = async () => {
@@ -45,10 +52,16 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
       return {
         alias: 'd',
         description: 'New or edit dimension',
+        historyCursor: () => {
+          return modelService.getHistoryCursor()
+        },
+        revert: async (index: number) => {
+          modelService.gotoHistoryCursor(index)
+        },
         agent: {
           type: CopilotAgentType.Default
         },
-        tools: [createDimensionTool],
+        tools: [selectTablesTool, queryTablesTool, createDimensionTool],
         prompt
       }
     })()

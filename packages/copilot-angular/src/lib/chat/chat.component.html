@@ -90,11 +90,11 @@
                                     </button>
                                   }
 
-                                @if (conversation.command?.revert) {
+                                @if (conversation.command?.revert && !message.reverted) {
                                   <button class="flex items-center gap-1.5 rounded-md p-1 text-xs text-token-text-tertiary hover:text-token-text-primary md:invisible md:group-hover:visible md:group-[.final-completion]:visible
                                     transition-colors duration-100 text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300"
                                     [matTooltip]="'Copilot.Revert' | translate: {Default: 'Revert'}"
-                                    (click)="conversation.command.revert(message.historyCursor)">
+                                    (click)="revert(conversation.command, message)">
                                     <svg width="24" height="24" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" class="icon-md">
                                       <defs></defs>
                                       <path fill="currentColor" d="M 454.773 346.315 C 442.015 227.344 354.517 135.227 248.471 135.227 C 197.384 135.27 148.054 156.727 109.563 195.654 L 109.563 162.034 C 109.563 141.437 90.318 128.503 74.908 138.824 C 67.772 143.622 63.33 152.486 63.33 162.034 L 63.33 269.227 C 63.33 284.047 73.685 296.037 86.445 296.037 L 179.161 296.037 C 196.936 296.037 208.027 273.725 199.139 255.823 C 195.019 247.559 187.397 242.463 179.161 242.463 L 133.944 242.463 C 164.687 208.072 205.742 188.887 248.471 188.844 C 329.973 188.844 398.756 259.163 408.946 352.954 C 410.744 373.509 431.006 384.088 445.44 372.012 C 452.449 366.142 456.079 356.25 454.773 346.315 M 62.188 376.634" style=""></path>

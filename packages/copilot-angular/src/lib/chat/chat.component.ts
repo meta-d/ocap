@@ -755,4 +755,9 @@ export class NgmCopilotChatComponent {
       this.autocompleteTrigger().openPanel()
     }
   }
+
+  async revert(command: CopilotCommand, message: CopilotChatMessage) {
+    await command.revert?.(message.historyCursor)
+    message.reverted = true
+  }
 }

@@ -439,7 +439,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
       id: assistantId,
       role: CopilotChatMessageRoleEnum.Assistant,
       content: '',
-      status: 'thinking'
+      status: 'thinking',
+      historyCursor: command.historyCursor?.()
     })
 
     // Remove thinking message when abort

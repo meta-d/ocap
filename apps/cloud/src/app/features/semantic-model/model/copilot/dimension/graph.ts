@@ -1,11 +1,11 @@
 import { inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
 import { ChatOpenAI } from '@langchain/openai'
 import { NgmCopilotService } from '@metad/copilot-angular'
 import { SemanticModelService } from '../../model.service'
 import { createCommandAgent } from '../langgraph-helper-utilities'
-import { systemPrompt } from './dimension.command'
+import { CreateDimensionSystemPrompt } from './dimension.command'
 import { injectCreateDimensionTool } from './tools'
+import { injectSelectTablesTool, injectQueryTablesTool } from '../tools'
 
 export const DIMENSION_MODELER_NAME = 'DimensionModeler'
 
@@ -13,6 +13,8 @@ export function injectDimensionModeler() {
   const copilotService = inject(NgmCopilotService)
   const modelService = inject(SemanticModelService)
   const createDimensionTool = injectCreateDimensionTool()
+  const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
 
   const dimensions = modelService.dimensions
 
@@ -28,7 +30,11 @@ export function injectDimensionModeler() {
   }
 
   return async (llm: ChatOpenAI) => {
-    const agent = await createCommandAgent(llm, [createDimensionTool], systemPrompt, systemContext)
+    const agent = await createCommandAgent(llm, [
+      selectTablesTool,
+      queryTablesTool,
+      createDimensionTool
+    ], CreateDimensionSystemPrompt, systemContext)
     return agent
   }
 }

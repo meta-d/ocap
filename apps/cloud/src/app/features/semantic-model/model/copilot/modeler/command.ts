@@ -9,7 +9,7 @@ import { SemanticModelService } from '../../model.service'
 import { injectCubeModeler } from '../cube/graph'
 import { injectDimensionModeler } from '../dimension/graph'
 import { createModelerGraph } from './graph'
-import { injectQueryTablesTool, injectSelectTablesTool } from './tools'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { createModelerPlanner } from './planner'
 
 export function injectModelerCommand() {

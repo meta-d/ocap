@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
-import { SemanticModelService } from '../../model.service'
+import { SemanticModelService } from '../model.service'
 
 export function injectSelectTablesTool() {
   const modelService = inject(SemanticModelService)
