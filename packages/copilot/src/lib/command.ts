@@ -8,7 +8,7 @@ import { CopilotChatMessage } from './types/types'
 /**
  * Copilot command, which can execute multiple actions.
  */
-export interface CopilotCommand<Inputs extends any[] = any[]> {
+export interface CopilotCommand<T = any> {
   /**
    * Hidden for debug
    */
@@ -46,7 +46,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * @param args
    * @returns
    */
-  implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
+  implementation?: (...args: T[]) => Promise<void | string | CopilotChatMessage>
   /**
    * @deprecated use `tools` instead
    */
@@ -69,7 +69,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
     conversation?: boolean
   }
 
-  createGraph?: (llm: ChatOpenAI) => Promise<StateGraph<unknown>>
+  createGraph?: (llm: ChatOpenAI) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
 
   // For history management
   historyCursor?: () => number

@@ -1,5 +1,4 @@
 import { inject } from '@angular/core'
-import { StateGraph } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { CopilotAgentType } from '@metad/copilot'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
@@ -8,8 +7,8 @@ import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectCubeModeler } from '../cube/graph'
 import { injectDimensionModeler } from '../dimension/graph'
-import { createModelerGraph } from './graph'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
+import { createModelerGraph } from './graph'
 import { createModelerPlanner } from './planner'
 
 export function injectModelerCommand() {
@@ -33,7 +32,7 @@ export function injectModelerCommand() {
       conversation: true
     },
     createGraph: async (llm: ChatOpenAI) => {
-      return await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions }) as unknown as StateGraph<unknown>
+      return await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions })
     }
   })
 
@@ -54,14 +53,14 @@ export function injectModelerCommand() {
     createGraph: async (llm: ChatOpenAI) => {
       const dimensionModeler = await createDimensionModeler(llm)
       const cubeModeler = await createCubeModeler(llm)
-      return (await createModelerGraph({
+      return await createModelerGraph({
         llm,
         dimensionModeler,
         cubeModeler,
         selectTablesTool,
         queryTablesTool,
         dimensions
-      })) as unknown as StateGraph<unknown>
+      })
     }
   })
 }

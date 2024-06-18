@@ -139,7 +139,7 @@
 
     <ngm-drawer-container class="flex-1 z-10" [mode]="isMobile() ? 'over' : 'side'"
       [(opened)]="copilotDrawerOpened">
-      <ngm-drawer-content class="flex-1 relative" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
+      <ngm-drawer-content class="flex-1 relative flex" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
         @if(copilotEnabled$()) {
           <ngm-drawer-trigger class="absolute -right-2 top-1/2 -translate-y-1/2 z-40" [(opened)]="copilotDrawerOpened" side="right"
             [matTooltip]="'PAC.Copilot.AICopilot' | translate: {Default: 'AI Copilot'}"

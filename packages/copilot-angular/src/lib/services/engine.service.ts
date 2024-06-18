@@ -19,7 +19,7 @@ import {
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { MemorySaver } from '@langchain/langgraph/web'
+import { BaseCheckpointSaver, MemorySaver } from '@langchain/langgraph/web'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { compact, flatten, pick } from 'lodash-es'
@@ -36,6 +36,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly #logger? = inject(NGXLogger, { optional: true })
   readonly copilot = inject(NgmCopilotService)
   readonly copilotContext = inject(NgmCopilotContextToken)
+  readonly checkpointSaver = inject(BaseCheckpointSaver)
 
   private api = signal('/api/chat')
   private chatId = `chat-${uniqueId++}`
@@ -135,7 +136,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly streamData = signal<JSONValue[] | undefined>(undefined)
   readonly isLoading = signal(false)
 
-  readonly agentMemory = new MemorySaver()
+  // readonly agentMemory = new MemorySaver()
 
   constructor() {
     //   effect(() => {
@@ -581,7 +582,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     
     const verbose = this.verbose()
     try {
-      const graph = (await command.createGraph(this.llm())).compile({ checkpointer: this.agentMemory })
+      const graph = (await command.createGraph(this.llm())).compile({ checkpointer: this.checkpointSaver })
 
       let verboseContent = ''
       const streamResults = await graph.stream(
