@@ -168,9 +168,9 @@ export class ModelDimensionService {
   public readonly newHierarchy = this.updater((state, nh?: Partial<PropertyHierarchy> | null) => {
     const id = nh?.__id__ ?? uuid()
     state.hierarchies.push({
-      __id__: id,
       caption: `New Hierarchy`,
-      ...(nh ?? {})
+      ...(nh ?? {}),
+      __id__: id
     } as PropertyHierarchy)
 
     this.navigateTo(id)
@@ -207,6 +207,23 @@ export class ModelDimensionService {
     })
   })
 
+  readonly upsertHierarchy = this.updater((state, hierarchy: Partial<PropertyHierarchy>) => {
+    let key = null
+    const index = state.hierarchies.findIndex((item) => item.name === hierarchy.name)
+    if (index > -1) {
+      state.hierarchies.splice(index, 1, {
+        ...state.hierarchies[index],
+        ...hierarchy
+      })
+      key = state.hierarchies[index].__id__
+    } else {
+      state.hierarchies.push({ ...hierarchy, __id__: hierarchy.__id__ ?? uuid() } as PropertyHierarchy)
+      key = state.hierarchies[state.hierarchies.length - 1].__id__
+    }
+
+    this.navigateTo(key)
+  })
+
   public readonly update = this.updater((state, d: PropertyDimension) => {
     assign(state, d)
   })
@@ -217,11 +234,9 @@ export class ModelDimensionService {
       switchMap(([id, dimension]) => {
         const hierarchy = dimension.hierarchies?.find((item) => item.__id__ === id)
         return this.settingsService
-          .openDesigner<{ modeling: {hierarchy: PropertyHierarchy; dimension: PropertyDimension } }>(
-            ModelDesignerType.hierarchy,
-            { modeling: { hierarchy, dimension: omit(dimension, 'hierarchies')}},
-            id
-          )
+          .openDesigner<{
+            modeling: { hierarchy: PropertyHierarchy; dimension: PropertyDimension }
+          }>(ModelDesignerType.hierarchy, { modeling: { hierarchy, dimension: omit(dimension, 'hierarchies') } }, id)
           .pipe(
             tap(({ modeling }) => {
               this.updateHierarchy({

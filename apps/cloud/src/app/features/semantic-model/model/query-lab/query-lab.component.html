@@ -20,7 +20,9 @@
       <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
         [matMenuTriggerFor]="menu"
         [matMenuTriggerData]="{key: query.key}"
-        >
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+      >
         <mat-icon>more_vert</mat-icon>
       </button>
       

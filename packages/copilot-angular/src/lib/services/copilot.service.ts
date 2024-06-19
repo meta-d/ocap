@@ -41,7 +41,7 @@ export class NgmCopilotService extends CopilotService {
   readonly roleDetail = computed(() => this.allRoles()?.find((role) => role.name === this.role()))
   readonly rolePrompt = computed(() => {
     const role = this.roleDetail()
-    return role ? `Your role is '${role.title}', and your responsibility is ${role.description};\n` : ''
+    return role ? `Your role is '${role.title}', and your responsibility is ${role.description}.` : ''
   })
 
   constructor() {

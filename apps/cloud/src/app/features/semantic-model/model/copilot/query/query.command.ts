@@ -2,7 +2,7 @@ import { Signal, WritableSignal, computed, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
-import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
+import { createAgentPromptTemplate, injectCopilotCommand } from '@metad/copilot-angular'
 import {
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
   createAgentStepsInstructions,
@@ -19,6 +19,7 @@ import { NGXLogger } from 'ngx-logger'
 import { ModelEntityService } from '../../entity/entity.service'
 import { SemanticModelService } from '../../model.service'
 import { injectSelectTablesTool } from '../tools'
+import { injectCopilotRoleContext } from '../types'
 import { injectCreateQueryTool, injectQueryTablesTool } from './tools'
 
 export function injectQueryCommand(
@@ -32,9 +33,9 @@ export function injectQueryCommand(
 ) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
-  const copilotService = inject(NgmCopilotService)
   const modelService = inject(SemanticModelService)
   const entityService = inject(ModelEntityService, { optional: true })
+  const copilotRoleContext = injectCopilotRoleContext()
 
   const selectTablesTool = injectSelectTablesTool()
   const queryTablesTool = injectQueryTablesTool()
@@ -82,50 +83,42 @@ export function injectQueryCommand(
       : `The database dialect is '${entityTypes[0]?.dialect}', the tables information are \n${_promptTables?.join('\n\n')}`
   })
 
-
-
   const systemContext = async () => {
     const { dialect, isMDX, entityTypes } = context()
 
-    let prompt = `${copilotService.rolePrompt()}`
-
-    prompt += isMDX
-      ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
-${makeCubeRulesPrompt()}
-
-The cube information is:
-
-${dbTablesPrompt()}
-
-Please provide the corresponding MDX statement for the given question.
-${
-  statement()
-    ? `Current statement: 
+    let prompt = ''
+    if (isMDX) {
+      prompt +=
+        `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.` +
+        makeCubeRulesPrompt() +
+        `The cube information is:` +
+        dbTablesPrompt() +
+        ` Please provide the corresponding MDX statement for the given question.`
+      if (statement()) {
+        prompt += `Current statement: 
 \`\`\`mdx
 ${statement()}
 \`\`\`
 `
-    : ''
-}
-`
-      : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
-The table information is:
+      }
+    } else {
+      prompt +=
+        `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.` +
+        ` The table information is:
 
 ${dbTablesPrompt()}
 
 Please provide the corresponding SQL statement for the given question.
-Note: Table fields are case-sensitive and should be enclosed in double quotation marks.
-
-${
-  statement()
-    ? `Current statement:
+Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`
+      if (statement()) {
+        prompt += `\nCurrent statement:
 \`\`\`sql
 ${statement()}
 \`\`\`
 `
-    : ''
-}
-`
+      }
+    }
+
     return prompt
   }
 
@@ -140,27 +133,24 @@ ${statement()}
   return injectCopilotCommand(
     commandName,
     (async () => {
-      const prompt =
-        await createAgentPromptTemplate(`You are a cube modeling expert. Let's create a query statement to query data!
-      ${
-        isMDX()
-          ? createAgentStepsInstructions(
-              PROMPT_RETRIEVE_DIMENSION_MEMBER,
-              `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 查询语句。`,
-              `最终调用 "createQuery" 工具来执行查询语句。`,
-              `得到查询结果后如果有错误则重新修正查询语句，直到得到正确的查询结果。`
-            )
-          : (
-            ` If the user does not provide a table, use 'selectTables' tool to get the table, and then select a table related to the requirement to query.` + 
-  ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.`
-          )
-      }
-      
-      {context}
-      
-      {system}`).partial({
-          system: systemContext
-        })
+      const prompt = await createAgentPromptTemplate(
+        `You are a cube modeling expert. Let's create a query statement to query data!` +
+          `\n{role}\n` +
+          (isMDX()
+            ? createAgentStepsInstructions(
+                PROMPT_RETRIEVE_DIMENSION_MEMBER,
+                `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 查询语句。`,
+                `最终调用 "createQuery" 工具来执行查询语句。`,
+                `得到查询结果后如果有错误则重新修正查询语句，直到得到正确的查询结果。`
+              )
+            : ` If the user does not provide a table, use 'selectTables' tool to get the table, and then select a table related to the requirement to query.` +
+              ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.`) +
+          `\n{context}\n` +
+          `{system}`
+      ).partial({
+        system: systemContext,
+        role: copilotRoleContext
+      })
 
       return {
         alias: 'q',
@@ -168,7 +158,8 @@ ${statement()}
           Default: 'Describe the data you want to query'
         }),
         agent: {
-          type: CopilotAgentType.Default
+          type: CopilotAgentType.Default,
+          conversation: true
         },
         tools,
         fewShotPrompt,

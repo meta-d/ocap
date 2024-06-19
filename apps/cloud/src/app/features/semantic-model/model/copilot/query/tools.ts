@@ -25,7 +25,7 @@ export function injectQueryTablesTool() {
         info +=
           `Columns of table '${table}':\n` +
           columns.map((t) => `- name: ${t.name}\n  caption: ${t.caption || ''}`).join('\n') +
-          '\n'
+          '\n\n'
       }
 
       return info

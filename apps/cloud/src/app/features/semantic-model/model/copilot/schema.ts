@@ -14,7 +14,7 @@ export const CalculatedMeasureSchema = z.object({
 })
 
 export const HierarchySchema = z.object({
-  __id__: z.string().optional().describe('The id of the hierarchy'),
+  // __id__: z.string().optional().describe('The id of hierarchy, do not set if this is a new hierarchy'),
   name: z.string().describe('The name of the hierarchy'),
   caption: z.string().describe('The caption of the hierarchy'),
   tables: z.array(

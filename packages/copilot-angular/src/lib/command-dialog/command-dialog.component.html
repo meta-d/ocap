@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>
+  <mat-chip-listbox hideSingleSelectionIndicator [(ngModel)]="commandName" required>
+    @for (command of data.commands; track command) {
+      <mat-chip-option [value]="command">/{{command}}</mat-chip-option>
+    }
+  </mat-chip-listbox>
+</h2>
+<mat-dialog-content>
+  <textarea matInput [(ngModel)]="prompt" class="w-[500px] focus:outline-none" [placeholder]="command()?.description"
+    cdkTextareaAutosize
+    cdkAutosizeMinRows="3"
+    cdkAutosizeMaxRows="5"></textarea>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button class="w-full" mat-button [disabled]="creating()" (click)="execute()">
+    @if (creating()) {
+      Creating...
+    } @else {
+      Create
+    }</button>
+</mat-dialog-actions>

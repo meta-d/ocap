@@ -411,7 +411,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const systemPrompt = await this.upsertUserInputMessage(command, params, content)
 
     conversationId ??= this.currentConversationId()
-    const assistantId = conversationId ?? nanoid()
+    const assistantId = nanoid()
 
     this.upsertMessage({
       id: assistantId,
@@ -864,7 +864,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.updateLastConversation((conversation) => ({
         ...(conversation ?? this.#newConversation(value)),
         ...value,
-        id: value.id ?? conversation.id ?? nanoid()
+        id: value.id ?? conversation?.id ?? nanoid()
       }))
     }
   }

@@ -50,6 +50,12 @@ ${markdownSharedDimensions(sharedDimensions)}
     return {
       alias: 'c',
       description: 'New or edit a cube',
+      historyCursor: () => {
+        return modelService.getHistoryCursor()
+      },
+      revert: async (index: number) => {
+        modelService.gotoHistoryCursor(index)
+      },
       agent: {
         type: CopilotAgentType.Default
       },
