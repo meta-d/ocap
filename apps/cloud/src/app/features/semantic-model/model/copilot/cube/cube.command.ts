@@ -7,10 +7,13 @@ import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectCreateCubeTool } from './tools'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
+import { markdownSharedDimensions } from '../dimension/types'
 
-export const SYSTEM_PROMPT = `You are a cube modeling expert. Let's create a cube!
-Generate cube metadata for MDX.
-Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
+export const SYSTEM_PROMPT = `You are a cube modeling expert. Let's create a cube! Generate cube metadata for MDX.` + 
+  ` If the user does not provide a dimension table, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a dimension.` + 
+  ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` + 
+  `Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
 
 ${createAgentStepsInstructions(
   `根据用户输入信息思考创建 Cube 需要哪些 dimensions 和 measures`,
@@ -19,8 +22,7 @@ ${createAgentStepsInstructions(
   `综合以上结果创建完整的 cube`
 )}
 
-{system_prompt}`
-
+{system}`
 
 export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -29,34 +31,36 @@ export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const copilotService = inject(NgmCopilotService)
   // tools
   const createCubeTool = injectCreateCubeTool()
+  const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
 
   const commandName = 'cube'
-  return injectCopilotCommand(commandName, {
-    alias: 'c',
-    description: 'New or edit a cube',
-    agent: {
-      type: CopilotAgentType.Default
-    },
-    tools: [createCubeTool],
-    prompt: createAgentPromptTemplate(SYSTEM_PROMPT + `\n{context}`),
-    systemPrompt: async () => {
-      const sharedDimensionsPrompt = JSON.stringify(
-        dimensions()
-          .filter((dimension) => dimension.hierarchies?.length)
-          .map((dimension) => ({
-            name: dimension.name,
-            caption: dimension.caption,
-            table: dimension.hierarchies[0].tables[0]?.name,
-            primaryKey: dimension.hierarchies[0].primaryKey
-          }))
-      )
-      return `${copilotService.rolePrompt()}
-There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
+  return injectCopilotCommand(commandName, (async () => {
+    const systemContext = async () => {
+      const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
+      return copilotService.rolePrompt() + '\n' + 
+      `There is no need to create as dimension with those table fields that are already used in dimensionUsages.` +
+      (sharedDimensions.length ? ` The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
 \`\`\`
-${sharedDimensionsPrompt}
+${markdownSharedDimensions(sharedDimensions)}
 \`\`\`
-`
+` : '')
     }
-  })
+
+    return {
+      alias: 'c',
+      description: 'New or edit a cube',
+      agent: {
+        type: CopilotAgentType.Default
+      },
+      tools: [
+        selectTablesTool,
+        queryTablesTool,
+        createCubeTool
+      ],
+      prompt: await createAgentPromptTemplate(SYSTEM_PROMPT + `\n{context}`).partial({
+        system: systemContext
+      }),
+    }
+  })())
 }

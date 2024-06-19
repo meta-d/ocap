@@ -1,16 +1,16 @@
+import { Signal } from '@angular/core'
 import { BaseMessage } from '@langchain/core/messages'
 import { Runnable } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
+import { PropertyDimension } from '@metad/ocap-core'
 import { CUBE_MODELER_NAME } from '../cube/graph'
 import { DIMENSION_MODELER_NAME } from '../dimension/graph'
 import { runAgentNode } from '../langgraph-helper-utilities'
 import { createModelerPlanner, getPlanFromState } from './planner'
 import { createSupervisor } from './supervisor'
 import { IGraphState, PLANNER_NAME, SUPERVISOR_NAME } from './types'
-import { Signal } from '@angular/core'
-import { PropertyDimension } from '@metad/ocap-core'
 
 // Define the top-level State interface
 interface State extends IGraphState {
@@ -63,7 +63,7 @@ export async function createModelerGraph({
 
   async function runPlanner(state: State): Promise<any> {
     const plan = await planner.invoke({ objective: state.messages.map((m) => m.content).join('\n') })
-    return { plan: getPlanFromState(plan) }
+    return { messages: [plan.messages[plan.messages.length - 1]] }
   }
 
   const superGraph = new StateGraph({ channels: superState })
@@ -80,7 +80,7 @@ export async function createModelerGraph({
     .addNode(CUBE_MODELER_NAME, (state: State, options) => {
       return runAgentNode<State>({ state, agent: cubeModeler, name: CUBE_MODELER_NAME, config: options.config })
     })
-    .addNode(SUPERVISOR_NAME, supervisorNode as unknown)
+    .addNode(SUPERVISOR_NAME, supervisorNode)
 
   superGraph.addEdge(PLANNER_NAME, SUPERVISOR_NAME)
   superGraph.addEdge(DIMENSION_MODELER_NAME, SUPERVISOR_NAME)

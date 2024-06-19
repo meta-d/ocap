@@ -28,13 +28,14 @@ export async function createModelerPlanner({
   queryTablesTool: DynamicStructuredTool
   dimensions: Signal<PropertyDimension[]>
 }) {
-  const tools = [selectTablesTool as any, queryTablesTool as any]
+  const tools = [selectTablesTool, queryTablesTool]
 
   const plannerPrompt = await ChatPromptTemplate.fromMessages([
     ['system', `You are a cube modeler for data analysis, now you need create a plan for the final goal.` +
       ` If user-provided tables, consider which of them are used to create shared dimensions and which are used to create cubes.` +
       ` Or use the 'selectTables' tool to get all tables then select the required physical tables from them.` +
       ` If the dimension required for modeling is in the following existing shared dimensions, please do not put it in the plan, just use it directly in the cube creation task` +
+      ` A plan is an array of independent, ordered steps.` +
       ` Each step of the plan corresponds to one of the tasks 'Create a shared dimension' and 'Create a cube'. ` +
       ' This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps.' +
       ' The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.\n\n' +
@@ -80,31 +81,22 @@ export function createPlannerReactAgent(props: {
   const boundModel = endict.pipe(prompt).pipe(
     llm.bindTools([
       ...tools,
-      {
-        type: 'function',
-        function: {
-          name: 'Response',
-          description: 'Respond the plan steps to the user using this tool.',
-          parameters: plan
-        }
-      }
     ])
   )
 
-  const toolNode = new ToolNode<{ messages: BaseMessage[] }>(tools as any[])
+  const toolNode = new ToolNode<{ messages: BaseMessage[] }>(tools)
 
   // Define the function that determines whether to continue or not
   const route = (state: IPlanState) => {
     const { messages } = state
-    const lastMessage = messages[messages.length - 1] as AIMessage
-    // If there is no function call, then we finish
-    if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
-      return END
+    const lastMessage = messages[messages.length - 1];
+    if (
+      isAIMessage(lastMessage) &&
+      (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0)
+    ) {
+      return END;
     }
-    // Otherwise if there is, we need to check what type of function call it is
-    if (lastMessage.tool_calls[0].name === 'Response') {
-      return END
-    }
+
     // Otherwise we continue
     return 'tools'
   }

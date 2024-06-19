@@ -73,14 +73,14 @@ export class NgmScrollBackComponent implements OnInit, OnDestroy, OnChanges {
   private scrollListenerDestroy$ = new Subject<boolean>()
   private target: HTMLElement | null = null
 
-  visible = signal(false)
+  readonly visible = signal(false)
   dir: Direction = 'ltr'
 
   @Input() nzTemplate?: TemplateRef<void>
-  @Input() visibilityHeight: number = 50
+  @Input() visibilityHeight = 100
   @Input() direction: 'top' | 'bottom' = 'top'
   @Input() ngmTarget?: string | HTMLElement
-  @Input() ngmDuration: number = 450
+  @Input() ngmDuration = 450
   @Output() readonly nzClick: EventEmitter<boolean> = new EventEmitter()
 
   constructor(

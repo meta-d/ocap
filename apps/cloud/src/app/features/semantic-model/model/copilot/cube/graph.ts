@@ -8,6 +8,7 @@ import { markdownSharedDimensions } from '../dimension/types'
 import { createCommandAgent } from '../langgraph-helper-utilities'
 import { SYSTEM_PROMPT } from './cube.command'
 import { injectCreateCubeTool } from './tools'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 
 export const CUBE_MODELER_NAME = 'CubeModeler'
 
@@ -27,6 +28,8 @@ export function injectCubeModeler() {
   const copilotService = inject(NgmCopilotService)
 
   const createCubeTool = injectCreateCubeTool()
+  const selectTablesTool = injectSelectTablesTool()
+  const queryTablesTool = injectQueryTablesTool()
 
   const dimensions = modelService.dimensions
   const cubes = modelService.cubes
@@ -49,8 +52,11 @@ ${markdownSharedDimensions(sharedDimensions)}
     //   // Add steps nodes
     //   .addNode(PLANNER_NAME, runPlanner)
 
-    const agent = await createCommandAgent(llm, [createCubeTool], SYSTEM_PROMPT, systemContext)
-
+    const agent = await createCommandAgent(llm, [
+      selectTablesTool,
+      queryTablesTool,
+      createCubeTool
+    ], SYSTEM_PROMPT, systemContext)
     
     return agent
   }
