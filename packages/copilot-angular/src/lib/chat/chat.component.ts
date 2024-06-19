@@ -71,16 +71,16 @@ import {
   throttleTime
 } from 'rxjs'
 import { UserAvatarComponent } from '../avatar/avatar.component'
+import { NgmScrollBackComponent } from '../common/scroll'
+import { NgmSearchComponent } from '../common/search/search.component'
+import { provideFadeAnimation } from '../core/animations'
+import { NgmHighlightDirective } from '../core/directives'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
+import { injectCommonCommands } from '../hooks/common'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from '../token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
-import { injectCommonCommands } from '../hooks/common'
-import { provideFadeAnimation } from '../core/animations'
-import { NgmSearchComponent } from '../common/search/search.component'
-import { NgmHighlightDirective } from '../core/directives'
-import { NgmScrollBackComponent } from '../common/scroll'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
 export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
@@ -125,7 +125,7 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
   host: {
     class: 'ngm-copilot-chat'
   },
-  animations: [ provideFadeAnimation('100ms') ]
+  animations: [provideFadeAnimation('100ms')]
 })
 export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
@@ -178,7 +178,8 @@ export class NgmCopilotChatComponent {
       id: '',
       messages: PlaceholderMessages,
       type: 'free',
-      command: null
+      command: null,
+      status: 'active'
     }
   ]
 
@@ -227,6 +228,14 @@ export class NgmCopilotChatComponent {
     }
   }
 
+  get interactive() {
+    return this.copilotEngine.aiOptions.interactive
+  }
+  set interactive(value) {
+    this.copilotEngine.aiOptions = { ...this.copilotEngine.aiOptions, interactive: value }
+    this.copilotEngine.updateAiOptions({ interactive: value })
+  }
+
   get verbose() {
     return this.copilotEngine.aiOptions.verbose
   }
@@ -264,7 +273,11 @@ export class NgmCopilotChatComponent {
 
   readonly #promptWords = computed(() => this.prompt()?.split(' '))
   readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
-  readonly #contextWord = computed(() => this.#promptWords().find((word) => word.startsWith('@'))?.slice(1))
+  readonly #contextWord = computed(() =>
+    this.#promptWords()
+      .find((word) => word.startsWith('@'))
+      ?.slice(1)
+  )
   readonly contextSearch = computed(() => {
     const lastWord = this.lastWord()
     if (lastWord && lastWord.startsWith('@')) {
@@ -372,8 +385,10 @@ export class NgmCopilotChatComponent {
   readonly commands = computed<Array<CopilotCommand & { example: string }>>(() => {
     if (this.copilotEngine?.commands && this.isTools()) {
       const commands = []
-      this.copilotEngine.commands().filter((c) => !c.hidden)
-        .sort((a, b) => a.name > b.name ? 1 : a.name === b.name ? 0 : -1 )
+      this.copilotEngine
+        .commands()
+        .filter((c) => !c.hidden)
+        .sort((a, b) => (a.name > b.name ? 1 : a.name === b.name ? 0 : -1))
         .forEach((command) => {
           if (command.examples?.length) {
             command.examples.forEach((example) => {
@@ -400,9 +415,11 @@ export class NgmCopilotChatComponent {
 
     if (prompt?.startsWith('/')) {
       const text = prompt.slice(1)
-      return this.commands()?.filter(
+      return (
+        this.commands()?.filter(
           (item) => item.name?.toLowerCase().includes(text) || item.alias?.toLowerCase()?.includes(text)
         ) ?? []
+      )
     }
 
     return []
@@ -467,14 +484,17 @@ export class NgmCopilotChatComponent {
       { allowSignalWrites: true }
     )
 
-    effect(async () => {
-      if (this.#contextWord()) {
-        const item = await this.commandContext().getContextItem(this.#contextWord())
-        this.context.set(item)
-      } else {
-        this.context.set(null)
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      async () => {
+        if (this.#contextWord()) {
+          const item = await this.commandContext().getContextItem(this.#contextWord())
+          this.context.set(item)
+        } else {
+          this.context.set(null)
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   trackByKey(index: number, item) {
@@ -653,7 +673,7 @@ export class NgmCopilotChatComponent {
             this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
             this.context.set(item)
           }
-        } else if(this.filteredCommands()?.length) {
+        } else if (this.filteredCommands()?.length) {
           this.promptControl.setValue(this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         }
       }
@@ -732,7 +752,7 @@ export class NgmCopilotChatComponent {
   setContext(item: CopilotContextItem) {
     this.context.set(item)
   }
-  
+
   repleaceContext(orginal: string, target: CopilotContextItem) {
     const prompt = this.prompt()
     this.promptControl.setValue(prompt.split(`@${orginal} `).join(`@${target.uKey} `))
@@ -761,5 +781,9 @@ export class NgmCopilotChatComponent {
   async revert(command: CopilotCommand, message: CopilotChatMessage) {
     await command.revert?.(message.historyCursor)
     message.reverted = true
+  }
+
+  async continue(conversation: CopilotChatConversation) {
+    await this.copilotEngine.continue(conversation)
   }
 }

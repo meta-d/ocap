@@ -10,6 +10,7 @@ import { injectDimensionModeler } from '../dimension/graph'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { createModelerGraph } from './graph'
 import { createModelerPlanner } from './planner'
+import { PLANNER_NAME } from './types'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -29,7 +30,8 @@ export function injectModelerCommand() {
     description: 'Plan command for semantic model',
     agent: {
       type: CopilotAgentType.Graph,
-      conversation: true
+      conversation: true,
+      interruptAfter: ['tools']
     },
     createGraph: async (llm: ChatOpenAI) => {
       return await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions })
@@ -42,7 +44,8 @@ export function injectModelerCommand() {
     description: 'Modeling command for semantic model',
     agent: {
       type: CopilotAgentType.Graph,
-      conversation: true
+      conversation: true,
+      interruptAfter: [PLANNER_NAME]
     },
     historyCursor: () => {
       return modelService.getHistoryCursor()

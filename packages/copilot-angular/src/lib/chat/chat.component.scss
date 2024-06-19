@@ -91,12 +91,18 @@
   width: 18px;
 }
 
-.ngm-colpilot__input-wrapper {
-  
+.ngm-copilot-button {
+  @apply rounded-md p-1 text-xs w-9 h-9 flex items-center justify-center transition-colors duration-100 
+    text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300
+    bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800;
 }
 
 :host::ng-deep {
   markdown {
+    > * {
+      @apply whitespace-pre-line;
+    }
+
     p:first-child {
       @apply indent-4;
     }

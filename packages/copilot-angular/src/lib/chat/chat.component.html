@@ -33,11 +33,11 @@
 
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
         @for (message of conversation.messages; track message.id) {
-            @switch (message.role) {
-              @case (CopilotChatMessageRoleEnum.Assistant) {
-                <div class="pl-2 pr-4 flex">
-                    <div class="flex-1 flex items-start overflow-auto">
-                        <div class="relative flex flex-col items-center shrink-0">
+          @switch (message.role) {
+            @case (CopilotChatMessageRoleEnum.Assistant) {
+              <div class="pl-2 pr-4 flex">
+                  <div class="flex-1 flex items-start overflow-auto">
+                      <div class="relative flex flex-col items-center shrink-0">
                             @if (assistantAvatar) {
                                 @if ((message.status === 'thinking' || message.status === 'answering') && thinkingAvatar) {
                                     <img class="w-8 h-8 pointer-events-none" [src]="thinkingAvatar"/>
@@ -47,14 +47,14 @@
                             } @else {
                                 <div class="w-8 h-8 rounded-full text-xl text-center font-notoColorEmoji">🤖</div>
                             }
-                        </div>
-                        <div class="flex-1 flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group">
+                      </div>
+                      <div class="flex-1 flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group">
                         @if (message.templateRef) {
                           <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
                         } @else {
                           @if (message.content) {
                             <div class="ngm-copilot-chat__message-content w-full" [ngClass]="{'thinking': message.status === 'thinking'}">
-                                <markdown clipboard class="whitespace-pre-line"
+                                <markdown clipboard
                                     [clipboardButtonTemplate]="buttonTemplate"
                                     lineNumbers
                                     [start]="5"
@@ -124,16 +124,15 @@
                               </div>
                             }
                         }
-        
                             <!-- <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                 (click)="deleteMessage(message)">
                                 <mat-icon>close</mat-icon>
                             </button> -->
-                        </div>
-                    </div>
-                </div>
-                }
-              @case (CopilotChatMessageRoleEnum.User) {
+                      </div>
+                  </div>
+              </div>
+            }
+            @case (CopilotChatMessageRoleEnum.User) {
                 <div @fadeAnimation class="pl-4 flex">
                     <div class="flex-1 flex items-start justify-end overflow-auto">
                         <div class="flex-1 flex flex-col justify-start items-end overflow-auto relative p-[10px] group"
@@ -198,8 +197,8 @@
                         <ngm-copilopt-user-avatar class="shrink-0 w-8 h-8 rounded-full overflow-hidden" [user]="user"></ngm-copilopt-user-avatar>
                     </div>
                 </div>
-              }
-              @case (CopilotChatMessageRoleEnum.Info) {
+            }
+            @case (CopilotChatMessageRoleEnum.Info) {
                 <div @fadeAnimation class="pl-4 flex">
                     <div class="flex-1 flex items-start justify-end overflow-auto">
                         <div class="rounded-lg py-2 px-4 w-full overflow-auto flex flex-col items-end">
@@ -207,8 +206,28 @@
                         </div>
                     </div>
                 </div>
-              }
             }
+          }
+        }
+
+        @if (conversation.status === 'interrupted') {
+          <div class="w-full flex items-center justify-center">
+              <button class="ngm-copilot-button gap-1.5"
+                [matTooltip]="'Copilot.Continue' | translate: {Default: 'Continue'}"
+                (click)="continue(conversation)">
+                <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" x="0px" y="0px">
+                  <path fill="currentColor" d="M49.12,36.88A3,3,0,0,0,47,36l-.3,0a3,3,0,0,0-2.23,1.36,3.05,3.05,0,0,0,.48,3.82l7.52,7.52a1.82,1.82,0,0,1,0,2.56L45,58.72a3.16,3.16,0,0,0-.51,4,3,3,0,0,0,4.6.42l7.59-7.59a7.82,7.82,0,0,0,0-11.06Z"/>
+                  <path fill="currentColor" d="M63.73,20.14a83.52,83.52,0,0,0-27.45,0A19.63,19.63,0,0,0,20.14,36.27a83.5,83.5,0,0,0,0,27.45A19.63,19.63,0,0,0,36.27,79.86a83.93,83.93,0,0,0,27.45,0A19.63,19.63,0,0,0,79.86,63.73,83.75,83.75,0,0,0,81,50a83.8,83.8,0,0,0-1.14-13.73A19.63,19.63,0,0,0,63.73,20.14ZM73.95,62.74a13.63,13.63,0,0,1-11.21,11.2A77.68,77.68,0,0,1,50,75a77.69,77.69,0,0,1-12.74-1.05,13.63,13.63,0,0,1-11.21-11.2,77.5,77.5,0,0,1,0-25.48,13.63,13.63,0,0,1,11.21-11.2,77.85,77.85,0,0,1,25.48,0,13.63,13.63,0,0,1,11.21,11.2A77.75,77.75,0,0,1,75,50,77.74,77.74,0,0,1,73.95,62.74Z"/>
+                </svg>
+              </button>
+
+              <button class="ngm-copilot-button gap-1.5"
+                [matTooltip]="'Copilot.End' | translate: {Default: 'End'}">
+                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 1024 1024" xml:space="preserve">
+                  <path fill="currentColor" d="M512,128c-212.08,0-384,171.92-384,384s171.92,384,384,384c92.63,0,177.6-32.8,243.93-87.41l53.22-53.35  C863.43,689.01,896,604.31,896,512C896,299.92,724.08,128,512,128z M672,612c0,33.14-26.86,60-60,60H412c-33.14,0-60-26.86-60-60  V412c0-33.14,26.86-60,60-60h200c33.14,0,60,26.86,60,60V612z"/>
+                </svg>
+              </button>
+          </div>
         }
 
         @if (!last) {
@@ -412,15 +431,14 @@
 
 <popper-content #copilotOptions class="z-[101]">
     <div class="w-80 flex flex-col max-w-sm p-4 border-0 border-gray-200 rounded-lg shadow-lg
-        dark:bg-gray-800/20 dark:border-gray-700 bg-white/60 backdrop-blur-lg"
-        displayDensity="compact">
-        <div class="text-base mb-2">
+        dark:bg-gray-800/20 dark:border-gray-700 bg-white/60 backdrop-blur-lg">
+        <div class="text-lg">
             {{ 'Copilot.Options' | translate: {Default: 'Options'} }}
         </div>
 
-        <div class="mt-2 font-notoColorEmoji flex justify-between items-center">
+        <div class="mt-2 flex justify-between items-center">
             <label class="shrink-0">
-                {{ 'Copilot.Model' | translate: {Default: 'Model'} }}:<span matTooltip="ID of the model to use.">💡</span>
+                {{ 'Copilot.Model' | translate: {Default: 'Model'} }}:<span class="font-notoColorEmoji" matTooltip="ID of the model to use.">💡</span>
             </label>
 
             <ngm-search class="flex-1" [formControl]="searchModel"/>
@@ -443,17 +461,22 @@
           }
         </mat-selection-list>
 
-        <label class="pt-4 font-notoColorEmoji">Temperature:<span matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>
+        <label class="pt-4">Temperature:<span class="font-notoColorEmoji" matTooltip="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or top_p but not both.">💡</span></label>
         <mat-slider color="accent" min="0" max="2" step="0.1" value="1" discrete>
             <input matSliderThumb [(ngModel)]="temperature">
         </mat-slider>
         
-        <label class="pt-4 font-notoColorEmoji">Choices:<span matTooltip="How many chat completion choices to generate for each input message.">💡</span></label>
+        <label class="pt-4">Choices:<span class="font-notoColorEmoji" matTooltip="How many chat completion choices to generate for each input message.">💡</span></label>
         <mat-slider color="accent" min="1" max="10" step="1" value="1" discrete>
             <input matSliderThumb [(ngModel)]="n">
         </mat-slider>
 
-        <mat-checkbox [(ngModel)]="verbose" color="accent" labelPosition="before">Verbose</mat-checkbox>
+        <mat-checkbox [(ngModel)]="interactive" color="accent" labelPosition="before">
+          {{ 'Copilot.Interactive' | translate: {Default: 'Interactive'} }}
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="verbose" color="accent" labelPosition="before">
+          {{ 'Copilot.Verbose' | translate: {Default: 'Verbose'} }}
+        </mat-checkbox>
 
         <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages mt-4" (click)="clear()">
             {{ 'Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}

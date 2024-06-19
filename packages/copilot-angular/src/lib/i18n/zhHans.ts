@@ -38,6 +38,10 @@ export const ZhHans = {
     Help: '帮助',
     NewChat: '新聊天',
     Update: '更新',
-    Revert: '还原'
+    Revert: '还原',
+    Continue: '继续',
+    Interactive: '交互',
+    Verbose: '详细',
+    End: '结束',
   }
 }

@@ -67,6 +67,8 @@ export interface CopilotCommand<T = any> {
   agent?: {
     type: CopilotAgentType
     conversation?: boolean
+    interruptBefore?: string[]
+    interruptAfter?: string[]
   }
 
   createGraph?: (llm: ChatOpenAI) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>

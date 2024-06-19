@@ -1,3 +1,4 @@
+import { CompiledStateGraph } from '@langchain/langgraph/web'
 import { CopilotCommand, CopilotContext } from './command'
 import { CopilotService } from './copilot'
 import { AIOptions, CopilotChatMessage } from './types'
@@ -20,9 +21,22 @@ export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMe
   messages: T[]
   type: 'free' | 'command'
   /**
+   * Status of the conversation:
+   * - active: is active
+   * - interrupted: is interrupted for waiting user confirmation or more information
+   * - completed: is completed
+   * - aborted: is aborted
+   * - error: has error
+   */
+  status: 'active' | 'interrupted' | 'completed' | 'aborted' | 'error'
+  /**
    * Command of this conversation
    */
   command: CopilotCommand
+
+  graph?: CompiledStateGraph<any, any, any>
+
+  abortController?: AbortController
 }
 
 /**
@@ -60,7 +74,19 @@ export interface CopilotEngine {
 
   messages(): CopilotChatMessage[]
 
+  /**
+   * Chat with copilot by prompt
+   * 
+   * @param prompt 
+   * @param options 
+   */
   chat(prompt: string, options?: CopilotChatOptions): Promise<CopilotChatMessage | string | void>
+  /**
+   * Continue the conversation
+   * 
+   * @param conversation 
+   */
+  continue(conversation: CopilotChatConversation): Promise<void>
 
   /**
    * How to process the event when user drag drop a data
