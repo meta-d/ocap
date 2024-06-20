@@ -9,11 +9,13 @@ import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import z from 'zod'
 import { ProjectService } from '../../project.service'
+import { uuid } from 'apps/cloud/src/app/@core'
 
 export function injectCreateIndicatorTool() {
   const logger = inject(NGXLogger)
   const router = inject(Router)
   const route = inject(ActivatedRoute)
+  const projectService = inject(ProjectService)
 
   const createIndicatorTool = new DynamicStructuredTool({
     name: 'createIndicator',
@@ -22,11 +24,11 @@ export function injectCreateIndicatorTool() {
     func: async (indicator) => {
       logger.debug(`Execute copilot action 'createIndicator':`, indicator)
 
-      router.navigate(['indicators/new'], {
+      indicator.code ??= uuid()
+      projectService.newIndicator(indicator)
+
+      router.navigate(['indicators', indicator.code], {
         relativeTo: route,
-        state: {
-          ...indicator
-        }
       })
 
       return 'Created Indicator!'

@@ -18,9 +18,8 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
 import { Router, RouterModule } from '@angular/router'
-import { FavoritesService, NgmSemanticModel, StoriesService, convertStory } from '@metad/cloud/state'
+import { FavoritesService, StoriesService, convertStory } from '@metad/cloud/state'
 import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/copilot-angular'
-import { markdownEntityType } from '@metad/core'
 import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -59,15 +58,15 @@ import {
   registerModel,
   routeAnimations,
   tryHttp
-} from '../../@core'
-import { MaterialModule, StoryCreationComponent } from '../../@shared'
-import { TranslationBaseComponent } from '../../@shared/language/translation-base.component'
-import { AppService } from '../../app.service'
-import { injectIndicatorCommand } from './copilot/'
-import { ReleaseStoryDialog } from './release-story.component'
-import { SelectModelDialog } from './select-model.component'
-import { collectionId, injectFetchModelDetails, treeDataSourceFactory } from './types'
-import { ProjectService } from './project.service'
+} from '../../../@core'
+import { MaterialModule, StoryCreationComponent } from '../../../@shared'
+import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
+import { AppService } from '../../../app.service'
+import { injectIndicatorCommand } from '../copilot/'
+import { ReleaseStoryDialog } from '../release-story.component'
+import { SelectModelDialog } from '../select-model.component'
+import { collectionId, injectFetchModelDetails, treeDataSourceFactory } from '../types'
+import { ProjectService } from '../project.service'
 
 @Component({
   standalone: true,
@@ -549,15 +548,15 @@ export class ProjectComponent extends TranslationBaseComponent {
     // })
   }
 
-  async refreshIndicators() {
-    const project = await firstValueFrom(
-      this.projectsService.getOne(this.project.id ?? null, ['indicators', 'indicators.businessArea'])
-    )
-    this.projectService.updateProject({
-      indicators: project.indicators
-    })
-    // this._project$.next({ ...this.project, indicators: project.indicators })
-  }
+  // async refreshIndicators() {
+  //   const project = await firstValueFrom(
+  //     this.projectsService.getOne(this.project.id ?? null, ['indicators', 'indicators.businessArea'])
+  //   )
+  //   this.projectService.updateProject({
+  //     indicators: project.indicators
+  //   })
+  //   // this._project$.next({ ...this.project, indicators: project.indicators })
+  // }
 
   updateCertifications(certifications: ICertification[]) {
     this.projectService.updateProject({

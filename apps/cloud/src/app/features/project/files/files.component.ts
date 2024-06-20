@@ -18,7 +18,7 @@ import {
   userLabel
 } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
-import { ProjectComponent } from '../project.component'
+import { ProjectComponent } from '../project/project.component'
 
 @Component({
   standalone: true,

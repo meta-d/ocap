@@ -17,7 +17,7 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { combineLatestWith, map, switchMap, tap } from 'rxjs/operators'
 import { UserPipe } from '../../../../@shared/pipes/created-by.pipe'
 import { UserAvatarComponent } from '../../../../@shared/user'
-import { ProjectComponent } from '../../project.component'
+import { ProjectComponent } from '../../project/project.component'
 import { NgmTableComponent } from '@metad/ocap-angular/common'
 
 @Component({

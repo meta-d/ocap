@@ -17,7 +17,7 @@ import {
   TranslationBaseComponent
 } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
-import { ProjectComponent } from '../project.component'
+import { ProjectComponent } from '../project/project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angular/common'

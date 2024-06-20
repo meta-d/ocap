@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { firstValueFrom, map } from 'rxjs'
 import { IIndicator, ToastrService } from '../../../../@core/index'
-import { ProjectComponent } from '../../project.component'
+import { ProjectComponent } from '../../project/project.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 
 @Component({

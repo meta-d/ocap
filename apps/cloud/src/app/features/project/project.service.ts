@@ -1,16 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { NgmSemanticModel } from '@metad/cloud/state'
+import { markdownEntityType } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { MDCube, isEntitySet } from '@metad/ocap-core'
+import { Indicator, MDCube, isEntitySet } from '@metad/ocap-core'
 import { EMPTY, catchError, combineLatest, firstValueFrom, map, shareReplay, startWith, switchMap, tap } from 'rxjs'
-import { IProject, ISemanticModel, registerModel } from '../../@core'
+import { IProject, ISemanticModel, ProjectsService, registerModel } from '../../@core'
 import { injectFetchModelDetails } from './types'
-import { markdownEntityType } from '@metad/core'
 
 @Injectable()
 export class ProjectService {
+  readonly projectsService = inject(ProjectsService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
@@ -21,12 +22,13 @@ export class ProjectService {
 
   readonly models = computed(() => this.project()?.models)
   readonly models$ = toObservable(this.models)
-  readonly dataSources = computed(() => this.models()?.map((model) => (
-    {
+  readonly dataSources = computed(() =>
+    this.models()?.map((model) => ({
       key: model.key,
       caption: model.name,
       value: model.id
-    })))
+    }))
+  )
 
   readonly modelDetails = signal<Record<string, ISemanticModel>>({})
 
@@ -80,6 +82,12 @@ export class ProjectService {
     shareReplay(1)
   )
 
+  /**
+   * Indicators
+   */
+  readonly indicators = computed(() => this.project()?.indicators)
+  readonly #newIndicators = signal<Indicator[]>([])
+
   setProject(project: IProject) {
     this.project.set(project)
   }
@@ -124,5 +132,27 @@ export class ProjectService {
         }
       })
     )
+  }
+  /**
+  |--------------------------------------------------------------------------
+  | Indicators
+  |--------------------------------------------------------------------------
+  */
+  newIndicator(indicator: Partial<Indicator>) {
+    this.#newIndicators.update((prev) => [...prev, indicator as Indicator])
+  }
+
+  refreshIndicators() {
+    this.projectsService
+      .getOne(this.project().id ?? null, ['indicators', 'indicators.businessArea'])
+      .subscribe((project) => {
+        this.updateProject({
+          indicators: project.indicators
+        })
+      })
+  }
+
+  getNewIndicator(code: string) {
+    return this.#newIndicators().find((indicator) => indicator.code === code)
   }
 }

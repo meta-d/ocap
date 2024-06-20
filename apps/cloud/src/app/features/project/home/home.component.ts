@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { firstValueFrom, switchMap, tap } from 'rxjs'
 import { DefaultCollection, IStory, IStoryTemplate, ProjectsService, ToastrService, tryHttp } from '../../../@core'
 import { StoryCardComponent, StoryCreationComponent, StoryTemplateComponent } from '../../../@shared'
-import { ProjectComponent } from '../project.component'
+import { ProjectComponent } from '../project/project.component'
 
 @Component({
   standalone: true,

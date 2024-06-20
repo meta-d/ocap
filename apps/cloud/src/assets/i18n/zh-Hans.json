@@ -548,7 +548,8 @@
         "Calendar": "日历维度",
         "Tags": "标签",
         "IndicatorNotFound": "指标未找到",
-        "DeleteIndicator": "删除指标"
+        "DeleteIndicator": "删除指标",
+        "CalendarDimensionNotSet": "日历维度未设置"
       },
       "MARKET": {
         "REQUEST": "申请",

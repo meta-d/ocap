@@ -265,6 +265,9 @@ export function getEntityCalendar(entityType: EntityType, calendar?: string, tim
   let calendarDimension: PropertyDimension
   if (calendar) {
     calendarHierarchy = getEntityHierarchy(entityType, calendar)
+    if (!calendarHierarchy) {
+      return null
+    }
     calendarDimension = getEntityProperty(entityType, calendarHierarchy.dimension)
   } else {
     // get default calendar dimension in entity type

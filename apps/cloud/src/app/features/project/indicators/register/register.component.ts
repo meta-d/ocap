@@ -33,7 +33,7 @@ import {
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { EMPTY, firstValueFrom } from 'rxjs'
+import { EMPTY, firstValueFrom, of } from 'rxjs'
 import {
   catchError,
   delay,
@@ -45,12 +45,12 @@ import {
   switchMap,
   tap
 } from 'rxjs/operators'
-import { IIndicator, IndicatorType, ToastrService } from '../../../../@core/index'
+import { IIndicator, IndicatorType, isUUID, ToastrService } from '../../../../@core/index'
 import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
-import { ProjectComponent } from '../../project.component'
 import { exportIndicator } from '../../types'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
+import { ProjectService } from '../../project.service'
 
 // AOA : array of array
 type AOA = any[][]
@@ -81,7 +81,7 @@ const NewIndicatorCodePlaceholder = 'new'
 export class IndicatorRegisterComponent extends TranslationBaseComponent implements OnDestroy, IsDirty {
   PERIODS = PERIODS
 
-  private projectComponent = inject(ProjectComponent)
+  private projectService = inject(ProjectService)
   private indicatorsComponent? = inject(ProjectIndicatorsComponent, { optional: true })
   private indicatorsService = inject(IndicatorsService)
   readonly #store = inject(Store)
@@ -97,7 +97,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   readonly indicatorModel = model<Indicator>({})
 
   readonly loading = signal(false)
-  readonly projectSignal = this.projectComponent.projectSignal
+  readonly projectSignal = this.projectService.project
   readonly type = signal<string>('')
 
   readonly dataSettings = computed(() => {
@@ -112,7 +112,9 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     }
     const calendar = getEntityCalendar(entityType, indicator.calendar, timeGranularity)
     if (!calendar) {
-      return null
+      return {
+        error: this.translateService.instant(`PAC.INDICATOR.REGISTER.CalendarDimensionNotSet`, { Default: 'Calendar dimension not set' })
+      } as undefined as DataSettings & {error?: string}
     }
     const { dimension, hierarchy, level } = calendar
 
@@ -166,9 +168,10 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
           selectionVariant: {
             selectOptions: [timeSlicer, ...(indicator.filters ?? [])]
           }
-        } as DataSettings)
+        } as DataSettings & {error?: string})
       : null
   })
+  readonly error = computed(() => this.dataSettings()?.error)
   readonly previewPeriod = signal('1Y')
   readonly period = computed(() => this.PERIODS.find((item) => item.name === this.previewPeriod()))
   readonly primaryTheme$ = toSignal(this.#store.primaryTheme$)
@@ -191,10 +194,10 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   readonly preview = signal(false)
 
   // states
-  public readonly certifications$ = this.projectComponent.project$.pipe(
+  public readonly certifications$ = this.projectService.project$.pipe(
     map((project) => project?.certifications?.map((item) => ({ value: item.id, label: item.name })) ?? [])
   )
-  public readonly models$ = this.projectComponent.project$.pipe(map((project) => project?.models))
+  public readonly models$ = this.projectService.models$
 
   public readonly indicator$ = this._route.paramMap.pipe(
     startWith(this._route.snapshot.paramMap),
@@ -202,31 +205,35 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     tap((id) => {
       if (id === NewIndicatorCodePlaceholder) {
         this.indicatorsComponent?.setCurrentLink({ id: NewIndicatorCodePlaceholder } as Indicator)
-        this._router.getCurrentNavigation().extras.state
+        // this._router.getCurrentNavigation().extras.state
         this.indicatorModel.update((state) => ({
           ...state,
-          ...(this._router.getCurrentNavigation().extras.state ?? {})
+          ...(this._router.getCurrentNavigation()?.extras?.state ?? {})
         }))
       }
     }),
     filter((id) => !isNil(id) && id !== NewIndicatorCodePlaceholder),
     distinctUntilChanged(),
     switchMap((id) => {
-      this.loading.set(true)
-      return this.indicatorsService.getById(id, ['createdBy']).pipe(
-        tap(() => this.loading.set(false)),
-        catchError((err) => {
-          this.loading.set(false)
-          if (err.status === 404) {
-            this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', { Default: 'Indicator not found' })
-          } else {
-            this.toastrService.error(err.error.message)
-          }
-          return EMPTY
-        })
-      )
+      if (isUUID(id)) {
+        this.loading.set(true)
+        return this.indicatorsService.getById(id, ['createdBy']).pipe(
+          tap(() => this.loading.set(false)),
+          catchError((err) => {
+            this.loading.set(false)
+            if (err.status === 404) {
+              this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', { Default: 'Indicator not found' })
+            } else {
+              this.toastrService.error(err.error.message)
+            }
+            return EMPTY
+          }),
+          map(convertIndicatorResult),
+        )
+      } else {
+        return of(this.projectService.getNewIndicator(id))
+      }
     }),
-    map(convertIndicatorResult),
     shareReplay(1)
   )
 
@@ -306,7 +313,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         this.indicatorsComponent?.replaceNewIndicator(indicator)
       }
 
-      await this.projectComponent.refreshIndicators()
+      this.projectService.refreshIndicators()
     } catch (err) {
       this.loading.set(false)
       this.toastrService.error(err, '', {})
@@ -349,7 +356,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         await firstValueFrom(this.indicatorsService.delete(this.indicatorModel().id))
         this.toastrService.success('PAC.INDICATOR.REGISTER.DeleteIndicator', { Default: 'Delete Indicator' })
 
-        await this.projectComponent.refreshIndicators()
+        this.projectService.refreshIndicators()
         this._router.navigate(['../../indicators'], { relativeTo: this._route })
       } catch (err) {
         this.toastrService.error(err, '', {})

@@ -8,7 +8,7 @@ import { ProjectIndicatorsComponent } from './indicators/indicators.component'
 import { AllIndicatorComponent } from './indicators/all/all.component'
 import { IndicatorRegisterComponent } from './indicators/register/register.component'
 import { ProjectMembersComponent } from './members/members.component'
-import { ProjectComponent } from './project.component'
+import { ProjectComponent } from './project/project.component'
 import { ProjectFilesComponent } from './files/files.component'
 
 const routes: Routes = [

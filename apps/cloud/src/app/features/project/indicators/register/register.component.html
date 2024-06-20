@@ -10,6 +10,7 @@
       (click)="fileUpload.value=null;"> -->
   
     <div ngmButtonGroup class="flex-wrap">
+
       <!-- <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
         <mat-icon fontSet="material-icons-round">upload</mat-icon>
           {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
@@ -55,35 +56,42 @@
   }
 
   <div class="w-full flex flex-col items-center">
-    <button mat-flat-button displayDensity="cosy" (click)="togglePreview()">
+    <button mat-flat-button (click)="togglePreview()">
       <mat-icon fontSet="material-icons-round">{{ preview() ? 'expand_less' : 'expand_more' }}</mat-icon>
       <span>
         {{ 'PAC.INDICATOR.DataPreview' | translate: {Default: 'Data Preview'} }}
       </span>
     </button>
+    
     @if (preview()) {
-      <ngm-analytical-card class="w-full h-[300px]"
-        [title]=" 'PAC.INDICATOR.DataPreview' | translate: {Default: 'Data Preview'}"
-        [dataSettings]="dataSettings()"
-        [chartOptions]="chartOptions()"
-        [chartSettings]="{theme: primaryTheme$()}"
-        [options]="{
-          realtimeLinked: true
-        }"
-        >
-        <div class=" flex-1 flex items-center md:gap-2">
-          <span class="text-base font-medium ml-4">{{ 'PAC.INDICATOR.Period' | translate: {Default: 'Period'} }}</span>
-
-          @for (p of PERIODS; track p.name) {
-            <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
-              [ngClass]="{selected: p.name === previewPeriod()}"
-              (click)="togglePeriod(p.name)"
-            >
-              {{p.name}}
-            </span>
-          }
+      @if (error()) {
+        <div class="w-full h-[300px] flex justify-center items-center">
+          <span class="">{{ error() }}</span>
         </div>
-      </ngm-analytical-card>
+      } @else {
+        <ngm-analytical-card class="w-full h-[300px]"
+          [title]="indicatorModel()?.name"
+          [dataSettings]="dataSettings()"
+          [chartOptions]="chartOptions()"
+          [chartSettings]="{theme: primaryTheme$()}"
+          [options]="{
+            realtimeLinked: true
+          }"
+          >
+          <div class=" flex-1 flex items-center md:gap-2">
+            <span class="text-base font-medium ml-4">{{ 'PAC.INDICATOR.Period' | translate: {Default: 'Period'} }}</span>
+
+            @for (p of PERIODS; track p.name) {
+              <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
+                [ngClass]="{selected: p.name === previewPeriod()}"
+                (click)="togglePeriod(p.name)"
+              >
+                {{p.name}}
+              </span>
+            }
+          </div>
+        </ngm-analytical-card>
+      }
     }
   </div>
 </div>

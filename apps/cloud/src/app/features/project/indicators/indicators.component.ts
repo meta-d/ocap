@@ -21,9 +21,9 @@ import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import { IIndicator, ISemanticModel, registerModel, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
-import { ProjectComponent } from '../project.component'
 import { exportIndicator, injectFetchModelDetails } from '../types'
 import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
+import { ProjectService } from '../project.service'
 
 @Component({
   standalone: true,
@@ -34,7 +34,8 @@ import { IndicatorImportComponent } from './indicator-import/indicator-import.co
   animations: [routeAnimations]
 })
 export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndicator> {
-  private projectComponent = inject(ProjectComponent)
+  // private projectComponent = inject(ProjectComponent)
+  private projectService = inject(ProjectService)
   private _dialog = inject(MatDialog)
   readonly #logger = inject(NGXLogger)
   readonly #translate = inject(TranslateService)
@@ -42,12 +43,12 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
 
-  get indicators() {
-    return this.projectComponent.project?.indicators
-  }
+  // get indicators() {
+  //   return this.projectComponent.project?.indicators
+  // }
 
   readonly selectedIndicators = signal<IIndicator[]>([])
-  readonly models = computed(() => this.projectComponent.projectSignal()?.models)
+  readonly models = this.projectService.models
   readonly dataSources = computed(() =>
     this.models().map((model) => ({
       key: model.key,
@@ -88,7 +89,7 @@ ${calcEntityTypePrompt(this.currentEntityType())}
                   if (modelKey && !this.modelDetails()[modelKey]) {
                     const semanticModel = await firstValueFrom(
                       this.fetchModelDetails(
-                        this.projectComponent.projectSignal().models.find((item) => item.key === modelKey).id
+                        this.projectService.models().find((item) => item.key === modelKey).id
                       )
                     )
 
@@ -142,7 +143,8 @@ ${calcEntityTypePrompt(this.currentEntityType())}
   })
 
   async export() {
-    const indicators = this.selectedIndicators().length ? this.selectedIndicators() : this.indicators
+    const project = this.projectService.project()
+    const indicators = this.selectedIndicators().length ? this.selectedIndicators() : project.indicators
     const indicatorsFileName = this.getTranslation('PAC.INDICATOR.Indicators', { Default: 'Indicators' })
     saveAsYaml(
       `${indicatorsFileName}.yaml`,
@@ -152,15 +154,15 @@ ${calcEntityTypePrompt(this.currentEntityType())}
 
   async handleUploadChange(event) {
     const indicators = await uploadYamlFile<Indicator[]>(event.target.files[0])
-
+    const project = this.projectService.project()
     const results = await firstValueFrom(
       this._dialog
         .open(IndicatorImportComponent, {
           data: {
             indicators,
-            models: this.projectComponent.project.models,
-            certifications: this.projectComponent.project.certifications,
-            projectId: this.projectComponent.project?.id
+            models: project.models,
+            certifications: project.certifications,
+            projectId: project?.id
           }
         })
         .afterClosed()
@@ -171,7 +173,7 @@ ${calcEntityTypePrompt(this.currentEntityType())}
         `${this.getTranslation('PAC.INDICATOR.IndicatorImportResults', { Default: 'Indicator_Import_Results' })}.yml`,
         results
       )
-      this.projectComponent.refreshIndicators()
+      this.projectService.refreshIndicators()
 
       this.router.navigate(['.'], { relativeTo: this.route })
     }
