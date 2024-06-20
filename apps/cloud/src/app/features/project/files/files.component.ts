@@ -8,7 +8,7 @@ import { NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, map, switchMap } from 'rxjs'
-import { IStorageFile, ProjectService, Store, ToastrService } from '../../../@core'
+import { IStorageFile, ProjectsService, Store, ToastrService } from '../../../@core'
 import {
   MaterialModule,
   ProjectFilesDialogComponent,
@@ -51,7 +51,7 @@ export class ProjectFilesComponent {
   userLabel = userLabel
 
   // Injectors
-  private projectService = inject(ProjectService)
+  private projectService = inject(ProjectsService)
   private projectComponent = inject(ProjectComponent)
   private store = inject(Store)
   private _dialog = inject(MatDialog)

@@ -16,7 +16,7 @@ import { ButtonGroupDirective, ISelectOption } from '@metad/ocap-angular/core'
 import { DSCoreService, EntitySet, nonNullable } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { combineLatestWith, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs'
+import { catchError, combineLatestWith, distinctUntilChanged, filter, map, of, startWith, switchMap, tap } from 'rxjs'
 
 export type EntitySelectResultType = {
   modelId: string
@@ -74,7 +74,7 @@ export class NgmEntityDialogComponent {
       this.entities.set([])
     }),
     switchMap((dataSource) => this.data.dsCoreService.getDataSource(dataSource)),
-    switchMap((dataSource) => dataSource.discoverMDCubes()),
+    switchMap((dataSource) => dataSource.discoverMDCubes().pipe(catchError(() => of([])))),
     map((entitySets) =>
       entitySets.map((item) => ({
         value: item,
@@ -91,9 +91,18 @@ export class NgmEntityDialogComponent {
         this.onApply()
       }
     }),
-    combineLatestWith(this.search.valueChanges.pipe(startWith(''), map((text) => text.trim().toLowerCase()))),
+    combineLatestWith(
+      this.search.valueChanges.pipe(
+        startWith(''),
+        map((text) => text.trim().toLowerCase())
+      )
+    ),
     map(([entities, text]) =>
-      text ? entities.filter((item) => item.caption?.toLowerCase().includes(text) || item.key?.toLowerCase().includes(text)) : entities
+      text
+        ? entities.filter(
+            (item) => item.caption?.toLowerCase().includes(text) || item.key?.toLowerCase().includes(text)
+          )
+        : entities
     )
   )
 

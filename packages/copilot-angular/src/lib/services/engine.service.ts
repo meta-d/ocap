@@ -19,12 +19,12 @@ import {
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { BaseCheckpointSaver, GraphValueError } from '@langchain/langgraph/web'
+import { BaseCheckpointSaver, END, GraphValueError } from '@langchain/langgraph/web'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { compact, flatten, pick } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { DropAction } from '../types'
+import { DropAction, NgmCopilotChatMessage } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
 
@@ -405,10 +405,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     const chatHistoryMessages = this.chatHistoryMessages()
 
     // Context content
-    const contextContent = context ? await recognizeContext(content, context) : null
-    const params = await recognizeContextParams(content, context)
-
-    const systemPrompt = await this.upsertUserInputMessage(command, params, content)
+    const {systemPrompt, contextContent} = await this.upsertUserInputMessage(command, content, context)
 
     conversationId ??= this.currentConversationId()
     const assistantId = nanoid()
@@ -536,10 +533,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // Context content
     let contextContent = null
     if (content) {
-      contextContent = context ? await recognizeContext(content, context) : null
-      const params = await recognizeContextParams(content, context)
-      
-      const systemPrompt = await this.upsertUserInputMessage(command, params, content)
+      const result = await this.upsertUserInputMessage(command, content, context)
+      if (result.error) {
+        return
+      }
+      contextContent = result.contextContent
     }
 
     let assistantId = nanoid()
@@ -571,18 +569,23 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
     // Compile state graph
     let graph = conversation.graph
-    if (!conversation.graph) {
-      const options = {checkpointer: this.checkpointSaver, interruptBefore: null, interruptAfter: null}
-      if (this.aiOptions.interactive) {
-        options.interruptBefore = command.agent.interruptBefore
-        options.interruptAfter = command.agent.interruptAfter
-      }
-      graph = (await command.createGraph(this.llm())).compile(options)
+    if (!graph) {
+      try {
+        const options = {checkpointer: this.checkpointSaver, interruptBefore: null, interruptAfter: null}
+        if (this.aiOptions.interactive) {
+          options.interruptBefore = command.agent.interruptBefore
+          options.interruptAfter = command.agent.interruptAfter
+        }
+        graph = (await command.createGraph(this.llm())).compile(options)
 
-      this.updateLastConversation((conversation) => ({
-        ...conversation,
-        graph
-      }))
+        this.updateLastConversation((conversation) => ({
+          ...conversation,
+          graph
+        }))
+      } catch (err: any) {
+        console.error(err)
+        return
+      }
     }
     
     const verbose = this.verbose()
@@ -609,16 +612,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
       try {
         for await (const output of streamResults) {
           if (!output?.__end__) {
-            console.log(output);
-            console.log("----");
-
             let content = ''
             Object.entries(output).forEach(([key, value]: [string, {messages?: HumanMessage[]; next?: string; instructions?: string;}]) => {
               content += content ? '\n' : ''
               if (value.messages) {
                 content += `<b>${key}</b>: ${value.messages[0]?.content}`
               } else if(value.next && value.next !== 'FINISH') {
-                content += `<b>${key}</b>: call ${value.next} with: ${value.instructions}`
+                if (value.next === 'FINISH' || value.next === END) {
+                  end = true
+                } else {
+                  content += `<b>${key}</b>: call ${value.next} with: ${value.instructions}`
+                }
               }
             })
 
@@ -683,10 +687,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
     await this.triggerGraphAgent(null, conversation)
   }
 
-  private async upsertUserInputMessage(command, params, content) {
-    const messages = []
+  private async upsertUserInputMessage(command: CopilotCommand, content: string, context: CopilotContext) {
+    const messages: NgmCopilotChatMessage[] = []
     let systemPrompt = ''
+    let contextContent = null
     try {
+
+      contextContent = context ? await recognizeContext(content, context) : null
+      const params = await recognizeContextParams(content, context)
+
       // Get System prompt
       if (command.systemPrompt) {
         systemPrompt = await command.systemPrompt({ params })
@@ -700,7 +709,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         lcMessage: new HumanMessage({ content })
       })
 
-      return systemPrompt
+      return {systemPrompt, contextContent}
     } catch (err: any) {
       messages.push({
         id: nanoid(),
@@ -709,7 +718,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         command: command.name,
         error: err.message
       })
-      return systemPrompt
+      return {systemPrompt, contextContent, error: err}
     } finally {
       this.upsertMessage(...messages)
     }

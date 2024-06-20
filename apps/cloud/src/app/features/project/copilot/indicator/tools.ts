@@ -1,0 +1,89 @@
+import { inject } from '@angular/core'
+import { MatDialog } from '@angular/material/dialog'
+import { ActivatedRoute, Router } from '@angular/router'
+import { DynamicStructuredTool } from '@langchain/core/tools'
+import { IndicatorSchema, markdownEntityType } from '@metad/core'
+import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
+import { NGXLogger } from 'ngx-logger'
+import { firstValueFrom } from 'rxjs'
+import z from 'zod'
+import { ProjectService } from '../../project.service'
+
+export function injectCreateIndicatorTool() {
+  const logger = inject(NGXLogger)
+  const router = inject(Router)
+  const route = inject(ActivatedRoute)
+
+  const createIndicatorTool = new DynamicStructuredTool({
+    name: 'createIndicator',
+    description: 'Create a new indicator.',
+    schema: IndicatorSchema,
+    func: async (indicator) => {
+      logger.debug(`Execute copilot action 'createIndicator':`, indicator)
+
+      router.navigate(['indicators/new'], {
+        relativeTo: route,
+        state: {
+          ...indicator
+        }
+      })
+
+      return 'Created Indicator!'
+    }
+  })
+
+  return createIndicatorTool
+}
+
+export function injectPickCubeTool() {
+  const logger = inject(NGXLogger)
+  const projectService = inject(ProjectService)
+  const dsCoreService = inject(NgmDSCoreService)
+  const _dialog = inject(MatDialog)
+
+  const pickCubeTool = new DynamicStructuredTool({
+    name: 'pickCube',
+    description: 'Pick a cube.',
+    schema: z.object({}),
+    func: async () => {
+      logger.debug(`Execute copilot action 'pickCube'`)
+
+      const dataSources = projectService.dataSources()
+      const result = await firstValueFrom<EntitySelectResultType>(
+        _dialog
+          .open<NgmEntityDialogComponent, EntitySelectDataType, EntitySelectResultType>(NgmEntityDialogComponent, {
+            data: {
+              dataSources,
+              dsCoreService: dsCoreService,
+              registerModel: projectService.registerModel.bind(projectService)
+            }
+          })
+          .afterClosed()
+      )
+
+      console.log(result)
+      const cube = result?.entities[0]
+      if (result?.dataSource && cube) {
+        const entityType = await firstValueFrom(projectService.selectEntityType(result.dataSource, cube))
+        return `Use model id: '${result.modelId}' and cube: '${cube}'\n` + markdownEntityType(entityType)
+
+        // this.currentDataSource.set(this.models().find((item) => item.key === result.dataSource)?.id)
+        // const entitySet = await firstValueFrom(
+        //   this.dsCoreService.selectEntitySet(result.dataSource, result.entities[0])
+        // )
+        // if (isEntitySet(entitySet)) {
+        //   this.currentEntityType.set(entitySet.entityType)
+        //   return {
+        //     dataSource: result.dataSource,
+        //     entityType: entitySet.entityType
+        //   }
+        // }
+      }
+
+      return ''
+    }
+  })
+
+  return pickCubeTool
+}

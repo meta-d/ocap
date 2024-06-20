@@ -1,25 +1,43 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop'
 import { CdkTreeModule, FlatTreeControl } from '@angular/cdk/tree'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, TemplateRef, ViewChild, computed, inject, model } from '@angular/core'
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ElementRef,
+  TemplateRef,
+  ViewChild,
+  computed,
+  inject,
+  model,
+  signal
+} from '@angular/core'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatDialog, MatDialogRef } from '@angular/material/dialog'
 import { MatTreeFlatDataSource } from '@angular/material/tree'
 import { Router, RouterModule } from '@angular/router'
+import { FavoritesService, NgmSemanticModel, StoriesService, convertStory } from '@metad/cloud/state'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/copilot-angular'
+import { markdownEntityType } from '@metad/core'
 import { NgmCommonModule, NgmConfirmDeleteComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
-import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
-import { DisplayBehaviour, FlatTreeNode, TreeNodeInterface, hierarchize } from '@metad/ocap-core'
-import { TranslateModule } from '@ngx-translate/core'
-import { FavoritesService, StoriesService, convertStory } from '@metad/cloud/state'
+import { AppearanceDirective, ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
+import { DisplayBehaviour, FlatTreeNode, MDCube, TreeNodeInterface, hierarchize, isEntitySet } from '@metad/ocap-core'
 import { Story } from '@metad/story/core'
+import { TranslateModule } from '@ngx-translate/core'
 import { uniq } from 'lodash-es'
 import {
   BehaviorSubject,
+  EMPTY,
+  catchError,
   combineLatest,
   distinctUntilChanged,
   firstValueFrom,
   map,
   shareReplay,
+  startWith,
   switchMap,
   tap,
   withLatestFrom
@@ -34,20 +52,22 @@ import {
   IIndicator,
   IProject,
   ISemanticModel,
-  ProjectService,
+  ProjectsService,
   Store,
   StoryStatusEnum,
   ToastrService,
+  registerModel,
   routeAnimations,
   tryHttp
 } from '../../@core'
 import { MaterialModule, StoryCreationComponent } from '../../@shared'
 import { TranslationBaseComponent } from '../../@shared/language/translation-base.component'
 import { AppService } from '../../app.service'
+import { injectIndicatorCommand } from './copilot/'
 import { ReleaseStoryDialog } from './release-story.component'
 import { SelectModelDialog } from './select-model.component'
-import { collectionId, treeDataSourceFactory } from './types'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { collectionId, injectFetchModelDetails, treeDataSourceFactory } from './types'
+import { ProjectService } from './project.service'
 
 @Component({
   standalone: true,
@@ -64,21 +84,33 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
     ButtonGroupDirective,
     NgmCommonModule,
     AppearanceDirective,
-    NgmTreeSelectComponent,
+    NgmTreeSelectComponent
   ],
   selector: 'pac-project',
   templateUrl: 'project.component.html',
   styleUrls: ['project.component.scss'],
-  animations: [ routeAnimations ]
+  animations: [routeAnimations],
+  providers: [
+    ProjectService,
+    {
+      provide: NgmCopilotContextToken,
+      useClass: NgmCopilotContextService
+    }
+  ]
 })
 export class ProjectComponent extends TranslationBaseComponent {
   DisplayBehaviour = DisplayBehaviour
   DefaultCollection = DefaultCollection
   StoryStatusEnum = StoryStatusEnum
 
-  private readonly collectionService = inject(CollectionService)
-  private readonly appService = inject(AppService)
-  readonly destroyRef = inject(DestroyRef);
+  readonly projectService = inject(ProjectService)
+  readonly collectionService = inject(CollectionService)
+  readonly copilotContext = inject(NgmCopilotContextToken)
+  readonly dsCoreService = inject(NgmDSCoreService)
+  readonly wasmAgent = inject(WasmAgentService)
+  readonly appService = inject(AppService)
+  readonly destroyRef = inject(DestroyRef)
+  readonly fetchModelDetails = injectFetchModelDetails()
 
   @ViewChild('collectionCreation') collectionCreation: TemplateRef<ElementRef>
   @ViewChild('moveTo') moveTo: TemplateRef<ElementRef>
@@ -95,19 +127,15 @@ export class ProjectComponent extends TranslationBaseComponent {
   treeControl: FlatTreeControl<FlatTreeNode<any>>
 
   /**
-   * @deprecated use projectSignal
-   */
-  private _project$ = new BehaviorSubject<IProject>(null)
-  /**
-   * @deprecated use projectSignal
+   * @deprecated use projectService
    */
   get project(): IProject {
-    return this._project$.value
+    return this.projectService.project()
   }
   get isOwner() {
     return this.store.user?.id === this.project?.ownerId
   }
-  
+
   moveToCollectionId: string
   public bookmarks = []
   public unfoldBookmarks = false
@@ -150,15 +178,17 @@ export class ProjectComponent extends TranslationBaseComponent {
   )
 
   // Collections tree
-  readonly collections = toSignal(this.collectionStories$.pipe(
-    map(([collections]) =>
-      hierarchize(collections, {
-        parentNodeProperty: 'parentId',
-        valueProperty: 'id',
-        labelProperty: 'name'
-      })
-    ),
-  ))
+  readonly collections = toSignal(
+    this.collectionStories$.pipe(
+      map(([collections]) =>
+        hierarchize(collections, {
+          parentNodeProperty: 'parentId',
+          valueProperty: 'id',
+          labelProperty: 'name'
+        })
+      )
+    )
+  )
 
   // Collections and stories tree
   public readonly collectionTree$ = this.collectionStories$.pipe(
@@ -185,17 +215,18 @@ export class ProjectComponent extends TranslationBaseComponent {
   )
 
   // Project ob
-  public project$ = this._project$.asObservable()
+  public project$ = this.projectService.project$
 
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly projectSignal = toSignal(this._project$)
+  readonly projectSignal = this.projectService.project
   readonly isDefaultProject = computed(() => {
     return !this.projectSignal()?.id || this.projectSignal()?.id === DefaultProject.id
   })
+  readonly projectModels = computed(() => this.projectSignal()?.models)
 
   /**
   |--------------------------------------------------------------------------
@@ -219,26 +250,33 @@ export class ProjectComponent extends TranslationBaseComponent {
   private _projectDetailSub = this.projectId$
     .pipe(
       switchMap((projectId) =>
-        this.projectService.getOne(projectId ?? null, [
+        this.projectsService.getOne(projectId ?? null, [
           'owner',
           'models',
           'indicators',
           'indicators.businessArea',
-          'certifications',
+          'certifications'
         ])
       ),
       takeUntilDestroyed()
     )
     .subscribe((project) => {
-      this._project$.next(project)
-      this._cdr.detectChanges()
+      // this._project$.next(project)
+      this.projectService.setProject(project)
+      // this._cdr.detectChanges()
     })
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot Commands
+  |--------------------------------------------------------------------------
+  */
+  private indicatorCommand = injectIndicatorCommand()
 
   constructor(
     private store: Store,
     private storiesService: StoriesService,
     private favoritesService: FavoritesService,
-    private projectService: ProjectService,
+    private projectsService: ProjectsService,
     private _dialog: MatDialog,
     private _toastrService: ToastrService,
     private _cdr: ChangeDetectorRef,
@@ -248,11 +286,13 @@ export class ProjectComponent extends TranslationBaseComponent {
     const { dataSource, treeControl } = treeDataSourceFactory()
     this.dataSource = dataSource
     this.treeControl = treeControl
-    
+
     this.appService.inProject.set(true)
     this.destroyRef.onDestroy(() => {
       this.appService.inProject.set(false)
     })
+
+    this.copilotContext.cubes.update(() => this.projectService.copilotCubes$)
   }
 
   hasChild = (_: number, node: FlatTreeNode<any>) => node.expandable
@@ -311,22 +351,33 @@ export class ProjectComponent extends TranslationBaseComponent {
   }
 
   async tryCreateStory(story: Story) {
-    return await tryHttp(this.storiesService.create(
-      convertStory({
-        ...story,
-        collectionId: collectionId(story.collectionId),
-        projectId: this.projectSignal().id
-      })
-    ).pipe(
-      switchMap((newStory) => this.storiesService.updateModels(newStory.id, story.models.map((model) => model.id)).pipe(
-        tap(() => {
-          this.refresh$.next()
-          this._toastrService.success('PAC.Project.CreateStory', { Default: 'Create story' })
-          // Navigate to new story viewer
-          this._router.navigate(['/story', newStory.id, 'edit'])
-        })
-      )),
-    ))
+    return await tryHttp(
+      this.storiesService
+        .create(
+          convertStory({
+            ...story,
+            collectionId: collectionId(story.collectionId),
+            projectId: this.projectSignal().id
+          })
+        )
+        .pipe(
+          switchMap((newStory) =>
+            this.storiesService
+              .updateModels(
+                newStory.id,
+                story.models.map((model) => model.id)
+              )
+              .pipe(
+                tap(() => {
+                  this.refresh$.next()
+                  this._toastrService.success('PAC.Project.CreateStory', { Default: 'Create story' })
+                  // Navigate to new story viewer
+                  this._router.navigate(['/story', newStory.id, 'edit'])
+                })
+              )
+          )
+        )
+    )
   }
 
   async copy(story: Story) {
@@ -344,13 +395,15 @@ export class ProjectComponent extends TranslationBaseComponent {
     )
 
     if (_story) {
-      await tryHttp(this.storiesService.copy(story.id, _story).pipe(
-        tap((newStory) => {
-          this.refresh$.next()
-          this._router.navigate(['/project', newStory.id])
-          this._toastrService.success('PAC.Project.CopyStory', { Default: 'Copy story' })
-        })
-      ))
+      await tryHttp(
+        this.storiesService.copy(story.id, _story).pipe(
+          tap((newStory) => {
+            this.refresh$.next()
+            this._router.navigate(['/project', newStory.id])
+            this._toastrService.success('PAC.Project.CopyStory', { Default: 'Copy story' })
+          })
+        )
+      )
     }
   }
 
@@ -434,12 +487,15 @@ export class ProjectComponent extends TranslationBaseComponent {
       )
       if (models) {
         const newProject = await firstValueFrom(
-          this.projectService.updateModels(project.id, uniq([...models, ...project.models].map(({ id }) => id)))
+          this.projectsService.updateModels(project.id, uniq([...models, ...project.models].map(({ id }) => id)))
         )
-        this._project$.next({
-          ...this.project,
+        this.projectService.updateProject({
           models: newProject.models
         })
+        // this._project$.next({
+        //   ...this.project,
+        //   models: newProject.models
+        // })
         this.modelsExpand = true
         this._cdr.detectChanges()
       }
@@ -453,7 +509,7 @@ export class ProjectComponent extends TranslationBaseComponent {
         this._dialog.open(NgmConfirmDeleteComponent, { data: { value: model.name } }).afterClosed()
       )
       if (confirm) {
-        await firstValueFrom(this.projectService.deleteModel(project.id, model.id))
+        await firstValueFrom(this.projectsService.deleteModel(project.id, model.id))
         this.project.models = this.project.models.filter((item) => item.id !== model.id)
         this.modelsExpand = true
         this._cdr.detectChanges()
@@ -464,7 +520,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   async onDropModels(event: CdkDragDrop<ISemanticModel[]>) {
     moveItemInArray(this.project.models, event.previousIndex, event.currentIndex)
     await firstValueFrom(
-      this.projectService.updateModels(
+      this.projectsService.updateModels(
         this.project.id,
         this.project.models.map(({ id }) => id)
       )
@@ -472,30 +528,44 @@ export class ProjectComponent extends TranslationBaseComponent {
   }
 
   _removeIndicator(id: string) {
-    this._project$.next({
-      ...this.project,
-      indicators: this.project.indicators.filter((item) => item.id !== id)
-    })
+    this.projectService.updateProject((project) => ({
+      ...project,
+      indicators: project.indicators.filter((item) => item.id !== id)
+    }))
+    // this._project$.next({
+    //   ...this.project,
+    //   indicators: this.project.indicators.filter((item) => item.id !== id)
+    // })
   }
 
   _addIndicator(indicator: IIndicator) {
-    this._project$.next({
-      ...this.project,
-      indicators: [indicator, ...this.project.indicators]
-    })
+    this.projectService.updateProject((project) => ({
+      ...project,
+      indicators: [indicator, ...project.indicators]
+    }))
+    // this._project$.next({
+    //   ...this.project,
+    //   indicators: [indicator, ...this.project.indicators]
+    // })
   }
 
   async refreshIndicators() {
     const project = await firstValueFrom(
-      this.projectService.getOne(this.project.id ?? null, ['indicators', 'indicators.businessArea'])
+      this.projectsService.getOne(this.project.id ?? null, ['indicators', 'indicators.businessArea'])
     )
-    this._project$.next({ ...this.project, indicators: project.indicators })
+    this.projectService.updateProject({
+      indicators: project.indicators
+    })
+    // this._project$.next({ ...this.project, indicators: project.indicators })
   }
 
   updateCertifications(certifications: ICertification[]) {
-    this._project$.next({
-      ...this.project,
+    this.projectService.updateProject({
       certifications
     })
+    // this._project$.next({
+    //   ...this.project,
+    //   certifications
+    // })
   }
 }

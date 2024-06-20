@@ -13,8 +13,8 @@ import { ModelDimensionService } from '../../dimension/dimension.service'
 import { SemanticModelService } from '../../model.service'
 import { markdownTableData } from '../../utils'
 import { HierarchySchema } from '../schema'
-import { injectCopilotRoleContext } from '../types'
 import { timeLevelFormatter } from './types'
+import { injectCopilotRoleContext } from '../../../../../@core/copilot'
 
 export function injectHierarchyCommand(dimensionService: ModelDimensionService, tableTypes: Signal<EntityType[]>) {
   const logger = inject(NGXLogger)

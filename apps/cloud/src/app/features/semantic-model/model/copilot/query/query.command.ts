@@ -13,13 +13,12 @@ import {
 import { EntityType } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { TranslateService } from '@ngx-translate/core'
-import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
+import { injectAgentFewShotTemplate, injectCopilotRoleContext } from '../../../../../@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 
 import { ModelEntityService } from '../../entity/entity.service'
 import { SemanticModelService } from '../../model.service'
 import { injectSelectTablesTool } from '../tools'
-import { injectCopilotRoleContext } from '../types'
 import { injectCreateQueryTool, injectQueryTablesTool } from './tools'
 
 export function injectQueryCommand(

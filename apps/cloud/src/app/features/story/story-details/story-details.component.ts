@@ -19,7 +19,7 @@ import { cloneDeep } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { Story, StoryModel, StoryOptions } from '@metad/story/core'
 import { Subject, combineLatestWith, filter, firstValueFrom, map, startWith, switchMap, tap } from 'rxjs'
-import { ISemanticModel, ProjectService, ScreenshotService, ToastrService } from '../../../@core'
+import { ISemanticModel, ProjectsService, ScreenshotService, ToastrService } from '../../../@core'
 import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 
 @Component({
@@ -49,7 +49,7 @@ import { NgmHighlightDirective } from '@metad/ocap-angular/common'
 })
 export class StoryDetailsComponent implements OnInit {
   private readonly screenshotService = inject(ScreenshotService)
-  private readonly projectService = inject(ProjectService)
+  private readonly projectService = inject(ProjectsService)
   public readonly toastrService = inject(ToastrService)
   public readonly data = inject<Story>(MAT_DIALOG_DATA)
   public dialogRef? = inject(MatDialogRef<StoryDetailsComponent>)

@@ -69,7 +69,16 @@ export class NgmCopilotContextService implements CopilotContext {
     return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
   })
 
-  // contexts
+  /**
+   * Contexts
+   */
+  /**
+   * Observable to get all cubes:
+   * 
+   * ```typescript
+   * this.copilotContext.cubes.update(() => this.modelCubes$.pipe(shareReplay(1)))
+   * ```
+   */
   readonly cubes = signal<Observable<ISelectOption<{
     dataSource: string;
     serizalize: () => Promise<string>

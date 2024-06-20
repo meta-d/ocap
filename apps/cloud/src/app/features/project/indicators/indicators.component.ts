@@ -11,7 +11,7 @@ import {
   uploadYamlFile,
   zodToProperties
 } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
+import { CommandDialogComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -59,7 +59,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly currentEntityType = signal<EntityType | null>(null)
 
   #createIndicator = injectCopilotCommand({
-    name: 'i',
+    name: 'iiii',
     description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateIndicator', {Default: 'Create a new indicator'}),
     systemPrompt: async () => {
       let prompt = `你是一名 BI 指标体系管理的业务专家，请根据指定的 Cube 信息和需求描述转成相应的参数调用 create_indicator 函数进行创建新指标。
@@ -183,5 +183,17 @@ ${calcEntityTypePrompt(this.currentEntityType())}
       this.openedLinks().splice(index, 1, indicator)
     }
     this.currentLink.set(indicator)
+  }
+
+  aiRegister() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['indicator']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 }

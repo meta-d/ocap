@@ -9,6 +9,11 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
       <div ngmButtonGroup>
+        <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action" [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="aiRegister()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        </button>
+
         <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators()?.length" (click)="export()">
           <div class="flex items-center">
             <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>

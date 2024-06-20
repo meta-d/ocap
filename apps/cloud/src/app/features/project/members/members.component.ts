@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
-import { ICertification, IProject, IUser, ProjectService, Store, ToastrService } from '../../../@core'
+import { ICertification, IProject, IUser, ProjectsService, Store, ToastrService } from '../../../@core'
 import {
   CertificationSelectComponent,
   UserProfileComponent,
@@ -58,7 +58,7 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
   userLabel = userLabel
 
   // Injectors
-  private projectService = inject(ProjectService)
+  private projectService = inject(ProjectsService)
   private projectComponent = inject(ProjectComponent)
   private store = inject(Store)
   private _dialog = inject(MatDialog)

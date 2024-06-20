@@ -10,7 +10,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { StoriesService, WidgetsService } from '@metad/cloud/state'
 import { NgmDialogComponent } from '@metad/components/dialog'
 import { BehaviorSubject, distinctUntilChanged, firstValueFrom, map, of, switchMap, tap } from 'rxjs'
-import { DefaultProject, ISemanticModel, IStory, ProjectService } from '../../../@core'
+import { DefaultProject, ISemanticModel, IStory, ProjectsService } from '../../../@core'
 import { LazyImgDirective } from '../../directives/lazy-img.directive'
 import { MaterialModule } from '../../material.module'
 import { CreatedByPipe } from '../../pipes'
@@ -49,7 +49,7 @@ export class StorySelectorComponent {
   private translateService = inject(TranslateService)
   private storiesService = inject(StoriesService)
   private widgetsService = inject(WidgetsService)
-  private projectService = inject(ProjectService)
+  private projectService = inject(ProjectsService)
 
   @Input() get model(): ISemanticModel {
     return this._model$.value
