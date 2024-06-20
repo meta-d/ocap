@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { Component, computed, inject, signal } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
-import { Indicator, ModelsService, NgmSemanticModel, convertIndicatorResult } from '@metad/cloud/state'
+import { Indicator, NgmSemanticModel, convertIndicatorResult } from '@metad/cloud/state'
 import {
   IndicatorSchema,
   calcEntityTypePrompt,
@@ -34,7 +34,6 @@ import { ProjectService } from '../project.service'
   animations: [routeAnimations]
 })
 export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndicator> {
-  // private projectComponent = inject(ProjectComponent)
   private projectService = inject(ProjectService)
   private _dialog = inject(MatDialog)
   readonly #logger = inject(NGXLogger)
@@ -42,10 +41,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
-
-  // get indicators() {
-  //   return this.projectComponent.project?.indicators
-  // }
+  
 
   readonly selectedIndicators = signal<IIndicator[]>([])
   readonly models = this.projectService.models

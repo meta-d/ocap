@@ -61,17 +61,17 @@
       {{ 'PAC.INDICATOR.MY_INDICATORS.Approvals' | translate: {Default: "Approvals"} }}
     </span>
 
-    <span mat-tab-link *ngFor="let indicator of openedLinks()" [routerLink]="[indicator.id]"
-      [active]="indicator.id === currentLink()?.id"
-    >
-      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
-      <span *ngIf="indicator.name">{{indicator.name}}</span>
-      <span *ngIf="indicator.id === 'new'">{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
-      <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
-        <mat-icon>cancel</mat-icon>
-      </button>
-    </span>
-    
+    @for (indicator of openedLinks(); track indicator) {
+      <span mat-tab-link [routerLink]="[indicator.id || indicator.code]"
+        [active]="indicator.id === currentLink()?.id || indicator.code === currentLink()?.code">
+        <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
+        <span *ngIf="indicator.name">{{indicator.name}}</span>
+        <span *ngIf="indicator.id === 'new'">{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
+        <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </span>
+    }
   </nav>
 </div>
 <mat-divider></mat-divider>

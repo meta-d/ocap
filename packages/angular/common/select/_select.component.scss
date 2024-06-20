@@ -62,12 +62,12 @@ $prefix: (ngm, color);
 
 .cdk-overlay-pane:not(.mat-mdc-select-panel-above) {
   .ngm-select-panel.mat-mdc-select-panel {
-    @apply mt-2;
+    @apply mt-4;
   }
 }
 .cdk-overlay-pane.mat-mdc-select-panel-above {
   .ngm-select-panel.mat-mdc-select-panel {
-    @apply mb-2;
+    @apply mb-4;
   }
 }
 .ngm-select-panel.mat-mdc-select-panel {

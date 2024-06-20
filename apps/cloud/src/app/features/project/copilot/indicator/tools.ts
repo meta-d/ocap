@@ -5,11 +5,11 @@ import { DynamicStructuredTool } from '@langchain/core/tools'
 import { IndicatorSchema, markdownEntityType } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
+import { uuid } from 'apps/cloud/src/app/@core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
 import z from 'zod'
 import { ProjectService } from '../../project.service'
-import { uuid } from 'apps/cloud/src/app/@core'
 
 export function injectCreateIndicatorTool() {
   const logger = inject(NGXLogger)
@@ -27,8 +27,10 @@ export function injectCreateIndicatorTool() {
       indicator.code ??= uuid()
       projectService.newIndicator(indicator)
 
-      router.navigate(['indicators', indicator.code], {
-        relativeTo: route,
+      setTimeout(async () => {
+        await router.navigate(['indicators', indicator.code], {
+          relativeTo: route
+        })
       })
 
       return 'Created Indicator!'
@@ -64,7 +66,6 @@ export function injectPickCubeTool() {
           .afterClosed()
       )
 
-      console.log(result)
       const cube = result?.entities[0]
       if (result?.dataSource && cube) {
         const entityType = await firstValueFrom(projectService.selectEntityType(result.dataSource, cube))

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
@@ -74,6 +75,7 @@ const NewIndicatorCodePlaceholder = 'new'
     AnalyticalCardModule,
     IndicatorRegisterFormComponent
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'pac-project-indicator-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -88,7 +90,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private toastrService = inject(ToastrService)
   private _route = inject(ActivatedRoute)
   private _router = inject(Router)
-  readonly _cdr = inject(ChangeDetectorRef)
+  // readonly _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private _logger? = inject(NGXLogger, { optional: true })
 
@@ -275,9 +277,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       this.indicatorsComponent?.setCurrentLink(indicator)
     })
 
-  constructor() {
-    super()
-  }
 
   isDirty(): boolean {
     return this.registerForm().isDirty

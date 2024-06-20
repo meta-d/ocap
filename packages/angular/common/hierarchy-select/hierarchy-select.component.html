@@ -3,7 +3,7 @@
     <mat-option>-- {{ 'Ngm.Common.None' | translate: {Default: 'None'} }} --</mat-option>
     <mat-optgroup *ngFor="let dimension of dimensions" [label]="dimension.caption">
         <mat-option *ngFor="let hierarchy of dimension.hierarchies" [value]="hierarchy.name">
-            <ngm-display-behaviour class="flex-1" [option]="{value: hierarchy.name, caption: hierarchy.caption}"></ngm-display-behaviour>
+            <ngm-display-behaviour class="flex-1" [option]="{key: hierarchy.name, caption: hierarchy.caption}"></ngm-display-behaviour>
         </mat-option>
     </mat-optgroup>
 </mat-select>
