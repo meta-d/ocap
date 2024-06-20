@@ -1,7 +1,9 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { ChangeDetectionStrategy, Component, Optional } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Optional, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
+import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 import { IsDirty } from '@metad/core'
 import { cloneDeep } from '@metad/ocap-core'
 import { convertModelQueryResult } from 'apps/cloud/src/app/@core'
@@ -24,7 +26,9 @@ import { QueryLabService } from './query-lab.service'
   providers: [QueryLabService]
 })
 export class QueryLabComponent extends TranslationBaseComponent implements IsDirty {
-  public readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
+  readonly _dialog = inject(MatDialog)
+
+  readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
   private readonly modelId = toSignal(this.modelService.modelId$)
   private readonly modelQueries = toSignal(
@@ -76,6 +80,19 @@ export class QueryLabComponent extends TranslationBaseComponent implements IsDir
   addQuery() {
     const key = this.queryLabService.newQuery('')
     this.router.navigate(['.', key], { relativeTo: this.route })
+  }
+
+  aiAddQuery() {
+    this.addQuery()
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['query']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 
   deleteQuery(key: string) {

@@ -133,21 +133,21 @@ ${statement()}
   return injectCopilotCommand(
     commandName,
     (async () => {
-      const prompt = await createAgentPromptTemplate(
-        `You are a cube modeling expert. Let's create a query statement to query data!` +
-          `\n{role}\n` +
-          (isMDX()
-            ? createAgentStepsInstructions(
-                PROMPT_RETRIEVE_DIMENSION_MEMBER,
-                `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 查询语句。`,
-                `最终调用 "createQuery" 工具来执行查询语句。`,
-                `得到查询结果后如果有错误则重新修正查询语句，直到得到正确的查询结果。`
-              )
-            : ` If the user does not provide a table, use 'selectTables' tool to get the table, and then select a table related to the requirement to query.` +
-              ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.`) +
-          `\n{context}\n` +
-          `{system}`
-      ).partial({
+      let _prompt = `You are a cube modeling expert. Let's all 'createQuery' tool with a query statement to query data!` +
+                      `\n{role}\n`
+      if (isMDX()) {
+        _prompt += createAgentStepsInstructions(
+          PROMPT_RETRIEVE_DIMENSION_MEMBER,
+          `根据用户输入的逻辑和获取到的维度成员信息创建一个 MDX 查询语句。`,
+          `最终调用 "createQuery" 工具来执行查询语句。`,
+          `得到查询结果后如果有错误则重新修正查询语句，直到得到正确的查询结果。`
+        )
+      } else {
+        _prompt += ` If the user does not provide a table, use 'selectTables' tool to get the table, and then select a table related to the requirement to query.` +
+              ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.`
+      }
+
+      const prompt = await createAgentPromptTemplate(_prompt + `\n{context}\n` + `{system}`).partial({
         system: systemContext,
         role: copilotRoleContext
       })

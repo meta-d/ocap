@@ -1,0 +1,6 @@
+.mat-mdc-input-element {
+  background-color: var(--mdc-dialog-container-color, white);
+}
+.ai-generate.mdc-button {
+  @apply text-neutral-700 dark:text-neutral-700;
+}

@@ -8,6 +8,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatInputModule } from '@angular/material/input'
 import { CopilotEngine } from '@metad/copilot'
 import { NgmCopilotEngineService } from '../services'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   standalone: true,
@@ -16,6 +17,7 @@ import { NgmCopilotEngineService } from '../services'
   styleUrls: ['./command-dialog.component.scss'],
   imports: [
     CommonModule,
+    TranslateModule,
     FormsModule,
     MatDialogModule,
     MatButtonModule,

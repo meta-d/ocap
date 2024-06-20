@@ -43,5 +43,8 @@ export const ZhHans = {
     Interactive: '交互',
     Verbose: '详细',
     End: '结束',
+    Generating: '生成中',
+    Generate: '生成',
+    GenerateWithAI: '使用 AI 生成',
   }
 }
