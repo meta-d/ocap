@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
-import { toObservable } from '@angular/core/rxjs-interop'
-import { IndicatorsService, NgmSemanticModel } from '@metad/cloud/state'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
+import { BusinessAreasService, IndicatorsService, NgmSemanticModel, hierarchizeBusinessAreas } from '@metad/cloud/state'
 import { markdownEntityType, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -19,13 +19,15 @@ import {
   take,
   tap
 } from 'rxjs'
-import { IProject, ISemanticModel, ProjectsService, registerModel } from '../../@core'
+import { IProject, ISemanticModel, ProjectsService, TagService, registerModel } from '../../@core'
 import { injectFetchModelDetails } from './types'
 
 @Injectable()
 export class ProjectService {
   readonly projectsService = inject(ProjectsService)
   readonly indicatorsService = inject(IndicatorsService)
+  readonly businessAreasStore = inject(BusinessAreasService)
+  readonly tagService = inject(TagService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
@@ -72,35 +74,46 @@ export class ProjectService {
     shareReplay(1)
   )
 
-  readonly copilotCubes$ = this.modelCubes$.pipe(
-    map((models) => {
-      const items = []
-      models.forEach((model, index) => {
-        items.push(
-          ...model.cubes.map((cube) => ({
-            value: {
-              dataSource: model,
-              dataSourceId: model.id,
-              serizalize: async () => {
-                const entityType = await firstValueFrom(this.selectEntityType(model.key, cube.name))
-                return `The model id: '${model.id}'\n` + markdownEntityType(entityType)
-              }
-            },
-            key: cube.name,
-            caption: cube.caption
-          }))
-        )
-      })
-      return items
-    }),
-    shareReplay(1)
-  )
+  // readonly copilotCubes$ = this.modelCubes$.pipe(
+  //   map((models) => {
+  //     const items = []
+  //     models.forEach((model, index) => {
+  //       items.push(
+  //         ...model.cubes.map((cube) => ({
+  //           value: {
+  //             dataSource: model,
+  //             dataSourceId: model.id,
+  //             serizalize: async () => {
+  //               const entityType = await firstValueFrom(this.selectEntityType(model.key, cube.name))
+  //               return `The model id: '${model.id}'\n` + markdownEntityType(entityType)
+  //             }
+  //           },
+  //           key: cube.name,
+  //           caption: cube.caption
+  //         }))
+  //       )
+  //     })
+  //     return items
+  //   }),
+  //   shareReplay(1)
+  // )
 
   /**
    * Indicators
    */
   readonly indicators = computed(() => this.project()?.indicators)
   readonly #newIndicators = signal<Indicator[]>([])
+
+  /**
+   * Business Areas
+   */
+  readonly businessAreas = toSignal(this.businessAreasStore.getMy().pipe(startWith([])))
+  readonly businessAreasTree = computed(() => hierarchizeBusinessAreas(this.businessAreas()))
+
+   /**
+   * Tags
+   */
+  readonly tags = toSignal(this.tagService.getAll('indicator'), { initialValue: [] })
 
   setProject(project: IProject) {
     this.project.set(project)

@@ -21,6 +21,8 @@ export function injectIndicatorCommand() {
   const memberRetrieverTool = injectDimensionMemberTool()
 
   const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
+  const businessAreas = projectService.businessAreas
+  const tags = projectService.tags
 
   const commandName = 'indicator'
   return injectCopilotCommand(
@@ -39,7 +41,9 @@ export function injectIndicatorCommand() {
             createIndicatorTool,
             memberRetrieverTool,
             copilotRoleContext,
-            indicatorCodes
+            indicatorCodes,
+            businessAreas,
+            tags
           })
         }
       }

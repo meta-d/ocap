@@ -616,7 +616,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
             Object.entries(output).forEach(([key, value]: [string, {messages?: HumanMessage[]; next?: string; instructions?: string;}]) => {
               content += content ? '\n' : ''
               if (value.messages) {
-                content += `<b>${key}</b>: ${value.messages[0]?.content}`
+                if (verbose) {
+                  content += `<b>${key}</b>: `
+                }
+                content += value.messages.map((m) => m.content).join('\n\n')
               } else if(value.next) {
                 if (value.next === 'FINISH' || value.next === END) {
                   end = true

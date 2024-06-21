@@ -30,7 +30,7 @@ export function injectCreateIndicatorTool() {
         const [hierarchy, level] = indicator.calendar.split('].[')
         indicator.calendar = level ? `${hierarchy}]` : indicator.calendar
       }
-      projectService.newIndicator(indicator as Indicator)
+      projectService.newIndicator({...indicator, visible: true} as Indicator)
 
       setTimeout(async () => {
         await router.navigate(['indicators', indicator.code], {

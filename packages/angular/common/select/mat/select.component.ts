@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   forwardRef,
@@ -16,7 +17,7 @@ import {
   signal,
   SimpleChanges
 } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
   FormControl,
@@ -34,9 +35,9 @@ import { MatInputModule } from '@angular/material/input'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { DisplayDensity, ISelectOption, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour } from '@metad/ocap-core'
-import { BehaviorSubject } from 'rxjs'
 import { combineLatestWith, debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
+import { isEqual } from 'lodash-es'
 
 @Component({
   standalone: true,
@@ -85,13 +86,15 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
 
   @Input() validators: ValidatorFn | ValidatorFn[] | null
 
-  @Input() get selectOptions(): ISelectOption[] {
-    return this._selectOptions$.value
-  }
-  set selectOptions(value) {
-    this._selectOptions$.next(value)
-  }
-  private _selectOptions$ = new BehaviorSubject<ISelectOption[]>([])
+  // @Input() get selectOptions(): ISelectOption[] {
+  //   return this._selectOptions$.value
+  // }
+  // set selectOptions(value) {
+  //   this._selectOptions$.next(value)
+  // }
+  // private _selectOptions$ = new BehaviorSubject<ISelectOption[]>([])
+
+  readonly selectOptions = input<ISelectOption[]>([])
 
   @Input() get multiple(): boolean {
     return this._multiple
@@ -116,6 +119,7 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
   formControl = new FormControl<ISelectOption | string[] | string>(null)
   // selection = new SelectionModel<string>(true)
   readonly selectionSignal = selectionModel<string>()
+  readonly selectedValues = computed(() => this.selectionSignal(), { equal: isEqual})
   get highlight() {
     return typeof this.formControl.value === 'string' ? this.formControl.value.trim() : null
   }
@@ -123,6 +127,7 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
     return Array.isArray(this.formControl.value) ? this.formControl.value.length : this.formControl.value
   }
 
+  readonly _selectOptions$ = toObservable(this.selectOptions)
   public readonly options$ = this.formControl.valueChanges.pipe(
     startWith(''),
     debounceTime(500),
@@ -141,8 +146,8 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
   constructor() {
     effect(() => {
       if (this.multiple) {
-        this._updateLabel()
-        this.onChange?.(this.selectionSignal())
+        // this._updateLabel()
+        this.onChange?.(this.selectedValues())
       }
     }, { allowSignalWrites: true })
   }
@@ -224,7 +229,7 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
     if (this.multiple) {
       this.formControl.setValue(
         // this.selection.selected.map((value) => this.selectOptions?.find((item) => item.key === value)?.caption || value)
-        this.selectionSignal().map((value) => this.selectOptions?.find((item) => item.key === value)?.caption || value)
+        this.selectionSignal().map((value) => this.selectOptions()?.find((item) => item.key === value)?.caption || value)
       )
     } else {
       let option: any = this.formControl.value
@@ -233,7 +238,7 @@ export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAcc
       if (key && !option.caption) {
         option = {
           key,
-          caption: this.selectOptions?.find((item) => item.key === key)?.caption
+          caption: this.selectOptions()?.find((item) => item.key === key)?.caption
         }
         this.formControl.setValue(option, { emitEvent: false })
       }

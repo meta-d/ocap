@@ -62,7 +62,7 @@ import {
 import { MaterialModule, StoryCreationComponent } from '../../../@shared'
 import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 import { AppService } from '../../../app.service'
-import { injectIndicatorCommand } from '../copilot/'
+import { injectIndicatorCommand, provideCopilotCubes } from '../copilot/'
 import { ReleaseStoryDialog } from '../release-story.component'
 import { SelectModelDialog } from '../select-model.component'
 import { collectionId, injectFetchModelDetails, treeDataSourceFactory } from '../types'
@@ -104,12 +104,13 @@ export class ProjectComponent extends TranslationBaseComponent {
 
   readonly projectService = inject(ProjectService)
   readonly collectionService = inject(CollectionService)
-  readonly copilotContext = inject(NgmCopilotContextToken)
+  // readonly copilotContext = inject(NgmCopilotContextToken)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly appService = inject(AppService)
   readonly destroyRef = inject(DestroyRef)
   readonly fetchModelDetails = injectFetchModelDetails()
+  readonly copilotContext = provideCopilotCubes()
 
   @ViewChild('collectionCreation') collectionCreation: TemplateRef<ElementRef>
   @ViewChild('moveTo') moveTo: TemplateRef<ElementRef>
@@ -291,7 +292,7 @@ export class ProjectComponent extends TranslationBaseComponent {
       this.appService.inProject.set(false)
     })
 
-    this.copilotContext.cubes.update(() => this.projectService.copilotCubes$)
+    // this.copilotContext.cubes.update(() => this.projectService.copilotCubes$)
   }
 
   hasChild = (_: number, node: FlatTreeNode<any>) => node.expandable

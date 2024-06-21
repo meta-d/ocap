@@ -7,6 +7,7 @@ import { Route } from '../../../../@core/copilot/'
 import { createIndicatorWorker } from './indicator-agent'
 import { createMemberWorker } from './member-agent'
 import { DIMENSION_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
+import { IBusinessArea, ITag } from '../../../../@core'
 
 // Define the top-level State interface
 interface State extends Route.IState {
@@ -39,7 +40,9 @@ export async function createIndicatorGraph({
   createIndicatorTool,
   memberRetrieverTool,
   copilotRoleContext,
-  indicatorCodes
+  indicatorCodes,
+  businessAreas,
+  tags
 }: {
   llm: ChatOpenAI
   pickCubeTool?: DynamicStructuredTool
@@ -47,6 +50,8 @@ export async function createIndicatorGraph({
   memberRetrieverTool?: DynamicStructuredTool
   copilotRoleContext: () => string
   indicatorCodes: Signal<string[]>
+  businessAreas: Signal<IBusinessArea[]>
+  tags: Signal<ITag[]>
 }) {
   const supervisorNode = await Route.createSupervisor(llm, [INDICATOR_AGENT_NAME])
   // const planner = await Route.createWorkerAgent(llm, [pickCubeTool], `为注册业务数据指标指定计划\n` + `{context}`)
@@ -58,7 +63,9 @@ export async function createIndicatorGraph({
   const createIndicator = await createIndicatorWorker({
     llm,
     copilotRoleContext,
-    indicatorCodes
+    indicatorCodes,
+    businessAreas,
+    tags
   }, [pickCubeTool, memberRetrieverTool, createIndicatorTool])
 
   const superGraph = new StateGraph({ channels: superState })

@@ -49,6 +49,8 @@ import {
 import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
 import { injectFetchModelDetails } from '../../types'
+import { ProjectService } from '../../project.service'
+import { isEqual } from 'lodash-es'
 
 
 @Component({
@@ -85,7 +87,8 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 
-  readonly businessAreasStore = inject(BusinessAreasService)
+  // readonly businessAreasStore = inject(BusinessAreasService)
+  readonly projectService = inject(ProjectService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
@@ -182,7 +185,7 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
     })
   )
 
-  public readonly groupTree$ = this.businessAreasStore.getMyAreasTree().pipe(startWith([]))
+  readonly businessAreasTree = this.projectService.businessAreasTree
 
   private readonly entitySet$ = this.entity.valueChanges.pipe(distinctUntilChanged(), filter(nonBlank))
   public readonly dataSettings$ = combineLatest([this.dataSourceName$, this.entitySet$]).pipe(
@@ -190,6 +193,7 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
       dataSource,
       entitySet
     })),
+    distinctUntilChanged(isEqual),
     takeUntilDestroyed(),
     shareReplay(1)
   )
