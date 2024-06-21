@@ -8,8 +8,13 @@ import { ChatOpenAI } from '@langchain/openai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { z } from 'zod'
+import { ConversationState } from './types'
 
 type ZodAny = z.ZodObject<any, any, any, any>
+
+export interface State extends ConversationState {
+  next: string
+}
 
 /**
  * Create the **supervisor** node for the route graph.
@@ -118,9 +123,4 @@ export function createRunWorkerAgent<S>(agent: AgentExecutor, name: string) {
       messages: [new HumanMessage({ content: result.output, name })]
     }
   }
-}
-
-export type IState = {
-  context: string
-  messages: BaseMessage[]
 }

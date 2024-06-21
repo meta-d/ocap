@@ -576,7 +576,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           options.interruptBefore = command.agent.interruptBefore
           options.interruptAfter = command.agent.interruptAfter
         }
-        graph = (await command.createGraph(this.llm())).compile(options)
+        graph = (await command.createGraph({llm: this.llm(), checkpointer: this.checkpointSaver})).compile(options)
 
         this.updateLastConversation((conversation) => ({
           ...conversation,
@@ -584,6 +584,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }))
       } catch (err: any) {
         console.error(err)
+        this.upsertMessage({
+          id: assistantId,
+          role: CopilotChatMessageRoleEnum.Assistant,
+          content: '',
+          status: 'error',
+          error: err.message
+        })
         return
       }
     }
@@ -598,6 +605,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           {
             messages,
             context: contextContent ? contextContent : null,
+            role: this.copilot.rolePrompt()
           } : null,
         {
           configurable: {
@@ -652,9 +660,15 @@ export class NgmCopilotEngineService implements CopilotEngine {
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         if (!(err instanceof GraphValueError)) {
           console.error(err)
+          this.upsertMessage({
+            id: assistantId,
+            role: CopilotChatMessageRoleEnum.Assistant,
+            status: 'error',
+            error: err.message
+          })
         }
         end = true
       }

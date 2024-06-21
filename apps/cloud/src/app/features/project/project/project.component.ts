@@ -62,7 +62,7 @@ import {
 import { MaterialModule, StoryCreationComponent } from '../../../@shared'
 import { TranslationBaseComponent } from '../../../@shared/language/translation-base.component'
 import { AppService } from '../../../app.service'
-import { injectIndicatorCommand, provideCopilotCubes } from '../copilot/'
+import { injectIndicatorArchitectCommand, injectIndicatorCommand, provideCopilotCubes } from '../copilot/'
 import { ReleaseStoryDialog } from '../release-story.component'
 import { SelectModelDialog } from '../select-model.component'
 import { collectionId, injectFetchModelDetails, treeDataSourceFactory } from '../types'
@@ -271,6 +271,7 @@ export class ProjectComponent extends TranslationBaseComponent {
   |--------------------------------------------------------------------------
   */
   private indicatorCommand = injectIndicatorCommand()
+  private indicatorArchitectCommand = injectIndicatorArchitectCommand()
 
   constructor(
     private store: Store,

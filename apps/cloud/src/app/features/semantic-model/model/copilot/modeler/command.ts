@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { ChatOpenAI } from '@langchain/openai'
-import { CopilotAgentType } from '@metad/copilot'
+import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
@@ -33,7 +33,7 @@ export function injectModelerCommand() {
       conversation: true,
       interruptAfter: ['tools']
     },
-    createGraph: async (llm: ChatOpenAI) => {
+    createGraph: async ({llm}: CreateGraphOptions) => {
       return await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions })
     }
   })
@@ -53,7 +53,7 @@ export function injectModelerCommand() {
     revert: async (index: number) => {
       modelService.gotoHistoryCursor(index)
     },
-    createGraph: async (llm: ChatOpenAI) => {
+    createGraph: async ({llm}: CreateGraphOptions) => {
       const dimensionModeler = await createDimensionModeler(llm)
       const cubeModeler = await createCubeModeler(llm)
       return await createModelerGraph({

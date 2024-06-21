@@ -2,20 +2,23 @@ import { Signal } from '@angular/core'
 import { BaseMessage } from '@langchain/core/messages'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
-import { ChatOpenAI } from '@langchain/openai'
 import { Route } from '../../../../@core/copilot/'
 import { createIndicatorWorker } from './indicator-agent'
 import { DIMENSION_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
 import { IBusinessArea, ITag } from '../../../../@core'
 import { createReviewerWorker } from './reviewer-agent'
+import { CreateGraphOptions } from '@metad/copilot'
 
 // Define the top-level State interface
-interface State extends Route.IState {
-  next: string
-  instructions: string
+interface State extends Route.State {
+  instructions?: string
 }
 
 const superState: StateGraphArgs<State>['channels'] = {
+  role: {
+    value: (x: any, y: any) => y ?? x,
+    default: () => ''
+  },
   context: {
     value: (x: any, y: any) => y ?? x,
     default: () => ''
@@ -36,6 +39,7 @@ const superState: StateGraphArgs<State>['channels'] = {
 
 export async function createIndicatorGraph({
   llm,
+  checkpointer,
   pickCubeTool,
   createIndicatorTool,
   memberRetrieverTool,
@@ -44,8 +48,7 @@ export async function createIndicatorGraph({
   indicatorCodes,
   businessAreas,
   tags,
-}: {
-  llm: ChatOpenAI
+}: CreateGraphOptions & {
   pickCubeTool?: DynamicStructuredTool
   createIndicatorTool?: DynamicStructuredTool
   memberRetrieverTool?: DynamicStructuredTool

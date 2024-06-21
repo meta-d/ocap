@@ -120,12 +120,12 @@
                               }
                             </div>
                           }
-                            @if (message.error) {
-                              <div class="ngm-copilot-chat__message-content text-red-400">
-                                <span class="font-notoColorEmoji">🙈</span>
-                                <span>{{ message.error }}</span>
-                              </div>
-                            }
+                          @if (message.error) {
+                            <div class="ngm-copilot-chat__message-content text-red-400">
+                              <span class="font-notoColorEmoji">🙈</span>
+                              <span>{{ message.error }}</span>
+                            </div>
+                          }
                         }
                             <!-- <button mat-icon-button displayDensity="compact" class="ngm-copilot__message-remove left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100"
                                 (click)="deleteMessage(message)">
