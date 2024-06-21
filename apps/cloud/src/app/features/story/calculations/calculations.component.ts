@@ -20,7 +20,7 @@ import { CalculationProperty, DataSettings, DisplayBehaviour, ParameterProperty,
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationCommand } from './copilot/commands'
+import { injectCalculationCommand } from '../copilot'
 
 @Component({
   standalone: true,

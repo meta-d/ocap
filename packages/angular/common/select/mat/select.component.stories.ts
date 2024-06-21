@@ -26,7 +26,7 @@ import { NgmMatSelectComponent } from './select.component'
   </ngm-mat-select> `
 })
 class TestSelectComponent<T> implements OnChanges {
-  @Input() label: string
+  @Input() caption: string
   @Input() placeholder: string
   @Input() selectOptions: TreeNodeInterface<T>
   @Input() multiple: boolean
@@ -81,28 +81,28 @@ type Story = StoryObj<NgmMatSelectComponent>
 
 const TREE_NODE_DATA = [
   {
-    value: 'Fruit',
-    label: '水果'
+    key: 'Fruit',
+    caption: '水果'
   },
-  { value: 'Apple', label: '苹果', raw: { type: 'Hive' } },
-  { value: 'Banana', label: '香蕉' },
-  { value: 'Fruit loops', label: '果循环' },
+  { key: 'Apple', caption: '苹果', raw: { type: 'Hive' } },
+  { key: 'Banana', caption: '香蕉' },
+  { key: 'Fruit loops', caption: '果循环' },
   {
-    value: 'Vegetables',
-    label: '蔬菜'
+    key: 'Vegetables',
+    caption: '蔬菜'
   },
   {
-    value: 'Green',
-    label: '绿色'
+    key: 'Green',
+    caption: '绿色'
   },
-  { value: 'Broccoli', label: '西兰花' },
-  { value: 'Brussel sprouts', label: '豆芽' },
+  { key: 'Broccoli', caption: '西兰花' },
+  { key: 'Brussel sprouts', caption: '豆芽' },
   {
-    value: 'Orange',
-    label: '橙'
+    key: 'Orange',
+    caption: '橙'
   },
-  { value: 'Pumpkins', label: '南瓜', raw: { type: 'PG' } },
-  { value: 'Carrots', label: '胡萝卜' }
+  { key: 'Pumpkins', caption: '南瓜', raw: { type: 'PG' } },
+  { key: 'Carrots', caption: '胡萝卜' }
 ] as any
 
 export const Default = {
@@ -136,9 +136,8 @@ export const SelectMultiple = {
     label: '饮食选择器',
     placeholder: '请选择你喜欢的一种食品',
     selectOptions: TREE_NODE_DATA,
-    valueKey: 'key',
     multiple: true,
-    model: ['Apple', 'Pumpkins']
+    value: ['Apple', 'Pumpkins']
   }
 }
 
@@ -147,19 +146,17 @@ export const SelectVirtualScroll = {
     label: '饮食选择器',
     placeholder: '请选择你喜欢的一种食品',
     selectOptions: TREE_NODE_DATA,
-    valueKey: 'key',
     multiple: true,
-    model: ['Apple', 'Pumpkins'],
+    value: ['Apple', 'Pumpkins'],
     virtualScroll: true
   }
 }
 
 export const DensityCosy = {
   args: {
-    label: '饮食选择器',
+    caption: '饮食选择器',
     placeholder: '请选择你喜欢的一种食品',
     selectOptions: TREE_NODE_DATA,
-    valueKey: 'key',
     displayDensity: DisplayDensity.cosy
   }
 }
@@ -169,7 +166,6 @@ export const DensityCompact = {
     label: '饮食选择器',
     placeholder: '请选择你喜欢的一种食品',
     selectOptions: TREE_NODE_DATA,
-    valueKey: 'key',
     displayDensity: DisplayDensity.compact
   }
 }

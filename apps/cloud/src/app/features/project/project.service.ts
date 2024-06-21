@@ -1,17 +1,31 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable } from '@angular/core/rxjs-interop'
-import { NgmSemanticModel } from '@metad/cloud/state'
-import { markdownEntityType } from '@metad/core'
+import { IndicatorsService, NgmSemanticModel } from '@metad/cloud/state'
+import { markdownEntityType, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Indicator, MDCube, isEntitySet } from '@metad/ocap-core'
-import { EMPTY, catchError, combineLatest, firstValueFrom, map, shareReplay, startWith, switchMap, tap } from 'rxjs'
+import {
+  EMPTY,
+  catchError,
+  combineLatest,
+  filter,
+  firstValueFrom,
+  map,
+  of,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap
+} from 'rxjs'
 import { IProject, ISemanticModel, ProjectsService, registerModel } from '../../@core'
 import { injectFetchModelDetails } from './types'
 
 @Injectable()
 export class ProjectService {
   readonly projectsService = inject(ProjectsService)
+  readonly indicatorsService = inject(IndicatorsService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
@@ -152,7 +166,23 @@ export class ProjectService {
       })
   }
 
-  getNewIndicator(code: string) {
-    return this.#newIndicators().find((indicator) => indicator.code === code)
+  getIndicatorByCode(code: string) {
+    const newIndicator = this.#newIndicators().find((indicator) => indicator.code === code)
+    return newIndicator
+      ? of(newIndicator)
+      : this.project$.pipe(
+          map((project) => project?.id),
+          filter(nonBlank),
+          take<string>(1),
+          switchMap((projectId) =>
+            this.indicatorsService.getByProject(projectId, { where: { code }, relations: ['createdBy'] })
+          ),
+          map(({ items }) => items[0]),
+          catchError(() => of(null))
+        )
+  }
+
+  getIndicatorById(id: string) {
+    return this.indicatorsService.getById(id, ['createdBy'])
   }
 }

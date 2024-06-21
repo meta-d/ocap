@@ -25,6 +25,9 @@ import { exportIndicator, injectFetchModelDetails } from '../types'
 import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
 import { ProjectService } from '../project.service'
 
+
+export const NewIndicatorCodePlaceholder = 'new'
+
 @Component({
   standalone: true,
   imports: [CommonModule, RouterModule, TranslateModule, MaterialModule, ButtonGroupDirective, DensityDirective],
@@ -176,7 +179,7 @@ ${calcEntityTypePrompt(this.currentEntityType())}
   }
 
   replaceNewIndicator(indicator: Indicator) {
-    const index = this.openedLinks().findIndex((item) => item.id === 'new')
+    const index = this.openedLinks().findIndex((item) => item.code ? item.code === indicator.code : item.id === NewIndicatorCodePlaceholder)
     if (index > -1) {
       this.openedLinks().splice(index, 1, indicator)
     }

@@ -32,6 +32,9 @@
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
 
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
+        @if (conversation.command) {
+          <span class="self-center text-xs font-medium italic px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{conversation.command.name}}</span>
+        }
         @for (message of conversation.messages; track message.id) {
           @switch (message.role) {
             @case (CopilotChatMessageRoleEnum.Assistant) {
@@ -135,7 +138,7 @@
             @case (CopilotChatMessageRoleEnum.User) {
                 <div @fadeAnimation class="user pl-4 flex">
                     <div class="flex-1 flex items-start justify-end overflow-auto">
-                        <div class="flex-1 flex flex-col justify-start items-end overflow-auto relative p-[10px] group"
+                        <div class="flex-1 flex flex-col justify-start items-end overflow-auto relative p-[10px] pt-0 group"
                             [class.ngm-copilot-chat__message-editing]="editingMessageId() === message.id">
                             @if (message.templateRef) {
                               <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
@@ -157,9 +160,9 @@
                                     @if (showTokenizer$() && message.content) {
                                       <ngm-copilot-token [content]="message.content"></ngm-copilot-token>
                                     }
-                                    @if (message.command) {
+                                    <!-- @if (message.command) {
                                       <span class="text-xs font-medium italic px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{message.command}}</span>
-                                    }
+                                    } -->
                                   </div>
                                   <div class="ngm-copilot-chat__message-content ngm-copilot__user-message relative flex flex-col items-end">
                                       <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none

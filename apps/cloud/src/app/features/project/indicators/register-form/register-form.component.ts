@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnChanges, SimpleChanges, effect, forwardRef, inject, signal } from '@angular/core'
+import { Component, Input, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
@@ -78,7 +78,7 @@ import { injectFetchModelDetails } from '../../types'
     }
   ]
 })
-export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAccessor {
+export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   IndicatorType = IndicatorType
   Syntax = Syntax
   SlicersCapacity = SlicersCapacity
@@ -93,9 +93,12 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   readonly #translate = inject(TranslateService)
 
   @Input() certifications: ISelectOption[]
-  @Input() models: ISemanticModel[]
+  // @Input() models: ISemanticModel[]
+  readonly models = input<ISemanticModel[]>()
 
-  modelsOptions: ISelectOption[]
+  readonly modelsOptions = computed<ISelectOption[]>(() => {
+    return this.models()?.map((item) => ({ key: item.id, caption: item.name, value: item }))
+  })
 
   formGroup = new FormGroup({
     id: new FormControl<string>(null),
@@ -168,7 +171,7 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
     switchMap((dataSource) => {
       this.entitiesLoading$.next(true)
       return dataSource.discoverMDCubes().pipe(
-        map((entities) => entities.map((item) => ({ value: item.name, label: item.caption }))),
+        map((entities) => entities.map((item) => ({ key: item.name, caption: item.caption }))),
         catchError((error) => {
           console.error(error)
           this.entitiesLoading$.next(false)
@@ -205,11 +208,11 @@ export class IndicatorRegisterFormComponent implements OnChanges, ControlValueAc
   )
   public readonly measures$ = this.entityType$.pipe(
     map(getEntityMeasures),
-    map((items) => items.map((item) => ({ value: item.name, label: item.caption })))
+    map((items) => items.map((item) => ({ key: item.name, caption: item.caption })))
   )
   public readonly dimensions$ = this.entityType$.pipe(
     map(getEntityDimensions),
-    map((items) => items.map((item) => ({ value: item.name, label: item.caption })))
+    map((items) => items.map((item) => ({ key: item.name, caption: item.caption })))
   )
   public readonly calendars$ = this.entityType$.pipe(
     map(getEntityDimensions),
@@ -325,12 +328,6 @@ ${calcEntityTypePrompt(this.entityType())}
         this.dataSourceName$.next(dataSource.key)
       }
     }, { allowSignalWrites: true })
-  }
-
-  ngOnChanges({ models }: SimpleChanges): void {
-    if (models) {
-      this.modelsOptions = models.currentValue?.map((item) => ({ value: item.id, label: item.name }))
-    }
   }
 
   writeValue(obj: any): void {

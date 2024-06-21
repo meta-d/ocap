@@ -597,7 +597,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       const streamResults = await graph.stream(content ?
           {
             messages,
-            context: contextContent,
+            context: contextContent ? contextContent : null,
           } : null,
         {
           configurable: {
@@ -617,11 +617,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
               content += content ? '\n' : ''
               if (value.messages) {
                 content += `<b>${key}</b>: ${value.messages[0]?.content}`
-              } else if(value.next && value.next !== 'FINISH') {
+              } else if(value.next) {
                 if (value.next === 'FINISH' || value.next === END) {
                   end = true
                 } else {
-                  content += `<b>${key}</b>: call ${value.next} with: ${value.instructions}`
+                  content += `<b>${key}</b>: call ${value.next}`
+                    + (value.instructions ? ` with: ${value.instructions}` : '')
                 }
               }
             })
@@ -695,6 +696,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       contextContent = context ? await recognizeContext(content, context) : null
       const params = await recognizeContextParams(content, context)
+      if (contextContent) {
+        this.updateLastConversation((conversation) => ({
+          ...conversation,
+          context: contextContent
+        }))
+      }
 
       // Get System prompt
       if (command.systemPrompt) {

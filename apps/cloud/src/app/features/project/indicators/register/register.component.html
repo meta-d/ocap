@@ -40,11 +40,11 @@
   </div>
 </div>
 
-<div class="flex-1 overflow-auto p-2">
+<div #content class="flex-1 overflow-auto p-2">
 
   <pac-indicator-register-form #register_form
     [certifications]="certifications$ | async"
-    [models]="models$ | async"
+    [models]="models()"
     [(ngModel)]="indicatorModel"
   ></pac-indicator-register-form>
     

@@ -28,6 +28,12 @@ export class IndicatorsService {
       .pipe(map(({ items }) => items))
   }
 
+  getByProject(projectId: string, options: {relations, where}) {
+    const query = JSON.stringify(options)
+    const params = new HttpParams().append('$query', query)
+    return this.httpClient.get<{ items: IIndicator[] }>(C_URI_API_INDICATORS + `/project/${projectId}`, { params })
+  }
+
   getApp(relations = []) {
     const query = JSON.stringify({ relations })
     const params = new HttpParams().append('$query', query)

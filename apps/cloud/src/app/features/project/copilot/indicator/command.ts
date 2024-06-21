@@ -3,6 +3,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { CopilotAgentType } from '@metad/copilot'
 import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
+import { injectDimensionMemberTool } from '@metad/core'
 import { NGXLogger } from 'ngx-logger'
 import { createIndicatorGraph } from './graph'
 import { injectCreateIndicatorTool, injectPickCubeTool } from './tools'
@@ -17,6 +18,7 @@ export function injectIndicatorCommand() {
   const copilotRoleContext = injectCopilotRoleContext()
   const createIndicatorTool = injectCreateIndicatorTool()
   const pickCubeTool = injectPickCubeTool()
+  const memberRetrieverTool = injectDimensionMemberTool()
 
   const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
 
@@ -35,6 +37,7 @@ export function injectIndicatorCommand() {
           return createIndicatorGraph({llm,
             pickCubeTool,
             createIndicatorTool,
+            memberRetrieverTool,
             copilotRoleContext,
             indicatorCodes
           })

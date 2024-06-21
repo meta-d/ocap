@@ -66,6 +66,25 @@ export class IndicatorController extends CrudController<Indicator> {
 	}
 
 	/**
+	 * Query all indicators belong to the project
+	 * 
+	 * @param options 
+	 * @returns 
+	 */
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get('project/:id')
+	async byProject(@Param('id', UUIDValidationPipe) id: string, @Query('$query', ParseJsonPipe) options?: FindManyOptions<Indicator>) {
+		const { where, relations, select } = options ?? {}
+		// Check the project permission
+		// todo
+		return await this.indicatorService.findAll({
+			select,
+			relations,
+			where: {projectId: id, ...(where as ObjectLiteral ?? {})}
+		})
+	}
+
+	/**
 	 * 查询属于自己的指标应用指标
 	 * 
 	 * @param options 

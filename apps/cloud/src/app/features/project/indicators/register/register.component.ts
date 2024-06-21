@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   HostListener,
   inject,
   model,
@@ -38,12 +39,11 @@ import { IIndicator, IndicatorType, isUUID, ToastrService } from '../../../../@c
 import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
 import { ProjectService } from '../../project.service'
 import { exportIndicator } from '../../types'
-import { ProjectIndicatorsComponent } from '../indicators.component'
+import { NewIndicatorCodePlaceholder, ProjectIndicatorsComponent } from '../indicators.component'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 
 // AOA : array of array
 type AOA = any[][]
-const NewIndicatorCodePlaceholder = 'new'
 
 @Component({
   standalone: true,
@@ -82,6 +82,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private _logger? = inject(NGXLogger, { optional: true })
 
   readonly registerForm = viewChild<IndicatorRegisterFormComponent>('register_form')
+  readonly contentElement = viewChild<ElementRef>('content')
 
   readonly indicatorModel = model<Indicator>({})
 
@@ -188,7 +189,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   public readonly certifications$ = this.projectService.project$.pipe(
     map((project) => project?.certifications?.map((item) => ({ value: item.id, label: item.name })) ?? [])
   )
-  public readonly models$ = this.projectService.models$
+  readonly models = this.projectService.models
 
   readonly id$ = this._route.paramMap.pipe(
     startWith(this._route.snapshot.paramMap),
@@ -229,15 +230,19 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private newIndicatorSub = this.id$
     .pipe(
       filter((id) => !isUUID(id)),
-      map((code) => this.projectService.getNewIndicator(code))
+      switchMap((code) => this.projectService.getIndicatorByCode(code))
     )
     .subscribe((indicator) => {
       if (!indicator) {
+        this.registerForm().formGroup.markAsPristine()
         this._router.navigate(['../404'], { relativeTo: this._route })
-        return
+      } else {
+        this.indicatorModel.set({ ...indicator })
+        this.indicatorsComponent?.setCurrentLink(indicator)
+        if (indicator.id) {
+          this.registerForm().formGroup.markAsPristine()
+        }
       }
-      this.indicatorModel.set({ ...indicator })
-      this.indicatorsComponent?.setCurrentLink(indicator)
     })
 
   private indicatorSub = this.id$
@@ -245,7 +250,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       filter((id) => isUUID(id)),
       switchMap((id) => {
         this.loading.set(true)
-        return this.indicatorsService.getById(id, ['createdBy']).pipe(
+        return this.projectService.getIndicatorById(id).pipe(
           tap(() => this.loading.set(false)),
           catchError((err) => {
             this.loading.set(false)
@@ -288,11 +293,17 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   togglePreview() {
     this.preview.update((state) => !state)
+    if (this.preview()) {
+      setTimeout(() => {
+        this.scrollToBottom()
+      }, 300)
+    }
   }
 
   async onSubmit() {
     let indicator = {
       ...this.indicatorModel(),
+      measure: this.indicatorModel().type === IndicatorType.BASIC ? this.indicatorModel().measure : null,
       formula: this.indicatorModel().type === IndicatorType.DERIVE ? this.indicatorModel().formula : null,
       projectId: this.projectSignal().id ?? null
     }
@@ -378,6 +389,13 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
       event.preventDefault()
       this.onSubmit()
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      this.contentElement().nativeElement.scrollTop = this.contentElement().nativeElement.scrollHeight;
+    } catch (err) {
     }
   }
 

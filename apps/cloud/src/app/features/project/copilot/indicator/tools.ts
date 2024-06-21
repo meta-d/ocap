@@ -5,6 +5,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools'
 import { IndicatorSchema, markdownEntityType } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
+import { Indicator } from '@metad/ocap-core'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
@@ -25,7 +26,11 @@ export function injectCreateIndicatorTool() {
       logger.debug(`Execute copilot action 'createIndicator':`, indicator)
 
       indicator.code ??= uuid()
-      projectService.newIndicator(indicator)
+      if (indicator.calendar) {
+        const [hierarchy, level] = indicator.calendar.split('].[')
+        indicator.calendar = level ? `${hierarchy}]` : indicator.calendar
+      }
+      projectService.newIndicator(indicator as Indicator)
 
       setTimeout(async () => {
         await router.navigate(['indicators', indicator.code], {

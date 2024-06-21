@@ -26,10 +26,12 @@ export class DimensionMemberRetriever extends BaseDimensionMemberRetriever {
     // Pass `runManager?.getChild()` when invoking internal runnables to enable tracing
     // const additionalDocs = await someOtherRunnable.invoke(params, runManager?.getChild());
 
-    this.#logger.debug(`Retrieving documents for query: ${query}`)
+    this.#logger.debug(`Retrieving documents for query: ${query}`, runManager)
+    const modelId = this.model?.() ?? this.metadata.modelId as string ?? ''
+    const cube = this.cube?.() ?? this.metadata.cube as string
 
     const results = await firstValueFrom(
-      this.modelsService.getRelevantMembers(this.model(), this.cube(), query, 6).pipe(
+      this.modelsService.getRelevantMembers(modelId, cube, query, 6).pipe(
         timeout(SERVER_REQUEST_TIMEOUT),
         catchError((error) => {
           this.#logger.error('Error while fetching similar documents', error)

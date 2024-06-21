@@ -73,7 +73,7 @@
     <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
   
       <ngm-mat-select [appearance]="appearance" label="{{ 'PAC.INDICATOR.REGISTER.MODEL' | translate: {Default: 'Semantic Model'} }}"
-        [selectOptions]="modelsOptions"
+        [selectOptions]="modelsOptions()"
         displayBehaviour="descriptionOnly"
         virtualScroll
         formControlName="modelId"
