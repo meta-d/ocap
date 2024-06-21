@@ -19,9 +19,9 @@
         {{ 'PAC.MENU.INDICATOR.DownloadAsTemplate' | translate: {Default: "Download as Template"} }}
       </button>
       
-      @if (type() !== 'copy' && (indicator$ | async); as indicator) {
+      @if (type() !== 'copy' && indicatorModel()?.id) {
         <button mat-raised-button displayDensity="cosy"
-          (click)="copy(indicator)">
+          (click)="copy(indicatorModel())">
           {{ 'PAC.ACTIONS.COPY' | translate: {Default: "Copy"} }}
         </button>
       }

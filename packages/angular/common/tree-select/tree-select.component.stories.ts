@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { DisplayDensity, NgmMissingTranslationHandler, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, TreeNodeInterface } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { NgmTreeSelectComponent } from './tree-select.component'
 
 @Component({
@@ -116,6 +116,19 @@ export const TREE_NODE_DATA = [
     ]
   }
 ] as any
+
+type Story = StoryObj<NgmTreeSelectComponent<unknown>>
+
+export const ATreeSelectVirtualScroll = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    treeNodes: TREE_NODE_DATA,
+    model: 'Apple',
+    searchable: true,
+    virtualScroll: true
+  }
+}
 
 // const Template: Story<any> = (args: any) => ({
 //   props: args,

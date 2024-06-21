@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common'
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   computed,
-  effect,
   HostListener,
   inject,
   model,
@@ -17,7 +15,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { convertIndicatorResult, Indicator, IndicatorsService, Store } from '@metad/cloud/state'
-import { IsDirty, IsNilPipe, nonBlank, nonNullable, saveAsYaml } from '@metad/core'
+import { IsDirty, IsNilPipe, nonBlank, saveAsYaml } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective, PERIODS } from '@metad/ocap-angular/core'
@@ -34,24 +32,14 @@ import {
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { EMPTY, firstValueFrom, of } from 'rxjs'
-import {
-  catchError,
-  delay,
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-  tap
-} from 'rxjs/operators'
+import { EMPTY, firstValueFrom } from 'rxjs'
+import { catchError, delay, distinctUntilChanged, filter, map, startWith, switchMap, tap } from 'rxjs/operators'
 import { IIndicator, IndicatorType, isUUID, ToastrService } from '../../../../@core/index'
 import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
+import { ProjectService } from '../../project.service'
 import { exportIndicator } from '../../types'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
-import { ProjectService } from '../../project.service'
 
 // AOA : array of array
 type AOA = any[][]
@@ -90,7 +78,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   private toastrService = inject(ToastrService)
   private _route = inject(ActivatedRoute)
   private _router = inject(Router)
-  // readonly _cdr = inject(ChangeDetectorRef)
   private _dialog = inject(MatDialog)
   private _logger? = inject(NGXLogger, { optional: true })
 
@@ -115,8 +102,10 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     const calendar = getEntityCalendar(entityType, indicator.calendar, timeGranularity)
     if (!calendar) {
       return {
-        error: this.translateService.instant(`PAC.INDICATOR.REGISTER.CalendarDimensionNotSet`, { Default: 'Calendar dimension not set' })
-      } as undefined as DataSettings & {error?: string}
+        error: this.translateService.instant(`PAC.INDICATOR.REGISTER.CalendarDimensionNotSet`, {
+          Default: 'Calendar dimension not set'
+        })
+      } as undefined as DataSettings & { error?: string }
     }
     const { dimension, hierarchy, level } = calendar
 
@@ -170,7 +159,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
           selectionVariant: {
             selectOptions: [timeSlicer, ...(indicator.filters ?? [])]
           }
-        } as DataSettings & {error?: string})
+        } as DataSettings & { error?: string })
       : null
   })
   readonly error = computed(() => this.dataSettings()?.error)
@@ -201,7 +190,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   )
   public readonly models$ = this.projectService.models$
 
-  public readonly indicator$ = this._route.paramMap.pipe(
+  readonly id$ = this._route.paramMap.pipe(
     startWith(this._route.snapshot.paramMap),
     map((paramMap) => paramMap.get('id')),
     tap((id) => {
@@ -215,28 +204,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       }
     }),
     filter((id) => !isNil(id) && id !== NewIndicatorCodePlaceholder),
-    distinctUntilChanged(),
-    switchMap((id) => {
-      if (isUUID(id)) {
-        this.loading.set(true)
-        return this.indicatorsService.getById(id, ['createdBy']).pipe(
-          tap(() => this.loading.set(false)),
-          catchError((err) => {
-            this.loading.set(false)
-            if (err.status === 404) {
-              this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', { Default: 'Indicator not found' })
-            } else {
-              this.toastrService.error(err.error.message)
-            }
-            return EMPTY
-          }),
-          map(convertIndicatorResult),
-        )
-      } else {
-        return of(this.projectService.getNewIndicator(id))
-      }
-    }),
-    shareReplay(1)
+    distinctUntilChanged()
   )
 
   /**
@@ -258,9 +226,42 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       }))
     })
 
-  private indicatorSub = this.indicator$
+  private newIndicatorSub = this.id$
     .pipe(
-      filter(nonNullable),
+      filter((id) => !isUUID(id)),
+      map((code) => this.projectService.getNewIndicator(code))
+    )
+    .subscribe((indicator) => {
+      if (!indicator) {
+        this._router.navigate(['../404'], { relativeTo: this._route })
+        return
+      }
+      this.indicatorModel.set({ ...indicator })
+      this.indicatorsComponent?.setCurrentLink(indicator)
+    })
+
+  private indicatorSub = this.id$
+    .pipe(
+      filter((id) => isUUID(id)),
+      switchMap((id) => {
+        this.loading.set(true)
+        return this.indicatorsService.getById(id, ['createdBy']).pipe(
+          tap(() => this.loading.set(false)),
+          catchError((err) => {
+            this.loading.set(false)
+            if (err.status === 404) {
+              this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', {
+                Default: 'Indicator not found'
+              })
+            } else {
+              this.toastrService.error(err.error.message)
+            }
+            this._router.navigate(['../404'], { relativeTo: this._route })
+            return EMPTY
+          }),
+          map(convertIndicatorResult)
+        )
+      }),
       tap((indicator) => {
         this._logger?.debug('indicator register page on indicator change', indicator)
         this.indicatorModel.update((state) => ({
@@ -276,7 +277,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       this.registerForm().formGroup.markAsPristine()
       this.indicatorsComponent?.setCurrentLink(indicator)
     })
-
 
   isDirty(): boolean {
     return this.registerForm().isDirty

@@ -6,15 +6,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
   forwardRef,
   HostBinding,
   inject,
+  input,
   Input,
   OnChanges,
   OnInit,
   SimpleChanges
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
   FormControl,
@@ -26,14 +27,6 @@ import {
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
-import {
-  CanColor,
-  CanDisable,
-  CanDisableRipple,
-  mixinColor,
-  mixinDisabled,
-  mixinDisableRipple
-} from '@angular/material/core'
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
@@ -43,7 +36,6 @@ import { DisplayBehaviour } from '@metad/ocap-core'
 import { BehaviorSubject } from 'rxjs'
 import { combineLatestWith, debounceTime, distinctUntilChanged, filter, map, startWith } from 'rxjs/operators'
 import { NgmDisplayBehaviourComponent } from '../../display-behaviour'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -79,20 +71,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
     OcapCoreModule
   ]
 })
-export class NgmMatSelectComponent
-  extends mixinColor(
-    mixinDisabled(
-      mixinDisableRipple(
-        class {
-          constructor(public _elementRef: ElementRef) {}
-        }
-      )
-    )
-  )
-  implements CanDisable, CanColor, CanDisableRipple, OnInit, OnChanges, ControlValueAccessor
-{
+export class NgmMatSelectComponent implements OnInit, OnChanges, ControlValueAccessor {
   readonly #destroyRef = inject(DestroyRef)
-  
+
   @HostBinding('class.ngm-mat-select') _isSelectComponent = true
 
   @Input() appearance: MatFormFieldAppearance
@@ -127,7 +108,8 @@ export class NgmMatSelectComponent
   }
   private _virtualScroll = false
 
-  @Input() loading = false
+  // @Input() loading = false
+  readonly loading = input(false)
 
   virtualScrollItemSize = 48
 
@@ -147,17 +129,13 @@ export class NgmMatSelectComponent
     map(([name, options]) => {
       const text = Array.isArray(name) ? null : typeof name === 'string' ? name?.trim().toLowerCase() : null
       return options?.filter((option) =>
-        text ? option.label?.toLowerCase().includes(text) || `${option.value}`.toLowerCase().includes(text) : true
+        text ? option.caption?.toLowerCase().includes(text) || `${option.key}`.toLowerCase().includes(text) : true
       )
     })
   )
 
   onChange: (input: any) => void
   onTouched: () => void
-
-  constructor(_elementRef: ElementRef) {
-    super(_elementRef)
-  }
 
   ngOnInit() {
     this.formControl.valueChanges
@@ -168,14 +146,19 @@ export class NgmMatSelectComponent
       )
       .subscribe((value) => {
         if (typeof value !== 'string' && !Array.isArray(value)) {
-          this.onChange?.(value?.value)
+          this.onChange?.(value?.key)
         }
       })
 
-    this.selection.changed.pipe(filter(() => this.multiple), takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
-      this._updateLabel()
-      this.onChange?.(this.selection.selected)
-    })
+    this.selection.changed
+      .pipe(
+        filter(() => this.multiple),
+        takeUntilDestroyed(this.#destroyRef)
+      )
+      .subscribe(() => {
+        this._updateLabel()
+        this.onChange?.(this.selection.selected)
+      })
 
     this._selectOptions$.pipe(takeUntilDestroyed(this.#destroyRef)).subscribe(() => {
       this._updateLabel()
@@ -215,31 +198,30 @@ export class NgmMatSelectComponent
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
     isDisabled ? this.formControl.disable() : this.formControl.enable()
   }
 
   trackBy(i: number, item: ISelectOption) {
-    return item.value
+    return item.key || item.value
   }
 
   displayWith(value: any) {
-    return Array.isArray(value) ? value : value?.label || value?.value
+    return Array.isArray(value) ? value : value?.caption || value?.key
   }
 
   private _updateLabel() {
     if (this.multiple) {
       this.formControl.setValue(
-        this.selection.selected.map((value) => this.selectOptions?.find((item) => item.value === value)?.label || value)
+        this.selection.selected.map((value) => this.selectOptions?.find((item) => item.key === value)?.caption || value)
       )
     } else {
       let option: any = this.formControl.value
       // if (isObject(option)) {
-      const value = option?.value
-      if (value && !option.label) {
+      const key = option?.key
+      if (key && !option.caption) {
         option = {
-          value,
-          label: this.selectOptions?.find((item) => item.value === value)?.label
+          key,
+          label: this.selectOptions?.find((item) => item.key === key)?.caption
         }
         this.formControl.setValue(option, { emitEvent: false })
       }
@@ -254,9 +236,9 @@ export class NgmMatSelectComponent
   onSelect(event: MatCheckboxChange, option: ISelectOption) {
     if (this.multiple) {
       if (event.checked) {
-        this.selection.select(option.value as string)
+        this.selection.select(option.key as string)
       } else {
-        this.selection.deselect(option.value as string)
+        this.selection.deselect(option.key as string)
       }
     }
   }

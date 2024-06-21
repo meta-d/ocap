@@ -12,6 +12,7 @@ import {
   inject,
   input,
   Input,
+  model,
   OnChanges,
   SimpleChanges,
   ViewChild
@@ -19,14 +20,6 @@ import {
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule, ValidatorFn } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatCheckboxChange } from '@angular/material/checkbox'
-import {
-  CanColor,
-  CanDisable,
-  CanDisableRipple,
-  mixinColor,
-  mixinDisabled,
-  mixinDisableRipple
-} from '@angular/material/core'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -59,19 +52,7 @@ import { NgmSearchComponent } from '../search/search.component'
 import { CommonModule } from '@angular/common'
 import { NgmDisplayBehaviourComponent } from '../display-behaviour'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-
-
-
-// Boilerplate for applying mixins to MatButton.
-const _TreeSelectBase = mixinColor(
-  mixinDisabled(
-    mixinDisableRipple(
-      class {
-        constructor(public _elementRef: ElementRef) {}
-      }
-    )
-  )
-)
+import { ThemePalette } from '@angular/material/core'
 
 /**
  * TreeSelect 组件分为三种展示模式:
@@ -108,15 +89,14 @@ const _TreeSelectBase = mixinColor(
   templateUrl: 'tree-select.component.html',
   styleUrls: ['tree-select.component.scss'],
   host: {
-    '[attr.disabled]': 'disabled || null',
+    '[attr.disabled]': 'disabled() || null',
     '[class._ngm-animation-noopable]': '_animationMode === "NoopAnimations"',
     // Add a class for disabled button styling instead of the using attribute
     // selector or pseudo-selector.  This allows users to create focusabled
     // disabled buttons without recreating the styles.
-    '[class.ngm-tree-select-disabled]': 'disabled',
+    '[class.ngm-tree-select-disabled]': 'disabled()',
     class: 'ngm-focus-indicator ngm-tree-select'
   },
-  inputs: ['disabled', 'disableRipple', 'color'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -126,9 +106,7 @@ const _TreeSelectBase = mixinColor(
     }
   ]
 })
-export class NgmTreeSelectComponent<T>
-  extends _TreeSelectBase
-  implements OnChanges, ControlValueAccessor, CanDisable, CanColor, CanDisableRipple
+export class NgmTreeSelectComponent<T> implements OnChanges, ControlValueAccessor
 {
   readonly #destroyRef = inject(DestroyRef)
   
@@ -218,7 +196,9 @@ export class NgmTreeSelectComponent<T>
   }
   private _autoSelectActiveOption: boolean;
 
-  @Input() loading = false
+  readonly disabled = model<boolean>(false)
+  readonly color = input<ThemePalette>()
+  readonly loading = input(false)
 
   @ViewChild('autoInput') autoInput: ElementRef<HTMLInputElement>
   @ViewChild(CdkVirtualScrollViewport, { static: false })
@@ -386,10 +366,7 @@ export class NgmTreeSelectComponent<T>
       this.allSelect = this.treeControl.dataNodes.length === this.multipleSelection.selected.length
       this.onChange?.(this.multipleSelection.selected)
     })
-    
-  constructor(elementRef: ElementRef) {
-    super(elementRef)
-  }
+
 
   ngOnChanges({ displayDensity, validators }: SimpleChanges): void {
     if (displayDensity) {

@@ -69,7 +69,7 @@ export class ProjectService {
               dataSourceId: model.id,
               serizalize: async () => {
                 const entityType = await firstValueFrom(this.selectEntityType(model.key, cube.name))
-                return markdownEntityType(entityType)
+                return `The model id: '${model.id}'\n` + markdownEntityType(entityType)
               }
             },
             key: cube.name,

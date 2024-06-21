@@ -10,6 +10,7 @@ import { IndicatorRegisterComponent } from './indicators/register/register.compo
 import { ProjectMembersComponent } from './members/members.component'
 import { ProjectComponent } from './project/project.component'
 import { ProjectFilesComponent } from './files/files.component'
+import { NotFoundComponent } from '../../@shared'
 
 const routes: Routes = [
   {
@@ -48,6 +49,10 @@ const routes: Routes = [
           {
             path: 'approvals',
             component: ApprovalsComponent
+          },
+          {
+            path: '404',
+            component: NotFoundComponent
           },
           {
             path: ':id',

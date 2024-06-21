@@ -1,5 +1,5 @@
 @if (!treeViewer) {
-  <mat-form-field class="flex-1" [appearance]="appearance" [floatLabel]="floatLabel" [color]="color">
+  <mat-form-field class="flex-1" [appearance]="appearance" [floatLabel]="floatLabel" [color]="color()">
     <mat-label>{{ label }}</mat-label>
 
     @if (useAutocomplete) {
@@ -196,7 +196,7 @@
 
     <div matSuffix class="flex justify-start items-center" >
       <button *ngIf="isNotInitial" class="ngm-actionable-opacity" mat-icon-button displayDensity="cosy" ngmAppearance="danger"
-        [disabled]="disabled"
+        [disabled]="disabled()"
         (click)="clear($event)">
         <mat-icon>close</mat-icon>
       </button>
@@ -219,7 +219,7 @@
     <mat-tree-node *matTreeNodeDef="let node" class="rounded-lg"
       matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
       [ngClass]="isSelected(node) ? 'selected' : ''"
-      [disabled]="disabled"
+      [disabled]="disabled()"
       (click)="disabled||toggleNode(node)">
       <!-- use a disabled button to provide padding for tree leaf -->
       <button mat-icon-button disabled [displayDensity]="displayDensity"></button>
@@ -233,7 +233,7 @@
     <mat-tree-node *matTreeNodeDef="let node;when: hasChild" class="rounded-lg"
       matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
       [ngClass]="isSelected(node) ? 'selected' : ''"
-      [disabled]="disabled"
+      [disabled]="disabled()"
       (click)="disabled||toggleNode(node)">
       <button mat-icon-button matTreeNodeToggle [displayDensity]="displayDensity"
               [attr.aria-label]="'Toggle ' + node.name">

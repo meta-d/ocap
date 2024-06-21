@@ -71,11 +71,13 @@ export async function createIndicatorGraph({
 
 async function createIndicatorWorker({ llm, createIndicatorTool, pickCubeTool, copilotRoleContext, indicatorCodes }) {
   const systemPrompt =
-    `你是一名 BI 指标体系管理的业务专家，请根据指定的 Cube 信息和需求描述转成相应的参数调用 createIndicator tool 进行创建新指标。` +
+    `You are a business expert in BI indicator system management. Please convert the specified Cube information and requirement description into corresponding parameters and call the createIndicator tool to create a new indicator.` +
     `\n{role}\n` +
-    `code 不能与以下已有的重复：[${indicatorCodes().join(', ')}]\n` +
-    `将未限定成员的可以自由选择的维度都加入到 dimensions 中，选择一个 calendar 维度加入到 calendar 中，将必要的限定成员加入到 filters 属性中。` +
-    `如果未提供 Cube 信息或者需要重新选择 Cube 时请调用 'pickCube' tool 获取 Cube 信息。`
+    `\n1. code 不能与以下已有的重复：[${indicatorCodes().join(', ')}]` +
+    `\n2. Specify a hierarchy name (not the level name) of calendar dimension for this indicator to be used for future calculations of the indicator's trends at different time granularity. If no calendar semantic dimension is found in cube, this question needs to be answered.` +
+    `\n3. 将未限定成员的可以自由选择的维度都加入到 dimensions 中，将必要的限定成员加入到 filters 属性中。` +
+    `\n 如果未提供 Cube 信息或者需要重新选择 Cube 时请调用 'pickCube' tool 获取 Cube 信息。` +
+    `\n{context}`
   return await Route.createWorkerAgent(llm, [pickCubeTool, createIndicatorTool], systemPrompt, {
     role: copilotRoleContext
   })

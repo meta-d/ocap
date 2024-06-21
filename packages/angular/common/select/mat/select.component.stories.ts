@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common'
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core'
-import { AbstractControl, FormControl, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms'
+import { FormControl, FormsModule, ReactiveFormsModule, ValidatorFn } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { DisplayDensity, OcapCoreModule } from '@metad/ocap-angular/core'
 import { DisplayBehaviour, TreeNodeInterface } from '@metad/ocap-core'
-import { Meta, moduleMetadata } from '@storybook/angular'
+import { Meta, StoryObj, moduleMetadata } from '@storybook/angular'
 import { NgmMatSelectComponent } from './select.component'
 
 @Component({
@@ -23,11 +23,9 @@ import { NgmMatSelectComponent } from './select.component'
     [formControl]="formControl"
     (ngModelChange)="onModelChange($event)"
   >
-  </ngm-mat-select>
-`
+  </ngm-mat-select> `
 })
 class TestSelectComponent<T> implements OnChanges {
-
   @Input() label: string
   @Input() placeholder: string
   @Input() selectOptions: TreeNodeInterface<T>
@@ -50,7 +48,7 @@ class TestSelectComponent<T> implements OnChanges {
     this.formControl.setValue(this.model)
   }
 
-  ngOnChanges({validators}: SimpleChanges): void {
+  ngOnChanges({ validators }: SimpleChanges): void {
     //
   }
 
@@ -59,12 +57,17 @@ class TestSelectComponent<T> implements OnChanges {
   }
 }
 
-export default {
-  title: 'NgmMatSelectComponent',
+const meta: Meta<NgmMatSelectComponent> = {
+  title: 'Common/MatSelect',
   component: NgmMatSelectComponent,
   decorators: [
     moduleMetadata({
-      imports: [CommonModule, BrowserAnimationsModule, FormsModule, ReactiveFormsModule, OcapCoreModule,
+      imports: [
+        CommonModule,
+        BrowserAnimationsModule,
+        FormsModule,
+        ReactiveFormsModule,
+        OcapCoreModule,
         MatFormFieldModule,
         MatInputModule
       ],
@@ -72,6 +75,9 @@ export default {
     })
   ]
 } as Meta<NgmMatSelectComponent>
+
+export default meta
+type Story = StoryObj<NgmMatSelectComponent>
 
 const TREE_NODE_DATA = [
   {
@@ -99,76 +105,74 @@ const TREE_NODE_DATA = [
   { value: 'Carrots', label: '胡萝卜' }
 ] as any
 
-// const Template: Story<any> = (args: any) => ({
-//   props: args,
-//   template: `<test-select [label]="label" [selectOptions]="selectOptions" [model]="model" [multiple]="multiple" [virtualScroll]="virtualScroll"
-//   [displayBehaviour]="displayBehaviour" [displayDensity]="displayDensity"
-//   [disabled]="disabled"
-//   ></test-select>`,
-//   styles: [``]
-// })
+export const Default = {
+  args: {
+    label: '饮食选择器',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key'
+  }
+}
 
-// export const Select = Template.bind({})
-// Select.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   model: 'Apple'
-// }
+export const Loading = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key',
+    loading: true
+  }
+}
 
-// export const SelectMultiple = Template.bind({})
-// SelectMultiple.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   multiple: true,
-//   model: ['Apple', 'Pumpkins']
-// }
+export const Select = {
+  args: {
+    label: '水果',
+    selectOptions: TREE_NODE_DATA,
+    model: 'Apple'
+  }
+}
 
-// export const SelectVirtualScroll = Template.bind({})
-// SelectVirtualScroll.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   multiple: true,
-//   virtualScroll: true,
-//   model: ['Apple', 'Pumpkins']
-// }
+export const SelectMultiple = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key',
+    multiple: true,
+    model: ['Apple', 'Pumpkins']
+  }
+}
 
-// export const SelectDisplayBehaviour = Template.bind({})
-// SelectDisplayBehaviour.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   model: 'Apple',
-//   displayBehaviour: DisplayBehaviour.descriptionAndId
-// }
+export const SelectVirtualScroll = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key',
+    multiple: true,
+    model: ['Apple', 'Pumpkins'],
+    virtualScroll: true
+  }
+}
 
-// export const SelectCosy = Template.bind({})
-// SelectCosy.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   model: 'Apple',
-//   displayDensity: DisplayDensity.cosy
-// }
+export const DensityCosy = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key',
+    displayDensity: DisplayDensity.cosy
+  }
+}
 
-// export const SelectCompact = Template.bind({})
-// SelectCompact.args = {
-//   label: '水果',
-//   selectOptions: TREE_NODE_DATA,
-//   model: 'Apple',
-//   displayDensity: DisplayDensity.compact
-// }
-
-// export const SelectNoSelectOptions = Template.bind({})
-// SelectNoSelectOptions.args = {
-//   label: '水果',
-//   model: 'Apple'
-// }
-
-// export const SelectDisabled = Template.bind({})
-// SelectDisabled.args = {
-//   label: '水果',
-//   model: 'Apple',
-//   selectOptions: TREE_NODE_DATA,
-//   disabled: true
-// }
+export const DensityCompact = {
+  args: {
+    label: '饮食选择器',
+    placeholder: '请选择你喜欢的一种食品',
+    selectOptions: TREE_NODE_DATA,
+    valueKey: 'key',
+    displayDensity: DisplayDensity.compact
+  }
+}
 
 // const TemplateError: Story<any> = (args: any) => ({
 //   props: args,
