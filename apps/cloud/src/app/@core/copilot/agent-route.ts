@@ -19,13 +19,13 @@ type ZodAny = z.ZodObject<any, any, any, any>
  * @param members 
  * @returns 
  */
-export async function createSupervisor(llm: ChatOpenAI, members: string[]): Promise<Runnable> {
+export async function createSupervisor(llm: ChatOpenAI, members: string[], system?: string): Promise<Runnable> {
   const systemPrompt =
     'You are a supervisor tasked with managing a conversation between the' +
     ' following workers: {members}. Given the following user request,' +
     ' respond with the worker to act next. Each worker will perform a' +
     ' task and respond with their results and status. When finished,' +
-    ' respond with END.'
+    ' respond with END.' + (system ? ' ' + system : '')
   const options = [END, ...members]
 
   // Define the routing function

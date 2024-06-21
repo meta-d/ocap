@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { BusinessAreasService, IndicatorsService, NgmSemanticModel, hierarchizeBusinessAreas } from '@metad/cloud/state'
-import { markdownEntityType, nonBlank } from '@metad/core'
+import { nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Indicator, MDCube, isEntitySet } from '@metad/ocap-core'
@@ -9,6 +9,7 @@ import {
   EMPTY,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   filter,
   firstValueFrom,
   map,
@@ -103,6 +104,7 @@ export class ProjectService {
    */
   readonly indicators = computed(() => this.project()?.indicators)
   readonly #newIndicators = signal<Indicator[]>([])
+  readonly newIndicators$ = toObservable(this.#newIndicators)
 
   /**
    * Business Areas
@@ -110,7 +112,7 @@ export class ProjectService {
   readonly businessAreas = toSignal(this.businessAreasStore.getMy().pipe(startWith([])))
   readonly businessAreasTree = computed(() => hierarchizeBusinessAreas(this.businessAreas()))
 
-   /**
+  /**
    * Tags
    */
   readonly tags = toSignal(this.tagService.getAll('indicator'), { initialValue: [] })
@@ -160,6 +162,7 @@ export class ProjectService {
       })
     )
   }
+
   /**
   |--------------------------------------------------------------------------
   | Indicators
@@ -180,22 +183,39 @@ export class ProjectService {
   }
 
   getIndicatorByCode(code: string) {
-    const newIndicator = this.#newIndicators().find((indicator) => indicator.code === code)
-    return newIndicator
-      ? of(newIndicator)
-      : this.project$.pipe(
-          map((project) => project?.id),
-          filter(nonBlank),
-          take<string>(1),
-          switchMap((projectId) =>
-            this.indicatorsService.getByProject(projectId, { where: { code }, relations: ['createdBy'] })
-          ),
-          map(({ items }) => items[0]),
-          catchError(() => of(null))
-        )
+    return this.newIndicators$.pipe(
+      map((indicators) => indicators.find((indicator) => indicator.code === code)),
+      distinctUntilChanged(),
+      switchMap((indicator) =>
+        indicator
+          ? of(indicator)
+          : this.project$.pipe(
+              map((project) => project?.id),
+              filter(nonBlank),
+              take<string>(1),
+              switchMap((projectId) =>
+                this.indicatorsService.getByProject(projectId, { where: { code }, relations: ['createdBy'] })
+              ),
+              map(({ items }) => items[0]),
+              catchError(() => of(null))
+            )
+      )
+    )
   }
 
   getIndicatorById(id: string) {
     return this.indicatorsService.getById(id, ['createdBy'])
+  }
+
+  updateIndicator(indicator: Partial<Indicator>) {
+    if (indicator.code) {
+      this.#newIndicators.update((indicators) => {
+        const index = indicators.findIndex((item) => item.code === indicator.code)
+        if (index > -1) {
+          indicators[index] = { ...indicators[index], ...indicator }
+        }
+        return [...indicators]
+      })
+    }
   }
 }

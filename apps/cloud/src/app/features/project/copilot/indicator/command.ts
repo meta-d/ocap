@@ -6,7 +6,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { injectDimensionMemberTool } from '@metad/core'
 import { NGXLogger } from 'ngx-logger'
 import { createIndicatorGraph } from './graph'
-import { injectCreateIndicatorTool, injectPickCubeTool } from './tools'
+import { injectCreateIndicatorTool, injectPickCubeTool, injectReviseFormulaTool } from './tools'
 import { injectCopilotRoleContext } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
 
@@ -19,6 +19,7 @@ export function injectIndicatorCommand() {
   const createIndicatorTool = injectCreateIndicatorTool()
   const pickCubeTool = injectPickCubeTool()
   const memberRetrieverTool = injectDimensionMemberTool()
+  const reviseFormulaTool = injectReviseFormulaTool()
 
   const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
   const businessAreas = projectService.businessAreas
@@ -40,10 +41,11 @@ export function injectIndicatorCommand() {
             pickCubeTool,
             createIndicatorTool,
             memberRetrieverTool,
+            reviseFormulaTool,
             copilotRoleContext,
             indicatorCodes,
             businessAreas,
-            tags
+            tags,
           })
         }
       }

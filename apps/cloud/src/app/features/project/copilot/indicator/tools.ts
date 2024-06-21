@@ -2,7 +2,7 @@ import { inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { IndicatorSchema, markdownEntityType } from '@metad/core'
+import { IndicatorFormulaSchema, IndicatorSchema, markdownEntityType } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
 import { Indicator } from '@metad/ocap-core'
@@ -43,6 +43,35 @@ export function injectCreateIndicatorTool() {
   })
 
   return createIndicatorTool
+}
+
+
+export function injectReviseFormulaTool() {
+  const logger = inject(NGXLogger)
+  const router = inject(Router)
+  const route = inject(ActivatedRoute)
+  const projectService = inject(ProjectService)
+
+  const reviseFormulaTool = new DynamicStructuredTool({
+    name: 'reviseFormula',
+    description: 'Revise formula of the indicator.',
+    schema: IndicatorFormulaSchema,
+    func: async ({code, formula}) => {
+      logger.debug(`Execute copilot action 'reviseFormula': code:`, code, `formula:`, formula)
+
+      projectService.updateIndicator({code, formula})
+
+      setTimeout(async () => {
+        await router.navigate(['indicators', code], {
+          relativeTo: route
+        })
+      })
+
+      return 'Revised formula of indicator!'
+    }
+  })
+
+  return reviseFormulaTool
 }
 
 export function injectPickCubeTool() {

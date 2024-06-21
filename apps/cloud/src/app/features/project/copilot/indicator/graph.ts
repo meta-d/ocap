@@ -5,9 +5,9 @@ import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { Route } from '../../../../@core/copilot/'
 import { createIndicatorWorker } from './indicator-agent'
-import { createMemberWorker } from './member-agent'
-import { DIMENSION_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
+import { DIMENSION_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
 import { IBusinessArea, ITag } from '../../../../@core'
+import { createReviewerWorker } from './reviewer-agent'
 
 // Define the top-level State interface
 interface State extends Route.IState {
@@ -39,27 +39,29 @@ export async function createIndicatorGraph({
   pickCubeTool,
   createIndicatorTool,
   memberRetrieverTool,
+  reviseFormulaTool,
   copilotRoleContext,
   indicatorCodes,
   businessAreas,
-  tags
+  tags,
 }: {
   llm: ChatOpenAI
   pickCubeTool?: DynamicStructuredTool
   createIndicatorTool?: DynamicStructuredTool
   memberRetrieverTool?: DynamicStructuredTool
+  reviseFormulaTool?: DynamicStructuredTool
   copilotRoleContext: () => string
   indicatorCodes: Signal<string[]>
   businessAreas: Signal<IBusinessArea[]>
   tags: Signal<ITag[]>
 }) {
-  const supervisorNode = await Route.createSupervisor(llm, [INDICATOR_AGENT_NAME])
+  const supervisorNode = await Route.createSupervisor(llm, [INDICATOR_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME], `Review the formula if the indicator has a formula`)
   // const planner = await Route.createWorkerAgent(llm, [pickCubeTool], `为注册业务数据指标指定计划\n` + `{context}`)
-  // const memberWorker = await createMemberWorker({
-  //   llm,
-  //   memberRetrieverTool,
-  //   copilotRoleContext
-  // })
+  const reviewerWorker = await createReviewerWorker({
+    llm,
+    copilotRoleContext,
+    tools: [reviseFormulaTool]
+  })
   const createIndicator = await createIndicatorWorker({
     llm,
     copilotRoleContext,
@@ -71,11 +73,11 @@ export async function createIndicatorGraph({
   const superGraph = new StateGraph({ channels: superState })
     // Add steps nodes
     .addNode(SUPERVISOR_NAME, supervisorNode)
-    // .addNode(DIMENSION_AGENT_NAME, Route.createRunWorkerAgent(memberWorker, DIMENSION_AGENT_NAME))
     .addNode(INDICATOR_AGENT_NAME, Route.createRunWorkerAgent(createIndicator, INDICATOR_AGENT_NAME))
+    .addNode(FORMULA_REVIEWER_AGENT_NAME, Route.createRunWorkerAgent(reviewerWorker, FORMULA_REVIEWER_AGENT_NAME))
 
-  // superGraph.addEdge(DIMENSION_AGENT_NAME, SUPERVISOR_NAME)
   superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
+  superGraph.addEdge(FORMULA_REVIEWER_AGENT_NAME, SUPERVISOR_NAME)
   superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next)
 
   superGraph.addEdge(START, SUPERVISOR_NAME)

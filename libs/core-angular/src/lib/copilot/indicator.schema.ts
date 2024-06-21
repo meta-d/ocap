@@ -32,3 +32,9 @@ export const IndicatorSchema = z
     })).optional().describe(`Relative tags of the indicator`)
   })
   .describe('Indicator')
+
+export const IndicatorFormulaSchema = z
+.object({
+  code: z.string().describe(`The code of indicator`),
+  formula: z.string().describe(`The MDX formula of indicator`)
+})
