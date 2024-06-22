@@ -665,14 +665,14 @@ export class NgmCopilotChatComponent {
       if (this.promptCompletion()) {
         this.promptControl.setValue(this.promptControl.value.trimEnd() + ' ' + this.promptCompletion())
       } else {
-        if (this.#activatedPrompt()) {
-          this.promptControl.setValue(this.#activatedPrompt())
-        } else if (this.isContextTrigger()) {
+        if (this.isContextTrigger()) {
           const item = this.filteredContextItems()[0]
           if (item) {
             this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
             this.context.set(item)
           }
+        } else if (this.#activatedPrompt()) {
+          this.promptControl.setValue(this.#activatedPrompt())
         } else if (this.filteredCommands()?.length) {
           this.promptControl.setValue(this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         }
