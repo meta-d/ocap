@@ -58,6 +58,10 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
         this.formGroup.patchValue(this.example())
       } else {
         this.formGroup.reset()
+        this.formGroup.patchValue({
+          role: this.examplesComponent.roleFilter(),
+          command: this.examplesComponent.commandFilter()
+        })
       }
       this.formGroup.markAsPristine()
       this.loading.set(false)

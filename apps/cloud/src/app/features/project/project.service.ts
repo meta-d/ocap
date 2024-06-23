@@ -75,36 +75,12 @@ export class ProjectService {
     shareReplay(1)
   )
 
-  // readonly copilotCubes$ = this.modelCubes$.pipe(
-  //   map((models) => {
-  //     const items = []
-  //     models.forEach((model, index) => {
-  //       items.push(
-  //         ...model.cubes.map((cube) => ({
-  //           value: {
-  //             dataSource: model,
-  //             dataSourceId: model.id,
-  //             serizalize: async () => {
-  //               const entityType = await firstValueFrom(this.selectEntityType(model.key, cube.name))
-  //               return `The model id: '${model.id}'\n` + markdownEntityType(entityType)
-  //             }
-  //           },
-  //           key: cube.name,
-  //           caption: cube.caption
-  //         }))
-  //       )
-  //     })
-  //     return items
-  //   }),
-  //   shareReplay(1)
-  // )
-
   /**
    * Indicators
    */
   readonly indicators = computed(() => this.project()?.indicators)
-  readonly #newIndicators = signal<Indicator[]>([])
-  readonly newIndicators$ = toObservable(this.#newIndicators)
+  readonly newIndicators = signal<Indicator[]>([])
+  readonly newIndicators$ = toObservable(this.newIndicators)
 
   /**
    * Business Areas
@@ -169,7 +145,7 @@ export class ProjectService {
   |--------------------------------------------------------------------------
   */
   newIndicator(indicator: Partial<Indicator>) {
-    this.#newIndicators.update((prev) => [...prev, indicator as Indicator])
+    this.newIndicators.update((prev) => [...prev, indicator as Indicator])
   }
 
   refreshIndicators() {
@@ -209,7 +185,7 @@ export class ProjectService {
 
   updateIndicator(indicator: Partial<Indicator>) {
     if (indicator.code) {
-      this.#newIndicators.update((indicators) => {
+      this.newIndicators.update((indicators) => {
         const index = indicators.findIndex((item) => item.code === indicator.code)
         if (index > -1) {
           indicators[index] = { ...indicators[index], ...indicator }

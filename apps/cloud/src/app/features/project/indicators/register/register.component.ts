@@ -238,7 +238,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         this._router.navigate(['../404'], { relativeTo: this._route })
       } else {
         this.indicatorModel.set({ ...indicator })
-        this.indicatorsComponent?.setCurrentLink(indicator)
+        this.indicatorsComponent?.setCurrentLink({...indicator, id: indicator.id ?? indicator.code})
         if (indicator.id) {
           this.registerForm().formGroup.markAsPristine()
         }
@@ -280,7 +280,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     )
     .subscribe((indicator) => {
       this.registerForm().formGroup.markAsPristine()
-      this.indicatorsComponent?.setCurrentLink(indicator)
+      this.indicatorsComponent?.setCurrentLink({...indicator, id: indicator.id ?? indicator.code})
     })
 
   isDirty(): boolean {

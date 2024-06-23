@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnDestroy, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Component, OnDestroy, computed, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { IndicatorsService } from '@metad/cloud/state'
@@ -12,6 +11,7 @@ import { firstValueFrom, map } from 'rxjs'
 import { IIndicator, ToastrService } from '../../../../@core/index'
 import { ProjectComponent } from '../../project/project.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
+import { ProjectService } from '../../project.service'
 
 @Component({
   standalone: true,
@@ -32,14 +32,20 @@ import { ProjectIndicatorsComponent } from '../indicators.component'
 export class AllIndicatorComponent implements OnDestroy {
   private projectComponent = inject(ProjectComponent)
   private indicatorsComponent = inject(ProjectIndicatorsComponent)
+  private projectService = inject(ProjectService)
   private indicatorsService = inject(IndicatorsService)
   private toastrService = inject(ToastrService)
   private _dialog = inject(MatDialog)
 
-  public readonly indicators$ = this.projectComponent.project$.pipe(
-    map((project) => project?.indicators),
-    takeUntilDestroyed()
-  )
+  readonly indicators = computed(() => {
+    const indicators = this.projectService.indicators()
+    const newIndicators = this.projectService.newIndicators()
+
+    return [
+      ...newIndicators.reverse(),
+      ...indicators
+    ]
+  })
 
   async onDelete(indicator: IIndicator) {
     const cofirm = await firstValueFrom(

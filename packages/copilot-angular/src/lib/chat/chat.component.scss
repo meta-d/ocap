@@ -9,7 +9,18 @@
   --subtle-purple: color-mix(in srgb, var(--bright-blue) 5%, white 10%);
   --full-contrast: white;
   --bright-blue: color-mix(in srgb, oklch(51.01% 0.274 263.83), var(--full-contrast) 60%);
+
   @apply flex flex-col relative;
+}
+
+.ngm-copilot-chat__command {
+  // background-color: rgb(217 161 255);
+  // background: linear-gradient(90deg, rgb(223 188 247) 0%, rgb(250 177 177) 50%, rgb(255 220 171) 100%);
+
+  background: var(--red-to-orange-horizontal-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 .copilot-code-container {

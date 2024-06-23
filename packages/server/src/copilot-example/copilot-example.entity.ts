@@ -26,12 +26,12 @@ export class CopilotExample extends TenantBaseEntity implements ICopilotExample 
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Column({ length: 5000, nullable: true })
+	@Column({ length: 10000, nullable: true })
 	input?: string
 
 	@ApiPropertyOptional({ type: () => String })
 	@IsString()
-	@Column({ length: 5000, nullable: true })
+	@Column({ length: 10000, nullable: true })
 	output?: string
 
 	@ApiPropertyOptional({ type: () => Boolean })

@@ -4,7 +4,9 @@ import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web
 import { CreateGraphOptions } from '@metad/copilot'
 import { Route, Team } from '../../../../@core/copilot/'
 import { createPlannerAgent } from './planner-agent'
-import { INDICATOR_AGENT_NAME, PLANNER_NAME, SUPERVISOR_NAME } from './types'
+import { INDICATOR_AGENT_NAME, PLANNER_NAME, SUPERVISOR_NAME, markdownIndicators } from './types'
+import { Signal } from '@angular/core'
+import { Indicator } from '@metad/cloud/state'
 
 // Define the top-level State interface
 interface State extends Team.State {
@@ -47,11 +49,13 @@ export async function createIndicatorArchitectGraph({
   checkpointer,
   copilotRoleContext,
   createIndicatorGraph,
-  fewShotTemplate
+  fewShotTemplate,
+  indicators
 }: CreateGraphOptions & {
   copilotRoleContext: () => string
   createIndicatorGraph: (options: CreateGraphOptions) => Promise<StateGraph<Route.State, Partial<Route.State>, any>>
   fewShotTemplate: FewShotPromptTemplate
+  indicators: Signal<Indicator[]>
 }) {
   const supervisorNode = await Team.createSupervisor(
     llm,
@@ -81,12 +85,15 @@ export async function createIndicatorArchitectGraph({
 
     const plan = await planner.invoke({
       ...state,
-      messages: [new HumanMessage(content)]
+      messages: [
+        new HumanMessage(`Existing indicators do not need to be created again. Exisiting indicators:\n` + markdownIndicators(indicators())),
+        new HumanMessage(content)
+      ]
     })
 
     console.log(`The plan steps:`, plan.steps)
 
-    return { plan: plan.steps.slice(0, 2) }
+    return { plan: plan.steps }
   }
 
   const superGraph = new StateGraph({ channels: superState })

@@ -17,7 +17,7 @@ export function injectIndicatorArchitectCommand() {
   const copilotRoleContext = injectCopilotRoleContext()
   const createIndicatorGraph = injectCreateIndicatorGraph()
 
-//   const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
+  const indicators = computed(() => projectService.indicators()?.map((indicator) => indicator) ?? [])
 //   const businessAreas = projectService.businessAreas
 //   const tags = projectService.tags
 
@@ -40,7 +40,8 @@ export function injectIndicatorArchitectCommand() {
             checkpointer,
             copilotRoleContext,
             createIndicatorGraph,
-            fewShotTemplate
+            fewShotTemplate,
+            indicators
           })
         }
       }

@@ -1,8 +1,7 @@
-<ngm-table class="flex-1 overflow-hidden rounded-lg border mt-2"
-  displayDensity="cosy"
+<ngm-table class="flex-1 overflow-hidden rounded-lg border mt-2" displayDensity="cosy"
   paging
   selectable
-  [data]="indicators$ | async"
+  [data]="indicators()"
   [columns]="[
     {
       name: 'name',
@@ -17,6 +16,10 @@
       name: 'businessArea',
       caption: 'PAC.KEY_WORDS.BUSINESS_AREA' | translate: {Default: 'Business Area'},
       cellTemplate: businessAreaTempl
+    },
+    {
+      name: 'createdAt',
+      caption: 'PAC.KEY_WORDS.CreatedAt' | translate: {Default: 'Created At'},
     },
     {
       name: 'isActive',

@@ -57,7 +57,7 @@ const routes: Routes = [
           {
             path: ':id',
             component: IndicatorRegisterComponent,
-            canDeactivate: [DirtyCheckGuard],
+            // canDeactivate: [DirtyCheckGuard],
           },
         ]
       },
