@@ -786,4 +786,8 @@ export class NgmCopilotChatComponent {
   async continue(conversation: CopilotChatConversation) {
     await this.copilotEngine.continue(conversation)
   }
+
+  async finish(conversation: CopilotChatConversation) {
+    await this.copilotEngine.finish(conversation)
+  }
 }

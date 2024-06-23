@@ -225,7 +225,8 @@
               </button>
 
               <button class="ngm-copilot-button gap-1.5"
-                [matTooltip]="'Copilot.End' | translate: {Default: 'End'}">
+                [matTooltip]="'Copilot.End' | translate: {Default: 'End'}"
+                (finish)="finish(conversation)">
                 <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 1024 1024" xml:space="preserve">
                   <path fill="currentColor" d="M512,128c-212.08,0-384,171.92-384,384s171.92,384,384,384c92.63,0,177.6-32.8,243.93-87.41l53.22-53.35  C863.43,689.01,896,604.31,896,512C896,299.92,724.08,128,512,128z M672,612c0,33.14-26.86,60-60,60H412c-33.14,0-60-26.86-60-60  V412c0-33.14,26.86-60,60-60h200c33.14,0,60,26.86,60,60V612z"/>
                 </svg>

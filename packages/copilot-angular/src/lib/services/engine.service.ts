@@ -705,6 +705,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
     await this.triggerGraphAgent(null, conversation)
   }
 
+  async finish(conversation: CopilotChatConversation) {
+    this.updateConversation(conversation.id, (conversation) => ({
+      ...conversation,
+      status: 'completed'
+    }))
+  }
+
   private async upsertUserInputMessage(command: CopilotCommand, content: string, context: CopilotContext) {
     const messages: NgmCopilotChatMessage[] = []
     let systemPrompt = ''

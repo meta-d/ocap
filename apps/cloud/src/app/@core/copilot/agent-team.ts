@@ -1,3 +1,4 @@
+import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
@@ -10,6 +11,14 @@ export interface State extends ConversationState {
   instructions: string
 }
 
+export const getInstructions = RunnableLambda.from((state: State) => {
+  return {
+    messages: [new HumanMessage(state.instructions)],
+    role: state.role,
+    context: state.context
+  }
+})
+
 export const getMessages = RunnableLambda.from((state: State) => {
   return { messages: state.messages }
 })
@@ -21,13 +30,14 @@ export const joinGraph = RunnableLambda.from((response: any) => {
 })
 
 export async function createSupervisor(llm: ChatOpenAI, members: string[], system?: string): Promise<Runnable> {
-  const systemPrompt = "You are a supervisor tasked with managing a conversation between the" +
-      " following workers:  {team_members}. Given the following user request," +
-      " respond with the worker to act next. Each worker will perform a" +
-      " task and respond with their results and status. When finished," +
-      " respond with FINISH.\n\n" +
-      " Select strategically to minimize the number of steps taken." +
-      (system ? " " + system : "")
+  const systemPrompt =
+    'You are a supervisor tasked with managing a conversation between the' +
+    ' following workers:  {team_members}. Given the following user request,' +
+    ' respond with the worker to act next. Each worker will perform a' +
+    ' task and respond with their results and status. When finished,' +
+    ' respond with FINISH.\n\n' +
+    ' Select strategically to minimize the number of steps taken.' +
+    (system ? ' ' + system : '')
   const options = ['FINISH', ...members]
   const functionDef = {
     name: 'route',

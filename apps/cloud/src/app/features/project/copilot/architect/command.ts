@@ -5,7 +5,7 @@ import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { injectDimensionMemberTool } from '@metad/core'
 import { NGXLogger } from 'ngx-logger'
-import { injectCopilotRoleContext } from '../../../../@core/copilot'
+import { injectAgentFewShotTemplate, injectCopilotRoleContext } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
 import { createIndicatorArchitectGraph } from './graph'
 import { injectCreateIndicatorGraph } from '../indicator'
@@ -22,6 +22,7 @@ export function injectIndicatorArchitectCommand() {
 //   const tags = projectService.tags
 
   const commandName = 'indicator-architect'
+  const fewShotTemplate = injectAgentFewShotTemplate(commandName)
   return injectCopilotCommand(
     commandName,
     (async () => {
@@ -38,7 +39,8 @@ export function injectIndicatorArchitectCommand() {
             llm,
             checkpointer,
             copilotRoleContext,
-            createIndicatorGraph
+            createIndicatorGraph,
+            fewShotTemplate
           })
         }
       }

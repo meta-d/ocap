@@ -87,6 +87,7 @@ export interface CopilotEngine {
    * @param conversation 
    */
   continue(conversation: CopilotChatConversation): Promise<void>
+  finish(conversation: CopilotChatConversation): Promise<void>
 
   /**
    * How to process the event when user drag drop a data
