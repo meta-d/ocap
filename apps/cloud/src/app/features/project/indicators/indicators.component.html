@@ -67,6 +67,14 @@
     @for (indicator of openedLinks(); track indicator) {
       <span mat-tab-link [routerLink]="[indicator.id || indicator.code]"
         [active]="indicator.id === currentLink()?.id || indicator.code === currentLink()?.code">
+
+        @if (isDirty(indicator.id)) {
+          <span class="ping-badge pointer-events-none absolute -left-2 top-2 flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2"></span>
+          </span>
+        }
+
         <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
         @if (indicator.name) {
           <span class="overflow-hidden text-ellipsis max-w-[200px]" [title]="indicator.name">{{indicator.name}}</span>

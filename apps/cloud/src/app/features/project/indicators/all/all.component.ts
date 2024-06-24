@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnDestroy, computed, inject } from '@angular/core'
+import { Component, OnDestroy, inject } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { IndicatorsService } from '@metad/cloud/state'
@@ -7,11 +8,11 @@ import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angula
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { firstValueFrom, map } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { IIndicator, ToastrService } from '../../../../@core/index'
+import { ProjectService } from '../../project.service'
 import { ProjectComponent } from '../../project/project.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
-import { ProjectService } from '../../project.service'
 
 @Component({
   standalone: true,
@@ -37,15 +38,7 @@ export class AllIndicatorComponent implements OnDestroy {
   private toastrService = inject(ToastrService)
   private _dialog = inject(MatDialog)
 
-  readonly indicators = computed(() => {
-    const indicators = this.projectService.indicators() ?? []
-    const newIndicators = this.projectService.newIndicators() ?? []
-
-    return [
-      ...newIndicators.reverse(),
-      ...indicators
-    ]
-  })
+  readonly indicators = toSignal(this.projectService.indicators$)
 
   async onDelete(indicator: IIndicator) {
     const cofirm = await firstValueFrom(
@@ -58,7 +51,7 @@ export class AllIndicatorComponent implements OnDestroy {
     try {
       await firstValueFrom(this.indicatorsService.delete(indicator.id))
       this.toastrService.success('PAC.INDICATOR.DeleteIndicator')
-      this.projectComponent._removeIndicator(indicator.id)
+      this.projectService.removeIndicator(indicator.id)
     } catch (err) {
       this.toastrService.error(err)
     }

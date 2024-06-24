@@ -66,9 +66,7 @@ export class TagEditorComponent implements ControlValueAccessor {
     return this.tagCtrl.value
   }
 
-  readonly _tags = derivedAsync(() => {
-    return this.tagService.getAll(this.category())
-  })
+  readonly _tags = derivedAsync(() => this.tagService.getAll(this.category()), { initialValue: []})
 
   readonly search = toSignal(this.tagCtrl.valueChanges.pipe(startWith(null)))
 
@@ -89,7 +87,7 @@ export class TagEditorComponent implements ControlValueAccessor {
   constructor() {
     effect(
       () => {
-        this.tags.update((values) => values.map((value) => this._tags().find((item) => item.id === value.id)))
+        this.tags.update((values) => values.map((value) => this._tags().find((item) => item.id === value.id) ?? value))
       },
       { allowSignalWrites: true }
     )

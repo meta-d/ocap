@@ -528,27 +528,16 @@ export class ProjectComponent extends TranslationBaseComponent {
     )
   }
 
-  _removeIndicator(id: string) {
-    this.projectService.updateProject((project) => ({
-      ...project,
-      indicators: project.indicators.filter((item) => item.id !== id)
-    }))
-    // this._project$.next({
-    //   ...this.project,
-    //   indicators: this.project.indicators.filter((item) => item.id !== id)
-    // })
-  }
-
-  _addIndicator(indicator: IIndicator) {
-    this.projectService.updateProject((project) => ({
-      ...project,
-      indicators: [indicator, ...project.indicators]
-    }))
-    // this._project$.next({
-    //   ...this.project,
-    //   indicators: [indicator, ...this.project.indicators]
-    // })
-  }
+  // _addIndicator(indicator: IIndicator) {
+  //   this.projectService.updateProject((project) => ({
+  //     ...project,
+  //     indicators: [indicator, ...project.indicators]
+  //   }))
+  //   // this._project$.next({
+  //   //   ...this.project,
+  //   //   indicators: [indicator, ...this.project.indicators]
+  //   // })
+  // }
 
   // async refreshIndicators() {
   //   const project = await firstValueFrom(

@@ -16,68 +16,68 @@ export interface State extends ConversationState {
   next: string
 }
 
-/**
- * Create the **supervisor** node for the route graph.
- * The supervisor will manage the conversation between the **workers**.
- * 
- * @param llm 
- * @param members 
- * @returns 
- */
-export async function createSupervisor(llm: ChatOpenAI, members: string[], system?: string): Promise<Runnable> {
-  const systemPrompt =
-    'You are a supervisor tasked with managing a conversation between the' +
-    ' following workers: {members}. Given the following user request,' +
-    ' respond with the worker to act next. Each worker will perform a' +
-    ' task and respond with their results and status. When finished,' +
-    ' respond with END.' + (system ? ' ' + system : '')
-  const options = [END, ...members]
+// /**
+//  * Create the **supervisor** node for the route graph.
+//  * The supervisor will manage the conversation between the **workers**.
+//  * 
+//  * @param llm 
+//  * @param members 
+//  * @returns 
+//  */
+// export async function createSupervisor(llm: ChatOpenAI, members: string[], system?: string): Promise<Runnable> {
+//   const systemPrompt =
+//     'You are a supervisor tasked with managing a conversation between the' +
+//     ' following workers: {members}. Given the following user request,' +
+//     ' respond with the worker to act next. Each worker will perform a' +
+//     ' task and respond with their results and status. When finished,' +
+//     ' respond with END.' + (system ? ' ' + system : '')
+//   const options = [END, ...members]
 
-  // Define the routing function
-  const functionDef = {
-    name: 'route',
-    description: 'Select the next role.',
-    parameters: {
-      title: 'routeSchema',
-      type: 'object',
-      properties: {
-        next: {
-          title: 'Next',
-          anyOf: [{ enum: options }]
-        }
-      },
-      required: ['next']
-    }
-  }
+//   // Define the routing function
+//   const functionDef = {
+//     name: 'route',
+//     description: 'Select the next role.',
+//     parameters: {
+//       title: 'routeSchema',
+//       type: 'object',
+//       properties: {
+//         next: {
+//           title: 'Next',
+//           anyOf: [{ enum: options }]
+//         }
+//       },
+//       required: ['next']
+//     }
+//   }
 
-  const toolDef = {
-    type: 'function',
-    function: functionDef
-  } as const
+//   const toolDef = {
+//     type: 'function',
+//     function: functionDef
+//   } as const
 
-  const prompt = ChatPromptTemplate.fromMessages([
-    ['system', systemPrompt],
-    new MessagesPlaceholder('messages'),
-    ['system', 'Given the conversation above, who should act next?' + ' Or should we FINISH? Select one of: {options}']
-  ])
+//   const prompt = ChatPromptTemplate.fromMessages([
+//     ['system', systemPrompt],
+//     new MessagesPlaceholder('messages'),
+//     ['system', 'Given the conversation above, who should act next?' + ' Or should we FINISH? Select one of: {options}']
+//   ])
 
-  const formattedPrompt = await prompt.partial({
-    options: options.join(', '),
-    members: members.join(', ')
-  })
+//   const formattedPrompt = await prompt.partial({
+//     options: options.join(', '),
+//     members: members.join(', ')
+//   })
 
-  const supervisorChain = formattedPrompt
-    .pipe(
-      llm.bindTools([toolDef], {
-        tool_choice: { type: 'function', function: { name: 'route' } }
-      })
-    )
-    .pipe(new JsonOutputToolsParser())
-    // select the first one
-    .pipe((x) => x[0].args)
+//   const supervisorChain = formattedPrompt
+//     .pipe(
+//       llm.bindTools([toolDef], {
+//         tool_choice: { type: 'function', function: { name: 'route' } }
+//       })
+//     )
+//     .pipe(new JsonOutputToolsParser())
+//     // select the first one
+//     .pipe((x) => x[0].args)
 
-  return supervisorChain
-}
+//   return supervisorChain
+// }
 
 /**
  * Create agent executor for **worker** node in the route graph.

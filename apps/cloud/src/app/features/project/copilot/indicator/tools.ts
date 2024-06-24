@@ -2,10 +2,10 @@ import { inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { DynamicStructuredTool } from '@langchain/core/tools'
+import { Indicator } from '@metad/cloud/state'
 import { IndicatorFormulaSchema, IndicatorSchema, markdownEntityType } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { EntitySelectDataType, EntitySelectResultType, NgmEntityDialogComponent } from '@metad/ocap-angular/entity'
-import { Indicator } from '@metad/ocap-core'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
@@ -17,6 +17,8 @@ export function injectCreateIndicatorTool() {
   const router = inject(Router)
   const route = inject(ActivatedRoute)
   const projectService = inject(ProjectService)
+
+  const businessAreas = projectService.businessAreas
 
   const createIndicatorTool = new DynamicStructuredTool({
     name: 'createIndicator',
@@ -30,7 +32,14 @@ export function injectCreateIndicatorTool() {
         const [hierarchy, level] = indicator.calendar.split('].[')
         indicator.calendar = level ? `${hierarchy}]` : indicator.calendar
       }
-      projectService.newIndicator({...indicator, visible: true} as Indicator)
+      projectService.newIndicator({
+        ...indicator,
+        visible: true,
+        isActive: true,
+        businessArea: businessAreas().find((item) => item.id === indicator.businessAreaId),
+        createdAt: new Date(),
+        id: indicator.code
+      } as Indicator)
 
       setTimeout(async () => {
         await router.navigate(['indicators', indicator.code], {
@@ -45,7 +54,6 @@ export function injectCreateIndicatorTool() {
   return createIndicatorTool
 }
 
-
 export function injectReviseFormulaTool() {
   const logger = inject(NGXLogger)
   const router = inject(Router)
@@ -56,10 +64,10 @@ export function injectReviseFormulaTool() {
     name: 'reviseFormula',
     description: 'Revise formula of the indicator.',
     schema: IndicatorFormulaSchema,
-    func: async ({code, formula}) => {
+    func: async ({ code, formula }) => {
       logger.debug(`Execute copilot action 'reviseFormula': code:`, code, `formula:`, formula)
 
-      projectService.updateIndicator({code, formula})
+      projectService.updateIndicator({ code, formula })
 
       setTimeout(async () => {
         await router.navigate(['indicators', code], {

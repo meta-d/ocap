@@ -1,7 +1,7 @@
 <div class="flex flex-wrap justify-between items-center py-4 px-4 md:px-8">
   <div class="text-xl">
     {{ 'PAC.MENU.INDICATOR.REGISTER_INDICATOR' | translate: {Default: "Register Indicator"} }}
-    {{ indicatorModel()?.id ? indicatorModel().name : ('PAC.INDICATOR.REGISTER.New' | translate: {Default: "New"}) }}
+    {{ indicator()?.id ? indicator().name : ('PAC.INDICATOR.REGISTER.New' | translate: {Default: "New"}) }}
   </div>
   
   <div class="flex flex-wrap ml-auto">
@@ -10,32 +10,18 @@
       (click)="fileUpload.value=null;"> -->
   
     <div ngmButtonGroup class="flex-wrap">
-
-      <!-- <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
-        <mat-icon fontSet="material-icons-round">upload</mat-icon>
-          {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
-      </button> -->
-      <button mat-button displayDensity="cosy" (click)="downloadTempl()">
-        {{ 'PAC.MENU.INDICATOR.DownloadAsTemplate' | translate: {Default: "Download as Template"} }}
-      </button>
-      
-      @if (type() !== 'copy' && indicatorModel()?.id) {
-        <button mat-raised-button displayDensity="cosy"
-          (click)="copy(indicatorModel())">
-          {{ 'PAC.ACTIONS.COPY' | translate: {Default: "Copy"} }}
-        </button>
-      }
       <button mat-raised-button displayDensity="cosy" color="primary"
-        [disabled]="register_form.formGroup.invalid || register_form.formGroup.pristine"
+        [disabled]="register_form.formGroup.invalid || register_form.formGroup.pristine || !dirty()"
         (click)="onSubmit()">
         {{ 'PAC.ACTIONS.SAVE' | translate: {Default: "Save"} }}
       </button>
 
-      @if (indicatorModel()?.id) {
-        <button mat-icon-button displayDensity="cosy" ngmAppearance="danger" (click)="deleteIndicator()">
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-      }
+      <button mat-icon-button displayDensity="cosy" [matMenuTriggerFor]="menu"
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+      >
+        <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
+      </button>
     </div>
   </div>
 </div>
@@ -45,7 +31,8 @@
   <pac-indicator-register-form #register_form
     [certifications]="certifications$ | async"
     [models]="models()"
-    [(ngModel)]="indicatorModel"
+    [ngModel]="indicator()"
+    (ngModelChange)="onModelChange($event)"
   ></pac-indicator-register-form>
     
   @if (loading()) {
@@ -70,7 +57,7 @@
         </div>
       } @else {
         <ngm-analytical-card class="w-full h-[300px]"
-          [title]="indicatorModel()?.name"
+          [title]="indicator()?.name"
           [dataSettings]="dataSettings()"
           [chartOptions]="chartOptions()"
           [chartSettings]="{theme: primaryTheme$()}"
@@ -79,7 +66,7 @@
           }"
           >
           <div class=" flex-1 flex items-center md:gap-2">
-            <span class="text-base font-medium ml-4">{{ 'PAC.INDICATOR.Period' | translate: {Default: 'Period'} }}</span>
+            <span class="text-base font-medium ml-4 whitespace-nowrap">{{ 'PAC.INDICATOR.Period' | translate: {Default: 'Period'} }}</span>
 
             @for (p of PERIODS; track p.name) {
               <span class="pac-indicator__period-tag text-sm cursor-pointer inline-flex items-center font-semibold leading-sm uppercase px-2 py-1 rounded-lg"
@@ -95,3 +82,29 @@
     }
   </div>
 </div>
+
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent>
+     <!-- <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
+        <mat-icon fontSet="material-icons-round">upload</mat-icon>
+          {{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}
+      </button> -->
+      <button mat-menu-item (click)="downloadTempl()">
+        <mat-icon fontSet="material-icons-outlined">download</mat-icon>{{ 'PAC.MENU.INDICATOR.DownloadAsTemplate' | translate: {Default: "Download as Template"} }}
+      </button>
+      
+      @if (type() !== 'copy' && indicator()?.id) {
+        <button mat-menu-item 
+          (click)="copy(indicator())">
+          <mat-icon fontSet="material-icons-outlined">content_copy</mat-icon>{{ 'PAC.ACTIONS.COPY' | translate: {Default: "Copy"} }}
+        </button>
+      }
+
+      @if (indicator()?.id) {
+        <button mat-menu-item ngmAppearance="danger" (click)="deleteIndicator()">
+          <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}
+        </button>
+      }
+  </ng-template>
+</mat-menu>

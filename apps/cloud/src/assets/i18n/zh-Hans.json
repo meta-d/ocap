@@ -428,7 +428,8 @@
       "Copy": "复制",
       "NewTag": "新建标签",
       "Duplicate": "复制",
-      "OpenAttributesPanel": "打开属性面板"
+      "OpenAttributesPanel": "打开属性面板",
+      "Close": "关闭"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "组织更新成功",
@@ -613,7 +614,8 @@
       "DataPreview": "数据预览",
       "Period": "周期",
       "CommandIndicatorDesc": "描述指标的业务逻辑",
-      "CommandIndicatorArchitectDesc": "描述指标系统的架构"
+      "CommandIndicatorArchitectDesc": "描述指标系统的架构",
+      "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",

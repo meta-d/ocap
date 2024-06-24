@@ -1,7 +1,7 @@
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
-import { Component, computed, effect, inject, model, signal } from '@angular/core'
+import { Component, computed, inject, model, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
@@ -17,9 +17,10 @@ import { TranslateModule } from '@ngx-translate/core'
 import { uniq } from 'lodash-es'
 import { derivedAsync } from 'ngxtension/derived-async'
 import { BehaviorSubject, delay, tap } from 'rxjs'
-import { NgmHighlightDirective } from '../core/directives'
-import { NgmCopilotEngineService } from '../services'
 import { NgmSearchComponent } from '../common/search/search.component'
+import { NgmHighlightDirective } from '../core/directives'
+import { getCtrlCharacter, getOperatingSystem } from '../core/index'
+import { NgmCopilotEngineService } from '../services'
 
 @Component({
   standalone: true,
@@ -50,6 +51,8 @@ export class CommandDialogComponent {
 
   readonly data = inject<{ commands: string[] }>(MAT_DIALOG_DATA)
   readonly dialogRef = inject(MatDialogRef)
+
+  readonly ctrlKey = getCtrlCharacter(getOperatingSystem())
 
   readonly commandName = model<string>(this.data.commands[0])
 
@@ -145,12 +148,6 @@ export class CommandDialogComponent {
 
   #abortController: AbortController
 
-  constructor() {
-    effect(() => {
-      console.log(this.commandWithContext())
-    })
-  }
-
   async execute() {
     const prompt = this.prompt()
     this.#abortController = new AbortController()
@@ -175,6 +172,11 @@ export class CommandDialogComponent {
   }
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
+    if ((event.isComposing || event.metaKey) && event.key === 'Enter') {
+      this.execute()
+      return
+    }
+
     this.character.set(event.key)
     setTimeout(() => {
       const { current, before, after } = getCurrentWord(event)
@@ -183,10 +185,6 @@ export class CommandDialogComponent {
       this.afterCurrentWord.set(after)
       // console.log(`'${before}'`, `'${current}'`, `'${after}'`)
     })
-
-    if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
-      return
-    }
 
     // Tab 键补全提示语
     if (event.key === 'Tab') {
@@ -197,7 +195,13 @@ export class CommandDialogComponent {
         } else {
           const item = this.filteredContextItems()[0]
           if (item) {
-            this.prompt.set((this.beforeCurrentWord() ? this.beforeCurrentWord() + ' ' : '') + '@' + item.uKey + ' ' + this.afterCurrentWord())
+            this.prompt.set(
+              (this.beforeCurrentWord() ? this.beforeCurrentWord() + ' ' : '') +
+                '@' +
+                item.uKey +
+                ' ' +
+                this.afterCurrentWord()
+            )
           }
         }
       }

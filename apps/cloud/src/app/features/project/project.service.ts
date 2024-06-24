@@ -1,10 +1,13 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { BusinessAreasService, IndicatorsService, NgmSemanticModel, hierarchizeBusinessAreas } from '@metad/cloud/state'
-import { nonBlank } from '@metad/core'
+import { BusinessAreasService, IndicatorsService, NgmSemanticModel, convertIndicatorResult, hierarchizeBusinessAreas } from '@metad/cloud/state'
+import { dirtyCheckWith, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { Indicator, MDCube, isEntitySet } from '@metad/ocap-core'
+import { Indicator, MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
+import { Store, createStore, withProps } from '@ngneat/elf'
+import { stateHistory } from '@ngneat/elf-state-history'
+import { cloneDeep } from 'lodash-es'
 import {
   EMPTY,
   catchError,
@@ -21,7 +24,7 @@ import {
   tap
 } from 'rxjs'
 import { IProject, ISemanticModel, ProjectsService, TagService, registerModel } from '../../@core'
-import { injectFetchModelDetails } from './types'
+import { ProjectIndicatorsState, injectFetchModelDetails } from './types'
 
 @Injectable()
 export class ProjectService {
@@ -79,8 +82,21 @@ export class ProjectService {
    * Indicators
    */
   readonly indicators = computed(() => this.project()?.indicators)
-  readonly newIndicators = signal<Indicator[]>([])
-  readonly newIndicators$ = toObservable(this.newIndicators)
+  // readonly newIndicators = signal<Indicator[]>([])
+  // readonly newIndicators$ = toObservable(this.newIndicators)
+
+  readonly iStore = createStore({ name: 'project_indicators' }, withProps<ProjectIndicatorsState>({ indicators: [] }))
+  readonly iPristineStore = createStore(
+    { name: 'project_indicators_pristine' },
+    withProps<ProjectIndicatorsState>({ indicators: [] })
+  )
+  readonly #stateHistory = stateHistory<Store, ProjectIndicatorsState>(this.iStore, {
+    comparatorFn: negate(isEqual)
+  })
+  readonly dirtyCheckResult = dirtyCheckWith(this.iStore, this.iPristineStore, { comparator: negate(isEqual) })
+  readonly indicators$ = this.iStore.pipe(map((state) => state.indicators))
+
+  readonly dirty = signal<Record<string, boolean>>({})
 
   /**
    * Business Areas
@@ -95,6 +111,9 @@ export class ProjectService {
 
   setProject(project: IProject) {
     this.project.set(project)
+    const indicators = project.indicators.map(convertIndicatorResult)
+    this.iStore.update(() => ({ indicators: cloneDeep(indicators) }))
+    this.iPristineStore.update(() => ({ indicators: cloneDeep(indicators) }))
   }
 
   updateProject(project: Partial<IProject>): void
@@ -145,7 +164,11 @@ export class ProjectService {
   |--------------------------------------------------------------------------
   */
   newIndicator(indicator: Partial<Indicator>) {
-    this.newIndicators.update((prev) => [...prev, indicator as Indicator])
+    // this.newIndicators.update((prev) => [...prev, indicator as Indicator])
+    this.iStore.update((state) => ({
+      ...state,
+      indicators: [indicator, ...state.indicators]
+    }))
   }
 
   refreshIndicators() {
@@ -159,7 +182,7 @@ export class ProjectService {
   }
 
   getIndicatorByCode(code: string) {
-    return this.newIndicators$.pipe(
+    return this.indicators$.pipe(
       map((indicators) => indicators.find((indicator) => indicator.code === code)),
       distinctUntilChanged(),
       switchMap((indicator) =>
@@ -185,13 +208,38 @@ export class ProjectService {
 
   updateIndicator(indicator: Partial<Indicator>) {
     if (indicator.code) {
-      this.newIndicators.update((indicators) => {
-        const index = indicators.findIndex((item) => item.code === indicator.code)
-        if (index > -1) {
-          indicators[index] = { ...indicators[index], ...indicator }
-        }
-        return [...indicators]
-      })
+      this.iStore.update((state) => ({
+        ...state,
+        indicators: state.indicators.map((item) => (item.code === indicator.code ? { ...item, ...indicator } : item))
+      }))
+      // this.newIndicators.update((indicators) => {
+      //   const index = indicators.findIndex((item) => item.code === indicator.code)
+      //   if (index > -1) {
+      //     indicators[index] = { ...indicators[index], ...indicator }
+      //   }
+      //   return [...indicators]
+      // })
     }
+  }
+
+  markDirty(id: string, dirty: boolean) {
+    this.dirty.update((state) => ({ ...state, [id]: dirty }))
+  }
+
+  resetIndicator(id: string) {
+    this.iStore.update((state) => ({
+      ...state,
+      indicators: state.indicators.map((item) =>
+        item.id === id ? cloneDeep(this.iPristineStore.getValue().indicators.find((i) => i.id === id)) : item
+      )
+    }))
+    this.dirty.update((state) => ({ ...state, [id]: null }))
+  }
+
+  removeIndicator(id: string) {
+    this.iStore.update((store) => ({
+      ...store,
+      indicators: store.indicators.filter((item) => item.id !== id)
+    }))
   }
 }

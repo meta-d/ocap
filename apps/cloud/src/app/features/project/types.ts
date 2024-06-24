@@ -8,6 +8,11 @@ import { map } from 'rxjs/operators'
 import { DefaultCollection, ICollection, IIndicator } from '../../@core'
 import { INDICATOR_COLUMNS } from '../indicator/types'
 
+
+export type ProjectIndicatorsState = {
+  indicators: IIndicator[]
+}
+
 export function collectionId(collection: ICollection | string) {
   collection = isString(collection) ? collection : collection?.id
   return collection === DefaultCollection.id ? null : collection

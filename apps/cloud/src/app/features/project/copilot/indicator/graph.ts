@@ -2,12 +2,12 @@ import { Signal } from '@angular/core'
 import { BaseMessage } from '@langchain/core/messages'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
-import { Route } from '../../../../@core/copilot/'
-import { createIndicatorWorker } from './indicator-agent'
-import { DIMENSION_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
-import { IBusinessArea, ITag } from '../../../../@core'
-import { createReviewerWorker } from './reviewer-agent'
 import { CreateGraphOptions } from '@metad/copilot'
+import { IBusinessArea, ITag } from '../../../../@core'
+import { Route, Team } from '../../../../@core/copilot/'
+import { createIndicatorWorker } from './indicator-agent'
+import { createReviewerWorker } from './reviewer-agent'
+import { FORMULA_REVIEWER_AGENT_NAME, INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
 
 // Define the top-level State interface
 interface State extends Route.State {
@@ -47,7 +47,7 @@ export async function createIndicatorGraph({
   copilotRoleContext,
   indicatorCodes,
   businessAreas,
-  tags,
+  tags
 }: CreateGraphOptions & {
   pickCubeTool?: DynamicStructuredTool
   createIndicatorTool?: DynamicStructuredTool
@@ -58,26 +58,34 @@ export async function createIndicatorGraph({
   businessAreas: Signal<IBusinessArea[]>
   tags: Signal<ITag[]>
 }) {
-  const supervisorNode = await Route.createSupervisor(llm, [INDICATOR_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME], `Review the formula if the indicator has a formula`)
-  // const planner = await Route.createWorkerAgent(llm, [pickCubeTool], `为注册业务数据指标指定计划\n` + `{context}`)
+  const supervisorNode = await Team.createSupervisor(
+    llm,
+    [INDICATOR_AGENT_NAME, FORMULA_REVIEWER_AGENT_NAME],
+    `If the new indicator has a formula, please use '${FORMULA_REVIEWER_AGENT_NAME}' to check the correctness of the formula, otherwise just end it`
+  )
+
+  const createIndicator = await createIndicatorWorker(
+    {
+      llm,
+      copilotRoleContext,
+      indicatorCodes,
+      businessAreas,
+      tags
+    },
+    [pickCubeTool, memberRetrieverTool, createIndicatorTool]
+  )
+
   const reviewerWorker = await createReviewerWorker({
     llm,
     copilotRoleContext,
     tools: [reviseFormulaTool]
   })
-  const createIndicator = await createIndicatorWorker({
-    llm,
-    copilotRoleContext,
-    indicatorCodes,
-    businessAreas,
-    tags
-  }, [pickCubeTool, memberRetrieverTool, createIndicatorTool])
 
   const superGraph = new StateGraph({ channels: superState })
     // Add steps nodes
     .addNode(SUPERVISOR_NAME, supervisorNode)
     .addNode(INDICATOR_AGENT_NAME, Route.createRunWorkerAgent(createIndicator, INDICATOR_AGENT_NAME))
-    .addNode(FORMULA_REVIEWER_AGENT_NAME, Route.createRunWorkerAgent(reviewerWorker, FORMULA_REVIEWER_AGENT_NAME))
+    .addNode(FORMULA_REVIEWER_AGENT_NAME, Team.getInstructions.pipe(Route.createRunWorkerAgent(reviewerWorker, FORMULA_REVIEWER_AGENT_NAME)))
 
   superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
   superGraph.addEdge(FORMULA_REVIEWER_AGENT_NAME, SUPERVISOR_NAME)

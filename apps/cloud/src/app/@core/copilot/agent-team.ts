@@ -23,7 +23,7 @@ export const getMessages = RunnableLambda.from((state: State) => {
   return { messages: state.messages }
 })
 
-export const joinGraph = RunnableLambda.from((response: any) => {
+export const joinGraph = RunnableLambda.from((response: ConversationState) => {
   return {
     messages: [response.messages[response.messages.length - 1]]
   }

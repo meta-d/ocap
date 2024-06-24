@@ -22,10 +22,10 @@
   }
   <textarea matInput [(ngModel)]="prompt" class="w-[500px] p-2 focus:outline-none" [placeholder]="command()?.description"
     cdkTextareaAutosize
-    cdkAutosizeMinRows="3"
-    cdkAutosizeMaxRows="5"
+    cdkAutosizeMinRows="5"
+    cdkAutosizeMaxRows="8"
     [matAutocomplete]="autoPrompts"
-    matAutocompletePosition="below"
+    matAutocompletePosition="above"
     (keydown)="triggerFun($event, autoPrompts)"></textarea>
   <mat-autocomplete #autoPrompts="matAutocomplete" class="ngm-copilot-chat__autocomplete-panel ngm-autocomplete-panel ngm-density__cosy"
     autoActiveFirstOption hideSingleSelectionIndicator
@@ -82,6 +82,14 @@
         {{ 'Copilot.Generate' | translate: {Default: 'Generate'} }}
       }
     </span>
+
+    <div class="inline-flex gap-2 items-center rounded-md px-2 py-0 bg-white/10">
+      <span>{{ctrlKey}}</span>
+
+      <svg class="inline-block" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 100 100" width="20px" height="20px" x="0px" y="0px">
+        <path fill="currentColor" d="M74,50V24H68V50a5,5,0,0,1-5,5H36.24l11-11L43,39.76,26.88,55.88a3,3,0,0,0,0,4.24L43,76.24,47.24,72l-11-11H63A11,11,0,0,0,74,50Z"/>
+      </svg>
+    </div>
   </button>
 </mat-dialog-actions>
 
