@@ -54,33 +54,33 @@ export function injectCreateIndicatorTool() {
   return createIndicatorTool
 }
 
-export function injectReviseFormulaTool() {
-  const logger = inject(NGXLogger)
-  const router = inject(Router)
-  const route = inject(ActivatedRoute)
-  const projectService = inject(ProjectService)
+// export function injectReviseFormulaTool() {
+//   const logger = inject(NGXLogger)
+//   const router = inject(Router)
+//   const route = inject(ActivatedRoute)
+//   const projectService = inject(ProjectService)
 
-  const reviseFormulaTool = new DynamicStructuredTool({
-    name: 'reviseFormula',
-    description: 'Revise formula of the indicator.',
-    schema: IndicatorFormulaSchema,
-    func: async ({ code, formula }) => {
-      logger.debug(`Execute copilot action 'reviseFormula': code:`, code, `formula:`, formula)
+//   const reviseFormulaTool = new DynamicStructuredTool({
+//     name: 'reviseFormula',
+//     description: 'Revise formula of the indicator.',
+//     schema: IndicatorFormulaSchema,
+//     func: async ({formula }) => {
+//       logger.debug(`Execute copilot action 'reviseFormula':`, `formula:`, formula)
 
-      projectService.updateIndicator({ code, formula })
+//       // projectService.updateIndicator({ code, formula })
 
-      setTimeout(async () => {
-        await router.navigate(['indicators', code], {
-          relativeTo: route
-        })
-      })
+//       // setTimeout(async () => {
+//       //   await router.navigate(['indicators', code], {
+//       //     relativeTo: route
+//       //   })
+//       // })
 
-      return 'Revised formula of indicator!'
-    }
-  })
+//       return 'Revised formula of indicator!'
+//     }
+//   })
 
-  return reviseFormulaTool
-}
+//   return reviseFormulaTool
+// }
 
 export function injectPickCubeTool() {
   const logger = inject(NGXLogger)
@@ -131,4 +131,25 @@ export function injectPickCubeTool() {
   })
 
   return pickCubeTool
+}
+
+
+export function injectCreateFormulaTool() {
+  const logger = inject(NGXLogger)
+  const router = inject(Router)
+  const route = inject(ActivatedRoute)
+  const projectService = inject(ProjectService)
+
+  const createFormulaTool = new DynamicStructuredTool({
+    name: 'createFormula',
+    description: 'Create formula for the indicator.',
+    schema: IndicatorFormulaSchema,
+    func: async ({ formula, unit }) => {
+      logger.debug(`Execute copilot action 'reviseFormula':`, `formula:`, formula, `unit:`, unit)
+
+      return `The formula "${formula}" and unit "${unit || ''}" for indicator is valid!`
+    }
+  })
+
+  return createFormulaTool
 }

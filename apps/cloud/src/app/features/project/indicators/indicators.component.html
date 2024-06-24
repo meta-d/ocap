@@ -14,21 +14,21 @@
           (click)="aiRegister()">
           <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
         </button>
-
-        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators()?.length" (click)="export()">
-          <div class="flex items-center">
-            <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
-            {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
-          </div>
-        </button>
-
-        <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
-          <mat-icon fontSet="material-icons-round">upload</mat-icon>
-          <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
-        </button>
         
+        @if (hasDirty()) {
+          <button mat-flat-button displayDensity="cosy" (click)="saveAll()">
+            {{ 'PAC.INDICATOR.SaveAll' | translate: {Default: "Save All"} }}
+          </button>
+        }
         <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicators/new']">
           {{ 'PAC.INDICATOR.MY_INDICATORS.REGISTER' | translate: {Default: "Register"} }}
+        </button>
+
+        <button mat-icon-button displayDensity="cosy" [matMenuTriggerFor]="menu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen"
+        >
+          <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
         </button>
       </div>
     </div>
@@ -95,3 +95,19 @@
   [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
   <router-outlet #o="outlet"></router-outlet>
 </mat-tab-nav-panel>
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent>
+    <button mat-menu-item [disabled]="!selectedIndicators()?.length" (click)="export()">
+      <div class="flex items-center">
+        <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+        {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
+      </div>
+    </button>
+
+    <button mat-menu-item (click)="fileUpload.click()">
+      <mat-icon fontSet="material-icons-round">upload</mat-icon>
+      <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
+    </button>
+  </ng-template>
+</mat-menu>

@@ -35,6 +35,7 @@ export const IndicatorSchema = z
 
 export const IndicatorFormulaSchema = z
 .object({
-  code: z.string().describe(`The code of indicator`),
-  formula: z.string().describe(`The MDX formula of indicator`)
+  // code: z.string().describe(`The code of indicator`),
+  formula: z.string().describe(`The MDX formula of indicator`),
+  unit: z.string().optional().describe(`The unit of formula result`)
 })

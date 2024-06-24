@@ -615,7 +615,8 @@
       "Period": "周期",
       "CommandIndicatorDesc": "描述指标的业务逻辑",
       "CommandIndicatorArchitectDesc": "描述指标系统的架构",
-      "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？"
+      "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？",
+      "SaveAll": "保存全部"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",

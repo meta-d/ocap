@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { Indicator, convertIndicatorResult } from '@metad/cloud/state'
@@ -8,11 +8,10 @@ import { saveAsYaml, uploadYamlFile } from '@metad/core'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { EntityType } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import { IIndicator, ISemanticModel, routeAnimations } from '../../../@core'
+import { IIndicator, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
 import { ProjectService } from '../project.service'
 import { exportIndicator, injectFetchModelDetails } from '../types'
@@ -40,16 +39,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly fetchModelDetails = injectFetchModelDetails()
 
   readonly selectedIndicators = signal<IIndicator[]>([])
-  readonly models = this.projectService.models
-  readonly dataSources = computed(() =>
-    this.models().map((model) => ({
-      key: model.key,
-      caption: model.name
-    }))
-  )
-  readonly modelDetails = signal<Record<string, ISemanticModel>>({})
-  readonly currentDataSource = signal<string | null>(null)
-  readonly currentEntityType = signal<EntityType | null>(null)
+  readonly hasDirty = this.projectService.hasDirty
 
   isDirty(id: string) {
     return this.projectService.dirty()[id]
@@ -57,18 +47,22 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
 
   async removeOpenedLink(link: IIndicator) {
     if (this.isDirty(link.id)) {
-      const confirm = await firstValueFrom(this._dialog
-        .open(NgmConfirmDeleteComponent, {
-          data: {
-            title: this.getTranslation('PAC.ACTIONS.Close', {Default: 'Close'}) + ` [${link.name}]`,
-            value: link.name,
-            information: this.getTranslation('PAC.INDICATOR.IndicatorHasUnsavedChanges', {Default: `There are unsaved changes in the indicator.\n Are you sure to close it?`})
-          }
-        })
-        .afterClosed())
-        if (!confirm) {
-          return
-        }
+      const confirm = await firstValueFrom(
+        this._dialog
+          .open(NgmConfirmDeleteComponent, {
+            data: {
+              title: this.getTranslation('PAC.ACTIONS.Close', { Default: 'Close' }) + ` [${link.name}]`,
+              value: link.name,
+              information: this.getTranslation('PAC.INDICATOR.IndicatorHasUnsavedChanges', {
+                Default: `There are unsaved changes in the indicator.\n Are you sure to close it?`
+              })
+            }
+          })
+          .afterClosed()
+      )
+      if (!confirm) {
+        return
+      }
     }
 
     this.projectService.resetIndicator(link.id)
@@ -120,6 +114,10 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
       this.openedLinks().splice(index, 1, indicator)
     }
     this.currentLink.set(indicator)
+  }
+
+  async saveAll() {
+    await this.projectService.saveAll()
   }
 
   aiRegister() {

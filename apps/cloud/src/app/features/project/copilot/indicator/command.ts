@@ -7,7 +7,7 @@ import { NGXLogger } from 'ngx-logger'
 import { injectCopilotRoleContext } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
 import { createIndicatorGraph } from './graph'
-import { injectCreateIndicatorTool, injectPickCubeTool, injectReviseFormulaTool } from './tools'
+import { injectCreateIndicatorTool, injectPickCubeTool, injectCreateFormulaTool } from './tools'
 
 export function injectIndicatorCommand() {
   const logger = inject(NGXLogger)
@@ -36,7 +36,7 @@ export function injectCreateIndicatorGraph() {
   const createIndicatorTool = injectCreateIndicatorTool()
   const pickCubeTool = injectPickCubeTool()
   const memberRetrieverTool = injectDimensionMemberTool()
-  const reviseFormulaTool = injectReviseFormulaTool()
+  const createFormulaTool = injectCreateFormulaTool()
 
   const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
   const businessAreas = projectService.businessAreas
@@ -49,7 +49,7 @@ export function injectCreateIndicatorGraph() {
       pickCubeTool,
       createIndicatorTool,
       memberRetrieverTool,
-      reviseFormulaTool,
+      createFormulaTool,
       copilotRoleContext,
       indicatorCodes,
       businessAreas,

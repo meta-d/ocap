@@ -1,6 +1,12 @@
 import { Injectable, computed, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
-import { BusinessAreasService, IndicatorsService, NgmSemanticModel, convertIndicatorResult, hierarchizeBusinessAreas } from '@metad/cloud/state'
+import {
+  BusinessAreasService,
+  IndicatorsService,
+  NgmSemanticModel,
+  convertIndicatorResult,
+  hierarchizeBusinessAreas
+} from '@metad/cloud/state'
 import { dirtyCheckWith, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -23,7 +29,16 @@ import {
   take,
   tap
 } from 'rxjs'
-import { IProject, ISemanticModel, ProjectsService, TagService, registerModel } from '../../@core'
+import {
+  IProject,
+  ISemanticModel,
+  ProjectsService,
+  TagService,
+  ToastrService,
+  getErrorMessage,
+  isUUID,
+  registerModel
+} from '../../@core'
 import { ProjectIndicatorsState, injectFetchModelDetails } from './types'
 
 @Injectable()
@@ -34,6 +49,7 @@ export class ProjectService {
   readonly tagService = inject(TagService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
+  readonly toastrService = inject(ToastrService)
   readonly fetchModelDetails = injectFetchModelDetails()
 
   readonly project = signal<IProject>(null)
@@ -97,6 +113,8 @@ export class ProjectService {
   readonly indicators$ = this.iStore.pipe(map((state) => state.indicators))
 
   readonly dirty = signal<Record<string, boolean>>({})
+  readonly hasDirty = computed(() => Object.values(this.dirty()).some((dirty) => dirty))
+  readonly loading = signal(false)
 
   /**
    * Business Areas
@@ -207,18 +225,11 @@ export class ProjectService {
   }
 
   updateIndicator(indicator: Partial<Indicator>) {
-    if (indicator.code) {
+    if (indicator.id) {
       this.iStore.update((state) => ({
         ...state,
-        indicators: state.indicators.map((item) => (item.code === indicator.code ? { ...item, ...indicator } : item))
+        indicators: state.indicators.map((item) => (item.id === indicator.id ? { ...item, ...indicator } : item))
       }))
-      // this.newIndicators.update((indicators) => {
-      //   const index = indicators.findIndex((item) => item.code === indicator.code)
-      //   if (index > -1) {
-      //     indicators[index] = { ...indicators[index], ...indicator }
-      //   }
-      //   return [...indicators]
-      // })
     }
   }
 
@@ -241,5 +252,30 @@ export class ProjectService {
       ...store,
       indicators: store.indicators.filter((item) => item.id !== id)
     }))
+  }
+
+  async saveAll() {
+    for await (const id of Object.keys(this.dirty())) {
+      let indicator = this.iStore.getValue().indicators.find((item) => item.id === id)
+      if (indicator) {
+        try {
+          if (!isUUID(indicator.id)) {
+            delete indicator.id
+          }
+          indicator = await firstValueFrom(this.indicatorsService.create(indicator))
+          this.iStore.update((state) => ({
+            ...state,
+            indicators: state.indicators.map((item) => (item.id === id ? cloneDeep(indicator) : item))
+          }))
+          this.iPristineStore.update((store) => ({
+            ...store,
+            indicators: store.indicators.map((item) => (item.id === id ? cloneDeep(indicator) : item))
+          }))
+          this.markDirty(id, false)
+        } catch (error) {
+          this.toastrService.error(getErrorMessage(error))
+        }
+      }
+    }
   }
 }
