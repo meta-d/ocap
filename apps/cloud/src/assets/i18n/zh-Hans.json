@@ -1174,7 +1174,8 @@
       "StoryPointName": "故事点名称",
       "AddCube": "添加数据集",
       "CreateCalculationMeasure": "创建计算度量",
-      "CreateParameter": "创建参数"
+      "CreateParameter": "创建参数",
+      "CommandCalculationDesc": "描述计算度量的业务逻辑"
     },
     "Project": {
       "Project": "项目",

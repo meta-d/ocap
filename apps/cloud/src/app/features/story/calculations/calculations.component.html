@@ -62,10 +62,17 @@
 
     <div class="flex justify-between items-center">
       <label class="text-lg p-2"> {{ 'Story.Common.Calculations' | translate: { Default: 'Calculations' } }} </label>
-      <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateCalculationMeasure' | translate: { Default: 'Create Calculation Measure' }" matTooltipPosition="above"
-        (click)="openCreateCalculation()">
-        <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
-      </button>
+      <div class="flex items-center gap-1">
+        <button mat-icon-button displayDensity="cosy" class="ngm-copilot-command-button ngm-toolbar__action"
+          [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="aiCreateCalculation()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        </button>
+        <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateCalculationMeasure' | translate: { Default: 'Create Calculation Measure' }" matTooltipPosition="above"
+          (click)="openCreateCalculation()">
+          <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
+        </button>
+      </div>
     </div>
     
     <mat-list class="divide-y ml-4 dark:divide-neutral-800" displayDensity="cosy">

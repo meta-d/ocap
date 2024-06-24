@@ -20,7 +20,8 @@ import { CalculationProperty, DataSettings, DisplayBehaviour, ParameterProperty,
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationCommand } from '../copilot'
+import { injectCalculationCommand } from '../copilot/index'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 
 @Component({
   standalone: true,
@@ -220,6 +221,18 @@ export class StoryCalculationsComponent {
 
   openCreateCalculation() {
     this.router.navigate(['create'], { relativeTo: this.route })
+  }
+
+  aiCreateCalculation() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['calculation']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 
   openEditCalculation(calculationProperty: CalculationProperty) {
