@@ -13,6 +13,7 @@ import { PLANNER_NAME } from './types'
 
 export function injectIndicatorArchitectCommand() {
   const logger = inject(NGXLogger)
+  const translate = inject(TranslateService)
   const projectService = inject(ProjectService)
   const copilotRoleContext = injectCopilotRoleContext()
   const createIndicatorGraph = injectCreateIndicatorGraph()
@@ -28,7 +29,7 @@ export function injectIndicatorArchitectCommand() {
     (async () => {
       return {
         alias: 'ia',
-        description: 'Descripe the indicator system architecture',
+        description: translate.instant('PAC.INDICATOR.CommandIndicatorArchitectDesc', {Default: 'Descripe the indicator system architecture'}),
         agent: {
           type: CopilotAgentType.Graph,
           conversation: true,

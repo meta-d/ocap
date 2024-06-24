@@ -38,8 +38,8 @@ export class AllIndicatorComponent implements OnDestroy {
   private _dialog = inject(MatDialog)
 
   readonly indicators = computed(() => {
-    const indicators = this.projectService.indicators()
-    const newIndicators = this.projectService.newIndicators()
+    const indicators = this.projectService.indicators() ?? []
+    const newIndicators = this.projectService.newIndicators() ?? []
 
     return [
       ...newIndicators.reverse(),

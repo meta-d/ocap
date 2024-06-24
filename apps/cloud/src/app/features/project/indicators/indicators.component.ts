@@ -32,6 +32,8 @@ export const NewIndicatorCodePlaceholder = 'new'
   animations: [routeAnimations]
 })
 export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndicator> {
+  NewIndicatorCodePlaceholder = NewIndicatorCodePlaceholder
+  
   private projectService = inject(ProjectService)
   private _dialog = inject(MatDialog)
   readonly #logger = inject(NGXLogger)

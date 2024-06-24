@@ -662,13 +662,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
       } catch (err: any) {
         if (!(err instanceof GraphValueError)) {
-          console.error(err)
-          this.upsertMessage({
-            id: assistantId,
-            role: CopilotChatMessageRoleEnum.Assistant,
-            status: 'error',
-            error: err.message
-          })
+          // console.error(err)
+          // this.upsertMessage({
+          //   id: assistantId,
+          //   role: CopilotChatMessageRoleEnum.Assistant,
+          //   status: 'error',
+          //   error: err.message
+          // })
+          throw err
         }
         end = true
       }
@@ -695,7 +696,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         status: 'error',
         error: err.message
       })
-      return
+      throw err
     } finally {
       abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
     }
@@ -867,6 +868,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
+  /**
+   * @deprecated use `triggerCommandAgent` instead
+   */
   async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
     if (!message.id) {
       message.id = this.generateId()

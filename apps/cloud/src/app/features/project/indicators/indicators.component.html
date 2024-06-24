@@ -9,7 +9,8 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
       <div ngmButtonGroup>
-        <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action" [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+        <button mat-icon-button displayDensity="cosy" class="ngm-copilot-command-button ngm-toolbar__action"
+          [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
           (click)="aiRegister()">
           <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
         </button>
@@ -44,6 +45,7 @@
       <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">settings</mat-icon>
       {{ 'PAC.INDICATOR.All' | translate: {Default: "All"} }}
     </span>
+
     <!-- <span mat-tab-link [routerLink]="['./all']"
       routerLinkActive #rla2="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"
@@ -52,6 +54,7 @@
       <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">group_add</mat-icon>
       {{ 'PAC.INDICATOR.MY_INDICATORS.ALL' | translate: {Default: "All"} }}
     </span> -->
+
     <span mat-tab-link [routerLink]="['approvals']"
       routerLinkActive #rla3="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"
@@ -65,8 +68,12 @@
       <span mat-tab-link [routerLink]="[indicator.id || indicator.code]"
         [active]="indicator.id === currentLink()?.id || indicator.code === currentLink()?.code">
         <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
-        <span *ngIf="indicator.name">{{indicator.name}}</span>
-        <span *ngIf="indicator.id === 'new'">{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
+        @if (indicator.name) {
+          <span class="overflow-hidden text-ellipsis max-w-[200px]" [title]="indicator.name">{{indicator.name}}</span>
+        }
+        @if (indicator.id === NewIndicatorCodePlaceholder) {
+          <span>{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
+        }
         <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
           <mat-icon>cancel</mat-icon>
         </button>

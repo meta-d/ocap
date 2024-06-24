@@ -51,7 +51,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
 
       return {
         alias: 'd',
-        description: 'New or edit dimension',
+        description: translate.instant('PAC.MODEL.Copilot.CommandDimensionDesc', {Default: 'Descripe business logic of the dimension'}),
         historyCursor: () => {
           return modelService.getHistoryCursor()
         },

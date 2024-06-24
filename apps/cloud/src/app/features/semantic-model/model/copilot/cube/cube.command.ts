@@ -49,7 +49,7 @@ ${markdownSharedDimensions(sharedDimensions)}
 
     return {
       alias: 'c',
-      description: 'New or edit a cube',
+      description: translate.instant('PAC.MODEL.Copilot.CommandCubeDesc', {Default: 'Descripe business logic of the cube'}),
       historyCursor: () => {
         return modelService.getHistoryCursor()
       },

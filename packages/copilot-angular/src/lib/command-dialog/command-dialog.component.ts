@@ -1,14 +1,25 @@
+import { ScrollingModule } from '@angular/cdk/scrolling'
 import { TextFieldModule } from '@angular/cdk/text-field'
 import { CommonModule } from '@angular/common'
-import { Component, computed, inject, model, signal } from '@angular/core'
+import { Component, computed, effect, inject, model, signal } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
+import { MatAutocomplete, MatAutocompleteActivatedEvent, MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatButtonModule } from '@angular/material/button'
 import { MatChipsModule } from '@angular/material/chips'
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog'
 import { MatInputModule } from '@angular/material/input'
-import { CopilotEngine } from '@metad/copilot'
-import { NgmCopilotEngineService } from '../services'
+import { MatMenuModule } from '@angular/material/menu'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { CopilotContextItem, CopilotEngine } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
+import { uniq } from 'lodash-es'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { BehaviorSubject, delay, tap } from 'rxjs'
+import { NgmHighlightDirective } from '../core/directives'
+import { NgmCopilotEngineService } from '../services'
+import { NgmSearchComponent } from '../common/search/search.component'
 
 @Component({
   standalone: true,
@@ -23,7 +34,15 @@ import { TranslateModule } from '@ngx-translate/core'
     MatButtonModule,
     MatChipsModule,
     MatInputModule,
-    TextFieldModule
+    TextFieldModule,
+    MatProgressBarModule,
+    MatAutocompleteModule,
+    MatTooltipModule,
+    MatMenuModule,
+    ScrollingModule,
+
+    NgmHighlightDirective,
+    NgmSearchComponent
   ]
 })
 export class CommandDialogComponent {
@@ -42,13 +61,101 @@ export class CommandDialogComponent {
   readonly prompt = model<string>('')
   readonly creating = signal(false)
   readonly error = signal('')
+  readonly character = signal<string>(null)
+  readonly currentWord = signal<string>(null)
+  readonly beforeCurrentWord = signal<string>(null)
+  readonly afterCurrentWord = signal<string>(null)
+
+  readonly promptEmpty = computed(() => this.prompt().trim().length === 0)
+
+  readonly commandWithContext = computed(() => {
+    const command = this.commandName()
+    return this.#copilotEngine.getCommandWithContext(command)
+  })
+  readonly commandContext = computed(() => this.commandWithContext()?.context)
+  readonly hasContextTrigger = computed(() => this.prompt().includes('@'))
+  readonly loadingContext$ = new BehaviorSubject(false)
+  readonly contextItems = derivedAsync(() => {
+    const context = this.commandContext()
+    const hasContextTrigger = this.hasContextTrigger()
+    if (hasContextTrigger && context && context.items()) {
+      this.loadingContext$.next(true)
+      return context.items().pipe(tap(() => this.loadingContext$.next(false)))
+    }
+    return null
+  })
+
+  readonly isContextTrigger = computed(() => this.currentWord()?.startsWith('@'))
+  readonly contextSearch = computed(() => this.currentWord()?.slice(1))
+  readonly filteredContextItems = computed(() => {
+    const isContextTrigger = this.isContextTrigger()
+    const text = this.contextSearch()
+    const items = this.contextItems()
+    if (isContextTrigger) {
+      if (text) {
+        const words = text.toLowerCase().split('_')
+        return items?.filter((item) =>
+          words.length
+            ? words.every((word) => item.key.toLowerCase().includes(word) || item.caption?.toLowerCase().includes(word))
+            : true
+        )
+      }
+      return items
+    }
+    return null
+  })
+
+  readonly contextWords = computed(() =>
+    uniq(
+      this.prompt()
+        .split(' ')
+        .filter((word) => word.startsWith('@'))
+        .map((word) => word.slice(1))
+        .filter((word) => word.length > 0)
+    )
+  )
+  readonly contexts = derivedAsync(
+    () => {
+      const words = this.contextWords()
+      return Promise.all(words.map((word) => this.commandContext().getContextItem(word))).then((items) =>
+        items.filter((item) => !!item)
+      )
+    },
+    { initialValue: [] }
+  )
+
+  #activatedContext = signal('')
+  readonly suggestionsOpened$ = new BehaviorSubject(false)
+  readonly #suggestionsOpened = toSignal(this.suggestionsOpened$.pipe(delay(100)), { initialValue: false })
+
+  readonly contextMenuSearch = model<string>(null)
+  readonly filteredContextMenuItems = computed(() => {
+    const text = this.contextMenuSearch()
+    const items = this.contextItems()
+    if (text) {
+      const words = text.toLowerCase().split(' ')
+      return items?.filter((item) =>
+        words.length
+          ? words.every((word) => item.key.toLowerCase().includes(word) || item.caption?.toLowerCase().includes(word))
+          : true
+      )
+    }
+    return items
+  })
 
   #abortController: AbortController
+
+  constructor() {
+    effect(() => {
+      console.log(this.commandWithContext())
+    })
+  }
 
   async execute() {
     const prompt = this.prompt()
     this.#abortController = new AbortController()
     this.creating.set(true)
+    this.error.set(null)
     try {
       const message = await this.#copilotEngine.chat(prompt, {
         command: this.commandName(),
@@ -61,5 +168,84 @@ export class CommandDialogComponent {
     } finally {
       this.creating.set(false)
     }
+  }
+
+  trackByKey(index: number, item: CopilotContextItem) {
+    return item?.key
+  }
+
+  triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
+    this.character.set(event.key)
+    setTimeout(() => {
+      const { current, before, after } = getCurrentWord(event)
+      this.currentWord.set(current)
+      this.beforeCurrentWord.set(before)
+      this.afterCurrentWord.set(after)
+      // console.log(`'${before}'`, `'${current}'`, `'${after}'`)
+    })
+
+    if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {
+      return
+    }
+
+    // Tab 键补全提示语
+    if (event.key === 'Tab') {
+      event.preventDefault()
+      if (this.isContextTrigger()) {
+        if (this.#activatedContext()) {
+          this.prompt.set(this.#activatedContext())
+        } else {
+          const item = this.filteredContextItems()[0]
+          if (item) {
+            this.prompt.set((this.beforeCurrentWord() ? this.beforeCurrentWord() + ' ' : '') + '@' + item.uKey + ' ' + this.afterCurrentWord())
+          }
+        }
+      }
+    }
+
+    if (event.key === '@') {
+      this.character.set('@')
+    }
+
+    // console.log(event.key, event.code)
+  }
+
+  onContextActivated(event: MatAutocompleteActivatedEvent) {
+    this.#activatedContext.set(event.option?.value)
+  }
+
+  removeContext(item: CopilotContextItem) {
+    const key = item.key
+    const prompt = this.prompt()
+    const newPrompt = prompt.replace(new RegExp(`@${key}`, 'g'), '')
+    this.prompt.set(newPrompt)
+  }
+
+  repleaceContext(orginal: string, target: CopilotContextItem) {
+    this.prompt.update((prompt) => prompt.split(`@${orginal}`).join(`@${target.uKey}`))
+  }
+}
+
+function getCurrentWord(event: KeyboardEvent) {
+  const inputElement = event.target as HTMLInputElement
+  const inputText = inputElement.value
+  const cursorPosition = inputElement.selectionStart
+
+  // Get the text before and after the cursor
+  const beforeCursor = inputText.slice(0, cursorPosition)
+  const afterCursor = inputText.slice(cursorPosition)
+
+  // Find the start of the current word
+  const startOfWord = beforeCursor.lastIndexOf(' ') + 1
+  // Find the end of the current word
+  const endOfWord = afterCursor.indexOf(' ') === -1 ? inputText.length : cursorPosition + afterCursor.indexOf(' ') + 1
+
+  // Extract the current word
+  const current = inputText.slice(startOfWord, endOfWord)
+
+  return {
+    current,
+    before: inputText.slice(0, startOfWord).trim(),
+    after: inputText.slice(endOfWord)
   }
 }

@@ -611,7 +611,9 @@
       "Copilot_CreateIndicator": "创建指标",
       "Copilot_CreateFormula": "创建指标公式",
       "DataPreview": "数据预览",
-      "Period": "周期"
+      "Period": "周期",
+      "CommandIndicatorDesc": "描述指标的业务逻辑",
+      "CommandIndicatorArchitectDesc": "描述指标系统的架构"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
@@ -997,6 +999,8 @@
         "CreatedDimension": "维度创建成功！",
         "CreateCalculatedFormula": "创建计算度量公式",
         "CreateHierarchy": "创建一个新的层次结构",
+        "CommandDimensionDesc": "描述维度的业务逻辑",
+        "CommandCubeDesc": "描述多维数据集的业务逻辑",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",

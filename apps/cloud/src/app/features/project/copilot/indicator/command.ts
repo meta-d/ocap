@@ -19,7 +19,7 @@ export function injectIndicatorCommand() {
     (async () => {
       return {
         alias: 'i',
-        description: 'Descripe the indicator business logic',
+        description: translate.instant('PAC.INDICATOR.CommandIndicatorDesc', {Default: 'Descripe the indicator business logic'}),
         agent: {
           type: CopilotAgentType.Graph,
           conversation: true

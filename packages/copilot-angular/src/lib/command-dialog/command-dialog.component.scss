@@ -1,6 +1,15 @@
+:host {
+  --mat-dialog-with-actions-content-padding: .5rem;
+}
+
+.mat-mdc-dialog-title+.mat-mdc-dialog-content {
+  padding-top: .5rem;
+}
+
 .mat-mdc-input-element {
   background-color: var(--mdc-dialog-container-color, white);
 }
-.ai-generate.mdc-button {
-  @apply text-neutral-700 dark:text-neutral-700;
+
+.mat-mdc-progress-bar {
+  position: absolute;
 }

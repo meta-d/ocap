@@ -33,7 +33,7 @@
 
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
         @if (conversation.command) {
-          <div class="ngm-copilot-chat__command self-center text-xs font-bold px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{conversation.command.name}}</div>
+          <div class="ngm-copilot-chat__command ngm-copilot-command-button self-center text-xs font-bold px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{conversation.command.name}}</div>
         }
         @for (message of conversation.messages; track message.id) {
           @switch (message.role) {
