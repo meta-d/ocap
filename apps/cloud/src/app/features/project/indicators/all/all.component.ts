@@ -11,7 +11,6 @@ import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { firstValueFrom } from 'rxjs'
 import { IIndicator, ToastrService } from '../../../../@core/index'
 import { ProjectService } from '../../project.service'
-import { ProjectComponent } from '../../project/project.component'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 
 @Component({
@@ -31,7 +30,6 @@ import { ProjectIndicatorsComponent } from '../indicators.component'
   styleUrls: ['./all.component.scss']
 })
 export class AllIndicatorComponent implements OnDestroy {
-  private projectComponent = inject(ProjectComponent)
   private indicatorsComponent = inject(ProjectIndicatorsComponent)
   private projectService = inject(ProjectService)
   private indicatorsService = inject(IndicatorsService)

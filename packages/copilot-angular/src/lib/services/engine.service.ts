@@ -640,9 +640,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
                   end = true
                 } else {
                   content += `<b>${key}</b>` +
-                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Invoke', {Default: 'Invoke'}) + `</b>: ${value.next}` +
-                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Instructions', {Default: 'Instructions'}) + `</b>: ${value.instructions || ''}` +
-                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Reasoning', {Default: 'Reasoning'}) + `</b>: ${value.reasoning || ''}`
+                    '\n<b>' + this.#translate.instant('Copilot.Invoke', {Default: 'Invoke'}) + `</b>: ${value.next}` +
+                    '\n<b>' + this.#translate.instant('Copilot.Instructions', {Default: 'Instructions'}) + `</b>: ${value.instructions || ''}` +
+                    '\n<b>' + this.#translate.instant('Copilot.Reasoning', {Default: 'Reasoning'}) + `</b>: ${value.reasoning || ''}`
                 }
               }
             })

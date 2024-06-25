@@ -109,5 +109,11 @@
       <mat-icon fontSet="material-icons-round">upload</mat-icon>
       <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
     </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item ngmAppearance="danger" [disabled]="!selectedIndicators()?.length" (click)="deleteSelected()">
+      <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}
+    </button>
   </ng-template>
 </mat-menu>

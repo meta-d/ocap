@@ -6,12 +6,12 @@ import { Indicator, convertIndicatorResult } from '@metad/cloud/state'
 import { CommandDialogComponent } from '@metad/copilot-angular'
 import { saveAsYaml, uploadYamlFile } from '@metad/core'
 import { NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
-import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
+import { AppearanceDirective, ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
-import { firstValueFrom } from 'rxjs'
-import { IIndicator, routeAnimations } from '../../../@core'
+import { EMPTY, firstValueFrom, switchMap } from 'rxjs'
+import { IIndicator, ToastrService, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
 import { ProjectService } from '../project.service'
 import { exportIndicator, injectFetchModelDetails } from '../types'
@@ -21,7 +21,15 @@ export const NewIndicatorCodePlaceholder = 'new'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, MaterialModule, ButtonGroupDirective, DensityDirective],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    MaterialModule,
+    AppearanceDirective,
+    ButtonGroupDirective,
+    DensityDirective
+  ],
   selector: 'pac-project-indicators',
   templateUrl: './indicators.component.html',
   styleUrls: ['./indicators.component.scss'],
@@ -36,6 +44,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   readonly #translate = inject(TranslateService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
+  readonly toastrService = inject(ToastrService)
   readonly fetchModelDetails = injectFetchModelDetails()
 
   readonly selectedIndicators = signal<IIndicator[]>([])
@@ -77,6 +86,32 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
       `${indicatorsFileName}.yaml`,
       indicators.map((item) => exportIndicator(convertIndicatorResult(item)))
     )
+  }
+
+  deleteSelected() {
+    this._dialog.open(NgmConfirmDeleteComponent, {
+      data: {
+        title: this.getTranslation('PAC.ACTIONS.Delete', { Default: 'Delete' }),
+        information: this.getTranslation('PAC.INDICATOR.DeleteSelectedIndicators', {
+          Default: 'Delete selected indicators?'
+        })
+      }
+    }).afterClosed().pipe(
+      switchMap((confirm) => {
+        if (confirm) {
+          return this.projectService.deleteIndicators(this.selectedIndicators().map((item) => item.id))
+        }
+        return EMPTY
+      })
+    )
+    .subscribe({
+      next: () => {
+        this.toastrService.success('PAC.INDICATOR.DeleteSelectedIndicators', {Default: 'Selected indicators deleted!'})
+      },
+      error: (error) => {
+        this.toastrService.error(error)
+      }
+    })
   }
 
   async handleUploadChange(event) {

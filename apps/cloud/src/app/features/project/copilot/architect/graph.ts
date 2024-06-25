@@ -1,12 +1,12 @@
+import { Signal } from '@angular/core'
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { FewShotPromptTemplate } from '@langchain/core/prompts'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { Indicator } from '@metad/cloud/state'
 import { CreateGraphOptions } from '@metad/copilot'
 import { Route, Team } from '../../../../@core/copilot/'
 import { createPlannerAgent } from './planner-agent'
 import { INDICATOR_AGENT_NAME, PLANNER_NAME, SUPERVISOR_NAME, markdownIndicators } from './types'
-import { Signal } from '@angular/core'
-import { Indicator } from '@metad/cloud/state'
 
 // Define the top-level State interface
 interface State extends Team.State {
@@ -24,10 +24,6 @@ const superState: StateGraphArgs<State>['channels'] = {
   },
   messages: {
     value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => []
-  },
-  team_members: {
-    value: (x: string[], y: string[]) => x.concat(y),
     default: () => []
   },
   next: {
@@ -51,12 +47,10 @@ const superState: StateGraphArgs<State>['channels'] = {
 export async function createIndicatorArchitectGraph({
   llm,
   checkpointer,
-  copilotRoleContext,
   createIndicatorGraph,
   fewShotTemplate,
   indicators
 }: CreateGraphOptions & {
-  copilotRoleContext: () => string
   createIndicatorGraph: (options: CreateGraphOptions) => Promise<StateGraph<Route.State, Partial<Route.State>, any>>
   fewShotTemplate: FewShotPromptTemplate
   indicators: Signal<Indicator[]>
@@ -64,7 +58,8 @@ export async function createIndicatorArchitectGraph({
   const supervisorNode = await Team.createSupervisor(
     llm,
     [PLANNER_NAME, INDICATOR_AGENT_NAME],
-    Team.SupervisorSystemPrompt + `Create a plan for the request indicator system if plan is empty, then assign the task to the indicator worker one by one.` +
+    Team.SupervisorSystemPrompt +
+      `Create a plan for the request indicator system if plan is empty, then assign the task to the indicator worker one by one.` +
       `\nThe plan is {plan}.`
   )
   const indicatorWorker = (
@@ -90,14 +85,17 @@ export async function createIndicatorArchitectGraph({
     const plan = await planner.invoke({
       ...state,
       messages: [
-        new HumanMessage(`Existing indicators do not need to be created again. Exisiting indicators:\n` + markdownIndicators(indicators())),
+        new HumanMessage(
+          `Existing indicators do not need to be created again. Exisiting indicators:\n` +
+            markdownIndicators(indicators())
+        ),
         new HumanMessage(content)
       ]
     })
 
     console.log(`The plan steps:`, plan.steps)
 
-    return { plan: plan.steps }
+    return { plan: plan.steps.slice(0, 2) }
   }
 
   const superGraph = new StateGraph({ channels: superState })

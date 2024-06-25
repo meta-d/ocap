@@ -13,7 +13,7 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { Indicator, MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
 import { Store, createStore, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, omit } from 'lodash-es'
 import {
   EMPTY,
   catchError,
@@ -260,9 +260,11 @@ export class ProjectService {
       if (indicator) {
         try {
           if (!isUUID(indicator.id)) {
-            delete indicator.id
+            indicator = omit(indicator, 'id')
           }
-          indicator = await firstValueFrom(this.indicatorsService.create(indicator))
+          indicator = await firstValueFrom(
+            this.indicatorsService.create({ ...indicator, projectId: this.project().id })
+          )
           this.iStore.update((state) => ({
             ...state,
             indicators: state.indicators.map((item) => (item.id === id ? cloneDeep(indicator) : item))
@@ -277,5 +279,9 @@ export class ProjectService {
         }
       }
     }
+  }
+
+  deleteIndicators(ids: string[]) {
+    return combineLatest(ids.map((id) => this.indicatorsService.delete(id).pipe(tap(() => this.removeIndicator(id)))))
   }
 }

@@ -1,10 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { IIndicator } from '@metad/contracts'
-import { Indicator } from '@metad/ocap-core'
 import { map } from 'rxjs/operators'
 import { C_URI_API_INDICATORS } from './constants'
-import { convertIndicator, convertIndicatorResult } from './types'
+import { Indicator, convertIndicator, convertIndicatorResult } from './types'
 
 
 @Injectable({

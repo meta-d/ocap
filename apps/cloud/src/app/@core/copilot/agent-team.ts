@@ -6,7 +6,6 @@ import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { ConversationState } from './types'
 
 export interface State extends ConversationState {
-  team_members: string[]
   next: string
   instructions: string
   reasoning: string

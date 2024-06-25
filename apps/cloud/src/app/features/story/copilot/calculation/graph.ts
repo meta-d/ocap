@@ -35,10 +35,6 @@ const superState: StateGraphArgs<State>['channels'] = {
     value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
     default: () => []
   },
-  team_members: {
-    value: (x: string[], y: string[]) => x.concat(y),
-    default: () => []
-  },
   next: {
     value: (x: string, y?: string) => y ?? x,
     default: () => 'ResearchTeam'
