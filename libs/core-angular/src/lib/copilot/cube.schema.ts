@@ -59,7 +59,7 @@ export const SlicerSchema = z.object({
 
 export const DimensionMemberSchema = z.object({
   ...baseDimensionSchema,
-  members: z.array(MemberSchema).describe('Members in the dimension')
+  members: z.array(MemberSchema).optional().describe('Members in the dimension')
 })
 export const FormulaSchema = z.string().describe('MDX expression for the calculated measure in cube')
 

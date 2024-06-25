@@ -20,6 +20,7 @@ import {
   processChatStream
 } from '@metad/copilot'
 import { BaseCheckpointSaver, END, GraphValueError } from '@langchain/langgraph/web'
+import { TranslateService } from '@ngx-translate/core'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { compact, flatten, pick } from 'lodash-es'
@@ -34,6 +35,7 @@ let uniqueId = 0
 @Injectable()
 export class NgmCopilotEngineService implements CopilotEngine {
   readonly #logger? = inject(NGXLogger, { optional: true })
+  readonly #translate? = inject(TranslateService, { optional: true })
   readonly copilot = inject(NgmCopilotService)
   readonly copilotContext = inject(NgmCopilotContextToken)
   readonly checkpointSaver = inject(BaseCheckpointSaver)
@@ -621,19 +623,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
         for await (const output of streamResults) {
           if (!output?.__end__) {
             let content = ''
-            Object.entries(output).forEach(([key, value]: [string, {messages?: HumanMessage[]; next?: string; instructions?: string;}]) => {
+            Object.entries(output).forEach(([key, value]: [string, {
+              messages?: HumanMessage[];
+              next?: string;
+              instructions?: string;
+              reasoning?: string;
+            }]) => {
               content += content ? '\n' : ''
               if (value.messages) {
                 if (verbose) {
-                  content += `<b>${key}</b>: `
+                  content += `<b>${key}</b>\n`
                 }
                 content += value.messages.map((m) => m.content).join('\n\n')
               } else if(value.next) {
                 if (value.next === 'FINISH' || value.next === END) {
                   end = true
                 } else {
-                  content += `<b>${key}</b>: call ${value.next}`
-                    + (value.instructions ? ` with: ${value.instructions}` : '')
+                  content += `<b>${key}</b>` +
+                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Invoke', {Default: 'Invoke'}) + `</b>: ${value.next}` +
+                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Instructions', {Default: 'Instructions'}) + `</b>: ${value.instructions || ''}` +
+                    '\n<b>' + this.#translate.instant('Ngm.Copilot.Reasoning', {Default: 'Reasoning'}) + `</b>: ${value.reasoning || ''}`
                 }
               }
             })

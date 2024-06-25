@@ -38,6 +38,10 @@ const superState: StateGraphArgs<State>['channels'] = {
     value: (x: string, y?: string) => y ?? x,
     default: () => "Resolve the user's request."
   },
+  reasoning: {
+    value: (x: string, y?: string) => y ?? x,
+    default: () => ''
+  },
   plan: {
     value: (x?: string[], y?: string[]) => y ?? x ?? [],
     default: () => []

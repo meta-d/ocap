@@ -9,6 +9,7 @@ export interface State extends ConversationState {
   team_members: string[]
   next: string
   instructions: string
+  reasoning: string
 }
 
 export const getInstructions = RunnableLambda.from((state: State) => {
@@ -85,10 +86,7 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
     )
     .pipe(new JsonOutputToolsParser())
     // select the first one
-    .pipe((x) => ({
-      next: x[0].args.next,
-      instructions: x[0].args.instructions
-    }))
+    .pipe((x) => x[0].args)
 
   return supervisor
 }

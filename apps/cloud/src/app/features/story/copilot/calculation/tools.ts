@@ -1,6 +1,6 @@
 import { Signal, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CalculationSchema } from '@metad/core'
+import { CalculationSchema, tryFixDimension } from '@metad/core'
 import {
   AggregationProperty,
   C_MEASURES,
@@ -8,6 +8,7 @@ import {
   CalculationType,
   CompareToEnum,
   DataSettings,
+  EntityType,
   MeasureControlProperty,
   RestrictedMeasureProperty,
   VarianceMeasureProperty
@@ -15,6 +16,7 @@ import {
 import { NxStoryService } from '@metad/story/core'
 import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
+import { firstValueFrom } from 'rxjs'
 import {
   ConditionalAggregationSchema,
   MeasureControlSchema,
@@ -35,16 +37,15 @@ export function injectCreateFormulaMeasureTool(
     schema: CalculationSchema,
     func: async ({ __id__, name, caption, formula }) => {
       const key = __id__ || nanoid()
-      const _dataSettings = dataSettings()
-      const calculation = {
-        __id__: key,
-        name,
-        caption,
-        calculationType: CalculationType.Calculated,
-        formula
-      } as CalculatedProperty
-
       try {
+        const _dataSettings = dataSettings()
+        const calculation = {
+          __id__: key,
+          name,
+          caption,
+          calculationType: CalculationType.Calculated,
+          formula
+        } as CalculatedProperty
         storyService.addCalculationMeasure({ dataSettings: _dataSettings, calculation })
 
         logger.debug(`Calculation measure created: `, _dataSettings, calculation)
@@ -74,21 +75,25 @@ export function injectCreateRestrictedMeasureTool(
     schema: RestrictedMeasureSchema,
     func: async (property) => {
       const key = property.__id__ || nanoid()
-      const dataSettings = defaultDataSettings()
-      storyService.addCalculationMeasure({
-        dataSettings,
-        calculation: {
-          ...property,
-          __id__: key,
-          calculationType: CalculationType.Restricted
-        } as RestrictedMeasureProperty
-      })
+      try {
+        const dataSettings = defaultDataSettings()
+        storyService.addCalculationMeasure({
+          dataSettings,
+          calculation: {
+            ...property,
+            __id__: key,
+            calculationType: CalculationType.Restricted
+          } as RestrictedMeasureProperty
+        })
 
-      logger.debug(`Restricted calculation measure created: `, dataSettings, property)
+        logger.debug(`Restricted calculation measure created: `, dataSettings, property)
 
-      callback(dataSettings, key)
+        callback(dataSettings, key)
 
-      return `Restricted calculation measure created!`
+        return `Restricted calculation measure created!`
+      } catch (error: any) {
+        return `Error creating restricted calculation measure: ${error.message}`
+      }
     }
   })
 
@@ -109,20 +114,47 @@ export function injectCreateConditionalAggregationTool(
     func: async (property) => {
       const key = property.__id__ || nanoid()
       const dataSettings = defaultDataSettings()
-      storyService.addCalculationMeasure({
-        dataSettings,
-        calculation: {
+
+      try {
+        const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings))
+        const calculation = {
           ...property,
           __id__: key,
           calculationType: CalculationType.Aggregation
         } as AggregationProperty
-      })
 
-      logger.debug(`Conditional aggregation calculation measure created: `, dataSettings, property)
+        if (calculation.conditionalDimensions?.length) {
+          calculation.useConditionalAggregation = true
+          calculation.conditionalDimensions = calculation.conditionalDimensions.map((dimension) => {
+            return {
+              ...dimension,
+              ...tryFixDimension(dimension, entityType)
+            }
+          })
+        }
 
-      callback(dataSettings, key)
+        if (calculation.aggregationDimensions?.length) {
+          calculation.aggregationDimensions = calculation.aggregationDimensions.map((dimension) => {
+            return {
+              ...dimension,
+              ...tryFixDimension(dimension, entityType)
+            }
+          })
+        }
 
-      return `Conditional aggregation calculation measure created!`
+        storyService.addCalculationMeasure({
+          dataSettings,
+          calculation
+        })
+
+        logger.debug(`Conditional aggregation calculation measure created: `, dataSettings, calculation)
+
+        callback(dataSettings, key)
+
+        return `Conditional aggregation calculation measure created!`
+      } catch (error: any) {
+        return `Error creating conditional aggregation calculation measure: ${error.message}`
+      }
     }
   })
 
@@ -142,64 +174,33 @@ export function injectCreateVarianceMeasureTool(
     func: async (property) => {
       const key = property.__id__ || nanoid()
       const dataSettings = defaultDataSettings()
-      storyService.addCalculationMeasure({
-        dataSettings,
-        calculation: {
-          ...property,
-          measure: {
-            ...property.measure,
-            dimension: C_MEASURES
-          },
-          compareA: {
-            type: CompareToEnum.CurrentMember
-          },
-          __id__: key,
-          calculationType: CalculationType.Variance
-        } as VarianceMeasureProperty
-      })
+      try {
+        storyService.addCalculationMeasure({
+          dataSettings,
+          calculation: {
+            ...property,
+            measure: {
+              ...property.measure,
+              dimension: C_MEASURES
+            },
+            compareA: {
+              type: CompareToEnum.CurrentMember
+            },
+            __id__: key,
+            calculationType: CalculationType.Variance
+          } as VarianceMeasureProperty
+        })
 
-      logger.debug(`Variance calculation measure created: `, dataSettings, property)
+        logger.debug(`Variance calculation measure created: `, dataSettings, property)
 
-      callback(dataSettings, key)
+        callback(dataSettings, key)
 
-      return `Variance calculation measure created!`
+        return `Variance calculation measure created!`
+      } catch (error: any) {
+        return `Error creating cariance calculation measure: ${error.message}`
+      }
     }
   })
 
   return createVarianceMeasureTool
-}
-
-export function injectCreateMeasureControlTool(
-  defaultDataSettings: Signal<DataSettings>,
-  callback: (dataSettings: DataSettings, key: string) => void
-) {
-  const logger = inject(NGXLogger)
-  const storyService = inject(NxStoryService)
-
-  const createMeasureControlTool = new DynamicStructuredTool({
-    name: 'createMeasureControl',
-    description: 'Create measures control to select actual measure in runtime',
-    schema: MeasureControlSchema,
-    func: async (property) => {
-      const key = property.__id__ || nanoid()
-      const dataSettings = defaultDataSettings()
-
-      storyService.addCalculationMeasure({
-        dataSettings,
-        calculation: {
-          ...property,
-          __id__: key,
-          calculationType: CalculationType.MeasureControl
-        } as MeasureControlProperty
-      })
-
-      logger.debug(`Measure control calculation measure created: `, dataSettings, property)
-
-      callback(dataSettings, key)
-
-      return `Measure control calculation created!`
-    }
-  })
-
-  return createMeasureControlTool
 }

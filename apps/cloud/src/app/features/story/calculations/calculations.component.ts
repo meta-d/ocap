@@ -27,7 +27,7 @@ import {
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationCommand, injectCalculationGraphCommand } from '../copilot/index'
+import { injectCalculationGraphCommand } from '../copilot/index'
 
 @Component({
   standalone: true,
@@ -157,16 +157,16 @@ export class StoryCalculationsComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  readonly calculatioCommand = injectCalculationCommand(
-    this.storyService,
-    this.dataSettings,
-    this.property,
-    (dataSettings: DataSettings, key: string) => {
-      this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
-      this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
-    }
-  )
-  readonly newCalculatioCommand = injectCalculationGraphCommand(
+  // readonly calculatioCommand = injectCalculationCommand(
+  //   this.storyService,
+  //   this.dataSettings,
+  //   this.property,
+  //   (dataSettings: DataSettings, key: string) => {
+  //     this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+  //     this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
+  //   }
+  // )
+  readonly calculatioCommand = injectCalculationGraphCommand(
     this.dataSettings,
     this.property,
     (dataSettings: DataSettings, key: string) => {
