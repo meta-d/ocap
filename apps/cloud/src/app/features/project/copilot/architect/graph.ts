@@ -60,7 +60,7 @@ export async function createIndicatorArchitectGraph({
   const supervisorNode = await Team.createSupervisor(
     llm,
     [PLANNER_NAME, INDICATOR_AGENT_NAME],
-    `Create a plan for the request indicator system if plan is empty, then assign the task to the indicator worker one by one.` +
+    Team.SupervisorSystemPrompt + `Create a plan for the request indicator system if plan is empty, then assign the task to the indicator worker one by one.` +
       `\nThe plan is {plan}.`
   )
   const indicatorWorker = (

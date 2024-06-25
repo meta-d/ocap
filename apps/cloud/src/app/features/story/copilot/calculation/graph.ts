@@ -1,15 +1,26 @@
 import { Signal } from '@angular/core'
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { FewShotPromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions } from '@metad/copilot'
+import { markdownModelCube } from '@metad/core'
+import { EntityType } from '@metad/ocap-core'
 import { Route, Team } from '../../../../@core/copilot/'
-import { SUPERVISOR_NAME } from './types'
+import { createFormulaWorker } from './formula-agent'
+import { createRestrictedMeasureWorker } from './restricted-agent'
+import {
+  CONDITIONAL_AGGREGATION_AGENT_NAME,
+  FORMULA_AGENT_NAME,
+  MEASURE_CONTROL_AGENT_NAME,
+  RESTRICTED_AGENT_NAME,
+  SUPERVISOR_NAME,
+  VARIANCE_AGENT_NAME
+} from './types'
 
 // Define the top-level State interface
-interface State extends Route.State {
-  instructions?: string
-}
+interface State extends Team.State {}
 
 const superState: StateGraphArgs<State>['channels'] = {
   role: {
@@ -22,6 +33,10 @@ const superState: StateGraphArgs<State>['channels'] = {
   },
   messages: {
     value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
+    default: () => []
+  },
+  team_members: {
+    value: (x: string[], y: string[]) => x.concat(y),
     default: () => []
   },
   next: {
@@ -37,48 +52,89 @@ const superState: StateGraphArgs<State>['channels'] = {
 export async function createCalculationGraph({
   llm,
   checkpointer,
+  formulaFewShotPrompt,
+  defaultModelCube,
   pickCubeTool,
   memberRetrieverTool,
-  copilotRoleContext,
+  createFormulaTool,
+  createRestrictedMeasureTool
 }: CreateGraphOptions & {
+  formulaFewShotPrompt: FewShotPromptTemplate
+  defaultModelCube: Signal<{ dataSource: string; cube: EntityType }>
   pickCubeTool?: DynamicStructuredTool
-  createIndicatorTool?: DynamicStructuredTool
   memberRetrieverTool?: DynamicStructuredTool
   createFormulaTool?: DynamicStructuredTool
-  copilotRoleContext: () => string
+  createRestrictedMeasureTool?: DynamicStructuredTool
 }) {
   const supervisorNode = await Team.createSupervisor(
     llm,
-    [INDICATOR_AGENT_NAME],
-    // `If the new indicator has a formula, please use '${FORMULA_REVIEWER_AGENT_NAME}' to check the correctness of the formula, otherwise just end it`
+    [
+      RESTRICTED_AGENT_NAME,
+      CONDITIONAL_AGGREGATION_AGENT_NAME,
+      VARIANCE_AGENT_NAME,
+      FORMULA_AGENT_NAME,
+      MEASURE_CONTROL_AGENT_NAME
+    ],
+    `You are a supervisor responsible for selecting one of the following workers: {team_members} .` +
+      ` Here are the explanations of these functions to help the agent select the appropriate tools for creating calculated measures in Cube:` +
+      `\n1. **RestrictedMeasureAgent**: This agent allows the creation of measures that aggregate values based on restrictions imposed by dimension members. It is useful when you need to filter or limit the data aggregation to specific members of a dimension.` +
+      `\n2. **ConditionalAggregationAgent**: This agent provides the ability to create aggregated measures based on various operations and dimensions. It supports operations such as Count, Sum, TopCount, TopSum, Min, Max, and Avg. This function is suitable when you need to perform different types of aggregations based on certain conditions.` +
+      `\n3. **VarianceMeasureAgent**: This agent is designed to create measures that calculate the variance or ratio between different members within a dimension. It is useful for comparing data, such as year-over-year changes, month-over-month changes, differences between versions, or differences between accounts.` +
+      `\n4. **FormulaMeasureAgent**: When none of the above agents can meet the requirements, this agent allows the creation of calculated measures using MDX (Multidimensional Expressions) formulas. It provides the flexibility to define complex calculations and custom aggregations.` +
+      `\n5. **MeasureControlAgent**: This agent creates a virtual measure that allows the selection among multiple measures. It is useful when you need to provide users with the ability to choose from different measures dynamically.` +
+      ` Based on the following user request, select an appropriate worker to create a calculated measure.` +
+      ` When finished, respond FINISH. Choose strategically to minimize the number of steps taken.` +
+      `\n\n{role}` +
+      `\n\n{context}`
   )
 
-  const createIndicator = await createIndicatorWorker(
-    {
-      llm,
-      copilotRoleContext,
-      indicatorCodes,
-      businessAreas,
-      tags
-    },
-    [pickCubeTool, memberRetrieverTool, createFormulaTool, createIndicatorTool]
-  )
+  const createFormulaAgent = await createFormulaWorker({
+    llm,
+    tools: [pickCubeTool, memberRetrieverTool, createFormulaTool]
+  })
+  const createRestrictedMeasureAgent = await createRestrictedMeasureWorker({
+    llm,
+    tools: [pickCubeTool, memberRetrieverTool, createRestrictedMeasureTool]
+  })
 
-  // const reviewerWorker = await createReviewerWorker({
-  //   llm,
-  //   copilotRoleContext,
-  //   tools: [reviseFormulaTool]
-  // })
+  const runCreateFormulaAgent = RunnableLambda.from(async (state: State) => {
+    const context = state.context || markdownModelCube(defaultModelCube())
+    const input = await formulaFewShotPrompt.format({
+      input: state.instructions,
+      context
+    })
+    return {
+      messages: [new HumanMessage(input)],
+      role: state.role,
+      context
+    }
+  })
+
+  const runCreateRestrictedMeasureAgent = RunnableLambda.from(async (state: State) => {
+    const context = state.context || markdownModelCube(defaultModelCube())
+    return {
+      messages: [new HumanMessage(state.instructions)],
+      role: state.role,
+      context
+    }
+  })
 
   const superGraph = new StateGraph({ channels: superState })
     // Add steps nodes
     .addNode(SUPERVISOR_NAME, supervisorNode)
-    .addNode(INDICATOR_AGENT_NAME, Route.createRunWorkerAgent(createIndicator, INDICATOR_AGENT_NAME))
-    // .addNode(FORMULA_REVIEWER_AGENT_NAME, Team.getInstructions.pipe(Route.createRunWorkerAgent(reviewerWorker, FORMULA_REVIEWER_AGENT_NAME)))
+    .addNode(
+      FORMULA_AGENT_NAME,
+      runCreateFormulaAgent.pipe(Route.createRunWorkerAgent(createFormulaAgent, FORMULA_AGENT_NAME))
+    )
+    .addNode(RESTRICTED_AGENT_NAME, Route.createRunWorkerAgent(createRestrictedMeasureAgent, RESTRICTED_AGENT_NAME))
 
-  superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
-  // superGraph.addEdge(FORMULA_REVIEWER_AGENT_NAME, SUPERVISOR_NAME)
-  superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next)
+  superGraph.addEdge(FORMULA_AGENT_NAME, SUPERVISOR_NAME)
+  superGraph.addEdge(RESTRICTED_AGENT_NAME, SUPERVISOR_NAME)
+  superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next, {
+    [FORMULA_AGENT_NAME]: FORMULA_AGENT_NAME,
+    [RESTRICTED_AGENT_NAME]: RESTRICTED_AGENT_NAME,
+    FINISH: END
+  })
 
   superGraph.addEdge(START, SUPERVISOR_NAME)
 

@@ -13,15 +13,21 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { ISelectOption, NgmDSCacheService, filterSearch } from '@metad/ocap-angular/core'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
-import { CalculationProperty, DataSettings, DisplayBehaviour, ParameterProperty, getEntityCalculations } from '@metad/ocap-core'
+import {
+  CalculationProperty,
+  DataSettings,
+  DisplayBehaviour,
+  ParameterProperty,
+  getEntityCalculations
+} from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationCommand } from '../copilot/index'
-import { CommandDialogComponent } from '@metad/copilot-angular'
+import { injectCalculationCommand, injectCalculationGraphCommand } from '../copilot/index'
 
 @Component({
   standalone: true,
@@ -77,7 +83,7 @@ export class StoryCalculationsComponent {
   )
   private schemas$ = toSignal(this.storyService.schemas$, { initialValue: null })
 
-  public entities$ = computed<ISelectOption<{ dataSource: string; }>[]>(() => {
+  public entities$ = computed<ISelectOption<{ dataSource: string }>[]>(() => {
     const schemas = this.schemas$()
     if (schemas) {
       const entities = []
@@ -146,10 +152,28 @@ export class StoryCalculationsComponent {
 
   readonly property = signal<CalculationProperty>(null)
 
-  readonly calculatioCommand = injectCalculationCommand(this.storyService, this.dataSettings, this.property, (dataSettings: DataSettings, key: string) => {
-    this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
-    this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
-  })
+  /**
+  |--------------------------------------------------------------------------
+  | Copilot
+  |--------------------------------------------------------------------------
+  */
+  readonly calculatioCommand = injectCalculationCommand(
+    this.storyService,
+    this.dataSettings,
+    this.property,
+    (dataSettings: DataSettings, key: string) => {
+      this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+      this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
+    }
+  )
+  readonly newCalculatioCommand = injectCalculationGraphCommand(
+    this.dataSettings,
+    this.property,
+    (dataSettings: DataSettings, key: string) => {
+      this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+      this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
+    }
+  )
 
   constructor(
     private storyService: NxStoryService,

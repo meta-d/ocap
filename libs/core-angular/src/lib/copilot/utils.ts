@@ -56,6 +56,11 @@ ${getEntityMeasures(entityType).map((item) => `  - name: "${item.name}"
 `
 }
 
+export function markdownModelCube({dataSource, cube}: {dataSource: string; cube: EntityType}) {
+  return `The dataSource is: ${dataSource}` +
+    `\n` + markdownEntityType(cube)
+}
+
 export function makeCubePrompt(cube: Cube) {
   return JSON.stringify({
     name: cube.name,

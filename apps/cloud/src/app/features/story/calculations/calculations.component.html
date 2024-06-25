@@ -36,6 +36,7 @@
     <div class="flex justify-between items-center">
       <label class="text-lg p-2"> {{ 'Story.Common.Parameters' | translate: { Default: 'Parameters' } }} </label>
       <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateParameter' | translate: { Default: 'Create Parameter' }" matTooltipPosition="above"
+        [disabled]="!dataSettings()"
         (click)="openCreateParameter()">
         <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
       </button>
@@ -69,6 +70,7 @@
           <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
         </button>
         <button mat-icon-button class="opacity-60" [matTooltip]="'PAC.Story.CreateCalculationMeasure' | translate: { Default: 'Create Calculation Measure' }" matTooltipPosition="above"
+          [disabled]="!dataSettings()"
           (click)="openCreateCalculation()">
           <mat-icon fontSet="material-icons-outlined">add_circle_outline</mat-icon>
         </button>

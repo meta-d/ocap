@@ -112,18 +112,6 @@ export function injectPickCubeTool() {
       if (result?.dataSource && cube) {
         const entityType = await firstValueFrom(projectService.selectEntityType(result.dataSource, cube))
         return `Use model id: '${result.modelId}' and cube: '${cube}'\n` + markdownEntityType(entityType)
-
-        // this.currentDataSource.set(this.models().find((item) => item.key === result.dataSource)?.id)
-        // const entitySet = await firstValueFrom(
-        //   this.dsCoreService.selectEntitySet(result.dataSource, result.entities[0])
-        // )
-        // if (isEntitySet(entitySet)) {
-        //   this.currentEntityType.set(entitySet.entityType)
-        //   return {
-        //     dataSource: result.dataSource,
-        //     entityType: entitySet.entityType
-        //   }
-        // }
       }
 
       return ''
@@ -132,7 +120,6 @@ export function injectPickCubeTool() {
 
   return pickCubeTool
 }
-
 
 export function injectCreateFormulaTool() {
   const logger = inject(NGXLogger)

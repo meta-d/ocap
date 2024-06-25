@@ -29,15 +29,14 @@ export const joinGraph = RunnableLambda.from((response: ConversationState) => {
   }
 })
 
-export async function createSupervisor(llm: ChatOpenAI, members: string[], system?: string): Promise<Runnable> {
-  const systemPrompt =
-    'You are a supervisor tasked with managing a conversation between the' +
+export const SupervisorSystemPrompt = 'You are a supervisor tasked with managing a conversation between the' +
     ' following workers:  {team_members}. Given the following user request,' +
     ' respond with the worker to act next. Each worker will perform a' +
     ' task and respond with their results and status. When finished,' +
     ' respond with FINISH.\n\n' +
-    ' Select strategically to minimize the number of steps taken.' +
-    (system ? ' ' + system : '')
+    ' Select strategically to minimize the number of steps taken.'
+
+export async function createSupervisor(llm: ChatOpenAI, members: string[], systemPrompt?: string): Promise<Runnable> {
   const options = ['FINISH', ...members]
   const functionDef = {
     name: 'route',
@@ -68,7 +67,7 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
     function: functionDef
   }
   let prompt = ChatPromptTemplate.fromMessages([
-    ['system', systemPrompt],
+    ['system', systemPrompt ?? SupervisorSystemPrompt],
     new MessagesPlaceholder('messages'),
     ['system', 'Given the conversation above, who should act next? Or should we FINISH? Select one of: {options}']
   ])

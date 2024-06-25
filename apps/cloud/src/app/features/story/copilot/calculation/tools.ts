@@ -43,13 +43,18 @@ export function injectCreateFormulaMeasureTool(
         calculationType: CalculationType.Calculated,
         formula
       } as CalculatedProperty
-      storyService.addCalculationMeasure({ dataSettings: _dataSettings, calculation })
 
-      logger.debug(`Calculation measure created: `, _dataSettings, calculation)
+      try {
+        storyService.addCalculationMeasure({ dataSettings: _dataSettings, calculation })
 
-      callback(_dataSettings, key)
+        logger.debug(`Calculation measure created: `, _dataSettings, calculation)
 
-      return `Formula calculation measure created!`
+        callback(_dataSettings, key)
+
+        return `Formula calculation measure created!`
+      } catch (error: any) {
+        return `Error creating formula calculation measure: ${error.message}`
+      }
     }
   })
 
