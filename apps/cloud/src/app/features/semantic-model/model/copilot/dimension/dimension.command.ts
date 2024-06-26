@@ -14,7 +14,7 @@ export const CreateDimensionSystemPrompt =
   ` If the user does not provide a dimension table, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a dimension.` + 
   ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` + 
   '\n' + timeLevelFormatter() + 
-  `\n{system_prompt}`
+  `\n{system}`
 
 export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)

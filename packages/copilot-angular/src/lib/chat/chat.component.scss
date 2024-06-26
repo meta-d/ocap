@@ -23,6 +23,10 @@
   // color: transparent;
 }
 
+.ngm-copilot-chat__command-tag {
+  @apply bg-gray-200 text-neutral-800 dark:bg-gray-100/10 dark:text-neutral-300;
+}
+
 .copilot-code-container {
   @apply bg-gray-200 rounded-lg text-xs text-gray-500;
 }

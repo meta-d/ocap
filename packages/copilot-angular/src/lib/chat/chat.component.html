@@ -371,10 +371,10 @@
 
           @for (command of filteredCommands();  track command.prompt) {
             <mat-option [value]="'/'+command.name+' '+(command.example || '')" [title]="command.description">
-                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300"
+                <span class="ngm-copilot-chat__command-tag text-xs font-medium me-2 px-1 mr-1 rounded"
                 >/{{command.name}}</span>
               @if (command.alias) {
-                <span class="bg-gray-200 text-neutral-800 text-xs font-medium me-2 px-1 mr-1 rounded dark:bg-gray-900 dark:text-neutral-300"
+                <span class="ngm-copilot-chat__command-tag text-xs font-medium me-2 px-1 mr-1 rounded"
                 >/{{command.alias}}</span>
               }
 
@@ -484,9 +484,9 @@
           {{ 'Copilot.Verbose' | translate: {Default: 'Verbose'} }}
         </mat-checkbox>
 
-        <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages mt-4" (click)="clear()">
+        <!-- <button mat-stroked-button displayDensity="cosy" class="pac-colpilot__clear-messages mt-4" (click)="clear()">
             {{ 'Copilot.ClearMessages' | translate: {Default: 'Clear messages'} }}
-        </button>
+        </button> -->
     </div>
 </popper-content>
 

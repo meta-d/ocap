@@ -1,10 +1,10 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { createTeamSupervisor } from '../langgraph-helper-utilities'
-import { PLANNER_NAME } from './types'
+import { Team } from 'apps/cloud/src/app/@core/copilot'
 
-export async function createSupervisor(llm: ChatOpenAI, tools: string[]) {
-  const supervisorNode = await createTeamSupervisor(
+export async function createSupervisor(llm: ChatOpenAI, members: string[]) {
+  const supervisorNode = await Team.createSupervisor(
     llm,
+    members,
     'You are a supervisor tasked with managing a conversation between the' +
       ' following teams: {team_members}. Given the following user request,' +
       // `call the ${PLANNER_NAME} to get a plan steps firstly.` +
@@ -14,8 +14,6 @@ export async function createSupervisor(llm: ChatOpenAI, tools: string[]) {
       ' respond with FINISH.\n\n' +
       // 'Current plan is {plan}.\n\n' +
       ' Select strategically to minimize the number of steps taken.',
-
-    tools
   )
 
   return supervisorNode

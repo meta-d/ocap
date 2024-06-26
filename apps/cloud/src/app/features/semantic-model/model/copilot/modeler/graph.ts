@@ -10,17 +10,18 @@ import { DIMENSION_MODELER_NAME } from '../dimension/graph'
 import { runAgentNode } from '../langgraph-helper-utilities'
 import { createModelerPlanner, getPlanFromState } from './planner'
 import { createSupervisor } from './supervisor'
-import { IGraphState, PLANNER_NAME, SUPERVISOR_NAME } from './types'
+import { PLANNER_NAME, SUPERVISOR_NAME, State } from './types'
 
-// Define the top-level State interface
-interface State extends IGraphState {
-  next: string
-  instructions: string
-  plan: string[]
-  pastSteps: [string, string][]
-}
 
 const superState: StateGraphArgs<State>['channels'] = {
+  role: {
+    value: (x: any, y: any) => y ?? x,
+    default: () => ''
+  },
+  context: {
+    value: (x: any, y: any) => y ?? x,
+    default: () => ''
+  },
   messages: {
     value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
     default: () => []
@@ -33,12 +34,12 @@ const superState: StateGraphArgs<State>['channels'] = {
     value: (x: string, y?: string) => y ?? x,
     default: () => "Resolve the user's request."
   },
+  reasoning: {
+    value: (x: string, y?: string) => y ?? x,
+    default: () => ''
+  },
   plan: {
     value: (x?: string[], y?: string[]) => y ?? x ?? [],
-    default: () => []
-  },
-  pastSteps: {
-    value: (x: [string, string][], y: [string, string][]) => x.concat(y),
     default: () => []
   }
 }

@@ -1,7 +1,6 @@
 import { inject } from '@angular/core'
-import { ChatOpenAI } from '@langchain/openai'
 import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
-import { NgmCopilotService, injectCopilotCommand } from '@metad/copilot-angular'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
@@ -16,7 +15,6 @@ export function injectModelerCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
-  const copilotService = inject(NgmCopilotService)
   const createDimensionModeler = injectDimensionModeler()
   const createCubeModeler = injectCubeModeler()
   const selectTablesTool = injectSelectTablesTool()
