@@ -46,6 +46,7 @@ import { ProjectService } from '../../project.service'
 import { exportIndicator } from '../../types'
 import { NewIndicatorCodePlaceholder, ProjectIndicatorsComponent } from '../indicators.component'
 import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
+import { injectParams } from 'ngxtension/inject-params'
 
 // AOA : array of array
 type AOA = any[][]
@@ -88,8 +89,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   readonly registerForm = viewChild<IndicatorRegisterFormComponent>('register_form')
   readonly contentElement = viewChild<ElementRef>('content')
-
-  // readonly indicatorModel = model<Indicator>({})
 
   readonly store = createSubStore(
     this.projectService.iStore,
@@ -211,105 +210,18 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   )
   readonly models = this.projectService.models
 
-  readonly id$ = this._route.paramMap.pipe(
-    startWith(this._route.snapshot.paramMap),
-    map((paramMap) => paramMap.get('id')),
-    tap((id) => {
-      if (id === NewIndicatorCodePlaceholder) {
-        this.indicatorsComponent?.setCurrentLink({ id: NewIndicatorCodePlaceholder } as Indicator)
-        // this._router.getCurrentNavigation().extras.state
-        // this.indicatorModel.update((state) => ({
-        //   ...state,
-        //   ...(this._router.getCurrentNavigation()?.extras?.state ?? {})
-        // }))
-      }
-    }),
-    filter((id) => !isNil(id) && id !== NewIndicatorCodePlaceholder),
-    distinctUntilChanged()
-  )
-
-  /**
-  |--------------------------------------------------------------------------
-  | Subscriptions (effect)
-  |--------------------------------------------------------------------------
-  */
-  // private queryMapSub = this._route.queryParams
-  //   .pipe(
-  //     startWith(this._route.snapshot.queryParams),
-  //     map((queryParams) => queryParams['modelId']),
-  //     filter(nonBlank),
-  //     takeUntilDestroyed()
-  //   )
-  //   .subscribe((id) => {
-  //     this.indicatorModel.update((indicator) => ({
-  //       ...indicator,
-  //       modelId: id
-  //     }))
-  //   })
-
-  // private newIndicatorSub = this.id$
-  //   .pipe(
-  //     filter((id) => !isUUID(id)),
-  //     switchMap((code) => this.projectService.getIndicatorByCode(code))
-  //   )
-  //   .subscribe((indicator) => {
-  //     if (!indicator) {
-  //       this.registerForm().formGroup.markAsPristine()
-  //       this._router.navigate(['../404'], { relativeTo: this._route })
-  //     } else {
-  //       this.indicatorModel.set({ ...indicator })
-  //       this.indicatorsComponent?.setCurrentLink({...indicator, id: indicator.id ?? indicator.code})
-  //       if (indicator.id) {
-  //         this.registerForm().formGroup.markAsPristine()
-  //       }
-  //     }
-  //   })
-
-  // private indicatorSub = this.id$
-  //   .pipe(
-  //     filter((id) => isUUID(id)),
-  //     switchMap((id) => {
-  //       this.loading.set(true)
-  //       return this.projectService.getIndicatorById(id).pipe(
-  //         tap(() => this.loading.set(false)),
-  //         catchError((err) => {
-  //           this.loading.set(false)
-  //           if (err.status === 404) {
-  //             this.toastrService.error('PAC.INDICATOR.REGISTER.IndicatorNotFound', '', {
-  //               Default: 'Indicator not found'
-  //             })
-  //           } else {
-  //             this.toastrService.error(err.error.message)
-  //           }
-  //           this._router.navigate(['../404'], { relativeTo: this._route })
-  //           return EMPTY
-  //         }),
-  //         map(convertIndicatorResult)
-  //       )
-  //     }),
-  //     tap((indicator) => {
-  //       this._logger?.debug('indicator register page on indicator change', indicator)
-  //       this.indicatorModel.update((state) => ({
-  //         ...state,
-  //         ...indicator,
-  //         createdByName: userLabel(indicator.createdBy)
-  //       }))
-  //     }),
-  //     delay(300),
-  //     takeUntilDestroyed()
-  //   )
-  //   .subscribe((indicator) => {
-  //     this.registerForm().formGroup.markAsPristine()
-  //     this.indicatorsComponent?.setCurrentLink({...indicator, id: indicator.id ?? indicator.code})
-  //     this.store.update(() => indicator)
-  //     this.pristineStore.update(() => cloneDeep(indicator))
-  //   })
+  readonly paramId = injectParams('id')
   
   readonly initialized = signal(false)
-  private idSub = this.id$.subscribe((id) => this.init(id))
 
   constructor() {
     super()
+
+    effect(() => {
+      if (this.paramId()) {
+        this.init(this.paramId())
+      }
+    }, { allowSignalWrites: true })
 
     effect(() => {
       if (this.indicator()?.id) {
@@ -382,45 +294,39 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   }
 
   async onSubmit() {
-    let indicator = {
-      ...this.indicator(),
-      measure: this.indicator().type === IndicatorType.BASIC ? this.indicator().measure : null,
-      formula: this.indicator().type === IndicatorType.DERIVE ? this.indicator().formula : null,
-      projectId: this.projectSignal().id ?? null
-    }
-    if (!isUUID(indicator.id)) {
-      delete indicator.id
-    }
+    // let indicator = {
+    //   ...this.indicator(),
+    //   measure: this.indicator().type === IndicatorType.BASIC ? this.indicator().measure : null,
+    //   formula: this.indicator().type === IndicatorType.DERIVE ? this.indicator().formula : null,
+    //   projectId: this.projectSignal().id ?? null
+    // }
+    // if (!isUUID(indicator.id)) {
+    //   delete indicator.id
+    // }
 
     this.loading.set(true)
     try {
-      indicator = await firstValueFrom(this.indicatorsService.create(indicator))
+      const indicator = await this.indicatorsComponent.saveIndicator(this.indicator())
 
       this.loading.set(false)
-      if (isUUID(this.indicator().id)) {
-        this.toastrService.success('PAC.INDICATOR.REGISTER.SaveIndicator', { Default: 'Save Indicator' })
-      } else {
-        this.toastrService.success('PAC.INDICATOR.REGISTER.CreateIndicator', { Default: 'Create Indicator' })
-        this.indicatorsComponent?.replaceNewIndicator(indicator)
+
+      if (this.type() === 'copy') {
+        this.type.set('edit')
+        this._router.navigate(['../', indicator.id], { relativeTo: this._route })
       }
 
-      this.projectService.refreshIndicators()
+      // if (isUUID(this.indicator().id)) {
+      //   this.toastrService.success('PAC.INDICATOR.REGISTER.SaveIndicator', { Default: 'Save Indicator' })
+      // } else {
+      //   this.toastrService.success('PAC.INDICATOR.REGISTER.CreateIndicator', { Default: 'Create Indicator' })
+      //   this.projectService.replaceNewIndicator(this.indicator().id, indicator)
+      //   this.indicatorsComponent?.replaceNewIndicator(this.indicator().id, indicator)
+      // }
+
+      // this.projectService.refreshIndicators()
     } catch (err) {
       this.loading.set(false)
       this.toastrService.error(err, '', {})
-      return
-    }
-
-    this.store.update((state) => ({
-      ...state,
-      id: indicator.id
-    }))
-    this.pristineStore.update(() => cloneDeep(this.indicator()))
-    // this.registerForm().formGroup.markAsPristine()
-
-    if (this.type() === 'copy') {
-      this.type.set('edit')
-      this._router.navigate(['../', indicator.id], { relativeTo: this._route })
     }
   }
 

@@ -616,6 +616,8 @@
       "CommandIndicatorDesc": "描述指标的业务逻辑",
       "CommandIndicatorArchitectDesc": "描述指标系统的架构",
       "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？",
+      "DeleteSelectedIndicators": "删除选中指标",
+      "DeletedSelectedIndicators": "已删除选中指标",
       "SaveAll": "保存全部"
     },
     "MODEL": {

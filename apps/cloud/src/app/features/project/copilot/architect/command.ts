@@ -15,7 +15,7 @@ export function injectIndicatorArchitectCommand() {
   const projectService = inject(ProjectService)
   const createIndicatorGraph = injectCreateIndicatorGraph()
 
-  const indicators = computed(() => projectService.indicators()?.map((indicator) => indicator) ?? [])
+  const indicators = computed(() => projectService.indicators() ?? [])
   //   const businessAreas = projectService.businessAreas
   //   const tags = projectService.tags
 

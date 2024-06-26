@@ -9,7 +9,7 @@ import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@me
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { firstValueFrom } from 'rxjs'
-import { IIndicator, ToastrService } from '../../../../@core/index'
+import { IIndicator, ToastrService, isUUID } from '../../../../@core/index'
 import { ProjectService } from '../../project.service'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 
@@ -30,6 +30,7 @@ import { ProjectIndicatorsComponent } from '../indicators.component'
   styleUrls: ['./all.component.scss']
 })
 export class AllIndicatorComponent implements OnDestroy {
+  isUUID = isUUID
   private indicatorsComponent = inject(ProjectIndicatorsComponent)
   private projectService = inject(ProjectService)
   private indicatorsService = inject(IndicatorsService)

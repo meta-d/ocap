@@ -1,15 +1,49 @@
-import { HumanMessage } from '@langchain/core/messages'
+import { BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
+import { AgentState } from '@metad/copilot-angular'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
-import { ConversationState } from './types'
 
-export interface State extends ConversationState {
+export interface State extends AgentState {
   next: string
   instructions: string
   reasoning: string
 }
+
+export function createState() {
+  return {
+    input: {
+      value: (x: any, y: any) => y ?? x,
+      default: () => ''
+    },
+    role: {
+      value: (x: any, y: any) => y ?? x,
+      default: () => ''
+    },
+    context: {
+      value: (x: any, y: any) => y ?? x,
+      default: () => ''
+    },
+    messages: {
+      value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
+      default: () => []
+    },
+    next: {
+      value: (x: string, y?: string) => y ?? x,
+      default: () => ''
+    },
+    instructions: {
+      value: (x: string, y?: string) => y ?? x,
+      default: () => "Resolve the user's request."
+    },
+    reasoning: {
+      value: (x: string, y?: string) => y ?? x,
+      default: () => ''
+    }
+  }
+}
+
 
 export const getInstructions = RunnableLambda.from((state: State) => {
   return {
@@ -23,7 +57,7 @@ export const getMessages = RunnableLambda.from((state: State) => {
   return { messages: state.messages }
 })
 
-export const joinGraph = RunnableLambda.from((response: ConversationState) => {
+export const joinGraph = RunnableLambda.from((response: AgentState) => {
   return {
     messages: [response.messages[response.messages.length - 1]]
   }

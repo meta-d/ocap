@@ -1,7 +1,8 @@
-import { Injectable, computed, inject, signal } from '@angular/core'
+import { Injectable, computed, effect, inject, signal } from '@angular/core'
 import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import {
   BusinessAreasService,
+  Indicator,
   IndicatorsService,
   NgmSemanticModel,
   convertIndicatorResult,
@@ -10,7 +11,7 @@ import {
 import { dirtyCheckWith, nonBlank } from '@metad/core'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { Indicator, MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
+import { MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
 import { Store, createStore, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, omit } from 'lodash-es'
@@ -35,7 +36,6 @@ import {
   ProjectsService,
   TagService,
   ToastrService,
-  getErrorMessage,
   isUUID,
   registerModel
 } from '../../@core'
@@ -97,10 +97,6 @@ export class ProjectService {
   /**
    * Indicators
    */
-  readonly indicators = computed(() => this.project()?.indicators)
-  // readonly newIndicators = signal<Indicator[]>([])
-  // readonly newIndicators$ = toObservable(this.newIndicators)
-
   readonly iStore = createStore({ name: 'project_indicators' }, withProps<ProjectIndicatorsState>({ indicators: [] }))
   readonly iPristineStore = createStore(
     { name: 'project_indicators_pristine' },
@@ -111,6 +107,7 @@ export class ProjectService {
   })
   readonly dirtyCheckResult = dirtyCheckWith(this.iStore, this.iPristineStore, { comparator: negate(isEqual) })
   readonly indicators$ = this.iStore.pipe(map((state) => state.indicators))
+  readonly indicators = toSignal(this.indicators$)
 
   readonly dirty = signal<Record<string, boolean>>({})
   readonly hasDirty = computed(() => Object.values(this.dirty()).some((dirty) => dirty))
@@ -126,6 +123,12 @@ export class ProjectService {
    * Tags
    */
   readonly tags = toSignal(this.tagService.getAll('indicator'), { initialValue: [] })
+
+  constructor() {
+    effect(() => {
+      console.log(this.hasDirty(), this.dirty())
+    })
+  }
 
   setProject(project: IProject) {
     this.project.set(project)
@@ -182,11 +185,17 @@ export class ProjectService {
   |--------------------------------------------------------------------------
   */
   newIndicator(indicator: Partial<Indicator>) {
-    // this.newIndicators.update((prev) => [...prev, indicator as Indicator])
-    this.iStore.update((state) => ({
-      ...state,
-      indicators: [indicator, ...state.indicators]
-    }))
+    this.iStore.update((state) => {
+      const index = state.indicators.findIndex((item) => item.id === indicator.id)
+      // If indicator already exists, don't add it
+      if (index > -1) {
+        return state
+      }
+      return {
+        ...state,
+        indicators: [indicator, ...state.indicators]
+      }
+    })
   }
 
   refreshIndicators() {
@@ -238,47 +247,40 @@ export class ProjectService {
   }
 
   resetIndicator(id: string) {
-    this.iStore.update((state) => ({
-      ...state,
-      indicators: state.indicators.map((item) =>
-        item.id === id ? cloneDeep(this.iPristineStore.getValue().indicators.find((i) => i.id === id)) : item
-      )
-    }))
-    this.dirty.update((state) => ({ ...state, [id]: null }))
+    if (isUUID(id)) {
+      this.iStore.update((state) => ({
+        ...state,
+        indicators: state.indicators.map((item) =>
+          item.id === id ? cloneDeep(this.iPristineStore.getValue().indicators.find((i) => i.id === id)) : item
+        )
+      }))
+      this.dirty.update((state) => ({ ...state, [id]: null }))
+    } else {
+      this.removeIndicator(id)
+    }
+  }
+
+  replaceNewIndicator(id: string, indicator: Indicator) {
+    const update = (state) => {
+      const index = state.indicators.findIndex((item) => item.id === id)
+      if (index > -1) {
+        const indicators = [...state.indicators]
+        indicators.splice(index, 1, cloneDeep(indicator))
+        return { ...state, indicators }
+      }
+
+      return state
+    }
+    this.iStore.update(update)
+    this.iPristineStore.update(update)
   }
 
   removeIndicator(id: string) {
+    this.dirty.update((state) => ({ ...state, [id]: null }))
     this.iStore.update((store) => ({
       ...store,
       indicators: store.indicators.filter((item) => item.id !== id)
     }))
-  }
-
-  async saveAll() {
-    for await (const id of Object.keys(this.dirty())) {
-      let indicator = this.iStore.getValue().indicators.find((item) => item.id === id)
-      if (indicator) {
-        try {
-          if (!isUUID(indicator.id)) {
-            indicator = omit(indicator, 'id')
-          }
-          indicator = await firstValueFrom(
-            this.indicatorsService.create({ ...indicator, projectId: this.project().id })
-          )
-          this.iStore.update((state) => ({
-            ...state,
-            indicators: state.indicators.map((item) => (item.id === id ? cloneDeep(indicator) : item))
-          }))
-          this.iPristineStore.update((store) => ({
-            ...store,
-            indicators: store.indicators.map((item) => (item.id === id ? cloneDeep(indicator) : item))
-          }))
-          this.markDirty(id, false)
-        } catch (error) {
-          this.toastrService.error(getErrorMessage(error))
-        }
-      }
-    }
   }
 
   deleteIndicators(ids: string[]) {

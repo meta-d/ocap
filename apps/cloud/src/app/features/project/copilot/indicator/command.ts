@@ -3,30 +3,26 @@ import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { injectDimensionMemberTool } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
-import { NGXLogger } from 'ngx-logger'
 import { injectCopilotRoleContext } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
 import { createIndicatorGraph } from './graph'
 import { injectCreateIndicatorTool, injectPickCubeTool, injectCreateFormulaTool } from './tools'
 
 export function injectIndicatorCommand() {
-  const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
+  const createGraph = injectCreateIndicatorGraph()
 
   const commandName = 'indicator'
-  return injectCopilotCommand(
-    commandName,
-    (async () => {
-      return {
-        alias: 'i',
-        description: translate.instant('PAC.INDICATOR.CommandIndicatorDesc', {Default: 'Descripe the indicator business logic'}),
-        agent: {
-          type: CopilotAgentType.Graph,
-          conversation: true
-        },
-        createGraph: injectCreateIndicatorGraph()
-      }
-    })()
+  return injectCopilotCommand(commandName,
+    {
+      alias: 'i',
+      description: translate.instant('PAC.INDICATOR.CommandIndicatorDesc', {Default: 'Descripe the indicator business logic'}),
+      agent: {
+        type: CopilotAgentType.Graph,
+        conversation: true
+      },
+      createGraph
+    }
   )
 }
 

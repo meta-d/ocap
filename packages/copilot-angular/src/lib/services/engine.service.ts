@@ -605,6 +605,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
       const streamResults = await graph.stream(content ?
           {
+            input: content,
             messages,
             context: contextContent ? contextContent : null,
             role: this.copilot.rolePrompt()
@@ -650,7 +651,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
             if (content) {
               if (verbose) {
                 if (verboseContent) {
-                  verboseContent += '<br><br>'
+                  verboseContent += '\n\n<br>'
                 }
                 verboseContent += '✨ ' + content
               } else {
@@ -697,11 +698,11 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       return null
     } catch (err: any) {
-      console.error(err.message)
+      console.error(err)
       this.upsertMessage({
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,
-        content: '',
+        // content: '',
         status: 'error',
         error: err.message
       })

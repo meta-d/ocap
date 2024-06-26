@@ -1,43 +1,19 @@
 import { Signal } from '@angular/core'
-import { BaseMessage } from '@langchain/core/messages'
 import { Runnable } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { PropertyDimension } from '@metad/ocap-core'
+import { Team } from 'apps/cloud/src/app/@core/copilot'
 import { CUBE_MODELER_NAME } from '../cube/graph'
 import { DIMENSION_MODELER_NAME } from '../dimension/graph'
+import { runAgentNode } from '../langgraph-helper-utilities'
 import { createModelerPlanner } from './planner'
 import { createSupervisor } from './supervisor'
 import { PLANNER_NAME, SUPERVISOR_NAME, State } from './types'
-import { runAgentNode } from '../langgraph-helper-utilities'
-
 
 const superState: StateGraphArgs<State>['channels'] = {
-  role: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  context: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  messages: {
-    value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => []
-  },
-  next: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => 'ResearchTeam'
-  },
-  instructions: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => "Resolve the user's request."
-  },
-  reasoning: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => ''
-  },
+  ...Team.createState(),
   plan: {
     value: (x?: string[], y?: string[]) => y ?? x ?? [],
     default: () => []

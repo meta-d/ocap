@@ -1,5 +1,4 @@
 import { Signal } from '@angular/core'
-import { BaseMessage } from '@langchain/core/messages'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions } from '@metad/copilot'
@@ -10,31 +9,9 @@ import { INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
 
 // Define the top-level State interface
 interface State extends Route.State {
-  instructions?: string
 }
 
-const superState: StateGraphArgs<State>['channels'] = {
-  role: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  context: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  messages: {
-    value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => []
-  },
-  next: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => 'ResearchTeam'
-  },
-  instructions: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => "Resolve the user's request."
-  }
-}
+const superState: StateGraphArgs<State>['channels'] = Route.createState()
 
 export async function createIndicatorGraph({
   llm,

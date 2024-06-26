@@ -20,7 +20,8 @@
             {{ 'PAC.INDICATOR.SaveAll' | translate: {Default: "Save All"} }}
           </button>
         }
-        <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicators/new']">
+        <button mat-raised-button displayDensity="cosy" color="primary"
+          (click)="register()">
           {{ 'PAC.INDICATOR.MY_INDICATORS.REGISTER' | translate: {Default: "Register"} }}
         </button>
 
@@ -76,11 +77,12 @@
         }
 
         <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
+        @if (indicator.id === NewIndicatorCodePlaceholder) {
+          <span class="mr-2">{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
+        }
+
         @if (indicator.name) {
           <span class="overflow-hidden text-ellipsis max-w-[200px]" [title]="indicator.name">{{indicator.name}}</span>
-        }
-        @if (indicator.id === NewIndicatorCodePlaceholder) {
-          <span>{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
         }
         <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
           <mat-icon>cancel</mat-icon>

@@ -1,6 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TemplateRef } from '@angular/core'
 import { CopilotChatMessage, CopilotEngine } from '@metad/copilot'
+import { BaseMessage } from '@langchain/core/messages'
 
 export type IUser = {
   name?: string
@@ -38,4 +39,11 @@ export enum NgmLanguageEnum {
 	SimplifiedChinese = "zh-Hans",
 	TraditionalChinese = 'zh-Hant',
 	English = 'en',
+}
+
+export interface AgentState {
+  input: string
+  role: string
+  context: string
+  messages: BaseMessage[]
 }

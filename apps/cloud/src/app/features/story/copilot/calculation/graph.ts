@@ -1,5 +1,5 @@
 import { Signal } from '@angular/core'
-import { BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import { FewShotPromptTemplate } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
@@ -22,32 +22,7 @@ import {
   VARIANCE_AGENT_NAME
 } from './types'
 
-const superState: StateGraphArgs<State>['channels'] = {
-  role: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  context: {
-    value: (x: any, y: any) => y ?? x,
-    default: () => ''
-  },
-  messages: {
-    value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => []
-  },
-  next: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => 'ResearchTeam'
-  },
-  instructions: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => "Resolve the user's request."
-  },
-  reasoning: {
-    value: (x: string, y?: string) => y ?? x,
-    default: () => ''
-  }
-}
+const superState: StateGraphArgs<State>['channels'] = Team.createState()
 
 export async function createCalculationGraph({
   llm,
