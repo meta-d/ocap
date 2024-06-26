@@ -3,19 +3,11 @@ import { AIMessage, BaseMessage, isAIMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool, StructuredTool } from '@langchain/core/tools'
-import { ToolNode, createReactAgent } from '@langchain/langgraph/prebuilt'
-import { CompiledStateGraph, END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
+import { ToolNode } from '@langchain/langgraph/prebuilt'
+import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { PropertyDimension } from '@metad/ocap-core'
-import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 import { IPlanState } from './types'
-
-const plan = zodToJsonSchema(
-  z.object({
-    steps: z.array(z.string()).describe('different steps to follow, should be in sorted order')
-  })
-)
 
 export async function createModelerPlanner({
   llm,
@@ -126,19 +118,10 @@ export function createPlannerReactAgent(props: {
     // This means that after `tools` is called, `agent` node is called next.
     .addEdge('tools', 'agent')
 
-  // Finally, we compile it!
-  // This compiles it into a LangChain Runnable,
-  // meaning you can use it as you would any other runnable
-  const app = workflow.compile()
+  // // Finally, we compile it!
+  // // This compiles it into a LangChain Runnable,
+  // // meaning you can use it as you would any other runnable
+  // const app = workflow.compile()
 
   return workflow
-}
-
-export function getPlanFromState(state: IPlanState) {
-  const lastMessage = state.messages[state.messages.length - 1]
-  if (isAIMessage(lastMessage)) {
-    return lastMessage.tool_calls[0].args.steps
-  }
-
-  throw new Error('No plan found in last message.')
 }

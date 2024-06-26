@@ -19,6 +19,21 @@ export function injectIndicatorArchitectCommand() {
   //   const businessAreas = projectService.businessAreas
   //   const tags = projectService.tags
 
+  // Planner command
+  // injectCopilotCommand('ia-plan', {
+  //   hidden: true,
+  //   alias: 'iap',
+  //   description: 'Plan command for indicator system architect',
+  //   agent: {
+  //     type: CopilotAgentType.Graph,
+  //     conversation: true,
+  //     interruptAfter: ['tools']
+  //   },
+  //   createGraph: async ({llm}: CreateGraphOptions) => {
+  //     return await createIndicatorArchitectPlanner({ llm })
+  //   }
+  // })
+
   const commandName = 'indicator-architect'
   const fewShotTemplate = injectAgentFewShotTemplate(commandName)
   return injectCopilotCommand(

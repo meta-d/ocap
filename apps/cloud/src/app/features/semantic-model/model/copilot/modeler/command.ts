@@ -22,9 +22,9 @@ export function injectModelerCommand() {
 
   const dimensions = modelService.dimensions
 
-  injectCopilotCommand('plan', {
+  injectCopilotCommand('modeler-plan', {
     hidden: true,
-    alias: 'p',
+    alias: 'mlp',
     description: 'Plan command for semantic model',
     agent: {
       type: CopilotAgentType.Graph,

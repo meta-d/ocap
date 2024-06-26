@@ -5,13 +5,9 @@ import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web
 import { Indicator } from '@metad/cloud/state'
 import { CreateGraphOptions } from '@metad/copilot'
 import { Route, Team } from '../../../../@core/copilot/'
-import { createPlannerAgent } from './planner-agent'
-import { INDICATOR_AGENT_NAME, PLANNER_NAME, SUPERVISOR_NAME, markdownIndicators } from './types'
+import { createPlannerAgent } from './agent-planner'
+import { INDICATOR_AGENT_NAME, PLANNER_NAME, SUPERVISOR_NAME, State } from './types'
 
-// Define the top-level State interface
-interface State extends Team.State {
-  plan: string[]
-}
 
 const superState: StateGraphArgs<State>['channels'] = {
   role: {
@@ -69,39 +65,12 @@ export async function createIndicatorArchitectGraph({
     })
   ).compile({ checkpointer })
 
-  const planner = createPlannerAgent(
-    llm,
-    `As an Indicator System Architect specializing in data analysis, your task is to develop a set of indicators specifically tailored for business data analysis based on model information and user prompt, aligning with your business role.` +
-      ` Your goal is to create a detailed plan outlining the necessary steps for the creation of these indicators, with each step corresponding to the development of one indicator and ordered in the sequence required for completion.`
-  )
-
-  async function planStep(state: State): Promise<any> {
-    // Call fewshot examples prompt
-    const userInput = state.messages.map((x) => x.content).join('\n')
-    console.log('userInput', userInput, `state:`, state)
-    const content = await fewShotTemplate.format({ input: userInput, context: state.context })
-    console.log(`FewShotTemplate content:`, content)
-
-    const plan = await planner.invoke({
-      ...state,
-      messages: [
-        new HumanMessage(
-          `Existing indicators do not need to be created again. Exisiting indicators:\n` +
-            markdownIndicators(indicators())
-        ),
-        new HumanMessage(content)
-      ]
-    })
-
-    console.log(`The plan steps:`, plan.steps)
-
-    return { plan: plan.steps.slice(0, 2) }
-  }
+  const planner = await createPlannerAgent({llm, fewShotTemplate, indicators})
 
   const superGraph = new StateGraph({ channels: superState })
     // Add steps nodes
     .addNode(SUPERVISOR_NAME, supervisorNode)
-    .addNode(PLANNER_NAME, planStep)
+    .addNode(PLANNER_NAME, planner)
     .addNode(INDICATOR_AGENT_NAME, Team.getInstructions.pipe(indicatorWorker).pipe(Team.joinGraph))
 
   superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
