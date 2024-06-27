@@ -50,7 +50,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { injectCubeCommand, injectDimensionCommand, injectModelerCommand } from './copilot'
+import { injectCubeCommand, injectDimensionCommand, injectModelerCommand, provideCopilotTables } from './copilot'
 import {
   CreateEntityDialogDataType,
   CreateEntityDialogRetType,
@@ -94,6 +94,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private toastrService = inject(ToastrService)
   readonly #logger = inject(NGXLogger)
   readonly destroyRef = inject(DestroyRef)
+  readonly copilotContext = provideCopilotTables()
 
   /**
   |--------------------------------------------------------------------------

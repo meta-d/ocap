@@ -30,9 +30,10 @@ export async function createOrEditCube(modelService: SemanticModelService, cube:
       dimensions: cube.dimensions?.map((dimension) => ({
         ...dimension,
         __id__: uuid(),
-        hierarchies: dimension.hierarchies?.map((hierarchy) => ({
+        hierarchies: dimension.hierarchies?.map((hierarchy, index) => ({
           ...hierarchy,
           __id__: uuid(),
+          name: index ? hierarchy.name : '',
           hasAll: isOlap,
           levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
         }))

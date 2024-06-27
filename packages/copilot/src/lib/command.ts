@@ -1,6 +1,6 @@
 import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
-import { BaseCheckpointSaver, StateGraph } from '@langchain/langgraph/web'
+import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
@@ -71,7 +71,8 @@ export interface CopilotCommand<T = any> {
     interruptAfter?: string[]
   }
 
-  createGraph?: (options: CreateGraphOptions) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
+  createGraph?: (options: CreateGraphOptions) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string> |
+    CompiledStateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
 
   // For history management
   historyCursor?: () => number

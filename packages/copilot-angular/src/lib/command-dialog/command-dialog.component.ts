@@ -149,6 +149,8 @@ export class CommandDialogComponent {
   #abortController: AbortController
 
   async execute() {
+    if (this.creating()) return
+
     const prompt = this.prompt()
     this.#abortController = new AbortController()
     this.creating.set(true)
@@ -172,7 +174,8 @@ export class CommandDialogComponent {
   }
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
-    if ((event.isComposing || event.metaKey) && event.key === 'Enter') {
+    // Enter execute command
+    if ((event.isComposing || event.metaKey || event.ctrlKey) && event.key === 'Enter') {
       this.execute()
       return
     }
@@ -187,7 +190,7 @@ export class CommandDialogComponent {
     })
 
     // Tab 键补全提示语
-    if (event.key === 'Tab') {
+    if (event.key === 'Tab' && this.#suggestionsOpened()) {
       event.preventDefault()
       if (this.isContextTrigger()) {
         if (this.#activatedContext()) {
@@ -206,12 +209,6 @@ export class CommandDialogComponent {
         }
       }
     }
-
-    if (event.key === '@') {
-      this.character.set('@')
-    }
-
-    // console.log(event.key, event.code)
   }
 
   onContextActivated(event: MatAutocompleteActivatedEvent) {

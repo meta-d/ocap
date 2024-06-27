@@ -578,7 +578,7 @@ export class AnalyticalGridComponent<T> implements OnChanges, AfterViewInit, OnD
       this.matRowColumns = compact(
         rowColumns.length
           ? [...rowColumns, ...pivotColumnNames[pivotColumnNames.length - 1]]
-          : [columnAxes[columnAxes.length - 1].dimension, ...pivotColumnNames[pivotColumnNames.length - 1]]
+          : [columnAxes[columnAxes.length - 1]?.dimension, ...pivotColumnNames[pivotColumnNames.length - 1]]
       )
 
       this.cdr.detectChanges()

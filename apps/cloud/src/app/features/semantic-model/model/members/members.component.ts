@@ -8,7 +8,7 @@ import { ModelsService } from '@metad/cloud/state'
 import { isEntitySet } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@core'
-import { catchError, combineLatest, delay, map, of, switchMap, tap } from 'rxjs'
+import { catchError, combineLatest, delay, map, of, startWith, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelMembersCubeComponent } from './cube/cube.component'
 
@@ -71,7 +71,7 @@ export class ModelMembersComponent {
                 })
               )
             )
-          )
+          ).pipe(startWith([]))
         ]).pipe(
           map(([entities, cubes]) => {
             return cubes.map((cube) => {

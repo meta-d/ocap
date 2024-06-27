@@ -1,9 +1,6 @@
 :host {
   --mat-dialog-with-actions-content-padding: .5rem;
-}
-
-.mat-mdc-dialog-title+.mat-mdc-dialog-content {
-  padding-top: .5rem;
+  --mdc-filled-button-container-shape: .75rem;
 }
 
 .mat-mdc-input-element {
@@ -12,4 +9,12 @@
 
 .mat-mdc-progress-bar {
   position: absolute;
+}
+
+.mat-mdc-dialog-content.mdc-dialog__content {
+  @apply flex flex-col;
+}
+
+.mat-mdc-form-field-error {
+  color: var(--mdc-theme-error);
 }

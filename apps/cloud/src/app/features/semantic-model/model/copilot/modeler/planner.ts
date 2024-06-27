@@ -41,8 +41,6 @@ export async function createModelerPlanner({
         : `There are no existing shared dimensions.`
   })
 
-  // return createReactAgent({ llm: llm as any, tools, messageModifier: plannerPrompt})
-
   return createPlannerReactAgent({ llm, tools, systemMessage: plannerPrompt })
 }
 

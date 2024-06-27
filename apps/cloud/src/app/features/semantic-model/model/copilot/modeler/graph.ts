@@ -4,10 +4,9 @@ import { DynamicStructuredTool } from '@langchain/core/tools'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { PropertyDimension } from '@metad/ocap-core'
-import { Team } from 'apps/cloud/src/app/@core/copilot'
+import { Team, Route } from 'apps/cloud/src/app/@core/copilot'
 import { CUBE_MODELER_NAME } from '../cube/graph'
 import { DIMENSION_MODELER_NAME } from '../dimension/graph'
-import { runAgentNode } from '../langgraph-helper-utilities'
 import { createModelerPlanner } from './planner'
 import { createSupervisor } from './supervisor'
 import { PLANNER_NAME, SUPERVISOR_NAME, State } from './types'
@@ -47,7 +46,7 @@ export async function createModelerGraph({
     // Add steps nodes
     .addNode(PLANNER_NAME, runPlanner)
     .addNode(DIMENSION_MODELER_NAME, (state: State, options) => {
-      return runAgentNode<State>({
+      return Route.runAgentNode<State>({
         state,
         agent: dimensionModeler,
         name: DIMENSION_MODELER_NAME,
@@ -55,7 +54,7 @@ export async function createModelerGraph({
       })
     })
     .addNode(CUBE_MODELER_NAME, (state: State, options) => {
-      return runAgentNode<State>({ state, agent: cubeModeler, name: CUBE_MODELER_NAME, config: options.config })
+      return Route.runAgentNode<State>({ state, agent: cubeModeler, name: CUBE_MODELER_NAME, config: options.config })
     })
     .addNode(SUPERVISOR_NAME, supervisorNode)
 

@@ -26,7 +26,7 @@ import { Store, createStore, select, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
 import { ISemanticModel, MDX, ToastrService, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
 import { dirtyCheckWith, write } from '../store'
@@ -187,13 +187,6 @@ export class SemanticModelService {
     shareReplay(1)
   )
 
-  // public readonly selectDBTables$: Observable<DBTable[]> = this.originalDataSource$.pipe(
-  //   filter(nonNullable),
-  //   switchMap((dataSource) => dataSource.discoverDBTables())
-  // )
-
-  // private _saved$ = new Subject<void>()
-  // public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
 
   /**
@@ -211,20 +204,12 @@ export class SemanticModelService {
     private _router: Router,
     private _route: ActivatedRoute
   ) {
-    // Pause state history until model is loaded
-    // this.#stateHistory.pause()
-
-    // TODO 一个状态改变产生另一个状态, 这种需求应该怎么处理??
-    // this.entities$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((entities) => {
-    //   this.patchState({ ids: entities?.map((state) => state.id) })
-    // })
-
     this.semanticModelKey$
       .pipe(
         filter(nonNullable),
         switchMap((key) => this.dsCoreService.getDataSource(key)),
         // 先清 DataSource 缓存再进行后续
-        // switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
+        switchMap((dataSource) => from(this.modelType() === MODEL_TYPE.OLAP ? dataSource.clearCache() : [true]).pipe(map(() => dataSource))),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.dataSource$)
@@ -257,7 +242,9 @@ export class SemanticModelService {
     })
 
     // this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
-    //   dataSource?.clearCache()
+    //   if (this.modelType() === MODEL_TYPE.OLAP) {
+    //     dataSource?.clearCache()
+    //   }
     // })
   }
 

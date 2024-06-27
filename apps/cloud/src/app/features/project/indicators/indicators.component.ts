@@ -182,11 +182,11 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
 
     _indicator = await firstValueFrom(this.indicatorsService.create(_indicator))
 
+    this.projectService.replaceNewIndicator(indicator.id, _indicator)
     if (isUUID(indicator.id)) {
       this.toastrService.success('PAC.INDICATOR.REGISTER.SaveIndicator', { Default: 'Save Indicator' })
     } else {
       this.toastrService.success('PAC.INDICATOR.REGISTER.CreateIndicator', { Default: 'Create Indicator' })
-      this.projectService.replaceNewIndicator(indicator.id, _indicator)
       this.replaceNewIndicator(indicator.id, _indicator)
     }
     return _indicator

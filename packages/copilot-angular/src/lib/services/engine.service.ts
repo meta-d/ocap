@@ -19,7 +19,7 @@ import {
   getCommandPrompt,
   processChatStream
 } from '@metad/copilot'
-import { BaseCheckpointSaver, END, GraphValueError } from '@langchain/langgraph/web'
+import { BaseCheckpointSaver, END, GraphValueError, StateGraph } from '@langchain/langgraph/web'
 import { TranslateService } from '@ngx-translate/core'
 import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
@@ -470,7 +470,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
       let verboseContent = ''
       const result = await chain.invoke(
-        { input: content, system_prompt: systemPrompt, context: contextContent, chat_history: chatHistoryMessages },
+        { input: content, system_prompt: systemPrompt, context: contextContent, role: this.copilot.rolePrompt(), chat_history: chatHistoryMessages },
         {
           callbacks: [
             {
@@ -478,7 +478,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
                 const text = output.generations[0][0].text
                 if (text) {
                   if (verbose) {
-                    verboseContent += '\n\n👉 ' + text
+                    verboseContent += '\n\n✨ ' + text
                   } else {
                     verboseContent = text
                   }
@@ -578,7 +578,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
           options.interruptBefore = command.agent.interruptBefore
           options.interruptAfter = command.agent.interruptAfter
         }
-        graph = (await command.createGraph({llm: this.llm(), checkpointer: this.checkpointSaver})).compile(options)
+
+        const _graph = await command.createGraph({llm: this.llm(), checkpointer: this.checkpointSaver})
+        if (_graph instanceof StateGraph) {
+          graph = _graph.compile(options)
+        } else {
+          graph = _graph
+        }
 
         this.updateLastConversation((conversation) => ({
           ...conversation,
@@ -641,9 +647,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
                   end = true
                 } else {
                   content += `<b>${key}</b>` +
-                    '\n<b>' + this.#translate.instant('Copilot.Invoke', {Default: 'Invoke'}) + `</b>: ${value.next}` +
-                    '\n<b>' + this.#translate.instant('Copilot.Instructions', {Default: 'Instructions'}) + `</b>: ${value.instructions || ''}` +
-                    '\n<b>' + this.#translate.instant('Copilot.Reasoning', {Default: 'Reasoning'}) + `</b>: ${value.reasoning || ''}`
+                    '\n\n<b>' + this.#translate.instant('Copilot.Invoke', {Default: 'Invoke'}) + `</b>: ${value.next}` +
+                    '\n\n<b>' + this.#translate.instant('Copilot.Instructions', {Default: 'Instructions'}) + `</b>: ${value.instructions || ''}` +
+                    '\n\n<b>' + this.#translate.instant('Copilot.Reasoning', {Default: 'Reasoning'}) + `</b>: ${value.reasoning || ''}`
                 }
               }
             })

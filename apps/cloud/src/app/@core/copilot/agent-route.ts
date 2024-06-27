@@ -1,8 +1,8 @@
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredToolInterface } from '@langchain/core/tools'
 import { PartialValues } from '@langchain/core/utils/types'
+import { Runnable, RunnableConfig } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
@@ -87,5 +87,20 @@ export function createRunWorkerAgent<S>(agent: AgentExecutor, name: string) {
     return {
       messages: [new HumanMessage({ content: result.output, name })]
     }
+  }
+}
+
+export async function runAgentNode<T>(params: {
+  state: T
+  agent: Runnable
+  name: string
+  config?: RunnableConfig & {
+    config: RunnableConfig
+  } & Record<string, any>
+}) {
+  const { state, agent, name, config } = params
+  const result = await agent.invoke(state, config)
+  return {
+    messages: [new HumanMessage({ content: result.output, name })]
   }
 }

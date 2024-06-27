@@ -22,8 +22,8 @@ export const HierarchySchema = z.object({
       name: z.string().describe('The name of the dimension table')
       // join: z.object({})
     })
-  ),
-  primaryKey: z.string().describe('The primary key of the dimension table'),
+  ).optional(),
+  primaryKey: z.string().optional().describe('The primary key of the dimension table'),
   hasAll: z.boolean().describe('Whether the hierarchy has an all level'),
   levels: z
     .array(
@@ -32,6 +32,7 @@ export const HierarchySchema = z.object({
         name: z.string().describe('The name of the level'),
         caption: z.string().describe('The caption of the level'),
         column: z.string().describe('The column of the level'),
+        type: z.enum(['String', 'Integer', 'Numeric', 'Boolean']).optional().describe('The type of the column, must be set if the column type is not string'),
 
         levelType: z.enum([
           TimeLevelType.TimeYears, 
@@ -78,6 +79,7 @@ export const CubeSchema = z.object({
       // join: z.object({})
     })
   ).optional(),
+  defaultMeasure: z.string().optional().describe('The default measure of the cube'),
   measures: z
     .array(
       z.object({

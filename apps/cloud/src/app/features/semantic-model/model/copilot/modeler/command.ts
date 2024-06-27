@@ -39,7 +39,7 @@ export function injectModelerCommand() {
   const commandName = 'modeler'
   return injectCopilotCommand(commandName, {
     alias: 'm',
-    description: 'Modeling command for semantic model',
+    description: translate.instant('PAC.MODEL.Copilot.CommandModelerDesc', {Default: 'Describe model requirements or structure'}),
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
@@ -53,7 +53,7 @@ export function injectModelerCommand() {
     },
     createGraph: async ({llm}: CreateGraphOptions) => {
       const dimensionModeler = await createDimensionModeler(llm)
-      const cubeModeler = await createCubeModeler(llm)
+      const cubeModeler = await createCubeModeler({llm})
       return await createModelerGraph({
         llm,
         dimensionModeler,

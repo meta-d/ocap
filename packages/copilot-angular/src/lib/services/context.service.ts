@@ -80,7 +80,7 @@ export class NgmCopilotContextService implements CopilotContext {
    * ```
    */
   readonly cubes = signal<Observable<ISelectOption<{
-    dataSource: string;
+    dataSource?: string;
     serizalize: () => Promise<string>
   }>[]>>(null)
 

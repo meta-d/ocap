@@ -1006,6 +1006,7 @@
         "CreateHierarchy": "创建一个新的层次结构",
         "CommandDimensionDesc": "描述维度的业务逻辑",
         "CommandCubeDesc": "描述多维数据集的业务逻辑",
+        "CommandModelerDesc": "描述模型的需求或结构",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",

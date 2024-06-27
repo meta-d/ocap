@@ -1,27 +1,77 @@
 import { inject } from '@angular/core'
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, SystemMessage } from '@langchain/core/messages'
+import { createReactAgent } from '@langchain/langgraph/prebuilt'
 import { StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
+import { CreateGraphOptions } from '@metad/copilot'
 import { NgmCopilotService } from '@metad/copilot-angular'
 import { SemanticModelService } from '../../model.service'
 import { markdownSharedDimensions } from '../dimension/types'
 import { createCommandAgent } from '../langgraph-helper-utilities'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { SYSTEM_PROMPT } from './cube.command'
 import { injectCreateCubeTool } from './tools'
-import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 
 export const CUBE_MODELER_NAME = 'CubeModeler'
 
-interface CubeState {
-  messages: BaseMessage[]
-}
+// interface CubeState {
+//   messages: BaseMessage[]
+// }
 
-const cubeState: StateGraphArgs<CubeState>['channels'] = {
-  messages: {
-    value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => []
-  }
-}
+// const cubeState: StateGraphArgs<CubeState>['channels'] = {
+//   messages: {
+//     value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
+//     default: () => []
+//   }
+// }
+
+// export function injectCubeModeler() {
+//   const modelService = inject(SemanticModelService)
+//   const copilotService = inject(NgmCopilotService)
+
+//   const createCubeTool = injectCreateCubeTool()
+//   const selectTablesTool = injectSelectTablesTool()
+//   const queryTablesTool = injectQueryTablesTool()
+
+//   const dimensions = modelService.dimensions
+//   const cubes = modelService.cubes
+
+//   const systemContext = async () => {
+//     const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
+//     return (
+//       copilotService.rolePrompt() +
+//       ` The cube name can't be the same as the fact table name.` +
+//       (cubes().length
+//         ? ` The cube name cannot be any of the following existing cubes [${cubes()
+//             .map(({ name }) => name)
+//             .join(', ')}]`
+//         : '') +
+//       ` There is no need to create as dimension with those table fields that are already used in 'dimensionUsages'.` +
+//       (sharedDimensions.length
+//         ? ` The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
+// \`\`\`
+// ${markdownSharedDimensions(sharedDimensions)}
+// \`\`\`
+// `
+//         : '')
+//     )
+//   }
+
+//   return async (llm: ChatOpenAI) => {
+//     // const superGraph = new StateGraph({ channels: cubeState })
+//     //   // Add steps nodes
+//     //   .addNode(PLANNER_NAME, runPlanner)
+
+//     const agent = await createCommandAgent(
+//       llm,
+//       [selectTablesTool, queryTablesTool, createCubeTool],
+//       SYSTEM_PROMPT,
+//       systemContext
+//     )
+
+//     return agent
+//   }
+// }
 
 export function injectCubeModeler() {
   const modelService = inject(SemanticModelService)
@@ -36,28 +86,32 @@ export function injectCubeModeler() {
 
   const systemContext = async () => {
     const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
-    return copilotService.rolePrompt() + 
-      ` The cube name can't be the same as the fact table name.` + 
-      (cubes().length ? ` The cube name cannot be any of the following existing cubes [${cubes().map(({name}) => name).join(', ')}]` : '') + 
-` There is no need to create as dimension with those table fields that are already used in 'dimensionUsages'.` +
-(sharedDimensions.length ? ` The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
+    return (
+      copilotService.rolePrompt() +
+      ` The cube name can't be the same as the fact table name.` +
+      (cubes().length
+        ? ` The cube name cannot be any of the following existing cubes [${cubes()
+            .map(({ name }) => name)
+            .join(', ')}]`
+        : '') +
+      ` There is no need to create as dimension with those table fields that are already used in 'dimensionUsages'.` +
+      (sharedDimensions.length
+        ? ` The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
 \`\`\`
 ${markdownSharedDimensions(sharedDimensions)}
 \`\`\`
-` : '')
+`
+        : '')
+    )
   }
 
-  return async (llm: ChatOpenAI) => {
-    // const superGraph = new StateGraph({ channels: cubeState })
-    //   // Add steps nodes
-    //   .addNode(PLANNER_NAME, runPlanner)
-
-    const agent = await createCommandAgent(llm, [
-      selectTablesTool,
-      queryTablesTool,
-      createCubeTool
-    ], SYSTEM_PROMPT, systemContext)
-    
-    return agent
+  return async ({ llm }: CreateGraphOptions) => {
+    return createReactAgent({
+      llm,
+      tools: [selectTablesTool, queryTablesTool, createCubeTool],
+      messageModifier: async (messages) => {
+        return [new SystemMessage(SYSTEM_PROMPT + `\n\n${await systemContext()}\n\n` + `{context}`), ...messages]
+      }
+    })
   }
 }

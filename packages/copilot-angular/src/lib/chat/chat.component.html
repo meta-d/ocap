@@ -281,7 +281,7 @@
                 [matTooltip]="context().caption"
                 [matMenuTriggerFor]="contextMenu"
                 [matMenuTriggerData]="{word: {text: context().uKey }}"
-                (click)="$event.stopPropagation()">{{context().caption}}<button class="flex-shrink-0 hover:text-red-500" (click)="removeContext()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-lg"><path fill="currentColor" fill-rule="evenodd" d="M7.293 7.293a1 1 0 0 1 1.414 0L12 10.586l3.293-3.293a1 1 0 1 1 1.414 1.414L13.414 12l3.293 3.293a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L10.586 12 7.293 8.707a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg></button></span>
+                (click)="$event.stopPropagation()">{{context().caption || context().key}}<button class="flex-shrink-0 hover:text-red-500" (click)="removeContext()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-lg"><path fill="currentColor" fill-rule="evenodd" d="M7.293 7.293a1 1 0 0 1 1.414 0L12 10.586l3.293-3.293a1 1 0 1 1 1.414 1.414L13.414 12l3.293 3.293a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L10.586 12 7.293 8.707a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg></button></span>
             }
             <span class="overflow-hidden text-ellipsis">{{command().description}}</span>
           </div>
@@ -450,9 +450,13 @@
             <ngm-search class="flex-1" [formControl]="searchModel"/>
 
           @if (canListModels()) {
-            <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
+            @if (refreshingModels()) {
+              <mat-spinner class="m-2" [diameter]="22"></mat-spinner>
+            } @else {
+              <button mat-icon-button displayDensity="compact" (click)="refreshModels()">
                 <mat-icon>refresh</mat-icon>
-            </button>
+              </button>
+            }
           }
         </div>
         

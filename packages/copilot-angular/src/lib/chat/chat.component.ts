@@ -36,6 +36,8 @@ import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'
+import {MatSnackBar} from '@angular/material/snack-bar'
 import { RouterModule } from '@angular/router'
 import {
   AIOptions,
@@ -109,6 +111,7 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     MatSliderModule,
     MatMenuModule,
     MatChipsModule,
+    MatProgressSpinnerModule,
     TranslateModule,
     NgxPopperjsModule,
     MarkdownModule,
@@ -133,6 +136,7 @@ export class NgmCopilotChatComponent {
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
 
   // private translateService = inject(TranslateService)
+  readonly _snackBar = inject(MatSnackBar)
   private copilotService = inject(NgmCopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
 
@@ -264,6 +268,7 @@ export class NgmCopilotChatComponent {
   readonly role = this.copilotService.role
   readonly roleDetail = this.copilotService.roleDetail
   #activatedPrompt = signal('')
+  readonly refreshingModels = signal(false)
 
   /**
    * 当前 Asking prompt
@@ -502,8 +507,21 @@ export class NgmCopilotChatComponent {
   }
 
   refreshModels() {
-    this.copilotService.getModels().subscribe((res) => {
-      this.latestModels.set(res.data.map((model) => ({ id: model.id, name: model.id })))
+    if (this.refreshingModels()) {
+      return
+    }
+    this.refreshingModels.set(true)
+    this.copilotService.getModels().subscribe({
+      next: (res) => {
+        this.refreshingModels.set(false)
+        this.latestModels.set(res.data.map((model) => ({ id: model.id, name: model.id })))
+      },
+      error: (error) => {
+        this.refreshingModels.set(false)
+        this._snackBar.open(error.message, 'Close', {
+          duration: 5000
+        })
+      }
     })
   }
 
