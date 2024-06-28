@@ -7,44 +7,6 @@
                 (ngModelChange)="changeExpression($event)"
                 />
         </div>
-      <!-- } @else {
-        <div class="pac-cube-structure-drop w-full"
-            cdkDropList
-            [cdkDropListData]="tables$ | async"
-            (cdkDropListDropped)="drop($event)"
-        >
-            <div class="pac-cube__join-table-container">
-              @for (item of tables$ | async; track item.__id__) {
-                @if (item.join) {
-                    <div class="table-join">
-                        <span class="join-icon join-icon-with-connector"
-                            [ngClass]="{
-                            'inner-join-icon': item.join.type === 'Inner',
-                            'left-join-icon': item.join.type === 'Left',
-                            'right-join-icon': item.join.type === 'Right'
-                            }"
-                            [matMenuTriggerFor]="joinMenu"
-                            [matMenuTriggerData]="{table: item}"
-                        ></span>
-                    </div>
-                }
-            
-                <div class="join-table">
-                    <span class="join-table-name">
-                        {{ item.name }}
-                    </span>
-                
-                    <button mat-icon-button displayDensity="compact"
-                        [matMenuTriggerFor]="tableMenu"
-                        [matMenuTriggerData]="{table: item}"
-                    >
-                        <mat-icon>more_vert</mat-icon>
-                    </button>
-                </div>
-              }
-            </div>
-        </div> 
--->
     } @else {
         <pac-model-er class="w-full h-full" tabindex="0"></pac-model-er>
     }
@@ -113,8 +75,9 @@
                             (cdkDragReleased)="onDragReleased($event)">
                             <div matLine>
                                 <div class="flex justify-between items-center gap-2">
-                                    <ngm-entity-property class="flex-1" [property]="property" hiddenIcon></ngm-entity-property>
-                                    <mat-checkbox [ngModel]="property.visible" (ngModelChange)="toggleDimVisible(property, $event)"/>
+                                    <mat-checkbox class="flex-1" [ngModel]="property.visible" (ngModelChange)="toggleDimVisible(property, $event)">
+                                        <ngm-entity-property class="flex-1" [property]="property" hiddenIcon></ngm-entity-property>
+                                    </mat-checkbox>
 
                                     <span class="pac-data-type-tag">{{property.dataType}}</span>
                                 </div>
@@ -148,8 +111,9 @@
                             >
                             <div matLine>
                                 <div class="flex justify-between items-center gap-2">
-                                    <ngm-entity-property class="flex-1" [property]="property" hiddenIcon />
-                                    <mat-checkbox [ngModel]="property.visible" (ngModelChange)="toggleMeasureVisible(property, $event)"/>
+                                    <mat-checkbox class="flex-1" [ngModel]="property.visible" (ngModelChange)="toggleMeasureVisible(property, $event)">
+                                        <ngm-entity-property class="flex-1" [property]="property" hiddenIcon />
+                                    </mat-checkbox>
                                     <span class="pac-data-type-tag">{{property.dataType}}</span>
                                 </div>
                             </div>

@@ -173,7 +173,7 @@ export function CalendarFormatter(COMMON?) {
     hideExpression: `!model || !model.semantic?.startsWith('Calendar')`,
     key: 'formatter',
     type: 'input',
-    className: FORMLY_W_1_2,
+    className: FORMLY_W_FULL,
     props: {
       icon: 'date_range',
       label: COMMON?.Formatter ?? 'Time formatter',
@@ -251,6 +251,7 @@ export function SemanticsAccordionWrapper(i18n) {
       key: 'semantics',
       label: i18n?.Semantics ?? 'Semantics',
       toggleable: true,
+      fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [Semantic(i18n), CalendarFormatter(i18n)]
     }
   ])

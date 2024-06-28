@@ -1,5 +1,5 @@
 import { uuid } from '@metad/components/core'
-import { C_MEASURES, Cube } from '@metad/ocap-core'
+import { C_MEASURES, Cube, DimensionType, Semantics } from '@metad/ocap-core'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, SemanticModelEntityType } from '../../types'
 
@@ -30,6 +30,14 @@ export async function createOrEditCube(modelService: SemanticModelService, cube:
       dimensions: cube.dimensions?.map((dimension) => ({
         ...dimension,
         __id__: uuid(),
+        // Add semantic 'Calendar' for time dimension
+        semantics:
+          dimension.semantics ??
+          (dimension.type === DimensionType.TimeDimension
+            ? {
+                semantic: Semantics.Calendar
+              }
+            : null),
         hierarchies: dimension.hierarchies?.map((hierarchy, index) => ({
           ...hierarchy,
           __id__: uuid(),
