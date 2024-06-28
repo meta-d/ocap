@@ -3,14 +3,13 @@ import { FormlyFieldConfig } from '@ngx-formly/core'
 import { ControlType } from '@metad/core'
 import { FilterControlType } from '@metad/story/core'
 import {
-  CLASS_NAME_COL12,
-  CLASS_NAME_COL6,
   DataSettingsSchemaService,
   DataTable,
   dateFilterOptions,
   filterAttributes,
   FORMLY_ROW,
   FORMLY_W_1_2,
+  FORMLY_W_FULL,
   SchemaState,
   SelectionType,
   Size
@@ -60,7 +59,7 @@ export class FilterBarFieldSchemaService<T extends SchemaState = SchemaState> ex
         fieldGroupClassName: FORMLY_ROW,
         fieldGroup: [
           {
-            className: CLASS_NAME_COL6,
+            className: FORMLY_W_1_2,
             key: 'controlType',
             type: 'select',
             props: {
@@ -105,7 +104,7 @@ export class FilterBarFieldSchemaService<T extends SchemaState = SchemaState> ex
   }
 
   getOptionsFieldGroup(STORY_DESIGNER, DateVariable) {
-    const className = CLASS_NAME_COL6
+    const className = FORMLY_W_1_2
     const treeSelectExpression = (model: any, formState: any, field: FormlyFieldConfig) => {
       return field.parent.parent.form.value?.controlType !== 'TreeSelect'
     }
@@ -211,7 +210,7 @@ export class FilterBarFieldSchemaService<T extends SchemaState = SchemaState> ex
             hideExpression: (model: any, formState: any, field: FormlyFieldConfig) => {
               return field.parent.parent.form.value?.controlType !== ControlType.dropDownList
             },
-            ...DataTable(CLASS_NAME_COL12, STORY_DESIGNER?.Widgets?.Filter)
+            ...DataTable(FORMLY_W_FULL, STORY_DESIGNER?.Widgets?.Filter)
           },
           ...dateFilterOptions(this.coreService, className, STORY_DESIGNER?.Widgets?.Filter, DateVariable).map(
             (item) => ({
@@ -244,7 +243,7 @@ export class FilterBarFieldSchemaService<T extends SchemaState = SchemaState> ex
 @Injectable()
 export class FilterBarDateSchemaService extends FilterBarFieldSchemaService {
   getOptionsFieldGroup(STORY_DESIGNER, DateVariable) {
-    const className = CLASS_NAME_COL6
+    const className = FORMLY_W_1_2
     return [
       {
         fieldGroupClassName: FORMLY_ROW,

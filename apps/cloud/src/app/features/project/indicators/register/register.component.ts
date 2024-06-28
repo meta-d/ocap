@@ -200,7 +200,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     }
   })
 
-  readonly preview = signal(false)
+  readonly preview = signal(true)
 
   // states
   public readonly certifications$ = this.projectService.project$.pipe(

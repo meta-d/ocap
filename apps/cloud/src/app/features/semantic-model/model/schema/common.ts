@@ -1,5 +1,5 @@
 import { AggregationRole, Semantics } from '@metad/ocap-core'
-import { AccordionWrappers, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { AccordionWrappers, FORMLY_W_FULL, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { format } from 'date-fns'
 import { map, startWith, tap } from 'rxjs'
@@ -42,7 +42,7 @@ export function SQLExpression(COMMON) {
       {
         key: 'content',
         type: 'textarea',
-        className: FORMLY_W_1_2,
+        className: FORMLY_W_FULL,
         props: {
           label: COMMON?.SQLExpression?.Content ?? 'Content',
           rows: 1,
