@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnChanges, SimpleChanges, computed, effect, forwardRef, inject, input, signal } from '@angular/core'
+import { Component, Input, computed, effect, forwardRef, inject, input, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import {
   ControlValueAccessor,
@@ -10,13 +10,15 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms'
+import { MatDialog } from '@angular/material/dialog'
 import { MatFormFieldAppearance } from '@angular/material/form-field'
-import { BusinessAreasService, NgmSemanticModel } from '@metad/cloud/state'
+import { NgmSemanticModel } from '@metad/cloud/state'
+import { CommandDialogComponent, injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { IsNilPipe, calcEntityTypePrompt, nonBlank, nonNullable } from '@metad/core'
 import { NgmHierarchySelectComponent, NgmMatSelectComponent, NgmTreeSelectComponent } from '@metad/ocap-angular/common'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { ISelectOption, NgmDSCoreService } from '@metad/ocap-angular/core'
 import { NgmCalculatedMeasureComponent } from '@metad/ocap-angular/entity'
+import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   ISlicer,
@@ -31,6 +33,7 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ISemanticModel, ITag, registerModel } from 'apps/cloud/src/app/@core'
 import { MaterialModule, TagEditorComponent } from 'apps/cloud/src/app/@shared'
+import { isEqual } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import {
   BehaviorSubject,
@@ -46,12 +49,10 @@ import {
   switchMap,
   tap
 } from 'rxjs'
-import { NgmSelectionModule, SlicersCapacity } from '@metad/ocap-angular/selection'
 import { INDICATOR_AGGREGATORS } from '../../../indicator/types'
-import { injectFetchModelDetails } from '../../types'
 import { ProjectService } from '../../project.service'
-import { isEqual } from 'lodash-es'
-
+import { injectFetchModelDetails } from '../../types'
+import { injectIndicatorFormulaCommand } from '../../copilot'
 
 @Component({
   standalone: true,
@@ -70,7 +71,7 @@ import { isEqual } from 'lodash-es'
     NgmHierarchySelectComponent,
     IsNilPipe,
     NgmCalculatedMeasureComponent,
-    NgmSelectionModule,
+    NgmSelectionModule
   ],
   providers: [
     {
@@ -87,16 +88,15 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   AGGREGATORS = INDICATOR_AGGREGATORS
   appearance: MatFormFieldAppearance = 'fill'
 
-  // readonly businessAreasStore = inject(BusinessAreasService)
   readonly projectService = inject(ProjectService)
   readonly dsCoreService = inject(NgmDSCoreService)
   readonly wasmAgent = inject(WasmAgentService)
   readonly fetchModelDetails = injectFetchModelDetails()
   readonly #logger = inject(NGXLogger)
   readonly #translate = inject(TranslateService)
+  readonly _dialog = inject(MatDialog)
 
   @Input() certifications: ISelectOption[]
-  // @Input() models: ISemanticModel[]
   readonly models = input<ISemanticModel[]>()
 
   readonly modelsOptions = computed<ISelectOption[]>(() => {
@@ -235,103 +235,110 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   readonly dataSettings = toSignal(this.dataSettings$)
   readonly entityType = toSignal(this.entityType$)
   readonly showFormula = signal(false)
-  readonly semanticModel = toSignal(this.formGroup.get('modelId').valueChanges.pipe(
-    startWith(this.formGroup.get('modelId').value),
-    distinctUntilChanged(),
-    filter(nonBlank),
-    switchMap((id) => this.fetchModelDetails(id)),
-  ))
+  readonly semanticModel = toSignal(
+    this.formGroup.get('modelId').valueChanges.pipe(
+      startWith(this.formGroup.get('modelId').value),
+      distinctUntilChanged(),
+      filter(nonBlank),
+      switchMap((id) => this.fetchModelDetails(id))
+    )
+  )
   readonly indicator = toSignal(this.formGroup.valueChanges.pipe(startWith(this.formGroup.value)))
-
 
   /**
   |--------------------------------------------------------------------------
   | Copilot Commands
   |--------------------------------------------------------------------------
   */
-  #formula = injectCopilotCommand({
-    name: 'formula',
-    description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateFormula', {Default: 'Create a formula for the indicator'}),
-    systemPrompt: async () => {
-      let prompt = `你是一名 BI 指标体系管理的业务专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建指标公式。`
-      if (this.entityType()) {
-        prompt += `当前选择的 Cube 信息为:
-\`\`\`
-${calcEntityTypePrompt(this.entityType())}
-\`\`\`
-`
-      }
-      return prompt
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'new_formula',
-        description: 'Create a new formula for the indicator',
-        argumentAnnotations: [
-          {
-            name: 'formula',
-            type: 'string',
-            description: 'Provide the new formula',
-            required: true
-          },
-          {
-            name: 'unit',
-            type: 'string',
-            description: 'unit of the formula',
-            required: true
-          }
-        ],
-        implementation: async (formula: string, unit: string) => {
-          this.#logger.debug(`Copilot command 'formula' params: formula is`, formula, `unit is`, unit)
+  #formulaCommand = injectIndicatorFormulaCommand()
 
-          this.formGroup.patchValue({
-            formula,
-            unit,
-            type: IndicatorType.DERIVE
-          })
+//   #formula = injectCopilotCommand({
+//     name: 'formula',
+//     description: this.#translate.instant('PAC.INDICATOR.Copilot_CreateFormula', {
+//       Default: 'Create a formula for the indicator'
+//     }),
+//     systemPrompt: async () => {
+//       let prompt = `你是一名 BI 指标体系管理的业务专家，你现在需要根据用户需求用 Multidimensional Expressions (MDX) 创建指标公式。`
+//       if (this.entityType()) {
+//         prompt += `当前选择的 Cube 信息为:
+// \`\`\`
+// ${calcEntityTypePrompt(this.entityType())}
+// \`\`\`
+// `
+//       }
+//       return prompt
+//     },
+//     actions: [
+//       injectMakeCopilotActionable({
+//         name: 'new_formula',
+//         description: 'Create a new formula for the indicator',
+//         argumentAnnotations: [
+//           {
+//             name: 'formula',
+//             type: 'string',
+//             description: 'Provide the new formula',
+//             required: true
+//           },
+//           {
+//             name: 'unit',
+//             type: 'string',
+//             description: 'unit of the formula',
+//             required: true
+//           }
+//         ],
+//         implementation: async (formula: string, unit: string) => {
+//           this.#logger.debug(`Copilot command 'formula' params: formula is`, formula, `unit is`, unit)
 
-          return `✅`
-        }
-      })
-    ]
-  })
+//           this.formGroup.patchValue({
+//             formula,
+//             unit,
+//             type: IndicatorType.DERIVE
+//           })
+
+//           return `✅`
+//         }
+//       })
+//     ]
+//   })
 
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  #valueSub = this.formGroup.valueChanges.pipe(
-    debounceTime(500),
-    takeUntilDestroyed()
-  ).subscribe((value) => this._onChange?.(value))
+  #valueSub = this.formGroup.valueChanges
+    .pipe(debounceTime(500), takeUntilDestroyed())
+    .subscribe((value) => this._onChange?.(value))
 
   constructor() {
-    effect(() => {
-      const indicator = this.indicator()
-      const semanticModel = this.semanticModel()
-      if (semanticModel && indicator) {
-        // 指标公式编辑时需要用到现有 Indicators
-        // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
-        const indicators = [...semanticModel.indicators]
-        const index = indicators.findIndex((item) => item.id === indicator.id)
-        if (index >= 0) {
-          indicators.splice(index, 1, indicator as Indicator)
-        } else {
-          indicators.push(indicator as Indicator)
+    effect(
+      () => {
+        const indicator = this.indicator()
+        const semanticModel = this.semanticModel()
+        if (semanticModel && indicator) {
+          // 指标公式编辑时需要用到现有 Indicators
+          // const dataSource = registerModel(omit(storyModel, 'indicators'), this.dsCoreService, this.wasmAgent)
+          const indicators = [...semanticModel.indicators]
+          const index = indicators.findIndex((item) => item.id === indicator.id)
+          if (index >= 0) {
+            indicators.splice(index, 1, indicator as Indicator)
+          } else {
+            indicators.push(indicator as Indicator)
+          }
+          const dataSource = registerModel(
+            {
+              ...semanticModel,
+              indicators
+              // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
+            } as NgmSemanticModel,
+            this.dsCoreService,
+            this.wasmAgent
+          )
+          this.dataSourceName$.next(dataSource.key)
         }
-        const dataSource = registerModel(
-          {
-            ...semanticModel,
-            indicators
-            // name: semanticModel.key || semanticModel.name, // xmla 中的 CATALOG_NAME 仍然在使用 model name 属性值， 所示改成 data source name 改成 key 之前需要先修改 CATALOG_NAME 的取值逻辑
-          } as NgmSemanticModel,
-          this.dsCoreService,
-          this.wasmAgent
-        )
-        this.dataSourceName$.next(dataSource.key)
-      }
-    }, { allowSignalWrites: true })
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   writeValue(obj: any): void {
@@ -355,4 +362,15 @@ ${calcEntityTypePrompt(this.entityType())}
     this.showFormula.update((state) => !state)
   }
 
+  aiFormula() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['iformula']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
+  }
 }

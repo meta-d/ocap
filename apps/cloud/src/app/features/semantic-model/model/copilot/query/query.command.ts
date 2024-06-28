@@ -13,7 +13,7 @@ import {
 import { EntityType } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { TranslateService } from '@ngx-translate/core'
-import { injectAgentFewShotTemplate, injectCopilotRoleContext } from '../../../../../@core/copilot'
+import { injectAgentFewShotTemplate } from '../../../../../@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 
 import { ModelEntityService } from '../../entity/entity.service'
@@ -34,7 +34,6 @@ export function injectQueryCommand(
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
   const entityService = inject(ModelEntityService, { optional: true })
-  const copilotRoleContext = injectCopilotRoleContext()
 
   const selectTablesTool = injectSelectTablesTool()
   const queryTablesTool = injectQueryTablesTool()
@@ -148,7 +147,6 @@ ${statement()}
 
       const prompt = await createAgentPromptTemplate(_prompt + `\n{context}\n` + `{system}`).partial({
         system: systemContext,
-        role: copilotRoleContext
       })
 
       return {

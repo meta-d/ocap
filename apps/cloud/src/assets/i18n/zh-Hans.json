@@ -611,6 +611,7 @@
       "Certifications": "认证",
       "Copilot_CreateIndicator": "创建指标",
       "Copilot_CreateFormula": "创建指标公式",
+      "Copilot_CommandFormulaDesc": "描述指标公式的业务逻辑",
       "DataPreview": "数据预览",
       "Period": "周期",
       "CommandIndicatorDesc": "描述指标的业务逻辑",

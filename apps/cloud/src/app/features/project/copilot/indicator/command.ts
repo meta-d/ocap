@@ -3,7 +3,6 @@ import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { injectDimensionMemberTool } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
-import { injectCopilotRoleContext } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
 import { createIndicatorGraph } from './graph'
 import { injectCreateIndicatorTool, injectPickCubeTool, injectCreateFormulaTool } from './tools'
@@ -28,7 +27,6 @@ export function injectIndicatorCommand() {
 
 export function injectCreateIndicatorGraph() {
   const projectService = inject(ProjectService)
-  const copilotRoleContext = injectCopilotRoleContext()
   const createIndicatorTool = injectCreateIndicatorTool()
   const pickCubeTool = injectPickCubeTool()
   const memberRetrieverTool = injectDimensionMemberTool()
@@ -46,7 +44,6 @@ export function injectCreateIndicatorGraph() {
       createIndicatorTool,
       memberRetrieverTool,
       createFormulaTool,
-      copilotRoleContext,
       indicatorCodes,
       businessAreas,
       tags

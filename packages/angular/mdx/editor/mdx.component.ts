@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { CommonModule } from '@angular/common'
-import { Component, forwardRef, input, Input } from '@angular/core'
+import { Component, forwardRef, Input } from '@angular/core'
 import { NG_VALUE_ACCESSOR } from '@angular/forms'
 import { FormsModule } from '@angular/forms'
 import { EntityType, nonNullable } from '@metad/ocap-core'

@@ -1,11 +1,14 @@
 import { inject } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
-import { createReactAgent } from '@langchain/langgraph/prebuilt'
 import { CreateGraphOptions } from '@metad/copilot'
 import { SemanticModelService } from '../../model.service'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { injectCreateDimensionTool, injectCreateHierarchyTool } from './tools'
 import { timeLevelFormatter } from './types'
+import { createCopilotAgentState, createReactAgent } from 'apps/cloud/src/app/@core/copilot'
+import { StateGraphArgs } from '@langchain/langgraph/web'
+import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { AgentState } from '@metad/copilot-angular'
 
 export const DIMENSION_MODELER_NAME = 'DimensionModeler'
 
@@ -37,15 +40,17 @@ export function injectDimensionModeler() {
   }
 
   return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    const state: StateGraphArgs<AgentState>['channels'] = createCopilotAgentState()
     return createReactAgent({
       llm,
       checkpointSaver: checkpointer,
+      state,
       tools: [selectTablesTool, queryTablesTool, createDimensionTool, createHierarchyTool],
-      messageModifier: async (messages) => {
-        return [
-          new SystemMessage(CreateDimensionSystemPrompt + `\n\n${await systemContext()}\n\n` + `{context}`),
-          ...messages
-        ]
+      messageModifier: async (state) => {
+        const system = await SystemMessagePromptTemplate.fromTemplate(
+          CreateDimensionSystemPrompt + `\n\n${await systemContext()}\n\n` + `{context}`
+        ).format(state as any)
+        return [new SystemMessage(system), ...state.messages]
       }
     })
   }

@@ -140,6 +140,11 @@
           [entityType]="entityType()"
           formControlName="formula"
         >
+        <button mat-icon-button displayDensity="compact" class="ngm-copilot-command-button ngm-calculated-measure__action"
+          [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="aiFormula()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        </button>
       </ngm-calculated-measure>
     }
 

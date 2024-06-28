@@ -14,13 +14,11 @@ import { SemanticModelService } from '../../model.service'
 import { markdownTableData } from '../../utils'
 import { HierarchySchema } from '../schema'
 import { timeLevelFormatter } from './types'
-import { injectCopilotRoleContext } from '../../../../../@core/copilot'
 
 export function injectHierarchyCommand(dimensionService: ModelDimensionService, tableTypes: Signal<EntityType[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
-  const copilotRoleContext = injectCopilotRoleContext()
   const route = inject(ActivatedRoute)
   const router = inject(Router)
 
@@ -78,7 +76,6 @@ ${tableTypes()
           `\n{system}`
       ).partial({
         system: systemContext,
-        role: copilotRoleContext
       })
 
       return {

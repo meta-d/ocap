@@ -590,6 +590,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
           ...conversation,
           graph
         }))
+
+        // For few shot
+        if (command.fewShotPrompt) {
+          content = await command.fewShotPrompt.format({ input: content, context: '' })
+          this.#logger?.debug(`[Command] [${command.name}] few shot input: ${content}`)
+        }
       } catch (err: any) {
         console.error(err)
         this.upsertMessage({

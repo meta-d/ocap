@@ -107,6 +107,8 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   readonly projectSignal = this.projectService.project
   readonly type = signal<string>('')
 
+  readonly entityType = computed(() => this.registerForm()?.entityType())
+
   readonly dataSettings = computed(() => {
     const registerForm = this.registerForm()
     const dataSettings = registerForm?.dataSettings()
@@ -306,9 +308,13 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     }
   }
 
+  updateIndicator(event: Partial<Indicator>) {
+    this.store.update((state) => ({ ...state, ...event }))
+  }
+
   onModelChange(event: Indicator) {
     if (this.initialized()) {
-      this.store.update((state) => ({ ...state, ...event }))
+      this.updateIndicator(event)
     }
   }
 

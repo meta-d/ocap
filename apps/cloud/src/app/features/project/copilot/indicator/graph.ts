@@ -20,7 +20,6 @@ export async function createIndicatorGraph({
   createIndicatorTool,
   memberRetrieverTool,
   createFormulaTool,
-  copilotRoleContext,
   indicatorCodes,
   businessAreas,
   tags
@@ -29,7 +28,6 @@ export async function createIndicatorGraph({
   createIndicatorTool?: DynamicStructuredTool
   memberRetrieverTool?: DynamicStructuredTool
   createFormulaTool?: DynamicStructuredTool
-  copilotRoleContext: () => string
   indicatorCodes: Signal<string[]>
   businessAreas: Signal<IBusinessArea[]>
   tags: Signal<ITag[]>
@@ -39,7 +37,6 @@ export async function createIndicatorGraph({
   const createIndicator = await createIndicatorWorker(
     {
       llm,
-      copilotRoleContext,
       indicatorCodes,
       businessAreas,
       tags

@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, Input, OnDestroy, Output, computed, inject, signal } from '@angular/core'
+import { Directive, EventEmitter, Input, OnDestroy, Output, computed, inject, output, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor } from '@angular/forms'
 import { BehaviorSubject, Observable, Observer, Subject, Subscription } from 'rxjs'
@@ -56,6 +56,8 @@ export class NgmBaseEditorDirective implements ControlValueAccessor, OnDestroy {
   @Output() modelChange = this._modelChange$.pipe(debounceTime(500))
   // @Output() textSelectionChange = new EventEmitter<string>()
   @Output() selectionChange = new EventEmitter<{ range: any; text: string }>()
+  readonly focus = output()
+  readonly blur = output()
 
   private cursorSelection$ = new Subject()
 
@@ -67,6 +69,30 @@ export class NgmBaseEditorDirective implements ControlValueAccessor, OnDestroy {
   })
   private cursorSelectionSub = this.cursorSelection$.pipe(debounceTime(300), takeUntilDestroyed()).subscribe((e) => {
     this.selectionChange.emit({ range: this.editor.getSelection(), text: this.getSelectText() })
+  })
+
+  readonly focusSub = this.editor$.pipe(filter(Boolean), switchMap((editor) => new Observable((observer) => {
+    editor.onDidFocusEditorWidget(()=>{
+      observer.next()
+    })
+
+    return () => {
+      return
+    }
+  }))).subscribe(() => {
+    this.focus.emit()
+  })
+
+  readonly blurSub = this.editor$.pipe(filter(Boolean), switchMap((editor) => new Observable((observer) => {
+    editor.onDidBlurEditorWidget(()=>{
+      observer.next()
+    })
+
+    return () => {
+      return
+    }
+  }))).subscribe(() => {
+    this.blur.emit()
   })
 
   onModelChange(event) {

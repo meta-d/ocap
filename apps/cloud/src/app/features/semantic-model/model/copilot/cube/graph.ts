@@ -1,19 +1,20 @@
 import { inject } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
-import { createReactAgent } from '@langchain/langgraph/prebuilt'
 import { CreateGraphOptions } from '@metad/copilot'
-import { NgmCopilotService } from '@metad/copilot-angular'
 import { SemanticModelService } from '../../model.service'
 import { markdownSharedDimensions } from '../dimension/types'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { SYSTEM_PROMPT } from './cube.command'
 import { injectCreateCubeTool } from './tools'
+import { StateGraphArgs } from '@langchain/langgraph/web'
+import { createCopilotAgentState, createReactAgent } from 'apps/cloud/src/app/@core/copilot'
+import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { AgentState } from '@metad/copilot-angular'
 
 export const CUBE_MODELER_NAME = 'CubeModeler'
 
 export function injectCubeModeler() {
   const modelService = inject(SemanticModelService)
-  const copilotService = inject(NgmCopilotService)
 
   const createCubeTool = injectCreateCubeTool()
   const selectTablesTool = injectSelectTablesTool()
@@ -24,8 +25,7 @@ export function injectCubeModeler() {
 
   const systemContext = async () => {
     const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
-    return (
-      copilotService.rolePrompt() +
+    return (`{role}\n` +
       ` The cube name can't be the same as the fact table name.` +
       (cubes().length
         ? ` The cube name cannot be any of the following existing cubes [${cubes()
@@ -44,12 +44,17 @@ ${markdownSharedDimensions(sharedDimensions)}
   }
 
   return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    const state: StateGraphArgs<AgentState>['channels'] = createCopilotAgentState()
     return createReactAgent({
       llm,
       checkpointSaver: checkpointer,
+      state,
       tools: [selectTablesTool, queryTablesTool, createCubeTool],
-      messageModifier: async (messages) => {
-        return [new SystemMessage(SYSTEM_PROMPT + `\n\n${await systemContext()}\n\n` + `{context}`), ...messages]
+      messageModifier: async (state) => {
+        const system = await SystemMessagePromptTemplate.fromTemplate(
+          SYSTEM_PROMPT + `\n\n${await systemContext()}\n\n` + `{context}`
+        ).format(state as any)
+        return [new SystemMessage(system), ...state.messages]
       }
     })
   }
