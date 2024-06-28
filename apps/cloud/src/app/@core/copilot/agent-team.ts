@@ -57,6 +57,9 @@ export const getMessages = RunnableLambda.from((state: State) => {
   return { messages: state.messages }
 })
 
+/**
+ * Merge the messages of two graphs, and keep only the last message to the source graph
+ */
 export const joinGraph = RunnableLambda.from((response: AgentState) => {
   return {
     messages: [response.messages[response.messages.length - 1]]

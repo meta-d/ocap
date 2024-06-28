@@ -3,7 +3,7 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, convertNewSemanticModelResult } from '@metad/cloud/state'
-import { nonNullable } from '@metad/core'
+import { DeepPartial, nonNullable } from '@metad/core'
 import { NgmDSCoreService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
@@ -14,6 +14,7 @@ import {
   Dimension,
   EntityType,
   PropertyDimension,
+  PropertyHierarchy,
   Schema,
   TableEntity,
   isEntitySet,
@@ -42,6 +43,7 @@ import {
   initEntitySubState
 } from './types'
 import { CreateEntityDialogRetType } from './create-entity/create-entity.component'
+import { upsertHierarchy } from './utils'
 
 @Injectable()
 export class SemanticModelService {
@@ -590,6 +592,15 @@ export class SemanticModelService {
         ...state.schema.dimensions[index],
         ...dimension
       }
+    }
+  })
+
+  readonly upsertHierarchy = this.updater((state, {dimension, hierarchy}: {dimension: string; hierarchy: DeepPartial<PropertyHierarchy>}) => {
+    const index = state.schema.dimensions.findIndex((item) => item.name === dimension)
+    if (index > -1) {
+      const _dimension = state.schema.dimensions[index]
+      const key = upsertHierarchy(_dimension, hierarchy as PropertyHierarchy)
+      this.router.navigate([`dimension`, _dimension.__id__, `hierarchy`, key], { relativeTo: this.route })
     }
   })
 

@@ -1,18 +1,26 @@
 import { inject } from '@angular/core'
-import { ChatOpenAI } from '@langchain/openai'
-import { NgmCopilotService } from '@metad/copilot-angular'
+import { SystemMessage } from '@langchain/core/messages'
+import { createReactAgent } from '@langchain/langgraph/prebuilt'
+import { CreateGraphOptions } from '@metad/copilot'
 import { SemanticModelService } from '../../model.service'
-import { createCommandAgent } from '../langgraph-helper-utilities'
-import { CreateDimensionSystemPrompt } from './dimension.command'
-import { injectCreateDimensionTool } from './tools'
-import { injectSelectTablesTool, injectQueryTablesTool } from '../tools'
+import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
+import { injectCreateDimensionTool, injectCreateHierarchyTool } from './tools'
+import { timeLevelFormatter } from './types'
 
 export const DIMENSION_MODELER_NAME = 'DimensionModeler'
 
+export const CreateDimensionSystemPrompt =
+  `You are a cube modeling expert. Let's create a shared dimension for cube!` +
+  ` If the user does not provide a dimension table, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a dimension.` +
+  ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` +
+  ` If the user wants to add an analysis scenario for the current dimension, please call 'createHierarchy' to add the corresponding hierarchy of the dimension.` +
+  '\n' +
+  timeLevelFormatter()
+
 export function injectDimensionModeler() {
-  const copilotService = inject(NgmCopilotService)
   const modelService = inject(SemanticModelService)
   const createDimensionTool = injectCreateDimensionTool()
+  const createHierarchyTool = injectCreateHierarchyTool()
   const selectTablesTool = injectSelectTablesTool()
   const queryTablesTool = injectQueryTablesTool()
 
@@ -20,7 +28,6 @@ export function injectDimensionModeler() {
 
   const systemContext = async () => {
     return (
-      copilotService.rolePrompt() +
       `The dimension name cannot be any of the share dimension names in the list: [${dimensions()
         .map((d) => d.name)
         .join(', ')}].` +
@@ -29,12 +36,17 @@ export function injectDimensionModeler() {
     )
   }
 
-  return async (llm: ChatOpenAI) => {
-    const agent = await createCommandAgent(llm, [
-      selectTablesTool,
-      queryTablesTool,
-      createDimensionTool
-    ], CreateDimensionSystemPrompt, systemContext)
-    return agent
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    return createReactAgent({
+      llm,
+      checkpointSaver: checkpointer,
+      tools: [selectTablesTool, queryTablesTool, createDimensionTool, createHierarchyTool],
+      messageModifier: async (messages) => {
+        return [
+          new SystemMessage(CreateDimensionSystemPrompt + `\n\n${await systemContext()}\n\n` + `{context}`),
+          ...messages
+        ]
+      }
+    })
   }
 }

@@ -52,7 +52,7 @@ export function injectModelerCommand() {
       modelService.gotoHistoryCursor(index)
     },
     createGraph: async ({llm}: CreateGraphOptions) => {
-      const dimensionModeler = await createDimensionModeler(llm)
+      const dimensionModeler = await createDimensionModeler({llm})
       const cubeModeler = await createCubeModeler({llm})
       return await createModelerGraph({
         llm,

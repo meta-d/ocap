@@ -12,6 +12,7 @@ import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, 
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType } from '../types'
+import { upsertHierarchy } from '../utils'
 
 @Injectable()
 export class ModelDimensionService {
@@ -208,19 +209,19 @@ export class ModelDimensionService {
   })
 
   readonly upsertHierarchy = this.updater((state, hierarchy: Partial<PropertyHierarchy>) => {
-    let key = null
-    const index = state.hierarchies.findIndex((item) => item.name === hierarchy.name)
-    if (index > -1) {
-      state.hierarchies.splice(index, 1, {
-        ...state.hierarchies[index],
-        ...hierarchy
-      })
-      key = state.hierarchies[index].__id__
-    } else {
-      state.hierarchies.push({ ...hierarchy, __id__: hierarchy.__id__ ?? uuid() } as PropertyHierarchy)
-      key = state.hierarchies[state.hierarchies.length - 1].__id__
-    }
-
+    const key = upsertHierarchy(state, hierarchy)
+    // let key = null
+    // const index = state.hierarchies.findIndex((item) => item.name === hierarchy.name)
+    // if (index > -1) {
+    //   state.hierarchies.splice(index, 1, {
+    //     ...state.hierarchies[index],
+    //     ...hierarchy
+    //   })
+    //   key = state.hierarchies[index].__id__
+    // } else {
+    //   state.hierarchies.push({ ...hierarchy, __id__: hierarchy.__id__ ?? uuid() } as PropertyHierarchy)
+    //   key = state.hierarchies[state.hierarchies.length - 1].__id__
+    // }
     this.navigateTo(key)
   })
 

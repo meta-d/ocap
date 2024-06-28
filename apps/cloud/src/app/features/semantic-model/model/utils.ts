@@ -1,5 +1,6 @@
-import { AggregationRole, EntityType, measureFormatter, PivotColumn, PropertyLevel } from '@metad/ocap-core'
+import { AggregationRole, EntityType, measureFormatter, PivotColumn, PropertyDimension, PropertyHierarchy, PropertyLevel } from '@metad/ocap-core'
 import { serializeUniqueName } from '@metad/ocap-sql'
+import { uuid } from '../../../@core'
 
 export function serializePropertyUniqueName(property: PropertyLevel, dialect: string) {
   switch (property.role) {
@@ -110,4 +111,21 @@ export function markdownTableData({data, columns}: {data: any[], columns: PivotC
   const divider = columns.map(() => '---').join(' | ')
   const rows = data.map((row) => columns.map((column) => row[column.name]).join(' | ')).join('\n')
   return `${header}\n${divider}\n${rows}`
+}
+
+export function upsertHierarchy(dimension: PropertyDimension, hierarchy: Partial<PropertyHierarchy>) {
+  let key = null
+  const index = dimension.hierarchies.findIndex((item) => item.name === hierarchy.name)
+  if (index > -1) {
+    dimension.hierarchies.splice(index, 1, {
+      ...dimension.hierarchies[index],
+      ...hierarchy
+    })
+    key = dimension.hierarchies[index].__id__
+  } else {
+    dimension.hierarchies.push({ ...hierarchy, __id__: hierarchy.__id__ ?? uuid() } as PropertyHierarchy)
+    key = dimension.hierarchies[dimension.hierarchies.length - 1].__id__
+  }
+
+  return key
 }
