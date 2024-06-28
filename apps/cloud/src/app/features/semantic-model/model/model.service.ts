@@ -177,7 +177,7 @@ export class SemanticModelService {
    * * MDX Model 中用于直接计算数据库信息
    * * SQL Model 中同 dataSource 相等
    */
-  private originalDataSource$ = new BehaviorSubject<DataSource>(null)
+  readonly originalDataSource$ = new BehaviorSubject<DataSource>(null)
   public get originalDataSource() {
     return this.originalDataSource$.value
   }

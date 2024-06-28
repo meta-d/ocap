@@ -94,6 +94,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   // Translations
   private T_Count = 'Count'
+  readonly HierarchyTableId = CdkDragDropContainers.HierarchyTable
 
   // Signal
   // States
@@ -286,10 +287,9 @@ export class ModelHierarchyComponent implements AfterViewInit {
     shareReplay(1)
   )
 
-  public readonly data$ = this.query$.pipe(map(({ data }) => data))
-  public readonly error$ = this.query$.pipe(map(({ error }) => error))
+  readonly error$ = this.query$.pipe(map(({ error }) => error))
 
-  readonly data = toSignal(this.data$)
+  readonly data = toSignal(this.query$.pipe(map(({ data }) => data)))
   readonly showKey = model(false)
 
   /**
@@ -379,7 +379,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
     try {
       if (event.previousContainer.id === event.container.id) {
         this.hierarchyService.moveLevelInArray(event)
-      } else if (event.previousContainer.id === 'pac-model-dimension__hierarchy-tables' && event.item.data.name) {
+      } else if (event.previousContainer.id === CdkDragDropContainers.HierarchyTable && event.item.data.name) {
         this.hierarchyService.appendLevel({ name: event.item.data.name, table: event.item.data.entity })
       }
     } catch (err: any) {
@@ -406,7 +406,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   tableRemovePredicate(item: CdkDrag<EntitySchemaNode>) {
     return (
-      item.dropContainer.id === 'pac-model-dimension__hierarchy-tables' && item.data.type === EntitySchemaType.Entity
+      item.dropContainer.id === CdkDragDropContainers.HierarchyTable && item.data.type === EntitySchemaType.Entity
     )
   }
 

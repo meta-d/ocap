@@ -78,6 +78,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   readonly error = toSignal(
     this.dimensionService.name$.pipe(switchMap((entity) => this.modelService.selectOriginalEntityError(entity)))
   )
+  readonly dirty = this.dimensionService.dirtyCheckResult.dirty
 
   readonly tables = computed(
     () =>

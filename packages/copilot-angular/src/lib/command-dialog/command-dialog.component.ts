@@ -175,7 +175,7 @@ export class CommandDialogComponent {
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
     // Enter execute command
-    if ((event.isComposing || event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    if ((event.metaKey || event.ctrlKey) && !event.isComposing && event.key === 'Enter') {
       this.execute()
       return
     }

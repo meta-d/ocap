@@ -101,8 +101,3 @@ ${tableTypes()
     })()
   )
 }
-
-// function navigateToRouteSnapshot(router: Router, snapshot: ActivatedRouteSnapshot) {
-//   const url = snapshot.pathFromRoot.map((segment) => segment.url.map((segment) => segment.path).join('/')).join('/')
-//   router.navigate([url], { queryParams: snapshot.queryParams })
-// }

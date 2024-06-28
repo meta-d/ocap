@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { nonNullable } from '@metad/core'
+import { nonBlank, nonNullable } from '@metad/core'
 import { effectAction } from '@metad/ocap-angular/core'
 import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -41,7 +41,8 @@ export class ModelDimensionService {
   //   comparatorFn: negate(isEqual)
   // })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
-  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+  // readonly dimensionDirty = this.dirtyCheckResult.dirty
+  // readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
   readonly dimension$ = this.store.pipe(
     select((state) => state),
     filter(nonNullable)
@@ -67,8 +68,13 @@ export class ModelDimensionService {
   // public readonly currentHierarchy$ = this.select((state) => state.currentHierarchy)
 
   public readonly dimEntityService$ = this.name$.pipe(
-    filter((value) => !!value),
-    switchMap((name) => this.modelService.selectOriginalEntityService(name)),
+    filter(nonBlank),
+    switchMap((dimensionName) =>
+      this.modelService.originalDataSource$.pipe(
+        filter((dataSource) => !!dataSource),
+        map((dataSource) => dataSource.createEntityService(dimensionName))
+      )
+    ),
     shareReplay(1)
   )
 

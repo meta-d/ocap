@@ -53,7 +53,7 @@
                         <mat-icon color="warn" fontSet="material-icons-round">delete</mat-icon>
                     </button>
                 </mat-toolbar>
-                <div id="pac-model-dimension__hierarchy-tables"
+                <div [id]="HierarchyTableId"
                     class="pac-cdk-drop__list flex-1 overflow-y-auto"
                     cdkDropList
                     [cdkDropListData]="entities"
