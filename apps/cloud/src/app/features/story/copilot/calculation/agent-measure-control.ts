@@ -13,7 +13,7 @@ import { MeasureControlSchema } from '../schema'
 import { MEASURE_CONTROL_AGENT_NAME, State } from './types'
 
 export function injectCreateMeasureControlWorker(
-  defaultModelCube: Signal<{ dataSource: string; cube: EntityType }>,
+  defaultModelCube: Signal<{ dataSource: string; modelId: string; cube: EntityType }>,
   callback: (dataSettings: DataSettings, key: string) => void
 ) {
   const createMeasureControlTool = injectCreateMeasureControlTool(defaultModelCube, callback)

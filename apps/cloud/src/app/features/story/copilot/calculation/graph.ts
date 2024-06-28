@@ -10,7 +10,6 @@ import { EntityType } from '@metad/ocap-core'
 import { Route, Team } from '../../../../@core/copilot/'
 import { createConditionalAggregationWorker } from './agent-cond-aggr'
 import { createFormulaWorker } from './agent-formula'
-import { createRestrictedMeasureWorker } from './agent-restricted'
 import { createVarianceMeasureWorker } from './agent-variance'
 import {
   CONDITIONAL_AGGREGATION_AGENT_NAME,
@@ -21,6 +20,7 @@ import {
   State,
   VARIANCE_AGENT_NAME
 } from './types'
+import { AgentExecutor } from 'langchain/agents'
 
 const superState: StateGraphArgs<State>['channels'] = Team.createState()
 
@@ -34,7 +34,7 @@ export async function createCalculationGraph({
   pickCubeTool,
   memberRetrieverTool,
   createFormulaTool,
-  createRestrictedMeasureTool,
+  restrictedMeasureWorker,
   createConditionalAggregationTool,
   createVarianceMeasureTool,
   runMeasureControlWorker
@@ -42,11 +42,11 @@ export async function createCalculationGraph({
   formulaFewShotPrompt: FewShotPromptTemplate
   condAggrFewShotPrompt: FewShotPromptTemplate
   varianceFewShotPrompt: FewShotPromptTemplate
-  defaultModelCube: Signal<{ dataSource: string; cube: EntityType }>
+  defaultModelCube: Signal<{ modelId: string; dataSource: string; cube: EntityType }>
   pickCubeTool?: DynamicStructuredTool
   memberRetrieverTool?: DynamicStructuredTool
   createFormulaTool?: DynamicStructuredTool
-  createRestrictedMeasureTool?: DynamicStructuredTool
+  restrictedMeasureWorker?: (options: CreateGraphOptions) => Promise<AgentExecutor>
   createConditionalAggregationTool?: DynamicStructuredTool
   createVarianceMeasureTool?: DynamicStructuredTool
   runMeasureControlWorker: (options: CreateGraphOptions) => Promise<Runnable>
@@ -77,10 +77,7 @@ export async function createCalculationGraph({
     llm,
     tools: [pickCubeTool, memberRetrieverTool, createFormulaTool]
   })
-  const createRestrictedMeasureAgent = await createRestrictedMeasureWorker({
-    llm,
-    tools: [pickCubeTool, memberRetrieverTool, createRestrictedMeasureTool]
-  })
+  const createRestrictedMeasureAgent = await restrictedMeasureWorker({llm})
   const createConditionalAggregationAgent = await createConditionalAggregationWorker({
     llm,
     tools: [memberRetrieverTool, createConditionalAggregationTool]

@@ -62,8 +62,7 @@ export class StoryCalculationsComponent {
   readonly route = inject(ActivatedRoute)
   readonly dsCoreService = inject(NgmDSCacheService)
 
-  // entities: ISelectOption<string>[] = []
-  readonly activeLink = signal<{ dataSource: string; entity: string }>(null)
+  readonly activeLink = signal<{ dataSource: string; modelId: string; entity: string }>(null)
 
   readonly #entitySchema = computed(() => {
     const { dataSource, entity } = this.activeLink() ?? {}
@@ -77,21 +76,23 @@ export class StoryCalculationsComponent {
     this.activeLink()
       ? {
           dataSource: this.activeLink().dataSource,
-          entitySet: this.activeLink().entity
+          entitySet: this.activeLink().entity,
+          modelId: this.activeLink().modelId
         }
       : null
   )
   private schemas$ = toSignal(this.storyService.schemas$, { initialValue: null })
 
-  public entities$ = computed<ISelectOption<{ dataSource: string }>[]>(() => {
+  public entities$ = computed<ISelectOption<{ dataSource: string; modelId: string }>[]>(() => {
     const schemas = this.schemas$()
+    const dataSources = this.storyService.dataSources()
     if (schemas) {
       const entities = []
 
       Object.keys(schemas).forEach((dataSource) => {
         Object.keys(schemas[dataSource]).forEach((entity) => {
           entities.push({
-            value: { dataSource },
+            value: { dataSource, modelId: dataSources.find((item) => item.key === dataSource)?.value },
             key: entity,
             caption: schemas[dataSource][entity].caption
           })
@@ -103,7 +104,7 @@ export class StoryCalculationsComponent {
     return []
   })
 
-  readonly newCubes = signal([])
+  readonly newCubes = signal<ISelectOption<{ modelId: string; dataSource: string }>[]>([])
   readonly entities = computed(() => {
     const items = [...this.entities$()]
     this.newCubes().forEach((cube) => {
@@ -127,7 +128,7 @@ export class StoryCalculationsComponent {
               ...model.cubes.map((cube) => ({
                 value: {
                   dataSource: model.key,
-                  dataSourceId: model.value
+                  modelId: model.value
                 },
                 key: cube.name,
                 caption: cube.caption
@@ -157,15 +158,6 @@ export class StoryCalculationsComponent {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  // readonly calculatioCommand = injectCalculationCommand(
-  //   this.storyService,
-  //   this.dataSettings,
-  //   this.property,
-  //   (dataSettings: DataSettings, key: string) => {
-  //     this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
-  //     this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
-  //   }
-  // )
   readonly calculatioCommand = injectCalculationGraphCommand(
     this.dataSettings,
     this.property,
@@ -192,20 +184,22 @@ export class StoryCalculationsComponent {
   }
 
   activeEntity(dataSource: string, entity: string) {
-    this.activeLink.set({ dataSource, entity })
+    this.activeLink.set({
+      dataSource: dataSource,
+      entity: entity,
+      modelId: this.storyService.dataSources().find((item) => item.key === dataSource)?.value
+    })
   }
 
   trackByKey(index: number, item) {
     return item?.key
   }
 
-  addCube(cube: ISelectOption<{ dataSource: string }>) {
+  addCube(cube: ISelectOption<{ dataSource: string; modelId: string }>) {
     this.newCubes.update((cubes) => [
       ...cubes,
       {
-        value: {
-          dataSource: cube.value.dataSource
-        },
+        value: cube.value,
         key: cube.key,
         caption: cube.caption
       }

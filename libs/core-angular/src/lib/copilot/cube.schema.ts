@@ -20,6 +20,11 @@ Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Nam
 `
 }
 
+export const DataSettingsSchema = z.object({
+  dataSource: z.string().describe('The name of the data source'),
+  entitySet: z.string().describe('The name of the cube')
+})
+
 const baseDimensionSchema = {
   dimension: z.string().describe('The name of the dimension using pattern `[Dimension Name]`'),
   hierarchy: z

@@ -1,6 +1,6 @@
 import { Signal, inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { CalculationSchema, tryFixDimension } from '@metad/core'
+import { CalculationSchema, DataSettingsSchema, tryFixDimension } from '@metad/core'
 import {
   AggregationProperty,
   C_MEASURES,
@@ -8,24 +8,17 @@ import {
   CalculationType,
   CompareToEnum,
   DataSettings,
-  EntityType,
-  MeasureControlProperty,
-  RestrictedMeasureProperty,
   VarianceMeasureProperty
 } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { nanoid } from 'nanoid'
+import { z } from 'zod'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom } from 'rxjs'
-import {
-  ConditionalAggregationSchema,
-  MeasureControlSchema,
-  RestrictedMeasureSchema,
-  VarianceMeasureSchema
-} from '../schema'
+import { ConditionalAggregationSchema, VarianceMeasureSchema } from '../schema'
 
 export function injectCreateFormulaMeasureTool(
-  dataSettings: Signal<DataSettings>,
+  defaultDataSettings: Signal<DataSettings>,
   callback: (dataSettings: DataSettings, key: string) => void
 ) {
   const logger = inject(NGXLogger)
@@ -34,11 +27,14 @@ export function injectCreateFormulaMeasureTool(
   const createFormulaTool = new DynamicStructuredTool({
     name: 'createFormulaMeasure',
     description: 'Create or edit calculated measure for cube.',
-    schema: CalculationSchema,
-    func: async ({ __id__, name, caption, formula }) => {
+    schema: z.object({
+      dataSettings: DataSettingsSchema.optional(),
+      property: CalculationSchema
+    }),
+    func: async ({dataSettings, property: { __id__, name, caption, formula }}) => {
       const key = __id__ || nanoid()
       try {
-        const _dataSettings = dataSettings()
+        const _dataSettings = dataSettings as DataSettings ?? defaultDataSettings()
         const calculation = {
           __id__: key,
           name,
@@ -62,44 +58,6 @@ export function injectCreateFormulaMeasureTool(
   return createFormulaTool
 }
 
-export function injectCreateRestrictedMeasureTool(
-  defaultDataSettings: Signal<DataSettings>,
-  callback: (dataSettings: DataSettings, key: string) => void
-) {
-  const logger = inject(NGXLogger)
-  const storyService = inject(NxStoryService)
-
-  const createRestrictedMeasureTool = new DynamicStructuredTool({
-    name: 'createRestrictedMeasure',
-    description: 'Create or edit restricted measure for cube.',
-    schema: RestrictedMeasureSchema,
-    func: async (property) => {
-      const key = property.__id__ || nanoid()
-      try {
-        const dataSettings = defaultDataSettings()
-        storyService.addCalculationMeasure({
-          dataSettings,
-          calculation: {
-            ...property,
-            __id__: key,
-            calculationType: CalculationType.Restricted
-          } as RestrictedMeasureProperty
-        })
-
-        logger.debug(`Restricted calculation measure created: `, dataSettings, property)
-
-        callback(dataSettings, key)
-
-        return `Restricted calculation measure created!`
-      } catch (error: any) {
-        return `Error creating restricted calculation measure: ${error.message}`
-      }
-    }
-  })
-
-  return createRestrictedMeasureTool
-}
-
 export function injectCreateConditionalAggregationTool(
   defaultDataSettings: Signal<DataSettings>,
   callback: (dataSettings: DataSettings, key: string) => void
@@ -110,13 +68,16 @@ export function injectCreateConditionalAggregationTool(
   const createConditionalAggregationTool = new DynamicStructuredTool({
     name: 'createConditionalAggregation',
     description: 'Create conditional aggregation measure for cube.',
-    schema: ConditionalAggregationSchema,
-    func: async (property) => {
+    schema: z.object({
+      dataSettings: DataSettingsSchema.optional(),
+      property: ConditionalAggregationSchema
+    }),
+    func: async ({dataSettings, property}) => {
       const key = property.__id__ || nanoid()
-      const dataSettings = defaultDataSettings()
+      const _dataSettings = dataSettings as DataSettings ?? defaultDataSettings()
 
       try {
-        const entityType = await firstValueFrom(storyService.selectEntityType(dataSettings))
+        const entityType = await firstValueFrom(storyService.selectEntityType(_dataSettings))
         const calculation = {
           ...property,
           __id__: key,
@@ -143,13 +104,13 @@ export function injectCreateConditionalAggregationTool(
         }
 
         storyService.addCalculationMeasure({
-          dataSettings,
+          dataSettings: _dataSettings,
           calculation
         })
 
-        logger.debug(`Conditional aggregation calculation measure created: `, dataSettings, calculation)
+        logger.debug(`Conditional aggregation calculation measure created: `, _dataSettings, calculation)
 
-        callback(dataSettings, key)
+        callback(_dataSettings, key)
 
         return `Conditional aggregation calculation measure created!`
       } catch (error: any) {
@@ -170,13 +131,16 @@ export function injectCreateVarianceMeasureTool(
   const createVarianceMeasureTool = new DynamicStructuredTool({
     name: 'createVarianceMeasure',
     description: 'Create variance measure for cube.',
-    schema: VarianceMeasureSchema,
-    func: async (property) => {
+    schema: z.object({
+      dataSettings: DataSettingsSchema.optional(),
+      property: VarianceMeasureSchema
+    }),
+    func: async ({dataSettings, property}) => {
       const key = property.__id__ || nanoid()
-      const dataSettings = defaultDataSettings()
+      const _dataSettings = dataSettings as DataSettings ?? defaultDataSettings()
       try {
         storyService.addCalculationMeasure({
-          dataSettings,
+          dataSettings: _dataSettings,
           calculation: {
             ...property,
             measure: {
@@ -191,9 +155,9 @@ export function injectCreateVarianceMeasureTool(
           } as VarianceMeasureProperty
         })
 
-        logger.debug(`Variance calculation measure created: `, dataSettings, property)
+        logger.debug(`Variance calculation measure created: `, _dataSettings, property)
 
-        callback(dataSettings, key)
+        callback(_dataSettings, key)
 
         return `Variance calculation measure created!`
       } catch (error: any) {
