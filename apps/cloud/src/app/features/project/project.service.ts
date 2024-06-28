@@ -14,7 +14,7 @@ import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { MDCube, isEntitySet, isEqual, negate } from '@metad/ocap-core'
 import { Store, createStore, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
-import { cloneDeep, omit } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import {
   EMPTY,
   catchError,
@@ -39,7 +39,7 @@ import {
   isUUID,
   registerModel
 } from '../../@core'
-import { ProjectIndicatorsState, injectFetchModelDetails } from './types'
+import { NewIndicatorCodePlaceholder, ProjectIndicatorsState, injectFetchModelDetails } from './types'
 
 @Injectable()
 export class ProjectService {
@@ -124,11 +124,11 @@ export class ProjectService {
    */
   readonly tags = toSignal(this.tagService.getAll('indicator'), { initialValue: [] })
 
-  constructor() {
-    effect(() => {
-      console.log(this.hasDirty(), this.dirty())
-    })
-  }
+  // constructor() {
+  //   effect(() => {
+  //     console.log(this.hasDirty(), this.dirty())
+  //   })
+  // }
 
   setProject(project: IProject) {
     this.project.set(project)
@@ -184,18 +184,30 @@ export class ProjectService {
   | Indicators
   |--------------------------------------------------------------------------
   */
-  newIndicator(indicator: Partial<Indicator>) {
+  addIndicator(indicator: Partial<Indicator>) {
     this.iStore.update((state) => {
       const index = state.indicators.findIndex((item) => item.id === indicator.id)
       // If indicator already exists, don't add it
       if (index > -1) {
-        return state
+        throw new Error(`Indicator with id ${indicator.id} already exists`)
       }
       return {
         ...state,
         indicators: [indicator, ...state.indicators]
       }
     })
+  }
+
+  newIndicator() {
+    const exists = this.indicators().some((item) => item.id === NewIndicatorCodePlaceholder)
+    if (!exists) {
+      this.addIndicator({
+        visible: true,
+        isActive: true,
+        createdAt: new Date(),
+        id: NewIndicatorCodePlaceholder
+      } as Indicator)
+    }
   }
 
   refreshIndicators() {

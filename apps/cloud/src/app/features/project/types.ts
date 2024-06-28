@@ -13,6 +13,8 @@ export type ProjectIndicatorsState = {
   indicators: Indicator[]
 }
 
+export const NewIndicatorCodePlaceholder = 'new'
+
 export function collectionId(collection: ICollection | string) {
   collection = isString(collection) ? collection : collection?.id
   return collection === DefaultCollection.id ? null : collection

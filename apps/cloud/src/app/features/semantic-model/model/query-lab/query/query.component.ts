@@ -15,16 +15,14 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from '@metad/core'
 import { NgmCopilotService } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { nonNullable, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
-import { Store } from 'apps/cloud/src/app/@core'
+import { ModelQuery, Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
 import { BehaviorSubject, EMPTY, Observable, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
@@ -148,7 +146,7 @@ ${calcEntityTypePrompt(entityType)}
   )
   public readonly query$ = this.queryState$.pipe(
     map((state) => state.query),
-    shareReplay(1)
+    shareReplay<ModelQuery>(1)
   )
   public readonly results$ = this.queryState$.pipe(
     map((state) => state.results),

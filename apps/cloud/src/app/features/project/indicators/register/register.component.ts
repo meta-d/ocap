@@ -7,17 +7,16 @@ import {
   ElementRef,
   HostListener,
   inject,
-  model,
   OnDestroy,
   signal,
   viewChild
 } from '@angular/core'
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { convertIndicatorResult, Indicator, IndicatorsService, Store } from '@metad/cloud/state'
-import { createSubStore, debugDirtyCheckComparator, dirtyCheckWith, IsDirty, IsNilPipe, nonBlank, saveAsYaml } from '@metad/core'
+import { createSubStore, dirtyCheckWith, IsDirty, IsNilPipe, nonBlank, saveAsYaml } from '@metad/core'
 import { AnalyticalCardModule } from '@metad/ocap-angular/analytical-card'
 import { NgmCommonModule, NgmConfirmDeleteComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective, PERIODS } from '@metad/ocap-angular/core'
@@ -30,7 +29,6 @@ import {
   getEntityCalendar,
   IFilter,
   isEqual,
-  isNil,
   negate,
   TimeRangeType
 } from '@metad/ocap-core'
@@ -38,15 +36,15 @@ import { withProps } from '@ngneat/elf'
 import { TranslateModule } from '@ngx-translate/core'
 import { cloneDeep } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { EMPTY, firstValueFrom } from 'rxjs'
-import { catchError, delay, distinctUntilChanged, filter, map, startWith, tap } from 'rxjs/operators'
-import { IIndicator, IndicatorType, isUUID, ToastrService } from '../../../../@core/index'
-import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
-import { ProjectService } from '../../project.service'
-import { exportIndicator } from '../../types'
-import { NewIndicatorCodePlaceholder, ProjectIndicatorsComponent } from '../indicators.component'
-import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 import { injectParams } from 'ngxtension/inject-params'
+import { EMPTY, firstValueFrom } from 'rxjs'
+import { catchError, delayWhen, distinctUntilChanged, filter, map, startWith, tap } from 'rxjs/operators'
+import { IIndicator, isUUID, ToastrService } from '../../../../@core/index'
+import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
+import { ProjectService } from '../../project.service'
+import { exportIndicator, NewIndicatorCodePlaceholder } from '../../types'
+import { ProjectIndicatorsComponent } from '../indicators.component'
+import { IndicatorRegisterFormComponent } from '../register-form/register-form.component'
 
 // AOA : array of array
 type AOA = any[][]
@@ -211,23 +209,44 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   readonly models = this.projectService.models
 
   readonly paramId = injectParams('id')
-  
+
   readonly initialized = signal(false)
+  readonly initialized$ = toObservable(this.initialized)
+
+  private queryMapSub = this._route.queryParams
+    .pipe(
+      startWith(this._route.snapshot.queryParams),
+      map((queryParams) => queryParams['modelId']),
+      filter(nonBlank),
+      delayWhen(() => this.initialized$.pipe(filter((initialized) => initialized))),
+      takeUntilDestroyed()
+    )
+    .subscribe((id) => {
+      this.onModelChange({ modelId: id })
+    })
+  private paramIdSub = toObservable(this.paramId)
+    .pipe(
+      tap((id) => {
+        if (id === NewIndicatorCodePlaceholder) {
+          this.projectService.newIndicator()
+        }
+      })
+    )
+    .subscribe((id) => {
+      this.init(id)
+    })
 
   constructor() {
     super()
 
-    effect(() => {
-      if (this.paramId()) {
-        this.init(this.paramId())
-      }
-    }, { allowSignalWrites: true })
-
-    effect(() => {
-      if (this.indicator()?.id) {
-        this.projectService.markDirty(this.indicator()?.id, this.dirty())
-      }
-    }, { allowSignalWrites: true })
+    effect(
+      () => {
+        if (this.indicator()?.id) {
+          this.projectService.markDirty(this.indicator()?.id, this.dirty())
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   public init(id: string) {
@@ -252,7 +271,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
               this._router.navigate(['../404'], { relativeTo: this._route })
               return EMPTY
             }),
-            map(convertIndicatorResult),
+            map(convertIndicatorResult)
           )
           .subscribe((indicator) => {
             this.registerForm().formGroup.markAsPristine()
@@ -289,7 +308,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
 
   onModelChange(event: Indicator) {
     if (this.initialized()) {
-      this.store.update((state) => ({...state, ...event}))
+      this.store.update((state) => ({ ...state, ...event }))
     }
   }
 

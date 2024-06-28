@@ -1,15 +1,14 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
-import { Injectable, OnDestroy, inject, signal } from '@angular/core'
+import { Injectable, inject, signal } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { CopilotChatConversation } from '@metad/copilot'
 import { NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
 import { cloneDeep, isEqual } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
-import { ModelQueryService, convertModelQueryResult, uuid } from 'apps/cloud/src/app/@core'
+import { ModelQuery, ModelQueryService, convertModelQueryResult, uuid } from 'apps/cloud/src/app/@core'
 import { firstValueFrom } from 'rxjs'
-import { SemanticModelService } from '../model.service'
-import { ModelQuery, ModelQueryState, QueryResult } from '../types'
+import { ModelQueryState, QueryResult } from '../types'
 import { initModelQueryState } from './types'
 
 export interface QueryLabState {
@@ -20,8 +19,7 @@ export interface QueryLabState {
 }
 
 @Injectable()
-export class QueryLabService extends ComponentStore<QueryLabState> implements OnDestroy {
-  private readonly modelService = inject(SemanticModelService)
+export class QueryLabService extends ComponentStore<QueryLabState> {
   private readonly modelQueryService = inject(ModelQueryService)
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
@@ -179,10 +177,5 @@ export class QueryLabService extends ComponentStore<QueryLabState> implements On
       query = convertModelQueryResult(result)
       this.setQuery({ key, query })
     }
-  }
-
-  ngOnDestroy(): void {
-    const queries = this.get((state) => state.queries)
-    this.modelService.updateQueries(Object.keys(queries).map((key) => queries[key]))
   }
 }

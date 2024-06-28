@@ -29,13 +29,12 @@ import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
-import { ISemanticModel, MDX, ToastrService, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
+import { ISemanticModel, MDX, ModelQuery, ToastrService, convertModelQueryInput, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
 import { dirtyCheckWith, write } from '../store'
 import {
   MODEL_TYPE,
   ModelCubeState,
   ModelDimensionState,
-  ModelQueryState,
   SemanticModelEntity,
   SemanticModelEntityType,
   SemanticModelState,
@@ -788,26 +787,26 @@ export class SemanticModelService {
     this._router.navigate([`dimension/${dimension.__id__}`], { relativeTo: this._route })
   }
 
-  newQuery(statement?: string) {
-    const key = uid10()
-    this.updater((state) => {
-      state.queries.push({
-        key,
-        name: 'Untitled_1',
-        modelId: state.id,
-        options: {
-          entities: [],
-          statement
-        }
-      })
-    })()
+  // newQuery(statement?: string) {
+  //   const key = uid10()
+  //   this.updater((state) => {
+  //     state.queries.push({
+  //       key,
+  //       name: 'Untitled_1',
+  //       modelId: state.id,
+  //       options: {
+  //         entities: [],
+  //         statement
+  //       }
+  //     })
+  //   })()
 
-    return key
-  }
+  //   return key
+  // }
 
-  readonly updateQueries = this.updater((state, queries: ModelQueryState[]) => {
-    // state.queries = queries
-  })
+  // readonly updateQueries = this.updater((state, queries: ModelQuery[]) => {
+  //   state.queries = queries.map(convertModelQueryInput)
+  // })
 
   /**
    * 打开实体编辑页面

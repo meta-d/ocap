@@ -14,7 +14,7 @@ export interface IModelQuery extends IBasePerTenantAndOrganizationEntityModel {
    * The details
    */
   options?: {
-    entities: string[]
+    entities?: string[]
     statement?: string
     conversations?: any[]
   }

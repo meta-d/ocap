@@ -32,7 +32,7 @@ export function injectCreateIndicatorTool() {
         const [hierarchy, level] = indicator.calendar.split('].[')
         indicator.calendar = level ? `${hierarchy}]` : indicator.calendar
       }
-      projectService.newIndicator({
+      projectService.addIndicator({
         ...indicator,
         visible: true,
         isActive: true,

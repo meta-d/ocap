@@ -6,13 +6,13 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { CommandDialogComponent } from '@metad/copilot-angular'
 import { IsDirty } from '@metad/core'
 import { cloneDeep } from '@metad/ocap-core'
-import { convertModelQueryResult } from 'apps/cloud/src/app/@core'
+import { ModelQuery, ModelQueryService, convertModelQueryResult } from 'apps/cloud/src/app/@core'
 import { orderBy } from 'lodash-es'
-import { map } from 'rxjs'
+import { distinctUntilChanged, map, switchMap } from 'rxjs'
 import { TranslationBaseComponent } from '../../../../@shared'
 import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
-import { ModelQuery, ModelQueryState } from '../types'
+import { ModelQueryState } from '../types'
 import { QueryLabService } from './query-lab.service'
 
 @Component({
@@ -27,26 +27,46 @@ import { QueryLabService } from './query-lab.service'
 })
 export class QueryLabComponent extends TranslationBaseComponent implements IsDirty {
   readonly _dialog = inject(MatDialog)
+  readonly queryService = inject(ModelQueryService)
 
   readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
   private readonly modelId = toSignal(this.modelService.modelId$)
-  private readonly modelQueries = toSignal(
-    this.modelService.model$.pipe(
-      map((model) =>
-        model.queries.map((query) => {
-          query = convertModelQueryResult(query)
-          return {
-            key: query.key,
-            origin: cloneDeep(query),
-            query: query,
-            dirty: false,
-            results: []
-          } as ModelQueryState
-        })
-      )
-    )
-  )
+  // private readonly modelQueries = toSignal(
+  //   this.modelService.model$.pipe(
+  //     map((model) =>
+  //       model.queries.map((query) => {
+  //         query = convertModelQueryResult(query)
+  //         return {
+  //           key: query.key,
+  //           origin: cloneDeep(query),
+  //           query: query,
+  //           dirty: false,
+  //           results: []
+  //         } as ModelQueryState
+  //       })
+  //     )
+  //   )
+  // )
+
+  private queriesSub = this.modelService.modelId$.pipe(
+    distinctUntilChanged(),
+    switchMap((modelId) => this.queryService.getByModel(modelId))
+  ).subscribe((queries) => {
+    this.queryLabService.init({
+      modelId: this.modelId(),
+      queries: queries.map((query) => {
+        return {
+          key: query.key,
+          origin: cloneDeep(query),
+          query: query,
+          dirty: false,
+          results: []
+        } as ModelQueryState
+      })
+    })
+  })
+
 
   constructor(
     public modelService: SemanticModelService,
@@ -58,11 +78,6 @@ export class QueryLabComponent extends TranslationBaseComponent implements IsDir
     public entityService?: ModelEntityService
   ) {
     super()
-
-    this.queryLabService.init({
-      modelId: this.modelId(),
-      queries: this.modelQueries()
-    })
   }
 
   trackByKey(i: number, item: any) {

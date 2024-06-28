@@ -14,10 +14,8 @@ import { EMPTY, firstValueFrom, switchMap } from 'rxjs'
 import { IIndicator, IndicatorType, ToastrService, getErrorMessage, isUUID, routeAnimations } from '../../../@core'
 import { ManageEntityBaseComponent, MaterialModule } from '../../../@shared'
 import { ProjectService } from '../project.service'
-import { exportIndicator, injectFetchModelDetails } from '../types'
+import { NewIndicatorCodePlaceholder, exportIndicator, injectFetchModelDetails } from '../types'
 import { IndicatorImportComponent } from './indicator-import/indicator-import.component'
-
-export const NewIndicatorCodePlaceholder = 'new'
 
 @Component({
   standalone: true,
@@ -193,12 +191,7 @@ export class ProjectIndicatorsComponent extends ManageEntityBaseComponent<IIndic
   }
 
   register() {
-    this.projectService.newIndicator({
-      visible: true,
-      isActive: true,
-      createdAt: new Date(),
-      id: NewIndicatorCodePlaceholder
-    } as Indicator)
+    this.projectService.newIndicator()
 
     this.router.navigate([NewIndicatorCodePlaceholder], {
       relativeTo: this.route
