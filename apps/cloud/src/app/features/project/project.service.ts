@@ -274,14 +274,15 @@ export class ProjectService {
 
   replaceNewIndicator(id: string, indicator: Indicator) {
     const update = (state) => {
+      const indicators = [...state.indicators]
       const index = state.indicators.findIndex((item) => item.id === id)
       if (index > -1) {
-        const indicators = [...state.indicators]
         indicators.splice(index, 1, cloneDeep(indicator))
-        return { ...state, indicators }
+      } else {
+        indicators.push(cloneDeep(indicator))
       }
 
-      return state
+      return { ...state, indicators }
     }
     this.iStore.update(update)
     this.iPristineStore.update(update)

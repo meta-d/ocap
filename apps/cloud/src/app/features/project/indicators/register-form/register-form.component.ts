@@ -212,6 +212,8 @@ export class IndicatorRegisterFormComponent implements ControlValueAccessor {
   )
   public readonly measures$ = this.entityType$.pipe(
     map(getEntityMeasures),
+    // filter myself
+    map((measures) => measures.filter((item) => item.name !== this.indicator().code && item.name !== this.indicator().name)),
     map((items) => items.map((item) => ({ key: item.name, caption: item.caption })))
   )
   public readonly dimensions$ = this.entityType$.pipe(

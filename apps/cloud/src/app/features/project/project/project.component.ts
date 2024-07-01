@@ -255,6 +255,7 @@ export class ProjectComponent extends TranslationBaseComponent {
           'models',
           'indicators',
           'indicators.businessArea',
+          'indicators.tags',
           'certifications'
         ])
       ),
@@ -292,8 +293,6 @@ export class ProjectComponent extends TranslationBaseComponent {
     this.destroyRef.onDestroy(() => {
       this.appService.inProject.set(false)
     })
-
-    // this.copilotContext.cubes.update(() => this.projectService.copilotCubes$)
   }
 
   hasChild = (_: number, node: FlatTreeNode<any>) => node.expandable

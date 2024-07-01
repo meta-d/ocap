@@ -35,7 +35,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     }
 
     state.dataSources = state.dataSources ?? []
-    const index = state.dataSources.findIndex((item) => item.name === model.name)
+    const index = state.dataSources.findIndex((item) => item.key === model.key)
     if (index > -1) {
       state.dataSources.splice(index, 1, model)
     } else {

@@ -332,8 +332,11 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     this.loading.set(true)
     try {
       const indicator = await this.indicatorsComponent.saveIndicator(this.indicator())
-
       this.loading.set(false)
+
+      if (this.paramId() === NewIndicatorCodePlaceholder) {
+        this._router.navigate(['../', indicator.id], { relativeTo: this._route })
+      }
 
       if (this.type() === 'copy') {
         this.type.set('edit')

@@ -214,7 +214,7 @@ export function workOutTimeRangeSlicers(
         members: [
           {
             key: results[0],
-            value: results[0],
+            value: results[0]
           }
         ]
       }
@@ -260,7 +260,24 @@ export function getCalendarHierarchy(entityType: EntityType): PropertyHierarchy 
 
   return timeHierarchy
 }
-export function getEntityCalendar(entityType: EntityType, calendar?: string, timeGranularity?: TimeGranularity) {
+
+/**
+ * Get the specified calendar dimension or the default calendar dimension
+ *
+ * @param entityType
+ * @param calendar
+ * @param timeGranularity
+ * @returns
+ */
+export function getEntityCalendar(
+  entityType: EntityType,
+  calendar?: string,
+  timeGranularity?: TimeGranularity
+): {
+  dimension: PropertyDimension
+  hierarchy: PropertyHierarchy
+  level?: PropertyLevel
+} {
   let calendarHierarchy: PropertyHierarchy
   let calendarDimension: PropertyDimension
   if (calendar) {
