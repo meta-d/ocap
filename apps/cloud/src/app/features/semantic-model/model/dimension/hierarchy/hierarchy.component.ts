@@ -136,7 +136,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
         }
 
         level.properties
-          ?.filter((property) => property.column && property.name)
+          ?.filter((property) => property?.column && property?.name)
           .forEach((property) => {
             columns.push({
               name: serializeUniqueName(dialect, dimension, hierarchy, property.name),
@@ -178,7 +178,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
       level: serializeUniqueName(dialect, dimension, hierarchy, level.name),
       caption: level.caption || level.name,
       properties: level.properties
-        ?.filter((property) => property.column && property.name)
+        ?.filter((property) => property?.column && property?.name)
         .map((property) => serializeUniqueName(dialect, dimension, hierarchy, property.name))
     }))
   })

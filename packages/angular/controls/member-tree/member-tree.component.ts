@@ -303,7 +303,7 @@ export class NgmMemberTreeComponent<T extends IDimensionMember = IDimensionMembe
   }
 
   writeValue(obj: any): void {
-    if (obj) {
+    if (Array.isArray(obj?.members)) {
       this.memberKeys.set(obj.members.map(({ key }) => key))
     }
   }
