@@ -128,7 +128,7 @@ export class ModelEntityPreviewComponent {
   )
 
   readonly modelType = toSignal(this.modelService.modelType$)
-  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dialect = this.modelService.dialect
 
   public readonly dataSettings = computed(() => ({
     dataSource: this.modelKey(),

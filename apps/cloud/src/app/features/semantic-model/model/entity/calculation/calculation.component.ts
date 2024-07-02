@@ -103,7 +103,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   }))
 
   readonly modelType = toSignal(this.modelService.modelType$)
-  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dialect = this.modelService.dialect
   readonly selectedProperty = this.entityService.selectedProperty
   readonly typeKey = computed(() => `${ModelDesignerType.calculatedMember}#${this.key()}`)
 
@@ -113,83 +113,6 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   |--------------------------------------------------------------------------
   */
   #formulaCommand = injectFormulaCommand(this.calculatedMember, this.cube, this.entityType)
-
-  //   #calculatedMeasureCommand = injectCopilotCommand({
-  //     name: 'formula',
-  //     description: 'Create or edit a calculated member',
-  //     systemPrompt: async () => {
-  //       let prompt = `Create a new or edit (if there is a formula) MDX calculated measure for the cube based on the prompt.`
-  //       if (this.entityType()) {
-  //         prompt += `The cube is:
-  // \`\`\`
-  // ${calcEntityTypePrompt(this.entityType())}
-  // \`\`\`
-  // `
-  //       } else {
-  //         prompt += `The cube is:
-  // \`\`\`
-  // ${makeCubePrompt(this.cube())}
-  // \`\`\`
-  // `
-  //       }
-  //       if (this.key()) {
-  //         prompt += `The formula is "${this.formula()}"`
-  //       }
-  //       return prompt
-  //     },
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'create-calculated-measure',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'measure',
-  //             type: 'object', // Add or change types according to your needs.
-  //             description: 'The defination of calculated measure',
-  //             required: true,
-  //             properties: zodToAnnotations(CalculatedMeasureSchema)
-  //           }
-  //         ],
-  //         implementation: async (cm: CalculatedMember) => {
-  //           this.#logger.debug(`Create a new calculated measure '${cm.name}' with formula '${cm.formula}'`)
-  //           const key = cm.__id__ ?? uuid()
-  //           this.entityService.addCalculatedMeasure({
-  //             ...cm,
-  //             dimension: C_MEASURES,
-  //             __id__: key
-  //           })
-
-  //           this.entityService.navigateCalculation(key)
-
-  //           return `✅`
-  //         }
-  //       }),
-  //       injectMakeCopilotActionable({
-  //         name: 'edit-calculated-measure',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'formula',
-  //             type: 'string', // Add or change types according to your needs.
-  //             description: 'The defination of calculated measure',
-  //             required: true
-  //           }
-  //         ],
-  //         implementation: async (formula: string) => {
-  //           this.#logger.debug(`Edit current calculated measure '${this.formula()}' to '${formula}'`)
-  //           this.entityService.updateCubeProperty({
-  //             type: ModelDesignerType.calculatedMember,
-  //             id: this.key(),
-  //             model: {
-  //               formula
-  //             }
-  //           })
-
-  //           return `✅`
-  //         }
-  //       })
-  //     ]
-  //   })
 
   /**
   |--------------------------------------------------------------------------

@@ -50,7 +50,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { injectCubeCommand, injectDimensionCommand, injectModelerCommand, provideCopilotTables } from './copilot'
+import { injectCubeCommand, injectDimensionCommand, injectModelerCommand, injectTableCommand, provideCopilotTables } from './copilot'
 import {
   CreateEntityDialogDataType,
   CreateEntityDialogRetType,
@@ -216,6 +216,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   */
   #cubeCommand = injectCubeCommand(this.dimensions)
   #dimensionCommand = injectDimensionCommand(this.dimensions)
+  #tableCommand = injectTableCommand()
   #entityDropAction = provideCopilotDropAction({
     id: CdkDragDropContainers.Tables,
     implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
@@ -377,7 +378,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       .open(CommandDialogComponent, {
         backdropClass: 'bg-transparent',
         data: {
-          commands: ['dimension', 'cube']
+          commands: ['dimension', 'cube', 'table']
         }
       })
       .afterClosed()

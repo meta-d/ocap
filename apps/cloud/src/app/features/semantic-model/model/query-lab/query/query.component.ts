@@ -60,7 +60,6 @@ export class QueryComponent extends TranslationBaseComponent {
   private readonly store = inject(Store)
   readonly #logger = inject(NGXLogger)
   readonly featuresComponent = inject(FeaturesComponent)
-  // readonly #copilotEngine = inject(QueryCopilotEngineService)
   readonly #destroyRef = inject(DestroyRef)
 
   @ViewChild('editor') editor!: BaseEditorDirective
@@ -199,15 +198,15 @@ ${calcEntityTypePrompt(entityType)}
 
   readonly entityType = computed(() => this.entityTypes()[0])
 
-  readonly dbTablesPrompt = computed(() =>
-    this.isMDX()
-      ? `The source dialect is ${this.entityTypes()[0]?.dialect}, the cubes information are ${this.#promptCubes?.join(
-          '\n'
-        )}`
-      : `The database dialect is ${
-          this.entityTypes()[0]?.dialect
-        }, the tables information are ${this.promptTables?.join('\n')}`
-  )
+  // readonly dbTablesPrompt = computed(() =>
+  //   this.isMDX()
+  //     ? `The source dialect is ${this.entityTypes()[0]?.dialect}, the cubes information are ${this.#promptCubes?.join(
+  //         '\n'
+  //       )}`
+  //     : `The database dialect is ${
+  //         this.entityTypes()[0]?.dialect
+  //       }, the tables information are ${this.promptTables?.join('\n')}`
+  // )
   sqlEditorActionLabel = toSignal(
     this.translateService.stream('PAC.MODEL.QUERY.EditorActions', {
       Default: {
@@ -295,91 +294,6 @@ ${calcEntityTypePrompt(entityType)}
   #queryCommand = injectQueryCommand(this._statement, this.copilotContext, async (statement: string) => {
     return await firstValueFrom(this._query(statement))
   })
-  //   d = injectCopilotCommand({
-  //     name: 'query',
-  //     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.QueryDBDesc', {
-  //       Default: 'Describe the data you want to query'
-  //     }),
-  //     systemPrompt: async () =>
-  //       this.isMDX()
-  //         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
-  // The cube information is:
-  // \`\`\`
-  // ${this.dbTablesPrompt()}
-  // \`\`\`
-  // Please provide the corresponding MDX statement for the given question.
-  // `
-  //         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
-  // The table information is:
-  // \`\`\`
-  // ${this.dbTablesPrompt()}
-  // \`\`\`
-  // Please provide the corresponding SQL statement for the given question.
-  // Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`,
-  //     // `假设你是数据库 SQL 编程专家, 如果 system 未提供 database tables information 请给出提示, ${this.dbTablesPrompt()}, 请给出问题对应的 sql 语句 (注意：表字段区分大小写，需要用双引号括起来)。 `
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'query-db',
-  //         description: 'query db using statement',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'query',
-  //             type: 'string',
-  //             description: `query extracting info to answer the user's question.
-  // statement should be written using this database schema.
-  // The query should be returned in plain text, not in JSON.
-  // `,
-  //             required: true
-  //           }
-  //         ],
-  //         implementation: async (query: string) => {
-  //           // Set into editor
-  //           this.statement = query
-  //           // Run query on db
-  //           this.query(query)
-  //           // Return to message content
-  //           return query
-  //         }
-  //       })
-  //     ]
-  //   })
-
-//   #fixCommand = injectCopilotCommand({
-//     name: 'fix',
-//     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.FixQueryDesc', {
-//       Default: 'Describe how to fix the statement'
-//     }),
-//     systemPrompt: async () => {
-//       return `Fix the statement of db query:
-// \`\`\`
-// ${this.selectedStatement}
-// \`\`\`
-// `
-//     },
-//     actions: [
-//       injectMakeCopilotActionable({
-//         name: 'fix_query',
-//         description: 'Fix the statement of db query',
-//         argumentAnnotations: [
-//           {
-//             name: 'statement',
-//             type: 'string',
-//             description: `
-// statement should be written using this database schema.
-// The query should be returned in plain text, not in JSON.
-// `,
-//             required: true
-//           }
-//         ],
-//         implementation: async (statement: string) => {
-//           this.#logger.debug(`Copilot_Action:fix_query('${statement}')`)
-//           this.statement = this.statement.replace(this.selectedStatement, statement)
-//           // Return to message content
-//           return statement
-//         }
-//       })
-//     ]
-//   })
 
   /**
   |--------------------------------------------------------------------------

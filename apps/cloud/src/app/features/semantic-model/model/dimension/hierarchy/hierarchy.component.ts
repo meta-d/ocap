@@ -119,7 +119,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
 
   public readonly columns$ = this.levels$.pipe(
     filter(nonNullable),
-    combineLatestWith(this.dimensionService.name$, this.hierarchyService.name$, this.modelService.dialect$),
+    combineLatestWith(this.dimensionService.name$, this.hierarchyService.name$, toObservable(this.modelService.dialect)),
     map(([levels, dimension, hierarchy, dialect]) => {
       const columns = []
       levels.forEach((level) => {
@@ -160,7 +160,7 @@ export class ModelHierarchyComponent implements AfterViewInit {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dialect = this.modelService.dialect
   readonly dimensionName = toSignal(this.dimensionService.name$)
   readonly hierarchyName = toSignal(this.hierarchyService.name$)
   readonly levels = toSignal(this.hierarchyService.levels$)

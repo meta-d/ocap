@@ -17,6 +17,8 @@ export const CreateDimensionSystemPrompt =
   ` If the user does not provide a dimension table, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a dimension.` +
   ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` +
   ` If the user wants to add an analysis scenario for the current dimension, please call 'createHierarchy' to add the corresponding hierarchy of the dimension.` +
+  ` The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].` +
+  ` Use the primary key of the dimension table or the most granular level field as the 'primaryKey'.` +
   '\n' +
   timeLevelFormatter()
 
@@ -34,7 +36,6 @@ export function injectDimensionModeler() {
       `The dimension name cannot be any of the share dimension names in the list: [${dimensions()
         .map((d) => d.name)
         .join(', ')}].` +
-      `The dimension name don't be the same as the table name, It is not necessary to convert all table fields into levels. The levels are arranged in order of granularity from coarse to fine, based on the business data represented by the table fields, for example table: product (id, name, product_category, product_family) to levels: [product_family, product_category, name].` +
       ` Return the 'name' and 'caption' fields of the dimension.`
     )
   }

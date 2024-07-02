@@ -54,7 +54,7 @@ export class ModelHierarchyService {
 
   // Signals
   readonly hierarchy = toSignal(this.hierarchy$)
-  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dialect = this.modelService.dialect
   readonly dimensionName = toSignal(this.parentService.name$)
   readonly sharedDimensions = toSignal(this.modelService.dimensions$)
   readonly hasAll = toSignal(this.hierarchy$.pipe(map((hierarchy) => hierarchy?.hasAll)))
