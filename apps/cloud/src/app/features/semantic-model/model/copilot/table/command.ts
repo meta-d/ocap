@@ -14,7 +14,7 @@ export function injectTableCommand() {
   const createTableCreator = injectTableCreator()
 
   const commandName = 'table'
-  const fewShotPrompt = injectAgentFewShotTemplate(commandName)
+  const fewShotPrompt = injectAgentFewShotTemplate(commandName, {k: 1, vectorStore: null})
   return injectCopilotCommand(commandName, {
     alias: 't',
     description: translate.instant('PAC.MODEL.Copilot.CommandTableDesc', {

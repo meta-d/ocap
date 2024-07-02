@@ -113,6 +113,7 @@ export class SemanticModelService {
   | Observables
   |--------------------------------------------------------------------------
   */
+  private refreshDBTables$ = new BehaviorSubject<boolean>(null)
   public readonly tables$ = this.model$.pipe(map((model) => model?.tables))
   public readonly sharedDimensions$ = this.dimensionStates$.pipe(
     map((states) => states?.map((state) => state.dimension))
@@ -611,17 +612,21 @@ export class SemanticModelService {
     this.dataSource$.value?.setEntityType(entityType)
   }
 
+  refreshTableSchema() {
+    this.refreshDBTables$.next(true)
+  }
+
   /**
   |--------------------------------------------------------------------------
   | Selectors
   |--------------------------------------------------------------------------
   */
-
-  selectDBTables(refresh = false) {
+  selectDBTables(refresh = null) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
       take(1),
-      switchMap((dataSource) => dataSource.discoverDBTables(refresh))
+      combineLatestWith(this.refreshDBTables$),
+      switchMap(([dataSource, _refresh]) => dataSource.discoverDBTables(refresh ?? _refresh))
     )
   }
 

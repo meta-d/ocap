@@ -206,7 +206,6 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   readonly writable$ = computed(
     () => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL)
   )
-  // readonly _isDirty = toSignal(this.modelService.dirty$)
   readonly tables = toSignal(this.selectDBTables$)
 
   /**
