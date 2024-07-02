@@ -541,24 +541,26 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
       contextContent = result.contextContent
     }
-
-    let assistantId = nanoid()
+    
     const lastMessage = conversation.messages[conversation.messages.length - 1]
-    if (lastMessage.role === CopilotChatMessageRoleEnum.Assistant && lastMessage.status === 'pending') {
-      assistantId = lastMessage.id
+    if (lastMessage && lastMessage.role === CopilotChatMessageRoleEnum.Assistant && lastMessage.status === 'pending') {
       this.upsertMessage({
-        id: assistantId,
-        status: 'thinking',
+        id: lastMessage.id,
+        status: 'done',
       })
-    } else {
-      this.upsertMessage({
-        id: assistantId,
-        role: CopilotChatMessageRoleEnum.Assistant,
-        content: '',
-        status: 'thinking',
-        historyCursor: command.historyCursor?.()
-      })
+      this.updateConversation(conversation.id, (conversation) => ({
+        ...conversation,
+        status: 'active'
+      }))
     }
+    const assistantId = nanoid()
+    this.upsertMessage({
+      id: assistantId,
+      role: CopilotChatMessageRoleEnum.Assistant,
+      content: '',
+      status: 'thinking',
+      historyCursor: command.historyCursor?.()
+    })
 
     // Remove thinking message when abort
     const abort = signal(false)
