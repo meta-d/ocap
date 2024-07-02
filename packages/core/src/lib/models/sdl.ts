@@ -257,7 +257,7 @@ export interface PropertyLevel extends EntityProperty {
   captionColumn?: string
   ordinalColumn?: string
   parentColumn?: string
-  nullParentValue?: number
+  nullParentValue?: string
   uniqueMembers?: boolean
   type?: 'String' | 'Integer' | 'Numeric' | 'Boolean' | 'Date' | 'Time' | 'Timestamp'
   table?: string

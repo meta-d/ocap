@@ -68,7 +68,23 @@ const BaseHierarchySchema = {
 for examples: 'yyyy' for year, '[yyyy].[MM]' for month, '[yyyy].[yyyyMM].[yyyyMMDD]' for day
           `)
           })
-          .optional()
+          .optional(),
+
+        captionColumn: z.string().optional().describe('The caption column of the level'),
+        parentColumn: z.string().optional().describe('The parent column of the parent-child structure level'),
+        ordinalColumn: z.string().optional().describe('The ordinal column to sort the members of the level'),
+
+        uniqueMembers: z.boolean().optional().describe('Members of the level is unique'),
+        nullParentValue: z.string().optional().describe('The value of the null parent'),
+
+        properties: z.array(
+          z.object({
+            name: z.string().describe('The name of the property'),
+            column: z.string().describe('The column of the property'),
+            caption: z.string().optional().describe('The caption of the property'),
+            description: z.string().optional().describe('The description of the property')
+          })
+        ).optional().describe('An array of properties in this level'),
       })
     )
     .describe('An array of levels in this hierarchy')

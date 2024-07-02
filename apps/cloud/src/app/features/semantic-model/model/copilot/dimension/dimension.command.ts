@@ -3,6 +3,7 @@ import { CopilotAgentType } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { Property } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectDimensionModeler } from './graph'
@@ -14,6 +15,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const createDimensionModeler = injectDimensionModeler()
 
   const commandName = 'dimension'
+  const fewShotPrompt = injectAgentFewShotTemplate(commandName, { k: 1, vectorStore: null })
   return injectCopilotCommand(commandName, {
     alias: 'd',
     description: translate.instant('PAC.MODEL.Copilot.CommandDimensionDesc', {
@@ -29,6 +31,7 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
       type: CopilotAgentType.Graph,
       conversation: true
     },
+    fewShotPrompt,
     createGraph: createDimensionModeler
   })
 }
