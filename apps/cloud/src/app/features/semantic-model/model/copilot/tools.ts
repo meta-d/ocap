@@ -66,9 +66,9 @@ export async function queryTableStructureData(modelService: SemanticModelService
             `      type: ${t.dataType || ''}`
           ].join('\n')
         )
-        .join('\n')
+        .join('\n'),
+      '```'
     ].join('\n') +
-    '```' +
     '\n\n' +
     dataPrompt
   )

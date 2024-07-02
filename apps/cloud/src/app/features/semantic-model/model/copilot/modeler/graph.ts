@@ -38,7 +38,11 @@ export async function createModelerGraph({
   const planner = (await createModelerPlanner({ llm, selectTablesTool, queryTablesTool, dimensions })).compile()
 
   async function runPlanner(state: State): Promise<any> {
-    const plan = await planner.invoke({ objective: state.messages.map((m) => m.content).join('\n') })
+    const plan = await planner.invoke({
+      role: state.role,
+      context: state.context,
+      objective: state.messages.map((m) => m.content).join('\n')
+    })
     return { messages: [plan.messages[plan.messages.length - 1]] }
   }
 

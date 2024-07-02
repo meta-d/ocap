@@ -559,20 +559,38 @@ export class SemanticModelService {
   }
 
   // Actions for entity
-  // readonly newEntity = this.updater((state, cube: ModelCubeState) => {
-  //   state.cubes.push(cube)
-  // })
-
   readonly newCube = this.updater((state, cube: Cube) => {
     state.schema ??= {} as Schema
     state.schema.cubes ??= []
     state.schema.cubes.push(cube)
   })
 
+  readonly upsertCube = this.updater((state, cube: Cube) => {
+    state.schema ??= {} as Schema
+    state.schema.cubes ??= []
+    const index = state.schema.cubes.findIndex((item) => item.__id__ === cube.__id__)
+    if (index > -1) {
+      state.schema.cubes[index] = cube
+    } else {
+      state.schema.cubes.push(cube)
+    }
+  })
+
   readonly newDimension = this.updater((state, dimension: PropertyDimension) => {
     state.schema ??= {} as Schema
     state.schema.dimensions ??= []
     state.schema.dimensions.push(dimension)
+  })
+
+  readonly upsertDimension = this.updater((state, dimension: PropertyDimension) => {
+    state.schema ??= {} as Schema
+    state.schema.dimensions ??= []
+    const index = state.schema.dimensions.findIndex((item) => item.__id__ === dimension.__id__)
+    if (index > -1) {
+      state.schema.dimensions[index] = dimension
+    } else {
+      state.schema.dimensions.push(dimension)
+    }
   })
 
   /**
@@ -603,29 +621,29 @@ export class SemanticModelService {
     }
   })
 
-  readonly updateCube = this.updater((state, cube: Partial<Cube>) => {
-    const index = state.schema.cubes.findIndex((item) => item.__id__ === cube.__id__)
-    if (index > -1) {
-      const _cube = state.schema.cubes[index]
-      if (cube.dimensions) {
-        _cube.dimensions = cube.dimensions.reduce((acc, dimension) => upsertItem(acc, dimension), _cube.dimensions ?? [])
-      }
-      if (cube.measures) {
-        _cube.measures = cube.measures.reduce((acc, measure) => upsertItem(acc, measure), _cube.measures ?? [])
-      }
-      if (cube.calculatedMembers) {
-        _cube.calculatedMembers = cube.calculatedMembers.reduce((acc, calculatedMember) => upsertItem(acc, calculatedMember), _cube.calculatedMembers ?? [])
-      }
-      if (cube.dimensionUsages) {
-        _cube.dimensionUsages = cube.dimensionUsages.reduce((acc, dimensionUsage) => upsertItem(acc, dimensionUsage), _cube.dimensionUsages ?? [])
-      }
-      state.schema.cubes[index] = {
-        ..._cube,
-      }
-    } else {
-      throw new Error(`Cube key '${cube.__id__}' not found!`)
-    }
-  })
+  // readonly updateCube = this.updater((state, cube: Partial<Cube>) => {
+  //   const index = state.schema.cubes.findIndex((item) => item.__id__ === cube.__id__)
+  //   if (index > -1) {
+  //     const _cube = state.schema.cubes[index]
+  //     if (cube.dimensions) {
+  //       _cube.dimensions = cube.dimensions.reduce((acc, dimension) => upsertItem(acc, dimension), _cube.dimensions ?? [])
+  //     }
+  //     if (cube.measures) {
+  //       _cube.measures = cube.measures.reduce((acc, measure) => upsertItem(acc, measure), _cube.measures ?? [])
+  //     }
+  //     if (cube.calculatedMembers) {
+  //       _cube.calculatedMembers = cube.calculatedMembers.reduce((acc, calculatedMember) => upsertItem(acc, calculatedMember), _cube.calculatedMembers ?? [])
+  //     }
+  //     if (cube.dimensionUsages) {
+  //       _cube.dimensionUsages = cube.dimensionUsages.reduce((acc, dimensionUsage) => upsertItem(acc, dimensionUsage), _cube.dimensionUsages ?? [])
+  //     }
+  //     state.schema.cubes[index] = {
+  //       ..._cube,
+  //     }
+  //   } else {
+  //     throw new Error(`Cube key '${cube.__id__}' not found!`)
+  //   }
+  // })
 
   /**
    * Update cube of schema in {@link DataSource}

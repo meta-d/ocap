@@ -5,7 +5,7 @@ import { NGXLogger } from 'ngx-logger'
 import { z } from 'zod'
 import { SemanticModelService } from '../../model.service'
 import { DimensionSchema, HierarchySchema } from '../schema'
-import { createDimension } from './chat'
+import { createOrEditDimension } from './chat'
 
 export function injectCreateDimensionTool() {
   const logger = inject(NGXLogger)
@@ -18,7 +18,7 @@ export function injectCreateDimensionTool() {
     schema: DimensionSchema,
     func: async (d) => {
       logger.debug(`Execute copilot action 'createDimension':`, d)
-      createDimension(modelService, d as any)
+      createOrEditDimension(modelService, d as any)
       return translate.instant('PAC.MODEL.Copilot.CreatedDimension', { Default: 'Created Dimension!' })
     }
   })
