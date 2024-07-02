@@ -65,7 +65,7 @@ export function makeCubePrompt(cube: Cube) {
   return JSON.stringify({
     name: cube.name,
     caption: cube.caption,
-    dimensions: cube.dimensions.map((dimension) => ({
+    dimensions: cube.dimensions?.map((dimension) => ({
       name: dimension.name,
       caption: dimension.caption,
       hierarchies: dimension.hierarchies?.map((item) => ({
@@ -77,11 +77,11 @@ export function makeCubePrompt(cube: Cube) {
         }))
       }))
     })),
-    measures: cube.measures.map((item) => ({
+    measures: cube.measures?.map((item) => ({
       name: item.name,
       caption: item.caption
     })),
-    calculatedMembers: cube.calculatedMembers.map((item) => ({
+    calculatedMembers: cube.calculatedMembers?.map((item) => ({
       name: item.name,
       caption: item.caption,
       formula: item.formula
@@ -89,7 +89,7 @@ export function makeCubePrompt(cube: Cube) {
     /**
      * @todo Add dimensions
      */
-    dimensionUsages: cube.dimensionUsages.map((item) => ({
+    dimensionUsages: cube.dimensionUsages?.map((item) => ({
       name: item.name,
       caption: item.caption
     }))

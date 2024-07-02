@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild, computed, effect, inject } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
+import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 import { DisplayDensity } from '@metad/ocap-angular/core'
 import { NgmCalculatedMeasureComponent, NgmFormulaEditorComponent } from '@metad/ocap-angular/entity'
 import { NgmFormulaModule } from '@metad/ocap-angular/formula'
@@ -14,7 +16,7 @@ import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
 import { isNil, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { computedAsync } from 'ngxtension/computed-async'
+import { derivedAsync } from 'ngxtension/derived-async'
 import { injectParams } from 'ngxtension/inject-params'
 import { EMPTY } from 'rxjs'
 import { filter, map } from 'rxjs/operators'
@@ -61,6 +63,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly #logger = inject(NGXLogger)
   readonly #store = inject(Store)
   readonly #toastr = inject(ToastrService)
+  readonly #dialog = inject(MatDialog)
 
   @ViewChild('editor') editor!: BaseEditorDirective
 
@@ -77,11 +80,10 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   readonly cube = this.entityService.cube
   readonly isMobile = toSignal(this.appService.isMobile$)
 
-  readonly calculatedMember = computedAsync(() => {
+  readonly calculatedMember = derivedAsync(() => {
     if (this.key()) {
       return this.entityService.selectCalculatedMember(this.key())
     }
-
     return EMPTY
   })
 
@@ -112,7 +114,7 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #formulaCommand = injectFormulaCommand(this.calculatedMember, this.cube, this.entityType)
+  #formulaCommand = injectFormulaCommand(this.calculatedMember)
 
   /**
   |--------------------------------------------------------------------------
@@ -125,10 +127,18 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
     effect(
       () => {
-        this.entityService.setSelectedProperty(this.typeKey())
+        if (this.calculatedMember()) {
+          this.entityService.setSelectedProperty(this.typeKey())
+        }
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (!this.calculatedMember()) {
+        this.#router.navigate(['../404'], { relativeTo: this.#route })
+      }
+    })
   }
 
   /**
@@ -174,6 +184,18 @@ export class ModelEntityCalculationComponent extends TranslationBaseComponent im
 
   onEditorKeyDown(event) {
     console.log(event)
+  }
+
+  aiFormula() {
+    this.#dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['formula']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 
   ngOnDestroy(): void {

@@ -480,6 +480,16 @@ export class ModelEntityService {
     } as CalculatedMember)
   })
 
+  readonly upsertCalculatedMeasure = this.updater((state, calculatedMember: CalculatedMember) => {
+    state.calculatedMembers = state.calculatedMembers ?? []
+    const index = state.calculatedMembers.findIndex((item) => item.__id__ === calculatedMember.__id__)
+    if (index > -1) {
+      state.calculatedMembers[index] = calculatedMember
+    } else {
+      state.calculatedMembers.push(calculatedMember)
+    }
+  })
+
   readonly deleteDimensionUsage = this.updater((state, id: string) => {
     const index = state.dimensionUsages.findIndex((item) => item.__id__ === id)
     if (index > -1) {

@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router'
+import { NotFoundComponent } from 'apps/cloud/src/app/@shared'
 import { ModelEntityCalculationComponent } from './calculation/calculation.component'
 import { ModelEntityComponent } from './entity.component'
 import { ModelEntityPreviewComponent } from './preview/preview.component'
 import { EntityQueryComponent } from './query/query.component'
 import { ModelEntityStructureComponent } from './structure/structure.component'
-import { NotFoundComponent } from 'apps/cloud/src/app/@shared'
 
 export const routes: Routes = [
   {
@@ -30,6 +30,10 @@ export const routes: Routes = [
       {
         path: 'calculation',
         redirectTo: 'calculation/'
+      },
+      {
+        path: 'calculation/404',
+        component: NotFoundComponent
       },
       {
         path: 'calculation/:id',

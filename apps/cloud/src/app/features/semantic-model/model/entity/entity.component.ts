@@ -4,21 +4,17 @@ import { ChangeDetectionStrategy, Component, HostBinding, OnInit, inject, model 
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from '@angular/router'
-import { zodToAnnotations } from '@metad/copilot'
 import { nonBlank, routeAnimations } from '@metad/core'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import { NX_STORY_STORE, NxStoryStore, Story, StoryModel } from '@metad/story/core'
 import { NxDesignerModule, NxSettingsPanelService } from '@metad/story/designer'
 import { TranslateModule } from '@ngx-translate/core'
 import { ToastrService } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { isNil, negate } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { firstValueFrom, of } from 'rxjs'
 import { distinctUntilChanged, filter, map, startWith, switchMap } from 'rxjs/operators'
-import { z } from 'zod'
 import { AppService } from '../../../../app.service'
 import { injectCalculatedCommand } from '../copilot'
 import { ModelComponent } from '../model.component'
@@ -96,44 +92,44 @@ export class ModelEntityComponent implements OnInit {
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #createStoryCommand = injectCopilotCommand({
-    name: 'story',
-    description: 'Create a new story from the cube',
-    examples: [`Create a new story`],
-    systemPrompt: async () => {
-      let prompt = `Create a new story by the cube based on the prompt.
-The cube is`
-      return prompt
-    },
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create_story',
-        description: 'Should always be used to properly format output',
-        argumentAnnotations: [
-          {
-            name: 'story',
-            type: 'object', // Add or change types according to your needs.
-            description: 'The defination of story',
-            required: true,
-            properties: zodToAnnotations(
-              z.object({
-                name: z.string().describe(`The name of the story`),
-                description: z.string().describe(`The description of the story`)
-              })
-            )
-          }
-        ],
-        implementation: async (story: any) => {
-          this.#logger.debug(`Create a new story:`, story)
-          story.key = nanoid()
-          this.createStory(story)
-          return `✅`
-        }
-      })
-    ]
-  })
+  //   #createStoryCommand = injectCopilotCommand({
+  //     name: 'story',
+  //     description: 'Create a new story from the cube',
+  //     examples: [`Create a new story`],
+  //     systemPrompt: async () => {
+  //       let prompt = `Create a new story by the cube based on the prompt.
+  // The cube is`
+  //       return prompt
+  //     },
+  //     actions: [
+  //       injectMakeCopilotActionable({
+  //         name: 'create_story',
+  //         description: 'Should always be used to properly format output',
+  //         argumentAnnotations: [
+  //           {
+  //             name: 'story',
+  //             type: 'object', // Add or change types according to your needs.
+  //             description: 'The defination of story',
+  //             required: true,
+  //             properties: zodToAnnotations(
+  //               z.object({
+  //                 name: z.string().describe(`The name of the story`),
+  //                 description: z.string().describe(`The description of the story`)
+  //               })
+  //             )
+  //           }
+  //         ],
+  //         implementation: async (story: any) => {
+  //           this.#logger.debug(`Create a new story:`, story)
+  //           story.key = nanoid()
+  //           this.createStory(story)
+  //           return `✅`
+  //         }
+  //       })
+  //     ]
+  //   })
 
-  #calculatedMeasureCommand = injectCalculatedCommand(this.cube, this.entityType)
+  #calculatedMeasureCommand = injectCalculatedCommand()
 
   /**
   |--------------------------------------------------------------------------

@@ -1009,6 +1009,8 @@
         "CommandCubeDesc": "描述多维数据集的业务逻辑",
         "CommandModelerDesc": "描述模型的需求或结构",
         "CommandTableDesc": "描述表的结构或业务逻辑",
+        "CommandCalculatedDesc": "描述计算度量的业务逻辑",
+        "CommandFormulaDesc": "描述计算度量的公式逻辑",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
