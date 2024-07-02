@@ -1,5 +1,8 @@
 import { PropertyDimension } from "@metad/ocap-core";
 
+export const DimensionCommandName = 'dimension'
+export const DIMENSION_MODELER_NAME = 'DimensionModeler'
+
 export function timeLevelFormatter() {
     return `If you are creating a time dimension, the semantic formatter in time level is date-fns format string to format date to the time dimension member key.
 For examples: 

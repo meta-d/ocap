@@ -47,6 +47,7 @@ export function createState() {
 
 export const getInstructions = RunnableLambda.from((state: State) => {
   return {
+    input: state.instructions,
     messages: [new HumanMessage(state.instructions)],
     role: state.role,
     context: state.context

@@ -1,17 +1,22 @@
 import { inject } from '@angular/core'
-import { SystemMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
+import { StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions } from '@metad/copilot'
+import { AgentState } from '@metad/copilot-angular'
+import {
+  Team,
+  createCopilotAgentState,
+  createReactAgent,
+  injectAgentFewShotTemplate
+} from 'apps/cloud/src/app/@core/copilot'
 import { SemanticModelService } from '../../model.service'
 import { markdownSharedDimensions } from '../dimension/types'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { SYSTEM_PROMPT } from './cube.command'
 import { injectCreateCubeTool } from './tools'
-import { StateGraphArgs } from '@langchain/langgraph/web'
-import { createCopilotAgentState, createReactAgent } from 'apps/cloud/src/app/@core/copilot'
-import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { AgentState } from '@metad/copilot-angular'
-
-export const CUBE_MODELER_NAME = 'CubeModeler'
+import { CubeCommandName } from './types'
 
 export function injectCubeModeler() {
   const modelService = inject(SemanticModelService)
@@ -25,7 +30,8 @@ export function injectCubeModeler() {
 
   const systemContext = async () => {
     const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
-    return (`{role}\n` +
+    return (
+      `{role}\n` +
       ` The cube name can't be the same as the fact table name.` +
       (cubes().length
         ? ` The cube name cannot be any of the following existing cubes [${cubes()
@@ -57,5 +63,26 @@ ${markdownSharedDimensions(sharedDimensions)}
         return [new SystemMessage(system), ...state.messages]
       }
     })
+  }
+}
+
+export function injectRunCubeModeler() {
+  const createCubeModeler = injectCubeModeler()
+  const fewShotPrompt = injectAgentFewShotTemplate(CubeCommandName, { k: 1, vectorStore: null })
+
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    const agent = await createCubeModeler({ llm, checkpointer })
+
+    return RunnableLambda.from(async (state: AgentState) => {
+      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      return {
+        input: state.input,
+        messages: [new HumanMessage(content)],
+        role: state.role,
+        context: state.context
+      }
+    })
+      .pipe(agent)
+      .pipe(Team.joinGraph)
   }
 }

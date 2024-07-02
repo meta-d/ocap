@@ -1,16 +1,20 @@
 import { inject } from '@angular/core'
-import { SystemMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
+import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
+import { RunnableLambda } from '@langchain/core/runnables'
+import { StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions } from '@metad/copilot'
+import { AgentState } from '@metad/copilot-angular'
+import {
+  Team,
+  createCopilotAgentState,
+  createReactAgent,
+  injectAgentFewShotTemplate
+} from 'apps/cloud/src/app/@core/copilot'
 import { SemanticModelService } from '../../model.service'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
 import { injectCreateDimensionTool, injectCreateHierarchyTool } from './tools'
-import { timeLevelFormatter } from './types'
-import { createCopilotAgentState, createReactAgent } from 'apps/cloud/src/app/@core/copilot'
-import { StateGraphArgs } from '@langchain/langgraph/web'
-import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { AgentState } from '@metad/copilot-angular'
-
-export const DIMENSION_MODELER_NAME = 'DimensionModeler'
+import { DimensionCommandName, timeLevelFormatter } from './types'
 
 export const CreateDimensionSystemPrompt =
   `You are a cube modeling expert. Let's create a shared dimension for cube!` +
@@ -35,8 +39,7 @@ export function injectDimensionModeler() {
     return (
       `The dimension name cannot be any of the share dimension names in the list: [${dimensions()
         .map((d) => d.name)
-        .join(', ')}].` +
-      ` Return the 'name' and 'caption' fields of the dimension.`
+        .join(', ')}].` + ` Return the 'name' and 'caption' fields of the dimension.`
     )
   }
 
@@ -54,5 +57,26 @@ export function injectDimensionModeler() {
         return [new SystemMessage(system), ...state.messages]
       }
     })
+  }
+}
+
+export function injectRunDimensionModeler() {
+  const createDimensionModeler = injectDimensionModeler()
+  const fewShotPrompt = injectAgentFewShotTemplate(DimensionCommandName, { k: 1, vectorStore: null })
+
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    const agent = await createDimensionModeler({ llm, checkpointer })
+
+    return RunnableLambda.from(async (state: AgentState) => {
+      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      return {
+        input: state.input,
+        messages: [new HumanMessage(content)],
+        role: state.role,
+        context: state.context
+      }
+    })
+      .pipe(agent)
+      .pipe(Team.joinGraph)
   }
 }

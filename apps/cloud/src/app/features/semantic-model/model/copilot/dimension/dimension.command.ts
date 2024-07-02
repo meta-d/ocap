@@ -7,6 +7,7 @@ import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { injectDimensionModeler } from './graph'
+import { DimensionCommandName } from './types'
 
 export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
@@ -14,9 +15,8 @@ export function injectDimensionCommand(dimensions: Signal<Property[]>) {
   const modelService = inject(SemanticModelService)
   const createDimensionModeler = injectDimensionModeler()
 
-  const commandName = 'dimension'
-  const fewShotPrompt = injectAgentFewShotTemplate(commandName, { k: 1, vectorStore: null })
-  return injectCopilotCommand(commandName, {
+  const fewShotPrompt = injectAgentFewShotTemplate(DimensionCommandName, { k: 1, vectorStore: null })
+  return injectCopilotCommand(DimensionCommandName, {
     alias: 'd',
     description: translate.instant('PAC.MODEL.Copilot.CommandDimensionDesc', {
       Default: 'Descripe business logic of the dimension'

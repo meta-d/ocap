@@ -9,6 +9,7 @@ import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
 import { timeLevelFormatter } from '../dimension/types'
 import { injectCubeModeler } from './graph'
+import { CubeCommandName } from './types'
 
 export const SYSTEM_PROMPT =
   `You are a cube modeling expert. Let's create a cube! Generate cube metadata for MDX.` +
@@ -34,9 +35,8 @@ export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const modelService = inject(SemanticModelService)
   const createCube = injectCubeModeler()
 
-  const commandName = 'cube'
-  const fewShotPrompt = injectAgentFewShotTemplate(commandName, { k: 1, vectorStore: null })
-  return injectCopilotCommand(commandName, {
+  const fewShotPrompt = injectAgentFewShotTemplate(CubeCommandName, { k: 1, vectorStore: null })
+  return injectCopilotCommand(CubeCommandName, {
     alias: 'c',
     description: translate.instant('PAC.MODEL.Copilot.CommandCubeDesc', {
       Default: 'Descripe business logic of the cube'
