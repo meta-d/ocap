@@ -60,6 +60,7 @@ export function Role(I18N?) {
     className: FORMLY_W_1_2,
     props: {
       label: I18N?.AggregationRole ?? 'Aggregation Role',
+      valueKey: 'key',
       options: [
         {
           key: null,
@@ -95,6 +96,7 @@ export function Semantic(COMMON?) {
       icon: 'class',
       label: COMMON?.Semantic ?? 'Semantic',
       searchable: true,
+      valueKey: 'key',
       options: [
         { key: null, caption: COMMON?.None ?? 'None' },
         { key: Semantics.Geography, caption: 'Geography' },
@@ -177,7 +179,8 @@ export function CalendarFormatter(COMMON?) {
     props: {
       icon: 'date_range',
       label: COMMON?.Formatter ?? 'Time formatter',
-      options: []
+      options: [],
+      valueKey: 'key',
     },
     hooks: {
       onInit: (field: FormlyFieldConfig) => {
