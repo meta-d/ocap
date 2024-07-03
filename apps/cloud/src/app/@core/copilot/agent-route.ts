@@ -7,32 +7,22 @@ import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { z } from 'zod'
+import { createCopilotAgentState } from './types'
 
 type ZodAny = z.ZodObject<any, any, any, any>
 
+/**
+ * @deprecated use Team state
+ */
 export interface State extends AgentState {
   next: string
-  instructions?: string
+  instructions: string
+  reasoning: string
 }
 
 export function createState() {
   return {
-    input: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    role: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    context: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    messages: {
-      value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-      default: () => []
-    },
+    ...createCopilotAgentState(),
     next: {
       value: (x: string, y?: string) => y ?? x,
       default: () => ''
@@ -40,6 +30,10 @@ export function createState() {
     instructions: {
       value: (x: string, y?: string) => y ?? x,
       default: () => "Resolve the user's request."
+    },
+    reasoning: {
+      value: (x: string, y?: string) => y ?? x,
+      default: () => ''
     }
   }
 }

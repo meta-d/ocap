@@ -1,19 +1,18 @@
 import { computed, inject } from '@angular/core'
-import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
+import { CopilotAgentType } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { injectAgentFewShotTemplate } from '../../../../@core/copilot'
 import { ProjectService } from '../../project.service'
-import { injectCreateIndicatorGraph } from '../indicator'
-import { createIndicatorArchitectGraph } from './graph'
-import { PLANNER_NAME } from './types'
+import { injectCreateIndicatorArchitect } from './graph'
+import { INDICATOR_AGENT_NAME, PLANNER_NAME } from './types'
 
 export function injectIndicatorArchitectCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const projectService = inject(ProjectService)
-  const createIndicatorGraph = injectCreateIndicatorGraph()
+  const createIndicatorGraph = injectCreateIndicatorArchitect()
 
   const indicators = computed(() => projectService.indicators() ?? [])
   //   const businessAreas = projectService.businessAreas
@@ -35,30 +34,21 @@ export function injectIndicatorArchitectCommand() {
   // })
 
   const commandName = 'indicator-architect'
-  const fewShotTemplate = injectAgentFewShotTemplate(commandName)
+  const fewShotPrompt = injectAgentFewShotTemplate(commandName)
   return injectCopilotCommand(
     commandName,
-    (async () => {
-      return {
-        alias: 'ia',
-        description: translate.instant('PAC.INDICATOR.CommandIndicatorArchitectDesc', {
-          Default: 'Descripe the indicator system architecture'
-        }),
-        agent: {
-          type: CopilotAgentType.Graph,
-          conversation: true,
-          interruptAfter: [PLANNER_NAME]
-        },
-        createGraph: async ({ llm, checkpointer }: CreateGraphOptions) => {
-          return createIndicatorArchitectGraph({
-            llm,
-            checkpointer,
-            createIndicatorGraph,
-            fewShotTemplate,
-            indicators
-          })
-        }
-      }
-    })()
+    {
+      alias: 'ia',
+      description: translate.instant('PAC.INDICATOR.CommandIndicatorArchitectDesc', {
+        Default: 'Descripe the indicator system architecture'
+      }),
+      agent: {
+        type: CopilotAgentType.Graph,
+        conversation: true,
+        interruptAfter: [PLANNER_NAME, INDICATOR_AGENT_NAME]
+      },
+      fewShotPrompt,
+      createGraph: createIndicatorGraph
+    }
   )
 }

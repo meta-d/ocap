@@ -7,6 +7,8 @@ import { SemanticModelService } from '../../model.service'
 import { injectCreateModelerGraph } from './graph'
 import { injectCreateModelerPlanner } from './planner'
 import { PLANNER_NAME } from './types'
+import { DIMENSION_MODELER_NAME } from '../dimension'
+import { CUBE_MODELER_NAME } from '../cube'
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -39,7 +41,7 @@ export function injectModelerCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
-      interruptAfter: [PLANNER_NAME]
+      interruptAfter: [PLANNER_NAME, DIMENSION_MODELER_NAME, CUBE_MODELER_NAME]
     },
     historyCursor: () => {
       return modelService.getHistoryCursor()

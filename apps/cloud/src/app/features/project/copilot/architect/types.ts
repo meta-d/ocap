@@ -1,6 +1,7 @@
 import { Indicator } from '@metad/cloud/state'
 import { Plan } from 'apps/cloud/src/app/@core/copilot'
 
+export const IndicatorArchitectCommandName = 'indicator-architect'
 // export const SUPERVISOR_NAME = 'Supervisor'
 export const PLANNER_NAME = 'Planner'
 export const REPLANNER_NAME = 'Replanner'

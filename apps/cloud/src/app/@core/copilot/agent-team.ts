@@ -4,6 +4,7 @@ import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
+import { createCopilotAgentState } from './types'
 
 export interface State extends AgentState {
   next: string
@@ -13,22 +14,7 @@ export interface State extends AgentState {
 
 export function createState() {
   return {
-    input: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    role: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    context: {
-      value: (x: any, y: any) => y ?? x,
-      default: () => ''
-    },
-    messages: {
-      value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-      default: () => []
-    },
+    ...createCopilotAgentState(),
     next: {
       value: (x: string, y?: string) => y ?? x,
       default: () => ''

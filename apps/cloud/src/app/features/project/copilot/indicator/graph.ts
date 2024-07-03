@@ -1,15 +1,20 @@
-import { Signal } from '@angular/core'
+import { Signal, computed, inject } from '@angular/core'
+import { HumanMessage } from '@langchain/core/messages'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions } from '@metad/copilot'
+import { AgentState } from '@metad/copilot-angular'
+import { injectDimensionMemberTool } from '@metad/core'
 import { IBusinessArea, ITag } from '../../../../@core'
-import { Route, Team } from '../../../../@core/copilot/'
+import { Route, Team, injectAgentFewShotTemplate } from '../../../../@core/copilot/'
+import { ProjectService } from '../../project.service'
 import { createIndicatorWorker } from './indicator-agent'
-import { INDICATOR_AGENT_NAME, SUPERVISOR_NAME } from './types'
+import { injectCreateFormulaTool, injectCreateIndicatorTool, injectPickCubeTool } from './tools'
+import { INDICATOR_AGENT_NAME, IndicatorCommandName, SUPERVISOR_NAME } from './types'
 
 // Define the top-level State interface
-interface State extends Route.State {
-}
+interface State extends Route.State {}
 
 const superState: StateGraphArgs<State>['channels'] = Route.createState()
 
@@ -54,5 +59,50 @@ export async function createIndicatorGraph({
 
   superGraph.addEdge(START, SUPERVISOR_NAME)
 
-  return superGraph
+  return superGraph.compile({ checkpointer })
+}
+
+export function injectCreateIndicatorGraph() {
+  const projectService = inject(ProjectService)
+  const createIndicatorTool = injectCreateIndicatorTool()
+  const pickCubeTool = injectPickCubeTool()
+  const memberRetrieverTool = injectDimensionMemberTool()
+  const createFormulaTool = injectCreateFormulaTool()
+
+  const indicatorCodes = computed(() => projectService.indicators()?.map((indicator) => indicator.code) ?? [])
+  const businessAreas = projectService.businessAreas
+  const tags = projectService.tags
+
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    return createIndicatorGraph({
+      llm,
+      checkpointer,
+      pickCubeTool,
+      createIndicatorTool,
+      memberRetrieverTool,
+      createFormulaTool,
+      indicatorCodes,
+      businessAreas,
+      tags
+    })
+  }
+}
+
+export function injectRunIndicatorAgent() {
+  const createIndicatorGraph = injectCreateIndicatorGraph()
+  const fewShotPrompt = injectAgentFewShotTemplate(IndicatorCommandName, { k: 1, vectorStore: null })
+
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    const agent = await createIndicatorGraph({ llm })
+
+    return RunnableLambda.from(async (state: AgentState) => {
+      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      return {
+        input: state.input,
+        messages: [new HumanMessage(content)],
+        role: state.role,
+        context: state.context
+      }
+    }).pipe(agent)
+  }
 }
