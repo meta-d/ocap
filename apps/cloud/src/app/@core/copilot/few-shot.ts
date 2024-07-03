@@ -32,7 +32,7 @@ Answer: {{output}}`,
     }),
     examplePrompt,
     prefix: `Refer to the examples below to provide solutions to the problem.`,
-    suffix: 'Question: {{context}}\n\n{{input}}\n\nAnswer: ',
+    suffix: 'Question: {{input}}\n\nAnswer: ',
     inputVariables: ['input'],
     templateFormat: "mustache",
   })
