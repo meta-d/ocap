@@ -490,8 +490,10 @@ export class NgmCopilotChatComponent {
 
     effect(
       async () => {
-        if (this.#contextWord()) {
-          const item = await this.commandContext().getContextItem(this.#contextWord())
+        const contextWord = this.#contextWord()
+        const commandContext = this.commandContext()
+        if (contextWord && commandContext) {
+          const item = await commandContext.getContextItem(contextWord)
           this.context.set(item)
         } else {
           this.context.set(null)

@@ -1,5 +1,5 @@
 import { Signal, computed, inject } from '@angular/core'
-import { CopilotAgentType, CopilotCommand, CreateGraphOptions } from '@metad/copilot'
+import { CopilotAgentType, CreateGraphOptions } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { injectDimensionMemberTool } from '@metad/core'
 import { CalculationProperty, DataSettings } from '@metad/ocap-core'
@@ -18,9 +18,16 @@ import {
   injectCreateFormulaMeasureTool,
   injectCreateVarianceMeasureTool
 } from './tools'
+import {
+  CONDITIONAL_AGGREGATION_AGENT_NAME,
+  FORMULA_AGENT_NAME,
+  MEASURE_CONTROL_AGENT_NAME,
+  RESTRICTED_AGENT_NAME,
+  VARIANCE_AGENT_NAME
+} from './types'
 
 export function injectCalculationGraphCommand(
-  defaultDataSettings: Signal<DataSettings & {modelId: string}>,
+  defaultDataSettings: Signal<DataSettings & { modelId: string }>,
   property: Signal<CalculationProperty | null>,
   callback: (dataSettings: DataSettings, key: string) => void
 ) {
@@ -61,36 +68,38 @@ export function injectCalculationGraphCommand(
   const runMeasureControlWorker = injectCreateMeasureControlWorker(defaultModelCube, callback)
 
   const commandName = 'calculation'
-  return injectCopilotCommand(
-    commandName,
-    (async () => {
-      return {
-        alias: 'cc',
-        description: translate.instant('PAC.Story.CommandCalculationDesc', {
-          Default: 'Describe logic of the calculation you want'
-        }),
-        agent: {
-          type: CopilotAgentType.Graph,
-          conversation: true
-        },
-        createGraph: async ({ llm, checkpointer }: CreateGraphOptions) => {
-          return await createCalculationGraph({
-            llm,
-            checkpointer,
-            formulaFewShotPrompt,
-            condAggrFewShotPrompt,
-            varianceFewShotPrompt,
-            defaultModelCube,
-            pickCubeTool,
-            memberRetrieverTool,
-            createFormulaTool,
-            restrictedMeasureWorker,
-            createConditionalAggregationTool,
-            createVarianceMeasureTool,
-            runMeasureControlWorker
-          })
-        }
-      } as CopilotCommand
-    })()
-  )
+  return injectCopilotCommand(commandName, {
+    alias: 'cc',
+    description: translate.instant('PAC.Story.CommandCalculationDesc', {
+      Default: 'Describe logic of the calculation you want'
+    }),
+    agent: {
+      type: CopilotAgentType.Graph,
+      conversation: true,
+      interruptBefore: [
+        FORMULA_AGENT_NAME,
+        RESTRICTED_AGENT_NAME,
+        CONDITIONAL_AGGREGATION_AGENT_NAME,
+        VARIANCE_AGENT_NAME,
+        MEASURE_CONTROL_AGENT_NAME
+      ]
+    },
+    createGraph: async ({ llm, checkpointer }: CreateGraphOptions) => {
+      return await createCalculationGraph({
+        llm,
+        checkpointer,
+        formulaFewShotPrompt,
+        condAggrFewShotPrompt,
+        varianceFewShotPrompt,
+        defaultModelCube,
+        pickCubeTool,
+        memberRetrieverTool,
+        createFormulaTool,
+        restrictedMeasureWorker,
+        createConditionalAggregationTool,
+        createVarianceMeasureTool,
+        runMeasureControlWorker
+      })
+    }
+  })
 }

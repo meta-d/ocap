@@ -28,6 +28,7 @@ import { NGXLogger } from 'ngx-logger'
 import { DropAction, NgmCopilotChatMessage } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
+import { ToolInputParsingException } from '@langchain/core/tools'
 
 
 let uniqueId = 0
@@ -704,17 +705,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
           }
         }
       } catch (err: any) {
-        if (!(err instanceof GraphValueError)) {
-          // console.error(err)
-          // this.upsertMessage({
-          //   id: assistantId,
-          //   role: CopilotChatMessageRoleEnum.Assistant,
-          //   status: 'error',
-          //   error: err.message
-          // })
+        if (err instanceof ToolInputParsingException) {
+          this.#logger.error(err.message, err.output)
+          throw err
+        } else if (err instanceof GraphValueError) {
+          end = true
+        } else {
           throw err
         }
-        end = true
       }
 
       this.updateConversation(this.currentConversationId(), (conversation) => ({
@@ -739,7 +737,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.upsertMessage({
         id: assistantId,
         role: CopilotChatMessageRoleEnum.Assistant,
-        // content: '',
         status: 'error',
         error: err.message
       })
