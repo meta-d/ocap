@@ -22,65 +22,58 @@ export function injectCreateIndicatorTool() {
 
   const createIndicatorTool = new DynamicStructuredTool({
     name: 'createIndicator',
-    description: 'Create a new indicator.',
+    description: 'Create new or edit indicator.',
     schema: IndicatorSchema,
     func: async (indicator) => {
       logger.debug(`Execute copilot action 'createIndicator':`, indicator)
 
-      indicator.code ??= uuid()
+      indicator.id ||= uuid()
       if (indicator.calendar) {
         const [hierarchy, level] = indicator.calendar.split('].[')
         indicator.calendar = level ? `${hierarchy}]` : indicator.calendar
       }
-      projectService.addIndicator({
+      projectService.upsertIndicator({
         ...indicator,
         visible: true,
         isActive: true,
         businessArea: businessAreas().find((item) => item.id === indicator.businessAreaId),
         createdAt: new Date(),
-        id: indicator.code
       } as Indicator)
 
       setTimeout(async () => {
-        await router.navigate(['indicators', indicator.code], {
+        await router.navigate(['indicators', indicator.id], {
           relativeTo: route
         })
       })
 
-      return 'Created Indicator!'
+      return `Created indicator with id '${indicator.id}'!`
     }
   })
 
   return createIndicatorTool
 }
 
-// export function injectReviseFormulaTool() {
-//   const logger = inject(NGXLogger)
-//   const router = inject(Router)
-//   const route = inject(ActivatedRoute)
-//   const projectService = inject(ProjectService)
+export function injectCreateFormulaTool() {
+  const logger = inject(NGXLogger)
+  const router = inject(Router)
+  const route = inject(ActivatedRoute)
+  const projectService = inject(ProjectService)
 
-//   const reviseFormulaTool = new DynamicStructuredTool({
-//     name: 'reviseFormula',
-//     description: 'Revise formula of the indicator.',
-//     schema: IndicatorFormulaSchema,
-//     func: async ({formula }) => {
-//       logger.debug(`Execute copilot action 'reviseFormula':`, `formula:`, formula)
+  const createFormulaTool = new DynamicStructuredTool({
+    name: 'createFormula',
+    description: 'Create formula for the indicator.',
+    schema: IndicatorFormulaSchema,
+    func: async ({ formula, unit }) => {
+      logger.debug(`Execute copilot action 'reviseFormula':`, `formula:`, formula, `unit:`, unit)
 
-//       // projectService.updateIndicator({ code, formula })
+      // todo: validate formula
 
-//       // setTimeout(async () => {
-//       //   await router.navigate(['indicators', code], {
-//       //     relativeTo: route
-//       //   })
-//       // })
+      return `The formula "${formula}" and unit "${unit || ''}" for indicator is valid!`
+    }
+  })
 
-//       return 'Revised formula of indicator!'
-//     }
-//   })
-
-//   return reviseFormulaTool
-// }
+  return createFormulaTool
+}
 
 export function injectPickCubeTool() {
   const logger = inject(NGXLogger)
@@ -119,24 +112,4 @@ export function injectPickCubeTool() {
   })
 
   return pickCubeTool
-}
-
-export function injectCreateFormulaTool() {
-  const logger = inject(NGXLogger)
-  const router = inject(Router)
-  const route = inject(ActivatedRoute)
-  const projectService = inject(ProjectService)
-
-  const createFormulaTool = new DynamicStructuredTool({
-    name: 'createFormula',
-    description: 'Create formula for the indicator.',
-    schema: IndicatorFormulaSchema,
-    func: async ({ formula, unit }) => {
-      logger.debug(`Execute copilot action 'reviseFormula':`, `formula:`, formula, `unit:`, unit)
-
-      return `The formula "${formula}" and unit "${unit || ''}" for indicator is valid!`
-    }
-  })
-
-  return createFormulaTool
 }

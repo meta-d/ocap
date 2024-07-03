@@ -82,6 +82,8 @@ export interface CopilotCommand<T = any> {
 export type CreateGraphOptions = {
   llm: ChatOpenAI;
   checkpointer?: BaseCheckpointSaver
+  interruptBefore?: any[]
+  interruptAfter?: any[]
 }
 
 /**

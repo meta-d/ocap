@@ -146,19 +146,15 @@ export class CommandDialogComponent {
     return items
   })
 
-  #abortController: AbortController
-
   async execute() {
     if (this.creating()) return
 
     const prompt = this.prompt()
-    this.#abortController = new AbortController()
     this.creating.set(true)
     this.error.set(null)
     try {
       const message = await this.#copilotEngine.chat(prompt, {
         command: this.commandName(),
-        abortController: this.#abortController
       })
       this.dialogRef.close(message)
     } catch (err: any) {

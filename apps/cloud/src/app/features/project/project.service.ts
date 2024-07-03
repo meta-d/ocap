@@ -184,6 +184,15 @@ export class ProjectService {
   | Indicators
   |--------------------------------------------------------------------------
   */
+  upsertIndicator(indicator: Indicator) {
+    const index = this.indicators().findIndex((item) => item.id === indicator.id)
+    if (index > -1) {
+      this.updateIndicator(indicator)
+    } else {
+      this.addIndicator(indicator)
+    }
+  }
+
   addIndicator(indicator: Partial<Indicator>) {
     this.iStore.update((state) => {
       const index = state.indicators.findIndex((item) => item.id === indicator.id)

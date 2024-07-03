@@ -23,11 +23,8 @@ export function injectCreateIndicatorArchitect() {
 
   const indicators = computed(() => projectService.indicators() ?? [])
 
-  return async ({ llm, checkpointer }: CreateGraphOptions) => {
-    const indicatorWorker = await createIndicatorGraph({
-      llm,
-      checkpointer
-    })
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter}: CreateGraphOptions) => {
+    const indicatorWorker = await createIndicatorGraph({ llm })
 
     const planner = await createPlannerAgent({ llm, fewShotTemplate, indicators })
     const replanner = await createReplannerAgent({ llm })
@@ -39,7 +36,7 @@ export function injectCreateIndicatorArchitect() {
         messages: [],
         role: state.role,
         context: state.context,
-        input: state.input
+        input: task
       })
 
       return {
@@ -55,7 +52,6 @@ export function injectCreateIndicatorArchitect() {
 
     const superGraph = new StateGraph({ channels: superState })
       // Add steps nodes
-      // .addNode(SUPERVISOR_NAME, supervisorNode)
       .addNode(PLANNER_NAME, planner)
       .addNode(INDICATOR_AGENT_NAME, executeStep)
       .addNode(REPLANNER_NAME, replanner)
@@ -67,37 +63,6 @@ export function injectCreateIndicatorArchitect() {
         false: INDICATOR_AGENT_NAME
       })
 
-    // .addNode(INDICATOR_AGENT_NAME, Team.getInstructions.pipe(indicatorWorker).pipe(Team.joinGraph))
-    // superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
-    // superGraph.addEdge(PLANNER_NAME, SUPERVISOR_NAME)
-    // superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next, {
-    //   [INDICATOR_AGENT_NAME]: INDICATOR_AGENT_NAME,
-    //   [PLANNER_NAME]: PLANNER_NAME,
-    //   FINISH: END
-    // })
-    // superGraph.addEdge(START, SUPERVISOR_NAME)
-
-    return superGraph.compile({ checkpointer })
+    return superGraph.compile({ checkpointer, interruptBefore, interruptAfter})
   }
 }
-
-// export async function createIndicatorArchitectGraph({
-//   llm,
-//   checkpointer,
-//   createIndicatorGraph,
-//   fewShotTemplate,
-//   indicators
-// }: CreateGraphOptions & {
-//   createIndicatorGraph: (options: CreateGraphOptions) => Promise<StateGraph<Route.State, Partial<Route.State>, any>>
-//   fewShotTemplate: FewShotPromptTemplate
-//   indicators: Signal<Indicator[]>
-// }) {
-//   // const supervisorNode = await Team.createSupervisor(
-//   //   llm,
-//   //   [PLANNER_NAME, INDICATOR_AGENT_NAME],
-//   //   Team.SupervisorSystemPrompt +
-//   //     `Create a plan for the request indicator system if plan is empty, then assign the task to the indicator worker one by one.` +
-//   //     `\nThe plan is {plan}.`
-//   // )
-
-// }

@@ -64,6 +64,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly #conversationId = signal<string>(nanoid())
 
   readonly conversations = computed(() => this.conversations$())
+  readonly conversation = computed(() => this.conversations$()[this.conversations$().length - 1])
   readonly messages = computed(() => flatten(this.conversations$().map((c) => c.messages)))
 
   readonly lastConversation = computed(() => {
@@ -193,7 +194,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     this.#logger?.debug(`process copilot ask: ${prompt}`)
 
     let { command } = options ?? {}
-    const { abortController, assistantMessageId, conversationId } = options ?? {}
+    const { assistantMessageId, conversationId } = options ?? {}
     // New messages
     const newMessages: CopilotChatMessage[] = []
 
@@ -289,7 +290,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
           }
         },
         {
-          abortController,
           assistantMessageId,
           conversationId
         }
@@ -306,14 +306,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
    * @returns 
    */
   async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
-    const { abortController, conversationId, assistantMessageId, context } = options ?? {}
+    const { conversationId, assistantMessageId, context } = options ?? {}
 
     // For agent command
     if (_command.agent) {
       return await this.triggerCommandAgent(prompt, _command, {
         conversationId: assistantMessageId,
         context: context,
-        abortController
       })
     }
 
@@ -371,7 +370,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
       },
       {
-        abortController,
         assistantMessageId,
         conversationId: conversationId ?? this.#conversationId()
       }
@@ -398,10 +396,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async triggerDefaultAgent(content: string, command: CopilotCommand, options?: CopilotChatOptions) {
     // ------------------------- 重复，需重构
-    let { conversationId, abortController } = options ?? {}
+    let { conversationId } = options ?? {}
     const { context } = options ?? {}
-    // conversationId ??= nanoid()
-    abortController ??= new AbortController()
+    const abortController = new AbortController()
 
     // Get chat history messages
     const chatHistoryMessages = this.chatHistoryMessages()
@@ -418,6 +415,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
       content: '',
       status: 'thinking',
       historyCursor: command.historyCursor?.()
+    })
+
+    this.updateConversation(conversationId, (state) => {
+      return {
+        ...state,
+        status: 'answering',
+        abortController
+      }
     })
 
     // Remove thinking message when abort
@@ -503,6 +508,13 @@ export class NgmCopilotEngineService implements CopilotEngine {
         status: 'done',
         lcMessage: new AIMessage({ content: verboseContent })
       })
+
+      this.updateConversation(conversationId, (state) => {
+        return {
+          ...state,
+          status: 'completed',
+        }
+      })
       return null
     } catch (err: any) {
       console.error(err.message)
@@ -513,6 +525,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
         status: 'error',
         error: err.message
       })
+      this.updateConversation(conversationId, (state) => {
+        return {
+          ...state,
+          status: 'error',
+        }
+      })
       return
     } finally {
       abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
@@ -521,10 +539,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async triggerGraphAgent(content: string | null, conversation: CopilotChatConversation, options?: CopilotChatOptions) {
     // ------------------------- 重复，需重构
-    let { abortController } = options ?? {}
     const { context } = options ?? {}
     
-    abortController ??= new AbortController()
+    const abortController = new AbortController()
 
     // Get chat history messages
     // const chatHistoryMessages = this.chatHistoryMessages()
@@ -541,6 +558,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
       contextContent = result.contextContent
     }
+
+    this.updateConversation(conversation.id, (conversation) => ({
+      ...conversation,
+      status: 'answering',
+      abortController
+    }))
     
     const lastMessage = conversation.messages[conversation.messages.length - 1]
     if (lastMessage && lastMessage.role === CopilotChatMessageRoleEnum.Assistant && lastMessage.status === 'pending') {
@@ -548,10 +571,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         id: lastMessage.id,
         status: 'done',
       })
-      this.updateConversation(conversation.id, (conversation) => ({
-        ...conversation,
-        status: 'active'
-      }))
     }
     const assistantId = nanoid()
     this.upsertMessage({
@@ -581,7 +600,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           options.interruptAfter = command.agent.interruptAfter
         }
 
-        const _graph = await command.createGraph({llm: this.llm(), checkpointer: this.checkpointSaver})
+        const _graph = await command.createGraph({...options, llm: this.llm()})
         if (_graph instanceof StateGraph) {
           graph = _graph.compile(options)
         } else {
@@ -703,12 +722,16 @@ export class NgmCopilotEngineService implements CopilotEngine {
         status: end ? 'completed' : 'interrupted',
       }))
 
-      this.upsertMessage({
-        id: assistantId,
-        role: CopilotChatMessageRoleEnum.Assistant,
-        // content: verboseContent,
-        status: end ? 'done' : 'pending',
-      })
+      const lastMessage = this.getMessage(assistantId)
+      if (lastMessage.content) {
+        this.upsertMessage({
+          id: assistantId,
+          role: CopilotChatMessageRoleEnum.Assistant,
+          status: end ? 'done' : 'pending',
+        })
+      } else {
+        this.deleteMessage(assistantId)
+      }
 
       return null
     } catch (err: any) {
@@ -720,6 +743,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
         status: 'error',
         error: err.message
       })
+
+      this.updateConversation(this.currentConversationId(), (conversation) => ({
+        ...conversation,
+        status: 'error'
+      }))
+
       throw err
     } finally {
       abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
@@ -937,6 +966,20 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
+  /**
+   * Get message by id from current conversation
+   * 
+   * @param id 
+   */
+  getMessage(id: string) {
+    return this.currentConversation()?.messages.find((message) => message.id === id)
+  }
+
+  /**
+   * Update or insert message in last conversation
+   * 
+   * @param messages 
+   */
   upsertMessage(...messages: Partial<CopilotChatMessage>[]) {
     this.conversations$.update((conversations) => {
       const lastConversation = conversations[conversations.length - 1]

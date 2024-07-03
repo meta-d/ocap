@@ -619,7 +619,8 @@
       "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？",
       "DeleteSelectedIndicators": "删除选中指标",
       "DeletedSelectedIndicators": "已删除选中指标",
-      "SaveAll": "保存全部"
+      "SaveAll": "保存全部",
+      "New": "新建"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",

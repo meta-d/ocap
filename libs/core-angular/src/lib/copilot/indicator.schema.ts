@@ -7,6 +7,7 @@ import { SlicerSchema } from './cube.schema'
  */
 export const IndicatorSchema = z
   .object({
+    id: z.string().optional().describe(`The id of indicator`),
     code: z.string().describe(`The code of indicator, use alphabetic characters`),
     name: z.string().describe(`The name of indicator`),
     type: z

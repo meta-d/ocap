@@ -135,7 +135,6 @@ export class NgmCopilotChatComponent {
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
 
-  // private translateService = inject(TranslateService)
   readonly _snackBar = inject(MatSnackBar)
   private copilotService = inject(NgmCopilotService)
   readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
@@ -183,7 +182,7 @@ export class NgmCopilotChatComponent {
       messages: PlaceholderMessages,
       type: 'free',
       command: null,
-      status: 'active'
+      status: 'completed'
     }
   ]
 
@@ -263,10 +262,14 @@ export class NgmCopilotChatComponent {
   readonly conversations = computed<Array<CopilotChatConversation<NgmCopilotChatMessage>>>(() =>
     this.copilotEngine?.conversations()
   )
+  readonly conversation = computed(() => this.copilotEngine?.conversation())
+  readonly answering = computed(() => this.conversation()?.status === 'answering')
+  readonly abortController = computed(() => this.conversation()?.abortController)
   readonly isTools = toSignal(this.copilotService.isTools$)
   readonly roles = this.copilotService.allRoles
   readonly role = this.copilotService.role
   readonly roleDetail = this.copilotService.roleDetail
+
   #activatedPrompt = signal('')
   readonly refreshingModels = signal(false)
 
@@ -371,12 +374,8 @@ export class NgmCopilotChatComponent {
 
   readonly promptCompletion = signal<string>(null)
 
-  readonly answering = signal(false)
-
   readonly historyQuestions = signal<string[]>([])
   private readonly historyIndex = signal(-1)
-
-  #abortController: AbortController
 
   // Available models
   searchModel = new FormControl<string>('')
@@ -547,16 +546,12 @@ export class NgmCopilotChatComponent {
     // Clear prompt in input
     this.promptControl.setValue('')
 
-    // Answering
-    this.answering.set(true)
     // 由其他引擎接手处理
     if (this.copilotEngine) {
       try {
-        this.#abortController = new AbortController()
         const message = await this.copilotEngine$().chat(prompt, {
           command,
           newConversation,
-          abortController: this.#abortController,
           assistantMessageId
         })
 
@@ -574,14 +569,13 @@ export class NgmCopilotChatComponent {
       } catch (err) {
         this.conversationsChange.emit(this.conversations)
       } finally {
-        this.answering.set(false)
+        // this.answering.set(false)
       }
     }
   }
 
   stopGenerating() {
-    this.#abortController?.abort()
-    this.answering.set(false)
+    this.abortController()?.abort()
     this.conversationsChange.emit(this.conversations)
 
     this.scrollBottom()

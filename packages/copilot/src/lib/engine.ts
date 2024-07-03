@@ -7,7 +7,6 @@ export type CopilotChatOptions = {
   command?: string
   newConversation?: boolean
   action?: string
-  abortController?: AbortController
   assistantMessageId?: string
   conversationId?: string
   context?: CopilotContext
@@ -28,7 +27,7 @@ export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMe
    * - aborted: is aborted
    * - error: has error
    */
-  status: 'active' | 'interrupted' | 'completed' | 'aborted' | 'error'
+  status: 'answering' | 'interrupted' | 'completed' | 'aborted' | 'error'
   /**
    * Command of this conversation
    */
@@ -71,7 +70,13 @@ export interface CopilotEngine {
    * Conversations
    */
   conversations(): Array<CopilotChatConversation>
-
+  /**
+   * Current conversation
+   */
+  conversation(): CopilotChatConversation
+  /**
+   * Messages in current conversation
+   */
   messages(): CopilotChatMessage[]
 
   /**
@@ -87,6 +92,9 @@ export interface CopilotEngine {
    * @param conversation 
    */
   continue(conversation: CopilotChatConversation): Promise<void>
+  /**
+   * Finish the conversation
+   */
   finish(conversation: CopilotChatConversation): Promise<void>
 
   /**
@@ -102,7 +110,11 @@ export interface CopilotEngine {
    * @returns CopilotCommand[]
    */
   commands?: () => CopilotCommand[]
-
+  /**
+   * Get command and it's context by command name
+   * 
+   * @param name 
+   */
   getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
 
   /**

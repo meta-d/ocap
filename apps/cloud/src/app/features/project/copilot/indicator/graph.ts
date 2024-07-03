@@ -18,9 +18,11 @@ interface State extends Route.State {}
 
 const superState: StateGraphArgs<State>['channels'] = Route.createState()
 
-export async function createIndicatorGraph({
+async function createIndicatorGraph({
   llm,
   checkpointer,
+  interruptBefore,
+  interruptAfter,
   pickCubeTool,
   createIndicatorTool,
   memberRetrieverTool,
@@ -59,7 +61,7 @@ export async function createIndicatorGraph({
 
   superGraph.addEdge(START, SUPERVISOR_NAME)
 
-  return superGraph.compile({ checkpointer })
+  return superGraph.compile({ checkpointer, interruptBefore, interruptAfter })
 }
 
 export function injectCreateIndicatorGraph() {
@@ -73,10 +75,12 @@ export function injectCreateIndicatorGraph() {
   const businessAreas = projectService.businessAreas
   const tags = projectService.tags
 
-  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createIndicatorGraph({
       llm,
       checkpointer,
+      interruptBefore,
+      interruptAfter,
       pickCubeTool,
       createIndicatorTool,
       memberRetrieverTool,
