@@ -1,6 +1,6 @@
 {
   "name": "@metad/copilot",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "peerDependencies": {
     "@langchain/core": "0.2.5",
     "ai": "^2.2.30",
