@@ -5,18 +5,21 @@ import {
   Component,
   DestroyRef,
   HostListener,
+  TemplateRef,
   ViewChild,
   computed,
   effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
 import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from '@metad/core'
-import { NgmCopilotService } from '@metad/copilot-angular'
+import { CopilotChatMessageRoleEnum, CopilotEngine, nanoid } from '@metad/copilot'
+import { NgmCopilotService, provideCopilotDropAction } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { nonNullable, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
@@ -25,13 +28,13 @@ import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, EMPTY, Observable, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { FeaturesComponent } from '../../../../features.component'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
 import { CdkDragDropContainers, MODEL_TYPE, QueryResult } from '../../types'
-import { quoteLiteral } from '../../utils'
+import { markdownTableData, quoteLiteral, stringifyTableType } from '../../utils'
 import { QueryLabService } from '../query-lab.service'
 import { QueryService } from './query.service'
 import { QueryCopilotEngineService } from './copilot.service'
@@ -63,6 +66,7 @@ export class QueryComponent extends TranslationBaseComponent {
   readonly #destroyRef = inject(DestroyRef)
 
   @ViewChild('editor') editor!: BaseEditorDirective
+  readonly tableTemplate = viewChild<TemplateRef<any>>('tableTemplate')
 
   themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
@@ -293,6 +297,51 @@ ${calcEntityTypePrompt(entityType)}
   */
   #queryCommand = injectQueryCommand(this._statement, this.copilotContext, async (statement: string) => {
     return await firstValueFrom(this._query(statement))
+  })
+
+  #entityDropAction = provideCopilotDropAction({
+    id: CdkDragDropContainers.QueryEntity,
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop table entity to copilot chat:`, event)
+      const data = event.item.data
+      // 获取源表或源多维数据集结构
+      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
+
+      const topCount = 10
+      const samples = await firstValueFrom(this.modelService.selectTableSamples(data.name, topCount))
+
+      const tableHeader = `The structure of table "${data.name}" is as follows:`
+      const dataHeader = `The first ${topCount} rows of the table "${data.name}" are as follows:`
+
+      return [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: [
+              { name: 'name', caption: 'Name' },
+              { name: 'caption', caption: 'Description' },
+              { name: 'dataType', caption: 'Type' }
+            ],
+            content: Object.values(entityType.properties) as any[],
+            header: tableHeader
+          },
+          content: tableHeader + '\n' + stringifyTableType(entityType),
+          templateRef: this.tableTemplate()
+        },
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: samples.columns,
+            content: samples.data,
+            header: dataHeader
+          },
+          content: dataHeader + '\n' + markdownTableData(samples),
+          templateRef: this.tableTemplate()
+        }
+      ]
+    }
   })
 
   /**

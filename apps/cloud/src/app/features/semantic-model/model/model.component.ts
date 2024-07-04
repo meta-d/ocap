@@ -616,9 +616,9 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     try {
       await firstValueFrom(this.modelsService.deleteCache(this.model.id))
       this.clearingServerCache = false
-      this.toastrService.success('PAC.MODEL.ClearServerCache')
+      this.toastrService.success('PAC.MODEL.ClearServerCache', {Default: 'Clear server cache successfully'})
     } catch (err) {
-      this.toastrService.error('PAC.MODEL.ClearServerCache', getErrorMessage(err))
+      this.toastrService.error('PAC.MODEL.ClearServerCache', getErrorMessage(err), {Default: 'Clear server cache failed'})
       this.clearingServerCache = false
     }
   }

@@ -162,3 +162,7 @@ list-content-loader {
 .mat-drawer-content {
   @apply flex overflow-hidden;
 }
+
+.cdk-virtual-scrollable {
+  @apply overflow-hidden hover:overflow-auto;
+}

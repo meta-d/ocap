@@ -14,6 +14,9 @@
 
 🎉🎉 新版本带来了一些令人兴奋的新功能，特别是对 [Copilot Command](https://www.mtda.cloud/docs/server/copilot/#命令) 和 [Business Roles](https://www.mtda.cloud/docs/server/copilot/#业务角色) 的全面升级。
 
+- [新版本 2.4 - 副驾多智能体命令](https://www.mtda.cloud/blog/releases-2-4-copilot-multi-agent/)。
+- [AI 数字业务专家](https://www.mtda.cloud/#people-are-talking)
+
 - **副驾驶命令智能体**
   - _维度成员检索器_：此功能动态检索和获取维度成员的关键信息，帮助用户更好地理解数据维度。
   - _少量样本_：通过检索类似的示例，提供更精确的模板，使数据分析更符合实际需求。

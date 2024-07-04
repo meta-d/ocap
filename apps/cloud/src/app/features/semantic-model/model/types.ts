@@ -253,4 +253,5 @@ export enum CdkDragDropContainers {
   Tables = 'pac-model-entitysets',
   Entities = 'pac-model-entities',
   HierarchyTable = 'pac-model-dimension__hierarchy-tables',
+  QueryEntity = 'pac-model__query-entities'
 }
