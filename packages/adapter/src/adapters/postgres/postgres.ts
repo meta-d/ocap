@@ -1,5 +1,5 @@
 import { Client, ClientConfig, types } from 'pg'
-import { BaseSQLQueryRunner, QueryResult, register, SQLAdapterOptions } from '../../base'
+import { BaseSQLQueryRunner, QueryResult, SQLAdapterOptions, register } from '../../base'
 import { convertPGSchema, getPGSchemaQuery, pgTypeMap, typeToPGDB } from '../../helpers'
 import { CreationTable, IDSSchema, QueryOptions } from '../../types'
 import { pgFormat } from './pg-format'
@@ -176,6 +176,12 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
     await this.runQuery(`CREATE SCHEMA IF NOT EXISTS ${catalog}`)
   }
 
+  /**
+   * Import data to a table
+   * 
+   * @param params 
+   * @param options 
+   */
   async import(params: CreationTable, options?: { catalog?: string }): Promise<void> {
     const { name, columns, data, mergeType } = params
 
@@ -199,33 +205,35 @@ export class PostgresRunner extends BaseSQLQueryRunner<PostgresAdapterOptions> {
         return row[name]
       }
     }))
-    const insertStatement = pgFormat(
-        `INSERT INTO ${tableName} (${columns
-          .map(({ fieldName }) => `"${fieldName}"`)
-          .join(',')}) VALUES %L`,
-        values
-      )
-    await this.connect()
-    try {
-      // if (options?.catalog) {
-      //   await this.client.query(`SET search_path TO ${options.catalog};`)
-      // }
-      if (mergeType === 'DELETE') {
-        await this.client.query(dropTableStatement)
-      }
-      await this.client.query(createTableStatement)
-      await this.client.query(insertStatement)
-    } catch (err: any) {
-      throw {
-        message: err.message,
-        stats: {
-          statements: [
-            dropTableStatement,
-            createTableStatement,
-            insertStatement,
-          ],
-        },
-      }
+    const batchSize = 10000; // Define batch size
+    let insertStatement = ''
+      await this.connect()
+      try {
+        if (mergeType === 'DELETE') {
+          await this.client.query(dropTableStatement)
+        }
+        await this.client.query(createTableStatement)
+        for (let i = 0; i < values.length; i += batchSize) {
+          const batchValues = values.slice(i, i + batchSize);
+          insertStatement = pgFormat(
+              `INSERT INTO ${tableName} (${columns
+                .map(({ fieldName }) => `"${fieldName}"`)
+                .join(',')}) VALUES %L`,
+              batchValues
+            )
+          await this.client.query(insertStatement)
+        }
+      } catch (err) {
+        throw {
+          message: err instanceof Error ? err.message : 'An unknown error occurred',
+          stats: {
+            statements: [
+              dropTableStatement,
+              createTableStatement,
+              insertStatement,
+            ],
+          },
+        }
     }
   }
 
