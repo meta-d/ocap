@@ -96,8 +96,8 @@ spec:
     spec:
       containers:
         - name: metad-prod-api
-          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:2.3.1
-          imagePullPolicy: Always
+          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:2.4.0
+          # imagePullPolicy: Always
           envFrom:
             - secretRef:
                 name: ocap-secrets
@@ -233,8 +233,8 @@ spec:
     spec:
       containers:
         - name: metad-prod-webapp
-          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:2.3.1
-          imagePullPolicy: Always
+          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:2.4.0
+          # imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP
@@ -260,7 +260,7 @@ spec:
     spec:
       containers:
         - name: metad-prod-website
-          image: registry.cn-hangzhou.aliyuncs.com/metad/website:2.3.1
+          image: registry.cn-hangzhou.aliyuncs.com/metad/website:2.4.0
           ports:
             - containerPort: 80
               protocol: TCP
@@ -369,7 +369,7 @@ spec:
       containers:
         - name: postgres
           image: registry.cn-hangzhou.aliyuncs.com/metad/pgvector:pg12
-          imagePullPolicy: Always
+          # imagePullPolicy: Always
           ports:
             - containerPort: 5432
           env:
@@ -448,7 +448,7 @@ spec:
       containers:
         - name: redis
           image: registry.cn-hangzhou.aliyuncs.com/metad/redis-stack:6.2.6-v15-x86_64
-          imagePullPolicy: Always
+          # imagePullPolicy: Always
           ports:
             - containerPort: 6379
             - containerPort: 8001
