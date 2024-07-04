@@ -232,7 +232,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 		options: { createRole: boolean; clearRole: boolean }
 	) {
 		const { createRole, clearRole } = options || {}
-		const roleNames = compact(uniq(entities.map((example) => example.role)))
+		const roleNames = uniq(entities.map((example) => example.role))
 
 		for await (const role of roles) {
 			try {
@@ -242,7 +242,7 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 		// Auto create role if not existed
 		if (createRole) {
-			for await (const role of roleNames.filter((role) => !roles.find((r) => r.name === role))) {
+			for await (const role of compact(roleNames).filter((role) => !roles.find((r) => r.name === role))) {
 				try {
 					await this.commandBus.execute(new CopilotRoleCreateCommand({ name: role }))
 				} catch (error) {}
@@ -253,8 +253,8 @@ export class CopilotExampleService extends TenantAwareCrudService<CopilotExample
 
 		// Add examples to vector store
 		const tenantId = RequestContext.currentTenantId()
-		for (const role of [null, ...roleNames]) {
-			const vectorStore = await this.getVectorStore(tenantId, role === 'null' ? null : role)
+		for (const role of roleNames) {
+			const vectorStore = await this.getVectorStore(tenantId, role ? role : null)
 			if (clearRole) {
 				const { items } = await this.findAll({ where: { role: role } })
 				await vectorStore?.vectorStore.delete({ filter: { role: role } })

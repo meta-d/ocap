@@ -244,9 +244,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       } else {
         await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
-
-      // // New conversation after command completion
-      // this.newConversation()
     } else {
       if (this.currentCommand()?.agent.conversation) {
         const _command = this.currentCommand()
@@ -254,6 +251,10 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
         return await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
+
+      /**
+       * @todo Use langchain agent to execute free chat conversation
+       */
 
       this.upsertConversation({
         id: conversationId,

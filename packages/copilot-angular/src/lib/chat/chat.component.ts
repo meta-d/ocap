@@ -670,7 +670,10 @@ export class NgmCopilotChatComponent {
       return
     }
     if (!this.#suggestionsOpened() && event.key === 'Enter') {
-      this.askCopilotStream(this.prompt())
+      setTimeout(() => {
+        this.askCopilotStream(this.prompt().trim())
+      })
+      return
     }
 
     // Tab 键补全提示语

@@ -57,7 +57,7 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   )
 
   public readonly kpiValue$ = this.dataService.kpiValue$
-  public readonly trend$ = this.dataService.kpiValue$.pipe(filter((kpiValue) => !isNil(kpiValue.arrow)))
+  public readonly trend$ = this.kpiValue$.pipe(filter((kpiValue) => !isNil(kpiValue?.arrow)))
   public readonly additionalDataPoints$ = this.dataService.additionalDataPoints$.pipe(
     map((kpiValues) =>
       kpiValues.map((kpiValue) => {
