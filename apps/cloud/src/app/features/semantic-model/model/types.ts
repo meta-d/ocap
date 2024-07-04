@@ -1,6 +1,5 @@
 import { NgmSemanticModel } from '@metad/cloud/state'
-import { IModelQuery, IStory } from '@metad/contracts'
-import { AIOptions, CopilotChatConversation } from '@metad/copilot'
+import { IStory } from '@metad/contracts'
 import {
   Cube,
   Dimension,
@@ -13,7 +12,7 @@ import {
   Schema,
   SemanticModel
 } from '@metad/ocap-core'
-import { uuid } from '../../../@core'
+import { ModelQuery, uuid } from '../../../@core'
 
 export enum MODEL_TYPE {
   /**
@@ -53,17 +52,6 @@ export enum ModelDesignerType {
   levelAttributes = 'levelAttributes',
   measureAttributes = 'measureAttributes',
   calculatedMemberAttributes = 'calculatedMemberAttributes'
-}
-
-export interface ModelQuery extends IModelQuery {
-  id?: string
-  key: string
-  modelId: string
-  name: string
-  entities: string[]
-  statement?: string
-  aiOptions?: AIOptions
-  conversations?: Array<CopilotChatConversation>
 }
 
 export interface QueryResult {
@@ -263,5 +251,7 @@ export type ModelSchemaValueTypes = {
 
 export enum CdkDragDropContainers {
   Tables = 'pac-model-entitysets',
-  Entities = 'pac-model-entities'
+  Entities = 'pac-model-entities',
+  HierarchyTable = 'pac-model-dimension__hierarchy-tables',
+  QueryEntity = 'pac-model__query-entities'
 }

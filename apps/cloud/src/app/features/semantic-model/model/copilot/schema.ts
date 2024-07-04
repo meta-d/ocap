@@ -7,14 +7,16 @@ export const CalculatedMeasureSchema = z.object({
   caption: z.string().optional().describe('Caption (short description)'),
   description: z.string().optional().describe('Long description'),
   formula: z.string().describe('MDX expression for the calculated measure in cube'),
-  formatting: z.object({
-    unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
-    decimal: z.string().optional().describe('The decimal of value when formatting the measure')
-  }).optional().describe('The formatting config of this measure')
+  formatting: z
+    .object({
+      unit: z.string().optional().describe('Unit of the measure; if this is a ratio measurement, value is `%`'),
+      decimal: z.string().optional().describe('The decimal of value when formatting the measure')
+    })
+    .optional()
+    .describe('The formatting config of this measure')
 })
 
-export const HierarchySchema = z.object({
-  __id__: z.string().optional().describe('The id of the hierarchy'),
+const BaseHierarchySchema = {
   name: z.string().describe('The name of the hierarchy'),
   caption: z.string().describe('The caption of the hierarchy'),
   tables: z.array(
@@ -32,66 +34,129 @@ export const HierarchySchema = z.object({
         name: z.string().describe('The name of the level'),
         caption: z.string().describe('The caption of the level'),
         column: z.string().describe('The column of the level'),
+        type: z
+          .enum(['String', 'Integer', 'Numeric', 'Boolean'])
+          .optional()
+          .describe('The type of the column, must be set if the column type is not string'),
 
-        levelType: z.enum([
-          TimeLevelType.TimeYears, 
-          TimeLevelType.TimeQuarters,
-          TimeLevelType.TimeMonths,
-          TimeLevelType.TimeWeeks,
-          TimeLevelType.TimeDays,
-        ]).optional().describe(`The type of level, such as 'TimeYears', 'TimeMonths', 'TimeDays' if dimension is a time dimension`),
+        levelType: z
+          .enum([
+            TimeLevelType.TimeYears,
+            TimeLevelType.TimeQuarters,
+            TimeLevelType.TimeMonths,
+            TimeLevelType.TimeWeeks,
+            TimeLevelType.TimeDays
+          ])
+          .optional()
+          .describe(
+            `The type of level, such as 'TimeYears', 'TimeMonths', 'TimeDays' if dimension is a time dimension`
+          ),
 
-        semantics: z.object({
-          semantic: z.enum([
-            Semantics['Calendar.Year'], 
-            Semantics['Calendar.Quarter'],
-            Semantics['Calendar.Month'],
-            Semantics['Calendar.Week'],
-            Semantics['Calendar.Day'],
-          ]).optional().describe(`The semantic of the time level`),
-          formatter: z.string().optional().describe(`The formatter of the member key of the time level;
+        semantics: z
+          .object({
+            semantic: z
+              .enum([
+                Semantics['Calendar.Year'],
+                Semantics['Calendar.Quarter'],
+                Semantics['Calendar.Month'],
+                Semantics['Calendar.Week'],
+                Semantics['Calendar.Day']
+              ])
+              .optional()
+              .describe(`The semantic of the time level`),
+            formatter: z.string().optional().describe(`The formatter of the member key of the time level;
 for examples: 'yyyy' for year, '[yyyy].[MM]' for month, '[yyyy].[yyyyMM].[yyyyMMDD]' for day
           `)
-        }).optional()
+          })
+          .optional(),
+
+        captionColumn: z.string().optional().describe('The caption column of the level'),
+        parentColumn: z.string().optional().describe('The parent column of the parent-child structure level'),
+        ordinalColumn: z.string().optional().describe('The ordinal column to sort the members of the level'),
+
+        uniqueMembers: z.boolean().optional().describe('Members of the level is unique'),
+        nullParentValue: z.string().optional().describe('The value of the null parent'),
+
+        properties: z.array(
+          z.object({
+            name: z.string().describe('The name of the property'),
+            column: z.string().describe('The column of the property'),
+            caption: z.string().optional().describe('The caption of the property'),
+            description: z.string().optional().describe('The description of the property')
+          })
+        ).optional().describe('An array of properties in this level'),
       })
     )
     .describe('An array of levels in this hierarchy')
+}
+
+export const HierarchySchema = z.object({
+  // __id__: z.string().optional().describe('The id of hierarchy, do not set if this is a new hierarchy'),
+  ...BaseHierarchySchema
 })
 
-export const DimensionSchema = z.object({
-  __id__: z.string().optional().describe('The id of the dimension'),
+const BaseDimensionSchema = {
   name: z.string().describe('The name of the dimension'),
   caption: z.string().describe('The caption of the dimension'),
-  type: z.enum([DimensionType.StandardDimension, DimensionType.TimeDimension])
+  type: z
+    .enum([DimensionType.StandardDimension, DimensionType.TimeDimension])
     .optional()
     .describe('The type of the dimension'),
   hierarchies: z.array(HierarchySchema).describe('An array of hierarchies in this dimension')
+}
+
+export const DimensionSchema = z.object({
+  __id__: z.string().optional().describe('The id of the dimension'),
+  ...BaseDimensionSchema
 })
 
 export const CubeSchema = z.object({
   name: z.string().optional().describe('The name of the cube'),
   caption: z.string().optional().describe('The caption of the cube'),
-  description: z.string().optional().describe('The description of the cube'),
-  tables: z.array(
-    z.object({
-      name: z.string().describe('The name of the cube fact table')
-      // join: z.object({})
-    })
-  ).optional(),
+  description: z.string().optional().describe('The basic description of the cube'),
+  tables: z
+    .array(
+      z.object({
+        name: z.string().describe('The name of the cube fact table')
+        // join: z.object({})
+      })
+    )
+    .optional(),
+  defaultMeasure: z.string().optional().describe('The default measure of the cube'),
   measures: z
     .array(
       z.object({
         name: z.string().describe('The name of the measure'),
         caption: z.string().describe('The caption of the measure'),
         column: z.string().describe('The column of the measure'),
-        aggregator: z.enum(['sum', 'avg', 'count', 'max', 'min', 'distinct-count']).optional().describe('The aggregator of the measure'),
+        aggregator: z
+          .enum(['sum', 'avg', 'count', 'max', 'min', 'distinct-count'])
+          .optional()
+          .describe('The aggregator of the measure')
       })
     )
     .optional()
     .describe('An array of measures in this cube'),
   dimensions: z
     .array(
-      DimensionSchema
+      z.object({
+        ...BaseDimensionSchema,
+        hierarchies: z
+          .array(
+            z.object({
+              ...BaseHierarchySchema,
+              tables: z
+                .array(
+                  z.object({
+                    name: z.string().describe('The name of the dimension table')
+                  })
+                )
+                .optional(),
+              primaryKey: z.string().optional().describe('The primary key of the dimension table'),
+            })
+          )
+          .describe('An array of hierarchies in this dimension')
+      })
     )
     .optional()
     .describe('An array of dimensions in this cube'),
@@ -108,10 +173,12 @@ export const CubeSchema = z.object({
     )
     .optional()
     .describe('An array of shared dimensions ref used in this cube'),
-    
-  calculatedMembers: z.array(CalculatedMeasureSchema).optional().describe('An array of calculated measures in this cube')
-})
 
+  calculatedMembers: z
+    .array(CalculatedMeasureSchema)
+    .optional()
+    .describe('An array of calculated measures in this cube')
+})
 
 export const QueryCubeSchema = z.object({
   statement: z.string().describe('The MDX statement of query the cube')
@@ -125,18 +192,37 @@ export const RoleSchema = z.object({
     name: z.string().describe('The name of role'),
     schemaGrant: z.object({
       access: z.enum([MDX.Access.all, MDX.Access.custom]).default(MDX.Access.all).describe('The access of role'),
-      cubeGrants: z.array(z.object({
-        cube: z.string().describe('The name of cube'),
-        access: z.enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none]).default(MDX.Access.all).describe('The access of cube'),
-        hierarchyGrants: z.array(z.object({
-          hierarchy: z.string().describe('The name of hierarchy'),
-          access: z.enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none]).default(MDX.Access.all).describe('The access of hierarchy'),
-          memberGrants: z.array(z.object({
-            member: z.string().describe('The name of member'),
-            access: z.enum([MDX.Access.all, MDX.Access.none]).default(MDX.Access.all).describe('The access of member'),
-          })).optional()
-        })).optional()
-      }))
+      cubeGrants: z.array(
+        z.object({
+          cube: z.string().describe('The name of cube'),
+          access: z
+            .enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none])
+            .default(MDX.Access.all)
+            .describe('The access of cube'),
+          hierarchyGrants: z
+            .array(
+              z.object({
+                hierarchy: z.string().describe('The name of hierarchy'),
+                access: z
+                  .enum([MDX.Access.all, MDX.Access.custom, MDX.Access.none])
+                  .default(MDX.Access.all)
+                  .describe('The access of hierarchy'),
+                memberGrants: z
+                  .array(
+                    z.object({
+                      member: z.string().describe('The name of member'),
+                      access: z
+                        .enum([MDX.Access.all, MDX.Access.none])
+                        .default(MDX.Access.all)
+                        .describe('The access of member')
+                    })
+                  )
+                  .optional()
+              })
+            )
+            .optional()
+        })
+      )
     })
   })
 })

@@ -428,7 +428,8 @@
       "Copy": "复制",
       "NewTag": "新建标签",
       "Duplicate": "复制",
-      "OpenAttributesPanel": "打开属性面板"
+      "OpenAttributesPanel": "打开属性面板",
+      "Close": "关闭"
     },
     "MESSAGE": {
       "MAIN_ORGANIZATION_UPDATED": "组织更新成功",
@@ -548,7 +549,8 @@
         "Calendar": "日历维度",
         "Tags": "标签",
         "IndicatorNotFound": "指标未找到",
-        "DeleteIndicator": "删除指标"
+        "DeleteIndicator": "删除指标",
+        "CalendarDimensionNotSet": "日历维度未设置"
       },
       "MARKET": {
         "REQUEST": "申请",
@@ -609,8 +611,16 @@
       "Certifications": "认证",
       "Copilot_CreateIndicator": "创建指标",
       "Copilot_CreateFormula": "创建指标公式",
+      "Copilot_CommandFormulaDesc": "描述指标公式的业务逻辑",
       "DataPreview": "数据预览",
-      "Period": "周期"
+      "Period": "周期",
+      "CommandIndicatorDesc": "描述指标的业务逻辑",
+      "CommandIndicatorArchitectDesc": "描述指标系统的架构",
+      "IndicatorHasUnsavedChanges": "指标存在未保存更改，确认要关闭？",
+      "DeleteSelectedIndicators": "删除选中指标",
+      "DeletedSelectedIndicators": "已删除选中指标",
+      "SaveAll": "保存全部",
+      "New": "新建"
     },
     "MODEL": {
       "ModelOverview": "语义模型概览",
@@ -996,6 +1006,12 @@
         "CreatedDimension": "维度创建成功！",
         "CreateCalculatedFormula": "创建计算度量公式",
         "CreateHierarchy": "创建一个新的层次结构",
+        "CommandDimensionDesc": "描述维度的业务逻辑",
+        "CommandCubeDesc": "描述多维数据集的业务逻辑",
+        "CommandModelerDesc": "描述模型的需求或结构",
+        "CommandTableDesc": "描述表的结构或业务逻辑",
+        "CommandCalculatedDesc": "描述计算度量的业务逻辑",
+        "CommandFormulaDesc": "描述计算度量的公式逻辑",
         "Examples": {
           "CreateCubeByTableInfo": "根据表信息创建立方体 Cube",
           "CreateDimensionByTableInfo": "根据表信息创建维度 Dimension",
@@ -1166,7 +1182,8 @@
       "StoryPointName": "故事点名称",
       "AddCube": "添加数据集",
       "CreateCalculationMeasure": "创建计算度量",
-      "CreateParameter": "创建参数"
+      "CreateParameter": "创建参数",
+      "CommandCalculationDesc": "描述计算度量的业务逻辑"
     },
     "Project": {
       "Project": "项目",

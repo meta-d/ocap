@@ -338,11 +338,11 @@ export function serializeAggregationProperty(property: AggregationProperty) {
     case AggregationOperation.MEDIAN:
       return Median(CrossjoinOperator(...aggregationDimensions), measure)
     case AggregationOperation.TOP_PERCENT:
-      return Aggregate(TopPercent(CrossjoinOperator(...aggregationDimensions), property.value, measure))
+      return Aggregate(TopPercent(CrossjoinOperator(...aggregationDimensions), property.value, measure), measure)
     case AggregationOperation.TOP_COUNT:
-      return Aggregate(TopCount(CrossjoinOperator(...aggregationDimensions), property.value, measure))
+      return Aggregate(TopCount(CrossjoinOperator(...aggregationDimensions), property.value, measure), measure)
     case AggregationOperation.TOP_SUM:
-        return Aggregate(TopSum(CrossjoinOperator(...aggregationDimensions), property.value, measure))
+        return Aggregate(TopSum(CrossjoinOperator(...aggregationDimensions), property.value, measure), measure)
     default:
       throw new Error(`The operation '${property.operation}' for conditional aggregation is not implemented!`)
   }

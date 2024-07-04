@@ -1,7 +1,7 @@
-import { ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI, ClientOptions } from '@langchain/openai'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 import { UseChatOptions as AiUseChatOptions, ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
-import { BehaviorSubject, Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs'
+import { BehaviorSubject, Observable, catchError, combineLatest, map, of, shareReplay, switchMap, throwError } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { callChatApi as callDashScopeChatApi } from './dashscope/'
 import { callChatApi } from './shared/call-chat-api'
@@ -65,8 +65,10 @@ export abstract class CopilotService {
    */
   readonly isTools$ = this.copilot$.pipe(map((copilot) => copilot?.provider && AI_PROVIDERS[copilot.provider]?.isTools))
 
-  readonly llm$ = this.copilot$.pipe(
-    map((copilot) => {
+  readonly clientOptions$ = new BehaviorSubject<ClientOptions>(null)
+
+  readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
+    map(([copilot, clientOptions]) => {
       switch (copilot.provider) {
         case AiProvider.OpenAI:
         case AiProvider.Azure:
@@ -76,10 +78,11 @@ export abstract class CopilotService {
               baseURL: copilot.apiHost || null,
               defaultHeaders: {
                 ...(this.requestOptions().headers ?? {})
-              }
+              },
+              ...(clientOptions ?? {})
             },
             model: copilot.defaultModel,
-            temperature: 0
+            temperature: 0,
           })
         default:
           return null
@@ -103,9 +106,7 @@ export abstract class CopilotService {
   abstract setRole(role: string): void
 
   /**
-   * Custom request options, headers (Auth, others) and body
-   *
-   * @returns
+   * @deprecated use getClientOptions
    */
   requestOptions(): RequestOptions {
     return {}

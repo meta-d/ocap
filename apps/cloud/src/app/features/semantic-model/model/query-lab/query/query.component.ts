@@ -5,37 +5,36 @@ import {
   Component,
   DestroyRef,
   HostListener,
+  TemplateRef,
   ViewChild,
   computed,
   effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormControl } from '@angular/forms'
 import { ActivatedRoute } from '@angular/router'
 import { BaseEditorDirective } from '@metad/components/editor'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from '@metad/core'
-import {
-  NgmCopilotService,
-} from '@metad/ocap-angular/copilot'
+import { CopilotChatMessageRoleEnum, CopilotEngine, nanoid } from '@metad/copilot'
+import { NgmCopilotService, provideCopilotDropAction } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
 import { nonNullable, uniqBy } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
-import { Store } from 'apps/cloud/src/app/@core'
+import { ModelQuery, Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
 import { cloneDeep, isEqual, isPlainObject } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, EMPTY, Observable, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject, Subscription, combineLatest, firstValueFrom, of } from 'rxjs'
 import { catchError, distinctUntilChanged, filter, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators'
 import { FeaturesComponent } from '../../../../features.component'
 import { ModelComponent } from '../../model.component'
 import { SemanticModelService } from '../../model.service'
 import { CdkDragDropContainers, MODEL_TYPE, QueryResult } from '../../types'
-import { quoteLiteral } from '../../utils'
+import { markdownTableData, quoteLiteral, stringifyTableType } from '../../utils'
 import { QueryLabService } from '../query-lab.service'
 import { QueryService } from './query.service'
 import { QueryCopilotEngineService } from './copilot.service'
@@ -61,14 +60,13 @@ export class QueryComponent extends TranslationBaseComponent {
   readonly copilotService = inject(NgmCopilotService)
   private readonly _cdr = inject(ChangeDetectorRef)
   private readonly route = inject(ActivatedRoute)
-  // private readonly _toastrService = inject(ToastrService)
   private readonly store = inject(Store)
   readonly #logger = inject(NGXLogger)
   readonly featuresComponent = inject(FeaturesComponent)
-  readonly #copilotEngine = inject(QueryCopilotEngineService)
   readonly #destroyRef = inject(DestroyRef)
 
   @ViewChild('editor') editor!: BaseEditorDirective
+  readonly tableTemplate = viewChild<TemplateRef<any>>('tableTemplate')
 
   themeName = toSignal(this.store.preferredTheme$.pipe(map((theme) => theme?.split('-')[0])))
 
@@ -151,7 +149,7 @@ ${calcEntityTypePrompt(entityType)}
   )
   public readonly query$ = this.queryState$.pipe(
     map((state) => state.query),
-    shareReplay(1)
+    shareReplay<ModelQuery>(1)
   )
   public readonly results$ = this.queryState$.pipe(
     map((state) => state.results),
@@ -204,15 +202,15 @@ ${calcEntityTypePrompt(entityType)}
 
   readonly entityType = computed(() => this.entityTypes()[0])
 
-  readonly dbTablesPrompt = computed(() =>
-    this.isMDX()
-      ? `The source dialect is ${this.entityTypes()[0]?.dialect}, the cubes information are ${this.#promptCubes?.join(
-          '\n'
-        )}`
-      : `The database dialect is ${
-          this.entityTypes()[0]?.dialect
-        }, the tables information are ${this.promptTables?.join('\n')}`
-  )
+  // readonly dbTablesPrompt = computed(() =>
+  //   this.isMDX()
+  //     ? `The source dialect is ${this.entityTypes()[0]?.dialect}, the cubes information are ${this.#promptCubes?.join(
+  //         '\n'
+  //       )}`
+  //     : `The database dialect is ${
+  //         this.entityTypes()[0]?.dialect
+  //       }, the tables information are ${this.promptTables?.join('\n')}`
+  // )
   sqlEditorActionLabel = toSignal(
     this.translateService.stream('PAC.MODEL.QUERY.EditorActions', {
       Default: {
@@ -222,56 +220,56 @@ ${calcEntityTypePrompt(entityType)}
       }
     })
   )
-  sqlEditorActions = [
-    {
-      id: `sql-editor-action-nl-sql`,
-      label: computed(() => this.sqlEditorActionLabel().Nl2SQL),
-      action: (text, options) => {
-        const statement = text || this.statement
-        if (statement) {
-          this.answering.set(true)
-          this.nl2SQL(statement).subscribe((result) => {
-            this.answering.set(false)
-            const lines = this.statement.split('\n')
-            const endLineNumber = text ? options.selection.endLineNumber : lines.length
-            lines.splice(endLineNumber, 0, result)
-            this.statement = lines.join('\n')
-          })
-        }
-      }
-    },
-    {
-      id: `sql-editor-action-explain-sql`,
-      label: computed(() => this.sqlEditorActionLabel().Explain),
-      action: (text, options) => {
-        const statement = text || this.statement
-        if (statement) {
-          this.answering.set(true)
-          this.explainSQL(statement).subscribe((result) => {
-            this.answering.set(false)
-            const startLineNumber = text ? options.selection.startLineNumber : 1
-            const lines = this.statement.split('\n')
-            lines.splice(startLineNumber - 1, 0, `/**\n${result}\n*/`)
-            this.statement = lines.join('\n')
-          })
-        }
-      }
-    },
-    {
-      id: `sql-editor-action-optimize-sql`,
-      label: computed(() => this.sqlEditorActionLabel().Optimize),
-      action: (text, options) => {
-        const statement = text || this.statement
-        if (statement) {
-          this.answering.set(true)
-          this.optimizeSQL(statement).subscribe((result) => {
-            this.answering.set(false)
-            this.statement = this.statement.replace(statement, result)
-          })
-        }
-      }
-    }
-  ]
+  // sqlEditorActions = [
+  //   {
+  //     id: `sql-editor-action-nl-sql`,
+  //     label: computed(() => this.sqlEditorActionLabel().Nl2SQL),
+  //     action: (text, options) => {
+  //       const statement = text || this.statement
+  //       if (statement) {
+  //         this.answering.set(true)
+  //         this.nl2SQL(statement).subscribe((result) => {
+  //           this.answering.set(false)
+  //           const lines = this.statement.split('\n')
+  //           const endLineNumber = text ? options.selection.endLineNumber : lines.length
+  //           lines.splice(endLineNumber, 0, result)
+  //           this.statement = lines.join('\n')
+  //         })
+  //       }
+  //     }
+  //   },
+  //   {
+  //     id: `sql-editor-action-explain-sql`,
+  //     label: computed(() => this.sqlEditorActionLabel().Explain),
+  //     action: (text, options) => {
+  //       const statement = text || this.statement
+  //       if (statement) {
+  //         this.answering.set(true)
+  //         this.explainSQL(statement).subscribe((result) => {
+  //           this.answering.set(false)
+  //           const startLineNumber = text ? options.selection.startLineNumber : 1
+  //           const lines = this.statement.split('\n')
+  //           lines.splice(startLineNumber - 1, 0, `/**\n${result}\n*/`)
+  //           this.statement = lines.join('\n')
+  //         })
+  //       }
+  //     }
+  //   },
+  //   {
+  //     id: `sql-editor-action-optimize-sql`,
+  //     label: computed(() => this.sqlEditorActionLabel().Optimize),
+  //     action: (text, options) => {
+  //       const statement = text || this.statement
+  //       if (statement) {
+  //         this.answering.set(true)
+  //         this.optimizeSQL(statement).subscribe((result) => {
+  //           this.answering.set(false)
+  //           this.statement = this.statement.replace(statement, result)
+  //         })
+  //       }
+  //     }
+  //   }
+  // ]
 
   get results() {
     return this.queryLabService.results[this.queryKey()]
@@ -300,91 +298,51 @@ ${calcEntityTypePrompt(entityType)}
   #queryCommand = injectQueryCommand(this._statement, this.copilotContext, async (statement: string) => {
     return await firstValueFrom(this._query(statement))
   })
-  //   d = injectCopilotCommand({
-  //     name: 'query',
-  //     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.QueryDBDesc', {
-  //       Default: 'Describe the data you want to query'
-  //     }),
-  //     systemPrompt: async () =>
-  //       this.isMDX()
-  //         ? `Assuming you are an expert in MDX programming, provide a prompt if the system does not offer information on the cubes.
-  // The cube information is:
-  // \`\`\`
-  // ${this.dbTablesPrompt()}
-  // \`\`\`
-  // Please provide the corresponding MDX statement for the given question.
-  // `
-  //         : `Assuming you are an expert in SQL programming, provide a prompt if the system does not offer information on the database tables.
-  // The table information is:
-  // \`\`\`
-  // ${this.dbTablesPrompt()}
-  // \`\`\`
-  // Please provide the corresponding SQL statement for the given question.
-  // Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`,
-  //     // `假设你是数据库 SQL 编程专家, 如果 system 未提供 database tables information 请给出提示, ${this.dbTablesPrompt()}, 请给出问题对应的 sql 语句 (注意：表字段区分大小写，需要用双引号括起来)。 `
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'query-db',
-  //         description: 'query db using statement',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'query',
-  //             type: 'string',
-  //             description: `query extracting info to answer the user's question.
-  // statement should be written using this database schema.
-  // The query should be returned in plain text, not in JSON.
-  // `,
-  //             required: true
-  //           }
-  //         ],
-  //         implementation: async (query: string) => {
-  //           // Set into editor
-  //           this.statement = query
-  //           // Run query on db
-  //           this.query(query)
-  //           // Return to message content
-  //           return query
-  //         }
-  //       })
-  //     ]
-  //   })
 
-//   #fixCommand = injectCopilotCommand({
-//     name: 'fix',
-//     description: this.translateService.instant('PAC.MODEL.Copilot.Examples.FixQueryDesc', {
-//       Default: 'Describe how to fix the statement'
-//     }),
-//     systemPrompt: async () => {
-//       return `Fix the statement of db query:
-// \`\`\`
-// ${this.selectedStatement}
-// \`\`\`
-// `
-//     },
-//     actions: [
-//       injectMakeCopilotActionable({
-//         name: 'fix_query',
-//         description: 'Fix the statement of db query',
-//         argumentAnnotations: [
-//           {
-//             name: 'statement',
-//             type: 'string',
-//             description: `
-// statement should be written using this database schema.
-// The query should be returned in plain text, not in JSON.
-// `,
-//             required: true
-//           }
-//         ],
-//         implementation: async (statement: string) => {
-//           this.#logger.debug(`Copilot_Action:fix_query('${statement}')`)
-//           this.statement = this.statement.replace(this.selectedStatement, statement)
-//           // Return to message content
-//           return statement
-//         }
-//       })
-//     ]
-//   })
+  #entityDropAction = provideCopilotDropAction({
+    id: CdkDragDropContainers.QueryEntity,
+    implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
+      this.#logger.debug(`Drop table entity to copilot chat:`, event)
+      const data = event.item.data
+      // 获取源表或源多维数据集结构
+      const entityType = await firstValueFrom(this.modelService.selectOriginalEntityType(data.name))
+
+      const topCount = 10
+      const samples = await firstValueFrom(this.modelService.selectTableSamples(data.name, topCount))
+
+      const tableHeader = `The structure of table "${data.name}" is as follows:`
+      const dataHeader = `The first ${topCount} rows of the table "${data.name}" are as follows:`
+
+      return [
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: [
+              { name: 'name', caption: 'Name' },
+              { name: 'caption', caption: 'Description' },
+              { name: 'dataType', caption: 'Type' }
+            ],
+            content: Object.values(entityType.properties) as any[],
+            header: tableHeader
+          },
+          content: tableHeader + '\n' + stringifyTableType(entityType),
+          templateRef: this.tableTemplate()
+        },
+        {
+          id: nanoid(),
+          role: CopilotChatMessageRoleEnum.User,
+          data: {
+            columns: samples.columns,
+            content: samples.data,
+            header: dataHeader
+          },
+          content: dataHeader + '\n' + markdownTableData(samples),
+          templateRef: this.tableTemplate()
+        }
+      ]
+    }
+  })
 
   /**
   |--------------------------------------------------------------------------
@@ -398,7 +356,7 @@ ${calcEntityTypePrompt(entityType)}
     .select((state) => state.query?.conversations ?? [])
     .pipe(takeUntilDestroyed())
     .subscribe((conversations) => {
-      this.#copilotEngine.conversations$.set(cloneDeep(conversations))
+      // this.#copilotEngine.conversations$.set(cloneDeep(conversations))
     })
 
   constructor() {
@@ -407,16 +365,16 @@ ${calcEntityTypePrompt(entityType)}
     effect(
       () => {
         if (this.#queryService.initialized()) {
-          if (!isEqual(this.#queryService.conversations(), this.#copilotEngine.conversations())) {
-            this.#queryService.setConversations(this.#copilotEngine.conversations())
-          }
+          // if (!isEqual(this.#queryService.conversations(), this.#copilotEngine.conversations())) {
+          //   this.#queryService.setConversations(this.#copilotEngine.conversations())
+          // }
         }
       },
       { allowSignalWrites: true }
     )
 
     // Set individual engine to global copilot chat
-    this.featuresComponent.copilotEngine = this.#copilotEngine
+    // this.featuresComponent.copilotEngine = this.#copilotEngine
     this.#destroyRef.onDestroy(() => {
       this.featuresComponent.copilotEngine = null
     })
@@ -829,56 +787,56 @@ ${calcEntityTypePrompt(entityType)}
     }
   }
 
-  nl2SQL(sql: string): Observable<string> {
-    return this.copilotService
-      .chatCompletions([
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: `请根据给定的表信息和要求给出相应的SQL语句(仅输出 sql 语句)， 要求：\n${sql}，答案：`
-        }
-      ])
-      .pipe(map(({ choices }) => choices[0]?.message?.content))
-  }
+  // nl2SQL(sql: string): Observable<string> {
+  //   return this.copilotService
+  //     .chatCompletions([
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.System,
+  //         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
+  //       },
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.User,
+  //         content: `请根据给定的表信息和要求给出相应的SQL语句(仅输出 sql 语句)， 要求：\n${sql}，答案：`
+  //       }
+  //     ])
+  //     .pipe(map(({ choices }) => choices[0]?.message?.content))
+  // }
 
-  explainSQL(sql: string): Observable<string> {
-    return this.copilotService
-      .chatCompletions([
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: `请根据给定的表信息解释一下这个SQL语句：\n${sql}`
-        }
-      ])
-      .pipe(map(({ choices }) => choices[0]?.message?.content))
-  }
+  // explainSQL(sql: string): Observable<string> {
+  //   return this.copilotService
+  //     .chatCompletions([
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.System,
+  //         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
+  //       },
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.User,
+  //         content: `请根据给定的表信息解释一下这个SQL语句：\n${sql}`
+  //       }
+  //     ])
+  //     .pipe(map(({ choices }) => choices[0]?.message?.content))
+  // }
 
-  optimizeSQL(sql: string): Observable<string> {
-    return this.copilotService
-      .chatCompletions([
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: `请根据给定的表信息优化一下这个SQL语句(仅输出 sql 语句)：\n${sql}`
-        }
-      ])
-      .pipe(map(({ choices }) => choices[0]?.message?.content))
-  }
+  // optimizeSQL(sql: string): Observable<string> {
+  //   return this.copilotService
+  //     .chatCompletions([
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.System,
+  //         content: `假如你是一个数据库管理员，已知数据库信息有：\n${this.dbTablesPrompt()}`
+  //       },
+  //       {
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.User,
+  //         content: `请根据给定的表信息优化一下这个SQL语句(仅输出 sql 语句)：\n${sql}`
+  //       }
+  //     ])
+  //     .pipe(map(({ choices }) => choices[0]?.message?.content))
+  // }
 }
 
 /**

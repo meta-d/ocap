@@ -14,9 +14,8 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
 import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { NxChartType } from '@metad/core'
-import { MetadFormlyArrayComponent } from '@metad/formly-mat/array'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
-import { injectCopilotCommand, injectMakeCopilotActionable, NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
 import {
   BarVariant,
   HeatmapVariant,
@@ -40,6 +39,7 @@ import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
 import { NgmThemeService } from '@metad/ocap-angular/core'
 import { EditorThemeMap } from '@metad/ocap-angular/formula'
+import { NgmCopilotService } from '@metad/copilot-angular'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,10 +70,6 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
     }))
   ]
 
-  /**
-   * @deprecated use formlyArray2
-   */
-  readonly formlyArray? = inject(MetadFormlyArrayComponent, { optional: true })
   readonly formlyArray2? = inject(NgmFormlyArrayComponent, { optional: true })
   readonly schema = inject<ChartOptionsSchemaService>(STORY_DESIGNER_SCHEMA)
   readonly #copilotService = inject(NgmCopilotService)
@@ -338,7 +334,6 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
   killMyself() {
     if (this.field.form instanceof FormArray) {
       const index = this.field.parent.fieldGroup.indexOf(this.field)
-      this.formlyArray?.remove(index)
       this.formlyArray2?.remove(index)
     } else {
       const index = this.field.parent.fieldGroup.findIndex((field) => field.key === this.field.key)

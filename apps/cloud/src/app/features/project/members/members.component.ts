@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
-import { ICertification, IProject, IUser, ProjectService, Store, ToastrService } from '../../../@core'
+import { ICertification, IProject, IUser, ProjectsService, Store, ToastrService } from '../../../@core'
 import {
   CertificationSelectComponent,
   UserProfileComponent,
@@ -17,7 +17,7 @@ import {
   TranslationBaseComponent
 } from '../../../@shared'
 import { InlineSearchComponent } from '../../../@shared/form-fields'
-import { ProjectComponent } from '../project.component'
+import { ProjectComponent } from '../project/project.component'
 import { uniq } from 'lodash-es'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angular/common'
@@ -58,7 +58,7 @@ export class ProjectMembersComponent extends TranslationBaseComponent {
   userLabel = userLabel
 
   // Injectors
-  private projectService = inject(ProjectService)
+  private projectService = inject(ProjectsService)
   private projectComponent = inject(ProjectComponent)
   private store = inject(Store)
   private _dialog = inject(MatDialog)

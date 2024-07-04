@@ -339,7 +339,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
           type: 'ngm-select',
           props: {
             label: LEVEL?.ParentColumn ?? 'Parent Column',
-            searchable: true
+            searchable: true,
+            valueKey: 'key'
           },
           hooks: {
             onInit: (field: FormlyFieldConfig) => {
@@ -358,7 +359,8 @@ export class LevelSchemaService extends CubeSchemaService<PropertyLevel> {
           type: 'ngm-select',
           props: {
             label: LEVEL?.ChildColumn ?? 'Child Column',
-            searchable: true
+            searchable: true,
+            valueKey: 'key'
           },
           hooks: {
             onInit: (field: FormlyFieldConfig) => {

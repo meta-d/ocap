@@ -58,6 +58,10 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
         this.formGroup.patchValue(this.example())
       } else {
         this.formGroup.reset()
+        this.formGroup.patchValue({
+          role: this.examplesComponent.roleFilter(),
+          command: this.examplesComponent.commandFilter()
+        })
       }
       this.formGroup.markAsPristine()
       this.loading.set(false)
@@ -79,12 +83,15 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
 
   save() {
     if (this.formGroup.valid) {
+      this.loading.set(true)
       this.exampleService.create(this.formGroup.value).subscribe({
         next: () => {
+          this.loading.set(false)
           this._toastrService.success('PAC.Messages.SavedSuccessfully', {Default: 'Saved successfully'})
           this.close(true)
         },
         error: (error) => {
+          this.loading.set(false)
           this._toastrService.error(getErrorMessage(error))
         }
       })
@@ -92,12 +99,15 @@ export class CopilotExampleComponent extends TranslationBaseComponent {
   }
 
   update() {
+    this.loading.set(true)
     this.exampleService.update(this.paramId(), this.formGroup.value).subscribe({
       next: () => {
+        this.loading.set(false)
         this._toastrService.success('PAC.Messages.UpdatedSuccessfully', {Default: 'Updated successfully'})
         this.close(true)
       },
       error: (error) => {
+        this.loading.set(false)
         this._toastrService.error(getErrorMessage(error))
       }
     })

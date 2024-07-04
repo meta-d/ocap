@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from '@angular/core'
+import { ChangeDetectionStrategy, Component, HostBinding, input, model } from '@angular/core'
 
 @Component({
   selector: 'ngm-drawer-trigger',
@@ -9,14 +9,16 @@ import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, O
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NgmDrawerTriggerComponent {
-  @HostBinding('class.ngm-drawer__opened')
-  @Input() opened: boolean = false
-  @Input() side: 'left' | 'right' = 'left'
+  readonly opened = model<boolean>()
 
-  @Output() openedChange: EventEmitter<boolean> = new EventEmitter<boolean>()
+  readonly side = input<'left' | 'right'>('left')
 
   toggle() {
-    this.opened = !this.opened
-    this.openedChange.emit(this.opened)
+    this.opened.update((opened) => !opened)
+  }
+
+  @HostBinding('class.ngm-drawer__opened')
+  get _opened() {
+    return this.opened()
   }
 }

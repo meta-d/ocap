@@ -35,6 +35,8 @@ import { CdkDragDropContainers, MODEL_TYPE, ModelDesignerType, SemanticModelEnti
 import { PropertyDimensionComponent } from '../dimension/dimension.component'
 import { ModelEntityService } from '../entity.service'
 import { CubeEventType } from '../types'
+import { MatDialog } from '@angular/material/dialog'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 
 /**
  * 展示和编辑多维分析模型的字段列表
@@ -72,13 +74,13 @@ export class ModelCubeStructureComponent {
   private readonly modelService = inject(SemanticModelService)
   public readonly cubeState = inject(ModelEntityService)
   private readonly _cdr = inject(ChangeDetectorRef)
+  readonly _dialog = inject(MatDialog)
   private readonly _logger = inject(NGXLogger)
 
   @Input() modelType: MODEL_TYPE
   readonly editable = input<boolean, boolean | string>(false, {
     transform: booleanAttribute
   })
-  // @Output() selectedChange = new EventEmitter<string>()
   @Output() editChange = new EventEmitter<any>()
 
   @ViewChildren(CdkDropList) cdkDropList: CdkDropList[]
@@ -142,14 +144,6 @@ export class ModelCubeStructureComponent {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  // private _selectedNodeSub = this.checklistSelection.changed.pipe(takeUntilDestroyed()).subscribe((selected) => {
-  //   const node: string = selected.added[0]
-  //   if (node) {
-  //     this.selectedChange.emit(node)
-  //   } else {
-  //     this.selectedChange.emit(null)
-  //   }
-  // })
   // 手动 Stop Receiving dropListRef, 因为官方的程序在跨页面 DropList 间似乎 detectChanges 时间先后有问题
   private _dragReleasedSub = this.modelService.dragReleased$.pipe(takeUntilDestroyed()).subscribe((_dropListRef) => {
     this.cdkDropList.forEach((list) => list._dropListRef._stopReceiving(_dropListRef))
@@ -336,5 +330,17 @@ export class ModelCubeStructureComponent {
     ) {
       this.cubeState.newCalculatedMeasure({ index: event.currentIndex, column: event.item.data.name })
     }
+  }
+
+  aiCalculated() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['calculated']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 }

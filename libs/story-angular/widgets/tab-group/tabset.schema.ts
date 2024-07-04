@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { WidgetComponentType } from '@metad/story/core'
-import { CLASS_NAME_COL6, DataSettingsSchemaService, FORMLY_ROW } from '@metad/story/designer'
+import { DataSettingsSchemaService, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { WidgetComponentType as IndicatorCardWidgetType } from '@metad/story/widgets/indicator-card'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { map, startWith } from 'rxjs/operators'
@@ -11,7 +11,7 @@ export class TabGroupSchemaService extends DataSettingsSchemaService {
   getSchema() {
     return this.translate.stream('Story.Widgets').pipe(
       map((i18n) => {
-        const className = CLASS_NAME_COL6
+        const className = FORMLY_W_1_2
         return [
           {
             key: 'options',

@@ -125,6 +125,14 @@ export class AuthController {
 	  const refreshToken = req.user['refreshToken']
 	  return await this.authService.refreshTokens(userId, refreshToken)
 	}
+	
+	@ApiOperation({ summary: 'Authentication is alive' })
+	@ApiResponse({ status: HttpStatus.OK })
+	@Get('alive')
+	@HttpCode(HttpStatus.OK)
+	async alive(@Req() req: Request) {
+		return { message: 'Token is valid', user: req.user };
+	}
 
 	@Post('/reset-password')
 	@Public()

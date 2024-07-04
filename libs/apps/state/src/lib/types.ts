@@ -5,8 +5,6 @@ import { Story, StoryConnection, StoryModel, StoryPoint, StoryWidget, uuid } fro
 import { convertNewSemanticModelResult } from './models.service'
 
 
-
-
 export const SystemPrivacyFields = [
   'createdById',
   'createdBy',

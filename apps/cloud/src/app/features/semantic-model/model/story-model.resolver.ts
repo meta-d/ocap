@@ -25,7 +25,7 @@ export class StoryModelResolver  {
       'roles.users',
       'indicators',
       'indicators.createdBy',
-      'queries'
+      // 'queries'
     ])
   }
 }
@@ -45,7 +45,7 @@ export const semanticModelResolver: ResolveFn<ISemanticModel> = (
     'roles.users',
     'indicators',
     'indicators.createdBy',
-    'queries'
+    // 'queries'
   ]).pipe(
     catchError((err) => {
       console.error(err)

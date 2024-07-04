@@ -20,7 +20,9 @@
       <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
         [matMenuTriggerFor]="menu"
         [matMenuTriggerData]="{key: query.key}"
-        >
+        #mt="matMenuTrigger"
+        [class.active]="mt.menuOpen"
+      >
         <mat-icon>more_vert</mat-icon>
       </button>
       
@@ -29,6 +31,10 @@
     <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'PAC.MODEL.QUERY.New' | translate: {Default: 'New Query'} "
       (click)="addQuery()">
       <mat-icon>add</mat-icon>
+    </button>
+    <button mat-icon-button displayDensity="cosy" [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+      (click)="aiAddQuery()">
+      <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
     </button>
   </nav>
 </mat-toolbar>

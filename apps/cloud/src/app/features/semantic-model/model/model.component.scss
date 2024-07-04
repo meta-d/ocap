@@ -28,6 +28,8 @@ $prefix: (ngm, model);
 :host {
   @include token-utils.create-token-values($prefix, get-token-slots());
   --mdc-list-list-item-container-shape: #{theme('borderRadius.lg')};
+  --mat-toolbar-standard-height: 30px;
+  --ngm-model-toolbar-background-color: linear-gradient(0.25turn, var(--mat-sidenav-content-background-color), var(--ngm-model-color-surface));
 
   display: flex;
   flex-direction: column;
@@ -159,4 +161,8 @@ list-content-loader {
 
 .mat-drawer-content {
   @apply flex overflow-hidden;
+}
+
+.cdk-virtual-scrollable {
+  @apply overflow-hidden hover:overflow-auto;
 }

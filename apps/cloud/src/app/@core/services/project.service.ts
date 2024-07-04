@@ -8,7 +8,7 @@ import { IProject } from '../types'
 const API_PROJECT = API_PREFIX + '/project'
 
 @Injectable({ providedIn: 'root' })
-export class ProjectService {
+export class ProjectsService {
   private httpClient = inject(HttpClient)
   private refresh$ = new BehaviorSubject<void>(null)
   public deleted$ = new Subject<string>()

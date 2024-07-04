@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core'
 import { ReactiveFormsModule } from '@angular/forms'
 import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
-import { NgmCopilotChatComponent } from '@metad/ocap-angular/copilot'
+import { NgmCopilotChatComponent } from '@metad/copilot-angular'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
 import { NgmEntitySchemaComponent } from '@metad/ocap-angular/entity'
 import { NgmMDXEditorComponent } from '@metad/ocap-angular/mdx'

@@ -8,7 +8,7 @@ import {
   PermissionsEnum,
   RolesEnum
 } from '@metad/contracts'
-import { firstValueFrom, Observable } from 'rxjs'
+import { Observable, firstValueFrom } from 'rxjs'
 import { C_API_AUTH } from './constants'
 
 
@@ -68,5 +68,9 @@ export class AuthService {
 
   verifyEmail(token: string) {
     return this.http.get(`${C_API_AUTH}/verify`, { params: new HttpParams().append('token', token) })
+  }
+
+  isAlive(): Observable<void> {
+    return this.http.get<void>(`${C_API_AUTH}/alive`)
   }
 }

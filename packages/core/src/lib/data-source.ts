@@ -421,6 +421,12 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 }
 
+/**
+ * Compile indicator to measures
+ * 
+ * @param indicator 
+ * @returns 
+ */
 export function mapIndicatorToMeasures(indicator: Indicator) {
   const measures = []
   const name = indicator.code || indicator.name

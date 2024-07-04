@@ -1,3 +1,8 @@
+import { PropertyDimension } from "@metad/ocap-core";
+
+export const DimensionCommandName = 'dimension'
+export const DIMENSION_MODELER_NAME = 'DimensionModeler'
+
 export function timeLevelFormatter() {
     return `If you are creating a time dimension, the semantic formatter in time level is date-fns format string to format date to the time dimension member key.
 For examples: 
@@ -24,3 +29,11 @@ so the formmater of
 The value of the specific time level can refer to the level keyColumn field name and the given table records.
 `
   }
+
+export function markdownSharedDimensions(dimensions: PropertyDimension[]) {
+  return dimensions.map((dimension) => `- name: ${dimension.name}
+  caption: ${dimension.caption || ''}
+  table: ${dimension.hierarchies[0].tables[0]?.name || ''}
+  primaryKey: ${dimension.hierarchies[0].primaryKey}  
+`).join('\n')
+}

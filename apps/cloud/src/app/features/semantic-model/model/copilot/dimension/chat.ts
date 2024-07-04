@@ -3,8 +3,15 @@ import { DimensionType, PropertyDimension, Semantics } from '@metad/ocap-core'
 import { SemanticModelService } from '../../model.service'
 import { ModelDimensionState, SemanticModelEntityType } from '../../types'
 
-export function createDimension(modelService: SemanticModelService, dimension: PropertyDimension) {
-  const key = uuid()
+export function createOrEditDimension(modelService: SemanticModelService, dimension: PropertyDimension) {
+  const dimensions = modelService.dimensions()
+  let key = ''
+  const index = dimensions.findIndex((d) => d.name === dimension.name)
+  if (index > -1) {
+    key = dimensions[index].__id__
+  } else {
+    key = uuid()
+  }
   const _dimension = {
     ...dimension,
     __id__: key,
@@ -30,6 +37,9 @@ export function createDimension(modelService: SemanticModelService, dimension: P
     dimension: _dimension
   }
 
-  modelService.newDimension(_dimension)
-  modelService.activeEntity(dimensionState)
+  modelService.upsertDimension(_dimension)
+  // Active the entity if it is new
+  if (index === -1) {
+    modelService.activeEntity(dimensionState)
+  }
 }

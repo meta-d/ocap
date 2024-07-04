@@ -64,10 +64,16 @@
         ngmResizer [resizerWidth]="230"
     >
         <ngm-splitter class="h-full mr-1" [type]="1">
-            <ngm-splitter-pane size='15rem' class="flex flex-col justify-items-stretch items-stretch">
+            <ngm-splitter-pane size='50%' class="flex flex-col justify-items-stretch items-stretch">
                 <mat-toolbar displayDensity="compact" class="shrink-0 flex justify-between items-center">
                     <span>{{ 'PAC.MODEL.MODEL.Entities' | translate: {Default: "Entities"} }}</span>
+
+                    <span class="flex-1"></span>
                     
+                    <button mat-icon-button displayDensity="cosy" class="ngm-copilot-command-button ngm-toolbar__action" [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+                        (click)="aiCreateEntity()">
+                        <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+                    </button>
                     <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action" [matTooltip]=" 'PAC.MODEL.MODEL.New' | translate: {Default: 'New'} "
                         (click)="createEntity()">
                         <mat-icon>add</mat-icon>

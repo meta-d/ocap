@@ -7,7 +7,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog'
   styleUrls: ['./confirm-delete.component.scss']
 })
 export class NgmConfirmDeleteComponent {
-  readonly data = inject<{ value: any; information: string }>(MAT_DIALOG_DATA)
+  readonly data = inject<{ title?: string; value: any; information: string }>(MAT_DIALOG_DATA)
 
   @HostBinding('class.ngm-dialog-container') isDialogContainer = true
 }

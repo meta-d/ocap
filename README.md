@@ -33,6 +33,9 @@ English | [中文](./README_zh.md)
 
 🎉🎉 New version brings several exciting new features, particularly a comprehensive upgrade to [Copilot Command](https://www.mtda.cloud/en/docs/server/copilot/#commands) and [Business Roles](https://www.mtda.cloud/en/docs/server/copilot/#business-roles).
 
+- [New Version 2.4 - Copilot Multi-Agent Command](https://www.mtda.cloud/en/blog/releases-2-4-copilot-multi-agent).
+- [AI Digital Business Experts](https://www.mtda.cloud/en/#people-are-talking)
+
 - **Copilot Command Agents**
   - _Dimension Members Retriever_: This feature dynamically retrieves and acquires key information of dimension members, helping users better understand data dimensions.
   - _Few Shot_: By retrieving similar examples, it provides more precise templates, making data analysis more aligned with actual needs.

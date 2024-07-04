@@ -1,20 +1,33 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes'
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, Input, OnInit, ViewChild, forwardRef, inject, signal } from '@angular/core'
+import {
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+  computed,
+  effect,
+  forwardRef,
+  inject,
+  input,
+  signal
+} from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { MatChipInputEvent } from '@angular/material/chips'
-import { CanDisable, ThemePalette, mixinDisabled } from '@angular/material/core'
+import { ThemePalette } from '@angular/material/core'
+import { NgmHighlightDirective } from '@metad/ocap-angular/common'
+import { isString } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
-import { HighlightDirective } from '@metad/components/core'
-import { Observable, map, startWith, switchMap } from 'rxjs'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { startWith } from 'rxjs'
 import { ITag, Store, TagService } from '../../../@core'
 import { MaterialModule } from '../../material.module'
-import { isString } from '@metad/ocap-core'
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, TranslateModule, HighlightDirective],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, TranslateModule, NgmHighlightDirective],
   selector: 'pac-tag-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
@@ -30,20 +43,13 @@ import { isString } from '@metad/ocap-core'
     }
   ]
 })
-export class TagEditorComponent extends 
-  mixinDisabled(
-    class {
-      constructor(public _elementRef: ElementRef) {}
-    }
-  )
-  implements ControlValueAccessor, OnInit, CanDisable
-{
+export class TagEditorComponent implements ControlValueAccessor {
   private tagService = inject(TagService)
   private store = inject(Store)
 
   @Input() color: ThemePalette
-  // @Input() formControl: FormControl
-  @Input() category: string
+  // @Input() category: string
+  readonly category = input<string>(null)
 
   @ViewChild('tagInput') tagInput: ElementRef<HTMLInputElement>
 
@@ -60,27 +66,33 @@ export class TagEditorComponent extends
     return this.tagCtrl.value
   }
 
-  public tags$: Observable<ITag[]>
-  ngOnInit(): void {
-    this.tags$ = this.tagService.getAll(this.category).pipe(
-      switchMap((tags) =>
-        this.tagCtrl.valueChanges.pipe(
-          startWith(null),
-          map((tag: ITag | string | null) => {
-            if (isString(tag)) {
-              const _tag = tag?.trim().toLowerCase()
-              return tag
-                ? tags.filter(
-                    (item) => item.name.toLowerCase().includes(_tag) || item.description?.toLowerCase().includes(_tag)
-                  )
-                : tags.slice()
-            }
-            return tags
-          })
-        )
-      )
+  readonly _tags = derivedAsync(() => this.tagService.getAll(this.category()), { initialValue: []})
+
+  readonly search = toSignal(this.tagCtrl.valueChanges.pipe(startWith(null)))
+
+  readonly filterdTags = computed(() => {
+    const tags = this._tags()
+    const search = this.search()
+    if (isString(search)) {
+      const _tag = search?.trim().toLowerCase()
+      return search
+        ? tags.filter(
+            (item) => item.name.toLowerCase().includes(_tag) || item.description?.toLowerCase().includes(_tag)
+          )
+        : tags.slice()
+    }
+    return tags
+  })
+
+  constructor() {
+    effect(
+      () => {
+        this.tags.update((values) => values.map((value) => this._tags().find((item) => item.id === value.id) ?? value))
+      },
+      { allowSignalWrites: true }
     )
   }
+
   writeValue(obj: any): void {
     this.tags.set(obj)
   }
@@ -104,7 +116,7 @@ export class TagEditorComponent extends
         {
           name: value,
           color: 'blue',
-          category: this.category,
+          category: this.category(),
           organizationId: this.store.selectedOrganization.id
         }
       ])
@@ -125,10 +137,7 @@ export class TagEditorComponent extends
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.tags.set([
-      ...(this.tags() ?? []),
-      event.option.value
-    ])
+    this.tags.set([...(this.tags() ?? []), event.option.value])
     this.tagInput.nativeElement.value = ''
     this.tagCtrl.setValue(null)
     this.onChange(this.tags())

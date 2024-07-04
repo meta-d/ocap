@@ -1,5 +1,5 @@
-import { Message } from 'ai'
 import { BaseMessage } from '@langchain/core/messages'
+import { Message } from 'ai'
 import JSON5 from 'json5'
 import { ChatCompletionMessage } from 'openai/resources'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
@@ -65,9 +65,21 @@ export interface CopilotChatMessage extends Omit<Message, 'role'> {
    */
   command?: string
 
-  status?: 'thinking' | 'answering' | 'done' | 'error' | 'info'
+  /**
+   * Status of the message:
+   * - thinking: AI is thinking
+   * - answering: AI is answering
+   * - pending: AI is pending for confirm or more information
+   * - done: AI is done
+   * - error: AI has error
+   * - info: todo
+   */
+  status?: 'thinking' | 'answering' | 'pending' | 'done' | 'error' | 'info'
 
   lcMessage?: BaseMessage
+
+  historyCursor?: number
+  reverted?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -78,7 +90,11 @@ export interface CopilotChatResponseChoice {
 /**
  * @deprecated use LangChain
  */
-export type AIOptions = ChatCompletionCreateParamsBase & { useSystemPrompt?: boolean; verbose?: boolean }
+export type AIOptions = ChatCompletionCreateParamsBase & {
+  useSystemPrompt?: boolean
+  verbose?: boolean
+  interactive?: boolean
+}
 
 // Helper function
 /**
@@ -101,9 +117,9 @@ export function getFunctionCall(message: ChatCompletionMessage, name?: string) {
 
 /**
  * Split the prompt into command and prompt
- * 
- * @param prompt 
- * @returns 
+ *
+ * @param prompt
+ * @returns
  */
 export function getCommandPrompt(prompt: string) {
   prompt = prompt.trim()
@@ -127,14 +143,14 @@ export function nonNullable<T>(value: T): value is NonNullable<T> {
 }
 
 export type BusinessRoleType = {
-  name: string;
-  title: string;
-  titleCN: string;
-  description: string;
+  name: string
+  title: string
+  titleCN: string
+  description: string
 }
 
-export type Headers = Record<string, string | null | undefined>;
+export type Headers = Record<string, string | null | undefined>
 export type RequestOptions = {
-  headers?: Record<string, string> | Headers;
-  body?: object;
+  headers?: Record<string, string> | Headers
+  body?: object
 }

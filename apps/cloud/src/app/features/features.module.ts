@@ -3,8 +3,8 @@ import { NgModule, importProvidersFrom } from '@angular/core'
 import { PacAuthModule } from '@metad/cloud/auth'
 import { NgmFormlyModule, provideFormly, provideFormlyMaterial } from '@metad/formly'
 import { registerEChartsThemes } from '@metad/material-theme'
-import { NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
-import { NgmCopilotContextService, NgmCopilotChatComponent, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { NgmDrawerContentComponent, NgmDrawerTriggerComponent, NgmTableComponent, ResizerModule } from '@metad/ocap-angular/common'
+import { NgmCopilotContextService, NgmCopilotContextToken, NgmCopilotEngineService, NgmCopilotService } from '@metad/copilot-angular'
 import {
   DensityDirective,
   NgmAgentService,
@@ -14,6 +14,7 @@ import {
 } from '@metad/ocap-angular/core'
 import { NGM_WASM_AGENT_WORKER, WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import { DataSource, Type } from '@metad/ocap-core'
+import { NgmCopilotChatComponent } from '@metad/copilot-angular'
 import { NX_STORY_FEED, NX_STORY_MODEL, NX_STORY_STORE } from '@metad/story/core'
 import { provideMarkdown } from 'ngx-markdown'
 import { NgxPopperjsModule } from 'ngx-popperjs'
@@ -27,7 +28,8 @@ import { PACThemeModule } from '../@theme/theme.module'
 import { StoryFeedService, StoryModelService, StoryStoreService } from '../services/index'
 import { FeaturesRoutingModule } from './features-routing.module'
 import { FeaturesComponent } from './features.component'
-import { provideDimensionMemberRetriever } from '../@core/copilot'
+import { provideCheckpointSaver, provideDimensionMemberRetriever } from '../@core/copilot'
+import { NgmDrawerComponent, NgmDrawerContainerComponent } from '@metad/ocap-angular/common'
 
 registerEChartsThemes()
 
@@ -51,6 +53,10 @@ registerEChartsThemes()
 
     NgmCopilotChatComponent,
     NgmDrawerTriggerComponent,
+    NgmDrawerContainerComponent,
+    NgmDrawerComponent,
+    NgmDrawerContentComponent,
+    NgmDrawerContainerComponent,
     ResizerModule,
     NgmTableComponent,
     NotificationComponent,
@@ -134,7 +140,8 @@ registerEChartsThemes()
       provide: NgmCopilotContextToken,
       useClass: NgmCopilotContextService
     },
-    provideDimensionMemberRetriever()
+    provideDimensionMemberRetriever(),
+    provideCheckpointSaver()
   ]
 })
 export class FeaturesModule {}

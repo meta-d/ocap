@@ -13,7 +13,7 @@ import {
   input,
   model
 } from '@angular/core'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
@@ -38,13 +38,12 @@ import {
   getEntityCalculations,
   getEntityParameters,
   isIndicatorMeasureProperty,
-  isPropertyMeasure,
-  nonNullable
+  isPropertyMeasure
 } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { negate, sortBy } from 'lodash-es'
 import { MarkdownModule } from 'ngx-markdown'
-import { combineLatestWith, distinctUntilChanged, filter, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
+import { combineLatestWith, firstValueFrom, map, of, startWith, switchMap } from 'rxjs'
 import { NgmEntitySchemaComponent } from '../entity-schema/entity-schema.component'
 import { EntityCapacity } from '../entity-schema/types'
 import { NgmEntityPropertyComponent } from '../property/property.component'
@@ -100,7 +99,6 @@ export class NgmCalculatedMeasureComponent implements ControlValueAccessor {
   readonly dsCoreService = input<NgmDSCoreService>()
   readonly dataSettings = input<DataSettings>()
   readonly entityType = input<EntityType>()
-  // readonly coreService = input<NxCoreService>()
   readonly syntax = input<Syntax>()
 
   @Input() get story() {
@@ -166,11 +164,11 @@ export class NgmCalculatedMeasureComponent implements ControlValueAccessor {
     )
   )
 
-  private statementSub = this.statement.valueChanges
-    .pipe(distinctUntilChanged(), filter(nonNullable), takeUntilDestroyed())
-    .subscribe((value) => {
-      this._onChange?.(value)
-    })
+  // private statementSub = this.statement.valueChanges
+  //   .pipe(distinctUntilChanged(), filter(nonNullable), takeUntilDestroyed())
+  //   .subscribe((value) => {
+  //     this._onChange?.(value)
+  //   })
 
   constructor() {
     effect(
@@ -240,6 +238,10 @@ export class NgmCalculatedMeasureComponent implements ControlValueAccessor {
         this.editor.insert(event.item.data)
       }
     }
+  }
+
+  onBlur() {
+    this._onChange?.(this.statement.value)
   }
 
   openHelp(event) {

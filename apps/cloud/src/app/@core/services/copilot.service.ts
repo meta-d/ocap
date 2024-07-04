@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http'
 import { effect, inject, Injectable, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { API_PREFIX } from '@metad/cloud/state'
+import { API_PREFIX, AuthService } from '@metad/cloud/state'
 import { BusinessRoleType, ICopilot, RequestOptions } from '@metad/copilot'
-import { NgmCopilotService } from '@metad/ocap-angular/copilot'
+import { NgmCopilotService } from '@metad/copilot-angular'
 import { environment } from 'apps/cloud/src/environments/environment'
 import { omit } from 'lodash-es'
-import { distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
+import { combineLatest, distinctUntilChanged, filter, firstValueFrom, map, startWith, switchMap } from 'rxjs'
 import { ICopilot as IServerCopilot } from '../types'
 import { CopilotRoleService } from './copilot-role.service'
 import { Store } from './store.service'
@@ -19,6 +19,7 @@ const API_AI_HOST = constructUrl(baseUrl) + '/api/ai/proxy'
 export class PACCopilotService extends NgmCopilotService {
   readonly #store = inject(Store)
   readonly httpClient = inject(HttpClient)
+  readonly authService = inject(AuthService)
   readonly roleService = inject(CopilotRoleService)
 
   readonly copilotConfig = signal<ICopilot>(null)
@@ -58,6 +59,37 @@ export class PACCopilotService extends NgmCopilotService {
       this.roles.set(roles as BusinessRoleType[])
     })
 
+  private clientOptionsSub = combineLatest([this.#store.token$, this.#store.selectOrganizationId()])
+    .pipe(
+      map(([token, organizationId]) => ({
+        defaultHeaders: {
+          'Organization-Id': `${organizationId}`,
+          Authorization: `Bearer ${token}`
+        },
+        fetch: (async (url: string, request: RequestInit) => {
+          try {
+            const response = await fetch(url, request)
+            // Refresh token if unauthorized
+            if (response.status === 401) {
+              try {
+                await firstValueFrom(this.authService.isAlive())
+                request.headers['authorization'] = this.getAuthorizationToken()
+                return await fetch(url, request)
+              } catch (error) {
+                return response
+              }
+            }
+
+            return response
+          } catch (error) {
+            console.error(error)
+            return null
+          }
+        }) as any
+      }))
+    )
+    .subscribe((options) => this.clientOptions$.next(options))
+
   constructor() {
     super()
 
@@ -82,10 +114,43 @@ export class PACCopilotService extends NgmCopilotService {
     return {
       headers: {
         'Organization-Id': `${this.#store.selectedOrganization?.id}`,
-        Authorization: `Bearer ${this.#store.token}`
+        Authorization: this.getAuthorizationToken()
       }
     }
   }
+
+  private getAuthorizationToken() {
+    return `Bearer ${this.#store.token}`
+  }
+
+  // getClientOptions() {
+  //   return {
+  //     defaultHeaders: {
+  //       'Organization-Id': `${this.#store.selectedOrganization?.id}`,
+  //       Authorization: this.getAuthorizationToken()
+  //     },
+  //     fetch: async (url: string, request: RequestInit) => {
+  //       try {
+  //         const response = await fetch(url, request)
+  //         // Refresh token if unauthorized
+  //         if (response.status === 401) {
+  //           try {
+  //             await firstValueFrom(this.authService.isAlive())
+  //             request.headers['authorization'] = this.getAuthorizationToken()
+  //             return await fetch(url, request)
+  //           } catch (error) {
+  //             return response
+  //           }
+  //         }
+
+  //         return response
+  //       } catch (error) {
+  //         console.error(error)
+  //         return null;
+  //       }
+  //     }
+  //   }
+  // }
 
   async upsertOne(input: Partial<IServerCopilot>) {
     const copilot = await firstValueFrom(

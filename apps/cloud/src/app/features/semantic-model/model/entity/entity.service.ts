@@ -241,7 +241,11 @@ export class ModelEntityService {
   }
 
   public init(entity: string) {
-    this.store.connect(['model', 'schema', 'cubes', entity])
+    const state = this.store.connect(['model', 'schema', 'cubes', entity]).getValue()
+    if (!state.__id__) {
+      this.#router.navigate(['../404'], { relativeTo: this.#route })
+      return
+    }
     this.pristineStore.connect(['model', 'schema', 'cubes', entity])
   }
 
@@ -474,6 +478,16 @@ export class ModelEntityService {
       ...calculatedMember,
       __id__: calculatedMember.__id__ ?? uuid()
     } as CalculatedMember)
+  })
+
+  readonly upsertCalculatedMeasure = this.updater((state, calculatedMember: CalculatedMember) => {
+    state.calculatedMembers = state.calculatedMembers ?? []
+    const index = state.calculatedMembers.findIndex((item) => item.__id__ === calculatedMember.__id__)
+    if (index > -1) {
+      state.calculatedMembers[index] = calculatedMember
+    } else {
+      state.calculatedMembers.push(calculatedMember)
+    }
   })
 
   readonly deleteDimensionUsage = this.updater((state, id: string) => {

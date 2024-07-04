@@ -1,12 +1,20 @@
 import { uuid } from '@metad/components/core'
-import { C_MEASURES, Cube } from '@metad/ocap-core'
+import { C_MEASURES, Cube, DimensionType, Semantics } from '@metad/ocap-core'
 import { SemanticModelService } from '../../model.service'
 import { MODEL_TYPE, SemanticModelEntityType } from '../../types'
 
-export async function createCube(modelService: SemanticModelService, cube: Cube) {
+export async function createOrEditCube(modelService: SemanticModelService, cube: Cube) {
   const isOlap = modelService.modelType() === MODEL_TYPE.OLAP
-  const key = uuid()
-  const cube2: Cube = {
+  const cubes = modelService.cubes()
+  let key = ''
+  const index = cubes.findIndex((c) => c.name === cube.name)
+  if (index > -1) {
+    key = cubes[index].__id__
+  } else {
+    key = uuid()
+  }
+
+  const _cube: Cube = {
     ...cube,
     __id__: key,
     measures: cube.measures?.map((measure) => ({
@@ -18,9 +26,18 @@ export async function createCube(modelService: SemanticModelService, cube: Cube)
     dimensions: cube.dimensions?.map((dimension) => ({
       ...dimension,
       __id__: uuid(),
-      hierarchies: dimension.hierarchies?.map((hierarchy) => ({
+      // Add semantic 'Calendar' for time dimension
+      semantics:
+        dimension.semantics ??
+        (dimension.type === DimensionType.TimeDimension
+          ? {
+              semantic: Semantics.Calendar
+            }
+          : null),
+      hierarchies: dimension.hierarchies?.map((hierarchy, index) => ({
         ...hierarchy,
         __id__: uuid(),
+        name: index ? hierarchy.name : '',
         hasAll: isOlap,
         levels: hierarchy.levels?.map((level) => ({ ...level, __id__: uuid() }))
       }))
@@ -33,15 +50,11 @@ export async function createCube(modelService: SemanticModelService, cube: Cube)
       visible: true
     }))
   }
-  const cubeState = {
-    type: SemanticModelEntityType.CUBE,
-    id: key,
-    name: cube.name,
-    caption: cube.caption,
-    cube: cube2,
-    queryLab: {}
-  }
 
-  modelService.newCube(cube2)
-  modelService.activeEntity(cubeState)
+  modelService.upsertCube(_cube)
+
+  modelService.activeEntity({
+    type: SemanticModelEntityType.CUBE,
+    id: key
+  })
 }

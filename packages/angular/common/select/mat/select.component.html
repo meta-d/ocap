@@ -31,11 +31,13 @@
         </ng-template>
     </mat-autocomplete>
 
-    <div matSuffix class="flex">
-        <button *ngIf="isNotInitial" class="opacity-0 group-hover:opacity-100" [disabled]="disabled" mat-icon-button ngmAppearance="danger" (click)="clear()">
+    <div matSuffix class="flex items-center">
+        <button *ngIf="isNotInitial" mat-icon-button class="opacity-0 group-hover:opacity-100" [disabled]="formControl.disabled"
+            ngmAppearance="danger"
+            (click)="clear()">
             <mat-icon>close</mat-icon>
         </button>
-        <mat-spinner *ngIf="loading" color="accent" strokeWidth="2" diameter="20"></mat-spinner>
+        <mat-spinner *ngIf="loading()" class="m-2" color="accent" strokeWidth="2" diameter="24"></mat-spinner>
     </div>
 
     <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>

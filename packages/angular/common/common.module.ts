@@ -16,6 +16,7 @@ import { NgmDrawerTriggerComponent } from './drawer-trigger'
 import { NgmScrollBackComponent } from './scroll'
 import { NgmPropertyComponent } from './property/property.component'
 import { NgmHierarchySelectComponent } from './hierarchy-select/hierarchy-select.component'
+import { NgmDrawerContainerComponent } from './drawer'
 
 @NgModule({
   imports: [
@@ -42,7 +43,8 @@ import { NgmHierarchySelectComponent } from './hierarchy-select/hierarchy-select
     NgmTableComponent,
     NgmSelectionTableComponent,
     NgmPropertyComponent,
-    NgmHierarchySelectComponent
+    NgmHierarchySelectComponent,
+    NgmDrawerContainerComponent
   ],
   exports: [
     ResizerModule,
@@ -66,7 +68,8 @@ import { NgmHierarchySelectComponent } from './hierarchy-select/hierarchy-select
     NgmTableComponent,
     NgmSelectionTableComponent,
     NgmPropertyComponent,
-    NgmHierarchySelectComponent
+    NgmHierarchySelectComponent,
+    NgmDrawerContainerComponent
   ],
   declarations: [],
   providers: []

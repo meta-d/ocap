@@ -19,7 +19,7 @@
     <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
       <ngm-tree-select formControlName="businessAreaId" [appearance]="appearance"
         label="{{ 'PAC.INDICATOR.REGISTER.BUSINESS_AREA' | translate: {Default: 'Business Area'} }}"
-        [treeNodes]="groupTree$ | async"
+        [treeNodes]="businessAreasTree()"
         displayBehaviour="descriptionOnly"
         searchable
       ></ngm-tree-select>
@@ -73,7 +73,7 @@
     <div class="section grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-3">
   
       <ngm-mat-select [appearance]="appearance" label="{{ 'PAC.INDICATOR.REGISTER.MODEL' | translate: {Default: 'Semantic Model'} }}"
-        [selectOptions]="modelsOptions"
+        [selectOptions]="modelsOptions()"
         displayBehaviour="descriptionOnly"
         virtualScroll
         formControlName="modelId"
@@ -140,6 +140,11 @@
           [entityType]="entityType()"
           formControlName="formula"
         >
+        <button mat-icon-button displayDensity="compact" class="ngm-copilot-command-button ngm-calculated-measure__action"
+          [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="aiFormula()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
+        </button>
       </ngm-calculated-measure>
     }
 

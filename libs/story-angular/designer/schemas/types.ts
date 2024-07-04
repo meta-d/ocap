@@ -5,14 +5,6 @@ import { FormlyFieldConfig } from '@ngx-formly/core'
 import { Observable, combineLatest, throwError } from 'rxjs'
 import { catchError, map, switchMap, tap } from 'rxjs/operators'
 
-/**
- * @deprecated use `FORMLY_W_1_2` instead
- */
-export const CLASS_NAME_COL6 = 'ngm-formly__col ngm-formly__col-6'
-/**
- * @deprecated use `FORMLY_W_FULL` instead
- */
-export const CLASS_NAME_COL12 = 'ngm-formly__col ngm-formly__col-12'
 export const FORMLY_W_FULL = 'ngm-formly__col ngm-formly__col-12'
 export const FORMLY_W_1_3 = 'ngm-formly__col ngm-formly__col-4'
 export const FORMLY_W_2_3 = 'ngm-formly__col ngm-formly__col-8'

@@ -20,6 +20,11 @@ Member key pattern: [MemberKey] (do not includes [Hierarchy Name] and [Level Nam
 `
 }
 
+export const DataSettingsSchema = z.object({
+  dataSource: z.string().describe('The name of the data source'),
+  entitySet: z.string().describe('The name of the cube')
+})
+
 const baseDimensionSchema = {
   dimension: z.string().describe('The name of the dimension using pattern `[Dimension Name]`'),
   hierarchy: z
@@ -59,7 +64,7 @@ export const SlicerSchema = z.object({
 
 export const DimensionMemberSchema = z.object({
   ...baseDimensionSchema,
-  members: z.array(MemberSchema).describe('Members in the dimension')
+  members: z.array(MemberSchema).optional().describe('Members in the dimension')
 })
 export const FormulaSchema = z.string().describe('MDX expression for the calculated measure in cube')
 

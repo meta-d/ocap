@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
-import { nonNullable } from '@metad/core'
+import { nonBlank, nonNullable } from '@metad/core'
 import { effectAction } from '@metad/ocap-angular/core'
 import { PropertyDimension, PropertyHierarchy } from '@metad/ocap-core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -12,6 +12,7 @@ import { Observable, distinctUntilChanged, filter, map, shareReplay, switchMap, 
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
 import { ModelDesignerType } from '../types'
+import { upsertHierarchy } from '../utils'
 
 @Injectable()
 export class ModelDimensionService {
@@ -40,7 +41,8 @@ export class ModelDimensionService {
   //   comparatorFn: negate(isEqual)
   // })
   readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
-  readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
+  // readonly dimensionDirty = this.dirtyCheckResult.dirty
+  // readonly dirty$ = toObservable(this.dirtyCheckResult.dirty)
   readonly dimension$ = this.store.pipe(
     select((state) => state),
     filter(nonNullable)
@@ -66,8 +68,13 @@ export class ModelDimensionService {
   // public readonly currentHierarchy$ = this.select((state) => state.currentHierarchy)
 
   public readonly dimEntityService$ = this.name$.pipe(
-    filter((value) => !!value),
-    switchMap((name) => this.modelService.selectOriginalEntityService(name)),
+    filter(nonBlank),
+    switchMap((dimensionName) =>
+      this.modelService.originalDataSource$.pipe(
+        filter((dataSource) => !!dataSource),
+        map((dataSource) => dataSource.createEntityService(dimensionName))
+      )
+    ),
     shareReplay(1)
   )
 
@@ -107,7 +114,11 @@ export class ModelDimensionService {
   }
 
   public init(id: string) {
-    this.store.connect(['model', 'schema', 'dimensions', id])
+    const state = this.store.connect(['model', 'schema', 'dimensions', id]).getValue()
+    if (!state.__id__) {
+      this.router.navigate(['../404'], { relativeTo: this.route })
+      return
+    }
     this.pristineStore.connect(['model', 'schema', 'dimensions', id])
 
     timer(0).subscribe(() => {
@@ -164,9 +175,9 @@ export class ModelDimensionService {
   public readonly newHierarchy = this.updater((state, nh?: Partial<PropertyHierarchy> | null) => {
     const id = nh?.__id__ ?? uuid()
     state.hierarchies.push({
-      __id__: id,
       caption: `New Hierarchy`,
-      ...(nh ?? {})
+      ...(nh ?? {}),
+      __id__: id
     } as PropertyHierarchy)
 
     this.navigateTo(id)
@@ -203,6 +214,23 @@ export class ModelDimensionService {
     })
   })
 
+  readonly upsertHierarchy = this.updater((state, hierarchy: Partial<PropertyHierarchy>) => {
+    const key = upsertHierarchy(state, hierarchy)
+    // let key = null
+    // const index = state.hierarchies.findIndex((item) => item.name === hierarchy.name)
+    // if (index > -1) {
+    //   state.hierarchies.splice(index, 1, {
+    //     ...state.hierarchies[index],
+    //     ...hierarchy
+    //   })
+    //   key = state.hierarchies[index].__id__
+    // } else {
+    //   state.hierarchies.push({ ...hierarchy, __id__: hierarchy.__id__ ?? uuid() } as PropertyHierarchy)
+    //   key = state.hierarchies[state.hierarchies.length - 1].__id__
+    // }
+    this.navigateTo(key)
+  })
+
   public readonly update = this.updater((state, d: PropertyDimension) => {
     assign(state, d)
   })
@@ -213,11 +241,9 @@ export class ModelDimensionService {
       switchMap(([id, dimension]) => {
         const hierarchy = dimension.hierarchies?.find((item) => item.__id__ === id)
         return this.settingsService
-          .openDesigner<{ modeling: {hierarchy: PropertyHierarchy; dimension: PropertyDimension } }>(
-            ModelDesignerType.hierarchy,
-            { modeling: { hierarchy, dimension: omit(dimension, 'hierarchies')}},
-            id
-          )
+          .openDesigner<{
+            modeling: { hierarchy: PropertyHierarchy; dimension: PropertyDimension }
+          }>(ModelDesignerType.hierarchy, { modeling: { hierarchy, dimension: omit(dimension, 'hierarchies') } }, id)
           .pipe(
             tap(({ modeling }) => {
               this.updateHierarchy({

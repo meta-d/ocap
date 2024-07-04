@@ -7,7 +7,7 @@ import { NgmConfirmDeleteComponent, NgmSearchComponent } from '@metad/ocap-angul
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { Subscription, firstValueFrom, of, startWith, switchMap, tap } from 'rxjs'
-import { IStorageFile, ProjectService, StorageFileService, ToastrService, listAnimation } from '../../../@core'
+import { IStorageFile, ProjectsService, StorageFileService, ToastrService, listAnimation } from '../../../@core'
 import { MaterialModule } from '../../material.module'
 
 @Component({
@@ -33,7 +33,7 @@ export class ProjectFilesDialogComponent {
   private readonly _dialog = inject(MatDialog)
   private readonly _data = inject<{ projectId: string }>(MAT_DIALOG_DATA)
   private readonly _toastrService = inject(ToastrService)
-  private readonly projectService = inject(ProjectService)
+  private readonly projectService = inject(ProjectsService)
   private readonly storageFileService = inject(StorageFileService)
 
   readonly #files = signal<IStorageFile[]>([])

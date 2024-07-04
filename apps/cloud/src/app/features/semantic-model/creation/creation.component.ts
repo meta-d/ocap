@@ -75,7 +75,7 @@ export class ModelCreationComponent implements ControlValueAccessor {
     name: new FormControl('', [Validators.required]),
     description: new FormControl(null),
     businessAreaId: new FormControl(null),
-    mdx: new FormControl(false),
+    mdx: new FormControl(true),
     dataSource: new FormControl(null, [Validators.required]),
     catalog: new FormControl()
   })

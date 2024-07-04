@@ -1,12 +1,19 @@
 import { FlatTreeControl } from '@angular/cdk/tree'
 import { inject } from '@angular/core'
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree'
-import { ModelsService, convertNewSemanticModelResult } from '@metad/cloud/state'
+import { Indicator, ModelsService, convertNewSemanticModelResult } from '@metad/cloud/state'
 import { FlatTreeNode, TreeNodeInterface, isString, omitBlank } from '@metad/ocap-core'
 import { pick } from 'lodash-es'
 import { map } from 'rxjs/operators'
 import { DefaultCollection, ICollection, IIndicator } from '../../@core'
 import { INDICATOR_COLUMNS } from '../indicator/types'
+
+
+export type ProjectIndicatorsState = {
+  indicators: Indicator[]
+}
+
+export const NewIndicatorCodePlaceholder = 'new'
 
 export function collectionId(collection: ICollection | string) {
   collection = isString(collection) ? collection : collection?.id

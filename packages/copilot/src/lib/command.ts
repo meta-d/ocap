@@ -1,12 +1,18 @@
+import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
-import { ChatPromptTemplate, BaseStringPromptTemplate } from "@langchain/core/prompts"
+import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph/web'
+import { ChatOpenAI } from '@langchain/openai'
 import { Observable } from 'rxjs'
 import { CopilotChatMessage } from './types/types'
 
 /**
  * Copilot command, which can execute multiple actions.
  */
-export interface CopilotCommand<Inputs extends any[] = any[]> {
+export interface CopilotCommand<T = any> {
+  /**
+   * Hidden for debug
+   */
+  hidden?: boolean
   /**
    * Full name of the command
    */
@@ -32,9 +38,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    */
   suggestionTemplate?: ChatPromptTemplate
   /**
-   * Get system prompt message
-   *
-   * @returns System prompt message
+   * @deprecated use prompt only
    */
   systemPrompt?: (options?: { params?: CopilotContextParam[] }) => Promise<string>
   /**
@@ -42,7 +46,7 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * @param args
    * @returns
    */
-  implementation?: (...args: Inputs) => Promise<void | string | CopilotChatMessage>
+  implementation?: (...args: T[]) => Promise<void | string | CopilotChatMessage>
   /**
    * @deprecated use `tools` instead
    */
@@ -59,14 +63,41 @@ export interface CopilotCommand<Inputs extends any[] = any[]> {
    * The few shot prompt template to add examples for user input
    */
   fewShotPrompt?: BaseStringPromptTemplate
-  
+
   agent?: {
-    type: CopilotAgentType;
-    conversation?: boolean;
+    type: CopilotAgentType
+    conversation?: boolean
+    interruptBefore?: string[]
+    interruptAfter?: string[]
   }
+
+  createGraph?: (options: CreateGraphOptions) => Promise<StateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string> |
+    CompiledStateGraph<T, Partial<T>, "__start__" | "tools" | "agent" | string>>
+
+  // For history management
+  historyCursor?: () => number
+  revert?: (index: number) => Promise<void>
 }
+
+export type CreateGraphOptions = {
+  llm: ChatOpenAI;
+  checkpointer?: BaseCheckpointSaver
+  interruptBefore?: any[]
+  interruptAfter?: any[]
+}
+
+/**
+ * The type of agent for copilot command
+ */
 export enum CopilotAgentType {
+  /**
+   * Default use single agent
+   */
   Default = 'Default',
+  /**
+   * Graph use multiple agents (LangGraph)
+   */
+  Graph = 'Graph',
   OpenAI = 'OpenAI',
   LangChain = 'LangChain'
 }

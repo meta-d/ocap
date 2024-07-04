@@ -85,7 +85,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
 
   readonly showQueryResult = signal(false)
 
-  readonly dialect = toSignal(this.modelService.dialect$)
+  readonly dialect = this.modelService.dialect
   readonly queryContext = computed(() => {
     return {
       dialect: this.dialect(),
@@ -211,7 +211,7 @@ export class EntityQueryComponent extends TranslationBaseComponent {
 
   async drop(event: CdkDragDrop<{ name: string }[]>) {
     const modelType = await firstValueFrom(this.modelType$)
-    const dialect = await firstValueFrom(this.modelService.dialect$)
+    const dialect = this.dialect()
     const property = event.item.data
     if (event.previousContainer.id === 'list-measures') {
       this.editor.insert(modelType === MODEL_TYPE.XMLA ? property.name : measureFormatter(property.name))

@@ -1,5 +1,5 @@
 import { AggregationRole, Semantics } from '@metad/ocap-core'
-import { AccordionWrappers, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { AccordionWrappers, FORMLY_W_FULL, FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
 import { FormlyFieldConfig } from '@ngx-formly/core'
 import { format } from 'date-fns'
 import { map, startWith, tap } from 'rxjs'
@@ -18,31 +18,31 @@ export function SQLExpression(COMMON) {
           searchable: true,
           valueKey: 'key',
           options: [
-            { value: null, caption: COMMON?.None ?? 'None' },
-            { value: 'generic', caption: 'generic' },
-            { value: 'access', caption: 'access' },
-            { value: 'db2', caption: 'db2' },
-            { value: 'derby', caption: 'derby' },
-            { value: 'firebird', caption: 'firebird' },
-            { value: 'hsqldb', caption: 'hsqldb' },
-            { value: 'mssql', caption: 'mssql' },
-            { value: 'mysql', caption: 'mysql' },
-            { value: 'oracle', caption: 'oracle' },
-            { value: 'postgres', caption: 'postgres' },
-            { value: 'sybase', caption: 'sybase' },
-            { value: 'teradata', caption: 'teradata' },
-            { value: 'ingres', caption: 'ingres' },
-            { value: 'infobright', caption: 'infobright' },
-            { value: 'luciddb', caption: 'luciddb' },
-            { value: 'vertica', caption: 'vertica' },
-            { value: 'neoview', caption: 'neoview' }
+            { key: null, caption: COMMON?.None ?? 'None' },
+            { key: 'generic', caption: 'generic' },
+            { key: 'access', caption: 'access' },
+            { key: 'db2', caption: 'db2' },
+            { key: 'derby', caption: 'derby' },
+            { key: 'firebird', caption: 'firebird' },
+            { key: 'hsqldb', caption: 'hsqldb' },
+            { key: 'mssql', caption: 'mssql' },
+            { key: 'mysql', caption: 'mysql' },
+            { key: 'oracle', caption: 'oracle' },
+            { key: 'postgres', caption: 'postgres' },
+            { key: 'sybase', caption: 'sybase' },
+            { key: 'teradata', caption: 'teradata' },
+            { key: 'ingres', caption: 'ingres' },
+            { key: 'infobright', caption: 'infobright' },
+            { key: 'luciddb', caption: 'luciddb' },
+            { key: 'vertica', caption: 'vertica' },
+            { key: 'neoview', caption: 'neoview' }
           ]
         }
       },
       {
         key: 'content',
         type: 'textarea',
-        className: FORMLY_W_1_2,
+        className: FORMLY_W_FULL,
         props: {
           label: COMMON?.SQLExpression?.Content ?? 'Content',
           rows: 1,
@@ -60,25 +60,26 @@ export function Role(I18N?) {
     className: FORMLY_W_1_2,
     props: {
       label: I18N?.AggregationRole ?? 'Aggregation Role',
+      valueKey: 'key',
       options: [
         {
-          value: null,
+          key: null,
           caption: 'None'
         },
         {
-          value: AggregationRole.dimension,
+          key: AggregationRole.dimension,
           caption: 'Dimension'
         },
         {
-          value: AggregationRole.measure,
+          key: AggregationRole.measure,
           caption: 'Measure'
         },
         {
-          value: AggregationRole.hierarchy,
+          key: AggregationRole.hierarchy,
           caption: 'Hierarchy'
         },
         {
-          value: AggregationRole.level,
+          key: AggregationRole.level,
           caption: 'Hierarchy Level'
         }
       ]
@@ -95,72 +96,73 @@ export function Semantic(COMMON?) {
       icon: 'class',
       label: COMMON?.Semantic ?? 'Semantic',
       searchable: true,
+      valueKey: 'key',
       options: [
-        { value: null, caption: COMMON?.None ?? 'None' },
-        { value: Semantics.Geography, caption: 'Geography' },
+        { key: null, caption: COMMON?.None ?? 'None' },
+        { key: Semantics.Geography, caption: 'Geography' },
         {
-          value: Semantics['GeoLocation.Latitude'],
+          key: Semantics['GeoLocation.Latitude'],
           caption: 'GeoLocation Latitude'
         },
         {
-          value: Semantics['GeoLocation.Longitude'],
+          key: Semantics['GeoLocation.Longitude'],
           caption: 'GeoLocation Longitude'
         },
         {
-          value: Semantics.Calendar,
+          key: Semantics.Calendar,
           caption: 'Calendar'
         },
-        { value: Semantics['Calendar.Year'], caption: 'Calendar Year' },
-        { value: Semantics['Calendar.Quarter'], caption: 'Calendar Quarter' },
-        { value: Semantics['Calendar.Month'], caption: 'Calendar Month' },
-        { value: Semantics['Calendar.Week'], caption: 'Calendar Week' },
-        { value: Semantics['Calendar.Day'], caption: 'Calendar Day' },
+        { key: Semantics['Calendar.Year'], caption: 'Calendar Year' },
+        { key: Semantics['Calendar.Quarter'], caption: 'Calendar Quarter' },
+        { key: Semantics['Calendar.Month'], caption: 'Calendar Month' },
+        { key: Semantics['Calendar.Week'], caption: 'Calendar Week' },
+        { key: Semantics['Calendar.Day'], caption: 'Calendar Day' },
         {
-          value: Semantics['Amount.CurrencyCode'],
+          key: Semantics['Amount.CurrencyCode'],
           caption: 'Amount CurrencyCode'
         },
         {
-          value: Semantics['Quantity.UnitOfMeasure'],
+          key: Semantics['Quantity.UnitOfMeasure'],
           caption: 'Quantity UnitOfMeasure'
         },
         {
-          value: Semantics.CurrencyCode,
+          key: Semantics.CurrencyCode,
           caption: 'Currency Code'
         },
         {
-          value: Semantics.UnitOfMeasure,
+          key: Semantics.UnitOfMeasure,
           caption: 'Unit of Measure'
         },
         {
-          value: Semantics.Language,
+          key: Semantics.Language,
           caption: 'Language'
         },
         {
-          value: Semantics['Address.Region'],
+          key: Semantics['Address.Region'],
           caption: 'Address Region'
         },
         {
-          value: Semantics['Address.SubRegion'],
+          key: Semantics['Address.SubRegion'],
           caption: 'Address SubRegion'
         },
         {
-          value: Semantics['Address.Country'],
+          key: Semantics['Address.Country'],
           caption: 'Address Country'
         },
         {
-          value: Semantics['Address.City'],
+          key: Semantics['Address.City'],
           caption: 'Address City'
         },
         {
-          value: Semantics['Address.ZipCode'],
+          key: Semantics['Address.ZipCode'],
           caption: 'Address ZipCode'
         },
         {
-          value: Semantics['Address.PostBox'],
+          key: Semantics['Address.PostBox'],
           caption: 'Address PostBox'
         },
         {
-          value: Semantics['Address.Street'],
+          key: Semantics['Address.Street'],
           caption: 'Address Street'
         }
       ]
@@ -173,63 +175,64 @@ export function CalendarFormatter(COMMON?) {
     hideExpression: `!model || !model.semantic?.startsWith('Calendar')`,
     key: 'formatter',
     type: 'input',
-    className: FORMLY_W_1_2,
+    className: FORMLY_W_FULL,
     props: {
       icon: 'date_range',
       label: COMMON?.Formatter ?? 'Time formatter',
-      options: []
+      options: [],
+      valueKey: 'key',
     },
     hooks: {
       onInit: (field: FormlyFieldConfig) => {
         const formatters = [
           {
             semantic: Semantics['Calendar.Day'],
-            value: 'yyyyMMdd',
+            key: 'yyyyMMdd',
             caption: format(new Date(), 'yyyyMMdd')
           },
           {
             semantic: Semantics['Calendar.Day'],
-            value: 'yyyy.MM.dd',
+            key: 'yyyy.MM.dd',
             caption: format(new Date(), 'yyyy.MM.dd')
           },
           {
             semantic: Semantics['Calendar.Day'],
-            value: 'yyyy-MM-dd',
+            key: 'yyyy-MM-dd',
             caption: format(new Date(), 'yyyy-MM-dd')
           },
           {
             semantic: Semantics['Calendar.Month'],
-            value: `yyyyMM`,
+            key: `yyyyMM`,
             caption: format(new Date(), `yyyyMM`)
           },
           {
             semantic: Semantics['Calendar.Month'],
-            value: `yyyy.MM`,
+            key: `yyyy.MM`,
             caption: format(new Date(), `yyyy.MM`)
           },
           {
             semantic: Semantics['Calendar.Month'],
-            value: `yyyy-MM`,
+            key: `yyyy-MM`,
             caption: format(new Date(), `yyyy-MM`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
-            value: `yyyy'Q'Q`,
+            key: `yyyy'Q'Q`,
             caption: format(new Date(), `yyyy'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
-            value: `yyyy.'Q'Q`,
+            key: `yyyy.'Q'Q`,
             caption: format(new Date(), `yyyy.'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Quarter'],
-            value: `yyyy-'Q'Q`,
+            key: `yyyy-'Q'Q`,
             caption: format(new Date(), `yyyy-'Q'Q`)
           },
           {
             semantic: Semantics['Calendar.Year'],
-            value: `yyyy`,
+            key: `yyyy`,
             caption: format(new Date(), `yyyy`)
           }
         ]
@@ -251,6 +254,7 @@ export function SemanticsAccordionWrapper(i18n) {
       key: 'semantics',
       label: i18n?.Semantics ?? 'Semantics',
       toggleable: true,
+      fieldGroupClassName: FORMLY_ROW,
       fieldGroup: [Semantic(i18n), CalendarFormatter(i18n)]
     }
   ])

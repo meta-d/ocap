@@ -35,29 +35,13 @@ export class BusinessAreasService extends OrganizationBaseService {
 
   getGroupsTree(): Observable<TreeNodeInterface<IBusinessArea>[]> {
     return this.getAll().pipe(
-      map((groups) => {
-        return (
-          hierarchize(groups, {
-            parentNodeProperty: 'parentId',
-            valueProperty: 'id',
-            labelProperty: 'name'
-          }) ?? []
-        )
-      })
+      map((groups) => hierarchizeBusinessAreas(groups) ?? [])
     )
   }
 
   getMyAreasTree(modeler?: boolean): Observable<TreeNodeInterface<IBusinessArea>[]> {
     return this.getMy(modeler).pipe(
-      map((areas) => {
-        return (
-          hierarchize(areas, {
-            parentNodeProperty: 'parentId',
-            valueProperty: 'id',
-            labelProperty: 'name'
-          }) ?? []
-        )
-      })
+      map((areas) => hierarchizeBusinessAreas(areas) ?? [])
     )
   }
 
@@ -80,4 +64,12 @@ export class BusinessAreasService extends OrganizationBaseService {
   delete(id: string) {
     return this.httpClient.delete(C_API_BUSINESS_AREA + `/${id}`)
   }
+}
+
+export function hierarchizeBusinessAreas(areas: IBusinessArea[]) {
+  return hierarchize(areas, {
+    parentNodeProperty: 'parentId',
+    valueProperty: 'id',
+    labelProperty: 'name'
+  })
 }

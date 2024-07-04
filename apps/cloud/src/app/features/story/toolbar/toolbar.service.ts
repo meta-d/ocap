@@ -32,15 +32,12 @@ export class StoryToolbarService {
    * 新创建 Story Widget
    */
   async createWidget(widget: DeepPartial<StoryWidget>) {
-    const untitled = await firstValueFrom(this.translateService.get('Story.Common.Untitled', { Default: 'Untitled' }))
+    // const untitled = await firstValueFrom(this.translateService.get('Story.Common.Untitled', { Default: 'Untitled' }))
     const currentWidget = await firstValueFrom(this.creatingWidget$)
     if (currentWidget === widget.component) {
       this.storyService.setCreatingWidget(null)
     } else {
-      this.storyService.setCreatingWidget({
-        ...widget,
-        title: untitled
-      } as StoryWidget)
+      this.storyService.setCreatingWidget({...widget} as StoryWidget)
     }
   }
 

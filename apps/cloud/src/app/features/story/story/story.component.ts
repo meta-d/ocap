@@ -18,7 +18,7 @@ import {
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { IsDirty, markdownEntityType, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { IsDirty, markdownEntityType, markdownModelCube, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
@@ -41,7 +41,7 @@ import {
   NxStoryComponent,
   NxStoryModule
 } from '@metad/story/story'
-import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/ocap-angular/copilot'
+import { NgmCopilotContextService, NgmCopilotContextToken } from '@metad/copilot-angular'
 import { TranslateModule } from '@ngx-translate/core'
 import { registerTheme } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
@@ -172,7 +172,6 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #styleCommand = injectStoryStyleCommand(this.storyService)
   #pageCommand = injectStoryPageCommand(this.storyService)
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
-  // #mathCommand = injectMathCommand(this.storyService)
   #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
 
   /**
@@ -291,7 +290,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
               dataSourceId: model.value,
               serizalize: async () => {
                 const entityType = await firstValueFrom(this.storyService.selectEntityType({dataSource: model.key, entitySet: cube.name}))
-                return markdownEntityType(entityType)
+                return markdownModelCube({modelId: model.value, dataSource: model.key, cube: entityType})
               }
             }, key: cube.name, caption: cube.caption })))
           })

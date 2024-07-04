@@ -44,7 +44,7 @@
 
     <mat-drawer-content>
         <ngm-splitter class="ngm-layout-container-secondary flex-1 w-full h-full" [type]="1">
-            <ngm-splitter-pane size='15rem' class="flex flex-col justify-end items-stretch z-[101]">
+            <ngm-splitter-pane size='50%' class="flex flex-col justify-end items-stretch z-[101]">
                 <mat-toolbar class="pac-sub-toolbar pac-toolbar__editor flex justify-start items-center gap-2"
                     displayDensity="compact">
                     <button *ngIf="!drawer.opened" mat-icon-button displayDensity="compact" (click)="drawer.toggle()">
@@ -157,7 +157,6 @@
                     <ngm-sql-editor #editor class="pac-cdk-drop__list pac-cdk-drop__area flex-1 w-full h-full"
                         [theme]="themeName()"
                         [entitySets]="tables$ | async"
-                        [actions]="sqlEditorActions"
                         [(ngModel)]="statement"
                         [disabled]="answering()"
                         (selectionChange)="onSelectionChange($event)"
@@ -272,10 +271,28 @@
 </mat-drawer-container>
 
 <mat-menu #menu="matMenu" class="ngm-density__compact ngm-density__compact">
+    <button mat-menu-item (click)="export()">
+        <mat-icon>file_download</mat-icon>
+        <span>{{ 'PAC.KEY_WORDS.EXPORT' | translate: {Default: 'Export'} }}</span>
+    </button>
+
+    <mat-divider></mat-divider>
+
     <button mat-menu-item ngmAppearance="danger" (click)="closeAllResults()">
         <mat-icon>close</mat-icon>
         <span>{{ 'PAC.KEY_WORDS.CLOSE_ALL' | translate: {Default: "Close All"} }}</span>
     </button>
-
-    <mat-divider></mat-divider>
 </mat-menu>
+
+
+<ng-template #tableTemplate let-message="message">
+  @if (message.data['header']) {
+    <div >{{message.data['header']}}</div>
+  }
+    <ngm-table class="max-w-full rounded-lg border overflow-hidden"
+        [columns]="message.data['columns']"
+        [data]="message.data['content']"
+        paging
+        [pageSizeOptions]="[10, 20, 50, 100]"
+    ></ngm-table>
+</ng-template>

@@ -1,10 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { IIndicator } from '@metad/contracts'
-import { Indicator } from '@metad/ocap-core'
 import { map } from 'rxjs/operators'
 import { C_URI_API_INDICATORS } from './constants'
-import { convertIndicator, convertIndicatorResult } from './types'
+import { Indicator, convertIndicator, convertIndicatorResult } from './types'
 
 
 @Injectable({
@@ -26,6 +25,12 @@ export class IndicatorsService {
     return this.httpClient
       .get<{ items: IIndicator[] }>(C_URI_API_INDICATORS + '/my', { params })
       .pipe(map(({ items }) => items))
+  }
+
+  getByProject(projectId: string, options: {relations, where}) {
+    const query = JSON.stringify(options)
+    const params = new HttpParams().append('$query', query)
+    return this.httpClient.get<{ items: IIndicator[] }>(C_URI_API_INDICATORS + `/project/${projectId}`, { params })
   }
 
   getApp(relations = []) {

@@ -1,3 +1,5 @@
 export * from './chat'
 export * from './dimension.command'
 export * from './hierarchy.command'
+export * from './types'
+export * from './graph'

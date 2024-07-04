@@ -1,8 +1,9 @@
 <mat-toolbar class="pac-nav-toolbar pac-model__shell-bar flex items-center pl-2" displayDensity="compact">
-    <button mat-icon-button displayDensity="cosy"
+    <button mat-icon-button displayDensity="cosy" [color]="mt.menuOpen?'accent':''"
         [matMenuTriggerFor]="menu"
+        #mt="matMenuTrigger"
         >
-        <mat-icon>more_vert</mat-icon>
+        <mat-icon [color]="mt.menuOpen?'accent':''">more_vert</mat-icon>
     </button>
     <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="accent" disableRipple class="flex-1" mat-stretch-tabs="false" mat-align-tabs="start">
       @for (tab of hierarchies(); track tab.__id__; let i = $index) {
@@ -13,7 +14,7 @@
         >
           {{tab.caption}}
 
-          @if (isDirty(tab.__id__)) {
+          @if (dirty() && isDirty(tab.__id__)) {
             <span class="ping-badge pointer-events-none absolute -left-2 top-2 flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2"></span>
@@ -22,15 +23,17 @@
             <button mat-icon-button displayDensity="compact" class="pac-nav-tab__close"
                 [matMenuTriggerFor]="hMenu"
                 [matMenuTriggerData]="{key: tab.__id__}"
+                #mt="matMenuTrigger"
+                [class.active]="mt.menuOpen"
                 >
                 <mat-icon>more_vert</mat-icon>
             </button>
         </span>
       }
 
-        <button mat-icon-button displayDensity="cosy" [matTooltip]="'PAC.ACTIONS.NEW_HIERARCHY' | translate: {Default: 'New Hierarchy'}"
-            (click)="newHierarchy()">
-            <mat-icon>add</mat-icon>
+        <button mat-icon-button [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="newHierarchy()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
         </button>
     </nav>
 

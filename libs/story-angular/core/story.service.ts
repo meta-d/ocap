@@ -1470,7 +1470,7 @@ export class NxStoryService {
     }
   })
 
-  async openDefultDataSettings() {
+  async openDefultDataSettings(): Promise<EntitySelectResultType> {
     const dataSources = this.dataSources()
 
     const result = await firstValueFrom<EntitySelectResultType>(

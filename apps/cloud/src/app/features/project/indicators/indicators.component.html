@@ -9,26 +9,34 @@
         (change)="handleUploadChange($event)"
         (click)="fileUpload.value=null;">
       <div ngmButtonGroup>
-        <button mat-button displayDensity="cosy" [disabled]="!selectedIndicators()?.length" (click)="export()">
-          <div class="flex items-center">
-            <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
-            {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
-          </div>
+        <button mat-icon-button displayDensity="cosy" class="ngm-copilot-command-button ngm-toolbar__action"
+          [matTooltip]=" 'Copilot.GenerateWithAI' | translate: {Default: 'Generate with AI'} "
+          (click)="aiRegister()">
+          <mat-icon fontSet="material-icons-outlined">auto_fix_high</mat-icon>
         </button>
 
-        <button mat-button displayDensity="cosy" (click)="fileUpload.click()">
-          <mat-icon fontSet="material-icons-round">upload</mat-icon>
-          <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
+        <button mat-raised-button displayDensity="cosy" color="primary"
+          (click)="register()">
+          {{ 'PAC.INDICATOR.MY_INDICATORS.REGISTER' | translate: {Default: "Register"} }}
         </button>
         
-        <button mat-raised-button displayDensity="cosy" color="primary" [routerLink]="['/project/indicators/new']">
-          {{ 'PAC.INDICATOR.MY_INDICATORS.REGISTER' | translate: {Default: "Register"} }}
+        @if (hasDirty()) {
+          <button mat-flat-button displayDensity="cosy" (click)="saveAll()">
+            {{ 'PAC.INDICATOR.SaveAll' | translate: {Default: "Save All"} }}
+          </button>
+        }
+        
+        <button mat-icon-button displayDensity="cosy" [matMenuTriggerFor]="menu"
+          #mt="matMenuTrigger"
+          [class.active]="mt.menuOpen"
+        >
+          <mat-icon fontSet="material-icons-outlined">more_horiz</mat-icon>
         </button>
       </div>
     </div>
   </div>
 
-  <nav mat-tab-nav-bar class="pac-tab-nav-bar max-w-full" color="accent" disableRipple displayDensity="cosy" mat-stretch-tabs="false" mat-align-tabs="start"
+  <nav mat-tab-nav-bar class="pac-tab-nav-bar max-w-full self-stretch" color="accent" disableRipple displayDensity="cosy" mat-stretch-tabs="false" mat-align-tabs="start"
     [tabPanel]="tabPanel"
   >
     <span mat-tab-link [routerLink]="['.']"
@@ -39,6 +47,7 @@
       <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">settings</mat-icon>
       {{ 'PAC.INDICATOR.All' | translate: {Default: "All"} }}
     </span>
+
     <!-- <span mat-tab-link [routerLink]="['./all']"
       routerLinkActive #rla2="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"
@@ -47,6 +56,7 @@
       <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">group_add</mat-icon>
       {{ 'PAC.INDICATOR.MY_INDICATORS.ALL' | translate: {Default: "All"} }}
     </span> -->
+
     <span mat-tab-link [routerLink]="['approvals']"
       routerLinkActive #rla3="routerLinkActive"
       [routerLinkActiveOptions]="{exact: true}"
@@ -56,17 +66,30 @@
       {{ 'PAC.INDICATOR.MY_INDICATORS.Approvals' | translate: {Default: "Approvals"} }}
     </span>
 
-    <span mat-tab-link *ngFor="let indicator of openedLinks()" [routerLink]="[indicator.id]"
-      [active]="indicator.id === currentLink()?.id"
-    >
-      <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
-      <span *ngIf="indicator.name">{{indicator.name}}</span>
-      <span *ngIf="indicator.id === 'new'">{{ 'PAC.INDICATOR.All' | translate: {Default: 'All'} }}</span>
-      <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
-        <mat-icon>cancel</mat-icon>
-      </button>
-    </span>
-    
+    @for (indicator of openedLinks(); track indicator) {
+      <span mat-tab-link [routerLink]="[indicator.id || indicator.code]"
+        [active]="indicator.id === currentLink()?.id || indicator.code === currentLink()?.code">
+
+        @if (isDirty(indicator.id)) {
+          <span class="ping-badge pointer-events-none absolute -left-2 top-2 flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2"></span>
+          </span>
+        }
+
+        <mat-icon fontSet="material-icons-outlined" displayDensity="cosy">trending_up</mat-icon>
+        @if (indicator.id === NewIndicatorCodePlaceholder) {
+          <span class="mr-2">{{ 'PAC.INDICATOR.New' | translate: {Default: 'New'} }}</span>
+        }
+
+        @if (indicator.name) {
+          <span class="overflow-hidden text-ellipsis max-w-[200px]" [title]="indicator.name">{{indicator.name}}</span>
+        }
+        <button mat-icon-button class="pac-tab-close" displayDensity="compact" (click)="removeOpenedLink(indicator)">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </span>
+    }
   </nav>
 </div>
 <mat-divider></mat-divider>
@@ -75,3 +98,25 @@
   [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path">
   <router-outlet #o="outlet"></router-outlet>
 </mat-tab-nav-panel>
+
+<mat-menu #menu="matMenu" class="ngm-density__compact">
+  <ng-template matMenuContent>
+    <button mat-menu-item [disabled]="!selectedIndicators()?.length" (click)="export()">
+      <div class="flex items-center">
+        <mat-icon fontSet="material-icons-outlined">file_download</mat-icon>
+        {{ 'PAC.INDICATOR.MY_INDICATORS.EXPORT' | translate: {Default: "Export"} }}
+      </div>
+    </button>
+
+    <button mat-menu-item (click)="fileUpload.click()">
+      <mat-icon fontSet="material-icons-round">upload</mat-icon>
+      <span class="whitespace-nowrap">{{ 'PAC.MENU.INDICATOR.BATCH_UPLOAD' | translate: {Default: "Batch Upload"} }}</span>
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item ngmAppearance="danger" [disabled]="!selectedIndicators()?.length" (click)="deleteSelected()">
+      <mat-icon fontSet="material-icons-round">delete_forever</mat-icon>{{ 'PAC.ACTIONS.Delete' | translate: {Default: "Delete"} }}
+    </button>
+  </ng-template>
+</mat-menu>

@@ -49,3 +49,9 @@ export function omitSystemProperty<T>(obj: T) {
     return acc
   }, {} as T)
 }
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isUUID(id: string) {
+  return uuidRegex.test(id);
+}

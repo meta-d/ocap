@@ -28,7 +28,7 @@
       {{'PAC.KEY_WORDS.CACHE' | translate: {Default: 'Cache'} }}
     </h5>
 
-    <div class="flex px-4 pt-8">
+    <div class="flex px-4">
       <mat-slider class="flex-1" color="accent" [max]="5" [min]="0" [step]="1" showTickMarks discrete 
         [displayWith]="cacheLevelFormatter">
         <input matSliderThumb [(ngModel)]="cacheLevel">

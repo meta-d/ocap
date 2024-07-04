@@ -90,9 +90,9 @@ export class EntitySchemaService<T extends EntitySchemaState<T['modeling']>> ext
   selectTableColumns(table: string) {
     return this.modelService.selectOriginalEntityProperties(table).pipe(
       map((properties) => {
-        const options = [{ value: null, label: 'None' }]
+        const options = [{ key: null, caption: this.getTranslation('PAC.KEY_WORDS.None', {Default: 'None'}) }]
         properties.forEach((property) => {
-          options.push({ value: property.name, label: property.caption })
+          options.push({ key: property.name, caption: property.caption })
         })
         return options
       })

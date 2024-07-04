@@ -32,7 +32,7 @@ import { distinctUntilChanged, map, shareReplay, switchMap, tap } from 'rxjs/ope
 import { IndicatorDetailComponent } from './indicator-detail/indicator-detail.component'
 import { IndicatorsStore } from './services/store'
 import { IndicatorState, IndicatorTagEnum, LookbackLimit } from './types'
-import { injectCopilotCommand } from '@metad/ocap-angular/copilot'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

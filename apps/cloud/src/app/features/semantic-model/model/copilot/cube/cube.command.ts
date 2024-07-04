@@ -1,72 +1,57 @@
 import { Signal, inject } from '@angular/core'
-import { DynamicStructuredTool } from '@langchain/core/tools'
 import { CopilotAgentType } from '@metad/copilot'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { createAgentStepsInstructions } from '@metad/core'
-import { NgmCopilotService, createAgentPromptTemplate, injectCopilotCommand } from '@metad/ocap-angular/copilot'
 import { Property } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { SemanticModelService } from '../../model.service'
-import { CubeSchema } from '../schema'
-import { createCube } from './chat'
+import { timeLevelFormatter } from '../dimension/types'
+import { injectCubeModeler } from './graph'
+import { CubeCommandName } from './types'
+
+export const SYSTEM_PROMPT =
+  `You are a cube modeling expert. Let's create a cube! Generate cube metadata for MDX.` +
+  ` If the user does not provide a fact table for cube, use 'selectTables' tool to get the table, and then select a table related to the requirement to create a cube.` +
+  ` If the user does not provide the table field information, use the 'queryTables' tool to obtain the table field structure.` +
+  `
+${createAgentStepsInstructions(
+  `Think about what dimensions and measures are needed to create the Cube based on user input`,
+  `For each dimension, first consider selecting existing dimensions from shared dimensions and adding them to the dimensionUsages attribute, and then consider creating new dimensions to the dimensions attribute.` +
+    ` Create a dimension for fields that clearly belong to different levels of the same dimension, and add the fields from coarse to fine granularity as the levels of the dimension.` +
+    ` For example, create a dimension called Department with the fields: First-level Department, Second-level Department, Third-level Department, and add First-level Department, Second-level Department, and Third-level Department as the levels of the dimension in order.` +
+    ` If the dimension table is the fact table of cube, you do not need to fill in the hierarchy tables.` +
+    ` If the column field type of level is non-char type, you need to set level type to the type corresponding to column.`,
+  `For each measure, first consider selecting the appropriate measure field from the table fields and adding it to the measures property, and then consider creating calculated measures in the calculatedMembers property.`,
+  `Combine the above results to create a complete cube`
+)}
+
+${timeLevelFormatter()}`
 
 export function injectCubeCommand(dimensions: Signal<Property[]>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const modelService = inject(SemanticModelService)
-  const copilotService = inject(NgmCopilotService)
+  const createCube = injectCubeModeler()
 
-  const createCubeTool = new DynamicStructuredTool({
-    name: 'createCube',
-    description: 'Create or edit cube',
-    schema: CubeSchema,
-    func: async (cube) => {
-      logger.debug(`Execute copilot action 'createCube':`, cube)
-      createCube(modelService, cube as any)
-      return translate.instant('PAC.MODEL.Copilot.CreatedCube', { Default: 'Created Cube!' })
-    }
-  })
-
-  const commandName = 'cube'
-  return injectCopilotCommand(commandName, {
+  const fewShotPrompt = injectAgentFewShotTemplate(CubeCommandName, { k: 1, vectorStore: null })
+  return injectCopilotCommand(CubeCommandName, {
     alias: 'c',
-    description: 'New or edit a cube',
-    agent: {
-      type: CopilotAgentType.Default
+    description: translate.instant('PAC.MODEL.Copilot.CommandCubeDesc', {
+      Default: 'Descripe business logic of the cube'
+    }),
+    historyCursor: () => {
+      return modelService.getHistoryCursor()
     },
-    tools: [createCubeTool],
-    prompt: createAgentPromptTemplate(`You are a cube modeling expert. Let's create a cube!
-Generate cube metadata for MDX. The cube name can't be the same as the table name.
-Partition the table fields that may belong to the same dimension into the levels of hierarchy of the same dimension.
-
-${createAgentStepsInstructions(
-  `根据用户输入信息思考创建 Cube 需要哪些 dimensions 和 measures`,
-  `针对每一个 dimension 首先考虑从 shared dimensions 中选择已有的 dimensions 添加至 dimensionUsages 属性中，然后再考虑创建新的 dimensions 至 dimensions 属性中`,
-  `针对每一个 measure 首先考虑从表字段中选择合适的 measure 字段添加至 measures 属性中，然后再考虑创建 calculated measures 至 calculatedMembers 属性中`,
-  `综合以上结果创建完整的 cube`
-)}
-
-{context}
-    
-{system_prompt}`),
-    systemPrompt: async () => {
-      const sharedDimensionsPrompt = JSON.stringify(
-        dimensions()
-          .filter((dimension) => dimension.hierarchies?.length)
-          .map((dimension) => ({
-            name: dimension.name,
-            caption: dimension.caption,
-            table: dimension.hierarchies[0].tables[0]?.name,
-            primaryKey: dimension.hierarchies[0].primaryKey
-          }))
-      )
-      return `${copilotService.rolePrompt()}
-There is no need to create as dimension with those table fields that are already used in dimensionUsages.
-The cube can fill the source field in dimensionUsages only within the name of shared dimensions:
-\`\`\`
-${sharedDimensionsPrompt}
-\`\`\`
-`
-    }
+    revert: async (index: number) => {
+      modelService.gotoHistoryCursor(index)
+    },
+    agent: {
+      type: CopilotAgentType.Graph,
+      conversation: true
+    },
+    fewShotPrompt,
+    createGraph: createCube
   })
 }

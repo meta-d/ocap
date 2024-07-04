@@ -3,17 +3,17 @@ import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ModelsService, NgmSemanticModel, convertNewSemanticModelResult } from '@metad/cloud/state'
-import { nonNullable } from '@metad/core'
+import { DeepPartial, nonNullable } from '@metad/core'
 import { NgmDSCoreService, effectAction } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
 import {
   AgentType,
   Cube,
-  DBTable,
   DataSource,
   Dimension,
   EntityType,
   PropertyDimension,
+  PropertyHierarchy,
   Schema,
   TableEntity,
   isEntitySet,
@@ -26,22 +26,30 @@ import { Store, createStore, select, withProps } from '@ngneat/elf'
 import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
 import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
-import { ISemanticModel, MDX, ToastrService, getSQLSourceName, getXmlaSourceName, registerModel, uid10, uuid } from '../../../@core'
+import {
+  ISemanticModel,
+  MDX,
+  ToastrService,
+  getSQLSourceName,
+  getXmlaSourceName,
+  registerModel,
+  uuid
+} from '../../../@core'
 import { dirtyCheckWith, write } from '../store'
+import { CreateEntityDialogRetType } from './create-entity/create-entity.component'
 import {
   MODEL_TYPE,
   ModelCubeState,
   ModelDimensionState,
-  ModelQueryState,
   SemanticModelEntity,
   SemanticModelEntityType,
   SemanticModelState,
   initDimensionSubState,
   initEntitySubState
 } from './types'
-import { CreateEntityDialogRetType } from './create-entity/create-entity.component'
+import { upsertHierarchy } from './utils'
 
 @Injectable()
 export class SemanticModelService {
@@ -56,25 +64,32 @@ export class SemanticModelService {
   | Store
   |--------------------------------------------------------------------------
   */
-  readonly store = createStore({ name: 'semantic_model' }, withProps<SemanticModelState>({model: null}))
-  readonly pristineStore = createStore({ name: 'semantic_model_pristine' }, withProps<SemanticModelState>({model: null}))
+  readonly store = createStore({ name: 'semantic_model' }, withProps<SemanticModelState>({ model: null }))
+  readonly pristineStore = createStore(
+    { name: 'semantic_model_pristine' },
+    withProps<SemanticModelState>({ model: null })
+  )
   readonly #stateHistory = stateHistory<Store, SemanticModelState>(this.store, {
     comparatorFn: negate(isEqual)
   })
   /**
    * Dirty check for whole model
    */
-  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual )})
+  readonly dirtyCheckResult = dirtyCheckWith(this.store, this.pristineStore, { comparator: negate(isEqual) })
   /**
    * Dirty for every entity
    */
   readonly dirty = signal<Record<string, boolean>>({})
   readonly stories = signal([])
-  readonly model$ = this.store.pipe(select((state) => state.model), filter(nonNullable))
+  readonly model$ = this.store.pipe(
+    select((state) => state.model),
+    filter(nonNullable)
+  )
   readonly cubeStates$ = this.model$.pipe(map(initEntitySubState))
   readonly dimensionStates$ = this.model$.pipe(map(initDimensionSubState))
   readonly modelSignal = toSignal(this.model$)
-  readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions)
+  readonly dimensions = computed(() => this.modelSignal()?.schema?.dimensions ?? [])
+  readonly cubes = computed(() => this.modelSignal()?.schema?.cubes ?? [])
 
   readonly schema$ = this.model$.pipe(
     select((state) => state?.schema),
@@ -85,7 +100,7 @@ export class SemanticModelService {
   readonly virtualCubes$ = this.schema$.pipe(select((schema) => schema.virtualCubes))
 
   readonly modelId$ = this.model$.pipe(map((model) => model?.id))
-  readonly dialect$ = this.model$.pipe(map((model) => model?.dataSource?.type?.type))
+  // readonly dialect$ = this.model$.pipe(map((model) => model?.dataSource?.type?.type))
   readonly isLocalAgent$ = this.model$.pipe(map((model) => model?.dataSource?.type?.type === 'agent'))
 
   readonly tables = computed(() => this.modelSignal()?.tables)
@@ -98,6 +113,7 @@ export class SemanticModelService {
   | Observables
   |--------------------------------------------------------------------------
   */
+  private refreshDBTables$ = new BehaviorSubject<boolean>(null)
   public readonly tables$ = this.model$.pipe(map((model) => model?.tables))
   public readonly sharedDimensions$ = this.dimensionStates$.pipe(
     map((states) => states?.map((state) => state.dimension))
@@ -165,7 +181,12 @@ export class SemanticModelService {
   )
   public readonly indicators$ = this.model$.pipe(map((model) => model.indicators))
 
-  readonly semanticModelKey$ = this.model$.pipe(filter(nonNullable), map(getSemanticModelKey), filter(nonNullable), distinctUntilChanged())
+  readonly semanticModelKey$ = this.model$.pipe(
+    filter(nonNullable),
+    map(getSemanticModelKey),
+    filter(nonNullable),
+    distinctUntilChanged()
+  )
 
   readonly dataSource$ = new BehaviorSubject<DataSource>(null)
 
@@ -174,7 +195,7 @@ export class SemanticModelService {
    * * MDX Model 中用于直接计算数据库信息
    * * SQL Model 中同 dataSource 相等
    */
-  private originalDataSource$ = new BehaviorSubject<DataSource>(null)
+  readonly originalDataSource$ = new BehaviorSubject<DataSource>(null)
   public get originalDataSource() {
     return this.originalDataSource$.value
   }
@@ -186,13 +207,6 @@ export class SemanticModelService {
     shareReplay(1)
   )
 
-  // public readonly selectDBTables$: Observable<DBTable[]> = this.originalDataSource$.pipe(
-  //   filter(nonNullable),
-  //   switchMap((dataSource) => dataSource.discoverDBTables())
-  // )
-
-  // private _saved$ = new Subject<void>()
-  // public readonly saved$ = this._saved$.asObservable()
   public readonly dragReleased$ = new Subject<DropListRef<CdkDropList<any>>>()
 
   /**
@@ -201,6 +215,7 @@ export class SemanticModelService {
   |--------------------------------------------------------------------------
   */
   readonly modelType = toSignal(this.modelType$)
+  readonly dialect = toSignal(this.model$.pipe(map((model) => model?.dataSource?.type?.type)))
   readonly isDirty = this.dirtyCheckResult.dirty
 
   constructor(
@@ -210,20 +225,14 @@ export class SemanticModelService {
     private _router: Router,
     private _route: ActivatedRoute
   ) {
-    // Pause state history until model is loaded
-    // this.#stateHistory.pause()
-
-    // TODO 一个状态改变产生另一个状态, 这种需求应该怎么处理??
-    // this.entities$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((entities) => {
-    //   this.patchState({ ids: entities?.map((state) => state.id) })
-    // })
-
     this.semanticModelKey$
       .pipe(
         filter(nonNullable),
         switchMap((key) => this.dsCoreService.getDataSource(key)),
         // 先清 DataSource 缓存再进行后续
-        // switchMap((dataSource) => from(dataSource?.clearCache() ?? [true]).pipe(map(() => dataSource))),
+        switchMap((dataSource) =>
+          from(this.modelType() === MODEL_TYPE.OLAP ? dataSource.clearCache() : [true]).pipe(map(() => dataSource))
+        ),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(this.dataSource$)
@@ -256,7 +265,9 @@ export class SemanticModelService {
     })
 
     // this.dataSource$.pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef)).subscribe((dataSource) => {
-    //   dataSource?.clearCache()
+    //   if (this.modelType() === MODEL_TYPE.OLAP) {
+    //     dataSource?.clearCache()
+    //   }
     // })
   }
 
@@ -264,10 +275,18 @@ export class SemanticModelService {
     // New store
     this.stories.set(model.stories)
     const semanticModel = convertNewSemanticModelResult(model)
-    this.store.update(() => ({model: semanticModel}))
-    this.pristineStore.update(() => ({model: cloneDeep(semanticModel)}))
+    this.store.update(() => ({ model: semanticModel }))
+    this.pristineStore.update(() => ({ model: cloneDeep(semanticModel) }))
     // Resume state history after model is loaded
     // this.#stateHistory.resume()
+  }
+
+  getHistoryCursor() {
+    return this.#stateHistory.getPast().length
+  }
+
+  gotoHistoryCursor(index: number) {
+    this.#stateHistory.jumpToPast(index)
   }
 
   undo() {
@@ -282,13 +301,15 @@ export class SemanticModelService {
     fn: (state: NgmSemanticModel, ...params: OriginType[]) => NgmSemanticModel | void
   ) {
     return (...params: OriginType[]) => {
-      this.store.update(write((state) => {
-        const model = fn(state.model, ...params)
-        if (model) {
-          state.model = model
-        }
-        return state
-      }))
+      this.store.update(
+        write((state) => {
+          const model = fn(state.model, ...params)
+          if (model) {
+            state.model = model
+          }
+          return state
+        })
+      )
     }
   }
 
@@ -320,6 +341,7 @@ export class SemanticModelService {
               // this.updateModel({roles: sortBy(model.roles, 'index')})
               // this._saved$.next()
               this.resetPristine()
+              this.clearDirty()
               this.dataSource$.value?.clearCache()
               // Register model after saved to refresh metadata of entity
               this.registerModel()
@@ -329,74 +351,13 @@ export class SemanticModelService {
     )
   })
 
-  /**
-   * 语义模型保存
-   *
-   */
-  // _saveModel() {
-  //   this.rollupEntities()
-  //   const model = cloneDeep(this.get((state) => state.model))
-  //   model.roles = model.roles.map((role, index) => ({...role, index}))
-  // }
-
-  /**
-   * 收集子状态中需要保存的数据
-   */
-  // readonly rollupEntities = this.updater((state) => {
-  //   state.schema = (state.schema || { name: state.name }) as Schema
-  //   state.schema.dimensions = state.dimensions
-  //     .map((dimensionState) => dimensionState.dimension)
-  //     .filter((cube) => !!cube)
-  //   state.schema.cubes = state.cubes.map((entityState) => entityState.cube).filter((cube) => !!cube)
-  // })
-
-  /**
-   * 初始化 Semantic Model UI State 和子状态
-   */
-  // private readonly _setModel = this.updater((state, model: NgmSemanticModel) => {
-  //   state.activedEntities = []
-  //   state.model = model
-  //   state.roles = sortBy(state.roles, 'index')
-  //   state.cubes = initEntitySubState(model)
-  //   state.dimensions = initDimensionSubState(model)
-  //   if (state.currentEntity) {
-  //     const entity = [...state.cubes, ...state.dimensions].find((entity) => entity.id === state.currentEntity)
-  //     if (entity) {
-  //       state.activedEntities.push(entity)
-  //     }
-  //   }
-  // })
-
   resetPristine() {
-    this.pristineStore.update(() => ({model: cloneDeep(this.modelSignal())}))
+    this.pristineStore.update(() => ({ model: cloneDeep(this.modelSignal()) }))
   }
 
   setCrrentEntity(id: string) {
     this.currentEntity.set(id)
   }
-
-  // private readonly _resetDirty = this.updater((state) => {
-  //   state.dimensions.forEach((dimension) => (dimension.dirty = false))
-  //   state.cubes.forEach((cube) => (cube.dirty = false))
-  // })
-
-  /**
-   * 激活(打开) Entity
-   */
-  // readonly setCrrentEntity = this.updater((state, id: string) => {
-  //   let entity = state.activedEntities?.find((entity) => entity.id === id)
-  //   if (!entity) {
-  //     entity = state.cubes?.find((entity) => entity.id === id)
-  //     if (!entity) {
-  //       entity = state.dimensions?.find((entity) => entity.id === id)
-  //     }
-  //     if (entity) {
-  //       state.activedEntities.push(entity)
-  //     }
-  //   }
-
-  //   state.currentEntity = id
-  // })
 
   readonly updateModel = this.updater((state, model: Partial<NgmSemanticModel>) => {
     return {
@@ -473,7 +434,7 @@ export class SemanticModelService {
           foreignKey: column.name,
           source: column.dimension.name
         })
-      } else if(column.isDimension) {
+      } else if (column.isDimension) {
         cube.dimensions.push({
           __id__: uuid(),
           name: column.name,
@@ -510,20 +471,22 @@ export class SemanticModelService {
     return state
   }
 
-  readonly createVirtualCube = this.updater((state, { id, name, caption, cubes }: CreateEntityDialogRetType & { id: string }) => {
-    const schema = state.schema as Schema
-    schema.virtualCubes ??= []
-    schema.virtualCubes.push({
-      __id__: id,
-      name,
-      caption,
-      cubeUsages:
-        cubes?.map((cube: Cube) => ({
-          cubeName: cube.name,
-          ignoreUnrelatedDimensions: true
-        })) ?? []
-    } as Partial<MDX.VirtualCube>)
-  })
+  readonly createVirtualCube = this.updater(
+    (state, { id, name, caption, cubes }: CreateEntityDialogRetType & { id: string }) => {
+      const schema = state.schema as Schema
+      schema.virtualCubes ??= []
+      schema.virtualCubes.push({
+        __id__: id,
+        name,
+        caption,
+        cubeUsages:
+          cubes?.map((cube: Cube) => ({
+            cubeName: cube.name,
+            ignoreUnrelatedDimensions: true
+          })) ?? []
+      } as Partial<MDX.VirtualCube>)
+    }
+  )
 
   createDimension({ name, caption, table, expression, primaryKey, columns }: CreateEntityDialogRetType) {
     const id = uuid()
@@ -566,20 +529,38 @@ export class SemanticModelService {
   }
 
   // Actions for entity
-  // readonly newEntity = this.updater((state, cube: ModelCubeState) => {
-  //   state.cubes.push(cube)
-  // })
-
   readonly newCube = this.updater((state, cube: Cube) => {
     state.schema ??= {} as Schema
     state.schema.cubes ??= []
     state.schema.cubes.push(cube)
   })
 
+  readonly upsertCube = this.updater((state, cube: Cube) => {
+    state.schema ??= {} as Schema
+    state.schema.cubes ??= []
+    const index = state.schema.cubes.findIndex((item) => item.__id__ === cube.__id__)
+    if (index > -1) {
+      state.schema.cubes[index] = cube
+    } else {
+      state.schema.cubes.push(cube)
+    }
+  })
+
   readonly newDimension = this.updater((state, dimension: PropertyDimension) => {
     state.schema ??= {} as Schema
     state.schema.dimensions ??= []
     state.schema.dimensions.push(dimension)
+  })
+
+  readonly upsertDimension = this.updater((state, dimension: PropertyDimension) => {
+    state.schema ??= {} as Schema
+    state.schema.dimensions ??= []
+    const index = state.schema.dimensions.findIndex((item) => item.__id__ === dimension.__id__)
+    if (index > -1) {
+      state.schema.dimensions[index] = dimension
+    } else {
+      state.schema.dimensions.push(dimension)
+    }
   })
 
   /**
@@ -601,6 +582,17 @@ export class SemanticModelService {
     }
   })
 
+  readonly upsertHierarchy = this.updater(
+    (state, { dimension, hierarchy }: { dimension: string; hierarchy: DeepPartial<PropertyHierarchy> }) => {
+      const index = state.schema.dimensions.findIndex((item) => item.name === dimension)
+      if (index > -1) {
+        const _dimension = state.schema.dimensions[index]
+        const key = upsertHierarchy(_dimension, hierarchy as PropertyHierarchy)
+        this.router.navigate([`dimension`, _dimension.__id__, `hierarchy`, key], { relativeTo: this.route })
+      }
+    }
+  )
+
   /**
    * Update cube of schema in {@link DataSource}
    *
@@ -620,17 +612,21 @@ export class SemanticModelService {
     this.dataSource$.value?.setEntityType(entityType)
   }
 
+  refreshTableSchema() {
+    this.refreshDBTables$.next(true)
+  }
+
   /**
   |--------------------------------------------------------------------------
   | Selectors
   |--------------------------------------------------------------------------
   */
-
-  selectDBTables(refresh = false) {
+  selectDBTables(refresh = null) {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
       take(1),
-      switchMap((dataSource) => dataSource.discoverDBTables(refresh))
+      combineLatestWith(this.refreshDBTables$),
+      switchMap(([dataSource, _refresh]) => dataSource.discoverDBTables(refresh ?? _refresh))
     )
   }
 
@@ -751,7 +747,9 @@ export class SemanticModelService {
     return this.originalDataSource$.pipe(
       filter(nonNullable),
       take(1),
-      switchMap((dataSource) => dataSource.query({ statement: `SELECT * FROM ${table} LIMIT ${k}`, forceRefresh: true }))
+      switchMap((dataSource) =>
+        dataSource.query({ statement: `SELECT * FROM ${table} LIMIT ${k}`, forceRefresh: true })
+      )
     )
   }
 
@@ -761,33 +759,12 @@ export class SemanticModelService {
     this._router.navigate([`dimension/${dimension.__id__}`], { relativeTo: this._route })
   }
 
-  newQuery(statement?: string) {
-    const key = uid10()
-    this.updater((state) => {
-      state.queries.push({
-        key,
-        name: 'Untitled_1',
-        modelId: state.id,
-        options: {
-          entities: [],
-          statement
-        }
-      })
-    })()
-
-    return key
-  }
-
-  readonly updateQueries = this.updater((state, queries: ModelQueryState[]) => {
-    // state.queries = queries
-  })
-
   /**
    * 打开实体编辑页面
    *
    * @param entity
    */
-  activeEntity(entity: SemanticModelEntity) {
+  activeEntity(entity: Partial<SemanticModelEntity>) {
     if (entity.type === SemanticModelEntityType.CUBE) {
       this.router.navigate([`entity/${entity.id}`], { relativeTo: this.route })
     } else {
@@ -813,5 +790,9 @@ export class SemanticModelService {
       ...state,
       [id]: dirty
     }))
+  }
+
+  clearDirty() {
+    this.dirty.set({})
   }
 }

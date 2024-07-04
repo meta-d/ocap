@@ -24,20 +24,19 @@ import { FieldArrayType } from '@ngx-formly/core';
   }
 
   @for (field of field.fieldGroup; track field.name; let i = $index;) {
-    <div class="ngm-formly__array-row" cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
+    <div class="ngm-formly__array-row relative" cdkDragBoundary=".ngm-formly-cdk__drag-list" cdkDrag>
       <div class="text-sm flex justify-between items-center">
-        <div>
         @if (props.labelField) {
           <span>{{model[i]?.[props.labelField]}}</span>
         }
-        </div>
-        @if (!to.hideDelete) {
-          <button class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
-            (click)="remove(i)">
-            <mat-icon>clear</mat-icon>
-          </button>
-        }
       </div>
+
+      @if (!to.hideDelete) {
+        <button class="ngm-formly__remove" mat-icon-button color="warn" displayDensity="compact"
+          (click)="remove(i)">
+          <mat-icon>clear</mat-icon>
+        </button>
+      }
       <formly-field class="flex-1" cdkDropList [field]="field"></formly-field>
       <div class="ngm-formly-cdk__drag-placeholder" *cdkDragPlaceholder></div>
     </div>

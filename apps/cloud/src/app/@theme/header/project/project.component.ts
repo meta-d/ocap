@@ -15,7 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { computedAsync } from 'ngxtension/computed-async'
 import { firstValueFrom } from 'rxjs'
 import { map, startWith, switchMap } from 'rxjs/operators'
-import { DefaultProject, IProject, ProjectService, Store, ToastrService } from '../../../@core'
+import { DefaultProject, IProject, ProjectsService, Store, ToastrService } from '../../../@core'
 import { InlineSearchComponent } from '../../../@shared'
 import { ProjectCreationComponent } from './creation/creation.component'
 
@@ -45,7 +45,7 @@ export class ProjectSelectorComponent {
   private _dialog = inject(MatDialog)
   private _toastrService = inject(ToastrService)
   private _router = inject(Router)
-  private projectService = inject(ProjectService)
+  private projectService = inject(ProjectsService)
   private translateService = inject(TranslateService)
   readonly store = inject(Store)
 

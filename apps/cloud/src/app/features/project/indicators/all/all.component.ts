@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common'
 import { Component, OnDestroy, inject } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { MatDialog } from '@angular/material/dialog'
 import { RouterModule } from '@angular/router'
 import { IndicatorsService } from '@metad/cloud/state'
@@ -8,9 +8,9 @@ import { NgmConfirmDeleteComponent, NgmTableComponent } from '@metad/ocap-angula
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
-import { firstValueFrom, map } from 'rxjs'
-import { IIndicator, ToastrService } from '../../../../@core/index'
-import { ProjectComponent } from '../../project.component'
+import { firstValueFrom } from 'rxjs'
+import { IIndicator, ToastrService, isUUID } from '../../../../@core/index'
+import { ProjectService } from '../../project.service'
 import { ProjectIndicatorsComponent } from '../indicators.component'
 
 @Component({
@@ -30,16 +30,14 @@ import { ProjectIndicatorsComponent } from '../indicators.component'
   styleUrls: ['./all.component.scss']
 })
 export class AllIndicatorComponent implements OnDestroy {
-  private projectComponent = inject(ProjectComponent)
+  isUUID = isUUID
   private indicatorsComponent = inject(ProjectIndicatorsComponent)
+  private projectService = inject(ProjectService)
   private indicatorsService = inject(IndicatorsService)
   private toastrService = inject(ToastrService)
   private _dialog = inject(MatDialog)
 
-  public readonly indicators$ = this.projectComponent.project$.pipe(
-    map((project) => project?.indicators),
-    takeUntilDestroyed()
-  )
+  readonly indicators = toSignal(this.projectService.indicators$)
 
   async onDelete(indicator: IIndicator) {
     const cofirm = await firstValueFrom(
@@ -52,7 +50,7 @@ export class AllIndicatorComponent implements OnDestroy {
     try {
       await firstValueFrom(this.indicatorsService.delete(indicator.id))
       this.toastrService.success('PAC.INDICATOR.DeleteIndicator')
-      this.projectComponent._removeIndicator(indicator.id)
+      this.projectService.removeIndicator(indicator.id)
     } catch (err) {
       this.toastrService.error(err)
     }

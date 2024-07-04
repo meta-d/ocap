@@ -21,7 +21,7 @@ import { ModelsService, NgmSemanticModel } from '@metad/cloud/state'
 import { CopilotChatMessageRoleEnum, CopilotEngine } from '@metad/copilot'
 import { IsDirty, nonBlank } from '@metad/core'
 import { NgmConfirmDeleteComponent, NgmConfirmUniqueComponent } from '@metad/ocap-angular/common'
-import { NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/ocap-angular/copilot'
+import { CommandDialogComponent, NgmCopilotChatComponent, provideCopilotDropAction } from '@metad/copilot-angular'
 import { DBTable, PropertyAttributes, TableEntity, pick } from '@metad/ocap-core'
 import { NX_STORY_STORE, NxStoryStore, StoryModel } from '@metad/story/core'
 import { NxSettingsPanelService } from '@metad/story/designer'
@@ -50,7 +50,7 @@ import { TranslationBaseComponent } from '../../../@shared'
 import { AppService } from '../../../app.service'
 import { exportSemanticModel } from '../types'
 import { ModelUploadComponent } from '../upload/upload.component'
-import { injectCubeCommand, injectDimensionCommand } from './copilot'
+import { injectCubeCommand, injectDimensionCommand, injectModelerCommand, injectTableCommand, provideCopilotTables } from './copilot'
 import {
   CreateEntityDialogDataType,
   CreateEntityDialogRetType,
@@ -94,6 +94,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   private toastrService = inject(ToastrService)
   readonly #logger = inject(NGXLogger)
   readonly destroyRef = inject(DestroyRef)
+  readonly copilotContext = provideCopilotTables()
 
   /**
   |--------------------------------------------------------------------------
@@ -205,7 +206,6 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   readonly writable$ = computed(
     () => !this.isWasm$() && (this.modelType$() === MODEL_TYPE.OLAP || this.modelType$() === MODEL_TYPE.SQL)
   )
-  // readonly _isDirty = toSignal(this.modelService.dirty$)
   readonly tables = toSignal(this.selectDBTables$)
 
   /**
@@ -215,6 +215,7 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
   */
   #cubeCommand = injectCubeCommand(this.dimensions)
   #dimensionCommand = injectDimensionCommand(this.dimensions)
+  #tableCommand = injectTableCommand()
   #entityDropAction = provideCopilotDropAction({
     id: CdkDragDropContainers.Tables,
     implementation: async (event: CdkDragDrop<any[], any[], any>, copilotEngine: CopilotEngine) => {
@@ -279,6 +280,8 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       }
     }
   })
+
+  #modelerCommand = injectModelerCommand()
 
   ngOnInit() {
     this.model = this.route.snapshot.data['storyModel']
@@ -367,6 +370,18 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
         this.activeEntity(modelEntity)
       }
     }
+  }
+
+  async aiCreateEntity() {
+    this._dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['dimension', 'cube', 'table']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 
   /**
@@ -601,9 +616,9 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
     try {
       await firstValueFrom(this.modelsService.deleteCache(this.model.id))
       this.clearingServerCache = false
-      this.toastrService.success('PAC.MODEL.ClearServerCache')
+      this.toastrService.success('PAC.MODEL.ClearServerCache', {Default: 'Clear server cache successfully'})
     } catch (err) {
-      this.toastrService.error('PAC.MODEL.ClearServerCache', getErrorMessage(err))
+      this.toastrService.error('PAC.MODEL.ClearServerCache', getErrorMessage(err), {Default: 'Clear server cache failed'})
       this.clearingServerCache = false
     }
   }

@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, model } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
+import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router } from '@angular/router'
+import { CommandDialogComponent } from '@metad/copilot-angular'
 import { nonBlank } from '@metad/core'
 import { NgmCommonModule, NgmTableComponent, ResizerModule, SplitterModule } from '@metad/ocap-angular/common'
 import { OcapCoreModule, effectAction } from '@metad/ocap-angular/core'
@@ -60,10 +62,10 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   readonly #router = inject(Router)
   readonly #destroyRef = inject(DestroyRef)
   readonly #translate = inject(TranslateService)
+  readonly dialog = inject(MatDialog)
 
-  
   public readonly dimension$ = this.dimensionService.dimension$
-  
+
   /**
    |--------------------------------------------------------------------------
    | Signals
@@ -76,6 +78,7 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   readonly error = toSignal(
     this.dimensionService.name$.pipe(switchMap((entity) => this.modelService.selectOriginalEntityError(entity)))
   )
+  readonly dirty = this.dimensionService.dirtyCheckResult.dirty
 
   readonly tables = computed(
     () =>
@@ -100,35 +103,6 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   |--------------------------------------------------------------------------
   */
   #createHierarchyCommand = injectHierarchyCommand(this.dimensionService, this.tableTypes)
-  //   h = injectCopilotCommand({
-  //     name: 'h',
-  //     description: this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' }),
-  //     examples: [this.#translate.instant('PAC.MODEL.Copilot.CreateHierarchy', { Default: 'Create a new hierarchy' })],
-  //     systemPrompt: async () => {
-  //       return `你是一名 BI 分析多维模型建模专家，请根据信息为当前维度创建一个新的 Hierarchy，
-
-  // `
-  //     },
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'create-model-hierarchy',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'hierarchy',
-  //             type: 'object', // Add or change types according to your needs.
-  //             description: 'The defination of hierarchy',
-  //             required: true,
-  //             properties: (<{ properties: any }>zodToJsonSchema(HierarchySchema)).properties
-  //           }
-  //         ],
-  //         implementation: async (h: PropertyHierarchy) => {
-  //           this.dimensionService.newHierarchy(h)
-  //           return `✅`
-  //         }
-  //       })
-  //     ]
-  //   })
 
   /**
   |--------------------------------------------------------------------------
@@ -220,7 +194,16 @@ export class ModelDimensionComponent extends TranslationBaseComponent implements
   }
 
   newHierarchy() {
-    this.dimensionService.newHierarchy(null)
+    this.dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['hierarchy']
+        }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
+    // this.dimensionService.newHierarchy(null)
   }
 
   duplicateHierarchy(key: string) {
