@@ -2,14 +2,15 @@
   "name": "xmla",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/xmla/src",
+  "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/xmla",
-        "tsConfig": "packages/xmla/tsconfig.lib.json",
         "main": "packages/xmla/src/index.ts",
+        "tsConfig": "packages/xmla/tsconfig.lib.json",
         "project": "packages/xmla/package.json",
         "entryFile": "packages/xmla/src/index.ts",
         "globals": [
@@ -29,6 +30,7 @@
             "output": "."
           }
         ],
+        "compiler": "swc",
         "format": ["cjs", "esm"]
       }
     },

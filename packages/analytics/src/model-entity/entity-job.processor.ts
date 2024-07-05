@@ -37,12 +37,7 @@ export class EntityMemberProcessor {
 
 		try {
 			const model = await this.modelService.findOne(modelId, { where: {tenantId, organizationId} })
-			const cubeMembers = await this.memberService.syncMembers(model.id, {
-				[cube]: {
-					entityId,
-					hierarchies
-				},
-			}, {createdById})
+			const members = await this.memberService.syncMembers(model.id, cube, hierarchies, {id: entityId, createdById})
 
 			// Update job status and sync status of model entity
 			await this.commandBus.execute(
@@ -52,7 +47,7 @@ export class EntityMemberProcessor {
 						vector: {
 							hierarchies
 						},
-						members: cubeMembers[cube]
+						members
 					},
 					job: {
 						id: job.id,
@@ -63,6 +58,9 @@ export class EntityMemberProcessor {
 
 			this.logger.debug(`[Job: entity '${job.id}'] End!`)
 		} catch (err) {
+			this.logger.debug(`[Job: entity '${job.id}'] Error!`)
+			console.error(err)
+
 			this.entityService.update(entityId, {
 				job: {
 					id: job.id,
@@ -71,7 +69,6 @@ export class EntityMemberProcessor {
 				}
 			})
 			await job.moveToFailed(err)
-			this.logger.debug(`[Job: entity '${job.id}'] Error!`)
 		}
 	}
 }

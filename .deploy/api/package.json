@@ -1,7 +1,7 @@
 {
   "name": "ocap-server",
   "author": "Metad",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "scripts": {
     "start": "nx serve",
     "build": "nx build",

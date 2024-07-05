@@ -53,3 +53,20 @@ export interface AgentRequestOptions {
    */
   table?: string
 }
+
+export interface OcapCache {
+  keys(): Promise<string[]>
+  clear(key: string): Promise<void>
+  clearAllCache(): void
+  changeCacheLevel(level: number): void
+  getCacheLevel(): number
+  getCache<T>(options: OcapCacheOptions, ...params): Promise<T>
+  setCache(options: OcapCacheOptions, data: unknown, ...params): void
+}
+
+export interface OcapCacheOptions {
+  key: string;
+  maxAge: number
+  level: number
+  version: string
+}

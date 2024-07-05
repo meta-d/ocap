@@ -51,51 +51,44 @@ export class SemanticModelMemberService extends TenantOrganizationAwareCrudServi
 	 * @param modelId
 	 * @param body Cube name and it's hierarchies
 	 */
-	async syncMembers(modelId: string, body: Record<string, { entityId: string; hierarchies: string[] }>, { createdById }: Partial<ISemanticModelEntity>) {
+	async syncMembers(modelId: string, cube: string, hierarchies: string[], { id, createdById }: Partial<ISemanticModelEntity>) {
 		const model = await this.modelRepository.findOne(modelId, {
 			relations: ['dataSource', 'dataSource.type', 'roles']
 		})
 		const modelKey = getSemanticModelKey(model)
-		const modelDataSource = await firstValueFrom(this.dsCoreService.getDataSource(modelKey))
+		const modelDataSource = await this.dsCoreService._getDataSource(modelKey)
 
-		const cubeMembers = {}
-		for (const cube of Object.keys(body)) {
-			const { hierarchies, entityId } = body[cube]
+		this.logger.debug(`Sync members for dimensions: ${hierarchies} in cube: ${cube} of model: ${modelId} ...`)
 
-			this.logger.debug(`Sync members for dimensions: ${hierarchies} in cube: ${cube} of model: ${modelId} ...`)
-
-			const entityType = await firstValueFrom(modelDataSource.selectEntityType(cube))
-			if (!isEntityType(entityType)) {
-				throw entityType
-			}
-
-			this.logger.debug(`Got entity type: ${entityType.name}`)
-
-			const hMembers = {}
-			let members = []
-			for (const hierarchy of hierarchies) {
-				const hierarchyProperty = getEntityHierarchy(entityType, hierarchy)
-				const _members = await firstValueFrom(
-					modelDataSource.selectMembers(cube, {
-						dimension: hierarchyProperty.dimension,
-						hierarchy: hierarchyProperty.name
-					})
-				)
-
-				hMembers[hierarchy] = _members.length
-				members = members.concat(_members.map((item) => ({ ...item, modelId, entityId, cube })))
-			}
-
-			this.logger.debug(`Got entity members: ${members.length}`)
-
-			if (members.length) {
-				await this.storeMembers(model, cube, members.map((member) => ({...member, createdById })), entityType)
-			}
-
-			cubeMembers[cube] = hMembers
+		const entityType = await firstValueFrom(modelDataSource.selectEntityType(cube))
+		if (!isEntityType(entityType)) {
+			throw entityType
 		}
 
-		return cubeMembers
+		this.logger.debug(`Got entity type: ${entityType.name}`)
+
+		const hMembers = {}
+		let members = []
+		for (const hierarchy of hierarchies) {
+			const hierarchyProperty = getEntityHierarchy(entityType, hierarchy)
+			const _members = await firstValueFrom(
+				modelDataSource.selectMembers(cube, {
+					dimension: hierarchyProperty.dimension,
+					hierarchy: hierarchyProperty.name
+				})
+			)
+
+			hMembers[hierarchy] = _members.length
+			members = members.concat(_members.map((item) => ({ ...item, modelId, entityId: id, cube })))
+		}
+
+		this.logger.debug(`Got entity members: ${members.length}`)
+
+		if (members.length) {
+			await this.storeMembers(model, cube, members.map((member) => ({...member, createdById })), entityType)
+		}
+
+		return hMembers
 	}
 
 	/**

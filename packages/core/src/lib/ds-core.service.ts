@@ -1,6 +1,6 @@
 import { ComponentStore } from '@metad/store'
 import { combineLatest, filter, map, Observable, shareReplay, switchMap } from 'rxjs'
-import { Agent, AgentType, DSCacheService } from './agent'
+import { Agent, AgentType, OcapCache } from './agent'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
 import { EntitySet, isEntitySet } from './models'
 import { TimeGranularity } from './models/index'
@@ -18,12 +18,13 @@ export class DSCoreService extends ComponentStore<DSState> {
   )
 
   private _dataSources = new Map<string, Observable<DataSource>>()
+  readonly #dataSources = new Map<string, DataSource>()
 
   constructor(
     public agents: Array<Agent>,
     dataSources: Array<DataSourceOptions>,
     public factories: Array<{ type: string; factory: DataSourceFactory }>,
-    public cacheService?: DSCacheService
+    public cacheService?: OcapCache
   ) {
     super({ dataSources })
   }
@@ -55,27 +56,49 @@ export class DSCoreService extends ComponentStore<DSState> {
         name,
         this.select((state) => state.dataSources?.find((item) => item.key === name || item.name === name)).pipe(
           filter((value) => !!value),
-          switchMap(async (options) => {
-            const provider = this.factories.find(({ type }) => type === options?.type)
-            if (!provider) {
-              throw new Error(`Can't found provider for dataSource type: '${options.type}'`)
-            }
-
-            const agent = this.agents.find((item) => item.type === options.agentType)
-
-            if (!agent) {
-              throw new Error(`Can't found Agent for type '${options.agentType}'`)
-            }
-
-            const DataSourceType = await provider.factory()
-            return new DataSourceType(options, agent, this.cacheService)
-          }),
+          switchMap((options) => this.createDataSource(options)),
           shareReplay(1)
         )
       )
     }
 
     return this._dataSources.get(name)
+  }
+
+  /**
+   * New async method to get DataSource object
+   * 
+   * @param name 
+   * @returns 
+   */
+  async _getDataSource(name: string): Promise<DataSource> {
+    if (!this.#dataSources.has(name)) {
+      const options = this.get((state) => state.dataSources?.find((item) => item.key === name || item.name === name))
+      if (!options) {
+        throw new Error(`Can't found dataSource options: '${name}'`)
+      }
+      
+      this.#dataSources.set(name, await this.createDataSource(options))
+    }
+    
+    return this.#dataSources.get(name)
+  }
+
+  private async createDataSource(options: DataSourceOptions) {
+    const provider = this.factories.find(({ type }) => type === options?.type)
+    if (!provider) {
+      throw new Error(`Can't found provider for dataSource type: '${options.type}'`)
+    }
+
+    const agent = this.agents.find((item) => item.type === options.agentType)
+
+    if (!agent) {
+      throw new Error(`Can't found Agent for type '${options.agentType}'`)
+    }
+
+    const DataSourceType = await provider.factory()
+
+    return new DataSourceType(options, agent, this.cacheService)
   }
 
   getEntityService(dataSource: string, entitySet: string) {

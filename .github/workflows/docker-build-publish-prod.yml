@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6.3.0
       with:
           context: .
           file: ./.deploy/api/Dockerfile
@@ -33,7 +33,7 @@ jobs:
           sudo docker image list
 
     - name: Login to DockerHub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3.2.0
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
         docker push metadc/ocap-api:$GITHUB_REF_NAME
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3.2.0
       with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -78,7 +78,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6.3.0
       with:
           context: .
           file: ./.deploy/webapp/Dockerfile
@@ -96,7 +96,7 @@ jobs:
           sudo docker image list
 
     - name: Login to DockerHub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3.2.0
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -110,7 +110,7 @@ jobs:
         docker push metadc/ocap-webapp:$GITHUB_REF_NAME
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3.2.0
       with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -140,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6.3.0
         with:
             context: .
             file: ./.deploy/olap/Dockerfile
@@ -158,7 +158,7 @@ jobs:
             sudo docker image list
   
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3.2.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -172,7 +172,7 @@ jobs:
           docker push metadc/ocap-olap:$GITHUB_REF_NAME
   
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3.2.0
         with:
             registry: ghcr.io
             username: ${{ github.repository_owner }}
