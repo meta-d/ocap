@@ -11,6 +11,11 @@ export interface DSState {
   timeGranularity?: TimeGranularity
 }
 
+/**
+ * DataSource core store
+ * 
+ * 
+ */
 export class DSCoreService extends ComponentStore<DSState> {
   public readonly timeGranularity$ = this.select((state) => state.timeGranularity)
   public readonly currentTime$ = combineLatest([this.select((state) => state.today), this.timeGranularity$]).pipe(
@@ -29,13 +34,14 @@ export class DSCoreService extends ComponentStore<DSState> {
     super({ dataSources })
   }
 
-  public readonly registerModel = this.updater((state, model: DataSourceOptions) => {
+  registerModel = this.updater((state, model: DataSourceOptions) => {
     // Backward compatibility
     if (model.useLocalAgent) {
       model.agentType = model.agentType ?? AgentType.Local
     }
 
     state.dataSources = state.dataSources ?? []
+    // Use `key` as primary to determine duplication
     const index = state.dataSources.findIndex((item) => item.key === model.key)
     if (index > -1) {
       state.dataSources.splice(index, 1, model)
@@ -47,14 +53,14 @@ export class DSCoreService extends ComponentStore<DSState> {
   /**
    * @todo 共用 DataSource 对象
    *
-   * @param name
+   * @param key The key of data source
    * @returns
    */
-  getDataSource(name: string): Observable<DataSource> {
-    if (!this._dataSources.get(name)) {
+  getDataSource(key: string): Observable<DataSource> {
+    if (!this._dataSources.get(key)) {
       this._dataSources.set(
-        name,
-        this.select((state) => state.dataSources?.find((item) => item.key === name || item.name === name)).pipe(
+        key,
+        this.select((state) => state.dataSources?.find((item) => item.key === key)).pipe(
           filter((value) => !!value),
           switchMap((options) => this.createDataSource(options)),
           shareReplay(1)
@@ -62,26 +68,26 @@ export class DSCoreService extends ComponentStore<DSState> {
       )
     }
 
-    return this._dataSources.get(name)
+    return this._dataSources.get(key)
   }
 
   /**
    * New async method to get DataSource object
    * 
-   * @param name 
+   * @param key
    * @returns 
    */
-  async _getDataSource(name: string): Promise<DataSource> {
-    if (!this.#dataSources.has(name)) {
-      const options = this.get((state) => state.dataSources?.find((item) => item.key === name || item.name === name))
+  async _getDataSource(key: string): Promise<DataSource> {
+    if (!this.#dataSources.has(key)) {
+      const options = this.get((state) => state.dataSources?.find((item) => item.key === key))
       if (!options) {
-        throw new Error(`Can't found dataSource options: '${name}'`)
+        throw new Error(`Can't found dataSource options: '${key}'`)
       }
       
-      this.#dataSources.set(name, await this.createDataSource(options))
+      this.#dataSources.set(key, await this.createDataSource(options))
     }
     
-    return this.#dataSources.get(name)
+    return this.#dataSources.get(key)
   }
 
   private async createDataSource(options: DataSourceOptions) {

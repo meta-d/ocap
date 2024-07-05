@@ -1,96 +1,96 @@
-import { AgentType, ISemanticModel } from "@metad/contracts"
-import { DataSourceOptions, Syntax } from "@metad/ocap-core"
-import { isNil, omit } from "lodash"
-import { SemanticModel } from "../../core/entities/internal"
-import { NgmDSCoreService } from "./core.service"
+import { AgentType, ISemanticModel } from '@metad/contracts'
+import { DataSourceOptions, Syntax } from '@metad/ocap-core'
+import { isNil, omit } from 'lodash'
+import { SemanticModel } from '../../core/entities/internal'
+import { NgmDSCoreService } from './core.service'
 
 export const OCAP_AGENT_TOKEN = 'OCAP_AGENT_TOKEN'
 export const OCAP_DATASOURCE_TOKEN = 'OCAP_DATASOURCE_TOKEN'
 export const OCAP_MODEL_TOKEN = 'OCAP_MODEL_TOKEN'
 
 export function getSemanticModelKey(model: ISemanticModel) {
-    return model.id
+	return model.id
 }
 
 export function registerModel(model: SemanticModel, dsCoreService: NgmDSCoreService) {
-    const modelKey = getSemanticModelKey(model)
-    const agentType = isNil(model.dataSource)
-        ? AgentType.Wasm
-        : model.dataSource.useLocalAgent
-            ? AgentType.Local
-            : AgentType.Server
-    const dialect =
-        model.dataSource?.type?.type === 'agent'
-            ? 'sqlite'
-            : agentType === AgentType.Wasm
-                ? 'duckdb'
-                : model.dataSource?.type?.type
-    const catalog = agentType === AgentType.Wasm ? model.catalog || 'main' : model.catalog
-    const semanticModel = {
-        ...omit(model, 'indicators'),
-        name: modelKey,
-        catalog,
-        dialect,
-        agentType,
-        settings: {
-            dataSourceInfo: model.dataSource?.options?.data_source_info as string
-        } as any,
-        schema: {
-            ...(model.options?.schema ?? {}),
-            indicators: model.indicators
-        }
-    } as DataSourceOptions
+	const modelKey = getSemanticModelKey(model)
+	const agentType = isNil(model.dataSource)
+		? AgentType.Wasm
+		: model.dataSource.useLocalAgent
+			? AgentType.Local
+			: AgentType.Server
+	const dialect =
+		model.dataSource?.type?.type === 'agent'
+			? 'sqlite'
+			: agentType === AgentType.Wasm
+				? 'duckdb'
+				: model.dataSource?.type?.type
+	const catalog = agentType === AgentType.Wasm ? model.catalog || 'main' : model.catalog
+	const semanticModel = {
+		...omit(model, 'indicators'),
+		key: modelKey,
+		catalog,
+		dialect,
+		agentType,
+		settings: {
+			dataSourceInfo: model.dataSource?.options?.data_source_info as string
+		} as any,
+		schema: {
+			...(model.options?.schema ?? {}),
+			indicators: model.indicators
+		}
+	} as DataSourceOptions
 
-    if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
-        semanticModel.settings = semanticModel.settings
-            ? { ...semanticModel.settings }
-            : {
-                ignoreUnknownProperty: true
-            }
-        semanticModel.settings.dataSourceId = model.dataSource.id
-    }
+	if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
+		semanticModel.settings = semanticModel.settings
+			? { ...semanticModel.settings }
+			: {
+					ignoreUnknownProperty: true
+				}
+		semanticModel.settings.dataSourceId = model.dataSource.id
+	}
 
-    if (model.type === 'XMLA') {
-        semanticModel.syntax = Syntax.MDX
-        if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
-            dsCoreService.registerModel({
-                ...semanticModel,
-                /**
-                 * Corresponding name of schema in olap engine:
-                 * ```xml
-                 * <root name="Semantic Model Name">
-                 *    <Cube name="Sales">
-                 * ...
-                 * ```
-                 */
-                catalog: model.name,
-                settings: {
-                    ...(semanticModel.settings ?? {}),
-                    /**
-                     * Corresponding id of XmlaConnection in olap engine:
-                     */
-                    dataSourceInfo: model.id
-                } as any
-            })
-        } else {
-            dsCoreService.registerModel({
-                ...semanticModel,
-                settings: {
-                    ...semanticModel.settings,
-                    dataSourceInfo: model.dataSource?.options?.data_source_info
-                } as any
-            })
-        }
-    } else {
-        dsCoreService.registerModel({
-            ...semanticModel,
-            syntax: Syntax.SQL,
-            settings: {
-                ...semanticModel.settings,
-                dataSourceInfo: model.dataSource?.options?.data_source_info
-            } as any
-        })
-    }
+	if (model.type === 'XMLA') {
+		semanticModel.syntax = Syntax.MDX
+		if (model.dataSource?.type?.protocol?.toUpperCase() === 'SQL') {
+			dsCoreService.registerModel({
+				...semanticModel,
+				/**
+				 * Corresponding name of schema in olap engine:
+				 * ```xml
+				 * <root name="Semantic Model Name">
+				 *    <Cube name="Sales">
+				 * ...
+				 * ```
+				 */
+				catalog: model.name,
+				settings: {
+					...(semanticModel.settings ?? {}),
+					/**
+					 * Corresponding id of XmlaConnection in olap engine:
+					 */
+					dataSourceInfo: model.id
+				} as any
+			})
+		} else {
+			dsCoreService.registerModel({
+				...semanticModel,
+				settings: {
+					...semanticModel.settings,
+					dataSourceInfo: model.dataSource?.options?.data_source_info
+				} as any
+			})
+		}
+	} else {
+		dsCoreService.registerModel({
+			...semanticModel,
+			syntax: Syntax.SQL,
+			settings: {
+				...semanticModel.settings,
+				dataSourceInfo: model.dataSource?.options?.data_source_info
+			} as any
+		})
+	}
 
-    return semanticModel
+	return semanticModel
 }

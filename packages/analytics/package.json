@@ -1,6 +1,6 @@
 {
 	"name": "@metad/analytics",
-	"version": "2.4.2",
+	"version": "2.4.3",
 	"type": "commonjs",
 	"license": "MIT",
 	"scripts": {
