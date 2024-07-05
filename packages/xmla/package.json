@@ -4,8 +4,10 @@
   "scripts": {
     "docs": "yarn typedoc"
   },
+  "main": "./src/index.js",
+  "typings": "./src/index.d.ts",
   "peerDependencies": {
-    "@metad/ocap-core": "^2.3.2",
+    "@metad/ocap-core": "^2.4.1",
     "xmldom": "^0.6.0"
   }
 }

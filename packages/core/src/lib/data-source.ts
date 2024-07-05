@@ -11,7 +11,7 @@ import {
   switchMap,
   takeUntil
 } from 'rxjs'
-import { Agent, DSCacheService } from './agent'
+import { Agent, OcapCache } from './agent'
 import { EntityService } from './entity'
 import {
   AggregationRole,
@@ -265,7 +265,7 @@ export abstract class AbstractDataSource<T extends DataSourceOptions> implements
   }
 
   protected _entitySets = {}
-  constructor(options: T, public agent: Agent, protected cacheService: DSCacheService) {
+  constructor(options: T, public agent: Agent, public cacheService: OcapCache) {
     this.options$.next(options)
   }
   

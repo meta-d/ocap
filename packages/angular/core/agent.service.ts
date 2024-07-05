@@ -31,5 +31,7 @@ export class NgmAgentService {
 
 @Injectable()
 export class NgmDSCacheService extends DSCacheService {
-
+  constructor() {
+    super()
+  }
 }

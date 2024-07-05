@@ -58,6 +58,9 @@ export class EntityMemberProcessor {
 
 			this.logger.debug(`[Job: entity '${job.id}'] End!`)
 		} catch (err) {
+			this.logger.debug(`[Job: entity '${job.id}'] Error!`)
+			console.error(err)
+
 			this.entityService.update(entityId, {
 				job: {
 					id: job.id,
@@ -66,7 +69,6 @@ export class EntityMemberProcessor {
 				}
 			})
 			await job.moveToFailed(err)
-			this.logger.debug(`[Job: entity '${job.id}'] Error!`)
 		}
 	}
 }

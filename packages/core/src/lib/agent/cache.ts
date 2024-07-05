@@ -1,5 +1,6 @@
 import { get, set } from 'money-clip'
 import { clear, del, keys, UseStore } from 'idb-keyval'
+import { OcapCache, OcapCacheOptions } from './types'
 
 /**
  * Cache decorator options (IndexedDB)
@@ -21,7 +22,7 @@ export interface CacheOptions {
 
 const CACHE_OPTIONS = {level: 3}
 
-const serializeArgs = (...args: unknown[]) => args.map((arg: unknown) => arg.toString()).join(':')
+export const serializeArgs = (...args: unknown[]) => args.map((arg: unknown) => arg.toString()).join(':')
 
 /**
  * Cache decorator (store in IndexedDB), use [money-clip](https://www.npmjs.com/package/money-clip) lib:
@@ -87,12 +88,22 @@ export function Cache(key: string, {maxAge, level}: CacheOptions) {
 
 /**
  * Cache service, manage cache using [idb-keyval](https://www.npmjs.com/package/idb-keyval) lib:
+ * 
  * 1. clear all cache
  * 2. change cache level
  * 3. get cache keys
  * 4. clear cache by key
  */
-export class DSCacheService {
+export class DSCacheService implements OcapCache {
+  options = {
+    maxAge: 1000 * 60 * 60,
+    level: 3
+  }
+
+  constructor(options?: CacheOptions) {
+    this.options = options ?? this.options
+  }
+
   clearAllCache(): void {
     clear()
   }
@@ -105,7 +116,23 @@ export class DSCacheService {
     return CACHE_OPTIONS.level
   }
 
-  async keys(customStore?: UseStore):  Promise<IDBValidKey[]> {
+  async getCache({key: cacheKey, level, version, maxAge}: OcapCacheOptions, {skip}: {skip?: boolean | void}= {}) {
+    if (level <= this.options.level) {
+      if (!skip) {
+        return get(cacheKey, {version, maxAge})
+      }
+    }
+
+    return null
+  }
+
+  setCache({key, level, version, maxAge}: OcapCacheOptions, data: unknown): void {
+    if (data && level <= this.options.level) {
+      set(key, data, {version, maxAge})
+    }
+  }
+
+  async keys(customStore?: UseStore):  Promise<string[]> {
     return keys(customStore)
   }
 

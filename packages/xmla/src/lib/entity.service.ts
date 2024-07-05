@@ -1,8 +1,6 @@
 import {
   AbstractEntityService,
   Annotation,
-  AnnotationTerm,
-  Cache,
   CalculatedProperty,
   EntityService,
   getCalendarDimension,
@@ -18,6 +16,7 @@ import {
   QueryReturn,
   RecursiveHierarchyType,
   Semantics,
+  serializeArgs,
 } from '@metad/ocap-core'
 import { BehaviorSubject, EMPTY, firstValueFrom, from, Observable, of } from 'rxjs'
 import { catchError, map } from 'rxjs/operators'
@@ -56,13 +55,13 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
     super(dataSource, entitySet)
   }
 
-  override getAnnotation<AT extends Annotation>(term: string, qualifier: string): Observable<AT> {
-    const path = term + (qualifier ? `#${qualifier}` : '')
-    const annotations = this.annotations$.getValue()
-    return this.dataSource
-      .getAnnotation<AT>(this.entitySet, AnnotationTerm[term], qualifier)
-      .pipe(map((annotation) => (annotation ? annotation : annotations?.[path]) as AT))
-  }
+  // override getAnnotation<AT extends Annotation>(term: string, qualifier: string): Observable<AT> {
+  //   const path = term + (qualifier ? `#${qualifier}` : '')
+  //   const annotations = this.annotations$.getValue()
+  //   return this.dataSource
+  //     .getAnnotation<AT>(this.entitySet, AnnotationTerm[term], qualifier)
+  //     .pipe(map((annotation) => (annotation ? annotation : annotations?.[path]) as AT))
+  // }
 
   selectAssociations(): Observable<[]> {
     throw new Error('Method not implemented.')
@@ -222,16 +221,30 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
     }
   }
 
-  @Cache('xmla-mdx:', { maxAge: 1000 * 60 * 60, level: 3 })
   async execute(modelName: string, mdx: string, language = '', options: { skip: boolean | void }): Promise<any> {
     const headers: HttpHeaders = {}
     if (language) {
       headers['Accept-Language'] = language
     }
 
-    const dataset = await firstValueFrom(this.dataSource.xmlaService.execute(mdx, { headers, forceRefresh: options?.skip }))
+    const cacheOptions = {
+      key: serializeArgs('xmla-mdx:', modelName, mdx, language),
+      version: '1',
+      maxAge: 1000 * 60 * 60,
+      level: 3
+    }
 
-    return fetchDataFromMultidimensionalTuple(dataset, this.entityType, mdx)
+    // cache
+    const cache = await this.dataSource.cacheService.getCache(cacheOptions, options)
+
+    if (cache) {
+      return cache
+    }
+
+    const dataset = await firstValueFrom(this.dataSource.xmlaService.execute(mdx, { headers, forceRefresh: options?.skip }))
+    const result = fetchDataFromMultidimensionalTuple(dataset, this.entityType, mdx)
+    this.dataSource.cacheService.setCache(cacheOptions, result)
+    return result
   }
 
   /**

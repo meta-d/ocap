@@ -1,6 +1,6 @@
 import { ComponentStore } from '@metad/store'
 import { combineLatest, filter, map, Observable, shareReplay, switchMap } from 'rxjs'
-import { Agent, AgentType, DSCacheService } from './agent'
+import { Agent, AgentType, OcapCache } from './agent'
 import { DataSource, DataSourceFactory, DataSourceOptions } from './data-source'
 import { EntitySet, isEntitySet } from './models'
 import { TimeGranularity } from './models/index'
@@ -24,7 +24,7 @@ export class DSCoreService extends ComponentStore<DSState> {
     public agents: Array<Agent>,
     dataSources: Array<DataSourceOptions>,
     public factories: Array<{ type: string; factory: DataSourceFactory }>,
-    public cacheService?: DSCacheService
+    public cacheService?: OcapCache
   ) {
     super({ dataSources })
   }
