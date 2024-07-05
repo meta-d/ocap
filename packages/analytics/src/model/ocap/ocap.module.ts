@@ -3,15 +3,10 @@ import { CqrsModule } from '@nestjs/cqrs'
 import { NgmDSCoreService } from './core.service'
 import { provideOcap } from './providers'
 
-
 @Module({
-	imports: [
-		CqrsModule
-	],
+	imports: [CqrsModule],
 	controllers: [],
 	providers: [...provideOcap()],
-	exports: [
-        NgmDSCoreService
-    ]
+	exports: [NgmDSCoreService]
 })
 export class OcapModule {}
