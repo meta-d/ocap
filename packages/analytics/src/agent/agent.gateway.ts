@@ -3,10 +3,18 @@ import { getErrorMessage } from '@metad/server-common'
 import { WsJWTGuard, WsUser } from '@metad/server-core'
 import { UseGuards } from '@nestjs/common'
 import { QueryBus } from '@nestjs/cqrs'
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets'
+import {
+	ConnectedSocket,
+	MessageBody,
+	OnGatewayDisconnect,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
+	WsResponse
+} from '@nestjs/websockets'
 import { Observable, from } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import { DataSourceOlapQuery } from '../data-source'
 import { ModelOlapQuery } from '../model'
 
@@ -15,7 +23,7 @@ import { ModelOlapQuery } from '../model'
 		origin: '*'
 	}
 })
-export class EventsGateway {
+export class EventsGateway implements OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server
 
@@ -23,7 +31,11 @@ export class EventsGateway {
 
 	@UseGuards(WsJWTGuard)
 	@SubscribeMessage('olap')
-	async olap(@MessageBody() data: any, @WsUser() user: IUser): Promise<WsResponse<any>> {
+	async olap(
+		@MessageBody() data: any,
+		@ConnectedSocket() client: Socket,
+		@WsUser() user: IUser
+	): Promise<WsResponse<any>> {
 		const { id, dataSourceId, modelId, body, acceptLanguage, forceRefresh } = data
 
 		try {
@@ -33,6 +45,7 @@ export class EventsGateway {
 					new ModelOlapQuery(
 						{
 							id,
+							sessionId: client.id,
 							dataSourceId,
 							modelId,
 							body,
@@ -44,7 +57,7 @@ export class EventsGateway {
 				)
 			} else {
 				result = await this.queryBus.execute(
-					new DataSourceOlapQuery({ id, dataSourceId, body, forceRefresh, acceptLanguage }, user)
+					new DataSourceOlapQuery({ id, sessionId: client.id, dataSourceId, body, forceRefresh, acceptLanguage }, user)
 				)
 			}
 			return {
@@ -79,5 +92,9 @@ export class EventsGateway {
 	@SubscribeMessage('identity')
 	async identity(@MessageBody() data: number): Promise<number> {
 		return data
+	}
+
+	handleDisconnect(client: Socket) {
+		// console.log(`disconnect `, client.id)
 	}
 }

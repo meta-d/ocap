@@ -26,6 +26,7 @@ export class ProxyAgent implements Agent {
 			new ModelOlapQuery(
 				{
 					id: uuid(),
+					sessionId: model.id,
 					dataSourceId: model.dataSource.id,
 					modelId: model.id,
 					body: options.body,

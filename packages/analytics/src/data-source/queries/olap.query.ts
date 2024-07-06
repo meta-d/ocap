@@ -7,6 +7,7 @@ export class DataSourceOlapQuery implements IQuery {
 	constructor(
 		public readonly input: {
 			id: string
+			sessionId: string
 			dataSourceId: string
 			body: string
 			forceRefresh: boolean
