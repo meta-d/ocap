@@ -42,7 +42,7 @@ import {
 } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
-import { EntityPreview, MODEL_TYPE, ModelDesignerType, ModelSchemaValueTypes } from '../types'
+import { EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
 import { CubeDimensionType, CubeEventType, newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
@@ -182,11 +182,7 @@ export class ModelEntityService {
   private _cubeSub = this.cube$.pipe(filter(Boolean), takeUntilDestroyed()).subscribe((cube) => {
     this.#modelService.updateDataSourceSchemaCube(cube)
   })
-  // private _entityTypeSub = this.select((state) => state.entityType)
-  //   .pipe(filter(Boolean), takeUntilDestroyed())
-  //   .subscribe((cube) => {
-  //     this.#modelService.updateDataSourceSchemaEntityType(cube)
-  //   })
+
   private selectedSub = toObservable(this.selectedProperty)
     .pipe(
       switchMap((typeAndId) => {

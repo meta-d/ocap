@@ -3,7 +3,7 @@
     <span>
       {{ 'PAC.MENU.DIMENSIONS' | translate: {Default: "Dimensions"} }}
     </span>
-    @if (modelType !== MODEL_TYPE.XMLA) {
+    @if (modelType() !== MODEL_TYPE.XMLA) {
       <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
         [matTooltip]=" 'PAC.MODEL.ENTITY.NewDimension' | translate: {Default: 'New Dimension'} "
         (click)="$event.stopPropagation();$event.preventDefault();addNewItem({}, null);">
@@ -18,27 +18,36 @@
     >
     <div class="flex-1 flex flex-col overflow-auto">
       @for (item of dimensionUsages$ | async; track item.usage.name) {
-        <pac-property-dimension
-          displayDensity="compact"
+        <pac-usage-dimension displayDensity="compact"
           [dimension]="item.dimension"
           [usage]="item.usage"
-          [readonly]="true"
           (delete)="onDelete($event)"
           (toDimension)="toDimensionUsage(item.usage)"
-        >
-        </pac-property-dimension>
+        />
       }
 
-      @for (dim of cubeState.cubeDimensions$ | async; track dim.name) {
-        <pac-property-dimension
-          displayDensity="compact"
+      @for (dim of entityService.dimensions(); track dim.name) {
+        <pac-inline-dimension displayDensity="compact"
           [dimension]="dim"
-          [readonly]="modelType === MODEL_TYPE.XMLA"
-          (newItem)="addNewItem($event)"
+          [readonly]="modelType() === MODEL_TYPE.XMLA"
           (delete)="onDelete($event)"
-        >
-        </pac-property-dimension>
+          (newItem)="addNewItem($event)"
+        />
       }
+
+      <!-- @if (modelType() === MODEL_TYPE.XMLA) {
+        
+      } @else {
+        @for (dim of entityService.dimensions(); track dim.name) {
+          <pac-property-dimension
+            displayDensity="compact"
+            [dimension]="dim"
+            (newItem)="addNewItem($event)"
+            (delete)="onDelete($event)"
+          >
+          </pac-property-dimension>
+        }
+      } -->
     </div>
   </div>
 </div>
@@ -49,7 +58,7 @@
       {{ 'PAC.MENU.MEASURES' | translate: {Default: "Measures"} }}
     </span>
 
-    @if (modelType !== MODEL_TYPE.XMLA && editable()) {
+    @if (modelType() !== MODEL_TYPE.XMLA && editable()) {
       <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
         [matTooltip]=" 'PAC.MODEL.ENTITY.NewMeasure' | translate: {Default: 'New Measure'} "
         (click)="$event.stopPropagation();$event.preventDefault();onAddMeasure($event)">
