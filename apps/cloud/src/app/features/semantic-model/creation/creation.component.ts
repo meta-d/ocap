@@ -12,25 +12,15 @@ import {
 } from '@angular/forms'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { BusinessAreasService, DataSourceService } from '@metad/cloud/state'
+import { nonBlank } from '@metad/core'
 import { NgmSelectionTableComponent, NgmTreeSelectComponent, SelectionTableColumn } from '@metad/ocap-angular/common'
 import { ButtonGroupDirective, DensityDirective, NgmDSCoreService } from '@metad/ocap-angular/core'
-import { AgentType, Catalog, DataSource, isNil } from '@metad/ocap-core'
+import { AgentType, Catalog, isNil } from '@metad/ocap-core'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import {
-  Observable,
-  Subject,
-  catchError,
-  filter,
-  firstValueFrom,
-  map,
-  of,
-  startWith,
-  switchMap,
-  tap
-} from 'rxjs'
+import { environment } from 'apps/cloud/src/environments/environment'
+import { Observable, Subject, catchError, filter, map, of, startWith, switchMap, tap } from 'rxjs'
 import { IDataSource, getErrorMessage } from '../../../@core'
 import { MaterialModule } from '../../../@shared'
-import { environment } from 'apps/cloud/src/environments/environment'
 
 @Component({
   standalone: true,
@@ -94,7 +84,9 @@ export class ModelCreationComponent implements ControlValueAccessor {
     )
   }
 
-  public readonly dataSource$ = new Subject<DataSource>()
+  readonly dataSourceKey$ = new Subject<string>()
+
+  // public readonly dataSource$ = new Subject<DataSource>()
   readonly _columns = signal<SelectionTableColumn[]>([
     { value: 'name', label: 'Name', sticky: true },
     { value: 'type.type', label: 'Type' },
@@ -105,10 +97,12 @@ export class ModelCreationComponent implements ControlValueAccessor {
   readonly dataSourceColumns = computed(() => {
     const enableLocalAgent = environment.enableLocalAgent
     const i18nMODEL = this.i18nMODEL()
-    return this._columns().filter((col) => enableLocalAgent ? true : col.value !== 'useLocalAgent' ).map((col) => ({
-      ...col,
-      label: i18nMODEL?.SELECT_DATASOURCE_COLUMNS?.[col.label] ?? col.label
-    }))
+    return this._columns()
+      .filter((col) => (enableLocalAgent ? true : col.value !== 'useLocalAgent'))
+      .map((col) => ({
+        ...col,
+        label: i18nMODEL?.SELECT_DATASOURCE_COLUMNS?.[col.label] ?? col.label
+      }))
   })
 
   public readonly catalogColumns$ = of<SelectionTableColumn[]>([
@@ -149,7 +143,9 @@ export class ModelCreationComponent implements ControlValueAccessor {
     )
   )
 
-  public readonly catalogs$ = this.dataSource$.pipe(
+  readonly catalogs$ = this.dataSourceKey$.pipe(
+    filter(nonBlank),
+    switchMap((key) => this.dsCoreService.getDataSource(key)),
     tap(() => {
       this.catalogsLoading.set(true)
       this.discoverDBCatalogsError.set(null)
@@ -163,10 +159,10 @@ export class ModelCreationComponent implements ControlValueAccessor {
         })
       )
     ),
-    tap(() => (this.catalogsLoading.set(false)))
+    tap(() => this.catalogsLoading.set(false))
   )
 
-  public readonly businessAreas$ = this.businessAreaService.getMyAreasTree().pipe(startWith([]))
+  readonly businessAreas$ = this.businessAreaService.getMyAreasTree().pipe(startWith([]))
   /**
   |--------------------------------------------------------------------------
   | Signals
@@ -183,8 +179,10 @@ export class ModelCreationComponent implements ControlValueAccessor {
   private _dataSourceSub = this.dataSource.valueChanges
     .pipe(filter(Boolean), takeUntilDestroyed())
     .subscribe(async (dataSource) => {
+      const key = dataSource.id
       this.dsCoreService.registerModel({
         name: dataSource.name,
+        key: key,
         type: dataSource.type.protocol.toUpperCase() as any,
         agentType: dataSource.useLocalAgent ? AgentType.Local : AgentType.Server,
         dataSource,
@@ -195,8 +193,10 @@ export class ModelCreationComponent implements ControlValueAccessor {
         }
       } as any)
 
-      const _dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSource.name))
-      this.dataSource$.next(_dataSource)
+      this.dataSourceKey$.next(key)
+
+      // const _dataSource = await firstValueFrom(this.dsCoreService.getDataSource(dataSource.key))
+      // this.dataSource$.next(_dataSource)
     })
 
   private _formValueSub = this.formGroup.valueChanges.subscribe((value) => {
