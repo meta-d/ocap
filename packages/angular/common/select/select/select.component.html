@@ -10,6 +10,7 @@
       [formControl]="formControl"
       [placeholder]="placeholder"
       [panelWidth]="panelWidth() || 'auto'"
+      [multiple]="multiple()"
     >
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden">
         <span class="flex-1">

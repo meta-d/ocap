@@ -4,7 +4,6 @@ import { FormControl } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import {
   AbstractStoryWidget,
-  ControlType,
   StoryWidgetState,
   StoryWidgetStyling,
   WidgetMenuType,
@@ -76,7 +75,6 @@ export class NxInputControlComponent extends AbstractStoryWidget<
   InputControlState,
   InputControlStyling
 > {
-  CONTROL_TYPE = ControlType
   INPUT_CONTROL_TYPE = FilterControlType
 
   private readonly dsCoreService = inject(NgmDSCoreService)
@@ -169,18 +167,29 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     }
   })
 
-  public readonly type = computed<ControlType | FilterControlType>(() => {
+  readonly propertyType = computed<FilterControlType>(() => {
     if (this.asPlaceholder()) {
       return null
     }
-    if (this.controlType()) {
-      return this.controlType()
-    }
+
     if (this.dimension()) {
       return determineControlType(this.dimension(), this.entityType())
     }
     return null
   })
+
+  // public readonly type = computed<ControlType | FilterControlType>(() => {
+  //   if (this.asPlaceholder()) {
+  //     return null
+  //   }
+  //   if (this.controlType()) {
+  //     return this.controlType()
+  //   }
+  //   if (this.dimension()) {
+  //     return determineControlType(this.dimension(), this.entityType())
+  //   }
+  //   return null
+  // })
 
   public measureControlProperty = computed(() => {
     if (isMeasureControlProperty(this.property())) {

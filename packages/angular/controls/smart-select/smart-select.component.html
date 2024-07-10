@@ -1,3 +1,15 @@
+<ngm-select 
+  [label]="label$ | async"
+  [placeholder]="placeholder$ | async"
+  [displayDensity]="appearance?.displayDensity"
+  valueKey="key"
+  searchable
+  virtualScroll
+  [multiple]="multiple$ | async"
+  [selectOptions]="selectOptions$ | async"
+></ngm-select>
+<!-- 
+
 <label *ngIf="appearance?.displayDensity === 'cosy' || appearance?.displayDensity === 'compact'">{{label$ | async}}</label>
 
 <mat-form-field class="flex-1"
@@ -45,4 +57,4 @@
 
     <ng-content></ng-content>
   </div>
-</mat-form-field>
+</mat-form-field> -->

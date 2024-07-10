@@ -24,6 +24,9 @@ import { NgmEntityPropertyComponent } from '@metad/ocap-angular/entity'
 import { TranslateModule } from '@ngx-translate/core'
 import { IndicatorComponent } from './indicator/indicator.component'
 
+/**
+ * @deprecated
+ */
 @NgModule({
   declarations: [IndicatorComponent],
   imports: [

@@ -5,5 +5,6 @@ export enum FilterControlType {
   TagSelect = 'TagSelect',
   MeasureControl = 'MeasureControl',
   Parameter = 'Parameter',
-  Variable = 'Variable'
+  Variable = 'Variable',
+  DropDownList = 'DropDownList'
 }

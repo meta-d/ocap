@@ -82,6 +82,10 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
     }
   }
 
+  if (property.role === AggregationRole.variable) {
+    return FilterControlType.Variable
+  }
+
   // if (presentation === PresentationEnum.Flat) {
   //   return FilterControlType.Select
   // }
@@ -91,10 +95,6 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
 
   if (property?.hierarchies?.length > 0) {
     return FilterControlType.TreeSelect
-  }
-
-  if (property.role === AggregationRole.variable) {
-    return FilterControlType.Variable
   }
 
   return FilterControlType.Select
