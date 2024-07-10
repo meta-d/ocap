@@ -220,7 +220,7 @@
       matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
       [ngClass]="isSelected(node) ? 'selected' : ''"
       [disabled]="disabled()"
-      (click)="disabled||toggleNode(node)">
+      (click)="disabled() || toggleNode(node)">
       <!-- use a disabled button to provide padding for tree leaf -->
       <button mat-icon-button disabled [displayDensity]="displayDensity"></button>
       
@@ -234,7 +234,7 @@
       matTreeNodePadding [matTreeNodePaddingIndent]="treeNodePaddingIndent"
       [ngClass]="isSelected(node) ? 'selected' : ''"
       [disabled]="disabled()"
-      (click)="disabled||toggleNode(node)">
+      (click)="disabled() || toggleNode(node)">
       <button mat-icon-button matTreeNodeToggle [displayDensity]="displayDensity"
               [attr.aria-label]="'Toggle ' + node.name">
         <mat-icon class="mat-icon-rtl-mirror">

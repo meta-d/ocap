@@ -87,6 +87,10 @@ export function propertyIcon(property: EntityProperty) {
       icon = 'format_list_numbered_rtl'
       label = 'Level'
       break
+    case AggregationRole.variable:
+      icon = 'priority_high'
+      label = 'Variable'
+      break
     case AggregationRole.measure:
       if (isCalculationProperty(property)) {
         if (isMeasureControlProperty(property)) {

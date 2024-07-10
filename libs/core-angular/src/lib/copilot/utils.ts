@@ -1,4 +1,4 @@
-import { Cube, EntityType, getEntityDimensions, getEntityMeasures } from '@metad/ocap-core'
+import { Cube, EntityType, getEntityDimensions, getEntityMeasures, getEntityVariables } from '@metad/ocap-core'
 
 export function calcEntityTypePrompt(entityType: EntityType) {
   return JSON.stringify({
@@ -24,6 +24,7 @@ export function calcEntityTypePrompt(entityType: EntityType) {
 }
 
 export function markdownEntityType(entityType: EntityType) {
+  const variables = getEntityVariables(entityType)
   return `The cube definition for ${entityType.name} is as follows:
 name: "${entityType.name}"
 caption: "${entityType.caption || ''}"
@@ -53,7 +54,17 @@ ${item.levels?.map((item) => {
 measures:
 ${getEntityMeasures(entityType).map((item) => `  - name: "${item.name}"
     caption: "${item.caption || ''}"`).join('\n')}
-`
+` + (variables.length ? 
+`variables:
+${variables.map((variable) => 
+`  - name: ${variable.name}
+    caption: ${variable.caption}
+    referenceDimension: ${variable.referenceDimension}
+    referenceHierarchy: ${variable.referenceHierarchy}
+    defaultValueKey: ${variable.defaultLow || ''}
+    defaultValueCaption: ${variable.defaultLowCaption || ''}`
+).join('\n')}`
+: '')
 }
 
 export function markdownModelCube({modelId, dataSource, cube}: {modelId: string; dataSource: string; cube: EntityType}) {

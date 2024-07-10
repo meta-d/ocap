@@ -1,5 +1,5 @@
 import { BehaviorSubject, combineLatest, EMPTY, filter, map, Observable, withLatestFrom } from 'rxjs'
-import { PeriodFunctions } from '../annotations'
+import { PeriodFunctions, Semantics } from '../annotations'
 import {
   calcRange,
   TimeGranularity,
@@ -11,10 +11,12 @@ import {
   Property,
   PropertyHierarchy,
   PropertyLevel,
-  QueryReturn
+  QueryReturn,
+  mapTimeGranularitySemantic,
+  getEntityDimensions
 } from '../models/index'
 import { C_MEASURES, FilterOperator, QueryOptions } from '../types'
-import { isEmpty, isString } from '../utils'
+import { isEmpty, isString, nonNullable } from '../utils'
 import { SmartBusinessService, SmartBusinessState } from './smart-business.service'
 
 export interface IndicatorBusinessState extends SmartBusinessState {
@@ -67,11 +69,9 @@ export class SmartIndicatorDataService<
         if (id) {
           this.indicator = this.getIndicator(id as string)
           if (this.indicator) {
-            const entityType = this.entityType
             this.currentTime = currentTime
-            const { dimension, hierarchy, level } = getEntityCalendar(
-              entityType,
-              this.indicator.calendar,
+            const { dimension, hierarchy, level } = this.getEntityCalendar(
+              this.indicator,
               this.currentTime.timeGranularity
             )
             this.calendar = dimension
@@ -164,7 +164,7 @@ export class SmartIndicatorDataService<
         columns: [
           {
             dimension: C_MEASURES,
-            members: measureNames.map((item) => item[1])
+            members: measureNames.map((item) => item[1]).filter(nonNullable)
           }
         ],
         filters: [...(indicator.filters ?? []), tFilter],
@@ -209,7 +209,11 @@ export class SmartIndicatorDataService<
     const measureNames = this.indicatorMeasures[indicator.id]
     // 缓存中并且 EntityType Measures 中已存在相应时间计算成员才可以
     if (!(measureNames[type] && getEntityProperty(this.entityType, measureNames[type][1]))) {
-      measureNames[type] = this.getCalculatedMember(measureNames['CurrentPeriod'], type, this.calendarHierarchy.name)?.name
+      try {
+        measureNames[type] = this.getCalculatedMember(measureNames['CurrentPeriod'], type, this.calendarHierarchy.name)?.name
+      } catch(err) {
+        return null
+      }
     }
     return measureNames[type]
   }
@@ -245,5 +249,51 @@ export class SmartIndicatorDataService<
           members: timeRange.map((key) => ({ key })),
           operator: FilterOperator.BT
         }
+  }
+
+  getEntityCalendar(indicator: Indicator, timeGranularity: TimeGranularity) {
+    if (indicator.calendar) {
+      return getEntityCalendar(
+        this.entityType,
+        indicator.calendar,
+        timeGranularity
+      )
+    }
+
+    let dimension = null
+    let hierarchy = null
+    let level = null
+    const calendarSemantic = mapTimeGranularitySemantic(timeGranularity)
+    getEntityDimensions(this.entityType).filter(
+      (property) => property.semantics?.semantic.startsWith(Semantics.Calendar)
+    ).reduce((acc, curr) => {
+      if (acc) {
+        return acc
+      }
+      
+      const _hierarchy = curr.hierarchies?.find((_hierarchy) => {
+        const _level = _hierarchy.levels.find((level) => level.semantics?.semantic === calendarSemantic)
+        if (_level) {
+          level = _level
+          hierarchy = _hierarchy
+          dimension = curr
+          return true
+        }
+        
+        return false
+      })
+
+      if (_hierarchy) {
+        return curr
+      }
+
+      return null
+    }, null)
+
+    return {
+      dimension,
+      hierarchy,
+      level
+    }
   }
 }

@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog'
 import { NgmValueHelpComponent } from '@metad/ocap-angular/controls'
 import {
   AdvancedSlicer,
+  AggregationRole,
   cloneDeep,
   DataSettings,
   EntityType,
@@ -16,6 +17,8 @@ import {
   Property,
   Semantics,
   TimeRange,
+  VariableProperty,
+  VariableSelectionType,
 } from '@metad/ocap-core'
 import { DateVariableEnum, NgmOcapCoreService } from '@metad/ocap-angular/core'
 import { pick } from 'lodash-es'
@@ -56,7 +59,7 @@ export class BaseSlicersComponent {
   public readonly dateVariables = this.coreService.getDateVariables().filter((variable) => !!variable.dateRange)
  
 
-  async openSlicerCreator(property: Property | SlicersCapacity) {
+  async openSlicerCreator(property: Property | VariableProperty | SlicersCapacity) {
     const entityType = this.entityType
 
     if (property === SlicersCapacity.CombinationSlicer) {
@@ -94,11 +97,14 @@ export class BaseSlicersComponent {
       if (advancedSlicer) {
         await this.addSlicer(advancedSlicer)
       }
-    }
-    else if ((property as Property).semantics?.semantic === Semantics.Calendar) {
-      await this.openDynamicDateHelp(property)
+    } else if (property === SlicersCapacity.Variable) {
+      //
     } else {
-      await this.openValueHelp(property as Property)
+      if (property.semantics?.semantic === Semantics.Calendar) {
+        await this.openDynamicDateHelp(property)
+      } else {
+        await this.openValueHelp(property)
+      }
     }
   }
 
@@ -145,16 +151,29 @@ export class BaseSlicersComponent {
    *
    * @param property dimension property
    */
-  async openValueHelp(property: Property) {
+  async openValueHelp(property: Property | VariableProperty) {
+    const dimension = property.role === AggregationRole.variable ?
+      {
+        dimension: (property as VariableProperty).referenceDimension,
+        parameter: property.name
+      } :
+      {
+        dimension: property.name
+      }
+    const selectionType = property.role === AggregationRole.variable ?
+    ((property as VariableProperty).variableSelectionType === VariableSelectionType.Value ?
+      FilterSelectionType.Single : 
+      FilterSelectionType.Multiple)
+      : FilterSelectionType.Multiple
     const slicer = await firstValueFrom(
       this._dialog
         .open(NgmValueHelpComponent, {
           viewContainerRef: this.viewContainerRef,
           data: {
             dataSettings: pick(this.dataSettings, ['dataSource', 'entitySet']),
-            dimension: { dimension: (property as Property).name },
+            dimension,
             options: {
-              selectionType: FilterSelectionType.Multiple,
+              selectionType,
               searchable: true,
               initialLevel: 1
             }

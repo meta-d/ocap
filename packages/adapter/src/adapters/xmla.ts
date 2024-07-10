@@ -22,6 +22,8 @@ export class XMLA extends BaseHTTPQueryRunner<XmlaAdapterOptions> {
   // Inner status
   private authCookie: string
 
+  private authenticating: Promise<void> = null
+
   get configurationSchema() {
     return {
       type: 'object',
@@ -57,6 +59,33 @@ export class XMLA extends BaseHTTPQueryRunner<XmlaAdapterOptions> {
     }
   }
 
+  async authenticate(options?: Record<string, any>) {
+    if (!this.authenticating) {
+      this.authenticating = new Promise((resolve, reject) => {
+        this.post('', {
+          headers: {
+            ...(options?.headers || {}),
+            Accept: 'text/xml, application/xml, application/soap+xml',
+            'Content-Type': 'text/xml'
+          },
+          auth: this.getAuth(),
+          httpsAgent: this.options.disable_reject_cert ? httpsAgent : null
+        }).then((response) => {
+          if (response.headers['set-cookie']) {
+            this.authCookie = response.headers['set-cookie']
+          }
+          resolve()
+        })
+        .catch((err) => {
+          reject(err)
+        })
+        .finally(() => this.authenticating = null)
+      })
+    }
+
+    return this.authenticating
+  }
+
   override async runQuery(query: string, options?: Record<string, any>) {
     const _headers = {
       ...(options?.headers || {}),
@@ -68,6 +97,10 @@ export class XMLA extends BaseHTTPQueryRunner<XmlaAdapterOptions> {
     try {
       // console.log(`use authCookie`, this.authCookie)
       const headers = { ..._headers }
+      // Authenticate when no cookie
+      if (!this.authCookie) {
+        await this.authenticate(options)
+      }
       if (this.authCookie) {
         headers['Cookie'] = this.authCookie
       }

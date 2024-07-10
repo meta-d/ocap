@@ -56,7 +56,8 @@ export const SlicerSchema = z.object({
     .object({
       dimension: z.string().describe('The name of the dimension'),
       hierarchy: z.string().optional().describe('The name of the hierarchy in the dimension'),
-      level: z.string().optional().describe('The name of the level in the hierarchy')
+      level: z.string().optional().describe('The name of the level in the hierarchy'),
+      parameter: z.string().optional().describe('The name of variable reference to')
     })
     .describe('dimension of the slicer'),
   members: z.array(MemberSchema).describe('Members in the slicer')

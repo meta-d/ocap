@@ -34,6 +34,7 @@ export function injectCreateIndicatorTool() {
       }
       projectService.upsertIndicator({
         ...indicator,
+        filters: [...(indicator.variables ?? []), ...(indicator.filters ?? [])],
         visible: true,
         isActive: true,
         businessArea: businessAreas().find((item) => item.id === indicator.businessAreaId),

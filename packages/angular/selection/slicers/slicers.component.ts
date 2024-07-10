@@ -2,7 +2,7 @@ import { booleanAttribute, Component, EventEmitter, forwardRef, inject, input, I
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
-import { DisplayBehaviour, getEntityDimensions, getPropertyName, ISlicer, Syntax } from '@metad/ocap-core'
+import { DisplayBehaviour, getEntityDimensions, getEntityParameters, getEntityVariables, getPropertyName, ISlicer, nonNullable, Syntax } from '@metad/ocap-core'
 import { pick } from 'lodash-es'
 import {
   BehaviorSubject,
@@ -68,6 +68,9 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
   get showAdvancedSlicer() {
     return this.entityType?.syntax === Syntax.MDX && this.capacities?.includes(SlicersCapacity.AdvancedSlicer)
   }
+  get showVariable() {
+    return this.entityType?.syntax === Syntax.MDX && this.capacities?.includes(SlicersCapacity.Variable)
+  }
 
   public readonly dimensions$ = this.entityType$.pipe(
     filter((val) => !!val),
@@ -80,6 +83,19 @@ export class SlicersComponent extends BaseSlicersComponent implements OnInit, Co
             (item) => item.name.toLowerCase().includes(text) || item.caption?.toLowerCase().includes(text)
           )
         : dimensions.slice()
+    })
+  )
+  readonly variables$ = this.entityType$.pipe(
+    filter(nonNullable),
+    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''))),
+    map(([entityType, search]) => {
+      const variables = getEntityVariables(entityType)
+      const text = search?.trim().toLowerCase()
+      return text
+        ? variables.filter(
+            (item) => item.name.toLowerCase().includes(text) || item.caption?.toLowerCase().includes(text)
+          )
+        : variables.slice()
     })
   )
 

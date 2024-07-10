@@ -312,6 +312,9 @@ export enum VariableSelectionType {
 }
 
 export interface VariableProperty extends ParameterProperty {
+  // sap variables
+  referenceDimension?: string
+  referenceHierarchy: string
   defaultHigh: string
   defaultHighCaption: string
   defaultLow: string

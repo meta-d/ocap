@@ -307,13 +307,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
    * @returns
    */
   async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
-    const { conversationId, assistantMessageId, context } = options ?? {}
+    const { conversationId, assistantMessageId, context, interactive } = options ?? {}
 
     // For agent command
     if (_command.agent) {
       return await this.triggerCommandAgent(prompt, _command, {
         conversationId: assistantMessageId,
-        context: context
+        context: context,
+        interactive
       })
     }
 
@@ -545,7 +546,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   async triggerGraphAgent(content: string | null, conversation: CopilotChatConversation, options?: CopilotChatOptions) {
     // ------------------------- 重复，需重构
-    const { context } = options ?? {}
+    const { context, interactive } = options ?? {}
 
     const abortController = new AbortController()
 
@@ -601,7 +602,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     if (!graph) {
       try {
         const options = { checkpointer: this.checkpointSaver, interruptBefore: null, interruptAfter: null }
-        if (this.aiOptions.interactive) {
+        if (interactive ?? this.aiOptions.interactive) {
           options.interruptBefore = command.agent.interruptBefore
           options.interruptAfter = command.agent.interruptAfter
         }

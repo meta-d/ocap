@@ -170,7 +170,7 @@
       <div class="col-span-1 sm:col-span-2 text-base font-medium">{{ 'PAC.INDICATOR.REGISTER.RestrictiveCondition' | translate: {Default: 'Restrictive Condition'} }}</div>
       <ngm-slicers class="col-span-1 sm:col-span-2" editable inline
         [dataSettings]="dataSettings$ | async"
-        [capacities]="[SlicersCapacity.CombinationSlicer]"
+        [capacities]="[SlicersCapacity.CombinationSlicer, SlicersCapacity.Variable]"
         formControlName="filters"
       ></ngm-slicers>
     </div>

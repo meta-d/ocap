@@ -155,6 +155,7 @@ export class CommandDialogComponent {
     try {
       const message = await this.#copilotEngine.chat(prompt, {
         command: this.commandName(),
+        interactive: false
       })
       this.dialogRef.close(message)
     } catch (err: any) {

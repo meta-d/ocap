@@ -134,7 +134,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
 
   readonly appearance = input<NgmAppearance>(null)
  
-  readonly displayDensity = input<DisplayDensity>(null)
+  readonly displayDensity = input<DisplayDensity | string>(null)
   
   readonly disabled = input<boolean, string | boolean>(false, {
     transform: booleanAttribute

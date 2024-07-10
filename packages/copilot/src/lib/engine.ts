@@ -10,6 +10,7 @@ export type CopilotChatOptions = {
   assistantMessageId?: string
   conversationId?: string
   context?: CopilotContext
+  interactive?: boolean
 }
 
 /**

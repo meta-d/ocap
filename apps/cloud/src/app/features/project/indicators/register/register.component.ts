@@ -319,16 +319,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
   }
 
   async onSubmit() {
-    // let indicator = {
-    //   ...this.indicator(),
-    //   measure: this.indicator().type === IndicatorType.BASIC ? this.indicator().measure : null,
-    //   formula: this.indicator().type === IndicatorType.DERIVE ? this.indicator().formula : null,
-    //   projectId: this.projectSignal().id ?? null
-    // }
-    // if (!isUUID(indicator.id)) {
-    //   delete indicator.id
-    // }
-
     this.loading.set(true)
     try {
       const indicator = await this.indicatorsComponent.saveIndicator(this.indicator())
@@ -342,16 +332,6 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         this.type.set('edit')
         this._router.navigate(['../', indicator.id], { relativeTo: this._route })
       }
-
-      // if (isUUID(this.indicator().id)) {
-      //   this.toastrService.success('PAC.INDICATOR.REGISTER.SaveIndicator', { Default: 'Save Indicator' })
-      // } else {
-      //   this.toastrService.success('PAC.INDICATOR.REGISTER.CreateIndicator', { Default: 'Create Indicator' })
-      //   this.projectService.replaceNewIndicator(this.indicator().id, indicator)
-      //   this.indicatorsComponent?.replaceNewIndicator(this.indicator().id, indicator)
-      // }
-
-      // this.projectService.refreshIndicators()
     } catch (err) {
       this.loading.set(false)
       this.toastrService.error(err, '', {})
@@ -382,7 +362,8 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
         await firstValueFrom(this.indicatorsService.delete(this.indicator().id))
         this.toastrService.success('PAC.INDICATOR.REGISTER.DeleteIndicator', { Default: 'Delete Indicator' })
 
-        this.projectService.refreshIndicators()
+        await this.indicatorsComponent.removeOpenedLink(this.indicator())
+        this.projectService.removeIndicator(this.indicator().id)
         this._router.navigate(['../../indicators'], { relativeTo: this._route })
       } catch (err) {
         this.toastrService.error(err, '', {})
