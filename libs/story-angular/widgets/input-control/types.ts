@@ -2,6 +2,7 @@ import { ThemePalette } from '@angular/material/core'
 import { ControlOptions } from '@metad/ocap-angular/controls'
 import { ParameterOptions } from '@metad/ocap-angular/parameter'
 import {
+  AggregationRole,
   Dimension,
   EntityType,
   FilterSelectionType,
@@ -48,6 +49,10 @@ export interface InputControlOptions extends ControlOptions, MeasureControlOptio
 
 export function determineControlType(propertyName: Dimension, entityType: EntityType) {
   const property = getEntityProperty(entityType, propertyName)
+  if (!property) {
+    return null
+  }
+
   // 1. Measure control
   if (isMeasureControlProperty(property)) {
     return FilterControlType.MeasureControl
@@ -86,6 +91,10 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
 
   if (property?.hierarchies?.length > 0) {
     return FilterControlType.TreeSelect
+  }
+
+  if (property.role === AggregationRole.variable) {
+    return FilterControlType.Variable
   }
 
   return FilterControlType.Select

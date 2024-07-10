@@ -60,6 +60,6 @@ export class NgmSearchComponent implements ControlValueAccessor {
 
   onValueChange(value: string) {
     this.formControl?.setValue(value)
-    this.onChange(value)
+    this.onChange?.(value)
   }
 }

@@ -304,6 +304,21 @@ export interface ParameterProperty extends EntityProperty {
   referenceDimension?: string
 }
 
+export interface VariableProperty extends ParameterProperty {
+  defaultHigh: string
+  defaultHighCaption: string
+  defaultLow: string
+  defaultLowCaption: string
+  variableCaption: string
+  variableEntryType: number
+  variableGuid: string
+  variableName: string
+  variableOrdinal: number
+  variableProcessingType: number
+  variableSelectionType: number
+  variableType: number
+}
+
 /**
  *
  * Entity 的 Meta 信息集合

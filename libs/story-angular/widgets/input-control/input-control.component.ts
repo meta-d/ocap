@@ -15,6 +15,7 @@ import { NgmDSCoreService, NgmSmartFilterBarService } from '@metad/ocap-angular/
 import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import {
+  AggregationRole,
   DataSettings,
   Dimension,
   EntityType,
@@ -23,6 +24,7 @@ import {
   MeasureControlProperty,
   ParameterProperty,
   PropertyMeasure,
+  VariableProperty,
   getEntityDimensions,
   getEntityMeasures,
   getEntityProperty,
@@ -53,6 +55,12 @@ export interface InputControlStyling extends StoryWidgetStyling {
 
 export interface InputControlState extends StoryWidgetState<InputControlOptions> {
   entityType: EntityType
+}
+
+enum InputControlMenus {
+  SaveAsDefaultMembers = 'saveAsDefaultMembers',
+  ClearDefaultMembers = 'clearDefaultMembers',
+  EditInputControl = 'editInputControl'
 }
 
 @Component({
@@ -151,6 +159,16 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     return null
   })
 
+  readonly variableProperty = computed<VariableProperty>(() => this.property()?.role === AggregationRole.variable ? this.property() as VariableProperty : null)
+
+  readonly variableDimension = computed(() => {
+    const property = this.property() as any
+    return {
+      dimension: property.dimension,
+      hierarchy: property.hierarchy
+    }
+  })
+
   public readonly type = computed<ControlType | FilterControlType>(() => {
     if (this.asPlaceholder()) {
       return null
@@ -239,21 +257,21 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     .pipe(takeUntilDestroyed())
     .subscribe(async (menu) => {
       switch (menu.key) {
-        case 'clearDefaultMembers':
+        case InputControlMenus.ClearDefaultMembers:
           this.updateOptions({
             defaultMembers: [],
             dates: []
           })
           break
-        case 'saveAsDefaultMembers':
-          console.log('saveAsDefaultMembers', this.slicer, this.dates)
+        case InputControlMenus.SaveAsDefaultMembers:
+          console.log(InputControlMenus.SaveAsDefaultMembers, this.slicer, this.dates)
           this.updateOptions({
             defaultMembers: [...this.slicer.members],
             dates: this.dates.map((d) => d.toISOString()),
             defaultValue: ''
           })
           break
-        case 'editInputControl':
+        case InputControlMenus.EditInputControl:
           await this.openEditInputControl()
           break
       }
@@ -323,7 +341,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
         if (editProperty) {
           menus.push({
             icon: 'filter_vintage',
-            key: 'editInputControl',
+            key: InputControlMenus.EditInputControl,
             name: i18n?.EditInputControl ?? 'Edit Input Control',
             editable: editProperty,
             type: WidgetMenuType.Action
@@ -332,7 +350,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
         if (defaultMembers?.length) {
           menus.push({
             icon: 'bookmark_remove',
-            key: 'clearDefaultMembers',
+            key: InputControlMenus.ClearDefaultMembers,
             name: i18n?.ClearDefaultMembers ?? 'Clear Default Members',
             editable: true,
             type: WidgetMenuType.Action
@@ -342,7 +360,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
           ...menus,
           {
             icon: 'bookmark_add',
-            key: 'saveAsDefaultMembers',
+            key: InputControlMenus.SaveAsDefaultMembers,
             name: i18n?.SaveAsDefaultMembers ?? 'Save as Default Members',
             editable: !isEmpty(this.members()),
             type: WidgetMenuType.Action
@@ -487,6 +505,24 @@ export class NxInputControlComponent extends AbstractStoryWidget<
       // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
       this.slicersChange.emit([structuredClone(this.slicer)])
     }
+  }
+
+  onVariableChange(slicer: ISlicer) {
+    slicer.dimension = {
+      ...this.variableDimension(),
+      parameter: this.dimension().dimension
+    }
+    if (!slicer.members.length && this.variableProperty()?.defaultLow) {
+      slicer.members = [
+        {
+          key: this.variableProperty().defaultLow,
+          caption: this.variableProperty().defaultLowCaption
+        }
+      ]
+    }
+    this.slicer$.next(slicer)
+    // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
+    this.slicersChange.emit([structuredClone(slicer)])
   }
 
   openDesigner() {

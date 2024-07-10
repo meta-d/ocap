@@ -709,7 +709,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           name: vName,
           caption: vCaption,
           dimension: variable.REFERENCE_DIMENSION,
-          hierarchy: variable.REFERENCE_HIERARCHY
+          hierarchy: variable.REFERENCE_HIERARCHY,
+          role: AggregationRole.variable
         } as ParameterProperty
       })
 

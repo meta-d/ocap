@@ -95,6 +95,16 @@
         >
         </ngm-parameter>
       }
+      @case (INPUT_CONTROL_TYPE.Variable) {
+        <ngm-member-list class="w-full flex-1"
+            [appearance]="styling?.appearance"
+            [dataSettings]="_dataSettings()"
+            [dimension]="variableDimension()"
+            [options]="__options$ | async"
+            [ngModel]="slicer"
+            (ngModelChange)="onVariableChange($event)"
+        />
+      }
       @default {
         <div class="ngm-input-control__select-model w-full flex-1">
         </div>
