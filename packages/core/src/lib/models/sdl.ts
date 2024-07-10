@@ -304,6 +304,13 @@ export interface ParameterProperty extends EntityProperty {
   referenceDimension?: string
 }
 
+export enum VariableSelectionType {
+  Default,
+  Value,
+  Interval,
+  Complex
+}
+
 export interface VariableProperty extends ParameterProperty {
   defaultHigh: string
   defaultHighCaption: string
@@ -315,7 +322,7 @@ export interface VariableProperty extends ParameterProperty {
   variableName: string
   variableOrdinal: number
   variableProcessingType: number
-  variableSelectionType: number
+  variableSelectionType: VariableSelectionType
   variableType: number
 }
 

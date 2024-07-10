@@ -18,12 +18,14 @@ import {
   DataSettings,
   Dimension,
   EntityType,
+  FilterSelectionType,
   IMember,
   ISlicer,
   MeasureControlProperty,
   ParameterProperty,
   PropertyMeasure,
   VariableProperty,
+  VariableSelectionType,
   getEntityDimensions,
   getEntityMeasures,
   getEntityProperty,
@@ -528,6 +530,13 @@ export class NxInputControlComponent extends AbstractStoryWidget<
           caption: this.variableProperty().defaultLowCaption
         }
       ]
+    }
+    if (!slicer.selectionType && this.variableProperty()?.variableSelectionType) {
+      slicer.selectionType = this.variableProperty()?.variableSelectionType === VariableSelectionType.Value ?
+        FilterSelectionType.Single :
+        this.variableProperty()?.variableSelectionType === VariableSelectionType.Interval ? 
+        FilterSelectionType.SingleInterval :
+          FilterSelectionType.Multiple
     }
     this.slicer$.next(slicer)
     // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突

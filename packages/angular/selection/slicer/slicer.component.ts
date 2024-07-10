@@ -50,6 +50,10 @@ export class SlicerComponent extends BaseSlicersComponent {
       }
 
       if (entityType) {
+        if (slicer.dimension.parameter) {
+          const property = entityType.parameters[slicer.dimension.parameter]
+          return property.caption || property.name
+        }
         const property = getEntityProperty(entityType, slicer.dimension)
         return property?.caption || property?.name
       }
@@ -69,7 +73,7 @@ export class SlicerComponent extends BaseSlicersComponent {
   public readonly displayBehaviour$ = this.slicer$.pipe(map((slicer) => slicer?.dimension?.displayBehaviour))
 
   public readonly advancedSlicer$ = this.slicer$.pipe(
-    combineLatestWith(this.translate.stream('COMPONENTS.SELECTION')),
+    combineLatestWith(this.translate.stream('Ngm.Selection')),
     map(([slicer, SELECTION]) => {
       if (isAdvancedSlicer(slicer)) {
         return advancedSlicerAsString(slicer, SELECTION?.OnContext)
@@ -102,7 +106,12 @@ export class SlicerComponent extends BaseSlicersComponent {
     if (slicer) {
       this.slicer = {
         ...this.slicer,
-        ...slicer
+        ...slicer,
+        // Update dimension
+        dimension: {
+          ...this.slicer.dimension,
+          ...slicer.dimension
+        }
       }
       this.slicerChange.emit(this.slicer)
     }

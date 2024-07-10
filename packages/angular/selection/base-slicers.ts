@@ -214,7 +214,7 @@ export class BaseSlicersComponent {
           slicer: slicer,
           dataSettings: this.dataSettings,
           options: {
-            selectionType: FilterSelectionType.Multiple,
+            selectionType: slicer.selectionType,
             searchable: true,
             initialLevel: 1
           }
