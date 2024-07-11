@@ -1,4 +1,4 @@
-import { createQueryRunnerByType } from '@metad/adapter'
+import { createQueryRunnerByType, DBQueryRunner } from '@metad/adapter'
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs'
@@ -10,14 +10,21 @@ import { DataSourceOlapQuery } from '../olap.query'
 
 const axios = _axios.default
 
+// Cache for db query runners
+const runners: Record<string, Record<string, { runner: DBQueryRunner; expirationTimes: number }>> = {}
+const OBJECT_LIFETIME = 1000 * 60 * 10 // 10m
+
 @QueryHandler(DataSourceOlapQuery)
 export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 	private readonly logger = new Logger(OlapQueryHandler.name)
 
-	constructor(private readonly dsService: DataSourceService, private configService: ConfigService) {}
+	constructor(
+		private readonly dsService: DataSourceService,
+		private configService: ConfigService
+	) {}
 
 	async execute(query: DataSourceOlapQuery) {
-		const { id, dataSourceId, body, forceRefresh, acceptLanguage } = query.input
+		const { id, sessionId, dataSourceId, body, forceRefresh, acceptLanguage } = query.input
 		const user = query.user
 
 		this.logger.debug(`Executing OLAP query [${id}] for dataSource: ${dataSourceId}`)
@@ -39,20 +46,48 @@ export class OlapQueryHandler implements IQueryHandler<DataSourceOlapQuery> {
 			return result.data
 		}
 
-		// Determine the user authentication
-		dataSource = prepareDataSource(dataSource, user?.id)
-		const runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
-		try {
-			const result: AxiosResponse<any> = (await runner.runQuery(body, {
-				headers: { 'Accept-Language': acceptLanguage || '' }
-			})) as AxiosResponse<any>
-
-			return {
-				data: result.data,
-				cache: false
+		let _runner: DBQueryRunner
+		// Get runner from cache firstly
+		if (runners[sessionId]?.[dataSourceId]) {
+			const { runner } = runners[sessionId][dataSourceId]
+			_runner = runner
+		} else {
+			// Determine the user authentication
+			dataSource = prepareDataSource(dataSource, user?.id)
+			_runner = createQueryRunnerByType(dataSource.type.type, dataSource.options)
+			runners[sessionId] ??= {}
+			runners[sessionId][dataSourceId] = {
+				runner: _runner,
+				expirationTimes: Date.now() + OBJECT_LIFETIME
 			}
-		} finally {
-			await runner.teardown()
+		}
+
+		const result: AxiosResponse<any> = (await _runner.runQuery(body, {
+			headers: { 'Accept-Language': acceptLanguage || '' }
+		})) as AxiosResponse<any>
+
+		return {
+			data: result.data,
+			cache: false
 		}
 	}
 }
+
+/**
+ * Interval to clean cache of query runners
+ */
+setInterval(() => {
+	const now = Date.now()
+	Object.keys(runners).forEach((sessionId) => {
+		Object.keys(runners[sessionId]).forEach((dataSourceId) => {
+			if (runners[sessionId][dataSourceId].expirationTimes < now) {
+				// Teardown the runner object
+				runners[sessionId][dataSourceId].runner.teardown()
+				delete runners[sessionId][dataSourceId]
+				if (!Object.keys(runners[sessionId]).length) {
+					delete runners[sessionId]
+				}
+			}
+		})
+	})
+}, 60000 * 10) // 每10分钟检查一次

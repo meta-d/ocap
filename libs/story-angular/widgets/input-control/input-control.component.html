@@ -15,7 +15,7 @@
         {{error()}}
     </mat-error>
   } @else {
-    @switch (type()) {
+    @switch (propertyType()) {
       @case (INPUT_CONTROL_TYPE.Datepicker) {
         <ngm-member-datepicker class="w-full justify-self-start"
             [label]="options?.label"
@@ -46,24 +46,44 @@
         ></ngm-member-list>
       }
       @case (INPUT_CONTROL_TYPE.TreeSelect) {
-        <ngm-member-tree class="w-full flex-1"
-            [appearance]="styling?.appearance"
-            [dataSettings]="_dataSettings()"
-            [dimension]="dimension()"
-            [options]="__options$ | async"
-            [ngModel]="slicer"
-            (ngModelChange)="onSlicerChange($event)"
-        ></ngm-member-tree>
+        @if (controlType() === INPUT_CONTROL_TYPE.DropDownList) {
+            <ngm-smart-filter class="w-full justify-self-start" [label]="''"
+                [appearance]="styling?.appearance"
+                [dataSettings]="_dataSettings()"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            />
+          } @else if (controlType() === INPUT_CONTROL_TYPE.Select) {
+            <ngm-member-list class="w-full flex-1"
+                [appearance]="styling?.appearance"
+                [dataSettings]="_dataSettings()"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            />
+        } @else {
+            <ngm-member-tree class="w-full flex-1"
+                [appearance]="styling?.appearance"
+                [dataSettings]="_dataSettings()"
+                [dimension]="dimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onSlicerChange($event)"
+            />
+        }
       }
-      @case (CONTROL_TYPE.dropDownList) {
-        <ngm-smart-select class="w-full justify-self-start"
+      @case (INPUT_CONTROL_TYPE.DropDownList) {
+        <ngm-smart-filter class="w-full justify-self-start" [label]="''"
             [appearance]="styling?.appearance"
             [dataSettings]="_dataSettings()"
             [dimension]="dimension()"
             [options]="__options$ | async"
             [ngModel]="slicer"
             (ngModelChange)="onSlicerChange($event)"
-        ></ngm-smart-select>
+        />
       }
       @case (INPUT_CONTROL_TYPE.MeasureControl) {
         @if (measureControlProperty(); as property) {
@@ -94,6 +114,27 @@
             (parameterChange)="updateParameterValue($event)"
         >
         </ngm-parameter>
+      }
+      @case (INPUT_CONTROL_TYPE.Variable) {
+        @if (controlType() === INPUT_CONTROL_TYPE.DropDownList) {
+            <ngm-smart-filter class="w-full justify-self-start" [label]="''"
+                [appearance]="styling?.appearance"
+                [dataSettings]="_dataSettings()"
+                [dimension]="variableDimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onVariableChange($event)"
+            />
+        } @else {
+            <ngm-member-list class="w-full flex-1"
+                [appearance]="styling?.appearance"
+                [dataSettings]="_dataSettings()"
+                [dimension]="variableDimension()"
+                [options]="__options$ | async"
+                [ngModel]="slicer"
+                (ngModelChange)="onVariableChange($event)"
+            />
+        }
       }
       @default {
         <div class="ngm-input-control__select-model w-full flex-1">

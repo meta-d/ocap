@@ -21,7 +21,8 @@ import {
   PropertyHierarchy,
   PropertyLevel,
   PropertyMeasure,
-  Schema
+  Schema,
+  VariableProperty
 } from './sdl'
 
 
@@ -214,6 +215,10 @@ export function getEntityParameters(entityType: EntityType): ParameterProperty[]
     return []
   }
   return Object.values(entityType.parameters)
+}
+
+export function getEntityVariables(entityType: EntityType): VariableProperty[] {
+  return getEntityParameters(entityType).filter((parameter) => parameter.role === AggregationRole.variable) as VariableProperty[]
 }
 
 /**

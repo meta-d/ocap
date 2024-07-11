@@ -7,6 +7,7 @@ export class ModelOlapQuery implements IQuery {
 	constructor(
 		public readonly input: {
 			id: string
+			sessionId: string
 			dataSourceId: string;
 			modelId: string
 			body: string

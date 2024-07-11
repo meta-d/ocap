@@ -1,10 +1,9 @@
-import { BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { ChatOpenAI } from '@langchain/openai'
-import { AgentState } from '@metad/copilot-angular'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
-import { createCopilotAgentState } from './types'
+import { AgentState, createCopilotAgentState } from './types'
 
 export interface State extends AgentState {
   next: string

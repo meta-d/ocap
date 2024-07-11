@@ -16,6 +16,9 @@ function concatChunks(chunks: Uint8Array[], totalLength: number) {
   return concatenatedChunks;
 }
 
+/**
+ * @deprecated use LangChain
+ */
 export async function* readDataStream(
   reader: ReadableStreamDefaultReader<Uint8Array>,
   {

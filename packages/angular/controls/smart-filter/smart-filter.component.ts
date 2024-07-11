@@ -12,10 +12,13 @@ import {
   Output,
   ViewChild,
   ViewContainerRef,
+  booleanAttribute,
   computed,
   effect,
   forwardRef,
   inject,
+  input,
+  model,
   signal
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
@@ -113,29 +116,11 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   private _dialog = inject(MatDialog)
   private _viewContainerRef = inject(ViewContainerRef)
 
-  private _dataSettings = signal<DataSettings>(null)
-  @Input() get dataSettings(): DataSettings {
-    return this._dataSettings()
-  }
-  set dataSettings(value: DataSettings) {
-    this._dataSettings.set(value)
-  }
+  readonly label = input<string>()
 
-  private _dimension = signal<Dimension>(null)
-  @Input() get dimension(): Dimension {
-    return this._dimension()
-  }
-  set dimension(value: Dimension) {
-    this._dimension.set(value)
-  }
-
-  private _options = signal<SmartFilterOptions>(null)
-  @Input() get options() {
-    return this._options()
-  }
-  set options(value) {
-    this._options.set(value)
-  }
+  readonly dataSettings = input<DataSettings>(null)
+  readonly dimension = input<Dimension>()
+  readonly options = input<SmartFilterOptions>()
 
   get slicer() {
     return this.slicer$.value
@@ -147,30 +132,17 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
 
   public members = signal<IMember[]>(null)
 
-  private _appearance = signal<NgmAppearance>(null)
-  @Input() get appearance(): NgmAppearance {
-    return this._appearance()
-  }
-  set appearance(value: NgmAppearance) {
-    this._appearance.set(value)
-  }
+  readonly appearance = input<NgmAppearance>(null)
+ 
+  readonly displayDensity = input<DisplayDensity | string>(null)
+  
+  readonly disabled = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
-  @Input() get displayDensity(): string {
-    return this.displayDensity$()
-  }
-  set displayDensity(value) {
-    this.displayDensity$.set(DisplayDensity[value])
-  }
-  readonly displayDensity$ = signal<DisplayDensity>(null)
+  readonly _disabled = model<boolean>(false)
 
-  @Input()
-  get disabled(): boolean {
-    return this.disabled$()
-  }
-  set disabled(value: boolean | string) {
-    this.disabled$.set(coerceBooleanProperty(value))
-  }
-  private disabled$ = signal<boolean>(false)
+  readonly disabled$ = computed(() => this.disabled() || this._disabled())
 
   @Output() loadingChanging = new EventEmitter<boolean>()
 
@@ -180,28 +152,18 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   @ViewChild('search') searchInput: ElementRef<HTMLInputElement>
 
   get multiple() {
-    return this.options?.multiple
+    return this.options()?.multiple
   }
 
-  get hierarchy() {
-    return this.dimension?.hierarchy ?? this.dimension?.dimension
-  }
-  set hierarchy(value) {
-    this.dimension = {
-      ...this.dimension,
-      hierarchy: value,
-      level: null
-    }
-  }
+  readonly hierarchy = model<string>()
 
   /**
    * Compatible with `displayDensity` and `appearance.displayDensity`
    */
-  readonly _displayDensity = computed(() => this.displayDensity$() ?? this._appearance()?.displayDensity)
+  readonly _displayDensity = computed(() => this.displayDensity() ?? this.appearance()?.displayDensity)
 
-  get displayBehaviour() {
-    return this.dimension?.displayBehaviour ?? DisplayBehaviour.descriptionOnly
-  }
+  readonly displayBehaviour = model<DisplayBehaviour>(DisplayBehaviour.descriptionOnly)
+
   get searchHighlight() {
     return this.valueControl.value
   }
@@ -233,11 +195,18 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
   public readonly selectOptions$ = this.dataSource.connect({ viewChange: of() })
 
   private readonly entityType = toSignal(this.smartFilterService.selectEntityType())
-  public readonly options$ = toObservable(this._options)
+  public readonly options$ = toObservable(this.options)
 
-  public readonly property = computed(() => getEntityProperty(this.entityType(), this.dimension))
+  readonly _dimension = computed(() => this.dimension() ? {
+    ...this.dimension(),
+    hierarchy: this.hierarchy(),
+    level: this.hierarchy() === this.dimension().hierarchy ? this.dimension().level : null,
+    displayBehaviour: this.displayBehaviour()
+  } : null)
+
+  public readonly property = computed(() => getEntityProperty(this.entityType(), this._dimension()))
   public readonly hierarchies = computed(() => this.property()?.hierarchies)
-  public readonly label = computed(() => this.options?.label || this.property()?.caption || this.property()?.name)
+  readonly _label = computed(() => this.label() ?? (this.options()?.label || this.property()?.caption || this.property()?.name))
 
   public readonly placeholder$ = this.options$.pipe(map((options) => options?.placeholder))
   public readonly selectionType$ = this.options$.pipe(map((options) => options?.selectionType))
@@ -245,7 +214,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     map((selectionType) => selectionType === FilterSelectionType.Multiple)
   )
   // public readonly maxTagCount$ = this.options$.pipe(map((options) => options?.maxTagCount ?? 1))
-  public readonly maxTagCount = computed(() => this.options?.maxTagCount ?? 1)
+  public readonly maxTagCount = computed(() => this.options()?.maxTagCount ?? 1)
   public readonly autoActiveFirst$ = this.options$.pipe(map((options) => options?.autoActiveFirst))
 
   public readonly members$ = combineLatest([
@@ -256,7 +225,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
       return members?.map(({ key, value, caption }) => ({
         key,
         value,
-        caption: selectOptions?.find((item) => item.value === value)?.caption ?? caption
+        caption: selectOptions?.find((item) => item.key === key)?.caption ?? caption
       }))
     })
   )
@@ -292,7 +261,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
       ([text, selectOptions]) =>
         (text
           ? selectOptions?.filter(
-              (option) => option.caption?.toLowerCase().includes(text) || `${option.value}`.toLowerCase().includes(text)
+              (option) => option.caption?.toLowerCase().includes(text) || `${option.key}`.toLowerCase().includes(text)
             )
           : selectOptions) ?? []
     )
@@ -311,9 +280,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
       this.smartFilterService.refresh()
     })
   private slicerSub = this.slicer$.pipe(takeUntilDestroyed()).subscribe((slicer) => {
-    slicer.dimension = {
-      ...this.dimension
-    }
+    slicer.dimension = this._dimension()
     this.onChange?.(slicer)
   })
 
@@ -329,17 +296,17 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
       ),
       map(([treeNodes, text]) => {
         return filterTreeNodes(treeNodes ?? [], text, {
-          considerKey: this.displayBehaviour !== DisplayBehaviour.descriptionOnly
+          considerKey: this.displayBehaviour() !== DisplayBehaviour.descriptionOnly
         })
       })
     )
     .subscribe((nodes) => {
       this.dataSource.data = nodes
-      if (this.options?.initialLevel || !!this.valueControl.value) {
+      if (this.options()?.initialLevel || !!this.valueControl.value) {
         this.treeControl.dataNodes.forEach((node) => {
           const level = this.treeControl.getLevel(node)
           // is in initial levels or the searched node is exacted
-          if (level < this.options.initialLevel || (this.valueControl.value && node.childrenCardinality === 1)) {
+          if (level < this.options().initialLevel || (this.valueControl.value && node.childrenCardinality === 1)) {
             this.treeControl.expand(node)
           }
         })
@@ -350,8 +317,8 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     // 由于 set dataSettings 会同步执行至 toSignal entityType，所以需要使用 allowSignalWrites 设置
     effect(
       () => {
-        if (this.dataSettings) {
-          this.smartFilterService.dataSettings = this.dataSettings
+        if (this.dataSettings()) {
+          this.smartFilterService.dataSettings = this.dataSettings()
         }
       },
       { allowSignalWrites: true }
@@ -359,16 +326,16 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
 
     effect(() => {
       this.smartFilterService.options = {
-        ...(this.options ?? {}),
-        dimension: this.dimension
+        ...(this.options() ?? {}),
+        dimension: this._dimension()
       }
     })
 
     effect(() => {
-      if (this.options?.defaultMembers) {
+      if (this.options()?.defaultMembers) {
         this.slicer = {
           ...this.slicer,
-          members: [...this.options.defaultMembers]
+          members: [...this.options().defaultMembers]
         }
       }
     })
@@ -389,12 +356,23 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     })
 
     effect(() => {
-      if (this.disabled) {
+      if (this.disabled$()) {
         this.valueControl.disable()
       } else {
         this.valueControl.enable()
       }
     })
+
+    effect(() => {
+      const dimension = this.dimension()
+      this.hierarchy.set(dimension.hierarchy || dimension.dimension)
+    }, { allowSignalWrites: true })
+
+    effect(() => {
+      const dimension = this.dimension()
+      this.displayBehaviour.set(dimension.displayBehaviour)
+    }, { allowSignalWrites: true })
+    
   }
 
   writeValue(obj: any): void {
@@ -409,12 +387,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     //
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
-    if (isDisabled) {
-      this.valueControl.disable()
-    } else {
-      this.valueControl.enable()
-    }
+    this._disabled.set(isDisabled)
   }
 
   trackBy(index: number, item: IMember) {
@@ -481,7 +454,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     let members = this.slicer.members ?? []
 
     if (event.checked) {
-      if (this.options?.multiple || this.options?.selectionType === FilterSelectionType.Multiple) {
+      if (this.options()?.multiple || this.options()?.selectionType === FilterSelectionType.Multiple) {
         const index = members.findIndex((item) => item.key === member.key)
         if (index > -1) {
           members.splice(index, 1)
@@ -515,7 +488,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
 
   toggleMember(member: IMember) {
     let members = this.slicer.members ? [...this.slicer.members] : []
-    if (this.options?.multiple || this.options?.selectionType === FilterSelectionType.Multiple) {
+    if (this.options()?.multiple || this.options()?.selectionType === FilterSelectionType.Multiple) {
       const index = members.findIndex((item) => item.key === member.key)
       if (index > -1) {
         members.splice(index, 1)
@@ -523,7 +496,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
         members.push({
           key: member.key,
           value: member.value,
-          label: member.caption
+          caption: member.caption
         })
       }
     } else {
@@ -531,7 +504,7 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
         {
           key: member.key,
           value: member.value,
-          label: member.caption
+          caption: member.caption
         }
       ]
     }
@@ -548,12 +521,12 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
         .open(NgmValueHelpComponent, {
           viewContainerRef: this._viewContainerRef,
           data: {
-            dataSettings: this.dataSettings,
-            dimension: this.dimension,
+            dataSettings: this.dataSettings(),
+            dimension: this._dimension(),
             options: {
-              ...(this.options ?? {}),
+              ...(this.options() ?? {}),
               selectionType:
-                this.options?.selectionType ?? (this.options?.multiple ? FilterSelectionType.Multiple : null),
+                this.options()?.selectionType ?? (this.options()?.multiple ? FilterSelectionType.Multiple : null),
               searchable: true,
               initialLevel: 1
             },
@@ -564,11 +537,8 @@ export class NgmSmartFilterComponent implements ControlValueAccessor {
     )
 
     if (slicer) {
-      this.dimension = {
-        ...this.dimension,
-        hierarchy: slicer.dimension.hierarchy,
-        displayBehaviour: slicer.dimension.displayBehaviour
-      }
+      this.hierarchy.set(slicer.dimension.hierarchy)
+      this.displayBehaviour.set(slicer.dimension.displayBehaviour)
       this.slicer = {
         ...this.slicer,
         members: slicer.members ?? [],

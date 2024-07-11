@@ -138,9 +138,15 @@ export class SmartBusinessService<T, State extends SmartBusinessState = SmartBus
     if (ignoreUnknownProperty) {
       _filters = _filters.filter((f) => {
         if (f.dimension) {
+          // Is Advanced slicer
           if (isAdvancedSlicer(f)) {
             return !!getEntityProperty(entityType, f.context[0])
           }
+          // Is Variable
+          if (f.dimension.parameter) {
+            return !!entityType.parameters[f.dimension.parameter]
+          }
+          // Is Dimension
           return !!getEntityProperty(entityType, f.dimension)
         }
         return true

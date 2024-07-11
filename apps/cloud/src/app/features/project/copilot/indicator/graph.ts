@@ -1,67 +1,27 @@
-import { Signal, computed, inject } from '@angular/core'
+import { computed, inject } from '@angular/core'
 import { HumanMessage } from '@langchain/core/messages'
-import { RunnableLambda } from '@langchain/core/runnables'
-import { DynamicStructuredTool } from '@langchain/core/tools'
+import { RunnableConfig, RunnableLambda } from '@langchain/core/runnables'
 import { START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
-import { CreateGraphOptions } from '@metad/copilot'
+import { CreateGraphOptions, Team } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import { injectDimensionMemberTool } from '@metad/core'
-import { IBusinessArea, ITag } from '../../../../@core'
-import { Route, Team, injectAgentFewShotTemplate } from '../../../../@core/copilot/'
+import { injectAgentFewShotTemplate } from '../../../../@core/copilot/'
 import { ProjectService } from '../../project.service'
 import { createIndicatorWorker } from './indicator-agent'
 import { injectCreateFormulaTool, injectCreateIndicatorTool, injectPickCubeTool } from './tools'
 import { INDICATOR_AGENT_NAME, IndicatorCommandName, SUPERVISOR_NAME } from './types'
 
 // Define the top-level State interface
-interface State extends Route.State {}
+interface State extends Team.State {
+  indicator: string
+}
 
-const superState: StateGraphArgs<State>['channels'] = Route.createState()
-
-async function createIndicatorGraph({
-  llm,
-  checkpointer,
-  interruptBefore,
-  interruptAfter,
-  pickCubeTool,
-  createIndicatorTool,
-  memberRetrieverTool,
-  createFormulaTool,
-  indicatorCodes,
-  businessAreas,
-  tags
-}: CreateGraphOptions & {
-  pickCubeTool?: DynamicStructuredTool
-  createIndicatorTool?: DynamicStructuredTool
-  memberRetrieverTool?: DynamicStructuredTool
-  createFormulaTool?: DynamicStructuredTool
-  indicatorCodes: Signal<string[]>
-  businessAreas: Signal<IBusinessArea[]>
-  tags: Signal<ITag[]>
-}) {
-  const supervisorNode = await Team.createSupervisor(llm, [INDICATOR_AGENT_NAME])
-
-  const createIndicator = await createIndicatorWorker(
-    {
-      llm,
-      indicatorCodes,
-      businessAreas,
-      tags
-    },
-    [pickCubeTool, memberRetrieverTool, createFormulaTool, createIndicatorTool]
-  )
-
-  const superGraph = new StateGraph({ channels: superState })
-    // Add steps nodes
-    .addNode(SUPERVISOR_NAME, supervisorNode)
-    .addNode(INDICATOR_AGENT_NAME, Route.createRunWorkerAgent(createIndicator, INDICATOR_AGENT_NAME))
-
-  superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
-  superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next)
-
-  superGraph.addEdge(START, SUPERVISOR_NAME)
-
-  return superGraph.compile({ checkpointer, interruptBefore, interruptAfter })
+const superState: StateGraphArgs<State>['channels'] = {
+  ...Team.createState(),
+  indicator: {
+    value: (x: string, y?: string) => y ?? x,
+    default: () => ''
+  },
 }
 
 export function injectCreateIndicatorGraph() {
@@ -76,19 +36,43 @@ export function injectCreateIndicatorGraph() {
   const tags = projectService.tags
 
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
-    return createIndicatorGraph({
-      llm,
-      checkpointer,
-      interruptBefore,
-      interruptAfter,
-      pickCubeTool,
-      createIndicatorTool,
-      memberRetrieverTool,
-      createFormulaTool,
-      indicatorCodes,
-      businessAreas,
-      tags
-    })
+    const supervisorNode = await Team.createSupervisor(llm, [INDICATOR_AGENT_NAME])
+
+    const createIndicator = await createIndicatorWorker(
+      {
+        llm,
+        indicatorCodes,
+        businessAreas,
+        tags
+      },
+      [pickCubeTool, memberRetrieverTool, createFormulaTool, createIndicatorTool]
+    )
+
+    const superGraph = new StateGraph({ channels: superState })
+      // Add steps nodes
+      .addNode(SUPERVISOR_NAME, supervisorNode)
+      .addNode(INDICATOR_AGENT_NAME,
+        async (state: State, config?: RunnableConfig) => {
+          const result = await createIndicator.invoke({
+            role: state.role,
+            context: state.context,
+            indicator: state.indicator,
+            messages: [
+              new HumanMessage(state.instructions)
+            ]
+          }, config)
+          return {
+            messages: [new HumanMessage({ content: result.output, name: INDICATOR_AGENT_NAME })],
+            indicator: result.output
+          }
+        })
+
+    superGraph.addEdge(INDICATOR_AGENT_NAME, SUPERVISOR_NAME)
+    superGraph.addConditionalEdges(SUPERVISOR_NAME, (x) => x.next)
+
+    superGraph.addEdge(START, SUPERVISOR_NAME)
+
+    return superGraph.compile({ checkpointer, interruptBefore, interruptAfter })
   }
 }
 

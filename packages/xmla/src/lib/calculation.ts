@@ -26,7 +26,10 @@ import {
   RestrictedMeasureProperty,
   VarianceMeasureProperty,
   compact, isEmpty, pick, isNil,
-  measureFormatter
+  measureFormatter,
+  isSlicer,
+  isVariableSlicer,
+  convertSlicerToDimension
 } from '@metad/ocap-core'
 import { MDXHierarchyFilter, MDXProperty } from './filter'
 import {
@@ -190,10 +193,8 @@ export function withCalculationMembers(
   entityType: EntityType,
   filters?: MDXHierarchyFilter[]
 ): Record<string, WithMemberType> {
-  // const members: Record<string, WithMemberType> = {}
-
   // 未来迁移到 schema cube CalculatedMember 中
-  ;[...dimensions, ...(filters ?? [])].forEach((dimension) => {
+  [...dimensions, ...(filters ?? [])].forEach((dimension) => {
     dimension.members?.forEach((member) => {
       const property = getEntityProperty(entityType, getMemberValue(member))
       if (isCalculationProperty(property)) {
@@ -356,19 +357,21 @@ export function serializeAggregationProperty(property: AggregationProperty) {
  * @returns
  */
 export function serializeRestrictedMeasureProperty(property: RestrictedMeasureProperty, filters: MDXHierarchyFilter[]) {
-  const contexts = property.dimensions?.map((item) => {
-    const dimension = { ...item, members: item.members || [] }
-    // 非常量选择或者有 name? 则合并 Context 上下文的过滤器
-    if (dimension.name || !property.enableConstantSelection) {
-      filters
-        ?.filter((item) => item.name === dimension.name || item.dimension === dimension.dimension)
-        .forEach((item) => {
-          dimension.members = item.members
-        })
-      dimension.members = compact(dimension.members)
-    }
-    return serializeMemberSet(dimension)
-  })
+  const dimensions = property.slicers ? property.slicers.filter((slicer) => !isVariableSlicer(slicer)).map(convertSlicerToDimension) :
+    property.dimensions
+  const contexts = dimensions?.map((item) => {
+      const dimension = { ...item, members: item.members || [] }
+      // 非常量选择或者有 name? 则合并 Context 上下文的过滤器
+      if (dimension.name || !property.enableConstantSelection) {
+        filters
+          ?.filter((item) => item.name === dimension.name || item.dimension === dimension.dimension)
+          .forEach((item) => {
+            dimension.members = item.members
+          })
+        dimension.members = compact(dimension.members)
+      }
+      return serializeMemberSet(dimension)
+    })
 
   return isEmpty(contexts)
     ? measureFormatter(property.measure)

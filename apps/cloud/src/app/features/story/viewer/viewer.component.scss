@@ -28,6 +28,8 @@ $prefix: (ngm, story-viewer);
 :host {
   @include token-utils.create-token-values($prefix, get-token-slots());
   @apply relative h-full flex-1 max-w-full flex;
+
+  background-color: var(--ngm-color-surface-container);
   
   .pac-story-viewer__drawer {
     --mat-sidenav-container-background-color: transparent;

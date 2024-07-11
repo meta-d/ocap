@@ -6,7 +6,8 @@ export enum AggregationRole {
   hierarchy = 'hierarchy',
   level = 'level',
   measure = 'measure',
-  text = 'text'
+  text = 'text',
+  variable = 'variable'
 }
 
 export enum DataType {

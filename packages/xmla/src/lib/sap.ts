@@ -58,22 +58,22 @@ export function serializeSAPVariables(parameters: SAPVariableParameter[]) {
 }
 
 export function mapHierarchyFilterToSAPVariable(name: string, filter: MDXHierarchyFilter) {
+  const hierarchy = filter.hierarchy || filter.dimension
   if (filter.operator === FilterOperator.BT) {
     return [
-      `${name} INCLUDING ${wrapHierarchyValue(
-        filter.hierarchy,
+      `${name} INCLUDING ${wrapHierarchyValue(hierarchy,
         getMemberValue(filter.members[0])
-      )}:${wrapHierarchyValue(filter.hierarchy, getMemberValue(filter.members[1]))}`
+      )}:${wrapHierarchyValue(hierarchy, getMemberValue(filter.members[1]))}`
     ]
   }
   if (isArray(filter.members)) {
     return filter.members.map(
-      (member) => `${name} INCLUDING ${wrapHierarchyValue(filter.hierarchy, getMemberValue(member))}`
+      (member) => `${name} INCLUDING ${wrapHierarchyValue(hierarchy, getMemberValue(member))}`
     )
   }
 
   // todo
-  // return [`${name} INCLUDING ${wrapHierarchyValue(filter.hierarchy, filter.members)}`]
+  // return [`${name} INCLUDING ${wrapHierarchyValue(hierarchy, filter.members)}`]
 
   return []
 }

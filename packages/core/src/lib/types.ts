@@ -149,6 +149,13 @@ export enum Drill {
   Ancestor // 父级成员, distance 默认为 1
 }
 
+export enum FilterSelectionType {
+  Multiple = 'Multiple',
+  Single = 'Single',
+  SingleInterval = 'SingleInterval',
+  SingleRange = 'SingleRange'
+}
+
 export interface ISlicer {
   dimension?: Dimension
   exclude?: boolean
@@ -157,6 +164,7 @@ export interface ISlicer {
   drill?: Drill
   // 下钻到的层级距离本节点级数, 默认为 1 即下一级, drill distance of the member
   distance?: number
+  selectionType?: FilterSelectionType
 }
 
 export enum FilterOperator {
@@ -298,7 +306,8 @@ export const isFilter = (toBe): toBe is IFilter =>
 export const isAdvancedFilter = (toBe): toBe is IAdvancedFilter => !isNil((toBe as IAdvancedFilter)?.filteringLogic)
 export const isAdvancedSlicer = (toBe): toBe is AdvancedSlicer =>
   !isNil(AdvancedSlicerOperator[(toBe as AdvancedSlicer)?.operator])
-
+export const isVariableSlicer = (toBe): toBe is ISlicer =>
+  isSlicer(toBe) && !!toBe.dimension.parameter
 // Helpers
 export function getPropertyName(path: Dimension | Measure | string) {
   return isString(path) ? path : isDimension(path) ? path?.dimension : path?.measure

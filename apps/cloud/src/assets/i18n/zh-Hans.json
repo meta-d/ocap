@@ -190,7 +190,8 @@
       "Examples": "示例",
       "Basic": "基础",
       "Delete": "删除",
-      "MemberRetriever": "成员检索器"
+      "MemberRetriever": "成员检索器",
+      "Variables": "参数变量"
     },
     "MENU": {
       "Certification": "认证",
@@ -1291,6 +1292,7 @@
       "AskAICopilot": "向 AI 副驾驶询问问题",
       "Prompt": "提示",
       "SendPrompt": "发送提示",
+      "CommandChartDesc": "描述图形的业务逻辑",
       "Prompts": {
         "Set story theme dark": "设置故事暗黑主题",
         "Set story gradient background color sense of technology": "设置故事背景为科技感渐变色",

@@ -21,8 +21,7 @@ import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { MessagesState } from "@langchain/langgraph/dist/graph/message";
 import { All } from "@langchain/langgraph/dist/pregel/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { AgentState } from "@metad/copilot-angular";
-import { createCopilotAgentState } from "./types";
+import { AgentState, createCopilotAgentState } from "./types";
 
 
 export type N = typeof START | "agent" | "tools";

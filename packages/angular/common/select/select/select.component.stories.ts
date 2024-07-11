@@ -110,43 +110,68 @@ export const WithIcon: Story = {
   }
 }
 
+export const Multiple: Story = {
+  args: {
+    valueKey: 'key',
+    selectOptions: TREE_NODE_DATA,
+    multiple: true
+  }
+}
+
+export const MultipleSearchable: Story = {
+  args: {
+    valueKey: 'key',
+    selectOptions: TREE_NODE_DATA,
+    multiple: true,
+    searchable: true
+  }
+}
+
+
 export const Density: Story = {
   render: (args) => ({
     props: args,
     template: `
 <div class="flex items-center gap-4 p-4">
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+   [valueKey]="valueKey"
+  >
   </ngm-select>
 
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
   </ngm-select>
 
-
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>
   </ngm-select>
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>
   </ngm-select>
-  </div>
+</div>
 <div displayDensity="cosy" class="flex items-center gap-4 p-4">
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
   </ngm-select>
 
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
   </ngm-select>
 
-
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>
   </ngm-select>
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>
@@ -154,18 +179,22 @@ export const Density: Story = {
 </div>
 
 <div displayDensity="compact" class="flex items-center gap-4 p-4">
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
   </ngm-select>
 
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
   </ngm-select>
 
-  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions" displayDensity="compact">
+  <ngm-select label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions" displayDensity="compact"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>
   </ngm-select>
-  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions">
+  <ngm-select searchable label="Fruit" placeholder="Select an option" [selectOptions]="selectOptions"
+    [valueKey]="valueKey">
     <button ngmSuffix mat-icon-button>
       <mat-icon>close</mat-icon>
     </button>

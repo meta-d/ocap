@@ -1,14 +1,15 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, ViewChild, computed, inject } from '@angular/core'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { ChangeDetectionStrategy, Component, computed, effect, inject, model, ViewChild } from '@angular/core'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { nonNullable } from '@metad/core'
 import { AnalyticalGridComponent, AnalyticalGridModule } from '@metad/ocap-angular/analytical-grid'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { DisplayDensity } from '@metad/ocap-angular/core'
-import { C_MEASURES, Dimension, EntityType, ISlicer, Measure, Syntax } from '@metad/ocap-core'
+import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
+import { C_MEASURES, Dimension, EntityType, FilterOperator, getEntityVariables, ISlicer, Measure, Syntax } from '@metad/ocap-core'
 import { ContentLoaderModule } from '@ngneat/content-loader'
 import { TranslateModule } from '@ngx-translate/core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
@@ -17,7 +18,6 @@ import { BehaviorSubject, combineLatest, filter, from, map, of, switchMap } from
 import { SemanticModelService } from '../../model.service'
 import { ModelEntityService } from '../entity.service'
 import { getDropProperty } from '../types'
-import { NgmEntityModule, PropertyCapacity } from '@metad/ocap-angular/entity'
 
 @Component({
   standalone: true,
@@ -83,6 +83,8 @@ export class ModelEntityPreviewComponent {
   }
   public readonly slicers$ = new BehaviorSubject<ISlicer[]>([...(this.entityService.preview?.slicers ?? [])])
 
+  readonly variables = model<{ [name: string]: ISlicer }>({})
+
   reverse = false
 
   readonly entityError = toSignal(this.entityService.entityError$)
@@ -93,13 +95,23 @@ export class ModelEntityPreviewComponent {
     this.refresh$.pipe(switchMap((refresh) => (this.manualRefresh ? from([refresh, false]) : of(refresh)))),
     this.rows$,
     this.columns$,
-    this.slicers$
+    this.slicers$,
+    toObservable(this.variables)
   ]).pipe(
     filter(([refresh, rows, columns]) => {
       return (!this.manualRefresh || refresh) && (!isEmpty(rows) || !isEmpty(columns))
     }),
-    map(([, rows, columns, slicers]) => {
+    map(([, rows, columns, slicers, variables]) => {
       slicers = (slicers?.filter(Boolean) ?? []).map((item) => ({ ...item }))
+      slicers.push(
+        ...Object.keys(variables)
+          .map((name) =>
+            variables[name].members?.length
+              ? { ...variables[name], dimension: { ...variables[name].dimension, parameter: name } }
+              : null
+          )
+          .filter(nonNullable)
+      )
       return this.reverse
         ? {
             rows: [...columns],
@@ -146,6 +158,48 @@ export class ModelEntityPreviewComponent {
   public readonly entityType = toSignal<EntityType, EntityType>(this.entityService.entityType$, {
     initialValue: { syntax: Syntax.MDX, properties: {} } as EntityType
   })
+
+  readonly variableList = computed(() => {
+    return getEntityVariables(this.entityType())
+  })
+
+  constructor() {
+    effect(() => {
+      this.variableList().forEach((variable) => {
+        if (!this.variables[variable.name] && variable.defaultLow) {
+          const members = [
+            {
+              key: variable.defaultLow,
+              caption: variable.defaultLowCaption
+            }
+          ]
+
+          if (variable.defaultHigh) {
+            members.push({
+              key: variable.defaultHigh,
+              caption: variable.defaultHighCaption
+            })
+          }
+          this.variables.update((state) => ({
+            ...state,
+            [variable.name]: {
+              dimension: {
+                dimension: variable.referenceDimension,
+                hierarchy: variable.referenceHierarchy,
+                parameter: variable.name
+              },
+              members,
+              operator: variable.defaultHigh ? FilterOperator.BT : null
+            }
+          }))
+        }
+      })
+    }, { allowSignalWrites: true })
+  }
+
+  onVariable(name: string, event: ISlicer) {
+    this.variables.update((state) => ({ ...state, [name]: event }))
+  }
 
   trackByIndex(index: number, el: any): number {
     return index

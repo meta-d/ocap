@@ -94,9 +94,9 @@
   .ngm-copilot-chat__message-content {
     @apply rounded-lg border border-dashed border-transparent;
 
-    &.thinking {
-      @apply border-neutral-200 dark:border-neutral-800;
-    }
+    // &.thinking {
+    //   @apply border-neutral-200 dark:border-neutral-800;
+    // }
   }
 }
 

@@ -11,6 +11,7 @@ import {
 	UsePipes,
 	ValidationPipe,
 	BadRequestException,
+	Session,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
@@ -30,6 +31,7 @@ import { CurrentUser, Public } from './../shared/decorators';
 import { AuthGuard } from '@nestjs/passport';
 import { ChangePasswordRequestDTO, ResetPasswordRequestDTO } from '../password-reset/dto';
 import { RegisterUserDTO } from '../user/dto';
+import { randomUUID } from 'crypto';
 
 @ApiTags('Auth')
 // @UseInterceptors(TransformInterceptor)
@@ -104,8 +106,11 @@ export class AuthController {
 	@Post('/login')
 	@Public()
 	async login(
-		@Body() entity: IUserLoginInput
+		@Body() entity: IUserLoginInput,
+		@Session() session: Record<string, any>,
+		@Req() req: Request
 	): Promise<IAuthResponse | null> {
+		session.name = session.name || randomUUID()
 		return await this.commandBus.execute(new AuthLoginCommand(entity));
 	}
 

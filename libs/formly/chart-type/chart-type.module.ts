@@ -17,7 +17,6 @@ import { NgmSchemaFormComponent } from '@metad/story/designer'
 import { FormlyModule } from '@ngx-formly/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
-import { NgxPopperjsModule } from 'ngx-popperjs'
 import { PACFormlyChartTypeComponent } from './chart-type.component'
 
 @NgModule({
@@ -42,7 +41,6 @@ import { PACFormlyChartTypeComponent } from './chart-type.component'
     DensityDirective,
     NgmCommonModule,
     ResizerModule,
-    NgxPopperjsModule,
     NgmSchemaFormComponent,
 
     FormlyModule.forChild({

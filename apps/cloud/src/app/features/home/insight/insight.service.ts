@@ -130,7 +130,6 @@ export class InsightService {
       this.suggesting.set(true)
       await this.#copilotEngine.chat(`/chart ${prompt}`, {
         newConversation: true,
-        assistantMessageId: options.conversationId,
         conversationId: options.conversationId
       })
     } catch (err) {

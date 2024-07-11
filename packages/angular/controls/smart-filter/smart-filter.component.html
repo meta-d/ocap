@@ -1,5 +1,5 @@
 <label class="p-1 text-sm text-ellipsis whitespace-nowrap overflow-hidden disabled:opacity-50">
-    {{ label() }}
+  {{ _label() }}
 </label>
 
 <div class="w-full relative flex items-center rounded-md">
@@ -17,8 +17,8 @@
         +{{restChips().length}}
       </span>
       <mat-icon class="cursor-pointer shrink-0 text-neutral-400" displayDensity="compact" ngmAppearance="danger"
-        [class.cursor-not-allowed]="disabled"
-        (click)="disabled ? null : clearMembers()">close</mat-icon>
+        [class.cursor-not-allowed]="disabled$()"
+        (click)="disabled$() ? null : clearMembers()">close</mat-icon>
     </ng-container>
   </div>
 
@@ -29,11 +29,11 @@
     [matAutocomplete]="auto"
   >
   <div class="ngm-smart-filter__suffix flex items-center">
-    <mat-spinner *ngIf="loading$ | async" [color]="appearance?.color" strokeWidth="1" diameter="20"></mat-spinner>
+    <mat-spinner *ngIf="loading$ | async" [color]="appearance()?.color" strokeWidth="1" diameter="20"></mat-spinner>
 
     <button mat-icon-button *ngIf="hierarchies()?.length > 1" class="ngm-actionable-opacity"
       displayDensity="compact"
-      [disabled]="disabled"
+      [disabled]="disabled$()"
       [matMenuTriggerFor]="hierarchiesMenu"
       #mt="matMenuTrigger"
       [class.active]="mt.menuOpen"
@@ -41,7 +41,7 @@
       <mat-icon fontSet="material-icons-outlined">account_tree</mat-icon>
     </button>
     <button mat-icon-button type="button" class="ngm-actionable-opacity" displayDensity="compact"
-      [disabled]="disabled"
+      [disabled]="disabled$()"
       (click)="$event.stopPropagation();$event.preventDefault();openValueHelp($event)"
     >
       <mat-icon>help_outline</mat-icon>
@@ -53,7 +53,7 @@
 
 <mat-autocomplete #auto="matAutocomplete" class="ngm-tree-select__panel"
   [class]="'ngm-autocomplete-panel ' + (multiple ? 'multiple' : '') + ' ' + (_displayDensity() === 'compact' ? 'ngm-density__compact' : '') + ' ' + (_displayDensity()==='cosy' ? 'ngm-density__cosy' : '')"
-  [autoActiveFirstOption]="options?.autoActiveFirst"
+  [autoActiveFirstOption]="options()?.autoActiveFirst"
   [displayWith]="displayWithCaption"
   (opened)="onAutocompleteOpened()"
   (optionSelected)="selectMember($event)">
@@ -74,20 +74,20 @@
           </mat-icon>
         </button>
 
-        <mat-checkbox *ngIf="options?.multiple" class="flex-1"
+        <mat-checkbox *ngIf="options()?.multiple" class="flex-1"
           [checked]="isSelected(option)"
           (click)="$event.stopPropagation()"
           (change)="onCheckboxChange($event, option)"
         >
-          <ngm-display-behaviour [option]="{value: option.key, label: option.caption}"
-            [displayBehaviour]="displayBehaviour"
+          <ngm-display-behaviour [option]="option"
+            [displayBehaviour]="displayBehaviour()"
             [highlight]="searchHighlight">
           </ngm-display-behaviour>
         </mat-checkbox>
 
-        <ngm-display-behaviour *ngIf="!options?.multiple" class="flex-1"
-          [option]="{value: option.key, label: option.caption}"
-          [displayBehaviour]="displayBehaviour"
+        <ngm-display-behaviour *ngIf="!options()?.multiple" class="flex-1"
+          [option]="option"
+          [displayBehaviour]="displayBehaviour()"
           [highlight]="searchHighlight">
         </ngm-display-behaviour>
       </div>

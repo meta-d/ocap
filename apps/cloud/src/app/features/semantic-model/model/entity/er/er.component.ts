@@ -60,6 +60,7 @@ export class ERComponent {
   readonly dimensionElements = viewChildren('dimensionRef', { read: ElementRef })
   readonly dimensionDrags = viewChildren('dimensionRef', { read: CdkDrag })
   readonly container = viewChild('container', { read: CdkDrag })
+  readonly parent = viewChild('container', { read: ElementRef })
   readonly cubeElement = viewChild('cubeRef', { read: ElementRef })
 
   readonly cube = this.cubeService.cube
@@ -121,7 +122,7 @@ export class ERComponent {
 
   constructor() {
     afterNextRender(() => {
-      this.arrange()
+      this.autoLayout()
     })
   }
 
@@ -204,6 +205,21 @@ export class ERComponent {
 
   autoLayout() {
     this.arrange()
+
+    setTimeout(() => {
+      var parentWidth = this.parent().nativeElement.clientWidth;
+      var parentHeight = this.parent().nativeElement.clientHeight;
+
+      var childWidth = this.area().nativeElement.clientWidth;
+      var childHeight = this.area().nativeElement.clientHeight;
+
+      var leftPosition = (parentWidth - childWidth) / 2;
+      var topPosition = (parentHeight - childHeight) / 2;
+      this.areaPosition.update((state) => ({
+        x: leftPosition,
+        y: topPosition
+      }))
+    }, 600)
   }
 
   onContainerDragEnd(event: CdkDragEnd) {
@@ -221,7 +237,7 @@ export class ERComponent {
   zoomOut() {
     this.areaScale.update((state) => {
       state = state - 0.1
-      return state <= 0 ? 0.1 : state
+      return state <= 0.1 ? 0.1 : state
     })
   }
 

@@ -304,6 +304,31 @@ export interface ParameterProperty extends EntityProperty {
   referenceDimension?: string
 }
 
+export enum VariableSelectionType {
+  Default,
+  Value,
+  Interval,
+  Complex
+}
+
+export interface VariableProperty extends ParameterProperty {
+  // sap variables
+  referenceDimension?: string
+  referenceHierarchy: string
+  defaultHigh: string
+  defaultHighCaption: string
+  defaultLow: string
+  defaultLowCaption: string
+  variableCaption: string
+  variableEntryType: number
+  variableGuid: string
+  variableName: string
+  variableOrdinal: number
+  variableProcessingType: number
+  variableSelectionType: VariableSelectionType
+  variableType: number
+}
+
 /**
  *
  * Entity 的 Meta 信息集合

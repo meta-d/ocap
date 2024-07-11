@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph/web'
-import { CreateGraphOptions } from '@metad/copilot'
+import { createCopilotAgentState, CreateGraphOptions, createReactAgent } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import {
   PROMPT_RETRIEVE_DIMENSION_MEMBER,
@@ -14,7 +14,6 @@ import {
   markdownEntityType
 } from '@metad/core'
 import { CalculatedMember } from '@metad/ocap-core'
-import { createCopilotAgentState, createReactAgent } from 'apps/cloud/src/app/@core/copilot'
 import { ModelEntityService } from '../../entity/entity.service'
 import { SemanticModelService } from '../../model.service'
 import { injectCreateCalculatedTool, injectEditFormulaTool } from './tools'

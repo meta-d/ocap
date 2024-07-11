@@ -169,13 +169,13 @@ export class InputControlSchemaService extends DataSettingsSchemaService {
       )
     }
 
-    if (controlType === FilterControlType.TreeSelect) {
+    if (controlType === FilterControlType.TreeSelect || controlType === FilterControlType.DropDownList) {
       optionsFieldGroup.push(...hierarchyAttributes(i18nStoryWidgets?.Common))
     }
 
-    if (controlType === ControlType.dropDownList) {
-      optionsFieldGroup.push(DataTable(FORMLY_W_FULL, i18nStoryWidgets?.Filter))
-    }
+    // if (controlType === FilterControlType.DropDownList) {
+    //   optionsFieldGroup.push(DataTable(FORMLY_W_FULL, i18nStoryWidgets?.Filter))
+    // }
 
     return [
       {
@@ -367,7 +367,7 @@ function InputControlControlType(className: string, InputControl) {
           label: InputControl?.TreeSelect ?? 'Tree Select'
         },
         { value: FilterControlType.Select, label: InputControl?.FlatSelect ?? 'Flat Select' },
-        { value: ControlType.dropDownList, label: InputControl?.DropDownList ?? 'Dropdown List' }
+        { value: FilterControlType.DropDownList, label: InputControl?.DropDownList ?? 'Dropdown List' }
       ]
     }
   }

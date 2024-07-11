@@ -93,10 +93,8 @@ export function injectQueryCommand(
         dbTablesPrompt() +
         ` Please provide the corresponding MDX statement for the given question.`
       if (statement()) {
-        prompt += `Current statement: 
-\`\`\`mdx
+        prompt += `Current mdx statement: 
 ${statement()}
-\`\`\`
 `
       }
     } else {
@@ -109,10 +107,8 @@ ${dbTablesPrompt()}
 Please provide the corresponding SQL statement for the given question.
 Note: Table fields are case-sensitive and should be enclosed in double quotation marks.`
       if (statement()) {
-        prompt += `\nCurrent statement:
-\`\`\`sql
+        prompt += `\nCurrent sql statement:
 ${statement()}
-\`\`\`
 `
       }
     }

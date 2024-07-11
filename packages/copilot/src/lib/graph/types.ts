@@ -1,5 +1,12 @@
 import { BaseMessage } from '@langchain/core/messages'
 
+export interface AgentState {
+  input: string
+  role: string
+  context: string
+  messages: BaseMessage[]
+}
+
 export function createCopilotAgentState() {
   return {
     input: {

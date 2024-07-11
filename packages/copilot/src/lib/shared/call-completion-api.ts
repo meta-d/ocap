@@ -2,6 +2,9 @@ import { readDataStream } from './read-data-stream';
 import { JSONValue } from 'ai';
 import { COMPLEX_HEADER, createChunkDecoder } from 'ai';
 
+/**
+ * @deprecated use LangChain
+ */
 export async function callCompletionApi({
   api,
   prompt,

@@ -25,5 +25,6 @@ export function NX_SELECTION_DEFAULT_OPTIONS_FACTORY(): NxSelectionDefaultOption
 
 export enum SlicersCapacity {
   CombinationSlicer = 'CombinationSlicer',
-  AdvancedSlicer = 'AdvancedSlicer'
+  AdvancedSlicer = 'AdvancedSlicer',
+  Variable = 'Variable'
 }

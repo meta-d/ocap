@@ -10,7 +10,6 @@ import { MatListModule } from '@angular/material/list'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatRadioModule } from '@angular/material/radio'
-import { NxEntityModule } from '@metad/components/entity'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { NgmControlsModule } from '@metad/ocap-angular/controls'
 import { DensityDirective } from '@metad/ocap-angular/core'
@@ -40,7 +39,7 @@ import { InputControlPlaceholderComponent } from './placeholder/placeholder.comp
     TranslateModule,
 
     DensityDirective,
-    NxEntityModule,
+    // NxEntityModule,
     NgmMemberDatepickerModule,
     NgmCommonModule,
     NgmParameterComponent,

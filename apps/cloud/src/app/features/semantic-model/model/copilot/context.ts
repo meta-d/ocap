@@ -3,7 +3,7 @@ import { NgmCopilotContextToken } from '@metad/copilot-angular'
 import { DBTable } from '@metad/ocap-core'
 import { map, shareReplay } from 'rxjs'
 import { SemanticModelService } from '../model.service'
-import { queryTableStructureData } from './tools'
+import { queryEntityStructureData } from './tools'
 
 export function provideCopilotTables() {
   const modelService = inject(SemanticModelService)
@@ -14,7 +14,7 @@ export function provideCopilotTables() {
       return tables.map((table) => ({
         value: {
           serizalize: async () => {
-            return await queryTableStructureData(modelService, table)
+            return await queryEntityStructureData(modelService, table)
           }
         },
         key: table.name,

@@ -2,6 +2,7 @@ import { ThemePalette } from '@angular/material/core'
 import { ControlOptions } from '@metad/ocap-angular/controls'
 import { ParameterOptions } from '@metad/ocap-angular/parameter'
 import {
+  AggregationRole,
   Dimension,
   EntityType,
   FilterSelectionType,
@@ -48,6 +49,10 @@ export interface InputControlOptions extends ControlOptions, MeasureControlOptio
 
 export function determineControlType(propertyName: Dimension, entityType: EntityType) {
   const property = getEntityProperty(entityType, propertyName)
+  if (!property) {
+    return null
+  }
+
   // 1. Measure control
   if (isMeasureControlProperty(property)) {
     return FilterControlType.MeasureControl
@@ -75,6 +80,10 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
     if (levelProperty?.semantics?.semantic && Semantics[levelProperty.semantics.semantic].startsWith('Calendar')) {
       return FilterControlType.Datepicker
     }
+  }
+
+  if (property.role === AggregationRole.variable) {
+    return FilterControlType.Variable
   }
 
   // if (presentation === PresentationEnum.Flat) {

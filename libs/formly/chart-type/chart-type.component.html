@@ -137,24 +137,14 @@
   <div class="surface-content flex flex-col justify-start items-stretch relative mt-2 rounded-lg overflow-hidden"
     ngmResizer [resizerHeight]="500">
     <header class="flex justify-between items-center px-2">
-      <input matInput class="ngm-input-element rounded-md p-1 outline-none text-sm" [formControl]="name"
-        placeholder="{{ 'FORMLY.CHART.CustomCode' | translate: {Default: 'Custom Code'} }}"  
-      />
+      <ngm-input [formControl]="name" [label]="'FORMLY.CHART.ChartName' | translate: {Default: 'Chart name'} " displayDensity="compact" placeholder="{{ 'FORMLY.CHART.CustomCode' | translate: {Default: 'Custom Code'} }}" />
     
       <div class="flex items-center gap-2">
-        <button mat-icon-button displayDensity="compact" [disabled]="!scripts || answering"
+        <button mat-icon-button displayDensity="compact" class="ngm-copilot-command-button"
+          [disabled]="!scripts || answering"
           [matTooltip]=" 'FORMLY.CHART.AutomaticallyGenerateCode' | translate: {Default: 'Automatically generate code by comments'} "
-          (click)="askComplete()">
-            <mat-icon fontSet="material-icons-outlined">auto_awesome</mat-icon>
-        </button>
-        <button mat-icon-button displayDensity="compact" [disabled]="answering"
-            [popper]="copilot"
-            [popperTrigger]="NgxPopperjsTriggers.click"
-            [popperHideOnClickOutside]="true"
-            [popperHideOnScroll]="true"
-            [popperHideOnMouseLeave]="false"
-            [popperPlacement]="NgxPopperjsPlacements.TOPEND">
-            <mat-icon fontSet="material-icons-outlined">try</mat-icon>
+          (click)="aiGenerate()">
+          <mat-icon fontSet="material-icons-outlined">auto_awesome</mat-icon>
         </button>
       </div>
     </header>
@@ -172,17 +162,3 @@
   </div>
   }
 </div>
-
-<popper-content #copilot class="z-[101]">
-  <form (ngSubmit)="copilot.hide();askCopilot()" class="bg-white p-1">
-    <div class="relative w-full flex ">
-      <div class="absolute inset-y-0 left-1 flex items-center pointer-events-none font-notoColorEmoji">
-        🤖
-      </div>
-      <input type="text" id="simple-search" class="block w-full pl-6 p-1 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        placeholder="{{ 'FORMLY.CHART.Ask' | translate: {Default: 'Ask'} }}..." required
-        matInput [(ngModel)]="prompt" [ngModelOptions]="{standalone: true}"
-      >
-    </div>
-  </form>
-</popper-content>

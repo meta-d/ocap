@@ -1,5 +1,13 @@
-import { Component, effect, EventEmitter, forwardRef, inject, Input, Output, signal } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { Component, effect, EventEmitter, forwardRef, inject, input, Input, Output } from '@angular/core'
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatIconModule } from '@angular/material/icon'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatSelectModule } from '@angular/material/select'
+import { NgmSelectComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, DensityDirective, NgmAppearance } from '@metad/ocap-angular/core'
 import {
   DataSettings,
@@ -11,7 +19,7 @@ import {
   isEmpty,
   isEqual,
   ISlicer,
-  isNil,
+  isNil
 } from '@metad/ocap-core'
 import {
   BehaviorSubject,
@@ -27,13 +35,6 @@ import {
 } from 'rxjs'
 import { NgmSmartFilterService } from '../smart-filter.service'
 import { ControlOptions } from '../types'
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
-import { CommonModule } from '@angular/common'
-import { MatFormFieldModule } from '@angular/material/form-field'
-import { MatSelectModule } from '@angular/material/select'
-import { MatIconModule } from '@angular/material/icon'
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { MatButtonModule } from '@angular/material/button'
 
 export interface SmartSelectOptions extends ControlOptions {
   /**
@@ -42,6 +43,9 @@ export interface SmartSelectOptions extends ControlOptions {
   data?: Array<IMember>
 }
 
+/**
+ * @deprecated use NgmSmartFilter instand
+ */
 @Component({
   standalone: true,
   imports: [
@@ -53,7 +57,8 @@ export interface SmartSelectOptions extends ControlOptions {
     MatButtonModule,
     MatProgressSpinnerModule,
     DensityDirective,
-    AppearanceDirective
+    AppearanceDirective,
+    NgmSelectComponent
   ],
   selector: 'ngm-smart-select',
   templateUrl: 'smart-select.component.html',
@@ -70,34 +75,13 @@ export interface SmartSelectOptions extends ControlOptions {
     }
   ]
 })
-export class NgmSmartSelectComponent implements ControlValueAccessor
-{
+export class NgmSmartSelectComponent implements ControlValueAccessor {
   private smartFilterService = inject(NgmSmartFilterService)
 
-  private _dataSettings = signal<DataSettings>(null)
-  @Input() get dataSettings(): DataSettings {
-    return this._dataSettings()
-  }
-  set dataSettings(value: DataSettings) {
-    this._dataSettings.set(value)
-  }
-
-  private _dimension = signal<Dimension>(null)
-  @Input() get dimension(): Dimension {
-    return this._dimension()
-  }
-  set dimension(value: Dimension) {
-    this._dimension.set(value)
-  }
-
-  private _options = signal<SmartSelectOptions>(null)
-  @Input() get options() {
-    return this._options()
-  }
-  set options(value) {
-    this._options.set(value)
-  }
-  private options$ = toObservable(this._options)
+  readonly dataSettings = input<DataSettings>()
+  readonly dimension = input<Dimension>()
+  readonly options = input<SmartSelectOptions>()
+  private options$ = toObservable(this.options)
 
   @Input() appearance: NgmAppearance
   @Input() disabled: boolean
@@ -105,10 +89,10 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
   @Output() loadingChanging = new EventEmitter<boolean>()
 
   get displayBehaviour() {
-    return this.dimension?.displayBehaviour ?? DisplayBehaviour.descriptionOnly
+    return this.dimension()?.displayBehaviour ?? DisplayBehaviour.descriptionOnly
   }
 
-  public readonly property$ = toObservable(this._dimension).pipe(
+  public readonly property$ = toObservable(this.dimension).pipe(
     combineLatestWith(this.smartFilterService.selectEntityType()),
     map(([dimension, entityType]) => getEntityProperty(entityType, dimension))
   )
@@ -126,7 +110,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
   public readonly members$ = this.slicer$.pipe(map((slicer) => slicer?.members))
   public readonly memberValues$ = this.members$.pipe(
     withLatestFrom(this.multiple$),
-    map(([members, multiple]) => multiple ? members?.map(({ value }) => value) : members?.[0]?.value),
+    map(([members, multiple]) => (multiple ? members?.map(({ value }) => value) : members?.[0]?.value)),
     distinctUntilChanged(isEqual)
   )
   public readonly isInitial$ = this.members$.pipe(map((members) => isEmpty(members)))
@@ -134,7 +118,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
   public readonly data$ = this.options$.pipe(map((options) => options?.data))
   public readonly selectOptions$ = this.data$.pipe(
     map((data) => data?.filter((item) => !!item)),
-    switchMap((data) => isEmpty(data) ? this.smartFilterService.selectOptions$ : of(data)),
+    switchMap((data) => (isEmpty(data) ? this.smartFilterService.selectOptions$ : of(data))),
     withLatestFrom(this.autoActiveFirst$, this.members$),
     map(([selectOptions, autoActiveFirst, members]) => {
       if (selectOptions[0] && autoActiveFirst && isEmpty(members)) {
@@ -162,31 +146,35 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
   private slicerSub = this.slicer$.pipe(takeUntilDestroyed()).subscribe((slicer) => {
     this.onChange?.({
       ...slicer,
-      dimension: this.dimension
+      dimension: this.dimension()
     })
   })
- 
+
   constructor() {
     effect(() => {
-      if (this.dataSettings) {
-        this.smartFilterService.dataSettings = this.dataSettings
+      if (this.dataSettings()) {
+        this.smartFilterService.dataSettings = this.dataSettings()
       }
     })
 
     effect(() => {
       this.smartFilterService.options = {
-        ...(this.options ?? {}),
-        dimension: this.dimension
+        ...(this.options() ?? {}),
+        dimension: this.dimension()
       }
+      console.log(this.options())
     })
 
-    effect(() => {
-      if (this.options?.defaultMembers) {
-        this.setMembers(this.options.defaultMembers)
-      }
-    }, {allowSignalWrites: true})
+    effect(
+      () => {
+        if (this.options()?.defaultMembers) {
+          this.setMembers(this.options().defaultMembers)
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
-  
+
   writeValue(obj: any): void {
     if (obj) {
       this.slicer$.next(obj)
@@ -207,9 +195,9 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
 
   toggleMember(member: IMember) {
     const slicer = this.slicer$.value ?? {
-      dimension: this.dimension,
+      dimension: this.dimension()
     }
-    if (this.options?.selectionType === FilterSelectionType.Multiple) {
+    if (this.options()?.selectionType === FilterSelectionType.Multiple) {
       const index = slicer.members?.findIndex((item) => item.value === member.value)
       if (index > -1) {
         slicer.members.splice(index, 1)
@@ -243,7 +231,7 @@ export class NgmSmartSelectComponent implements ControlValueAccessor
 
   setMembers(members?: IMember[]) {
     const slicer = this.slicer$.value ?? {
-      dimension: this.dimension,
+      dimension: this.dimension()
     }
     slicer.members = [...(members ?? [])]
     this.slicer$.next(slicer)

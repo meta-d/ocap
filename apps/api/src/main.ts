@@ -3,7 +3,9 @@ import { NestFactory, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AnalyticsModule, AnalyticsService, prepare, seedModule } from '@metad/analytics'
 import { AuthGuard, seedDefault, ServerAppModule, AppService } from '@metad/server-core'
+import { getConfig, setConfig, environment as env } from '@metad/server-config'
 import { json, urlencoded, text } from 'express'
+import * as expressSession from 'express-session';
 import yargs from 'yargs'
 import { AppModule } from './app/app.module'
 import { pluginConfig } from './plugin-config'
@@ -37,6 +39,17 @@ async function bootstrap() {
 		allowedHeaders:
 			'Authorization, Language, Tenant-Id, Organization-Id, X-Requested-With, X-Auth-Token, X-HTTP-Method-Override, Content-Type, Content-Language, Accept, Accept-Language, Observe, ' + headersForOpenAI
 	})
+
+  // Sessions
+  app.use(
+    // this runs in memory, so we lose sessions on restart of server/pod
+    expressSession({
+      secret: env.EXPRESS_SESSION_SECRET,
+      resave: true, // we use this because Memory store does not support 'touch' method
+      saveUninitialized: true,
+      cookie: { secure: env.production } // TODO
+    })
+  )
 
   const globalPrefix = 'api'
   app.setGlobalPrefix(globalPrefix)

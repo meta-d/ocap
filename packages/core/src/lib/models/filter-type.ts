@@ -1,12 +1,4 @@
-import { Dimension } from "../types"
-
-
-export enum FilterSelectionType {
-  Multiple = 'Multiple',
-  Single = 'Single',
-  SingleInterval = 'SingleInterval',
-  SingleRange = 'SingleRange'
-}
+import { Dimension, FilterSelectionType } from "../types"
 
 export interface FilterRestrictions {
   nonFilterableProperties: string[]

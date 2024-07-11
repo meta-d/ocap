@@ -107,7 +107,7 @@ export class NgmTodayFilterComponent implements OnInit, OnChanges, ControlValueA
 @Component({
   selector: 'ngm-quarter-filter',
   template: `<mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
-    <mat-label>{{ 'COMPONENTS.TIME_FILTER.TODAY' | translate: {Default: 'Today'} }}</mat-label>
+    <mat-label>{{ 'Ngm.TimeFilter.TODAY' | translate: {Default: 'Today'} }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" />
     <mat-datepicker
       #dp
@@ -265,7 +265,7 @@ export class NxMonthFilterComponent implements ControlValueAccessor {
 @Component({
   selector: 'ngm-year-filter',
   template: `<mat-form-field [appearance]="appearance?.appearance" [displayDensity]="appearance?.displayDensity">
-    <mat-label>{{ 'COMPONENTS.TIME_FILTER.TODAY' | translate: {Default: 'Today'} }}</mat-label>
+    <mat-label>{{ 'Ngm.TimeFilter.TODAY' | translate: {Default: 'Today'} }}</mat-label>
     <input matInput [matDatepicker]="dp" [formControl]="date" />
     <mat-datepicker
       #dp

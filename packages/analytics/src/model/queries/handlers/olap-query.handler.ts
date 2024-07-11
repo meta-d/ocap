@@ -23,7 +23,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 	) {}
 
 	async execute(query: ModelOlapQuery) {
-		const { id, modelId, body, forceRefresh, acceptLanguage } = query.input
+		const { id, sessionId, modelId, body, forceRefresh, acceptLanguage } = query.input
 		const user = query.user
 
 		this.logger.debug(`Executing OLAP query [${id}] for model: ${modelId}`)
@@ -72,6 +72,7 @@ export class ModelOlapQueryHandler implements IQueryHandler<ModelOlapQuery> {
 				queryResult = await this.queryBus.execute(
 					new DataSourceOlapQuery({
 						id,
+						sessionId,
 						dataSourceId: model.dataSourceId,
 						body,
 						acceptLanguage: language,

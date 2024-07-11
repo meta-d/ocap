@@ -6,13 +6,11 @@ import { StateGraphArgs } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import {
-  Team,
-  createCopilotAgentState,
-  createReactAgent,
   injectAgentFewShotTemplate
 } from 'apps/cloud/src/app/@core/copilot'
 import { SemanticModelService } from '../../model.service'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
+import { createCopilotAgentState, createReactAgent, Team } from '@metad/copilot'
 
 const SYSTEM_PROMPT =
   `You are a cube modeler for data analysis, now you need create a plan for the final goal.` +

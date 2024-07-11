@@ -1,9 +1,11 @@
 import { inject } from '@angular/core'
 import { DynamicStructuredTool } from '@langchain/core/tools'
+import { markdownEntityType, markdownTable } from '@metad/core'
 import { DBTable } from '@metad/ocap-core'
 import { firstValueFrom } from 'rxjs'
 import { z } from 'zod'
 import { SemanticModelService } from '../model.service'
+import { MODEL_TYPE } from '../types'
 import { markdownTableData } from '../utils'
 
 export function injectSelectTablesTool() {
@@ -34,7 +36,7 @@ export function injectQueryTablesTool() {
     func: async ({ tables }) => {
       let info = ''
       for await (const table of tables) {
-        const tableStr = await queryTableStructureData(modelService, { name: table })
+        const tableStr = await queryEntityStructureData(modelService, { name: table })
         info += tableStr + '\n\n'
       }
 
@@ -45,31 +47,23 @@ export function injectQueryTablesTool() {
   return queryTablesTool
 }
 
-export async function queryTableStructureData(modelService: SemanticModelService, table: DBTable) {
-  const columns = await firstValueFrom(modelService.selectOriginalEntityProperties(table.name))
-  const topCount = 10
-  const samples = await firstValueFrom(modelService.selectTableSamples(table.name, topCount))
-  const dataPrompt =
-    `The first ${topCount} rows of the table "${table.name}" are as follows:` + '\n' + markdownTableData(samples)
-  return (
-    [
-      '```',
-      `Table is:`,
-      `  - name: ${table.name}`,
-      `    caption: ${table.caption || ''}`,
-      `    columns:`,
-      columns
-        .map((t) =>
-          [
-            `    - name: ${t.name}`,
-            `      caption: ${t.caption || ''}`,
-            `      type: ${t.dataType || ''}`
-          ].join('\n')
-        )
-        .join('\n'),
-      '```'
-    ].join('\n') +
-    '\n\n' +
-    dataPrompt
-  )
+/**
+ * Provide table or cube structure description
+ *
+ * @param modelService
+ * @param table
+ * @returns
+ */
+export async function queryEntityStructureData(modelService: SemanticModelService, table: DBTable) {
+  const entityType = await firstValueFrom(modelService.selectOriginalEntityType(table.name))
+  let dataPrompt = ''
+  if (modelService.modelType() === MODEL_TYPE.OLAP || modelService.modelType() === MODEL_TYPE.SQL) {
+    const topCount = 10
+    const samples = await firstValueFrom(modelService.selectTableSamples(table.name, topCount))
+    dataPrompt =
+      `The first ${topCount} rows of the table "${table.name}" are as follows:` + '\n' + markdownTableData(samples)
+    return markdownTable(entityType) + `\n\n${dataPrompt}`
+  }
+
+  return markdownEntityType(entityType)
 }

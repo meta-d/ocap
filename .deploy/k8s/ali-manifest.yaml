@@ -96,7 +96,7 @@ spec:
     spec:
       containers:
         - name: metad-prod-api
-          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:2.4.2
+          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-api:2.4.3
           # imagePullPolicy: Always
           envFrom:
             - secretRef:
@@ -233,7 +233,7 @@ spec:
     spec:
       containers:
         - name: metad-prod-webapp
-          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:2.4.2
+          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-webapp:2.4.3
           # imagePullPolicy: Always
           ports:
             - containerPort: 80
@@ -281,7 +281,7 @@ spec:
     spec:
       containers:
         - name: metad-prod-olap
-          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:2.4.2
+          image: registry.cn-hangzhou.aliyuncs.com/metad/ocap-olap:2.4.3
           ports:
             - containerPort: 8080
               protocol: TCP

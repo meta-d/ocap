@@ -7,9 +7,9 @@ export type CopilotChatOptions = {
   command?: string
   newConversation?: boolean
   action?: string
-  assistantMessageId?: string
   conversationId?: string
   context?: CopilotContext
+  interactive?: boolean
 }
 
 /**
@@ -43,6 +43,7 @@ export type CopilotChatConversation<T extends CopilotChatMessage = CopilotChatMe
  */
 export interface CopilotEngine {
   copilot?: CopilotService
+  copilotContext?: CopilotContext
 
   /**
    * Copilot engine name

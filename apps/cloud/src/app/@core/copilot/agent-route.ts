@@ -1,5 +1,5 @@
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import { ChatPromptTemplate, MessagesPlaceholder, TemplateFormat } from '@langchain/core/prompts'
 import { StructuredToolInterface } from '@langchain/core/tools'
 import { PartialValues } from '@langchain/core/utils/types'
 import { Runnable, RunnableConfig } from '@langchain/core/runnables'
@@ -7,7 +7,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { z } from 'zod'
-import { createCopilotAgentState } from './types'
+import { createCopilotAgentState } from '@metad/copilot'
 
 type ZodAny = z.ZodObject<any, any, any, any>
 
@@ -51,14 +51,17 @@ export async function createWorkerAgent<NewPartialVariableName extends string>(
   llm: ChatOpenAI,
   tools: StructuredToolInterface<ZodAny>[],
   systemPrompt: string,
-  partialValues?: PartialValues<NewPartialVariableName>
+  partialValues?: PartialValues<NewPartialVariableName>,
+  templateFormat?: TemplateFormat
 ): Promise<AgentExecutor> {
   // Each worker node will be given a name and some tools.
   const _prompt = ChatPromptTemplate.fromMessages([
     ['system', systemPrompt],
     new MessagesPlaceholder('messages'),
     new MessagesPlaceholder('agent_scratchpad')
-  ])
+  ], {
+    templateFormat
+  })
   let prompt = _prompt
   if (partialValues) {
     prompt = await _prompt.partial(partialValues)

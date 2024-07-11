@@ -96,6 +96,7 @@ export function generateMDXQuery(entity: string, entityType: EntityType, options
    * 其余常规过滤器需要分配到轴或者计算成员或者 Slicer 轴上
    */
   const slicers = []
+  const variables = []
   options.filters?.forEach((item) => {
     if (isAdvancedSlicer(item)) {
       conditions.push(item)
@@ -103,7 +104,11 @@ export function generateMDXQuery(entity: string, entityType: EntityType, options
       slicers.push(...flattenAdvancedFilter(item).map((slicer) => convertFilter2Hierarchy(entityType, slicer)))
       // advancedFilters.push(generateAdvancedFilterStatement(entityType, item))
     } else {
-      slicers.push(convertFilter2Hierarchy(entityType, item))
+      if (item.dimension.parameter) {
+        variables.push({...item, ...item.dimension})
+      } else {
+        slicers.push(convertFilter2Hierarchy(entityType, item))
+      }
     }
   })
   // filterHierarchies = compactSlicers(filterHierarchies)
@@ -149,7 +154,8 @@ export function generateMDXQuery(entity: string, entityType: EntityType, options
       conditions,
       advancedFilters,
       orderbys,
-      withMembers
+      withMembers,
+      variables
     },
     isNil
   ) as MDXQuery
