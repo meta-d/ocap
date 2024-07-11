@@ -7,7 +7,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { AgentState } from '@metad/copilot-angular'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { z } from 'zod'
-import { createCopilotAgentState } from './types'
+import { createCopilotAgentState } from '@metad/copilot'
 
 type ZodAny = z.ZodObject<any, any, any, any>
 

@@ -1,7 +1,6 @@
-import { BaseMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
+import { Team } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
-import { Team } from 'apps/cloud/src/app/@core/copilot'
 
 export const PLANNER_NAME = 'Planner'
 export const SUPERVISOR_NAME = 'Supervisor'

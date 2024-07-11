@@ -9,6 +9,9 @@ import {
 import { FunctionCallHandler } from './functions';
 import { CopilotChatMessage } from '../types';
 
+/**
+ * @deprecated use LangChain
+ */
 export async function processChatStream({
   getStreamedResponse,
   experimental_onFunctionCall,

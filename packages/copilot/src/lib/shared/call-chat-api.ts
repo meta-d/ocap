@@ -10,6 +10,9 @@ import {
 import { COMPLEX_HEADER, createChunkDecoder } from 'ai';
 import JSON5 from 'json5';
 
+/**
+ * @deprecated use LangChain
+ */
 export async function callChatApi({
   api,
   model,

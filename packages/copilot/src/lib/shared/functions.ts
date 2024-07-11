@@ -5,6 +5,9 @@ import { AnnotatedFunction } from '../types'
 
 export const defaultCopilotContextCategories = ['global']
 
+/**
+ * @deprecated use LangChain
+ */
 export type FunctionCallHandler = (
   chatMessages: Message[],
   functionCall: FunctionCall,
@@ -59,12 +62,18 @@ export function entryPointsToFunctionCallHandler(entryPoints: AnnotatedFunction<
   }
 }
 
+/**
+ * @deprecated use LangChain
+ */
 export function entryPointsToChatCompletionFunctions(
   entryPoints: AnnotatedFunction<any[]>[]
 ): ChatCompletionCreateParams.Function[] {
   return entryPoints.map(annotatedFunctionToChatCompletionFunction)
 }
 
+/**
+ * @deprecated use LangChain
+ */
 export function annotatedFunctionToChatCompletionFunction(
   annotatedFunction: AnnotatedFunction<any[]>
 ): ChatCompletionCreateParams.Function {

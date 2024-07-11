@@ -12,10 +12,12 @@ import {
 } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { FormArray, FormControl, FormGroup } from '@angular/forms'
-import { CopilotChatMessageRoleEnum } from '@metad/copilot'
-import { NxChartType } from '@metad/core'
+import { MatDialog } from '@angular/material/dialog'
+import { CommandDialogComponent, NgmCopilotService } from '@metad/copilot-angular'
+import { injectChartCommand, NxChartType } from '@metad/core'
 import { NgmFormlyArrayComponent } from '@metad/formly/array'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
+import { NgmThemeService } from '@metad/ocap-angular/core'
+import { EditorThemeMap } from '@metad/ocap-angular/formula'
 import {
   BarVariant,
   HeatmapVariant,
@@ -32,14 +34,10 @@ import { STORY_DESIGNER_SCHEMA } from '@metad/story/designer'
 import { ChartOptionsSchemaService } from '@metad/story/widgets/analytical-card'
 import { FieldType } from '@ngx-formly/core'
 import { TranslateService } from '@ngx-translate/core'
-import { nanoid } from 'nanoid'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { BehaviorSubject, distinctUntilChanged, map } from 'rxjs'
+import { BehaviorSubject, distinctUntilChanged, map, startWith } from 'rxjs'
 import { CHART_TYPES, GeoProjections } from './types'
-import { NgmThemeService } from '@metad/ocap-angular/core'
-import { EditorThemeMap } from '@metad/ocap-angular/formula'
-import { NgmCopilotService } from '@metad/copilot-angular'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,6 +74,7 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
   readonly #translate = inject(TranslateService)
   readonly #logger = inject(NGXLogger)
   readonly #themeService = inject(NgmThemeService)
+  readonly #dialog = inject(MatDialog)
 
   @ViewChild('mapTemp') mapTemplate: TemplateRef<unknown>
 
@@ -204,8 +203,8 @@ export class PACFormlyChartTypeComponent extends FieldType implements OnInit {
 
   prompt = ''
   answering = false
-  systemPrompt = `假设你一名程序员，请根据注释需求补全代码，要求：编写一个函数用于绘制 ECharts 图形，只要编写函数体内部代码，函数只返回 ECharts options，输入参数有 data chartAnnotation chartOptions chartSettings
-data 数据类型为 {data: <实际数据对象（包含measure对应的属性）>[]} chartAnnotation 类型为 {measures: {measure: string}[]}`
+//   systemPrompt = `假设你一名程序员，请根据注释需求补全代码，要求：编写一个函数用于绘制 ECharts 图形，只要编写函数体内部代码，函数只返回 ECharts options，输入参数有 data chartAnnotation chartOptions chartSettings
+// data 数据类型为 {data: <实际数据对象（包含measure对应的属性）>[]} chartAnnotation 类型为 {measures: {measure: string}[]}`
 
   public editor$ = new BehaviorSubject(null)
   readonly editorOptions = computed(() => {
@@ -216,71 +215,16 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     }
   })
 
+  readonly logic = toSignal(this.chartTypeForm.get('scripts').valueChanges.pipe(startWith(this.scripts)))
+
   /**
   |--------------------------------------------------------------------------
   | Copilot
   |--------------------------------------------------------------------------
   */
-  #chartCommand = injectCopilotCommand({
-    name: 'chart',
-    description: this.#translate.instant('PAC.MODEL.Copilot.Examples.CreateNewRole', {
-      Default: 'Describe the chart you want to create'
-    }),
-    systemPrompt:
-    async () => `根据提示编写一个 Javascript 函数来创建自定义图形，其目标是绘制自定义逻辑的 ECharts 图形。函数应该接受以下参数：
-1. 'queryResult': The type of queryResult is
-\`\`\`
-{
-  status: 'OK',
-  data: any[],
-  schema: {
-    rows?: {
-      name: string,
-      label?: string
-      dataType: string
-    }[],
-    columns: {
-      name: string,
-      label?: string
-      dataType: string
-    }[]
-  }
-}
-\`\`\`
-2. 'chartAnnotation':
-
-3. 'entityType':
-
-4. 'locale': 语言环境代码
-5. 'chartsInstance': ECharts 实例
-6. 'utils': 工具函数集
-。
-自定义逻辑需要返回结果类型为：
-\`\`\`
-{
-  options: ECharts 图形的 Option 配置对象
-  onClick: 图形点击事件的响应函数，返回事件和相关切片器
-}
-\`\`\`
-`,
-    actions: [
-      injectMakeCopilotActionable({
-        name: 'create_custom_chart',
-        description: 'Create a custom chart',
-        argumentAnnotations: [
-          {
-            name: 'logic',
-            type: 'string',
-            description: 'Chart custom logic body',
-            required: true
-          }
-        ],
-        implementation: async (logic: string) => {
-          this.#logger.debug(`Custom chart logic is:`, logic)
-          this.scripts = logic
-        }
-      })
-    ]
+  #chartCommands = injectChartCommand(this.logic, async ({ logic }) => {
+    this.scripts = logic
+    return `Chart created!`
   })
 
   constructor() {
@@ -345,47 +289,15 @@ data 数据类型为 {data: <实际数据对象（包含measure对应的属性�
     }
   }
 
-  async askComplete() {
-    this.answering = true
-    try {
-      const choices = await this.#copilotService.createChat([
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: this.systemPrompt
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: this.scripts
+  aiGenerate() {
+    this.#dialog
+      .open(CommandDialogComponent, {
+        backdropClass: 'bg-transparent',
+        data: {
+          commands: ['chart']
         }
-      ])
-
-      this.scripts = choices[0].message.content
-    } catch (err) {
-      this.answering = false
-    }
-  }
-
-  async askCopilot() {
-    this.answering = true
-    try {
-      const choices = await this.#copilotService.createChat([
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: this.systemPrompt + `根据以下描述补全代码：${this.prompt}`
-        },
-        {
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: this.scripts
-        }
-      ])
-
-      this.scripts = choices[0].message.content
-    } catch (err) {
-      this.answering = false
-    }
+      })
+      .afterClosed()
+      .subscribe((result) => {})
   }
 }

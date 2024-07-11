@@ -1,5 +1,5 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { Team } from 'apps/cloud/src/app/@core/copilot'
+import { Team } from '@metad/copilot'
 
 export async function createSupervisor(llm: ChatOpenAI, members: string[]) {
   const supervisorNode = await Team.createSupervisor(

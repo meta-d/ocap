@@ -15,6 +15,9 @@ type PrefixMap = {
   data: JSONValue[];
 };
 
+/**
+ * @deprecated use LangChain
+ */
 export async function parseComplexResponse({
   reader,
   abortControllerRef,

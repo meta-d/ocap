@@ -3,12 +3,9 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { StateGraphArgs } from '@langchain/langgraph/web'
-import { CreateGraphOptions } from '@metad/copilot'
+import { createCopilotAgentState, CreateGraphOptions, createReactAgent, Team } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import {
-  Team,
-  createCopilotAgentState,
-  createReactAgent,
   injectAgentFewShotTemplate
 } from 'apps/cloud/src/app/@core/copilot'
 import { SemanticModelService } from '../../model.service'

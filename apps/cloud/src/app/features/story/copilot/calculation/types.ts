@@ -1,5 +1,5 @@
+import { Team } from "@metad/copilot"
 import { MEMBER_RETRIEVER_TOOL_NAME } from "@metad/core"
-import { Team } from "apps/cloud/src/app/@core/copilot"
 
 export const SUPERVISOR_NAME = 'Supervisor'
 

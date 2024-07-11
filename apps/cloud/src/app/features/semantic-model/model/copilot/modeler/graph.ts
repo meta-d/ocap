@@ -1,7 +1,6 @@
 import { RunnableLambda } from '@langchain/core/runnables'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
-import { CreateGraphOptions } from '@metad/copilot'
-import { Team } from 'apps/cloud/src/app/@core/copilot'
+import { CreateGraphOptions, Team } from '@metad/copilot'
 import { CUBE_MODELER_NAME, injectRunCubeModeler } from '../cube'
 import { DIMENSION_MODELER_NAME, injectRunDimensionModeler } from '../dimension/'
 import { injectRunModelerPlanner } from './planner'
