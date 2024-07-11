@@ -32,7 +32,7 @@
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
 
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
-        @if (conversation.command) {
+        @if (conversation.command && !conversation.command.hidden) {
           <div class="ngm-copilot-chat__command ngm-copilot-command-button self-center text-xs font-bold px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{conversation.command.name}}</div>
         }
         @for (message of conversation.messages; track message.id) {
@@ -165,8 +165,8 @@
                                     } -->
                                   </div>
                                   <div class="ngm-copilot-chat__message-content ngm-copilot__user-message relative flex flex-col items-end">
-                                      <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap w-full focus-visible:outline-none
-                                        focus-visible:bg-white dark:focus-visible:bg-black"
+                                      <div #msgContent class="ngm-copilot-chat__message-edit whitespace-pre-wrap overflow-hidden text-ellipsis w-full
+                                        focus-visible:outline-none focus-visible:bg-white dark:focus-visible:bg-black"
                                       >{{ message.content }}</div>
 
                                       @if (editingMessageId() === message.id) {
@@ -213,7 +213,7 @@
           }
         }
 
-        @if (conversation.status === 'interrupted') {
+        @if (interactive && conversation.status === 'interrupted') {
           <div class="w-full flex items-center justify-center">
               <button class="ngm-copilot-button gap-1.5"
                 [matTooltip]="'Copilot.Continue' | translate: {Default: 'Continue'}"
@@ -272,10 +272,12 @@
 
     <div class="relative flex flex-col m-1">
 
-      @if (command()) {
+      @if (command() || context()) {
         <div class="flex flex-col divide-y overflow-hidden rounded-b-md rounded-t-xl bg-white dark:bg-black">
           <div class="flex items-center py-2 gap-2 pl-3 pr-1.5 text-sm whitespace-nowrap">
-            <span class="font-bold">{{command().name}}</span>
+            @if (command()) {
+              <span class="font-bold">{{command().name}}</span>
+            }
             @if (context()) {
               <span class="flex items-center px-1 py-0.5 rounded-full bg-neutral-50 dark:bg-neutral-900 cursor-pointer"
                 [matTooltip]="context().caption"
@@ -283,7 +285,9 @@
                 [matMenuTriggerData]="{word: {text: context().uKey }}"
                 (click)="$event.stopPropagation()">{{context().caption || context().key}}<button class="flex-shrink-0 hover:text-red-500" (click)="removeContext()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-lg"><path fill="currentColor" fill-rule="evenodd" d="M7.293 7.293a1 1 0 0 1 1.414 0L12 10.586l3.293-3.293a1 1 0 1 1 1.414 1.414L13.414 12l3.293 3.293a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L10.586 12 7.293 8.707a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg></button></span>
             }
-            <span class="overflow-hidden text-ellipsis">{{command().description}}</span>
+            @if (command()) {
+              <span class="overflow-hidden text-ellipsis">{{command().description}}</span>
+            }
           </div>
         </div>
       }

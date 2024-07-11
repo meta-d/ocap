@@ -4,8 +4,8 @@ import { CalculationSchema, FormulaSchema } from '@metad/core'
 import { C_MEASURES, CalculatedMember } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
-import { z } from 'zod'
 import { NGXLogger } from 'ngx-logger'
+import { z } from 'zod'
 import { ModelEntityService } from '../../entity/entity.service'
 import { ModelDesignerType } from '../../types'
 
@@ -19,13 +19,13 @@ export function injectCreateCalculatedTool() {
     description: 'Create or edit calculated measure for cube.',
     schema: CalculationSchema,
     func: async (property) => {
+      logger.debug(`Create or edit calculated measure:`, property)
+
       let key = property.__id__ || nanoid()
-      const _calculatedMember = entityService.calculatedMembers().find((cm) => cm.name === property.name)
+      const _calculatedMember = entityService.calculatedMembers()?.find((cm) => cm.name === property.name)
       if (_calculatedMember) {
         key = _calculatedMember.__id__
       }
-
-      logger.debug(`Create or edit calculated measure:`, property)
 
       entityService.upsertCalculatedMeasure({
         ...property,
@@ -45,27 +45,27 @@ export function injectCreateCalculatedTool() {
   return createCalcalatedTool
 }
 
-export function injectEditFormulaTool(calculatedMember: Signal<CalculatedMember>,) {
+export function injectEditFormulaTool(calculatedMember: Signal<CalculatedMember>) {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
   const entityService = inject(ModelEntityService)
-const editFormulaTool = new DynamicStructuredTool({
-  name: 'editFormula',
-  description: 'Create or edit mdx formula',
-  schema: z.object({ formula: FormulaSchema }),
-  func: async ({ formula }) => {
-    logger.debug(`Edit formula '${formula}'`)
+  const editFormulaTool = new DynamicStructuredTool({
+    name: 'editFormula',
+    description: 'Create or edit mdx formula',
+    schema: z.object({ formula: FormulaSchema }),
+    func: async ({ formula }) => {
+      logger.debug(`Edit formula '${formula}'`)
 
-    entityService.updateCubeProperty({
-      type: ModelDesignerType.calculatedMember,
-      id: calculatedMember().__id__,
-      model: {
-        formula
-      }
-    })
+      entityService.updateCubeProperty({
+        type: ModelDesignerType.calculatedMember,
+        id: calculatedMember().__id__,
+        model: {
+          formula
+        }
+      })
 
-    return `Formula updated!`
-  }
-})
-return editFormulaTool
+      return `Formula updated!`
+    }
+  })
+  return editFormulaTool
 }

@@ -1,5 +1,8 @@
 import { Cube, EntityType, getEntityDimensions, getEntityMeasures, getEntityVariables } from '@metad/ocap-core'
 
+/**
+ * @deprecated use markdownEntityType
+ */
 export function calcEntityTypePrompt(entityType: EntityType) {
   return JSON.stringify({
     name: entityType.name,
@@ -72,6 +75,9 @@ export function markdownModelCube({modelId, dataSource, cube}: {modelId: string;
     `\n` + (cube ? markdownEntityType(cube) : '')
 }
 
+/**
+ * @deprecated use markdownCube
+ */
 export function makeCubePrompt(cube: Cube) {
   return JSON.stringify({
     name: cube.name,
@@ -107,6 +113,9 @@ export function makeCubePrompt(cube: Cube) {
   })
 }
 
+/**
+ * @deprecated use markdownTable
+ */
 export function makeTablePrompt(entityType: EntityType) {
   if (!entityType?.properties) {
     return undefined
@@ -120,4 +129,27 @@ export function makeTablePrompt(entityType: EntityType) {
       type: item.dataType
     }))
   })
+}
+
+export function markdownTable(table: EntityType) {
+  if (!table) {
+    return `No table info.`
+  }
+  const columns = Object.values(table.properties)
+  return [
+    `Table is:`,
+    `  - name: ${table.name}`,
+    `    caption: ${table.caption || ''}`,
+    `    columns:`,
+    columns
+      .map((t) =>
+        [
+          `    - name: ${t.name}`,
+          `      caption: ${t.caption || ''}`,
+          `      type: ${t.dataType || ''}`
+        ].join('\n')
+      )
+      .join('\n'),
+    '```'
+  ].join('\n')
 }

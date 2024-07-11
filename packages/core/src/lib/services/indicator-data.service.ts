@@ -140,7 +140,7 @@ export class SmartIndicatorDataService<
         timeRange = calcRange(this.currentTime?.today || new Date(), {
           type: TimeRangeType.Standard,
           granularity: this.currentTime?.timeGranularity,
-          formatter: this.calendarLevel.semantics.formatter,
+          formatter: this.calendarLevel.semantics?.formatter,
           lookBack
         })
       } else {

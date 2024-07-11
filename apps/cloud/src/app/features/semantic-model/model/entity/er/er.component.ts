@@ -206,18 +206,20 @@ export class ERComponent {
   autoLayout() {
     this.arrange()
 
-    var parentWidth = this.parent().nativeElement.clientWidth;
-    var parentHeight = this.parent().nativeElement.clientHeight;
+    setTimeout(() => {
+      var parentWidth = this.parent().nativeElement.clientWidth;
+      var parentHeight = this.parent().nativeElement.clientHeight;
 
-    var childWidth = this.area().nativeElement.clientWidth;
-    var childHeight = this.area().nativeElement.clientHeight;
+      var childWidth = this.area().nativeElement.clientWidth;
+      var childHeight = this.area().nativeElement.clientHeight;
 
-    var leftPosition = (parentWidth - childWidth) / 2;
-    var topPosition = (parentHeight - childHeight) / 2;
-    this.areaPosition.update((state) => ({
-      x: leftPosition,
-      y: topPosition
-    }))
+      var leftPosition = (parentWidth - childWidth) / 2;
+      var topPosition = (parentHeight - childHeight) / 2;
+      this.areaPosition.update((state) => ({
+        x: leftPosition,
+        y: topPosition
+      }))
+    }, 600)
   }
 
   onContainerDragEnd(event: CdkDragEnd) {

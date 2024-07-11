@@ -33,12 +33,12 @@
 </div>
 
 <div class="ngm-card-content">
-  <div *ngIf="error$ | async as error; else content" class="ngm-card-error">
-    <span class="text-2xl font-notoColorEmoji">🐞</span>
-    <span>{{error}}</span>
-  </div>
-
-  <ng-template #content>
+@if (error$ | async) {
+    <div class="ngm-card-error">
+      <span class="text-2xl font-notoColorEmoji">🐞</span>
+      <span>{{error$ | async}}</span>
+    </div>
+} @else {
   <table mat-table [class.ngm-table-grid]="options?.grid" [displayDensity]="appearance?.displayDensity"
     [dataSource]="dataSource"
     matSort [matSortDisabled]="!options?.sortable"
@@ -286,12 +286,14 @@
       >
     </tr>
   </table>
-  </ng-template>
+}
+
+@if (isLoading$ | async) {
+  <div class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+    <mat-spinner strokeWidth="2" diameter="30"></mat-spinner>
+  </div>
+}
 </div>
 
 <mat-paginator *ngIf="options?.paging" [displayDensity]="appearance?.displayDensity"
   [pageSize]="options?.pageSize" [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>
-
-<div *ngIf="isLoading$ | async" class="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-  <mat-spinner strokeWidth="2" diameter="30"></mat-spinner>
-</div>

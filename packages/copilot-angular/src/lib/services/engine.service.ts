@@ -17,18 +17,18 @@ import {
   CopilotContext,
   CopilotEngine,
   DefaultModel,
-  entryPointsToChatCompletionFunctions,
   getCommandPrompt,
-  processChatStream
+  nanoid,
 } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
-import { ChatRequest, ChatRequestOptions, JSONValue, Message, nanoid } from 'ai'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
-import { compact, flatten, pick } from 'lodash-es'
+import { compact, flatten } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { DropAction, NgmCopilotChatMessage } from '../types'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
+import { injectCreateChatAgent } from './agent-free'
+
 
 let uniqueId = 0
 
@@ -39,6 +39,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly copilot = inject(NgmCopilotService)
   readonly copilotContext = inject(NgmCopilotContextToken)
   readonly checkpointSaver = inject(BaseCheckpointSaver)
+  readonly createChatAgent = injectCreateChatAgent()
 
   private api = signal('/api/chat')
   private chatId = `chat-${uniqueId++}`
@@ -136,7 +137,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
 
   // Chat States
   readonly error = signal<undefined | Error>(undefined)
-  readonly streamData = signal<JSONValue[] | undefined>(undefined)
+  // readonly streamData = signal<JSONValue[] | undefined>(undefined)
   readonly isLoading = signal(false)
 
   // readonly agentMemory = new MemorySaver()
@@ -194,9 +195,9 @@ export class NgmCopilotEngineService implements CopilotEngine {
     this.#logger?.debug(`process copilot ask: ${prompt}`)
 
     let { command } = options ?? {}
-    const { assistantMessageId, conversationId } = options ?? {}
+    const { conversationId } = options ?? {}
     // New messages
-    const newMessages: CopilotChatMessage[] = []
+    // const newMessages: CopilotChatMessage[] = []
 
     // deconstruct prompt to get command and prompt
     if (!command && prompt) {
@@ -244,7 +245,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         await this.callCommand(_command, prompt, { ...(options ?? {}), context: commandWithContext.context })
       }
     } else {
-      if (this.currentCommand()?.agent.conversation) {
+      if (this.currentCommand()?.agent?.conversation) {
         const _command = this.currentCommand()
         const commandWithContext = this.getCommandWithContext(_command.name)
 
@@ -255,46 +256,56 @@ export class NgmCopilotEngineService implements CopilotEngine {
        * @todo Use langchain agent to execute free chat conversation
        */
 
+      const freeCommand: CopilotCommand = {
+        name: 'free',
+        description: 'free chat',
+        hidden: true,
+        createGraph: this.createChatAgent
+      }
       this.upsertConversation({
         id: conversationId,
-        type: 'free'
+        type: 'free',
+        command: freeCommand
       })
       // Last conversation messages before append new messages
       const lastConversation = this.lastConversation()
-      // Allow empty prompt
-      if (prompt) {
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.User,
-          content: prompt
-        })
-      }
 
-      // Append new messages to conversation
-      if (newMessages.length > 0) {
-        this.upsertMessage(...newMessages)
-      }
+      await this.triggerGraphAgent(prompt, lastConversation, freeCommand, { context: this.copilotContext})
 
-      const functions = this.copilotContext.getGlobalFunctionDescriptions()
-      const body = {
-        ...this.aiOptions
-      }
-      if (functions.length) {
-        body.functions = functions
-      }
+      // // Allow empty prompt
+      // if (prompt) {
+      //   newMessages.push({
+      //     id: nanoid(),
+      //     role: CopilotChatMessageRoleEnum.User,
+      //     content: prompt
+      //   })
+      // }
 
-      await this.triggerRequest(
-        [...lastConversation.messages, ...newMessages],
-        {
-          options: {
-            body
-          }
-        },
-        {
-          assistantMessageId,
-          conversationId
-        }
-      )
+      // // Append new messages to conversation
+      // if (newMessages.length > 0) {
+      //   this.upsertMessage(...newMessages)
+      // }
+
+      // const functions = this.copilotContext.getGlobalFunctionDescriptions()
+      // const body = {
+      //   ...this.aiOptions
+      // }
+      // if (functions.length) {
+      //   body.functions = functions
+      // }
+
+      // await this.triggerRequest(
+      //   [...lastConversation.messages, ...newMessages],
+      //   {
+      //     options: {
+      //       body
+      //     }
+      //   },
+      //   {
+      //     assistantMessageId,
+      //     conversationId
+      //   }
+      // )
     }
   }
 
@@ -307,75 +318,74 @@ export class NgmCopilotEngineService implements CopilotEngine {
    * @returns
    */
   async callCommand(_command: CopilotCommand, prompt: string, options: CopilotChatOptions) {
-    const { conversationId, assistantMessageId, context, interactive } = options ?? {}
+    const { conversationId, context, interactive } = options ?? {}
 
     // For agent command
     if (_command.agent) {
       return await this.triggerCommandAgent(prompt, _command, {
-        conversationId: assistantMessageId,
+        conversationId,
         context: context,
         interactive
       })
     }
 
-    /**
-     * @deprecated the ortherwise use agent command instead
-     */
-    // Last user messages before add new messages
-    const lastUserMessages = this.lastUserMessages()
-    const newMessages = []
-    try {
-      if (_command.systemPrompt) {
-        newMessages.push({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.System,
-          content: await _command.systemPrompt()
-        })
-      }
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt,
-        command: _command.name
-      })
-    } catch (err: any) {
-      newMessages.push({
-        id: nanoid(),
-        role: CopilotChatMessageRoleEnum.User,
-        content: prompt,
-        command: _command.name,
-        error: err.message
-      })
-      return
-    } finally {
-      // Append new messages to conversation
-      this.upsertMessage(...newMessages)
-    }
+    // /**
+    //  * @deprecated the ortherwise use agent command instead
+    //  */
+    // // Last user messages before add new messages
+    // const lastUserMessages = this.lastUserMessages()
+    // const newMessages = []
+    // try {
+    //   if (_command.systemPrompt) {
+    //     newMessages.push({
+    //       id: nanoid(),
+    //       role: CopilotChatMessageRoleEnum.System,
+    //       content: await _command.systemPrompt()
+    //     })
+    //   }
+    //   newMessages.push({
+    //     id: nanoid(),
+    //     role: CopilotChatMessageRoleEnum.User,
+    //     content: prompt,
+    //     command: _command.name
+    //   })
+    // } catch (err: any) {
+    //   newMessages.push({
+    //     id: nanoid(),
+    //     role: CopilotChatMessageRoleEnum.User,
+    //     content: prompt,
+    //     command: _command.name,
+    //     error: err.message
+    //   })
+    //   return
+    // } finally {
+    //   // Append new messages to conversation
+    //   this.upsertMessage(...newMessages)
+    // }
 
-    const functions = _command.actions
-      ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.copilotContext.getEntryPoint(id)))
-      : this.copilotContext.getChatCompletionFunctionDescriptions()
+    // const functions = _command.actions
+    //   ? entryPointsToChatCompletionFunctions(_command.actions.map((id) => this.copilotContext.getEntryPoint(id)))
+    //   : this.copilotContext.getChatCompletionFunctionDescriptions()
 
-    const body = {
-      ...this.aiOptions
-    }
-    if (functions.length) {
-      body.functions = functions
-      body.stream = false
-    }
+    // const body = {
+    //   ...this.aiOptions
+    // }
+    // if (functions.length) {
+    //   body.functions = functions
+    //   body.stream = false
+    // }
 
-    await this.triggerRequest(
-      [...lastUserMessages, ...newMessages],
-      {
-        options: {
-          body
-        }
-      },
-      {
-        assistantMessageId,
-        conversationId: conversationId ?? this.#conversationId()
-      }
-    )
+    // await this.triggerRequest(
+    //   [...lastUserMessages, ...newMessages],
+    //   {
+    //     options: {
+    //       body
+    //     }
+    //   },
+    //   {
+    //     conversationId: conversationId ?? this.#conversationId()
+    //   }
+    // )
   }
 
   /**
@@ -392,7 +402,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       case CopilotAgentType.Default:
         return await this.triggerDefaultAgent(content, command, options)
       case CopilotAgentType.Graph:
-        return await this.triggerGraphAgent(content, currentConversation, options)
+        return await this.triggerGraphAgent(content, currentConversation, command, options)
     }
   }
 
@@ -544,7 +554,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  async triggerGraphAgent(content: string | null, conversation: CopilotChatConversation, options?: CopilotChatOptions) {
+  async triggerGraphAgent(content: string | null, conversation: CopilotChatConversation, command: CopilotCommand, options?: CopilotChatOptions) {
     // ------------------------- 重复，需重构
     const { context, interactive } = options ?? {}
 
@@ -554,7 +564,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // const chatHistoryMessages = this.chatHistoryMessages()
     const lastUserMessages = this.lastUserMessages()
 
-    const command = conversation.command
+    // const command = conversation.command
 
     // Context content
     let contextContent = null
@@ -773,7 +783,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   }
 
   async continue(conversation: CopilotChatConversation) {
-    await this.triggerGraphAgent(null, conversation)
+    await this.triggerGraphAgent(null, conversation, conversation.command)
   }
 
   async finish(conversation: CopilotChatConversation) {
@@ -825,127 +835,127 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 
-  /**
-   * @deprecated use `triggerCommandAgent` instead
-   */
-  async triggerRequest(
-    messagesSnapshot: CopilotChatMessage[],
-    { options, data }: ChatRequestOptions = {},
-    {
-      abortController,
-      assistantMessageId,
-      conversationId
-    }: {
-      abortController?: AbortController | null
-      assistantMessageId?: string
-      conversationId?: string
-    } = {}
-  ): Promise<ChatRequest | null | undefined> {
-    this.error.set(undefined)
-    this.isLoading.set(true)
-    abortController = abortController ?? new AbortController()
-    const getCurrentMessages = () => this.lastConversation()?.messages ?? []
+  // /**
+  //  * @deprecated use `triggerCommandAgent` instead
+  //  */
+  // async triggerRequest(
+  //   messagesSnapshot: CopilotChatMessage[],
+  //   { options, data }: ChatRequestOptions = {},
+  //   {
+  //     abortController,
+  //     assistantMessageId,
+  //     conversationId
+  //   }: {
+  //     abortController?: AbortController | null
+  //     assistantMessageId?: string
+  //     conversationId?: string
+  //   } = {}
+  // ): Promise<ChatRequest | null | undefined> {
+  //   this.error.set(undefined)
+  //   this.isLoading.set(true)
+  //   abortController = abortController ?? new AbortController()
+  //   const getCurrentMessages = () => this.lastConversation()?.messages ?? []
 
-    let chatRequest: ChatRequest = {
-      messages: messagesSnapshot as Message[],
-      options,
-      data
-    }
+  //   let chatRequest: ChatRequest = {
+  //     messages: messagesSnapshot as Message[],
+  //     options,
+  //     data
+  //   }
 
-    assistantMessageId = assistantMessageId ?? nanoid()
-    const thinkingMessage: CopilotChatMessage = {
-      id: assistantMessageId,
-      role: CopilotChatMessageRoleEnum.Assistant,
-      content: '',
-      status: 'thinking'
-    }
+  //   assistantMessageId = assistantMessageId ?? nanoid()
+  //   const thinkingMessage: CopilotChatMessage = {
+  //     id: assistantMessageId,
+  //     role: CopilotChatMessageRoleEnum.Assistant,
+  //     content: '',
+  //     status: 'thinking'
+  //   }
 
-    this.upsertMessage(thinkingMessage)
+  //   this.upsertMessage(thinkingMessage)
 
-    // Remove thinking message when abort
-    const removeMessageWhenAbort = () => {
-      this.stopMessage(thinkingMessage.id)
-    }
-    abortController.signal.addEventListener('abort', removeMessageWhenAbort)
+  //   // Remove thinking message when abort
+  //   const removeMessageWhenAbort = () => {
+  //     this.stopMessage(thinkingMessage.id)
+  //   }
+  //   abortController.signal.addEventListener('abort', removeMessageWhenAbort)
 
-    try {
-      const message = await processChatStream({
-        getStreamedResponse: async () => {
-          return await this.copilot.chat(
-            {
-              body: {
-                // functions: this.getChatCompletionFunctionDescriptions(),
-                ...pick(this.aiOptions, 'temperature'),
-                ...(options?.body ?? {})
-              },
-              generateId: () => assistantMessageId,
-              // onResponse: async (): Promise<void> => {
-              //   this.deleteMessage(thinkingMessage)
-              // },
-              onFinish: (message) => {
-                this.upsertMessage({ ...message, status: 'answering' })
-              },
-              appendMessage: (message) => {
-                this.upsertMessage({ ...message, status: 'answering' })
-              },
-              abortController,
-              model: this.aiOptions.model
-            },
-            chatRequest,
-            { options, data }
-          )
-        },
-        experimental_onFunctionCall: this.copilotContext.getFunctionCallHandler(),
-        updateChatRequest: (newChatRequest) => {
-          chatRequest = newChatRequest
-          this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
-        },
-        getCurrentMessages: () => getCurrentMessages(),
-        conversationId
-      })
-      // abortController = null
+  //   try {
+  //     const message = await processChatStream({
+  //       getStreamedResponse: async () => {
+  //         return await this.copilot.chat(
+  //           {
+  //             body: {
+  //               // functions: this.getChatCompletionFunctionDescriptions(),
+  //               ...pick(this.aiOptions, 'temperature'),
+  //               ...(options?.body ?? {})
+  //             },
+  //             generateId: () => assistantMessageId,
+  //             // onResponse: async (): Promise<void> => {
+  //             //   this.deleteMessage(thinkingMessage)
+  //             // },
+  //             onFinish: (message) => {
+  //               this.upsertMessage({ ...message, status: 'answering' })
+  //             },
+  //             appendMessage: (message) => {
+  //               this.upsertMessage({ ...message, status: 'answering' })
+  //             },
+  //             abortController,
+  //             model: this.aiOptions.model
+  //           },
+  //           chatRequest,
+  //           { options, data }
+  //         )
+  //       },
+  //       experimental_onFunctionCall: this.copilotContext.getFunctionCallHandler(),
+  //       updateChatRequest: (newChatRequest) => {
+  //         chatRequest = newChatRequest
+  //         this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
+  //       },
+  //       getCurrentMessages: () => getCurrentMessages(),
+  //       conversationId
+  //     })
+  //     // abortController = null
 
-      if (message) {
-        this.upsertMessage({ ...message, id: assistantMessageId, status: 'done' })
-      } else {
-        this.deleteMessage(assistantMessageId)
-      }
-      return null
-    } catch (err) {
-      // Ignore abort errors as they are expected.
-      if ((err as any).name === 'AbortError') {
-        // abortController = null
-        return null
-      }
+  //     if (message) {
+  //       this.upsertMessage({ ...message, id: assistantMessageId, status: 'done' })
+  //     } else {
+  //       this.deleteMessage(assistantMessageId)
+  //     }
+  //     return null
+  //   } catch (err) {
+  //     // Ignore abort errors as they are expected.
+  //     if ((err as any).name === 'AbortError') {
+  //       // abortController = null
+  //       return null
+  //     }
 
-      if (err instanceof Error) {
-        this.error.set(err)
-        this.deleteMessage(assistantMessageId)
-        this.upsertMessage({
-          id: nanoid(),
-          role: CopilotChatMessageRoleEnum.Assistant,
-          content: '',
-          error: (<Error>err).message,
-          status: 'error'
-        })
-      }
+  //     if (err instanceof Error) {
+  //       this.error.set(err)
+  //       this.deleteMessage(assistantMessageId)
+  //       this.upsertMessage({
+  //         id: nanoid(),
+  //         role: CopilotChatMessageRoleEnum.Assistant,
+  //         content: '',
+  //         error: (<Error>err).message,
+  //         status: 'error'
+  //       })
+  //     }
 
-      return null
-    } finally {
-      abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
-      this.isLoading.set(false)
-    }
-  }
+  //     return null
+  //   } finally {
+  //     abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
+  //     this.isLoading.set(false)
+  //   }
+  // }
 
-  /**
-   * @deprecated use `triggerCommandAgent` instead
-   */
-  async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
-    if (!message.id) {
-      message.id = this.generateId()
-    }
-    return this.triggerRequest((this.lastConversation()?.messages ?? []).concat(message as Message), options)
-  }
+  // /**
+  //  * @deprecated use `triggerCommandAgent` instead
+  //  */
+  // async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
+  //   if (!message.id) {
+  //     message.id = this.generateId()
+  //   }
+  //   return this.triggerRequest((this.lastConversation()?.messages ?? []).concat(message as Message), options)
+  // }
 
   generateId() {
     return nanoid()

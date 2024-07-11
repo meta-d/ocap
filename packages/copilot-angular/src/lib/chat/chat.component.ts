@@ -311,7 +311,7 @@ export class NgmCopilotChatComponent {
 
   readonly command = computed(() => this.commandWithContext()?.command)
   readonly commandTitle = computed(() => this.command().description)
-  readonly commandContext = computed(() => this.commandWithContext()?.context)
+  readonly commandContext = computed(() => this.commandWithContext()?.context ?? this.copilotEngine.copilotContext)
   readonly context = signal<CopilotContextItem>(null)
 
   // Only command in prompt
@@ -494,6 +494,7 @@ export class NgmCopilotChatComponent {
         const commandContext = this.commandContext()
         if (contextWord && commandContext) {
           const item = await commandContext.getContextItem(contextWord)
+          console.log(item)
           this.context.set(item)
         } else {
           this.context.set(null)
@@ -536,9 +537,9 @@ export class NgmCopilotChatComponent {
 
   async askCopilotStream(
     prompt: string,
-    options: { command?: string; newConversation?: boolean; assistantMessageId?: string } = {}
+    options: { command?: string; newConversation?: boolean; conversationId?: string } = {}
   ) {
-    const { command, newConversation, assistantMessageId } = options ?? {}
+    const { command, newConversation, conversationId } = options ?? {}
     // Reset history index
     this.historyIndex.set(-1)
     // Add to history
@@ -554,7 +555,7 @@ export class NgmCopilotChatComponent {
         const message = await this.copilotEngine$().chat(prompt, {
           command,
           newConversation,
-          assistantMessageId
+          conversationId
         })
 
         if (typeof message === 'string') {
@@ -645,7 +646,7 @@ export class NgmCopilotChatComponent {
     })
 
     // Send new message
-    await this.askCopilotStream(content, { command: message.command })
+    await this.askCopilotStream(content)
   }
 
   /**
@@ -658,7 +659,7 @@ export class NgmCopilotChatComponent {
       messages.splice(index)
       return { ...conversation, messages: [...messages] }
     })
-    await this.askCopilotStream(null, { assistantMessageId: message.id })
+    await this.askCopilotStream(null, { conversationId: message.id })
   }
 
   isFoucs(target: HTMLDivElement | HTMLTextAreaElement) {
