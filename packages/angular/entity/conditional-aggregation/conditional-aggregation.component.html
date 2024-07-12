@@ -17,10 +17,9 @@
       >
       </ngm-parameter-select>
     }
-
   </div>
 
-  <ngm-measure-select class="pt-4" formControlName="measure" label="{{ 'Ngm.Calculation.Measure' | translate: {Default: 'Measure'} }}"
+  <ngm-measure-select class="" formControlName="measure" label="{{ 'Ngm.Calculation.Measure' | translate: {Default: 'Measure'} }}"
     [dataSettings]="dataSettings"
     [filter]="filterMeasure"
     [error]="formGroup.get('measure').hasError('required') ? ('Ngm.Calculation.MeasureIsRequired' | translate: {Default: 'Measure is required'}) : null"

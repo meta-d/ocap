@@ -358,13 +358,11 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     effect(
       () => {
         const defaultMembers = this.defaultMembers()
-        if (defaultMembers && !this._slicer()) {
-          this._slicer.update((state) => ({
-            ...(state ?? {}),
-            // dimension: this.dimension(),
-            members: structuredClone(defaultMembers)
-          }))
-          // this.emitSlicer()
+        // 配置已初始化但 slicer 还未创建则创建一个 slicer 标志状态已初始化完成
+        if (!this._slicer() && this.dimension()) {
+          this._slicer.set({
+            members: defaultMembers ? structuredClone(defaultMembers) : []
+          })
         }
       },
       { allowSignalWrites: true }

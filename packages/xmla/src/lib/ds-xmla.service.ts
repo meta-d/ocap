@@ -331,14 +331,14 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       level: 1,
       version: '1'
     }
-    const cache = await this.cacheService.getCache(cacheOptions)
+    const cache = await this.cacheService?.getCache(cacheOptions)
     if (cache) {
       return cache as EntitySet[]
     }
 
     const result = await this._discoverMDCubes(CATALOG_NAME, language)
 
-    this.cacheService.setCache(cacheOptions, result)
+    this.cacheService?.setCache(cacheOptions, result)
 
     return result
   }
@@ -393,7 +393,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     }
 
     // Get cache firstly
-    const cache = await this.cacheService.getCache<EntitySet>(cacheOptions)
+    const cache = await this.cacheService?.getCache<EntitySet>(cacheOptions)
     if (cache) {
       return cache
     }
@@ -403,7 +403,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
     // Update cache
     if (result) {
-      this.cacheService.setCache(cacheOptions, result)
+      this.cacheService?.setCache(cacheOptions, result)
     }
 
     if (!result) {
@@ -837,7 +837,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     }
 
     // Get cache firstly
-    const cache = await this.cacheService.getCache<MDXMember[]>(cacheOptions)
+    const cache = await this.cacheService?.getCache<MDXMember[]>(cacheOptions)
     if (cache) {
       return cache
     }
@@ -874,7 +874,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     })
 
     // Update cache
-    this.cacheService.setCache(cacheOptions, result)
+    this.cacheService?.setCache(cacheOptions, result)
 
     return result
   }
@@ -997,11 +997,14 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
   }
 
   override async clearCache(key = ''): Promise<void> {
+    if (!this.cacheService) {
+      return
+    }
     if (key) {
       return await this.cacheService.clear(key)
     }
 
-    const keys = await this.cacheService.keys()
+    const keys = await this.cacheService?.keys()
     return await Promise.all(
       keys
         .filter((key) => (key as string).startsWith('xmla') && (key as string).indexOf(`::${this.options.name}`) > -1)
