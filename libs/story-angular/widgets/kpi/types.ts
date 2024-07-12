@@ -14,6 +14,7 @@ export interface NxWidgetKPIOptions {
   showDeviation?: boolean
   showDeviationText?: boolean
   deviationText?: string
+  nanPlaceholder?: string
 
   valueText: string
   targetText: string

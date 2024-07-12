@@ -27,7 +27,7 @@ import { stateHistory } from '@ngneat/elf-state-history'
 import { cloneDeep, isEqual, negate } from 'lodash-es'
 import { NGXLogger } from 'ngx-logger'
 import { BehaviorSubject, Observable, Subject, combineLatest, from } from 'rxjs'
-import { combineLatestWith, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
+import { combineLatestWith, debounceTime, distinctUntilChanged, filter, map, shareReplay, switchMap, take, tap } from 'rxjs/operators'
 import {
   ISemanticModel,
   MDX,
@@ -40,6 +40,7 @@ import {
 import { dirtyCheckWith, write } from '../store'
 import { CreateEntityDialogRetType } from './create-entity/create-entity.component'
 import {
+  DEBOUNCE_TIME,
   MODEL_TYPE,
   ModelCubeState,
   ModelDimensionState,
@@ -260,7 +261,7 @@ export class SemanticModelService {
       .subscribe(this.originalDataSource$)
 
     // @todo 存在不必要的注册动作，需要重构
-    this.model$.pipe(filter(nonNullable), takeUntilDestroyed(this.destroyRef)).subscribe((model) => {
+    this.model$.pipe(filter(nonNullable), debounceTime(DEBOUNCE_TIME), takeUntilDestroyed(this.destroyRef)).subscribe((model) => {
       this.registerModel()
     })
 

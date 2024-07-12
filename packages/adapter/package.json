@@ -1,6 +1,6 @@
 {
   "name": "@metad/adapter",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "dependencies": {
     "@sap/hana-client": "^2.20.20",
     "axios": "^0.21.4",

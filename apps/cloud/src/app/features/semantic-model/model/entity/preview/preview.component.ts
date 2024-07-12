@@ -83,7 +83,7 @@ export class ModelEntityPreviewComponent {
   }
   public readonly slicers$ = new BehaviorSubject<ISlicer[]>([...(this.entityService.preview?.slicers ?? [])])
 
-  readonly variables = model<{ [name: string]: ISlicer }>({})
+  readonly variables = model<{ [name: string]: ISlicer | null }>({})
 
   reverse = false
 
@@ -106,7 +106,7 @@ export class ModelEntityPreviewComponent {
       slicers.push(
         ...Object.keys(variables)
           .map((name) =>
-            variables[name].members?.length
+            variables[name]?.members?.length
               ? { ...variables[name], dimension: { ...variables[name].dimension, parameter: name } }
               : null
           )
@@ -197,7 +197,7 @@ export class ModelEntityPreviewComponent {
     }, { allowSignalWrites: true })
   }
 
-  onVariable(name: string, event: ISlicer) {
+  onVariable(name: string, event: ISlicer | null) {
     this.variables.update((state) => ({ ...state, [name]: event }))
   }
 

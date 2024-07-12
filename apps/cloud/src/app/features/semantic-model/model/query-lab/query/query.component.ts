@@ -21,7 +21,7 @@ import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from
 import { CopilotChatMessageRoleEnum, CopilotEngine, nanoid } from '@metad/copilot'
 import { NgmCopilotService, provideCopilotDropAction } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
-import { nonNullable, uniqBy } from '@metad/ocap-core'
+import { Cube, EntityType, nonNullable, PropertyAttributes, uniqBy, VariableProperty } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { ModelQuery, Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
@@ -577,7 +577,20 @@ ${calcEntityTypePrompt(entityType)}
   }
 
   drop(event: CdkDragDrop<{ name: string }[]>) {
-    const text = event.item.data?.name
+    const data = event.item.data
+    if (!data) {
+      return
+    }
+    let text = data.name
+    switch((<EntitySchemaNode>data).type) {
+      case EntitySchemaType.Parameter:
+        text = serializeVariable(data)
+        break
+      case EntitySchemaType.Parameters:
+        text = data.members?.map(serializeVariable).join('\n') ?? ''
+        break
+    }
+    
     if (text) {
       this.editor.insert(text)
     }
@@ -589,8 +602,9 @@ ${calcEntityTypePrompt(entityType)}
    * @param event
    */
   async dropTable(event: CdkDragDrop<{ name: string }[]>) {
-    const modelType = await firstValueFrom(this.modelService.modelType$)
-    const dialect = this.modelService.originalDataSource.options.dialect
+    const modelType = this.modelService.modelType()
+    const dialect = this.modelService.dialect()
+
     let statement = ''
     if (modelType === MODEL_TYPE.XMLA) {
       statement = await this.getXmlaQueryStatement(event.item.data)
@@ -625,24 +639,28 @@ ${calcEntityTypePrompt(entityType)}
     }
   }
 
-  async getXmlaQueryStatement(data) {
+  async getXmlaQueryStatement(data: any) {
     if (data.cubeType === 'CUBE' || data.cubeType === 'QUERY CUBE') {
       return `SELECT {[Measures].Members} ON COLUMNS FROM [${data.name}]`
-    } else if ((<EntitySchemaNode>data).type === EntitySchemaType.Entity) {
-      return `SELECT {[Measures].Members} ON COLUMNS FROM [${data.name}]`
-    } else if ((<EntitySchemaNode>data).type === EntitySchemaType.Dimension) {
-      return `SELECT {[Measures].Members} ON COLUMNS, {${data.name}.Members} ON ROWS FROM [${data.entity}]`
-    } else if (
-      (<EntitySchemaNode>data).type === EntitySchemaType.Hierarchy ||
-      (<EntitySchemaNode>data).type === EntitySchemaType.Level
-    ) {
-      return `SELECT {[Measures].Members} ON COLUMNS, {${data.name}.${data.allMember || 'Members'}} ON ROWS FROM [${
-        data.cubeName
-      }]`
-    } else if ((<EntitySchemaNode>data).type === EntitySchemaType.Member) {
-      return `SELECT {[Measures].Members} ON COLUMNS, {${data.raw.memberUniqueName}} ON ROWS FROM [${data.raw.cubeName}]`
-    } else if ((<EntitySchemaNode>data).type === EntitySchemaType.Field) {
-      return `SELECT {[Measures].Members} ON COLUMNS, {${data.levelUniqueName}.Members} DIMENSION PROPERTIES ${data.name} ON ROWS FROM [${data.cubeName}]`
+    } else {
+      switch((<EntitySchemaNode>data).type) {
+        case EntitySchemaType.Entity:
+          return `SELECT {[Measures].Members} ON COLUMNS FROM [${data.name}]`
+        case EntitySchemaType.Dimension:
+          return `SELECT {[Measures].Members} ON COLUMNS, {${data.name}.Members} ON ROWS FROM [${data.entity}]`
+        case EntitySchemaType.Hierarchy:
+        case EntitySchemaType.Level:
+          return `SELECT {[Measures].Members} ON COLUMNS, {${data.name}.${data.allMember || 'Members'}} ON ROWS FROM [${
+            data.cubeName
+          }]`
+        case EntitySchemaType.Member:
+          return `SELECT {[Measures].Members} ON COLUMNS, {${data.raw.memberUniqueName}} ON ROWS FROM [${data.raw.cubeName}]`
+        case EntitySchemaType.Field:
+          return `SELECT {[Measures].Members} ON COLUMNS, {${data.levelUniqueName}.Members} DIMENSION PROPERTIES ${data.name} ON ROWS FROM [${data.cubeName}]`
+        // case EntitySchemaType.Parameter:
+        //   return `${data.name} INCLUDING ` + (data.defaultLow ? `${data.hierarchy}.${data.defaultLow}` : '')
+        //     + (data.defaultHigh ? `:${data.hierarchy}.${data.defaultHigh}` : '')
+      }
     }
 
     return ``
@@ -852,4 +870,9 @@ export function typeOfObj(obj) {
     name: key,
     type: value === null || value === undefined ? null : typeof value
   }))
+}
+
+function serializeVariable(data: VariableProperty) {
+  return `${data.name} INCLUDING ` + (data.defaultLow ? `${data.defaultLow}` : `${data.referenceHierarchy}.[]`)
+            + (data.defaultHigh ? `:${data.defaultHigh}` : '')
 }

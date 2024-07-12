@@ -30,7 +30,7 @@
             [formatter]="options?.formatter"
             [defaultValue]="options?.defaultValue"
             [(date)]="dates"
-            [ngModel]="slicer"
+            [ngModel]="_slicer()"
             (ngModelChange)="onSlicerChange($event)"
         >
         </ngm-member-datepicker>
@@ -41,7 +41,7 @@
             [dataSettings]="_dataSettings()"
             [dimension]="dimension()"
             [options]="__options$ | async"
-            [ngModel]="slicer"
+            [ngModel]="_slicer()"
             (ngModelChange)="onSlicerChange($event)"
         ></ngm-member-list>
       }
@@ -52,7 +52,7 @@
                 [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
-                [ngModel]="slicer"
+                [ngModel]="_slicer()"
                 (ngModelChange)="onSlicerChange($event)"
             />
           } @else if (controlType() === INPUT_CONTROL_TYPE.Select) {
@@ -61,7 +61,7 @@
                 [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
-                [ngModel]="slicer"
+                [ngModel]="_slicer()"
                 (ngModelChange)="onSlicerChange($event)"
             />
         } @else {
@@ -70,7 +70,7 @@
                 [dataSettings]="_dataSettings()"
                 [dimension]="dimension()"
                 [options]="__options$ | async"
-                [ngModel]="slicer"
+                [ngModel]="_slicer()"
                 (ngModelChange)="onSlicerChange($event)"
             />
         }
@@ -81,7 +81,7 @@
             [dataSettings]="_dataSettings()"
             [dimension]="dimension()"
             [options]="__options$ | async"
-            [ngModel]="slicer"
+            [ngModel]="_slicer()"
             (ngModelChange)="onSlicerChange($event)"
         />
       }
@@ -117,21 +117,19 @@
       }
       @case (INPUT_CONTROL_TYPE.Variable) {
         @if (controlType() === INPUT_CONTROL_TYPE.DropDownList) {
-            <ngm-smart-filter class="w-full justify-self-start" [label]="''"
-                [appearance]="styling?.appearance"
+            <ngm-variable class="w-full justify-self-start" [label]="''"
                 [dataSettings]="_dataSettings()"
-                [dimension]="variableDimension()"
-                [options]="__options$ | async"
-                [ngModel]="slicer"
+                [variable]="variableProperty()"
+                [ngModel]="_slicer()"
                 (ngModelChange)="onVariableChange($event)"
             />
         } @else {
             <ngm-member-list class="w-full flex-1"
                 [appearance]="styling?.appearance"
                 [dataSettings]="_dataSettings()"
-                [dimension]="variableDimension()"
+                [dimension]="variableProperty()"
                 [options]="__options$ | async"
-                [ngModel]="slicer"
+                [ngModel]="_slicer()"
                 (ngModelChange)="onVariableChange($event)"
             />
         }

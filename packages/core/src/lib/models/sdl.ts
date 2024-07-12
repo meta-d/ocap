@@ -210,6 +210,8 @@ export interface Property extends EntityProperty {
    * @deprecated
    */
   hierarchyParentNodeFor?: string
+
+  dimensionOrdinal?: number
 }
 
 export type PropertyDimension = Property

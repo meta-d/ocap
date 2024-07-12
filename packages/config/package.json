@@ -1,6 +1,6 @@
 {
   "name": "@metad/server-config",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "type": "commonjs",
   "dependencies": {
     "@nestjs/common": "^8.0.0",

@@ -3,8 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { LanguagesEnum, saveAsYaml, uploadYamlFile } from '@metad/core'
-import { FORMLY_W_1_2 } from '@metad/formly'
+import { saveAsYaml, uploadYamlFile } from '@metad/core'
 import {
   NgmCommonModule,
   NgmConfirmDeleteComponent,
@@ -22,10 +21,12 @@ import {
   CopilotRoleService,
   ICopilotExample,
   ICopilotRole,
+  LanguagesEnum,
   ToastrService,
   getErrorMessage
 } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent, userLabel } from '../../../../@shared'
+import { FORMLY_W_1_2 } from '@metad/story/designer'
 
 @Component({
   standalone: true,

@@ -401,6 +401,7 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
     boxShadow: null,
     color: null,
     fontSize: null,
+    lineHeight: null,
     textAlign: null,
     fontFamily: null,
     fontWeight: null,
@@ -515,6 +516,9 @@ export class DesignerWidgetComponent implements ControlValueAccessor {
   }
   get fontSize() {
     return this.formGroup.get('fontSize') as FormControl
+  }
+  get lineHeight() {
+    return this.formGroup.get('lineHeight') as FormControl
   }
   get fontWeight() {
     return this.formGroup.get('fontWeight') as FormControl

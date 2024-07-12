@@ -20,8 +20,7 @@ import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-shee
 import { MatDatepicker } from '@angular/material/datepicker'
 import { Router } from '@angular/router'
 import { Store } from '@metad/cloud/state'
-import { LanguagesEnum } from '@metad/core'
-import { NgmDSCoreService } from '@metad/ocap-angular/core'
+import { NgmDSCoreService, NgmLanguageEnum } from '@metad/ocap-angular/core'
 import { TimeGranularity } from '@metad/ocap-core'
 import { ComponentStore } from '@metad/store'
 import { includes, some } from 'lodash-es'
@@ -266,6 +265,6 @@ ${this.indicatorDetailComponent()?.makeIndicatorDataPrompt()}
 
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.indicatorsStore.currentLang() === LanguagesEnum.SimplifiedChinese
+    return this.indicatorsStore.currentLang() === NgmLanguageEnum.SimplifiedChinese
   }
 }

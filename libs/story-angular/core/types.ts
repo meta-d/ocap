@@ -71,6 +71,7 @@ export interface ComponentStyling {
   color?: string
   textAlign?: string
   fontSize?: number
+  lineHeight?: number
   fontFamily?: string
   fontWeight?: string
   textShadow?: string

@@ -133,20 +133,7 @@ export class ModelCubeStructureComponent {
   | Signals
   |--------------------------------------------------------------------------
   */
-  readonly measures$ = toSignal(
-    this.entityService.measures$.pipe(
-      map((measures) =>
-        measures?.map(
-          (measure) =>
-            ({
-              ...measure,
-              role: AggregationRole.measure
-            }) as PropertyMeasure
-        )
-      )
-    )
-  )
-
+  readonly measures = this.entityService.measures
   readonly selectedProperty = this.entityService.selectedProperty
   readonly entityType = toSignal(this.entityService.originalEntityType$)
 

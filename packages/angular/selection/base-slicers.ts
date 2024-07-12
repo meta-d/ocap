@@ -218,6 +218,7 @@ export class BaseSlicersComponent {
       return await firstValueFrom(
         this._dialog
           .open(NgmTimeFilterEditorComponent, {
+            viewContainerRef: this.viewContainerRef,
             data: {
               entityType: this.entityType,
               slicer

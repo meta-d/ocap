@@ -13,7 +13,7 @@ import {
 } from '@angular/core'
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet'
 import { BusinessAreaRole, IBusinessAreaUser, IComment } from '@metad/contracts'
-import { DisplayDensity, NgmDSCoreService, PERIODS } from '@metad/ocap-angular/core'
+import { DisplayDensity, NgmDSCoreService, NgmLanguageEnum, PERIODS } from '@metad/ocap-angular/core'
 import {
   C_MEASURES,
   calcRange,
@@ -51,7 +51,7 @@ import {
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { CommentsService, Store, ToastrService } from '@metad/cloud/state'
-import { convertTableToCSV, LanguagesEnum, nonNullable } from '@metad/core'
+import { convertTableToCSV, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
@@ -297,7 +297,7 @@ export class IndicatorDetailComponent {
     map((indicator) => indicator.trend),
     distinctUntilChanged(),
     map((indicatorTrend) => {
-      const color = this.currentLang$() === LanguagesEnum.SimplifiedChinese
+      const color = this.currentLang$() === NgmLanguageEnum.SimplifiedChinese
           ? TrendReverseColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
           : TrendColor[Trend[indicatorTrend] ?? Trend[Trend.None]]
       return {
@@ -822,6 +822,6 @@ export class IndicatorDetailComponent {
 
   @HostBinding('class.reverse-semantic-color')
   public get reverse() {
-    return this.currentLang$() === LanguagesEnum.SimplifiedChinese
+    return this.currentLang$() === NgmLanguageEnum.SimplifiedChinese
   }
 }

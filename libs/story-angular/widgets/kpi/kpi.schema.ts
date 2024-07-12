@@ -200,6 +200,14 @@ export class KpiSchemaService extends DataSettingsSchemaService {
             props: {
               label: BUILDER?.KPI?.DeviationText ?? 'Deviation Text'
             }
+          },
+          {
+            className,
+            key: 'nanPlaceholder',
+            type: 'input',
+            props: {
+              label: BUILDER?.KPI?.NanPlaceholder ?? 'Nan Placeholder Text'
+            }
           }
         ]
       },

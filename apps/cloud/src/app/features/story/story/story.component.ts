@@ -56,6 +56,7 @@ import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
 import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { MatDialog } from '@angular/material/dialog'
+import { injectStoryCommand } from '../copilot'
 
 @Component({
   standalone: true,
@@ -173,6 +174,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #pageCommand = injectStoryPageCommand(this.storyService)
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
   #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
+  #storyCommand = injectStoryCommand()
 
   /**
   |--------------------------------------------------------------------------

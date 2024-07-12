@@ -255,3 +255,5 @@ export enum CdkDragDropContainers {
   HierarchyTable = 'pac-model-dimension__hierarchy-tables',
   QueryEntity = 'pac-model__query-entities'
 }
+
+export const DEBOUNCE_TIME = 100

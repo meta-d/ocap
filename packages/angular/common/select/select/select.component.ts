@@ -5,7 +5,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
-  ElementRef,
   Input,
   TemplateRef,
   booleanAttribute,
@@ -25,14 +24,6 @@ import {
   ValidatorFn
 } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
-import {
-  CanColor,
-  CanDisable,
-  CanDisableRipple,
-  mixinColor,
-  mixinDisableRipple,
-  mixinDisabled
-} from '@angular/material/core'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
@@ -73,17 +64,7 @@ import { NgmOptionContent } from '../../input/option-content'
     NgmOptionContent
   ]
 })
-export class NgmSelectComponent
-  extends mixinColor(
-    mixinDisabled(
-      mixinDisableRipple(
-        class {
-          constructor(public _elementRef: ElementRef) {}
-        }
-      )
-    )
-  )
-  implements CanDisable, CanColor, CanDisableRipple, ControlValueAccessor
+export class NgmSelectComponent implements ControlValueAccessor
 {
   @Input() displayBehaviour: DisplayBehaviour | string
   @Input() displayDensity: DisplayDensity | string
@@ -109,12 +90,15 @@ export class NgmSelectComponent
 
   readonly selectOptions = input<Array<ISelectOption>>()
   readonly panelWidth = input<string | number | null>(null)
+  readonly allowInput = input<boolean, string | boolean>(false, {
+    transform: booleanAttribute
+  })
 
   @ContentChild(NgmOptionContent, { read: TemplateRef, static: true })
   _explicitContent: TemplateRef<any> = undefined!
 
   formControl = new FormControl<string>(null)
-  readonly value = toSignal(this.formControl.valueChanges, { initialValue: '' })
+  readonly value = signal<string | number>(null)
 
   selection = new SelectionModel<string>(true)
   searchControl = new FormControl<string>(null)
@@ -148,6 +132,7 @@ export class NgmSelectComponent
       takeUntilDestroyed()
     )
     .subscribe((value) => {
+      this.value.set(value)
       this.onChange?.(value)
     })
 
@@ -160,8 +145,7 @@ export class NgmSelectComponent
       this.onChange?.(this.selection.selected)
     })
 
-  constructor(_elementRef: ElementRef) {
-    super(_elementRef)
+  constructor() {
     effect(() => {
       if (!isNil(this.value())) {
         const selectedOption = this.selectOptions()?.find((item) => item[this.valueKey()] === this.value())
@@ -177,7 +161,8 @@ export class NgmSelectComponent
   }
 
   writeValue(obj: any): void {
-    this.formControl.setValue(obj)
+    this.formControl.setValue(obj, {emitEvent: false})
+    this.value.set(obj)
   }
   registerOnChange(fn: any): void {
     this.onChange = fn
@@ -186,7 +171,6 @@ export class NgmSelectComponent
     this.onTouched = fn
   }
   setDisabledState?(isDisabled: boolean): void {
-    this.disabled = isDisabled
     isDisabled ? this.formControl.disable() : this.formControl.enable()
   }
   trackByValue(index: number, item) {
@@ -208,5 +192,16 @@ export class NgmSelectComponent
 
   onOptionSelected(event: any) {
     //
+  }
+
+  onBlur(event: FocusEvent) {
+    if (!this.allowInput()) {
+      return
+    }
+    const value = (<HTMLInputElement>event.target).value.trim()
+    if (!this.formControl.value && value) {
+      this.formControl.setValue(value)
+      this.searchControl.setValue(null)
+    }
   }
 }
