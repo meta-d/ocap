@@ -43,9 +43,10 @@
   flex: 1;
 }
 
-ngm-parameter {
+.ngm-parameter {
   max-height: 100%;
-  overflow-y: auto;
+  overflow: visible;
+  padding: 0;
 }
 
 .ngm-member-list {

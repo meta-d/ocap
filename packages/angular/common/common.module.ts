@@ -17,6 +17,7 @@ import { NgmScrollBackComponent } from './scroll'
 import { NgmPropertyComponent } from './property/property.component'
 import { NgmHierarchySelectComponent } from './hierarchy-select/hierarchy-select.component'
 import { NgmDrawerContainerComponent } from './drawer'
+import { NgmObjectNumberComponent } from './object-number/object-number.component'
 
 @NgModule({
   imports: [
@@ -44,7 +45,8 @@ import { NgmDrawerContainerComponent } from './drawer'
     NgmSelectionTableComponent,
     NgmPropertyComponent,
     NgmHierarchySelectComponent,
-    NgmDrawerContainerComponent
+    NgmDrawerContainerComponent,
+    NgmObjectNumberComponent
   ],
   exports: [
     ResizerModule,
@@ -69,7 +71,8 @@ import { NgmDrawerContainerComponent } from './drawer'
     NgmSelectionTableComponent,
     NgmPropertyComponent,
     NgmHierarchySelectComponent,
-    NgmDrawerContainerComponent
+    NgmDrawerContainerComponent,
+    NgmObjectNumberComponent
   ],
   declarations: [],
   providers: []

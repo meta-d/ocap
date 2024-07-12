@@ -36,6 +36,7 @@
       matInput
       [ngModel]="autoInput()"
       (ngModelChange)="onAutoInput($event)"
+      (blur)="onBlur($event)"
       [matAutocomplete]="auto"
     />
   

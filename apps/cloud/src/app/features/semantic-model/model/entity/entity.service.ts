@@ -32,6 +32,7 @@ import {
   Observable,
   Subject,
   combineLatest,
+  debounceTime,
   distinctUntilChanged,
   filter,
   map,
@@ -42,7 +43,7 @@ import {
 } from 'rxjs'
 import { createSubStore, dirtyCheckWith, write } from '../../store'
 import { SemanticModelService } from '../model.service'
-import { EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
+import { DEBOUNCE_TIME, EntityPreview, MODEL_TYPE, ModelDesignerType } from '../types'
 import { CubeDimensionType, CubeEventType, newDimensionFromColumn, newDimensionFromTable } from './types'
 
 @Injectable()
@@ -179,7 +180,7 @@ export class ModelEntityService {
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
-  private _cubeSub = this.cube$.pipe(filter(Boolean), takeUntilDestroyed()).subscribe((cube) => {
+  private _cubeSub = this.cube$.pipe(filter(Boolean), debounceTime(DEBOUNCE_TIME), takeUntilDestroyed()).subscribe((cube) => {
     this.#modelService.updateDataSourceSchemaCube(cube)
   })
 

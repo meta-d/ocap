@@ -89,46 +89,9 @@ export class ModelEntityComponent implements OnInit {
 
   /**
   |--------------------------------------------------------------------------
-  | Copilot
+  | Copilot Commands
   |--------------------------------------------------------------------------
   */
-  //   #createStoryCommand = injectCopilotCommand({
-  //     name: 'story',
-  //     description: 'Create a new story from the cube',
-  //     examples: [`Create a new story`],
-  //     systemPrompt: async () => {
-  //       let prompt = `Create a new story by the cube based on the prompt.
-  // The cube is`
-  //       return prompt
-  //     },
-  //     actions: [
-  //       injectMakeCopilotActionable({
-  //         name: 'create_story',
-  //         description: 'Should always be used to properly format output',
-  //         argumentAnnotations: [
-  //           {
-  //             name: 'story',
-  //             type: 'object', // Add or change types according to your needs.
-  //             description: 'The defination of story',
-  //             required: true,
-  //             properties: zodToAnnotations(
-  //               z.object({
-  //                 name: z.string().describe(`The name of the story`),
-  //                 description: z.string().describe(`The description of the story`)
-  //               })
-  //             )
-  //           }
-  //         ],
-  //         implementation: async (story: any) => {
-  //           this.#logger.debug(`Create a new story:`, story)
-  //           story.key = nanoid()
-  //           this.createStory(story)
-  //           return `✅`
-  //         }
-  //       })
-  //     ]
-  //   })
-
   #calculatedMeasureCommand = injectCalculatedCommand()
 
   /**

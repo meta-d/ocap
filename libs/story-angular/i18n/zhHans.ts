@@ -593,6 +593,7 @@ export const ZhHans = {
         UnitOfMeasure: '度量单位',
         ShowDeviation: '显示偏差',
         DeviationText: '偏差文本',
+        NanPlaceholder: '非数字占位符',
         AdditionalDataPoints: '其他数据指标',
         MainKPI: '主关键指标'
       },

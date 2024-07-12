@@ -106,7 +106,8 @@
                 {{options?.deviationText}}
               </div>
             }
-            <ngm-object-number [number]="kpiValue.deviation" unit="%"
+            <ngm-object-number
+              [number]="kpiValue.deviation" unit="%"
               [digitsInfo]="options?.digitsInfo"
               [shortNumber]="false"
               [locale]="locale">
@@ -120,6 +121,7 @@
           [digitsInfo]="options?.digitsInfo"
           [shortNumber]="options?.shortNumber"
           [unitSemantics]="options?.unitSemantics || kpiValue.unitSemantics"
+          [nanPlaceholder]="options?.nanPlaceholder"
           [locale]="locale"
           (click)="onClick($event)">
         </ngm-object-number>
@@ -131,13 +133,13 @@
   </div>
 </ng-template>
 
-@if (error$ | async; as error) {
+@if (error()) {
   <div class="pac-kpi-card__error ngm-card-error absolute left-0 top-0 w-full h-full overflow-auto 
     flex flex-col justify-center items-center backdrop-blur-md bg-white/10"
   >
     <span class="text-2xl font-notoColorEmoji">🐞</span>
     <div class="whitespace-pre-wrap max-w-full">
-      {{ error }}
+      {{ error() }}
     </div>
   </div>
 }

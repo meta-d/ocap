@@ -6,6 +6,7 @@ import { NgmSmartFilterComponent } from './smart-filter/smart-filter.component'
 import { NgmSmartSelectComponent } from './smart-select/smart-select.component'
 import { NgmMemberTreeSelectComponent } from './tree-select/tree-select.component'
 import { NgmValueHelpComponent } from './value-help/value-help.component'
+import { NgmVariableComponent } from './variable/variable.component'
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { NgmValueHelpComponent } from './value-help/value-help.component'
     NgmMemberTreeComponent,
     NgmMemberTableComponent,
     NgmMemberTreeSelectComponent,
-    NgmValueHelpComponent
+    NgmValueHelpComponent,
+    NgmVariableComponent
   ],
   exports: [
     NgmMemberListComponent,
@@ -24,7 +26,8 @@ import { NgmValueHelpComponent } from './value-help/value-help.component'
     NgmMemberTreeComponent,
     NgmMemberTableComponent,
     NgmMemberTreeSelectComponent,
-    NgmValueHelpComponent
+    NgmValueHelpComponent,
+    NgmVariableComponent
   ],
   declarations: [],
   providers: []

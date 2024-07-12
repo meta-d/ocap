@@ -1,0 +1,12 @@
+<ngm-select class="group" [label]="label()"
+  [disabled]="disabled()"
+  [selectOptions]="selectOptions$ | async"
+  searchable valueKey="key" allowInput
+  [(ngModel)]="value"
+>
+  @if (value()) {
+    <button mat-icon-button ngmSuffix ngmAppearance="danger" class="opacity-30 group-hover:opacity-100" (click)="clear()">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+</ngm-select>

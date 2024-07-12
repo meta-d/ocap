@@ -42,6 +42,7 @@ export interface NxFormatOprions {
 }
 
 /**
+ * @deprecated
  * Ref to [CurrencyPipe](https://github.com/angular/angular/blob/11.2.13/packages/common/src/pipes/number_pipe.ts#L163-L287)
  */
 @Pipe({

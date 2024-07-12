@@ -88,10 +88,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
 
   @ViewChild(NgmMemberTreeComponent) memberTree!: NgmMemberTreeComponent
 
-  get slicer() {
-    return this.slicer$.value
-  }
-  private slicer$ = new BehaviorSubject<ISlicer>(null)
+  readonly _slicer = signal<ISlicer>(null)
 
   // Inner state control
   measureFormControl = new FormControl()
@@ -104,8 +101,6 @@ export class NxInputControlComponent extends AbstractStoryWidget<
   }
   // For datepicker component
   dates: Date[] = []
-
-  // public readonly styling$ = this.select((state) => state.styling)
 
   public readonly __options$ = this.select((state) => state.options).pipe(
     combineLatestWith(toObservable(this.styling$)),
@@ -145,6 +140,11 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     map((items) => items?.filter((property) => !isMeasureControlProperty(property)))
   )
 
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
   public readonly maxTagCount = computed(() => this.optionsSignal()?.maxTagCount)
   public readonly controlType = computed(() => this.optionsSignal()?.controlType)
 
@@ -161,14 +161,6 @@ export class NxInputControlComponent extends AbstractStoryWidget<
 
   readonly variableProperty = computed<VariableProperty>(() => this.property()?.role === AggregationRole.variable ? this.property() as VariableProperty : null)
 
-  readonly variableDimension = computed(() => {
-    const property = this.property() as any
-    return {
-      dimension: property.dimension,
-      hierarchy: property.hierarchy
-    }
-  })
-
   readonly propertyType = computed<FilterControlType>(() => {
     if (this.asPlaceholder()) {
       return null
@@ -179,19 +171,6 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     }
     return null
   })
-
-  // public readonly type = computed<ControlType | FilterControlType>(() => {
-  //   if (this.asPlaceholder()) {
-  //     return null
-  //   }
-  //   if (this.controlType()) {
-  //     return this.controlType()
-  //   }
-  //   if (this.dimension()) {
-  //     return determineControlType(this.dimension(), this.entityType())
-  //   }
-  //   return null
-  // })
 
   public measureControlProperty = computed(() => {
     if (isMeasureControlProperty(this.property())) {
@@ -226,12 +205,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     })
   )
   public readonly _dataSettings = toSignal(this.dataSettings$)
-  public members = toSignal(
-    this.slicer$.pipe(
-      map((slicer) => slicer?.members ?? []),
-      startWith([])
-    )
-  )
+  public members = computed(() => this._slicer()?.members ?? [])
 
   public readonly displayMembers = computed(() => {
     const members = [...this.members(), ...(<IMember[]>this.parameter()?.members ?? [])]
@@ -250,10 +224,11 @@ export class NxInputControlComponent extends AbstractStoryWidget<
   public readonly asPlaceholder = computed(
     () => !(this.dataSettingsSignal()?.dataSource && this.dataSettingsSignal()?.entitySet)
   )
-
-  // Inner states
+  
+  readonly defaultMembers = computed(() => this.optionsSignal()?.defaultMembers)
   readonly storyPoints = this.storyService.storyPoints
   public readonly error = signal<string>(null)
+
   /**
   |--------------------------------------------------------------------------
   | Subscriptions (effect)
@@ -275,9 +250,8 @@ export class NxInputControlComponent extends AbstractStoryWidget<
           })
           break
         case InputControlMenus.SaveAsDefaultMembers:
-          console.log(InputControlMenus.SaveAsDefaultMembers, this.slicer, this.dates)
           this.updateOptions({
-            defaultMembers: [...this.slicer.members],
+            defaultMembers: [...this._slicer().members],
             dates: this.dates.map((d) => d.toISOString()),
             defaultValue: ''
           })
@@ -343,7 +317,7 @@ export class NxInputControlComponent extends AbstractStoryWidget<
 
     effect(
       () => {
-        const defaultMembers = this.optionsSignal()?.defaultMembers
+        const defaultMembers = this.defaultMembers()
         const property = this.property()
 
         const editProperty = isParameterProperty(property) || isCalculationProperty(property)
@@ -380,6 +354,21 @@ export class NxInputControlComponent extends AbstractStoryWidget<
       },
       { allowSignalWrites: true }
     )
+
+    effect(
+      () => {
+        const defaultMembers = this.defaultMembers()
+        if (defaultMembers && !this._slicer()) {
+          this._slicer.update((state) => ({
+            ...(state ?? {}),
+            // dimension: this.dimension(),
+            members: structuredClone(defaultMembers)
+          }))
+          // this.emitSlicer()
+        }
+      },
+      { allowSignalWrites: true }
+    )
   }
 
   refresh() {
@@ -395,12 +384,11 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     if (parameter) {
       this.updateParameterValue({ members: [] })
     } else {
-      const _slicer = {
-        ...this.slicer,
+      this._slicer.update((state) => ({
+        ...state,
         members: []
-      }
-      this.slicer$.next(_slicer)
-      this.slicersChange.emit([structuredClone(_slicer)])
+      }))
+      this.emitSlicer()
     }
   }
 
@@ -512,35 +500,44 @@ export class NxInputControlComponent extends AbstractStoryWidget<
       if (!slicer.dimension) {
         slicer.dimension = this.dimension()
       }
-      this.slicer$.next(slicer)
-      // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
-      this.slicersChange.emit([structuredClone(this.slicer)])
+
+      this._slicer.set(slicer)
+      this.emitSlicer()
     }
   }
 
-  onVariableChange(slicer: ISlicer) {
-    slicer.dimension = {
-      ...this.variableDimension(),
-      parameter: this.dimension().dimension
+  onVariableChange(slicer: ISlicer | null) {
+    if (slicer) {
+      slicer.dimension = {
+        dimension: this.variableProperty().referenceDimension,
+        hierarchy: this.variableProperty().referenceHierarchy,
+        parameter: this.dimension().dimension
+      }
+      if (!slicer.members.length && this.variableProperty()?.defaultLow) {
+        slicer.members = [
+          {
+            key: this.variableProperty().defaultLow,
+            caption: this.variableProperty().defaultLowCaption
+          }
+        ]
+      }
+      if (!slicer.selectionType && this.variableProperty()?.variableSelectionType) {
+        slicer.selectionType = this.variableProperty()?.variableSelectionType === VariableSelectionType.Value ?
+          FilterSelectionType.Single :
+          this.variableProperty()?.variableSelectionType === VariableSelectionType.Interval ? 
+          FilterSelectionType.SingleInterval :
+            FilterSelectionType.Multiple
+      }
+      this._slicer.set(slicer)
+      this.emitSlicer()
+    } else {
+      this.clearSelectedMembers()
     }
-    if (!slicer.members.length && this.variableProperty()?.defaultLow) {
-      slicer.members = [
-        {
-          key: this.variableProperty().defaultLow,
-          caption: this.variableProperty().defaultLowCaption
-        }
-      ]
-    }
-    if (!slicer.selectionType && this.variableProperty()?.variableSelectionType) {
-      slicer.selectionType = this.variableProperty()?.variableSelectionType === VariableSelectionType.Value ?
-        FilterSelectionType.Single :
-        this.variableProperty()?.variableSelectionType === VariableSelectionType.Interval ? 
-        FilterSelectionType.SingleInterval :
-          FilterSelectionType.Multiple
-    }
-    this.slicer$.next(slicer)
+  }
+
+  emitSlicer() {
     // 发出去的 slicer 可能会被 readonly 化，那样将与判断 slicer 是否改变有冲突
-    this.slicersChange.emit([structuredClone(slicer)])
+    this.slicersChange.emit([structuredClone(this._slicer())])
   }
 
   openDesigner() {

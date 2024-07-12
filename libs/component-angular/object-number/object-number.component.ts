@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { NxCoreModule, nonNullable } from '@metad/core'
 
 /**
+ * @deprecated
+ * 
  * https://experience.sap.com/fiori-design-web/object-display-elements/
  *
  * ## Semantic Colors:

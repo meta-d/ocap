@@ -200,7 +200,7 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
       map((result) => {
         const valueProperty = dimension.hierarchy || dimension.dimension
         const captionProperty = dimension.memberCaption || hProperty?.memberCaption
-        const data = result.data.map((item) => ({
+        const data = result.data?.map((item) => ({
           dimension: dimension.dimension,
           hierarchy: dimension.hierarchy || dimension.dimension,
           memberKey: item[valueProperty],
@@ -209,6 +209,7 @@ export class SmartFilterService<State extends SmartFilterState = SmartFilterStat
         }))
 
         return {
+          ...result,
           data,
           schema: {
             columns: [

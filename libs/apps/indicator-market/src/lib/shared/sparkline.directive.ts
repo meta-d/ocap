@@ -13,9 +13,9 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop'
 import { TinyArea } from '@antv/g2plot/esm/plots/tiny-area'
 import { Store } from '@metad/cloud/state'
-import { LanguagesEnum } from '@metad/core'
 import { TranslateService } from '@ngx-translate/core'
 import { IndicatorState, StatisticalType, Trend, TrendColor, TrendReverseColor } from '../types'
+import { NgmLanguageEnum } from '@metad/ocap-angular/core'
 
 @Directive({
   selector: '[pacSparkLine]'
@@ -47,7 +47,7 @@ export class AppSparkLineDirective {
     }
 
     const color =
-      this.#translate.currentLang === LanguagesEnum.SimplifiedChinese
+      this.#translate.currentLang === NgmLanguageEnum.SimplifiedChinese
         ? TrendReverseColor[Trend[this.indicator().trend]]
         : TrendColor[Trend[this.indicator().trend]]
     return {

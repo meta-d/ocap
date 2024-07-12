@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
 import { MatIconModule } from '@angular/material/icon'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { NxObjectNumberComponent } from '@metad/components/object-number'
 import { AbstractStoryWidget, StoryWidgetState, StoryWidgetStyling, WidgetMenuType, nonNullable } from '@metad/core'
+import { NgmObjectNumberComponent } from '@metad/ocap-angular/common'
 import { TrendType, isNil } from '@metad/ocap-core'
 import { ComponentStyling, componentStyling } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -34,7 +34,7 @@ export interface PacWidgetKPIStyling extends StoryWidgetStyling {
     MatIconModule,
     MatProgressSpinnerModule,
 
-    NxObjectNumberComponent,
+    NgmObjectNumberComponent,
     KPIPlaceholderComponent
   ]
 })
@@ -85,14 +85,13 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     map((additionals) => (additionals.length > 0 ? additionals : null))
   )
 
-  public readonly error$ = this.dataService.selectResult().pipe(map(({ error }) => error))
-
   /**
   |--------------------------------------------------------------------------
   | Signals
   |--------------------------------------------------------------------------
   */
   readonly isLoading = toSignal(this.dataService.loading$)
+  readonly error = signal<string | null>(null)
   readonly titleStyles$ = computed(() => componentStyling(this.styling$()?.title))
   readonly valueStyles = computed(() => componentStyling(this.styling$()?.value))
 
@@ -101,6 +100,9 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
   | Subscriptions (effect)
   |--------------------------------------------------------------------------
   */
+  private errorSub = this.dataService.selectResult().pipe(map(({ error }) => error), takeUntilDestroyed()).subscribe((err) => {
+    this.error.set(err)
+  })
   // slicers
   private slicersSub = this.selectionVariant$.pipe(takeUntilDestroyed()).subscribe((selectionVariant) => {
     this.dataService.selectionVariant = selectionVariant
@@ -137,6 +139,7 @@ export class NxWidgetKpiComponent extends AbstractStoryWidget<
     })
 
   refresh(force = false): void {
+    this.error.set(null)
     this.dataService.refresh(force)
   }
 

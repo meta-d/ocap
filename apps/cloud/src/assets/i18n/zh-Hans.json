@@ -1165,6 +1165,7 @@
       "Color": "颜色",
       "TextAlign": "文本对齐",
       "FontSize": "字体大小",
+      "LineHeight": "行高",
       "FontFamily": "字体",
       "FontWeight": "字重",
       "ChooseFontFamily": "选择字体",
