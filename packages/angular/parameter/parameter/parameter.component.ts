@@ -31,7 +31,17 @@ import {
   isEqual,
   pick
 } from '@metad/ocap-core'
-import { BehaviorSubject, Subject, combineLatestWith, debounceTime, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs'
+import {
+  BehaviorSubject,
+  Subject,
+  combineLatestWith,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  of,
+  switchMap
+} from 'rxjs'
 
 export interface ParameterOptions {
   /**
@@ -148,11 +158,14 @@ export class NgmParameterComponent implements OnChanges {
     ),
     switchMap(([parameter, entity, dataSource]) => dataSource.discoverMDMembers(entity, parameter)),
     map((members) =>
-      members?.map((item) => ({
-        key: item.memberKey,
-        value: item.memberKey,
-        caption: item.memberCaption
-      } as IMember))
+      members?.map(
+        (item) =>
+          ({
+            key: item.memberKey,
+            value: item.memberKey,
+            caption: item.memberCaption
+          }) as IMember
+      )
     )
   )
 
@@ -166,10 +179,9 @@ export class NgmParameterComponent implements OnChanges {
   parameterValue = null
 
   private changeParameter$ = new Subject<void>()
-  private changeSub = this.changeParameter$.pipe(
-      debounceTime(500),
-      takeUntilDestroyed()
-    ).subscribe(() => this.parameterChange.emit(this.parameter))
+  private changeSub = this.changeParameter$
+    .pipe(debounceTime(500), takeUntilDestroyed())
+    .subscribe(() => this.parameterChange.emit(this.parameter))
 
   ngOnChanges({ parameter }: SimpleChanges): void {
     if (parameter) {
