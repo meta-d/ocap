@@ -1,6 +1,5 @@
 export * from './entries.pipe'
 export * from './keys.pipe'
-export * from './short-number.pipe'
 export * from './property.pipe'
 export * from './safe.pipe'
 

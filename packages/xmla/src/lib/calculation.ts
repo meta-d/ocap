@@ -27,7 +27,6 @@ import {
   VarianceMeasureProperty,
   compact, isEmpty, pick, isNil,
   measureFormatter,
-  isSlicer,
   isVariableSlicer,
   convertSlicerToDimension
 } from '@metad/ocap-core'
@@ -322,7 +321,7 @@ export function serializeAggregationProperty(property: AggregationProperty) {
       return Sum(CrossjoinOperator(...aggregationDimensions), measure)
     case AggregationOperation.COUNT:
       if (property.measure) {
-        aggregationDimensions.push(measureFormatter(property.measure))
+        aggregationDimensions.push(`{${measureFormatter(property.measure)}}`)
       }
       
       return Count(Distinct(CrossjoinOperator(...aggregationDimensions)), true)

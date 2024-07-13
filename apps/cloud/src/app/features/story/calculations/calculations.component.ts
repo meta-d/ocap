@@ -19,7 +19,6 @@ import { ISelectOption, NgmDSCacheService, filterSearch } from '@metad/ocap-angu
 import { NgmParameterCreateComponent } from '@metad/ocap-angular/parameter'
 import {
   CalculationProperty,
-  DataSettings,
   DisplayBehaviour,
   ParameterProperty,
   getEntityCalculations
@@ -27,7 +26,6 @@ import {
 import { NxStoryService } from '@metad/story/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { BehaviorSubject, combineLatestWith, firstValueFrom, map, of, shareReplay, switchMap, tap } from 'rxjs'
-import { injectCalculationGraphCommand } from '../copilot/index'
 
 @Component({
   standalone: true,
@@ -153,19 +151,18 @@ export class StoryCalculationsComponent {
 
   readonly property = signal<CalculationProperty>(null)
 
-  /**
-  |--------------------------------------------------------------------------
-  | Copilot
-  |--------------------------------------------------------------------------
-  */
-  readonly calculatioCommand = injectCalculationGraphCommand(
-    this.dataSettings,
-    this.property,
-    (dataSettings: DataSettings, key: string) => {
-      this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
-      this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
-    }
-  )
+  // /**
+  // |--------------------------------------------------------------------------
+  // | Copilot
+  // |--------------------------------------------------------------------------
+  // */
+  // readonly calculatioCommand = injectCalculationGraphCommand(
+  //   this.dataSettings,
+  //   (dataSettings: DataSettings, key: string) => {
+  //     this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+  //     this.router.navigate([encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
+  //   }
+  // )
 
   constructor(
     private storyService: NxStoryService,

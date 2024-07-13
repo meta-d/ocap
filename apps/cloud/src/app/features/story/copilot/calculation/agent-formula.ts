@@ -9,8 +9,9 @@ export async function createFormulaWorker({ llm, tools }: { llm: ChatOpenAI; too
     ` Use the dimensions, hierarchy, level and other names accurately according to the cube information provided.` +
     makeCubeRulesPrompt() +
     `\nTry to perform derivative calculations based on existing measures.` +
-    `\n\n{role}` +
-    `\n\n{context}`
+    `If the formula value is a ratio or percentage, you need to set unit to '%'.
+{role}
+{context}`
 
   return await Route.createWorkerAgent(llm, tools, systemPrompt)
 }

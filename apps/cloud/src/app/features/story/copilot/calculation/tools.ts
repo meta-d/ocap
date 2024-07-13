@@ -31,16 +31,14 @@ export function injectCreateFormulaMeasureTool(
       dataSettings: DataSettingsSchema.optional(),
       property: CalculationSchema
     }),
-    func: async ({dataSettings, property: { __id__, name, caption, formula }}) => {
-      const key = __id__ || nanoid()
+    func: async ({dataSettings, property}) => {
+      const key = property.__id__ || nanoid()
       try {
         const _dataSettings = dataSettings as DataSettings ?? defaultDataSettings()
         const calculation = {
           __id__: key,
-          name,
-          caption,
+          ...property,
           calculationType: CalculationType.Calculated,
-          formula
         } as CalculatedProperty
         storyService.addCalculationMeasure({ dataSettings: _dataSettings, calculation })
 
@@ -48,9 +46,9 @@ export function injectCreateFormulaMeasureTool(
 
         callback(_dataSettings, key)
 
-        return `Formula calculation measure created!`
+        return `A calculation measure of formula type with ID '${key}' has been created!`
       } catch (error: any) {
-        return `Error creating formula calculation measure: ${error.message}`
+        return `Error creating calculation measure of formula type: ${error.message}`
       }
     }
   })
@@ -108,11 +106,11 @@ export function injectCreateConditionalAggregationTool(
           calculation
         })
 
-        logger.debug(`Conditional aggregation calculation measure created: `, _dataSettings, calculation)
+        logger.debug(`A calculation measure of conditional aggregation type has been created: `, _dataSettings, calculation)
 
         callback(_dataSettings, key)
 
-        return `Conditional aggregation calculation measure created!`
+        return `A calculation measure of conditional aggregation type with ID '${key}' has been created!`
       } catch (error: any) {
         return `Error creating conditional aggregation calculation measure: ${error.message}`
       }

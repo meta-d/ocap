@@ -1,13 +1,13 @@
-import { Signal } from '@angular/core'
+import { computed, inject, Signal } from '@angular/core'
 import { HumanMessage } from '@langchain/core/messages'
 import { FewShotPromptTemplate } from '@langchain/core/prompts'
 import { Runnable, RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { END, START, StateGraph, StateGraphArgs } from '@langchain/langgraph/web'
 import { CreateGraphOptions, Team } from '@metad/copilot'
-import { markdownModelCube } from '@metad/core'
-import { EntityType } from '@metad/ocap-core'
-import { Route } from '../../../../@core/copilot/'
+import { injectDimensionMemberTool, markdownModelCube } from '@metad/core'
+import { DataSettings, EntityType } from '@metad/ocap-core'
+import { injectAgentFewShotTemplate, Route } from '../../../../@core/copilot/'
 import { createConditionalAggregationWorker } from './agent-cond-aggr'
 import { createFormulaWorker } from './agent-formula'
 import { createVarianceMeasureWorker } from './agent-variance'
@@ -17,12 +17,25 @@ import {
   MEASURE_CONTROL_AGENT_NAME,
   RESTRICTED_AGENT_NAME,
   SUPERVISOR_NAME,
-  State,
+  CalculationAgentState,
   VARIANCE_AGENT_NAME
 } from './types'
 import { AgentExecutor } from 'langchain/agents'
+import { injectPickCubeTool } from '../tools'
+import { injectCreateConditionalAggregationTool, injectCreateFormulaMeasureTool, injectCreateVarianceMeasureTool } from './tools'
+import { injectCreateRestrictedMeasureWorker } from './agent-restricted'
+import { injectCreateMeasureControlWorker } from './agent-measure-control'
+import { derivedAsync } from 'ngxtension/derived-async'
+import { NxStoryService } from '@metad/story/core'
+import { of } from 'rxjs'
 
-const superState: StateGraphArgs<State>['channels'] = Team.createState()
+const superState: StateGraphArgs<CalculationAgentState>['channels'] = {
+  ...Team.createState(),
+  tool_call_id: {
+    value: (x: string, y?: string) => y,
+    default: () => null
+  },
+}
 
 export async function createCalculationGraph({
   llm,
@@ -87,7 +100,7 @@ export async function createCalculationGraph({
     tools: [memberRetrieverTool, createVarianceMeasureTool]
   })
 
-  const runCreateFormulaAgent = RunnableLambda.from(async (state: State) => {
+  const runCreateFormulaAgent = RunnableLambda.from(async (state: CalculationAgentState) => {
     const context = state.context || markdownModelCube(defaultModelCube())
     const input = await formulaFewShotPrompt.format({
       input: state.instructions,
@@ -100,7 +113,7 @@ export async function createCalculationGraph({
     }
   })
 
-  const runCreateConditionalAggregationAgent = RunnableLambda.from(async (state: State) => {
+  const runCreateConditionalAggregationAgent = RunnableLambda.from(async (state: CalculationAgentState) => {
     const context = state.context || markdownModelCube(defaultModelCube())
     const input = await condAggrFewShotPrompt.format({
       input: state.instructions,
@@ -113,7 +126,7 @@ export async function createCalculationGraph({
     }
   })
 
-  const runCreateVarianceMeasureAgent = RunnableLambda.from(async (state: State) => {
+  const runCreateVarianceMeasureAgent = RunnableLambda.from(async (state: CalculationAgentState) => {
     const context = state.context || markdownModelCube(defaultModelCube())
     const input = await varianceFewShotPrompt.format({
       input: state.instructions,
@@ -126,7 +139,7 @@ export async function createCalculationGraph({
     }
   })
 
-  const runCalculationAgent = RunnableLambda.from(async (state: State) => {
+  const runCalculationAgent = RunnableLambda.from(async (state: CalculationAgentState) => {
     const context = state.context || markdownModelCube(defaultModelCube())
     return {
       messages: [new HumanMessage(state.instructions)],
@@ -175,4 +188,61 @@ export async function createCalculationGraph({
   superGraph.addEdge(START, SUPERVISOR_NAME)
 
   return superGraph
+}
+
+export function injectCreateCalculationGraph(
+  defaultDataSettings: Signal<DataSettings & { modelId: string }>,
+  callback: (dataSettings: DataSettings, key: string) => void
+) {
+  const storyService = inject(NxStoryService)
+  
+  const defaultCube = derivedAsync(() => {
+    const dataSettings = defaultDataSettings()
+    return dataSettings ? storyService.selectEntityType(dataSettings) : of(null)
+  })
+  const defaultModelCube = computed(() => {
+    const dataSettings = defaultDataSettings()
+    const cube = defaultCube()
+    return { dataSource: dataSettings?.dataSource, modelId: dataSettings.modelId, cube }
+  })
+  
+  const formulaFewShotPrompt = injectAgentFewShotTemplate(`calculated`, { vectorStore: null, score: 0.7, k: 5 })
+  const condAggrFewShotPrompt = injectAgentFewShotTemplate(`calculation/aggregation`, {
+    vectorStore: null,
+    score: 0.7,
+    k: 5
+  })
+  const varianceFewShotPrompt = injectAgentFewShotTemplate(`calculation/variance`, {
+    vectorStore: null,
+    score: 0.7,
+    k: 5
+  })
+
+  const pickCubeTool = injectPickCubeTool()
+  const memberRetrieverTool = injectDimensionMemberTool()
+
+  const createFormulaTool = injectCreateFormulaMeasureTool(defaultDataSettings, callback)
+  const createConditionalAggregationTool = injectCreateConditionalAggregationTool(defaultDataSettings, callback)
+  const createVarianceMeasureTool = injectCreateVarianceMeasureTool(defaultDataSettings, callback)
+
+  const restrictedMeasureWorker = injectCreateRestrictedMeasureWorker(defaultModelCube, callback)
+  const runMeasureControlWorker = injectCreateMeasureControlWorker(defaultModelCube, callback)
+
+  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+    return await createCalculationGraph({
+      llm,
+      checkpointer,
+      formulaFewShotPrompt,
+      condAggrFewShotPrompt,
+      varianceFewShotPrompt,
+      defaultModelCube,
+      pickCubeTool,
+      memberRetrieverTool,
+      createFormulaTool,
+      restrictedMeasureWorker,
+      createConditionalAggregationTool,
+      createVarianceMeasureTool,
+      runMeasureControlWorker
+    })
+  }
 }

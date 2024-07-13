@@ -37,7 +37,7 @@ import {
 } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, firstValueFrom, timer } from 'rxjs'
+import { combineLatest, firstValueFrom, timer } from 'rxjs'
 import {
   combineLatestWith,
   distinctUntilChanged,
@@ -167,8 +167,9 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     }
 
     if (this.dimension()) {
-      return determineControlType(this.dimension(), this.entityType())
+      return determineControlType(this.dimension(), this.entityType(), this.controlType())
     }
+    
     return null
   })
 
@@ -358,13 +359,11 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     effect(
       () => {
         const defaultMembers = this.defaultMembers()
-        if (defaultMembers && !this._slicer()) {
-          this._slicer.update((state) => ({
-            ...(state ?? {}),
-            // dimension: this.dimension(),
-            members: structuredClone(defaultMembers)
-          }))
-          // this.emitSlicer()
+        // 配置已初始化但 slicer 还未创建则创建一个 slicer 标志状态已初始化完成
+        if (!this._slicer() && this.dimension()) {
+          this._slicer.set({
+            members: defaultMembers ? structuredClone(defaultMembers) : []
+          })
         }
       },
       { allowSignalWrites: true }

@@ -14,4 +14,6 @@ export const MEMBER_RETRIEVER_PROMPT = `If the requirement specifies the member 
 
 
 // Define the top-level State interface
-export interface State extends Team.State {}
+export interface CalculationAgentState extends Team.State {
+  tool_call_id: string
+}

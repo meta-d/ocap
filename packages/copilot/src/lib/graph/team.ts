@@ -5,6 +5,8 @@ import { ChatOpenAI } from '@langchain/openai'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { AgentState, createCopilotAgentState } from './types'
 
+export const SUPERVISOR_NAME = 'Supervisor'
+
 export interface State extends AgentState {
   next: string
   instructions: string
@@ -59,9 +61,8 @@ export const SupervisorSystemPrompt = 'You are a supervisor tasked with managing
     ' respond with FINISH.\n\n' +
     ' Select strategically to minimize the number of steps taken.'
 
-export async function createSupervisor(llm: ChatOpenAI, members: string[], systemPrompt?: string): Promise<Runnable> {
-  const options = ['FINISH', ...members]
-  const functionDef = {
+export function createRouteFunctionDef(members: string[]) {
+  return {
     name: 'route',
     description: 'Select the next role.',
     parameters: {
@@ -74,7 +75,7 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
         },
         next: {
           title: 'Next',
-          anyOf: [{ enum: options }]
+          anyOf: [{ enum: members }]
         },
         instructions: {
           title: 'Instructions',
@@ -85,6 +86,11 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
       required: ['reasoning', 'next', 'instructions']
     }
   }
+}
+
+export async function createSupervisor(llm: ChatOpenAI, members: string[], systemPrompt?: string): Promise<Runnable> {
+  const options = ['FINISH', ...members]
+  const functionDef = createRouteFunctionDef(options)
   const toolDef = {
     type: 'function' as const,
     function: functionDef

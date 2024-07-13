@@ -3,14 +3,15 @@ import { HumanMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { ChatOpenAI } from '@langchain/openai'
-import { markdownModelCube } from '@metad/core'
+import { DataSettingsSchema, markdownModelCube } from '@metad/core'
 import { CalculationType, DataSettings, EntityType, MeasureControlProperty } from '@metad/ocap-core'
 import { NxStoryService } from '@metad/story/core'
 import { Route } from 'apps/cloud/src/app/@core/copilot'
 import { nanoid } from 'nanoid'
+import { z } from 'zod'
 import { NGXLogger } from 'ngx-logger'
 import { MeasureControlSchema } from '../schema'
-import { MEASURE_CONTROL_AGENT_NAME, State } from './types'
+import { MEASURE_CONTROL_AGENT_NAME, CalculationAgentState } from './types'
 
 export function injectCreateMeasureControlWorker(
   defaultModelCube: Signal<{ dataSource: string; modelId: string; cube: EntityType }>,
@@ -26,7 +27,7 @@ export function injectCreateMeasureControlWorker(
       `\n\n{context}`
 
     const agent = await Route.createWorkerAgent(llm, [createMeasureControlTool], systemPrompt)
-    return RunnableLambda.from(async (state: State) => {
+    return RunnableLambda.from(async (state: CalculationAgentState) => {
       const context = state.context || markdownModelCube(defaultModelCube())
       return {
         messages: [new HumanMessage(state.instructions)],
@@ -47,14 +48,17 @@ export function injectCreateMeasureControlTool(
   const createMeasureControlTool = new DynamicStructuredTool({
     name: 'createMeasureControl',
     description: 'Create measures control to select actual measure in runtime',
-    schema: MeasureControlSchema,
-    func: async (property) => {
+    schema: z.object({
+      dataSettings: DataSettingsSchema.optional(),
+      property: MeasureControlSchema
+    }),
+    func: async ({dataSettings, property}) => {
       const key = property.__id__ || nanoid()
       try {
-        const dataSettings = { dataSource: defaultModelCube().dataSource, entitySet: defaultModelCube().cube.name }
+        const _dataSettings = (dataSettings as DataSettings) ?? {dataSource: defaultModelCube().dataSource, entitySet: defaultModelCube().cube?.name}
 
         storyService.addCalculationMeasure({
-          dataSettings,
+          dataSettings: _dataSettings,
           calculation: {
             ...property,
             __id__: key,
@@ -62,9 +66,9 @@ export function injectCreateMeasureControlTool(
           } as MeasureControlProperty
         })
 
-        logger.debug(`Measure control calculation measure created: `, dataSettings, property)
+        logger.debug(`Measure control calculation measure created: `, _dataSettings, property)
 
-        callback(dataSettings, key)
+        callback(_dataSettings, key)
 
         return `Measure control created!`
       } catch (error: any) {

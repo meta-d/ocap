@@ -166,7 +166,7 @@ export class ModelEntityPreviewComponent {
   constructor() {
     effect(() => {
       this.variableList().forEach((variable) => {
-        if (!this.variables[variable.name] && variable.defaultLow) {
+        if (!this.variables[variable.name]?.members?.length && variable.defaultLow) {
           const members = [
             {
               key: variable.defaultLow,

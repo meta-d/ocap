@@ -88,7 +88,8 @@ export class NgmVariableComponent implements ControlValueAccessor {
     effect(() => {
       const value = this.value()
       const variable = this.variable()
-      if (this.slicer && variable) {
+      // 初始化完成后才可以发出空值，否则只能在有值情况下发出
+      if (variable && (this.slicer && !value || !!value)) {
         this._onChange?.(value
             ? {
                 ...this.slicer,

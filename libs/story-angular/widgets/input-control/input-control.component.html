@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="flex-1 relative flex flex-col justify-start items-center p-1 overflow-hidden">
+<div class="flex-1 relative flex flex-col justify-start items-center p-1 overflow-visible">
   @if (error()) {
     <mat-error class="whitespace-normal overflow-auto">
         {{error()}}
@@ -46,34 +46,14 @@
         ></ngm-member-list>
       }
       @case (INPUT_CONTROL_TYPE.TreeSelect) {
-        @if (controlType() === INPUT_CONTROL_TYPE.DropDownList) {
-            <ngm-smart-filter class="w-full justify-self-start" [label]="''"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="_slicer()"
-                (ngModelChange)="onSlicerChange($event)"
-            />
-          } @else if (controlType() === INPUT_CONTROL_TYPE.Select) {
-            <ngm-member-list class="w-full flex-1"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="_slicer()"
-                (ngModelChange)="onSlicerChange($event)"
-            />
-        } @else {
-            <ngm-member-tree class="w-full flex-1"
-                [appearance]="styling?.appearance"
-                [dataSettings]="_dataSettings()"
-                [dimension]="dimension()"
-                [options]="__options$ | async"
-                [ngModel]="_slicer()"
-                (ngModelChange)="onSlicerChange($event)"
-            />
-        }
+        <ngm-member-tree class="w-full flex-1"
+            [appearance]="styling?.appearance"
+            [dataSettings]="_dataSettings()"
+            [dimension]="dimension()"
+            [options]="__options$ | async"
+            [ngModel]="_slicer()"
+            (ngModelChange)="onSlicerChange($event)"
+        />
       }
       @case (INPUT_CONTROL_TYPE.DropDownList) {
         <ngm-smart-filter class="w-full justify-self-start" [label]="''"

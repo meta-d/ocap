@@ -4,7 +4,7 @@
     <mat-icon *ngIf="!unfold">unfold_more</mat-icon>
     <mat-icon *ngIf="unfold">unfold_less</mat-icon>
   </button>
-  <ngm-search *ngIf="options()?.searchable" class="flex-1" [formControl]="searchControl"></ngm-search>
+  <ngm-search *ngIf="options()?.searchable ?? true" class="flex-1" [formControl]="searchControl"></ngm-search>
 </div>
 
 <cdk-virtual-scroll-viewport class="flex-1" [itemSize]="itemSize">

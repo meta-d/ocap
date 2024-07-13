@@ -235,7 +235,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
     }
 
     // cache
-    const cache = await this.dataSource.cacheService.getCache(cacheOptions, options)
+    const cache = await this.dataSource.cacheService?.getCache(cacheOptions, options)
 
     if (cache) {
       return cache
@@ -243,7 +243,7 @@ export class XmlaEntityService<T> extends AbstractEntityService<T> implements En
 
     const dataset = await firstValueFrom(this.dataSource.xmlaService.execute(mdx, { headers, forceRefresh: options?.skip }))
     const result = fetchDataFromMultidimensionalTuple(dataset, this.entityType, mdx)
-    this.dataSource.cacheService.setCache(cacheOptions, result)
+    this.dataSource.cacheService?.setCache(cacheOptions, result)
     return result
   }
 

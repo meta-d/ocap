@@ -19,52 +19,17 @@
     </button>
   </ng-template>
 </ngm-input>
-<!-- 
-<label class="ngm-input-label">
-  {{ label }}
-</label>
-
-<div class="w-full relative flex items-center bg-gray-50 rounded-md">
-  <div class="absolute left-0 max-w-[75%] overflow-hidden flex items-center px-1">
-    <ng-content select="[ngmPrefix]"></ng-content>
-  </div>
-
-  <div class="ngm-input__suffix flex items-center">
-    <button mat-icon-button displayDensity="compact" [matMenuTriggerFor]="paramMenu"
-      (click)="$event.stopPropagation(); $event.preventDefault()">
-      <mat-icon>alternate_email</mat-icon>
-    </button>
-
-    <ng-content select="[ngmSuffix]"></ng-content>
-  </div>
-
-  <input #search matInput class="ngm-input-element ngm-w-full"
-    [class.ngm-input__searching]="!!formControl.value"
-    [placeholder]="placeholder"
-    [(ngModel)]="value"
-    [disabled]="disabled"
-    [matAutocomplete]="auto"
-  >
-</div>
-
-<mat-autocomplete autoActiveFirstOption #auto="matAutocomplete"
-  class="ngm-density__compact"
-  (optionSelected)="onOptionSelected($event)"
->
-    <mat-option *ngFor="let parameter of selectOptions$ | async" [value]="parameter.value">{{parameter.label || parameter.value}}</mat-option>
-</mat-autocomplete> -->
-
 
 <mat-radio-group [(ngModel)]="model">
   <mat-menu #paramMenu="matMenu" class="ngm-density__compact">
     @for (parameter of parameters$ | async; track $index) {
       <button mat-menu-item disableRipple (click)="$event.stopPropagation();">
-        <div class="flex justify-between items-center">
-          <mat-radio-button [value]="parameter.key">
+        <div class="flex justify-between items-center relative">
+          <mat-radio-button class="flex-1 overflow-hidden" [value]="parameter.key">
             <ngm-display-behaviour [option]="parameter" />
           </mat-radio-button>
   
-          <button mat-icon-button displayDensity="cosy" (click)="openEditParameter(parameter.value.name)">
+          <button mat-icon-button class="shrink-0" displayDensity="cosy" (click)="openEditParameter(parameter.value.name)">
             <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
           </button>
         </div>
