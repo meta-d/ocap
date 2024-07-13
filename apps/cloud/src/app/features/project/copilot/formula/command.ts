@@ -66,7 +66,7 @@ export function injectCreateFormulaGraph() {
       messageModifier: async (state) => {
         const system = await SystemMessagePromptTemplate.fromTemplate(
           CreateFormulaSystemPrompt + `\n\n${await systemContext()}\n\n` + `{context}`
-        ).format(state as any)
+        ).format(state)
         return [new SystemMessage(system), ...state.messages]
       }
     })
