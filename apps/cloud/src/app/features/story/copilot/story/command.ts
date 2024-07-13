@@ -1,7 +1,6 @@
 import { inject } from '@angular/core'
 import { CopilotAgentType } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
-import { NxStoryService } from '@metad/story/core'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { injectCreateStoryGraph } from './graph'
@@ -9,7 +8,6 @@ import { injectCreateStoryGraph } from './graph'
 export function injectStoryCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
-  const storyService = inject(NxStoryService)
 
   const createGraph = injectCreateStoryGraph()
 
@@ -23,7 +21,7 @@ export function injectStoryCommand() {
       type: CopilotAgentType.Graph,
       conversation: true,
       interruptBefore: [
-        'tools'
+        'calculation'
       ]
     },
     createGraph

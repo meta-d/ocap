@@ -29,6 +29,7 @@ import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from
 import { NgmCopilotService } from './copilot.service'
 import { injectCreateChatAgent } from './agent-free'
 
+export const AgentRecursionLimit = 20
 
 let uniqueId = 0
 
@@ -611,18 +612,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
     let graph = conversation.graph
     if (!graph) {
       try {
-        const options = { checkpointer: this.checkpointSaver, interruptBefore: null, interruptAfter: null }
-        if (interactive ?? this.aiOptions.interactive) {
-          options.interruptBefore = command.agent.interruptBefore
-          options.interruptAfter = command.agent.interruptAfter
-        }
-
-        const _graph = await command.createGraph({ ...options, llm: this.llm() })
-        if (_graph instanceof StateGraph) {
-          graph = _graph.compile(options)
-        } else {
-          graph = _graph
-        }
+        graph = await this.createCommandGraph(command, interactive)
 
         this.updateLastConversation((conversation) => ({
           ...conversation,
@@ -666,7 +656,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           configurable: {
             thread_id: this.currentConversationId()
           },
-          recursionLimit: 20
+          recursionLimit: AgentRecursionLimit
         }
       )
 
@@ -687,7 +677,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
                 }
               ]) => {
                 content += content ? '\n' : ''
-                if (value.messages) {
+                if (value.messages && value.messages[0]?.content) {
                   if (verbose) {
                     content += `<b>${key}</b>\n`
                   }
@@ -791,6 +781,28 @@ export class NgmCopilotEngineService implements CopilotEngine {
       ...conversation,
       status: 'completed'
     }))
+  }
+
+  /**
+   * Create graph for command
+   * 
+   * @param command 
+   * @param interactive 
+   * @returns CompiledStateGraph
+   */
+  private async createCommandGraph(command: CopilotCommand, interactive?: boolean) {
+    const options = { checkpointer: this.checkpointSaver, interruptBefore: null, interruptAfter: null }
+    if (interactive ?? this.aiOptions.interactive) {
+      options.interruptBefore = command.agent.interruptBefore
+      options.interruptAfter = command.agent.interruptAfter
+    }
+
+    const _graph = await command.createGraph({ ...options, llm: this.llm() })
+    if (_graph instanceof StateGraph) {
+      return _graph.compile(options)
+    } else {
+      return _graph
+    }
   }
 
   private async upsertUserInputMessage(command: CopilotCommand, content: string, context: CopilotContext) {

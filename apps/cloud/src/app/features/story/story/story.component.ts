@@ -18,11 +18,11 @@ import {
 } from '@angular/core'
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
-import { IsDirty, markdownEntityType, markdownModelCube, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
+import { IsDirty, markdownModelCube, NgMapPipeModule, NxCoreService, ReversePipe } from '@metad/core'
 import { NgmDrawerTriggerComponent, ResizerModule } from '@metad/ocap-angular/common'
 import { NgmOcapCoreService, OcapCoreModule } from '@metad/ocap-angular/core'
 import { WasmAgentService } from '@metad/ocap-angular/wasm-agent'
-import { AgentType, CalculationProperty, isEqual } from '@metad/ocap-core'
+import { AgentType, CalculationProperty, DataSettings, isEqual } from '@metad/ocap-core'
 import { provideStoryDesigner, StoryExplorerModule } from '@metad/story'
 import {
   EmulatedDevice,
@@ -56,7 +56,7 @@ import { StoryToolbarService } from '../toolbar/toolbar.service'
 import { ResponsiveBreakpoints, ResponsiveBreakpointType } from '../types'
 import { NgmCalculationEditorComponent } from '@metad/ocap-angular/entity'
 import { MatDialog } from '@angular/material/dialog'
-import { injectStoryCommand } from '../copilot'
+import { injectCalculationGraphCommand, injectStoryCommand } from '../copilot'
 
 @Component({
   standalone: true,
@@ -106,7 +106,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   readonly storyService = inject(NxStoryService)
   readonly #store = inject(Store)
   private route = inject(ActivatedRoute)
-  private _router = inject(Router)
+  readonly #router = inject(Router)
   private logger = inject(NGXLogger)
   readonly copilotContext = inject(NgmCopilotContextToken)
   readonly coreService = inject(NgmOcapCoreService)
@@ -165,6 +165,9 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   readonly showExplorer = signal(false)
   readonly explore = signal(null)
 
+  // Default
+  readonly dataSettings = signal<DataSettings & { modelId: string }>(null)
+
   /**
   |--------------------------------------------------------------------------
   | Copilot
@@ -175,6 +178,14 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   #widgetCommand = injectStoryWidgetCommand(this.storyService)
   #widgetStyleCommand = injectWidgetStyleCommand(this.storyService)
   #storyCommand = injectStoryCommand()
+  readonly calculatioCommand = injectCalculationGraphCommand(
+    this.dataSettings,
+    (dataSettings: DataSettings, key: string) => {
+      this.logger.debug(`Created calculation '${key}' for dataSource '${dataSettings.dataSource}' entity '${dataSettings.entitySet}'`)
+      // this.activeEntity(dataSettings.dataSource, dataSettings.entitySet)
+      this.#router.navigate(['calculations', encodeURIComponent(dataSettings.entitySet), key], { relativeTo: this.route })
+    }
+  )
 
   /**
   |--------------------------------------------------------------------------
@@ -307,7 +318,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
   }
 
   openDataExploration(id: string) {
-    this._router.navigate([`/models/${id}`])
+    this.#router.navigate([`/models/${id}`])
   }
 
   toggleToolbarPin() {
@@ -380,7 +391,7 @@ export class StoryDesignerComponent extends TranslationBaseComponent implements 
 
   closeExplorer(event) {
     this.showExplorer.set(false)
-    this._router.navigate([], {
+    this.#router.navigate([], {
       relativeTo: this.route,
       queryParams: { explore: null, widgetKey: null },
       queryParamsHandling: 'merge' // remove to replace all query params by provided
