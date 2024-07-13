@@ -47,7 +47,7 @@ export interface InputControlOptions extends ControlOptions, MeasureControlOptio
   highlighted?: boolean
 }
 
-export function determineControlType(propertyName: Dimension, entityType: EntityType) {
+export function determineControlType(propertyName: Dimension, entityType: EntityType, controlType?: FilterControlType) {
   const property = getEntityProperty(entityType, propertyName)
   if (!property) {
     return null
@@ -58,11 +58,11 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
     return FilterControlType.MeasureControl
   }
 
+  // 2. User Input Parameter
   if (isParameterProperty(property)) {
     return FilterControlType.Parameter
   }
 
-  // // 2. User Input Parameter
   // if (isParameterControlProperty(property)) {
   //   this.inputControl.setValue(property.value)
   //   return FilterControlType.Input
@@ -70,7 +70,7 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
 
   // 3. Date picker
   if (property?.semantics?.semantic === Semantics.Calendar) {
-    return FilterControlType.Datepicker
+    return controlType ?? FilterControlType.Datepicker
   }
 
   if (isDimension(propertyName)) {
@@ -78,7 +78,7 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
     const levelProperty = hierarchy?.levels?.find((level) => level.name === propertyName.level)
 
     if (levelProperty?.semantics?.semantic && Semantics[levelProperty.semantics.semantic].startsWith('Calendar')) {
-      return FilterControlType.Datepicker
+      return controlType ?? FilterControlType.Datepicker
     }
   }
 
@@ -94,10 +94,10 @@ export function determineControlType(propertyName: Dimension, entityType: Entity
   // }
 
   if (property?.hierarchies?.length > 0) {
-    return FilterControlType.TreeSelect
+    return controlType ?? FilterControlType.TreeSelect
   }
 
-  return FilterControlType.Select
+  return controlType ?? FilterControlType.Select
 }
 
 // ParamterType

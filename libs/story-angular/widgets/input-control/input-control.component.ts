@@ -37,7 +37,7 @@ import {
 } from '@metad/ocap-core'
 import { FilterControlType, NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
-import { BehaviorSubject, combineLatest, firstValueFrom, timer } from 'rxjs'
+import { combineLatest, firstValueFrom, timer } from 'rxjs'
 import {
   combineLatestWith,
   distinctUntilChanged,
@@ -167,8 +167,9 @@ export class NxInputControlComponent extends AbstractStoryWidget<
     }
 
     if (this.dimension()) {
-      return determineControlType(this.dimension(), this.entityType())
+      return determineControlType(this.dimension(), this.entityType(), this.controlType())
     }
+    
     return null
   })
 

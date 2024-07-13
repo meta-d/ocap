@@ -50,7 +50,7 @@ export const ZhHans = {
       Reset: '重置',
       Public: '公开',
       ReUpload: '重新上传',
-      Widget: '部件',
+      Widget: '微件',
       ConfirmDeleteInfo: '在实际保存之前不会从服务器上删除',
       Back: '返回',
       Confirm: '确认'
@@ -110,7 +110,7 @@ export const ZhHans = {
       SaveFailed: '故事页面保存失败',
       SaveSuccess: '故事页面保存成功',
       LookingEmpty: '这个故事点看起来很空洞',
-      LookingEmptyAddWidget: '添加一个故事部件开始吧'
+      LookingEmptyAddWidget: '添加一个故事微件开始吧'
     },
     StoryDetails: {
       StoryName: '故事名称',
@@ -195,7 +195,7 @@ export const ZhHans = {
       Preview: '预览',
       Scale: '缩放',
       Scale_Unset: '重置',
-      Widgets: '部件',
+      Widgets: '微件',
       Charts: '图形',
       NewPage: '新页面',
       GlobalStyles: '全局样式',
@@ -280,10 +280,10 @@ export const ZhHans = {
       }
     },
     Widget: {
-      UpdateFailed: '部件更新失败',
-      SaveSuccess: '部件保存成功',
-      PinSuccess: '部件固定成功',
-      PinFailed: '部件固定失败',
+      UpdateFailed: '微件更新失败',
+      SaveSuccess: '微件保存成功',
+      PinSuccess: '微件固定成功',
+      PinFailed: '微件固定失败',
       MoveTo: '移动到',
       Explain: '解释',
       AnalyticalCard: '图形',
@@ -314,7 +314,7 @@ export const ZhHans = {
       AllWidgetsOnPage: '页面中所有组件',
       OnlySelectedWidgets: '仅选中组件',
       SelectWidgets: '选择组件',
-      ConnectNewly: '自动关联新建部件'
+      ConnectNewly: '自动关联新建微件'
     },
     GridOptions: {
       TITLE: '网格布局',

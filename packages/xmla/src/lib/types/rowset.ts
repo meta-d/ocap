@@ -275,6 +275,8 @@ export interface Variable {
   VARIABLE_CAPTION: string
   REFERENCE_DIMENSION: string
   REFERENCE_HIERARCHY: string
+  DEFAULT_LOW: string
+  DEFAULT_HIGH: string
 }
 
 /**

@@ -42,7 +42,8 @@ import {
   Semantics,
   serializeArgs,
   serializeUniqueName,
-  Syntax
+  Syntax,
+  VariableProperty
 } from '@metad/ocap-core'
 import { cloneDeep, groupBy, isArray, isEmpty, isNil, merge, mergeWith, sortBy } from 'lodash'
 import { combineLatest, firstValueFrom, from, Observable, of, throwError } from 'rxjs'
@@ -708,10 +709,12 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           ...convertMDXProperty(variable),
           name: vName,
           caption: vCaption,
+          defaultLow: convertHierarchyMemberValue(variable.REFERENCE_HIERARCHY, variable.DEFAULT_LOW),
+          defaultHigh: convertHierarchyMemberValue(variable.REFERENCE_HIERARCHY, variable.DEFAULT_HIGH),
           dimension: variable.REFERENCE_DIMENSION,
           hierarchy: variable.REFERENCE_HIERARCHY,
           role: AggregationRole.variable
-        } as ParameterProperty
+        } as VariableProperty
       })
 
       if (isEmpty(entityProperties)) {

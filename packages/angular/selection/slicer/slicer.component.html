@@ -28,7 +28,10 @@
   <mat-chip-option *ngIf="more() > 0">
     +{{ more() }}
   </mat-chip-option>
-  <mat-chip-option *ngIf="advancedSlicer$ | async as advancedSlicer" [matTooltip]="advancedSlicer">
-    <div class="whitespace-normal">{{ advancedSlicer }}</div>
-  </mat-chip-option>
+  
+  @if (advancedSlicer$ | async; as advancedSlicer) {
+    <mat-chip-option [matTooltip]="advancedSlicer">
+      <div class="whitespace-normal">{{ advancedSlicer }}</div>
+    </mat-chip-option>
+  }
 </mat-chip-listbox>

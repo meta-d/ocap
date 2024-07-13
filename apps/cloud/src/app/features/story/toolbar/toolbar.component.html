@@ -54,8 +54,11 @@
         <button mat-icon-button [matTooltip]="_fullscreen ? ('Story.Toolbar.ExitFullscreen' | translate: {Default: 'Exit Fullscreen'}) : 'Story.Toolbar.Fullscreen' | translate: {Default: 'Fullscreen'}"
             matTooltipPosition="after"
             (click)="_fullscreen=!_fullscreen;fullscreen.emit(_fullscreen)">
-            <mat-icon *ngIf="!_fullscreen" fontSet="material-icons-round">fullscreen</mat-icon>
-            <mat-icon *ngIf="_fullscreen" fontSet="material-icons-round">fullscreen_exit</mat-icon>
+          @if (_fullscreen) {
+            <mat-icon fontSet="material-icons-round">fullscreen_exit</mat-icon>
+          } @else {
+            <mat-icon fontSet="material-icons-round">fullscreen</mat-icon>
+          }
         </button>
 
         <div class="py-2 text-center">
@@ -110,8 +113,9 @@
         </button>
         <button mat-icon-button [color]="showDetails()==='widgets'?'accent':''"
             matTooltipPosition="after"
-            [matTooltip]="showDetails()==='widgets'?('Story.Toolbar.More' | translate: {Default: 'More'}):
-                ('Story.Toolbar.Less' | translate: {Default: 'Less'})"
+            [matTooltip]="showDetails()==='widgets' ?
+                ('Story.Toolbar.Less' | translate: {Default: 'Less'}) :
+                ('Story.Toolbar.More' | translate: {Default: 'More'})"
             (click)="toggleWidgets()">
             <mat-icon *ngIf="showDetails()!=='widgets'&&!onRight||showDetails()==='widgets'&&onRight">keyboard_arrow_right</mat-icon>
             <mat-icon *ngIf="showDetails()==='widgets'&&!onRight||showDetails()!=='widgets'&&onRight">keyboard_arrow_left</mat-icon>

@@ -16,7 +16,7 @@
         (click)="onSelectedIndex(pageTabs.selectedIndex)"
     >
       @for (point of displayPoints(); track point.key; let i = $index; let isLast = $last; let isFirst = $first;) {
-        <mat-tab>
+        <mat-tab bodyClass="ngm-story__point-tab">
             <ng-template matTabLabel>
                 <div class="relative flex items-center">
                   @if (story_point.dirtySignal()) {
