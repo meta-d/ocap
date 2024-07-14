@@ -197,7 +197,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
   }
 
   selectEntitySets(refresh?: boolean): Observable<EntitySet[]> {
-    const catalogName = this.options.catalog
+    const catalogName = this.options.catalog || ''
     const language = this.options.settings?.language || ''
 
     if (!this._catalogCubes[catalogName] || refresh) {
@@ -327,7 +327,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
   async getMDCubesWithCache(modelName: string, CATALOG_NAME: string, language = ''): Promise<EntitySet[]> {
     const cacheOptions = {
-      key: serializeArgs('xmla-catalog:', modelName, CATALOG_NAME, language),
+      key: serializeArgs('xmla-catalog:', modelName, CATALOG_NAME || '[CATALOG_NAME]', language),
       maxAge: 1000 * 60 * 60 * 24 * 30,
       level: 1,
       version: '1'
@@ -415,7 +415,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
   }
 
   async #discoverEntitySet(cube: string, language = ''): Promise<EntitySet> {
-    const CATALOG_NAME = this.options.catalog
+    const CATALOG_NAME = this.options.catalog || ''
     const CUBE_NAME = cube
 
     const headers: HttpHeaders = {}
@@ -755,7 +755,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       throw new Error(`Must specify a hierarchy or dimension for cube '${CUBE_NAME}' when selecting members`)
     }
 
-    const CATALOG_NAME = this.options.catalog
+    const CATALOG_NAME = this.options.catalog || ''
     // 如果有 Level 则要区分不同的 Level 下的成员缓存
     const uniqueName = `${CUBE_NAME}.${dimension.level || HIERARCHY_UNIQUE_NAME}`
     if (!this._members[uniqueName]) {
@@ -827,7 +827,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
       key: serializeArgs(
         'xmla-members:',
         modelName,
-        CATALOG_NAME,
+        CATALOG_NAME || '[CATALOG_NAME]',
         CUBE_NAME,
         DIMENSION,
         HIERARCHY_UNIQUE_NAME,
