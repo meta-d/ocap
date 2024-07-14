@@ -1,7 +1,7 @@
 import { Annotation, IMember, Measure, PrimitiveType, PropertyName, Syntax } from '../types'
 import { CalculatedMember, ParameterControlEnum } from './calculated'
 import { Indicator } from './indicator'
-import { EntityProperty, PropertyAttributes } from './property'
+import { AggregationRole, EntityProperty, PropertyAttributes } from './property'
 
 /**
  * Base type for all entity types
@@ -301,9 +301,8 @@ export interface ParameterProperty extends EntityProperty {
 
   // 候选成员
   availableMembers?: Array<IMember>
-
-  // sap variables
-  referenceDimension?: string
+  
+  hierarchy?: string
 }
 
 export enum VariableSelectionType {
@@ -368,3 +367,6 @@ export interface Closure {
   childColumn: string
   table: Table
 }
+
+// type Guards
+export const isVariableProperty = (toBe): toBe is VariableProperty => toBe.role === AggregationRole.variable

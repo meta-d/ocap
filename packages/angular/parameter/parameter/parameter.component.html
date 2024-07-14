@@ -55,7 +55,8 @@
   }
 }
 
-@if (parameter?.referenceDimension) {
+<!-- todo dimension$ change to referenceDimension -->
+@if (variableProperty()?.referenceDimension) {
   <ngm-member-tree class="flex-1"
     [dataSettings]="dataSettings"
     [dimension]="dimension$ | async"

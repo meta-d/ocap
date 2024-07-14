@@ -1,8 +1,11 @@
 import { CollectionViewer, DataSource, SelectionChange } from '@angular/cdk/collections'
+import { FormControl } from '@angular/forms'
 import { FlatTreeControl } from '@angular/cdk/tree'
 import { NgmDSCoreService } from '@metad/ocap-angular/core'
 import {
+  AggregationRole,
   C_MEASURES,
+  Dimension,
   DimensionMemberRecursiveHierarchy,
   EntityProperty,
   EntitySemantics,
@@ -19,7 +22,8 @@ import {
   PropertyHierarchy,
   PropertyLevel,
   serializeUniqueName,
-  TreeNodeInterface
+  TreeNodeInterface,
+  VariableProperty
 } from '@metad/ocap-core'
 import { TranslateService } from '@ngx-translate/core'
 import { flatMap, isEmpty } from 'lodash-es'
@@ -41,7 +45,7 @@ import {
   tap
 } from 'rxjs'
 import { EntityCapacity, EntitySchemaType } from './types'
-import { FormControl } from '@angular/forms'
+
 
 
 export interface EntitySchemaNode extends EntityProperty {
@@ -219,105 +223,129 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
   }
 
   getChildren(node: EntitySchemaFlatNode): Observable<any[]> {
-    if (node.item.type === EntitySchemaType.Entity) {
-      if (this.entityType?.name === node.item.name) {
-        // Entity Type has loaded
-        return of(this.getEntityTypeChildren(this.entityType))
-      }
-
-      this.entity$.next(node.item.name)
-      return this.dataSource$.pipe(
-        switchMap((dataSource) => dataSource.selectEntityType(node.item.name)),
-        first(),
-        tap((entityType) => {
-          if (isEntityType(entityType)) {
-            this.entityType = entityType
-            node.item.caption = this.entityType?.caption
-          } else {
-            throw entityType
-          }
-        }),
-        filter(isEntityType),
-        map((value) => this.getEntityTypeChildren(value))
-      )
-    } else if (node.item.type === EntitySchemaType.Dimension) {
-      const item = node.item as PropertyDimension
-      const hierarchies = item.hierarchies
-      
-      if (!isEmpty(hierarchies)) {
-        // Is Dimension
-        return of(hierarchies.map((item) => ({
-          ...item,
-          type: EntitySchemaType.Hierarchy
-        })))
-      } else if (!isEmpty(item.members)) {
-        // is Measures
-        return of(item.members)
-      } else {
-        return this.entityService$.pipe(
-          switchMap((entityService) => entityService.selectMembers({ dimension: node.item.name })),
+    switch(node.item.type) {
+      case EntitySchemaType.Entity: {
+        if (this.entityType?.name === node.item.name) {
+          // Entity Type has loaded
+          return of(this.getEntityTypeChildren(this.entityType))
+        }
+  
+        this.entity$.next(node.item.name)
+        return this.dataSource$.pipe(
+          switchMap((dataSource) => dataSource.selectEntityType(node.item.name)),
           first(),
-          map((members) => {
-            return members.map((item) => ({
-              ...item,
-              type: EntitySchemaType.Member,
-              name: item.memberKey,
-              caption: item.memberCaption
-            }))
-          })
+          tap((entityType) => {
+            if (isEntityType(entityType)) {
+              this.entityType = entityType
+              node.item.caption = this.entityType?.caption
+            } else {
+              throw entityType
+            }
+          }),
+          filter(isEntityType),
+          map((value) => this.getEntityTypeChildren(value))
         )
       }
-    } else if (node.item.type === EntitySchemaType.Hierarchy) {
-      const levels = (node.item as PropertyHierarchy).levels as Omit<PropertyLevel, 'type'>[] as EntitySchemaNode[]
-      if (!isEmpty(levels)) {
-        const properties = flatMap((node.item as PropertyHierarchy).levels, (level) => level.properties)
-          .map((item) => ({...item, type: EntitySchemaType.Field}))
-
-        const propertiesCaption = this.getTranslation('Ngm.EntitySchema.Properties', {Default: 'Properties'})
-        return of([...levels.map((item) => ({
+      case EntitySchemaType.Dimension: {
+        const item = node.item as PropertyDimension
+        const hierarchies = item.hierarchies
+        
+        if (!isEmpty(hierarchies)) {
+          // Is Dimension
+          return of(hierarchies.map((item) => ({
             ...item,
-            type: EntitySchemaType.Level
-          })),
-          ...(properties.length ? [{
-            name: '',
-            caption: propertiesCaption,
-            members: properties,
-            type: EntitySchemaType.Properties
-          }] : [])
-        ])
+            type: EntitySchemaType.Hierarchy
+          })))
+        } else if (!isEmpty(item.members)) {
+          // is Measures
+          return of(item.members)
+        } else {
+          return this.entityService$.pipe(
+            switchMap((entityService) => entityService.selectMembers({ dimension: node.item.name })),
+            first(),
+            map((members) => {
+              return members.map((item) => ({
+                ...item,
+                type: EntitySchemaType.Member,
+                name: item.memberKey,
+                caption: item.memberCaption
+              }))
+            })
+          )
+        }
+        break
       }
-    } else if (node.item.type === EntitySchemaType.Level) {
-      const item = node.item as any
-      return this.entityService$.pipe(
-        switchMap((entityService) => entityService.selectMembers({
+      case EntitySchemaType.Hierarchy: {
+        const levels = (node.item as PropertyHierarchy).levels as Omit<PropertyLevel, 'type'>[] as EntitySchemaNode[]
+        if (!isEmpty(levels)) {
+          const properties = flatMap((node.item as PropertyHierarchy).levels, (level) => level.properties)
+            .map((item) => ({...item, type: EntitySchemaType.Field}))
+  
+          const propertiesCaption = this.getTranslation('Ngm.EntitySchema.Properties', {Default: 'Properties'})
+          return of([...levels.map((item) => ({
+              ...item,
+              type: EntitySchemaType.Level
+            })),
+            ...(properties.length ? [{
+              name: '',
+              caption: propertiesCaption,
+              members: properties,
+              type: EntitySchemaType.Properties
+            }] : [])
+          ])
+        }
+        break
+      }
+      case EntitySchemaType.Level: {
+        const item = node.item as any
+        return this.selectDimensionMembers({
+          dimension: item.dimension,
+          hierarchy: item.hierarchy,
+        }, item.levelNumber)
+      }
+      case EntitySchemaType.Member: {
+        const members = (node.item as unknown as TreeNodeInterface<IDimensionMember>).children
+        return of(members?.map((item) => ({
+          ...item,
+          type: EntitySchemaType.Member,
+          name: item.raw.memberUniqueName
+        })) ?? [])
+      }
+      case EntitySchemaType.Parameter: {
+        if (node.item.role === AggregationRole.variable) {
+          const item = node.item as VariableProperty
+          return this.selectDimensionMembers({
             dimension: item.dimension,
             hierarchy: item.hierarchy,
           })
-        ),
-        first(),
-        map((members) => {
-          const _members = hierarchize<IDimensionMember>(members, DimensionMemberRecursiveHierarchy, {
-            startLevel: item.levelNumber
-          })
-          return _members.map((item) => ({
-            ...item,
-            type: EntitySchemaType.Member,
-            name: item.raw.memberUniqueName
-          }))
-        })
-      )
-    } else if (node.item.type === EntitySchemaType.Member) {
-      const members = (node.item as unknown as TreeNodeInterface<IDimensionMember>).children
-      return of(members?.map((item) => ({
-        ...item,
-        type: EntitySchemaType.Member,
-        name: item.raw.memberUniqueName
-      })) ?? [])
-    } else if (node.item.members) {
-      return of(node.item.members)
+        }
+        break
+      }
+      default: {
+        if (node.item.members) {
+          return of(node.item.members)
+        }
+      }
     }
 
     return of([])
+  }
+
+  selectDimensionMembers(dimension: Dimension, startLevel = 0) {
+    return this.entityService$.pipe(
+      switchMap((entityService) => entityService.selectMembers(dimension)),
+      first(),
+      map((members) => {
+        const _members = hierarchize<IDimensionMember>(members, DimensionMemberRecursiveHierarchy, {
+          startLevel
+        })
+        return _members.map((item) => ({
+          ...item,
+          type: EntitySchemaType.Member,
+          name: item.raw.memberUniqueName
+        }))
+      })
+    )
   }
 
   getEntityTypeChildren(entityType: EntityType) {
