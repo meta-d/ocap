@@ -339,7 +339,7 @@ export function SelectionVariantExpansion(BUILDER, dataSettings$: Observable<Dat
           props: {
             label: BUILDER?.SELECT_OPTIONS ?? 'Select Options',
             dataSettings: dataSettings$,
-            capacities: [SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer]
+            capacities: [SlicersCapacity.CombinationSlicer, SlicersCapacity.AdvancedSlicer, SlicersCapacity.Variable]
           }
         }
       ]

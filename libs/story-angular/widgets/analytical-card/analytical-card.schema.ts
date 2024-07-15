@@ -128,7 +128,7 @@ export class AnalyticalCardSchemaService extends DataSettingsSchemaService<Analy
             type: 'input',
             props: {
               label: BUILDER?.Title ?? 'Title',
-              required: true
+              // required: true
             }
           }
         ]
