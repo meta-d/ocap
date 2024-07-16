@@ -7,22 +7,26 @@ import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { injectCreateCalculatedMeasure, injectEditFormulaAgent } from './graph'
 
+export const COPILOT_COMMAND_FORMULA_NAME = 'formula'
+export const COPILOT_COMMAND_CALCULATED_NAME = 'calculated'
+
 export function injectCalculatedCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
 
+  const fewShotPrompt = injectAgentFewShotTemplate(COPILOT_COMMAND_FORMULA_NAME, { k: 1, vectorStore: null })
   const createCalculatedMeasure = injectCreateCalculatedMeasure()
 
-  const commandName = 'calculated'
-  return injectCopilotCommand(commandName, {
+  return injectCopilotCommand(COPILOT_COMMAND_CALCULATED_NAME, {
     alias: 'calc',
     description: translate.instant('PAC.MODEL.Copilot.CommandCalculatedDesc', {
-      Default: 'Descripe business logic of the calculated measure'
+      Default: 'Descripe business logic of the calculated member'
     }),
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true
     },
+    fewShotPrompt,
     createGraph: createCalculatedMeasure
   })
 }
@@ -33,9 +37,8 @@ export function injectFormulaCommand(calculatedMember: Signal<CalculatedMember>)
 
   const createEditFormulaAgent = injectEditFormulaAgent(calculatedMember)
 
-  const commandName = 'formula'
-  const fewShotPrompt = injectAgentFewShotTemplate(commandName, { k: 1, vectorStore: null })
-  return injectCopilotCommand(commandName, {
+  const fewShotPrompt = injectAgentFewShotTemplate(COPILOT_COMMAND_FORMULA_NAME, { k: 1, vectorStore: null })
+  return injectCopilotCommand(COPILOT_COMMAND_FORMULA_NAME, {
     alias: 'f',
     description: translate.instant('PAC.MODEL.Copilot.CommandFormulaDesc', {
       Default: 'Descripe business logic of the formula of calculated measure'
