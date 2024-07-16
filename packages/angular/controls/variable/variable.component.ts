@@ -92,7 +92,7 @@ export class NgmVariableComponent implements ControlValueAccessor {
       if (variable && (this.slicer && !key || !!key)) {
         const member: IMember = {key}
         if (key) {
-          member.caption = this.selectOptions().find((item) => item.key === key)?.caption
+          member.caption = this.selectOptions()?.find((item) => item.key === key)?.caption
         }
         this._onChange?.(key
             ? {
