@@ -36,6 +36,7 @@ import {
   isPropertyMeasure,
   isPropertyDimension,
   PropertyMeasure,
+  isVariableProperty,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
@@ -358,8 +359,9 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     return null
   })
   readonly isParameter = computed(() => isParameterProperty(this.property()))
+  readonly isVariable = computed(() => isVariableProperty(this.property()))
   readonly isDimension = computed(() => this.property()?.role === AggregationRole.dimension)
-  readonly showDisplayAs = computed(() => this.isDimension() || this.isParameter() && (<ParameterProperty>this.property()).paramType === ParameterControlEnum.Dimensions)
+  readonly showDisplayAs = computed(() => this.isDimension() || this.isVariable() || this.isParameter() && (<ParameterProperty>this.property()).paramType === ParameterControlEnum.Dimensions)
 
   readonly indicators$ = this.measures$.pipe(map(calculations => calculations?.filter(isIndicatorMeasureProperty) || []))
 

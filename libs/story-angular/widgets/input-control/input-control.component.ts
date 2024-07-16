@@ -26,6 +26,7 @@ import {
   PropertyMeasure,
   VariableProperty,
   VariableSelectionType,
+  displayByBehaviour,
   getEntityDimensions,
   getEntityMeasures,
   getEntityProperty,
@@ -207,14 +208,14 @@ export class NxInputControlComponent extends AbstractStoryWidget<
   )
   public readonly _dataSettings = toSignal(this.dataSettings$)
   public members = computed(() => this._slicer()?.members ?? [])
-
+  readonly displayBehaviour = computed(() => this.dimension()?.displayBehaviour)
   public readonly displayMembers = computed(() => {
     const members = [...this.members(), ...(<IMember[]>this.parameter()?.members ?? [])]
     const maxTagCount = this.maxTagCount() || 1
 
     let text = members
       .slice(0, maxTagCount)
-      .map((m) => m.caption || m.key || m.value)
+      .map((m) => displayByBehaviour(m, this.displayBehaviour()))
       .join(',')
     if (members.length > maxTagCount) {
       text = text + `+${members.length - maxTagCount}`

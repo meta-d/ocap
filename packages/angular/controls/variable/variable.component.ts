@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, effect, forwardRef, inject, input, model } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatIconModule } from '@angular/material/icon'
 import { NgmCommonModule } from '@metad/ocap-angular/common'
 import { OcapCoreModule } from '@metad/ocap-angular/core'
-import { DataSettings, ISlicer, VariableProperty } from '@metad/ocap-core'
+import { DataSettings, IMember, ISlicer, VariableProperty } from '@metad/ocap-core'
 import { TranslateModule } from '@ngx-translate/core'
 import { NgmSmartFilterService } from '../smart-filter.service'
 
@@ -46,8 +46,6 @@ export class NgmVariableComponent implements ControlValueAccessor {
   readonly dataSettings = input<DataSettings>(null)
   readonly variable = input<VariableProperty>()
 
-  readonly selectOptions$ = this.smartFilterService.selectOptions$
-
   readonly value = model<string>()
 
   private slicer: ISlicer = null
@@ -55,6 +53,8 @@ export class NgmVariableComponent implements ControlValueAccessor {
   private _onChange: any
   private onTouched: any
   readonly disabled = model<boolean>(false)
+
+  readonly selectOptions = toSignal(this.smartFilterService.selectOptions$)
 
   private refreshSub = this.smartFilterService
     .onAfterServiceInit()
@@ -86,22 +86,22 @@ export class NgmVariableComponent implements ControlValueAccessor {
     )
 
     effect(() => {
-      const value = this.value()
+      const key = this.value()
       const variable = this.variable()
       // 初始化完成后才可以发出空值，否则只能在有值情况下发出
-      if (variable && (this.slicer && !value || !!value)) {
-        this._onChange?.(value
+      if (variable && (this.slicer && !key || !!key)) {
+        const member: IMember = {key}
+        if (key) {
+          member.caption = this.selectOptions().find((item) => item.key === key)?.caption
+        }
+        this._onChange?.(key
             ? {
                 ...this.slicer,
                 dimension: {
                   dimension: variable.referenceDimension,
                   hierarchy: variable.referenceHierarchy
                 },
-                members: [
-                  {
-                    key: value
-                  }
-                ]
+                members: [member]
               }
             : null
         )
