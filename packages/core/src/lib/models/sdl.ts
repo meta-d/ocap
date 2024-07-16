@@ -369,4 +369,4 @@ export interface Closure {
 }
 
 // type Guards
-export const isVariableProperty = (toBe): toBe is VariableProperty => toBe.role === AggregationRole.variable
+export const isVariableProperty = (toBe): toBe is VariableProperty => toBe?.role === AggregationRole.variable
