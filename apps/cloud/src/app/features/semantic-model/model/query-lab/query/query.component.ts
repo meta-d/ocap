@@ -21,7 +21,7 @@ import { calcEntityTypePrompt, convertQueryResultColumns, getErrorMessage } from
 import { CopilotChatMessageRoleEnum, CopilotEngine, nanoid } from '@metad/copilot'
 import { NgmCopilotService, provideCopilotDropAction } from '@metad/copilot-angular'
 import { EntityCapacity, EntitySchemaNode, EntitySchemaType } from '@metad/ocap-angular/entity'
-import { Cube, EntityType, nonNullable, PropertyAttributes, uniqBy, VariableProperty } from '@metad/ocap-core'
+import { C_MEASURES, Cube, EntityType, nonNullable, PropertyAttributes, uniqBy, VariableProperty, wrapBrackets } from '@metad/ocap-core'
 import { serializeName } from '@metad/ocap-sql'
 import { ModelQuery, Store } from 'apps/cloud/src/app/@core'
 import { TranslationBaseComponent } from 'apps/cloud/src/app/@shared'
@@ -587,7 +587,8 @@ ${calcEntityTypePrompt(entityType)}
         text = serializeVariable(data)
         break
       case EntitySchemaType.Parameters:
-        text = data.members?.map(serializeVariable).join('\n') ?? ''
+        // 暂时仅支持 SAP Variables
+        text = `SAP VARIABLES\n` + (data.members?.map(serializeVariable).join('\n') ?? '')
         break
     }
     
@@ -647,6 +648,9 @@ ${calcEntityTypePrompt(entityType)}
         case EntitySchemaType.Entity:
           return `SELECT {[Measures].Members} ON COLUMNS FROM [${data.name}]`
         case EntitySchemaType.Dimension:
+          if (data.name === wrapBrackets(C_MEASURES)) {
+            return `SELECT {[Measures].Members} ON COLUMNS FROM [${data.entity}]`
+          }
           return `SELECT {[Measures].Members} ON COLUMNS, {${data.name}.Members} ON ROWS FROM [${data.entity}]`
         case EntitySchemaType.Hierarchy:
         case EntitySchemaType.Level:
@@ -873,6 +877,6 @@ export function typeOfObj(obj) {
 }
 
 function serializeVariable(data: VariableProperty) {
-  return `${data.name} INCLUDING ` + (data.defaultLow ? `${data.defaultLow}` : `${data.referenceHierarchy}.[]`)
-            + (data.defaultHigh ? `:${data.defaultHigh}` : '')
+  return `${data.name} INCLUDING ` + (data.defaultLow ? `${data.referenceHierarchy}.${data.defaultLow}` : `${data.referenceHierarchy}.[]`)
+            + (data.defaultHigh ? `:${data.referenceHierarchy}.${data.defaultHigh}` : '')
 }

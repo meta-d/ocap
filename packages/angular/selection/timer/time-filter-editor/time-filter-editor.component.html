@@ -25,14 +25,14 @@
 
   </div>
 
-  <mat-accordion hideToggle formArrayName="ranges">
+  <mat-accordion hideToggle formArrayName="ranges" displayDensity="cosy">
     <mat-expansion-panel *ngFor="let range of ranges.controls; let i = index;" [formGroupName]="i">
       <mat-expansion-panel-header class="pr-0">
         <mat-panel-title>
           {{ 'Ngm.TimeFilter.RANGE' | translate: {Default: "Range"} }} {{i + 1}}: {{range.value.result?.[0]}} - {{range.value.result?.[1]}}
         </mat-panel-title>
         <mat-panel-description class="">
-          <button mat-icon-button ngmAppearance="danger" displayDensity="cosy" (click)="ranges.controls.splice(i, 1)">
+          <button mat-icon-button ngmAppearance="danger" (click)="ranges.controls.splice(i, 1)">
             <mat-icon>close</mat-icon>
           </button>
         </mat-panel-description>

@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   inject
 } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ThemePalette } from '@angular/material/core'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -29,6 +29,7 @@ import {
   ParameterControlEnum,
   ParameterProperty,
   isEqual,
+  isVariableProperty,
   pick
 } from '@metad/ocap-core'
 import {
@@ -174,6 +175,8 @@ export class NgmParameterComponent implements OnChanges {
     distinctUntilChanged(),
     switchMap((availableMembers) => (availableMembers?.length ? of(availableMembers) : this.members$))
   )
+
+  readonly variableProperty = toSignal(this.parameter$.pipe(map((parameter) => isVariableProperty(parameter) ? parameter : null)))
 
   slicer = {}
   parameterValue = null

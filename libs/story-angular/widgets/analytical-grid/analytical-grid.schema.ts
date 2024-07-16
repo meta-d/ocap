@@ -49,7 +49,7 @@ export class AnalyticalGridSchemaService extends DataSettingsSchemaService {
             type: 'input',
             props: {
               label: Widgets?.Common?.Title ?? 'Title',
-              required: true
+              // required: true
             }
           }
         ]
