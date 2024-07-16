@@ -47,7 +47,6 @@ import {
 import { EntityCapacity, EntitySchemaType } from './types'
 
 
-
 export interface EntitySchemaNode extends EntityProperty {
   type?: EntitySchemaType
 }
@@ -385,6 +384,7 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
           name: serializeUniqueName(C_MEASURES),
           caption: measuresCaption,
           type: EntitySchemaType.Dimension,
+          entity: entityType.name,
           members: measures
         }] : measures)
       )
@@ -396,6 +396,7 @@ export class EntitySchemaDataSource implements DataSource<EntitySchemaFlatNode> 
           name: 'parameters',
           caption: parametersCaption,
           type: EntitySchemaType.Parameters,
+          entity: entityType.name,
           members: parameters
         }
       )
