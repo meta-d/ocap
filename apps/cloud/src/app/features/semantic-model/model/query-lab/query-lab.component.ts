@@ -14,6 +14,7 @@ import { ModelEntityService } from '../entity/entity.service'
 import { SemanticModelService } from '../model.service'
 import { ModelQueryState } from '../types'
 import { QueryLabService } from './query-lab.service'
+import { ModelComponent } from '../model.component'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,9 @@ import { QueryLabService } from './query-lab.service'
 export class QueryLabComponent extends TranslationBaseComponent implements IsDirty {
   readonly _dialog = inject(MatDialog)
   readonly queryService = inject(ModelQueryService)
+  readonly #model = inject(ModelComponent)
+
+  readonly modelSideMenuOpened= this.#model.sideMenuOpened
 
   readonly queries = toSignal(this.queryLabService.queries$.pipe(map((queries) => orderBy(queries, ['index']))))
 
@@ -105,5 +109,9 @@ export class QueryLabComponent extends TranslationBaseComponent implements IsDir
     const queries = this.queries()
     moveItemInArray(queries, event.previousIndex, event.currentIndex)
     this.queryLabService.updateOrders(queries.map((query, index) => ({ key: query.key, index })))
+  }
+
+  openSideMenu() {
+    this.modelSideMenuOpened.set(true)
   }
 }

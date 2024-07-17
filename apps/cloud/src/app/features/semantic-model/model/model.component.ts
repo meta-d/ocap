@@ -642,4 +642,8 @@ export class ModelComponent extends TranslationBaseComponent implements IsDirty 
       this.appService.exitFullscreen(5)
     }
   }
+
+  closeSidebar() {
+    this.sideMenuOpened.set(false)
+  }
 }
