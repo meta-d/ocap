@@ -1,4 +1,5 @@
 import { Cube, EntityType, getEntityDimensions, getEntityMeasures, getEntityVariables } from '@metad/ocap-core'
+import { nonBlank } from '../helpers'
 
 /**
  * @deprecated use markdownEntityType
@@ -55,8 +56,15 @@ ${item.levels?.map((item) => {
 `).join('\n')}
 `).join('\n')}
 measures:
-${getEntityMeasures(entityType).map((item) => `  - name: "${item.name}"
-    caption: "${item.caption || ''}"`).join('\n')}
+${getEntityMeasures(entityType).map((item) => 
+  [
+    `  - name: "${item.name}"`,
+    `    caption: ${item.caption || ''}`,
+    item.description ? 
+    `    description: > ${item.description}` : null
+
+  ].filter(nonBlank).join(`\n`)
+).join('\n')}
 ` + (variables.length ? 
 `variables:
 ${variables.map((variable) => 

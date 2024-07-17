@@ -26,7 +26,7 @@ import {
   ChartDimensionRoleType,
   DataSettings,
   FilterOperator,
-  getEntityCalendar,
+  getIndicatorEntityCalendar,
   IFilter,
   isEqual,
   negate,
@@ -119,15 +119,27 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
     if (!entityType) {
       return null
     }
-    const calendar = getEntityCalendar(entityType, indicator.calendar, timeGranularity)
-    if (!calendar) {
+
+    // const calendar = getEntityCalendar(entityType, indicator.calendar, timeGranularity)
+    // if (!calendar) {
+    //   return {
+    //     error: this.translateService.instant(`PAC.INDICATOR.REGISTER.CalendarDimensionNotSet`, {
+    //       Default: 'Calendar dimension not set'
+    //     })
+    //   } as undefined as DataSettings & { error?: string }
+    // }
+    const { dimension, hierarchy, level } = getIndicatorEntityCalendar(
+      indicator,
+      entityType,
+      timeGranularity
+    )
+    if (!level) {
       return {
         error: this.translateService.instant(`PAC.INDICATOR.REGISTER.CalendarDimensionNotSet`, {
           Default: 'Calendar dimension not set'
         })
       } as undefined as DataSettings & { error?: string }
     }
-    const { dimension, hierarchy, level } = calendar
 
     const timeRange = calcRange(new Date(), {
       type: TimeRangeType.Standard,
@@ -145,7 +157,7 @@ export class IndicatorRegisterComponent extends TranslationBaseComponent impleme
       operator: FilterOperator.BT
     } as IFilter
 
-    return dataSettings && calendar
+    return dataSettings && level
       ? ({
           ...dataSettings,
           chartAnnotation: {
