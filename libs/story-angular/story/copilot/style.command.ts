@@ -1,6 +1,6 @@
 import { inject } from '@angular/core'
 import { zodToProperties } from '@metad/core'
-import { injectCopilotCommand, injectMakeCopilotActionable } from '@metad/copilot-angular'
+import { injectCopilotCommand } from '@metad/copilot-angular'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { StoryStyleSchema } from './schema/story.schema'
@@ -20,28 +20,28 @@ export function injectStoryStyleCommand(storyService: NxStoryService) {
       )}`
     },
     actions: [
-      injectMakeCopilotActionable({
-        name: 'modify_story_style',
-        description: '',
-        argumentAnnotations: [
-          {
-            name: 'style',
-            type: 'object',
-            description: 'Story styles',
-            properties: zodToProperties(StoryStyleSchema),
-            required: true
-          }
-        ],
-        implementation: async (style) => {
-          logger.debug(`Function calling 'modify_story_style', params is:`, style)
-          storyService.mergeStoryPreferences({
-            ...style
-          })
-          return `✅ ${storyService.translate('Story.Copilot.InstructionExecutionComplete', {
-            Default: 'Instruction Execution Complete'
-          })}`
-        }
-      })
+      // injectMakeCopilotActionable({
+      //   name: 'modify_story_style',
+      //   description: '',
+      //   argumentAnnotations: [
+      //     {
+      //       name: 'style',
+      //       type: 'object',
+      //       description: 'Story styles',
+      //       properties: zodToProperties(StoryStyleSchema),
+      //       required: true
+      //     }
+      //   ],
+      //   implementation: async (style) => {
+      //     logger.debug(`Function calling 'modify_story_style', params is:`, style)
+      //     storyService.mergeStoryPreferences({
+      //       ...style
+      //     })
+      //     return `✅ ${storyService.translate('Story.Copilot.InstructionExecutionComplete', {
+      //       Default: 'Instruction Execution Complete'
+      //     })}`
+      //   }
+      // })
     ]
   })
 }

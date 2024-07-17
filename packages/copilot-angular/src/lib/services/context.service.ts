@@ -1,12 +1,9 @@
 import { DestroyRef, Injectable, InjectionToken, computed, inject, signal } from '@angular/core'
 import { ChatOpenAI, ChatOpenAICallOptions } from '@langchain/openai'
 import {
-  AnnotatedFunction,
   CopilotCommand,
   CopilotContext,
   CopilotContextParam,
-  entryPointsToChatCompletionFunctions,
-  entryPointsToFunctionCallHandler
 } from '@metad/copilot'
 import { AgentExecutor } from 'langchain/agents'
 import { Observable, firstValueFrom, map } from 'rxjs'
@@ -41,33 +38,33 @@ export class NgmCopilotContextService implements CopilotContext {
     return commands
   })
 
-  // Entry Points
-  /**
-   * @deprecated use tools instead
-   */
-  readonly #entryPoints = signal<Record<string, AnnotatedFunction<any[]>>>({})
+  // // Entry Points
+  // /**
+  //  * @deprecated use tools instead
+  //  */
+  // readonly #entryPoints = signal<Record<string, AnnotatedFunction<any[]>>>({})
 
-  /**
-   * @deprecated use tools instead
-   */
-  readonly getFunctionCallHandler = computed(() => {
-    return entryPointsToFunctionCallHandler(Object.values(this.#entryPoints()))
-  })
-  /**
-   * @deprecated use tools instead
-   */
-  readonly getChatCompletionFunctionDescriptions = computed(() => {
-    return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
-  })
-  /**
-   * @deprecated use tools instead
-   */
-  readonly getGlobalFunctionDescriptions = computed(() => {
-    const ids = Object.keys(this.#entryPoints()).filter(
-      (id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id))
-    )
-    return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
-  })
+  // /**
+  //  * @deprecated use tools instead
+  //  */
+  // readonly getFunctionCallHandler = computed(() => {
+  //   return entryPointsToFunctionCallHandler(Object.values(this.#entryPoints()))
+  // })
+  // /**
+  //  * @deprecated use tools instead
+  //  */
+  // readonly getChatCompletionFunctionDescriptions = computed(() => {
+  //   return entryPointsToChatCompletionFunctions(Object.values(this.#entryPoints()))
+  // })
+  // /**
+  //  * @deprecated use tools instead
+  //  */
+  // readonly getGlobalFunctionDescriptions = computed(() => {
+  //   const ids = Object.keys(this.#entryPoints()).filter(
+  //     (id) => !Object.values(this.#commands()).some((command) => command.actions?.includes(id))
+  //   )
+  //   return entryPointsToChatCompletionFunctions(ids.map((id) => this.#entryPoints()[id]))
+  // })
 
   /**
    * Contexts
@@ -146,24 +143,24 @@ export class NgmCopilotContextService implements CopilotContext {
     })
   }
 
-  setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
-    this.#entryPoints.update((state) => ({
-      ...state,
-      [id]: entryPoint
-    }))
-  }
+  // setEntryPoint(id: string, entryPoint: AnnotatedFunction<any[]>) {
+  //   this.#entryPoints.update((state) => ({
+  //     ...state,
+  //     [id]: entryPoint
+  //   }))
+  // }
 
-  removeEntryPoint(id: string) {
-    this.#entryPoints.update((prevPoints) => {
-      const newPoints = { ...prevPoints }
-      delete newPoints[id]
-      return newPoints
-    })
-  }
+  // removeEntryPoint(id: string) {
+  //   this.#entryPoints.update((prevPoints) => {
+  //     const newPoints = { ...prevPoints }
+  //     delete newPoints[id]
+  //     return newPoints
+  //   })
+  // }
 
-  getEntryPoint(id: string) {
-    return this.#entryPoints()[id]
-  }
+  // getEntryPoint(id: string) {
+  //   return this.#entryPoints()[id]
+  // }
 
   /**
    * Find command by name or alias

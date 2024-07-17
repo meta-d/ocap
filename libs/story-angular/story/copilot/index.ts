@@ -1,4 +1,3 @@
-export * from './math.command'
 export * from './measure.command'
 export * from './page.command'
 export * from './schema/'
