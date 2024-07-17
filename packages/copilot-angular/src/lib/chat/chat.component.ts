@@ -270,7 +270,7 @@ export class NgmCopilotChatComponent {
   readonly role = this.copilotService.role
   readonly roleDetail = this.copilotService.roleDetail
 
-  #activatedPrompt = signal('')
+  readonly #activatedPrompt = signal<CopilotContextItem | string>('')
   readonly refreshingModels = signal(false)
 
   /**
@@ -683,14 +683,20 @@ export class NgmCopilotChatComponent {
       if (this.promptCompletion()) {
         this.promptControl.setValue(this.promptControl.value.trimEnd() + ' ' + this.promptCompletion())
       } else {
+        const activatedPrompt = this.#activatedPrompt()
         if (this.isContextTrigger()) {
-          const item = this.filteredContextItems()[0]
+          let item: CopilotContextItem = null;
+          if (activatedPrompt && typeof activatedPrompt !== 'string') {
+            item = activatedPrompt
+          } else {
+            item = this.filteredContextItems()[0]
+          }
           if (item) {
             this.promptControl.setValue(this.beforeLastWord() + ' @' + item.uKey + ' ')
             this.context.set(item)
           }
-        } else if (this.#activatedPrompt()) {
-          this.promptControl.setValue(this.#activatedPrompt())
+        } else if (typeof activatedPrompt === 'string') {
+          this.promptControl.setValue(activatedPrompt)
         } else if (this.filteredCommands()?.length) {
           this.promptControl.setValue(this.filteredCommands()[0] ? '/' + this.filteredCommands()[0].name + ' ' : null)
         }

@@ -361,8 +361,9 @@
                 [style.height.px]="240" [itemSize]="36"
             >
               <mat-option *cdkVirtualFor="let item of filteredContextItems(); trackBy: trackByKey"
-                [value]="beforeLastWord() + ' @' + item.uKey + ' '"
-                (click)="setContext(item)">
+                [value]="item"
+                (click)="setContext(item)"
+              >
                 <div class="flex-1 flex items-center overflow-hidden" >
                   <span class="flex-1 text-ellipsis overflow-hidden" [ngmHighlight]="contextSearchWords()?.[0]"
                     [content]="item.caption">{{item.caption}}</span>
