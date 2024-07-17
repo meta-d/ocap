@@ -15,6 +15,7 @@ import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
   imports: [TranslateModule, MaterialModule, FormsModule, ReactiveFormsModule]
 })
 export class CopilotBasicComponent extends TranslationBaseComponent {
+  AiProvider = AiProvider
   readonly copilotService = inject(PACCopilotService)
   readonly _toastrService = inject(ToastrService)
 

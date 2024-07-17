@@ -7,9 +7,10 @@
     <mat-form-field appearance="fill">
         <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
         <mat-select formControlName="provider">
-          <mat-option value="openai">OpenAI</mat-option>
-          <mat-option value="azure">Azure</mat-option>
-          <mat-option value="dashscope">
+          <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
+          <mat-option [value]="AiProvider.Azure">Azure</mat-option>
+          <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
+          <mat-option [value]="AiProvider.DashScope">
             {{ 'PAC.Copilot.Provider_DashScope' | translate: {Default: 'DashScope'} }}
           </mat-option>
         </mat-select>

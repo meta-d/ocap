@@ -629,10 +629,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.upsertMessage({
           id: assistantId,
           role: CopilotChatMessageRoleEnum.Assistant,
-          content: '',
+          // content: '',
           status: 'error',
           error: err.message
         })
+        this.updateConversation(conversation.id, (conversation) => ({
+          ...conversation,
+          status: 'error'
+        }))
         return
       }
     }

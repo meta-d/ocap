@@ -1,13 +1,13 @@
-import { BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder, TemplateFormat } from '@langchain/core/prompts'
+import { Runnable, RunnableConfig } from '@langchain/core/runnables'
 import { StructuredToolInterface } from '@langchain/core/tools'
 import { PartialValues } from '@langchain/core/utils/types'
-import { Runnable, RunnableConfig } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
+import { createCopilotAgentState } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { z } from 'zod'
-import { createCopilotAgentState } from '@metad/copilot'
 
 type ZodAny = z.ZodObject<any, any, any, any>
 
@@ -48,7 +48,7 @@ export function createState() {
  * @returns
  */
 export async function createWorkerAgent<NewPartialVariableName extends string>(
-  llm: ChatOpenAI,
+  llm: BaseChatModel,
   tools: StructuredToolInterface<ZodAny>[],
   systemPrompt: string,
   partialValues?: PartialValues<NewPartialVariableName>,

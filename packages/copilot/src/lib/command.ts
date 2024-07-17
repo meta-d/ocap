@@ -1,3 +1,4 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseStringPromptTemplate, ChatPromptTemplate } from '@langchain/core/prompts'
 import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { BaseCheckpointSaver, CompiledStateGraph, StateGraph } from '@langchain/langgraph/web'
@@ -80,7 +81,7 @@ export interface CopilotCommand<T = any> {
 }
 
 export type CreateGraphOptions = {
-  llm: ChatOpenAI;
+  llm: ChatOpenAI
   checkpointer?: BaseCheckpointSaver
   interruptBefore?: any[]
   interruptAfter?: any[]

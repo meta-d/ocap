@@ -4,7 +4,8 @@
 export enum AiProvider {
     OpenAI = 'openai',
     Azure = 'azure',
-    DashScope = 'dashscope'
+    DashScope = 'dashscope',
+    Ollama = 'ollama'
 }
 
 /**

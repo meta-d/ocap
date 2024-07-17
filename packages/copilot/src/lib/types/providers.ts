@@ -1,7 +1,23 @@
+/**
+ * Providers for LLMs
+ * 
+ * - https://js.langchain.com/v0.2/docs/integrations/chat/
+ */
 export enum AiProvider {
+  /**
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/openai
+   */
   OpenAI = 'openai',
+  /**
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/azure
+   */
   Azure = 'azure',
-  DashScope = 'dashscope'
+  DashScope = 'dashscope',
+  /**
+   * - https://ollama.com/
+   * - https://js.langchain.com/v0.2/docs/integrations/chat/ollama
+   */
+  Ollama = 'ollama'
 }
 
 export type AiModelType = {
@@ -20,7 +36,7 @@ export type AiProviderType = {
   isTools: boolean
 }
 
-export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
+export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
   [AiProvider.OpenAI]: {
     apiHost: 'https://api.openai.com/v1',
     chatCompletionsUrl: '/chat/completions',
@@ -142,6 +158,18 @@ export const AI_PROVIDERS: Record<AiProvider, AiProviderType> = {
       {
         id: 'baichuan2-7b-chat-v1',
         name: '百川2 7b v1'
+      }
+    ]
+  },
+  [AiProvider.Ollama]: {
+    models: [
+      {
+        id: 'llama2',
+        name: 'LLama 3'
+      },
+      {
+        id: 'qwen2',
+        name: 'Qwen 2'
       }
     ]
   }
