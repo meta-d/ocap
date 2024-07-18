@@ -28,7 +28,7 @@ export const IndicatorSchema = z
     // basic info
     isApplication: z.boolean().optional().describe(`The indicator can be show in indicator application if it has calendar dimension`),
     businessAreaId: z.string().optional().describe(`Business area the indicator should belong to`),
-    business: z.string().optional().describe(`A language description of the indicator from a caliber perspective.`),
+    business: z.string().describe(`A language description of the indicator from a caliber perspective.`),
     tags: z.array(z.object({
       id: z.string().describe(`Id of tag`)
     })).optional().describe(`Relative tags of the indicator`)

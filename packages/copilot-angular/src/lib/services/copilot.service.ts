@@ -44,6 +44,8 @@ export class NgmCopilotService extends CopilotService {
     return role ? `Your role is '${role.title}', and your responsibility is ${role.description}.` : ''
   })
 
+  readonly languagePrompt = computed(() => `Please answer in language ${this.lang()}`)
+
   constructor() {
     super()
   }

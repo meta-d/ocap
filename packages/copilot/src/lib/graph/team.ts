@@ -5,6 +5,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { AgentState, createCopilotAgentState } from './types'
 import { END } from '@langchain/langgraph/web'
+import { DynamicStructuredTool } from '@langchain/core/tools'
 
 export const SUPERVISOR_NAME = 'Supervisor'
 
@@ -127,14 +128,14 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
 }
 
 
- export async function createSupervisorAgent(llm: ChatOpenAI, members: {name: string; description: string;}[], system: string) {
+ export async function createSupervisorAgent(llm: ChatOpenAI, members: {name: string; description: string;}[], tools: DynamicStructuredTool[], system: string) {
   const functionDef = createRouteFunctionDef(members.map((({name}) => name)))
   const toolDef = {
     type: 'function' as const,
     function: functionDef
   }
 
-  const modelWithTools = llm.bindTools([toolDef])
+  const modelWithTools = llm.bindTools([toolDef, ...(tools ?? [])])
   let prompt = ChatPromptTemplate.fromMessages([
     ['system', system],
     ['placeholder', '{messages}'],
@@ -155,11 +156,13 @@ To perform a task, you can select one of the following:
       messages: [message as BaseMessage]
     } as State
 
-    if (isAIMessage(message) && message.tool_calls && message.tool_calls[0]?.name === RouteFunctionName) {
-      newState.tool_call_id = message.tool_calls[0].id
-      newState.next = message.tool_calls[0].args['next']
-      newState.reasoning = message.tool_calls[0].args['reasoning']
-      newState.instructions = message.tool_calls[0].args['instructions']
+    if (isAIMessage(message) && message.tool_calls) {
+      if (message.tool_calls[0]?.name === RouteFunctionName) {
+        newState.tool_call_id = message.tool_calls[0].id
+        newState.next = message.tool_calls[0].args['next']
+        newState.reasoning = message.tool_calls[0].args['reasoning']
+        newState.instructions = message.tool_calls[0].args['instructions']
+      }
     }
 
     return newState
@@ -174,10 +177,14 @@ export const supervisorRouter = (state: AgentState) => {
   if (isAIMessage(lastMessage)) {
     if (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0) {
       return END
-    } else {
+    } else if (lastMessage.tool_calls[0]?.name === RouteFunctionName) {
       return lastMessage.tool_calls[0].args['next']
+    } else {
+      return TOOLS_NAME
     }
   } else {
     return END
   }
 }
+
+export const TOOLS_NAME = 'tools'

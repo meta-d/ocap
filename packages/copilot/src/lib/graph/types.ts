@@ -1,13 +1,15 @@
 import { BaseMessage } from '@langchain/core/messages'
+import { StateGraphArgs } from '@langchain/langgraph/web'
 
 export interface AgentState {
   input: string
   role: string
   context: string
   messages: BaseMessage[]
+  language?: string
 }
 
-export function createCopilotAgentState() {
+export function createCopilotAgentState(): StateGraphArgs<AgentState>['channels'] {
   return {
     input: {
       value: (x: any, y: any) => y ?? x,
@@ -24,6 +26,10 @@ export function createCopilotAgentState() {
     messages: {
       value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
       default: () => []
+    },
+    language: {
+      value: (x: any, y: any) => y ?? x,
+      default: () => ''
     }
   }
 }
