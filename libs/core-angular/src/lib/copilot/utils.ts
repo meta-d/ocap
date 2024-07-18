@@ -35,26 +35,28 @@ caption: "${entityType.caption || ''}"
 dimensions:
 ${getEntityDimensions(entityType)
     .map((dimension) =>
-`  - name: "${dimension.name}"
-    caption: "${dimension.caption || ''}"
-    hierarchies:
-${dimension.hierarchies?.map((item) =>
+[
+  `  - name: "${dimension.name}"`,
+  `    caption: "${dimension.caption || ''}"`,
+  dimension.semantics?.semantic ? 
+  `    semantic: ${dimension.semantics.semantic}` : null,
+  `    hierarchies:`
+].filter(nonBlank).join('\n') + '\n' +
+dimension.hierarchies?.map((item) =>
 `      - name: "${item.name}"
         caption: "${item.caption || ''}"
         levels:
-${item.levels?.map((item) => {
-
-  let result = 
-`          - name: "${item.name}"
-            caption: "${item.caption || ''}"`
-  if (item.semantics?.formatter) {
-    result += `\n            time_formatter: "${item.semantics.formatter}"`
-  }
-  return result
-}
+${item.levels?.map((item) =>
+[
+`          - name: "${item.name}"`,
+`            caption: "${item.caption || ''}"`,
+item.semantics?.semantic ?
+`            semantic: ${item.semantics.semantic}` : null,
+item.semantics?.formatter ? 
+`            time_formatter: "${item.semantics.formatter}"` : null,
+].filter(nonBlank).join('\n')).join('\n')}
+`).join('\n') ?? ''
 ).join('\n')}
-`).join('\n')}
-`).join('\n')}
 measures:
 ${getEntityMeasures(entityType).map((item) => 
   [
