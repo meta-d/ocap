@@ -1,4 +1,4 @@
-import { CopilotChatMessageRoleEnum, getFunctionCall } from '@metad/copilot'
+import { CopilotChatMessageRoleEnum } from '@metad/copilot'
 import { calcEntityTypePrompt } from '@metad/core'
 import { DataSettings, assignDeepOmitBlank, cloneDeep, omit, omitBlank } from '@metad/ocap-core'
 import { StoryWidget, WidgetComponentType } from '@metad/story/core'
@@ -34,16 +34,16 @@ Original widget is ${JSON.stringify(widget)}`
         ...omitBlank(copilot.options)
       }
     )
-    .pipe(
-      map(({ choices }) => {
-        try {
-          copilot.response = getFunctionCall(choices[0].message)
-        } catch (err) {
-          copilot.error = err as Error
-        }
-        return copilot
-      })
-    )
+    // .pipe(
+    //   map(({ choices }) => {
+    //     try {
+    //       copilot.response = getFunctionCall(choices[0].message)
+    //     } catch (err) {
+    //       copilot.error = err as Error
+    //     }
+    //     return copilot
+    //   })
+    // )
 }
 
 export function editControlWidgetCommand(copilot) {
