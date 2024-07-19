@@ -55,7 +55,6 @@ import { convertTableToCSV, nonNullable } from '@metad/core'
 import { graphic } from 'echarts/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPopperjsPlacements, NgxPopperjsTriggers } from 'ngx-popperjs'
-import { computedAsync } from 'ngxtension/computed-async'
 import {
   BehaviorSubject,
   combineLatest,
@@ -75,6 +74,7 @@ import { IndicatorsStore } from '../services/store'
 import { IndicatorState, Trend, TrendColor, TrendReverseColor } from '../types'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { NgmCopilotService } from '@metad/copilot-angular'
+import { derivedAsync } from 'ngxtension/derived-async'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -430,7 +430,7 @@ export class IndicatorDetailComponent {
       const pieName = this.#translate.instant('IndicatorApp.Pie', {Default: 'Pie'})
       const barName = this.#translate.instant('IndicatorApp.Bar', {Default: 'Bar'})
 
-      return indicator.filters?.map((filter, index) => {
+      return indicator.filters?.filter((filter) => !filter.dimension?.parameter).map((filter, index) => {
         const slicers = [...indicator.filters]
         slicers.splice(index, 1)
 
@@ -594,7 +594,7 @@ export class IndicatorDetailComponent {
 
   readonly drillLevels = signal<Record<string, string>>({})
 
-  readonly drillDimensions = computedAsync(() => {
+  readonly drillDimensions = derivedAsync(() => {
     const drillLevels = this.drillLevels()
     return this.drillDimensions$.pipe(
       // Update title from drillLevels (level from explain data)

@@ -2,18 +2,19 @@ import { BehaviorSubject, combineLatest, EMPTY, filter, map, Observable, withLat
 import { PeriodFunctions, Semantics } from '../annotations'
 import {
   calcRange,
-  TimeGranularity,
-  TimeRangeType,
+  EntityType,
   getEntityCalendar,
+  getEntityDimensions,
   getEntityProperty,
   getIndicatorMeasureName,
   Indicator,
+  mapTimeGranularitySemantic,
   Property,
   PropertyHierarchy,
   PropertyLevel,
   QueryReturn,
-  mapTimeGranularitySemantic,
-  getEntityDimensions
+  TimeGranularity,
+  TimeRangeType
 } from '../models/index'
 import { C_MEASURES, FilterOperator, QueryOptions } from '../types'
 import { isEmpty, isString, nonNullable } from '../utils'
@@ -70,8 +71,9 @@ export class SmartIndicatorDataService<
           this.indicator = this.getIndicator(id as string)
           if (this.indicator) {
             this.currentTime = currentTime
-            const { dimension, hierarchy, level } = this.getEntityCalendar(
+            const { dimension, hierarchy, level } = getIndicatorEntityCalendar(
               this.indicator,
+              this.entityType,
               this.currentTime.timeGranularity
             )
             this.calendar = dimension
@@ -191,10 +193,10 @@ export class SmartIndicatorDataService<
 
   /**
    * 获取或注册指标的时间计算成员，如何某指标的同比环比
-   * 
-   * @param indicator 
-   * @param type 
-   * @returns 
+   *
+   * @param indicator
+   * @param type
+   * @returns
    */
   getOrRegisterMember(indicator: Indicator, type: PeriodFunctions) {
     if (!this.indicatorMeasures[indicator.id]) {
@@ -210,8 +212,12 @@ export class SmartIndicatorDataService<
     // 缓存中并且 EntityType Measures 中已存在相应时间计算成员才可以
     if (!(measureNames[type] && getEntityProperty(this.entityType, measureNames[type][1]))) {
       try {
-        measureNames[type] = this.getCalculatedMember(measureNames['CurrentPeriod'], type, this.calendarHierarchy.name)?.name
-      } catch(err) {
+        measureNames[type] = this.getCalculatedMember(
+          measureNames['CurrentPeriod'],
+          type,
+          this.calendarHierarchy.name
+        )?.name
+      } catch (err) {
         return null
       }
     }
@@ -250,27 +256,36 @@ export class SmartIndicatorDataService<
           operator: FilterOperator.BT
         }
   }
+}
 
-  getEntityCalendar(indicator: Indicator, timeGranularity: TimeGranularity) {
-    if (indicator.calendar) {
-      return getEntityCalendar(
-        this.entityType,
-        indicator.calendar,
-        timeGranularity
-      )
-    }
+/**
+ * Get calendar dimension by calendar field, or get the calednar level by timeGranularity
+ * 
+ * @param indicator 
+ * @param entityType 
+ * @param timeGranularity 
+ * @returns 
+ */
+export function getIndicatorEntityCalendar(
+  indicator: Indicator,
+  entityType: EntityType,
+  timeGranularity: TimeGranularity
+) {
+  if (indicator.calendar) {
+    return getEntityCalendar(entityType, indicator.calendar, timeGranularity)
+  }
 
-    let dimension = null
-    let hierarchy = null
-    let level = null
-    const calendarSemantic = mapTimeGranularitySemantic(timeGranularity)
-    getEntityDimensions(this.entityType).filter(
-      (property) => property.semantics?.semantic.startsWith(Semantics.Calendar)
-    ).reduce((acc, curr) => {
+  let dimension = null
+  let hierarchy = null
+  let level = null
+  const calendarSemantic = mapTimeGranularitySemantic(timeGranularity)
+  getEntityDimensions(entityType)
+    .filter((property) => property.semantics?.semantic.startsWith(Semantics.Calendar))
+    .reduce((acc, curr) => {
       if (acc) {
         return acc
       }
-      
+
       const _hierarchy = curr.hierarchies?.find((_hierarchy) => {
         const _level = _hierarchy.levels.find((level) => level.semantics?.semantic === calendarSemantic)
         if (_level) {
@@ -279,7 +294,7 @@ export class SmartIndicatorDataService<
           dimension = curr
           return true
         }
-        
+
         return false
       })
 
@@ -290,10 +305,9 @@ export class SmartIndicatorDataService<
       return null
     }, null)
 
-    return {
-      dimension,
-      hierarchy,
-      level
-    }
+  return {
+    dimension,
+    hierarchy,
+    level
   }
 }

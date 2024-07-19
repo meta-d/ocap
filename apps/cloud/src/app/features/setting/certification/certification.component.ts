@@ -52,7 +52,7 @@ export class CertificationComponent {
       catchError((err) => {
         return from(this.userService.getMe()).pipe(map((user) => [user]))
       }),
-      map((users) => users.map((user) => ({ label: userLabel(user), value: user.id }))))
+      map((users) => users.map((user) => ({ caption: userLabel(user), key: user.id }))))
 
   async createCertification() {
     try {

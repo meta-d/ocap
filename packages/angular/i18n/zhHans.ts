@@ -338,6 +338,9 @@ export const ZhHans = {
         SYSTEMTIME: '系统时间',
         TODAY: '今天'
       }
+    },
+    Messages: {
+      NotFoundValue: '未找到值：'
     }
   }
 }

@@ -31,6 +31,7 @@ import { RoleSchema } from '../copilot'
 import { SemanticModelService } from '../model.service'
 import { AccessControlStateService } from './access-control.service'
 import { zodToAnnotations } from '@metad/copilot'
+import { ModelComponent } from '../model.component'
 
 @Component({
   selector: 'pac-model-access-control',
@@ -57,11 +58,13 @@ export class AccessControlComponent extends TranslationBaseComponent {
   readonly #route = inject(ActivatedRoute)
   readonly #router = inject(Router)
   readonly #modelService = inject(SemanticModelService)
+  readonly #model = inject(ModelComponent)
 
   @ViewChild('creatTmpl') creatTmpl: TemplateRef<any>
 
   // Selectors
 
+  readonly modelSideMenuOpened= this.#model.sideMenuOpened
   creatFormGroup = new FormGroup({
     name: new FormControl('', [Validators.required, this.forbiddenNameValidator()]),
     type: new FormControl(),
@@ -201,6 +204,10 @@ export class AccessControlComponent extends TranslationBaseComponent {
       options: cloneDeep(role.options)
     })
     await this.openCreate()
+  }
+
+  openSideMenu() {
+    this.modelSideMenuOpened.set(true)
   }
 }
 

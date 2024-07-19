@@ -649,7 +649,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
               input: content,
               messages,
               context: contextContent ? contextContent : null,
-              role: this.copilot.rolePrompt()
+              role: this.copilot.rolePrompt(),
+              language: this.copilot.languagePrompt(),
             }
           : null,
         {
