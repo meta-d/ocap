@@ -142,7 +142,7 @@ failed: ${error.message}`)
 
 	async getCopilot(role: AiProviderRole) {
 		const result = await this.copilotService.findOneByRole(role)
-		if (!result) {
+		if (!result?.enabled) {
 			throw new Error('No copilot found')
 		}
 		return result
