@@ -2,13 +2,16 @@ import { inject } from '@angular/core'
 import { CopilotAgentType } from '@metad/copilot'
 import { injectCopilotCommand } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 import { NGXLogger } from 'ngx-logger'
 import { injectCreateIndicatorArchitect } from './graph'
-import { INDICATOR_AGENT_NAME, PLANNER_NAME, REPLANNER_NAME } from './types'
+import { INDICATOR_AGENT_NAME, IndicatorArchitectCommandName, PLANNER_NAME, REPLANNER_NAME } from './types'
 
 export function injectIndicatorArchitectCommand() {
   const logger = inject(NGXLogger)
   const translate = inject(TranslateService)
+
+  const fewShotPrompt = injectAgentFewShotTemplate(IndicatorArchitectCommandName, { k: 1, vectorStore: null })
   const createIndicatorGraph = injectCreateIndicatorArchitect()
 
   // const indicators = computed(() => projectService.indicators() ?? [])
@@ -39,8 +42,9 @@ export function injectIndicatorArchitectCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
-      interruptAfter: [PLANNER_NAME, REPLANNER_NAME, INDICATOR_AGENT_NAME]
+      interruptAfter: [ INDICATOR_AGENT_NAME ]
     },
+    fewShotPrompt,
     createGraph: createIndicatorGraph
   })
 }

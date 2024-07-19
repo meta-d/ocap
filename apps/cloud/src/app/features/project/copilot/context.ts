@@ -3,6 +3,7 @@ import { NgmCopilotContextToken } from '@metad/copilot-angular'
 import { markdownEntityType } from '@metad/core'
 import { firstValueFrom, map, shareReplay } from 'rxjs'
 import { ProjectService } from '../project.service'
+import { isIndicatorMeasureProperty } from '@metad/ocap-core'
 
 export function provideCopilotCubes() {
   const projectService = inject(ProjectService)
@@ -19,7 +20,19 @@ export function provideCopilotCubes() {
               dataSourceId: model.id,
               serizalize: async () => {
                 const entityType = await firstValueFrom(projectService.selectEntityType(model.key, cube.name))
-                return `The model id: '${model.id}'\n` + markdownEntityType(entityType)
+                if (entityType) {
+
+                }
+                return `The model id: '${model.id}'\n` + markdownEntityType({
+                  ...entityType, 
+                  // Filter excludes indicators
+                  properties: Object.keys(entityType.properties)
+                    .filter((key) => !isIndicatorMeasureProperty(entityType.properties[key]))
+                    .reduce((properties, key) => {
+                      properties[key] = entityType.properties[key]
+                      return properties
+                    }, {})
+                })
               }
             },
             key: cube.name,

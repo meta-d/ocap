@@ -61,6 +61,7 @@ export class ModelEntityComponent implements OnInit {
   readonly detailsOpen = model(false)
   // Cube structure opened state
   readonly drawerOpened = model(true)
+  readonly modelSideMenuOpened= this.#model.sideMenuOpened
 
   public readonly entityId$ = this.route.paramMap.pipe(
     startWith(this.route.snapshot.paramMap),
@@ -194,5 +195,9 @@ export class ModelEntityComponent implements OnInit {
 
   openStory(id: string) {
     this.router.navigate([`/story/${id}/edit`])
+  }
+
+  openSideMenu() {
+    this.modelSideMenuOpened.set(true)
   }
 }

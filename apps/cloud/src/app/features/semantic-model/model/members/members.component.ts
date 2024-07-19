@@ -11,6 +11,7 @@ import { SemanticModelEntityService, ToastrService } from 'apps/cloud/src/app/@c
 import { catchError, combineLatest, delay, map, of, startWith, switchMap, tap } from 'rxjs'
 import { SemanticModelService } from '../model.service'
 import { ModelMembersCubeComponent } from './cube/cube.component'
+import { ModelComponent } from '../model.component'
 
 @Component({
   standalone: true,
@@ -31,7 +32,9 @@ export class ModelMembersComponent {
   readonly modelEntityService = inject(SemanticModelEntityService)
   readonly modelsService = inject(ModelsService)
   readonly toastrService = inject(ToastrService)
+  readonly #model = inject(ModelComponent)
 
+  readonly modelSideMenuOpened= this.#model.sideMenuOpened
   readonly cubes = toSignal(this.modelService.cubes$)
   readonly virtualCubes = toSignal(this.modelService.virtualCubes$)
 
@@ -88,4 +91,8 @@ export class ModelMembersComponent {
       tap(() => this.loading.set(false))
     )
   )
+
+  openSideMenu() {
+    this.modelSideMenuOpened.set(true)
+  }
 }
