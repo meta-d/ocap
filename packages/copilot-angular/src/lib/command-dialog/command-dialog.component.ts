@@ -81,9 +81,10 @@ export class CommandDialogComponent {
   readonly contextItems = derivedAsync(() => {
     const context = this.commandContext()
     const hasContextTrigger = this.hasContextTrigger()
-    if (hasContextTrigger && context && context.items()) {
+    const contextObservable = context?.getContextObservable()
+    if (hasContextTrigger && contextObservable) {
       this.loadingContext$.next(true)
-      return context.items().pipe(tap(() => this.loadingContext$.next(false)))
+      return contextObservable.pipe(tap(() => this.loadingContext$.next(false)))
     }
     return null
   })

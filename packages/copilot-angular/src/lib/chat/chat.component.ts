@@ -277,7 +277,7 @@ export class NgmCopilotChatComponent {
    * 当前 Asking prompt
    */
   public promptControl = new FormControl<string>('')
-  readonly prompt = toSignal(this.promptControl.valueChanges, { initialValue: '' })
+  readonly prompt = toSignal(this.promptControl.valueChanges.pipe(filter((value) => typeof value === 'string')), { initialValue: '' })
 
   readonly #promptWords = computed(() => this.prompt()?.split(' '))
   readonly lastWord = computed(() => this.#promptWords()[this.#promptWords().length - 1])
@@ -330,9 +330,10 @@ export class NgmCopilotChatComponent {
   readonly contextItems = derivedAsync(() => {
     const context = this.commandContext()
     const hasContextTrigger = this.hasContextTrigger()
-    if (hasContextTrigger && context && context.items()) {
+    const contextObservable = context?.getContextObservable()
+    if (hasContextTrigger && contextObservable) {
       this.loadingContext$.next(true)
-      return context.items().pipe(tap(() => this.loadingContext$.next(false)))
+      return contextObservable.pipe(tap(() => this.loadingContext$.next(false)))
     }
     return null
   })
@@ -665,6 +666,16 @@ export class NgmCopilotChatComponent {
   isFoucs(target: HTMLDivElement | HTMLTextAreaElement) {
     return document.activeElement === target
   }
+  
+  _autocompleteDisplayWith(option: CopilotContextItem) {
+    if (typeof option.value === 'string') {
+      return option.value
+    } else if (typeof option === 'object') {
+      return [this.beforeLastWord(), `@${option.uKey}`].filter(Boolean).join(' ') + ' '
+    }
+    return null
+  }
+  autocompleteDisplayWith = this._autocompleteDisplayWith.bind(this)
 
   triggerFun(event: KeyboardEvent, autocomplete: MatAutocomplete) {
     if ((event.isComposing || event.shiftKey) && event.key === 'Enter') {

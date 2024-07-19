@@ -105,9 +105,9 @@ export enum CopilotAgentType {
 }
 
 export interface CopilotContext {
-  items(): Observable<CopilotContextItem[]>
   commands(): Array<CopilotCommand>
 
+  getContextObservable(): Observable<CopilotContextItem[]>
   getCommand(name: string): CopilotCommand | null
   getCommandWithContext(name: string): { command: CopilotCommand; context: CopilotContext } | null
   getContextItem(key: string): Promise<CopilotContextItem | null>
