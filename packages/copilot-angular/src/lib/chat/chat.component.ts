@@ -668,8 +668,8 @@ export class NgmCopilotChatComponent {
   }
   
   _autocompleteDisplayWith(option: CopilotContextItem) {
-    if (typeof option.value === 'string') {
-      return option.value
+    if (typeof option === 'string') {
+      return option
     } else if (typeof option === 'object') {
       return [this.beforeLastWord(), `@${option.uKey}`].filter(Boolean).join(' ') + ' '
     }
