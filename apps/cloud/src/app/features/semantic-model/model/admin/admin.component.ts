@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
 import { ActivatedRoute } from '@angular/router'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { NgmSearchComponent, NgmTableComponent } from '@metad/ocap-angular/common'
 import { AppearanceDirective, ButtonGroupDirective, DensityDirective } from '@metad/ocap-angular/core'
 import { TranslateModule } from '@ngx-translate/core'
@@ -20,7 +21,6 @@ import {
 import { uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, map, switchMap } from 'rxjs'
 import { ModelComponent } from '../model.component'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 
 @Component({
   standalone: true,
@@ -41,23 +41,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
   ],
   selector: 'pac-model-admin',
   templateUrl: 'admin.component.html',
-  styles: [
-    `
-      :host {
-        width: 100%;
-        overflow: auto;
-      }
-    `
-  ]
+  styleUrl: 'admin.component.scss',
 })
 export class ModelAdminComponent extends TranslationBaseComponent {
   userLabel = userLabel
 
   // Injectors
-  private modelComponent = inject(ModelComponent)
   private modelsService = inject(ModelsService)
   private store = inject(Store)
   private route = inject(ActivatedRoute)
+  readonly #model = inject(ModelComponent)
 
   searchControl = new FormControl()
 
@@ -69,8 +62,10 @@ export class ModelAdminComponent extends TranslationBaseComponent {
 
   public readonly refresh$ = new BehaviorSubject<void>(null)
 
+  readonly modelSideMenuOpened = this.#model.sideMenuOpened
+
   // Subscribers
-  private _modelDetailSub = combineLatest([this.refresh$, this.modelComponent.id$])
+  private _modelDetailSub = combineLatest([this.refresh$, this.#model.id$])
     .pipe(switchMap(([, id]) => this.modelsService.getById(id ?? null, ['owner', 'members'])), takeUntilDestroyed())
     .subscribe((semanticModel) => {
       this.semanticModel = semanticModel
@@ -149,5 +144,9 @@ export class ModelAdminComponent extends TranslationBaseComponent {
     member.loading = true
     await firstValueFrom(this.modelsService.deleteMember(this.semanticModel.id, id))
     this.refresh$.next()
+  }
+
+  openSideMenu() {
+    this.modelSideMenuOpened.set(true)
   }
 }
