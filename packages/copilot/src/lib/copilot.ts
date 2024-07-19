@@ -1,26 +1,9 @@
+import { ChatOllama } from '@langchain/community/chat_models/ollama'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatOpenAI, ClientOptions } from '@langchain/openai'
-import { ChatOllama } from "@langchain/community/chat_models/ollama"
-import { OllamaFunctions } from "@langchain/community/experimental/chat_models/ollama_functions";
-
-// import { UseChatOptions as AiUseChatOptions, Message } from 'ai'
 import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay, switchMap } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
-import {
-  AI_PROVIDERS,
-  AiProvider,
-  BusinessRoleType,
-  ICopilot,
-  RequestOptions
-} from './types'
-
-// function chatCompletionsUrl(copilot: ICopilot) {
-//   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
-//   const chatCompletionsUrl: string = AI_PROVIDERS[copilot.provider]?.chatCompletionsUrl
-//   return (
-//     copilot.chatUrl ||
-//     (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + chatCompletionsUrl : apiHost + chatCompletionsUrl)
-//   )
-// }
+import { AI_PROVIDERS, AiProvider, BusinessRoleType, ICopilot } from './types'
 
 function modelsUrl(copilot: ICopilot) {
   const apiHost: string = copilot.apiHost || AI_PROVIDERS[copilot.provider]?.apiHost
@@ -30,12 +13,6 @@ function modelsUrl(copilot: ICopilot) {
     (apiHost?.endsWith('/') ? apiHost.slice(0, apiHost.length - 1) + modelsUrl : apiHost + modelsUrl)
   )
 }
-
-// export type UseChatOptions = AiUseChatOptions & {
-//   appendMessage?: (message: Message) => void
-//   abortController?: AbortController | null
-//   model: string
-// }
 
 /**
  * Copilot Service
@@ -58,6 +35,17 @@ export abstract class CopilotService {
 
   readonly copilot$ = this.#copilot$.asObservable()
   readonly enabled$ = this.copilot$.pipe(map((copilot) => copilot?.enabled && copilot?.apiKey))
+
+  // Secondary
+  readonly #secondary$ = new BehaviorSubject<ICopilot | null>(null)
+  get secondary(): ICopilot {
+    return this.#secondary$.value
+  }
+  set secondary(value: ICopilot | null) {
+    this.#secondary$.next(value)
+  }
+  readonly secondary$ = this.#secondary$.asObservable()
+
   /**
    * If the provider has tools function
    */
@@ -66,34 +54,12 @@ export abstract class CopilotService {
   readonly clientOptions$ = new BehaviorSubject<ClientOptions>(null)
 
   readonly llm$ = combineLatest([this.copilot$, this.clientOptions$]).pipe(
-    map(([copilot, clientOptions]) => {
-      switch (copilot.provider) {
-        case AiProvider.OpenAI:
-        case AiProvider.Azure:
-          return new ChatOpenAI({
-            apiKey: copilot.apiKey,
-            configuration: {
-              baseURL: copilot.apiHost || null,
-              defaultHeaders: {
-                ...(this.requestOptions().headers ?? {})
-              },
-              ...(clientOptions ?? {})
-            },
-            model: copilot.defaultModel,
-            temperature: 0,
-          })
-        case AiProvider.Ollama:
-          return new OllamaFunctions({
-            baseUrl: copilot.apiHost || null,
-            model: copilot.defaultModel,
-            headers: {
-              ...(clientOptions?.defaultHeaders ?? {})
-            }
-          }) as unknown as ChatOpenAI
-        default:
-          return null
-      }
-    }),
+    map(([copilot, clientOptions]) => createLLM<ChatOpenAI>(copilot, clientOptions)),
+    shareReplay(1)
+  )
+
+  readonly secondaryLLM$ = combineLatest([this.#secondary$, this.clientOptions$]).pipe(
+    map(([secondary, clientOptions]) => createLLM(secondary, clientOptions)),
     shareReplay(1)
   )
 
@@ -111,19 +77,12 @@ export abstract class CopilotService {
   abstract role(): string
   abstract setRole(role: string): void
 
-  /**
-   * @deprecated use getClientOptions
-   */
-  requestOptions(): RequestOptions {
-    return {}
-  }
-
   getModels() {
     return fromFetch(modelsUrl(this.copilot), {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
+        'Content-Type': 'application/json'
+        // ...((this.requestOptions()?.headers ?? {}) as Record<string, string>)
         // Authorization: `Bearer ${this.copilot.apiKey}`
       }
     }).pipe(
@@ -143,5 +102,30 @@ export abstract class CopilotService {
       })
     )
   }
+}
 
+function createLLM<T = ChatOpenAI | BaseChatModel>(copilot: ICopilot, clientOptions: ClientOptions): T {
+  switch (copilot?.provider) {
+    case AiProvider.OpenAI:
+    case AiProvider.Azure:
+      return new ChatOpenAI({
+        apiKey: copilot.apiKey,
+        configuration: {
+          baseURL: copilot.apiHost || null,
+          ...(clientOptions ?? {})
+        },
+        model: copilot.defaultModel,
+        temperature: 0
+      }) as T
+    case AiProvider.Ollama:
+      return new ChatOllama({
+        baseUrl: copilot.apiHost || null,
+        model: copilot.defaultModel,
+        headers: {
+          ...(clientOptions?.defaultHeaders ?? {})
+        }
+      }) as T
+    default:
+      return null
+  }
 }

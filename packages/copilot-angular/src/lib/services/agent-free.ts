@@ -17,16 +17,16 @@ const dummyTool = new DynamicStructuredTool({
 })
 
 export function injectCreateChatAgent() {
-  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
+  return async ({ llm, secondaryChatModel, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
 
     const prompt = ChatPromptTemplate.fromMessages([
-      ['system', '{role}'],
+      ['system', '{role}\n{language}\n{context}'],
       ["placeholder", "{messages}"],
     ]);
 
     const callModel = async (state: AgentState) => {
       // TODO: Auto-promote streaming.
-      return { messages: [await prompt.pipe(llm).invoke(state)] };
+      return { messages: [await prompt.pipe(secondaryChatModel ?? llm).invoke(state)] };
     };
     const workflow = new StateGraph<AgentState>({
       channels: state

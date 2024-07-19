@@ -4,7 +4,7 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { AI_PROVIDERS, AiProvider } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { distinctUntilChanged, startWith } from 'rxjs'
-import { PACCopilotService, ToastrService, getErrorMessage } from '../../../../@core'
+import { AiProviderRole, PACCopilotService, ToastrService, getErrorMessage } from '../../../../@core'
 import { MaterialModule, TranslationBaseComponent } from '../../../../@shared'
 
 @Component({
@@ -19,7 +19,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   readonly copilotService = inject(PACCopilotService)
   readonly _toastrService = inject(ToastrService)
 
-  formGroup = new FormGroup({
+  readonly formGroup = new FormGroup({
     id: new FormControl(null),
     enabled: new FormControl(null),
     provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
@@ -27,8 +27,21 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     apiHost: new FormControl(null),
     defaultModel: new FormControl<string>(null),
 
-    showTokenizer: new FormControl(null)
+    showTokenizer: new FormControl(null),
+
+    secondary: new FormGroup({
+      id: new FormControl(null),
+      enabled: new FormControl(null),
+      provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
+      apiKey: new FormControl(null, [Validators.required]),
+      apiHost: new FormControl(null),
+      defaultModel: new FormControl<string>(null)
+    })
   })
+
+  get enSecondary() {
+    return this.formGroup.get('secondary').get('enabled')!.value
+  }
 
   providerHref = {
     openai: 'https://platform.openai.com/account/api-keys',
@@ -37,7 +50,11 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   }
 
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
+  readonly secondaryProvider = toSignal(
+    this.formGroup.get('secondary').get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI))
+  )
   readonly models = computed(() => AI_PROVIDERS[this.provider()]?.models || [])
+  readonly secondaryModels = computed(() => AI_PROVIDERS[this.secondaryProvider()]?.models || [])
 
   readonly saving = signal(false)
 
@@ -56,12 +73,14 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
         this.formGroup.get('apiHost').enable()
         this.formGroup.get('defaultModel').enable()
         this.formGroup.get('showTokenizer').enable()
+        this.formGroup.get('secondary').enable()
       } else {
         this.formGroup.get('provider').disable()
         this.formGroup.get('apiKey').disable()
         this.formGroup.get('apiHost').disable()
         this.formGroup.get('defaultModel').disable()
         this.formGroup.get('showTokenizer').disable()
+        this.formGroup.get('secondary').disable()
       }
     })
 
@@ -69,10 +88,17 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     super()
 
     effect(() => {
-      const copilot = this.copilotService.copilotConfig()
+      const items = this.copilotService.copilots()
       this.formGroup.reset()
-      if (copilot?.enabled) {
-        this.formGroup.patchValue(copilot)
+      if (items) {
+        const primary = items.find(({ role }) => role === AiProviderRole.Primary)
+        const secondary = items.find(({ role }) => role === AiProviderRole.Secondary)
+        if (primary?.enabled) {
+          this.formGroup.patchValue(primary)
+        }
+        if (secondary?.enabled) {
+          this.formGroup.get('secondary').patchValue(secondary as any)
+        }
       }
       this.formGroup.markAsPristine()
     })
@@ -86,15 +112,10 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   async onSubmit() {
     try {
       this.saving.set(true)
-      const { apiKey, ...rest } = this.formGroup.value
-      await this.copilotService.upsertOne(
-        this.formGroup.get('apiKey').dirty
-          ? {
-              ...rest,
-              apiKey: apiKey.trim()
-            }
-          : rest
-      )
+      await this.copilotService.upsertItems([
+        await this._getValue(AiProviderRole.Primary, this.formGroup),
+        await this._getValue(AiProviderRole.Secondary, this.formGroup.get('secondary') as FormGroup)
+      ])
       this.formGroup.markAsPristine()
       this._toastrService.success('PAC.ACTIONS.Save', { Default: 'Save' })
     } catch (err) {
@@ -102,5 +123,20 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
     } finally {
       this.saving.set(false)
     }
+  }
+
+  async _getValue(role: AiProviderRole, form: FormGroup) {
+    const { apiKey, secondary, ...rest } = form.value
+
+    return form.get('apiKey').dirty
+      ? {
+          ...rest,
+          role,
+          apiKey: apiKey.trim()
+        }
+      : {
+          ...rest,
+          role
+        }
   }
 }

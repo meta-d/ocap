@@ -1,4 +1,4 @@
-import { ICopilot } from '@metad/contracts'
+import { AiProviderRole, ICopilot } from '@metad/contracts'
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Headers, Logger, Post, Res, Param, Get } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ServerResponse } from 'http'
@@ -66,10 +66,10 @@ failed: ${error.message}`)
 		}
 	}
 
-	@Get('proxy/:m')
-	async proxyGetModule(@Param('m') m: string, @Headers() headers) {
+	@Get('proxy/:role/:m')
+	async proxyGetModule(@Param('role') role: AiProviderRole, @Param('m') m: string, @Headers() headers) {
 		const path = '/' + m
-		const copilot = await this.getCopilot()
+		const copilot = await this.getCopilot(role)
 		const copilotUrl = chatCompletionsUrl(copilot, path)
 		try {
 			const response = await fetch(copilotUrl, {
@@ -88,24 +88,24 @@ failed: ${error.message}`)
 			throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
 		}
 	}
-	@Post('proxy/:m')
-	async proxyModule(@Param('m') m: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+	@Post('proxy/:role/:m')
+	async proxyModule(@Param('role') role: AiProviderRole, @Param('m') m: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
 		const path = '/' + m
-		return await this.proxy(path, headers, body, resp)
+		return await this.proxy(role, path, headers, body, resp)
 	}
-	@Post('proxy/:m/:f')
-	async proxyModuleFun(@Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
+	@Post('proxy/:role/:m/:f')
+	async proxyModuleFun(@Param('role') role: AiProviderRole, @Param('m') m: string, @Param('f') f: string, @Headers() headers, @Body() body: any, @Res() resp: ServerResponse) {
 		const path = '/' + m + (f ? '/'+ f : '')
 
 		// const stream = await this.aiService.proxyChatCompletionStream(path, body, headers);
 		// resp.setHeader('Content-Type', 'application/json');
 		// stream.pipe(resp);
 
-		return await this.proxy(path, headers, body, resp)
+		return await this.proxy(role, path, headers, body, resp)
 	}
 
-	async proxy(path: string, headers: any, body: any, resp: ServerResponse) {
-		const copilot = await this.getCopilot()
+	async proxy(role: AiProviderRole, path: string, headers: any, body: any, resp: ServerResponse) {
+		const copilot = await this.getCopilot(role)
 		const copilotUrl = chatCompletionsUrl(copilot, path)
 		try {
 			const response = await fetch(copilotUrl, {
@@ -140,12 +140,12 @@ failed: ${error.message}`)
 		}
 	}
 
-	async getCopilot() {
-		const result = await this.copilotService.findAll()
-		if (result.total === 0) {
+	async getCopilot(role: AiProviderRole) {
+		const result = await this.copilotService.findOneByRole(role)
+		if (!result) {
 			throw new Error('No copilot found')
 		}
-		return result.items[0]
+		return result
 	}
 }
 

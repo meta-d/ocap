@@ -57,6 +57,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
   readonly verbose = computed(() => this.#aiOptions().verbose)
 
   readonly llm = toSignal(this.copilot.llm$)
+  readonly secondaryLLM = toSignal(this.copilot.secondaryLLM$)
 
   /**
    * One conversation including user and assistant messages
@@ -802,7 +803,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       options.interruptAfter = command.agent.interruptAfter
     }
 
-    const _graph = await command.createGraph({ ...options, llm: this.llm() })
+    const _graph = await command.createGraph({ ...options, llm: this.llm(), secondaryChatModel: this.secondaryLLM() })
     if (_graph instanceof StateGraph) {
       return _graph.compile(options)
     } else {
@@ -851,128 +852,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
       this.upsertMessage(...messages)
     }
   }
-
-  // /**
-  //  * @deprecated use `triggerCommandAgent` instead
-  //  */
-  // async triggerRequest(
-  //   messagesSnapshot: CopilotChatMessage[],
-  //   { options, data }: ChatRequestOptions = {},
-  //   {
-  //     abortController,
-  //     assistantMessageId,
-  //     conversationId
-  //   }: {
-  //     abortController?: AbortController | null
-  //     assistantMessageId?: string
-  //     conversationId?: string
-  //   } = {}
-  // ): Promise<ChatRequest | null | undefined> {
-  //   this.error.set(undefined)
-  //   this.isLoading.set(true)
-  //   abortController = abortController ?? new AbortController()
-  //   const getCurrentMessages = () => this.lastConversation()?.messages ?? []
-
-  //   let chatRequest: ChatRequest = {
-  //     messages: messagesSnapshot as Message[],
-  //     options,
-  //     data
-  //   }
-
-  //   assistantMessageId = assistantMessageId ?? nanoid()
-  //   const thinkingMessage: CopilotChatMessage = {
-  //     id: assistantMessageId,
-  //     role: CopilotChatMessageRoleEnum.Assistant,
-  //     content: '',
-  //     status: 'thinking'
-  //   }
-
-  //   this.upsertMessage(thinkingMessage)
-
-  //   // Remove thinking message when abort
-  //   const removeMessageWhenAbort = () => {
-  //     this.stopMessage(thinkingMessage.id)
-  //   }
-  //   abortController.signal.addEventListener('abort', removeMessageWhenAbort)
-
-  //   try {
-  //     const message = await processChatStream({
-  //       getStreamedResponse: async () => {
-  //         return await this.copilot.chat(
-  //           {
-  //             body: {
-  //               // functions: this.getChatCompletionFunctionDescriptions(),
-  //               ...pick(this.aiOptions, 'temperature'),
-  //               ...(options?.body ?? {})
-  //             },
-  //             generateId: () => assistantMessageId,
-  //             // onResponse: async (): Promise<void> => {
-  //             //   this.deleteMessage(thinkingMessage)
-  //             // },
-  //             onFinish: (message) => {
-  //               this.upsertMessage({ ...message, status: 'answering' })
-  //             },
-  //             appendMessage: (message) => {
-  //               this.upsertMessage({ ...message, status: 'answering' })
-  //             },
-  //             abortController,
-  //             model: this.aiOptions.model
-  //           },
-  //           chatRequest,
-  //           { options, data }
-  //         )
-  //       },
-  //       experimental_onFunctionCall: this.copilotContext.getFunctionCallHandler(),
-  //       updateChatRequest: (newChatRequest) => {
-  //         chatRequest = newChatRequest
-  //         this.#logger?.debug(`The new chat request after FunctionCall is`, newChatRequest)
-  //       },
-  //       getCurrentMessages: () => getCurrentMessages(),
-  //       conversationId
-  //     })
-  //     // abortController = null
-
-  //     if (message) {
-  //       this.upsertMessage({ ...message, id: assistantMessageId, status: 'done' })
-  //     } else {
-  //       this.deleteMessage(assistantMessageId)
-  //     }
-  //     return null
-  //   } catch (err) {
-  //     // Ignore abort errors as they are expected.
-  //     if ((err as any).name === 'AbortError') {
-  //       // abortController = null
-  //       return null
-  //     }
-
-  //     if (err instanceof Error) {
-  //       this.error.set(err)
-  //       this.deleteMessage(assistantMessageId)
-  //       this.upsertMessage({
-  //         id: nanoid(),
-  //         role: CopilotChatMessageRoleEnum.Assistant,
-  //         content: '',
-  //         error: (<Error>err).message,
-  //         status: 'error'
-  //       })
-  //     }
-
-  //     return null
-  //   } finally {
-  //     abortController.signal.removeEventListener('abort', removeMessageWhenAbort)
-  //     this.isLoading.set(false)
-  //   }
-  // }
-
-  // /**
-  //  * @deprecated use `triggerCommandAgent` instead
-  //  */
-  // async append(message: Message, options: ChatRequestOptions): Promise<ChatRequest | null | undefined> {
-  //   if (!message.id) {
-  //     message.id = this.generateId()
-  //   }
-  //   return this.triggerRequest((this.lastConversation()?.messages ?? []).concat(message as Message), options)
-  // }
 
   generateId() {
     return nanoid()

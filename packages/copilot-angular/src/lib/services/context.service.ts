@@ -191,8 +191,12 @@ export class NgmCopilotContextService implements CopilotContext {
   }
 
   async getContextItem(uKey: string) {
-    const items = await firstValueFrom(this.items())
-    return items.find((item) => item.uKey === uKey)
+    const selectItems = this.items()
+    if (selectItems) {
+      const items = await firstValueFrom(selectItems)
+      return items.find((item) => item.uKey === uKey)
+    }
+    return null
   }
 }
 

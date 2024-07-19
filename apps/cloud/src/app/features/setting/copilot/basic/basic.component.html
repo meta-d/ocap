@@ -9,10 +9,6 @@
         <mat-select formControlName="provider">
           <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
           <mat-option [value]="AiProvider.Azure">Azure</mat-option>
-          <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
-          <mat-option [value]="AiProvider.DashScope">
-            {{ 'PAC.Copilot.Provider_DashScope' | translate: {Default: 'DashScope'} }}
-          </mat-option>
         </mat-select>
     </mat-form-field>
 
@@ -23,7 +19,7 @@
                 {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
             </mat-label>
             <input name="copilot-apikey" id="copilot-apikey" matInput formControlName="apiKey" type="password"
-                autocomplete="current-password">
+                autocomplete="ai-token">
         </mat-form-field>
 
         <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
@@ -56,6 +52,62 @@
         <mat-checkbox formControlName="showTokenizer">
             {{ 'PAC.Copilot.ShowTokenizer' | translate: {Default: 'Show Tokenizer'} }}
         </mat-checkbox>
+    </div>
+
+    <h2 class="text-lg py-4 mt-8">Secondary</h2>
+    <div formGroupName="secondary" class="flex flex-col">
+        <mat-slide-toggle class="my-8" formControlName="enabled">
+            {{ 'PAC.Copilot.EnableCopilot' | translate: {Default: 'Enable Copilot'} }}
+        </mat-slide-toggle>
+
+      @if (enSecondary) {
+        <mat-form-field appearance="fill">
+            <mat-label>{{ 'PAC.Copilot.Provider' | translate: {Default: 'Provider'} }}</mat-label>
+            <mat-select formControlName="provider">
+              <mat-option [value]="AiProvider.OpenAI">OpenAI</mat-option>
+              <mat-option [value]="AiProvider.Azure">Azure</mat-option>
+              <mat-option [value]="AiProvider.Ollama">Ollama</mat-option>
+              <mat-option [value]="AiProvider.DashScope">
+                {{ 'PAC.Copilot.Provider_DashScope' | translate: {Default: 'DashScope'} }}
+              </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <input type="text" id="username" name="username" autocomplete="username" aria-hidden="true" style="display: none;">
+        <div class="self-stretch flex justify-start items-center gap-4">
+            <mat-form-field appearance="fill" class="flex-1">
+                <mat-label>
+                    {{ 'PAC.Copilot.APIKey' | translate: {Default: 'API Key'} }}
+                </mat-label>
+                <input name="copilot-apikey" id="secondary-apikey" matInput formControlName="apiKey" type="password" autocomplete="secondary-token">
+            </mat-form-field>
+
+            <a mat-stroked-button [href]="providerHref[provider()]" target="_blank">
+                {{ 'PAC.Copilot.GetYourApiKey' | translate: {Default: 'Get your api key!'} }}
+            </a>
+        </div>
+
+        <div class="self-stretch flex justify-start items-center">
+            <mat-form-field appearance="fill" class="flex-1">
+                <mat-label>
+                    {{ 'PAC.Copilot.APIHost' | translate: {Default: 'API Host'} }}
+                </mat-label>
+                <input name="copilot-apihost" id="secondary-apihost" matInput formControlName="apiHost" type="text">
+            </mat-form-field>
+        </div>
+    
+        <mat-form-field appearance="fill" class="flex-1">
+            <mat-label>
+                {{ 'PAC.Copilot.DefaultModel' | translate: {Default: 'Default Model'} }}
+            </mat-label>
+    
+            <mat-select formControlName="defaultModel">
+              @for (model of secondaryModels(); track model.id) {
+                <mat-option [value]="model.id">{{model.name}}</mat-option>
+              }
+            </mat-select>
+        </mat-form-field>
+      }
     </div>
 
     <div class="self-stretch flex justify-start items-center mt-8">

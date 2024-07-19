@@ -31,12 +31,6 @@ export class CopilotController extends CrudController<Copilot> {
 	@HttpCode(HttpStatus.CREATED)
 	@Post()
 	async create(@Body() entity: DeepPartial<Copilot>): Promise<Copilot> {
-		if (entity.id) {
-			await this.service.update(entity.id, entity)
-		} else {
-			entity = await this.service.create(entity)
-		}
-		entity = await this.service.findOne(entity.id)
-		return entity as Copilot
+		return this.service.upsert(entity)
 	}
 }
