@@ -1,4 +1,4 @@
-import { DeepPartial, DimensionSchema, MeasureSchema, SlicerSchema, getChartType, makeChartEnum, tryFixDimension } from '@metad/core'
+import { DataSettingsSchema, DeepPartial, DimensionSchema, MeasureSchema, SlicerSchema, getChartType, makeChartEnum, tryFixDimension } from '@metad/core'
 import { ChartAnnotation, ChartType, EntityType, assignDeepOmitBlank, cloneDeep, omit } from '@metad/ocap-core'
 import { ChartMainTypeEnum } from '@metad/story/widgets/analytical-card'
 import { z } from 'zod'
@@ -48,10 +48,7 @@ export const ChartWidgetSchema = z.object({
     cols: z.number().describe('Width of the widget in page layout'),
     rows: z.number().describe('Height of the widget in page layout')
   }).optional(),
-  dataSettings: z
-    .object({
-      limit: z.number().optional().describe('The limit of the records')
-    })
+  dataSettings: DataSettingsSchema
     .optional()
     .describe('The data settings of the widget'),
   chart: ChartSchema.describe('Chart configuration'),

@@ -19,7 +19,8 @@ export function injectStoryWidgetCommand() {
     description: 'Describe the widget you want',
     agent: {
       type: CopilotAgentType.Graph,
-      conversation: true
+      conversation: true,
+      interruptBefore: ['tools']
     },
     createGraph
   })

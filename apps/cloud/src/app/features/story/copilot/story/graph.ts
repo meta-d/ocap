@@ -7,6 +7,7 @@ import { END, START, StateGraph } from '@langchain/langgraph/web'
 import { ChatOpenAI } from '@langchain/openai'
 import { AgentState, CreateGraphOptions, Team } from '@metad/copilot'
 import { DataSettings } from '@metad/ocap-core'
+import { injectCreateWidgetAgent } from '@metad/story/story'
 import { NGXLogger } from 'ngx-logger'
 import { CalculationAgentState, injectCreateCalculationGraph } from '../calculation'
 import { StoryAgentState, storyAgentState } from './types'
@@ -28,6 +29,8 @@ export function injectCreateStoryGraph() {
     }
   )
 
+  const createWidgetGraph = injectCreateWidgetAgent()
+
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     
 
@@ -47,15 +50,29 @@ export function injectCreateStoryGraph() {
       }
     }
 
-    const superAgent = await createStorySupervisorAgent(
+    const superAgent = await Team.createSupervisorAgent(
       llm,
+      [
+        {
+          name: 'calcualtion',
+          description: 'create a calculation measure for cube'
+        },
+        {
+          name: 'widget',
+          description: 'create a widget in story dashboard'
+        }
+      ],
+      [],
       `你是一名数据分析师。
 {role}
+{language}
 {context}
 
 Story dashbaord 通常由多个页面组成，每个页面是一个分析主题，每个主题的页面通常由一个过滤器栏、多个主要的维度输入控制器、多个指标、多个图形、一个或多个表格组成。
 `
     )
+
+    const widgetAgent = await createWidgetGraph({llm})
 
     const superGraph = new StateGraph({ channels: storyAgentState })
       // Add steps nodes
@@ -69,7 +86,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
           // const content = await fewShotPrompt.format({ input: state.input, context: state.context })
           return {
             input: state.input,
-            messages: [new HumanMessage(state.input)],
+            messages: [new HumanMessage(state.instructions)],
             role: state.role,
             context: state.context,
             tool_call_id: state.tool_call_id
@@ -88,9 +105,32 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
             }
           })
       )
+      .addNode(
+        'widget',
+        RunnableLambda.from(async (state: StoryAgentState) => {
+          const { messages } = await widgetAgent.invoke({
+            input: state.input,
+            messages: [new HumanMessage(state.instructions)],
+            role: state.role,
+            context: state.context,
+          })
+
+          return {
+            tool_call_id: null,
+            messages: [
+              new ToolMessage({
+                tool_call_id: state.tool_call_id,
+                content: messages[messages.length - 1].content
+              })
+            ]
+          }
+        })
+      )
       .addEdge('calculation', Team.SUPERVISOR_NAME)
+      .addEdge('widget', Team.SUPERVISOR_NAME)
       .addConditionalEdges(Team.SUPERVISOR_NAME, shouldContinue, {
         calculation: 'calculation',
+        widget: 'widget',
         [END]: END
       })
       .addEdge(START, Team.SUPERVISOR_NAME)
@@ -99,43 +139,45 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
   }
 }
 
-async function createStorySupervisorAgent(llm: ChatOpenAI, system: string) {
-  const members = ['calculation']
-  const functionDef = Team.createRouteFunctionDef(members)
-  const toolDef = {
-    type: 'function' as const,
-    function: functionDef
-  }
 
-  const modelWithTools = llm.bindTools([toolDef])
-  let prompt = ChatPromptTemplate.fromMessages([
-    ['system', system],
-    ['placeholder', '{messages}'],
-    ['system', `Given the conversation above, please give priority to answering questions with language only. If you need to execute a task, you need to get confirmation before calling the route function.
-To perform a task, you can select one of the following: {members}`]
-  ])
-  prompt = await prompt.partial({
-    members: members.join(', ')
-  })
-  const modelRunnable = prompt.pipe(modelWithTools)
 
-  const callModel = async (state: AgentState) => {
-    // TODO: Auto-promote streaming.
-    const message = await modelRunnable.invoke(state)
+// async function createStorySupervisorAgent(llm: ChatOpenAI, system: string) {
+//   const members = ['calculation']
+//   const functionDef = Team.createRouteFunctionDef(members)
+//   const toolDef = {
+//     type: 'function' as const,
+//     function: functionDef
+//   }
 
-    const newState = {
-      messages: [message as BaseMessage]
-    } as StoryAgentState
+//   const modelWithTools = llm.bindTools([toolDef])
+//   let prompt = ChatPromptTemplate.fromMessages([
+//     ['system', system],
+//     ['placeholder', '{messages}'],
+//     ['system', `Given the conversation above, please give priority to answering questions with language only. If you need to execute a task, you need to get confirmation before calling the route function.
+// To perform a task, you can select one of the following: {members}`]
+//   ])
+//   prompt = await prompt.partial({
+//     members: members.join(', ')
+//   })
+//   const modelRunnable = prompt.pipe(modelWithTools)
 
-    if (isAIMessage(message) && message.tool_calls && message.tool_calls[0]?.name === 'route') {
-      newState.tool_call_id = message.tool_calls[0].id
-      newState.next = message.tool_calls[0].args.next
-      newState.reasoning = message.tool_calls[0].args.reasoning
-      newState.instructions = message.tool_calls[0].args.instructions
-    }
+//   const callModel = async (state: AgentState) => {
+//     // TODO: Auto-promote streaming.
+//     const message = await modelRunnable.invoke(state)
 
-    return newState
-  }
+//     const newState = {
+//       messages: [message as BaseMessage]
+//     } as StoryAgentState
 
-  return callModel
-}
+//     if (isAIMessage(message) && message.tool_calls && message.tool_calls[0]?.name === 'route') {
+//       newState.tool_call_id = message.tool_calls[0].id
+//       newState.next = message.tool_calls[0].args.next
+//       newState.reasoning = message.tool_calls[0].args.reasoning
+//       newState.instructions = message.tool_calls[0].args.instructions
+//     }
+
+//     return newState
+//   }
+
+//   return callModel
+// }

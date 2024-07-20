@@ -2,7 +2,7 @@ import { computed, inject, signal } from '@angular/core'
 import { SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { CreateGraphOptions, createReactAgent } from '@metad/copilot'
-import { injectDimensionMemberTool, makeCubeRulesPrompt } from '@metad/core'
+import { injectDimensionMemberTool, makeCubeRulesPrompt, PROMPT_RETRIEVE_DIMENSION_MEMBER } from '@metad/core'
 import { NxStoryService } from '@metad/story/core'
 import { NGXLogger } from 'ngx-logger'
 import { derivedAsync } from 'ngxtension/derived-async'
@@ -37,18 +37,20 @@ export function injectCreateWidgetAgent() {
   const createTableTool = injectCreateTableTool(defaultDataSettings, defaultCube)
   const createChartTool = injectCreateChartTool(defaultDataSettings, defaultCube)
 
-  return async ({ llm }: CreateGraphOptions) => {
+  return async ({ llm, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     return createReactAgent({
       state: widgetAgentState,
       llm,
+      interruptBefore,
+      interruptAfter,
       tools: [memberRetrieverTool, createTableTool, createChartTool],
       messageModifier: async (state) => {
         const systemTemplate = `You are a BI analysis expert. Please use MDX technology to edit or create chart widget configurations based on Cube information.
 {{role}}
-You must first call the 'dimensionMemberKeySearch' tool to obtain documentation related to dimension member keys (unique member name).
-A dimension can only be used once, and a hierarchy cannot appear on multiple independent axes.
-
 ${makeCubeRulesPrompt()}
+
+${PROMPT_RETRIEVE_DIMENSION_MEMBER}
+A dimension can only be used once, and a hierarchy cannot appear on multiple independent axes.
 
 for examples
 
