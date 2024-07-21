@@ -174,6 +174,14 @@ export const AI_PROVIDERS: Record<AiProvider, Partial<AiProviderType>> = {
       {
         id: 'qwen2',
         name: 'Qwen 2'
+      },
+      {
+        id: 'gemma2',
+        name: 'Gemma 2'
+      },
+      {
+        id: 'phi3',
+        name: 'Phi-3'
       }
     ]
   }

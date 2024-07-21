@@ -1292,6 +1292,7 @@
       "APIKey": "API 密钥",
       "APIHost": "API 主机",
       "AskAICopilot": "向 AI 副驾驶询问问题",
+      "EnableSecondaryProvider": "启用副提供商",
       "Prompt": "提示",
       "SendPrompt": "发送提示",
       "CommandChartDesc": "描述图形的业务逻辑",

@@ -33,7 +33,7 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
       id: new FormControl(null),
       enabled: new FormControl(null),
       provider: new FormControl(AiProvider.OpenAI, [Validators.required]),
-      apiKey: new FormControl(null, [Validators.required]),
+      apiKey: new FormControl(null),
       apiHost: new FormControl(null),
       defaultModel: new FormControl<string>(null)
     })
@@ -46,7 +46,8 @@ export class CopilotBasicComponent extends TranslationBaseComponent {
   providerHref = {
     openai: 'https://platform.openai.com/account/api-keys',
     azure: 'https://azure.microsoft.com/en-us/free/cognitive-services/',
-    dashscope: 'https://help.aliyun.com/zh/dashscope/developer-reference/activate-dashscope-and-create-an-api-key'
+    dashscope: 'https://help.aliyun.com/zh/dashscope/developer-reference/activate-dashscope-and-create-an-api-key',
+    ollama: 'https://ollama.com/'
   }
 
   readonly provider = toSignal(this.formGroup.get('provider').valueChanges.pipe(startWith(AiProvider.OpenAI)))
