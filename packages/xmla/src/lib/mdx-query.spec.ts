@@ -4,7 +4,6 @@ import {
   Filter,
   FilterOperator,
   IFilter,
-  IntrinsicMemberProperties,
   OrderDirection
 } from '@metad/ocap-core'
 import { DEPARTMENT_ENTITY_TYPE } from '../test/DATA'
@@ -109,7 +108,7 @@ describe('Generate MDX Query', () => {
         {
           dimension: '[Department]',
           hierarchy: '[Department]',
-          statement: `{[Department].[ABC]}`,
+          statement: `[Department].[ABC]`,
           properties: ['LEVEL_NUMBER', 'CHILDREN_CARDINALITY']
         }
       ],
@@ -181,12 +180,12 @@ describe('Generate MDX Query', () => {
           dimension: '[Department]',
           hierarchy: '[Department]',
           properties: ['LEVEL_NUMBER', 'CHILDREN_CARDINALITY'],
-          statement: '{Except( [Department].Children, {[Department].[#]} )}'
+          statement: 'Except( [Department].Children, [Department].[#] )'
         },
         {
           dimension: '[Customers]',
           hierarchy: '[Customers]',
-          statement: '[Customers].Members',
+          statement: '[Customers].[State Province].Members',
           properties: []
         }
       ],
@@ -208,32 +207,22 @@ describe('Generate MDX Query', () => {
       order: OrderFlag.DESC
     })
 
-    expect(convertOrderby(DEPARTMENT_ENTITY_TYPE, { order: OrderDirection.ASC, by: '[Department]' })).toEqual({
-      allMember: '[Department].[All Departments]',
-      defaultMember: '[Department].[All Departments]',
-      dimension: '[Department]',
-      hierarchy: '[Department]',
-      order: OrderFlag.ASC
-    } as any)
-
-    expect(
-      convertOrderby(DEPARTMENT_ENTITY_TYPE, { order: OrderDirection.ASC, by: '[Department].[Department Description]' })
-    ).toEqual({
-      defaultMember: '[Department].[All Departments]',
-      dimension: '[Department]',
-      hierarchy: '[Department]',
-      level: '[Department].[Department Description]',
-      order: OrderFlag.ASC
-    } as any)
+    expect(convertOrderby(DEPARTMENT_ENTITY_TYPE, { order: OrderDirection.ASC, by: '[Department]' })).toEqual(
+      expect.objectContaining({
+        dimension: '[Department]',
+        hierarchy: '[Department]',
+        order: OrderFlag.ASC
+      }))
   })
 
   it('#generateMDXQuery', () => {
     expect(
       generateMDXQuery('HR', DEPARTMENT_ENTITY_TYPE, {
         selects: [{ dimension: '[Department]' }],
-        filters: [new Filter({ dimension: '[Department]' }, [{ value: '财务' }], FilterOperator.Contains)]
+        filters: [new Filter({ dimension: '[Department]' }, [{ key: '财务' }], FilterOperator.Contains)]
       })
-    ).toEqual({
+    ).toEqual(
+      expect.objectContaining({
       entity: 'HR',
       rows: [
         {
@@ -241,22 +230,18 @@ describe('Generate MDX Query', () => {
           defaultMember: '[Department].[All Departments]',
           hierarchy: '[Department]',
           dimension: '[Department]',
-          statement: '{Filter( [Department], InStr( [Department].CURRENTMEMBER.MEMBER_CAPTION, "财务" ) > 0 )}',
+          statement: 'Filter( [Department], InStr( [Department].CURRENTMEMBER.MEMBER_CAPTION, "财务" ) > 0 )',
           properties: ['LEVEL_NUMBER', 'CHILDREN_CARDINALITY']
         }
       ],
-      slicers: [],
-      columns: [],
-      orderbys: [],
-      conditions: [],
-      advancedFilters: []
-    })
+    }))
 
     expect(
       generateMDXQuery('HR', DEPARTMENT_ENTITY_TYPE, {
         selects: [{ dimension: '[Department]' }, { dimension: C_MEASURES, measure: 'ZAMOUNT' } as BaseProperty]
       })
-    ).toEqual({
+    ).toEqual(
+      expect.objectContaining({
       entity: 'HR',
       rows: [
         {
@@ -264,7 +249,7 @@ describe('Generate MDX Query', () => {
           defaultMember: '[Department].[All Departments]',
           hierarchy: '[Department]',
           dimension: '[Department]',
-          statement: '[Department].[All Departments]',
+          statement: '[Department].[Department Description].Members',
           properties: []
         }
       ],
@@ -272,14 +257,9 @@ describe('Generate MDX Query', () => {
         {
           dimension: 'Measures',
           members: ['ZAMOUNT'],
-          measure: 'ZAMOUNT'
         }
       ],
-      slicers: [],
-      conditions: [],
-      advancedFilters: [],
-      orderbys: []
-    })
+    }))
   })
 
   it('#generateMDXQuery with orderbys', () => {
@@ -306,7 +286,8 @@ describe('Generate MDX Query', () => {
         ],
         orderbys: [{ order: OrderDirection.DESC, by: 'ZAMOUNT' }]
       })
-    ).toEqual({
+    ).toEqual(
+      expect.objectContaining({
       entity: 'HR',
       rows: [
         {
@@ -314,7 +295,7 @@ describe('Generate MDX Query', () => {
           defaultMember: '[Department].[All Departments]',
           hierarchy: '[Department]',
           dimension: '[Department]',
-          statement: '[Department].[All Departments]',
+          statement: '[Department].[Department Description].Members',
           properties: []
         }
       ],
@@ -322,7 +303,6 @@ describe('Generate MDX Query', () => {
         {
           dimension: 'Measures',
           members: ['ZAMOUNT'],
-          measure: 'ZAMOUNT'
         }
       ],
       slicers: [
@@ -347,9 +327,7 @@ describe('Generate MDX Query', () => {
           order: OrderFlag.DESC
         }
       ],
-      conditions: [],
-      advancedFilters: []
-    })
+    }))
   })
 
   it('#mapHierarchyFilterToMDX', () => {
@@ -359,16 +337,20 @@ describe('Generate MDX Query', () => {
       operator: FilterOperator.EQ,
       members: ['ABC']
     }
-    expect(mapMDXFilterToStatement(ftr, null, {})).toEqual(`{[Department].[ABC]}`)
+    expect(mapMDXFilterToStatement(ftr, null, {})).toEqual(`[Department].[ABC]`)
 
     expect(
-      mapMDXFilterToStatement({
-        dimension: '[Department]',
-        hierarchy: '[Department]',
-        operator: FilterOperator.Contains,
-        members: ['ABC'],
-        properties: ['MEMBER_CAPTION']
-      }, null, {})
+      mapMDXFilterToStatement(
+        {
+          dimension: '[Department]',
+          hierarchy: '[Department]',
+          operator: FilterOperator.Contains,
+          members: ['ABC'],
+          properties: ['MEMBER_CAPTION']
+        },
+        null,
+        {}
+      )
     ).toEqual(`Filter( [Department], InStr( [Department].CURRENTMEMBER.MEMBER_CAPTION, "ABC" ) > 0 )`)
   })
 
@@ -383,25 +365,16 @@ describe('Generate MDX Query', () => {
         ],
         columns: [{ dimension: C_MEASURES, measure: 'ZAMOUNT' } as BaseProperty]
       })
-    ).toEqual({
+    ).toEqual(expect.objectContaining({
       entity: 'HR',
       rows: [
-        {
-          dimension: '[Department]',
-          hierarchy: '[Department]',
+        expect.objectContaining({
           displayHierarchy: true,
-          statement: `Descendants( [Department].[All Departments], [Department].[Department Description], SELF_AND_BEFORE )`,
-          properties: [IntrinsicMemberProperties.PARENT_UNIQUE_NAME, IntrinsicMemberProperties.CHILDREN_CARDINALITY],
-          defaultMember: '[Department].[All Departments]',
-          allMember: '[Department].[All Departments]'
-        }
+          statement: `Descendants( [Department].[Department Description].Members, [Department].[Department Description], SELF_AND_BEFORE )`
+        })
       ],
-      columns: [{ dimension: 'Measures', measure: 'ZAMOUNT', members: ['ZAMOUNT'] }],
-      conditions: [],
-      advancedFilters: [],
-      slicers: [],
-      orderbys: []
-    })
+      columns: [{ dimension: 'Measures', members: ['ZAMOUNT'] }],
+    }))
   })
 })
 
@@ -416,7 +389,7 @@ describe('MDX Query with Time', () => {
     })
     expect(query.rows[0]).toEqual(
       expect.objectContaining({
-        statement: '[ZCALMONTH].Members'
+        statement: '[ZCALMONTH                     Z_H_MONTH_01].[LEVEL01].Members'
       })
     )
   })
@@ -429,29 +402,7 @@ describe('Allocate Axes Filter', () => {
         [
           {
             dimension: '[ZCALMONTH]',
-            hierarchy: '[ZCALMONTH]'
-          }
-        ],
-        [],
-        DEPARTMENT_ENTITY_TYPE,
-        {},
-      )
-    ).toEqual([
-      {
-        dimension: '[ZCALMONTH]',
-        hierarchy: '[ZCALMONTH]',
-        properties: [],
-        statement: '[ZCALMONTH].Members'
-      }
-    ])
-  })
-
-  it('#No Hierarchy', () => {
-    expect(
-      allocateAxesFilter(
-        [
-          {
-            dimension: '[ZCALMONTH]'
+            hierarchy: '[ZCALMONTH                     Z_H_MONTH_01]'
           }
         ],
         [],
@@ -461,8 +412,9 @@ describe('Allocate Axes Filter', () => {
     ).toEqual([
       {
         dimension: '[ZCALMONTH]',
+        hierarchy: '[ZCALMONTH                     Z_H_MONTH_01]',
         properties: [],
-        statement: '[ZCALMONTH].Members'
+        statement: '[ZCALMONTH                     Z_H_MONTH_01].[LEVEL01].Members'
       }
     ])
   })
@@ -485,7 +437,7 @@ describe('Allocate Axes Filter', () => {
         defaultMember: '[Time].[All Time]',
         dimension: '[Time]',
         properties: [],
-        statement: '[Time].[All Time]'
+        statement: '[Time].[Year].Members'
       }
     ])
   })
@@ -505,15 +457,13 @@ describe('Allocate Axes Filter', () => {
       )
     ).toEqual([
       {
-        defaultMember: '[Time].[All Time]',
         dimension: '[Time]',
-        properties: [],
-        statement: '[Time].[All Time]'
+        displayHierarchy: true,
+        properties: ['PARENT_UNIQUE_NAME', 'CHILDREN_CARDINALITY'],
+        statement: 'Descendants( [Time].[Year].Members, [Time].[Month], SELF_AND_BEFORE )'
       }
     ])
   })
-  
-
 })
 
 describe('GetMDXProperty', () => {

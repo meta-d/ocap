@@ -307,11 +307,12 @@ export enum DIMENSION_TYPE {
 /**
  * Type of the level:
  * https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms126038(v=sql.110)
+ * https://github.com/OpenlinkFinancial/MXMLABridge/blob/master/src/custom/mondrian/xmla/handler/RowsetDefinition.java
  */
 export enum LEVEL_TYPE {
-  // SAP BW LEVEL00 TYPE IS 1
-  // LEVEL0* TYPE IS 0
-  MDLEVEL_TYPE_ALL = 1, // 有疑问, 不确定是
+  MDLEVEL_TYPE_REGULAR = 0,
+  MDLEVEL_TYPE_ALL = 1,
+  MDLEVEL_TYPE_CALCULATED = 2,
   // MDLEVEL_TYPE_GEO_CONTINENT = 1,
   MDLEVEL_TYPE_TIME_YEAR = 20,
   MDLEVEL_TYPE_TIME_QUARTER = 68,

@@ -1,6 +1,6 @@
 import { IDimensionMember, Property, PropertyHierarchy, PropertyLevel } from '@metad/ocap-core'
 import { lowerCase, lowerFirst, upperFirst } from 'lodash'
-import { DIMENSION_TYPE, XmlaMember } from './rowset'
+import { DIMENSION_TYPE, LEVEL_TYPE, XmlaMember } from './rowset'
 
 /**
  * MDX Cube Type
@@ -231,7 +231,7 @@ export interface MDXLevel extends PropertyLevel, MDXCube {
   levelCaption: string
   levelNumber: number
   levelCardinality: number
-  levelType: number
+  levelType: LEVEL_TYPE
   customRollupSettings: number
   levelUniqueSettings: number
   levelIsVisible: boolean

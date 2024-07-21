@@ -31,7 +31,6 @@ import {
   OcapCache,
   omit,
   omitBy,
-  ParameterProperty,
   Property,
   PropertyDimension,
   PropertyHierarchy,
