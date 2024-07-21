@@ -52,7 +52,7 @@
     </div>
 
     <mat-list class="pac-indicator-list" cdkDropList (cdkDropListDropped)="dropOrder($event)">
-      <ng-container *cdkVirtualFor="let item of indicators(); trackBy: trackById; templateCacheSize: 0">
+      <ng-container *cdkVirtualFor="let item of indicators$ | async; trackBy: trackById; templateCacheSize: 0">
         <mat-list-item matRipple [class.selected]="selected$() === item.id"
           (click)="click(item)"
           cdkDrag [cdkDragStartDelay]="200"

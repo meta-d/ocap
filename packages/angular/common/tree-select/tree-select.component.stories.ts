@@ -119,15 +119,14 @@ export const TREE_NODE_DATA = [
 
 type Story = StoryObj<NgmTreeSelectComponent<unknown>>
 
-export const ATreeSelectVirtualScroll = {
+export const ATreeSelectVirtualScroll: Story = {
   args: {
     label: '饮食选择器',
     placeholder: '请选择你喜欢的一种食品',
     treeNodes: TREE_NODE_DATA,
-    model: 'Apple',
     searchable: true,
     virtualScroll: true
-  }
+  },
 }
 
 // const Template: Story<any> = (args: any) => ({

@@ -97,7 +97,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-2 h-4 w-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        <input #searchInput class="flex-1 p-1 pl-8 rounded-lg outline-none placeholder:opacity-30 focus:placeholder:opacity-50 transition-all
+        <input #searchInput class="flex-1 max-w-full p-1 pl-8 rounded-lg outline-none placeholder:opacity-30 focus:placeholder:opacity-50 transition-all
           bg-black/5 hover:bg-black/10 focus:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 dark:focus:bg-white/10"
           type="text"
           [placeholder]=" ('PAC.ACTIONS.Search' | translate: {Default: 'Search'})+'...'"
@@ -117,8 +117,8 @@
       @if(copilotEnabled$()) {
         <button mat-icon-button class="pac-copilot-trigger font-notoColorEmoji"
           displayDensity="cosy"
-          [class.active]="copilotDrawer.opened"
-          [color]="copilotDrawer.opened?'accent':''"
+          [class.active]="copilotDrawer.opened()"
+          [color]="copilotDrawer.opened() ? 'accent':''"
           (click)="copilotDrawer.toggle()"
         >
           <div class="flex justify-center items-center text-xl">🤖</div>
@@ -137,7 +137,7 @@
       </button>
     </mat-toolbar>
 
-    <ngm-drawer-container class="flex-1 z-10" [mode]="isMobile() ? 'over' : 'side'"
+    <ngm-drawer-container class="relative flex-1 z-10" [mode]="isMobile() ? 'over' : 'side'"
       [(opened)]="copilotDrawerOpened">
       <ngm-drawer-content class="flex-1 relative flex" [@routeAnimations]="o.isActivated && o.activatedRouteData?.title">
         @if(copilotEnabled$()) {

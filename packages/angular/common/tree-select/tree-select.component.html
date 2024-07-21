@@ -1,4 +1,4 @@
-@if (!treeViewer) {
+@if (!treeViewer()) {
   <mat-form-field class="flex-1" [appearance]="appearance" [floatLabel]="floatLabel" [color]="color()">
     <mat-label>{{ label }}</mat-label>
 
@@ -19,7 +19,10 @@
         [formControl]="autoControl"
         [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        (matChipInputTokenEnd)="add($event)"/>
+        (matChipInputTokenEnd)="add($event)"
+        (focus)="focus.emit($event)"
+        (blur)="blur.emit($event)"
+      />
 
       <!-- 
         [class.multiple]="multiple"
@@ -111,6 +114,8 @@
       [panelClass]="'ngm-tree-select__panel ' + (multiple ? 'multiple' : '') + ' ' + (displayDensity==='compact' ? 'ngm-density__compact' : '') + ' ' + (displayDensity==='cosy' ? 'ngm-density__cosy' : '')"
       [multiple]="multiple"
       [placeholder]="placeholder"
+      (focus)="focus.emit($event)"
+      (blur)="blur.emit($event)"
     >
 
       <mat-select-trigger class="flex items-center">
@@ -130,7 +135,7 @@
         </span>
       </mat-select-trigger>
 
-      <div *ngIf="searchable" class="mat-option mat-focus-indicator ngm-tree-select__option-toolbar flex justify-start items-center"
+      <div *ngIf="searchable()" class="mat-option mat-focus-indicator ngm-tree-select__option-toolbar flex justify-start items-center"
         [class.mat-option-multiple]="multiple"
         >
         <ngm-search class="flex-1 px-1" [displayDensity]="displayDensity"
@@ -208,7 +213,7 @@
     <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
   </mat-form-field>
 } @else {
-  <ngm-search *ngIf="searchable" class="w-full shrink-0 p-2" [formControl]="autoControl"></ngm-search>
+  <ngm-search *ngIf="searchable()" class="w-full shrink-0 p-2" [formControl]="autoControl"></ngm-search>
 
   <mat-tree class="selection ngm-tree-select__panel flex-1"
     [dataSource]="dataSource"

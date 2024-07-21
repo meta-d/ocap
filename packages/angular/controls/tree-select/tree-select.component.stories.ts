@@ -5,16 +5,16 @@ import { TREE_NODE_DATA } from '@metad/ocap-angular/common/tree-select/tree-sele
 import {
   DisplayDensity,
   NgmAppearance,
+  NgmDSCoreService,
   NgmMissingTranslationHandler,
-  OcapCoreModule,
   OCAP_AGENT_TOKEN,
   OCAP_DATASOURCE_TOKEN,
   OCAP_MODEL_TOKEN,
-  NgmDSCoreService
+  OcapCoreModule
 } from '@metad/ocap-angular/core'
-import { AgentType, DataSettings, DataSource, Dimension, DisplayBehaviour, Type } from '@metad/ocap-core'
+import { AgentType, DataSettings, DataSource, Dimension, Type } from '@metad/ocap-core'
 import { MissingTranslationHandler, TranslateModule } from '@ngx-translate/core'
-import { Meta, moduleMetadata } from '@storybook/angular'
+import { Meta, moduleMetadata, StoryObj } from '@storybook/angular'
 import { CUBE_SALES_ORDER, MockAgent } from '../../mock/agent-mock.service'
 import { NgmControlsModule } from '../controls.module'
 import { MemberTreeSelectOptions, NgmMemberTreeSelectComponent } from './tree-select.component'
@@ -28,11 +28,11 @@ import { MemberTreeSelectOptions, NgmMemberTreeSelectComponent } from './tree-se
     [options]="options"
     [data]="data"
     [ngModel]="model"
-    (ngModelChange)="onModelChange($event)">
+    (ngModelChange)="onModelChange($event)"
+  >
   </ngm-member-tree-select>`
 })
 class TestMemberTreeSelectComponent<T> {
-  
   @Input() label: string
   @Input() dataSettings: DataSettings
   @Input() dimension: Dimension
@@ -40,9 +40,7 @@ class TestMemberTreeSelectComponent<T> {
   @Input() options: MemberTreeSelectOptions
   @Input() data
   @Input() model = {
-    members: [
-      { value: 'Fruit' }
-    ]
+    members: [{ value: 'Fruit' }]
   }
 
   onModelChange(event) {
@@ -96,9 +94,7 @@ export default {
               ignoreUnknownProperty: true
             },
             schema: {
-              cubes: [
-                CUBE_SALES_ORDER
-              ]
+              cubes: [CUBE_SALES_ORDER]
             }
           },
           multi: true
@@ -108,11 +104,12 @@ export default {
   ]
 } as Meta<NgmMemberTreeSelectComponent>
 
+type Story = StoryObj<NgmMemberTreeSelectComponent>
 
 // const Template: Story<NgmMemberTreeSelectComponent> = (args: NgmMemberTreeSelectComponent) => ({
 //   props: args,
 //   template: `<test-member-tree-select [label]="label"
-//     [dataSettings]="dataSettings"  
+//     [dataSettings]="dataSettings"
 //     [dimension]="dimension"
 //     [appearance]="appearance"
 //     [data]="data"
@@ -120,16 +117,17 @@ export default {
 //   ></test-member-tree-select>`
 // })
 
-// export const Primary = Template.bind({})
-// Primary.args = {
-//   dimension: {
-//     dimension: 'product'
-//   },
-//   appearance: {
-//     displayDensity: DisplayDensity.compact
-//   },
-//   data: TREE_NODE_DATA
-// }
+export const Primary: Story = {
+  args: {
+    dimension: {
+      dimension: 'product'
+    },
+    appearance: {
+      displayDensity: DisplayDensity.compact
+    },
+    data: TREE_NODE_DATA
+  }
+}
 
 // export const FromDataSource = Template.bind({})
 // FromDataSource.args = {
