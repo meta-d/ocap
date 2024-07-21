@@ -751,7 +751,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.upsertMessage({
           id: assistantId,
           role: CopilotChatMessageRoleEnum.Assistant,
-          status: end ? 'done' : 'pending'
+          status: 'done'
         })
       } else {
         this.deleteMessage(assistantId)

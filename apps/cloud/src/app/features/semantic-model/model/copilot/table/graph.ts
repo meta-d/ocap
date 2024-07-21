@@ -11,11 +11,11 @@ export const TABLE_CREATOR_NAME = 'TableCreator'
 
 function createSystemPrompt(dialect: string) {
   return (
-    `You are a cube modeling expert. Let's create or edit the pyhsical table!` +
-    `\n{role}` +
-    `\nThe database dialect is '${dialect}'.` +
-    `\n\n` +
-    `{context}`
+    `You are a cube modeling expert. Let's create or edit the pyhsical table!
+{role}
+The database dialect is '${dialect}'.
+You need add short label to the created table and it's columns.
+{context}`
   )
 }
 

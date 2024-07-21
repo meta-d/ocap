@@ -1,10 +1,8 @@
 import { inject, signal } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
-import { BaseMessage, HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
-import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { HumanMessage, isAIMessage, ToolMessage } from '@langchain/core/messages'
 import { RunnableLambda } from '@langchain/core/runnables'
 import { END, START, StateGraph } from '@langchain/langgraph/web'
-import { ChatOpenAI } from '@langchain/openai'
 import { AgentState, CreateGraphOptions, Team } from '@metad/copilot'
 import { DataSettings } from '@metad/ocap-core'
 import { injectCreateWidgetAgent } from '@metad/story/story'
@@ -32,8 +30,6 @@ export function injectCreateStoryGraph() {
   const createWidgetGraph = injectCreateWidgetAgent()
 
   return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
-    
-
     const calculationAgent = (await createCalculationGraph({ llm })).compile()
 
     const shouldContinue = (state: AgentState) => {
@@ -72,7 +68,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
 `
     )
 
-    const widgetAgent = await createWidgetGraph({llm})
+    const widgetAgent = await createWidgetGraph({ llm })
 
     const superGraph = new StateGraph({ channels: storyAgentState })
       // Add steps nodes
@@ -112,7 +108,7 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
             input: state.input,
             messages: [new HumanMessage(state.instructions)],
             role: state.role,
-            context: state.context,
+            context: state.context
           })
 
           return {
@@ -138,46 +134,3 @@ Story dashbaord 通常由多个页面组成，每个页面是一个分析主题�
     return superGraph
   }
 }
-
-
-
-// async function createStorySupervisorAgent(llm: ChatOpenAI, system: string) {
-//   const members = ['calculation']
-//   const functionDef = Team.createRouteFunctionDef(members)
-//   const toolDef = {
-//     type: 'function' as const,
-//     function: functionDef
-//   }
-
-//   const modelWithTools = llm.bindTools([toolDef])
-//   let prompt = ChatPromptTemplate.fromMessages([
-//     ['system', system],
-//     ['placeholder', '{messages}'],
-//     ['system', `Given the conversation above, please give priority to answering questions with language only. If you need to execute a task, you need to get confirmation before calling the route function.
-// To perform a task, you can select one of the following: {members}`]
-//   ])
-//   prompt = await prompt.partial({
-//     members: members.join(', ')
-//   })
-//   const modelRunnable = prompt.pipe(modelWithTools)
-
-//   const callModel = async (state: AgentState) => {
-//     // TODO: Auto-promote streaming.
-//     const message = await modelRunnable.invoke(state)
-
-//     const newState = {
-//       messages: [message as BaseMessage]
-//     } as StoryAgentState
-
-//     if (isAIMessage(message) && message.tool_calls && message.tool_calls[0]?.name === 'route') {
-//       newState.tool_call_id = message.tool_calls[0].id
-//       newState.next = message.tool_calls[0].args.next
-//       newState.reasoning = message.tool_calls[0].args.reasoning
-//       newState.instructions = message.tool_calls[0].args.instructions
-//     }
-
-//     return newState
-//   }
-
-//   return callModel
-// }
