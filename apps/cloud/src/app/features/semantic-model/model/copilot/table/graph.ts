@@ -13,6 +13,7 @@ function createSystemPrompt(dialect: string) {
   return (
     `You are a cube modeling expert. Let's create or edit the pyhsical table!
 {role}
+{language}
 The database dialect is '${dialect}'.
 You need add short label to the created table and it's columns.
 {context}`
@@ -25,13 +26,15 @@ export function injectTableCreator() {
 
   const dialect = modelService.dialect
 
-  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     const state: StateGraphArgs<AgentState>['channels'] = createCopilotAgentState()
     return createReactAgent({
       llm,
       checkpointSaver: checkpointer,
       state,
-      tools: [createTableTool],
+      interruptBefore,
+      interruptAfter,
+      tools: [ createTableTool ],
       messageModifier: async (state) => {
         const system = await SystemMessagePromptTemplate.fromTemplate(createSystemPrompt(dialect())).format(state)
         return [new SystemMessage(system), ...state.messages]

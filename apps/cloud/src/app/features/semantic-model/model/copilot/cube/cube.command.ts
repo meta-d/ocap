@@ -49,7 +49,8 @@ export function injectCubeCommand(dimensions: Signal<Property[]>) {
     },
     agent: {
       type: CopilotAgentType.Graph,
-      conversation: true
+      conversation: true,
+      interruptBefore: ['tools']
     },
     fewShotPrompt,
     createGraph: createCube

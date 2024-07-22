@@ -662,7 +662,7 @@
       "SyncMembersJobRunning": "同步成员任务正在运行",
 
       "QUERY": {
-        "TITLE": "查询",
+        "TITLE": "查询实验室",
         "SaveAsModel": "另存为模型",
         "SaveAsDBInit": "另存为数据库初始化脚本",
         "TableSchema": "表结构",
@@ -1717,7 +1717,6 @@
       }
     },
     "WIDGETS": {
-
       "FilterBar": {
         "Query": "查询"
       },

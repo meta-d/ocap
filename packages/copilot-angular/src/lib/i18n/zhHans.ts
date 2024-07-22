@@ -47,7 +47,7 @@ export const ZhHans = {
     Generate: '生成',
     GenerateWithAI: '使用 AI 生成',
     Invoke: '调用',
-    Instructions: '说明',
+    Instructions: '指令',
     Reasoning: '推理',
   }
 }

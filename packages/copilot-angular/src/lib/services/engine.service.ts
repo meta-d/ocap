@@ -574,7 +574,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
     // Get chat history messages
     // const chatHistoryMessages = this.chatHistoryMessages()
     const lastUserMessages = this.lastUserMessages()
-    let inputState: PregelInputType = null
 
     // Context content
     let contextContent = null
@@ -584,16 +583,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         return
       }
       contextContent = result.contextContent
-
-      const messages = [...lastUserMessages]
-      if (content) {
-        messages.push(new HumanMessage({ content }))
-      }
-      inputState = {
-        input: content,
-        messages,
-        context: contextContent ? contextContent : null
-      }
     }
 
     // Update conversation status to 'answering'
@@ -652,7 +641,6 @@ export class NgmCopilotEngineService implements CopilotEngine {
         this.upsertMessage({
           id: assistantId,
           role: CopilotChatMessageRoleEnum.Assistant,
-          // content: '',
           status: 'error',
           error: err.message
         })
@@ -664,8 +652,17 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }
     }
 
-    const verbose = this.verbose()
     try {
+      let inputState: PregelInputType = null
+      const messages = [...lastUserMessages]
+      if (content) {
+        messages.push(new HumanMessage({ content }))
+        inputState = {
+          input: content,
+          messages,
+          context: contextContent ? contextContent : null
+        }
+      }
       const streamResults = await graph.stream(
         inputState
           ? {
@@ -682,12 +679,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
         }
       )
 
-      // let verboseContent = ''
-      const message = {} as NgmCopilotChatMessage
+      let verboseContent = ''
       let end = false
       try {
         for await (const output of streamResults) {
           if (!output?.__end__) {
+            const message = {templateRef: null} as NgmCopilotChatMessage
             let content = ''
             Object.entries(output).forEach(
               ([key, value]: [
@@ -700,12 +697,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
                 }
               ]) => {
                 content += content ? '\n' : ''
-                if (value.messages && value.messages[0]?.content) {
-                  if (verbose) {
-                    content += `<b>${key}</b>\n`
-                  }
-                  content += value.messages.map((m) => m.content).join('\n\n')
-                } else if (value.next) {
+                // Prioritize Routes
+                if (value.next) {
                   if (value.next === 'FINISH' || value.next === END) {
                     end = true
                   } else {
@@ -727,25 +720,31 @@ export class NgmCopilotEngineService implements CopilotEngine {
                       this.#translate.instant('Copilot.Reasoning', { Default: 'Reasoning' }) +
                       `</b>: ${value.reasoning || ''}`
                   }
+                } else if (value.messages && value.messages[0]?.content) {
+                  if (this.verbose()) {
+                    content += `<b>${key}</b>\n`
+                  }
+                  content += value.messages.map((m) => m.content).join('\n\n')
                 }
               }
             )
 
             if (content) {
-              if (verbose) {
-                if (message.content) {
-                  message.content += '\n\n<br>'
+              if (this.verbose()) {
+                if (verboseContent) {
+                  verboseContent += '\n\n<br>'
                 }
-                message.content += '✨ ' + content
+                verboseContent += '✨ ' + content
               } else {
-                message.content = content
+                verboseContent = content
               }
 
               this.upsertMessage({
                 ...message,
                 id: assistantId,
                 role: CopilotChatMessageRoleEnum.Assistant,
-                status: 'thinking'
+                status: 'thinking',
+                content: verboseContent
               })
             }
             if (abort()) {

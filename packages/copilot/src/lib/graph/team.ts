@@ -96,8 +96,8 @@ export function createRouteFunctionDef(members: string[]) {
   }
 }
 
-export async function createSupervisor(llm: ChatOpenAI, members: string[], systemPrompt?: string): Promise<Runnable> {
-  const options = ['FINISH', ...members]
+export async function createSupervisor(llm: ChatOpenAI, members: {name: string; description: string;}[], systemPrompt?: string): Promise<Runnable> {
+  const options = ['FINISH', ...members.map(({name}) => name)]
   const functionDef = createRouteFunctionDef(options)
   const toolDef = {
     type: 'function' as const,
@@ -110,7 +110,7 @@ export async function createSupervisor(llm: ChatOpenAI, members: string[], syste
   ])
   prompt = await prompt.partial({
     options: options.join(', '),
-    team_members: members.join(', ')
+    team_members: members.map(({name, description}) => `**${name}**: ${description}`).join('\n')
   })
 
   const supervisor = prompt

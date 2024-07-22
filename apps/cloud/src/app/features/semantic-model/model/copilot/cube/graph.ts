@@ -28,8 +28,9 @@ export function injectCubeModeler() {
   const systemContext = async () => {
     const sharedDimensions = dimensions().filter((dimension) => dimension.hierarchies?.length)
     return (
-      `{role}\n` +
-      ` The cube name can't be the same as the fact table name.` +
+`{role}
+{language}
+The cube name can't be the same as the fact table name.` +
       (cubes().length
         ? ` The cube name cannot be any of the following existing cubes [${cubes()
             .map(({ name }) => name)
@@ -46,17 +47,19 @@ ${markdownSharedDimensions(sharedDimensions)}
     )
   }
 
-  return async ({ llm, checkpointer }: CreateGraphOptions) => {
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
     const state: StateGraphArgs<AgentState>['channels'] = createCopilotAgentState()
     return createReactAgent({
       llm,
       checkpointSaver: checkpointer,
       state,
+      interruptBefore,
+      interruptAfter,
       tools: [selectTablesTool, queryTablesTool, createCubeTool],
       messageModifier: async (state) => {
         const system = await SystemMessagePromptTemplate.fromTemplate(
           SYSTEM_PROMPT + `\n\n${await systemContext()}\n\n` + `{context}`
-        ).format(state as any)
+        ).format(state)
         return [new SystemMessage(system), ...state.messages]
       }
     })
@@ -67,16 +70,17 @@ export function injectRunCubeModeler() {
   const createCubeModeler = injectCubeModeler()
   const fewShotPrompt = injectAgentFewShotTemplate(CubeCommandName, { k: 1, vectorStore: null })
 
-  return async ({ llm, checkpointer }: CreateGraphOptions) => {
-    const agent = await createCubeModeler({ llm, checkpointer })
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
+    const agent = await createCubeModeler({ llm, checkpointer, interruptBefore, interruptAfter })
 
     return RunnableLambda.from(async (state: AgentState) => {
-      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      const content = await fewShotPrompt.format({ input: state.input, context: '' })
       return {
         input: state.input,
         messages: [new HumanMessage(content)],
         role: state.role,
-        context: state.context
+        context: state.context,
+        language: state.language
       }
     })
       .pipe(agent)

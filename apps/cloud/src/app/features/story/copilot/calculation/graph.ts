@@ -67,23 +67,37 @@ export async function createCalculationGraph({
   const supervisorNode = await Team.createSupervisor(
     llm,
     [
-      RESTRICTED_AGENT_NAME,
-      CONDITIONAL_AGGREGATION_AGENT_NAME,
-      VARIANCE_AGENT_NAME,
-      FORMULA_AGENT_NAME,
-      MEASURE_CONTROL_AGENT_NAME
+      {
+        name: RESTRICTED_AGENT_NAME,
+        description: 'This agent allows the creation of measures that aggregate values based on restrictions imposed by dimension members. It is useful when you need to filter or limit the data aggregation to specific members of a dimension.'
+      },
+      {
+        name: CONDITIONAL_AGGREGATION_AGENT_NAME,
+        description: 'This agent provides the ability to create aggregated measures based on various operations and dimensions. It supports operations such as Count, Sum, TopCount, TopSum, Min, Max, and Avg. This function is suitable when you need to perform different types of aggregations based on certain conditions.'
+      },
+      {
+        name: VARIANCE_AGENT_NAME,
+        description: 'This agent is designed to create measures that calculate the variance or ratio between different members within a dimension. It is useful for comparing data, such as year-over-year changes, month-over-month changes, differences between versions, or differences between accounts.'
+      },
+      {
+        name: FORMULA_AGENT_NAME,
+        description: 'When none of the above agents can meet the requirements, this agent allows the creation of calculated measures using MDX (Multidimensional Expressions) formulas. It provides the flexibility to define complex calculations and custom aggregations.'
+      },
+      {
+        name: MEASURE_CONTROL_AGENT_NAME,
+        description: 'This agent create a calculation measure that allows the selection among multiple measures. It is useful when you need to provide users with the ability to choose from different measures dynamically.'
+      }
     ],
-    `You are a supervisor responsible for selecting one of the following workers: {team_members} .` +
-      ` Here are the explanations of these workers to help the agent select the appropriate tools for creating a calculation measure in Cube:` +
-      `\n1. **RestrictedMeasureAgent**: This agent allows the creation of measures that aggregate values based on restrictions imposed by dimension members. It is useful when you need to filter or limit the data aggregation to specific members of a dimension.` +
-      `\n2. **ConditionalAggregationAgent**: This agent provides the ability to create aggregated measures based on various operations and dimensions. It supports operations such as Count, Sum, TopCount, TopSum, Min, Max, and Avg. This function is suitable when you need to perform different types of aggregations based on certain conditions.` +
-      `\n3. **VarianceMeasureAgent**: This agent is designed to create measures that calculate the variance or ratio between different members within a dimension. It is useful for comparing data, such as year-over-year changes, month-over-month changes, differences between versions, or differences between accounts.` +
-      `\n4. **FormulaMeasureAgent**: When none of the above agents can meet the requirements, this agent allows the creation of calculated measures using MDX (Multidimensional Expressions) formulas. It provides the flexibility to define complex calculations and custom aggregations.` +
-      `\n5. **MeasureControlAgent**: This agent create a calculation measure that allows the selection among multiple measures. It is useful when you need to provide users with the ability to choose from different measures dynamically.` +
-      ` Based on the following user request, select an appropriate worker to create a calculation measure.` +
-      ` When finished, respond FINISH. Choose strategically to minimize the number of steps taken.` +
-      `\n\n{role}` +
-      `\n\n{context}`
+    `You are a supervisor responsible for selecting one of the following workers:
+{team_members}
+
+Based on the following user request, select an appropriate worker to create a calculation measure.
+When finished, respond FINISH. Choose strategically to minimize the number of steps taken.
+
+{role}
+
+{context}`
+
   )
 
   const createFormulaAgent = await createFormulaWorker({
