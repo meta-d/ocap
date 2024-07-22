@@ -109,7 +109,7 @@ export function injectRunModelerPlanner() {
     const agent = await createModelerPlanner({ llm })
 
     return RunnableLambda.from(async (state: AgentState) => {
-      const content = await fewShotPrompt.format({ input: state.input, context: state.context })
+      const content = await fewShotPrompt.format({ input: state.input, context: '' })
       return {
         input: state.input,
         messages: [new HumanMessage(content)],
@@ -121,80 +121,3 @@ export function injectRunModelerPlanner() {
       .pipe(Team.joinGraph)
   }
 }
-
-// export function createPlannerReactAgent(props: {
-//   llm: ChatOpenAI
-//   tools: StructuredTool[]
-//   systemMessage: ChatPromptTemplate
-// }) {
-//   const { llm, tools, systemMessage } = props
-
-//   const schema: StateGraphArgs<IPlanState>['channels'] = {
-//     ...createCopilotAgentState(),
-//     objective: {
-//       value: (left: string, right: string) => right ?? left ?? '',
-//       default: () => ''
-//     }
-//   }
-
-//   const endict = new RunnableLambda({
-//     func: (state: IPlanState) => (state)
-//   })
-
-//   const prompt = ChatPromptTemplate.fromMessages([systemMessage, ['placeholder', '{messages}']])
-
-//   const boundModel = endict.pipe(prompt).pipe(
-//     llm.bindTools([
-//       ...tools,
-//     ])
-//   )
-
-//   const toolNode = new ToolNode<{ messages: BaseMessage[] }>(tools)
-
-//   // Define the function that determines whether to continue or not
-//   const route = (state: IPlanState) => {
-//     const { messages } = state
-//     const lastMessage = messages[messages.length - 1];
-//     if (
-//       isAIMessage(lastMessage) &&
-//       (!lastMessage.tool_calls || lastMessage.tool_calls.length === 0)
-//     ) {
-//       return END;
-//     }
-
-//     // Otherwise we continue
-//     return 'tools'
-//   }
-
-//   // Define the function that calls the model
-//   const callModel = async (state: IPlanState, config?: any) => {
-//     const response = await boundModel.invoke(state)
-//     // We return an object, because this will get added to the existing list
-//     return { messages: [response] }
-//   }
-
-//   // Define a new graph
-//   const workflow = new StateGraph<IPlanState>({
-//     channels: schema
-//   })
-//     .addNode('agent', callModel)
-//     .addNode('tools', toolNode)
-//     .addEdge(START, 'agent')
-//     .addConditionalEdges(
-//       // First, we define the start node. We use `agent`.
-//       // This means these are the edges taken after the `agent` node is called.
-//       'agent',
-//       // Next, we pass in the function that will determine which node is called next.
-//       route
-//     )
-//     // We now add a normal edge from `tools` to `agent`.
-//     // This means that after `tools` is called, `agent` node is called next.
-//     .addEdge('tools', 'agent')
-
-//   // // Finally, we compile it!
-//   // // This compiles it into a LangChain Runnable,
-//   // // meaning you can use it as you would any other runnable
-//   // const app = workflow.compile()
-
-//   return workflow
-// }

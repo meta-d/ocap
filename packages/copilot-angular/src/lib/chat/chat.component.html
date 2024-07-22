@@ -31,6 +31,31 @@
 <div class="ngm-copilot-chat__content relative flex-1 flex flex-col overflow-hidden">
     <div #chatsContent class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
 
+      <!-- <div class="ngm-copilot__route-table z-10">
+        <table class="table-auto">
+          <tbody>
+            <tr>
+              <td class="font-bold ">Next</td>
+              <td>next123</td>
+            </tr>
+      
+            <tr>
+              <td class="font-bold">Instructions</td>
+              <td>
+                <textarea matInput type="text" class="ngm-copilot__route-instructions-input w-full"
+                  [ngModel]="'Instructions Instructions Instructions Instructions Instructions Instructions Instructions Instructions'"
+                ></textarea>
+              </td>
+            </tr>
+      
+            <tr>
+              <td class="font-bold">Reasoning</td>
+              <td>Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning Reasoning </td>
+            </tr>
+          </tbody>
+        </table>
+      </div> -->
+
       @for (conversation of (copilotEnabled() ? conversations() : _mockConversations); track $index; let last = $last) {
         @if (conversation.command && !conversation.command.hidden) {
           <div class="ngm-copilot-chat__command ngm-copilot-command-button self-center text-xs font-bold px-2.5 py-0.5 rounded bg-gray-200/50 dark:bg-neutral-700">/{{conversation.command.name}}</div>
@@ -53,7 +78,7 @@
                       </div>
                       <div class="flex-1 flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group">
                         @if (message.templateRef) {
-                          <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message}"></ng-container>
+                          <ng-container *ngTemplateOutlet="message.templateRef; context: {message: message, conversation: conversation}"></ng-container>
                         } @else {
                           @if (message.content) {
                             <div class="ngm-copilot-chat__message-content w-full" [ngClass]="{'thinking': message.status === 'thinking'}">
@@ -544,3 +569,31 @@
       }
     </ng-template>
 </mat-menu>
+
+<ng-template #routeTemplate let-message="message" let-conversation="conversation">
+  <div class="ngm-copilot__route-table">
+    <table class="table-auto">
+      <tbody>
+        <tr>
+          <td class="font-bold">Next</td>
+          <td>{{message.data.next}}</td>
+        </tr>
+
+        <tr>
+          <td class="font-bold">Instructions</td>
+          <td>
+            <textarea matInput type="text" class="ngm-copilot__route-instructions-input w-full"
+              [ngModel]="message.data.instructions"
+              (ngModelChange)="onRouteChange(conversation.id, $event)"
+            ></textarea>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="font-bold">Reasoning</td>
+          <td>{{message.data.reasoning}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-template>

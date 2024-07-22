@@ -10,6 +10,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  TemplateRef,
   ViewChild,
   computed,
   effect,
@@ -48,7 +49,6 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotContextItem,
-  CopilotEngine
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
 import { nanoid } from 'nanoid'
@@ -137,9 +137,9 @@ export class NgmCopilotChatComponent {
 
   readonly _snackBar = inject(MatSnackBar)
   private copilotService = inject(NgmCopilotService)
-  readonly #copilotEngine?: CopilotEngine = inject(NgmCopilotEngineService, { optional: true })
+  readonly #copilotEngine?: NgmCopilotEngineService = inject(NgmCopilotEngineService, { optional: true })
 
-  readonly copilotEngine$ = signal<CopilotEngine>(this.#copilotEngine)
+  readonly copilotEngine$ = signal<NgmCopilotEngineService>(this.#copilotEngine)
 
   readonly #clipboard: Clipboard = inject(Clipboard)
 
@@ -152,7 +152,7 @@ export class NgmCopilotChatComponent {
   /**
    * @deprecated use CopilotRole and Agent instead
    */
-  @Input() get copilotEngine(): CopilotEngine {
+  @Input() get copilotEngine(): NgmCopilotEngineService {
     return this.copilotEngine$()
   }
   set copilotEngine(value) {
@@ -168,6 +168,7 @@ export class NgmCopilotChatComponent {
   @ViewChild('chatsContent') chatsContent: ElementRef<HTMLDivElement>
   @ViewChild('copilotOptions') copilotOptions: NgxPopperjsContentComponent
   @ViewChild('scrollBack') scrollBack!: NgmScrollBackComponent
+  readonly routeTemplate = viewChild('routeTemplate', { read: TemplateRef })
 
   readonly autocompleteTrigger = viewChild('userInput', { read: MatAutocompleteTrigger })
   readonly userInput = viewChild('userInput', { read: ElementRef })
@@ -503,6 +504,12 @@ export class NgmCopilotChatComponent {
       },
       { allowSignalWrites: true }
     )
+
+    effect(() => {
+      if (this.copilotEngine) {
+        this.copilotEngine.routeTemplate = this.routeTemplate()
+      }
+    })
   }
 
   trackByKey(index: number, item) {
@@ -824,5 +831,9 @@ export class NgmCopilotChatComponent {
 
   async finish(conversation: CopilotChatConversation) {
     await this.copilotEngine.finish(conversation)
+  }
+
+  onRouteChange(conversationId: string, event: string) {
+    this.copilotEngine.updateConversationState(conversationId, {instructions: event})
   }
 }

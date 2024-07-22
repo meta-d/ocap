@@ -65,7 +65,7 @@
   @apply rounded-full;
 }
 
-.mat-mdc-input-element {
+.ngm-colpilot__input.mat-mdc-input-element {
   @apply outline-none bg-transparent;
 }
 
@@ -124,6 +124,37 @@
   @apply rounded-md text-xs w-9 h-9 flex items-center justify-center transition-colors duration-100 
     text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300
     bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800;
+}
+
+.ngm-copilot__route-table {
+  @apply m-2 rounded-lg border border-slate-100 dark:border-slate-700;
+
+  table {
+    @apply border-collapse;
+  }
+  
+  tr:not(:last-child) {
+    td {
+      @apply border-b border-slate-100 dark:border-slate-700;
+    }
+  }
+
+  tr {
+    td {
+      @apply p-1 pl-2;
+    }
+  }
+
+  .ngm-copilot__route-instructions-input {
+    @apply p-1 border border-transparent rounded-md outline outline-1 outline-offset-1 outline-transparent dark:border-transparent bg-transparent;
+
+    &:hover {
+      @apply shadow-sm border-slate-200 dark:border-slate-800;
+    }
+    &:focus {
+      @apply shadow-sm border-slate-300 dark:border-slate-800 outline-blue-500;
+    }
+  }
 }
 
 :host::ng-deep {

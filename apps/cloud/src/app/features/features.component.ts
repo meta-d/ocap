@@ -26,9 +26,8 @@ import {
 } from '@angular/router'
 import { PacMenuItem } from '@metad/cloud/auth'
 import { UsersService } from '@metad/cloud/state'
-import { CopilotEngine } from '@metad/copilot'
 import { isNotEmpty, nonNullable } from '@metad/core'
-import { NgmCopilotChatComponent } from '@metad/copilot-angular'
+import { NgmCopilotChatComponent, NgmCopilotEngineService } from '@metad/copilot-angular'
 import { TranslateService } from '@ngx-translate/core'
 import { NGXLogger } from 'ngx-logger'
 import { NgxPermissionsService, NgxRolesService } from 'ngx-permissions'
@@ -76,7 +75,7 @@ export class FeaturesComponent implements OnInit {
   readonly sidenav = viewChild('sidenav', { read: MatSidenav })
   readonly copilotChat = viewChild('copilotChat', { read: NgmCopilotChatComponent })
 
-  copilotEngine: CopilotEngine | null = null
+  copilotEngine: NgmCopilotEngineService | null = null
   readonly sidenavMode = signal<MatDrawerMode>('over')
   readonly sidenavOpened = model(false)
   isEmployee: boolean

@@ -22,10 +22,21 @@ export function injectCreateModelerGraph() {
 
   return async ({ llm }: CreateGraphOptions) => {
     const supervisorNode = await createSupervisor(llm, [PLANNER_NAME, DIMENSION_MODELER_NAME, CUBE_MODELER_NAME])
+    const plannerAgent = await createModelerPlanner({ llm })
 
     const superGraph = new StateGraph({ channels: superState })
       // Add steps nodes
-      .addNode(PLANNER_NAME, await createModelerPlanner({ llm }))
+      .addNode(PLANNER_NAME, 
+        RunnableLambda.from(async (state: State) => {
+          return plannerAgent.invoke({
+            input: state.instructions,
+            role: state.role,
+            context: state.context,
+            language: state.language,
+            messages: []
+          })
+        })
+      )
       .addNode(
         DIMENSION_MODELER_NAME,
         RunnableLambda.from(async (state: State) => {

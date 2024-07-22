@@ -41,7 +41,8 @@ export function injectModelerCommand() {
     agent: {
       type: CopilotAgentType.Graph,
       conversation: true,
-      interruptAfter: [PLANNER_NAME, DIMENSION_MODELER_NAME, CUBE_MODELER_NAME]
+      interruptBefore: [DIMENSION_MODELER_NAME, CUBE_MODELER_NAME],
+      interruptAfter: [PLANNER_NAME]
     },
     historyCursor: () => {
       return modelService.getHistoryCursor()
