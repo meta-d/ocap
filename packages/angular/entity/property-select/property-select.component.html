@@ -14,7 +14,7 @@
     <div class="flex items-center">
       <ng-content select="[ngmPrefix]"></ng-content>
     </div>
-    <mat-select #propertySelect formControlName="dimension" class="overflow-hidden flex-1"
+    <mat-select #propertySelect [formControl]="keyControl" class="overflow-hidden flex-1"
       panelClass="ngm-property-select__panel ngm-select-panel ngm-density__cosy" 
       [required]="required()">
       <mat-select-trigger *ngIf="selectTrigger()" class="flex items-center overflow-hidden pl-2">
@@ -56,15 +56,26 @@
 
       <ngm-search class="w-full px-1" displayDensity="cosy" [formControl]="searchControl"
         (keydown)="onSearchKeydown($event)"
-        (click)="$event.stopPropagation()"></ngm-search>
+        (click)="$event.stopPropagation()"/>
 
-      <mat-optgroup *ngIf="showDimension" [label]=" 'Ngm.Property.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
-        <mat-option [value]="property.name" *ngFor="let property of dimensions$ | async; trackBy: trackByName">
-          <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [displayDensity]="DisplayDensity.cosy" [highlight]="search"></ngm-entity-property>
-        </mat-option>
+    @if (showDimension) {
+      <mat-optgroup [label]=" 'Ngm.Property.DIMENSIONS' | translate: {Default: 'Dimensions'} ">
+        <ng-container *ngFor="let property of dimensions$ | async; trackBy trackByName">
+          <mat-option class="" [value]="property.name"
+            [ngClass]="{
+              'ngm-option__dimension': property.role === AggregationRole.dimension,
+              'ngm-option__hierarchy': property.role === AggregationRole.hierarchy,
+              'ngm-option__level': property.role === AggregationRole.level
+            }"
+          >
+            <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [displayDensity]="DisplayDensity.cosy" [highlight]="search" ></ngm-entity-property>
+          </mat-option>
+        </ng-container>
       </mat-optgroup>
+    }
 
-      <mat-optgroup *ngIf="showMeasure" [label]=" 'Ngm.Property.CALCULATIONS' | translate: {Default: 'Calculations'} ">
+    @if (showMeasure) {
+      <mat-optgroup [label]=" 'Ngm.Property.CALCULATIONS' | translate: {Default: 'Calculations'} ">
         @for (property of calculations(); track property.name) {
           <mat-option [value]="property.name">
             <ngm-entity-property class="flex-1" [property]="property" [displayBehaviour]="DISPLAY_BEHAVIOUR.auto" [highlight]="search"></ngm-entity-property>
@@ -81,6 +92,7 @@
           </button>
         </mat-option>
       </mat-optgroup>
+    }
 
       <mat-optgroup *ngIf="showMeasureControl" [label]=" 'Ngm.Property.MEASURE_CONTROLS' | translate: {Default: 'Measure Controls'} ">
         @for (property of measureControls(); track property.name) {

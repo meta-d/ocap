@@ -334,8 +334,6 @@ export function hasLevel(dimension: Dimension | string) {
   return isDimension(dimension) ? !!dimension.level : false
 }
 
-export const isPropertyLevel = (toBe): toBe is PropertyLevel => toBe.aggregationRole === AggregationRole.level
-
 /**
  * The property is Calendar Semantic
  *
@@ -753,6 +751,10 @@ export const isDimensionUsage = (toBe): toBe is DimensionUsage => !isNil((toBe a
 
 export const isPropertyDimension = (toBe: unknown): toBe is PropertyDimension =>
   (toBe as EntityProperty)?.role === AggregationRole.dimension
+export const isPropertyHierarchy = (toBe): toBe is PropertyHierarchy =>
+  (toBe as EntityProperty)?.role === AggregationRole.hierarchy
+export const isPropertyLevel = (toBe): toBe is PropertyLevel =>
+  (toBe as EntityProperty)?.role === AggregationRole.level
 export const isPropertyMeasure = (toBe): toBe is PropertyMeasure =>
   (toBe as EntityProperty)?.role === AggregationRole.measure
 export const isEntityType = (toBe): toBe is EntityType => !(toBe instanceof Error) && !isNil((toBe as EntityType)?.name)

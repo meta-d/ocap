@@ -37,6 +37,10 @@ import {
   isPropertyDimension,
   PropertyMeasure,
   isVariableProperty,
+  RuntimeLevelType,
+  isPropertyHierarchy,
+  isPropertyLevel,
+  isDimension,
 } from '@metad/ocap-core'
 import { cloneDeep, includes, isEmpty, isEqual, isNil, isString, negate, pick, uniq } from 'lodash-es'
 import { BehaviorSubject, combineLatest, firstValueFrom, Observable, of } from 'rxjs'
@@ -64,7 +68,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { PropertyCapacity } from '../types'
 import { NgmEntityPropertyComponent, propertyIcon } from '../property/property.component'
 import { NgmFormattingComponent } from '../formatting/formatting.component'
-
 
 
 @Component({
@@ -106,6 +109,8 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   DISPLAY_BEHAVIOUR = DisplayBehaviour
   DisplayDensity = DisplayDensity
   CalculationType = CalculationType
+  isVisible = isVisible
+  LevelType = RuntimeLevelType
 
   @HostBinding('class.ngm-property-select') isPropertySelect = true
 
@@ -140,7 +145,6 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   |--------------------------------------------------------------------------
   */
   readonly label = input<string>()
-  // readonly value = signal<Dimension | Measure>(null)
   readonly capacities = input<PropertyCapacity[]>()
 
   readonly required = input<boolean, string | boolean>(false, {
@@ -178,6 +182,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   @ViewChild('propertySelect', { read: MatSelect })
   private _propertySelect: MatSelect
 
+  readonly keyControl = new FormControl()
   readonly formGroup = new FormGroup({
     name: new FormControl<string>(null),
     caption: new FormControl<string>(null),
@@ -270,21 +275,36 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   readonly parameters$ = this.entityType$.pipe(
     map(entityType => Object.values(entityType?.parameters || {}))
   )
-
+  // Select options: dimension, hierarchy or levels
   readonly dimensions$: Observable<Array<Property>> = combineLatest([
     this.entityProperties$,
     this.restrictedDimensions$.pipe(distinctUntilChanged()),
-    this.searchControl.valueChanges.pipe(startWith(''))
   ]).pipe(
-    map(([properties, restrictedDimensions, text]) => filterProperty(
+    map(([properties, restrictedDimensions]) => {
+      const options = []
       properties.filter(item =>
         item.role === AggregationRole.dimension && 
           (isEmpty(restrictedDimensions) ? true : includes(restrictedDimensions, item.name))
           && isVisible(item)
-        ),
-        text
-      )
-    ),
+        ).forEach((dimension: PropertyDimension) => {
+          options.push(dimension)
+          dimension.hierarchies?.forEach((hierarchy) => {
+            if (hierarchy.name !== dimension.name) {
+              options.push(hierarchy)
+            }
+            const levels = hierarchy.levels?.filter((level) => level.levelType !== RuntimeLevelType.ALL)
+            if (levels?.length > 1) {
+              levels.forEach((level) => {
+                options.push(level)
+              })
+            }
+          })
+        })
+
+      return options
+    }),
+    combineLatestWith(this.searchControl.valueChanges.pipe(startWith(''))),
+    map(([options, search]) => filterProperty(options, search)),
     shareReplay(1)
   )
 
@@ -629,25 +649,41 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   /**
    * When dimension changed
    */
-  private dimensionSub = this.dimensionControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed())
+  private dimensionSub = this.keyControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed())
     .subscribe(([,dimension]) => {
-      const property = getEntityProperty<PropertyDimension | PropertyMeasure>(this.entityType(), dimension)
+      const property = getEntityProperty2<PropertyDimension | PropertyMeasure>(this.entityType(), dimension)
       if (isPropertyMeasure(property)) {
         this.formGroup.setValue({
           ...this._formValue,
           dimension,
         } as any)
-      } else if(isPropertyDimension(property)) {
-        const hierarchyName = property.defaultHierarchy || dimension
-        let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
-        if (!hierarchyProperty) {
-          hierarchyProperty = property.hierarchies[0]
+      } else {
+        let hierarchy = null
+        let level = null
+        if(isPropertyDimension(property)) {
+          const hierarchyName = property.defaultHierarchy || dimension
+          let hierarchyProperty = getEntityHierarchy(this.entityType(), { dimension, hierarchy: hierarchyName})
+          if (!hierarchyProperty) {
+            hierarchyProperty = property.hierarchies[0]
+          }
+          hierarchy = hierarchyProperty?.name
         }
+        if (isPropertyHierarchy(property)) {
+          hierarchy = property.name
+          dimension = property.dimension
+        }
+        if (isPropertyLevel(property)) {
+          level = property.name
+          hierarchy = property.hierarchy
+          dimension = property.dimension
+        }
+
         // Reset all fields and set default hierarchy
         this.formGroup.setValue({
           ...this._formValue,
           dimension,
-          hierarchy: hierarchyProperty?.name
+          hierarchy,
+          level
         } as any)
       }
     })
@@ -673,6 +709,11 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     // 避免双向绑定的循环更新
     if (obj && !isEqual(this.#value, this.formGroup.value)) {
       this.patchValue(this.#value)
+      if (isMeasure(obj)) {
+        this.keyControl.setValue(obj.measure)
+      } else if (isDimension(obj)) {
+        this.keyControl.setValue(obj.level || obj.hierarchy || obj.dimension)
+      }
     }
   }
   registerOnChange(fn: any): void {
@@ -697,6 +738,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
       debounceTime(100),
       // Update value when property is initialized
       filter(() => !!this.property$.value),
+      distinctUntilChanged(isEqual),
       takeUntilDestroyed(this._destroyRef),
     ).subscribe((value) => {
       if (this.property$.value?.role === AggregationRole.measure) {
@@ -746,6 +788,11 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
 
   trackByName(index, item) {
     return item.name
+  }
+
+  filterLevels(hierarchy: PropertyHierarchy) {
+    const levels = hierarchy.levels?.filter(isVisible).filter((level) => level.levelType !== RuntimeLevelType.ALL)
+    return levels?.length > 1 ? levels : []
   }
 
   patchCalculationProperty(property: CalculationProperty) {

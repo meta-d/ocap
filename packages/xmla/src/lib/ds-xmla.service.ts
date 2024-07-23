@@ -37,6 +37,7 @@ import {
   PropertyLevel,
   PropertyMeasure,
   QueryReturn,
+  RuntimeLevelType,
   Schema,
   Semantics,
   serializeArgs,
@@ -65,7 +66,6 @@ import {
   Hierarchy,
   isWrapBrackets,
   Level,
-  LEVEL_TYPE,
   MDOptions,
   MDXDialect,
   MDXDimension,
@@ -667,27 +667,27 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
                 levelProperty.hierarchy = levelProperty.hierarchyUniqueName
 
                 switch (level.LEVEL_TYPE) {
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_YEAR:
+                  case RuntimeLevelType.TIME_YEAR:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Year']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_QUARTER:
+                  case RuntimeLevelType.TIME_QUARTER:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Quarter']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_MONTH:
+                  case RuntimeLevelType.TIME_MONTH:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Month']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_WEEK:
+                  case RuntimeLevelType.TIME_WEEK:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Week']
                     }
                     break
-                  case LEVEL_TYPE.MDLEVEL_TYPE_TIME_DAY:
+                  case RuntimeLevelType.TIME_DAY:
                     levelProperty.semantics = {
                       semantic: Semantics['Calendar.Day']
                     }

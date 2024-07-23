@@ -1,4 +1,4 @@
-import { HttpHeaders } from '@metad/ocap-core'
+import { HttpHeaders, RuntimeLevelType } from '@metad/ocap-core'
 
 export interface Rowset {
   fetchAllAsObject(): any
@@ -135,7 +135,7 @@ export interface Level {
   LEVEL_IS_VISIBLE: boolean
   LEVEL_NAME: string
   LEVEL_NUMBER: number
-  LEVEL_TYPE: LEVEL_TYPE
+  LEVEL_TYPE: RuntimeLevelType
   LEVEL_UNIQUE_NAME: string
   SCHEMA_NAME: string
 }
@@ -302,24 +302,6 @@ export enum DIMENSION_TYPE {
   MD_DIMTYPE_ORGANIZATION = 15,
   MD_DIMTYPE_BILL_OF_MATERIALS = 16,
   MD_DIMTYPE_GEOGRAPHY = 17
-}
-
-/**
- * Type of the level:
- * https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms126038(v=sql.110)
- * https://github.com/OpenlinkFinancial/MXMLABridge/blob/master/src/custom/mondrian/xmla/handler/RowsetDefinition.java
- */
-export enum LEVEL_TYPE {
-  MDLEVEL_TYPE_REGULAR = 0,
-  MDLEVEL_TYPE_ALL = 1,
-  MDLEVEL_TYPE_CALCULATED = 2,
-  // MDLEVEL_TYPE_GEO_CONTINENT = 1,
-  MDLEVEL_TYPE_TIME_YEAR = 20,
-  MDLEVEL_TYPE_TIME_QUARTER = 68,
-  MDLEVEL_TYPE_TIME_MONTH = 132,
-  MDLEVEL_TYPE_TIME_WEEK = 260,
-  MDLEVEL_TYPE_TIME_DAY = 516
-  //...
 }
 
 /**

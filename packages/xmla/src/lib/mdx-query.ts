@@ -25,6 +25,7 @@ import {
   parameterFormatter,
   Property,
   QueryOptions,
+  RuntimeLevelType,
   Semantics
 } from '@metad/ocap-core'
 import { findIndex, flatten, groupBy, isEmpty, merge, negate, omit, padStart, uniq } from 'lodash'
@@ -34,7 +35,6 @@ import { Ascendants, Descendants, DescendantsFlag, Distinct, Except, Members, Me
 import { IntrinsicMemberProperties } from './reference/index'
 import {
   C_MDX_FIELD_NAME_REGEX,
-  LEVEL_TYPE,
   MDXDialect,
   MDXDimension,
   MDXHierarchy,
@@ -42,7 +42,6 @@ import {
   MDXQuery,
   MDXRank,
   wrapBrackets,
-  wrapHierarchyValue
 } from './types/index'
 
 export function filterNotUnitText(dimensions: Array<Dimension>, entityType: EntityType) {
@@ -622,7 +621,7 @@ export function allocateAxesFilter(
 
 export function serializeHierarchyDefaultLevel(entityType: EntityType, {dimension, hierarchy}: Dimension) {
   const property = getEntityHierarchy(entityType, {dimension, hierarchy})
-  const levels = property.levels.filter((level) => level.levelType !== LEVEL_TYPE.MDLEVEL_TYPE_ALL)
+  const levels = property.levels.filter((level) => level.levelType !== RuntimeLevelType.ALL)
   const level = levels[0]
   if (!level) {
     throw new Error(`Can't find any levels in hierarchy ${hierarchy} of cube ${entityType.name} except all level`)

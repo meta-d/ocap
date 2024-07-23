@@ -54,4 +54,11 @@ $prefix-color: (#{$prefix}, color);
       align-items: center;
     }
   }
+
+  .ngm-property-select__panel {
+    .mat-mdc-option.ngm-option__dimension,
+    .mat-mdc-option.ngm-option__hierarchy {
+      padding-left: 10px;
+    }
+  }
 }

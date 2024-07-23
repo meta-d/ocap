@@ -256,6 +256,32 @@ export interface PropertyHierarchy extends EntityProperty {
   levels?: Array<PropertyLevel>
 }
 
+export enum TimeLevelType {
+  TimeYears = 'TimeYears',
+  TimeQuarters = 'TimeQuarters',
+  TimeMonths = 'TimeMonths',
+  TimeWeeks = 'TimeWeeks',
+  TimeDays = 'TimeDays'
+}
+
+/**
+ * Runtime level type
+ * Type of the level:
+ * https://docs.microsoft.com/en-us/previous-versions/sql/sql-server-2012/ms126038(v=sql.110)
+ * https://github.com/OpenlinkFinancial/MXMLABridge/blob/master/src/custom/mondrian/xmla/handler/RowsetDefinition.java
+ */
+export enum RuntimeLevelType {
+  REGULAR = 0,
+  ALL = 1,
+  CALCULATED = 2,
+  // GEO_CONTINENT = 1,
+  TIME_YEAR = 20,
+  TIME_QUARTER = 68,
+  TIME_MONTH = 132,
+  TIME_WEEK = 260,
+  TIME_DAY = 516
+}
+
 export interface PropertyLevel extends EntityProperty {
   hierarchy?: PropertyName
   column?: string
@@ -274,7 +300,7 @@ export interface PropertyLevel extends EntityProperty {
   /**
    * The type of level, such as 'TimeYears', 'TimeMonths', 'TimeDays' if dimension is a time dimension
    */
-  levelType?: TimeLevelType | number | string
+  levelType?: TimeLevelType | RuntimeLevelType | string
   properties?: Array<LevelProperty>
   // hierarchyLevelFor?: PropertyName
   parentChild?: boolean
@@ -284,14 +310,6 @@ export interface PropertyLevel extends EntityProperty {
   captionExpression?: CaptionExpression
   ordinalExpression?: SQLExpression
   parentExpression?: SQLExpression
-}
-
-export enum TimeLevelType {
-  TimeYears = 'TimeYears',
-  TimeQuarters = 'TimeQuarters',
-  TimeMonths = 'TimeMonths',
-  TimeWeeks = 'TimeWeeks',
-  TimeDays = 'TimeDays'
 }
 
 export interface LevelProperty extends PropertyAttributes {
