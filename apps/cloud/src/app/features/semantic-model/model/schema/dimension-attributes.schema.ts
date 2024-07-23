@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core'
 import { EntityProperty, PropertyDimension } from '@metad/ocap-core'
-import { FORMLY_ROW, FORMLY_W_1_2 } from '@metad/story/designer'
+import { FORMLY_ROW, FORMLY_W_1_2, FORMLY_W_FULL } from '@metad/story/designer'
 import { combineLatestWith, map } from 'rxjs/operators'
 import { SemanticsAccordionWrapper } from './common'
 import { CubeSchemaService } from './cube.schema'
 
 @Injectable()
 export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimension> extends CubeSchemaService<T> {
-  public readonly hierarchies$ = this.select((state) => {
+  readonly hierarchies$ = this.select((state) => {
     return state.cube.dimensions.find((item) => item.__id__ === state.modeling.__id__)?.hierarchies
   })
 
@@ -31,7 +31,7 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
                 },
                 fieldGroup: [this.builder]
               },
-              this.dataDistribution
+              // this.dataDistribution
             ]
           }
         ]
@@ -70,7 +70,22 @@ export class DimensionAttributesSchema<T extends EntityProperty = PropertyDimens
                 label: COMMON?.Caption ?? 'Caption'
               }
             },
-
+            {
+              key: 'description',
+              type: 'textarea',
+              className: FORMLY_W_FULL,
+              props: {
+                label: COMMON?.Description ?? 'Description',
+              }
+            },
+            {
+              className: FORMLY_W_1_2,
+              key: 'visible',
+              type:'checkbox',
+              props: {
+                label: COMMON?.Visible ?? 'Visible',
+              }
+            },
             {
               className: FORMLY_W_1_2,
               key: 'defaultHierarchy',

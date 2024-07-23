@@ -8,8 +8,10 @@ import {
   Output,
   ViewChildren,
   booleanAttribute,
+  computed,
   inject,
-  input
+  input,
+  model
 } from '@angular/core'
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop'
 import { FormsModule } from '@angular/forms'
@@ -34,7 +36,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { uuid } from 'apps/cloud/src/app/@core'
 import { MaterialModule } from 'apps/cloud/src/app/@shared'
 import { NGXLogger } from 'ngx-logger'
-import { filter, map, switchMap, withLatestFrom } from 'rxjs'
+import { combineLatest, combineLatestWith, filter, map, switchMap, withLatestFrom } from 'rxjs'
 import { SemanticModelService } from '../../model.service'
 import {
   CdkDragDropContainers,
@@ -94,10 +96,70 @@ export class ModelCubeStructureComponent {
   @Output() editChange = new EventEmitter<any>()
 
   @ViewChildren(CdkDropList) cdkDropList: CdkDropList[]
+  
+  /**
+  |--------------------------------------------------------------------------
+  | Signals
+  |--------------------------------------------------------------------------
+  */
+  readonly search = model<string>('')
+  readonly dimensions = computed(() => {
+    const dimensions = this.entityService.dimensions()
+    const search = this.search()
+    if (search) {
+      const text = search.trim().toLowerCase()
+      return dimensions?.filter(({ name, caption }) => name.toLowerCase().includes(text) || caption?.toLowerCase().includes(text))
+    }
+    return dimensions
+  })
 
-  public readonly dimensionUsages$ = this.entityService.dimensionUsages$.pipe(
+  readonly calculatedMembers = toSignal(
+    combineLatest([this.entityService.calculatedMembers$, toObservable(this.search)])
+    .pipe(
+      map(([members, search]) => {
+        if (search) {
+          const text = search.trim().toLowerCase()
+          members = members?.filter(({ name, caption }) => name.toLowerCase().includes(text) || caption?.toLowerCase().includes(text))
+        }
+        return members?.map(
+          (member) =>
+            ({
+              ...member,
+              role: AggregationRole.measure,
+              calculationType: CalculationType.Calculated
+            }) as Partial<CalculatedMember>
+        )
+      })
+    )
+  )
+ 
+  readonly measures = computed(() => {
+    const measures = this.entityService.measures()
+    const search = this.search()
+    if (search) {
+      const text = search.trim().toLowerCase()
+      return measures?.filter(({ name, caption }) => name.toLowerCase().includes(text) || caption?.toLowerCase().includes(text))
+    }
+    return measures
+  })
+  readonly selectedProperty = this.entityService.selectedProperty
+  readonly entityType = toSignal(this.entityService.originalEntityType$)
+
+  
+
+  /**
+  |--------------------------------------------------------------------------
+  | Observables
+  |--------------------------------------------------------------------------
+  */
+  readonly dimensionUsages$ = this.entityService.dimensionUsages$.pipe(
     withLatestFrom(this.modelService.sharedDimensions$),
-    map(([dimensionUsages, sharedDimensions]) => {
+    combineLatestWith(toObservable(this.search)),
+    map(([[dimensionUsages, sharedDimensions], search]) => {
+      if (search) {
+        search = search.trim().toLowerCase()
+        dimensionUsages = dimensionUsages?.filter((usage) => usage.name.toLowerCase().includes(search) || usage.caption?.toLowerCase().includes(search))
+      }
       return dimensionUsages?.map((usage) => {
         const dimension = sharedDimensions.find((item) => usage.source === item.name)
         return {
@@ -112,30 +174,6 @@ export class ModelCubeStructureComponent {
       })
     })
   )
-
-  public readonly calculatedMembers = toSignal(
-    this.entityService.calculatedMembers$.pipe(
-      map((members) => {
-        return members?.map(
-          (member) =>
-            ({
-              ...member,
-              role: AggregationRole.measure,
-              calculationType: CalculationType.Calculated
-            }) as Partial<CalculatedMember>
-        )
-      })
-    )
-  )
-
-  /**
-  |--------------------------------------------------------------------------
-  | Signals
-  |--------------------------------------------------------------------------
-  */
-  readonly measures = this.entityService.measures
-  readonly selectedProperty = this.entityService.selectedProperty
-  readonly entityType = toSignal(this.entityService.originalEntityType$)
 
   /**
   |--------------------------------------------------------------------------
@@ -156,14 +194,17 @@ export class ModelCubeStructureComponent {
             __id__: uuid(),
             name: dimension.name,
             caption: dimension.caption,
+            visible: dimension.visible ?? true,
             hierarchies: dimension.hierarchies?.map((hierarchy) => ({
               __id__: uuid(),
               name: hierarchy.name,
               caption: hierarchy.caption,
+              visible: hierarchy.visible ?? true,
               levels: hierarchy.levels?.map((level) => ({
                 __id__: uuid(),
                 name: level.name,
-                caption: level.caption
+                caption: level.caption,
+                visible: level.visible ?? true,
               }))
             }))
           }))
@@ -175,7 +216,8 @@ export class ModelCubeStructureComponent {
           measures: getEntityMeasures(entityType).map((measure) => ({
             __id__: uuid(),
             name: measure.name,
-            caption: measure.caption
+            caption: measure.caption,
+            visible: measure.visible ?? true,
           }))
         })
       }

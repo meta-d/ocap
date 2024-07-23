@@ -24,6 +24,10 @@ export interface Entity {
    * Visible Property
    */
   visible?: boolean
+  /**
+   * Long text description of entity
+   */
+  description?: string
 }
 
 export interface Schema {

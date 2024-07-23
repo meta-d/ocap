@@ -1,5 +1,15 @@
 import { Semantics } from '../annotations'
-import { Dimension, getPropertyHierarchy, getPropertyName, IMember, isDimension, ISlicer, isMeasure, Measure, Member } from '../types'
+import {
+  Dimension,
+  getPropertyHierarchy,
+  getPropertyName,
+  IMember,
+  isDimension,
+  ISlicer,
+  isMeasure,
+  Measure,
+  Member
+} from '../types'
 import { assignDeepOmitBlank, isEmpty, isNil, isString, omit, omitBy } from '../utils'
 import {
   CalculationProperty,
@@ -24,7 +34,6 @@ import {
   Schema,
   VariableProperty
 } from './sdl'
-
 
 export function serializeUniqueName(dimension: string, hierarchy?: string, level?: string, intrinsic?: string) {
   const name = !!hierarchy && dimension !== hierarchy ? `[${dimension}.${hierarchy}]` : `[${dimension}]`
@@ -102,6 +111,12 @@ export function getEntityProperty2<T extends PropertyAttributes = EntityProperty
   }, null) ?? entityType?.parameters?.[path.dimension]) as unknown as T
 }
 
+/**
+ * Get dimensions in entity type, filterd by is visible or empty
+ *
+ * @param entityType
+ * @returns
+ */
 export function getEntityDimensions(entityType: EntityType): Property[] {
   if (isNil(entityType?.properties)) {
     return []
@@ -111,19 +126,19 @@ export function getEntityDimensions(entityType: EntityType): Property[] {
   )
 }
 
-export function getEntityHierarchies(entityType: EntityType): Property[] {
-  if (isNil(entityType?.properties)) {
-    return []
-  }
-  return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.hierarchy)
-}
+// export function getEntityHierarchies(entityType: EntityType): Property[] {
+//   if (isNil(entityType?.properties)) {
+//     return []
+//   }
+//   return Object.values(entityType?.properties).filter((item) => item.role === AggregationRole.hierarchy)
+// }
 
 export function getEntityDimensionAndHierarchies(entityType: EntityType): Property[] {
-  const results = []
   if (isNil(entityType?.properties)) {
     return []
   }
 
+  const results = []
   Object.values(entityType.properties).forEach((property) => {
     if (property.role === AggregationRole.dimension) {
       results.push(property)
@@ -137,7 +152,8 @@ export function getEntityDimensionAndHierarchies(entityType: EntityType): Proper
 }
 
 /**
- * 返回 EntityType 中的度量字段列表
+ * Get measures in entity type, filtered by is visible or empty
+ *
  * @param entityType
  * @returns
  */
@@ -146,16 +162,48 @@ export function getEntityMeasures(entityType: EntityType): PropertyMeasure[] {
     return []
   }
   return Object.values(entityType.properties).filter(
-    (property) => property.role === AggregationRole.measure && (isNil(property.visible) || property.visible)
+    (property) => property.role === AggregationRole.measure && isVisible(property)
   )
 }
 
+/**
+ * Get all indicator type measures in entity type, filtered by is visible or empty
+ *
+ * @param entityType
+ * @returns
+ */
 export function getEntityIndicators(entityType: EntityType): RestrictedMeasureProperty[] {
   return getEntityMeasures(entityType).filter(isIndicatorMeasureProperty)
 }
 
+/**
+ * Get default measure in entity type or first measure property
+ *
+ * @param entityType
+ * @returns
+ */
 export function getEntityDefaultMeasure(entityType: EntityType) {
   return entityType.defaultMeasure ? entityType.properties[entityType.defaultMeasure] : getEntityMeasures(entityType)[0]
+}
+
+/**
+ * Get visiable hierarchies from dimension property
+ * 
+ * @param dimension 
+ * @returns 
+ */
+export function getDimensionHierarchies(dimension: PropertyDimension) {
+  return dimension?.hierarchies?.filter(isVisible) ?? []
+}
+
+/**
+ * Get visiable levels from hierarchy property
+ * 
+ * @param hierarchy 
+ * @returns 
+ */
+export function getHierarchyLevels(hierarchy: PropertyHierarchy) {
+  return hierarchy?.levels?.filter(isVisible) ?? []
 }
 
 /**
@@ -218,7 +266,9 @@ export function getEntityParameters(entityType: EntityType): ParameterProperty[]
 }
 
 export function getEntityVariables(entityType: EntityType): VariableProperty[] {
-  return getEntityParameters(entityType).filter((parameter) => parameter.role === AggregationRole.variable) as VariableProperty[]
+  return getEntityParameters(entityType).filter(
+    (parameter) => parameter.role === AggregationRole.variable
+  ) as VariableProperty[]
 }
 
 /**
@@ -273,11 +323,11 @@ export function getPropertyUnitName(property: Property) {
  * @deprecated use {@link getMemberKey}
  */
 export function getMemberValue(member: Member): string {
-  return isString(member) ? member : (member?.key || member?.value as string)
+  return isString(member) ? member : member?.key || (member?.value as string)
 }
 
 export function getMemberKey(member: Member): string {
-  return isString(member) ? member : (member?.key || member?.value as string)
+  return isString(member) ? member : member?.key || (member?.value as string)
 }
 
 export function hasLevel(dimension: Dimension | string) {
@@ -650,7 +700,7 @@ export function getMemberFromRow(row: unknown, dimension: Dimension, entityType?
     key: row[dimension.hierarchy || dimension.dimension],
     value: row[dimension.hierarchy || dimension.dimension],
     label: caption ? row[caption] : null,
-    caption: caption ? row[caption] : null,
+    caption: caption ? row[caption] : null
   }
 }
 

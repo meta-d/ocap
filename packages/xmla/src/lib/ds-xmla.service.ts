@@ -164,7 +164,7 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
     return this.selectEntitySets(refresh) as unknown as Observable<DBTable[]>
   }
   /**
-   * Observable of cubes in xmla source, then merge 'caption' from custom schema
+   * Observable of cubes in xmla source, then merge caption and description from custom schema
    *
    * @param refresh For refresh cache
    * @returns
@@ -180,6 +180,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
           const index = cubes.findIndex((cube) => item.name === cube.name)
           if (index > -1) {
             cubes[index].caption = item.caption
+            cubes[index].description = item.description
+            cubes[index].visible = item.visible
             cubes[index].annotated = true
             results.push(...cubes.splice(index, 1))
           }
@@ -989,7 +991,8 @@ export class XmlaDataSource extends AbstractDataSource<XmlaDataSourceOptions> {
 
     return {
       ...rtEntityType,
-      caption: rtEntityType.caption || cube.caption,
+      caption: cube.caption || rtEntityType.caption,
+      description: cube.description || rtEntityType.description,
       properties
     }
   }

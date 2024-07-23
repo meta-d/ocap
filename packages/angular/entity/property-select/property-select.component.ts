@@ -292,7 +292,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   readonly property = toSignal(this.property$)
 
   readonly hierarchies$: Observable<Array<PropertyHierarchy>> = this.property$.pipe(
-    map((dimension) => dimension?.hierarchies),
+    map((dimension) => dimension?.hierarchies?.filter(isVisible)),
     shareReplay(1)
   )
 
@@ -305,7 +305,7 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   )
 
   readonly levels$ = this.hierarchy$.pipe(
-    map((hierarchy: PropertyHierarchy) => hierarchy?.levels),
+    map((hierarchy: PropertyHierarchy) => hierarchy?.levels?.filter(isVisible)),
     shareReplay(1)
   )
 

@@ -3,6 +3,9 @@
     <span>
       {{ 'PAC.MENU.DIMENSIONS' | translate: {Default: "Dimensions"} }}
     </span>
+
+    <ngm-search [(ngModel)]="search" class="flex-1 ml-4" />
+
     @if (modelType() !== MODEL_TYPE.XMLA) {
       <button mat-icon-button displayDensity="cosy" class="ngm-toolbar__action opacity-10 group-hover:opacity-100"
         [matTooltip]=" 'PAC.MODEL.ENTITY.NewDimension' | translate: {Default: 'New Dimension'} "
@@ -26,7 +29,7 @@
         />
       }
 
-      @for (dim of entityService.dimensions(); track dim.name) {
+      @for (dim of dimensions(); track dim.name) {
         <pac-inline-dimension displayDensity="compact"
           [dimension]="dim"
           [readonly]="modelType() === MODEL_TYPE.XMLA"
@@ -34,20 +37,6 @@
           (newItem)="addNewItem($event)"
         />
       }
-
-      <!-- @if (modelType() === MODEL_TYPE.XMLA) {
-        
-      } @else {
-        @for (dim of entityService.dimensions(); track dim.name) {
-          <pac-property-dimension
-            displayDensity="compact"
-            [dimension]="dim"
-            (newItem)="addNewItem($event)"
-            (delete)="onDelete($event)"
-          >
-          </pac-property-dimension>
-        }
-      } -->
     </div>
   </div>
 </div>
