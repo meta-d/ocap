@@ -597,24 +597,12 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
     })
   }
 
-  get showDimension() {
-    return this.capacities()?.includes(PropertyCapacity.Dimension)
-  }
-  get showMeasure() {
-    return this.capacities()?.includes(PropertyCapacity.Measure)
-  }
-  get showParameter() {
-    return this.capacities()?.includes(PropertyCapacity.Parameter)
-  }
-  get showMeasureControl() {
-    return this.capacities()?.includes(PropertyCapacity.MeasureControl)
-  }
-  get showMeasureAttributes() {
-    return this.capacities()?.includes(PropertyCapacity.MeasureAttributes)
-  }
-  get showOrder() {
-    return this.capacities()?.includes(PropertyCapacity.Order)
-  }
+  readonly showDimension = computed(() => this.capacities()?.includes(PropertyCapacity.Dimension))
+  readonly showMeasure = computed(() => this.capacities()?.includes(PropertyCapacity.Measure))
+  readonly showParameter = computed(() => this.capacities()?.includes(PropertyCapacity.Parameter))
+  readonly showMeasureControl = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureControl))
+  readonly showMeasureAttributes = computed(() => this.capacities()?.includes(PropertyCapacity.MeasureAttributes))
+  readonly showOrder = computed(() => this.capacities()?.includes(PropertyCapacity.Order))
 
   readonly showMore = signal(false)
 
@@ -649,8 +637,8 @@ export class NgmPropertySelectComponent implements ControlValueAccessor, AfterVi
   /**
    * When dimension changed
    */
-  private dimensionSub = this.keyControl.valueChanges.pipe(distinctUntilChanged(), pairwise(), takeUntilDestroyed())
-    .subscribe(([,dimension]) => {
+  private keySub = this.keyControl.valueChanges.pipe(distinctUntilChanged(), takeUntilDestroyed())
+    .subscribe((dimension) => {
       const property = getEntityProperty2<PropertyDimension | PropertyMeasure>(this.entityType(), dimension)
       if (isPropertyMeasure(property)) {
         this.formGroup.setValue({

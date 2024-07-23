@@ -57,8 +57,9 @@ $prefix-color: (#{$prefix}, color);
 
   .ngm-property-select__panel {
     .mat-mdc-option.ngm-option__dimension,
-    .mat-mdc-option.ngm-option__hierarchy {
-      padding-left: 10px;
+    .mat-mdc-option.ngm-option__hierarchy,
+    .mat-mdc-option.ngm-option__measure {
+      padding-left: 16px;
     }
   }
 }
