@@ -65,7 +65,8 @@ export function injectCreateStoryGraph() {
 {context}
 
 Story dashbaord 通常由多个页面组成，每个页面是一个分析主题，每个主题的页面通常由一个过滤器栏、多个主要的维度输入控制器、多个指标、多个图形、一个或多个表格组成。
-`
+`,
+      `If you need to execute a task, you need to get confirmation before calling the route function.`
     )
 
     const widgetAgent = await createWidgetGraph({ llm })

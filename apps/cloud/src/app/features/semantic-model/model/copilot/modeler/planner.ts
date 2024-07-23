@@ -18,7 +18,8 @@ const SYSTEM_PROMPT =
 {language}
 1. If user-provided tables, consider which of them are used to create shared dimensions and which are used to create cubes.
   Or use the 'selectTables' tool to get all tables then select the required physical tables from them.
-2. The dimensions of a model are divided into two types: shared dimensions and inline dimensions. If a dimension has an independent dimension table, it can be created as a shared dimension. Otherwise, the dimension field in the fact table is created as an inline dimension. Shared dimensions are created from independent dimension physical tables. 
+2. The dimensions of a model are divided into two types: shared dimensions and inline dimensions. 
+  If a dimension has an independent dimension table, it can be created as a shared dimension. Otherwise, the dimension field in the fact table is created as an inline dimension. Shared dimensions are created from independent dimension physical tables. 
   If the dimension fields of the model to be created are in the fact table, there is no need to create shared dimensions. 
   If the dimension fields of the fact table need to be associated with independent dimension physical tables, you need to create shared dimensions for this dimension physical table or use existing shared dimensions.
   Create a dimension for fields that clearly belong to different levels of the same dimension, and add the fields from coarse to fine granularity as the levels of the dimension.
