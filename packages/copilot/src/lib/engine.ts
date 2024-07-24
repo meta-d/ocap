@@ -166,5 +166,5 @@ export interface CopilotEngine {
    * @param input 
    * @param options 
    */
-  executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext}): Promise<string>
+  executeCommandSuggestion(input: string, options: {command: CopilotCommand; context: CopilotContext}): Promise<object>
 }

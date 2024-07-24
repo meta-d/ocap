@@ -22,6 +22,8 @@ import {
   MessageDataType,
   nanoid
 } from '@metad/copilot'
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { TranslateService } from '@ngx-translate/core'
 import { AgentExecutor, createOpenAIToolsAgent } from 'langchain/agents'
 import { compact, flatten } from 'lodash-es'
@@ -30,6 +32,7 @@ import { DropAction, NgmCopilotChatMessage } from '../types'
 import { injectCreateChatAgent } from './agent-free'
 import { NgmCopilotContextToken, recognizeContext, recognizeContextParams } from './context.service'
 import { NgmCopilotService } from './copilot.service'
+import { JsonOutputFunctionsParser } from 'langchain/output_parsers'
 
 export const AgentRecursionLimit = 20
 
@@ -1057,25 +1060,36 @@ export class NgmCopilotEngineService implements CopilotEngine {
   async executeCommandSuggestion(
     input: string,
     options: { command: CopilotCommand; context: CopilotContext; signal?: AbortSignal }
-  ): Promise<string> {
+  ): Promise<object> {
     const { command, context, signal } = options
     // Context content
     const contextContent = context ? await recognizeContext(input, context) : null
     const params = await recognizeContextParams(input, context)
 
-    let systemPrompt = ''
-    try {
-      // Get System prompt
-      if (command.systemPrompt) {
-        systemPrompt = await command.systemPrompt({ params })
-      }
+    if (command.fewShotPrompt) {
+      input = await command.fewShotPrompt.format({ input })
+    }
 
+    const outputFunctions = {
+      functions: [
+        {
+          name: "output_formatter",
+          description: "Should always be used to properly format output",
+          parameters: zodToJsonSchema(zodSchema),
+        },
+      ],
+      function_call: { name: "output_formatter" },
+    }
+
+    const outputParser = new JsonOutputFunctionsParser();
+    try {
       const llm = this.llm()
+      const secondaryLLM = this.secondaryLLM()
       const verbose = this.verbose()
       if (llm) {
-        if (command.suggestionTemplate) {
-          const chain = command.suggestionTemplate.pipe(this.llm()).pipe(new StringOutputParser())
-          return await chain.invoke({ input, system_prompt: systemPrompt, context: contextContent, signal, verbose })
+        if (command.suggestion?.promptTemplate) {
+          const chain = command.suggestion.promptTemplate.pipe((secondaryLLM ?? llm).bind(outputFunctions)).pipe(outputParser)
+          return await chain.invoke({ input, context: contextContent, signal, verbose })
         } else {
           throw new Error('No completion template found')
         }
@@ -1087,3 +1101,12 @@ export class NgmCopilotEngineService implements CopilotEngine {
     }
   }
 }
+
+const zodSchema = z.object({
+  input: z.string().describe("Prompt after completion"),
+  suggestions: z
+  .array(
+    z.string().describe("One suggestion input"),
+  )
+  .describe("An array of suggestions"),
+});

@@ -26,18 +26,18 @@ export interface CopilotCommand<T = any> {
    * Description of the command
    */
   description: string
+  // /**
+  //  * @deprecated use suggestions
+  //  * 
+  //  * Examples of the command usage
+  //  */
+  // examples?: string[]
   /**
-   * Examples of the command usage
+   * Input suggestions
    */
-  examples?: string[]
-  /**
-   * The ai tools for input suggestion generation
-   */
-  suggestionTools?: Array<DynamicStructuredTool | DynamicTool>
-  /**
-   * The prompt template for input suggestion
-   */
-  suggestionTemplate?: ChatPromptTemplate
+  suggestion?: {
+    promptTemplate: ChatPromptTemplate
+  }
   /**
    * @deprecated use prompt only
    */

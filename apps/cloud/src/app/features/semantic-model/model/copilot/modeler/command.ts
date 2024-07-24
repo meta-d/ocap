@@ -8,6 +8,18 @@ import { SemanticModelService } from '../../model.service'
 import { CUBE_MODELER_NAME } from '../cube'
 import { DIMENSION_MODELER_NAME } from '../dimension'
 import { injectCreateModelerGraph } from './graph'
+import {
+  ChatPromptTemplate,
+  PromptTemplate,
+  SystemMessagePromptTemplate,
+  AIMessagePromptTemplate,
+  HumanMessagePromptTemplate,
+} from "@langchain/core/prompts";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 
 export function injectModelerCommand() {
   const logger = inject(NGXLogger)
@@ -38,6 +50,12 @@ export function injectModelerCommand() {
       return await createModelerGraph({
         llm
       })
+    },
+    suggestion: {
+      promptTemplate: ChatPromptTemplate.fromMessages([
+        ["system", `用简短的一句话补全用户可能的提问，直接输出答案不要解释`],
+        ["human", '{input}'],
+      ])
     }
   })
 }

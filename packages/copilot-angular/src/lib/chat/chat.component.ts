@@ -392,20 +392,10 @@ export class NgmCopilotChatComponent {
         .filter((c) => !c.hidden)
         .sort((a, b) => (a.name > b.name ? 1 : a.name === b.name ? 0 : -1))
         .forEach((command) => {
-          if (command.examples?.length) {
-            command.examples.forEach((example) => {
-              commands.push({
-                ...command,
-                prompt: `/${command.name} ${example}`,
-                example
-              })
-            })
-          } else {
-            commands.push({
-              ...command,
-              prompt: `/${command.name} ${command.description}`
-            })
-          }
+          commands.push({
+            ...command,
+            prompt: `/${command.name} ${command.description}`
+          })
         })
       return commands
     }
@@ -462,13 +452,16 @@ export class NgmCopilotChatComponent {
         const commandWithContext = this.commandWithContext()
         return onlyCommand
           ? of(command?.description)
-          : command?.suggestionTemplate
+          : command?.suggestion
             ? this.copilotEngine.executeCommandSuggestion(prompt, { ...commandWithContext })
             : of(null)
       }),
       catchError(() => of(null))
     )
-    .subscribe((text) => this.promptCompletion.set(text))
+    .subscribe((output: any) => {
+      console.log(output)
+      this.promptCompletion.set(output.input)
+    })
 
   constructor() {
     effect(
