@@ -1,4 +1,3 @@
-import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { TextFieldModule } from '@angular/cdk/text-field'
@@ -49,10 +48,9 @@ import {
   CopilotChatMessageRoleEnum,
   CopilotCommand,
   CopilotContextItem,
+  nanoid,
 } from '@metad/copilot'
 import { TranslateModule } from '@ngx-translate/core'
-import { nanoid } from 'nanoid'
-import { MarkdownModule } from 'ngx-markdown'
 import {
   NgxPopperjsContentComponent,
   NgxPopperjsModule,
@@ -80,9 +78,10 @@ import { NgmHighlightDirective } from '../core/directives'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCommonCommands } from '../hooks/common'
 import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
-import { CopilotChatTokenComponent } from '../token/token.component'
+import { CopilotChatTokenComponent } from './token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
+import { CopilotAIMessageComponent } from './ai-message/ai-message.component'
 
 export const AUTO_SUGGESTION_DEBOUNCE_TIME = 1000
 export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
@@ -99,7 +98,6 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     ReactiveFormsModule,
     RouterModule,
     TextFieldModule,
-    ClipboardModule,
     MatInputModule,
     MatIconModule,
     MatButtonModule,
@@ -114,7 +112,6 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     MatProgressSpinnerModule,
     TranslateModule,
     NgxPopperjsModule,
-    MarkdownModule,
     ScrollingModule,
 
     NgmSearchComponent,
@@ -123,7 +120,8 @@ export const AUTO_SUGGESTION_STOP = ['\n', '.', ',', '@', '#']
     CopilotChatTokenComponent,
     NgmCopilotEnableComponent,
     UserAvatarComponent,
-    NgmScrollBackComponent
+    NgmScrollBackComponent,
+    CopilotAIMessageComponent
   ],
   host: {
     class: 'ngm-copilot-chat'
@@ -140,8 +138,6 @@ export class NgmCopilotChatComponent {
   readonly #copilotEngine?: NgmCopilotEngineService = inject(NgmCopilotEngineService, { optional: true })
 
   readonly copilotEngine$ = signal<NgmCopilotEngineService>(this.#copilotEngine)
-
-  readonly #clipboard: Clipboard = inject(Clipboard)
 
   @Input() welcomeTitle: string
   @Input() welcomeSubTitle: string
@@ -161,7 +157,6 @@ export class NgmCopilotChatComponent {
 
   @Input() user: IUser
 
-  @Output() copied = new EventEmitter()
   @Output() conversationsChange = new EventEmitter()
   @Output() enableCopilot = new EventEmitter()
 
@@ -746,22 +741,6 @@ export class NgmCopilotChatComponent {
     this.#activatedPrompt.set(event.option?.value)
   }
 
-  copyMessage(message: CopilotChatMessage) {
-    this.copied.emit(message.content)
-    this.#clipboard.copy(message.content)
-    this.messageCopied.update((ids) => [...ids, message.id])
-    setTimeout(() => {
-      this.messageCopied.update((ids) => ids.filter((id) => id !== message.id))
-    }, 3000)
-  }
-
-  onCopy(copyButton) {
-    copyButton.copied = true
-    setTimeout(() => {
-      copyButton.copied = false
-    }, 3000)
-  }
-
   dropCopilot(event: CdkDragDrop<any[], any[], any>) {
     if (this.copilotEngine) {
       this.copilotEngine.dropCopilot(event)
@@ -820,11 +799,6 @@ export class NgmCopilotChatComponent {
     }
   }
 
-  async revert(command: CopilotCommand, message: CopilotChatMessage) {
-    await command.revert?.(message.historyCursor)
-    message.reverted = true
-  }
-
   async continue(conversation: CopilotChatConversation) {
     await this.copilotEngine.continue(conversation)
   }
@@ -833,7 +807,4 @@ export class NgmCopilotChatComponent {
     await this.copilotEngine.finish(conversation)
   }
 
-  onRouteChange(conversationId: string, event: string) {
-    this.copilotEngine.updateConversationState(conversationId, {instructions: event})
-  }
 }

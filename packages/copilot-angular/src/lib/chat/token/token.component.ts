@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { TranslateModule } from '@ngx-translate/core'
 
@@ -11,9 +11,9 @@ import { TranslateModule } from '@ngx-translate/core'
     class="bg-neutral-100 text-neutral-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-neutral-700 dark:text-neutral-300"
     matTooltip="{{ 'PAC.Copilot.CharacterLength' | translate: { Default: 'Character length' } }}"
   >
-    <span *ngIf="characterLength >= 4000" class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
-    <span *ngIf="characterLength < 4000" class="inline-block w-2 h-2 bg-gray-300 rounded-full"></span>
-    {{ characterLength }}
+    <span *ngIf="characterLength() >= 4000" class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
+    <span *ngIf="characterLength() < 4000" class="inline-block w-2 h-2 bg-gray-300 rounded-full"></span>
+    {{ characterLength() }}
   </span>`,
   styles: [
     `
@@ -27,14 +27,10 @@ import { TranslateModule } from '@ngx-translate/core'
     class: 'ngm-copilot-token'
   }
 })
-export class CopilotChatTokenComponent implements OnChanges {
-  @Input() content: string | null
+export class CopilotChatTokenComponent {
+  readonly content = input<string | null>()
 
-  characterLength = 0
-
-  ngOnChanges({ content }: SimpleChanges): void {
-    if (content) {
-      this.characterLength = content.currentValue?.length
-    }
-  }
+  readonly characterLength = computed(() => {
+    return this.content()?.length ?? 0
+  })
 }

@@ -1,6 +1,6 @@
 import { BaseMessage, FunctionCall, OpenAIToolCall } from '@langchain/core/messages'
-import { AiProvider } from './providers'
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions'
+import { AiProvider } from './providers'
 
 export const DefaultModel = 'gpt-3.5-turbo'
 export const DefaultBusinessRole = 'default'
@@ -147,4 +147,9 @@ export type AIOptions = ChatCompletionCreateParamsBase & {
   useSystemPrompt?: boolean
   verbose?: boolean
   interactive?: boolean
+}
+
+export enum MessageDataType {
+  Route = 'route',
+  ToolsCall = 'tools_call',
 }

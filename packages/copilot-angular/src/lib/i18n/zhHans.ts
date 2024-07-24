@@ -49,5 +49,9 @@ export const ZhHans = {
     Invoke: '调用',
     Instructions: '指令',
     Reasoning: '推理',
+    Name: '名称',
+    Args: '参数',
+    ToolsCall: '工具调用',
+    Route: '路由'
   }
 }

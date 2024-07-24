@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { Injectable, TemplateRef, computed, inject, signal } from '@angular/core'
 import { toSignal } from '@angular/core/rxjs-interop'
-import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { AIMessage, BaseMessage, HumanMessage, isAIMessage } from '@langchain/core/messages'
 import { StringOutputParser } from '@langchain/core/output_parsers'
 import { Runnable } from '@langchain/core/runnables'
 import { ToolInputParsingException } from '@langchain/core/tools'
@@ -19,6 +19,7 @@ import {
   CopilotEngine,
   DefaultModel,
   getCommandPrompt,
+  MessageDataType,
   nanoid
 } from '@metad/copilot'
 import { TranslateService } from '@ngx-translate/core'
@@ -702,11 +703,14 @@ export class NgmCopilotEngineService implements CopilotEngine {
                   if (value.next === 'FINISH' || value.next === END) {
                     end = true
                   } else {
-                    message.templateRef = this.routeTemplate
+                    // message.templateRef = this.routeTemplate
                     message.data = {
-                      next: value.next,
-                      instructions: value.instructions,
-                      reasoning: value.reasoning
+                      type: MessageDataType.Route,
+                      data: {
+                        next: value.next,
+                        instructions: value.instructions,
+                        reasoning: value.reasoning
+                      }
                     }
                     content +=
                       `<b>${key}</b>` +
@@ -720,11 +724,21 @@ export class NgmCopilotEngineService implements CopilotEngine {
                       this.#translate.instant('Copilot.Reasoning', { Default: 'Reasoning' }) +
                       `</b>: ${value.reasoning || ''}`
                   }
-                } else if (value.messages && value.messages[0]?.content) {
-                  if (this.verbose()) {
-                    content += `<b>${key}</b>\n`
+                } else if (value.messages) {
+                  const _message = value.messages[0]
+                  if (isAIMessage(_message)) {
+                    if (_message.tool_calls?.length > 0) {
+                      message.data = {
+                        type: MessageDataType.ToolsCall,
+                        data: _message.tool_calls.map(({name, args, id}) => ({name, args: JSON.stringify(args), id}))
+                      }
+                    } else if (_message.content) {
+                      if (this.verbose()) {
+                        content += `<b>${key}</b>\n`
+                      }
+                      content += value.messages.map((m) => m.content).join('\n\n')
+                    }
                   }
-                  content += value.messages.map((m) => m.content).join('\n\n')
                 }
               }
             )
@@ -738,7 +752,8 @@ export class NgmCopilotEngineService implements CopilotEngine {
               } else {
                 verboseContent = content
               }
-
+            }
+            if (content || message.data) {
               this.upsertMessage({
                 ...message,
                 id: assistantId,
@@ -769,7 +784,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       }))
 
       const lastMessage = this.getMessage(assistantId)
-      if (lastMessage.content) {
+      if (lastMessage.content || lastMessage.data) {
         this.upsertMessage({
           id: assistantId,
           role: CopilotChatMessageRoleEnum.Assistant,
