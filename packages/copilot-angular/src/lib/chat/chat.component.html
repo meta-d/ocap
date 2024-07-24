@@ -51,7 +51,7 @@
                             }
                       </div>
                       
-                      <ngm-copilot-ai-message class="flex-1 flex flex-col justify-start items-start overflow-auto relative pt-2 min-h-[50px] min-w-[50px] group"
+                      <ngm-copilot-ai-message class="flex-1 flex flex-col justify-start items-start overflow-auto relative ml-2 pt-2 min-h-[50px] min-w-[50px] group"
                         [copilotEngine]="copilotEngine"
                         [conversation]="conversation"
                         [message]="message"
@@ -406,9 +406,9 @@
             <input matSliderThumb [(ngModel)]="temperature">
         </mat-slider>
         
-        <label class="pt-4">Choices:<span class="font-notoColorEmoji" matTooltip="How many chat completion choices to generate for each input message.">💡</span></label>
-        <mat-slider color="accent" min="1" max="10" step="1" value="1" discrete>
-            <input matSliderThumb [(ngModel)]="n">
+        <label class="pt-4">{{'Copilot.RecursionLimit' | translate: {Default: 'Recursion Limit'} }}:<span class="font-notoColorEmoji" matTooltip="Maximum number of loop calls">💡</span></label>
+        <mat-slider color="accent" min="1" max="100" step="1" value="20" discrete>
+          <input matSliderThumb [(ngModel)]="recursionLimit">
         </mat-slider>
 
         <mat-checkbox [(ngModel)]="interactive" color="accent" labelPosition="before">

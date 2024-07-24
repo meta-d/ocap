@@ -28,7 +28,7 @@
     .ngm-entity-schema__type {
       display: inline-block;
       white-space: nowrap;
-      width: 16px;
+      // width: 16px;
       height: 16px;
       margin-right: 5px;
       font-size: 12px;
@@ -38,7 +38,10 @@
       background-color: color.change(mat.get-color-from-palette($accent), $alpha: 0.1);
       border-radius: 3px;
       padding: 0 3px;
-      transform: scale(.7);
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      // transform: scale(.7);
     }
   }
 

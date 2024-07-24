@@ -147,6 +147,7 @@ export type AIOptions = ChatCompletionCreateParamsBase & {
   useSystemPrompt?: boolean
   verbose?: boolean
   interactive?: boolean
+  recursionLimit?: number
 }
 
 export enum MessageDataType {

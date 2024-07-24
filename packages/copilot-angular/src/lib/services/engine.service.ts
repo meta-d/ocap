@@ -676,7 +676,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
           configurable: {
             thread_id: conversation.id
           },
-          recursionLimit: AgentRecursionLimit
+          recursionLimit: this.aiOptions.recursionLimit ?? AgentRecursionLimit
         }
       )
 
@@ -685,7 +685,7 @@ export class NgmCopilotEngineService implements CopilotEngine {
       try {
         for await (const output of streamResults) {
           if (!output?.__end__) {
-            const message = {templateRef: null} as NgmCopilotChatMessage
+            const message = {data: null} as NgmCopilotChatMessage
             let content = ''
             Object.entries(output).forEach(
               ([key, value]: [

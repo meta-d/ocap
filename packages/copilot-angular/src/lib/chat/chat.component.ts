@@ -77,7 +77,7 @@ import { provideFadeAnimation } from '../core/animations'
 import { NgmHighlightDirective } from '../core/directives'
 import { NgmCopilotEnableComponent } from '../enable/enable.component'
 import { injectCommonCommands } from '../hooks/common'
-import { NgmCopilotEngineService, NgmCopilotService } from '../services/'
+import { AgentRecursionLimit, NgmCopilotEngineService, NgmCopilotService } from '../services/'
 import { CopilotChatTokenComponent } from './token/token.component'
 import { IUser, NgmCopilotChatMessage } from '../types'
 import { PlaceholderMessages } from './types'
@@ -132,6 +132,7 @@ export class NgmCopilotChatComponent {
   NgxPopperjsPlacements = NgxPopperjsPlacements
   NgxPopperjsTriggers = NgxPopperjsTriggers
   CopilotChatMessageRoleEnum = CopilotChatMessageRoleEnum
+  AgentRecursionLimit = AgentRecursionLimit
 
   readonly _snackBar = inject(MatSnackBar)
   private copilotService = inject(NgmCopilotService)
@@ -216,14 +217,14 @@ export class NgmCopilotChatComponent {
       this.openaiOptions.temperature = value
     }
   }
-  get n() {
-    return this.aiOptions.n
+  get recursionLimit() {
+    return this.aiOptions.recursionLimit
   }
-  set n(value) {
+  set recursionLimit(value) {
     if (this.copilotEngine) {
-      this.copilotEngine.aiOptions = { ...this.aiOptions, n: value }
+      this.copilotEngine.aiOptions = { ...this.aiOptions, recursionLimit: value }
     } else {
-      this.openaiOptions.n = value
+      this.openaiOptions.recursionLimit = value
     }
   }
 
