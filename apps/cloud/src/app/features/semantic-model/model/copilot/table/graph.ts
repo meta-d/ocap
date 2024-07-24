@@ -1,13 +1,15 @@
 import { inject } from '@angular/core'
-import { SystemMessage } from '@langchain/core/messages'
+import { HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { StateGraphArgs } from '@langchain/langgraph/web'
-import { createCopilotAgentState, CreateGraphOptions, createReactAgent } from '@metad/copilot'
+import { createCopilotAgentState, CreateGraphOptions, createReactAgent, Team } from '@metad/copilot'
 import { AgentState } from '@metad/copilot-angular'
 import { SemanticModelService } from '../../model.service'
 import { injectCreateTableTool } from './tools'
+import { RunnableLambda } from '@langchain/core/runnables'
+import { TABLE_COMMAND_NAME } from './types'
+import { injectAgentFewShotTemplate } from 'apps/cloud/src/app/@core/copilot'
 
-export const TABLE_CREATOR_NAME = 'TableCreator'
 
 function createSystemPrompt(dialect: string) {
   return (
@@ -42,5 +44,27 @@ export function injectTableCreator() {
         return [new SystemMessage(system), ...state.messages]
       }
     })
+  }
+}
+
+export function injectRunTableCreator() {
+  const createTableCreator = injectTableCreator()
+  const fewShotPrompt = injectAgentFewShotTemplate(TABLE_COMMAND_NAME, { k: 1, vectorStore: null })
+  
+  return async ({ llm, checkpointer, interruptBefore, interruptAfter }: CreateGraphOptions) => {
+    const agent = await createTableCreator({ llm, checkpointer, interruptBefore, interruptAfter })
+
+    return RunnableLambda.from(async (state: AgentState) => {
+      const content = await fewShotPrompt.format({ input: state.input, context: '' })
+      return {
+        input: state.input,
+        messages: [new HumanMessage(content)],
+        role: state.role,
+        context: state.context,
+        language: state.language
+      }
+    })
+      .pipe(agent)
+      .pipe(Team.joinGraph)
   }
 }

@@ -7,9 +7,9 @@ import { SemanticModelService } from '../../model.service'
 import { CUBE_MODELER_NAME, injectRunCubeModeler } from '../cube'
 import { DIMENSION_MODELER_NAME, injectRunDimensionModeler } from '../dimension/'
 import { injectQueryTablesTool, injectSelectTablesTool } from '../tools'
-import { injectRunModelerPlanner } from './planner'
 import { createSupervisorAgent } from './supervisor'
 import { ModelerState } from './types'
+import { injectExampleReferencesRetriever } from 'apps/cloud/src/app/@core/copilot'
 
 const superState: StateGraphArgs<ModelerState>['channels'] = {
   ...Team.createState(),
@@ -17,60 +17,25 @@ const superState: StateGraphArgs<ModelerState>['channels'] = {
 
 export function injectCreateModelerGraph() {
   const modelService = inject(SemanticModelService)
-  const createModelerPlanner = injectRunModelerPlanner()
   const createDimensionModeler = injectRunDimensionModeler()
   const createCubeModeler = injectRunCubeModeler()
   const selectTablesTool = injectSelectTablesTool()
   const queryTablesTool = injectQueryTablesTool()
 
+  const referencesRetriever = injectExampleReferencesRetriever('modeler/references', {k: 3, vectorStore: null})
+
   const dimensions = modelService.dimensions
 
   return async ({ llm }: CreateGraphOptions) => {
     const tools = [selectTablesTool, queryTablesTool]
-    const supervisorAgent = await createSupervisorAgent({ llm, dimensions, tools })
+    const supervisorAgent = await createSupervisorAgent({ llm, dimensions, tools, referencesRetriever })
     const dimensionAgent = await createDimensionModeler({ llm })
     const cubeAgent = await createCubeModeler({ llm })
-
-    // const supervisorNode = await createSupervisor(llm, [
-    //   {
-    //     name: PLANNER_NAME,
-    //     description: 'Create a plan for modeling'
-    //   },
-    //   {
-    //     name: DIMENSION_MODELER_NAME,
-    //     description: 'Create a dimension, only one at a time'
-    //   },
-    //   {
-    //     name: CUBE_MODELER_NAME,
-    //     description: 'Create a cube, only one at a time'
-    //   }
-    // ])
-    const plannerAgent = await createModelerPlanner({ llm })
 
     const superGraph = new StateGraph({ channels: superState })
       // Add steps nodes
       .addNode(Team.SUPERVISOR_NAME, supervisorAgent.withConfig({ runName: Team.SUPERVISOR_NAME }))
       .addNode(Team.TOOLS_NAME, new ToolNode<ModelerState>(tools))
-      // .addNode(SUPERVISOR_NAME, RunnableLambda.from(async (state: State) => {
-      //   const _state = await supervisorNode.invoke(state)
-      //   return {
-      //     ..._state,
-      //     messages: [
-      //       new HumanMessage(`Call ${_state.next} with instructions: ${_state.instructions}`)
-      //     ]
-      //   }
-      // }))
-      // .addNode(PLANNER_NAME,
-      //   RunnableLambda.from(async (state: State) => {
-      //     return plannerAgent.invoke({
-      //       input: state.instructions,
-      //       role: state.role,
-      //       context: state.context,
-      //       language: state.language,
-      //       messages: []
-      //     })
-      //   })
-      // )
       .addNode(
         DIMENSION_MODELER_NAME,
         RunnableLambda.from(async (state: ModelerState) => {

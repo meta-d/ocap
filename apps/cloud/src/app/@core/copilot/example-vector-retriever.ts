@@ -8,9 +8,9 @@ import {
   VectorStoreRetrieverInterface,
   VectorStoreRetrieverMMRSearchKwargs
 } from '@langchain/core/vectorstores'
-import { CopilotExampleService } from '../services/'
 import { catchError, firstValueFrom, of, timeout } from 'rxjs'
 import { SERVER_REQUEST_TIMEOUT } from '../config'
+import { CopilotExampleService } from '../services/'
 
 /**
  * Type for options when adding a document to the VectorStore.
@@ -22,7 +22,7 @@ type AddDocumentOptions = Record<string, any>
  * Class for performing document retrieval from a VectorStore. Can perform
  * similarity search or maximal marginal relevance search.
  */
-export class VectorStoreRetriever<V extends VectorStoreInterface = VectorStoreInterface>
+export class ExampleVectorStoreRetriever<V extends VectorStoreInterface = VectorStoreInterface>
   extends BaseRetriever
   implements VectorStoreRetrieverInterface
 {
@@ -78,32 +78,40 @@ export class VectorStoreRetriever<V extends VectorStoreInterface = VectorStoreIn
           `The vector store backing this retriever, ${this._vectorstoreType()} does not support max marginal relevance search.`
         )
       }
-      return await firstValueFrom(this.service.maxMarginalRelevanceSearch(query, {
-        k: this.k,
-        filter: this.filter,
-        command: this.command,
-        role: this.role(),
-        ...this.searchKwargs
-      }).pipe(
-        timeout(SERVER_REQUEST_TIMEOUT),
-        catchError((error) => {
-          return of([])
-        })
-      ))
+      return await firstValueFrom(
+        this.service
+          .maxMarginalRelevanceSearch(query, {
+            k: this.k,
+            filter: this.filter,
+            command: this.command,
+            role: this.role(),
+            ...this.searchKwargs
+          })
+          .pipe(
+            timeout(SERVER_REQUEST_TIMEOUT),
+            catchError((error) => {
+              return of([])
+            })
+          )
+      )
     }
 
-    return await firstValueFrom(this.service.similaritySearch(query, {
-      command: this.command,
-      k: this.k,
-      filter: this.filter,
-      role: this.role(),
-      score: this.score
-    }).pipe(
-      timeout(SERVER_REQUEST_TIMEOUT),
-      catchError((error) => {
-        return of([])
-      })
-    ))
+    return await firstValueFrom(
+      this.service
+        .similaritySearch(query, {
+          command: this.command,
+          k: this.k,
+          filter: this.filter,
+          role: this.role(),
+          score: this.score
+        })
+        .pipe(
+          timeout(SERVER_REQUEST_TIMEOUT),
+          catchError((error) => {
+            return of([])
+          })
+        )
+    )
   }
 
   async addDocuments(documents: DocumentInterface[], options?: AddDocumentOptions): Promise<string[] | void> {

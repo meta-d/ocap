@@ -8,15 +8,19 @@ import { CUBE_MODELER_NAME } from '../cube'
 import { DIMENSION_MODELER_NAME } from '../dimension'
 import { getTablesFromDimension } from '../types'
 import { ModelerState } from './types'
+import { formatDocumentsAsString } from 'langchain/util/document'
+import { VectorStoreRetriever } from '@langchain/core/vectorstores'
 
 export async function createSupervisorAgent({
   llm,
   dimensions,
-  tools
+  tools,
+  referencesRetriever
 }: {
   llm: ChatOpenAI
   dimensions: Signal<PropertyDimension[]>
   tools: DynamicStructuredTool[]
+  referencesRetriever: VectorStoreRetriever
 }) {
   const getDimensions = async () => {
     return dimensions().length
@@ -99,16 +103,23 @@ The plan are as follows:
 Avoid creating already existing shared dimensions:
 {dimensions}
 just use them directly in the cube creation task.
-Please plan the cube model first, and then decide to call route to create it step by step.
+Please plan the cube modeling first, and then decide to call route to create it ont by one.
+
+Use the following pieces of context to answer the question at the end.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+----------------
+{references}
 `,
     `Use only one tool at a time`
   )
 
   return RunnableLambda.from(async (state: ModelerState) => {
     const dimensions = await getDimensions()
+    const references = await referencesRetriever.pipe(formatDocumentsAsString).invoke(state.input)
     return {
       ...state,
-      dimensions
+      dimensions,
+      references
     }
   }).pipe(agent)
 }

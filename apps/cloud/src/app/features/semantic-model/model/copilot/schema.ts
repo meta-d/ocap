@@ -35,7 +35,7 @@ const BaseHierarchySchema = {
         caption: z.string().describe('The caption of the level'),
         column: z.string().describe('The column of the level'),
         type: z
-          .enum(['String', 'Integer', 'Numeric', 'Boolean'])
+          .enum(['String', 'Integer', 'Numeric', 'Boolean', 'Date'])
           .optional()
           .describe('The type of the column, must be set if the column type is not string'),
 

@@ -52,6 +52,7 @@ export const ZhHans = {
     Name: '名称',
     Args: '参数',
     ToolsCall: '工具调用',
-    Route: '路由'
+    Route: '路由',
+    RecursionLimit: '递归限制'
   }
 }
