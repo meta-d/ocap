@@ -15,7 +15,9 @@ function createSystemPrompt(dialect: string) {
 {role}
 {language}
 The database dialect is '${dialect}'.
-You need add short label to the created table and it's columns.
+Consider the tables that need to be created based on the user's questions and call the 'createTable' tool to create them one by one.
+You need to add short labels to the created table and its columns.
+In PostgreSQL, the 'LABEL' syntax is incorrect, we can add labels by using Comment.
 {context}`
   )
 }

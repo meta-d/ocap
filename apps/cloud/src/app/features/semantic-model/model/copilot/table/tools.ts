@@ -12,7 +12,7 @@ export function injectCreateTableTool() {
 
   const createTableTool = new DynamicStructuredTool({
     name: 'createTable',
-    description: 'Create or edit a table',
+    description: 'Create or edit a table, one table at a time',
     schema: z.object({
       statement: z.string().describe('The statement of creating or modifing a table')
     }),
